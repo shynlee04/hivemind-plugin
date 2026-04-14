@@ -24,7 +24,7 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 
 ### Active
 
-- [ ] **Phase 08 closure**: Finalize Phase 08 execution summaries/state updates after the corrected verification evidence is recorded.
+- [ ] **Post-Phase-12 runtime verification corridor**: Use the reconciled Phase 09-family truth to decide the next live runtime verification / re-planning step before Phase 09.3 or Phase 11 work proceeds.
 
 ### Out of Scope
 
@@ -44,9 +44,11 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 - Phase 02 implementation is complete across 9/9 plans.
 - Phase 08 repaired the live runtime-policy override seam and durable parent-visible delegated-session status corridor.
 - Phase 02 verification is now **18/18** verified in `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md`.
+- Phase 12 corrected false-start semantics so async builtin-subsession children stay non-started until observer-confirmed evidence exists.
+- Phase 12 also reconciled Phase 09/09.1/09.2 planning artifacts so quarantined summaries cannot be mistaken for authoritative runtime truth.
 - Fresh bounded tests, full suite, and typecheck all passed during the latest corrective closure run.
 
-**Current state**: Phase 02 is re-verified; later planning work can proceed from the corrected dependency chain once Phase 08 execution metadata is finalized.
+**Current state**: Phase 02 remains re-verified, Phase 12 has repaired the false-start corridor, and downstream planning must now start from the corrected chain `Phase 02 baseline → Phase 08 corrective closure → Phase 09-family forensic reset → Phase 12 reconciliation` rather than the stale placeholder storyline.
 
 ## Constraints
 
@@ -54,6 +56,7 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 - **Verification boundary**: Treat Phase 08 as a bounded corrective closure phase, not a general delegation redesign.
 - **Closure rule**: Later planning work depends on the corrected sequence `Phase 02 baseline → Phase 08 corrective closure → Phase 02 re-verification`.
 - **Evidence standard**: Current status must match `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md` rather than older audit or validation artifacts.
+- **Reconciliation rule**: Phase 09-family summaries are not authoritative by default; planners must consult the Phase 12 reconciliation note before inheriting claims from that corridor.
 
 ## Key Decisions
 
@@ -64,6 +67,7 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 | Background execution uses classified runtime modes | Execution family/submode must be chosen from task characteristics and environment capabilities | Verified |
 | Injection remains narrow and route-aware | Specialist guidance should derive from the effective route and active governance state only | Verified |
 | Phase 02 closure requires end-to-end runtime-policy override persistence | Manual in-memory test injection is insufficient; live producer + reload path must exist | Satisfied by Phase 08 corrective closure |
+| Phase 09-family truth must be reconciled through forensic evidence before reuse | Mock-heavy tests and partial integration work can remain historically useful without being accepted as authoritative runtime proof | Enforced by Phase 12 reconciliation |
 
 ## Evolution
 
@@ -83,4 +87,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-10 after Phase 08 corrective re-verification*
+*Last updated: 2026-04-14 after Phase 12 reconciliation*

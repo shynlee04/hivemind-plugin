@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-14 (Forensic truth reset — Phase 09/09.1 mock-verified only, 09.2 integration wiring pending)
+**Updated:** 2026-04-14 (Phase 12 reconciliation — false-start repair landed, 09.2 summaries quarantined as non-authoritative runtime proof)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -18,6 +18,7 @@
 - [~] **Phase 9.1: Critical Bug Fixes + Test Rewrites** — ⚠️ COMPLETE WITH CAVEATS — 668 tests pass but mock-heavy (forensic reset 2026-04-14)
 - [ ] **Phase 9.2: Completion Detection Architecture** — PARTIAL: Plan 01 done, Plans 02-03 pending (integration wiring)
 - [ ] **Phase 9.3: Module Restructuring + Config** — D-01→D-08, D-28→D-30 (11 decisions)
+- [x] **Phase 12: Correct background session start semantics + planning reconciliation** — 2/2 plans complete, authoritative truth reset established
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -193,7 +194,13 @@ Plans:
 **Goal:** Make background delegation report truthful start state, then reconcile the Phase 09-family artifacts and planning metadata to that corrected runtime reality.
 **Requirements**: [PH12-01, PH12-02, PH12-03, PH12-04]
 **Depends on:** Phase 08 corrective sequencing baseline plus the existing Phase 09/09.1/09.2 runtime corridor (not Phase 11)
-**Plans:** 2 plans
+**Plans:** 2/2 plans executed
+
+**Execution status:** ✅ COMPLETE. Phase 12 closed the false-start corridor, quarantined contaminated 09.2 completion summaries, and refreshed roadmap/project/state artifacts to the corrected dependency chain.
+
+**Authoritative references:**
+- `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-01-SUMMARY.md`
+- `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`
 
 **Requirement details:**
 - **PH12-01:** Async builtin-subsession children stay non-started until observer-confirmed D-10 start-gate evidence exists.
@@ -202,8 +209,8 @@ Plans:
 - **PH12-04:** Roadmap/state/project metadata and stale architectural notes are archived or rewritten to the corrected dependency chain.
 
 Plans:
-- [ ] 12-01-PLAN.md — Lock truthful async start semantics and regression coverage
-- [ ] 12-02-PLAN.md — Reconcile Phase 09-family artifacts and archive stale planning noise
+- [x] 12-01-PLAN.md — Lock truthful async start semantics and regression coverage
+- [x] 12-02-PLAN.md — Reconcile Phase 09-family artifacts and archive stale planning noise
 
 ---
 
@@ -344,6 +351,7 @@ Plans:
 | 9.1 Critical Bug Fixes + Tests | 3/3 plans | ⚠️ COMPLETE WITH CAVEATS — mock-heavy, live verification pending |
 | 9.2 Completion Detection Architecture | 1/3 plans | 🔴 PARTIAL — Plan 01 done, Plans 02-03 pending (integration wiring) |
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
+| 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
 ## Dependencies
@@ -353,11 +361,12 @@ Phase 1 (7 done, 3 pending — planned)
   └─→ Phase 2: V3 Runtime baseline
        └─→ Phase 8: Corrective closure for delegated-session durability ✅
             └─→ Phase 2: Authoritative re-verification (18/18) ✅
-                 └─→ Phase 9.1: Critical Bug Fixes + Test Rewrites (CURRENT)
-                      └─→ Phase 9.2: Completion Detection Architecture
-                           └─→ Phase 9.3: Module Restructuring + Config
-                                └─→ Phase 11: Clean Architecture Restructuring
-                                     └─→ Phase 3: Schema Definition
-                                          └─→ Phase 4: Migration Gate
-                                               └─→ Phase 5: Integration Verification
+                 └─→ Phase 9 family: partial implementation + forensic reset
+                      └─→ Phase 12: truthful start-semantics repair + reconciliation ✅
+                           └─→ Next runtime verification / re-planning work from corrected truth
+                                └─→ Phase 9.3: Module Restructuring + Config
+                                     └─→ Phase 11: Clean Architecture Restructuring
+                                          └─→ Phase 3: Schema Definition
+                                               └─→ Phase 4: Migration Gate
+                                                    └─→ Phase 5: Integration Verification
 ```

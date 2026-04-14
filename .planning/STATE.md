@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 1
-status: "Phase 09.2 Executing (Plans 02-03 pending — integration wiring incomplete)"
-stopped_at: "Forensic truth reset 2026-04-14"
-last_updated: "2026-04-14T18:04:00.000Z"
+current_plan: 2
+status: Phase 12 complete
+stopped_at: Completed 12-02-PLAN.md
+last_updated: "2026-04-14T13:10:00.000Z"
 progress:
-  total_phases: 13
-  completed_phases: 3
-  total_plans: 24
-  completed_plans: 13
-  percent: 54
+  total_phases: 14
+  completed_phases: 6
+  total_plans: 26
+  completed_plans: 24
+  percent: 92
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-09)
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 09.2 — completion-detection-architecture (Plans 02-03: integration wiring)
+**Current focus:** Post-Phase-12 runtime planning from corrected delegation truth
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -33,11 +33,11 @@ See: `.planning/PROJECT.md` (updated 2026-04-09)
 
 ## Current Position
 
-Phase: 09.2 (completion-detection-architecture) — PARTIAL
-Plan: 2 of 3 (Plan 01 complete, Plans 02-03 pending)
+Phase: 12 (correct-background-session-start-semantics-reconcile-phase-0) — COMPLETE
+Plan: 2 of 2 complete
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
-**Current plan:** 09.2-02 (integration wiring)
-**Progress:** [█████░░░░░] 54%
+**Current plan:** Complete
+**Progress:** [██████░░░░] 62%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -50,8 +50,9 @@ Phase 7: Runtime Domain Restructuring SUPERSEDED by Phase 11
 Phase 8: Repair Durable Parent Obs COMPLETE (corrective closure, 2026-04-10)
 Phase 9: Sticky Delegation Corrective COMPLETE WITH CAVEATS (mock-verified only)
 Phase 9.1: Critical Bug Fixes ..... COMPLETE WITH CAVEATS (test rewrites done, live verification pending)
-Phase 9.2: Completion Detection .... PARTIAL — Plan 01 done (pure modules), Plans 02-03 pending (integration wiring)
+Phase 9.2: Completion Detection .... PARTIAL — implementation exists, but 09.2-02/03 summaries are quarantined as non-authoritative runtime proof
 Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
+Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
 ```
 
 ## Phase Completion Details
@@ -70,21 +71,22 @@ Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 |-------|--------|--------|
 | Phase 9 | COMPLETE WITH CAVEATS | Code exists but UAT quarantined as "substantively false" — mock-verified only, never runtime-verified |
 | Phase 9.1 | COMPLETE WITH CAVEATS | Bug fixes + test rewrites done (668 tests pass), but mock-heavy — never spawn real child sessions |
+| Phase 12 | COMPLETE | False-start corridor fixed and 09-family planning truth reconciled |
 
 ### In-Progress Phases
 
 | Phase | Status | Detail |
 |-------|--------|--------|
-| Phase 9.2 | PARTIAL | Plan 01: pure completion-detection modules shipped. Plans 02-03 (failure handling, parent coordination, lifecycle wiring) NOT executed |
+| Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 
 ## Known Issues
 
 1. **Phase 09 UAT quarantined** — `.planning/debug/09-UAT-quarantined-2026-04-10.md` — 14/15 claims were code-existence checks, not runtime verification
 2. **Phase 09 VALIDATION quarantined** — `.planning/debug/09-VALIDATION-quarantined-2026-04-10.md` — validation was mock-only
 3. **Background observability mostly blind** — observer conflates idle-as-completed, `formatPendingNotificationsForSession` has zero runtime callers
-4. **668 tests pass but mock-heavy** — never spawn real child sessions; completion detection modules exist as standalone code but aren't integrated into live runtime
-5. **9 debug sessions, 0 verified fixes** — 2 have code but `awaiting_human_verify` never confirmed by human
-6. **Integration wiring incomplete** — Phase 09.2 Plans 02-03 are the critical next step to wire completion detection into live runtime
+4. **668 tests pass but mock-heavy** — historical suite progress exists, but those tests alone are not authoritative runtime proof
+5. **9 debug sessions, 0 verified fixes** — several investigations remained unresolved until Phase 12 reconciled the false-start corridor
+6. **Next runtime step still needs selection** — downstream planning must decide how to resume live runtime verification/re-planning from the corrected Phase 12 baseline
 
 ## Performance Metrics
 
@@ -93,8 +95,8 @@ Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 | Test suite | Pass | 668 passed, mock-heavy |
 | Typecheck | Pass | Pass |
 | Build | Pass | Pass |
-| Runtime-verified delegation | Working | NOT WORKING — integration wiring pending |
-| Completion detection live | Working | Code exists, not wired |
+| Runtime-verified delegation | Working | PARTIALLY CORRECTED — false-start semantics fixed, broader runtime verification still pending |
+| Completion detection live | Working | PARTIAL — implementation exists, authority limited by quarantined 09.2 summaries |
 
 ## Accumulated Context
 
@@ -116,6 +118,7 @@ Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 - [Phase 09]: Reuse CompletionDetector as the stable-idle gate
 - [Phase 09]: Base64-encode sync assistant output inside a JSON envelope
 - **2026-04-14**: Forensic truth reset — STATE.md rewritten to reflect actual project state, not inflated claims
+- **2026-04-14**: Phase 12 reconciled 09-family artifacts; 09.2-02/03 summaries are historical evidence only, not authoritative runtime closure
 
 ### Roadmap Evolution
 
@@ -127,18 +130,19 @@ Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 - Phase 9.1 complete: Bug fixes + test rewrites done (mock-verified only)
 - Phase 9.2 partial: Plan 01 (pure modules) done, Plans 02-03 (integration wiring) pending
 - **2026-04-14**: Forensic truth reset — STATE.md progress corrected from inflated 92% to honest 54%
+- Phase 12 added: Correct background session start semantics, reconcile Phase 09/09.1/09.2, and archive obsolete architectural noise
+- Phase 12 complete: false-start corridor fixed, planning truth reconciled, roadmap/project/state updated to corrected dependency chain
 
 ### Todos
 
-- [ ] Execute Phase 09.2 Plan 02: failure handling + parent coordination
-- [ ] Execute Phase 09.2 Plan 03: wire completion detection into lifecycle-manager
-- [ ] Live verification: spawn real child sessions and confirm end-to-end delegation works
+- [ ] Decide the next corrected runtime step for the 09-family corridor (fresh verification, targeted re-plan, or both)
+- [ ] Live verification: spawn real child sessions and confirm end-to-end delegation works from the Phase 12 baseline
 - [ ] Plan Phase 11: Clean Architecture Restructuring
 - [ ] Plan Phase 03: Schema Definition & Runtime Configurability
 
 ### Blockers
 
-- None active. Phase 09.2 Plans 02-03 are ready for execution.
+- None active. The next task is planning/verification choice, not an unresolved blocker.
 
 ## Session Continuity
 
@@ -147,7 +151,7 @@ Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Forensic truth reset (2026-04-14)
+**Stopped At:** Completed 12-02-PLAN.md
 
 **Key files:**
 
@@ -161,4 +165,4 @@ Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 
 ---
 *State initialized: 2026-04-06*
-*Forensic reset: 2026-04-14 — progress corrected from inflated 92% to honest 54%*
+*Forensic reset + reconciliation: 2026-04-14 — false-start corridor corrected and 09-family truth quarantined where needed*
