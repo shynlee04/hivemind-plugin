@@ -166,9 +166,9 @@ export async function launchDelegatedSession(
       },
       metadata: {
         parentSessionID: args.parentSessionID,
-            rootSessionID: args.rootID,
-            delegation,
-            delegationPacket: createDelegationPacket(
+        rootSessionID: args.rootID,
+        delegation,
+        delegationPacket: createDelegationPacket(
           args.description,
           buildDelegationPacketParentChain({
             rootSessionID: args.rootID,
@@ -290,10 +290,6 @@ export async function launchDelegatedSession(
           }
 
           if (execution.submode === "builtin-process") {
-            if (!ctx.backgroundManager) {
-              throw new Error("[Harness] builtin-process execution requires a BackgroundManager.")
-            }
-
             await runLifecycleProcessTask({
               sessionID: childSessionID,
               parentSessionID: args.parentSessionID,
@@ -443,10 +439,6 @@ export async function launchDelegatedSession(
     }
 
     if (execution.submode === "builtin-process") {
-      if (!ctx.backgroundManager) {
-        throw new Error("[Harness] builtin-process execution requires a BackgroundManager.")
-      }
-
       return await runLifecycleProcessTask({
         sessionID: childSessionID,
         parentSessionID: args.parentSessionID,

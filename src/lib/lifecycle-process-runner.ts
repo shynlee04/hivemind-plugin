@@ -1,240 +1,67 @@
-import type { BackgroundResult, BackgroundTask } from "./background-manager.js"
+/**
+ * lifecycle-process-runner.ts
+ *
+ * Runs delegated session work using the OpenCode session API (sendPrompt/sendPromptAsync).
+ * This is the "builtin" execution path — it invokes the LLM directly via the platform,
+ * without requiring tmux or external child processes.
+ *
+ * Previously (broken): spawned a Node.js echo script that printed the prompt and claimed
+ * completion in 136ms with zero LLM output — "false theater."
+ *
+ * Now (fixed): calls sendPrompt() for sync mode, sendPromptAsync() + polling for async mode.
+ * Result capture reads session messages from disk (getSessionMessages) and persists to continuity.
+ */
 import type { CompletionDetector } from "./completion-detector.js"
 import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
 import { extractTextFromResponse } from "./lifecycle-state.js"
 import {
   type CommonRunnerArgs,
-  type FinalizedResult,
   type PatchLifecycleArgs,
 } from "./lifecycle-runner-shared.js"
-import type { ExecutionModeResult } from "./execution-mode.js"
 import { buildTaskNotificationFromContinuity, notifyParentSession } from "./notification-handler.js"
 import { persistPendingNotification } from "./pending-notifications.js"
-import { captureProcessResult } from "./result-capture.js"
+import { captureSubsessionResult } from "./result-capture.js"
 import { sendPrompt, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import type { SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleState } from "./types.js"
 
 type RunLifecycleProcessArgs = CommonRunnerArgs
 
-function buildBuiltinProcessCommand(promptText: string): { command: string; args: string[]; env: Record<string, string> } {
-  return {
-    command: "node",
-    args: [
-      "-e",
-      [
-        'const prompt = process.env.HARNESS_DELEGATION_PROMPT ?? "";',
-        'const shouldFail = process.env.HARNESS_DELEGATION_FAIL === "1";',
-        'if (shouldFail) {',
-        '  process.stderr.write(prompt || "[Harness] builtin-process failed");',
-        "  process.exit(1);",
-        "}",
-        "process.stdout.write(prompt);",
-      ].join(" "),
-    ],
-    env: {
-      HARNESS_DELEGATION_PROMPT: promptText,
-      HARNESS_DELEGATION_FAIL: process.env.OPENCODE_HARNESS_BUILTIN_PROCESS_FAIL === "1" ? "1" : "0",
-    },
-  }
-}
-
-function buildFailureMessage(result: BackgroundResult): string {
-  const stderr = result.stderr.trim()
-  if (stderr.length > 0) {
-    return stderr
-  }
-
-  return `[Harness] Builtin process failed with status ${result.status} and code ${String(result.exitCode)}`
-}
-
-function finalizeProcessResult(args: {
-  result: BackgroundResult
-  sessionID: string
-  patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
-  now: () => number
-}): FinalizedResult {
-  const { result, sessionID, patchLifecycle, now } = args
-  const completedAt = now()
-
-  if (result.status === "completed") {
-    const advanced =
-      patchLifecycle({
-        sessionID,
-        status: "completed",
-        phase: "completed",
-      completedAt,
-      observation: {
-        source: "observe:process",
-          observedAt: completedAt,
-          detail: "owned-process-output-ready",
-        },
-      }) !== false
-    return { output: result.stdout, status: "completed", advanced }
-  }
-
-  const error = buildFailureMessage(result)
-  const advanced =
-    patchLifecycle({
-      sessionID,
-      status: "error",
-      phase: "failed",
-    error,
-    observation: {
-      source: "observe:process",
-        observedAt: completedAt,
-        detail: "owned-process-failed",
-      },
-    }) !== false
-  return { error, status: "failed", advanced }
-}
-
-function buildAsyncProcessResponse(args: {
-  task: BackgroundTask
-  sessionID: string
-  parentSessionID: string
-  rootID: string
-  childDepth: number
-  agent: string
-  category?: string
-  model?: string
-  description: string
-  execution: ExecutionModeResult
-  getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
-}): string {
-  return JSON.stringify(
-    {
-      ok: true,
-      mode: "async",
-      session_id: args.sessionID,
-      parent_session_id: args.parentSessionID,
-      root_session_id: args.rootID,
-      agent: args.agent,
-      category: args.category,
-      model: args.model,
-      depth: args.childDepth,
-      background_task_id: args.task.id,
-      execution: args.execution,
-      description: args.description,
-      lifecycle: args.getLifecycleSnapshot(args.sessionID),
-      instruction: "Task dispatched. Continue with other work — you'll be notified when complete.",
-    },
-    null,
-    2,
-  )
-}
+// ---------------------------------------------------------------------------
+// Builtin-process runner (session-based, NOT child-process)
+// ---------------------------------------------------------------------------
 
 export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Promise<string> {
-  const command = buildBuiltinProcessCommand(args.promptText)
-  const task = args.backgroundManager.spawn({
-    command: command.command,
-    args: command.args,
-    cwd: args.execution.capabilityEvidence.projectRoot,
-    env: command.env,
-    parentSessionID: args.parentSessionID,
-  })
-
-  const startedAt = args.now()
-  const startedAdvanced =
-    args.patchLifecycle({
-      sessionID: args.sessionID,
-      status: "running",
-      phase: "running",
-      launchedAt: startedAt,
-      observation: {
-        source: "dispatch",
-        observedAt: startedAt,
-        detail: "owned-process-spawned",
-      },
-    }) !== false
+  // Build the prompt body for the LLM session
+  const body = {
+    agent: args.agent,
+    parts: [{ type: "text", text: args.promptText }],
+    ...(args.model ? { model: args.model } : {}),
+  }
 
   if (args.runInBackground) {
-    const startedContinuity = args.getSessionContinuity(args.sessionID)
-    if (startedAdvanced && startedContinuity?.metadata.parentSessionID) {
-      const startedNotification = buildTaskNotificationFromContinuity(startedContinuity, "started")
-      void notifyParentSession(
-        args.client,
-        startedContinuity.metadata.parentSessionID,
-        startedNotification,
-      ).then((delivered) => {
-        if (!delivered) {
-          persistPendingNotification(startedContinuity.metadata.parentSessionID, startedNotification)
-        }
-      })
-    }
-
-    void args.backgroundManager
-      .onComplete(task.id)
-      .then((result) => {
-        const finalized = finalizeProcessResult({
-          result,
-          sessionID: args.sessionID,
-          patchLifecycle: args.patchLifecycle,
-          now: args.now,
-        })
-
-        if (finalized.advanced && finalized.status === "completed" && finalized.output) {
-          try {
-            const captured = captureProcessResult(finalized.output, "")
-            args.patchSessionContinuity(args.sessionID, { resultCapture: captured })
-            if (captured.artifactPaths.length > 0 || captured.gitCommits.length > 0) {
-              const existingPacket = args.getSessionContinuity(args.sessionID)?.metadata.delegationPacket
-              if (existingPacket) {
-                args.patchSessionContinuity(args.sessionID, {
-                  delegationPacket: {
-                    ...existingPacket,
-                    artifacts: captured.artifactPaths,
-                    commits: captured.gitCommits,
-                  },
-                })
-              }
-            }
-          } catch {
-            // Capture failure must not block notification
-          }
-        }
-
-        // Re-read continuity AFTER capture so notification includes enriched data
-        const continuity = args.getSessionContinuity(args.sessionID)
-
-        if (finalized.advanced && continuity?.metadata.parentSessionID) {
-          const notification = buildTaskNotificationFromContinuity(
-            continuity,
-            finalized.status,
-            finalized.error,
-          )
-          void notifyParentSession(
-            args.client,
-            continuity.metadata.parentSessionID,
-            notification,
-          ).then((delivered) => {
-            if (!delivered) {
-              persistPendingNotification(continuity.metadata.parentSessionID, notification)
-            }
-          })
-        }
-
-        if (finalized.status === "failed") {
-          throw new Error(finalized.error)
-        }
-
-        return finalized.output
+    // Async mode: dispatch via sendPromptAsync, then poll for completion.
+    // The observer verifies actual execution by checking getSessionMessages()
+    // for new assistant messages and tool calls — no false theater.
+    sendPromptAsync(args.client, args.sessionID, body)
+      .then(() => {
+        // Dispatch accepted — the observer will verify actual execution.
       })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error)
-        const advanced =
-          args.patchLifecycle({
+        args.patchLifecycle({
           sessionID: args.sessionID,
           status: "error",
           phase: "failed",
           error: message,
           observation: {
-            source: "observe:process",
+            source: "dispatch",
             observedAt: args.now(),
-            detail: "owned-process-handler-failed",
+            detail: "builtin-process-dispatch-failed",
           },
-          }) !== false
+        })
+
         const continuity = args.getSessionContinuity(args.sessionID)
-        if (advanced && continuity?.metadata.parentSessionID) {
+        if (continuity?.metadata.parentSessionID) {
           const failedNotification = buildTaskNotificationFromContinuity(continuity, "failed", message)
           void notifyParentSession(
             args.client,
@@ -247,41 +74,103 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
           })
         }
       })
-      .finally(() => {
-        args.releaseQueue("builtin-process-complete")
-      })
 
-    return buildAsyncProcessResponse({
-      task,
+    void observeBackgroundCompletion({
       sessionID: args.sessionID,
-      parentSessionID: args.parentSessionID,
-      rootID: args.rootID,
-      childDepth: args.childDepth,
-      agent: args.agent,
-      category: args.category,
-      model: args.model,
-      description: args.description,
-      execution: args.execution,
-      getLifecycleSnapshot: args.getLifecycleSnapshot,
+      client: args.client,
+      completionDetector: undefined,
+      pollTimeoutMs: 120_000, // 2-minute fast-fail (no disk activity = dead)
+      now: args.now,
+      getSessionContinuity: args.getSessionContinuity,
+      patchSessionContinuity: args.patchSessionContinuity,
+      patchLifecycle: args.patchLifecycle,
+      releaseQueue: args.releaseQueue,
     })
+
+    return JSON.stringify(
+      {
+        ok: true,
+        mode: "async",
+        session_id: args.sessionID,
+        parent_session_id: args.parentSessionID,
+        root_session_id: args.rootID,
+        agent: args.agent,
+        category: args.category,
+        model: args.model,
+        depth: args.childDepth,
+        description: args.description,
+        lifecycle: args.getLifecycleSnapshot(args.sessionID),
+        output_link: `session://${args.sessionID}`,
+        instruction: "Task dispatched. Continue with other work — you'll be notified when complete.",
+      },
+      null,
+      2,
+    )
   }
 
+  // Sync mode: await LLM response directly
   try {
-    const result = await args.backgroundManager.onComplete(task.id)
-    const finalized = finalizeProcessResult({
-      result,
+    const response = await sendPrompt(args.client, args.sessionID, body)
+    const assistantText = extractTextFromResponse(response)
+    const completedAt = args.now()
+
+    args.patchLifecycle({
       sessionID: args.sessionID,
-      patchLifecycle: args.patchLifecycle,
-      now: args.now,
+      status: "completed",
+      phase: "completed",
+      completedAt,
+      observation: {
+        source: "observe:sync",
+        observedAt: completedAt,
+        detail: "builtin-process-assistant-output-ready",
+      },
     })
-    if (finalized.status === "failed") {
-      throw new Error(finalized.error)
+
+    // Capture result to continuity
+    try {
+      const captured = await captureSubsessionResult(args.client, args.sessionID)
+      args.patchSessionContinuity(args.sessionID, { resultCapture: captured })
+    } catch {
+      // Best-effort capture — lifecycle already complete
     }
-    return finalized.output ?? ""
+
+    return JSON.stringify(
+      {
+        ok: true,
+        mode: "sync",
+        session_id: args.sessionID,
+        parent_session_id: args.parentSessionID,
+        root_session_id: args.rootID,
+        agent: args.agent,
+        category: args.category,
+        model: args.model,
+        output: assistantText,
+      },
+      null,
+      2,
+    )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    args.patchLifecycle({
+      sessionID: args.sessionID,
+      status: "error",
+      phase: "failed",
+      error: message,
+      observation: {
+        source: "observe:sync",
+        observedAt: args.now(),
+        detail: "builtin-process-assistant-output-failed",
+      },
+    })
+    throw error
   } finally {
     args.releaseQueue("builtin-process-complete")
   }
 }
+
+// ---------------------------------------------------------------------------
+// Subsession runner (kept for tmux-pane path compatibility)
+// ---------------------------------------------------------------------------
 
 type RunLifecycleSubsessionArgs = {
   sessionID: string
@@ -337,13 +226,9 @@ function buildSyncSubsessionEnvelope(args: {
 
 export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArgs): Promise<string> {
   if (args.runInBackground) {
-    // Use promptAsync so the platform keeps the child session alive
-    // independently of the parent's turn lifecycle.
     sendPromptAsync(args.client, args.sessionID, args.body)
       .then(() => {
-        // Prompt dispatch only proves transport acceptance, not child execution.
-        // The observer will promote to `running` and notify the parent only after
-        // start-gate evidence is visible in child session messages.
+        // Dispatch accepted — observer verifies execution.
       })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error)
@@ -359,7 +244,6 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
           },
         })
 
-        // Notify parent of dispatch failure so they don't wait blindly.
         const continuity = args.getSessionContinuity(args.sessionID)
         if (continuity?.metadata.parentSessionID) {
           const failedNotification = buildTaskNotificationFromContinuity(continuity, "failed", message)

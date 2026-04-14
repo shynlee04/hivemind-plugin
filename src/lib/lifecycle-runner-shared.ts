@@ -26,7 +26,8 @@ export type CommonRunnerArgs = {
   runInBackground: boolean
   execution: ExecutionModeResult
   client: OpenCodeClient
-  backgroundManager: BackgroundManager
+  /** Only required for tmux-pane execution path. */
+  backgroundManager?: BackgroundManager
   getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
   patchSessionContinuity: (sessionID: string, patch: Partial<SessionContinuityMetadata>) => SessionContinuityRecord | undefined
   patchLifecycle: (args: PatchLifecycleArgs) => boolean | void

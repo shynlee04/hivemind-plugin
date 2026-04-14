@@ -96,6 +96,10 @@ function finalizeTmuxResult(args: {
  * This is the visible-worker execution path (D-11/D-12).
  */
 export async function runLifecycleTmuxTask(args: RunLifecycleTmuxArgs): Promise<string> {
+  if (!args.backgroundManager) {
+    throw new Error("[Harness] tmux-pane execution requires a BackgroundManager.")
+  }
+
   const tmuxCmd = buildTmuxCommand(args.sessionID)
   const task = args.backgroundManager.spawn({
     command: tmuxCmd.command,
