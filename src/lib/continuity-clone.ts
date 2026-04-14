@@ -1,4 +1,5 @@
 import type {
+  CapturedResult,
   CompactionCheckpointData,
   DelegationMeta,
   DelegationExecutionMetadata,
@@ -128,6 +129,25 @@ export function cloneCompactionCheckpoint(
     : undefined
 }
 
+export function cloneCapturedResult(
+  result: CapturedResult | undefined,
+): CapturedResult | undefined {
+  return result
+    ? {
+        resultText: result.resultText,
+        artifactPaths: [...result.artifactPaths],
+        gitCommits: [...result.gitCommits],
+        toolCallSummary: result.toolCallSummary.map((s) => ({
+          tool: s.tool,
+          args: s.args,
+        })),
+        messageCount: result.messageCount,
+        capturedAt: result.capturedAt,
+        partial: result.partial,
+      }
+    : undefined
+}
+
 export function cloneContinuityRecord(record: SessionContinuityRecord): SessionContinuityRecord {
   return {
     sessionID: record.sessionID,
@@ -158,6 +178,7 @@ export function cloneContinuityRecord(record: SessionContinuityRecord): SessionC
       constraints: cloneStringList(record.metadata.constraints),
       lifecycle: cloneLifecycleState(record.metadata.lifecycle),
       pendingNotifications: clonePendingNotifications(record.metadata.pendingNotifications),
+      resultCapture: cloneCapturedResult(record.metadata.resultCapture),
     },
   }
 }

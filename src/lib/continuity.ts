@@ -12,6 +12,7 @@ import type {
   SessionToolProfile,
 } from "./types.js"
 import {
+  cloneCapturedResult,
   cloneCompactionCheckpoint,
   cloneContinuityRecord,
   cloneDelegationMeta,
@@ -244,6 +245,9 @@ export function patchSessionContinuity(
       pendingNotifications: patch.pendingNotifications
         ? clonePendingNotifications(patch.pendingNotifications)
         : clonePendingNotifications(current.metadata.pendingNotifications),
+      resultCapture: patch.resultCapture
+        ? cloneCapturedResult(patch.resultCapture)
+        : cloneCapturedResult(current.metadata.resultCapture),
       updatedAt: Date.now(),
     },
   }
