@@ -45,6 +45,21 @@ export type LoopWindow = {
   count: number
 }
 
+export type ToolCallSummary = {
+  tool: string
+  args?: string
+}
+
+export type CapturedResult = {
+  resultText: string
+  artifactPaths: string[]
+  gitCommits: string[]
+  toolCallSummary: ToolCallSummary[]
+  messageCount: number
+  capturedAt: number
+  partial?: boolean
+}
+
 export type SessionStats = {
   total: number
   byTool: Record<string, number>
@@ -272,6 +287,7 @@ export type SessionContinuityMetadata = {
   defaultDispatchMode?: "async" | "sync"
   tmuxAvailability?: "auto" | "enabled" | "disabled"
   pollIntervalMs?: number
+  resultCapture?: CapturedResult
 }
 
 export type SessionContinuityRecord = {
