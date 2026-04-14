@@ -6,6 +6,7 @@ import {
   type TaskNotification,
 } from "./notification-handler.js"
 import { persistPendingNotification } from "./pending-notifications.js"
+import { captureSubsessionResult } from "./result-capture.js"
 import { CompletionVerifier } from "./tasking/completion/completion-verifier.js"
 import {
   checkIdleTimeout,
@@ -123,6 +124,7 @@ export async function observeBackgroundCompletion(args: {
   now: () => number
   getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
   patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
+  patchSessionContinuity: (sessionID: string, patch: Partial<SessionContinuityMetadata>) => SessionContinuityRecord | undefined
   releaseQueue: (reason: string) => void
   /** @internal Injected sleep function for testing. Defaults to real setTimeout. */
   sleepFn?: (ms: number) => Promise<void>
@@ -167,8 +169,16 @@ export async function observeBackgroundCompletion(args: {
                 detail: "background-completion-poll-deleted",
               },
             }) !== false
+          if (advanced) {
+            try {
+              const captured = await captureSubsessionResult(args.client, args.sessionID)
+              args.patchSessionContinuity(args.sessionID, { resultCapture: { ...captured, partial: true } })
+            } catch {
+              // Partial capture best-effort
+            }
+          }
           const continuity = args.getSessionContinuity(args.sessionID)
-          if (advanced && continuity?.metadata.parentSessionID) {
+          if (continuity?.metadata.parentSessionID) {
             void notifyParentWithFallback(
               args.client,
               continuity.metadata.parentSessionID,
@@ -256,8 +266,16 @@ export async function observeBackgroundCompletion(args: {
                   detail: "background-completion-retry-exhausted",
                 },
               }) !== false
+            if (advanced) {
+              try {
+                const captured = await captureSubsessionResult(args.client, args.sessionID)
+                args.patchSessionContinuity(args.sessionID, { resultCapture: { ...captured, partial: true } })
+              } catch {
+                // Partial capture best-effort
+              }
+            }
             const continuity = args.getSessionContinuity(args.sessionID)
-            if (advanced && continuity?.metadata.parentSessionID) {
+            if (continuity?.metadata.parentSessionID) {
               void notifyParentWithFallback(
                 args.client,
                 continuity.metadata.parentSessionID,
@@ -281,8 +299,28 @@ export async function observeBackgroundCompletion(args: {
                 detail: "background-completion-poll-idle",
               },
             }) !== false
+          if (advanced) {
+            try {
+              const captured = await captureSubsessionResult(args.client, args.sessionID)
+              args.patchSessionContinuity(args.sessionID, { resultCapture: captured })
+              if (captured.artifactPaths.length > 0 || captured.gitCommits.length > 0) {
+                const existingPacket = args.getSessionContinuity(args.sessionID)?.metadata.delegationPacket
+                if (existingPacket) {
+                  args.patchSessionContinuity(args.sessionID, {
+                    delegationPacket: {
+                      ...existingPacket,
+                      artifacts: captured.artifactPaths,
+                      commits: captured.gitCommits,
+                    },
+                  })
+                }
+              }
+            } catch {
+              // Capture failure must not block notification
+            }
+          }
           const completedContinuity = args.getSessionContinuity(args.sessionID)
-          if (advanced && completedContinuity?.metadata.parentSessionID) {
+          if (completedContinuity?.metadata.parentSessionID) {
             void notifyParentWithFallback(
               args.client,
               completedContinuity.metadata.parentSessionID,
@@ -335,8 +373,16 @@ export async function observeBackgroundCompletion(args: {
               detail: "background-completion-poll-sdk-error",
             },
           }) !== false
+        if (advanced) {
+          try {
+            const captured = await captureSubsessionResult(args.client, args.sessionID)
+            args.patchSessionContinuity(args.sessionID, { resultCapture: { ...captured, partial: true } })
+          } catch {
+            // Partial capture best-effort
+          }
+        }
         const continuity = args.getSessionContinuity(args.sessionID)
-        if (advanced && continuity?.metadata.parentSessionID) {
+        if (continuity?.metadata.parentSessionID) {
           void notifyParentWithFallback(
             args.client,
             continuity.metadata.parentSessionID,

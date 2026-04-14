@@ -2,7 +2,7 @@ import type { BackgroundManager, BackgroundTask } from "./background-manager.js"
 import type { ExecutionModeResult } from "./execution-mode.js"
 import type { PatchLifecycleArgs } from "./lifecycle-patching.js"
 import type { OpenCodeClient } from "./session-api.js"
-import type { SessionContinuityRecord, SessionLifecycleState } from "./types.js"
+import type { SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleState } from "./types.js"
 
 export type { PatchLifecycleArgs }
 
@@ -28,6 +28,7 @@ export type CommonRunnerArgs = {
   client: OpenCodeClient
   backgroundManager: BackgroundManager
   getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
+  patchSessionContinuity: (sessionID: string, patch: Partial<SessionContinuityMetadata>) => SessionContinuityRecord | undefined
   patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
   releaseQueue: (reason: string) => void

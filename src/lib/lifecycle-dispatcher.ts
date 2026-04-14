@@ -3,7 +3,7 @@ import type { SpawnReservation } from "./concurrency.js"
 import type { BackgroundManager } from "./background-manager.js"
 import { buildDelegationPacketParentChain, createDelegationPacket } from "./delegation-packet.js"
 import type { ExecutionModeResult } from "./execution-mode.js"
-import { getSessionContinuity, recordSessionContinuity } from "./continuity.js"
+import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
 import { runLifecycleProcessTask } from "./lifecycle-process-runner.js"
 import { runLifecycleSubsessionTask } from "./lifecycle-process-runner.js"
 import { runLifecycleTmuxTask } from "./lifecycle-tmux-runner.js"
@@ -280,6 +280,7 @@ export async function launchDelegatedSession(
               client: ctx.client,
               backgroundManager: ctx.backgroundManager,
               getSessionContinuity,
+              patchSessionContinuity,
               patchLifecycle: ctx.patchLifecycleFn,
               getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
               releaseQueue,
@@ -308,6 +309,7 @@ export async function launchDelegatedSession(
               client: ctx.client,
               backgroundManager: ctx.backgroundManager,
               getSessionContinuity,
+              patchSessionContinuity,
               patchLifecycle: ctx.patchLifecycleFn,
               getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
               releaseQueue,
@@ -332,6 +334,7 @@ export async function launchDelegatedSession(
             completionDetector: ctx.completionDetector,
             pollTimeoutMs: ctx.pollTimeoutMs,
             getSessionContinuity,
+            patchSessionContinuity,
             patchLifecycle: ctx.patchLifecycleFn,
             getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
             releaseQueue,
@@ -431,6 +434,7 @@ export async function launchDelegatedSession(
         client: ctx.client,
         backgroundManager: ctx.backgroundManager,
         getSessionContinuity,
+        patchSessionContinuity,
         patchLifecycle: ctx.patchLifecycleFn,
         getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
         releaseQueue,
@@ -458,6 +462,7 @@ export async function launchDelegatedSession(
         client: ctx.client,
         backgroundManager: ctx.backgroundManager,
         getSessionContinuity,
+        patchSessionContinuity,
         patchLifecycle: ctx.patchLifecycleFn,
         getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
         releaseQueue,
@@ -481,6 +486,7 @@ export async function launchDelegatedSession(
       completionDetector: ctx.completionDetector,
       pollTimeoutMs: ctx.pollTimeoutMs,
       getSessionContinuity,
+      patchSessionContinuity,
       patchLifecycle: ctx.patchLifecycleFn,
       getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
       releaseQueue,

@@ -10,8 +10,9 @@ import {
 import type { ExecutionModeResult } from "./execution-mode.js"
 import { buildTaskNotificationFromContinuity, notifyParentSession } from "./notification-handler.js"
 import { persistPendingNotification } from "./pending-notifications.js"
+import { captureProcessResult } from "./result-capture.js"
 import { sendPrompt, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
-import type { SessionContinuityRecord, SessionLifecycleState } from "./types.js"
+import type { SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleState } from "./types.js"
 
 type RunLifecycleProcessArgs = CommonRunnerArgs
 
@@ -170,6 +171,29 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
           patchLifecycle: args.patchLifecycle,
           now: args.now,
         })
+
+        if (finalized.advanced && finalized.status === "completed" && finalized.output) {
+          try {
+            const captured = captureProcessResult(finalized.output, "")
+            args.patchSessionContinuity(args.sessionID, { resultCapture: captured })
+            if (captured.artifactPaths.length > 0 || captured.gitCommits.length > 0) {
+              const existingPacket = args.getSessionContinuity(args.sessionID)?.metadata.delegationPacket
+              if (existingPacket) {
+                args.patchSessionContinuity(args.sessionID, {
+                  delegationPacket: {
+                    ...existingPacket,
+                    artifacts: captured.artifactPaths,
+                    commits: captured.gitCommits,
+                  },
+                })
+              }
+            }
+          } catch {
+            // Capture failure must not block notification
+          }
+        }
+
+        // Re-read continuity AFTER capture so notification includes enriched data
         const continuity = args.getSessionContinuity(args.sessionID)
 
         if (finalized.advanced && continuity?.metadata.parentSessionID) {
@@ -275,6 +299,7 @@ type RunLifecycleSubsessionArgs = {
   completionDetector: CompletionDetector
   pollTimeoutMs: number
   getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
+  patchSessionContinuity: (sessionID: string, patch: Partial<SessionContinuityMetadata>) => SessionContinuityRecord | undefined
   patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
   releaseQueue: (reason: string) => void
@@ -357,6 +382,7 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
       pollTimeoutMs: args.pollTimeoutMs,
       now: args.now,
       getSessionContinuity: args.getSessionContinuity,
+      patchSessionContinuity: args.patchSessionContinuity,
       patchLifecycle: args.patchLifecycle,
       releaseQueue: args.releaseQueue,
     })
