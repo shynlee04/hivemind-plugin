@@ -16,7 +16,7 @@
 - [x] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
 - [~] **Phase 9: Sticky Delegation Corrective** — ⚠️ MOCK-VERIFIED ONLY, runtime verification pending (forensic reset 2026-04-14)
 - [~] **Phase 9.1: Critical Bug Fixes + Test Rewrites** — ⚠️ COMPLETE WITH CAVEATS — 668 tests pass but mock-heavy (forensic reset 2026-04-14)
-- [ ] **Phase 9.2: Completion Detection Architecture** — PARTIAL: Plan 01 done, Plans 02-03 pending (integration wiring)
+- [~] **Phase 9.2: Completion Detection Architecture** — MIXED: Plan 01 authoritative; Plans 02-03 executed historically but quarantined as non-authoritative
 - [ ] **Phase 9.3: Module Restructuring + Config** — D-01→D-08, D-28→D-30 (11 decisions)
 - [x] **Phase 12: Correct background session start semantics + planning reconciliation** — 2/2 plans complete, authoritative truth reset established
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
@@ -125,7 +125,7 @@ Plans:
 ## Phase 9: Sticky Delegation Corrective — SPLIT INTO SUB-PHASES
 
 **Original goal:** Fix multi-layered architectural mismatches from Phase 08 root-cause analysis.
-**Original result:** ⚠️ MOCK-VERIFIED ONLY — forensic investigation (2026-04-14) confirmed UAT was inflated. Code exists but integration wiring incomplete. Runtime verification pending Phase 09.2 Plans 02-03.
+**Original result:** ⚠️ MIXED HISTORICAL STATE — forensic investigation (2026-04-14) confirmed UAT was inflated. Code exists and 09.2-02/03 produced historical execution artifacts, but those closure claims are quarantined as non-authoritative. Fresh runtime verification or replanning is still required.
 **Decision:** Split 30 locked decisions across 7 clusters into 3 focused sub-phases.
 
 **Parent context:** `.planning/phases/09-sticky-delegation-corrective/09-CONTEXT.md` (all 30 decisions D-01→D-30)
@@ -186,8 +186,8 @@ Plans:
 
 Plans:
 - [x] 09.2-01-PLAN.md — Implement completion detection sub-module (start-gate, poll-strategy, completion-verifier) ✅ pure modules shipped
-- [ ] 09.2-02-PLAN.md — Implement failure handling + parent coordination (failure-handler, parent-coordinator) 🔴 PENDING — integration wiring
-- [ ] 09.2-03-PLAN.md — Wire completion detection into lifecycle-manager, end-to-end verification 🔴 PENDING — critical integration step
+- [~] 09.2-02-PLAN.md — Historical execution artifact exists in `09.2-02-SUMMARY.md`, but it is quarantined/non-authoritative pending fresh verification or replanning
+- [~] 09.2-03-PLAN.md — Historical execution artifact exists in `09.2-03-SUMMARY.md`, but it is quarantined/non-authoritative pending fresh authoritative follow-up
 
 ### Phase 12: Correct background session start semantics, reconcile Phase 09/09.1/09.2, and archive obsolete architectural noise
 
@@ -349,7 +349,7 @@ Plans:
 | 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
 | 9. Sticky Delegation Corrective | 3/3 plans | ⚠️ MOCK-VERIFIED ONLY — forensic reset 2026-04-14 |
 | 9.1 Critical Bug Fixes + Tests | 3/3 plans | ⚠️ COMPLETE WITH CAVEATS — mock-heavy, live verification pending |
-| 9.2 Completion Detection Architecture | 1/3 plans | 🔴 PARTIAL — Plan 01 done, Plans 02-03 pending (integration wiring) |
+| 9.2 Completion Detection Architecture | 1/3 authoritative (+2 historical/quarantined) | ⚠️ MIXED — Plan 01 authoritative; Plans 02-03 ran historically but are not current proof |
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
