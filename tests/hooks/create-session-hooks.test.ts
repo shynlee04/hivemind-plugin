@@ -79,6 +79,17 @@ function buildContinuityRecord(sessionID: string) {
         model: "gpt-5.4",
         queueKey: "gpt-5.4:builder:implementation",
       },
+      delegationPacket: {
+        id: `packet-${sessionID}`,
+        spec: "Delegation packet",
+        plan: null,
+        artifacts: [],
+        commits: [],
+        parentChain: ["root-session", "parent-session", sessionID],
+        status: "running" as const,
+        createdAt: 1,
+        updatedAt: 1,
+      },
       title: "builder: continue feature",
       description: "continue feature",
       category: "implementation" as const,
@@ -88,6 +99,26 @@ function buildContinuityRecord(sessionID: string) {
       status: "running" as const,
       createdAt: 1,
       updatedAt: 1,
+      lifecycle: {
+        phase: "running" as const,
+        runMode: "sync" as const,
+        queueKey: "gpt-5.4:builder:implementation",
+      },
+    },
+  }
+}
+
+function buildParentContinuityRecord(sessionID: string) {
+  const base = buildContinuityRecord(sessionID)
+  return {
+    ...base,
+    metadata: {
+      ...base.metadata,
+      parentSessionID: sessionID,
+      rootSessionID: sessionID,
+      delegationPacket: undefined,
+      runInBackground: false,
+      description: "Harness parent session record",
       lifecycle: {
         phase: "running" as const,
         runMode: "sync" as const,
@@ -345,6 +376,195 @@ describe("createSessionHooks", () => {
     await hooks.event({ event: makeIdleEvent("sess-done") })
 
     expect(requestAutoLoopRetry).not.toHaveBeenCalled()
+  })
+
+  it("does not auto-loop synthetic parent continuity records", async () => {
+    const { createSessionHooks, recordSessionContinuity, TaskStateManager } =
+      await loadSessionHookModules(continuityFile)
+    recordSessionContinuity({
+      ...buildContinuityRecord("sess-parent-shell"),
+      metadata: {
+        ...buildContinuityRecord("sess-parent-shell").metadata,
+        parentSessionID: "sess-parent-shell",
+        rootSessionID: "sess-parent-shell",
+        description: "Harness parent session record",
+        delegationPacket: undefined,
+      },
+    })
+
+    const requestAutoLoopRetry = vi.fn().mockResolvedValue(undefined)
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        getLifecycleSnapshot: vi.fn(),
+        handleEvent: vi.fn(),
+        requestAutoLoopRetry,
+      } as any,
+      stateManager: new TaskStateManager(),
+      client: {
+        session: {
+          messages: vi.fn().mockResolvedValue({ data: makeMessages("Still working") }),
+        },
+      } as any,
+      sleep: vi.fn().mockResolvedValue(undefined),
+    })
+
+    await hooks.event({ event: makeIdleEvent("sess-parent-shell") })
+
+    expect(requestAutoLoopRetry).not.toHaveBeenCalled()
+  })
+
+  it("retries parent sessions when registered delegations are still active", async () => {
+    const { createSessionHooks, recordSessionContinuity, TaskStateManager } =
+      await loadSessionHookModules(continuityFile)
+    recordSessionContinuity(buildParentContinuityRecord("sess-parent"))
+    recordSessionContinuity(buildContinuityRecord("child-running"))
+
+    const stateManager = new TaskStateManager()
+    stateManager.registerSubagent("sess-parent", "child-running")
+
+    const requestAutoLoopRetry = vi.fn().mockResolvedValue(undefined)
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        getLifecycleSnapshot: vi.fn(),
+        handleEvent: vi.fn(),
+        requestAutoLoopRetry,
+      } as any,
+      stateManager,
+      client: {
+        session: {
+          messages: vi.fn().mockResolvedValue({ data: makeMessages("Parent waiting") }),
+        },
+      } as any,
+      sleep: vi.fn().mockResolvedValue(undefined),
+    })
+
+    await hooks.event({ event: makeIdleEvent("sess-parent") })
+
+    expect(requestAutoLoopRetry).toHaveBeenCalledWith({
+      sessionID: "sess-parent",
+      promptText: expect.stringContaining("Parent auto-loop poll 1/10"),
+    })
+    expect(requestAutoLoopRetry.mock.calls[0][0].promptText).toContain("1 active")
+  })
+
+  it("synthesizes parent sessions once all registered delegations are terminal", async () => {
+    const { createSessionHooks, recordSessionContinuity, TaskStateManager } =
+      await loadSessionHookModules(continuityFile)
+    recordSessionContinuity(buildParentContinuityRecord("sess-parent-done"))
+    recordSessionContinuity({
+      ...buildContinuityRecord("child-complete"),
+      metadata: {
+        ...buildContinuityRecord("child-complete").metadata,
+        lifecycle: {
+          phase: "completed" as const,
+          runMode: "async" as const,
+          queueKey: "gpt-5.4:builder:implementation",
+        },
+      },
+    })
+
+    const stateManager = new TaskStateManager()
+    stateManager.registerSubagent("sess-parent-done", "child-complete")
+
+    const requestAutoLoopRetry = vi.fn().mockResolvedValue(undefined)
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        getLifecycleSnapshot: vi.fn(),
+        handleEvent: vi.fn(),
+        requestAutoLoopRetry,
+      } as any,
+      stateManager,
+      client: {
+        session: {
+          messages: vi.fn().mockResolvedValue({ data: makeMessages("Parent waiting") }),
+        },
+      } as any,
+      sleep: vi.fn().mockResolvedValue(undefined),
+    })
+
+    await hooks.event({ event: makeIdleEvent("sess-parent-done") })
+
+    expect(requestAutoLoopRetry).toHaveBeenCalledWith({
+      sessionID: "sess-parent-done",
+      promptText: expect.stringContaining("All delegations complete"),
+    })
+  })
+
+  it("caps parent retries and records a warning after max parent iterations", async () => {
+    const { createSessionHooks, recordSessionContinuity, TaskStateManager } =
+      await loadSessionHookModules(continuityFile)
+    recordSessionContinuity(buildParentContinuityRecord("sess-parent-max"))
+    recordSessionContinuity(buildContinuityRecord("child-running-max"))
+
+    const stateManager = new TaskStateManager()
+    stateManager.registerSubagent("sess-parent-max", "child-running-max")
+
+    const requestAutoLoopRetry = vi.fn().mockResolvedValue(undefined)
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        getLifecycleSnapshot: vi.fn(),
+        handleEvent: vi.fn(),
+        requestAutoLoopRetry,
+      } as any,
+      stateManager,
+      client: {
+        session: {
+          messages: vi.fn().mockResolvedValue({ data: makeMessages("Parent waiting") }),
+        },
+      } as any,
+      sleep: vi.fn().mockResolvedValue(undefined),
+      parentAutoLoopConfig: { maxIterations: 2, backoffMs: 0 },
+    })
+
+    await hooks.event({ event: makeIdleEvent("sess-parent-max") })
+    await hooks.event({ event: makeIdleEvent("sess-parent-max") })
+    await hooks.event({ event: makeIdleEvent("sess-parent-max") })
+
+    expect(requestAutoLoopRetry).toHaveBeenCalledTimes(2)
+    expect(
+      stateManager
+        .getStats("sess-parent-max")
+        ?.warnings.some((warning) => warning.includes("max parent auto-loop iterations")),
+    ).toBe(true)
+  })
+
+  it("includes parent auto-loop state in compaction context", async () => {
+    const { createSessionHooks, recordSessionContinuity, TaskStateManager } =
+      await loadSessionHookModules(continuityFile)
+    recordSessionContinuity(buildParentContinuityRecord("sess-parent-compact"))
+    recordSessionContinuity(buildContinuityRecord("child-running-compact"))
+
+    const stateManager = new TaskStateManager()
+    stateManager.registerSubagent("sess-parent-compact", "child-running-compact")
+
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        getLifecycleSnapshot: vi.fn().mockReturnValue({
+          phase: "running",
+          runMode: "sync",
+          queueKey: "gpt-5.4:builder:implementation",
+        }),
+        handleEvent: vi.fn(),
+        requestAutoLoopRetry: vi.fn().mockResolvedValue(undefined),
+        recordCompactionCheckpoint: vi.fn(),
+      } as any,
+      stateManager,
+      client: {
+        session: {
+          messages: vi.fn().mockResolvedValue({ data: makeMessages("Parent waiting") }),
+        },
+      } as any,
+      sleep: vi.fn().mockResolvedValue(undefined),
+    })
+
+    await hooks.event({ event: makeIdleEvent("sess-parent-compact") })
+    const output: { context?: unknown } = {}
+
+    await hooks["experimental.session.compacting"]({ sessionID: "sess-parent-compact" }, output)
+
+    expect(output.context).toEqual(
+      expect.arrayContaining([expect.stringContaining("parent_auto_loop_iteration: 1/10")]),
+    )
   })
 
   it("stops at max iterations and does not re-dispatch again", async () => {
