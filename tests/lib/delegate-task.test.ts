@@ -271,6 +271,11 @@ describe("delegate task lifecycle", () => {
     })
 
     const parsed = JSON.parse(raw) as { session_id: string }
+    expect(getSessionContinuity(parsed.session_id)?.metadata.status).toBe("queued")
+    expect(
+      client.session.prompt.mock.calls.filter(([request]) => request.path.id === "delegate-parent-notify"),
+    ).toHaveLength(0)
+
     client._setStatus(parsed.session_id, "busy")
     await flush()
     client._addMessage(parsed.session_id, {

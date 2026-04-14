@@ -10,7 +10,14 @@ const assistant = (...types: string[]) => ({ role: "assistant", parts: types.map
 const user = (...types: string[]) => ({ role: "user", parts: types.map((type) => ({ type })) })
 
 function continuity(sessionID: string, launchedAt = 0) {
-  return { sessionID, metadata: { description: "observer rewrite", lifecycle: { launchedAt } } } as any
+  return {
+    sessionID,
+    metadata: {
+      description: "observer rewrite",
+      status: "queued",
+      lifecycle: { phase: "dispatching", runMode: "async", queueKey: "model:gpt-5.4", launchedAt },
+    },
+  } as any
 }
 
 function setupObserver(status = "busy", options?: { launchedAt?: number; timeoutMs?: number }) {
@@ -18,9 +25,19 @@ function setupObserver(status = "busy", options?: { launchedAt?: number; timeout
   const client = createInMemoryClient()
   client._sessions.set(sessionID, { id: sessionID, status: { type: status } })
   const detector = new CompletionDetector(10_000)
-  const patchLifecycle = vi.fn()
-  const releaseQueue = vi.fn()
   const record = continuity(sessionID, options?.launchedAt)
+  const patchLifecycle = vi.fn((patch: { status: string; phase: string; observation?: unknown; completedAt?: number; error?: string }) => {
+    record.metadata.status = patch.status
+    record.metadata.lastError = patch.error
+    record.metadata.lifecycle = {
+      ...record.metadata.lifecycle,
+      phase: patch.phase,
+      observation: patch.observation,
+      completedAt: patch.completedAt,
+    }
+    return true
+  })
+  const releaseQueue = vi.fn()
   let run: Promise<void> | undefined
   const start = () => (run ??= observeBackgroundCompletion({
     sessionID,
@@ -121,6 +138,44 @@ describe("observeBackgroundCompletion", () => {
     c.client._setStatus("child-123", "idle")
     await c.tick(75_000)
     expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({ status: "completed", phase: "completed" }))
+  })
+
+  /* WHY: Builtin-subsession children must not claim started until D-10 evidence is real.
+   * WHAT: observer owns the single promotion from dispatching/queued to running once evidence passes.
+   * HOW: feed reasoning + two tool calls while the child stays busy, then assert one running patch before completion.
+   * CONNECTS TO: PH12-01, D-10 */
+  it("promotes to running exactly once when the start gate passes", async () => {
+    const c = setupObserver("busy", { timeoutMs: 60_000 })
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+
+    await c.tick(0)
+    await c.tick(5_000)
+
+    const runningPatches = c.patchLifecycle.mock.calls.filter(
+      ([patch]) => patch.status === "running" && patch.phase === "running",
+    )
+
+    expect(runningPatches).toHaveLength(1)
+    expect(runningPatches[0]?.[0]).toEqual(
+      expect.objectContaining({
+        observation: expect.objectContaining({ detail: "background-start-gate-passed" }),
+      }),
+    )
+  })
+
+  /* WHY: Failed or timed-out children must not backfill a fake started signal after never doing real work.
+   * WHAT: timeout path records failure without any running/start-gate promotion.
+   * HOW: leave the child with no assistant evidence until the poll deadline expires.
+   * CONNECTS TO: PH12-02, D-10 */
+  it("does not promote to running before timing out without start-gate evidence", async () => {
+    const c = setupObserver("busy", { timeoutMs: 5_000 })
+
+    await c.tick(20_000)
+    await expectError(c, "background-completion-poll-timeout", /timed out/i)
+
+    expect(c.patchLifecycle).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: "running", phase: "running" }),
+    )
   })
 
   /* WHY: Queue release is the cleanup contract that prevents deadlocked delegated-session slots.
