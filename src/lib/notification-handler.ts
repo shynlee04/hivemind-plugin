@@ -13,9 +13,11 @@ export type TaskNotification = {
   briefSummary?: string
   outputLink?: string
   duration?: number
+  artifacts?: string[]
+  commits?: string[]
 }
 
-const MAX_PREVIEW_LENGTH = 100
+const MAX_PREVIEW_LENGTH = 500
 
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`
@@ -114,15 +116,31 @@ export function buildTaskNotificationFromContinuity(
               ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed review of "${continuity.metadata.description}". Check for identified issues.`
               : `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed work on "${continuity.metadata.description}". Check session output for details.`
 
+  const capturedResult = continuity.metadata.resultCapture
+  const resultPreview = capturedResult?.resultText ?? undefined
+  const artifacts = capturedResult?.artifactPaths && capturedResult.artifactPaths.length > 0
+    ? capturedResult.artifactPaths
+    : undefined
+  const commits = capturedResult?.gitCommits && capturedResult.gitCommits.length > 0
+    ? capturedResult.gitCommits
+    : undefined
+
+  const effectiveSummary = status === "completed" && capturedResult?.resultText
+    ? capturedResult.resultText.slice(0, 200).trim() + (capturedResult.resultText.length > 200 ? "..." : "")
+    : briefSummary
+
   return {
     sessionID: continuity.sessionID,
     description: continuity.metadata.description ?? "Delegated task",
     agent: String(agent),
     status,
     error,
-    briefSummary,
+    resultPreview,
+    briefSummary: effectiveSummary,
     outputLink,
     duration,
+    artifacts,
+    commits,
   }
 }
 
