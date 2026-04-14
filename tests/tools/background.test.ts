@@ -41,6 +41,11 @@ describe("background tool", () => {
     await new Promise((resolve) => setTimeout(resolve, 50))
   })
 
+  it("describes itself as OS process management rather than delegated session work", () => {
+    expect(tool.description).toContain("OS child processes")
+    expect(tool.description).toContain("not delegate-task")
+  })
+
   it("spawns a background task scoped to the calling session", async () => {
     const raw = await tool.execute(
       {
@@ -54,6 +59,7 @@ describe("background tool", () => {
     const result = parseResult(raw)
     const task = result.data as { id: string; parentSessionID: string; status: string }
 
+    expect(result.message).toBe("Process task started")
     expect(task.parentSessionID).toBe("session-1")
     expect(task.status).toBe("running")
 

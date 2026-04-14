@@ -1,4 +1,4 @@
-ee/**
+/**
  * Start gate verification for delegated sessions (D-10).
  *
  * Determines whether a delegated session has actually started substantive work

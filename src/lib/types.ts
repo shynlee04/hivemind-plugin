@@ -81,7 +81,65 @@ export type CompactionCheckpointData = {
   capturedAt: number
 }
 
+// ---------------------------------------------------------------------------
+// Unified lifecycle status model
+// ---------------------------------------------------------------------------
+// Three overlapping status types exist. HarnessStatus is the canonical superset.
+//
+// MAPPING TABLE:
+// ┌─────────────┬────────────────────────┬──────────────────────────┐
+// │ HarnessStatus│ SessionLifecyclePhase  │ DelegationPacketStatus   │
+// ├─────────────┼────────────────────────┼──────────────────────────┤
+// │ pending     │ created                │ pending                  │
+// │ queued      │ queued                 │ pending                  │
+// │ dispatching │ dispatching            │ running                  │
+// │ running     │ running                │ running                  │
+// │ completed   │ completed              │ completed                │
+// │ error       │ failed                 │ failed                   │
+// │ cancelled   │ failed                 │ failed                   │
+// │ interrupt   │ (preserves previous)   │ (preserves previous)     │
+// └─────────────┴────────────────────────┴──────────────────────────┘
+//
+// TaskStatus (7 values, no dispatching) is the continuity-store status.
+// SessionLifecyclePhase (6 values, adds dispatching, no interrupt/cancelled).
+// DelegationPacketStatus (4 values) is a coarse-grained packet view.
+// ---------------------------------------------------------------------------
+
+export type HarnessStatus =
+  | "pending"
+  | "queued"
+  | "dispatching"
+  | "running"
+  | "completed"
+  | "error"
+  | "cancelled"
+  | "interrupt"
+  | "failed"
+
 export type DelegationPacketStatus = "pending" | "running" | "completed" | "failed"
+
+export const HARNESS_STATUS_TO_LIFECYCLE_PHASE: Record<
+  Exclude<HarnessStatus, "interrupt">,
+  "created" | "queued" | "dispatching" | "running" | "completed" | "failed"
+> = {
+  pending: "created",
+  queued: "queued",
+  dispatching: "dispatching",
+  running: "running",
+  completed: "completed",
+  error: "failed",
+  cancelled: "failed",
+  failed: "failed",
+} as const
+
+export const LIFECYCLE_PHASE_TO_PACKET_STATUS: Record<SessionLifecyclePhase, DelegationPacketStatus> = {
+  created: "pending",
+  queued: "pending",
+  dispatching: "running",
+  running: "running",
+  completed: "completed",
+  failed: "failed",
+} as const
 
 export type DelegationExecutionCharacteristics = {
   isParallel: boolean

@@ -11,7 +11,6 @@ import type { OpenCodeClient } from "../../src/lib/session-api.js"
 import { createDelegateTaskTool } from "../../src/tools/delegate-task.js"
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../../src/lib/runtime-policy.js"
 import type { RuntimePolicy } from "../../src/lib/types.js"
-import { resolveLifecycleConcurrency } from "../../src/lib/lifecycle-runtime-policy.js"
 
 const mockCtx = {
   messageID: "message-1",
@@ -375,7 +374,7 @@ describe("delegate-task tool category routing", () => {
 // lifecycle-runtime-policy helper tests (02-07 Task 2)
 // ---------------------------------------------------------------------------
 
-describe("lifecycle-runtime-policy: resolveLifecycleConcurrency", () => {
+describe("runtime-policy: resolveConcurrencyForKey (inlined from lifecycle-runtime-policy)", () => {
   it("resolves queue limit and timeout from workspace runtime policy", () => {
     const policy: RuntimePolicy = {
       concurrency: {
@@ -387,7 +386,7 @@ describe("lifecycle-runtime-policy: resolveLifecycleConcurrency", () => {
       budget: DEFAULT_RUNTIME_POLICY.budget,
     }
 
-    const result = resolveLifecycleConcurrency(policy, "model:gpt-5")
+    const result = resolveConcurrencyForKey(policy, "model:gpt-5")
 
     expect(result.limit).toBe(2)
     expect(result.acquireTimeoutMs).toBe(30000)
@@ -399,13 +398,13 @@ describe("lifecycle-runtime-policy: resolveLifecycleConcurrency", () => {
       budget: DEFAULT_RUNTIME_POLICY.budget,
     }
 
-    const result = resolveLifecycleConcurrency(policy, "agent:builder")
+    const result = resolveConcurrencyForKey(policy, "agent:builder")
 
     expect(result.limit).toBe(5)
     expect(result.acquireTimeoutMs).toBeUndefined()
   })
 
-  it("records resolved policy inputs in audit metadata", () => {
+  it("returns per-key values when key exists", () => {
     const policy: RuntimePolicy = {
       concurrency: {
         globalLimit: 3,
@@ -416,24 +415,21 @@ describe("lifecycle-runtime-policy: resolveLifecycleConcurrency", () => {
       budget: DEFAULT_RUNTIME_POLICY.budget,
     }
 
-    const result = resolveLifecycleConcurrency(policy, "model:gpt-5")
+    const result = resolveConcurrencyForKey(policy, "model:gpt-5")
 
-    expect(result.audit).toBeDefined()
-    expect(result.audit.key).toBe("model:gpt-5")
-    expect(result.audit.source).toBe("perKey")
-    expect(result.audit.resolvedLimit).toBe(1)
-    expect(result.audit.resolvedTimeoutMs).toBe(5000)
+    expect(result.limit).toBe(1)
+    expect(result.acquireTimeoutMs).toBe(5000)
   })
 
-  it("audit metadata indicates global fallback source", () => {
+  it("returns global limit for unknown keys", () => {
     const policy: RuntimePolicy = {
       concurrency: { globalLimit: 7 },
       budget: DEFAULT_RUNTIME_POLICY.budget,
     }
 
-    const result = resolveLifecycleConcurrency(policy, "category:research")
+    const result = resolveConcurrencyForKey(policy, "category:research")
 
-    expect(result.audit.source).toBe("globalLimit")
-    expect(result.audit.resolvedLimit).toBe(7)
+    expect(result.limit).toBe(7)
+    expect(result.acquireTimeoutMs).toBeUndefined()
   })
 })

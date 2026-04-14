@@ -11,6 +11,7 @@ import type {
   SessionPolicyOverride,
   SpecialistAgent,
 } from "./types.js"
+import { LIFECYCLE_PHASE_TO_PACKET_STATUS } from "./types.js"
 
 export const VALID_LIFECYCLE_TRANSITIONS: Record<SessionLifecyclePhase, SessionLifecyclePhase[]> = {
   created: ["queued", "dispatching"],
@@ -90,18 +91,7 @@ export function buildDelegationMeta(args: {
 export function mapPhaseToDelegationPacketStatus(
   phase: SessionLifecyclePhase,
 ): DelegationPacketStatus {
-  switch (phase) {
-    case "created":
-    case "queued":
-      return "pending"
-    case "dispatching":
-    case "running":
-      return "running"
-    case "completed":
-      return "completed"
-    case "failed":
-      return "failed"
-  }
+  return LIFECYCLE_PHASE_TO_PACKET_STATUS[phase]
 }
 
 export function mapStatusToLifecyclePhase(

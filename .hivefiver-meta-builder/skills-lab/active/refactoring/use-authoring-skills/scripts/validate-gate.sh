@@ -18,8 +18,8 @@ pass_gate() { echo "GATE OK: $1"; }
 
 # ── Gate 0: Action is valid ──
 case "$ACTION" in
-  create|edit|audit) ;;
-  *) fail "Unknown action '$ACTION'. Must be: create, edit, or audit" ;;
+  create|edit|audit|synthesize) ;;
+  *) fail "Unknown action '$ACTION'. Must be: create, edit, audit, or synthesize" ;;
 esac
 
 # ── Gate 1: Intent extraction ──

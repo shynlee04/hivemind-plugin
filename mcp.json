@@ -16,7 +16,10 @@
     },
     "fetcher": {
       "command": "npx",
-      "args": ["-y", "fetcher-mcp"],
+      "args": [
+        "-y",
+        "fetcher-mcp"
+      ],
       "timeout": 30000
     },
     "web-search-prime": {
@@ -46,56 +49,91 @@
     },
     "desktop-commander": {
       "command": "npx",
-      "args": ["-y", "@smithery/cli@latest", "run", "@wonderwhy-er/desktop-commander", "--key", "$SMITHERY_CLI_KEY"]
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@wonderwhy-er/desktop-commander",
+        "--key",
+        "$SMITHERY_CLI_KEY"
+      ]
     },
     "exa": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.exa.ai/mcp"],
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.exa.ai/mcp"
+      ],
       "env": {
         "EXA_API_KEY": "$EXA_API_KEY"
       }
     },
     "fetch": {
       "command": "uvx",
-      "args": ["mcp-server-fetch"]
+      "args": [
+        "mcp-server-fetch"
+      ]
     },
     "github": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PAT"
       }
     },
     "mcp-playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"]
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
     },
     "memory": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
     },
     "netlify": {
       "command": "npx",
-      "args": ["-y", "@netlify/mcp"],
+      "args": [
+        "-y",
+        "@netlify/mcp"
+      ],
       "env": {
         "NETLIFY_PERSONAL_ACCESS_TOKEN": "$NETLIFY_PAT"
       }
     },
     "repomix": {
       "command": "npx",
-      "args": ["-y", "repomix", "--mcp"]
+      "args": [
+        "-y",
+        "repomix",
+        "--mcp"
+      ]
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     },
     "tavily": {
-      "httpUrl": "https://mcp.tavily.com/mcp/?tavilyApiKey=$TAVILY_API_KEY",
-      "timeout": 15000
+      "httpUrl": "https://mcp.tavily.com/mcp/?tavilyApiKey=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",
+      "timeout": 25000
     },
     "brave-search": {
       "command": "npx",
-      "args": ["-y", "@brave/brave-search-mcp-server"],
+      "args": [
+        "-y",
+        "@brave/brave-search-mcp-server"
+      ],
       "env": {
         "BRAVE_API_KEY": "$BRAVE_API_KEY"
       }

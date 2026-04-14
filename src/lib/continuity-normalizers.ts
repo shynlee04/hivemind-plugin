@@ -632,6 +632,13 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
   const lastError = asString(value.lastError)
   const lifecycle = normalizeLifecycleState(value.lifecycle)
   const pendingNotifications = normalizePendingNotifications(value.pendingNotifications)
+  const defaultDispatchMode = value.defaultDispatchMode === "async" || value.defaultDispatchMode === "sync"
+    ? value.defaultDispatchMode
+    : undefined
+  const tmuxAvailability = value.tmuxAvailability === "auto" || value.tmuxAvailability === "enabled" || value.tmuxAvailability === "disabled"
+    ? value.tmuxAvailability
+    : undefined
+  const pollIntervalMs = asNumber(value.pollIntervalMs)
 
   if (
     !parentSessionID ||
@@ -668,6 +675,9 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
     lastError,
     lifecycle,
     pendingNotifications,
+    defaultDispatchMode,
+    tmuxAvailability,
+    pollIntervalMs,
   }
 }
 

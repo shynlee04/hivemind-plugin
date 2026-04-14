@@ -14,7 +14,7 @@ import { createSession, getEventParentID, getSessionID, type OpenCodeClient, sen
 import { commitDescendant, forgetSession, hydrateDelegationState, inheritRootFromParent, setDelegationMeta, taskState } from "./state.js"
 import { acquireLifecycleQueue, enqueueWaitingLifecycle, type QueueSnapshot } from "./lifecycle-queue.js"
 import { buildDelegationMeta, buildLifecycleState, isValidLifecycleTransition, mapPhaseToDelegationPacketStatus, mapStatusToLifecyclePhase } from "./lifecycle-state.js"
-import { resolveLifecycleConcurrency } from "./lifecycle-runtime-policy.js"
+import { resolveConcurrencyForKey } from "./runtime-policy.js"
 import type {
   DelegationRouteResolution,
   PermissionRule,
@@ -373,7 +373,7 @@ export class HarnessLifecycleManager {
 
       // Resolve per-key concurrency policy from runtime policy
       const resolvedConcurrency = this.runtimePolicy
-        ? resolveLifecycleConcurrency(this.runtimePolicy, queueKey)
+        ? resolveConcurrencyForKey(this.runtimePolicy, queueKey)
         : undefined
 
       if (args.runInBackground) {

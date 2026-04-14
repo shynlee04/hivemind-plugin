@@ -129,6 +129,8 @@ going by headings, the first heading and the 2nd can really tell if the skills w
 #### The body [SKILL.md](http://SKILL.md) absolute isolate for refactoring vs. those that consider for removal and migrated
 
 - Overlapping and hierarchy mess → see within its own than the other skills, are they teaching the same things, or are they  making distinct routers
+- Skills that dictate governance -> NO! SKILL shows how to run systematically and must adapt to the "hard" harness
+- Skills dictate hierarchy and conventions but shallow and definitely cause conflict later (plan as signle unit, no adaptation for the growth, no variants adaptability)
 - skills of hierarchy and management tasks and agents team, or harness workflow → but find itself to not knowing any order.
 - the skill that are either rarely picked or picked to often making it the confusion
 - the skills which are not arranging themself into the 2-2-2 I said above

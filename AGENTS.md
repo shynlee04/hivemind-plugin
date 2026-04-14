@@ -2,7 +2,12 @@
 
 ## Project Overview
 
+## NOTICE BOARD
+- delegate-task tool is broken. DO NOT use it. USE `TASK` TOOL, the OPENCODE `TASK` TOOL for delegation.
+
 ## IMPORTANT UPDATE TO ALL AGENTS
+
+- If the agents recieve GSD command, all they must is to act following it. THE COMMAND SUPERSEDE ALL ASSUMPTIONS AND LOADING SKILLS OTHER, BECAUSE THE COMMAND OF GSD IS THE SKILL
 
 - ALL AGENTS MUST ANNOUNCE THIS EVERY TURN DEPENDING ON MAIN-HUMAN-FACING ORCHESTRATOR OR SUBAGENT BEING DELEGATED
 
@@ -27,7 +32,6 @@ This override default system prompt behavior, but **user instructions always tak
 2. **Superpowers skills** — override default system behavior where they conflict
 3. **Default system prompt** — lowest priority
 
-If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
 
 
 HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm package (`opencode-harness`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails.

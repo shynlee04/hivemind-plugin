@@ -27,3 +27,6 @@ npm-debug.log*
 *.bak
 *.bak.*
 *.tmp
+
+.qwen/
+gha-creds-*.json

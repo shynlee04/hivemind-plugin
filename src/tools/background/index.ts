@@ -54,7 +54,7 @@ export function createBackgroundTool(
 ): ReturnType<typeof tool> {
   return tool({
     description:
-      "Manage harness background processes by spawning, listing, checking, waiting for, or cancelling tracked tasks.",
+      "Manage harness OS child processes by spawning, listing, checking, waiting for, or cancelling tracked process tasks. This is not delegate-task async child-session work.",
     args: {
       action: s
         .string()
@@ -86,12 +86,12 @@ export function createBackgroundTool(
             parentSessionID: sessionID,
           })
 
-          return renderToolResult(success("Background task started", task))
+          return renderToolResult(success("Process task started", task))
         }
         case "list":
           return renderToolResult(
             success(
-              "Background tasks listed",
+              "Process tasks listed",
               backgroundManager.listTasks(sessionID),
             ),
           )
@@ -101,7 +101,7 @@ export function createBackgroundTool(
             requireTaskID(args),
             sessionID,
           )
-          return renderToolResult(success("Background task retrieved", task))
+          return renderToolResult(success("Process task retrieved", task))
         }
         case "cancel": {
           const taskID = requireTaskID(args)
@@ -109,7 +109,7 @@ export function createBackgroundTool(
           backgroundManager.kill(taskID)
           return renderToolResult(
             success(
-              "Background task cancelled",
+              "Process task cancelled",
               getOwnedTask(backgroundManager, taskID, sessionID),
             ),
           )
@@ -119,7 +119,7 @@ export function createBackgroundTool(
           getOwnedTask(backgroundManager, taskID, sessionID)
           return renderToolResult(
             success(
-              "Background task completed",
+              "Process task completed",
               await backgroundManager.onComplete(taskID),
             ),
           )

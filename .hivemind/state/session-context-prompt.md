@@ -26,11 +26,11 @@ uncommitted_files: 70
 eval_harness_symlink: broken
 oh_my_openagent_xml: 11MB context_bomb_at_skills_references
 
-# Absorb fields (added 2026-04-09)
-dates_active: [2026-04-07, 2026-04-09]
-last_updated: "2026-04-09T18:00:00Z"
-sessions_count: 2
-complexity: 9
+# Absorb fields (added 2026-04-09, updated 2026-04-10)
+dates_active: [2026-04-07, 2026-04-09, 2026-04-10]
+last_updated: "2026-04-10T02:00:00Z"
+sessions_count: 3
+complexity: 10
 actors:
   - name: "Debugger Agent (commit 9df4cd75)"
     first_seen: "2026-04-09"
@@ -58,7 +58,21 @@ actors:
     first_seen: "2026-04-09"
   - name: "The Human Developer"
     first_seen: "2026-04-09"
-domains: [runtime-harness, delegation-chain, background-tasks, forensic-analysis, context-governance, codebase-refactoring, builtin-process, generative-ui, json-render, sse-streaming, zod-schema-validation, hivemind-philosophy, hierarchical-superiority, collaborative-domains, strategic-measurement, iterative-granularity, mems-brain, skill-gap-analysis, cqrs-pattern, detox-refactor]
+  - name: "MEMS-BRAIN Investigator Group A (harness-experiment)"
+    first_seen: "2026-04-10"
+  - name: "MEMS-BRAIN Investigator Group B (framework evolution)"
+    first_seen: "2026-04-10"
+  - name: "MEMS-BRAIN Investigator Group C (anti-pattern reference)"
+    first_seen: "2026-04-10"
+  - name: "Document 1 Writer (Philosophy)"
+    first_seen: "2026-04-10"
+  - name: "Document 2 Writer (Architecture)"
+    first_seen: "2026-04-10"
+  - name: "Document 3 Writer (Agents)"
+    first_seen: "2026-04-10"
+  - name: "Skill Auditor Cycle 1"
+    first_seen: "2026-04-10"
+domains: [runtime-harness, delegation-chain, background-tasks, forensic-analysis, context-governance, codebase-refactoring, builtin-process, generative-ui, json-render, sse-streaming, zod-schema-validation, hivemind-philosophy, hierarchical-superiority, collaborative-domains, strategic-measurement, iterative-granularity, mems-brain, skill-gap-analysis, cqrs-pattern, detox-refactor, mems-brain-definition, mems-brain-5layer-architecture, mems-brain-cross-session, mems-brain-persistence-vs-intelligence, document-1-philosophy, document-2-architecture, document-3-agents, skill-assessment-cycle-1, skill-gap-tdd, skill-gap-spec-driven, skill-gap-architecture-docs, loc-budget-reconciliation, hive-mind-philosophy, two-halves-architecture, lifecycle-state-machine, agent-registry, delegation-chain-context-flow]
 absorb_history:
   - date: 2026-04-09
     wave_count: 4
@@ -68,6 +82,11 @@ absorb_history:
     wave_count: 4
     sources_added: 22
     sections_added: 6
+  - date: 2026-04-10
+    wave_count: 5
+    sources_added: 3
+    sections_added: 11
+    description: "MEMS-BRAIN investigation (3 parallel agents), 3 research-quality documents written (Philosophy/Architecture/Agents), Skill Ecosystem Audit Cycle 1 completed"
 ---
 
 # Enhanced Session Context Prompt v3
@@ -610,145 +629,237 @@ Begins only after Tier 3 exits successfully.
     <question id="q7" source="user-narrative" asked_user="false">
       The user mentions "drop or adopt and bring over from this GitHub" — suggesting the harness-experiment worktree results will be merged into or replace the main branch. What is the merge strategy?
     </question>
-  </questions_open>
+  </questions_open></absorb-session>
+## PHASE 10 ENHANCED PROMPT (Appended 2026-04-10 via prompt-enhance pipeline)
+
+```yaml
+enhanced_prompt_version: 1
+original_complexity_score: 2/10
+target_complexity_score: 7/10
+scope_boundaries_confirmed: true
+pattern_mitigations_applied: true
+complexity_before: 2
+complexity_after: 7
+confidence: 0.72
+phases_completed: [skim, bridge, investigation, clarification]
+```
+
+### Task Summary
+Restructure and refactor the `src/` directory (lib/, hooks/, tools/, plugin.ts) applying Clean Architecture patterns with CQRS separation, modular decomposition into 8-10 focused modules (<350 LOC each), and explicit design patterns (Factory, Handler Composition, Strategy) for extensibility and maintainability.
+
+### Enhanced Prompt
+
+**Objective:** Restructure and refactor the `src/` directory into a maintainable, extensible, pattern-driven architecture.
+
+**Scope — IN scope:**
+- `src/lib/` — 31 files, flat namespace, mixed concerns (lifecycle, continuity, delegation, session, runtime, state, notifications, concurrency, completion, engine, utilities)
+- `src/hooks/` — 5 files, functional grouping (consider CQRS read-side alignment)
+- `src/tools/` — 11 files, best-organized (4 sub-dirs)
+- `src/plugin.ts` — 57 LOC, composition root
+
+**Scope — OUT of scope:**
+- `.opencode/` — client-side concern, not this refactor
+- `tests/` — separate from source restructuring
+- `dist/` — build artifact
+- `docs/` — documentation
+
+**Scope — AS-IS (preserve without refactor):**
+- `src/cli/` — install/user runtime scaffolding from GitHub
+
+**Scope — UNCERTAIN (analyze before deciding):**
+- `src/shared/`, `src/schema-kernel/`, `src/kernel/`, `src/harness/`
+
+**Target Module Structure (8-10 modules):**
+```
+src/
+├── plugin/              # Assembly root (<100 LOC)
+├── tools/               # 5 tools (~500 LOC, write-side CQRS)
+├── hooks/               # Event handlers (~800 LOC, read-side CQRS)
+├── lifecycle/           # Session state machine (~400 LOC)
+├── delegation/          # Delegation chain logic (~400 LOC)
+├── continuity/          # State persistence, JSON durability (~400 LOC)
+├── cli/                 # CLI substrate (~500 LOC, AS-IS)
+├── control-plane/       # Control primitives (~400 LOC)
+└── shared/              # Utilities (~800 LOC, leaf module)
+```
+
+**Dependency Rules (non-negotiable):**
+- `shared/` is leaf — depends on nothing
+- `plugin/` depends on everything (assembly root)
+- `tools/`, `hooks/`, `cli/`, `control-plane/` depend on `lifecycle/`, `delegation/`, `continuity/`, `shared/`
+- `lifecycle/`, `delegation/`, `continuity/` depend on `shared/` only
+- No circular dependencies
+
+**File Size Rule:** No file exceeds 350 LOC
+
+**Design Patterns to Apply:**
+| Pattern | Application |
+|---------|-------------|
+| Factory | `createTool()`, `createHook()`, `createHandler()` factories for extensible construction |
+| Handler Composition | Chain `before/after` hooks via composition, not inheritance |
+| Strategy | Pluggable continuity store, notification handlers |
+| Command/Query Separation | tools/ = write-side, hooks/ = read-side |
+
+**Phased Execution Plan:**
+1. **Phase 1: Analyze and Map** — Audit current `src/lib/` 31 files, classify by concern, document cross-dependencies, produce `src/REFACTOR-MAP.md`
+2. **Phase 2: Shared Leaf First** — Extract utilities to `src/shared/`, ensure zero dependencies
+3. **Phase 3: Core Domain Modules** — Create `lifecycle/`, `delegation/`, `continuity/` modules with clean internal APIs
+4. **Phase 4: CQRS Separation** — Move tools to `src/tools/`, hooks to `src/hooks/`, wire via plugin
+5. **Phase 5: Plugin Assembly** — Compose all modules in `src/plugin.ts` as root (<100 LOC)
+6. **Phase 6: Validation** — Run `npm run typecheck`, `npm test`, verify <350 LOC per file
+
+**Success Criteria:**
+- All source files in `src/` organized into target module structure
+- No file exceeds 350 LOC
+- `npm run build` succeeds
+- `npm test` passes
+- `npm run typecheck` passes with zero errors
+- Dependency rules verified (no circular, shared is leaf)
+
+**Constraints:**
+- DO NOT modify `.opencode/`, `tests/`, `dist/`, `docs/`
+- DO NOT modify `src/cli/` (preserve AS-IS)
+- Phase commits after each phase for rollback capability
+- Output dry-run migration map before executing moves
+
+**Verification Gate:**
+- [ ] `npm run build` — compiles without errors
+- [ ] `npm test` — all tests pass
+- [ ] `npm run typecheck` — zero type errors
+- [ ] `src/plugin.ts` composition root <100 LOC
+- [ ] No file in `src/` exceeds 350 LOC
+- [ ] `src/shared/` has zero imports from other `src/` modules (leaf verification)
+
+### Identified Risks (Mitigated)
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| Flat-folder consolidation causes import breakage | CRITICAL | Dry-run output before executing file moves; phased commits per phase |
+| No rollback plan | CRITICAL | Phase commits after each of 6 phases; git history enables revert |
+| Vague patterns ("apply architecture patterns") | HIGH | Explicit pattern list: Factory, Handler Composition, Strategy, CQRS |
+| Scope creep into uncertain directories | HIGH | AS-IS flag on `src/cli/`; UNCERTAIN set deferred to Phase 1 analysis |
+| No validation gate | HIGH | Explicit gate: `npm run typecheck && npm test` must pass before claim success |
+
+### Deferred Items
+| Item | Reason |
+|------|--------|
+| `src/shared/`, `src/schema-kernel/`, `src/kernel/`, `src/harness/` disposition | Requires Phase 1 analysis to determine if they merge into target modules or remain as-is |
+| `src/cli/` refactor | Explicitly excluded — AS-IS per clarification |
+| Pattern language selection (Factory vs Abstract Factory) | Deferred to implementation phase |
+
 </absorb-session>
 
-<absorb-session date="2026-04-09" wave_count="4">
-  <sources>
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/OVERVIEW-Unmodified.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/draft/architecture-proposal-hivemind-v3.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/draft/hivemind-current-state.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/use-hivemind-detox-refactor-design.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/PROJECT.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/ROADMAP.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/STATE.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/REQUIREMENTS.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/plugin-diagnostic.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/attempt-fix-1.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/attmp-fix-trial-2-fail.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/tools_hooks_export_flaw.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/opencode.json" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/package.json" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/mcp.json" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/findings.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/progress.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/task_plan.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/draft/migration-strategy-2026-04-03.md" extracted="true" depth="SKIM" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md" extracted="true" depth="SCAN" />
-    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/implementation-plan-2026-04-02.md" extracted="true" depth="SCAN" />
-    <source type="text" path="inline:hivemind-philosophy-5-pillars" extracted="true" />
-  </sources>
+## PHASE 10 ENHANCED PROMPT (Appended 2026-04-10 via prompt-enhance pipeline)
 
-  <narrative>
-    <main_story>
-      HiveMind V3 is a runtime composition engine for OpenCode that evolved from a bloated 15,000-LOC anti-pattern (product-detox) into a disciplined ~8,100-LOC clean harness implementing a two-halves architecture: a "Hard Harness" npm package (tools, hooks, plugin assembly) and "Soft Meta-Concepts" (skills, agents, commands in .opencode/). The project's philosophy — "Agent Intelligence = HIVE + MIND" — means agents gain intelligence through hierarchical collaboration within the HIVE while sharing one MIND with their human operator. It is currently at 17/18 verified truths on Phase 2, blocked by a single runtime-policy override persistence gap.
-    </main_story>
+```yaml
+enhanced_prompt_version: 1
+original_complexity_score: 2/10
+target_complexity_score: 7/10
+scope_boundaries_confirmed: true
+pattern_mitigations_applied: true
+complexity_before: 2
+complexity_after: 7
+confidence: 0.72
+phases_completed: [skim, bridge, investigation, clarification]
+```
 
-    <subplot name="5-pillars-philosophy">
-      The HiveMind philosophy rests on 5 pillars: (1) Hierarchical Superiority — systematic file trees with safe dependency ordering; (2) Collaborative Domains — agents bounded by domain, delegation controlled within boundaries, reports flowing up and down; (3) Strategically Measurable — 2-end-extreme metrics requiring both quantitative AND qualitative proof, incremental guardrails; (4) Iteratively Granular — break down small (max 300 LOC per file), loop until perfect; (5) Growing MEMS-BRAIN — long-term intelligence collected by HIVE, shared toward MIND (content TBD — user wants crawled from worktrees).
-    </subplot>
+### Task Summary
+Restructure and refactor the `src/` directory (lib/, hooks/, tools/, plugin.ts) applying Clean Architecture patterns with CQRS separation, modular decomposition into 8-10 focused modules (<350 LOC each), and explicit design patterns (Factory, Handler Composition, Strategy) for extensibility and maintainability.
 
-    <subplot name="framework-differentiation">
-      HiveMind explicitly differentiates from GSD/BMAD (corporate-spec-driven frameworks requiring procedural compliance) and OMO/Oh-my-opencode (all-in-SOTA-harness for full autonomous coding). Position: "ready to be either if users configure it" — a runtime composition engine that can adopt other frameworks' patterns through its Tier 3 skills layer without committing to any single paradigm.
-    </subplot>
+### Enhanced Prompt
 
-    <subplot name="detox-arc">
-      The product-detox branch poisoned the codebase with 235 SKILL.md files (target: ~20), 22 governance scripts that dictated instead of reporting, 57 agent file copies, and a 1,121-line god-tool. The architecture proposal (2026-04-04) defined this as the anti-pattern and established the clean two-halves target of ~2,547 LOC. Seven worktrees now contain different evolution stages.
-    </subplot>
+**Objective:** Restructure and refactor the `src/` directory into a maintainable, extensible, pattern-driven architecture.
 
-    <subplot name="7-phase-roadmap">
-      Phase 1 (Baseline Cleanup) achieved 7/10 items. Phase 2 (V3 Runtime Architecture) completed all 9 plans across 9 waves but 1 of 18 verification truths remains open (runtimePolicyOverride gap). Phases 3-7 (Schema Definition through Runtime Domain Restructuring) are planned but gated on Phase 2 reaching 18/18.
-    </subplot>
+**Scope — IN scope:**
+- `src/lib/` — 31 files, flat namespace, mixed concerns (lifecycle, continuity, delegation, session, runtime, state, notifications, concurrency, completion, engine, utilities)
+- `src/hooks/` — 5 files, functional grouping (consider CQRS read-side alignment)
+- `src/tools/` — 11 files, best-organized (4 sub-dirs)
+- `src/plugin.ts` — 57 LOC, composition root
 
-    <subplot name="cqrs-enforcement">
-      Tools are write-side (5 core tools with Zod schemas that mutate state), hooks are read-side (event observers that inject context, never mutate), and the plugin assembly is 57 LOC with zero business logic. Dependency rules enforce types.ts as leaf, max module 500 LOC, no circular dependencies.
-    </subplot>
+**Scope — OUT of scope:**
+- `.opencode/` — client-side concern, not this refactor
+- `tests/` — separate from source restructuring
+- `dist/` — build artifact
+- `docs/` — documentation
 
-    <subplot name="skill-assessment-next-cycles">
-      User identified skill gaps: TDD, spec-driven, planning skills still lacking. Next cycles require: assessing skill bundles for conflicts/overlaps/inefficiencies, mapping skill-agent-workflow pairings (pair-of-3, pair-of-2), forming red fail cases, and using skill-creator/skill-judge/skill-development tools.
-    </subplot>
-  </narrative>
+**Scope — AS-IS (preserve without refactor):**
+- `src/cli/` — install/user runtime scaffolding from GitHub
 
-  <entities>
-    <actor name="HiveMind Framework" first_seen="2026-04-09" type="concept" />
-    <actor name="GSD (Get Shit Done)" first_seen="2026-04-09" type="external-service" />
-    <actor name="BMAD" first_seen="2026-04-09" type="concept" />
-    <actor name="OMO / Oh-my-opencode" first_seen="2026-04-09" type="external-service" />
-    <actor name="HiveFiver Meta-Builder" first_seen="2026-04-09" type="internal-module" />
-    <actor name="product-detox branch" first_seen="2026-04-09" type="concept" />
-    <actor name="The Human Developer" first_seen="2026-04-09" type="person" />
-    <domain name="hivemind-philosophy" />
-    <domain name="hierarchical-superiority" />
-    <domain name="collaborative-domains" />
-    <domain name="strategic-measurement" />
-    <domain name="iterative-granularity" />
-    <domain name="mems-brain" />
-    <domain name="skill-gap-analysis" />
-    <domain name="cqrs-pattern" />
-    <domain name="detox-refactor" />
-  </entities>
+**Scope — UNCERTAIN (analyze before deciding):**
+- `src/shared/`, `src/schema-kernel/`, `src/kernel/`, `src/harness/`
 
-  <timeline>
-    <event date="2026-04-01" description="Architecture investigation: 11 reports, 267 files analyzed, layer trust collapse identified" confidence="confirmed" />
-    <event date="2026-04-04" description="Architecture proposal (architecture-proposal-hivemind-v3.md) finalized as Mindset Document defining two-halves architecture and CQRS separation" confidence="confirmed" />
-    <event date="2026-04-05" description="Skill-authoring ecosystem built: 5 core skills created, .hivefiver-meta-builder/ restructured with symlinks" confidence="confirmed" />
-    <event date="2026-04-06" description="7-phase roadmap created in ROADMAP.md, Phase 1 at 7/10 items, Phase 2 defined with 9 wave-ordered plans" confidence="confirmed" />
-    <event date="2026-04-08" description="V3 synthesis report produced, architecture audit completed, Phase 2 plans being implemented" confidence="confirmed" />
-    <event date="2026-04-09" description="Phase 2 implementation reaches 17/18 verified truths; single runtimePolicyOverride gap remains" confidence="confirmed" />
-    <event date="2026-04-09" description="Hivemind philosophy articulated: 5 Pillars (Hierarchical Superiority, Collaborative Domains, Strategically Measurable, Iteratively Granularity, Growing MEMS-BRAIN)" confidence="confirmed" />
-    <event date="2026-04-09" description="Full worktree ecosystem scanned: 7 worktrees, ~8,100 LOC in harness-experiment src/, 31 lib modules, 5 hooks, 4 tools" confidence="confirmed" />
-  </timeline>
+**Target Module Structure (8-10 modules):**
+```
+src/
+├── plugin/              # Assembly root (<100 LOC)
+├── tools/               # 5 tools (~500 LOC, write-side CQRS)
+├── hooks/               # Event handlers (~800 LOC, read-side CQRS)
+├── lifecycle/           # Session state machine (~400 LOC)
+├── delegation/          # Delegation chain logic (~400 LOC)
+├── continuity/          # State persistence, JSON durability (~400 LOC)
+├── cli/                 # CLI substrate (~500 LOC, AS-IS)
+├── control-plane/       # Control primitives (~400 LOC)
+└── shared/              # Utilities (~800 LOC, leaf module)
+```
 
-  <insights>
-    <finding source="cross-ref" confidence="high">
-      ARCHITECTURE TIER CONFLICT: architecture-proposal defines 2 halves (Hard Harness + Soft Meta-Concepts) while hivemind-current-state.md defines 3 Tiers (Hard Harness, Opencode-Dependable, SKILLS). Resolution: different documents for different purposes — proposal=technical architecture, current-state=adoption tiers. Both valid in context, must not be conflated.
-      Evidence: architecture-proposal-hivemind-v3.md:17-25 vs hivemind-current-state.md:20-30.
-    </finding>
+**Dependency Rules (non-negotiable):**
+- `shared/` is leaf — depends on nothing
+- `plugin/` depends on everything (assembly root)
+- `tools/`, `hooks/`, `cli/`, `control-plane/` depend on `lifecycle/`, `delegation/`, `continuity/`, `shared/`
+- `lifecycle/`, `delegation/`, `continuity/` depend on `shared/` only
+- No circular dependencies
 
-    <finding source="file-scan" confidence="high">
-      LOC BUDGET EXCEEDED: AGENTS.md targets ~4,000-5,000 LOC total but harness-experiment src/ measures ~8,100 LOC across 52 TypeScript files (6,339 in src/lib/ alone). Either the target needs revision or significant cleanup is needed. Additionally, 3 orphan modules exist on disk (governance-engine.ts, specialist-router.ts, injection-engine.ts) that are absent from the architecture proposal.
-      Evidence: AGENTS.md "total codebase target ~4,000-5,000 LOC" vs Wave 1C file count.
-    </finding>
+**File Size Rule:** No file exceeds 350 LOC
 
-    <finding source="cross-ref" confidence="high">
-      5 PILLARS PHILOSOPHICAL GAP: The 5 Pillars (Hierarchical Superiority, Collaborative Domains, Strategically Measurable, Iteratively Granularity, Growing MEMS-BRAIN) are completely absent from the existing session-context-prompt.md. This is the philosophical foundation that was missing — the first absorb covered technical events and failure analysis, but the philosophical/strategic layer is new.
-      Evidence: grep for "pillar" or "philosophy" in original 596 lines returned 0 results.
-    </finding>
+**Design Patterns to Apply:**
+| Pattern | Application |
+|---------|-------------|
+| Factory | `createTool()`, `createHook()`, `createHandler()` factories for extensible construction |
+| Handler Composition | Chain `before/after` hooks via composition, not inheritance |
+| Strategy | Pluggable continuity store, notification handlers |
+| Command/Query Separation | tools/ = write-side, hooks/ = read-side |
 
-    <finding source="cross-ref" confidence="high">
-      CQRS PATTERN NOT IN SESSION STATE: The architecture proposal defines a clear CQRS separation (tools=write-side, hooks=read-side, plugin=zero-logic assembly) but this pattern is not documented in the existing session state. The plugin.ts at 57 LOC meets the &lt;100 LOC target. The dependency chain is: plugin.ts imports hooks + tools + lib modules as composition root.
-      Evidence: architecture-proposal-hivemind-v3.md:20-21, plugin-diagnostic.md confirms 57 LOC.
-    </finding>
+**Phased Execution Plan:**
+1. **Phase 1: Analyze and Map** — Audit current `src/lib/` 31 files, classify by concern, document cross-dependencies, produce `src/REFACTOR-MAP.md`
+2. **Phase 2: Shared Leaf First** — Extract utilities to `src/shared/`, ensure zero dependencies
+3. **Phase 3: Core Domain Modules** — Create `lifecycle/`, `delegation/`, `continuity/` modules with clean internal APIs
+4. **Phase 4: CQRS Separation** — Move tools to `src/tools/`, hooks to `src/hooks/`, wire via plugin
+5. **Phase 5: Plugin Assembly** — Compose all modules in `src/plugin.ts` as root (<100 LOC)
+6. **Phase 6: Validation** — Run `npm run typecheck`, `npm test`, verify <350 LOC per file
 
-    <finding source="file-scan" confidence="medium">
-      WORKTREE CONSOLIDATION NEEDED: 7 worktrees contain different evolution stages — hivefiver-packs and hivefiver-v2 appear to be duplicates, product-detox is the anti-pattern reference, session-journal-minimal has a built version with dist/. The migration strategy (docs/draft/migration-strategy-2026-04-03.md) references "selective migration from product-detox" but the merge/consolidation plan is unclear.
-      Evidence: Wave 1C directory listings of all 7 worktrees.
-    </finding>
+**Success Criteria:**
+- All source files in `src/` organized into target module structure
+- No file exceeds 350 LOC
+- `npm run build` succeeds
+- `npm test` passes
+- `npm run typecheck` passes with zero errors
+- Dependency rules verified (no circular, shared is leaf)
 
-    <finding source="narrative-synthesis" confidence="medium">
-      SKILL ECOSYSTEM GAP ANALYSIS: User identified missing skills (TDD, spec-driven, planning) and wants a comprehensive assessment of existing skill bundles for conflicts, overlaps, and inefficiencies. The meta-builder chain (meta-builder → hivefiver-skill-author → SKILL.md) exists but has not been used for gap analysis. The skill-judge framework (8 dimensions, 120 points) provides the assessment tooling.
-      Evidence: User narrative instructions, .opencode/skills/ has 23 skill dirs, agents/ has ~47 agent files.
-    </finding>
-  </insights>
+**Constraints:**
+- DO NOT modify `.opencode/`, `tests/`, `dist/`, `docs/`
+- DO NOT modify `src/cli/` (preserve AS-IS)
+- Phase commits after each phase for rollback capability
+- Output dry-run migration map before executing moves
 
-  <questions_open>
-    <question id="q1" source="user-narrative" asked_user="false">
-      What specific content should populate the 5th pillar (Growing MEMS-BRAIN) and how should it be crawled from the 7 worktrees? User said "I have not come up with the 5th yet but you can crawl them out intensively across branches."
-    </question>
-    <question id="q2" source=".planning/PROJECT.md" asked_user="false">
-      How will the runtimePolicyOverride gap be closed? The producer needs to write session-specific overrides in live delegation metadata, persist through continuity normalization, and enforce in tool-guard runtime-policy path.
-    </question>
-    <question id="q3" source="architecture-documents" asked_user="false">
-      What is the relationship between OVERVIEW-Unmodified.md "Ideal Architecture Design" (7-layer) and architecture-proposal "two-halves" model? They appear to describe different target states.
-    </question>
-    <question id="q4" source="AGENTS.md" asked_user="false">
-      Is the ~4,000-5,000 LOC target still valid given src/ is already ~8,100 LOC? Has scope expanded beyond the original clean prototype?
-    </question>
-    <question id="q5" source="user-narrative" asked_user="false">
-      How does HiveMind's "ready to be either" (GSD/BMAD or OMO) configuration work in practice? No implementation evidence exists for framework-switching.
-    </question>
-    <question id="q6" source="worktree-ecosystem" asked_user="false">
-      What is the intended merge/consolidation strategy across the 7 worktrees? ROADMAP.md Phase 4 mentions "Migration Gate — selective migration from product-detox" but the broader consolidation plan is unclear.
-    </question>
-  </questions_open>
-</absorb-session>
+**Verification Gate:**
+- [ ] `npm run build` — compiles without errors
+- [ ] `npm test` — all tests pass
+- [ ] `npm run typecheck` — zero type errors
+- [ ] `src/plugin.ts` composition root <100 LOC
+- [ ] No file in `src/` exceeds 350 LOC
+- [ ] `src/shared/` has zero imports from other `src/` modules (leaf verification)
+
+### Identified Risks (Mitigated)
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| Flat-folder consolidation causes import breakage | CRITICAL | Dry-run output before executing file moves; phased commits per phase |
+| No rollback plan | CRITICAL | Phase commits after each of 6 phases; git history enables revert |
+| Vague patterns ("apply architecture patterns") | HIGH | Explicit pattern list: Factory, Handler Composition, Strategy, CQRS |
+| Scope creep into uncertain directories | HIGH | AS-IS flag on `src/cli/`; UNCERTAIN set deferred to Phase 1 analysis |
+| No validation gate | HIGH | Explicit gate: `npm run typecheck && npm test` must pass before claim success |
+
+### Deferred Items
+| Item | Reason |
+|------|--------|
+| `src/shared/`, `src/schema-kernel/`, `src/kernel/`, `src/harness/` disposition | Requires Phase 1 analysis to determine if they merge into target modules or remain as-is |
+| `src/cli/` refactor | Explicitly excluded — AS-IS per clarification |
+| Pattern language selection (Factory vs Abstract Factory) | Deferred to implementation phase

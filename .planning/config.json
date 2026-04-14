@@ -1,4 +1,6 @@
 {
+  "search_gitignored": true,
+  "mcp": true,
   "mode": "YOLO",
   "granularity": "fine",
   "parallelization": true,
