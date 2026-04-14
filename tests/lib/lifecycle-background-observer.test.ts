@@ -149,4 +149,70 @@ describe("observeBackgroundCompletion", () => {
     expect(retry.releaseQueue).toHaveBeenCalledTimes(1)
     expect(timeout.releaseQueue).toHaveBeenCalledTimes(1)
   })
+
+  /* WHY: D-12 requires two consecutive idle polls after start-gate evidence before true completion.
+   * WHAT: the first idle poll stays provisional; the second idle poll completes.
+   * HOW: provide start-gate evidence, flip the child idle, and advance through two polling windows.
+   * CONNECTS TO: D-10, D-11, D-12 */
+  it("does not complete on the first idle poll after start-gate evidence", async () => {
+    const c = setupObserver("busy", { timeoutMs: 60_000 })
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.tick(0)
+    c.client._setStatus("child-123", "idle")
+
+    await c.tick(15_000)
+
+    expect(c.patchLifecycle).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: "completed", phase: "completed" }),
+    )
+
+    await c.tick(20_000)
+    await c.finish()
+
+    expect(c.patchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "completed", phase: "completed" }),
+    )
+  })
+
+  /* WHY: D-13 requires resume-first retry on the SAME child session after 180s inactivity.
+   * WHAT: prolonged inactivity after meaningful evidence dispatches promptAsync against the existing child session.
+   * HOW: seed start-gate evidence, keep the session busy, and advance fake timers past the inactivity threshold.
+   * CONNECTS TO: D-13 */
+  it("retries the existing child session via promptAsync after idle timeout", async () => {
+    const c = setupObserver("busy", { timeoutMs: 300_000 })
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+
+    await c.tick(240_000)
+
+    expect(c.client.session.promptAsync).toHaveBeenCalledWith({
+      path: { id: "child-123" },
+      body: expect.objectContaining({
+        parts: expect.any(Array),
+      }),
+    })
+    expect(c.patchLifecycle).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: "error", phase: "failed" }),
+    )
+  })
+
+  /* WHY: Retry handling must be bounded so a wedged child cannot loop forever.
+   * WHAT: after 2 resume-first retries, the observer marks the child as permanently failed.
+   * HOW: keep the child busy with no new evidence long enough to exhaust the retry budget.
+   * CONNECTS TO: D-13 */
+  it("fails permanently after exhausting the resume-first retry budget", async () => {
+    const c = setupObserver("busy", { timeoutMs: 700_000 })
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+
+    await c.tick(650_000)
+    await c.finish()
+
+    expect(c.client.session.promptAsync).toHaveBeenCalledTimes(2)
+    expect(c.patchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "error",
+        phase: "failed",
+        error: expect.stringMatching(/retry/i),
+      }),
+    )
+  })
 })
