@@ -1,43 +1,19 @@
-import type { BackgroundManager, BackgroundResult, BackgroundTask } from "./background-manager.js"
+import type { BackgroundResult, BackgroundTask } from "./background-manager.js"
 import type { CompletionDetector } from "./completion-detector.js"
-import type { ExecutionModeResult } from "./execution-mode.js"
 import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
 import { extractTextFromResponse } from "./lifecycle-state.js"
+import {
+  type CommonRunnerArgs,
+  type FinalizedResult,
+  type PatchLifecycleArgs,
+} from "./lifecycle-runner-shared.js"
+import type { ExecutionModeResult } from "./execution-mode.js"
 import { buildTaskNotificationFromContinuity, notifyParentSession } from "./notification-handler.js"
 import { persistPendingNotification } from "./pending-notifications.js"
 import { sendPrompt, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
-import type { SessionContinuityRecord } from "./types.js"
-import type { SessionContinuityMetadata, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleState } from "./types.js"
+import type { SessionContinuityRecord, SessionLifecycleState } from "./types.js"
 
-type PatchLifecycleArgs = {
-  sessionID: string
-  status: SessionContinuityMetadata["status"]
-  phase: SessionLifecyclePhase
-  observation?: SessionLifecycleObservation
-  completedAt?: number
-  error?: string
-}
-
-type RunLifecycleProcessArgs = {
-  sessionID: string
-  parentSessionID: string
-  rootID: string
-  childDepth: number
-  agent: string
-  category?: string
-  model?: string
-  description: string
-  promptText: string
-  runInBackground: boolean
-  execution: ExecutionModeResult
-  client: OpenCodeClient
-  backgroundManager: BackgroundManager
-  getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
-  patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
-  getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
-  releaseQueue: (reason: string) => void
-  now: () => number
-}
+type RunLifecycleProcessArgs = CommonRunnerArgs
 
 function buildBuiltinProcessCommand(promptText: string): { command: string; args: string[]; env: Record<string, string> } {
   return {
@@ -75,7 +51,7 @@ function finalizeProcessResult(args: {
   sessionID: string
   patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   now: () => number
-}): { output?: string; error?: string; status: "completed" | "failed"; advanced: boolean } {
+}): FinalizedResult {
   const { result, sessionID, patchLifecycle, now } = args
   const completedAt = now()
 
