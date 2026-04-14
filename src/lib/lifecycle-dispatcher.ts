@@ -10,10 +10,10 @@ import { runLifecycleTmuxTask } from "./lifecycle-tmux-runner.js"
 import { addWarning } from "./state.js"
 import { createSession, getSessionID, type OpenCodeClient } from "./session-api.js"
 import { commitDescendant, setDelegationMeta, taskState } from "./state.js"
-import { acquireLifecycleQueue, enqueueWaitingLifecycle, type QueueSnapshot } from "./lifecycle-queue.js"
+import { acquireLifecycleQueue, enqueueWaitingLifecycle } from "./lifecycle-queue.js"
 import { buildDelegationMeta, buildLifecycleState } from "./lifecycle-state.js"
-import { resolveLifecycleConcurrency } from "./lifecycle-runtime-policy.js"
-import { patchLifecycle, type PatchLifecycleArgs } from "./lifecycle-patching.js"
+import { resolveConcurrencyForKey } from "./runtime-policy.js"
+import { type PatchLifecycleArgs } from "./lifecycle-patching.js"
 import type {
   DelegationRouteResolution,
   PermissionRule,
@@ -226,7 +226,7 @@ export async function launchDelegatedSession(
     })
 
     const resolvedConcurrency = ctx.runtimePolicy
-      ? resolveLifecycleConcurrency(ctx.runtimePolicy, queueKey)
+      ? resolveConcurrencyForKey(ctx.runtimePolicy, queueKey)
       : undefined
 
     if (args.runInBackground) {
