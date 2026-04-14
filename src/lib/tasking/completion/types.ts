@@ -19,3 +19,11 @@ export type CompletionCheckResult = {
   consecutiveIdlePolls: number
   idleDurationMs: number
 }
+
+export type DelegationCompletionSnapshot = {
+  activeDelegations: Set<string>
+  completedDelegations: Set<string>
+  failedDelegations: Set<string>
+  totalDelegations: number
+  allComplete: boolean
+}

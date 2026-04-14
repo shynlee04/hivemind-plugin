@@ -25,6 +25,8 @@ import {
   getEventSessionID,
   getSessionMessages,
 } from "../lib/session-api.js"
+import { ParentCoordinator } from "../lib/tasking/completion/parent-coordinator.js"
+import type { DelegationCompletionSnapshot } from "../lib/tasking/completion/types.js"
 import type { HookDependencies } from "./types.js"
 
 type CompactingInput = { sessionID?: unknown }
@@ -38,10 +40,24 @@ type AutoLoopState = {
   exhausted: boolean
 }
 
+type ParentAutoLoopState = {
+  iterations: number
+  maxIterations: number
+  pendingDelegations: Set<string>
+  lastSnapshot: DelegationCompletionSnapshot | null
+  retryPending: boolean
+  exhausted: boolean
+}
+
 const DEFAULT_AUTO_LOOP_CONFIG = {
   maxIterations: 5,
   completionSignal: "<promise>DONE</promise>",
   backoffMs: 1000,
+} as const
+
+const DEFAULT_PARENT_AUTO_LOOP_CONFIG = {
+  maxIterations: 10,
+  backoffMs: 15_000,
 } as const
 
 function formatRuntimeInjectionBlock(args: {
@@ -99,6 +115,14 @@ function resolveAutoLoopConfig(deps: HookDependencies) {
   }
 }
 
+function resolveParentAutoLoopConfig(deps: HookDependencies) {
+  return {
+    maxIterations:
+      deps.parentAutoLoopConfig?.maxIterations ?? DEFAULT_PARENT_AUTO_LOOP_CONFIG.maxIterations,
+    backoffMs: deps.parentAutoLoopConfig?.backoffMs ?? DEFAULT_PARENT_AUTO_LOOP_CONFIG.backoffMs,
+  }
+}
+
 function getAutoLoopState(
   autoLoopStates: Map<string, AutoLoopState>,
   sessionID: string,
@@ -115,6 +139,28 @@ function getAutoLoopState(
     exhausted: false,
   }
   autoLoopStates.set(sessionID, nextState)
+  return nextState
+}
+
+function getParentAutoLoopState(
+  parentAutoLoopStates: Map<string, ParentAutoLoopState>,
+  sessionID: string,
+  maxIterations: number,
+): ParentAutoLoopState {
+  const state = parentAutoLoopStates.get(sessionID)
+  if (state) {
+    return state
+  }
+
+  const nextState: ParentAutoLoopState = {
+    iterations: 0,
+    maxIterations,
+    pendingDelegations: new Set<string>(),
+    lastSnapshot: null,
+    retryPending: false,
+    exhausted: false,
+  }
+  parentAutoLoopStates.set(sessionID, nextState)
   return nextState
 }
 
@@ -176,6 +222,40 @@ function buildAutoLoopPrompt(args: {
   return lines.join("\n")
 }
 
+function formatDelegationIDs(ids: Set<string>): string {
+  return ids.size > 0 ? Array.from(ids).sort().join(", ") : "none"
+}
+
+function buildParentAutoLoopPrompt(args: {
+  snapshot: DelegationCompletionSnapshot
+  state: ParentAutoLoopState
+}): string {
+  const { snapshot, state } = args
+  return [
+    `<system_reminder>Parent auto-loop poll ${state.iterations}/${state.maxIterations}</system_reminder>`,
+    `Delegation status: ${snapshot.activeDelegations.size} active, ${snapshot.completedDelegations.size} completed, ${snapshot.failedDelegations.size} failed.`,
+    `Active delegations: ${formatDelegationIDs(snapshot.activeDelegations)}`,
+    `Newly terminal delegations: ${formatDelegationIDs(
+      new Set([
+        ...snapshot.completedDelegations,
+        ...snapshot.failedDelegations,
+      ]),
+    )}`,
+    "Continue waiting for background delegations to complete.",
+    "When all are done, synthesize results and emit <promise>DONE</promise>.",
+  ].join("\n")
+}
+
+function buildParentSynthesisPrompt(snapshot: DelegationCompletionSnapshot): string {
+  return [
+    "<system_reminder>All delegations complete</system_reminder>",
+    "All background tasks have finished. Synthesize their results now.",
+    `Delegation summary: ${snapshot.completedDelegations.size} completed, ${snapshot.failedDelegations.size} failed.`,
+    `Completed: ${formatDelegationIDs(snapshot.completedDelegations)}`,
+    `Failed: ${formatDelegationIDs(snapshot.failedDelegations)}`,
+  ].join("\n")
+}
+
 async function waitForRetry(ms: number, sleep: HookDependencies["sleep"]): Promise<void> {
   if (ms <= 0) {
     return
@@ -194,7 +274,10 @@ async function waitForRetry(ms: number, sleep: HookDependencies["sleep"]): Promi
 export function createSessionHooks(deps: HookDependencies): SessionHooks {
   const { client, lifecycleManager, sleep, stateManager } = deps
   const autoLoopConfig = resolveAutoLoopConfig(deps)
+  const parentAutoLoopConfig = resolveParentAutoLoopConfig(deps)
   const autoLoopStates = new Map<string, AutoLoopState>()
+  const parentAutoLoopStates = new Map<string, ParentAutoLoopState>()
+  const parentCoordinators = new Map<string, ParentCoordinator>()
 
   return {
     event: async ({ event }: EventInput): Promise<void> => {
@@ -214,56 +297,121 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
         return
       }
 
-      const state = getAutoLoopState(autoLoopStates, sessionID)
-      if (state.retryPending || state.exhausted) {
-        return
-      }
+      if (continuity.metadata.delegationPacket) {
+        const state = getAutoLoopState(autoLoopStates, sessionID)
+        if (state.retryPending || state.exhausted) {
+          return
+        }
 
-      const messages = await getSessionMessages(client, sessionID)
-      const assistantText = extractAssistantText(messages)
-      if (assistantText.includes(autoLoopConfig.completionSignal)) {
-        autoLoopStates.delete(sessionID)
-        return
-      }
+        const messages = await getSessionMessages(client, sessionID)
+        const assistantText = extractAssistantText(messages)
+        if (assistantText.includes(autoLoopConfig.completionSignal)) {
+          autoLoopStates.delete(sessionID)
+          return
+        }
 
-      if (messages.length <= state.lastMessageCount) {
-        return
-      }
+        if (messages.length <= state.lastMessageCount) {
+          return
+        }
 
-      if (state.iterations >= autoLoopConfig.maxIterations) {
-        state.exhausted = true
-        stateManager.addWarning(
-          sessionID,
-          `[Harness] Reached max auto-loop iterations (${autoLoopConfig.maxIterations}) for session ${sessionID}`,
-        )
+        if (state.iterations >= autoLoopConfig.maxIterations) {
+          state.exhausted = true
+          stateManager.addWarning(
+            sessionID,
+            `[Harness] Reached max auto-loop iterations (${autoLoopConfig.maxIterations}) for session ${sessionID}`,
+          )
+          autoLoopStates.set(sessionID, state)
+          return
+        }
+
+        state.iterations += 1
+        state.lastMessageCount = messages.length
+        state.retryPending = true
         autoLoopStates.set(sessionID, state)
+
+        try {
+          await waitForRetry(autoLoopConfig.backoffMs, sleep)
+          await lifecycleManager.requestAutoLoopRetry({
+            sessionID,
+            promptText: buildAutoLoopPrompt({
+              iteration: state.iterations,
+              maxIterations: autoLoopConfig.maxIterations,
+              completionSignal: autoLoopConfig.completionSignal,
+              description: continuity.metadata.description,
+              constraints: continuity.metadata.constraints,
+              assistantText,
+            }),
+          })
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          stateManager.addWarning(sessionID, `[Harness] Auto-loop retry failed: ${message}`)
+        } finally {
+          state.retryPending = false
+          autoLoopStates.set(sessionID, state)
+        }
         return
       }
 
-      state.iterations += 1
-      state.lastMessageCount = messages.length
-      state.retryPending = true
-      autoLoopStates.set(sessionID, state)
+      const childSessionIDs = stateManager.getSubagents(sessionID)
+      if (childSessionIDs.size === 0) {
+        return
+      }
 
-      try {
-        await waitForRetry(autoLoopConfig.backoffMs, sleep)
+      const parentState = getParentAutoLoopState(
+        parentAutoLoopStates,
+        sessionID,
+        parentAutoLoopConfig.maxIterations,
+      )
+      if (parentState.retryPending || parentState.exhausted) {
+        return
+      }
+
+      const coordinator = parentCoordinators.get(sessionID) ?? new ParentCoordinator()
+      parentCoordinators.set(sessionID, coordinator)
+      for (const childSessionID of childSessionIDs) {
+        coordinator.registerChild(childSessionID)
+      }
+
+      const snapshot = coordinator.snapshotDelegationStatus()
+      parentState.pendingDelegations = new Set(snapshot.activeDelegations)
+      parentState.lastSnapshot = snapshot
+
+      if (snapshot.allComplete) {
+        parentAutoLoopStates.delete(sessionID)
+        parentCoordinators.delete(sessionID)
         await lifecycleManager.requestAutoLoopRetry({
           sessionID,
-          promptText: buildAutoLoopPrompt({
-            iteration: state.iterations,
-            maxIterations: autoLoopConfig.maxIterations,
-            completionSignal: autoLoopConfig.completionSignal,
-            description: continuity.metadata.description,
-            constraints: continuity.metadata.constraints,
-            assistantText,
-          }),
+          promptText: buildParentSynthesisPrompt(snapshot),
+        })
+        return
+      }
+
+      if (parentState.iterations >= parentAutoLoopConfig.maxIterations) {
+        parentState.exhausted = true
+        stateManager.addWarning(
+          sessionID,
+          `[Harness] Reached max parent auto-loop iterations (${parentAutoLoopConfig.maxIterations}) for session ${sessionID}`,
+        )
+        parentAutoLoopStates.set(sessionID, parentState)
+        return
+      }
+
+      parentState.iterations += 1
+      parentState.retryPending = true
+      parentAutoLoopStates.set(sessionID, parentState)
+
+      try {
+        await waitForRetry(parentAutoLoopConfig.backoffMs, sleep)
+        await lifecycleManager.requestAutoLoopRetry({
+          sessionID,
+          promptText: buildParentAutoLoopPrompt({ snapshot, state: parentState }),
         })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        stateManager.addWarning(sessionID, `[Harness] Auto-loop retry failed: ${message}`)
+        stateManager.addWarning(sessionID, `[Harness] Parent auto-loop retry failed: ${message}`)
       } finally {
-        state.retryPending = false
-        autoLoopStates.set(sessionID, state)
+        parentState.retryPending = false
+        parentAutoLoopStates.set(sessionID, parentState)
       }
     },
 
@@ -308,6 +456,16 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
             `- auto_loop_iteration: ${autoLoopState.iterations}/${autoLoopConfig.maxIterations}`,
           )
           contextLines.push(`- auto_loop_exhausted: ${autoLoopState.exhausted}`)
+        }
+        const parentAutoLoopState = parentAutoLoopStates.get(sessionID)
+        if (parentAutoLoopState) {
+          contextLines.push(
+            `- parent_auto_loop_iteration: ${parentAutoLoopState.iterations}/${parentAutoLoopState.maxIterations}`,
+          )
+          contextLines.push(`- parent_auto_loop_exhausted: ${parentAutoLoopState.exhausted}`)
+          contextLines.push(
+            `- parent_auto_loop_pending: ${formatDelegationIDs(parentAutoLoopState.pendingDelegations)}`,
+          )
         }
 
         ;(output.context as string[]).push(contextLines.join("\n"))

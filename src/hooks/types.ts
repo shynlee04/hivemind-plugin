@@ -8,6 +8,11 @@ export interface AutoLoopConfig {
   backoffMs: number
 }
 
+export interface ParentAutoLoopConfig {
+  maxIterations: number
+  backoffMs: number
+}
+
 /**
  * Shared dependency bundle injected into every hook factory.
  * Carries only what hooks need — tools receive their own narrower contexts.
@@ -18,5 +23,6 @@ export interface HookDependencies {
   stateManager: TaskStateManager
   eventObservers?: Array<(input: { event?: unknown }) => Promise<void> | void>
   autoLoopConfig?: Partial<AutoLoopConfig>
+  parentAutoLoopConfig?: Partial<ParentAutoLoopConfig>
   sleep?: (ms: number) => Promise<void>
 }
