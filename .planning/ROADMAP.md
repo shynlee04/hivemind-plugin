@@ -212,6 +212,17 @@ Plans:
 - [x] 12-01-PLAN.md — Lock truthful async start semantics and regression coverage
 - [x] 12-02-PLAN.md — Reconcile Phase 09-family artifacts and archive stale planning noise
 
+### Phase 13: fix async delegated result capture and persist child session outputs, transcripts, and evidence so completion is backed by recoverable work product
+
+**Goal:** Fix async delegated result capture and persist child session outputs, transcripts, and evidence so completion is backed by recoverable work product.
+**Requirements**: PH13-01 through PH13-11
+**Depends on:** Phase 12
+**Plans:** 2 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Types, result-capture module, and continuity wiring (Wave 1)
+- [ ] 13-02-PLAN.md — Wire result capture into observer, process runner, and notifications (Wave 2, depends on 13-01)
+
 ---
 
 ### Phase 9.3: Module Restructuring + Config
@@ -352,6 +363,7 @@ Plans:
 | 9.2 Completion Detection Architecture | 1/3 authoritative (+2 historical/quarantined) | ⚠️ MIXED — Plan 01 authoritative; Plans 02-03 ran historically but are not current proof |
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
+| 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
 ## Dependencies
