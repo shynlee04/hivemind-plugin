@@ -164,6 +164,26 @@ function buildContinuityRecord(sessionID: string) {
   }
 }
 
+function buildParentContinuityRecord(sessionID: string) {
+  const base = buildContinuityRecord(sessionID)
+  return {
+    ...base,
+    metadata: {
+      ...base.metadata,
+      parentSessionID: sessionID,
+      rootSessionID: sessionID,
+      delegationPacket: undefined,
+      runInBackground: false,
+      description: "Harness parent session record",
+      lifecycle: {
+        phase: "running" as const,
+        runMode: "sync" as const,
+        queueKey: "model:claude-sonnet-4-6",
+      },
+    },
+  }
+}
+
 function makeIdleEvent(sessionID: string) {
   return {
     type: "session.idle",
@@ -414,6 +434,61 @@ describe("HiveMind V3 integration coverage", () => {
     const rendered = (compactionOutput.context as string[]).join("\n")
     expect(rendered).toContain("auto_loop_iteration: 2/2")
     expect(rendered).toContain("auto_loop_exhausted: true")
+  })
+
+  it("only reports newly terminal child delegations on successive parent auto-loop polls", async () => {
+    const continuityFile = makeTempContinuityFile()
+
+    const { createSessionHooks, recordSessionContinuity, TaskStateManager } = await loadV3Modules(
+      continuityFile,
+    )
+
+    recordSessionContinuity(buildParentContinuityRecord("parent-auto-loop"))
+    recordSessionContinuity(buildContinuityRecord("child-a"))
+    recordSessionContinuity(buildContinuityRecord("child-b"))
+
+    const stateManager = new TaskStateManager()
+    stateManager.registerSubagent("parent-auto-loop", "child-a")
+    stateManager.registerSubagent("parent-auto-loop", "child-b")
+
+    const requestAutoLoopRetry = vi.fn(async () => undefined)
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        handleEvent: vi.fn(),
+        requestAutoLoopRetry,
+        recordCompactionCheckpoint: vi.fn(),
+        getLifecycleSnapshot: vi.fn().mockReturnValue({
+          phase: "running",
+          runMode: "sync",
+          queueKey: "model:claude-sonnet-4-6",
+        }),
+      } as never,
+      stateManager,
+      client: { session: { messages: vi.fn(async () => ({ data: makeMessages("parent waiting") })) } } as never,
+      sleep: vi.fn(async () => undefined),
+      parentAutoLoopConfig: { maxIterations: 5, backoffMs: 0 },
+    })
+
+    await hooks.event({ event: makeIdleEvent("parent-auto-loop") })
+    expect(requestAutoLoopRetry.mock.calls[0]?.[0].promptText).toContain("Newly terminal delegations: none")
+
+    recordSessionContinuity({
+      ...buildContinuityRecord("child-a"),
+      metadata: {
+        ...buildContinuityRecord("child-a").metadata,
+        lifecycle: {
+          phase: "completed" as const,
+          runMode: "async" as const,
+          queueKey: "model:claude-sonnet-4-6",
+        },
+      },
+    })
+
+    await hooks.event({ event: makeIdleEvent("parent-auto-loop") })
+    expect(requestAutoLoopRetry.mock.calls[1]?.[0].promptText).toContain("Newly terminal delegations: child-a")
+
+    await hooks.event({ event: makeIdleEvent("parent-auto-loop") })
+    expect(requestAutoLoopRetry.mock.calls[2]?.[0].promptText).toContain("Newly terminal delegations: none")
   })
 
   it("restores persisted compaction checkpoint state after reload", async () => {
