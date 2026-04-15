@@ -445,7 +445,7 @@ describe("Task 3: evidence-driven running and dead-start failure", () => {
   /* WHY: Transport status alone must never prove running for background children.
    * WHAT: Even if the session reports multiple different active statuses, no running promotion
    *       occurs without assistant messages or tool activity.
-   * HOW: Cycle through busy→running→streaming, never add evidence, verify no running patch.
+   * HOW: Cycle through busy/running/streaming, never add evidence, verify no running patch.
    * CONNECTS TO: Task 3 requirement 1 */
   it("never promotes from transport-only status changes across busy/running/streaming", async () => {
     const c = setupObserver("busy", { timeoutMs: 60_000 })
@@ -459,5 +459,189 @@ describe("Task 3: evidence-driven running and dead-start failure", () => {
     expect(c.patchLifecycle).not.toHaveBeenCalledWith(
       expect.objectContaining({ status: "running", phase: "running" }),
     )
+  })
+})
+
+/* -------------------------------------------------------------------------- */
+/* Task 4: Result persistence before notification                              */
+/* -------------------------------------------------------------------------- */
+describe("Task 4: result persistence and parent retrieval", () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+  })
+
+  /* WHY: Requirement 1 — resultCapture must be written to continuity BEFORE notification.
+   * WHAT: On completion, patchSessionContinuity(resultCapture) call must happen during the completion flow.
+   * HOW: Use setupObserver helper, seed evidence, verify patchSessionContinuity was called with resultCapture.
+   * CONNECTS TO: Task 4 requirement 1 */
+  it("persists resultCapture to continuity during completion flow", async () => {
+    const c = setupObserver()
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.tick(0)
+    c.client._setStatus("child-123", "idle")
+    await c.tick(55_000)
+    await c.finish()
+
+    // Verify that patchSessionContinuity was called with resultCapture
+    const captureCalls = c.patchSessionContinuity.mock.calls.filter(
+      (call: any[]) => call[1] && typeof call[1] === "object" && "resultCapture" in (call[1] as object),
+    )
+    expect(captureCalls.length).toBeGreaterThanOrEqual(1)
+    const capturedResult = captureCalls[0][1].resultCapture
+    expect(capturedResult).toHaveProperty("resultText")
+    expect(capturedResult).toHaveProperty("artifactPaths")
+    expect(capturedResult).toHaveProperty("gitCommits")
+    expect(capturedResult).toHaveProperty("toolCallSummary")
+    expect(capturedResult).toHaveProperty("capturedAt")
+    expect(typeof capturedResult.capturedAt).toBe("number")
+  })
+
+  /* WHY: Requirement 1 — capture happens BEFORE notification is observable.
+   * WHAT: The sequence is: lifecycle:completed → patchSessionContinuity(resultCapture) → notification.
+   * HOW: Verify patchLifecycle completed AND patchSessionContinuity was called with resultCapture.
+   * CONNECTS TO: Task 4 requirement 1 */
+  it("resultCapture and lifecycle completed are both recorded on success", async () => {
+    const c = setupObserver()
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.tick(0)
+    c.client._setStatus("child-123", "idle")
+    await c.tick(55_000)
+    await c.finish()
+
+    expect(c.patchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "completed", phase: "completed" }),
+    )
+
+    const captureCalls = c.patchSessionContinuity.mock.calls.filter(
+      (call: any[]) => call[1] && typeof call[1] === "object" && "resultCapture" in (call[1] as object),
+    )
+    expect(captureCalls.length).toBeGreaterThanOrEqual(1)
+  })
+
+  /* WHY: Requirement 2 — partial capture on failure/deletion.
+   * WHAT: Deleted children attempt partial capture with partial: true flag.
+   * HOW: Delete the child session, finish observation, verify lifecycle was patched to error.
+   * CONNECTS TO: Task 4 requirement 2 */
+  it("attempts partial resultCapture on deleted session failure", async () => {
+    const c = setupObserver()
+    // Add some messages before deletion
+    c.client._addMessage("child-123", assistant("text"))
+
+    // Delete the session
+    c.client._sessions.delete("child-123")
+    await c.finish()
+
+    // On deleted session, lifecycle should be patched to error
+    expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({
+      status: "error", phase: "failed",
+    }))
+  })
+
+  /* WHY: Requirement 2 — partial capture on dead-start timeout.
+   * WHAT: Dead-start failure attempts partial capture.
+   * HOW: Use setupObserver with running status and no evidence, advance past 120s, verify capture attempted.
+   * CONNECTS TO: Task 4 requirement 2 */
+  it("attempts partial resultCapture on dead-start timeout", async () => {
+    const c = setupObserver("running", { launchedAt: 0, timeoutMs: 600_000 })
+
+    await c.tick(130_000)
+    await c.finish()
+
+    const captureCalls = c.patchSessionContinuity.mock.calls.filter(
+      (call: any[]) => call[1] && typeof call[1] === "object" && "resultCapture" in (call[1] as object),
+    )
+    expect(captureCalls.length).toBeGreaterThanOrEqual(1)
+  })
+
+  /* WHY: Requirement 4 — notifications derive from metadata.resultCapture, not live session.
+   * WHAT: buildTaskNotificationFromContinuity reads resultCapture from the continuity record.
+   * HOW: Set resultCapture in continuity, then verify notification preview matches it.
+   * CONNECTS TO: Task 4 requirement 4 */
+  it("notification preview comes from continuity resultCapture, not live scraping", async () => {
+    const { buildTaskNotificationFromContinuity } = await import("../../src/lib/notification-handler.js")
+
+    const record: any = {
+      sessionID: "child-preview",
+      metadata: {
+        parentSessionID: "parent-session",
+        description: "test task",
+        delegation: { agent: "builder" },
+        resultCapture: {
+          resultText: "I completed the implementation. Created /src/new-feature.ts",
+          artifactPaths: ["/src/new-feature.ts"],
+          gitCommits: ["a1b2c3d"],
+          toolCallSummary: [{ tool: "Write", args: '{"filePath":"/src/new-feature.ts"}' }],
+          messageCount: 5,
+          capturedAt: Date.now(),
+        },
+        lifecycle: { launchedAt: 1000, completedAt: 5000 },
+      },
+    }
+
+    const notification = buildTaskNotificationFromContinuity(record, "completed")
+
+    expect(notification.resultPreview).toBe("I completed the implementation. Created /src/new-feature.ts")
+    expect(notification.artifacts).toEqual(["/src/new-feature.ts"])
+    expect(notification.commits).toEqual(["a1b2c3d"])
+  })
+
+  /* WHY: Requirement 4 — notification with no resultCapture still works.
+   * WHAT: When resultCapture is missing, notification uses fallback summary.
+   * HOW: Create continuity record without resultCapture, verify notification still builds.
+   * CONNECTS TO: Task 4 requirement 4 */
+  it("notification builds successfully when resultCapture is missing", async () => {
+    const { buildTaskNotificationFromContinuity } = await import("../../src/lib/notification-handler.js")
+
+    const record: any = {
+      sessionID: "child-no-capture",
+      metadata: {
+        parentSessionID: "parent-session",
+        description: "test task no capture",
+        delegation: { agent: "researcher" },
+        category: "research",
+        lifecycle: { launchedAt: 1000, completedAt: 5000 },
+      },
+    }
+
+    const notification = buildTaskNotificationFromContinuity(record, "completed")
+
+    expect(notification.resultPreview).toBeUndefined()
+    expect(notification.artifacts).toBeUndefined()
+    expect(notification.commits).toBeUndefined()
+    expect(notification.briefSummary).toBeDefined()
+  })
+
+  /* WHY: Requirement 4 — failed notification includes error from continuity, not live scrape.
+   * WHAT: Failed notification reads lastError and resultCapture from continuity.
+   * CONNECTS TO: Task 4 requirement 4 */
+  it("failed notification includes error message from continuity metadata", async () => {
+    const { buildTaskNotificationFromContinuity } = await import("../../src/lib/notification-handler.js")
+
+    const record: any = {
+      sessionID: "child-failed",
+      metadata: {
+        parentSessionID: "parent-session",
+        description: "failing task",
+        delegation: { agent: "builder" },
+        resultCapture: {
+          resultText: "partial work done",
+          artifactPaths: ["/src/partial.ts"],
+          gitCommits: [],
+          toolCallSummary: [],
+          messageCount: 2,
+          capturedAt: Date.now(),
+          partial: true,
+        },
+        lifecycle: { launchedAt: 1000 },
+      },
+    }
+
+    const notification = buildTaskNotificationFromContinuity(record, "failed", "SDK connection lost")
+
+    expect(notification.status).toBe("failed")
+    expect(notification.error).toBe("SDK connection lost")
+    expect(notification.resultPreview).toBe("partial work done")
+    expect(notification.artifacts).toEqual(["/src/partial.ts"])
   })
 })

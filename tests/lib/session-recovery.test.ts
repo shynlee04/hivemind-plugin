@@ -324,3 +324,246 @@ describe("session recovery", () => {
     expect(failed?.metadata.lastError).toBe("transport failure")
   })
 })
+
+/* -------------------------------------------------------------------------- */
+/* Task 4: Parent retrieval from continuity                                    */
+/* -------------------------------------------------------------------------- */
+describe("Task 4: parent retrieves child results from continuity", () => {
+  let continuityFile: string
+  const fixedNow = new Date("2026-04-08T16:00:00.000Z").getTime()
+
+  beforeEach(() => {
+    continuityFile = makeTempContinuityFile()
+    vi.useFakeTimers()
+    vi.setSystemTime(fixedNow)
+  })
+
+  async function loadModules() {
+    return loadRecoveryModules(continuityFile)
+  }
+
+  function buildCompletedChild(
+    sessionID: string,
+    parentID: string,
+    resultText: string,
+    artifacts: string[],
+    commits: string[],
+  ): SessionContinuityRecord {
+    return {
+      sessionID,
+      toolProfile: { permissionRules: [], compatibleTools: ["read", "write"] },
+      promptParams: { agent: "builder" as const, tools: ["read", "write"] },
+      metadata: {
+        parentSessionID: parentID,
+        rootSessionID: "root-session",
+        delegation: {
+          rootID: "root-session",
+          depth: 1,
+          budgetUsed: 2,
+          agent: "builder" as const,
+          queueKey: "gpt-5.4:builder:implementation",
+        },
+        title: `child: ${sessionID}`,
+        description: `task for ${sessionID}`,
+        constraints: [],
+        runInBackground: true,
+        status: "completed" as const,
+        createdAt: fixedNow - 120_000,
+        updatedAt: fixedNow - 60_000,
+        lifecycle: {
+          phase: "completed" as const,
+          runMode: "async" as const,
+          queueKey: "gpt-5.4:builder:implementation",
+          launchedAt: fixedNow - 120_000,
+          completedAt: fixedNow - 60_000,
+        },
+        resultCapture: {
+          resultText,
+          artifactPaths: artifacts,
+          gitCommits: commits,
+          toolCallSummary: [{ tool: "Write", args: "{}" }],
+          messageCount: 5,
+          capturedAt: fixedNow - 60_000,
+        },
+      },
+    }
+  }
+
+  /* WHY: Requirement 3 — resumed parent must read results directly from continuity.
+   * WHAT: getChildResultPreviews returns preview text, artifact paths, commit SHAs.
+   * CONNECTS TO: Task 4 requirement 3 */
+  it("returns result preview text from continuity for completed children", async () => {
+    const { recordSessionContinuity, getSessionContinuity } = await loadModules()
+    const child = buildCompletedChild(
+      "child-1", "parent-1",
+      "Implemented feature X in /src/feature.ts",
+      ["/src/feature.ts"],
+      ["a1b2c3d"],
+    )
+    recordSessionContinuity(child)
+
+    const { getChildResultPreviews } = await import("../../src/lib/session-recovery.js")
+    const store = new Map<string, SessionContinuityRecord>()
+    const record = getSessionContinuity("child-1")!
+    store.set("child-1", record)
+
+    const previews = getChildResultPreviews(store, "parent-1")
+
+    expect(previews).toHaveLength(1)
+    expect(previews[0].resultPreview).toBe("Implemented feature X in /src/feature.ts")
+  })
+
+  /* WHY: Requirement 3 — artifact paths from continuity, not live session.
+   * CONNECTS TO: Task 4 requirement 3 */
+  it("returns artifact paths from continuity resultCapture", async () => {
+    const { recordSessionContinuity, getSessionContinuity } = await loadModules()
+    const child = buildCompletedChild(
+      "child-2", "parent-1",
+      "done", ["/src/a.ts", "/src/b.ts"], [],
+    )
+    recordSessionContinuity(child)
+
+    const { getChildResultPreviews } = await import("../../src/lib/session-recovery.js")
+    const store = new Map<string, SessionContinuityRecord>()
+    store.set("child-2", getSessionContinuity("child-2")!)
+
+    const previews = getChildResultPreviews(store, "parent-1")
+
+    expect(previews).toHaveLength(1)
+    expect(previews[0].artifacts).toEqual(["/src/a.ts", "/src/b.ts"])
+  })
+
+  /* WHY: Requirement 3 — commit SHAs from continuity.
+   * CONNECTS TO: Task 4 requirement 3 */
+  it("returns commit SHAs from continuity resultCapture", async () => {
+    const { recordSessionContinuity, getSessionContinuity } = await loadModules()
+    const child = buildCompletedChild(
+      "child-3", "parent-1",
+      "done", [], ["deadbeef", "cafef00d"],
+    )
+    recordSessionContinuity(child)
+
+    const { getChildResultPreviews } = await import("../../src/lib/session-recovery.js")
+    const store = new Map<string, SessionContinuityRecord>()
+    store.set("child-3", getSessionContinuity("child-3")!)
+
+    const previews = getChildResultPreviews(store, "parent-1")
+
+    expect(previews).toHaveLength(1)
+    expect(previews[0].commits).toEqual(["deadbeef", "cafef00d"])
+  })
+
+  /* WHY: Requirement 3 — completed children with no resultCapture are excluded.
+   * CONNECTS TO: Task 4 requirement 3 */
+  it("excludes completed children without resultCapture from previews", async () => {
+    const { recordSessionContinuity, getSessionContinuity } = await loadModules()
+    const child: SessionContinuityRecord = {
+      sessionID: "child-no-capture",
+      toolProfile: { permissionRules: [], compatibleTools: ["read"] },
+      promptParams: { agent: "builder" as const, tools: ["read"] },
+      metadata: {
+        parentSessionID: "parent-1",
+        rootSessionID: "root-session",
+        delegation: {
+          rootID: "root-session", depth: 1, budgetUsed: 1,
+          agent: "builder" as const, queueKey: "key",
+        },
+        title: "no capture",
+        description: "no capture",
+        constraints: [],
+        runInBackground: true,
+        status: "completed" as const,
+        createdAt: fixedNow - 60_000,
+        updatedAt: fixedNow - 30_000,
+      },
+    }
+    recordSessionContinuity(child)
+
+    const { getChildResultPreviews } = await import("../../src/lib/session-recovery.js")
+    const store = new Map<string, SessionContinuityRecord>()
+    store.set("child-no-capture", getSessionContinuity("child-no-capture")!)
+
+    const previews = getChildResultPreviews(store, "parent-1")
+    expect(previews).toHaveLength(0)
+  })
+
+  /* WHY: Requirement 3 — only completed children show results, not running/failed.
+   * CONNECTS TO: Task 4 requirement 3 */
+  it("does not return previews for non-completed children", async () => {
+    const { recordSessionContinuity, getSessionContinuity } = await loadModules()
+
+    const runningChild: SessionContinuityRecord = {
+      sessionID: "child-running",
+      toolProfile: { permissionRules: [], compatibleTools: ["read"] },
+      promptParams: { agent: "builder" as const, tools: ["read"] },
+      metadata: {
+        parentSessionID: "parent-1",
+        rootSessionID: "root-session",
+        delegation: {
+          rootID: "root-session", depth: 1, budgetUsed: 1,
+          agent: "builder" as const, queueKey: "key",
+        },
+        title: "running",
+        description: "running",
+        constraints: [],
+        runInBackground: true,
+        status: "running" as const,
+        createdAt: fixedNow - 60_000,
+        updatedAt: fixedNow - 30_000,
+        resultCapture: {
+          resultText: "partial",
+          artifactPaths: [],
+          gitCommits: [],
+          toolCallSummary: [],
+          messageCount: 2,
+          capturedAt: fixedNow,
+          partial: true,
+        },
+      },
+    }
+    recordSessionContinuity(runningChild)
+
+    const { getChildResultPreviews } = await import("../../src/lib/session-recovery.js")
+    const store = new Map<string, SessionContinuityRecord>()
+    store.set("child-running", getSessionContinuity("child-running")!)
+
+    const previews = getChildResultPreviews(store, "parent-1")
+    expect(previews).toHaveLength(0)
+  })
+
+  /* WHY: Requirement 3 — parent can see all completed children results in one call.
+   * CONNECTS TO: Task 4 requirement 3 */
+  it("returns multiple completed child results for the same parent", async () => {
+    const { recordSessionContinuity, getSessionContinuity } = await loadModules()
+
+    recordSessionContinuity(buildCompletedChild("c1", "p1", "result 1", ["/a.ts"], []))
+    recordSessionContinuity(buildCompletedChild("c2", "p1", "result 2", ["/b.ts"], ["sha1"]))
+    recordSessionContinuity(buildCompletedChild("c3", "other-parent", "result 3", [], []))
+
+    const { getChildResultPreviews } = await import("../../src/lib/session-recovery.js")
+    const store = new Map<string, SessionContinuityRecord>()
+    store.set("c1", getSessionContinuity("c1")!)
+    store.set("c2", getSessionContinuity("c2")!)
+    store.set("c3", getSessionContinuity("c3")!)
+
+    const previews = getChildResultPreviews(store, "p1")
+
+    expect(previews).toHaveLength(2)
+    expect(previews.map((p) => p.sessionId).sort()).toEqual(["c1", "c2"])
+  })
+
+  /* WHY: Requirement 3 — completedAt from lifecycle is preserved in result preview.
+   * CONNECTS TO: Task 4 requirement 3 */
+  it("includes completedAt timestamp from lifecycle in result previews", async () => {
+    const { recordSessionContinuity, getSessionContinuity } = await loadModules()
+    recordSessionContinuity(buildCompletedChild("c-time", "p-time", "result", [], []))
+
+    const { getChildResultPreviews } = await import("../../src/lib/session-recovery.js")
+    const store = new Map<string, SessionContinuityRecord>()
+    store.set("c-time", getSessionContinuity("c-time")!)
+
+    const previews = getChildResultPreviews(store, "p-time")
+
+    expect(previews[0].completedAt).toBe(fixedNow - 60_000)
+  })
+})

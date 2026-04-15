@@ -531,3 +531,162 @@ describe("createCoreHooks", () => {
     )
   })
 })
+
+/* -------------------------------------------------------------------------- */
+/* Task 4: Replay persisted delegate-task results to parent session            */
+/* -------------------------------------------------------------------------- */
+describe("Task 4: core hooks replay persisted results", () => {
+  let continuityFile: string
+
+  beforeEach(() => {
+    continuityFile = makeTempContinuityFile()
+  })
+
+  async function loadHookModules(filePath: string) {
+    process.env.OPENCODE_HARNESS_CONTINUITY_FILE = filePath
+    vi.resetModules()
+
+    const [{ createCoreHooks }, continuityModule, { TaskStateManager }] =
+      await Promise.all([
+        import("../../src/hooks/create-core-hooks.js"),
+        import("../../src/lib/continuity.js"),
+        import("../../src/lib/state.js"),
+      ])
+
+    return {
+      createCoreHooks,
+      getSessionContinuity: continuityModule.getSessionContinuity,
+      recordSessionContinuity: continuityModule.recordSessionContinuity,
+      patchSessionContinuity: continuityModule.patchSessionContinuity,
+      TaskStateManager,
+    }
+  }
+
+  /* WHY: Requirement 3+5 — parent session resumes with persisted child results available.
+   * WHAT: After patching resultCapture into continuity, parent can read it back.
+   * CONNECTS TO: Task 4 requirements 3, 5 */
+  it("parent session can read persisted resultCapture from continuity after child completion", async () => {
+    const { recordSessionContinuity, patchSessionContinuity, getSessionContinuity } =
+      await loadHookModules(continuityFile)
+
+    recordSessionContinuity(buildContinuityRecord("child-result-test", {
+      metadata: {
+        ...buildContinuityRecord("child-result-test").metadata,
+        status: "completed",
+        lifecycle: {
+          phase: "completed",
+          runMode: "async",
+          queueKey: "gpt-5.4:builder:implementation",
+          launchedAt: 1000,
+          completedAt: 5000,
+        },
+      },
+    }))
+
+    patchSessionContinuity("child-result-test", {
+      resultCapture: {
+        resultText: "Implemented the feature in /src/new.ts",
+        artifactPaths: ["/src/new.ts"],
+        gitCommits: ["abc1234"],
+        toolCallSummary: [{ tool: "Write" }],
+        messageCount: 4,
+        capturedAt: 5000,
+      },
+    })
+
+    const record = getSessionContinuity("child-result-test")
+    expect(record?.metadata.resultCapture).toBeDefined()
+    expect(record?.metadata.resultCapture?.resultText).toBe("Implemented the feature in /src/new.ts")
+    expect(record?.metadata.resultCapture?.artifactPaths).toEqual(["/src/new.ts"])
+    expect(record?.metadata.resultCapture?.gitCommits).toEqual(["abc1234"])
+  })
+
+  /* WHY: Requirement 5 — system.transform must inject pending notifications with result data.
+   * WHAT: When parent resumes, pending notifications include result previews from resultCapture.
+   * CONNECTS TO: Task 4 requirement 5 */
+  it("replays notification with result preview from persisted resultCapture", async () => {
+    const { createCoreHooks, recordSessionContinuity, getSessionContinuity, TaskStateManager } =
+      await loadHookModules(continuityFile)
+    const showToast = vi.fn()
+    const now = Date.now()
+
+    recordSessionContinuity(buildContinuityRecord("parent-with-results", {
+      metadata: {
+        ...buildContinuityRecord("parent-with-results").metadata,
+        createdAt: now,
+        updatedAt: now,
+        lifecycle: {
+          phase: "created",
+          runMode: "async",
+          queueKey: "gpt-5.4:builder:implementation",
+        },
+        pendingNotifications: [
+          {
+            sessionID: "completed-child",
+            description: "build feature",
+            agent: "builder",
+            status: "completed",
+            resultPreview: "Implemented feature X. Created /src/feature.ts",
+            briefSummary: "Feature X is complete.",
+            artifacts: ["/src/feature.ts"],
+            commits: ["deadbeef"],
+            outputLink: "session://completed-child",
+            createdAt: now - 1000,
+            delivered: false,
+          },
+        ],
+      },
+    }))
+
+    const hooks = createCoreHooks({
+      lifecycleManager: { handleEvent: vi.fn() } as never,
+      client: { tui: { showToast } } as never,
+      stateManager: new TaskStateManager(),
+    })
+
+    await hooks.event({ event: makeEvent("parent-with-results", "session.created") })
+    await hooks["system.transform"]({ sessionID: "parent-with-results" }, {})
+
+    expect(showToast).toHaveBeenCalledWith({
+      body: {
+        message: expect.stringContaining("build feature"),
+        variant: "info",
+      },
+    })
+
+    const afterClear = getSessionContinuity("parent-with-results")
+    expect(afterClear?.metadata.pendingNotifications).toEqual([])
+  })
+
+  /* WHY: Requirement 5 — result data survives round-trip through continuity persistence.
+   * WHAT: Patch resultCapture, then read it back — data must be intact.
+   * CONNECTS TO: Task 4 requirement 5 */
+  it("resultCapture survives round-trip through patchSessionContinuity", async () => {
+    const { recordSessionContinuity, patchSessionContinuity, getSessionContinuity } =
+      await loadHookModules(continuityFile)
+
+    recordSessionContinuity(buildContinuityRecord("round-trip"))
+
+    const captured = {
+      resultText: "Round trip test",
+      artifactPaths: ["/src/a.ts", "/src/b.ts"],
+      gitCommits: ["sha1", "sha2"],
+      toolCallSummary: [{ tool: "Write", args: "{}" }, { tool: "Bash", args: "{}" }],
+      messageCount: 10,
+      capturedAt: 12345,
+    }
+
+    patchSessionContinuity("round-trip", { resultCapture: captured })
+
+    const record = getSessionContinuity("round-trip")
+    const rc = record?.metadata.resultCapture
+
+    expect(rc).toBeDefined()
+    expect(rc!.resultText).toBe("Round trip test")
+    expect(rc!.artifactPaths).toEqual(["/src/a.ts", "/src/b.ts"])
+    expect(rc!.gitCommits).toEqual(["sha1", "sha2"])
+    expect(rc!.toolCallSummary).toHaveLength(2)
+    expect(rc!.messageCount).toBe(10)
+    expect(rc!.capturedAt).toBe(12345)
+  })
+})

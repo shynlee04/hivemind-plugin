@@ -334,4 +334,130 @@ describe("result-capture", () => {
       expect(result.endsWith("...[truncated]")).toBe(true)
     })
   })
+
+  // ---------------------------------------------------------------------------
+  // Task 4: Comprehensive result capture content tests
+  // ---------------------------------------------------------------------------
+  describe("Task 4: result capture completeness", () => {
+    it("extracts all four capture dimensions from a realistic session", () => {
+      const messages = [
+        { role: "user", parts: [{ type: "text", text: "implement feature X" }] },
+        {
+          role: "assistant",
+          parts: [
+            { type: "text", text: "I'll implement feature X in the following file:" },
+            { type: "tool-call", name: "Write", arguments: { filePath: "/src/feature.ts", content: "export const X = 1" } },
+          ],
+        },
+        {
+          role: "assistant",
+          parts: [
+            { type: "tool-result", output: "File written successfully: abc1234" },
+            { type: "tool-call", name: "Bash", arguments: { command: "git commit -m 'feat: add feature X'" } },
+          ],
+        },
+        {
+          role: "assistant",
+          parts: [
+            { type: "tool-result", output: "[main deadbeef] feat: add feature X" },
+            { type: "text", text: "Feature X has been implemented and committed." },
+          ],
+        },
+      ]
+
+      const text = extractAssistantText(messages)
+      expect(text).toContain("I'll implement feature X")
+      expect(text).toContain("Feature X has been implemented")
+
+      const tools = extractToolCallSummary(messages)
+      expect(tools.map((t) => t.tool)).toEqual(expect.arrayContaining(["Write", "Bash"]))
+
+      const artifacts = extractArtifactPaths(messages)
+      expect(artifacts).toContain("/src/feature.ts")
+
+      const commits = extractGitCommits(messages)
+      expect(commits.length).toBeGreaterThanOrEqual(1)
+      expect(commits).toEqual(expect.arrayContaining([expect.stringMatching(/^[0-9a-f]{7,40}$/)]))
+    })
+
+    it("extracts tool call summary with args preserved", () => {
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            { type: "tool-call", name: "Read", arguments: { filePath: "/src/foo.ts" } },
+            { type: "tool-call", name: "Edit", arguments: { filePath: "/src/bar.ts", oldString: "a", newString: "b" } },
+          ],
+        },
+      ]
+      const tools = extractToolCallSummary(messages)
+      expect(tools).toHaveLength(2)
+      expect(tools[0].tool).toBe("Read")
+      expect(tools[0].args).toContain("/src/foo.ts")
+      expect(tools[1].tool).toBe("Edit")
+      expect(tools[1].args).toContain("/src/bar.ts")
+    })
+
+    it("extracts multiple distinct artifact paths", () => {
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            { type: "tool-call", name: "Write", arguments: { filePath: "/a.ts" } },
+            { type: "tool-call", name: "Write", arguments: { filePath: "/b.ts" } },
+            { type: "tool-call", name: "Edit", arguments: { path: "/c.ts" } },
+          ],
+        },
+      ]
+      expect(extractArtifactPaths(messages)).toEqual(["/a.ts", "/b.ts", "/c.ts"])
+    })
+
+    it("extracts commit SHAs from bash tool-result output", () => {
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            { type: "tool-result", output: "[feature a1b2c3d] implement X\n 2 files changed" },
+          ],
+        },
+      ]
+      expect(extractGitCommits(messages)).toEqual(["a1b2c3d"])
+    })
+
+    it("extracts 40-char full SHAs from git output", () => {
+      const sha = "a1b2c3d4e5f6789012345678901234567890abcd"
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            { type: "tool-result", output: `commit ${sha}\nAuthor: test` },
+          ],
+        },
+      ]
+      expect(extractGitCommits(messages)).toEqual([sha])
+    })
+
+    it("handles mixed message roles correctly — only assistant text captured", () => {
+      const messages = [
+        { role: "user", parts: [{ type: "text", text: "user says hi" }] },
+        { role: "system", parts: [{ type: "text", text: "system message" }] },
+        { role: "assistant", parts: [{ type: "text", text: "assistant reply" }] },
+        { role: "tool", parts: [{ type: "text", text: "tool output" }] },
+      ]
+      expect(extractAssistantText(messages)).toBe("assistant reply")
+    })
+
+    it("extracts artifact paths from 'read' and 'write' tool variants", () => {
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            { type: "tool-call", name: "read", arguments: { filePath: "/read-path.ts" } },
+            { type: "tool-call", name: "write", arguments: { filePath: "/write-path.ts" } },
+          ],
+        },
+      ]
+      expect(extractArtifactPaths(messages)).toEqual(["/read-path.ts", "/write-path.ts"])
+    })
+  })
 })
