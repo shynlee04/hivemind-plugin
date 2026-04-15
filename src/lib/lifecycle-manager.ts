@@ -117,7 +117,7 @@ export class HarnessLifecycleManager {
     this.completionDetector.cancel(sessionID)
     this.privatePatchLifecycle({
       sessionID,
-      status: "error",
+      status: "failed",
       phase: "failed",
       error: "Session cancelled by user",
       observation: {

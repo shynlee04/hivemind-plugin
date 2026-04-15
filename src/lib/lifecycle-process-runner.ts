@@ -50,7 +50,7 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
         const message = error instanceof Error ? error.message : String(error)
         args.patchLifecycle({
           sessionID: args.sessionID,
-          status: "error",
+          status: "failed",
           phase: "failed",
           error: message,
           observation: {
@@ -153,7 +153,7 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
     const message = error instanceof Error ? error.message : String(error)
     args.patchLifecycle({
       sessionID: args.sessionID,
-      status: "error",
+      status: "failed",
       phase: "failed",
       error: message,
       observation: {
@@ -234,7 +234,7 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
         const message = error instanceof Error ? error.message : String(error)
         args.patchLifecycle({
           sessionID: args.sessionID,
-          status: "error",
+          status: "failed",
           phase: "failed",
           error: message,
           observation: {
@@ -329,7 +329,7 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
     const message = error instanceof Error ? error.message : String(error)
     args.patchLifecycle({
       sessionID: args.sessionID,
-      status: "error",
+      status: "failed",
       phase: "failed",
       error: message,
       observation: {

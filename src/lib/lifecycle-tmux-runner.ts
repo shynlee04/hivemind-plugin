@@ -77,7 +77,7 @@ function finalizeTmuxResult(args: {
   const advanced =
     patchLifecycle({
       sessionID,
-      status: "error",
+      status: "failed",
       phase: "failed",
       error,
       observation: {
@@ -174,7 +174,7 @@ export async function runLifecycleTmuxTask(args: RunLifecycleTmuxArgs): Promise<
         const message = error instanceof Error ? error.message : String(error)
         args.patchLifecycle({
           sessionID: args.sessionID,
-          status: "error",
+          status: "failed",
           phase: "failed",
           error: message,
           observation: {

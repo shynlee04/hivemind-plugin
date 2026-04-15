@@ -67,7 +67,7 @@ function setupObserver(status = "busy", options?: { launchedAt?: number; timeout
 async function expectError(control: Controls, detail: string, text: RegExp) {
   await control.finish()
   expect(control.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({
-    status: "error", phase: "failed", error: expect.stringMatching(text), observation: expect.objectContaining({ detail }),
+    status: "failed", phase: "failed", error: expect.stringMatching(text), observation: expect.objectContaining({ detail }),
   }))
 }
 
@@ -268,30 +268,30 @@ describe("observeBackgroundCompletion", () => {
       }),
     })
     expect(c.patchLifecycle).not.toHaveBeenCalledWith(
-      expect.objectContaining({ status: "error", phase: "failed" }),
+      expect.objectContaining({ status: "failed", phase: "failed" }),
     )
   })
 
   /* WHY: Retry handling must be bounded so a wedged child cannot loop forever.
-   * WHAT: after 2 resume-first retries, the observer marks the child as permanently failed.
-   * HOW: keep the child busy with no new evidence long enough to exhaust the retry budget.
-   * CONNECTS TO: D-13 */
-  it("fails permanently after exhausting the resume-first retry budget", async () => {
-    const c = setupObserver("busy", { timeoutMs: 700_000 })
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+     * WHAT: after 2 resume-first retries, the observer marks the child as permanently failed.
+     * HOW: keep the child busy with no new evidence long enough to exhaust the retry budget.
+     * CONNECTS TO: D-13 */
+    it("fails permanently after exhausting the resume-first retry budget", async () => {
+      const c = setupObserver("busy", { timeoutMs: 700_000 })
+      c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
 
-    await c.tick(900_000)
-    await c.finish()
+      await c.tick(900_000)
+      await c.finish()
 
-    expect(c.client.session.promptAsync).toHaveBeenCalledTimes(2)
-    expect(c.patchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "error",
-        phase: "failed",
-        error: expect.stringMatching(/retry/i),
-      }),
-    )
-  })
+      expect(c.client.session.promptAsync).toHaveBeenCalledTimes(2)
+      expect(c.patchLifecycle).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "failed",
+          phase: "failed",
+          error: expect.stringMatching(/retry/i),
+        }),
+      )
+    })
 
   /* WHY: PH13-06/PH13-08 require result capture before notification on completion.
    * WHAT: completed branch calls patchSessionContinuity with resultCapture before parent notification.
@@ -327,7 +327,7 @@ describe("observeBackgroundCompletion", () => {
     // Even on deletion, should try to capture (may fail but the call should happen)
     // The key is that capture was attempted inside try/catch
     expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({
-      status: "error", phase: "failed",
+      status: "failed", phase: "failed",
     }))
   })
 
@@ -405,7 +405,7 @@ describe("Task 3: evidence-driven running and dead-start failure", () => {
 
     expect(c.patchLifecycle).toHaveBeenCalledWith(
       expect.objectContaining({
-        status: "error",
+        status: "failed",
         phase: "failed",
         error: expect.stringMatching(/no tool activity or assistant evidence/i),
         observation: expect.objectContaining({ detail: "background-dead-start-timeout" }),
@@ -534,7 +534,7 @@ describe("Task 4: result persistence and parent retrieval", () => {
 
     // On deleted session, lifecycle should be patched to error
     expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({
-      status: "error", phase: "failed",
+      status: "failed", phase: "failed",
     }))
   })
 

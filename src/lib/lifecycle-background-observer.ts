@@ -167,7 +167,7 @@ export async function observeBackgroundCompletion(args: {
           const advanced =
             args.patchLifecycle({
               sessionID: args.sessionID,
-              status: "error",
+              status: "failed",
               phase: "failed",
             error,
             observation: {
@@ -224,7 +224,7 @@ export async function observeBackgroundCompletion(args: {
             const advanced =
               args.patchLifecycle({
                 sessionID: args.sessionID,
-                status: "error",
+                status: "failed",
                 phase: "failed",
                 error,
                 observation: {
@@ -303,7 +303,7 @@ export async function observeBackgroundCompletion(args: {
             const advanced =
               args.patchLifecycle({
                 sessionID: args.sessionID,
-                status: "error",
+                status: "failed",
                 phase: "failed",
                 error,
                 observation: {
@@ -383,7 +383,7 @@ export async function observeBackgroundCompletion(args: {
           const advanced =
             args.patchLifecycle({
               sessionID: args.sessionID,
-              status: "error",
+              status: "failed",
               phase: "failed",
             error,
             observation: {
@@ -410,7 +410,7 @@ export async function observeBackgroundCompletion(args: {
         const advanced =
           args.patchLifecycle({
             sessionID: args.sessionID,
-            status: "error",
+            status: "failed",
             phase: "failed",
           error,
           observation: {
@@ -444,7 +444,7 @@ export async function observeBackgroundCompletion(args: {
     const advanced =
       args.patchLifecycle({
         sessionID: args.sessionID,
-        status: "error",
+        status: "failed",
         phase: "failed",
       error,
       observation: {

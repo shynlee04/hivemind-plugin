@@ -441,7 +441,7 @@ describe("HarnessLifecycleManager — builtin-process execution (session-based)"
     ).rejects.toThrow(/process boom/)
 
     const continuity = getSessionContinuity("child-process-fail")
-    expect(continuity?.metadata.status).toBe("error")
+    expect(continuity?.metadata.status).toBe("failed")
     expect(continuity?.metadata.lastError).toContain("process boom")
     expect(continuity?.metadata.execution?.submode).toBe("builtin-process")
   })

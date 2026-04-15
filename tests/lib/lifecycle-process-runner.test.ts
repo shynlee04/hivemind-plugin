@@ -144,7 +144,7 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
     expect(client.session.abort).toHaveBeenCalledWith({ path: { id: parsed.session_id } })
 
     // Lifecycle should show failed state
-    expect(getSessionContinuity(parsed.session_id)?.metadata.status).toBe("error")
+    expect(getSessionContinuity(parsed.session_id)?.metadata.status).toBe("failed")
     expect(getSessionContinuity(parsed.session_id)?.metadata.lifecycle?.phase).toBe("failed")
   })
 
@@ -173,7 +173,7 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
     })).rejects.toThrow("sendPrompt failed")
 
     expect(getSessionContinuity("process-child-fail")?.metadata).toMatchObject({
-      status: "error",
+      status: "failed",
       lifecycle: expect.objectContaining({ phase: "failed" }),
     })
   })
@@ -248,7 +248,7 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
     const parsed = JSON.parse(raw) as { session_id: string }
     await vi.advanceTimersByTimeAsync(20_000)
 
-    expect(getSessionContinuity(parsed.session_id)?.metadata.status).toBe("error")
+    expect(getSessionContinuity(parsed.session_id)?.metadata.status).toBe("failed")
     expect(getSessionContinuity(parsed.session_id)?.metadata.lastError).toMatch(/deleted|timed out/i)
   })
 })
