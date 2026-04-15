@@ -8,6 +8,7 @@ export type StartGateEvidence = {
   thinkingBlocks: number
   toolCalls: number
   assistantMessages: number
+  assistantContentMessages: number
   passed: boolean
 }
 

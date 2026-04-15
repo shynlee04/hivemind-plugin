@@ -79,23 +79,97 @@ describe("start-gate", () => {
   })
 
   describe("verifyStartGate", () => {
-    it("passes when assistant has ≥1 reasoning block AND ≥2 tool calls", async () => {
-      // WHY: This is the core D-10 requirement — both signals present means real work started
+    it("passes when assistant has usable text content even without tool calls", async () => {
+      // WHY: Cycle 2 treats real assistant output as sufficient proof that meaningful work started
       const client = createInMemoryClient()
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
-          { type: "reasoning", text: "I need to investigate..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
+          { type: "text", text: "I inspected the runtime contract and started fixing the observer." },
         ],
       })
 
       const evidence = await verifyStartGate(client, "ses_1")
       expect(evidence.passed).toBe(true)
-      expect(evidence.thinkingBlocks).toBe(1)
-      expect(evidence.toolCalls).toBe(2)
+      expect(evidence.thinkingBlocks).toBe(0)
+      expect(evidence.toolCalls).toBe(0)
       expect(evidence.assistantMessages).toBe(1)
+    })
+
+    it("passes when a normalized real-shape tool part is present", async () => {
+      const client = createInMemoryClient()
+      client._addMessage("ses_1", {
+        role: "assistant",
+        parts: [
+          {
+            type: "tool",
+            tool: "Read",
+            state: {
+              status: "completed",
+              input: { filePath: "/tmp/runtime.ts" },
+              output: "source contents",
+            },
+          },
+        ],
+      })
+
+      const evidence = await verifyStartGate(client, "ses_1")
+      expect(evidence.passed).toBe(true)
+      expect(evidence.assistantMessages).toBe(1)
+      expect(evidence.thinkingBlocks).toBe(0)
+      expect(evidence.toolCalls).toBe(1)
+    })
+
+    it("fails when tool-like parts are hollow legacy shells with no normalized activity", async () => {
+      const client = createInMemoryClient()
+      client._addMessage("ses_1", {
+        role: "assistant",
+        parts: [
+          { type: "tool-call", name: "read" },
+          { type: "tool_call", name: "write" },
+          { type: "tool", name: "edit" },
+        ],
+      })
+
+      const evidence = await verifyStartGate(client, "ses_1")
+      expect(evidence.passed).toBe(false)
+      expect(evidence.assistantMessages).toBe(1)
+      expect(evidence.thinkingBlocks).toBe(0)
+      expect(evidence.toolCalls).toBe(0)
+    })
+
+    it("fails when a tool part only provides the tool label with no meaningful state", async () => {
+      const client = createInMemoryClient()
+      client._addMessage("ses_1", {
+        role: "assistant",
+        parts: [{ type: "tool-call", tool: "Read" }],
+      })
+
+      const evidence = await verifyStartGate(client, "ses_1")
+      expect(evidence.passed).toBe(false)
+      expect(evidence.assistantMessages).toBe(1)
+      expect(evidence.thinkingBlocks).toBe(0)
+      expect(evidence.toolCalls).toBe(0)
+    })
+
+    it("passes when a tool label is paired with meaningful normalized state", async () => {
+      const client = createInMemoryClient()
+      client._addMessage("ses_1", {
+        role: "assistant",
+        parts: [
+          {
+            type: "tool-call",
+            tool: "Read",
+            state: { input: { filePath: "/tmp/runtime.ts" } },
+          },
+        ],
+      })
+
+      const evidence = await verifyStartGate(client, "ses_1")
+      expect(evidence.passed).toBe(true)
+      expect(evidence.assistantMessages).toBe(1)
+      expect(evidence.thinkingBlocks).toBe(0)
+      expect(evidence.toolCalls).toBe(1)
     })
 
     it("recognizes assistant messages when SDK stores role under info.role", async () => {
@@ -103,51 +177,31 @@ describe("start-gate", () => {
       client._addMessage("ses_1", {
         info: { role: "assistant" },
         parts: [
-          { type: "reasoning", text: "I need to investigate..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "grep" },
+          { type: "text", text: "I started analyzing the delegated child state." },
         ],
       })
 
       const evidence = await verifyStartGate(client, "ses_1")
       expect(evidence.passed).toBe(true)
       expect(evidence.assistantMessages).toBe(1)
-      expect(evidence.thinkingBlocks).toBe(1)
-      expect(evidence.toolCalls).toBe(2)
-    })
-
-    it("fails when there are zero reasoning/thinking blocks even if tool calls ≥ 2", async () => {
-      // WHY: Prevents false positive from rapid tool calls without any deliberation
-      const client = createInMemoryClient()
-      client._addMessage("ses_1", {
-        role: "assistant",
-        parts: [
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
-        ],
-      })
-
-      const evidence = await verifyStartGate(client, "ses_1")
-      expect(evidence.passed).toBe(false)
       expect(evidence.thinkingBlocks).toBe(0)
-      expect(evidence.toolCalls).toBe(2)
+      expect(evidence.toolCalls).toBe(0)
     })
 
-    it("fails when tool calls < 2 even if thinking blocks ≥ 1", async () => {
-      // WHY: Single tool call could be a ping/status check, not substantive work
+    it("fails when there is only reasoning and no usable assistant text or real tool activity", async () => {
+      // WHY: Hidden reasoning alone is not authoritative runtime evidence of substantive work
       const client = createInMemoryClient()
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
           { type: "reasoning", text: "Let me check..." },
-          { type: "tool-call", name: "status" },
         ],
       })
 
       const evidence = await verifyStartGate(client, "ses_1")
       expect(evidence.passed).toBe(false)
       expect(evidence.thinkingBlocks).toBe(1)
-      expect(evidence.toolCalls).toBe(1)
+      expect(evidence.toolCalls).toBe(0)
     })
 
     it("fails when there are no assistant messages at all", async () => {
@@ -167,20 +221,23 @@ describe("start-gate", () => {
       const client = createInMemoryClient()
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [{ type: "reasoning", text: "Step 1" }],
+        parts: [{ type: "text", text: "Step 1 complete." }],
       })
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
+          {
+            type: "tool",
+            tool: "Edit",
+            state: { status: "completed", input: { filePath: "/tmp/a.ts" }, output: "patched" },
+          },
         ],
       })
 
       const evidence = await verifyStartGate(client, "ses_1")
       expect(evidence.passed).toBe(true)
-      expect(evidence.thinkingBlocks).toBe(1)
-      expect(evidence.toolCalls).toBe(2)
+      expect(evidence.thinkingBlocks).toBe(0)
+      expect(evidence.toolCalls).toBe(1)
       expect(evidence.assistantMessages).toBe(2)
     })
 
@@ -198,15 +255,22 @@ describe("start-gate", () => {
       expect(evidence.assistantMessages).toBe(3)
     })
 
-    it("counts tool_call and tool variants alongside tool-call", async () => {
-      // WHY: SDK may return variant type strings — all must be counted
+    it("counts tool_call and tool variants when they include normalized tool fields", async () => {
+      // WHY: SDK may return variant type strings, but only normalized tool activity is substantive
       const client = createInMemoryClient()
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool_call", name: "write" },
+          {
+            type: "tool-call",
+            tool: "Read",
+            state: { status: "completed" },
+          },
+          {
+            type: "tool_call",
+            tool: "Write",
+            state: { input: { filePath: "/tmp/write.ts" } },
+          },
         ],
       })
 
@@ -215,33 +279,39 @@ describe("start-gate", () => {
       expect(evidence.toolCalls).toBe(2)
     })
 
-    it("counts 'tool' type variant as tool call", async () => {
-      // WHY: Another SDK variant that must be recognized
+    it("counts 'tool' type variant when it carries normalized activity", async () => {
+      // WHY: Another SDK variant that must be recognized once it has real normalized fields
       const client = createInMemoryClient()
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
-          { type: "thinking", text: "Analyzing..." },
-          { type: "tool", name: "bash" },
-          { type: "tool", name: "edit" },
+          {
+            type: "tool",
+            tool: "Bash",
+            state: { output: "listed files" },
+          },
+          {
+            type: "tool",
+            tool: "Edit",
+            state: { status: "completed" },
+          },
         ],
       })
 
       const evidence = await verifyStartGate(client, "ses_1")
       expect(evidence.passed).toBe(true)
       expect(evidence.toolCalls).toBe(2)
-      expect(evidence.thinkingBlocks).toBe(1)
+      expect(evidence.thinkingBlocks).toBe(0)
     })
 
-    it("passes with redacted_thinking compatibility alias + tool calls", async () => {
-      // WHY: Proves compatibility alias 'redacted_thinking' counts as thinking block
+    it("passes with redacted_thinking compatibility alias when usable assistant text also exists", async () => {
+      // WHY: Compatibility aliases still count, but Cycle 2 start proof comes from usable assistant output
       const client = createInMemoryClient()
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
           { type: "redacted_thinking", text: "[redacted]" },
-          { type: "tool-call", name: "grep" },
-          { type: "tool-call", name: "edit" },
+          { type: "text", text: "I have started processing the delegated task." },
         ],
       })
 
@@ -258,9 +328,7 @@ describe("start-gate", () => {
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
-          { type: "reasoning", text: "Investigating..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "edit" },
+          { type: "text", text: "Investigating the failure mode now." },
         ],
       })
 

@@ -2,7 +2,7 @@
  * Start gate verification for delegated sessions (D-10).
  *
  * Determines whether a delegated session has actually started substantive work
- * by checking for thinking/reasoning blocks AND tool calls in assistant messages.
+ * from real assistant output or normalized tool activity in assistant messages.
  *
  * Self-contained — does not import from lifecycle-background-observer.
  * Reuses counting patterns but keeps its own implementation.
@@ -11,6 +11,10 @@
 import { getSessionMessages } from "../../session-api.js"
 import type { OpenCodeClient } from "../../session-api.js"
 import type { StartGateEvidence } from "./types.js"
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
 
 function getMessageRole(message: unknown): string | undefined {
   if (!message || typeof message !== "object") return undefined
@@ -56,8 +60,49 @@ export function countThinkingBlocks(message: unknown): number {
 /**
  * Count tool-call parts in a single message.
  * Recognized types: `tool-call`, `tool_call`, `tool`.
+ * Bare legacy shells are ignored; a part must expose normalized tool activity.
  */
-function countToolCallParts(message: unknown): number {
+function hasMeaningfulToolStateValue(value: unknown): boolean {
+  if (typeof value === "string") {
+    return value.trim().length > 0
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0
+  }
+
+  if (isRecord(value)) {
+    return Object.keys(value).length > 0
+  }
+
+  return value !== undefined && value !== null
+}
+
+function hasNormalizedToolActivity(part: unknown): boolean {
+  if (!isRecord(part)) {
+    return false
+  }
+
+  const type = part.type
+  if (type !== "tool-call" && type !== "tool_call" && type !== "tool") {
+    return false
+  }
+
+  const hasToolName = typeof part.tool === "string" && part.tool.trim().length > 0
+
+  const state = isRecord(part.state) ? part.state : undefined
+  if (!hasToolName || !state) {
+    return false
+  }
+
+  return (
+    hasMeaningfulToolStateValue(state.status) ||
+    hasMeaningfulToolStateValue(state.input) ||
+    hasMeaningfulToolStateValue(state.output)
+  )
+}
+
+export function countToolCallParts(message: unknown): number {
   if (!message || typeof message !== "object") {
     return 0
   }
@@ -68,14 +113,30 @@ function countToolCallParts(message: unknown): number {
   }
 
   return parts.reduce((count: number, part: unknown) => {
-    if (!part || typeof part !== "object") {
+    return hasNormalizedToolActivity(part) ? count + 1 : count
+  }, 0)
+}
+
+export function countUsableAssistantContentParts(message: unknown): number {
+  if (!isRecord(message)) {
+    return 0
+  }
+
+  const parts = message.parts
+  if (!Array.isArray(parts)) {
+    return 0
+  }
+
+  return parts.reduce((count: number, part: unknown) => {
+    if (!isRecord(part)) {
       return count
     }
 
-    const type = (part as { type?: unknown }).type
-    return type === "tool-call" || type === "tool_call" || type === "tool"
-      ? count + 1
-      : count
+    if (part.type === "text" && typeof part.text === "string" && part.text.trim().length > 0) {
+      return count + 1
+    }
+
+    return count
   }, 0)
 }
 
@@ -84,9 +145,9 @@ function countToolCallParts(message: unknown): number {
 /**
  * Verify that a delegated session has started substantive work.
  *
- * Passes when assistant messages contain:
- * - ≥1 thinking/reasoning block (canonical or compatibility alias)
- * - ≥2 tool-call parts
+ * Passes when assistant messages contain either:
+ * - usable assistant text content, or
+ * - normalized tool activity
  *
  * Gracefully handles malformed messages — returns 0 counts, never crashes.
  */
@@ -104,16 +165,21 @@ export async function verifyStartGate(
   // Aggregate counts across ALL assistant messages
   let thinkingBlocks = 0
   let toolCalls = 0
+  let assistantContentMessages = 0
 
   for (const msg of assistantMessages) {
     thinkingBlocks += countThinkingBlocks(msg)
     toolCalls += countToolCallParts(msg)
+    if (countUsableAssistantContentParts(msg) > 0) {
+      assistantContentMessages++
+    }
   }
 
   return {
     thinkingBlocks,
     toolCalls,
     assistantMessages: assistantMessages.length,
-    passed: thinkingBlocks >= 1 && toolCalls >= 2,
+    assistantContentMessages,
+    passed: assistantContentMessages > 0 || toolCalls > 0,
   }
 }

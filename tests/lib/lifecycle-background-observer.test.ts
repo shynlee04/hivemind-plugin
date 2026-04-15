@@ -7,6 +7,12 @@ import { createInMemoryClient } from "./helpers/in-memory-client.js"
 type Controls = ReturnType<typeof setupObserver>
 
 const assistant = (...types: string[]) => ({ role: "assistant", parts: types.map((type) => ({ type })) })
+const realToolPart = (tool = "Read") => ({
+  type: "tool",
+  tool,
+  state: { status: "completed", input: { filePath: `/tmp/${tool.toLowerCase()}.ts` }, output: "ok" },
+})
+const assistantWithRealToolActivity = (tool = "Read") => ({ role: "assistant", parts: [{ type: "reasoning" }, realToolPart(tool)] })
 const user = (...types: string[]) => ({ role: "user", parts: types.map((type) => ({ type })) })
 
 function continuity(sessionID: string, launchedAt = 0, lastToolActivityAt?: number) {
@@ -81,9 +87,9 @@ describe("observeBackgroundCompletion", () => {
    * WHAT: busy → idle with assistant evidence becomes completed after the stability window.
    * HOW: seed busy session, add assistant output, flip idle, then advance poll + detector timers.
    * CONNECTS TO: D-20, D-21, D-24 */
-  it("completes when session goes idle after producing assistant output", async () => {
+  it("completes when session goes idle after producing assistant text output", async () => {
     const c = setupObserver()
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", { role: "assistant", parts: [{ type: "text", text: "I started fixing the runtime observer." }] })
     c.client._setStatus("child-123", "idle")
     await c.tick(0)
     await c.tick(55_000)
@@ -124,7 +130,7 @@ describe("observeBackgroundCompletion", () => {
 
   it("uses session.status as the runtime status source even when session.get is stale", async () => {
     const c = setupObserver("busy", { timeoutMs: 60_000 })
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
     c.client.session.get.mockResolvedValue({
       data: {
         id: "child-123",
@@ -167,7 +173,7 @@ describe("observeBackgroundCompletion", () => {
    * CONNECTS TO: D-16, D-24 */
   it("does not set seenBusy for unknown status", async () => {
     const c = setupObserver("unknown", { launchedAt: 0, timeoutMs: 90_000 })
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
     await c.tick(15_000)
     c.client._setStatus("child-123", "idle")
     await c.tick(75_000)
@@ -178,9 +184,9 @@ describe("observeBackgroundCompletion", () => {
    * WHAT: observer owns the single promotion from dispatching/queued to running once evidence passes.
    * HOW: feed reasoning + two tool calls while the child stays busy, then assert one running patch before completion.
    * CONNECTS TO: PH12-01, D-10 */
-  it("promotes to running exactly once when the start gate passes", async () => {
+  it("promotes to running exactly once when assistant text evidence appears", async () => {
     const c = setupObserver("busy", { timeoutMs: 60_000 })
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", { role: "assistant", parts: [{ type: "text", text: "Started the delegated task." }] })
 
     await c.tick(0)
     await c.tick(5_000)
@@ -219,8 +225,16 @@ describe("observeBackgroundCompletion", () => {
     await expectError(c, "background-dead-start-timeout", /no tool activity or assistant evidence/i)
   })
 
-  it("promotes to running when real tool activity was observed even before start-gate evidence", async () => {
+  it("promotes to running when normalized real tool activity was observed", async () => {
     const c = setupObserver("busy", { timeoutMs: 60_000, lastToolActivityAt: 1_000 })
+    c.client._addMessage("child-123", {
+      role: "assistant",
+      parts: [{
+        type: "tool",
+        tool: "Read",
+        state: { status: "completed", input: { filePath: "/tmp/runtime.ts" }, output: "contents" },
+      }],
+    })
 
     await c.tick(0)
 
@@ -239,7 +253,7 @@ describe("observeBackgroundCompletion", () => {
    * CONNECTS TO: D-21, D-24 */
   it("releases concurrency queue on completion", async () => {
     const completed = setupObserver()
-    completed.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    completed.client._addMessage("child-123", assistantWithRealToolActivity())
     completed.client._setStatus("child-123", "idle")
     await completed.tick(35_000)
     await completed.finish()
@@ -260,9 +274,9 @@ describe("observeBackgroundCompletion", () => {
    * WHAT: the first idle poll stays provisional; the second idle poll completes.
    * HOW: provide start-gate evidence, flip the child idle, and advance through two polling windows.
    * CONNECTS TO: D-10, D-11, D-12 */
-  it("does not complete on the first idle poll after start-gate evidence", async () => {
+  it("does not complete on the first idle poll after substantive assistant evidence", async () => {
     const c = setupObserver("busy", { timeoutMs: 60_000 })
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", { role: "assistant", parts: [{ type: "text", text: "Made substantive progress." }] })
     c.client._setStatus("child-123", "idle")
     await c.tick(0)
 
@@ -286,7 +300,7 @@ describe("observeBackgroundCompletion", () => {
    * CONNECTS TO: D-13 */
   it("retries the existing child session via promptAsync after idle timeout", async () => {
     const c = setupObserver("busy", { timeoutMs: 300_000 })
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
 
     await c.tick(240_000)
 
@@ -307,7 +321,7 @@ describe("observeBackgroundCompletion", () => {
      * CONNECTS TO: D-13 */
     it("fails permanently after exhausting the resume-first retry budget", async () => {
       const c = setupObserver("busy", { timeoutMs: 700_000 })
-      c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+      c.client._addMessage("child-123", assistantWithRealToolActivity())
 
       await c.tick(900_000)
       await c.finish()
@@ -328,7 +342,7 @@ describe("observeBackgroundCompletion", () => {
    * CONNECTS TO: PH13-06, PH13-08 */
   it("captures result via patchSessionContinuity on completion", async () => {
     const c = setupObserver()
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
     c.client._setStatus("child-123", "idle")
     await c.tick(0)
     await c.tick(55_000)
@@ -368,7 +382,7 @@ describe("observeBackgroundCompletion", () => {
     const c = setupObserver()
     // Make capture fail by having no messages at all — capture may still succeed with empty result
     // The important thing is the observer completes the lifecycle regardless
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
     c.client._setStatus("child-123", "idle")
     await c.tick(0)
     await c.tick(55_000)
@@ -410,7 +424,7 @@ describe("Task 3: evidence-driven running and dead-start failure", () => {
    * CONNECTS TO: Task 3 requirement 2 */
   it("promotes queued to running exactly once even across multiple polls with evidence", async () => {
     const c = setupObserver("busy", { timeoutMs: 60_000 })
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
 
     await c.tick(0)
     await c.tick(5_000)
@@ -506,7 +520,7 @@ describe("Task 4: result persistence and parent retrieval", () => {
    * CONNECTS TO: Task 4 requirement 1 */
   it("persists resultCapture to continuity during completion flow", async () => {
     const c = setupObserver()
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
     c.client._setStatus("child-123", "idle")
     await c.tick(0)
     await c.tick(55_000)
@@ -532,7 +546,7 @@ describe("Task 4: result persistence and parent retrieval", () => {
    * CONNECTS TO: Task 4 requirement 1 */
   it("resultCapture and lifecycle completed are both recorded on success", async () => {
     const c = setupObserver()
-    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client._addMessage("child-123", assistantWithRealToolActivity())
     c.client._setStatus("child-123", "idle")
     await c.tick(0)
     await c.tick(55_000)

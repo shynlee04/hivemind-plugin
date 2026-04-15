@@ -8,6 +8,7 @@ import {
 import { persistPendingNotification } from "./pending-notifications.js"
 import { captureSubsessionResult } from "./result-capture.js"
 import { CompletionVerifier } from "./tasking/completion/completion-verifier.js"
+import { countToolCallParts, countUsableAssistantContentParts } from "./tasking/completion/start-gate.js"
 import {
   checkIdleTimeout,
   createFailureState,
@@ -41,26 +42,6 @@ type PatchLifecycleArgs = {
   error?: string
 }
 
-function countToolCallParts(message: unknown): number {
-  if (!message || typeof message !== "object") {
-    return 0
-  }
-
-  const parts = (message as { parts?: unknown }).parts
-  if (!Array.isArray(parts)) {
-    return 0
-  }
-
-  return parts.reduce((count, part) => {
-    if (!part || typeof part !== "object") {
-      return count
-    }
-
-    const type = (part as { type?: unknown }).type
-    return type === "tool-call" || type === "tool_call" || type === "tool" ? count + 1 : count
-  }, 0)
-}
-
 function getMessageRole(message: unknown): string | undefined {
   if (!message || typeof message !== "object") return undefined
   const record = message as { role?: unknown; info?: { role?: unknown } }
@@ -72,11 +53,11 @@ function getMessageRole(message: unknown): string | undefined {
 async function getCombinedEvidenceCount(client: OpenCodeClient, sessionID: string): Promise<number> {
   const messages = await getSessionMessages(client, sessionID)
   const assistantMessages = messages.filter((msg) => getMessageRole(msg) === "assistant")
-  const toolCallCount = assistantMessages.reduce<number>(
-    (count, message) => count + countToolCallParts(message),
-    0,
-  )
-  return assistantMessages.length + toolCallCount
+  const assistantContentCount = assistantMessages.reduce<number>((count, message) => {
+    return count + (countUsableAssistantContentParts(message) > 0 ? 1 : 0)
+  }, 0)
+  const toolCallCount = assistantMessages.reduce<number>((count, message) => count + countToolCallParts(message), 0)
+  return assistantContentCount + toolCallCount
 }
 
 function getCompletionDetector(detector: unknown): CompletionDetector {

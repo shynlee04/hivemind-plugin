@@ -13,11 +13,7 @@ describe("completion-verifier (D-12)", () => {
       // Add sufficient evidence so start gate passes
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
-        ],
+        parts: [{ type: "text", text: "Started implementing the adapter fix." }],
       })
 
       const result = await verifier.check(client, "ses_1", true)
@@ -32,11 +28,7 @@ describe("completion-verifier (D-12)", () => {
 
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
-        ],
+        parts: [{ type: "text", text: "Started implementing the adapter fix." }],
       })
 
       await verifier.check(client, "ses_1", true) // 1st idle
@@ -52,11 +44,7 @@ describe("completion-verifier (D-12)", () => {
 
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
-        ],
+        parts: [{ type: "text", text: "Started implementing the adapter fix." }],
       })
 
       await verifier.check(client, "ses_1", true) // 1st idle
@@ -75,11 +63,7 @@ describe("completion-verifier (D-12)", () => {
 
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
-        ],
+        parts: [{ type: "text", text: "Started implementing the adapter fix." }],
       })
 
       await verifier.check(client, "ses_1", true) // 1st idle → polls=1
@@ -87,7 +71,11 @@ describe("completion-verifier (D-12)", () => {
       // New message arrives — activity detected
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [{ type: "tool-call", name: "edit" }],
+        parts: [{
+          type: "tool-call",
+          tool: "Edit",
+          state: { status: "completed", input: { filePath: "/tmp/file.ts" } },
+        }],
       })
 
       const result = await verifier.check(client, "ses_1", true)
@@ -108,16 +96,13 @@ describe("completion-verifier (D-12)", () => {
     })
 
     it("start gate not passed but evidence exists → status active", async () => {
-      // WHY: Some work happened but doesn't meet the start gate threshold
+      // WHY: Some activity happened, but hidden reasoning alone is not authoritative start evidence
       const client = createInMemoryClient()
       const verifier = new CompletionVerifier()
 
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [
-          { type: "reasoning", text: "Thinking..." },
-          { type: "tool-call", name: "read" }, // Only 1 tool call — not enough
-        ],
+        parts: [{ type: "reasoning", text: "Thinking..." }],
       })
 
       const result = await verifier.check(client, "ses_1", true)
@@ -132,11 +117,7 @@ describe("completion-verifier (D-12)", () => {
 
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
-        ],
+        parts: [{ type: "text", text: "Started implementing the adapter fix." }],
       })
 
       const result = await verifier.check(client, "ses_1", true)
@@ -152,9 +133,11 @@ describe("completion-verifier (D-12)", () => {
       client._addMessage("ses_1", {
         role: "assistant",
         parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
+          {
+            type: "tool",
+            tool: "Read",
+            state: { status: "completed", input: { filePath: "/tmp/runtime.ts" }, output: "contents" },
+          },
         ],
       })
 
@@ -171,11 +154,7 @@ describe("completion-verifier (D-12)", () => {
 
       client._addMessage("ses_1", {
         role: "assistant",
-        parts: [
-          { type: "reasoning", text: "Working..." },
-          { type: "tool-call", name: "read" },
-          { type: "tool-call", name: "write" },
-        ],
+        parts: [{ type: "text", text: "Started implementing the adapter fix." }],
       })
 
       await verifier.check(client, "ses_1", true) // 1st idle
