@@ -42,8 +42,8 @@ function extractSdkErrorMessage(error: unknown): string {
       .map((e) => {
         if (!isObject(e)) return JSON.stringify(e)
         return (
-          (typeof e.message === "string" && e.message) ??
-          (typeof e.reason === "string" && e.reason) ??
+          (typeof e.message === "string" && e.message) ||
+          (typeof e.reason === "string" && e.reason) ||
           JSON.stringify(e)
         )
       })

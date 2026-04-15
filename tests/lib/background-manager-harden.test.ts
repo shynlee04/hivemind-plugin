@@ -816,6 +816,6 @@ describe("HarnessLifecycleManager — tmux-pane execution", () => {
         tmuxAvailability: "enabled",
         pollIntervalMs: 3000,
       }),
-    ).rejects.toThrow(/\[Harness\].*tmux.*execution.*without.*tmux/i)
+    ).rejects.toThrow(/\[Harness\].*tmux-pane execution.*BackgroundManager/i)
   })
 })
