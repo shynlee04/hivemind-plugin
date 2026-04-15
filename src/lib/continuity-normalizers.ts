@@ -435,10 +435,14 @@ function normalizePromptParams(value: unknown): SessionPromptParams | undefined 
 function normalizeStatus(value: unknown): SessionContinuityMetadata["status"] | undefined {
   switch (value) {
     case "pending":
+      return "queued"
     case "queued":
     case "running":
     case "completed":
+    case "failed":
+      return value
     case "error":
+      return "failed"
     case "cancelled":
     case "interrupt":
       return value
@@ -711,7 +715,18 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
     lastObservedAt,
     lastToolActivityAt,
     lastError,
-    lifecycle,
+    lifecycle: lifecycle ?? {
+      phase:
+        status === "completed"
+          ? "completed"
+          : status === "failed" || status === "error" || status === "cancelled"
+            ? "failed"
+            : status === "running"
+              ? "running"
+              : "queued",
+      runMode: runInBackground ? "async" : "sync",
+      queueKey: delegation.queueKey,
+    },
     pendingNotifications,
     defaultDispatchMode,
     tmuxAvailability,

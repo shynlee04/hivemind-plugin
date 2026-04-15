@@ -47,7 +47,7 @@ export function enqueueWaitingLifecycle(args: {
 
   args.patchLifecycle({
     sessionID: args.sessionID,
-    status: "running",
+    status: "queued",
     phase: "queued",
     observation: {
       source: "queue",
@@ -94,7 +94,7 @@ export async function acquireLifecycleQueue(args: {
 
   args.patchLifecycle({
     sessionID: args.sessionID,
-    status: "running",
+    status: "queued",
     phase: "dispatching",
     queue: {
       ...args.queue.snapshot(args.queueKey),

@@ -234,6 +234,12 @@ export async function observeBackgroundCompletion(args: {
                 },
               }) !== false
             if (advanced) {
+              try {
+                const captured = await captureSubsessionResult(args.client, args.sessionID)
+                args.patchSessionContinuity(args.sessionID, { resultCapture: { ...captured, partial: true } })
+              } catch {
+                // Partial capture best-effort
+              }
               const failedContinuity = args.getSessionContinuity(args.sessionID)
               if (failedContinuity?.metadata.parentSessionID) {
                 void notifyParentWithFallback(
@@ -447,6 +453,14 @@ export async function observeBackgroundCompletion(args: {
           detail: "background-completion-poll-timeout",
         },
       }) !== false
+    if (advanced) {
+      try {
+        const captured = await captureSubsessionResult(args.client, args.sessionID)
+        args.patchSessionContinuity(args.sessionID, { resultCapture: { ...captured, partial: true } })
+      } catch {
+        // Partial capture best-effort
+      }
+    }
     const continuity = args.getSessionContinuity(args.sessionID)
     if (advanced && continuity?.metadata.parentSessionID) {
       void notifyParentWithFallback(

@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs"
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -13,19 +13,21 @@ async function loadRecoveryModules(filePath: string) {
   process.env.OPENCODE_HARNESS_CONTINUITY_FILE = filePath
   vi.resetModules()
 
-  const [{ recordSessionContinuity, patchSessionContinuity, getSessionContinuity }, recoveryModule] =
-    await Promise.all([
-      import("../../src/lib/continuity.js"),
-      import("../../src/lib/session-recovery.js"),
+    const [{ recordSessionContinuity, patchSessionContinuity, getSessionContinuity }, recoveryModule] =
+      await Promise.all([
+        import("../../src/lib/continuity.js"),
+        import("../../src/lib/session-recovery.js"),
     ])
 
-  return {
-    recordSessionContinuity,
-    patchSessionContinuity,
-    getSessionContinuity,
-    assessRecoveryRisk: recoveryModule.assessRecoveryRisk,
-    buildRecoveryResumeState: recoveryModule.buildRecoveryResumeState,
-  }
+    return {
+      recordSessionContinuity,
+      patchSessionContinuity,
+      getSessionContinuity,
+      listSessionContinuity: (await import("../../src/lib/continuity.js")).listSessionContinuity,
+      assessRecoveryRisk: recoveryModule.assessRecoveryRisk,
+      buildRecoveryResumeState: recoveryModule.buildRecoveryResumeState,
+      getUnresolvedChildren: recoveryModule.getUnresolvedChildren,
+    }
 }
 
 function buildContinuityRecord(
@@ -205,5 +207,120 @@ describe("session recovery", () => {
     expect(resumeState.warningSnapshot).toEqual(["warning-a", "warning-b"])
     expect(resumeState.checkpoint?.sessionStats.total).toBe(21)
     expect(resumeState.assessment.reasons).toEqual(expect.arrayContaining([expect.stringContaining("warning")]))
+  })
+
+  it("treats queued children as unresolved from continuity truth even if packet transport looks stale", async () => {
+    const { recordSessionContinuity, getUnresolvedChildren } = await loadRecoveryModules(continuityFile)
+
+    recordSessionContinuity({
+      ...buildContinuityRecord("queued-child", fixedNow, fixedNow - 10_000),
+      metadata: {
+        ...buildContinuityRecord("queued-child", fixedNow, fixedNow - 10_000).metadata,
+        status: "queued",
+        lifecycle: {
+          phase: "queued",
+          runMode: "async",
+          queueKey: "gpt-5.4:builder:implementation",
+          launchedAt: fixedNow - 30_000,
+        },
+        delegationPacket: {
+          ...buildContinuityRecord("queued-child", fixedNow, fixedNow - 10_000).metadata.delegationPacket!,
+          status: "running",
+        },
+      },
+    })
+
+    const unresolved = getUnresolvedChildren(
+      new Map([["queued-child", (await loadRecoveryModules(continuityFile)).getSessionContinuity("queued-child")!]]),
+      "parent-session",
+    )
+
+    expect(unresolved).toEqual([
+      expect.objectContaining({
+        sessionId: "queued-child",
+        status: "queued",
+      }),
+    ])
+  })
+
+  it("normalizes legacy pending and error continuity records into queued and failed truth on load", async () => {
+    const legacyStore = {
+      version: 1,
+      updatedAt: fixedNow,
+      sessions: {
+        "legacy-pending": {
+          sessionID: "legacy-pending",
+          toolProfile: { permissionRules: [], compatibleTools: ["read"] },
+          promptParams: { agent: "builder", tools: ["read"] },
+          metadata: {
+            parentSessionID: "parent-session",
+            rootSessionID: "root-session",
+            delegation: {
+              rootID: "root-session",
+              depth: 1,
+              budgetUsed: 1,
+              agent: "builder",
+              queueKey: "gpt-5.4:builder:implementation",
+            },
+            title: "legacy pending",
+            description: "legacy pending",
+            constraints: [],
+            runInBackground: true,
+            status: "pending",
+            createdAt: fixedNow - 120_000,
+            updatedAt: fixedNow - 90_000,
+            route: {
+              category: "implementation",
+              effectiveAgent: "builder",
+              presetKey: "builder",
+              temperature: 0,
+              fallbackUsed: false,
+              rationale: "legacy",
+              modelSource: "none",
+              agentSource: "explicit",
+              temperatureSource: "agent",
+              warnings: [],
+            },
+          },
+        },
+        "legacy-error": {
+          sessionID: "legacy-error",
+          toolProfile: { permissionRules: [], compatibleTools: ["read"] },
+          promptParams: { agent: "builder", tools: ["read"] },
+          metadata: {
+            parentSessionID: "parent-session",
+            rootSessionID: "root-session",
+            delegation: {
+              rootID: "root-session",
+              depth: 1,
+              budgetUsed: 1,
+              agent: "builder",
+              queueKey: "gpt-5.4:builder:implementation",
+            },
+            title: "legacy error",
+            description: "legacy error",
+            constraints: [],
+            runInBackground: true,
+            status: "error",
+            lastError: "transport failure",
+            createdAt: fixedNow - 120_000,
+            updatedAt: fixedNow - 60_000,
+          },
+        },
+      },
+    }
+
+    writeFileSync(continuityFile, `${JSON.stringify(legacyStore, null, 2)}\n`, "utf8")
+
+    const { listSessionContinuity } = await loadRecoveryModules(continuityFile)
+    const records = listSessionContinuity()
+    const pending = records.find((record) => record.sessionID === "legacy-pending")
+    const failed = records.find((record) => record.sessionID === "legacy-error")
+
+    expect(pending?.metadata.status).toBe("queued")
+    expect(pending?.metadata.lifecycle?.phase).toBe("queued")
+    expect(failed?.metadata.status).toBe("failed")
+    expect(failed?.metadata.lifecycle?.phase).toBe("failed")
+    expect(failed?.metadata.lastError).toBe("transport failure")
   })
 })

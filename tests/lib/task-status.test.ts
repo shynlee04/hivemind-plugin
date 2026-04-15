@@ -2,13 +2,14 @@ import { describe, it, expect } from "vitest"
 
 describe("task-status", () => {
   describe("VALID_TASK_STATUSES", () => {
-    it("should contain all 7 statuses", async () => {
+    it("should contain all 8 statuses", async () => {
       const { VALID_TASK_STATUSES } = await import("../../src/lib/task-status.js")
-      expect(VALID_TASK_STATUSES).toHaveLength(7)
+      expect(VALID_TASK_STATUSES).toHaveLength(8)
       expect(VALID_TASK_STATUSES).toContain("pending")
       expect(VALID_TASK_STATUSES).toContain("queued")
       expect(VALID_TASK_STATUSES).toContain("running")
       expect(VALID_TASK_STATUSES).toContain("completed")
+      expect(VALID_TASK_STATUSES).toContain("failed")
       expect(VALID_TASK_STATUSES).toContain("error")
       expect(VALID_TASK_STATUSES).toContain("cancelled")
       expect(VALID_TASK_STATUSES).toContain("interrupt")
@@ -16,12 +17,12 @@ describe("task-status", () => {
   })
 
   describe("VALID_TRANSITIONS", () => {
-    it("should have all 7 statuses as keys", async () => {
+    it("should have all 8 statuses as keys", async () => {
       const { VALID_TRANSITIONS, VALID_TASK_STATUSES } = await import("../../src/lib/task-status.js")
       for (const status of VALID_TASK_STATUSES) {
         expect(VALID_TRANSITIONS).toHaveProperty(status)
       }
-      expect(Object.keys(VALID_TRANSITIONS)).toHaveLength(7)
+      expect(Object.keys(VALID_TRANSITIONS)).toHaveLength(8)
     })
 
     it("pending should transition to queued and cancelled", async () => {
@@ -29,14 +30,14 @@ describe("task-status", () => {
       expect(VALID_TRANSITIONS.pending).toEqual(["queued", "cancelled"])
     })
 
-    it("queued should transition to running and cancelled", async () => {
+    it("queued should transition to running, failed, and cancelled", async () => {
       const { VALID_TRANSITIONS } = await import("../../src/lib/task-status.js")
-      expect(VALID_TRANSITIONS.queued).toEqual(["running", "cancelled"])
+      expect(VALID_TRANSITIONS.queued).toEqual(["running", "failed", "cancelled"])
     })
 
-    it("running should transition to completed, error, cancelled, interrupt", async () => {
+    it("running should transition to completed, failed, error, cancelled, interrupt", async () => {
       const { VALID_TRANSITIONS } = await import("../../src/lib/task-status.js")
-      expect(VALID_TRANSITIONS.running).toEqual(["completed", "error", "cancelled", "interrupt"])
+      expect(VALID_TRANSITIONS.running).toEqual(["completed", "failed", "error", "cancelled", "interrupt"])
     })
 
     it("completed should have no transitions", async () => {
@@ -47,6 +48,11 @@ describe("task-status", () => {
     it("error should have no transitions", async () => {
       const { VALID_TRANSITIONS } = await import("../../src/lib/task-status.js")
       expect(VALID_TRANSITIONS.error).toEqual([])
+    })
+
+    it("failed should have no transitions", async () => {
+      const { VALID_TRANSITIONS } = await import("../../src/lib/task-status.js")
+      expect(VALID_TRANSITIONS.failed).toEqual([])
     })
 
     it("cancelled should have no transitions", async () => {
@@ -86,6 +92,16 @@ describe("task-status", () => {
       expect(canTransition("running", "error")).toBe(true)
     })
 
+    it("should allow queued -> failed", async () => {
+      const { canTransition } = await import("../../src/lib/task-status.js")
+      expect(canTransition("queued", "failed")).toBe(true)
+    })
+
+    it("should allow running -> failed", async () => {
+      const { canTransition } = await import("../../src/lib/task-status.js")
+      expect(canTransition("running", "failed")).toBe(true)
+    })
+
     it("should allow interrupt -> running", async () => {
       const { canTransition } = await import("../../src/lib/task-status.js")
       expect(canTransition("interrupt", "running")).toBe(true)
@@ -104,6 +120,11 @@ describe("task-status", () => {
     it("should reject error -> running", async () => {
       const { canTransition } = await import("../../src/lib/task-status.js")
       expect(canTransition("error", "running")).toBe(false)
+    })
+
+    it("should reject failed -> running", async () => {
+      const { canTransition } = await import("../../src/lib/task-status.js")
+      expect(canTransition("failed", "running")).toBe(false)
     })
 
     it("should reject cancelled -> queued", async () => {
@@ -127,6 +148,7 @@ describe("task-status", () => {
       expect(canTransition("queued", "queued")).toBe(false)
       expect(canTransition("running", "running")).toBe(false)
       expect(canTransition("completed", "completed")).toBe(false)
+      expect(canTransition("failed", "failed")).toBe(false)
       expect(canTransition("error", "error")).toBe(false)
       expect(canTransition("cancelled", "cancelled")).toBe(false)
       expect(canTransition("interrupt", "interrupt")).toBe(false)
@@ -147,6 +169,11 @@ describe("task-status", () => {
     it("should return true for cancelled", async () => {
       const { isTerminal } = await import("../../src/lib/task-status.js")
       expect(isTerminal("cancelled")).toBe(true)
+    })
+
+    it("should return true for failed", async () => {
+      const { isTerminal } = await import("../../src/lib/task-status.js")
+      expect(isTerminal("failed")).toBe(true)
     })
 
     it("should return false for pending", async () => {

@@ -5,6 +5,7 @@ import { forgetSession, hydrateDelegationState, inheritRootFromParent } from "./
 import type { CompletionDetector } from "./completion-detector.js"
 import { buildLifecycleState, mapStatusToLifecyclePhase } from "./lifecycle-state.js"
 import { syncDelegationPacketStatus } from "./lifecycle-patching.js"
+import { isTerminal } from "./task-status.js"
 
 export function noteObservedActivity(
   sessionID: string,
@@ -16,8 +17,19 @@ export function noteObservedActivity(
   }
 
   const timestamp = Date.now()
+
+  // Terminal guard: if the record is completed or failed, only update the
+  // observation timestamp. Do NOT resurrect status or phase.
+  if (isTerminal(record.metadata.status)) {
+    patchSessionContinuity(sessionID, {
+      lastObservedAt: timestamp,
+      lastToolActivityAt: timestamp,
+    })
+    return
+  }
+
   const lifecycle = buildLifecycleState({
-    phase: record.metadata.status === "error" ? "failed" : "running",
+    phase: record.metadata.status === "failed" || record.metadata.status === "error" ? "failed" : "running",
     runMode: record.metadata.runInBackground ? "async" : "sync",
     queueKey: record.metadata.lifecycle?.queueKey ?? record.metadata.delegation.queueKey,
     previous: record.metadata.lifecycle,
@@ -29,10 +41,10 @@ export function noteObservedActivity(
   })
 
   patchSessionContinuity(sessionID, {
-    status: record.metadata.status === "error" ? "error" : "running",
+    status: record.metadata.status === "failed" || record.metadata.status === "error" ? "failed" : "running",
     lastObservedAt: timestamp,
     lastToolActivityAt: timestamp,
-    lastError: record.metadata.status === "error" ? record.metadata.lastError : undefined,
+    lastError: record.metadata.status === "failed" || record.metadata.status === "error" ? record.metadata.lastError : undefined,
     lifecycle,
   })
   syncDelegationPacketStatus(sessionID, lifecycle.phase)
@@ -73,6 +85,8 @@ export function handleEvent(args: {
     event,
     eventType,
     currentStatus: continuity.metadata.status,
+    requireEvidence: continuity.metadata.runInBackground,
+    existingLastToolActivityAt: continuity.metadata.lastToolActivityAt,
   })
 
   const timestamp = Date.now()
@@ -92,7 +106,7 @@ export function handleEvent(args: {
   patchSessionContinuity(sessionID, {
     status: nextStatus ?? continuity.metadata.status,
     lastObservedAt: timestamp,
-    lastError: nextStatus === "error" ? continuity.metadata.lastError : undefined,
+    lastError: nextStatus === "failed" || nextStatus === "error" ? continuity.metadata.lastError : undefined,
     lifecycle,
   })
   syncDelegationPacketStatus(sessionID, lifecycle.phase)

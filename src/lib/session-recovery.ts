@@ -1,4 +1,5 @@
 import type { CompactionCheckpointData, DelegationPacketStatus, SessionContinuityRecord } from "./types.js"
+import { isTerminal } from "./task-status.js"
 
 export type RecoveryRiskLevel = "low" | "medium" | "high"
 
@@ -170,4 +171,74 @@ export function buildRecoveryResumeState(
     lastActivityAt,
     resumeSummary: summaryBits.join("; "),
   }
+}
+
+export function getUnresolvedChildren(
+  continuityStore: Map<string, SessionContinuityRecord>,
+  parentSessionID: string,
+): Array<{
+  sessionId: string
+  status: string
+  launchedAt: number | undefined
+  lastObservedAt: number | undefined
+  agent: string | undefined
+  description: string | undefined
+}> {
+  const children: Array<{
+    sessionId: string
+    status: string
+    launchedAt: number | undefined
+    lastObservedAt: number | undefined
+    agent: string | undefined
+    description: string | undefined
+  }> = []
+
+  for (const record of continuityStore.values()) {
+    if (record.metadata.parentSessionID !== parentSessionID) continue
+    if (isTerminal(record.metadata.status)) continue
+    children.push({
+      sessionId: record.sessionID,
+      status: record.metadata.status,
+      launchedAt: record.metadata.lifecycle?.launchedAt,
+      lastObservedAt: record.metadata.lastObservedAt,
+      agent: record.metadata.delegation.agent,
+      description: record.metadata.description,
+    })
+  }
+
+  return children
+}
+
+export function getChildResultPreviews(
+  continuityStore: Map<string, SessionContinuityRecord>,
+  parentSessionID: string,
+): Array<{
+  sessionId: string
+  resultPreview: string | undefined
+  artifacts: string[]
+  commits: string[]
+  completedAt: number | undefined
+}> {
+  const results: Array<{
+    sessionId: string
+    resultPreview: string | undefined
+    artifacts: string[]
+    commits: string[]
+    completedAt: number | undefined
+  }> = []
+
+  for (const record of continuityStore.values()) {
+    if (record.metadata.parentSessionID !== parentSessionID) continue
+    if (record.metadata.status !== "completed") continue
+    if (!record.metadata.resultCapture) continue
+    results.push({
+      sessionId: record.sessionID,
+      resultPreview: record.metadata.resultCapture.resultText,
+      artifacts: record.metadata.resultCapture.artifactPaths,
+      commits: record.metadata.resultCapture.gitCommits,
+      completedAt: record.metadata.lifecycle?.completedAt,
+    })
+  }
+
+  return results
 }

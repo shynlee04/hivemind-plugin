@@ -80,6 +80,7 @@ function ensureParentContinuityRecord(args: {
       status: "running",
       createdAt: args.timestamp,
       updatedAt: args.timestamp,
+      lastObservedAt: args.timestamp,
     },
   })
 }
@@ -187,13 +188,17 @@ export async function launchDelegatedSession(
         scope: args.scope,
         constraints: args.constraints ?? [],
         runInBackground: args.runInBackground,
-        status: "pending",
+        status: "queued",
         createdAt: timestamp,
         updatedAt: timestamp,
+        lastObservedAt: timestamp,
+        lastError: undefined,
+        resultCapture: undefined,
         lifecycle: buildLifecycleState({
-          phase: "created",
+          phase: "queued",
           runMode,
           queueKey,
+          launchedAt: timestamp,
           observation: {
             source: "lifecycle-manager",
             observedAt: timestamp,
@@ -280,7 +285,7 @@ export async function launchDelegatedSession(
           const message = error instanceof Error ? error.message : String(error)
           ctx.patchLifecycleFn({
             sessionID: childSessionID,
-            status: "error",
+            status: "failed",
             phase: "failed",
             error: message,
             observation: {

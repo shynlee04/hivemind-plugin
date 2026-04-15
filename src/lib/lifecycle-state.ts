@@ -104,9 +104,10 @@ export function mapStatusToLifecyclePhase(
     case "queued":
       return "queued"
     case "running":
-      return previousPhase === "queued" || previousPhase === "dispatching" ? previousPhase : "running"
+      return previousPhase === "queued" ? "queued" : "running"
     case "completed":
       return "completed"
+    case "failed":
     case "error":
     case "cancelled":
       return "failed"

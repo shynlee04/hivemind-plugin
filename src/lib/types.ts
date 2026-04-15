@@ -1,4 +1,4 @@
-export type TaskStatus = "pending" | "queued" | "running" | "completed" | "error" | "cancelled" | "interrupt"
+export type TaskStatus = "pending" | "queued" | "running" | "completed" | "failed" | "error" | "cancelled" | "interrupt"
 
 export type TaskNotification = {
   sessionID: string
@@ -121,15 +121,16 @@ export type CompactionCheckpointData = {
 // ├─────────────┼────────────────────────┼──────────────────────────┤
 // │ pending     │ created                │ pending                  │
 // │ queued      │ queued                 │ pending                  │
-// │ dispatching │ dispatching            │ running                  │
+// │ dispatching │ dispatching            │ pending                  │
 // │ running     │ running                │ running                  │
 // │ completed   │ completed              │ completed                │
+// │ failed      │ failed                 │ failed                   │
 // │ error       │ failed                 │ failed                   │
 // │ cancelled   │ failed                 │ failed                   │
 // │ interrupt   │ (preserves previous)   │ (preserves previous)     │
 // └─────────────┴────────────────────────┴──────────────────────────┘
 //
-// TaskStatus (7 values, no dispatching) is the continuity-store status.
+// TaskStatus (8 values, no dispatching) is the continuity-store status.
 // SessionLifecyclePhase (6 values, adds dispatching, no interrupt/cancelled).
 // DelegationPacketStatus (4 values) is a coarse-grained packet view.
 // ---------------------------------------------------------------------------
@@ -164,7 +165,7 @@ export const HARNESS_STATUS_TO_LIFECYCLE_PHASE: Record<
 export const LIFECYCLE_PHASE_TO_PACKET_STATUS: Record<SessionLifecyclePhase, DelegationPacketStatus> = {
   created: "pending",
   queued: "pending",
-  dispatching: "running",
+  dispatching: "pending",
   running: "running",
   completed: "completed",
   failed: "failed",

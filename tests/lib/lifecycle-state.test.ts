@@ -9,10 +9,12 @@ import { describe, expect, it } from "vitest"
 describe("lifecycle-state helpers", () => {
   it("maps continuity status to lifecycle phase using previous queued states", () => {
     expect(mapStatusToLifecyclePhase("pending")).toBe("created")
+    expect(mapStatusToLifecyclePhase("queued")).toBe("queued")
     expect(mapStatusToLifecyclePhase("running", "queued")).toBe("queued")
-    expect(mapStatusToLifecyclePhase("running", "dispatching")).toBe("dispatching")
+    expect(mapStatusToLifecyclePhase("running", "dispatching")).toBe("running")
     expect(mapStatusToLifecyclePhase("interrupt", "queued")).toBe("queued")
     expect(mapStatusToLifecyclePhase("completed", "running")).toBe("completed")
+    expect(mapStatusToLifecyclePhase("failed", "running")).toBe("failed")
     expect(mapStatusToLifecyclePhase("error", "running")).toBe("failed")
   })
 
@@ -61,7 +63,7 @@ describe("lifecycle-state helpers", () => {
 
   it("maps lifecycle phases to delegation packet status and enforces transition rules", () => {
     expect(mapPhaseToDelegationPacketStatus("created")).toBe("pending")
-    expect(mapPhaseToDelegationPacketStatus("dispatching")).toBe("running")
+    expect(mapPhaseToDelegationPacketStatus("dispatching")).toBe("pending")
     expect(mapPhaseToDelegationPacketStatus("completed")).toBe("completed")
     expect(mapPhaseToDelegationPacketStatus("failed")).toBe("failed")
     expect(isValidLifecycleTransition("created", "queued")).toBe(true)
