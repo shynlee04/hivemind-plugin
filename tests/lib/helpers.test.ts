@@ -104,19 +104,44 @@ describe("unwrapData", () => {
 
   it("throws on error property with string message", () => {
     expect(() => unwrapData({ error: "Something went wrong" })).toThrow(
-      "Something went wrong"
+      "[Harness] Something went wrong"
     )
   })
 
-  it("throws on error property with object message", () => {
+  it("throws on error property with object message at top level", () => {
     expect(() =>
       unwrapData({ error: { message: "Detailed error" } })
-    ).toThrow("Detailed error")
+    ).toThrow("[Harness] Detailed error")
   })
 
-  it("throws with fallback message for error without message", () => {
+  it("extracts message from named error shape (data.message)", () => {
+    expect(() =>
+      unwrapData({ error: { name: "UnknownError", data: { message: "Session not found" } } })
+    ).toThrow("[Harness] Session not found")
+  })
+
+  it("extracts message from MessageAbortedError shape", () => {
+    expect(() =>
+      unwrapData({ error: { name: "MessageAbortedError", data: { message: "Request aborted" } } })
+    ).toThrow("[Harness] Request aborted")
+  })
+
+  it("extracts messages from BadRequestError errors array", () => {
+    expect(() =>
+      unwrapData({
+        error: {
+          errors: [
+            { message: "Field required" },
+            { reason: "Invalid format" },
+          ],
+        },
+      })
+    ).toThrow("[Harness] Field required; Invalid format")
+  })
+
+  it("falls back to error name + JSON for unrecognizable error shape", () => {
     expect(() => unwrapData({ error: { code: 500 } })).toThrow(
-      "Unknown SDK error"
+      "[Harness] Unknown SDK error: "
     )
   })
 
@@ -134,7 +159,7 @@ describe("unwrapData", () => {
   it("error takes precedence over data when both present", () => {
     expect(() =>
       unwrapData({ data: "ok", error: "fail" })
-    ).toThrow("fail")
+    ).toThrow("[Harness] fail")
   })
 })
 

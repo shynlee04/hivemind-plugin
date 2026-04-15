@@ -30,6 +30,13 @@ export function inferContinuityStatusFromEvent(args: {
 }): SessionContinuityMetadata["status"] | undefined {
   const statusSignal = getStatusSignal(args.event)
 
+  if (
+    statusSignal &&
+    (args.currentStatus === "error" || args.currentStatus === "completed")
+  ) {
+    return args.currentStatus
+  }
+
   switch (statusSignal) {
     case "failed":
     case "error":

@@ -1,7 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { mkdtempSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 
 import { CATEGORY_DEFAULTS } from "../../src/lib/categories.js"
 import { setDelegationMeta } from "../../src/lib/state.js"
@@ -42,6 +39,45 @@ function createLifecycleManagerMock() {
   }
 }
 
+function createLifecycleManagerPayloadMock() {
+  const launchDelegatedSession = vi.fn(async (args: any) => {
+    const payload = {
+      ok: true,
+      mode: "async",
+      session_id: "child-session",
+      parent_session_id: args.parentSessionID,
+      root_session_id: args.rootID,
+      agent: args.agent,
+      category: args.route.category,
+      model: args.route.effectiveModel,
+      depth: args.childDepth,
+      budget_used: args.spawnReservation ? 1 : 0,
+      concurrency_key: args.route.presetKey,
+      concurrency_active: 1,
+      concurrency_pending: 0,
+      concurrency_limit: 1,
+      route: args.route,
+      description: args.description,
+      lifecycle: {
+        phase: "dispatching",
+        runMode: "async",
+      },
+      execution: args.execution,
+      output_link: "session://child-session",
+      instruction: "Task dispatched. Continue with other work — you'll be notified when complete.",
+    }
+
+    return JSON.stringify(payload, null, 2)
+  })
+
+  return {
+    lifecycleManager: {
+      launchDelegatedSession,
+    } as unknown as HarnessLifecycleManager,
+    launchDelegatedSession,
+  }
+}
+
 describe("delegate-task tool category routing", () => {
   beforeEach(() => {
     taskState.clear()
@@ -57,9 +93,12 @@ describe("delegate-task tool category routing", () => {
     expect(tool.description).toContain("async child session")
     expect(tool.description).not.toContain("background processes")
     expect(tool.description).not.toContain("run_in_background")
+    expect(tool.description).not.toContain("build→builder")
+    expect(tool.description).not.toContain("plan→general")
+    expect(tool.description).not.toContain("explore→general")
   })
 
-  it("uses category defaults to resolve effective agent, model, and temperature", async () => {
+  it("uses category defaults to resolve effective agent, model, and temperature without unsupported public override metadata", async () => {
     const client = createClient({
       "parent-session": { id: "parent-session" },
     })
@@ -85,9 +124,6 @@ describe("delegate-task tool category routing", () => {
         agentSource: string
         modelSource: string
       }
-      defaultDispatchMode: string
-      tmuxAvailability: string
-      pollIntervalMs: number
     }
 
     expect(launchArgs.agent).toBe("researcher")
@@ -96,9 +132,38 @@ describe("delegate-task tool category routing", () => {
     expect(launchArgs.route.temperature).toBe(CATEGORY_DEFAULTS.research.temperature)
     expect(launchArgs.route.agentSource).toBe("category")
     expect(launchArgs.route.modelSource).toBe("category")
-    expect(launchArgs.defaultDispatchMode).toBe("sync")
-    expect(launchArgs.tmuxAvailability).toMatch(/^(auto|enabled|disabled)$/)
-    expect([3000, 5000, 15000]).toContain(launchArgs.pollIntervalMs)
+    expect(launchArgs).not.toHaveProperty("defaultDispatchMode")
+    expect(launchArgs).not.toHaveProperty("tmuxAvailability")
+    expect(launchArgs).not.toHaveProperty("pollIntervalMs")
+  })
+
+  it("marks signal-driven specialist selection with truthful source metadata", async () => {
+    const client = createClient({
+      "parent-session": { id: "parent-session" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    await tool.execute(
+      {
+        description: "Investigate runtime evidence and analyze the failure mode",
+        prompt: "Research the current state and compare evidence across the code path.",
+        async_dispatch: false,
+      },
+      mockCtx,
+    )
+
+    const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+      route: {
+        agentSource: string
+        effectiveAgent: string
+        requestedCategory?: string
+      }
+    }
+
+    expect(launchArgs.route.effectiveAgent).toBe("researcher")
+    expect(launchArgs.route.requestedCategory).toBeUndefined()
+    expect(launchArgs.route.agentSource).toBe("signal")
   })
 
   it("lets an explicit agent override the category tool profile and temperature source", async () => {
@@ -165,6 +230,49 @@ describe("delegate-task tool category routing", () => {
 
     expect(launchArgs.route.effectiveModel).toBe("gpt-5.4")
     expect(launchArgs.route.modelSource).toBe("explicit")
+  })
+
+  it("keeps sync delegate-task work on the single builtin-subsession lane", async () => {
+    const previousTmux = process.env.TMUX
+    process.env.TMUX = "pane-1"
+
+    try {
+      const client = createClient({
+        "parent-session": { id: "parent-session" },
+      })
+      const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+      const tool = createDelegateTaskTool(lifecycleManager, client)
+
+      await tool.execute(
+        {
+          description: "Review the parallel background routing wording only",
+          prompt: "Mention background and concurrent work in prose, but do not dispatch async.",
+          agent: "critic",
+          async_dispatch: false,
+        },
+        mockCtx,
+      )
+
+      const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+        execution: {
+          family: string
+          submode: string
+          rationale: string
+          characteristics: { isParallel: boolean; runInBackground: boolean }
+        }
+      }
+
+      expect(launchArgs.execution.family).toBe("built-in")
+      expect(launchArgs.execution.submode).toBe("builtin-subsession")
+      expect(launchArgs.execution.characteristics).toMatchObject({ isParallel: false, runInBackground: false })
+      expect(launchArgs.execution.rationale.toLowerCase()).not.toContain("tmux")
+    } finally {
+      if (previousTmux === undefined) {
+        delete process.env.TMUX
+      } else {
+        process.env.TMUX = previousTmux
+      }
+    }
   })
 
   it("supports deep and quick categories using explicit category profiles", async () => {
@@ -276,10 +384,10 @@ describe("delegate-task tool category routing", () => {
       submode: "builtin-subsession",
       capabilityEvidence: { projectRoot: process.cwd() },
     })
-    expect(launchArgs.execution.rationale).toContain("Interactive task")
+    expect(launchArgs.execution.rationale).toContain("single built-in child-session lane")
   })
 
-  it("classifies research work as builtin-process and preserves execution audit metadata", async () => {
+  it("classifies research work as builtin-subsession and preserves execution audit metadata", async () => {
     const client = createClient({
       "parent-session": { id: "parent-session" },
     })
@@ -314,8 +422,9 @@ describe("delegate-task tool category routing", () => {
     expect(launchArgs.route.effectiveAgent).toBe("researcher")
     expect(launchArgs.execution).toMatchObject({
       family: "built-in",
-      submode: "builtin-process",
+      submode: "builtin-subsession",
       characteristics: {
+        isParallel: false,
         isResearch: true,
         isHeadless: true,
         runInBackground: true,
@@ -325,7 +434,229 @@ describe("delegate-task tool category routing", () => {
         projectRoot: process.cwd(),
       },
     })
-    expect(launchArgs.execution.rationale).toContain("builtin-process")
+    expect(launchArgs.execution.rationale).toContain("single built-in child-session lane")
+  })
+
+  it("forces async launches onto builtin-subsession even when tmux is available", async () => {
+    const previousTmux = process.env.TMUX
+    process.env.TMUX = "pane-1"
+
+    try {
+      const client = createClient({
+        "parent-session": { id: "parent-session" },
+      })
+      const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+      const tool = createDelegateTaskTool(lifecycleManager, client)
+
+      await tool.execute(
+        {
+          description: "Background implementation",
+          prompt: "Update the child launch path and continue in the background.",
+          async_dispatch: true,
+        },
+        mockCtx,
+      )
+
+      const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+        execution: {
+          family: string
+          submode: string
+          rationale: string
+          capabilityEvidence: { hasTmux: boolean }
+        }
+      }
+
+      expect(launchArgs.execution.family).toBe("built-in")
+      expect(launchArgs.execution.submode).toBe("builtin-subsession")
+      expect(launchArgs.execution.capabilityEvidence.hasTmux).toBe(true)
+      expect(launchArgs.execution.rationale.toLowerCase()).toContain("builtin")
+      expect(launchArgs.execution.rationale.toLowerCase()).not.toContain("tmux-pane")
+      expect(launchArgs.execution.rationale.toLowerCase()).not.toContain("builtin-process")
+    } finally {
+      if (previousTmux === undefined) {
+        delete process.env.TMUX
+      } else {
+        process.env.TMUX = previousTmux
+      }
+    }
+  })
+
+  it("returns the immediate async payload contract without drifting onto tmux/process lanes", async () => {
+    const previousTmux = process.env.TMUX
+    process.env.TMUX = "pane-1"
+
+    try {
+      const client = createClient({
+        "parent-session": { id: "parent-session" },
+      })
+      const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerPayloadMock()
+      const tool = createDelegateTaskTool(lifecycleManager, client)
+
+      const raw = await tool.execute(
+        {
+          description: "Background implementation payload",
+          prompt: "Continue in the background and report through the child session handle.",
+          category: "implementation",
+          async_dispatch: true,
+        },
+        mockCtx,
+      )
+
+      const parsed = JSON.parse(raw) as {
+        ok: boolean
+        mode: string
+        session_id: string
+        parent_session_id: string
+        root_session_id: string
+        agent: string
+        category?: string
+        model?: string
+        depth: number
+        budget_used: number
+        concurrency_key: string
+        concurrency_active: number
+        concurrency_pending: number
+        concurrency_limit: number
+        route: { effectiveAgent: string; presetKey: string }
+        description: string
+        output_link: string
+        execution: { family: string; submode: string }
+        lifecycle: { phase: string; runMode: string }
+        instruction: string
+      }
+      const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+        execution: { family: string; submode: string }
+      }
+
+      expect(parsed.ok).toBe(true)
+      expect(parsed.mode).toBe("async")
+      expect(parsed.session_id).toBe("child-session")
+      expect(parsed.parent_session_id).toBe("parent-session")
+      expect(parsed.root_session_id).toBe("parent-session")
+      expect(parsed.agent).toBe("builder")
+      expect(parsed.category).toBe("implementation")
+      expect(parsed.model).toBe(CATEGORY_DEFAULTS.implementation.model)
+      expect(parsed.depth).toBe(1)
+      expect(parsed.budget_used).toBe(1)
+      expect(parsed.concurrency_key).toBe(launchArgs.route.presetKey)
+      expect(parsed.concurrency_active).toBe(1)
+      expect(parsed.concurrency_pending).toBe(0)
+      expect(parsed.concurrency_limit).toBe(1)
+      expect(parsed.route).toMatchObject({ effectiveAgent: "builder", presetKey: launchArgs.route.presetKey })
+      expect(parsed.description).toBe("Background implementation payload")
+      expect(parsed.output_link).toBe("session://child-session")
+      expect(parsed.lifecycle).toEqual({ phase: "dispatching", runMode: "async" })
+      expect(parsed.execution).toMatchObject({ family: "built-in", submode: "builtin-subsession" })
+      expect(parsed.instruction).toContain("Continue with other work")
+      expect(launchArgs.execution).toMatchObject({ family: "built-in", submode: "builtin-subsession" })
+    } finally {
+      if (previousTmux === undefined) {
+        delete process.env.TMUX
+      } else {
+        process.env.TMUX = previousTmux
+      }
+    }
+  })
+
+  it.each(["build", "plan", "explore", "made-up-agent"])(
+    "degrades requested agent %s to general with fallback warnings instead of throwing",
+    async (requestedAgent) => {
+      const client = createClient({
+        "parent-session": { id: "parent-session" },
+      })
+      const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+      const tool = createDelegateTaskTool(lifecycleManager, client)
+
+      await tool.execute(
+        {
+          description: "Fallback routing",
+          prompt: "Read the files and summarize them.",
+          agent: requestedAgent,
+          async_dispatch: true,
+        },
+        mockCtx,
+      )
+
+      const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+        agent: string
+        route: {
+          effectiveAgent: string
+          fallbackUsed: boolean
+          warnings: string[]
+          requestedAgent?: string
+        }
+        execution: {
+          family: string
+          submode: string
+        }
+      }
+
+      expect(launchArgs.agent).toBe("general")
+      expect(launchArgs.route.effectiveAgent).toBe("general")
+      expect(launchArgs.route.fallbackUsed).toBe(true)
+      expect(launchArgs.route.requestedAgent).toBe("general")
+      expect(launchArgs.route.warnings.join(" ").toLowerCase()).toContain("general")
+      expect(launchArgs.route.warnings.join(" ").toLowerCase()).toContain("fallback")
+      expect(launchArgs.execution.family).toBe("built-in")
+      expect(launchArgs.execution.submode).toBe("builtin-subsession")
+    },
+  )
+
+  it.each(["build", "plan", "explore"])(
+    "routes alias %s through the general permission/tool profile",
+    async (requestedAgent) => {
+      const client = createClient({
+        "parent-session": { id: "parent-session" },
+      })
+      const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+      const tool = createDelegateTaskTool(lifecycleManager, client)
+
+      await tool.execute(
+        {
+          description: "Alias fallback permissions",
+          prompt: "Read files only and report findings.",
+          agent: requestedAgent,
+          async_dispatch: true,
+        },
+        mockCtx,
+      )
+
+      const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+        permissionRules: Array<{ permission: string; action: string }>
+      }
+
+      expect(launchArgs.permissionRules).toContainEqual({ permission: "edit", pattern: "*", action: "deny" })
+      expect(launchArgs.permissionRules).toContainEqual({ permission: "write", pattern: "*", action: "deny" })
+      expect(launchArgs.permissionRules).toContainEqual({ permission: "bash", pattern: "*", action: "deny" })
+    },
+  )
+
+  it("preserves invalid-agent warning text for fallback launches", async () => {
+    const client = createClient({
+      "parent-session": { id: "parent-session" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    await tool.execute(
+      {
+        description: "Unknown agent fallback",
+        prompt: "Read the files and summarize them.",
+        agent: "made-up-agent",
+        async_dispatch: true,
+      },
+      mockCtx,
+    )
+
+    const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+      route: { warnings: string[]; fallbackUsed: boolean }
+    }
+
+    expect(launchArgs.route.fallbackUsed).toBe(true)
+    expect(launchArgs.route.warnings.join(" ").toLowerCase()).toContain("invalid")
+    expect(launchArgs.route.warnings.join(" ").toLowerCase()).toContain("made-up-agent")
+    expect(launchArgs.route.warnings.join(" ")).not.toContain("build→builder")
+    expect(launchArgs.route.warnings.join(" ")).not.toContain("build, plan, explore")
   })
 
   it("threads a trusted parent runtime policy override into child delegation metadata", async () => {

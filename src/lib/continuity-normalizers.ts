@@ -63,10 +63,11 @@ function normalizeSpecialistAgent(value: unknown): SpecialistAgent | undefined {
     case "builder":
     case "critic":
     case "general":
+      return value
     case "build":
     case "plan":
     case "explore":
-      return value
+      return "general"
     default:
       return undefined
   }
@@ -183,7 +184,7 @@ function normalizeRouteResolution(value: unknown): DelegationRouteResolution | u
     fallbackUsed === undefined ||
     !rationale ||
     (modelSource !== "explicit" && modelSource !== "category" && modelSource !== "none") ||
-    (agentSource !== "explicit" && agentSource !== "category") ||
+    (agentSource !== "explicit" && agentSource !== "category" && agentSource !== "signal") ||
     (temperatureSource !== "category" && temperatureSource !== "agent")
   ) {
     return undefined
@@ -663,6 +664,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
   const createdAt = asNumber(value.createdAt)
   const updatedAt = asNumber(value.updatedAt)
   const lastObservedAt = asNumber(value.lastObservedAt)
+  const lastToolActivityAt = asNumber(value.lastToolActivityAt)
   const lastError = asString(value.lastError)
   const lifecycle = normalizeLifecycleState(value.lifecycle)
   const pendingNotifications = normalizePendingNotifications(value.pendingNotifications)
@@ -707,6 +709,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
     createdAt,
     updatedAt,
     lastObservedAt,
+    lastToolActivityAt,
     lastError,
     lifecycle,
     pendingNotifications,

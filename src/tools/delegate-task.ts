@@ -9,7 +9,7 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { getSessionContinuity } from "../lib/continuity.js"
 import { reserveSubagentSpawn } from "../lib/concurrency.js"
-import { classifyExecutionMode, type TaskCharacteristics } from "../lib/execution-mode.js"
+import { type ExecutionModeResult, type TaskCharacteristics } from "../lib/execution-mode.js"
 import { resolveSpecialistRoute } from "../lib/specialist-router.js"
 import {
   buildPromptText,
@@ -26,7 +26,6 @@ import type {
 } from "../lib/types.js"
 import {
   MAX_DESCENDANTS_PER_ROOT,
-  VALID_AGENTS,
 } from "../lib/types.js"
 
 // ---------------------------------------------------------------------------
@@ -43,19 +42,11 @@ const AGENT_TOOLS: Record<string, { required: string[]; mustNot: string[] }> = {
   builder: { required: ["read", "glob", "grep", "edit", "write", "bash"], mustNot: ["task"] },
   critic: { required: ["read", "glob", "grep", "bash"], mustNot: ["edit", "write", "task"] },
   general: { required: ["read", "glob", "grep"], mustNot: ["task"] },
-  // OpenCode built-in agent aliases — map to same profiles as their targets
-  build: { required: ["read", "glob", "grep", "edit", "write", "bash"], mustNot: ["task"] },  // same as builder
-  plan: { required: ["read", "glob", "grep"], mustNot: ["edit", "write", "bash", "task"] },  // read-only analysis
-  explore: { required: ["read", "glob", "grep"], mustNot: ["edit", "write", "task"] },  // read-only exploration
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function isValidAgent(value: string): value is SpecialistAgent {
-  return VALID_AGENTS.includes(value as SpecialistAgent)
-}
 
 function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[] {
   const commonDelegateDeny: PermissionRule = {
@@ -100,43 +91,20 @@ function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[
         { permission: "task", pattern: "*", action: "deny" },
         commonDelegateDeny,
       ]
-    case "build":
-      return [
-        { permission: "task", pattern: "*", action: "deny" },
-        commonDelegateDeny,
-      ]
-    case "plan":
-      return [
-        { permission: "edit", pattern: "*", action: "deny" },
-        { permission: "write", pattern: "*", action: "deny" },
-        { permission: "bash", pattern: "*", action: "deny" },
-        { permission: "task", pattern: "*", action: "deny" },
-        commonDelegateDeny,
-      ]
-    case "explore":
-      return [
-        { permission: "edit", pattern: "*", action: "deny" },
-        { permission: "write", pattern: "*", action: "deny" },
-        { permission: "task", pattern: "*", action: "deny" },
-        commonDelegateDeny,
-      ]
     default:
       throw new Error(`[Harness] Unsupported agent for permission profile: ${String(agentName)}`)
   }
 }
 
 function buildTaskCharacteristics(args: DelegateTaskArgs, agent: SpecialistAgent): TaskCharacteristics {
-  const description = args.description.toLowerCase()
-  const prompt = args.prompt.toLowerCase()
   const category = args.category?.toLowerCase() ?? ""
   const isResearch = agent === "researcher" || category === "research" || category === "deep"
   const isReview = agent === "critic" || category === "review"
   const isHeadless = isResearch || (!isReview && args.async_dispatch)
   const isInteractive = !isResearch
-  const isParallel = args.async_dispatch || /parallel|concurrent|independent|background/.test(`${description} ${prompt}`)
 
   return {
-    isParallel,
+    isParallel: false,
     isInteractive,
     isResearch,
     isHeadless,
@@ -182,6 +150,26 @@ function resolveTrustedParentRuntimePolicyOverride(
   return cloneRuntimePolicyOverride(continuityOverride)
 }
 
+function buildDelegateExecutionContract(
+  args: DelegateTaskArgs,
+  agent: SpecialistAgent,
+): ExecutionModeResult {
+  const characteristics = buildTaskCharacteristics(args, agent)
+  const capabilityEvidence = {
+    hasTmux: detectTmuxAvailability(),
+    projectRoot: process.cwd(),
+  }
+  return {
+    family: "built-in",
+    submode: "builtin-subsession",
+    rationale: args.async_dispatch
+      ? "delegate-task async dispatch is locked to the single built-in child-session lane (builtin-subsession)."
+      : "delegate-task sync dispatch stays on the single built-in child-session lane (builtin-subsession).",
+    characteristics,
+    capabilityEvidence,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Tool factory
 // ---------------------------------------------------------------------------
@@ -198,9 +186,6 @@ type DelegateTaskArgs = {
   scope?: string
   constraints?: string[]
   model?: string
-  defaultDispatchMode?: "async" | "sync"
-  tmuxAvailability?: "auto" | "enabled" | "disabled"
-  pollIntervalMs?: number
 }
 
 /**
@@ -215,7 +200,7 @@ export function createDelegateTaskTool(
 ): ReturnType<typeof tool> {
   return tool({
     description:
-      "Create a restricted async child session for researcher, builder, critic, general, or OpenCode built-in agents (build, plan, explore). When async_dispatch=true, returns immediately with task metadata for delegated session work — continue with other productive work. You will receive a system_reminder notification when the child session completes. This is separate from the background tool for OS child processes.",
+      "Create a restricted async child session for researcher, builder, critic, or general work. Invalid or alias agent requests safely degrade to general with visible fallback warnings. When async_dispatch=true, returns immediately with task metadata for delegated session work — continue with other productive work. You will receive a system_reminder notification when the child session completes. This is separate from the background tool for OS child processes.",
     args: {
       description: s.string().describe("Short task description"),
       prompt: s.string().describe("Full task prompt for the delegated agent"),
@@ -223,7 +208,7 @@ export function createDelegateTaskTool(
         .string()
         .optional()
         .describe(
-          "Optional explicit specialist agent (researcher, builder, critic, general, build, plan, explore). Aliases: build→builder, plan→general, explore→general.",
+          "Optional explicit specialist agent (researcher, builder, critic, general). Alias or invalid values degrade to general with fallback warnings.",
         ),
       category: s
         .string()
@@ -234,18 +219,6 @@ export function createDelegateTaskTool(
       async_dispatch: s
         .boolean()
         .describe("When true, launch async delegated child-session work and return immediately. You'll be notified via system_reminder when that child session completes."),
-      defaultDispatchMode: s
-        .enum(["async", "sync"])
-        .optional()
-        .describe("Optional explicit dispatch mode override (async or sync). Defaults to behavior derived from async_dispatch."),
-      tmuxAvailability: s
-        .enum(["auto", "enabled", "disabled"])
-        .optional()
-        .describe("Optional tmux availability override for this task. Defaults to auto-detection."),
-      pollIntervalMs: s
-        .number()
-        .optional()
-        .describe("Optional poll interval for completion detection in ms. Defaults to 3000."),
       session_id: s.string().optional().describe("Optional parent session override"),
       scope: s.string().optional().describe("Optional explicit task scope"),
       constraints: s
@@ -258,19 +231,11 @@ export function createDelegateTaskTool(
         .describe("Optional explicit model to request and use as the concurrency key"),
     },
     async execute(args: DelegateTaskArgs, context: { sessionID?: string }): Promise<string> {
-      const requestedAgent = args.agent?.trim().toLowerCase()
-      if (requestedAgent && !isValidAgent(requestedAgent)) {
-        throw new Error(
-          `[Harness] Invalid target agent "${args.agent}". Allowed agents: ${VALID_AGENTS.join(", ")}.`,
-        )
-      }
-      const requestedSpecialistAgent = requestedAgent as SpecialistAgent | undefined
-
       const route = resolveSpecialistRoute({
         description: args.description,
         prompt: args.prompt,
         category: args.category,
-        agent: requestedSpecialistAgent,
+        agent: args.agent,
         model: args.model,
       })
       const agent = route.effectiveAgent
@@ -312,16 +277,8 @@ export function createDelegateTaskTool(
       const permission = getPermissionRulesForAgent(agent)
       const toolCompatibility = getPromptToolCompatibility(permission)
       const compatibleTools = toolCompatibility ? Object.keys(toolCompatibility).sort() : []
-      const execution = classifyExecutionMode(buildTaskCharacteristics(args, agent), {
-        hasTmux: detectTmuxAvailability(),
-        projectRoot: process.cwd(),
-      })
+      const execution = buildDelegateExecutionContract(args, agent)
       const runtimePolicyOverride = resolveTrustedParentRuntimePolicyOverride(parentSessionID)
-
-      const tmuxAvailable = detectTmuxAvailability()
-      const effectiveDefaultDispatchMode = args.defaultDispatchMode ?? (args.async_dispatch ? "async" : "sync")
-      const effectiveTmuxAvailability = args.tmuxAvailability ?? (tmuxAvailable ? "auto" : "disabled")
-      const effectivePollIntervalMs = args.pollIntervalMs ?? 3000
 
       return await lifecycleManager.launchDelegatedSession({
         parentSessionID,
@@ -350,9 +307,6 @@ export function createDelegateTaskTool(
         execution,
         runtimePolicyOverride,
         spawnReservation,
-        defaultDispatchMode: effectiveDefaultDispatchMode,
-        tmuxAvailability: effectiveTmuxAvailability,
-        pollIntervalMs: effectivePollIntervalMs,
       })
     },
   })

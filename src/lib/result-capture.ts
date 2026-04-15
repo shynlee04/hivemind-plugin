@@ -14,10 +14,18 @@ function isArray(value: unknown): value is unknown[] {
   return Array.isArray(value)
 }
 
+function getMessageRole(message: unknown): string | undefined {
+  if (!isRecord(message)) return undefined
+  if (typeof message.role === "string") return message.role
+  const info = isRecord(message.info) ? message.info : undefined
+  if (info && typeof info.role === "string") return info.role
+  return undefined
+}
+
 export function extractAssistantText(messages: unknown[]): string {
   let combined = ""
   for (const msg of messages) {
-    if (!isRecord(msg) || msg.role !== "assistant") continue
+    if (!isRecord(msg) || getMessageRole(msg) !== "assistant") continue
     const parts = isArray(msg.parts) ? msg.parts : []
     for (const part of parts) {
       if (!isRecord(part)) continue
@@ -32,7 +40,7 @@ export function extractAssistantText(messages: unknown[]): string {
 export function extractToolCallSummary(messages: unknown[]): ToolCallSummary[] {
   const summaries: ToolCallSummary[] = []
   for (const msg of messages) {
-    if (!isRecord(msg) || msg.role !== "assistant") continue
+    if (!isRecord(msg) || getMessageRole(msg) !== "assistant") continue
     const parts = isArray(msg.parts) ? msg.parts : []
     for (const part of parts) {
       if (!isRecord(part)) continue
@@ -57,7 +65,7 @@ export function extractArtifactPaths(messages: unknown[]): string[] {
   const recognizedTools = new Set(["Write", "Edit", "read", "write"])
 
   for (const msg of messages) {
-    if (!isRecord(msg) || msg.role !== "assistant") continue
+    if (!isRecord(msg) || getMessageRole(msg) !== "assistant") continue
     const parts = isArray(msg.parts) ? msg.parts : []
     for (const part of parts) {
       if (!isRecord(part)) continue

@@ -20,6 +20,9 @@ type GetSessionMessagesOptions = {
   limit?: number
 }
 
+const SYNC_PROMPT_FALLBACK_TIMEOUT_MS = 30_000
+const SYNC_PROMPT_FALLBACK_POLL_MS = 1_000
+
 export async function createSession(client: OpenCodeClient, opts: CreateSessionOptions): Promise<SessionRecord> {
   const { directory, ...body } = opts
   const request: SessionCreateRequest = {
@@ -65,6 +68,43 @@ export async function getSessionMessages(
   return Array.isArray(response) ? response : []
 }
 
+function getMessageRole(message: unknown): string | undefined {
+  return (
+    asString(getNestedValue(message, ["info", "role"])) ??
+    asString(getNestedValue(message, ["role"]))
+  )
+}
+
+function hasUsableAssistantParts(message: unknown): boolean {
+  const parts = getNestedValue(message, ["parts"])
+  return Array.isArray(parts) && parts.length > 0
+}
+
+async function waitForAssistantResponse(
+  client: OpenCodeClient,
+  sessionID: string,
+  baselineMessageCount: number,
+): Promise<unknown> {
+  const deadline = Date.now() + SYNC_PROMPT_FALLBACK_TIMEOUT_MS
+
+  while (Date.now() < deadline) {
+    const messages = await getSessionMessages(client, sessionID)
+    const newMessages = messages.slice(baselineMessageCount)
+    const assistantMessage = newMessages.find(
+      (message) => getMessageRole(message) === "assistant" && hasUsableAssistantParts(message),
+    )
+    if (assistantMessage) {
+      return assistantMessage
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, SYNC_PROMPT_FALLBACK_POLL_MS))
+  }
+
+  throw new Error(
+    `[Harness] session.prompt returned an empty response and no assistant output was captured within ${SYNC_PROMPT_FALLBACK_TIMEOUT_MS}ms.`,
+  )
+}
+
 type SessionPromptAsyncRequest = Parameters<OpenCodeClient["session"]["promptAsync"]>[0]
 
 export async function sendPrompt(
@@ -72,12 +112,30 @@ export async function sendPrompt(
   sessionID: string,
   body: unknown
 ): Promise<unknown> {
+  const baselineMessageCount = (await getSessionMessages(client, sessionID).catch(() => [] as unknown[])).length
   const request: SessionPromptRequest = {
     path: { id: sessionID },
     body: body as SessionPromptRequest["body"],
+    parseAs: "text",
   }
 
-  return unwrapData(await client.session.prompt(request))
+  const response = unwrapData(await client.session.prompt(request))
+  if (typeof response !== "string") {
+    return response
+  }
+
+  const trimmed = response.trim()
+  if (!trimmed) {
+    return waitForAssistantResponse(client, sessionID, baselineMessageCount)
+  }
+
+  try {
+    return JSON.parse(trimmed) as unknown
+  } catch {
+    return {
+      parts: [{ type: "text", text: trimmed }],
+    }
+  }
 }
 
 /**

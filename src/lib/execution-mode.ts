@@ -98,8 +98,9 @@ export const DEFAULT_ALLOWED_COMMANDS: readonly string[] = [
  * characteristics and the current runtime capabilities.
  *
  * Decision logic:
- *  1. If task is parallel + background AND tmux is available → visible-worker
- *  2. Otherwise → built-in (with submode resolved by resolveBuiltInMode)
+ *  1. Background delegate-task work always uses built-in builtin-subsession.
+ *  2. Non-background parallel work may still use visible-worker when tmux exists.
+ *  3. Otherwise → built-in (with submode resolved by resolveBuiltInMode)
  *
  * The classifier always records why it chose or fell back, so parent sessions
  * can audit the decision (threat T-02-04).
@@ -113,24 +114,36 @@ export function classifyExecutionMode(
     projectRoot: capabilities.projectRoot,
   }
 
-  // D-12: Parallel + background + tmux available → visible-worker family
-  if (characteristics.isParallel && characteristics.runInBackground && capabilities.hasTmux) {
+  if (characteristics.runInBackground) {
+    return {
+      family: "built-in",
+      submode: "builtin-subsession",
+      rationale:
+        "Background delegate-task work is locked to the builtin OpenCode child-session path (builtin-subsession).",
+      characteristics,
+      capabilityEvidence,
+    }
+  }
+
+  // Non-background parallel work may still use the visible-worker family.
+  if (characteristics.isParallel && capabilities.hasTmux) {
     return {
       family: "visible-worker",
       submode: "tmux-pane",
-      rationale: `Parallel background task with tmux available: selected visible-worker family (tmux-pane).`,
+      rationale: `Parallel task with tmux available: selected visible-worker family (tmux-pane).`,
       characteristics,
       capabilityEvidence,
     }
   }
 
   // D-12 fallback: no tmux for parallel task → built-in with rationale
-  if (characteristics.isParallel && characteristics.runInBackground && !capabilities.hasTmux) {
+  if (characteristics.isParallel && !capabilities.hasTmux) {
     const builtIn = resolveBuiltInMode(characteristics)
+    const taskLabel = characteristics.runInBackground ? "Parallel background task" : "Parallel task"
     return {
       family: "built-in",
       submode: builtIn.submode,
-      rationale: `Parallel background task but tmux unavailable: fallback to built-in family (${builtIn.submode}). ${builtIn.rationale}`,
+      rationale: `${taskLabel} but tmux unavailable: fallback to built-in family (${builtIn.submode}). ${builtIn.rationale}`,
       characteristics,
       capabilityEvidence,
     }
@@ -155,16 +168,16 @@ export function classifyExecutionMode(
  * Within the built-in family, resolve which submode to use.
  *
  * Decision logic:
- *  - isInteractive → builtin-subsession (OpenCode child session)
- *  - isResearch or isHeadless → builtin-process (owned-process stdio)
- *  - default → builtin-subsession (D-16: prefer OpenCode sessions)
+ *  - all current built-in tasks → builtin-subsession
+ *
+ * Temporary simplification: builtin-process is detached from automatic routing
+ * until one truthful delegation path is stable.
  *
  * @returns The chosen submode and a rationale string.
  */
 export function resolveBuiltInMode(
   characteristics: TaskCharacteristics,
 ): { submode: ExecutionSubmode; rationale: string } {
-  // D-13: Interactive tasks need OpenCode child sessions (D-16 preference)
   if (characteristics.isInteractive) {
     return {
       submode: "builtin-subsession",
@@ -172,18 +185,17 @@ export function resolveBuiltInMode(
     }
   }
 
-  // D-13: Research/headless tasks use owned-process stdio
   if (characteristics.isResearch) {
     return {
-      submode: "builtin-process",
-      rationale: "Research task: owned-process stdio is sufficient (read-only work).",
+      submode: "builtin-subsession",
+      rationale: "Research task routed to builtin-subsession on the single built-in child-session lane.",
     }
   }
 
   if (characteristics.isHeadless) {
     return {
-      submode: "builtin-process",
-      rationale: "Headless task: owned-process stdio for non-interactive execution.",
+      submode: "builtin-subsession",
+      rationale: "Headless task routed to builtin-subsession on the single built-in child-session lane.",
     }
   }
 

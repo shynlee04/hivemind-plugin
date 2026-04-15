@@ -1,23 +1,20 @@
 /**
  * Unit tests for the execution-mode classifier.
  *
- * Covers RESEARCH D-12 (execution-family auto-detection) and D-13 (built-in
- * submode auto-detection between OpenCode sub-session and owned-process stdio).
+ * Covers execution-family selection and the single built-in subsession lane.
  *
  * Behaviours tested:
  *  1. Parallel-independent tasks prefer visible-worker family when tmux is available.
  *  2. If tmux is unavailable, the classifier records the fallback and still returns
  *     a built-in family decision.
- *  3. Built-in family resolves to `builtin-subsession` for interactive tasks and
- *     `builtin-process` for research/headless tasks.
+ *  3. Built-in family resolves to `builtin-subsession` for current delegated work.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect } from "vitest"
 import {
   classifyExecutionMode,
   resolveBuiltInMode,
   type TaskCharacteristics,
   type RuntimeCapabilities,
-  type ExecutionModeResult,
   DEFAULT_ALLOWED_COMMANDS,
 } from "../../src/lib/execution-mode.js"
 
@@ -50,9 +47,9 @@ function makeCapabilities(overrides: Partial<RuntimeCapabilities> = {}): Runtime
 // ---------------------------------------------------------------------------
 
 describe("classifyExecutionMode — visible-worker family", () => {
-  it("prefers visible-worker family when tmux is available and task is parallel", () => {
+  it("prefers visible-worker family when tmux is available and task is parallel without background delegation", () => {
     const result = classifyExecutionMode(
-      makeChars({ isParallel: true, runInBackground: true }),
+      makeChars({ isParallel: true, runInBackground: false }),
       makeCapabilities({ hasTmux: true }),
     )
     expect(result.family).toBe("visible-worker")
@@ -62,7 +59,7 @@ describe("classifyExecutionMode — visible-worker family", () => {
 
   it("visible-worker result includes tmux capability evidence", () => {
     const result = classifyExecutionMode(
-      makeChars({ isParallel: true, runInBackground: true }),
+      makeChars({ isParallel: true, runInBackground: false }),
       makeCapabilities({ hasTmux: true }),
     )
     expect(result.capabilityEvidence.hasTmux).toBe(true)
@@ -70,7 +67,7 @@ describe("classifyExecutionMode — visible-worker family", () => {
 
   it("tmux-pane submode is distinct from builtin-subsession", () => {
     const tmuxResult = classifyExecutionMode(
-      makeChars({ isParallel: true, runInBackground: true }),
+      makeChars({ isParallel: true, runInBackground: false }),
       makeCapabilities({ hasTmux: true }),
     )
     const subsessionResult = classifyExecutionMode(
@@ -89,14 +86,47 @@ describe("classifyExecutionMode — visible-worker family", () => {
 // ---------------------------------------------------------------------------
 
 describe("classifyExecutionMode — fallback when no tmux", () => {
-  it("falls back to built-in family when tmux is unavailable for parallel task", () => {
+  it("falls back to built-in family when tmux is unavailable for visible-worker task", () => {
     const result = classifyExecutionMode(
-      makeChars({ isParallel: true, runInBackground: true }),
+      makeChars({ isParallel: true, runInBackground: false }),
       makeCapabilities({ hasTmux: false }),
     )
     expect(result.family).toBe("built-in")
     expect(result.rationale).toContain("fallback")
     expect(result.rationale).toContain("tmux")
+  })
+
+  it("uses a non-background fallback rationale when tmux is unavailable", () => {
+    const result = classifyExecutionMode(
+      makeChars({ isParallel: true, runInBackground: false }),
+      makeCapabilities({ hasTmux: false }),
+    )
+
+    expect(result.rationale.toLowerCase()).toContain("parallel task")
+    expect(result.rationale.toLowerCase()).not.toContain("parallel background task")
+  })
+
+  it("keeps background delegate-task work on builtin-subsession even when tmux is available", () => {
+    const result = classifyExecutionMode(
+      makeChars({ isParallel: true, isInteractive: true, isHeadless: true, runInBackground: true }),
+      makeCapabilities({ hasTmux: true }),
+    )
+
+    expect(result.family).toBe("built-in")
+    expect(result.submode).toBe("builtin-subsession")
+    expect(result.rationale.toLowerCase()).not.toContain("tmux-pane")
+    expect(result.rationale.toLowerCase()).not.toContain("builtin-process")
+  })
+
+  it("keeps background delegate-task research work on builtin-subsession without process fallback", () => {
+    const result = classifyExecutionMode(
+      makeChars({ isParallel: true, isResearch: true, isHeadless: true, runInBackground: true }),
+      makeCapabilities({ hasTmux: false }),
+    )
+
+    expect(result.family).toBe("built-in")
+    expect(result.submode).toBe("builtin-subsession")
+    expect(result.rationale.toLowerCase()).not.toContain("builtin-process")
   })
 
   it("returns built-in for non-parallel tasks regardless of tmux", () => {
@@ -109,8 +139,8 @@ describe("classifyExecutionMode — fallback when no tmux", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test 3: Built-in family resolves to `builtin-subsession` for interactive
-//         tasks and `builtin-process` for research/headless tasks.
+// Test 3: Simplified built-in family resolves to `builtin-subsession`
+//         for all current tasks while builtin-process is detached.
 // ---------------------------------------------------------------------------
 
 describe("resolveBuiltInMode", () => {
@@ -120,16 +150,16 @@ describe("resolveBuiltInMode", () => {
     expect(result.rationale.toLowerCase()).toContain("interactive")
   })
 
-  it("resolves to builtin-process for research tasks", () => {
+  it("resolves to builtin-subsession for research tasks", () => {
     const result = resolveBuiltInMode(makeChars({ isResearch: true }))
-    expect(result.submode).toBe("builtin-process")
-    expect(result.rationale.toLowerCase()).toContain("research")
+    expect(result.submode).toBe("builtin-subsession")
+    expect(result.rationale.toLowerCase()).toContain("subsession")
   })
 
-  it("resolves to builtin-process for headless tasks", () => {
+  it("resolves to builtin-subsession for headless tasks", () => {
     const result = resolveBuiltInMode(makeChars({ isHeadless: true }))
-    expect(result.submode).toBe("builtin-process")
-    expect(result.rationale.toLowerCase()).toContain("headless")
+    expect(result.submode).toBe("builtin-subsession")
+    expect(result.rationale.toLowerCase()).toContain("subsession")
   })
 
   it("defaults to builtin-subsession when no special flags are set", () => {

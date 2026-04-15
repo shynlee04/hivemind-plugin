@@ -1,21 +1,7 @@
 import type { OpenCodeClient } from "./session-api.js"
-import type { SessionContinuityRecord } from "./types.js"
+import type { SessionContinuityRecord, TaskNotification } from "./types.js"
 
 type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
-
-export type TaskNotification = {
-  sessionID: string
-  description: string
-  agent: string
-  status: "started" | "completed" | "failed" | "cancelled"
-  error?: string
-  resultPreview?: string
-  briefSummary?: string
-  outputLink?: string
-  duration?: number
-  artifacts?: string[]
-  commits?: string[]
-}
 
 const MAX_PREVIEW_LENGTH = 500
 
@@ -179,3 +165,5 @@ export async function notifyParentSession(
 
   return delivered
 }
+
+export type { TaskNotification }

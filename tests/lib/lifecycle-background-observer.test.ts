@@ -9,23 +9,25 @@ type Controls = ReturnType<typeof setupObserver>
 const assistant = (...types: string[]) => ({ role: "assistant", parts: types.map((type) => ({ type })) })
 const user = (...types: string[]) => ({ role: "user", parts: types.map((type) => ({ type })) })
 
-function continuity(sessionID: string, launchedAt = 0) {
+function continuity(sessionID: string, launchedAt = 0, lastToolActivityAt?: number) {
   return {
     sessionID,
     metadata: {
       description: "observer rewrite",
       status: "queued",
+      createdAt: launchedAt,
+      lastToolActivityAt,
       lifecycle: { phase: "dispatching", runMode: "async", queueKey: "model:gpt-5.4", launchedAt },
     },
   } as any
 }
 
-function setupObserver(status = "busy", options?: { launchedAt?: number; timeoutMs?: number }) {
+function setupObserver(status = "busy", options?: { launchedAt?: number; timeoutMs?: number; lastToolActivityAt?: number }) {
   const sessionID = "child-123"
   const client = createInMemoryClient()
   client._sessions.set(sessionID, { id: sessionID, status: { type: status } })
   const detector = new CompletionDetector(10_000)
-  const record = continuity(sessionID, options?.launchedAt)
+  const record = continuity(sessionID, options?.launchedAt, options?.lastToolActivityAt)
   const patchLifecycle = vi.fn((patch: { status: string; phase: string; observation?: unknown; completedAt?: number; error?: string }) => {
     record.metadata.status = patch.status
     record.metadata.lastError = patch.error
@@ -178,6 +180,27 @@ describe("observeBackgroundCompletion", () => {
 
     expect(c.patchLifecycle).not.toHaveBeenCalledWith(
       expect.objectContaining({ status: "running", phase: "running" }),
+    )
+  })
+
+  it("fails after 2 minutes with no tool activity or assistant evidence even if session reports running", async () => {
+    const c = setupObserver("running", { launchedAt: 0, timeoutMs: 600_000 })
+
+    await c.tick(130_000)
+    await expectError(c, "background-dead-start-timeout", /no tool activity or assistant evidence/i)
+  })
+
+  it("promotes to running when real tool activity was observed even before start-gate evidence", async () => {
+    const c = setupObserver("busy", { timeoutMs: 60_000, lastToolActivityAt: 1_000 })
+
+    await c.tick(0)
+
+    expect(c.patchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "running",
+        phase: "running",
+        observation: expect.objectContaining({ detail: "background-start-gate-passed" }),
+      }),
     )
   })
 

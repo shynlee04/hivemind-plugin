@@ -98,6 +98,24 @@ describe("start-gate", () => {
       expect(evidence.assistantMessages).toBe(1)
     })
 
+    it("recognizes assistant messages when SDK stores role under info.role", async () => {
+      const client = createInMemoryClient()
+      client._addMessage("ses_1", {
+        info: { role: "assistant" },
+        parts: [
+          { type: "reasoning", text: "I need to investigate..." },
+          { type: "tool-call", name: "read" },
+          { type: "tool-call", name: "grep" },
+        ],
+      })
+
+      const evidence = await verifyStartGate(client, "ses_1")
+      expect(evidence.passed).toBe(true)
+      expect(evidence.assistantMessages).toBe(1)
+      expect(evidence.thinkingBlocks).toBe(1)
+      expect(evidence.toolCalls).toBe(2)
+    })
+
     it("fails when there are zero reasoning/thinking blocks even if tool calls ≥ 2", async () => {
       // WHY: Prevents false positive from rapid tool calls without any deliberation
       const client = createInMemoryClient()

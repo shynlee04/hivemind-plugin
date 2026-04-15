@@ -39,9 +39,6 @@ export type LaunchDelegatedSessionArgs = {
   execution: ExecutionModeResult
   runtimePolicyOverride?: SessionPolicyOverride
   spawnReservation?: SpawnReservation
-  defaultDispatchMode?: "async" | "sync"
-  tmuxAvailability?: "auto" | "enabled" | "disabled"
-  pollIntervalMs?: number
 }
 
 function now(): number { return Date.now() }
@@ -193,9 +190,6 @@ export async function launchDelegatedSession(
         status: "pending",
         createdAt: timestamp,
         updatedAt: timestamp,
-        defaultDispatchMode: args.defaultDispatchMode,
-        tmuxAvailability: args.tmuxAvailability,
-        pollIntervalMs: args.pollIntervalMs,
         lifecycle: buildLifecycleState({
           phase: "created",
           runMode,
@@ -256,63 +250,6 @@ export async function launchDelegatedSession(
               detail: "prompt-dispatched-async",
             },
           })
-
-          if (execution.submode === "tmux-pane") {
-            if (args.tmuxAvailability === "enabled" && !execution.capabilityEvidence.hasTmux) {
-              throw new Error("[Harness] tmux-pane execution requested without available tmux runner.")
-            }
-            if (!ctx.backgroundManager) {
-              throw new Error("[Harness] tmux-pane execution requires a BackgroundManager.")
-            }
-
-            await runLifecycleTmuxTask({
-              sessionID: childSessionID,
-              parentSessionID: args.parentSessionID,
-              rootID: args.rootID,
-              childDepth: args.childDepth,
-              agent: args.agent,
-              category: args.route.category,
-              model: args.route.effectiveModel,
-              description: args.description,
-              promptText: args.promptText,
-              runInBackground: true,
-              execution,
-              client: ctx.client,
-              backgroundManager: ctx.backgroundManager,
-              getSessionContinuity,
-              patchSessionContinuity,
-              patchLifecycle: ctx.patchLifecycleFn,
-              getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
-              releaseQueue,
-              now,
-            })
-            return
-          }
-
-          if (execution.submode === "builtin-process") {
-            await runLifecycleProcessTask({
-              sessionID: childSessionID,
-              parentSessionID: args.parentSessionID,
-              rootID: args.rootID,
-              childDepth: args.childDepth,
-              agent: args.agent,
-              category: args.route.category,
-              model: args.route.effectiveModel,
-              description: args.description,
-              promptText: args.promptText,
-              runInBackground: true,
-              execution,
-              client: ctx.client,
-              backgroundManager: ctx.backgroundManager,
-              getSessionContinuity,
-              patchSessionContinuity,
-              patchLifecycle: ctx.patchLifecycleFn,
-              getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
-              releaseQueue,
-              now,
-            })
-            return
-          }
 
           await runLifecycleSubsessionTask({
             sessionID: childSessionID,
@@ -408,9 +345,6 @@ export async function launchDelegatedSession(
     })
 
     if (execution.submode === "tmux-pane") {
-      if (args.tmuxAvailability === "enabled" && !execution.capabilityEvidence.hasTmux) {
-        throw new Error("[Harness] tmux-pane execution requested without available tmux runner.")
-      }
       if (!ctx.backgroundManager) {
         throw new Error("[Harness] tmux-pane execution requires a BackgroundManager.")
       }
@@ -434,6 +368,7 @@ export async function launchDelegatedSession(
         patchLifecycle: ctx.patchLifecycleFn,
         getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
         releaseQueue,
+        pollTimeoutMs: ctx.pollTimeoutMs,
         now,
       })
     }
@@ -458,6 +393,7 @@ export async function launchDelegatedSession(
         patchLifecycle: ctx.patchLifecycleFn,
         getLifecycleSnapshot: (sid) => ctx.getLifecycleSnapshotFn(sid),
         releaseQueue,
+        pollTimeoutMs: ctx.pollTimeoutMs,
         now,
       })
     }

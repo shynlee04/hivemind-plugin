@@ -15,14 +15,64 @@ export function getNestedValue(value: unknown, path: string[]): unknown {
   return current
 }
 
+/**
+ * Extract a human-readable error message from OpenCode SDK error objects.
+ *
+ * SDK error structures vary — this function checks all known shapes:
+ *   - String error: used as-is
+ *   - Named errors (UnknownError, MessageAbortedError): `error.data.message`
+ *   - BadRequestError: `error.errors[]` array with `.message` or `.reason`
+ *   - Fallback: includes error name if available
+ */
+function extractSdkErrorMessage(error: unknown): string {
+  if (typeof error === "string") return error
+
+  if (!isObject(error)) return "Unknown SDK error"
+
+  // Shape 1: Named errors — { name: "UnknownError", data: { message: "..." } }
+  const dataMessage = getNestedValue(error, ["data", "message"])
+  if (typeof dataMessage === "string" && dataMessage.length > 0) {
+    return dataMessage
+  }
+
+  // Shape 2: Bad request — { errors: [{ message: "..." }, { reason: "..." }] }
+  const errors = getNestedValue(error, ["errors"])
+  if (Array.isArray(errors) && errors.length > 0) {
+    const messages = errors
+      .map((e) => {
+        if (!isObject(e)) return JSON.stringify(e)
+        return (
+          (typeof e.message === "string" && e.message) ??
+          (typeof e.reason === "string" && e.reason) ??
+          JSON.stringify(e)
+        )
+      })
+      .filter(Boolean)
+    if (messages.length > 0) {
+      return messages.join("; ")
+    }
+  }
+
+  // Shape 3: Direct message at top level (rare but possible)
+  const topLevelMessage = getNestedValue(error, ["message"])
+  if (typeof topLevelMessage === "string" && topLevelMessage.length > 0) {
+    return topLevelMessage
+  }
+
+  // Fallback: include error name if available
+  const name = getNestedValue(error, ["name"])
+  if (typeof name === "string" && name.length > 0) {
+    return `${name}: ${JSON.stringify(error)}`
+  }
+
+  return `Unknown SDK error: ${JSON.stringify(error).slice(0, 200)}`
+}
+
 export function unwrapData<T = unknown>(response: unknown): T {
   if (isObject(response) && "error" in response && response.error) {
     const error = response.error
-    const message =
-      typeof error === "string"
-        ? error
-        : String(getNestedValue(error, ["message"]) ?? "Unknown SDK error")
-    throw new Error(message)
+    const message = extractSdkErrorMessage(error)
+    throw new Error(`[Harness] ${message}`)
   }
   if (isObject(response) && "data" in response && response.data !== undefined) {
     return response.data as T

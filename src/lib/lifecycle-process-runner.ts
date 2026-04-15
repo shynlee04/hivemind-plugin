@@ -79,7 +79,7 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
       sessionID: args.sessionID,
       client: args.client,
       completionDetector: undefined,
-      pollTimeoutMs: 120_000, // 2-minute fast-fail (no disk activity = dead)
+      pollTimeoutMs: args.pollTimeoutMs,
       now: args.now,
       getSessionContinuity: args.getSessionContinuity,
       patchSessionContinuity: args.patchSessionContinuity,

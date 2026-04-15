@@ -9,14 +9,7 @@
  */
 
 import { getSessionContinuity, patchSessionContinuity } from "./continuity.js"
-import type { TaskNotification } from "./notification-handler.js"
-
-export type PendingNotification = TaskNotification & {
-  /** Timestamp when the notification was created. */
-  createdAt: number
-  /** Whether the notification has been delivered to the user. */
-  delivered: boolean
-}
+import type { PendingNotification, TaskNotification } from "./types.js"
 
 /**
  * Build a pending notification from a completed task.
@@ -76,4 +69,4 @@ export function formatPendingNotificationsForSession(
   return lines.join("\n")
 }
 
-export type { TaskNotification }
+export type { PendingNotification, TaskNotification }

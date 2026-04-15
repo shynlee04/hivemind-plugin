@@ -33,6 +33,7 @@ export type CommonRunnerArgs = {
   patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
   releaseQueue: (reason: string) => void
+  pollTimeoutMs: number
   now: () => number
 }
 

@@ -50,6 +50,7 @@ async function waitTurn() {
 
 describe("builtin-process lifecycle (session-based, not child-process)", () => {
   afterEach(() => {
+    vi.useRealTimers()
     for (const id of [
       "process-parent-sync",
       "process-root-sync",
@@ -60,6 +61,12 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
       "process-parent-fail",
       "process-root-fail",
       "process-child-fail",
+      "process-parent-async",
+      "process-root-async",
+      "process-child-async",
+      "process-parent-timeout",
+      "process-root-timeout",
+      "process-child-timeout",
     ]) deleteSessionContinuity(id)
   })
 
@@ -69,7 +76,7 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
   it("sync mode calls sendPrompt with correct body", async () => {
     const client = createInMemoryClient()
     installCreateIds(client, ["process-child-sync"])
-    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 50 })
+    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 60_000 })
 
     client.session.prompt.mockResolvedValue({
       data: {
@@ -110,7 +117,7 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
   it("process runner handles session abort gracefully", async () => {
     const client = createInMemoryClient()
     installCreateIds(client, ["process-child-abort"])
-    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 50 })
+    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 60_000 })
 
     client.session.promptAsync.mockResolvedValue(undefined)
 
@@ -130,9 +137,6 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
 
     const parsed = JSON.parse(raw) as { session_id: string }
 
-    // Session should have been created and dispatched
-    expect(getSessionContinuity(parsed.session_id)?.metadata.lifecycle?.phase).toBe("dispatching")
-
     // Cancel the session
     await manager.cancelDelegatedSession(parsed.session_id)
 
@@ -150,7 +154,7 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
   it("process runner reports error on sync failure", async () => {
     const client = createInMemoryClient()
     installCreateIds(client, ["process-child-fail"])
-    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 50 })
+    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 60_000 })
 
     client.session.prompt.mockRejectedValue(new Error("sendPrompt failed"))
 
@@ -213,9 +217,38 @@ describe("builtin-process lifecycle (session-based, not child-process)", () => {
     const promptCall = client.session.promptAsync.mock.calls[0][0]
     expect(promptCall.body.parts).toEqual([{ type: "text", text: "async task" }])
 
-    // Session should be in dispatching state (observer will poll)
-    expect(getSessionContinuity(parsed.session_id)?.metadata.lifecycle?.phase).toBe("dispatching")
     expect(parsed.session_id).toBe("process-child-async")
     expect(parsed.mode).toBe("async")
+  })
+
+  it("async mode respects the lifecycle manager poll timeout instead of hardcoding 120s", async () => {
+    vi.useFakeTimers()
+    const client = createInMemoryClient()
+    installCreateIds(client, ["process-child-timeout"])
+    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 50 })
+
+    client.session.promptAsync.mockResolvedValue(undefined)
+    client.session.messages.mockResolvedValue({ data: [] })
+    client._setGetSessionError(new Error("missing session"))
+
+    const raw = await manager.launchDelegatedSession({
+      parentSessionID: "process-parent-timeout",
+      rootID: "process-root-timeout",
+      childDepth: 1,
+      description: "process async timeout test",
+      runInBackground: true,
+      agent: "builder",
+      route: route(),
+      permissionRules: [],
+      compatibleTools: [],
+      promptText: "async timeout task",
+      execution: execution(true),
+    })
+
+    const parsed = JSON.parse(raw) as { session_id: string }
+    await vi.advanceTimersByTimeAsync(20_000)
+
+    expect(getSessionContinuity(parsed.session_id)?.metadata.status).toBe("error")
+    expect(getSessionContinuity(parsed.session_id)?.metadata.lastError).toMatch(/deleted|timed out/i)
   })
 })

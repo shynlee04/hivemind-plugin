@@ -1,13 +1,27 @@
-import type { TaskStatus } from "./task-status.js"
-import type { PendingNotification as PendingNotificationType } from "./pending-notifications.js"
+export type TaskStatus = "pending" | "queued" | "running" | "completed" | "error" | "cancelled" | "interrupt"
 
-export type PendingNotification = PendingNotificationType
+export type TaskNotification = {
+  sessionID: string
+  description: string
+  agent: string
+  status: "started" | "completed" | "failed" | "cancelled"
+  error?: string
+  resultPreview?: string
+  briefSummary?: string
+  outputLink?: string
+  duration?: number
+  artifacts?: string[]
+  commits?: string[]
+}
+
+export type PendingNotification = TaskNotification & {
+  createdAt: number
+  delivered: boolean
+}
 
 export const MAX_DESCENDANTS_PER_ROOT = 10
 export const VALID_AGENTS = [
   "researcher", "builder", "critic", "general",
-  // OpenCode built-in agents
-  "build", "plan", "explore",
 ] as const
 export const VALID_DELEGATION_CATEGORIES = [
   "research",
@@ -202,7 +216,7 @@ export type DelegationRouteResolution = {
   rationale: string
   guidanceText?: string
   modelSource: "explicit" | "category" | "none"
-  agentSource: "explicit" | "category"
+  agentSource: "explicit" | "category" | "signal"
   temperatureSource: "category" | "agent"
   warnings: string[]
 }
@@ -280,6 +294,7 @@ export type SessionContinuityMetadata = {
   createdAt: number
   updatedAt: number
   lastObservedAt?: number
+  lastToolActivityAt?: number
   lastError?: string
   lifecycle?: SessionLifecycleState
   pendingNotifications?: PendingNotification[]

@@ -79,20 +79,14 @@ function normalizeAgent(value: string | undefined): SpecialistAgent | undefined 
     return undefined
   }
 
-  // Alias mapping for common variants
-  const aliases: Record<string, SpecialistAgent> = {
-    "build": "builder",
-    "plan": "general",  // plan is read-only analysis → general lane
-    "explore": "general", // explore is general-purpose investigation
+  if (["build", "plan", "explore"].includes(normalized)) {
+    return undefined
   }
 
-  const mapped = aliases[normalized] ?? normalized
-  if (!isValidAgent(mapped)) {
-    throw new Error(
-      `[Harness] Invalid target agent "${value}". Allowed agents: ${VALID_AGENTS.join(", ")}. Aliases: build→builder, plan→general, explore→general.`,
-    )
+  if (!isValidAgent(normalized)) {
+    return undefined
   }
-  return mapped
+  return normalized
 }
 
 function scorePreset(signal: string, preset: SpecialistPreset): number {
@@ -130,7 +124,8 @@ function resolvePresetFromSignal(signal: string): { preset: SpecialistPreset; fa
 }
 
 export function resolveSpecialistRoute(args: ResolveSpecialistRouteArgs): DelegationRouteResolution {
-  const requestedAgent = normalizeAgent(args.agent)
+  const rawRequestedAgent = args.agent?.trim().toLowerCase()
+  const normalizedRequestedAgent = normalizeAgent(args.agent)
   const category = normalizeCategory(args.category)
   const signal = `${args.description} ${args.prompt}`.toLowerCase()
 
@@ -138,12 +133,30 @@ export function resolveSpecialistRoute(args: ResolveSpecialistRouteArgs): Delega
   let fallbackUsed = true
   let rationale = "Used the explicit generalist fallback because no category or strong specialist signal was provided."
   let agentSource: DelegationRouteResolution["agentSource"] = "category"
+  const warnings: string[] = []
 
-  if (requestedAgent) {
-    preset = getPresetForAgent(requestedAgent)
+  if (normalizedRequestedAgent) {
+    preset = getPresetForAgent(normalizedRequestedAgent)
     fallbackUsed = false
-    rationale = `Used the explicitly requested ${requestedAgent} specialist preset.`
+    rationale = `Used the explicitly requested ${normalizedRequestedAgent} specialist preset.`
     agentSource = "explicit"
+  } else if (rawRequestedAgent) {
+    preset = SPECIALIST_PRESETS["general"]
+    fallbackUsed = true
+    rationale = `Fell back to general because requested agent "${args.agent}" is unsupported for delegate-task.`
+    agentSource = "explicit"
+
+    const aliasWarning = ["build", "plan", "explore"].includes(rawRequestedAgent)
+      ? `Alias agent "${args.agent}" degraded to general for delegate-task's single builtin-subsession path.`
+      : undefined
+
+    if (aliasWarning) {
+      warnings.push(aliasWarning)
+    }
+
+    warnings.push(
+      `Invalid target agent "${args.agent}" fell back to general. Allowed direct specialist agents: researcher, builder, critic, general. Alias or unknown values degrade to general for this delegate-task slice.`,
+    )
   } else if (category) {
     const categoryConfig = getCategoryConfig(category)
     preset = getPresetForAgent(categoryConfig.toolProfile)
@@ -154,6 +167,7 @@ export function resolveSpecialistRoute(args: ResolveSpecialistRouteArgs): Delega
     preset = resolved.preset
     fallbackUsed = resolved.fallbackUsed
     rationale = resolved.rationale
+    agentSource = "signal"
   }
 
   const categoryConfig = category ? getCategoryConfig(category) : undefined
@@ -162,18 +176,18 @@ export function resolveSpecialistRoute(args: ResolveSpecialistRouteArgs): Delega
   return {
     requestedCategory: category,
     category,
-    requestedAgent,
+    requestedAgent: normalizedRequestedAgent ?? (preset.agent === "general" && rawRequestedAgent ? "general" : undefined),
     effectiveAgent: preset.agent,
     presetKey: preset.key,
     requestedModel: args.model,
     effectiveModel,
-    temperature: requestedAgent ? preset.temperature : (categoryConfig?.temperature ?? preset.temperature),
+    temperature: normalizedRequestedAgent ? preset.temperature : (categoryConfig?.temperature ?? preset.temperature),
     fallbackUsed,
     rationale,
     guidanceText: preset.guidanceText,
     modelSource: args.model ? "explicit" : category ? "category" : "none",
     agentSource,
-    temperatureSource: requestedAgent || !category ? "agent" : "category",
-    warnings: fallbackUsed ? ["Specialist routing used the generalist fallback."] : [],
+    temperatureSource: normalizedRequestedAgent || !category ? "agent" : "category",
+    warnings: [...warnings, ...(fallbackUsed ? ["Specialist routing used the generalist fallback."] : [])],
   }
 }

@@ -1,4 +1,4 @@
-export type TaskStatus = "pending" | "queued" | "running" | "completed" | "error" | "cancelled" | "interrupt"
+import type { TaskStatus } from "./types.js"
 
 export const VALID_TASK_STATUSES: TaskStatus[] = ["pending", "queued", "running", "completed", "error", "cancelled", "interrupt"]
 

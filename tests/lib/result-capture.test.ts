@@ -30,6 +30,13 @@ describe("result-capture", () => {
       expect(extractAssistantText(messages)).toBe("hello world")
     })
 
+    it("reads assistant text when SDK stores role under info.role", () => {
+      const messages = [
+        { info: { role: "assistant" }, parts: [{ type: "text", text: "hello nested" }] },
+      ]
+      expect(extractAssistantText(messages)).toBe("hello nested")
+    })
+
     it("ignores non-text parts", () => {
       const messages = [
         {

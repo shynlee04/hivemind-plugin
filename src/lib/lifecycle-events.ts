@@ -31,6 +31,7 @@ export function noteObservedActivity(
   patchSessionContinuity(sessionID, {
     status: record.metadata.status === "error" ? "error" : "running",
     lastObservedAt: timestamp,
+    lastToolActivityAt: timestamp,
     lastError: record.metadata.status === "error" ? record.metadata.lastError : undefined,
     lifecycle,
   })

@@ -27,6 +27,8 @@ import type {
 } from "./types.js"
 import type { QueueSnapshot } from "./lifecycle-queue.js"
 
+const DEAD_START_TIMEOUT_MS = 120_000
+
 type PatchLifecycleArgs = {
   sessionID: string
   status: SessionContinuityMetadata["status"]
@@ -59,12 +61,17 @@ function countToolCallParts(message: unknown): number {
   }, 0)
 }
 
+function getMessageRole(message: unknown): string | undefined {
+  if (!message || typeof message !== "object") return undefined
+  const record = message as { role?: unknown; info?: { role?: unknown } }
+  if (typeof record.role === "string") return record.role
+  if (record.info && typeof record.info.role === "string") return record.info.role
+  return undefined
+}
+
 async function getCombinedEvidenceCount(client: OpenCodeClient, sessionID: string): Promise<number> {
   const messages = await getSessionMessages(client, sessionID)
-  const assistantMessages = messages.filter((msg) => {
-    if (!msg || typeof msg !== "object") return false
-    return (msg as { role?: string }).role === "assistant"
-  })
+  const assistantMessages = messages.filter((msg) => getMessageRole(msg) === "assistant")
   const toolCallCount = assistantMessages.reduce<number>(
     (count, message) => count + countToolCallParts(message),
     0,
@@ -205,9 +212,42 @@ export async function observeBackgroundCompletion(args: {
 
         const continuity = args.getSessionContinuity(args.sessionID)
         const startGatePassed = completionCheck.evidence.passed
+        const toolActivityObserved = Boolean(continuity?.metadata.lastToolActivityAt)
         const alreadyRunning = continuity?.metadata.status === "running"
+        const launchedAt = continuity?.metadata.lifecycle?.launchedAt ?? continuity?.metadata.createdAt ?? args.now()
+        const deadStartWindowMs = Math.min(args.pollTimeoutMs, DEAD_START_TIMEOUT_MS)
 
-        if (startGatePassed && !alreadyRunning) {
+        if (!startGatePassed && !toolActivityObserved && combinedEvidenceCount === 0) {
+          const idleSinceLaunchMs = Math.max(0, args.now() - launchedAt)
+          if (idleSinceLaunchMs >= deadStartWindowMs) {
+            const error = "Background start timed out with no tool activity or assistant evidence"
+            const advanced =
+              args.patchLifecycle({
+                sessionID: args.sessionID,
+                status: "error",
+                phase: "failed",
+                error,
+                observation: {
+                  source: "observe:dead-start-timeout",
+                  observedAt: args.now(),
+                  detail: "background-dead-start-timeout",
+                },
+              }) !== false
+            if (advanced) {
+              const failedContinuity = args.getSessionContinuity(args.sessionID)
+              if (failedContinuity?.metadata.parentSessionID) {
+                void notifyParentWithFallback(
+                  args.client,
+                  failedContinuity.metadata.parentSessionID,
+                  buildTaskNotificationFromContinuity(failedContinuity, "failed", error),
+                )
+              }
+            }
+            return
+          }
+        }
+
+        if ((startGatePassed || toolActivityObserved) && !alreadyRunning) {
           const promotedAt = args.now()
           const advanced =
             args.patchLifecycle({

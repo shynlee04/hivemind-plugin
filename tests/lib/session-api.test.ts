@@ -109,6 +109,7 @@ describe("session-api typed wrappers", () => {
     it("calls client.session.prompt with correct shape", async () => {
       const client = mockClient()
       client.session.prompt.mockResolvedValue({ data: { info: {}, parts: [] } })
+      client.session.messages.mockResolvedValue({ data: [] })
 
       const { sendPrompt } = await import("../../src/lib/session-api.js")
       await sendPrompt(client, "s1", {
@@ -120,17 +121,46 @@ describe("session-api typed wrappers", () => {
         body: {
           parts: [{ type: "text", text: "hello" }],
         },
+        parseAs: "text",
       })
     })
 
     it("returns unwrapped data from prompt response", async () => {
       const client = mockClient()
+      client.session.messages.mockResolvedValue({ data: [] })
       client.session.prompt.mockResolvedValue({ data: { info: { id: "msg-1" }, parts: [] } })
 
       const { sendPrompt } = await import("../../src/lib/session-api.js")
       const result = await sendPrompt(client, "s1", { parts: [] })
 
       expect(result).toEqual({ info: { id: "msg-1" }, parts: [] })
+    })
+
+    it("recovers from empty-body prompt responses by reading the resulting assistant message", async () => {
+      const client = mockClient()
+      client.session.prompt.mockResolvedValue({ data: "" })
+      client.session.messages
+        .mockResolvedValueOnce({ data: [] })
+        .mockResolvedValueOnce({
+          data: [
+            { info: { role: "assistant", id: "msg-2" }, parts: [{ type: "text", text: "OK" }] },
+          ],
+        })
+
+      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const result = await sendPrompt(client, "s1", { parts: [{ type: "text", text: "hello" }] })
+
+      expect(client.session.prompt).toHaveBeenCalledWith({
+        path: { id: "s1" },
+        body: {
+          parts: [{ type: "text", text: "hello" }],
+        },
+        parseAs: "text",
+      })
+      expect(result).toEqual({
+        info: { role: "assistant", id: "msg-2" },
+        parts: [{ type: "text", text: "OK" }],
+      })
     })
   })
 })

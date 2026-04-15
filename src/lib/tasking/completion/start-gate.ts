@@ -12,6 +12,14 @@ import { getSessionMessages } from "../../session-api.js"
 import type { OpenCodeClient } from "../../session-api.js"
 import type { StartGateEvidence } from "./types.js"
 
+function getMessageRole(message: unknown): string | undefined {
+  if (!message || typeof message !== "object") return undefined
+  const record = message as { role?: unknown; info?: { role?: unknown } }
+  if (typeof record.role === "string") return record.role
+  if (record.info && typeof record.info.role === "string") return record.info.role
+  return undefined
+}
+
 // ── Pure counting helpers ────────────────────────────────────────────
 
 /**
@@ -90,8 +98,7 @@ export async function verifyStartGate(
 
   // Filter to assistant messages only — user/system messages are not evidence
   const assistantMessages = messages.filter((msg: unknown) => {
-    if (!msg || typeof msg !== "object") return false
-    return (msg as { role?: string }).role === "assistant"
+    return getMessageRole(msg) === "assistant"
   })
 
   // Aggregate counts across ALL assistant messages
