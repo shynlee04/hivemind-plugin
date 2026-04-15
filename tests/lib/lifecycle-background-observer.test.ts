@@ -351,3 +351,113 @@ describe("observeBackgroundCompletion", () => {
     expect(c.releaseQueue).toHaveBeenCalledTimes(1)
   })
 })
+
+/* -------------------------------------------------------------------------- */
+/* Task 3: Evidence-driven start gate, 2-min dead-start, no-resurrection     */
+/* -------------------------------------------------------------------------- */
+describe("Task 3: evidence-driven running and dead-start failure", () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
+  })
+
+  /* WHY: Transport status alone (busy/running/idle) must never promote queued→running.
+   * WHAT: A child receiving only transport-level busy signals stays queued.
+   * HOW: Session reports busy with zero assistant messages and no tool activity.
+   * CONNECTS TO: Task 3 requirement 1 */
+  it("stays queued when only transport busy status arrives with no assistant/tool evidence", async () => {
+    const c = setupObserver("busy", { timeoutMs: 60_000 })
+
+    await c.tick(0)
+
+    expect(c.patchLifecycle).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: "running", phase: "running" }),
+    )
+  })
+
+  /* WHY: Single promotion guarantee — once promoted to running, no second running patch.
+   * WHAT: Observer issues exactly one running patch regardless of how many polls see evidence.
+   * HOW: Seed evidence, advance through two poll intervals, then count running patches.
+   * CONNECTS TO: Task 3 requirement 2 */
+  it("promotes queued to running exactly once even across multiple polls with evidence", async () => {
+    const c = setupObserver("busy", { timeoutMs: 60_000 })
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+
+    c.tick(0)
+    await c.tick(5_000)
+    await c.tick(5_000)
+
+    const runningPatches = c.patchLifecycle.mock.calls.filter(
+      ([patch]) => patch.status === "running" && patch.phase === "running",
+    )
+
+    expect(runningPatches).toHaveLength(1)
+  })
+
+  /* WHY: Dead-start timeout must fail the child and never promote it.
+   * WHAT: After 120s with no evidence, child goes to failed with descriptive error.
+   * HOW: Session reports running but has no messages and no tool activity, advance past 120s.
+   * CONNECTS TO: Task 3 requirement 3 */
+  it("transitions to failed after 120s dead-start with no evidence", async () => {
+    const c = setupObserver("running", { launchedAt: 0, timeoutMs: 600_000 })
+
+    await c.tick(125_000)
+
+    expect(c.patchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "error",
+        phase: "failed",
+        error: expect.stringMatching(/no tool activity or assistant evidence/i),
+        observation: expect.objectContaining({ detail: "background-dead-start-timeout" }),
+      }),
+    )
+  })
+
+  /* WHY: Dead-start must patch continuity, persist failure reason, and release queue.
+   * WHAT: The dead-start failure path calls patchSessionContinuity and releaseQueue.
+   * HOW: Verify patchSessionContinuity and releaseQueue are invoked on dead-start.
+   * CONNECTS TO: Task 3 requirement 3 */
+  it("dead-start failure patches continuity and releases queue", async () => {
+    const c = setupObserver("running", { launchedAt: 0, timeoutMs: 600_000 })
+
+    await c.tick(125_000)
+
+    expect(c.patchSessionContinuity).toHaveBeenCalled()
+    expect(c.releaseQueue).toHaveBeenCalledTimes(1)
+  })
+
+  /* WHY: No-resurrection — once failed, a child must never go back to running.
+   * WHAT: After dead-start failure, the observer returns immediately without further running patches.
+   * HOW: Trigger dead-start, then check that no running patch was ever issued.
+   * CONNECTS TO: Task 3 requirement 4 */
+  it("never promotes to running after dead-start failure is recorded", async () => {
+    const c = setupObserver("running", { launchedAt: 0, timeoutMs: 600_000 })
+
+    await c.tick(125_000)
+    await c.finish()
+
+    const runningPatches = c.patchLifecycle.mock.calls.filter(
+      ([patch]) => patch.status === "running" && patch.phase === "running",
+    )
+    expect(runningPatches).toHaveLength(0)
+  })
+
+  /* WHY: Transport status alone must never prove running for background children.
+   * WHAT: Even if the session reports multiple different active statuses, no running promotion
+   *       occurs without assistant messages or tool activity.
+   * HOW: Cycle through busy→running→streaming, never add evidence, verify no running patch.
+   * CONNECTS TO: Task 3 requirement 1 */
+  it("never promotes from transport-only status changes across busy/running/streaming", async () => {
+    const c = setupObserver("busy", { timeoutMs: 60_000 })
+
+    await c.tick(0)
+    c.client._setStatus("child-123", "running")
+    await c.tick(5_000)
+    c.client._setStatus("child-123", "streaming")
+    await c.tick(5_000)
+
+    expect(c.patchLifecycle).not.toHaveBeenCalledWith(
+      expect.objectContaining({ status: "running", phase: "running" }),
+    )
+  })
+})
