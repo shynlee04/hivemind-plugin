@@ -139,6 +139,19 @@ describe("unwrapData", () => {
     ).toThrow("[Harness] Field required; Invalid format")
   })
 
+  it("extracts messages from SDK payloads that use the singular error array key", () => {
+    expect(() =>
+      unwrapData({
+        error: {
+          error: [
+            { message: "Invalid session id" },
+            { reason: "Expected value to start with 'ses'" },
+          ],
+        },
+      })
+    ).toThrow("[Harness] Invalid session id; Expected value to start with 'ses'")
+  })
+
   it("falls back to error name + JSON for unrecognizable error shape", () => {
     expect(() => unwrapData({ error: { code: 500 } })).toThrow(
       "[Harness] Unknown SDK error: "

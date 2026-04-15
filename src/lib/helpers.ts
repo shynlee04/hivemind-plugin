@@ -35,9 +35,13 @@ function extractSdkErrorMessage(error: unknown): string {
     return dataMessage
   }
 
-  // Shape 2: Bad request — { errors: [{ message: "..." }, { reason: "..." }] }
-  const errors = getNestedValue(error, ["errors"])
-  if (Array.isArray(errors) && errors.length > 0) {
+  // Shape 2: Validation arrays — { errors: [...] } or { error: [...] }
+  const validationErrors = [getNestedValue(error, ["errors"]), getNestedValue(error, ["error"])]
+  for (const errors of validationErrors) {
+    if (!Array.isArray(errors) || errors.length === 0) {
+      continue
+    }
+
     const messages = errors
       .map((e) => {
         if (!isObject(e)) return JSON.stringify(e)

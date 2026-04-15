@@ -18,18 +18,18 @@ describe("session-api typed wrappers", () => {
   describe("createSession", () => {
     it("calls client.session.create with correct body shape", async () => {
       const client = mockClient()
-      client.session.create.mockResolvedValue({ data: { id: "s1", title: "test" } })
+      client.session.create.mockResolvedValue({ data: { id: "ses_1", title: "test" } })
 
       const { createSession } = await import("../../src/lib/session-api.js")
       const result = await createSession(client, {
-        parentID: "parent-1",
+        parentID: "ses_parent_1",
         title: "builder: fix bug",
       })
 
       expect(client.session.create).toHaveBeenCalledWith({
-        body: { parentID: "parent-1", title: "builder: fix bug" },
+        body: { parentID: "ses_parent_1", title: "builder: fix bug" },
       })
-      expect(result).toEqual({ id: "s1", title: "test" })
+      expect(result).toEqual({ id: "ses_1", title: "test" })
     })
 
     it("passes directory as query param when provided", async () => {
@@ -44,18 +44,42 @@ describe("session-api typed wrappers", () => {
         query: { directory: "/tmp" },
       })
     })
+
+    it("rejects invalid parent session IDs before calling the SDK", async () => {
+      const client = mockClient()
+
+      const { createSession } = await import("../../src/lib/session-api.js")
+
+      await expect(createSession(client, { title: "test", parentID: "   " })).rejects.toThrow(
+        "[Harness] Invalid parent session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
+      )
+
+      expect(client.session.create).not.toHaveBeenCalled()
+    })
   })
 
   describe("getSession", () => {
     it("calls client.session.get with { path: { id } }", async () => {
       const client = mockClient()
-      client.session.get.mockResolvedValue({ data: { id: "s1" } })
+      client.session.get.mockResolvedValue({ data: { id: "ses_1" } })
 
       const { getSession } = await import("../../src/lib/session-api.js")
-      const result = await getSession(client, "s1")
+      const result = await getSession(client, "ses_1")
 
-      expect(client.session.get).toHaveBeenCalledWith({ path: { id: "s1" } })
-      expect(result).toEqual({ id: "s1" })
+      expect(client.session.get).toHaveBeenCalledWith({ path: { id: "ses_1" } })
+      expect(result).toEqual({ id: "ses_1" })
+    })
+
+    it("rejects invalid session IDs before calling the SDK", async () => {
+      const client = mockClient()
+
+      const { getSession } = await import("../../src/lib/session-api.js")
+
+      await expect(getSession(client, "not-a-session")).rejects.toThrow(
+        "[Harness] Invalid session ID 'not-a-session'. Expected an OpenCode session ID starting with 'ses'.",
+      )
+
+      expect(client.session.get).not.toHaveBeenCalled()
     })
   })
 
@@ -65,9 +89,21 @@ describe("session-api typed wrappers", () => {
       client.session.abort.mockResolvedValue({ data: true })
 
       const { abortSession } = await import("../../src/lib/session-api.js")
-      await abortSession(client, "s1")
+      await abortSession(client, "ses_1")
 
-      expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "s1" } })
+      expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "ses_1" } })
+    })
+
+    it("rejects invalid session IDs before calling the SDK", async () => {
+      const client = mockClient()
+
+      const { abortSession } = await import("../../src/lib/session-api.js")
+
+      await expect(abortSession(client, "bad-session")).rejects.toThrow(
+        "[Harness] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
+      )
+
+      expect(client.session.abort).not.toHaveBeenCalled()
     })
   })
 
@@ -77,9 +113,9 @@ describe("session-api typed wrappers", () => {
       client.session.messages.mockResolvedValue({ data: [] })
 
       const { getSessionMessages } = await import("../../src/lib/session-api.js")
-      const result = await getSessionMessages(client, "s1")
+      const result = await getSessionMessages(client, "ses_1")
 
-      expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "s1" } })
+      expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "ses_1" } })
       expect(result).toEqual([])
     })
 
@@ -88,10 +124,10 @@ describe("session-api typed wrappers", () => {
       client.session.messages.mockResolvedValue({ data: [] })
 
       const { getSessionMessages } = await import("../../src/lib/session-api.js")
-      await getSessionMessages(client, "s1", { limit: 5 })
+      await getSessionMessages(client, "ses_1", { limit: 5 })
 
       expect(client.session.messages).toHaveBeenCalledWith({
-        path: { id: "s1" },
+        path: { id: "ses_1" },
         query: { limit: 5 },
       })
     })
@@ -101,9 +137,21 @@ describe("session-api typed wrappers", () => {
       client.session.messages.mockResolvedValue({ data: "not-an-array" })
 
       const { getSessionMessages } = await import("../../src/lib/session-api.js")
-      const result = await getSessionMessages(client, "s1")
+      const result = await getSessionMessages(client, "ses_1")
 
       expect(result).toEqual([])
+    })
+
+    it("rejects blank session IDs before calling the SDK", async () => {
+      const client = mockClient()
+
+      const { getSessionMessages } = await import("../../src/lib/session-api.js")
+
+      await expect(getSessionMessages(client, "   ")).rejects.toThrow(
+        "[Harness] Invalid session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
+      )
+
+      expect(client.session.messages).not.toHaveBeenCalled()
     })
   })
 
@@ -114,16 +162,29 @@ describe("session-api typed wrappers", () => {
       client.session.messages.mockResolvedValue({ data: [] })
 
       const { sendPrompt } = await import("../../src/lib/session-api.js")
-      await sendPrompt(client, "s1", {
+      await sendPrompt(client, "ses_1", {
         parts: [{ type: "text", text: "hello" }],
       })
 
       expect(client.session.prompt).toHaveBeenCalledWith({
-        path: { id: "s1" },
+        path: { id: "ses_1" },
         body: {
           parts: [{ type: "text", text: "hello" }],
         },
       })
+    })
+
+    it("rejects invalid session IDs before reading messages or prompting", async () => {
+      const client = mockClient()
+
+      const { sendPrompt } = await import("../../src/lib/session-api.js")
+
+      await expect(sendPrompt(client, "bad-session", { parts: [] })).rejects.toThrow(
+        "[Harness] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
+      )
+
+      expect(client.session.messages).not.toHaveBeenCalled()
+      expect(client.session.prompt).not.toHaveBeenCalled()
     })
 
     it("returns unwrapped data from prompt response", async () => {
@@ -132,7 +193,7 @@ describe("session-api typed wrappers", () => {
       client.session.prompt.mockResolvedValue({ data: { info: { id: "msg-1" }, parts: [] } })
 
       const { sendPrompt } = await import("../../src/lib/session-api.js")
-      const result = await sendPrompt(client, "s1", { parts: [] })
+      const result = await sendPrompt(client, "ses_1", { parts: [] })
 
       expect(result).toEqual({ info: { id: "msg-1" }, parts: [] })
     })
@@ -149,10 +210,10 @@ describe("session-api typed wrappers", () => {
         })
 
       const { sendPrompt } = await import("../../src/lib/session-api.js")
-      const result = await sendPrompt(client, "s1", { parts: [{ type: "text", text: "hello" }] })
+      const result = await sendPrompt(client, "ses_1", { parts: [{ type: "text", text: "hello" }] })
 
       expect(client.session.prompt).toHaveBeenCalledWith({
-        path: { id: "s1" },
+        path: { id: "ses_1" },
         body: {
           parts: [{ type: "text", text: "hello" }],
         },
@@ -185,10 +246,10 @@ describe("session-api typed wrappers", () => {
       })
 
       const { sendPrompt } = await import("../../src/lib/session-api.js")
-      const result = await sendPrompt(client, "s1", { parts: [{ type: "text", text: "hello" }] })
+      const result = await sendPrompt(client, "ses_1", { parts: [{ type: "text", text: "hello" }] })
 
       expect(client.session.prompt).toHaveBeenCalledWith({
-        path: { id: "s1" },
+        path: { id: "ses_1" },
         body: {
           parts: [{ type: "text", text: "hello" }],
         },
@@ -208,6 +269,37 @@ describe("session-api typed wrappers", () => {
           },
         ],
       })
+    })
+  })
+
+  describe("sendPromptAsync", () => {
+    it("calls client.session.promptAsync with correct shape", async () => {
+      const client = mockClient()
+      client.session.promptAsync.mockResolvedValue(undefined)
+
+      const { sendPromptAsync } = await import("../../src/lib/session-api.js")
+      await sendPromptAsync(client, "ses_1", {
+        parts: [{ type: "text", text: "hello" }],
+      })
+
+      expect(client.session.promptAsync).toHaveBeenCalledWith({
+        path: { id: "ses_1" },
+        body: {
+          parts: [{ type: "text", text: "hello" }],
+        },
+      })
+    })
+
+    it("rejects blank session IDs before calling the SDK", async () => {
+      const client = mockClient()
+
+      const { sendPromptAsync } = await import("../../src/lib/session-api.js")
+
+      await expect(sendPromptAsync(client, "\n\t ", { parts: [] })).rejects.toThrow(
+        "[Harness] Invalid session ID '\n\t '. Expected an OpenCode session ID starting with 'ses'.",
+      )
+
+      expect(client.session.promptAsync).not.toHaveBeenCalled()
     })
   })
 
@@ -335,40 +427,52 @@ describe("session-api helpers", () => {
     it("walks up parent chain", async () => {
       const client = mockClient()
       client.session.get.mockImplementation(({ path: { id } }: any) => {
-        if (id === "child") return Promise.resolve({ data: { id: "child", parentID: "parent" } })
-        if (id === "parent") return Promise.resolve({ data: { id: "parent" } })
+        if (id === "ses_child") return Promise.resolve({ data: { id: "ses_child", parentID: "ses_parent" } })
+        if (id === "ses_parent") return Promise.resolve({ data: { id: "ses_parent" } })
         return Promise.reject(new Error("not found"))
       })
 
       const { walkParentChain } = await import("../../src/lib/session-api.js")
-      const chain = await walkParentChain(client, "child")
+      const chain = await walkParentChain(client, "ses_child")
 
       expect(chain).toHaveLength(2)
-      expect(chain[0]).toEqual({ id: "child", parentID: "parent" })
-      expect(chain[1]).toEqual({ id: "parent" })
+      expect(chain[0]).toEqual({ id: "ses_child", parentID: "ses_parent" })
+      expect(chain[1]).toEqual({ id: "ses_parent" })
     })
 
     it("returns single element for session without parent", async () => {
       const client = mockClient()
-      client.session.get.mockResolvedValue({ data: { id: "root" } })
+      client.session.get.mockResolvedValue({ data: { id: "ses_root" } })
 
       const { walkParentChain } = await import("../../src/lib/session-api.js")
-      const chain = await walkParentChain(client, "root")
+      const chain = await walkParentChain(client, "ses_root")
 
       expect(chain).toHaveLength(1)
-      expect(chain[0]).toEqual({ id: "root" })
+      expect(chain[0]).toEqual({ id: "ses_root" })
     })
 
     it("detects cyclic chains", async () => {
       const client = mockClient()
       client.session.get.mockImplementation(({ path: { id } }: any) => {
-        if (id === "a") return Promise.resolve({ data: { id: "a", parentID: "b" } })
-        if (id === "b") return Promise.resolve({ data: { id: "b", parentID: "a" } })
+        if (id === "ses_a") return Promise.resolve({ data: { id: "ses_a", parentID: "ses_b" } })
+        if (id === "ses_b") return Promise.resolve({ data: { id: "ses_b", parentID: "ses_a" } })
         return Promise.reject(new Error("not found"))
       })
 
       const { walkParentChain } = await import("../../src/lib/session-api.js")
-      await expect(walkParentChain(client, "a")).rejects.toThrow(/\[Harness\].*cyclic/)
+      await expect(walkParentChain(client, "ses_a")).rejects.toThrow(/\[Harness\].*cyclic/)
+    })
+
+    it("rejects invalid starting session IDs before calling the SDK", async () => {
+      const client = mockClient()
+
+      const { walkParentChain } = await import("../../src/lib/session-api.js")
+
+      await expect(walkParentChain(client, "root-123")).rejects.toThrow(
+        "[Harness] Invalid session ID 'root-123'. Expected an OpenCode session ID starting with 'ses'.",
+      )
+
+      expect(client.session.get).not.toHaveBeenCalled()
     })
   })
 })

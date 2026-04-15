@@ -23,10 +23,24 @@ type GetSessionMessagesOptions = {
 const SYNC_PROMPT_FALLBACK_TIMEOUT_MS = 30_000
 const SYNC_PROMPT_FALLBACK_POLL_MS = 1_000
 
+function assertValidSessionID(sessionID: string, label = "session ID"): string {
+  const trimmed = sessionID.trim()
+  if (!trimmed.startsWith("ses")) {
+    throw new Error(
+      `[Harness] Invalid ${label} '${sessionID}'. Expected an OpenCode session ID starting with 'ses'.`,
+    )
+  }
+
+  return trimmed
+}
+
 export async function createSession(client: OpenCodeClient, opts: CreateSessionOptions): Promise<SessionRecord> {
   const { directory, ...body } = opts
   const request: SessionCreateRequest = {
-    body,
+    body: {
+      ...body,
+      ...(body.parentID ? { parentID: assertValidSessionID(body.parentID, "parent session ID") } : {}),
+    },
     ...(directory ? { query: { directory } } : {}),
   }
 
@@ -34,7 +48,8 @@ export async function createSession(client: OpenCodeClient, opts: CreateSessionO
 }
 
 export async function getSession(client: OpenCodeClient, sessionID: string): Promise<SessionRecord> {
-  return unwrapData(await client.session.get({ path: { id: sessionID } }))
+  const validSessionID = assertValidSessionID(sessionID)
+  return unwrapData(await client.session.get({ path: { id: validSessionID } }))
 }
 
 /**
@@ -50,7 +65,8 @@ export async function getSessionStatusMap(client: OpenCodeClient): Promise<Recor
 }
 
 export async function abortSession(client: OpenCodeClient, sessionID: string): Promise<unknown> {
-  return unwrapData(await client.session.abort({ path: { id: sessionID } }))
+  const validSessionID = assertValidSessionID(sessionID)
+  return unwrapData(await client.session.abort({ path: { id: validSessionID } }))
 }
 
 export async function getSessionMessages(
@@ -58,8 +74,9 @@ export async function getSessionMessages(
   sessionID: string,
   opts?: GetSessionMessagesOptions
 ): Promise<unknown[]> {
+  const validSessionID = assertValidSessionID(sessionID)
   const request: SessionMessagesRequest = {
-    path: { id: sessionID },
+    path: { id: validSessionID },
     ...(opts?.limit !== undefined ? { query: { limit: opts.limit } } : {}),
   }
 
@@ -112,9 +129,10 @@ export async function sendPrompt(
   sessionID: string,
   body: unknown
 ): Promise<unknown> {
-  const baselineMessageCount = (await getSessionMessages(client, sessionID).catch(() => [] as unknown[])).length
+  const validSessionID = assertValidSessionID(sessionID)
+  const baselineMessageCount = (await getSessionMessages(client, validSessionID).catch(() => [] as unknown[])).length
   const request: SessionPromptRequest = {
-    path: { id: sessionID },
+    path: { id: validSessionID },
     body: body as SessionPromptRequest["body"],
   }
 
@@ -125,7 +143,7 @@ export async function sendPrompt(
 
   const trimmed = response.trim()
   if (!trimmed) {
-    return waitForAssistantResponse(client, sessionID, baselineMessageCount)
+    return waitForAssistantResponse(client, validSessionID, baselineMessageCount)
   }
 
   try {
@@ -149,8 +167,9 @@ export async function sendPromptAsync(
   sessionID: string,
   body: unknown
 ): Promise<void> {
+  const validSessionID = assertValidSessionID(sessionID)
   const request: SessionPromptAsyncRequest = {
-    path: { id: sessionID },
+    path: { id: validSessionID },
     body: body as SessionPromptAsyncRequest["body"],
   }
 
@@ -195,7 +214,7 @@ export async function walkParentChain(client: OpenCodeClient, sessionID: string)
   const chain: SessionRecord[] = []
   const visited = new Set<string>()
 
-  let currentID: string | undefined = sessionID
+  let currentID: string | undefined = assertValidSessionID(sessionID)
   while (currentID) {
     if (visited.has(currentID)) {
       throw new Error(`[Harness] Detected cyclic session parent chain at ${currentID}`)

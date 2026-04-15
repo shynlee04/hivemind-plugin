@@ -11,7 +11,7 @@ import type { RuntimePolicy } from "../../src/lib/types.js"
 
 const mockCtx = {
   messageID: "message-1",
-  sessionID: "parent-session",
+  sessionID: "ses_parent",
   agent: "builder",
   directory: process.cwd(),
   worktree: process.cwd(),
@@ -85,7 +85,7 @@ describe("delegate-task tool category routing", () => {
 
   it("describes async_dispatch as async child-session delegation", () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -98,9 +98,55 @@ describe("delegate-task tool category routing", () => {
     expect(tool.description).not.toContain("explore→general")
   })
 
+  it("rejects invalid session_id overrides before any SDK lookup", async () => {
+    const client = createClient({
+      ses_parent: { id: "ses_parent" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    await expect(
+      tool.execute(
+        {
+          description: "Invalid override",
+          prompt: "Attempt delegation with a bad parent override.",
+          session_id: "not-a-ses-id",
+          async_dispatch: false,
+        },
+        mockCtx,
+      ),
+    ).rejects.toThrow("[Harness] Invalid session_id override. Expected an OpenCode session ID starting with 'ses'.")
+
+    expect(client.session.get).not.toHaveBeenCalled()
+    expect(launchDelegatedSession).not.toHaveBeenCalled()
+  })
+
+  it("rejects blank session_id overrides before any SDK lookup", async () => {
+    const client = createClient({
+      ses_parent: { id: "ses_parent" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    await expect(
+      tool.execute(
+        {
+          description: "Blank override",
+          prompt: "Attempt delegation with a blank parent override.",
+          session_id: "   ",
+          async_dispatch: false,
+        },
+        mockCtx,
+      ),
+    ).rejects.toThrow("[Harness] Invalid session_id override. Expected an OpenCode session ID starting with 'ses'.")
+
+    expect(client.session.get).not.toHaveBeenCalled()
+    expect(launchDelegatedSession).not.toHaveBeenCalled()
+  })
+
   it("uses category defaults to resolve effective agent, model, and temperature without unsupported public override metadata", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -139,7 +185,7 @@ describe("delegate-task tool category routing", () => {
 
   it("marks signal-driven specialist selection with truthful source metadata", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -168,7 +214,7 @@ describe("delegate-task tool category routing", () => {
 
   it("lets an explicit agent override the category tool profile and temperature source", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -205,7 +251,7 @@ describe("delegate-task tool category routing", () => {
 
   it("lets an explicit model override category model resolution", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -238,7 +284,7 @@ describe("delegate-task tool category routing", () => {
 
     try {
       const client = createClient({
-        "parent-session": { id: "parent-session" },
+        ses_parent: { id: "ses_parent" },
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -277,7 +323,7 @@ describe("delegate-task tool category routing", () => {
 
   it("supports deep and quick categories using explicit category profiles", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -319,7 +365,7 @@ describe("delegate-task tool category routing", () => {
 
   it("passes a spawn reservation into the launch path", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -346,8 +392,8 @@ describe("delegate-task tool category routing", () => {
     }
 
     expect(launchArgs.spawnReservation).toBeDefined()
-    expect(launchArgs.spawnReservation?.parentID).toBe("parent-session")
-    expect(launchArgs.spawnReservation?.rootID).toBe("parent-session")
+    expect(launchArgs.spawnReservation?.parentID).toBe("ses_parent")
+    expect(launchArgs.spawnReservation?.rootID).toBe("ses_parent")
     expect(typeof launchArgs.spawnReservation?.reservedAt).toBe("number")
     expect(typeof launchArgs.spawnReservation?.release).toBe("function")
     expect(typeof launchArgs.spawnReservation?.rollback).toBe("function")
@@ -355,7 +401,7 @@ describe("delegate-task tool category routing", () => {
 
   it("classifies interactive work before launching the delegated session", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -389,7 +435,7 @@ describe("delegate-task tool category routing", () => {
 
   it("classifies research work as builtin-subsession and preserves execution audit metadata", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -443,7 +489,7 @@ describe("delegate-task tool category routing", () => {
 
     try {
       const client = createClient({
-        "parent-session": { id: "parent-session" },
+        ses_parent: { id: "ses_parent" },
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -487,7 +533,7 @@ describe("delegate-task tool category routing", () => {
 
     try {
       const client = createClient({
-        "parent-session": { id: "parent-session" },
+        ses_parent: { id: "ses_parent" },
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerPayloadMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -531,8 +577,8 @@ describe("delegate-task tool category routing", () => {
       expect(parsed.ok).toBe(true)
       expect(parsed.mode).toBe("async")
       expect(parsed.session_id).toBe("child-session")
-      expect(parsed.parent_session_id).toBe("parent-session")
-      expect(parsed.root_session_id).toBe("parent-session")
+      expect(parsed.parent_session_id).toBe("ses_parent")
+      expect(parsed.root_session_id).toBe("ses_parent")
       expect(parsed.agent).toBe("builder")
       expect(parsed.category).toBe("implementation")
       expect(parsed.model).toBe(CATEGORY_DEFAULTS.implementation.model)
@@ -562,7 +608,7 @@ describe("delegate-task tool category routing", () => {
     "degrades requested agent %s to general with fallback warnings instead of throwing",
     async (requestedAgent) => {
       const client = createClient({
-        "parent-session": { id: "parent-session" },
+        ses_parent: { id: "ses_parent" },
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -606,7 +652,7 @@ describe("delegate-task tool category routing", () => {
     "routes alias %s through the general permission/tool profile",
     async (requestedAgent) => {
       const client = createClient({
-        "parent-session": { id: "parent-session" },
+        ses_parent: { id: "ses_parent" },
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -633,7 +679,7 @@ describe("delegate-task tool category routing", () => {
 
   it("preserves invalid-agent warning text for fallback launches", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
@@ -661,13 +707,13 @@ describe("delegate-task tool category routing", () => {
 
   it("threads a trusted parent runtime policy override into child delegation metadata", async () => {
     const client = createClient({
-      "parent-session": { id: "parent-session" },
+      ses_parent: { id: "ses_parent" },
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
 
-    setDelegationMeta("parent-session", {
-      rootID: "parent-session",
+    setDelegationMeta("ses_parent", {
+      rootID: "ses_parent",
       depth: 0,
       budgetUsed: 0,
       agent: "builder",

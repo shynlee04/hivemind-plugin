@@ -240,7 +240,15 @@ export function createDelegateTaskTool(
       })
       const agent = route.effectiveAgent
 
-      const parentSessionID = args.session_id?.trim() || context.sessionID
+      const rawSessionOverride = args.session_id
+      const sessionOverride = rawSessionOverride?.trim()
+      if (rawSessionOverride !== undefined && (!sessionOverride || !sessionOverride.startsWith("ses"))) {
+        throw new Error(
+          "[Harness] Invalid session_id override. Expected an OpenCode session ID starting with 'ses'.",
+        )
+      }
+
+      const parentSessionID = sessionOverride || context.sessionID
       if (!parentSessionID) {
         throw new Error("[Harness] Missing parent session ID for delegation.")
       }
