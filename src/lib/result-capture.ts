@@ -22,6 +22,54 @@ function getMessageRole(message: unknown): string | undefined {
   return undefined
 }
 
+type NormalizedToolPart = {
+  tool: string
+  args?: unknown
+  output?: unknown
+  status?: string
+}
+
+function getPartToolName(part: Record<string, unknown>): string | undefined {
+  return typeof part.tool === "string"
+    ? part.tool
+    : typeof part.name === "string"
+      ? part.name
+      : undefined
+}
+
+function getPartState(part: Record<string, unknown>): Record<string, unknown> | undefined {
+  return isRecord(part.state) ? part.state : undefined
+}
+
+function normalizeToolPart(part: unknown): NormalizedToolPart | undefined {
+  if (!isRecord(part)) return undefined
+  const type = part.type
+  if (type !== "tool-call" && type !== "tool_call" && type !== "tool") return undefined
+
+  const tool = getPartToolName(part)
+  if (!tool) return undefined
+
+  const state = getPartState(part)
+  const args = state?.input ?? part.arguments ?? part.args
+  const output = state?.output ?? part.output ?? part.text
+  const status = typeof state?.status === "string" ? state.status : undefined
+
+  return { tool, args, output, status }
+}
+
+function stringifyPartValue(value: unknown, maxLength: number): string | undefined {
+  if (value === undefined || value === null) return undefined
+  if (typeof value === "string") {
+    return truncateToMax(value, maxLength)
+  }
+
+  try {
+    return truncateToMax(JSON.stringify(value), maxLength)
+  } catch {
+    return undefined
+  }
+}
+
 export function extractAssistantText(messages: unknown[]): string {
   let combined = ""
   for (const msg of messages) {
@@ -43,16 +91,15 @@ export function extractToolCallSummary(messages: unknown[]): ToolCallSummary[] {
     if (!isRecord(msg) || getMessageRole(msg) !== "assistant") continue
     const parts = isArray(msg.parts) ? msg.parts : []
     for (const part of parts) {
-      if (!isRecord(part)) continue
-      const type = part.type
-      if (type !== "tool-call" && type !== "tool_call" && type !== "tool") continue
-      const tool = typeof part.name === "string" ? part.name : ""
-      if (!tool) continue
-      const rawArgs = part.arguments ?? part.args
-      const argsStr = rawArgs !== undefined && rawArgs !== null
-        ? truncateToMax(JSON.stringify(rawArgs), MAX_TOOL_CALL_ARGS_LENGTH)
-        : undefined
-      summaries.push({ tool, args: argsStr })
+      const normalized = normalizeToolPart(part)
+      if (!normalized) continue
+
+      summaries.push({
+        tool: normalized.tool,
+        args: stringifyPartValue(normalized.args, MAX_TOOL_CALL_ARGS_LENGTH),
+        output: stringifyPartValue(normalized.output, MAX_RESULT_TEXT_LENGTH),
+        status: normalized.status,
+      })
       if (summaries.length >= MAX_TOOL_CALL_SUMMARIES) return summaries
     }
   }
@@ -68,12 +115,12 @@ export function extractArtifactPaths(messages: unknown[]): string[] {
     if (!isRecord(msg) || getMessageRole(msg) !== "assistant") continue
     const parts = isArray(msg.parts) ? msg.parts : []
     for (const part of parts) {
-      if (!isRecord(part)) continue
-      const type = part.type
-      if (type !== "tool-call" && type !== "tool_call" && type !== "tool") continue
-      const toolName = typeof part.name === "string" ? part.name : ""
+      const normalized = normalizeToolPart(part)
+      if (!normalized) continue
+
+      const toolName = normalized.tool
       if (!recognizedTools.has(toolName)) continue
-      const args = isRecord(part.arguments) ? part.arguments : isRecord(part.args) ? part.args : undefined
+      const args = isRecord(normalized.args) ? normalized.args : undefined
       if (!args) continue
       const path = typeof args.filePath === "string" ? args.filePath
         : typeof args.path === "string" ? args.path
@@ -92,6 +139,17 @@ export function extractGitCommits(messages: unknown[]): string[] {
   const seen = new Set<string>()
   const shaPattern = /[0-9a-f]{7,40}/g
 
+  const collectMatches = (text: string): void => {
+    const matches = text.matchAll(shaPattern)
+    for (const match of matches) {
+      const sha = match[0]
+      if (!seen.has(sha)) {
+        seen.add(sha)
+        commits.push(sha)
+      }
+    }
+  }
+
   for (const msg of messages) {
     if (!isRecord(msg)) continue
     const parts = isArray(msg.parts) ? msg.parts : []
@@ -102,32 +160,17 @@ export function extractGitCommits(messages: unknown[]): string[] {
         const output = typeof part.output === "string" ? part.output
           : typeof part.text === "string" ? part.text
           : ""
-        const matches = output.matchAll(shaPattern)
-        for (const match of matches) {
-          const sha = match[0]
-          if (!seen.has(sha)) {
-            seen.add(sha)
-            commits.push(sha)
-          }
-        }
+        collectMatches(output)
       }
-      // Check tool-call parts for bash/Bash with "git commit"
-      if (part.type === "tool-call" || part.type === "tool_call" || part.type === "tool") {
-        const toolName = typeof part.name === "string" ? part.name : ""
-        if (toolName === "bash" || toolName === "Bash") {
-          const args = isRecord(part.arguments) ? part.arguments : isRecord(part.args) ? part.args : undefined
-          if (args) {
-            const cmd = typeof args.command === "string" ? args.command : ""
-            if (cmd.includes("git commit")) {
-              const matches = cmd.matchAll(shaPattern)
-              for (const match of matches) {
-                const sha = match[0]
-                if (!seen.has(sha)) {
-                  seen.add(sha)
-                  commits.push(sha)
-                }
-              }
-            }
+
+      const normalized = normalizeToolPart(part)
+      if (normalized && (normalized.tool === "bash" || normalized.tool === "Bash")) {
+        const args = isRecord(normalized.args) ? normalized.args : undefined
+        const cmd = typeof args?.command === "string" ? args.command : ""
+        if (cmd.includes("git commit")) {
+          const outputText = stringifyPartValue(normalized.output, MAX_RESULT_TEXT_LENGTH)
+          if (outputText) {
+            collectMatches(outputText)
           }
         }
       }

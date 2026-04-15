@@ -614,7 +614,12 @@ function normalizeToolCallSummary(value: unknown): ToolCallSummary | undefined {
   if (!isRecord(value)) return undefined
   const tool = asString(value.tool)
   if (!tool) return undefined
-  return { tool, args: asString(value.args) }
+   return {
+     tool,
+     args: asString(value.args),
+     output: asString(value.output),
+     status: asString(value.status),
+   }
 }
 
 function normalizeCapturedResult(value: unknown): CapturedResult | undefined {

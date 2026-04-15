@@ -62,6 +62,8 @@ export type LoopWindow = {
 export type ToolCallSummary = {
   tool: string
   args?: string
+  output?: string
+  status?: string
 }
 
 export type CapturedResult = {

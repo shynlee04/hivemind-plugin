@@ -5,9 +5,11 @@ function mockClient() {
     session: {
       create: vi.fn(),
       get: vi.fn(),
+      status: vi.fn(),
       abort: vi.fn(),
       messages: vi.fn(),
       prompt: vi.fn(),
+      promptAsync: vi.fn(),
     },
   } as any
 }
@@ -121,7 +123,6 @@ describe("session-api typed wrappers", () => {
         body: {
           parts: [{ type: "text", text: "hello" }],
         },
-        parseAs: "text",
       })
     })
 
@@ -155,11 +156,79 @@ describe("session-api typed wrappers", () => {
         body: {
           parts: [{ type: "text", text: "hello" }],
         },
-        parseAs: "text",
       })
       expect(result).toEqual({
         info: { role: "assistant", id: "msg-2" },
         parts: [{ type: "text", text: "OK" }],
+      })
+    })
+
+    it("returns structured prompt responses directly without text-forcing", async () => {
+      const client = mockClient()
+      client.session.messages.mockResolvedValue({ data: [] })
+      client.session.prompt.mockResolvedValue({
+        data: {
+          info: { id: "msg-structured", role: "assistant" },
+          parts: [
+            { type: "text", text: "ready" },
+            {
+              type: "tool",
+              tool: "Bash",
+              state: {
+                input: { command: "pwd" },
+                output: "/tmp/project",
+                status: "completed",
+              },
+            },
+          ],
+        },
+      })
+
+      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const result = await sendPrompt(client, "s1", { parts: [{ type: "text", text: "hello" }] })
+
+      expect(client.session.prompt).toHaveBeenCalledWith({
+        path: { id: "s1" },
+        body: {
+          parts: [{ type: "text", text: "hello" }],
+        },
+      })
+      expect(result).toEqual({
+        info: { id: "msg-structured", role: "assistant" },
+        parts: [
+          { type: "text", text: "ready" },
+          {
+            type: "tool",
+            tool: "Bash",
+            state: {
+              input: { command: "pwd" },
+              output: "/tmp/project",
+              status: "completed",
+            },
+          },
+        ],
+      })
+    })
+  })
+
+  describe("getSessionStatusMap", () => {
+    it("uses session.status as the authoritative runtime status source", async () => {
+      const client = mockClient()
+      client.session.status.mockResolvedValue({
+        data: {
+          s1: { type: "busy" },
+          s2: { type: "idle" },
+        },
+      })
+
+      const { getSessionStatusMap } = await import("../../src/lib/session-api.js")
+      const result = await getSessionStatusMap(client)
+
+      expect(client.session.status).toHaveBeenCalledWith()
+      expect(client.session.get).not.toHaveBeenCalled()
+      expect(result).toEqual({
+        s1: { type: "busy" },
+        s2: { type: "idle" },
       })
     })
   })

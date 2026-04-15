@@ -84,8 +84,8 @@ describe("observeBackgroundCompletion", () => {
   it("completes when session goes idle after producing assistant output", async () => {
     const c = setupObserver()
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
-    c.tick(0)
     c.client._setStatus("child-123", "idle")
+    await c.tick(0)
     await c.tick(55_000)
     await c.finish()
     expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({ status: "completed", phase: "completed" }))
@@ -120,6 +120,35 @@ describe("observeBackgroundCompletion", () => {
   it("reports error when session enters retry state", async () => {
     const c = setupObserver("retry")
     await expectError(c, "background-completion-poll-retry", /retry/i)
+  })
+
+  it("uses session.status as the runtime status source even when session.get is stale", async () => {
+    const c = setupObserver("busy", { timeoutMs: 60_000 })
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    c.client.session.get.mockResolvedValue({
+      data: {
+        id: "child-123",
+        title: "stale child metadata",
+        status: { type: "retry" },
+      },
+    })
+    c.client.session.status.mockResolvedValue({
+      data: {
+        "child-123": { type: "idle" },
+      },
+    })
+
+    await c.tick(55_000)
+    await c.finish()
+
+    expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({ status: "completed", phase: "completed" }))
+    expect(c.patchLifecycle).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "failed",
+        phase: "failed",
+        observation: expect.objectContaining({ detail: "background-completion-poll-retry" }),
+      }),
+    )
   })
 
   /* WHY: Stuck busy sessions must fail deterministically so queues can recover.
@@ -234,8 +263,8 @@ describe("observeBackgroundCompletion", () => {
   it("does not complete on the first idle poll after start-gate evidence", async () => {
     const c = setupObserver("busy", { timeoutMs: 60_000 })
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
-    c.tick(0)
     c.client._setStatus("child-123", "idle")
+    await c.tick(0)
 
     await c.tick(14_999)
 
@@ -300,8 +329,8 @@ describe("observeBackgroundCompletion", () => {
   it("captures result via patchSessionContinuity on completion", async () => {
     const c = setupObserver()
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
-    c.tick(0)
     c.client._setStatus("child-123", "idle")
+    await c.tick(0)
     await c.tick(55_000)
     await c.finish()
 
@@ -340,8 +369,8 @@ describe("observeBackgroundCompletion", () => {
     // Make capture fail by having no messages at all — capture may still succeed with empty result
     // The important thing is the observer completes the lifecycle regardless
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
-    c.tick(0)
     c.client._setStatus("child-123", "idle")
+    await c.tick(0)
     await c.tick(55_000)
     await c.finish()
 
@@ -383,7 +412,7 @@ describe("Task 3: evidence-driven running and dead-start failure", () => {
     const c = setupObserver("busy", { timeoutMs: 60_000 })
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
 
-    c.tick(0)
+    await c.tick(0)
     await c.tick(5_000)
     await c.tick(5_000)
 
@@ -478,8 +507,8 @@ describe("Task 4: result persistence and parent retrieval", () => {
   it("persists resultCapture to continuity during completion flow", async () => {
     const c = setupObserver()
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
-    c.tick(0)
     c.client._setStatus("child-123", "idle")
+    await c.tick(0)
     await c.tick(55_000)
     await c.finish()
 
@@ -504,8 +533,8 @@ describe("Task 4: result persistence and parent retrieval", () => {
   it("resultCapture and lifecycle completed are both recorded on success", async () => {
     const c = setupObserver()
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
-    c.tick(0)
     c.client._setStatus("child-123", "idle")
+    await c.tick(0)
     await c.tick(55_000)
     await c.finish()
 

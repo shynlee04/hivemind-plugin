@@ -671,14 +671,31 @@ describe("Task 4: core hooks replay persisted results", () => {
       resultText: "Round trip test",
       artifactPaths: ["/src/a.ts", "/src/b.ts"],
       gitCommits: ["sha1", "sha2"],
-      toolCallSummary: [{ tool: "Write", args: "{}" }, { tool: "Bash", args: "{}" }],
+      toolCallSummary: [
+        {
+          tool: "Write",
+          args: '{"filePath":"/src/a.ts"}',
+          output: "wrote /src/a.ts",
+          status: "completed",
+        },
+        {
+          tool: "Bash",
+          args: '{"command":"npm test"}',
+          output: "ok",
+          status: "failed",
+        },
+      ],
       messageCount: 10,
       capturedAt: 12345,
     }
 
     patchSessionContinuity("round-trip", { resultCapture: captured })
 
-    const record = getSessionContinuity("round-trip")
+    vi.resetModules()
+    process.env.OPENCODE_HARNESS_CONTINUITY_FILE = continuityFile
+    const continuityModule = await import("../../src/lib/continuity.js")
+
+    const record = continuityModule.getSessionContinuity("round-trip")
     const rc = record?.metadata.resultCapture
 
     expect(rc).toBeDefined()
@@ -686,7 +703,24 @@ describe("Task 4: core hooks replay persisted results", () => {
     expect(rc!.artifactPaths).toEqual(["/src/a.ts", "/src/b.ts"])
     expect(rc!.gitCommits).toEqual(["sha1", "sha2"])
     expect(rc!.toolCallSummary).toHaveLength(2)
+    expect(rc!.toolCallSummary[0]).toEqual(expect.objectContaining({
+      tool: "Write",
+      output: "wrote /src/a.ts",
+      status: "completed",
+    }))
+    expect(rc!.toolCallSummary[1]).toEqual(expect.objectContaining({
+      tool: "Bash",
+      output: "ok",
+      status: "failed",
+    }))
     expect(rc!.messageCount).toBe(10)
     expect(rc!.capturedAt).toBe(12345)
+
+    rc!.toolCallSummary[0]!.output = "mutated"
+    rc!.toolCallSummary[1]!.status = "mutated"
+
+    const reread = continuityModule.getSessionContinuity("round-trip")
+    expect(reread?.metadata.resultCapture?.toolCallSummary[0]?.output).toBe("wrote /src/a.ts")
+    expect(reread?.metadata.resultCapture?.toolCallSummary[1]?.status).toBe("failed")
   })
 })

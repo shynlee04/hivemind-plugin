@@ -113,6 +113,37 @@ describe("result-capture", () => {
       expect(result[0].tool).toBe("Bash")
     })
 
+    it("prefers real SDK tool-part fields over legacy fields", () => {
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            {
+              type: "tool",
+              tool: "Read",
+              name: "legacy-name-should-not-win",
+              arguments: { path: "/legacy.ts" },
+              state: {
+                input: { filePath: "/real.ts" },
+                output: "file contents",
+                status: "completed",
+              },
+            },
+          ],
+        },
+      ]
+
+      const result = extractToolCallSummary(messages)
+      expect(result).toEqual([
+        {
+          tool: "Read",
+          args: JSON.stringify({ filePath: "/real.ts" }),
+          output: "file contents",
+          status: "completed",
+        },
+      ])
+    })
+
     it("truncates args to 200 chars", () => {
       const longArgs = { data: "x".repeat(500) }
       const messages = [
@@ -187,6 +218,36 @@ describe("result-capture", () => {
         },
       ]
       expect(extractArtifactPaths(messages)).toEqual(["/src/bar.ts"])
+    })
+
+    it("extracts artifact paths from real SDK state.input payloads", () => {
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            {
+              type: "tool",
+              tool: "Write",
+              state: {
+                input: { filePath: "/sdk-write.ts" },
+                output: { ok: true },
+                status: "completed",
+              },
+            },
+            {
+              type: "tool",
+              tool: "Edit",
+              state: {
+                input: { path: "/sdk-edit.ts" },
+                output: { ok: true },
+                status: "completed",
+              },
+            },
+          ],
+        },
+      ]
+
+      expect(extractArtifactPaths(messages)).toEqual(["/sdk-write.ts", "/sdk-edit.ts"])
     })
 
     it("deduplicates paths", () => {
@@ -276,6 +337,27 @@ describe("result-capture", () => {
           ],
         },
       ]
+      expect(extractGitCommits(messages)).toEqual(["abc1234"])
+    })
+
+    it("extracts commit SHAs from real SDK tool state output", () => {
+      const messages = [
+        {
+          role: "assistant",
+          parts: [
+            {
+              type: "tool",
+              tool: "bash",
+              state: {
+                input: { command: "git commit -m 'test'" },
+                output: "[feature abc1234] test commit",
+                status: "completed",
+              },
+            },
+          ],
+        },
+      ]
+
       expect(extractGitCommits(messages)).toEqual(["abc1234"])
     })
   })

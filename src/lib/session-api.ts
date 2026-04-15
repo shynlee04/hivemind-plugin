@@ -116,7 +116,6 @@ export async function sendPrompt(
   const request: SessionPromptRequest = {
     path: { id: sessionID },
     body: body as SessionPromptRequest["body"],
-    parseAs: "text",
   }
 
   const response = unwrapData(await client.session.prompt(request))

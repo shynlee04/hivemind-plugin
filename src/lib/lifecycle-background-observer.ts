@@ -84,31 +84,20 @@ function getCompletionDetector(detector: unknown): CompletionDetector {
 }
 
 /**
- * Check if a session exists by direct lookup.
+ * Check if a session still exists by direct lookup.
  *
- * Uses client.session.get(sessionID) instead of the status map because
- * the status map may not include all sessions (e.g., child sessions in
- * different scopes, or sessions not yet registered in the map).
- *
- * Returns the session's status type if found, undefined if deleted.
+ * Runtime state must come from client.session.status(); session.get() is only
+ * used here to distinguish a deleted session from a status-map visibility gap.
  */
 async function checkSessionExists(
   sessionID: string,
   client: OpenCodeClient,
-): Promise<{ type: string } | undefined> {
+): Promise<boolean> {
   try {
-    const session = await getSession(client, sessionID)
-    // Session exists — extract status from the response
-    const raw = session as Record<string, unknown>
-    const status = raw.status ?? raw.info
-    if (status && typeof status === "object") {
-      const statusObj = status as Record<string, unknown>
-      return { type: (statusObj.type as string) ?? "unknown" }
-    }
-    return { type: "unknown" }
+    await getSession(client, sessionID)
+    return true
   } catch {
-    // Session.get() threw — session doesn't exist
-    return undefined
+    return false
   }
 }
 
@@ -147,21 +136,17 @@ export async function observeBackgroundCompletion(args: {
   try {
     while (args.now() < deadline) {
       try {
-        // Primary check: direct session lookup via client.session.get()
-        // This is more reliable than the status map because:
-        // 1. Status map may not include all sessions (scope/directory filtering)
-        // 2. Child sessions may not appear in parent's status map view
-        // 3. Direct lookup confirms the session actually exists
-        let sessionStatus = await checkSessionExists(args.sessionID, args.client)
+        const statusMap = await getSessionStatusMap(args.client)
+        let sessionStatus = statusMap[args.sessionID]
 
-        // Fallback: if direct lookup returned undefined, try status map
-        // to confirm the session is truly deleted vs. just not findable
-        if (!sessionStatus) {
-          const statusMap = await getSessionStatusMap(args.client)
-          sessionStatus = statusMap[args.sessionID]
+        // If the status map cannot see the child, use session.get() only to
+        // distinguish deletion from a temporary visibility gap. Do not derive
+        // idle/busy/retry state from the session payload.
+        if (!sessionStatus && await checkSessionExists(args.sessionID, args.client)) {
+          sessionStatus = { type: "unknown" }
         }
 
-        // Session not found by either method — it was deleted or never existed
+        // Session not found by either method — it was deleted or never existed.
         if (!sessionStatus) {
           const error = "Session deleted during background execution"
           const advanced =

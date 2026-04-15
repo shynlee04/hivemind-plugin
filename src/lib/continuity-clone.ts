@@ -140,6 +140,8 @@ export function cloneCapturedResult(
         toolCallSummary: result.toolCallSummary.map((s) => ({
           tool: s.tool,
           args: s.args,
+          output: s.output,
+          status: s.status,
         })),
         messageCount: result.messageCount,
         capturedAt: result.capturedAt,
