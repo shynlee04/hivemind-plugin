@@ -44,6 +44,10 @@ describe("DEFAULT_RUNTIME_POLICY", () => {
   it("resetOnCompact defaults to true", () => {
     expect(DEFAULT_RUNTIME_POLICY.budget.resetOnCompact).toBe(true)
   })
+
+  it("builtin async background child-session support defaults to false", () => {
+    expect(DEFAULT_RUNTIME_POLICY.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(false)
+  })
 })
 
 describe("loadRuntimePolicy", () => {
@@ -62,12 +66,14 @@ describe("loadRuntimePolicy", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 5 },
       budget: { maxToolCallsPerSession: 200, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: true },
     }
     const policy = loadRuntimePolicy(workspace)
     expect(policy.concurrency.globalLimit).toBe(5)
     expect(policy.budget.maxToolCallsPerSession).toBe(200)
     // Budget fields that are provided should come from workspace
     expect(policy.budget.repeatedSignatureThreshold).toBe(16)
+    expect(policy.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(true)
   })
 })
 
@@ -80,16 +86,19 @@ describe("getRuntimePolicyForSession", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 5 },
       budget: { maxToolCallsPerSession: 300, repeatedSignatureThreshold: 10, warningCap: 20, resetOnCompact: false },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     const resolved = getRuntimePolicyForSession(workspace, undefined)
     expect(resolved.budget.maxToolCallsPerSession).toBe(300)
     expect(resolved.concurrency.globalLimit).toBe(5)
+    expect(resolved.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(false)
   })
 
   it("session budget override wins over workspace default", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     const sessionOverride: SessionPolicyOverride = {
       budget: { maxToolCallsPerSession: 100 },
@@ -104,6 +113,7 @@ describe("getRuntimePolicyForSession", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     const sessionOverride: SessionPolicyOverride = {
       concurrency: { globalLimit: 1 },
@@ -116,6 +126,7 @@ describe("getRuntimePolicyForSession", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     const sessionOverride: SessionPolicyOverride = {
       concurrency: {
@@ -126,6 +137,41 @@ describe("getRuntimePolicyForSession", () => {
     const resolved = getRuntimePolicyForSession(workspace, sessionOverride)
     expect(resolved.concurrency.globalLimit).toBe(2)
     expect(resolved.concurrency.perKey?.["model:gpt-5"]?.limit).toBe(1)
+  })
+
+  it("session trusted runtime override can explicitly enable builtin async background child sessions", () => {
+    const workspace: RuntimePolicy = {
+      concurrency: { globalLimit: 3 },
+      budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
+    }
+    const sessionOverride: SessionPolicyOverride = {
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: true },
+    }
+
+    const resolved = getRuntimePolicyForSession(workspace, sessionOverride)
+
+    expect(resolved.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(true)
+  })
+
+  it("falls back to the default trusted runtime when older workspace fixtures omit trustedRuntime", () => {
+    const legacyWorkspace = {
+      concurrency: { globalLimit: 5 },
+      budget: {
+        maxToolCallsPerSession: 300,
+        repeatedSignatureThreshold: 10,
+        warningCap: 20,
+        resetOnCompact: false,
+      },
+    } as RuntimePolicy
+
+    const resolved = getRuntimePolicyForSession(legacyWorkspace, undefined)
+
+    expect(resolved.concurrency.globalLimit).toBe(5)
+    expect(resolved.budget.maxToolCallsPerSession).toBe(300)
+    expect(resolved.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(
+      DEFAULT_RUNTIME_POLICY.trustedRuntime.builtinAsyncBackgroundChildSessions,
+    )
   })
 })
 
@@ -138,6 +184,7 @@ describe("loadRuntimePolicy — validation", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 0 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
@@ -146,6 +193,7 @@ describe("loadRuntimePolicy — validation", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: -1 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
@@ -154,6 +202,7 @@ describe("loadRuntimePolicy — validation", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 0, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
@@ -162,6 +211,7 @@ describe("loadRuntimePolicy — validation", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 0, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
@@ -170,6 +220,7 @@ describe("loadRuntimePolicy — validation", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 0, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
@@ -180,6 +231,7 @@ describe("getRuntimePolicyForSession — validation", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     const sessionOverride: SessionPolicyOverride = {
       budget: { maxToolCallsPerSession: 0 },
@@ -191,6 +243,7 @@ describe("getRuntimePolicyForSession — validation", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
+      trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
     const sessionOverride: SessionPolicyOverride = {
       concurrency: { globalLimit: -5 },

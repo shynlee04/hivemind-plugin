@@ -144,13 +144,28 @@ function normalizeSessionPolicyOverride(
       )
     : undefined
 
-  if (!concurrency && (!normalizedBudget || Object.keys(normalizedBudget).length === 0)) {
+  const trustedRuntime = isRecord(value.trustedRuntime)
+    ? Object.fromEntries(
+        Object.entries({
+          builtinAsyncBackgroundChildSessions: asBoolean(
+            value.trustedRuntime.builtinAsyncBackgroundChildSessions,
+          ),
+        }).filter(([, entry]) => entry !== undefined),
+      )
+    : undefined
+
+  if (
+    !concurrency &&
+    (!normalizedBudget || Object.keys(normalizedBudget).length === 0) &&
+    (!trustedRuntime || Object.keys(trustedRuntime).length === 0)
+  ) {
     return undefined
   }
 
   return {
     concurrency,
     budget: normalizedBudget,
+    trustedRuntime,
   }
 }
 

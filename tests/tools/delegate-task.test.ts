@@ -78,6 +78,22 @@ function createLifecycleManagerPayloadMock() {
   }
 }
 
+function enableTrustedAsyncRuntime(sessionID = "ses_parent") {
+  setDelegationMeta(sessionID, {
+    rootID: sessionID,
+    depth: 0,
+    budgetUsed: 0,
+    agent: "builder",
+    category: "implementation",
+    queueKey: "parent",
+    runtimePolicyOverride: {
+      trustedRuntime: {
+        builtinAsyncBackgroundChildSessions: true,
+      },
+    },
+  })
+}
+
 describe("delegate-task tool category routing", () => {
   beforeEach(() => {
     taskState.clear()
@@ -439,6 +455,7 @@ describe("delegate-task tool category routing", () => {
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
+    enableTrustedAsyncRuntime()
 
     await tool.execute(
       {
@@ -493,6 +510,7 @@ describe("delegate-task tool category routing", () => {
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
+      enableTrustedAsyncRuntime()
 
       await tool.execute(
         {
@@ -527,6 +545,101 @@ describe("delegate-task tool category routing", () => {
     }
   })
 
+  it("rejects async builtin background dispatch by default when runtime durability is not explicitly trusted", async () => {
+    const client = createClient({
+      ses_parent: { id: "ses_parent" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    await expect(
+      tool.execute(
+        {
+          description: "Background implementation",
+          prompt: "Continue in the background.",
+          async_dispatch: true,
+        },
+        mockCtx,
+      ),
+    ).rejects.toThrow(/builtin async disabled because runtime durability cannot be proven/i)
+
+    expect(launchDelegatedSession).not.toHaveBeenCalled()
+  })
+
+  it("allows async builtin background dispatch when trusted runtime policy explicitly enables it", async () => {
+    const client = createClient({
+      ses_parent: { id: "ses_parent" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    setDelegationMeta("ses_parent", {
+      rootID: "ses_parent",
+      depth: 0,
+      budgetUsed: 0,
+      agent: "builder",
+      category: "implementation",
+      queueKey: "parent",
+      runtimePolicyOverride: {
+        trustedRuntime: {
+          builtinAsyncBackgroundChildSessions: true,
+        },
+      },
+    })
+
+    await tool.execute(
+      {
+        description: "Background implementation",
+        prompt: "Continue in the background.",
+        async_dispatch: true,
+      },
+      mockCtx,
+    )
+
+    const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+      runtimePolicyOverride?: {
+        trustedRuntime?: {
+          builtinAsyncBackgroundChildSessions?: boolean
+        }
+      }
+      execution: {
+        family: string
+        submode: string
+      }
+    }
+
+    expect(launchArgs.runtimePolicyOverride?.trustedRuntime?.builtinAsyncBackgroundChildSessions).toBe(true)
+    expect(launchArgs.execution).toMatchObject({ family: "built-in", submode: "builtin-subsession" })
+  })
+
+  it("allows async builtin background dispatch when the workspace runtime policy explicitly enables it", async () => {
+    const client = createClient({
+      ses_parent: { id: "ses_parent" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const workspacePolicy: RuntimePolicy = {
+      concurrency: DEFAULT_RUNTIME_POLICY.concurrency,
+      budget: DEFAULT_RUNTIME_POLICY.budget,
+      trustedRuntime: {
+        builtinAsyncBackgroundChildSessions: true,
+      },
+    }
+    const tool = createDelegateTaskTool(lifecycleManager, client, workspacePolicy)
+
+    await expect(
+      tool.execute(
+        {
+          description: "Background implementation via trusted workspace policy",
+          prompt: "Continue in the background.",
+          async_dispatch: true,
+        },
+        mockCtx,
+      ),
+    ).resolves.toBe("delegated-session")
+
+    expect(launchDelegatedSession).toHaveBeenCalledTimes(1)
+  })
+
   it("returns the immediate async payload contract without drifting onto tmux/process lanes", async () => {
     const previousTmux = process.env.TMUX
     process.env.TMUX = "pane-1"
@@ -537,6 +650,7 @@ describe("delegate-task tool category routing", () => {
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerPayloadMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
+      enableTrustedAsyncRuntime()
 
       const raw = await tool.execute(
         {
@@ -612,6 +726,7 @@ describe("delegate-task tool category routing", () => {
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
+      enableTrustedAsyncRuntime()
 
       await tool.execute(
         {
@@ -656,6 +771,7 @@ describe("delegate-task tool category routing", () => {
       })
       const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
       const tool = createDelegateTaskTool(lifecycleManager, client)
+      enableTrustedAsyncRuntime()
 
       await tool.execute(
         {
@@ -683,6 +799,7 @@ describe("delegate-task tool category routing", () => {
     })
     const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
     const tool = createDelegateTaskTool(lifecycleManager, client)
+    enableTrustedAsyncRuntime()
 
     await tool.execute(
       {

@@ -31,6 +31,8 @@ duration: 4 min
 completed: 2026-04-10
 ---
 
+> **QUARANTINED 2026-04-14:** Do not use this summary as proof of truthful async start/runtime semantics. Later forensic work showed delegated children were still being marked `running`/`started` from dispatch metadata before assistant/tool evidence proved real execution.
+
 # Phase 09 Plan 1: Stable builtin-subsession completion Summary
 
 **Builtin-subsession completion now waits for stable combined message and tool-call evidence before an idle child session is marked done.**

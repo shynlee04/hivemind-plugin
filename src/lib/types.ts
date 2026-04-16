@@ -391,9 +391,18 @@ export type BudgetPolicy = {
   resetOnCompact: boolean
 }
 
+export type TrustedRuntimePolicy = {
+  /**
+   * Whether the host runtime is explicitly trusted to keep builtin async child
+   * sessions alive beyond the immediate parent call lifecycle.
+   */
+  builtinAsyncBackgroundChildSessions: boolean
+}
+
 export type RuntimePolicy = {
   concurrency: ConcurrencyPolicy
   budget: BudgetPolicy
+  trustedRuntime: TrustedRuntimePolicy
 }
 
 export type SessionBudgetOverride = Partial<BudgetPolicy>
@@ -406,6 +415,7 @@ export type SessionConcurrencyOverride = {
 export type SessionPolicyOverride = {
   concurrency?: SessionConcurrencyOverride
   budget?: SessionBudgetOverride
+  trustedRuntime?: Partial<TrustedRuntimePolicy>
 }
 
 export type ResolvedConcurrencyPolicy = {

@@ -10,6 +10,7 @@ import { tool } from "@opencode-ai/plugin/tool"
 import { getSessionContinuity } from "../lib/continuity.js"
 import { reserveSubagentSpawn } from "../lib/concurrency.js"
 import { type ExecutionModeResult, type TaskCharacteristics } from "../lib/execution-mode.js"
+import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../lib/runtime-policy.js"
 import { resolveSpecialistRoute } from "../lib/specialist-router.js"
 import {
   buildPromptText,
@@ -21,6 +22,7 @@ import { getSessionID, walkParentChain } from "../lib/session-api.js"
 import { addWarning, getDelegationMeta, taskState } from "../lib/state.js"
 import type {
   PermissionRule,
+  RuntimePolicy,
   SessionPolicyOverride,
   SpecialistAgent,
 } from "../lib/types.js"
@@ -135,6 +137,7 @@ function cloneRuntimePolicyOverride(
         }
       : undefined,
     budget: override.budget ? { ...override.budget } : undefined,
+    trustedRuntime: override.trustedRuntime ? { ...override.trustedRuntime } : undefined,
   }
 }
 
@@ -170,6 +173,21 @@ function buildDelegateExecutionContract(
   }
 }
 
+function assertAsyncBuiltinDispatchTrusted(
+  workspacePolicy: RuntimePolicy,
+  runtimePolicyOverride: SessionPolicyOverride | undefined,
+): void {
+  const resolvedPolicy = getRuntimePolicyForSession(workspacePolicy, runtimePolicyOverride)
+
+  if (resolvedPolicy.trustedRuntime.builtinAsyncBackgroundChildSessions) {
+    return
+  }
+
+  throw new Error(
+    "[Harness] Builtin async disabled because runtime durability cannot be proven. Use sync dispatch, a durable server/attach flow, or an explicit trusted runtime policy.",
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Tool factory
 // ---------------------------------------------------------------------------
@@ -197,10 +215,11 @@ type DelegateTaskArgs = {
 export function createDelegateTaskTool(
   lifecycleManager: HarnessLifecycleManager,
   client: OpenCodeClient,
+  workspacePolicy: RuntimePolicy = DEFAULT_RUNTIME_POLICY,
 ): ReturnType<typeof tool> {
   return tool({
     description:
-      "Create a restricted async child session for researcher, builder, critic, or general work. Invalid or alias agent requests safely degrade to general with visible fallback warnings. When async_dispatch=true, returns immediately with task metadata for delegated session work — continue with other productive work. You will receive a system_reminder notification when the child session completes. This is separate from the background tool for OS child processes.",
+      "Create a restricted child session for researcher, builder, critic, or general work, including async child session flows when the effective trusted runtime policy proves the host is durable. Invalid or alias agent requests safely degrade to general with visible fallback warnings. This is separate from the background tool for OS child processes.",
     args: {
       description: s.string().describe("Short task description"),
       prompt: s.string().describe("Full task prompt for the delegated agent"),
@@ -218,7 +237,7 @@ export function createDelegateTaskTool(
         ),
       async_dispatch: s
         .boolean()
-        .describe("When true, launch async delegated child-session work and return immediately. You'll be notified via system_reminder when that child session completes."),
+        .describe("When true, request async delegated child-session work. The tool returns immediately only when the effective trusted runtime policy allows builtin async child sessions, and you will then be notified via system_reminder when that child session completes."),
       session_id: s.string().optional().describe("Optional parent session override"),
       scope: s.string().optional().describe("Optional explicit task scope"),
       constraints: s
@@ -287,6 +306,10 @@ export function createDelegateTaskTool(
       const compatibleTools = toolCompatibility ? Object.keys(toolCompatibility).sort() : []
       const execution = buildDelegateExecutionContract(args, agent)
       const runtimePolicyOverride = resolveTrustedParentRuntimePolicyOverride(parentSessionID)
+
+      if (args.async_dispatch && execution.submode === "builtin-subsession") {
+        assertAsyncBuiltinDispatchTrusted(workspacePolicy, runtimePolicyOverride)
+      }
 
       return await lifecycleManager.launchDelegatedSession({
         parentSessionID,

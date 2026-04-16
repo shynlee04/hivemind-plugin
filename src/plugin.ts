@@ -46,7 +46,7 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
     ...createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy }),
     tool: {
       background: createBackgroundTool(backgroundManager, process.cwd()),
-      "delegate-task": createDelegateTaskTool(lifecycleManager, client),
+      "delegate-task": createDelegateTaskTool(lifecycleManager, client, runtimePolicy),
       "prompt-skim": createPromptSkimTool(process.cwd()),
       "prompt-analyze": createPromptAnalyzeTool(process.cwd()),
       "session-patch": createSessionPatchTool(process.cwd()),

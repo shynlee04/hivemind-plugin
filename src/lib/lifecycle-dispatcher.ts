@@ -12,7 +12,11 @@ import { createSession, getSessionID, type OpenCodeClient } from "./session-api.
 import { commitDescendant, setDelegationMeta, taskState } from "./state.js"
 import { acquireLifecycleQueue, enqueueWaitingLifecycle } from "./lifecycle-queue.js"
 import { buildDelegationMeta, buildLifecycleState } from "./lifecycle-state.js"
-import { resolveConcurrencyForKey } from "./runtime-policy.js"
+import {
+  DEFAULT_RUNTIME_POLICY,
+  getRuntimePolicyForSession,
+  resolveConcurrencyForKey,
+} from "./runtime-policy.js"
 import { type PatchLifecycleArgs } from "./lifecycle-patching.js"
 import type {
   DelegationRouteResolution,
@@ -103,6 +107,10 @@ export async function launchDelegatedSession(
   const runMode = args.runInBackground ? "async" : "sync"
   const timestamp = now()
   const execution = args.execution
+  const effectiveRuntimePolicy = getRuntimePolicyForSession(
+    ctx.runtimePolicy ?? DEFAULT_RUNTIME_POLICY,
+    args.runtimePolicyOverride,
+  )
   const queueKey = buildDelegationQueueKey({
     model: args.route.effectiveModel,
     agent: args.agent,
@@ -119,6 +127,17 @@ export async function launchDelegatedSession(
   })
 
   try {
+    if (
+      args.runInBackground &&
+      execution.family === "built-in" &&
+      execution.submode === "builtin-subsession" &&
+      !effectiveRuntimePolicy.trustedRuntime.builtinAsyncBackgroundChildSessions
+    ) {
+      throw new Error(
+        "[Harness] Builtin async disabled because runtime durability cannot be proven. Use sync dispatch, a durable server/attach flow, or an explicit trusted runtime policy.",
+      )
+    }
+
     const childSession = await createSession(ctx.client, {
       parentID: args.parentSessionID,
       title: `${args.agent}: ${args.description}`,
@@ -224,9 +243,7 @@ export async function launchDelegatedSession(
       patchLifecycle: ctx.patchLifecycleFn,
     })
 
-    const resolvedConcurrency = ctx.runtimePolicy
-      ? resolveConcurrencyForKey(ctx.runtimePolicy, queueKey)
-      : undefined
+    const resolvedConcurrency = resolveConcurrencyForKey(effectiveRuntimePolicy, queueKey)
 
     if (args.runInBackground) {
       void (async () => {

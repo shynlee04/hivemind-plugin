@@ -159,8 +159,8 @@ export async function sendPrompt(
  * Prompt a session asynchronously — returns 204 immediately.
  *
  * Use this for background/background delegation tasks where the caller
- * should not wait for the assistant's response. The OpenCode platform
- * keeps the child session alive independently of the parent's lifecycle.
+ * should not wait for the assistant's response. Harness must only use this
+ * path when a trusted runtime policy explicitly says the host is durable.
  */
 export async function sendPromptAsync(
   client: OpenCodeClient,

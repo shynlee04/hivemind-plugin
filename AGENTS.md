@@ -4,7 +4,6 @@
 
 ## NOTICE BOARD
 - delegate-task tool is broken. DO NOT use it. USE `TASK` TOOL, the OPENCODE `TASK` TOOL for delegation.
-
 ## IMPORTANT UPDATE TO ALL AGENTS
 
 - If the agents recieve GSD command, all they must is to act following it. THE COMMAND SUPERSEDE ALL ASSUMPTIONS AND LOADING SKILLS OTHER, BECAUSE THE COMMAND OF GSD IS THE SKILL

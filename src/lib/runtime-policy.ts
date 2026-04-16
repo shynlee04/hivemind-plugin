@@ -18,6 +18,7 @@ import type {
   ResolvedBudgetPolicy,
   RuntimePolicy,
   SessionPolicyOverride,
+  TrustedRuntimePolicy,
 } from "./types.js"
 
 // ---------------------------------------------------------------------------
@@ -33,6 +34,9 @@ export const DEFAULT_RUNTIME_POLICY: RuntimePolicy = {
     repeatedSignatureThreshold: 16,
     warningCap: 25,
     resetOnCompact: true,
+  },
+  trustedRuntime: {
+    builtinAsyncBackgroundChildSessions: false,
   },
 }
 
@@ -80,6 +84,10 @@ function validateBudgetPolicy(policy: BudgetPolicy): void {
   }
 }
 
+function validateTrustedRuntimePolicy(_policy: TrustedRuntimePolicy): void {
+  // Boolean-only policy today; shape validation happens through typing/merge.
+}
+
 // ---------------------------------------------------------------------------
 // Policy loaders
 // ---------------------------------------------------------------------------
@@ -117,10 +125,17 @@ export function loadRuntimePolicy(
       DEFAULT_RUNTIME_POLICY.budget.resetOnCompact,
   }
 
+  const trustedRuntime: TrustedRuntimePolicy = {
+    builtinAsyncBackgroundChildSessions:
+      workspacePolicy?.trustedRuntime?.builtinAsyncBackgroundChildSessions ??
+      DEFAULT_RUNTIME_POLICY.trustedRuntime.builtinAsyncBackgroundChildSessions,
+  }
+
   validateConcurrencyPolicy(concurrency)
   validateBudgetPolicy(budget)
+  validateTrustedRuntimePolicy(trustedRuntime)
 
-  return { concurrency, budget }
+  return { concurrency, budget, trustedRuntime }
 }
 
 /**
@@ -143,41 +158,50 @@ export function getRuntimePolicyForSession(
   workspacePolicy: RuntimePolicy,
   sessionOverride?: SessionPolicyOverride,
 ): RuntimePolicy {
+  const resolvedWorkspacePolicy = loadRuntimePolicy(workspacePolicy)
+
   if (!sessionOverride) {
-    return workspacePolicy
+    return resolvedWorkspacePolicy
   }
 
   // Merge concurrency overrides
   const concurrency: ConcurrencyPolicy = {
     globalLimit:
       sessionOverride.concurrency?.globalLimit ??
-      workspacePolicy.concurrency.globalLimit,
+      resolvedWorkspacePolicy.concurrency.globalLimit,
     perKey:
       sessionOverride.concurrency?.perKey ??
-      workspacePolicy.concurrency.perKey,
+      resolvedWorkspacePolicy.concurrency.perKey,
   }
 
   // Merge budget overrides (partial override wins per-field)
   const budget: BudgetPolicy = {
     maxToolCallsPerSession:
       sessionOverride.budget?.maxToolCallsPerSession ??
-      workspacePolicy.budget.maxToolCallsPerSession,
+      resolvedWorkspacePolicy.budget.maxToolCallsPerSession,
     repeatedSignatureThreshold:
       sessionOverride.budget?.repeatedSignatureThreshold ??
-      workspacePolicy.budget.repeatedSignatureThreshold,
+      resolvedWorkspacePolicy.budget.repeatedSignatureThreshold,
     warningCap:
       sessionOverride.budget?.warningCap ??
-      workspacePolicy.budget.warningCap,
+      resolvedWorkspacePolicy.budget.warningCap,
     resetOnCompact:
       sessionOverride.budget?.resetOnCompact ??
-      workspacePolicy.budget.resetOnCompact,
+      resolvedWorkspacePolicy.budget.resetOnCompact,
+  }
+
+  const trustedRuntime: TrustedRuntimePolicy = {
+    builtinAsyncBackgroundChildSessions:
+      sessionOverride.trustedRuntime?.builtinAsyncBackgroundChildSessions ??
+      resolvedWorkspacePolicy.trustedRuntime.builtinAsyncBackgroundChildSessions,
   }
 
   // Validate the merged result
   validateConcurrencyPolicy(concurrency)
   validateBudgetPolicy(budget)
+  validateTrustedRuntimePolicy(trustedRuntime)
 
-  return { concurrency, budget }
+  return { concurrency, budget, trustedRuntime }
 }
 
 // ---------------------------------------------------------------------------

@@ -65,9 +65,10 @@ function cloneRuntimePolicyOverride(
                     Object.entries(override.concurrency.perKey).map(([key, value]) => [key, { ...value }]),
                   )
                 : undefined,
-            }
+        }
           : undefined,
         budget: override.budget ? { ...override.budget } : undefined,
+        trustedRuntime: override.trustedRuntime ? { ...override.trustedRuntime } : undefined,
       }
     : undefined
 }
