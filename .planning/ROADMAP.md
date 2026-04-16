@@ -223,6 +223,18 @@ Plans:
 - [ ] 13-01-PLAN.md — Types, result-capture module, and continuity wiring (Wave 1)
 - [ ] 13-02-PLAN.md — Wire result capture into observer, process runner, and notifications (Wave 2, depends on 13-01)
 
+### Phase 14: delegate-task truth-reset: archive phases 09-13, remove trash artifacts, refactor codebase to stop confusing agents about delegation
+
+**Goal:** Hard reset + rebuild — delete all 09-13 regression code, archive stale phase dirs, rebuild delegate-task with sync + async delegation using a single DelegationManager class (~300-400 LOC replacing 20+ broken files).
+**Requirements**: REQ-14-01 through REQ-14-08
+**Depends on:** Phase 12 (truthful start semantics baseline)
+**Plans:** 3 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Cleanup + Deletion: NUKE trash, archive phase dirs, delete 09-13 code/tests, clean plugin.ts + types.ts (Wave 1)
+- [ ] 14-02-PLAN.md — DelegationManager Core: Build delegation engine with sync dispatch, async durability, session lifecycle events, persistence, recovery (Wave 2)
+- [ ] 14-03-PLAN.md — Tool + Tests + AGENTS.md: Rebuild delegate-task tool, write fresh runtime-truthful tests, update AGENTS.md (Wave 3)
+
 ---
 
 ### Phase 9.3: Module Restructuring + Config
