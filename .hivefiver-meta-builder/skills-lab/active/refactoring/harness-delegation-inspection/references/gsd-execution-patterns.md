@@ -12,7 +12,7 @@ LLMs are trained on prompts and templates. GSD is a **real execution engine** wi
 
 ```bash
 # STEP 1: Initialize via gsd-tools CLI
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init execute-phase "${PHASE}")
+INIT=$(node ".opencode/get-shit-done/bin/gsd-tools.cjs" init execute-phase "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 
 # STEP 2: Parse JSON output
@@ -22,8 +22,8 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 cat .planning/STATE.md 2>/dev/null
 
 # STEP 4: Detect auto-mode
-AUTO_CHAIN=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+AUTO_CHAIN=$(node ".opencode/get-shit-done/bin/gsd-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+AUTO_CFG=$(node ".opencode/get-shit-done/bin/gsd-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
 ```
 
 ### Task Execution Flow
@@ -73,7 +73,7 @@ TASK_COMMIT=$(git rev-parse --short HEAD)
 
 ## 3. State Management (gsd-tools.cjs)
 
-Every agent uses `node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs"` for:
+Every agent uses `node ".opencode/get-shit-done/bin/gsd-tools.cjs"` for:
 
 | Command | Purpose |
 |---------|---------|
@@ -121,13 +121,13 @@ Every agent uses `node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs"` for:
 cat "$PHASE_DIR"/*-VERIFICATION.md 2>/dev/null
 
 # Step 2a: Load ROADMAP success criteria
-PHASE_DATA=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "$PHASE_NUM" --raw)
+PHASE_DATA=$(node ".opencode/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "$PHASE_NUM" --raw)
 
 # Step 2b: Load PLAN frontmatter must-haves
 grep -l "must_haves:" "$PHASE_DIR"/*-PLAN.md 2>/dev/null
 
 # Step 4: Artifact verification (3 levels)
-ARTIFACT_RESULT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" verify artifacts "$PLAN_PATH")
+ARTIFACT_RESULT=$(node ".opencode/get-shit-done/bin/gsd-tools.cjs" verify artifacts "$PLAN_PATH")
 ```
 
 ### Anti-Pattern Scanning
@@ -288,9 +288,8 @@ const claudeToCopilotTools = {
 ### Path Conversion
 
 ```javascript
-// ~/.claude/ → ~/.copilot/
-// ./.claude/ → ./.github/
-c = c.replace(/\$HOME\/\.claude\//g, '$HOME/.copilot/');
+// .opencode/ → ./.github/ (for Copilot runtime)
+c = c.replace(/\.opencode\/get-shit-done\//g, '.github/copilot-gsd/');
 ```
 
 ---

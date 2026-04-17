@@ -42,7 +42,7 @@ GSD does NOT use "fire and forget" subagents. It uses:
 
 ```bash
 # 1. INIT — load context via CLI tool
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init execute-phase "${PHASE}")
+INIT=$(node ".opencode/get-shit-done/bin/gsd-tools.cjs" init execute-phase "${PHASE}")
 
 # 2. PARSE — extract JSON fields from init output
 # Fields: executor_model, commit_docs, sub_repos, phase_dir, plans, incomplete_plans
