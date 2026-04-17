@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 1
-status: Ready to execute
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-04-17T11:09:51.872Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 14-03-PLAN.md
+last_updated: "2026-04-17T11:23:20.079Z"
 progress:
   total_phases: 16
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 16
-  completed_plans: 15
-  percent: 94
+  completed_plans: 16
+  percent: 100
 ---
 
 # STATE: Harness Cleanup
@@ -33,7 +33,7 @@ Phase: 14 (delegate-task-truth-reset-archive-phases-09-13-remove-trash-) — EXE
 Plan: 3 of 3
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 **Current plan:** 1
-**Progress:** [█████████░] 94%
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -96,6 +96,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Phase 12 P02 | 9 min | 2 tasks | 7 files |
 | Phase 14-delegate-task-truth-reset-archive-phases-09-13-remove-trash P01 | 21h 46m | 3 tasks | 76 files |
 | Phase 14 P02 | 5 min | 2 tasks | 4 files |
+| Phase 14 P03 | 5 min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,8 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - [Phase 14]: Use a temporary compile-safe lifecycle-manager shell as the clean-slate boundary until 14-02 rebuilds delegation behavior.
 - [Phase 14]: Use continuity storage for delegations.json so delegation durability stays in the canonical harness state directory.
 - [Phase 14]: Persist delegation status before resolving callbacks or async notifications to avoid recovery races.
+- [Phase 14]: Return delegate-task results through the standard JSON tool-response envelope so the plugin tool contract stays string-based while preserving structured sync/async payloads.
+- [Phase 14]: Route session.idle and session.deleted to DelegationManager through plugin event observers instead of reworking the existing hook factories.
 
 ### Todos
 
@@ -149,7 +152,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 14-02-PLAN.md
+**Stopped At:** Completed 14-03-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
