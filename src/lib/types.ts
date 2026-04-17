@@ -332,3 +332,32 @@ export type ContinuityStoreFile = {
 // ---------------------------------------------------------------------------
 
 export type CheckpointData = CompactionCheckpointData
+
+// ---------------------------------------------------------------------------
+// Delegation types (Phase 14)
+// ---------------------------------------------------------------------------
+
+export type DelegationStatus = "pending" | "running" | "completed" | "error" | "timeout"
+
+export interface Delegation {
+  id: string
+  parentSessionId: string
+  childSessionId: string
+  agent: string
+  status: DelegationStatus
+  result?: string
+  error?: string
+  createdAt: number
+  completedAt?: number
+  timeoutMs: number
+}
+
+export interface DelegationResult {
+  status: "completed" | "error" | "timeout"
+  result?: string
+  error?: string
+  delegationId: string
+}
+
+export const DEFAULT_DELEGATION_TIMEOUT_MS = 15 * 60 * 1000
+export const MAX_DELEGATION_DEPTH = 1
