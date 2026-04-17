@@ -20,4 +20,4 @@ Control rules:
 - Use absolute path: `.hivemind/state/session-context-prompt.md` (not relative)
 
 User prompt:
-$ARGUMENTS
+"$ARGUMENTS"

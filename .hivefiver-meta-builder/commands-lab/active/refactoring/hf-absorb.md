@@ -6,7 +6,7 @@ subtask: false
 
 ## Raw Input
 
-$ARGUMENTS
+"$ARGUMENTS"
 
 ## Current State
 

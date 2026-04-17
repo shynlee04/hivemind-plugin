@@ -224,4 +224,4 @@ OPENCODE_EXPERIMENTAL_PLAN_MODE	boolean	Enable plan mode
 
 
 # User prompt: <--->>>>>>>>
-$ARGUMENTS  
+"$ARGUMENTS"

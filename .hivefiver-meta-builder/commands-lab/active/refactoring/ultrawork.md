@@ -28,4 +28,4 @@ Execution rule: never rely on generic built-in task delegation. The conductor ro
 
 Do not ask for clarification. Classify the intent and act. If the task is ambiguous, make a reasonable assumption and proceed autonomously.
 
-$ARGUMENTS
+"$ARGUMENTS"
