@@ -3,7 +3,6 @@
 ## Project Overview
 
 ## NOTICE BOARD
-- delegate-task tool is broken. DO NOT use it. USE `TASK` TOOL, the OPENCODE `TASK` TOOL for delegation.
 ## IMPORTANT UPDATE TO ALL AGENTS
 
 - If the agents recieve GSD command, all they must is to act following it. THE COMMAND SUPERSEDE ALL ASSUMPTIONS AND LOADING SKILLS OTHER, BECAUSE THE COMMAND OF GSD IS THE SKILL
@@ -72,23 +71,31 @@ npm run test:coverage          # Coverage report (src/**/*.ts)
 
 ```
 src/
-├── plugin.ts              # Composition root (447 LOC, target <100)
-├── index.ts               # Public API re-exports
-└── lib/                   # Core library modules
-    ├── types.ts           # Shared types + constants (leaf — no imports)
-    ├── task-status.ts     # Task status transitions + guards
-    ├── state.ts           # In-memory Maps (sessionStats, rootBudgets)
-    ├── helpers.ts         # Pure utilities only
-    ├── concurrency.ts     # Keyed semaphore (FIFO queue)
-    ├── continuity.ts      # Durable JSON persistence (~635 LOC)
-    ├── session-api.ts     # Typed OpenCode SDK wrappers
-    ├── runtime.ts         # Event→status mapping
-    ├── completion-detector.ts  # Two-signal completion detection
+├── plugin.ts                  # Composition root
+├── index.ts                   # Public API re-exports
+├── hooks/                     # Event hook factories
+├── tools/                     # Plugin tools
+│   ├── delegate-task.ts       # DelegationManager-backed delegation tool
+│   ├── prompt-skim/           # Prompt skimming tool
+│   ├── prompt-analyze/        # Prompt analysis tool
+│   └── session-patch/         # Session patching tool
+└── lib/                       # Core library modules
+    ├── types.ts               # Shared types + constants (leaf — no imports)
+    ├── task-status.ts         # Task status transitions + guards
+    ├── state.ts               # In-memory Maps (sessionStats, rootBudgets)
+    ├── helpers.ts             # Pure utilities only
+    ├── concurrency.ts         # Keyed semaphore (FIFO queue)
+    ├── continuity.ts          # Durable JSON persistence (~635 LOC)
+    ├── session-api.ts         # Typed OpenCode SDK wrappers
+    ├── runtime.ts             # Event→status mapping
+    ├── completion-detector.ts # Two-signal completion detection
     ├── notification-handler.ts # Async completion notification
-    ├── lifecycle-manager.ts    # Session lifecycle state machine (~500 LOC)
-    └── agent-registry.ts      # Agent definitions
+    ├── lifecycle-manager.ts   # Session lifecycle state machine (~500 LOC)
+    ├── runtime-policy.ts      # Trusted runtime policy loading and resolution
+    └── delegation-manager.ts  # Core delegation orchestrator
 
-tests/lib/                 # Unit tests (vitest, globals: true)
+tests/lib/                     # Unit tests (vitest, globals: true)
+tests/tools/                   # Tool-focused unit tests
 .opencode/                 # Soft meta-concepts (skills, agents, commands)
 ```
 
@@ -108,6 +115,8 @@ tests/lib/                 # Unit tests (vitest, globals: true)
 | Add a lifecycle phase | `src/lib/types.ts` + `src/lib/lifecycle-manager.ts` |
 | Change SDK call patterns | `src/lib/session-api.ts` |
 | Change concurrency model | `src/lib/concurrency.ts` |
+| Change delegation behavior | `src/lib/delegation-manager.ts` — DelegationManager class |
+| Change delegate-task tool | `src/tools/delegate-task.ts` — tool wrapper |
 | Change completion detection | `src/lib/completion-detector.ts` |
 | Change task status transitions | `src/lib/task-status.ts` |
 | Change agent config (temperature, tools) | `src/plugin.ts` — `AGENT_DEFAULTS`, `AGENT_TOOLS` |
@@ -122,7 +131,7 @@ tests/lib/                 # Unit tests (vitest, globals: true)
 - Run tests matching pattern: `npx vitest run -t "<test name>"`
 - Watch mode: `npm run test:watch`
 - Coverage: `npm run test:coverage` — covers `src/**/*.ts`, excludes `src/index.ts`
-- Test files live in `tests/lib/` — mirror `src/lib/` structure
+- Test files live in `tests/lib/` and `tests/tools/` — mirror `src/lib/` and `src/tools/`
 - Tests use vitest globals (no imports needed for `describe`, `it`, `expect`)
 - **Type-check before committing:** `npm run typecheck`
 
