@@ -228,10 +228,10 @@ Plans:
 **Goal:** Hard reset + rebuild — delete all 09-13 regression code, archive stale phase dirs, rebuild delegate-task with sync + async delegation using a single DelegationManager class (~300-400 LOC replacing 20+ broken files).
 **Requirements**: REQ-14-01 through REQ-14-08
 **Depends on:** Phase 12 (truthful start semantics baseline)
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
-- [ ] 14-01-PLAN.md — Cleanup + Deletion: NUKE trash, archive phase dirs, delete 09-13 code/tests, clean plugin.ts + types.ts (Wave 1)
+- [x] 14-01-PLAN.md — Cleanup + Deletion: NUKE trash, archive phase dirs, delete 09-13 code/tests, clean plugin.ts + types.ts (Wave 1)
 - [ ] 14-02-PLAN.md — DelegationManager Core: Build delegation engine with sync dispatch, async durability, session lifecycle events, persistence, recovery (Wave 2)
 - [ ] 14-03-PLAN.md — Tool + Tests + AGENTS.md: Rebuild delegate-task tool, write fresh runtime-truthful tests, update AGENTS.md (Wave 3)
 

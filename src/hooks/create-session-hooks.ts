@@ -1,32 +1,21 @@
 /**
  * Session hook factory.
  *
- * Produces the `experimental.session.compacting` hook that injects checkpointed
- * harness state into compaction context and an `event` hook that drives
- * session-level auto-loop behavior on `session.idle`.
+ * Produces the `experimental.session.compacting` hook and an `event` hook
+ * that drives session-level auto-loop behavior on `session.idle`.
+ *
+ * Stripped in 14-01: compaction-checkpoint, injection-engine, governance-engine,
+ * tasking/* removed. Auto-loop and parent-coordination code preserved but simplified.
  */
-import {
-  captureCheckpoint,
-  formatCheckpointContext,
-} from "../lib/compaction-checkpoint.js"
 import {
   getContinuityStoragePath,
   getSessionContinuity,
-  getSessionRecoveryState,
 } from "../lib/continuity.js"
 import { asString, getNestedValue } from "../lib/helpers.js"
-import {
-  evaluateInjections,
-  hasAnyInjection,
-  INJECTION_CANDIDATE_IDS,
-} from "../lib/injection-engine.js"
-import { buildInjectionGovernanceState } from "../lib/governance-engine.js"
 import {
   getEventSessionID,
   getSessionMessages,
 } from "../lib/session-api.js"
-import { ParentCoordinator } from "../lib/tasking/completion/parent-coordinator.js"
-import type { DelegationCompletionSnapshot } from "../lib/tasking/completion/types.js"
 import type { HookDependencies } from "./types.js"
 
 type CompactingInput = { sessionID?: unknown }
@@ -40,63 +29,11 @@ type AutoLoopState = {
   exhausted: boolean
 }
 
-type ParentAutoLoopState = {
-  iterations: number
-  maxIterations: number
-  pendingDelegations: Set<string>
-  lastSnapshot: DelegationCompletionSnapshot | null
-  retryPending: boolean
-  exhausted: boolean
-}
-
 const DEFAULT_AUTO_LOOP_CONFIG = {
   maxIterations: 5,
   completionSignal: "<promise>DONE</promise>",
   backoffMs: 1000,
 } as const
-
-const DEFAULT_PARENT_AUTO_LOOP_CONFIG = {
-  maxIterations: 10,
-  backoffMs: 15_000,
-} as const
-
-function formatRuntimeInjectionBlock(args: {
-  phase: "session-start" | "compaction"
-  rules: string[]
-  commands: string[]
-  skills: string[]
-  tools: string[]
-}): string {
-  const lines = [`<harness_runtime_injection phase="${args.phase}">`]
-
-  if (args.rules.length > 0) {
-    lines.push("Rules:")
-    for (const rule of args.rules) {
-      lines.push(`- ${rule}`)
-    }
-  }
-  if (args.commands.length > 0) {
-    lines.push("Commands:")
-    for (const command of args.commands) {
-      lines.push(`- ${command}`)
-    }
-  }
-  if (args.skills.length > 0) {
-    lines.push("Skills:")
-    for (const skill of args.skills) {
-      lines.push(`- ${skill}`)
-    }
-  }
-  if (args.tools.length > 0) {
-    lines.push("Tools:")
-    for (const tool of args.tools) {
-      lines.push(`- ${tool}`)
-    }
-  }
-
-  lines.push("</harness_runtime_injection>")
-  return lines.join("\n")
-}
 
 export interface SessionHooks {
   event: (input: EventInput) => Promise<void>
@@ -112,14 +49,6 @@ function resolveAutoLoopConfig(deps: HookDependencies) {
     completionSignal:
       deps.autoLoopConfig?.completionSignal ?? DEFAULT_AUTO_LOOP_CONFIG.completionSignal,
     backoffMs: deps.autoLoopConfig?.backoffMs ?? DEFAULT_AUTO_LOOP_CONFIG.backoffMs,
-  }
-}
-
-function resolveParentAutoLoopConfig(deps: HookDependencies) {
-  return {
-    maxIterations:
-      deps.parentAutoLoopConfig?.maxIterations ?? DEFAULT_PARENT_AUTO_LOOP_CONFIG.maxIterations,
-    backoffMs: deps.parentAutoLoopConfig?.backoffMs ?? DEFAULT_PARENT_AUTO_LOOP_CONFIG.backoffMs,
   }
 }
 
@@ -139,28 +68,6 @@ function getAutoLoopState(
     exhausted: false,
   }
   autoLoopStates.set(sessionID, nextState)
-  return nextState
-}
-
-function getParentAutoLoopState(
-  parentAutoLoopStates: Map<string, ParentAutoLoopState>,
-  sessionID: string,
-  maxIterations: number,
-): ParentAutoLoopState {
-  const state = parentAutoLoopStates.get(sessionID)
-  if (state) {
-    return state
-  }
-
-  const nextState: ParentAutoLoopState = {
-    iterations: 0,
-    maxIterations,
-    pendingDelegations: new Set<string>(),
-    lastSnapshot: null,
-    retryPending: false,
-    exhausted: false,
-  }
-  parentAutoLoopStates.set(sessionID, nextState)
   return nextState
 }
 
@@ -222,57 +129,6 @@ function buildAutoLoopPrompt(args: {
   return lines.join("\n")
 }
 
-function formatDelegationIDs(ids: Set<string>): string {
-  return ids.size > 0 ? Array.from(ids).sort().join(", ") : "none"
-}
-
-function getNewlyTerminalDelegations(args: {
-  current: DelegationCompletionSnapshot
-  previous: DelegationCompletionSnapshot | null
-}): Set<string> {
-  const previousTerminal = new Set<string>([
-    ...(args.previous?.completedDelegations ?? []),
-    ...(args.previous?.failedDelegations ?? []),
-  ])
-  const currentTerminal = new Set<string>([
-    ...args.current.completedDelegations,
-    ...args.current.failedDelegations,
-  ])
-
-  return new Set(
-    Array.from(currentTerminal).filter((sessionID) => !previousTerminal.has(sessionID)),
-  )
-}
-
-function buildParentAutoLoopPrompt(args: {
-  snapshot: DelegationCompletionSnapshot
-  state: ParentAutoLoopState
-}): string {
-  const { snapshot, state } = args
-  const newlyTerminalDelegations = getNewlyTerminalDelegations({
-    current: snapshot,
-    previous: state.lastSnapshot,
-  })
-  return [
-    `<system_reminder>Parent auto-loop poll ${state.iterations}/${state.maxIterations}</system_reminder>`,
-    `Delegation status: ${snapshot.activeDelegations.size} active, ${snapshot.completedDelegations.size} completed, ${snapshot.failedDelegations.size} failed.`,
-    `Active delegations: ${formatDelegationIDs(snapshot.activeDelegations)}`,
-    `Newly terminal delegations: ${formatDelegationIDs(newlyTerminalDelegations)}`,
-    "Continue waiting for background delegations to complete.",
-    "When all are done, synthesize results and emit <promise>DONE</promise>.",
-  ].join("\n")
-}
-
-function buildParentSynthesisPrompt(snapshot: DelegationCompletionSnapshot): string {
-  return [
-    "<system_reminder>All delegations complete</system_reminder>",
-    "All background tasks have finished. Synthesize their results now.",
-    `Delegation summary: ${snapshot.completedDelegations.size} completed, ${snapshot.failedDelegations.size} failed.`,
-    `Completed: ${formatDelegationIDs(snapshot.completedDelegations)}`,
-    `Failed: ${formatDelegationIDs(snapshot.failedDelegations)}`,
-  ].join("\n")
-}
-
 async function waitForRetry(ms: number, sleep: HookDependencies["sleep"]): Promise<void> {
   if (ms <= 0) {
     return
@@ -291,10 +147,7 @@ async function waitForRetry(ms: number, sleep: HookDependencies["sleep"]): Promi
 export function createSessionHooks(deps: HookDependencies): SessionHooks {
   const { client, lifecycleManager, sleep, stateManager } = deps
   const autoLoopConfig = resolveAutoLoopConfig(deps)
-  const parentAutoLoopConfig = resolveParentAutoLoopConfig(deps)
   const autoLoopStates = new Map<string, AutoLoopState>()
-  const parentAutoLoopStates = new Map<string, ParentAutoLoopState>()
-  const parentCoordinators = new Map<string, ParentCoordinator>()
 
   return {
     event: async ({ event }: EventInput): Promise<void> => {
@@ -314,6 +167,7 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
         return
       }
 
+      // Auto-loop for delegation packets
       if (continuity.metadata.delegationPacket) {
         const state = getAutoLoopState(autoLoopStates, sessionID)
         if (state.retryPending || state.exhausted) {
@@ -369,67 +223,8 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
         return
       }
 
-      const childSessionIDs = stateManager.getSubagents(sessionID)
-      if (childSessionIDs.size === 0) {
-        return
-      }
-
-      const parentState = getParentAutoLoopState(
-        parentAutoLoopStates,
-        sessionID,
-        parentAutoLoopConfig.maxIterations,
-      )
-      if (parentState.retryPending || parentState.exhausted) {
-        return
-      }
-
-      const coordinator = parentCoordinators.get(sessionID) ?? new ParentCoordinator()
-      parentCoordinators.set(sessionID, coordinator)
-      for (const childSessionID of childSessionIDs) {
-        coordinator.registerChild(childSessionID)
-      }
-
-      const snapshot = coordinator.snapshotDelegationStatus()
-      parentState.pendingDelegations = new Set(snapshot.activeDelegations)
-
-      if (snapshot.allComplete) {
-        parentAutoLoopStates.delete(sessionID)
-        parentCoordinators.delete(sessionID)
-        await lifecycleManager.requestAutoLoopRetry({
-          sessionID,
-          promptText: buildParentSynthesisPrompt(snapshot),
-        })
-        return
-      }
-
-      if (parentState.iterations >= parentAutoLoopConfig.maxIterations) {
-        parentState.exhausted = true
-        stateManager.addWarning(
-          sessionID,
-          `[Harness] Reached max parent auto-loop iterations (${parentAutoLoopConfig.maxIterations}) for session ${sessionID}`,
-        )
-        parentAutoLoopStates.set(sessionID, parentState)
-        return
-      }
-
-      parentState.iterations += 1
-      parentState.retryPending = true
-      parentAutoLoopStates.set(sessionID, parentState)
-
-      try {
-        await waitForRetry(parentAutoLoopConfig.backoffMs, sleep)
-        await lifecycleManager.requestAutoLoopRetry({
-          sessionID,
-          promptText: buildParentAutoLoopPrompt({ snapshot, state: parentState }),
-        })
-        parentState.lastSnapshot = snapshot
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        stateManager.addWarning(sessionID, `[Harness] Parent auto-loop retry failed: ${message}`)
-      } finally {
-        parentState.retryPending = false
-        parentAutoLoopStates.set(sessionID, parentState)
-      }
+      // Parent auto-loop stripped in 14-01 clean slate — tasking/* removed
+      // Will be restored in Plan 14-02 (DelegationManager)
     },
 
     "experimental.session.compacting": async (
@@ -443,14 +238,9 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
 
       const continuity = getSessionContinuity(sessionID)
       const lifecycle = lifecycleManager.getLifecycleSnapshot(sessionID)
-      const checkpoint = captureCheckpoint(sessionID, stateManager, {
-        tools: continuity?.promptParams.tools ?? [],
-      })
-      lifecycleManager.recordCompactionCheckpoint(sessionID, checkpoint)
       const autoLoopState = autoLoopStates.get(sessionID)
 
       output.context = Array.isArray(output.context) ? output.context : []
-      ;(output.context as string[]).push(formatCheckpointContext(checkpoint))
 
       if (lifecycle || autoLoopState) {
         const contextLines = ["Harness session context:"]
@@ -474,41 +264,11 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
           )
           contextLines.push(`- auto_loop_exhausted: ${autoLoopState.exhausted}`)
         }
-        const parentAutoLoopState = parentAutoLoopStates.get(sessionID)
-        if (parentAutoLoopState) {
-          contextLines.push(
-            `- parent_auto_loop_iteration: ${parentAutoLoopState.iterations}/${parentAutoLoopState.maxIterations}`,
-          )
-          contextLines.push(`- parent_auto_loop_exhausted: ${parentAutoLoopState.exhausted}`)
-          contextLines.push(
-            `- parent_auto_loop_pending: ${formatDelegationIDs(parentAutoLoopState.pendingDelegations)}`,
-          )
-        }
 
         ;(output.context as string[]).push(contextLines.join("\n"))
       }
 
       if (continuity) {
-        const injectionEvaluation = evaluateInjections({
-          sessionID,
-          phase: "compaction",
-          agent: continuity.promptParams.agent,
-          category: continuity.promptParams.category,
-          delegation: continuity.metadata.delegation,
-          route: continuity.metadata.route,
-          recovery: getSessionRecoveryState(sessionID),
-          governance: buildInjectionGovernanceState({ sessionID, injectionIDs: INJECTION_CANDIDATE_IDS }),
-        })
-
-        if (hasAnyInjection(injectionEvaluation.injections)) {
-          ;(output.context as string[]).push(
-            formatRuntimeInjectionBlock({
-              phase: "compaction",
-              ...injectionEvaluation.injections,
-            }),
-          )
-        }
-
         ;(output.context as string[]).push(
           [
             "Harness continuity snapshot:",

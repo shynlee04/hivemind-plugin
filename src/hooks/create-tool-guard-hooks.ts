@@ -5,17 +5,12 @@
  * enforce the session circuit breaker and tool budget, track per-session
  * stats, and inject harness metadata into tool outputs.
  *
- * All state access goes through the provided TaskStateManager instance so
- * tests can inject a fresh, isolated manager without touching the singleton.
- * The optional lifecycleManager is used to note observed tool activity when
- * present; tests omit it so they have no dependency on the lifecycle manager.
+ * Stripped in 14-01: governance-engine removed. Governance evaluation is no-op.
  */
 import {
   getSessionContinuity,
   getContinuityStoragePath,
-  getSessionRecoveryState,
 } from "../lib/continuity.js"
-import { evaluateGovernance, type GovernanceEvaluationResult } from "../lib/governance-engine.js"
 import { asString, getNestedValue, isObject, makeToolSignature } from "../lib/helpers.js"
 import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../lib/runtime-policy.js"
 import type { RuntimePolicy } from "../lib/types.js"
@@ -53,78 +48,13 @@ export interface ToolGuardHooks {
 
 /**
  * Creates the tool guard hooks using the provided dependency bundle.
- *
- * @param deps - Dependency bundle containing the state manager
- * @returns Object with `tool.execute.before` and `tool.execute.after` handlers
  */
 export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHooks {
   const { stateManager, lifecycleManager } = deps
   const workspacePolicy = deps.runtimePolicy ?? DEFAULT_RUNTIME_POLICY
-  const recentGovernance = new Map<string, GovernanceEvaluationResult>()
-  const pendingInvocationKeys = new Map<string, string[]>()
-  let invocationCounter = 0
-
-  function readNativeInvocationKey(value: unknown): string | undefined {
-    return (
-      asString(getNestedValue(value, ["requestID"])) ??
-      asString(getNestedValue(value, ["requestId"])) ??
-      asString(getNestedValue(value, ["invocationID"])) ??
-      asString(getNestedValue(value, ["invocationId"])) ??
-      asString(getNestedValue(value, ["toolCallID"])) ??
-      asString(getNestedValue(value, ["toolCallId"]))
-    )
-  }
-
-  function nextInvocationKey(sessionID: string, toolName: string): string {
-    invocationCounter += 1
-    return `harness:${sessionID}:${toolName}:${invocationCounter}`
-  }
-
-  function stripHarnessInvocationKey(args: unknown): unknown {
-    if (!isObject(args)) {
-      return args
-    }
-
-    const { _harnessInvocationKey: _ignored, ...rest } = args
-    return rest
-  }
-
-  function registerPendingInvocation(sessionID: string, invocationKey: string): void {
-    const queue = pendingInvocationKeys.get(sessionID) ?? []
-    queue.push(invocationKey)
-    pendingInvocationKeys.set(sessionID, queue)
-  }
-
-  function consumePendingInvocation(sessionID: string, invocationKey?: string): string | undefined {
-    const queue = pendingInvocationKeys.get(sessionID)
-    if (!queue || queue.length === 0) {
-      return invocationKey
-    }
-
-    if (invocationKey) {
-      const nextQueue = queue.filter((key) => key !== invocationKey)
-      if (nextQueue.length === 0) {
-        pendingInvocationKeys.delete(sessionID)
-      } else {
-        pendingInvocationKeys.set(sessionID, nextQueue)
-      }
-      return invocationKey
-    }
-
-    if (queue.length !== 1) {
-      return undefined
-    }
-
-    pendingInvocationKeys.delete(sessionID)
-    return queue[0]
-  }
 
   /**
    * Resolve the effective runtime policy for a given session.
-   *
-   * Per-session overrides come from trusted continuity/delegation metadata
-   * only (not arbitrary tool args). This prevents silent limit escalation
-   * from untrusted sources (threat T-02-21).
    */
   function resolvePolicy(sessionID: string): RuntimePolicy {
     const delegation = getDelegationMeta(sessionID)
@@ -136,40 +66,9 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       const sessionID = asString(getNestedValue(input, ["sessionID"]))
       const toolName = asString(getNestedValue(input, ["tool"]))
       const rawArgs = getNestedValue(output, ["args"])
-      const args = stripHarnessInvocationKey(rawArgs)
 
       if (!sessionID || !toolName) {
         return
-      }
-
-      const governance = evaluateGovernance({
-        scope: "tool.execute.before",
-        sessionID,
-        toolName,
-        args,
-      })
-      const nativeInvocationKey = readNativeInvocationKey(input) ?? readNativeInvocationKey(args)
-      const invocationKey = nativeInvocationKey ?? nextInvocationKey(sessionID, toolName)
-      recentGovernance.set(invocationKey, governance)
-      registerPendingInvocation(sessionID, invocationKey)
-
-      if (!nativeInvocationKey) {
-        output.args = {
-          ...(isObject(args) ? args : {}),
-          _harnessInvocationKey: invocationKey,
-        }
-      }
-
-      for (const warning of governance.warnings) {
-        stateManager.addWarning(sessionID, warning.message)
-      }
-
-      for (const escalation of governance.escalations) {
-        stateManager.addWarning(sessionID, `Governance escalation: ${escalation.message}`)
-      }
-
-      if (governance.blocks.length > 0) {
-        throw new Error(`[Harness] ${governance.blocks[0]?.message ?? "Tool execution blocked by governance."}`)
       }
 
       // Resolve per-session policy from trusted delegation metadata
@@ -188,7 +87,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
         )
       }
 
-      const signature = makeToolSignature(toolName, args)
+      const signature = makeToolSignature(toolName, rawArgs)
       if (stats.loop.signature === signature) {
         stats.loop.count += 1
       } else {
@@ -220,18 +119,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       const stats = stateManager.getStats(sessionID)
       const delegation = getDelegationMeta(sessionID)
       const continuity = getSessionContinuity(sessionID)
-      const recovery = getSessionRecoveryState(sessionID)
       const lifecycle = lifecycleManager?.getLifecycleSnapshot(sessionID)
-      const afterArgs = getNestedValue(input, ["args"])
-      const requestedInvocationKey =
-        readNativeInvocationKey(input) ??
-        readNativeInvocationKey(afterArgs) ??
-        asString(getNestedValue(afterArgs, ["_harnessInvocationKey"]))
-      const invocationKey = consumePendingInvocation(sessionID, requestedInvocationKey)
-      const governance = invocationKey ? recentGovernance.get(invocationKey) : undefined
-      if (invocationKey) {
-        recentGovernance.delete(invocationKey)
-      }
 
       output.metadata = {
         ...(isObject(output.metadata) ? output.metadata : {}),
@@ -248,9 +136,8 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
           concurrencyKey: delegation?.queueKey,
           continuityStatus: continuity?.metadata.status,
           lifecycle,
-          recovery,
           routing: continuity?.metadata.route,
-          governance: governance ?? { warnings: [], escalations: [], blocks: [] },
+          governance: { warnings: [], escalations: [], blocks: [] },
           continuityStorage: getContinuityStoragePath(),
           continuity: continuity
             ? {

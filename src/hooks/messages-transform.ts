@@ -46,8 +46,8 @@ function buildContextPacket(sessionID: string): string {
   try {
     const continuity = getSessionContinuity(sessionID)
     const status = continuity?.metadata.status ?? "unknown"
-    const agent = continuity?.metadata.delegation.agent ?? "none"
-    const category = continuity?.metadata.delegation.category ?? "none"
+    const agent = continuity?.metadata.delegation?.agent ?? "none"
+    const category = continuity?.metadata.delegation?.category ?? "none"
 
     return CONTEXT_PACKET_TEMPLATE.join("\n")
       .replace("{sessionID}", sessionID)

@@ -1,26 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
-import { exportDelegationArtifacts, type DelegationExportPolicy } from "./delegation-export.js"
-import { buildRecoveryResumeState, type RecoveryAssessmentOptions, type RecoveryResumeState } from "./session-recovery.js"
 import type {
+  CapturedResult,
+  CompactionCheckpointData,
   ContinuityStoreFile,
+  DelegationMeta,
   DelegationPacket,
   GovernancePersistenceState,
+  PendingNotification,
   SessionContinuityMetadata,
   SessionContinuityRecord,
-  SessionPromptParams,
-  SessionToolProfile,
+  SessionLifecycleState,
 } from "./types.js"
-import {
-  cloneCapturedResult,
-  cloneCompactionCheckpoint,
-  cloneContinuityRecord,
-  cloneDelegationMeta,
-  cloneDelegationPacket,
-  cloneLifecycleState,
-  clonePendingNotifications,
-} from "./continuity-clone.js"
-import { normalizeContinuityRecord } from "./continuity-normalizers.js"
 
 const CONTINUITY_VERSION = 1 as const
 const DEFAULT_STATE_DIR = resolve(process.cwd(), ".opencode", "state", "opencode-harness")
@@ -47,16 +38,6 @@ function getContinuityFile(): string {
   return resolveContinuityFilePath()
 }
 
-function resolveDelegationExportPolicy(): DelegationExportPolicy {
-  const enabled = /^(1|true|yes|audit)$/i.test(getEnvPath("OPENCODE_HARNESS_DELEGATION_EXPORTS") ?? "false")
-  const explicitDir = getEnvPath("OPENCODE_HARNESS_DELEGATION_EXPORT_DIR")
-
-  return {
-    enabled,
-    outputDir: explicitDir ? resolve(explicitDir) : resolve(process.cwd(), ".hivemind", "delegation"),
-  }
-}
-
 function emptyStore(): ContinuityStoreFile {
   return {
     version: CONTINUITY_VERSION,
@@ -73,6 +54,157 @@ function emptyStore(): ContinuityStoreFile {
 function isParsedStore(value: unknown): value is Partial<ContinuityStoreFile> & { sessions?: unknown } {
   return typeof value === "object" && value !== null
 }
+
+// ---------------------------------------------------------------------------
+// Inline deep-clone helpers (replaces deleted continuity-clone.ts)
+// ---------------------------------------------------------------------------
+
+function cloneDelegationMeta(meta: DelegationMeta | null): DelegationMeta | null {
+  if (!meta) return null
+  return { ...meta }
+}
+
+function cloneCompactionCheckpoint(cp: CompactionCheckpointData | undefined): CompactionCheckpointData | undefined {
+  if (!cp) return undefined
+  return {
+    ...cp,
+    tools: [...cp.tools],
+    warnings: [...cp.warnings],
+    delegationMeta: cp.delegationMeta ? { ...cp.delegationMeta } : null,
+    sessionStats: { ...cp.sessionStats, byTool: { ...cp.sessionStats.byTool } },
+  }
+}
+
+function cloneDelegationPacket(packet: DelegationPacket | undefined): DelegationPacket | undefined {
+  if (!packet) return undefined
+  return {
+    ...packet,
+    artifacts: [...packet.artifacts],
+    commits: [...packet.commits],
+    parentChain: [...packet.parentChain],
+  }
+}
+
+function cloneLifecycleState(state: SessionLifecycleState | undefined): SessionLifecycleState | undefined {
+  if (!state) return undefined
+  return { ...state }
+}
+
+function clonePendingNotifications(notifications: PendingNotification[] | undefined): PendingNotification[] {
+  if (!Array.isArray(notifications)) return []
+  return [...notifications]
+}
+
+function cloneCapturedResult(result: CapturedResult | undefined): CapturedResult | undefined {
+  if (!result) return undefined
+  return {
+    ...result,
+    artifactPaths: [...result.artifactPaths],
+    gitCommits: [...result.gitCommits],
+    toolCallSummary: [...result.toolCallSummary],
+  }
+}
+
+function cloneContinuityRecord(record: SessionContinuityRecord): SessionContinuityRecord {
+  return {
+    ...record,
+    metadata: {
+      ...record.metadata,
+      delegation: cloneDelegationMeta(record.metadata.delegation),
+      constraints: [...record.metadata.constraints],
+      pendingNotifications: clonePendingNotifications(record.metadata.pendingNotifications),
+      resultCapture: cloneCapturedResult(record.metadata.resultCapture),
+      compactionCheckpoint: cloneCompactionCheckpoint(record.metadata.compactionCheckpoint),
+      delegationPacket: cloneDelegationPacket(record.metadata.delegationPacket),
+      lifecycle: cloneLifecycleState(record.metadata.lifecycle),
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Inline normalizer (replaces deleted continuity-normalizers.ts)
+// ---------------------------------------------------------------------------
+
+function normalizeContinuityRecord(sessionID: string, value: unknown): SessionContinuityRecord | null {
+  if (typeof value !== "object" || value === null) {
+    return null
+  }
+
+  const rec = value as Record<string, unknown>
+  const meta = typeof rec.metadata === "object" && rec.metadata !== null
+    ? rec.metadata as Record<string, unknown>
+    : {}
+  const promptParams = typeof rec.promptParams === "object" && rec.promptParams !== null
+    ? rec.promptParams as SessionContinuityRecord["promptParams"]
+    : {}
+
+  return {
+    sessionID,
+    promptParams,
+    toolProfile: typeof rec.toolProfile === "object" && rec.toolProfile !== null
+      ? rec.toolProfile as SessionContinuityRecord["toolProfile"]
+      : undefined,
+    metadata: {
+      status: (meta.status as SessionContinuityMetadata["status"]) ?? "pending",
+      description: typeof meta.description === "string" ? meta.description : "",
+      delegation: (meta.delegation as DelegationMeta | null) ?? null,
+      category: typeof meta.category === "string" ? meta.category : undefined,
+      constraints: Array.isArray(meta.constraints) ? [...(meta.constraints as string[])] : [],
+      lifecycle: (meta.lifecycle as SessionLifecycleState | undefined) ?? undefined,
+      pendingNotifications: Array.isArray(meta.pendingNotifications)
+        ? [...(meta.pendingNotifications as PendingNotification[])]
+        : [],
+      resultCapture: (meta.resultCapture as CapturedResult | undefined) ?? undefined,
+      compactionCheckpoint: (meta.compactionCheckpoint as CompactionCheckpointData | undefined) ?? undefined,
+      delegationPacket: (meta.delegationPacket as DelegationPacket | undefined) ?? undefined,
+      route: typeof meta.route === "string" ? meta.route : undefined,
+      lastToolActivityAt: typeof meta.lastToolActivityAt === "number" ? meta.lastToolActivityAt : undefined,
+      updatedAt: typeof meta.updatedAt === "number" && Number.isFinite(meta.updatedAt) ? meta.updatedAt : Date.now(),
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Governance state helpers
+// ---------------------------------------------------------------------------
+
+function isGovernanceState(value: unknown): value is GovernancePersistenceState {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false
+  }
+
+  const rules = (value as { rules?: unknown }).rules
+  const violations = (value as { violations?: unknown }).violations
+  const updatedAt = (value as { updatedAt?: unknown }).updatedAt
+
+  return Array.isArray(rules) && Array.isArray(violations) && typeof updatedAt === "number" && Number.isFinite(updatedAt)
+}
+
+function cloneGovernanceState(state: GovernancePersistenceState): GovernancePersistenceState {
+  return {
+    rules: state.rules.map((rule) => ({
+      ...rule,
+      condition: {
+        ...rule.condition,
+        toolNames: rule.condition.toolNames ? [...rule.condition.toolNames] : undefined,
+        sessionIDs: rule.condition.sessionIDs ? [...rule.condition.sessionIDs] : undefined,
+      },
+      action: {
+        ...rule.action,
+        escalation: rule.action.escalation ? { ...rule.action.escalation } : undefined,
+      },
+    })),
+    violations: state.violations.map((violation) => ({
+      ...violation,
+      escalation: violation.escalation ? { ...violation.escalation } : undefined,
+    })),
+    updatedAt: state.updatedAt,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Store I/O
+// ---------------------------------------------------------------------------
 
 function ensureStoreLoaded(): ContinuityStoreFile {
   if (storeCache) {
@@ -126,50 +258,17 @@ function loadStoreFromDisk(): ContinuityStoreFile {
   }
 }
 
-function isGovernanceState(value: unknown): value is GovernancePersistenceState {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return false
-  }
-
-  const rules = (value as { rules?: unknown }).rules
-  const violations = (value as { violations?: unknown }).violations
-  const updatedAt = (value as { updatedAt?: unknown }).updatedAt
-
-  return Array.isArray(rules) && Array.isArray(violations) && typeof updatedAt === "number" && Number.isFinite(updatedAt)
-}
-
-function cloneGovernanceState(state: GovernancePersistenceState): GovernancePersistenceState {
-  return {
-    rules: state.rules.map((rule) => ({
-      ...rule,
-      condition: {
-        toolNames: rule.condition.toolNames ? [...rule.condition.toolNames] : undefined,
-        sessionIDs: rule.condition.sessionIDs ? [...rule.condition.sessionIDs] : undefined,
-      },
-      action: {
-        ...rule.action,
-        escalation: rule.action.escalation ? { ...rule.action.escalation } : undefined,
-      },
-    })),
-    violations: state.violations.map((violation) => ({
-      ...violation,
-      escalation: violation.escalation ? { ...violation.escalation } : undefined,
-    })),
-    updatedAt: state.updatedAt,
-  }
-}
-
 function persistStore(): void {
   const continuityFile = getContinuityFile()
   const store = ensureStoreLoaded()
   store.updatedAt = Date.now()
   mkdirSync(dirname(continuityFile), { recursive: true })
   writeFileSync(continuityFile, `${JSON.stringify(store, null, 2)}\n`, "utf8")
-  exportDelegationArtifacts({
-    records: Object.values(store.sessions),
-    policy: resolveDelegationExportPolicy(),
-  })
 }
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
 
 export function listSessionContinuity(): SessionContinuityRecord[] {
   return Object.values(ensureStoreLoaded().sessions).map((record) => cloneContinuityRecord(record))
@@ -180,24 +279,16 @@ export function getSessionContinuity(sessionID: string): SessionContinuityRecord
   return record ? cloneContinuityRecord(record) : undefined
 }
 
-export function getSessionToolProfile(sessionID: string): SessionToolProfile | undefined {
+export function getSessionToolProfile(sessionID: string): SessionContinuityRecord["toolProfile"] | undefined {
   return getSessionContinuity(sessionID)?.toolProfile
 }
 
-export function getSessionPromptParams(sessionID: string): SessionPromptParams | undefined {
+export function getSessionPromptParams(sessionID: string): SessionContinuityRecord["promptParams"] | undefined {
   return getSessionContinuity(sessionID)?.promptParams
 }
 
 export function getSessionContinuityMetadata(sessionID: string): SessionContinuityMetadata | undefined {
   return getSessionContinuity(sessionID)?.metadata
-}
-
-export function getSessionRecoveryState(
-  sessionID: string,
-  options: RecoveryAssessmentOptions = {},
-): RecoveryResumeState | undefined {
-  const record = getSessionContinuity(sessionID)
-  return record ? buildRecoveryResumeState(record, options) : undefined
 }
 
 export function recordSessionContinuity(record: SessionContinuityRecord): SessionContinuityRecord {
@@ -291,10 +382,6 @@ export function deleteSessionContinuity(sessionID: string): void {
 
 export function getContinuityStoragePath(): string {
   return getContinuityFile()
-}
-
-export function getDelegationExportPolicy(): DelegationExportPolicy {
-  return resolveDelegationExportPolicy()
 }
 
 export function getGovernancePersistenceState(): GovernancePersistenceState {

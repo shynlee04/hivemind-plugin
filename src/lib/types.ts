@@ -164,212 +164,8 @@ export const HARNESS_STATUS_TO_LIFECYCLE_PHASE: Record<
   failed: "failed",
 } as const
 
-export const LIFECYCLE_PHASE_TO_PACKET_STATUS: Record<SessionLifecyclePhase, DelegationPacketStatus> = {
-  created: "pending",
-  queued: "pending",
-  dispatching: "pending",
-  running: "running",
-  completed: "completed",
-  failed: "failed",
-} as const
-
-export type DelegationExecutionCharacteristics = {
-  isParallel: boolean
-  isInteractive: boolean
-  isResearch: boolean
-  isHeadless: boolean
-  runInBackground: boolean
-}
-
-export type DelegationExecutionCapabilityEvidence = {
-  hasTmux: boolean
-  projectRoot: string
-}
-
-export type DelegationExecutionMetadata = {
-  family: "visible-worker" | "built-in"
-  submode: "tmux-pane" | "builtin-subsession" | "builtin-process"
-  rationale: string
-  characteristics: DelegationExecutionCharacteristics
-  capabilityEvidence: DelegationExecutionCapabilityEvidence
-}
-
-export type DelegationPacket = {
-  id: string
-  spec: string
-  plan: string | null
-  artifacts: string[]
-  commits: string[]
-  parentChain: readonly string[]
-  status: DelegationPacketStatus
-  createdAt: number
-  updatedAt: number
-}
-
-export type DelegationRouteResolution = {
-  requestedCategory?: DelegationCategory
-  category?: DelegationCategory
-  requestedAgent?: SpecialistAgent
-  effectiveAgent: SpecialistAgent
-  presetKey: string
-  requestedModel?: string
-  effectiveModel?: string
-  temperature: number
-  fallbackUsed: boolean
-  rationale: string
-  guidanceText?: string
-  modelSource: "explicit" | "category" | "none"
-  agentSource: "explicit" | "category" | "signal"
-  temperatureSource: "category" | "agent"
-  warnings: string[]
-}
-
-export type SessionToolProfile = {
-  permissionRules: PermissionRule[]
-  compatibleTools: string[]
-}
-
-export type SessionPromptParams = {
-  agent: SpecialistAgent
-  category?: DelegationCategory
-  model?: string
-  temperature?: number
-  guidanceText?: string
-  tools: string[]
-}
-
-export type SessionLifecyclePhase =
-  | "created"
-  | "queued"
-  | "dispatching"
-  | "running"
-  | "completed"
-  | "failed"
-
-export type SessionLifecycleQueueState = {
-  active: number
-  pending: number
-  limit: number
-  acquiredAt?: number
-  releasedAt?: number
-}
-
-export type SessionLifecycleObservation = {
-  source: string
-  observedAt: number
-  detail?: string
-  statusType?: string
-  sessionStatusType?: string
-}
-
-export type SessionLifecycleCleanup = {
-  scheduledAt?: number
-  completedAt?: number
-  reason?: string
-}
-
-export type SessionLifecycleState = {
-  phase: SessionLifecyclePhase
-  runMode: "sync" | "async"
-  queueKey: string
-  launchedAt?: number
-  completedAt?: number
-  queue?: SessionLifecycleQueueState
-  observation?: SessionLifecycleObservation
-  cleanup?: SessionLifecycleCleanup
-}
-
-export type SessionContinuityMetadata = {
-  parentSessionID: string
-  rootSessionID: string
-  delegation: DelegationMeta
-  compactionCheckpoint?: CompactionCheckpointData
-  delegationPacket?: DelegationPacket
-  execution?: DelegationExecutionMetadata
-  title: string
-  description: string
-  category?: DelegationCategory
-  route?: DelegationRouteResolution
-  scope?: string
-  constraints: string[]
-  runInBackground: boolean
-  status: TaskStatus
-  createdAt: number
-  updatedAt: number
-  lastObservedAt?: number
-  lastToolActivityAt?: number
-  lastError?: string
-  lifecycle?: SessionLifecycleState
-  pendingNotifications?: PendingNotification[]
-  /** Launch-time dispatch config (09-04: explicit async contract) */
-  defaultDispatchMode?: "async" | "sync"
-  tmuxAvailability?: "auto" | "enabled" | "disabled"
-  pollIntervalMs?: number
-  resultCapture?: CapturedResult
-}
-
-export type SessionContinuityRecord = {
-  sessionID: string
-  toolProfile: SessionToolProfile
-  promptParams: SessionPromptParams
-  metadata: SessionContinuityMetadata
-}
-
-export type ContinuityStoreFile = {
-  version: 1
-  updatedAt: number
-  sessions: Record<string, SessionContinuityRecord>
-  governance?: GovernancePersistenceState
-}
-
-export type GovernanceScope = "tool.execute.before"
-
-export type GovernanceCondition = {
-  toolNames?: string[]
-  sessionIDs?: string[]
-}
-
-export type GovernanceEscalation = {
-  channel: "parent" | "session"
-  severity: "low" | "medium" | "high"
-}
-
-export type GovernanceActionType = "warn" | "escalate" | "block"
-
-export type GovernanceAction = {
-  type: GovernanceActionType
-  message: string
-  escalation?: GovernanceEscalation
-}
-
-export type GovernanceRule = {
-  id: string
-  scope: GovernanceScope
-  condition: GovernanceCondition
-  action: GovernanceAction
-  createdAt: number
-  updatedAt: number
-  source: string
-}
-
-export type GovernanceViolation = {
-  id: string
-  ruleID: string
-  scope: GovernanceScope
-  sessionID: string
-  toolName?: string
-  actionType: GovernanceActionType
-  message: string
-  escalation?: GovernanceEscalation
-  createdAt: number
-}
-
-export type GovernancePersistenceState = {
-  rules: GovernanceRule[]
-  violations: GovernanceViolation[]
-  updatedAt: number
-}
-
+// ---------------------------------------------------------------------------
+// Runtime policy types (RESEARCH D-16: supplements OpenCode built-ins only)
 // ---------------------------------------------------------------------------
 // Runtime policy types (RESEARCH D-16: supplements OpenCode built-ins only)
 // ---------------------------------------------------------------------------
@@ -424,3 +220,115 @@ export type ResolvedConcurrencyPolicy = {
 }
 
 export type ResolvedBudgetPolicy = BudgetPolicy
+
+// ---------------------------------------------------------------------------
+// Lifecycle state types
+// ---------------------------------------------------------------------------
+
+export type SessionLifecyclePhase =
+  | "created"
+  | "queued"
+  | "dispatching"
+  | "running"
+  | "completed"
+  | "failed"
+
+export type SessionLifecycleState = {
+  phase: SessionLifecyclePhase
+  launchedAt?: number
+  completedAt?: number
+  runMode?: string
+  queue?: { active: number; limit: number; pending: number }
+  observation?: { source: string; observedAt: number; detail: string }
+  error?: string
+}
+
+// ---------------------------------------------------------------------------
+// Continuity store types
+// ---------------------------------------------------------------------------
+
+export type SessionPromptParams = {
+  agent?: string
+  category?: string
+  tools?: string[]
+  [key: string]: unknown
+}
+
+export type SessionToolProfile = {
+  allowed?: string[]
+  denied?: string[]
+  [key: string]: unknown
+}
+
+export type DelegationPacket = {
+  id: string
+  createdAt: number
+  spec: string
+  plan?: string
+  artifacts: string[]
+  commits: string[]
+  parentChain: string[]
+  status: DelegationPacketStatus
+  updatedAt: number
+}
+
+export type SessionContinuityMetadata = {
+  status: TaskStatus
+  description: string
+  delegation: DelegationMeta | null
+  category?: string
+  constraints: string[]
+  lifecycle?: SessionLifecycleState
+  pendingNotifications: PendingNotification[]
+  resultCapture?: CapturedResult
+  compactionCheckpoint?: CompactionCheckpointData
+  delegationPacket?: DelegationPacket
+  route?: string
+  lastToolActivityAt?: number
+  updatedAt: number
+}
+
+export type SessionContinuityRecord = {
+  sessionID: string
+  promptParams: SessionPromptParams
+  toolProfile?: SessionToolProfile
+  metadata: SessionContinuityMetadata
+}
+
+// ---------------------------------------------------------------------------
+// Governance persistence types
+// ---------------------------------------------------------------------------
+
+export type GovernanceRule = {
+  id: string
+  condition: { toolNames?: string[]; sessionIDs?: string[]; [key: string]: unknown }
+  action: { type: string; escalation?: Record<string, unknown>; [key: string]: unknown }
+  enabled: boolean
+}
+
+export type GovernanceViolation = {
+  ruleId: string
+  sessionID: string
+  timestamp: number
+  detail: string
+  escalation?: Record<string, unknown>
+}
+
+export type GovernancePersistenceState = {
+  rules: GovernanceRule[]
+  violations: GovernanceViolation[]
+  updatedAt: number
+}
+
+export type ContinuityStoreFile = {
+  version: number
+  updatedAt: number
+  sessions: Record<string, SessionContinuityRecord>
+  governance: GovernancePersistenceState
+}
+
+// ---------------------------------------------------------------------------
+// Checkpoint data type (for compaction lifecycle)
+// ---------------------------------------------------------------------------
+
+export type CheckpointData = CompactionCheckpointData

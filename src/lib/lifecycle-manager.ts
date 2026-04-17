@@ -1,48 +1,56 @@
-import { DelegationConcurrencyQueue } from "./concurrency.js"
-import type { BackgroundManager } from "./background-manager.js"
+/**
+ * Harness lifecycle manager — minimal stub.
+ *
+ * Stripped to compile after 09-13 module deletion.
+ * Plan 14-02 (DelegationManager) will replace this with a full implementation.
+ */
 import { CompletionDetector } from "./completion-detector.js"
-import type { CheckpointData } from "./compaction-checkpoint.js"
-import { getSessionContinuity, getSessionRecoveryState, listSessionContinuity, patchSessionContinuity } from "./continuity.js"
-import { restoreCheckpoint } from "./compaction-checkpoint.js"
+import { getSessionContinuity, listSessionContinuity, patchSessionContinuity } from "./continuity.js"
 import type { OpenCodeClient } from "./session-api.js"
-import { sendPrompt } from "./session-api.js"
 import { hydrateDelegationState, taskState } from "./state.js"
-import { isValidLifecycleTransition } from "./lifecycle-state.js"
-import { patchLifecycle } from "./lifecycle-patching.js"
-import { handleEvent as handleLifecycleEvent, noteObservedActivity as noteActivity } from "./lifecycle-events.js"
-import { launchDelegatedSession, type LaunchDelegatedSessionArgs } from "./lifecycle-dispatcher.js"
 import type {
+  CheckpointData,
   RuntimePolicy,
   SessionLifecyclePhase,
   SessionLifecycleState,
 } from "./types.js"
 
-export type { LaunchDelegatedSessionArgs } from "./lifecycle-dispatcher.js"
-
 type HarnessLifecycleManagerOptions = {
   client: OpenCodeClient
   pollTimeoutMs: number
   runtimePolicy?: RuntimePolicy
-  backgroundManager?: BackgroundManager
+  backgroundManager?: unknown
 }
 
-export function isValidTransition(from: SessionLifecyclePhase, to: SessionLifecyclePhase): boolean {
-  return isValidLifecycleTransition(from, to)
+export type LaunchDelegatedSessionArgs = {
+  sessionID: string
+  description: string
+  agent: string
+  category?: string
+  model?: string
+  constraints?: string[]
+  promptText: string
+  parentSessionID?: string
+  [key: string]: unknown
+}
+
+export function isValidTransition(_from: SessionLifecyclePhase, _to: SessionLifecyclePhase): boolean {
+  // Minimal stub — always allow transitions during clean slate.
+  // Full validation restored in Plan 14-02.
+  return true
 }
 
 export class HarnessLifecycleManager {
   private readonly concurrencyLimit: number
-  private readonly queue: DelegationConcurrencyQueue
   private readonly completionDetector = new CompletionDetector()
-  private readonly runtimePolicy: RuntimePolicy | undefined
+  private readonly client: OpenCodeClient
 
-  constructor(private readonly options: HarnessLifecycleManagerOptions) {
-    this.runtimePolicy = options.runtimePolicy
+  constructor(options: HarnessLifecycleManagerOptions) {
+    this.client = options.client
     this.concurrencyLimit = parseInt(process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3", 10)
     if (Number.isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
       this.concurrencyLimit = 3
     }
-    this.queue = new DelegationConcurrencyQueue(this.concurrencyLimit)
   }
 
   getConcurrencyLimit(): number {
@@ -51,47 +59,58 @@ export class HarnessLifecycleManager {
 
   hydrateFromContinuity(): void {
     for (const record of listSessionContinuity()) {
-      hydrateDelegationState(record.sessionID, record.metadata.delegation)
-      if (record.metadata.compactionCheckpoint) {
-        restoreCheckpoint(record.sessionID, record.metadata.compactionCheckpoint, taskState)
+      if (record.metadata.delegation) {
+        hydrateDelegationState(record.sessionID, record.metadata.delegation)
       }
     }
-  }
-
-  getRecoveryState(sessionID: string): ReturnType<typeof getSessionRecoveryState> {
-    return getSessionRecoveryState(sessionID)
   }
 
   getLifecycleSnapshot(sessionID: string): SessionLifecycleState | undefined {
     return getSessionContinuity(sessionID)?.metadata.lifecycle
   }
 
-  noteObservedActivity(sessionID: string, source: string): void {
-    noteActivity(sessionID, source)
+  noteObservedActivity(_sessionID: string, _source: string): void {
+    // No-op stub — full implementation in Plan 14-02
   }
 
   handleEvent(args: { event: unknown; eventType: string; sessionID: string }): void {
-    handleLifecycleEvent({
-      ...args,
-      completionDetector: this.completionDetector,
-    })
+    const { eventType, sessionID } = args
+    // Minimal event routing: feed completion detector for idle detection
+    const statusSignal = typeof (args.event as Record<string, unknown>)?.properties === "object"
+      ? (((args.event as { properties?: { status?: { type?: string } } }).properties?.status?.type) ?? "")
+      : ""
+
+    if (statusSignal === "idle" || eventType === "session.idle") {
+      this.completionDetector.feed(sessionID, "idle")
+    }
   }
 
   async cancelDelegatedSession(sessionID: string): Promise<void> {
     try {
-      if (this.options.client?.session?.abort) {
-        await this.options.client.session.abort({ path: { id: sessionID } })
+      if (this.client?.session?.abort) {
+        await this.client.session.abort({ path: { id: sessionID } })
       }
     } catch {
-      return this.cancelLifecycle(sessionID)
+      // Abort best-effort
     }
 
-    this.cancelLifecycle(sessionID)
+    this.completionDetector.cancel(sessionID)
+    patchSessionContinuity(sessionID, {
+      lifecycle: {
+        phase: "failed",
+        error: "Session cancelled by user",
+      },
+    })
   }
 
   async requestAutoLoopRetry(args: { sessionID: string; promptText: string }): Promise<void> {
-    await sendPrompt(this.options.client, args.sessionID, {
-      parts: [{ type: "text", text: args.promptText }],
+    // Minimal: send prompt to session
+    const { client } = this
+    await client.session.prompt({
+      path: { id: args.sessionID },
+      body: {
+        parts: [{ type: "text", text: args.promptText }],
+      },
     })
   }
 
@@ -100,36 +119,12 @@ export class HarnessLifecycleManager {
     taskState.resetStats(sessionID)
   }
 
-  async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
-    return launchDelegatedSession(args, {
-      client: this.options.client,
-      queue: this.queue,
-      completionDetector: this.completionDetector,
-      pollTimeoutMs: this.options.pollTimeoutMs,
-      runtimePolicy: this.runtimePolicy,
-      backgroundManager: this.options.backgroundManager,
-      patchLifecycleFn: (patchArgs) => this.privatePatchLifecycle(patchArgs),
-      getLifecycleSnapshotFn: (sessionID) => this.getLifecycleSnapshot(sessionID),
-    })
+  async launchDelegatedSession(_args: LaunchDelegatedSessionArgs): Promise<string> {
+    throw new Error("[Harness] launchDelegatedSession not yet restored — see Plan 14-02 (DelegationManager)")
   }
 
-  private cancelLifecycle(sessionID: string): void {
-    this.completionDetector.cancel(sessionID)
-    this.privatePatchLifecycle({
-      sessionID,
-      status: "failed",
-      phase: "failed",
-      error: "Session cancelled by user",
-      observation: {
-        source: "cancel",
-        observedAt: Date.now(),
-        detail: "session-cancelled",
-      },
-    })
-  }
-
-  private privatePatchLifecycle(args: Parameters<typeof patchLifecycle>[0]): boolean {
-    return patchLifecycle(args)
+  getCompletionDetector(): CompletionDetector {
+    return this.completionDetector
   }
 }
 
