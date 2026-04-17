@@ -48,6 +48,8 @@ permission:
 step: 5
 ---
 
+<!-- HIERARCHY: This is the SINGLE PRIMARY ORCHESTRATOR for the workspace. All other orchestrator-named agents (conductor, orchestrator, hivefiver) are specialists under this coordinator. -->
+
 
 ## Task Management (CRITICAL)
 
