@@ -237,13 +237,15 @@ Plans:
 
 ### Phase 15: Security & Quality Remediation — fix all 26 audit issues from comprehensive codebase audit
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Fix all 26 audit findings from the comprehensive 6-phase codebase audit. Deliver a spotless, production-ready .opencode/ configuration with zero security vulnerabilities, zero portability failures, zero dangling references, and all files conforming to OpenCode platform standards. This phase modifies ONLY soft meta-concepts (skills, agents, commands) — no src/ code changes.
+**Requirements**: C-1, C-2, C-3, W-1, W-2, W-3, W-4, W-5, W-6, W-7, W-8, W-9, W-10, W-11, W-12
 **Depends on:** Phase 14
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 15 to break down)
+- [ ] 15-01-PLAN.md — Critical security fixes: remove profanity, replace wildcard permissions, scope conductor access, fix hardcoded paths, disambiguate agent hierarchy (Wave 1)
+- [ ] 15-02-PLAN.md — High-severity command & skill fixes: add frontmatter, quote $ARGUMENTS, add files_to_read blocks, resolve dangling skill refs (Wave 2)
+- [ ] 15-03-PLAN.md — Remaining fixes + cross-phase risk verification: narrow triggers, verify XPR-1 through XPR-4 closure (Wave 3)
 
 ---
 
