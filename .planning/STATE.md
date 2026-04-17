@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 1
-status: Phase complete — ready for verification
+status: Phase 14 COMPLETE — all root causes fixed, debug session resolved
 stopped_at: Completed 14-03-PLAN.md
-last_updated: "2026-04-17T11:23:20.079Z"
+last_updated: "2026-04-17T20:00:00.000Z"
 progress:
   total_phases: 16
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 16
   completed_plans: 16
   percent: 100
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 14 — delegate-task-truth-reset-archive-phases-09-13-remove-trash-
+**Current focus:** Phase 14 COMPLETE — delegate-task truth-reset, debug session resolved
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,9 +29,10 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 14 (delegate-task-truth-reset-archive-phases-09-13-remove-trash-) — EXECUTING
+Phase: 14 (delegate-task-truth-reset-archive-phases-09-13-remove-trash-) — COMPLETE
 Plan: 3 of 3
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
+Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
 **Current plan:** 1
 **Progress:** [██████████] 100%
 
@@ -60,6 +61,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Phase 1 | COMPLETE | 10/10 items, typecheck/tests/build green, commit `42babee6` |
 | Phase 2 | VERIFIED | 9/9 plans, 18/18 verification truths, re-verified after Phase 08 |
 | Phase 8 | COMPLETE | 3/3 plans, corrective closure, Phase 02 re-verification passed |
+| Phase 14 | COMPLETE | 3/3 plans, 4 root causes fixed (event routing, sync race, misleading notifications, VALID_AGENTS→SDK), 351 tests pass, typecheck clean |
 
 ### Phases With Caveats
 
@@ -79,20 +81,20 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 
 1. **Phase 09 UAT quarantined** — `.planning/debug/09-UAT-quarantined-2026-04-10.md` — 14/15 claims were code-existence checks, not runtime verification
 2. **Phase 09 VALIDATION quarantined** — `.planning/debug/09-VALIDATION-quarantined-2026-04-10.md` — validation was mock-only
-3. **Background observability mostly blind** — observer conflates idle-as-completed, `formatPendingNotificationsForSession` has zero runtime callers
-4. **668 tests pass but mock-heavy** — historical suite progress exists, but those tests alone are not authoritative runtime proof
-5. **9 debug sessions, 0 verified fixes** — several investigations remained unresolved until Phase 12 reconciled the false-start corridor
+3. ~~**Background observability mostly blind**~~ — RESOLVED in Phase 14: canonical event extraction, status-aware notifications
+4. ~~**668 tests pass but mock-heavy**~~ — RESOLVED in Phase 14: 351 tests pass, dead-module tests removed
+5. ~~**9 debug sessions, 0 verified fixes**~~ — RESOLVED in Phase 14: session-264b debug closed with all root causes verified
 6. **Next runtime step still needs selection** — downstream planning must decide how to resume live runtime verification/re-planning from the corrected Phase 12 baseline
 
 ## Performance Metrics
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Test suite | Pass | 668 passed, mock-heavy |
-| Typecheck | Pass | Pass |
+| Test suite | Pass | 351 passed |
+| Typecheck | Pass | Pass (0 errors) |
 | Build | Pass | Pass |
-| Runtime-verified delegation | Working | PARTIALLY CORRECTED — false-start semantics fixed, broader runtime verification still pending |
-| Completion detection live | Working | PARTIAL — implementation exists, authority limited by quarantined 09.2 summaries |
+| Runtime-verified delegation | Working | CORRECTED — event routing, sync race, notifications, VALID_AGENTS all fixed |
+| Completion detection live | Working | CORRECTED — canonical event extraction via getEventSessionID |
 | Phase 12 P02 | 9 min | 2 tasks | 7 files |
 | Phase 14-delegate-task-truth-reset-archive-phases-09-13-remove-trash P01 | 21h 46m | 3 tasks | 76 files |
 | Phase 14 P02 | 5 min | 2 tasks | 4 files |
