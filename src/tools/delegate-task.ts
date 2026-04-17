@@ -33,8 +33,9 @@ export function createDelegateTaskTool(
       timeoutMs: s.number().optional().describe("Timeout in milliseconds (1000-1800000)"),
     },
     async execute(rawArgs: DelegateTaskInput, context: ToolContext): Promise<string> {
+      const args = DelegateTaskInputSchema.parse(rawArgs)
+
       try {
-        const args = DelegateTaskInputSchema.parse(rawArgs)
         const parentSessionId = context.sessionID ?? process.env.OPENCODE_SESSION_ID
 
         if (!parentSessionId) {

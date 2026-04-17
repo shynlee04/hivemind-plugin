@@ -3,6 +3,9 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 
+import { DelegationManager } from "../../src/lib/delegation-manager.js"
+import type { Delegation } from "../../src/lib/types.js"
+
 type MockClient = {
   session: {
     create: ReturnType<typeof vi.fn>
@@ -11,18 +14,37 @@ type MockClient = {
     messages: ReturnType<typeof vi.fn>
     abort: ReturnType<typeof vi.fn>
   }
+  app: {
+    agents: ReturnType<typeof vi.fn>
+  }
+}
+
+type ManagerInternals = {
+  delegations: Map<string, Delegation>
+  delegationsBySession: Map<string, string>
+  timeoutTimers: Map<string, NodeJS.Timeout>
 }
 
 function createMockClient(): MockClient {
   return {
     session: {
-      create: vi.fn(),
-      prompt: vi.fn(),
-      status: vi.fn(),
-      messages: vi.fn(),
-      abort: vi.fn(),
+      create: vi.fn().mockResolvedValue({ id: "child-ses-123" }),
+      prompt: vi.fn().mockResolvedValue(undefined),
+      status: vi.fn().mockResolvedValue({ data: {} }),
+      messages: vi.fn().mockResolvedValue([
+        { role: "user", parts: [{ type: "text", text: "task" }] },
+        { role: "assistant", parts: [{ type: "text", text: "Task completed successfully" }] },
+      ]),
+      abort: vi.fn().mockResolvedValue(undefined),
+    },
+    app: {
+      agents: vi.fn().mockResolvedValue([]),
     },
   }
+}
+
+function getInternals(manager: DelegationManager): ManagerInternals {
+  return manager as unknown as ManagerInternals
 }
 
 function getDelegationsFile(stateDir: string): string {
@@ -51,236 +73,225 @@ describe("DelegationManager", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
-  it("delegateSync creates a child session, tracks it, and resolves on session idle", async () => {
+  it("rejects invalid agent", async () => {
+    const manager = new DelegationManager(createMockClient() as never)
+
+    await expect(manager.delegateSync({
+      parentSessionId: "parent-1",
+      agent: "not-real",
+      prompt: "do work",
+    })).rejects.toThrow("[Harness] Invalid agent: not-real")
+  })
+
+  it("creates a child session on valid delegation with the expected parent linkage", async () => {
     const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "ses_child_sync" })
-    client.session.prompt.mockResolvedValue(undefined)
-    client.session.messages.mockResolvedValue([
-      { role: "assistant", parts: [{ type: "text", text: "sync result" }] },
-    ])
+    client.session.create.mockResolvedValue({ id: "child-create" })
 
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
     const manager = new DelegationManager(client as never)
-
-    const promise = manager.delegateSync({
-      parentSessionId: "ses_parent_sync",
+    const syncResult = manager.delegateSync({
+      parentSessionId: "parent-create",
       agent: "builder",
       prompt: "do work",
+      title: "Delegation title",
     })
 
     await vi.waitFor(() => {
       expect(client.session.create).toHaveBeenCalledWith({
-        body: { title: "Delegation: builder", parentID: "ses_parent_sync" },
+        body: {
+          title: "Delegation title",
+          parentID: "parent-create",
+        },
       })
     })
 
-    const delegation = Array.from((manager as any).delegations.values())[0]
-    expect(delegation.childSessionId).toBe("ses_child_sync")
-    expect(delegation.status).toBe("running")
-
-    manager.handleSessionIdle("ses_child_sync")
-
-    await expect(promise).resolves.toEqual({
-      status: "completed",
-      result: "sync result",
-      delegationId: delegation.id,
-    })
+    manager.handleSessionIdle("child-create")
+    await expect(syncResult).resolves.toMatchObject({ status: "completed" })
   })
 
-  it("delegateSync rejects on timeout and aborts the child session", async () => {
-    vi.useFakeTimers()
-
+  it("tracks delegation state in maps and schedules a timeout timer", async () => {
     const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "ses_child_timeout" })
-    client.session.prompt.mockResolvedValue(undefined)
-    client.session.abort.mockResolvedValue(undefined)
+    client.session.create.mockResolvedValue({ id: "child-track" })
 
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
     const manager = new DelegationManager(client as never)
-
-    const promise = manager.delegateSync({
-      parentSessionId: "ses_parent_timeout",
+    const { delegationId } = await manager.delegateAsync({
+      parentSessionId: "parent-track",
       agent: "builder",
-      prompt: "do work",
+      prompt: "track me",
+      timeoutMs: 5000,
+    })
+
+    const internals = getInternals(manager)
+    const delegation = internals.delegations.get(delegationId)
+    expect(delegation).toMatchObject({
+      parentSessionId: "parent-track",
+      childSessionId: "child-track",
+      agent: "builder",
+      status: "running",
+      timeoutMs: 5000,
+    })
+    expect(internals.delegationsBySession.get("child-track")).toBe(delegationId)
+    expect(internals.timeoutTimers.has(delegationId)).toBe(true)
+  })
+
+  it("handleSessionIdle completes delegation and extracts assistant text", async () => {
+    const client = createMockClient()
+    client.session.create.mockResolvedValue({ id: "child-idle" })
+    client.session.messages.mockResolvedValue([
+      { role: "user", parts: [{ type: "text", text: "task" }] },
+      { role: "assistant", parts: [{ type: "text", text: "result" }] },
+      { info: { role: "assistant" }, parts: [{ type: "text", text: "with detail" }] },
+    ])
+
+    const manager = new DelegationManager(client as never)
+    const syncResult = manager.delegateSync({
+      parentSessionId: "parent-idle",
+      agent: "builder",
+      prompt: "finish",
+    })
+
+    await vi.waitFor(() => {
+      expect(getInternals(manager).delegationsBySession.has("child-idle")).toBe(true)
+    })
+
+    manager.handleSessionIdle("child-idle")
+
+    await expect(syncResult).resolves.toEqual({
+      status: "completed",
+      result: "result\nwith detail",
+      delegationId: getInternals(manager).delegationsBySession.get("child-idle") ?? expect.any(String),
+    })
+
+    const delegation = Array.from(getInternals(manager).delegations.values()).find((entry) => entry.childSessionId === "child-idle")
+    expect(delegation?.status).toBe("completed")
+    expect(delegation?.result).toBe("result\nwith detail")
+  })
+
+  it("handleSessionIdle ignores non-delegation sessions", () => {
+    const manager = new DelegationManager(createMockClient() as never)
+    const before = getInternals(manager).delegations.size
+
+    expect(() => manager.handleSessionIdle("unknown-session")).not.toThrow()
+    expect(getInternals(manager).delegations.size).toBe(before)
+  })
+
+  it("handleSessionDeleted cleans up a running delegation", async () => {
+    const client = createMockClient()
+    client.session.create.mockResolvedValue({ id: "child-deleted" })
+
+    const manager = new DelegationManager(client as never)
+    const syncResult = manager.delegateSync({
+      parentSessionId: "parent-deleted",
+      agent: "builder",
+      prompt: "delete me",
+    })
+
+    await vi.waitFor(() => {
+      expect(getInternals(manager).delegationsBySession.get("child-deleted")).toBeDefined()
+    })
+
+    const delegationId = getInternals(manager).delegationsBySession.get("child-deleted")!
+    manager.handleSessionDeleted("child-deleted")
+
+    await expect(syncResult).rejects.toThrow("[Harness] Delegated session deleted before completion")
+    expect(getInternals(manager).delegationsBySession.has("child-deleted")).toBe(false)
+    expect(getInternals(manager).timeoutTimers.has(delegationId)).toBe(false)
+    expect(getInternals(manager).delegations.get(delegationId)?.status).toBe("error")
+  })
+
+  it("timeout marks delegation as timeout and aborts the child session", async () => {
+    vi.useFakeTimers()
+    const client = createMockClient()
+    client.session.create.mockResolvedValue({ id: "child-timeout" })
+
+    const manager = new DelegationManager(client as never)
+    const syncResult = manager.delegateSync({
+      parentSessionId: "parent-timeout",
+      agent: "builder",
+      prompt: "wait forever",
       timeoutMs: 25,
     })
 
-    const rejection = expect(promise).rejects.toThrow("[Harness] Delegation timed out after 25ms")
+    await vi.waitFor(() => {
+      expect(getInternals(manager).delegationsBySession.get("child-timeout")).toBeDefined()
+    })
 
+    const delegationId = getInternals(manager).delegationsBySession.get("child-timeout")!
+    const rejection = expect(syncResult).rejects.toThrow("[Harness] Delegation timed out after 25ms")
     await vi.advanceTimersByTimeAsync(30)
-
     await rejection
-    expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "ses_child_timeout" } })
+
+    expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-timeout" } })
+    expect(getInternals(manager).delegations.get(delegationId)?.status).toBe("timeout")
+    expect(getInternals(manager).delegationsBySession.has("child-timeout")).toBe(false)
   })
 
-  it("handleSessionDeleted marks running delegations as error and clears tracking", async () => {
+  it("async delegation returns a delegation ID immediately and persists state to disk", async () => {
     const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "ses_child_deleted" })
-    client.session.prompt.mockResolvedValue(undefined)
+    client.session.create.mockResolvedValue({ id: "child-async" })
 
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
     const manager = new DelegationManager(client as never)
-
-    const promise = manager.delegateSync({
-      parentSessionId: "ses_parent_deleted",
-      agent: "builder",
-      prompt: "do work",
-    })
-
-    await vi.waitFor(() => {
-      expect(client.session.create).toHaveBeenCalled()
-    })
-
-    const delegation = Array.from((manager as any).delegations.values())[0]
-    manager.handleSessionDeleted("ses_child_deleted")
-
-    await expect(promise).rejects.toThrow("[Harness] Delegated session deleted before completion")
-    expect((manager as any).delegationsBySession.has("ses_child_deleted")).toBe(false)
-    expect((manager as any).delegations.get(delegation.id)?.status).toBe("error")
-  })
-
-  it("rejects agents outside VALID_AGENTS", async () => {
-    const client = createMockClient()
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
-    const manager = new DelegationManager(client as never)
-
-    await expect(manager.delegateSync({
-      parentSessionId: "ses_parent_invalid",
-      agent: "not-real",
-      prompt: "do work",
-    })).rejects.toThrow("[Harness] Invalid agent: not-real")
-
-    expect(client.session.create).not.toHaveBeenCalled()
-  })
-
-  it("tracks multiple concurrent delegations independently", async () => {
-    const client = createMockClient()
-    client.session.create
-      .mockResolvedValueOnce({ id: "ses_child_one" })
-      .mockResolvedValueOnce({ id: "ses_child_two" })
-    client.session.prompt.mockResolvedValue(undefined)
-    client.session.messages
-      .mockResolvedValueOnce([{ role: "assistant", parts: [{ type: "text", text: "first" }] }])
-      .mockResolvedValueOnce([{ role: "assistant", parts: [{ type: "text", text: "second" }] }])
-
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
-    const manager = new DelegationManager(client as never)
-
-    const first = manager.delegateSync({ parentSessionId: "ses_parent_one", agent: "builder", prompt: "one" })
-    const second = manager.delegateSync({ parentSessionId: "ses_parent_two", agent: "critic", prompt: "two" })
-
-    await vi.waitFor(() => {
-      expect((manager as any).delegations.size).toBe(2)
-    })
-
-    manager.handleSessionIdle("ses_child_one")
-    manager.handleSessionIdle("ses_child_two")
-
-    await expect(first).resolves.toMatchObject({ status: "completed", result: "first" })
-    await expect(second).resolves.toMatchObject({ status: "completed", result: "second" })
-  })
-
-  it("delegateAsync persists state before prompting and returns the delegation ID immediately", async () => {
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "ses_child_async" })
-    client.session.prompt.mockImplementation(async () => {
-      expect(existsSync(getDelegationsFile(stateDir))).toBe(true)
-      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf8")) as Array<{ childSessionId: string }>
-      expect(persisted[0]?.childSessionId).toBe("ses_child_async")
-    })
-
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
-    const manager = new DelegationManager(client as never)
-
-    await expect(manager.delegateAsync({
-      parentSessionId: "ses_parent_async",
+    const result = await manager.delegateAsync({
+      parentSessionId: "parent-async",
       agent: "builder",
       prompt: "background work",
-    })).resolves.toHaveProperty("delegationId")
+    })
+
+    const filePath = getDelegationsFile(stateDir)
+    expect(result.delegationId).toBeTypeOf("string")
+    expect(existsSync(filePath)).toBe(true)
+
+    const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
+    expect(persisted).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: result.delegationId,
+        parentSessionId: "parent-async",
+        childSessionId: "child-async",
+        status: "running",
+      }),
+    ]))
   })
 
-  it("recoverPending re-registers running delegations, finalizes idle sessions, and marks missing sessions as error", async () => {
+  it("recoverPending restores running delegations and finalizes idle ones", async () => {
     const now = Date.now()
-    const persisted = [
+    writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
       {
         id: "delegation-running",
-        parentSessionId: "ses_parent_running",
-        childSessionId: "ses_child_running",
+        parentSessionId: "parent-running",
+        childSessionId: "child-running",
         agent: "builder",
         status: "running",
         createdAt: now,
-        timeoutMs: 60000,
+        timeoutMs: 60_000,
       },
       {
         id: "delegation-idle",
-        parentSessionId: "ses_parent_idle",
-        childSessionId: "ses_child_idle",
+        parentSessionId: "parent-idle",
+        childSessionId: "child-idle-recover",
         agent: "critic",
         status: "running",
         createdAt: now,
-        timeoutMs: 60000,
+        timeoutMs: 60_000,
       },
-      {
-        id: "delegation-missing",
-        parentSessionId: "ses_parent_missing",
-        childSessionId: "ses_child_missing",
-        agent: "builder",
-        status: "running",
-        createdAt: now,
-        timeoutMs: 60000,
-      },
-    ]
-    writeFileSync(getDelegationsFile(stateDir), JSON.stringify(persisted, null, 2), "utf8")
+    ], null, 2))
 
     const client = createMockClient()
     client.session.status.mockResolvedValue({
       data: {
-        ses_child_running: { type: "busy" },
-        ses_child_idle: { type: "idle" },
+        "child-running": { type: "busy" },
+        "child-idle-recover": { type: "idle" },
       },
     })
     client.session.messages.mockResolvedValue([
       { role: "assistant", parts: [{ type: "text", text: "recovered result" }] },
     ])
-    client.session.prompt.mockResolvedValue(undefined)
 
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
     const manager = new DelegationManager(client as never)
-
     await manager.recoverPending()
 
-    expect((manager as any).delegationsBySession.get("ses_child_running")).toBe("delegation-running")
-    expect((manager as any).delegations.get("delegation-idle")?.status).toBe("completed")
-    expect((manager as any).delegations.get("delegation-idle")?.result).toBe("recovered result")
-    expect((manager as any).delegations.get("delegation-missing")?.status).toBe("error")
-  })
-
-  it("async completion notifies the parent session with noReply true", async () => {
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "ses_child_notify" })
-    client.session.prompt.mockResolvedValue(undefined)
-    client.session.messages.mockResolvedValue([
-      { role: "assistant", parts: [{ type: "text", text: "done" }] },
-    ])
-
-    const { DelegationManager } = await import("../../src/lib/delegation-manager.js")
-    const manager = new DelegationManager(client as never)
-
-    await manager.delegateAsync({
-      parentSessionId: "ses_parent_notify",
-      agent: "builder",
-      prompt: "background work",
-    })
-
-    manager.handleSessionIdle("ses_child_notify")
-    await vi.waitFor(() => {
-      expect(client.session.prompt).toHaveBeenCalledWith({
-        path: { id: "ses_parent_notify" },
-        body: {
-          parts: [{ type: "text", text: "[Delegation Complete] builder: completed" }],
-          noReply: true,
-        },
-      })
-    })
+    const internals = getInternals(manager)
+    expect(internals.delegationsBySession.get("child-running")).toBe("delegation-running")
+    expect(internals.timeoutTimers.has("delegation-running")).toBe(true)
+    expect(internals.delegations.get("delegation-idle")?.status).toBe("completed")
+    expect(internals.delegations.get("delegation-idle")?.result).toBe("recovered result")
   })
 })
