@@ -166,6 +166,43 @@ describe("DelegationManager", () => {
     expect(delegation?.result).toBe("result\nwith detail")
   })
 
+  it("delegateSync resolves immediately if delegation already completed before callback registration", async () => {
+    const manager = new DelegationManager(createMockClient() as never)
+    const now = Date.now()
+
+    vi.spyOn(manager as never, "createDelegation").mockImplementation(async () => {
+      const delegation: Delegation = {
+        id: "delegation-race",
+        parentSessionId: "parent-race",
+        childSessionId: "child-race",
+        agent: "builder",
+        status: "completed",
+        createdAt: now,
+        timeoutMs: 1000,
+        completedAt: now,
+        result: "fast result",
+      }
+
+      getInternals(manager).delegations.set(delegation.id, delegation)
+      return delegation
+    })
+
+    const raced = Promise.race([
+      manager.delegateSync({
+        parentSessionId: "parent-race",
+        agent: "builder",
+        prompt: "complete instantly",
+      }),
+      new Promise((resolve) => setTimeout(() => resolve("timeout"), 25)),
+    ])
+
+    await expect(raced).resolves.toEqual({
+      status: "completed",
+      result: "fast result",
+      delegationId: "delegation-race",
+    })
+  })
+
   it("handleSessionIdle ignores non-delegation sessions", () => {
     const manager = new DelegationManager(createMockClient() as never)
     const before = getInternals(manager).delegations.size
@@ -223,6 +260,30 @@ describe("DelegationManager", () => {
     expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-timeout" } })
     expect(getInternals(manager).delegations.get(delegationId)?.status).toBe("timeout")
     expect(getInternals(manager).delegationsBySession.has("child-timeout")).toBe(false)
+  })
+
+  it("async timeout notifies parent as timeout rather than completed", async () => {
+    vi.useFakeTimers()
+    const client = createMockClient()
+    client.session.create.mockResolvedValue({ id: "child-async-timeout" })
+
+    const manager = new DelegationManager(client as never)
+    await manager.delegateAsync({
+      parentSessionId: "parent-async-timeout",
+      agent: "builder",
+      prompt: "background timeout",
+      timeoutMs: 25,
+    })
+
+    await vi.advanceTimersByTimeAsync(30)
+
+    expect(client.session.prompt).toHaveBeenNthCalledWith(2, {
+      path: { id: "parent-async-timeout" },
+      body: {
+        parts: [{ type: "text", text: "[Delegation Timeout] builder: timeout" }],
+        noReply: true,
+      },
+    })
   })
 
   it("async delegation returns a delegation ID immediately and persists state to disk", async () => {

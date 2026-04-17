@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 import { createDelegateTaskTool, DelegateTaskInputSchema } from "../../src/tools/delegate-task.js"
 
@@ -60,6 +61,22 @@ describe("delegate-task tool", () => {
   it("is registered in the plugin tool surface as delegate-task", async () => {
     const plugin = await HarnessControlPlane({ client: createPluginClient() } as never)
     expect(plugin.tool["delegate-task"]).toBeDefined()
+  })
+
+  it("routes session.idle events using canonical lifecycle event session IDs", async () => {
+    const idleSpy = vi.spyOn(DelegationManager.prototype, "handleSessionIdle")
+    const plugin = await HarnessControlPlane({ client: createPluginClient() } as never)
+
+    await plugin.event({
+      event: {
+        type: "session.idle",
+        properties: {
+          info: { id: "child-from-info-id" },
+        },
+      },
+    })
+
+    expect(idleSpy).toHaveBeenCalledWith("child-from-info-id")
   })
 
   it("validates required agent parameter", async () => {

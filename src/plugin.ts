@@ -13,6 +13,7 @@ import { createCoreHooks } from "./hooks/create-core-hooks.js"
 import { createSessionHooks } from "./hooks/create-session-hooks.js"
 import { createToolGuardHooks } from "./hooks/create-tool-guard-hooks.js"
 import { asString, getNestedValue } from "./lib/helpers.js"
+import { getEventSessionID } from "./lib/session-api.js"
 import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
@@ -39,11 +40,7 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = async ({ event }: { event?: unknown }) => {
     const eventType = asString(getNestedValue(event, ["type"]))
-    const sessionId =
-      asString(getNestedValue(event, ["session", "id"]))
-      ?? asString(getNestedValue(event, ["properties", "session_id"]))
-      ?? asString(getNestedValue(event, ["sessionID"]))
-      ?? asString(getNestedValue(event, ["sessionId"]))
+    const sessionId = getEventSessionID(event)
 
     if (!eventType || !sessionId) {
       return

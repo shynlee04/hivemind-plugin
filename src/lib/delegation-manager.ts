@@ -44,6 +44,11 @@ export class DelegationManager {
   async delegateSync(params: DelegateParams): Promise<DelegationResult> {
     const delegation = await this.createDelegation(params)
 
+    const current = this.delegations.get(delegation.id)
+    if (current && current.status !== "running") {
+      return this.toTerminalResult(current)
+    }
+
     return new Promise<DelegationResult>((resolve, reject) => {
       this.completionCallbacks.set(delegation.id, { resolve, reject })
     })
@@ -258,11 +263,13 @@ export class DelegationManager {
   }
 
   private async notifyParent(delegation: Delegation): Promise<void> {
+    const prefix = this.getNotificationPrefix(delegation.status)
+
     try {
       await this.client.session.prompt({
         path: { id: delegation.parentSessionId },
         body: {
-          parts: [{ type: "text", text: `[Delegation Complete] ${delegation.agent}: ${delegation.status}` }],
+          parts: [{ type: "text", text: `${prefix} ${delegation.agent}: ${delegation.status}` }],
           noReply: true,
         },
       })
@@ -343,6 +350,31 @@ export class DelegationManager {
   private cleanupTracking(delegationId: string, childSessionId: string): void {
     this.clearTimeoutTimer(delegationId)
     this.delegationsBySession.delete(childSessionId)
+  }
+
+  private toTerminalResult(delegation: Delegation): DelegationResult {
+    if (delegation.status === "completed") {
+      return {
+        status: "completed",
+        result: delegation.result,
+        delegationId: delegation.id,
+      }
+    }
+
+    throw new Error(delegation.error ?? `[Harness] Delegation ended with status ${delegation.status}`)
+  }
+
+  private getNotificationPrefix(status: Delegation["status"]): string {
+    switch (status) {
+      case "completed":
+        return "[Delegation Complete]"
+      case "timeout":
+        return "[Delegation Timeout]"
+      case "error":
+        return "[Delegation Error]"
+      default:
+        return "[Delegation Update]"
+    }
   }
 
   private extractAssistantText(messages: MessageLike[]): string {
