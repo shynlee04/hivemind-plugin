@@ -38,7 +38,13 @@ function createMockClient(): MockClient {
       abort: vi.fn().mockResolvedValue(undefined),
     },
     app: {
-      agents: vi.fn().mockResolvedValue([]),
+      agents: vi.fn().mockResolvedValue([
+        { name: "researcher" },
+        { name: "builder" },
+        { name: "critic" },
+        { name: "explore" },
+        { name: "general" },
+      ]),
     },
   }
 }
@@ -80,7 +86,7 @@ describe("DelegationManager", () => {
       parentSessionId: "parent-1",
       agent: "not-real",
       prompt: "do work",
-    })).rejects.toThrow("[Harness] Invalid agent: not-real")
+    })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
   })
 
   it("creates a child session on valid delegation with the expected parent linkage", async () => {
@@ -354,5 +360,45 @@ describe("DelegationManager", () => {
     expect(internals.timeoutTimers.has("delegation-running")).toBe(true)
     expect(internals.delegations.get("delegation-idle")?.status).toBe("completed")
     expect(internals.delegations.get("delegation-idle")?.result).toBe("recovered result")
+  })
+
+  it("rejects unknown agent with available agents in error message", async () => {
+    const client = createMockClient()
+    const manager = new DelegationManager(client as never)
+
+    await expect(manager.delegateSync({
+      parentSessionId: "parent-1",
+      agent: "nonexistent-agent",
+      prompt: "do work",
+    })).rejects.toThrow('[Harness] Invalid agent: "nonexistent-agent". Available: [researcher, builder, critic, explore, general]')
+
+    expect(client.app.agents).toHaveBeenCalledOnce()
+  })
+
+  it("accepts any agent returned by SDK including custom agents", async () => {
+    const client = createMockClient()
+    client.app.agents.mockResolvedValue([
+      { name: "researcher" },
+      { name: "builder" },
+      { name: "critic" },
+      { name: "explore" },
+      { name: "general" },
+      { name: "custom-reviewer" },
+    ])
+    client.session.create.mockResolvedValue({ id: "child-custom" })
+
+    const manager = new DelegationManager(client as never)
+    const syncResult = manager.delegateSync({
+      parentSessionId: "parent-custom",
+      agent: "custom-reviewer",
+      prompt: "custom work",
+    })
+
+    await vi.waitFor(() => {
+      expect(getInternals(manager).delegationsBySession.has("child-custom")).toBe(true)
+    })
+
+    manager.handleSessionIdle("child-custom")
+    await expect(syncResult).resolves.toMatchObject({ status: "completed" })
   })
 })

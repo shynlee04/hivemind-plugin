@@ -20,9 +20,6 @@ export type PendingNotification = TaskNotification & {
 }
 
 export const MAX_DESCENDANTS_PER_ROOT = 10
-export const VALID_AGENTS = [
-  "researcher", "builder", "critic", "general",
-] as const
 export const VALID_DELEGATION_CATEGORIES = [
   "research",
   "implementation",
@@ -32,7 +29,7 @@ export const VALID_DELEGATION_CATEGORIES = [
   "quick",
 ] as const
 
-export type SpecialistAgent = (typeof VALID_AGENTS)[number]
+export type SpecialistAgent = string
 export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
 export type PermissionAction = "allow" | "deny" | "ask"
 

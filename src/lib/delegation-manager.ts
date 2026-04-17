@@ -7,7 +7,6 @@ import { getContinuityStoragePath } from "./continuity.js"
 import { unwrapData } from "./helpers.js"
 import {
   DEFAULT_DELEGATION_TIMEOUT_MS,
-  VALID_AGENTS,
   type Delegation,
   type DelegationResult,
 } from "./types.js"
@@ -133,7 +132,7 @@ export class DelegationManager {
   }
 
   private async createDelegation(params: DelegateParams): Promise<Delegation> {
-    const agent = this.validateAgent(params.agent)
+    const agent = await this.validateAgent(params.agent)
     const queueKey = buildDelegationQueueKey({ agent })
     const release = await this.semaphore.acquire(queueKey)
 
@@ -323,11 +322,15 @@ export class DelegationManager {
       && typeof record.timeoutMs === "number"
   }
 
-  private validateAgent(agent: string): string {
-    if (!VALID_AGENTS.includes(agent as (typeof VALID_AGENTS)[number])) {
-      throw new Error(`[Harness] Invalid agent: ${agent}`)
-    }
+  private async validateAgent(agent: string): Promise<string> {
+    const agents = unwrapData<Array<{ name: string }>>(await this.client.app.agents())
+    const names = (agents ?? []).map(a => a.name)
 
+    if (!names.includes(agent)) {
+      throw new Error(
+        `[Harness] Invalid agent: "${agent}". Available: [${names.join(", ")}]`
+      )
+    }
     return agent
   }
 
