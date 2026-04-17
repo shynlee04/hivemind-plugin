@@ -235,6 +235,16 @@ Plans:
 - [x] 14-02-PLAN.md — DelegationManager Core: Build delegation engine with sync dispatch, async durability, session lifecycle events, persistence, recovery (Wave 2)
 - [x] 14-03-PLAN.md — Tool + Tests + AGENTS.md: Rebuild delegate-task tool, write fresh runtime-truthful tests, update AGENTS.md (Wave 3)
 
+### Phase 15: Security & Quality Remediation — fix all 26 audit issues from comprehensive codebase audit
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 14
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 15 to break down)
+
 ---
 
 ### Phase 9.3: Module Restructuring + Config
