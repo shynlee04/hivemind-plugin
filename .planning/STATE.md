@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 1
 status: Ready to execute
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-04-17T14:16:13.643Z"
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-04-18T11:18:27.011Z"
 progress:
   total_phases: 17
   completed_phases: 4
   total_plans: 19
-  completed_plans: 17
-  percent: 89
+  completed_plans: 18
+  percent: 95
 ---
 
 # STATE: Harness Cleanup
@@ -30,11 +30,11 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 ## Current Position
 
 Phase: 15 (security-quality-remediation-fix-all-26-audit-issues-from-co) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
 **Current plan:** 1
-**Progress:** [█████████░] 89%
+**Progress:** [██████████] 95%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -100,6 +100,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Phase 14 P02 | 5 min | 2 tasks | 4 files |
 | Phase 14 P03 | 5 min | 3 tasks | 5 files |
 | Phase 15 P01 | 8min | 3 tasks | 7 files |
+| Phase 15 P02 | 5min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -134,6 +135,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - [Phase 15]: Replaced profanity with professional language in build.md
 - [Phase 15]: Wildcard skill permissions replaced with explicit allowlists across agents
 - [Phase 15]: Coordinator asserted as sole primary orchestrator; all other agents are specialists
+- [Phase 15]: files_to_read blocks reference only actually-existing files — plan suggested nonexistent GSD reference paths — Plan listed files that don't exist on disk; used ls to find real files in each skill's references/ and scripts/ directories
 
 ### Todos
 
@@ -159,7 +161,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 15-01-PLAN.md
+**Stopped At:** Completed 15-02-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
