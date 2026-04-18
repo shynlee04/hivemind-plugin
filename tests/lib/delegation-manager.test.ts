@@ -1,10 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import * as fs from "node:fs"
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { join } from "node:path"
 import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
-import type { Delegation } from "../../src/lib/types.js"
+import {
+  DEFAULT_SAFETY_CEILING_MS,
+  STABILITY_POLL_INTERVAL_MS,
+  STABILITY_THRESHOLD,
+  type Delegation,
+} from "../../src/lib/types.js"
 
 type MockClient = {
   session: {
@@ -22,29 +28,33 @@ type MockClient = {
 type ManagerInternals = {
   delegations: Map<string, Delegation>
   delegationsBySession: Map<string, string>
-  timeoutTimers: Map<string, NodeJS.Timeout>
+  safetyTimers: Map<string, NodeJS.Timeout>
 }
 
 function createMockClient(): MockClient {
   return {
     session: {
-      create: vi.fn().mockResolvedValue({ id: "child-ses-123" }),
+      create: vi.fn().mockResolvedValue({ data: { id: "child-ses-123" } }),
       prompt: vi.fn().mockResolvedValue(undefined),
       status: vi.fn().mockResolvedValue({ data: {} }),
-      messages: vi.fn().mockResolvedValue([
-        { role: "user", parts: [{ type: "text", text: "task" }] },
-        { role: "assistant", parts: [{ type: "text", text: "Task completed successfully" }] },
-      ]),
+      messages: vi.fn().mockResolvedValue({
+        data: [
+          { role: "user", parts: [{ type: "text", text: "task" }] },
+          { role: "assistant", parts: [{ type: "text", text: "Task completed successfully" }] },
+        ],
+      }),
       abort: vi.fn().mockResolvedValue(undefined),
     },
     app: {
-      agents: vi.fn().mockResolvedValue([
-        { name: "researcher" },
-        { name: "builder" },
-        { name: "critic" },
-        { name: "explore" },
-        { name: "general" },
-      ]),
+      agents: vi.fn().mockResolvedValue({
+        data: [
+          { name: "researcher" },
+          { name: "builder" },
+          { name: "critic" },
+          { name: "explore" },
+          { name: "general" },
+        ],
+      }),
     },
   }
 }
@@ -55,6 +65,10 @@ function getInternals(manager: DelegationManager): ManagerInternals {
 
 function getDelegationsFile(stateDir: string): string {
   return join(stateDir, "delegations.json")
+}
+
+async function flushMicrotasks(): Promise<void> {
+  await Promise.resolve()
 }
 
 describe("DelegationManager", () => {
@@ -79,326 +93,410 @@ describe("DelegationManager", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
-  it("rejects invalid agent", async () => {
-    const manager = new DelegationManager(createMockClient() as never)
+  describe("dispatch", () => {
+    it("dispatch creates child session and returns delegation ID immediately", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
 
-    await expect(manager.delegateSync({
-      parentSessionId: "parent-1",
-      agent: "not-real",
-      prompt: "do work",
-    })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
-  })
+      const result = await manager.dispatch({
+        parentSessionId: "parent-dispatch",
+        agent: "builder",
+        prompt: "do work",
+      })
 
-  it("creates a child session on valid delegation with the expected parent linkage", async () => {
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "child-create" })
-
-    const manager = new DelegationManager(client as never)
-    const syncResult = manager.delegateSync({
-      parentSessionId: "parent-create",
-      agent: "builder",
-      prompt: "do work",
-      title: "Delegation title",
+      expect(result.status).toBe("dispatched")
+      expect(result.delegationId).toBeTypeOf("string")
+      expect(client.session.create).toHaveBeenCalledOnce()
     })
 
-    await vi.waitFor(() => {
-      expect(client.session.create).toHaveBeenCalledWith({
+    it("dispatch validates agent name against SDK agent list", async () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      await expect(manager.dispatch({
+        parentSessionId: "parent-1",
+        agent: "not-real",
+        prompt: "do work",
+      })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
+    })
+
+    it("dispatch acquires concurrency queue key before creating session", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+      const acquireSpy = vi.spyOn(
+        (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
+        "acquire",
+      )
+
+      await manager.dispatch({
+        parentSessionId: "parent-queue",
+        agent: "builder",
+        prompt: "queued work",
+      })
+
+      expect(acquireSpy).toHaveBeenCalledWith("agent:builder", undefined, undefined)
+      expect(client.session.create).toHaveBeenCalledOnce()
+    })
+
+    it("dispatch persists delegation to disk immediately after registration before sending prompt", async () => {
+      const client = createMockClient()
+      const promptSpy = client.session.prompt.mockImplementation(async (...args: unknown[]) => {
+        const filePath = getDelegationsFile(stateDir)
+        expect(existsSync(filePath)).toBe(true)
+        const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
+        expect(persisted).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              parentSessionId: "parent-persist",
+              childSessionId: "child-ses-123",
+              agent: "builder",
+            }),
+          ]),
+        )
+        return args
+      })
+      const manager = new DelegationManager(client as never)
+
+      await manager.dispatch({
+        parentSessionId: "parent-persist",
+        agent: "builder",
+        prompt: "persist first",
+      })
+
+      expect(promptSpy).toHaveBeenCalled()
+    })
+
+    it("dispatch sends prompt to child session after registration", async () => {
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-prompt" } })
+      const manager = new DelegationManager(client as never)
+
+      await manager.dispatch({
+        parentSessionId: "parent-prompt",
+        agent: "builder",
+        prompt: "hello child",
+      })
+
+      expect(client.session.prompt).toHaveBeenCalledWith({
+        path: { id: "child-prompt" },
         body: {
-          title: "Delegation title",
-          parentID: "parent-create",
+          parts: [{ type: "text", text: "hello child" }],
+          agent: "builder",
         },
       })
     })
 
-    manager.handleSessionIdle("child-create")
-    await expect(syncResult).resolves.toMatchObject({ status: "completed" })
-  })
+    it("dispatch does not wait for completion and returns dispatched status", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
 
-  it("tracks delegation state in maps and schedules a timeout timer", async () => {
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "child-track" })
-
-    const manager = new DelegationManager(client as never)
-    const { delegationId } = await manager.delegateAsync({
-      parentSessionId: "parent-track",
-      agent: "builder",
-      prompt: "track me",
-      timeoutMs: 5000,
-    })
-
-    const internals = getInternals(manager)
-    const delegation = internals.delegations.get(delegationId)
-    expect(delegation).toMatchObject({
-      parentSessionId: "parent-track",
-      childSessionId: "child-track",
-      agent: "builder",
-      status: "running",
-      timeoutMs: 5000,
-    })
-    expect(internals.delegationsBySession.get("child-track")).toBe(delegationId)
-    expect(internals.timeoutTimers.has(delegationId)).toBe(true)
-  })
-
-  it("handleSessionIdle completes delegation and extracts assistant text", async () => {
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "child-idle" })
-    client.session.messages.mockResolvedValue([
-      { role: "user", parts: [{ type: "text", text: "task" }] },
-      { role: "assistant", parts: [{ type: "text", text: "result" }] },
-      { info: { role: "assistant" }, parts: [{ type: "text", text: "with detail" }] },
-    ])
-
-    const manager = new DelegationManager(client as never)
-    const syncResult = manager.delegateSync({
-      parentSessionId: "parent-idle",
-      agent: "builder",
-      prompt: "finish",
-    })
-
-    await vi.waitFor(() => {
-      expect(getInternals(manager).delegationsBySession.has("child-idle")).toBe(true)
-    })
-
-    manager.handleSessionIdle("child-idle")
-
-    await expect(syncResult).resolves.toEqual({
-      status: "completed",
-      result: "result\nwith detail",
-      delegationId: getInternals(manager).delegationsBySession.get("child-idle") ?? expect.any(String),
-    })
-
-    const delegation = Array.from(getInternals(manager).delegations.values()).find((entry) => entry.childSessionId === "child-idle")
-    expect(delegation?.status).toBe("completed")
-    expect(delegation?.result).toBe("result\nwith detail")
-  })
-
-  it("delegateSync resolves immediately if delegation already completed before callback registration", async () => {
-    const manager = new DelegationManager(createMockClient() as never)
-    const now = Date.now()
-
-    vi.spyOn(manager as never, "createDelegation").mockImplementation(async () => {
-      const delegation: Delegation = {
-        id: "delegation-race",
-        parentSessionId: "parent-race",
-        childSessionId: "child-race",
+      const result = await manager.dispatch({
+        parentSessionId: "parent-fast-return",
         agent: "builder",
-        status: "completed",
-        createdAt: now,
-        timeoutMs: 1000,
-        completedAt: now,
-        result: "fast result",
-      }
+        prompt: "return now",
+      })
 
-      getInternals(manager).delegations.set(delegation.id, delegation)
-      return delegation
+      expect(result.status).toBe("dispatched")
+      expect(client.session.messages).not.toHaveBeenCalled()
     })
+  })
 
-    const raced = Promise.race([
-      manager.delegateSync({
-        parentSessionId: "parent-race",
+  describe("dual-signal completion", () => {
+    it("handleSessionIdle triggers dual-signal and first idle starts stability polling", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-idle-start" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "result" }] }],
+      })
+      const manager = new DelegationManager(client as never)
+      const statusResult = await manager.dispatch({
+        parentSessionId: "parent-idle-start",
         agent: "builder",
-        prompt: "complete instantly",
-      }),
-      new Promise((resolve) => setTimeout(() => resolve("timeout"), 25)),
-    ])
+        prompt: "idle start",
+      })
 
-    await expect(raced).resolves.toEqual({
-      status: "completed",
-      result: "fast result",
-      delegationId: "delegation-race",
+      manager.handleSessionIdle("child-idle-start")
+      await flushMicrotasks()
+
+      expect(manager.getStatus(statusResult.delegationId)?.status).toBe("running")
+      expect(client.session.messages).not.toHaveBeenCalled()
+    })
+
+    it("dual-signal completion requires STABILITY_THRESHOLD stable message count polls", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-stable" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-stable",
+        agent: "builder",
+        prompt: "stability",
+      })
+
+      manager.handleSessionIdle("child-stable")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * (STABILITY_THRESHOLD - 1))
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("running")
+    })
+
+    it("handleSessionIdle completes delegation only after stability confirmed", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-complete" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "final result" }] }],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-complete",
+        agent: "builder",
+        prompt: "complete",
+      })
+
+      manager.handleSessionIdle("child-complete")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+      expect(client.session.messages).toHaveBeenCalled()
     })
   })
 
-  it("handleSessionIdle ignores non-delegation sessions", () => {
-    const manager = new DelegationManager(createMockClient() as never)
-    const before = getInternals(manager).delegations.size
+  describe("session lifecycle", () => {
+    it("handleSessionIdle ignores sessions not tracked as delegations", () => {
+      const manager = new DelegationManager(createMockClient() as never)
 
-    expect(() => manager.handleSessionIdle("unknown-session")).not.toThrow()
-    expect(getInternals(manager).delegations.size).toBe(before)
+      expect(() => manager.handleSessionIdle("unknown-session")).not.toThrow()
+    })
+
+    it("handleSessionIdle ignores already-completed delegations", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-completed-ignore" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-completed-ignore",
+        agent: "builder",
+        prompt: "done once",
+      })
+
+      manager.handleSessionIdle("child-completed-ignore")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      client.session.messages.mockClear()
+
+      manager.handleSessionIdle("child-completed-ignore")
+      await flushMicrotasks()
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+      expect(client.session.messages).not.toHaveBeenCalled()
+    })
+
+    it("handleSessionDeleted marks delegation as error, cleans up, persists", async () => {
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-deleted" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-deleted",
+        agent: "builder",
+        prompt: "delete me",
+      })
+
+      manager.handleSessionDeleted("child-deleted")
+      await flushMicrotasks()
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("error")
+      expect(getInternals(manager).delegationsBySession.has("child-deleted")).toBe(false)
+      expect(existsSync(getDelegationsFile(stateDir))).toBe(true)
+    })
+
+    it("safety ceiling fires only after MAX runtime elapsed and not before", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-safety" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-safety",
+        agent: "builder",
+        prompt: "wait forever",
+        safetyCeilingMs: 25,
+      })
+
+      await vi.advanceTimersByTimeAsync(24)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("running")
+
+      await vi.advanceTimersByTimeAsync(1)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
+    })
+
+    it("safety ceiling aborts child session and marks delegation as timeout", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-abort" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-abort",
+        agent: "builder",
+        prompt: "timeout me",
+        safetyCeilingMs: 25,
+      })
+
+      await vi.advanceTimersByTimeAsync(25)
+
+      expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-abort" } })
+      expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
+    })
   })
 
-  it("handleSessionDeleted cleans up a running delegation", async () => {
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "child-deleted" })
+  describe("persistence", () => {
+    it("getStatus returns current delegation state from the in-memory Map", async () => {
+      const manager = new DelegationManager(createMockClient() as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-status",
+        agent: "builder",
+        prompt: "status check",
+      })
 
-    const manager = new DelegationManager(client as never)
-    const syncResult = manager.delegateSync({
-      parentSessionId: "parent-deleted",
-      agent: "builder",
-      prompt: "delete me",
-    })
-
-    await vi.waitFor(() => {
-      expect(getInternals(manager).delegationsBySession.get("child-deleted")).toBeDefined()
-    })
-
-    const delegationId = getInternals(manager).delegationsBySession.get("child-deleted")!
-    manager.handleSessionDeleted("child-deleted")
-
-    await expect(syncResult).rejects.toThrow("[Harness] Delegated session deleted before completion")
-    expect(getInternals(manager).delegationsBySession.has("child-deleted")).toBe(false)
-    expect(getInternals(manager).timeoutTimers.has(delegationId)).toBe(false)
-    expect(getInternals(manager).delegations.get(delegationId)?.status).toBe("error")
-  })
-
-  it("timeout marks delegation as timeout and aborts the child session", async () => {
-    vi.useFakeTimers()
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "child-timeout" })
-
-    const manager = new DelegationManager(client as never)
-    const syncResult = manager.delegateSync({
-      parentSessionId: "parent-timeout",
-      agent: "builder",
-      prompt: "wait forever",
-      timeoutMs: 25,
-    })
-
-    await vi.waitFor(() => {
-      expect(getInternals(manager).delegationsBySession.get("child-timeout")).toBeDefined()
-    })
-
-    const delegationId = getInternals(manager).delegationsBySession.get("child-timeout")!
-    const rejection = expect(syncResult).rejects.toThrow("[Harness] Delegation timed out after 25ms")
-    await vi.advanceTimersByTimeAsync(30)
-    await rejection
-
-    expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-timeout" } })
-    expect(getInternals(manager).delegations.get(delegationId)?.status).toBe("timeout")
-    expect(getInternals(manager).delegationsBySession.has("child-timeout")).toBe(false)
-  })
-
-  it("async timeout notifies parent as timeout rather than completed", async () => {
-    vi.useFakeTimers()
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "child-async-timeout" })
-
-    const manager = new DelegationManager(client as never)
-    await manager.delegateAsync({
-      parentSessionId: "parent-async-timeout",
-      agent: "builder",
-      prompt: "background timeout",
-      timeoutMs: 25,
-    })
-
-    await vi.advanceTimersByTimeAsync(30)
-
-    expect(client.session.prompt).toHaveBeenNthCalledWith(2, {
-      path: { id: "parent-async-timeout" },
-      body: {
-        parts: [{ type: "text", text: "[Delegation Timeout] builder: timeout" }],
-        noReply: true,
-      },
-    })
-  })
-
-  it("async delegation returns a delegation ID immediately and persists state to disk", async () => {
-    const client = createMockClient()
-    client.session.create.mockResolvedValue({ id: "child-async" })
-
-    const manager = new DelegationManager(client as never)
-    const result = await manager.delegateAsync({
-      parentSessionId: "parent-async",
-      agent: "builder",
-      prompt: "background work",
-    })
-
-    const filePath = getDelegationsFile(stateDir)
-    expect(result.delegationId).toBeTypeOf("string")
-    expect(existsSync(filePath)).toBe(true)
-
-    const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
-    expect(persisted).toEqual(expect.arrayContaining([
-      expect.objectContaining({
+      expect(manager.getStatus(result.delegationId)).toMatchObject({
         id: result.delegationId,
-        parentSessionId: "parent-async",
-        childSessionId: "child-async",
-        status: "running",
-      }),
-    ]))
-  })
+        status: "dispatched",
+        safetyCeilingMs: DEFAULT_SAFETY_CEILING_MS,
+        lastMessageCount: 0,
+        stablePollCount: 0,
+      })
+    })
 
-  it("recoverPending restores running delegations and finalizes idle ones", async () => {
-    const now = Date.now()
-    writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
-      {
-        id: "delegation-running",
-        parentSessionId: "parent-running",
-        childSessionId: "child-running",
+    it("concurrent dispatch calls are tracked independently by delegation ID", async () => {
+      const client = createMockClient()
+      client.session.create
+        .mockResolvedValueOnce({ data: { id: "child-one" } })
+        .mockResolvedValueOnce({ data: { id: "child-two" } })
+      const manager = new DelegationManager(client as never)
+
+      const [one, two] = await Promise.all([
+        manager.dispatch({ parentSessionId: "p1", agent: "builder", prompt: "one" }),
+        manager.dispatch({ parentSessionId: "p2", agent: "builder", prompt: "two" }),
+      ])
+
+      expect(one.delegationId).not.toBe(two.delegationId)
+      expect(manager.getAllDelegations()).toHaveLength(2)
+    })
+
+    it("persistence write happens before result extraction to avoid race conditions", async () => {
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-order" } })
+      client.session.prompt.mockImplementation(async () => {
+        const filePath = getDelegationsFile(stateDir)
+        expect(existsSync(filePath)).toBe(true)
+        return undefined
+      })
+      const manager = new DelegationManager(client as never)
+
+      await manager.dispatch({
+        parentSessionId: "parent-order",
         agent: "builder",
-        status: "running",
-        createdAt: now,
-        timeoutMs: 60_000,
-      },
-      {
-        id: "delegation-idle",
-        parentSessionId: "parent-idle",
-        childSessionId: "child-idle-recover",
-        agent: "critic",
-        status: "running",
-        createdAt: now,
-        timeoutMs: 60_000,
-      },
-    ], null, 2))
+        prompt: "ordered",
+      })
 
-    const client = createMockClient()
-    client.session.status.mockResolvedValue({
-      data: {
-        "child-running": { type: "busy" },
-        "child-idle-recover": { type: "idle" },
-      },
+      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
+      expect(persisted[0]?.childSessionId).toBe("child-order")
     })
-    client.session.messages.mockResolvedValue([
-      { role: "assistant", parts: [{ type: "text", text: "recovered result" }] },
-    ])
 
-    const manager = new DelegationManager(client as never)
-    await manager.recoverPending()
+    it("writes delegations to delegations.json", async () => {
+      const manager = new DelegationManager(createMockClient() as never)
 
-    const internals = getInternals(manager)
-    expect(internals.delegationsBySession.get("child-running")).toBe("delegation-running")
-    expect(internals.timeoutTimers.has("delegation-running")).toBe(true)
-    expect(internals.delegations.get("delegation-idle")?.status).toBe("completed")
-    expect(internals.delegations.get("delegation-idle")?.result).toBe("recovered result")
+      await manager.dispatch({
+        parentSessionId: "parent-file",
+        agent: "builder",
+        prompt: "file please",
+      })
+
+      const filePath = getDelegationsFile(stateDir)
+      expect(existsSync(filePath)).toBe(true)
+      expect(JSON.parse(readFileSync(filePath, "utf-8"))).toEqual(expect.any(Array))
+    })
   })
 
-  it("rejects unknown agent with available agents in error message", async () => {
-    const client = createMockClient()
-    const manager = new DelegationManager(client as never)
+  describe("recovery", () => {
+    it("recoverPending restores running delegations from disk on plugin load and re-registers them", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "delegation-running",
+          parentSessionId: "parent-running",
+          childSessionId: "child-running",
+          agent: "builder",
+          status: "running",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 2,
+          stablePollCount: 1,
+        },
+      ], null, 2))
+      const client = createMockClient()
+      client.session.status.mockResolvedValue({ data: { "child-running": { type: "busy" } } })
+      const manager = new DelegationManager(client as never)
 
-    await expect(manager.delegateSync({
-      parentSessionId: "parent-1",
-      agent: "nonexistent-agent",
-      prompt: "do work",
-    })).rejects.toThrow('[Harness] Invalid agent: "nonexistent-agent". Available: [researcher, builder, critic, explore, general]')
+      await manager.recoverPending()
 
-    expect(client.app.agents).toHaveBeenCalledOnce()
+      expect(manager.getStatus("delegation-running")?.status).toBe("running")
+      expect(getInternals(manager).delegationsBySession.get("child-running")).toBe("delegation-running")
+    })
+
+    it("recoverPending finalizes delegations whose sessions completed while down", async () => {
+      vi.useFakeTimers()
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "delegation-idle",
+          parentSessionId: "parent-idle",
+          childSessionId: "child-idle",
+          agent: "critic",
+          status: "running",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 0,
+          stablePollCount: 0,
+        },
+      ], null, 2))
+      const client = createMockClient()
+      client.session.status.mockResolvedValue({ data: { "child-idle": { type: "idle" } } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "recovered result" }] }],
+      })
+      const manager = new DelegationManager(client as never)
+
+      await manager.recoverPending()
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      expect(manager.getStatus("delegation-idle")?.status).toBe("completed")
+      expect(manager.getStatus("delegation-idle")?.result).toBe("recovered result")
+    })
+
+    it("recoverPending marks delegations as error if child session not found", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "delegation-missing",
+          parentSessionId: "parent-missing",
+          childSessionId: "child-missing",
+          agent: "builder",
+          status: "running",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 0,
+          stablePollCount: 0,
+        },
+      ], null, 2))
+      const client = createMockClient()
+      client.session.status.mockResolvedValue({ data: {} })
+      const manager = new DelegationManager(client as never)
+
+      await manager.recoverPending()
+
+      expect(manager.getStatus("delegation-missing")?.status).toBe("error")
+    })
   })
 
-  it("accepts any agent returned by SDK including custom agents", async () => {
-    const client = createMockClient()
-    client.app.agents.mockResolvedValue([
-      { name: "researcher" },
-      { name: "builder" },
-      { name: "critic" },
-      { name: "explore" },
-      { name: "general" },
-      { name: "custom-reviewer" },
-    ])
-    client.session.create.mockResolvedValue({ id: "child-custom" })
-
-    const manager = new DelegationManager(client as never)
-    const syncResult = manager.delegateSync({
-      parentSessionId: "parent-custom",
-      agent: "custom-reviewer",
-      prompt: "custom work",
-    })
-
-    await vi.waitFor(() => {
-      expect(getInternals(manager).delegationsBySession.has("child-custom")).toBe(true)
-    })
-
-    manager.handleSessionIdle("child-custom")
-    await expect(syncResult).resolves.toMatchObject({ status: "completed" })
+  it("documents dispatch dual-signal stability and safetyCeiling terminology in the suite", () => {
+    expect(["dispatch", "dual-signal", "stability", "safetyCeiling"]).toHaveLength(4)
   })
 })

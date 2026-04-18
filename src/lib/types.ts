@@ -331,10 +331,18 @@ export type ContinuityStoreFile = {
 export type CheckpointData = CompactionCheckpointData
 
 // ---------------------------------------------------------------------------
-// Delegation types (Phase 14)
+// Delegation types (Phase 14) — WaiterModel + Dual-Signal Architecture
+// ---------------------------------------------------------------------------
+// Architecture: D-02 (always-background WaiterModel), D-04 (dual-signal completion),
+// D-13 (no fixed timeouts, safety ceiling only), D-14 (separate status tool)
 // ---------------------------------------------------------------------------
 
-export type DelegationStatus = "pending" | "running" | "completed" | "error" | "timeout"
+export type DelegationStatus =
+  | "dispatched"  // Just dispatched, child session created and prompted
+  | "running"     // Child session processing, dual-signal monitoring active
+  | "completed"   // Dual-signal confirmed completion, result extracted
+  | "error"       // Error occurred (child session deleted, SDK error, etc.)
+  | "timeout"     // Safety ceiling reached (MAX runtime, not a deadline)
 
 export interface Delegation {
   id: string
@@ -346,15 +354,25 @@ export interface Delegation {
   error?: string
   createdAt: number
   completedAt?: number
-  timeoutMs: number
+  /** Optional max runtime ceiling — NOT a deadline. Tasks run until dual-signal confirms completion. */
+  safetyCeilingMs?: number
+  /** Last known message count from child session (for stability tracking) */
+  lastMessageCount: number
+  /** Number of consecutive stable polls (message count unchanged) */
+  stablePollCount: number
 }
 
 export interface DelegationResult {
-  status: "completed" | "error" | "timeout"
+  status: DelegationStatus
   result?: string
   error?: string
   delegationId: string
 }
 
-export const DEFAULT_DELEGATION_TIMEOUT_MS = 15 * 60 * 1000
+/** Safety ceiling — MAX runtime, not a deadline. Tasks may complete faster. */
+export const DEFAULT_SAFETY_CEILING_MS = 30 * 60 * 1000 // 30 minutes
+/** Dual-signal: number of stable polls required to confirm completion */
+export const STABILITY_THRESHOLD = 3
+/** Dual-signal: interval between stability polls (ms) */
+export const STABILITY_POLL_INTERVAL_MS = 3000
 export const MAX_DELEGATION_DEPTH = 1
