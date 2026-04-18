@@ -2,7 +2,7 @@
 
 ## What This Is
 
-HiveMind V3 in this worktree is a runtime composition engine for OpenCode. The repository currently contains completed Phase 01 cleanup work and fully re-verified Phase 02 runtime architecture work, with Phase 08 serving as the corrective closure phase that repaired delegated-session durability and unblocked the final verification pass.
+HiveMind V3 in this worktree is a runtime composition engine for OpenCode. The repository currently contains completed Phase 01 cleanup work and fully re-verified Phase 02 runtime architecture work, with Phase 08 serving as the corrective closure phase that repaired delegated-session durability and unblocked the final verification pass. Phase 15 completed a comprehensive security and quality remediation addressing all 26 audit findings in the .opencode/ configuration layer.
 
 ## Core Value
 
@@ -48,7 +48,7 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 - Phase 12 also reconciled Phase 09/09.1/09.2 planning artifacts so quarantined summaries cannot be mistaken for authoritative runtime truth.
 - Fresh bounded tests, full suite, and typecheck all passed during the latest corrective closure run.
 
-**Current state**: Phase 02 remains re-verified, Phase 12 has repaired the false-start corridor, and downstream planning must now start from the corrected chain `Phase 02 baseline → Phase 08 corrective closure → Phase 09-family forensic reset → Phase 12 reconciliation` rather than the stale placeholder storyline.
+**Current state**: Phase 02 remains re-verified, Phase 12 has repaired the false-start corridor, Phase 15 has addressed all 26 security/quality audit findings in the .opencode/ configuration layer (3 critical, 8 high, 1 medium fixed; 2 medium documented as src/ technical debt; 4 cross-phase risks verified closed). Downstream planning must start from the corrected chain `Phase 02 baseline → Phase 08 corrective closure → Phase 09-family forensic reset → Phase 12 reconciliation → Phase 15 security remediation`.
 
 ## Constraints
 
@@ -87,4 +87,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-14 after Phase 12 reconciliation*
+*Last updated: 2026-04-18 after Phase 15 security remediation*
