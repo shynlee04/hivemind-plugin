@@ -29,7 +29,7 @@ permission:
     "custom-tools-dev": allow
     "opencode-platform-reference": allow
     "skill-synthesis": allow
-    "skill-judge": allow
+    "skill-judge": allow      # global skill at ~/.agents/skills/skill-judge/
     "coordinating-loop": allow
     "planning-with-files": allow
     "repomix-explorer": allow

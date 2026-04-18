@@ -24,8 +24,8 @@ permission:
   skill:
     "*": deny
     "use-authoring-skills": allow
-    "skill-judge": allow
-    "skill-creator": allow
+    "skill-judge": allow      # global skill at ~/.agents/skills/skill-judge/
+    "skill-creator": allow    # global skill at ~/.agents/skills/skill-creator/
     "opencode-platform-reference": allow
   glob: allow
   grep: allow

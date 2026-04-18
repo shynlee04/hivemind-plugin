@@ -30,6 +30,14 @@ This skill is LAYER 3 in the loading chain (coordination). Before any action:
 
 **If hierarchy check fails → STOP. This skill requires planning context that is not available.**
 
+<files_to_read>
+.opencode/skills/coordinating-loop/references/01-handoff-protocols.md
+.opencode/skills/coordinating-loop/references/02-sequential-vs-parallel.md
+.opencode/skills/coordinating-loop/references/03-parent-child-cycles.md
+.opencode/skills/coordinating-loop/references/04-ralph-loop-integration.md
+.opencode/get-shit-done/references/thinking-models-execution.md
+</files_to_read>
+
 # coordinating-loop
 
 Central coordination hub for multi-agent workflows. Manages hand-offs, execution mode decisions, parent-child cycles, and ralph-loop integration. **Scripts enforce gates — not tables.**
