@@ -223,17 +223,17 @@ Plans:
 - [ ] 13-01-PLAN.md — Types, result-capture module, and continuity wiring (Wave 1)
 - [ ] 13-02-PLAN.md — Wire result capture into observer, process runner, and notifications (Wave 2, depends on 13-01)
 
-### Phase 14: delegate-task truth-reset: archive phases 09-13, remove trash artifacts, refactor codebase to stop confusing agents about delegation
+### Phase 14: delegate-task truth-reset — Rebuild with WaiterModel + dual-signal + hybrid persistence + dedicated status tool
 
-**Goal:** Hard reset + rebuild — delete all 09-13 regression code, archive stale phase dirs, rebuild delegate-task with sync + async delegation using a single DelegationManager class (~300-400 LOC replacing 20+ broken files).
+**Goal:** Rebuild delegate-task with corrected architecture: WaiterModel always-background execution (no sync/async split), dual-signal completion detection (session.idle + message count stability, no fixed timeouts), hybrid persistence (disk + in-memory), and a dedicated delegation-status tool for polling results. Cleanup half is DONE; this is the rebuild.
 **Requirements**: REQ-14-01 through REQ-14-08
 **Depends on:** Phase 12 (truthful start semantics baseline)
-**Plans:** 3/3 plans complete
+**Plans:** 3 plans
 
 Plans:
-- [x] 14-01-PLAN.md — Cleanup + Deletion: NUKE trash, archive phase dirs, delete 09-13 code/tests, clean plugin.ts + types.ts (Wave 1)
-- [x] 14-02-PLAN.md — DelegationManager Core: Build delegation engine with sync dispatch, async durability, session lifecycle events, persistence, recovery (Wave 2)
-- [x] 14-03-PLAN.md — Tool + Tests + AGENTS.md: Rebuild delegate-task tool, write fresh runtime-truthful tests, update AGENTS.md (Wave 3)
+- [ ] 14-01-PLAN.md — DelegationManager Rewrite: WaiterModel dispatch + dual-signal completion + hybrid persistence (Wave 1, TDD)
+- [ ] 14-02-PLAN.md — Tools + Wiring: Rewrite delegate-task tool, create delegation-status tool, wire in plugin.ts, update AGENTS.md (Wave 2, TDD)
+- [ ] 14-03-PLAN.md — Test Hardening: Audit and expand all delegation tests for runtime-truthful coverage per D-08 (Wave 3, TDD)
 
 ### Phase 15: Security & Quality Remediation — fix all 26 audit issues from comprehensive codebase audit
 
