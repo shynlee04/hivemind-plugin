@@ -15,6 +15,12 @@ allowed-tools:
   - Task
 ---
 
+<files_to_read>
+.opencode/skills/harness-audit/references/pointers.md
+.opencode/skills/harness-audit/scripts/compile-bundle.sh
+.opencode/skills/harness-audit/scripts/validate-skill.sh
+</files_to_read>
+
 # harness-audit
 
 Comprehensive audit orchestrator for ANY OpenCode project. Reports facts, leaves judgment to the agent.

@@ -14,6 +14,17 @@ allowed-tools: Read Write Edit Bash Glob Grep
 NO SKILL WITHOUT TRIGGER PHRASES IN THE DESCRIPTION
 ```
 
+<files_to_read>
+.opencode/skills/use-authoring-skills/references/01-skill-anatomy.md
+.opencode/skills/use-authoring-skills/references/02-frontmatter-standard.md
+.opencode/skills/use-authoring-skills/references/03-three-patterns.md
+.opencode/skills/use-authoring-skills/references/05-skill-quality-matrix.md
+.opencode/skills/use-authoring-skills/scripts/validate-gate.sh
+.opencode/skills/use-authoring-skills/scripts/validate-skill.sh
+.opencode/skills/use-authoring-skills/scripts/check-overlaps.sh
+.opencode/get-shit-done/references/thinking-models-execution.md
+</files_to_read>
+
 The description is the ONLY thing the agent sees before deciding to load a skill. If it doesn't contain specific phrases a user would say, the skill is invisible. Dead on arrival.
 
 **Not "the description should be good."** The description IS the skill. Without it, nothing else matters.

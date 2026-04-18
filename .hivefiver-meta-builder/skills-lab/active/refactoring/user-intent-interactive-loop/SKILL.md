@@ -17,6 +17,16 @@ allowed-tools:
   - Question
 ---
 
+<files_to_read>
+.opencode/skills/user-intent-interactive-loop/references/01-question-protocols.md
+.opencode/skills/user-intent-interactive-loop/references/02-context-preservation.md
+.opencode/skills/user-intent-interactive-loop/references/03-brainstorming-patterns.md
+.opencode/skills/user-intent-interactive-loop/references/04-long-session-management.md
+.opencode/skills/user-intent-interactive-loop/scripts/intent-verify.sh
+.opencode/skills/user-intent-interactive-loop/scripts/verify-hierarchy.sh
+.opencode/get-shit-done/references/thinking-models-execution.md
+</files_to_read>
+
 # user-intent-interactive-loop
 
 Front-agent skill for iterative user engagement. The Agent stays in control, probes intent, delegates appropriately, and keeps users informed across long sessions. Deep material lives in `references/`; this body encodes the loop pattern, delegation rules, and persistence discipline.

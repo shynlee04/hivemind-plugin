@@ -15,6 +15,10 @@ allowed-tools:
   - Grep
 ---
 
+<files_to_read>
+.opencode/skills/agent-authorization/references/gates.md
+</files_to_read>
+
 # Agent Authorization Framework
 
 ## First Action
