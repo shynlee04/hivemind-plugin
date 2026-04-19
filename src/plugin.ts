@@ -18,6 +18,7 @@ import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
 import { createDelegateTaskTool } from "./tools/delegate-task.js"
+import { createDelegationStatusTool } from "./tools/delegation-status.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
@@ -65,6 +66,7 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
     ...createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy }),
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
+      "delegation-status": createDelegationStatusTool(delegationManager),
       "prompt-skim": createPromptSkimTool(process.cwd()),
       "prompt-analyze": createPromptAnalyzeTool(process.cwd()),
       "session-patch": createSessionPatchTool(process.cwd()),

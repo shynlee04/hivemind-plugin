@@ -76,6 +76,7 @@ src/
 ├── hooks/                     # Event hook factories
 ├── tools/                     # Plugin tools
 │   ├── delegate-task.ts       # DelegationManager-backed delegation tool
+│   ├── delegation-status.ts   # Delegation status polling and result retrieval
 │   ├── prompt-skim/           # Prompt skimming tool
 │   ├── prompt-analyze/        # Prompt analysis tool
 │   └── session-patch/         # Session patching tool
@@ -115,8 +116,9 @@ tests/tools/                   # Tool-focused unit tests
 | Add a lifecycle phase | `src/lib/types.ts` + `src/lib/lifecycle-manager.ts` |
 | Change SDK call patterns | `src/lib/session-api.ts` |
 | Change concurrency model | `src/lib/concurrency.ts` |
-| Change delegation behavior | `src/lib/delegation-manager.ts` — DelegationManager class |
-| Change delegate-task tool | `src/tools/delegate-task.ts` — tool wrapper |
+| Change delegation behavior | `src/lib/delegation-manager.ts` — DelegationManager class (WaiterModel dispatch, dual-signal completion) |
+| Change delegate-task tool | `src/tools/delegate-task.ts` — dispatch tool wrapper |
+| Check delegation status | `src/tools/delegation-status.ts` — status polling tool |
 | Change completion detection | `src/lib/completion-detector.ts` |
 | Change task status transitions | `src/lib/task-status.ts` |
 | Change agent config (temperature, tools) | `src/plugin.ts` — `AGENT_DEFAULTS`, `AGENT_TOOLS` |
