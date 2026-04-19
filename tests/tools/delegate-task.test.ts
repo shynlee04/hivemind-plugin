@@ -15,8 +15,7 @@ const mockCtx = {
 }
 
 type ToolManagerStub = {
-  delegateSync: ReturnType<typeof vi.fn>
-  delegateAsync: ReturnType<typeof vi.fn>
+  dispatch: ReturnType<typeof vi.fn>
 }
 
 function parseResult(raw: string): Record<string, unknown> {
@@ -25,12 +24,10 @@ function parseResult(raw: string): Record<string, unknown> {
 
 function createManagerStub(): ToolManagerStub {
   return {
-    delegateSync: vi.fn().mockResolvedValue({
-      status: "completed",
-      result: "assistant text result",
-      delegationId: "delegation-sync",
+    dispatch: vi.fn().mockResolvedValue({
+      status: "dispatched",
+      delegationId: "delegation-dispatch-123",
     }),
-    delegateAsync: vi.fn().mockResolvedValue({ delegationId: "delegation-async" }),
   }
 }
 
@@ -89,54 +86,45 @@ describe("delegate-task tool", () => {
     await expect(tool.execute({ agent: "builder" } as never, mockCtx)).rejects.toHaveProperty("name", "ZodError")
   })
 
-  it("defaults async to false and routes to delegateSync", async () => {
+  it("dispatches delegation and returns dispatched result", async () => {
     const manager = createManagerStub()
     const tool = createDelegateTaskTool(manager as never)
 
     const raw = await tool.execute({ agent: "builder", prompt: "ship it" } as never, mockCtx)
     const result = parseResult(raw)
 
-    expect(manager.delegateSync).toHaveBeenCalledWith({
+    expect(manager.dispatch).toHaveBeenCalledWith({
       parentSessionId: "parent-session",
       agent: "builder",
       prompt: "ship it",
       title: undefined,
-      timeoutMs: undefined,
-    })
-    expect(manager.delegateAsync).not.toHaveBeenCalled()
-    expect(result.kind).toBe("success")
-    expect(result.data).toEqual({
-      status: "completed",
-      result: "assistant text result",
-      delegationId: "delegation-sync",
-    })
-  })
-
-  it("returns dispatched response path for async mode", async () => {
-    const manager = createManagerStub()
-    const tool = createDelegateTaskTool(manager as never)
-
-    const raw = await tool.execute({ agent: "critic", prompt: "review this", async: true } as never, mockCtx)
-    const result = parseResult(raw)
-
-    expect(manager.delegateAsync).toHaveBeenCalledWith({
-      parentSessionId: "parent-session",
-      agent: "critic",
-      prompt: "review this",
-      title: undefined,
-      timeoutMs: undefined,
+      safetyCeilingMs: undefined,
     })
     expect(result.kind).toBe("success")
     expect(result.data).toEqual({
       status: "dispatched",
-      delegationId: "delegation-async",
-      message: "Async delegation dispatched to critic",
+      delegationId: "delegation-dispatch-123",
     })
   })
 
-  it("validates timeoutMs range", () => {
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", timeoutMs: 999 })).toThrow()
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", timeoutMs: 1_800_001 })).toThrow()
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", timeoutMs: 1_000 })).not.toThrow()
+  it("passes safetyCeilingMs to dispatch when provided", async () => {
+    const manager = createManagerStub()
+    const tool = createDelegateTaskTool(manager as never)
+
+    await tool.execute({ agent: "critic", prompt: "review this", safetyCeilingMs: 60_000 } as never, mockCtx)
+
+    expect(manager.dispatch).toHaveBeenCalledWith({
+      parentSessionId: "parent-session",
+      agent: "critic",
+      prompt: "review this",
+      title: undefined,
+      safetyCeilingMs: 60_000,
+    })
+  })
+
+  it("validates safetyCeilingMs range", () => {
+    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 999 })).toThrow()
+    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 1_800_001 })).toThrow()
+    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 1_000 })).not.toThrow()
   })
 })

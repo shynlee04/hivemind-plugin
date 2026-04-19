@@ -9,8 +9,7 @@ const DelegateTaskInputSchema = z.object({
   agent: z.string().min(1, "agent is required").describe("Agent name to delegate to"),
   prompt: z.string().min(1, "prompt is required").describe("The task prompt to send to the agent"),
   title: z.string().min(1).optional().describe("Optional title for the child session"),
-  async: z.boolean().default(false).describe("Return immediately with a delegation ID"),
-  timeoutMs: z.number().min(1000).max(1800000).optional().describe("Timeout in milliseconds"),
+  safetyCeilingMs: z.number().min(1000).max(1800000).optional().describe("Safety ceiling in milliseconds (max runtime)"),
 })
 
 type DelegateTaskInput = z.infer<typeof DelegateTaskInputSchema>
@@ -24,13 +23,12 @@ export function createDelegateTaskTool(
 
   return tool({
     description:
-      "Delegate work to a specialist agent. Use sync mode for immediate results or async mode for durable background work.",
+      "Delegate work to a specialist agent. Returns immediately with a delegation ID (always-background WaiterModel).",
     args: {
       agent: s.string().describe("Agent name to delegate to (must be valid at runtime)"),
       prompt: s.string().describe("Task prompt to send to the delegated agent"),
       title: s.string().optional().describe("Optional title for the child session"),
-      async: s.boolean().optional().describe("If true, return delegation ID immediately"),
-      timeoutMs: s.number().optional().describe("Timeout in milliseconds (1000-1800000)"),
+      safetyCeilingMs: s.number().optional().describe("Safety ceiling in milliseconds (max runtime)"),
     },
     async execute(rawArgs: DelegateTaskInput, context: ToolContext): Promise<string> {
       const args = DelegateTaskInputSchema.parse(rawArgs)
@@ -42,31 +40,15 @@ export function createDelegateTaskTool(
           throw new Error("[Harness] Missing parent session ID for delegate-task")
         }
 
-        if (args.async) {
-          const { delegationId } = await delegationManager.delegateAsync({
-            parentSessionId,
-            agent: args.agent,
-            prompt: args.prompt,
-            title: args.title,
-            timeoutMs: args.timeoutMs,
-          })
-
-          return renderToolResult(success(`Async delegation dispatched to ${args.agent}`, {
-            status: "dispatched",
-            delegationId,
-            message: `Async delegation dispatched to ${args.agent}`,
-          }))
-        }
-
-        const result = await delegationManager.delegateSync({
+        const result = await delegationManager.dispatch({
           parentSessionId,
           agent: args.agent,
           prompt: args.prompt,
           title: args.title,
-          timeoutMs: args.timeoutMs,
+          safetyCeilingMs: args.safetyCeilingMs,
         })
 
-        return renderToolResult(success(`Delegation completed via ${args.agent}`, result))
+        return renderToolResult(success(`Delegation dispatched to ${args.agent}`, result))
       } catch (caughtError) {
         const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
         return renderToolResult(error(message))

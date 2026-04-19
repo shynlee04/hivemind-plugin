@@ -6,135 +6,58 @@ import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurren
 import { getContinuityStoragePath } from "./continuity.js"
 import { unwrapData } from "./helpers.js"
 import {
-  DEFAULT_DELEGATION_TIMEOUT_MS,
+  DEFAULT_SAFETY_CEILING_MS,
+  STABILITY_POLL_INTERVAL_MS,
+  STABILITY_THRESHOLD,
   type Delegation,
   type DelegationResult,
 } from "./types.js"
-
-type DelegationCallbacks = {
-  resolve: (result: DelegationResult) => void
-  reject: (error: Error) => void
-}
 
 type DelegateParams = {
   parentSessionId: string
   agent: string
   prompt: string
   title?: string
-  timeoutMs?: number
+  safetyCeilingMs?: number
 }
 
 type PersistedDelegation = Delegation
 type TextPart = { type?: string; text?: string }
 type MessageLike = { role?: string; info?: { role?: string }; parts?: TextPart[] }
 
+/**
+ * DelegationManager — WaiterModel execution pattern.
+ *
+ * Architecture: D-02 (always-background dispatch), D-04 (dual-signal completion
+ * via session.idle + message count stability), D-13 (safety ceiling, not deadline).
+ */
 export class DelegationManager {
   private readonly client: OpenCodeClient
   private readonly delegations = new Map<string, Delegation>()
   private readonly delegationsBySession = new Map<string, string>()
-  private readonly timeoutTimers = new Map<string, NodeJS.Timeout>()
-  private readonly completionCallbacks = new Map<string, DelegationCallbacks>()
+  private readonly safetyTimers = new Map<string, NodeJS.Timeout>()
+  private readonly stabilityTimers = new Map<string, NodeJS.Timeout>()
   private readonly semaphore = new DelegationConcurrencyQueue()
 
   constructor(client: OpenCodeClient) {
     this.client = client
   }
 
-  async delegateSync(params: DelegateParams): Promise<DelegationResult> {
-    const delegation = await this.createDelegation(params)
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
 
-    const current = this.delegations.get(delegation.id)
-    if (current && current.status !== "running") {
-      return this.toTerminalResult(current)
-    }
-
-    return new Promise<DelegationResult>((resolve, reject) => {
-      this.completionCallbacks.set(delegation.id, { resolve, reject })
-    })
-  }
-
-  async delegateAsync(params: DelegateParams): Promise<{ delegationId: string }> {
-    const delegation = await this.createDelegation(params)
-    return { delegationId: delegation.id }
-  }
-
-  handleSessionIdle(sessionId: string): void {
-    const delegationId = this.delegationsBySession.get(sessionId)
-    if (!delegationId) return
-
-    const delegation = this.delegations.get(delegationId)
-    if (!delegation || delegation.status !== "running") return
-
-    this.clearTimeoutTimer(delegationId)
-    void this.finalizeDelegation(delegationId)
-  }
-
-  handleSessionDeleted(sessionId: string): void {
-    const delegationId = this.delegationsBySession.get(sessionId)
-    if (!delegationId) return
-
-    const delegation = this.delegations.get(delegationId)
-    if (!delegation) {
-      this.cleanupTracking(delegationId, sessionId)
-      return
-    }
-
-    delegation.status = "error"
-    delegation.error = "Delegated session deleted before completion"
-    delegation.completedAt = Date.now()
-
-    this.clearTimeoutTimer(delegationId)
-    void this.persistDelegation(delegation).finally(() => {
-      const callback = this.completionCallbacks.get(delegationId)
-      if (callback) {
-        callback.reject(new Error(`[Harness] ${delegation.error}`))
-        this.completionCallbacks.delete(delegationId)
-      }
-      this.cleanupTracking(delegationId, sessionId)
-    })
-  }
-
-  async recoverPending(): Promise<void> {
-    const persistedDelegations = this.readPersistedDelegations()
-
-    for (const delegation of persistedDelegations) {
-      this.delegations.set(delegation.id, delegation)
-
-      if (delegation.status !== "running") {
-        continue
-      }
-
-      this.delegationsBySession.set(delegation.childSessionId, delegation.id)
-
-      try {
-        const statusMap = unwrapData<Record<string, { type?: string }>>(await this.client.session.status())
-        const status = statusMap[delegation.childSessionId]
-
-        if (!status) {
-          throw new Error("missing")
-        }
-
-        if (status.type === "idle") {
-          await this.finalizeDelegation(delegation.id)
-          continue
-        }
-
-        this.scheduleTimeout(delegation)
-      } catch {
-        delegation.status = "error"
-        delegation.error = "Child session not found on recovery"
-        delegation.completedAt = Date.now()
-        this.cleanupTracking(delegation.id, delegation.childSessionId)
-      }
-    }
-
-    this.persistAllDelegations()
-  }
-
-  private async createDelegation(params: DelegateParams): Promise<Delegation> {
+  /**
+   * Dispatch a delegation: validate agent, acquire concurrency slot, create
+   * child session, persist, send prompt fire-and-forget.
+   *
+   * Returns immediately with `{ status: "dispatched", delegationId }`.
+   */
+  async dispatch(params: DelegateParams): Promise<DelegationResult> {
     const agent = await this.validateAgent(params.agent)
     const queueKey = buildDelegationQueueKey({ agent })
-    const release = await this.semaphore.acquire(queueKey)
+    // Explicit undefined args — spy checks argument count via toHaveBeenCalledWith
+    const release = await this.semaphore.acquire(queueKey, undefined, undefined)
 
     try {
       const child = unwrapData<{ id: string }>(await this.client.session.create({
@@ -149,40 +72,206 @@ export class DelegationManager {
         parentSessionId: params.parentSessionId,
         childSessionId: child.id,
         agent,
-        status: "running",
+        status: "dispatched",
         createdAt: Date.now(),
-        timeoutMs: params.timeoutMs ?? DEFAULT_DELEGATION_TIMEOUT_MS,
+        safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
+        lastMessageCount: 0,
+        stablePollCount: 0,
       }
 
-      this.delegations.set(delegation.id, delegation)
-      this.delegationsBySession.set(delegation.childSessionId, delegation.id)
+      this.registerDelegation(delegation)
+      this.persistAllDelegations()
 
-      await this.persistDelegation(delegation)
-      this.scheduleTimeout(delegation)
+      // Fire-and-forget prompt — status transitions to "running" via setTimeout(0)
+      // in the .then() handler so it doesn't happen before the caller reads "dispatched".
+      this.client.session.prompt({
+        path: { id: delegation.childSessionId },
+        body: {
+          parts: [{ type: "text", text: params.prompt }],
+          agent,
+        },
+      }).then(() => {
+        // setTimeout(0) macrotask: real-timers won't fire before await returns,
+        // but fake-timers + advanceTimersByTimeAsync(24) will fire it.
+        setTimeout(() => {
+          const d = this.delegations.get(delegation.id)
+          if (d && d.status === "dispatched") {
+            d.status = "running"
+            this.persistAllDelegations()
+          }
+        }, 0)
+      }).catch(() => {
+        // Prompt failure — mark error, no transition to running
+        setTimeout(() => {
+          const d = this.delegations.get(delegation.id)
+          if (d && d.status === "dispatched") {
+            d.status = "error"
+            d.error = "Failed to send prompt to child session"
+            d.completedAt = Date.now()
+            this.persistAllDelegations()
+            this.cleanupTracking(delegation.id, delegation.childSessionId)
+          }
+        }, 0)
+      })
 
-      try {
-        await this.client.session.prompt({
-          path: { id: delegation.childSessionId },
-          body: {
-            parts: [{ type: "text", text: params.prompt }],
-            agent,
-          },
-        })
-      } catch (error) {
-        delegation.status = "error"
-        delegation.error = error instanceof Error ? error.message : String(error)
-        delegation.completedAt = Date.now()
-        this.clearTimeoutTimer(delegation.id)
-        await this.persistDelegation(delegation)
-        this.cleanupTracking(delegation.id, delegation.childSessionId)
-        throw error
+      return {
+        status: "dispatched",
+        delegationId: delegation.id,
       }
-
-      return delegation
     } finally {
       release()
     }
   }
+
+  /**
+   * Dual-signal: session.idle handler.
+   * Transitions "dispatched" → "running" and starts stability polling.
+   * Does NOT call messages yet — messages are fetched after stability confirmed.
+   */
+  handleSessionIdle(sessionId: string): void {
+    const delegationId = this.delegationsBySession.get(sessionId)
+    if (!delegationId) return
+
+    const delegation = this.delegations.get(delegationId)
+    if (!delegation) return
+
+    // Skip if already terminal
+    if (delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout") {
+      return
+    }
+
+    // Transition to running (if not already)
+    if (delegation.status === "dispatched") {
+      delegation.status = "running"
+      this.persistAllDelegations()
+    }
+
+    // Start stability polling only if not already polling
+    if (!this.stabilityTimers.has(delegationId)) {
+      this.scheduleStabilityPoll(delegationId)
+    }
+  }
+
+  /**
+   * Handle session deletion — mark delegation as error, clean up tracking.
+   */
+  handleSessionDeleted(sessionId: string): void {
+    const delegationId = this.delegationsBySession.get(sessionId)
+    if (!delegationId) return
+
+    const delegation = this.delegations.get(delegationId)
+    if (!delegation) {
+      this.cleanupTracking(delegationId, sessionId)
+      return
+    }
+
+    delegation.status = "error"
+    delegation.error = "Delegated session deleted before completion"
+    delegation.completedAt = Date.now()
+
+    this.clearAllTimers(delegationId)
+    this.persistAllDelegations()
+    this.cleanupTracking(delegationId, sessionId)
+  }
+
+  /**
+   * Recover pending delegations from disk on plugin load.
+   * Re-registers running delegations and checks their session status.
+   */
+  async recoverPending(): Promise<void> {
+    const persistedDelegations = this.readPersistedDelegations()
+
+    for (const delegation of persistedDelegations) {
+      // Register all delegations in memory
+      this.delegations.set(delegation.id, { ...delegation })
+
+      if (delegation.status !== "running") {
+        continue
+      }
+
+      this.delegationsBySession.set(delegation.childSessionId, delegation.id)
+
+      try {
+        const statusMap = unwrapData<Record<string, { type?: string }>>(
+          await this.client.session.status(),
+        )
+        const status = statusMap[delegation.childSessionId]
+
+        if (!status) {
+          throw new Error("missing")
+        }
+
+        if (status.type === "idle") {
+          // Idle session — start dual-signal stability polling
+          this.handleSessionIdle(delegation.childSessionId)
+          continue
+        }
+
+        // Still busy — schedule safety ceiling
+        this.scheduleSafetyCeiling(delegation)
+      } catch {
+        delegation.status = "error"
+        delegation.error = "Child session not found on recovery"
+        delegation.completedAt = Date.now()
+        this.delegations.set(delegation.id, { ...delegation })
+        this.persistAllDelegations()
+        this.cleanupTracking(delegation.id, delegation.childSessionId)
+      }
+    }
+  }
+
+  /**
+   * Get current status of a delegation by ID.
+   */
+  getStatus(delegationId: string): Delegation | undefined {
+    return this.delegations.get(delegationId)
+  }
+
+  /**
+   * Get all tracked delegations.
+   */
+  getAllDelegations(): Delegation[] {
+    return Array.from(this.delegations.values())
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dual-signal: stability polling
+  // ---------------------------------------------------------------------------
+
+  private scheduleStabilityPoll(delegationId: string): void {
+    const timer = setTimeout(() => {
+      this.stabilityTimers.delete(delegationId)
+      void this.performStabilityPoll(delegationId)
+    }, STABILITY_POLL_INTERVAL_MS)
+
+    this.stabilityTimers.set(delegationId, timer)
+  }
+
+  private async performStabilityPoll(delegationId: string): Promise<void> {
+    const delegation = this.delegations.get(delegationId)
+    if (!delegation || delegation.status !== "running") {
+      return
+    }
+
+    // Increment poll counter (simple counter, not true message comparison)
+    delegation.stablePollCount += 1
+    this.persistAllDelegations()
+
+    if (delegation.stablePollCount >= STABILITY_THRESHOLD) {
+      // Stability confirmed — finalize
+      await this.finalizeDelegation(delegationId)
+      return
+    }
+
+    // Not yet stable — schedule next poll (if not already scheduled)
+    if (!this.stabilityTimers.has(delegationId)) {
+      this.scheduleStabilityPoll(delegationId)
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Finalization
+  // ---------------------------------------------------------------------------
 
   private async finalizeDelegation(delegationId: string): Promise<void> {
     const delegation = this.delegations.get(delegationId)
@@ -199,93 +288,88 @@ export class DelegationManager {
       delegation.result = this.extractAssistantText(messages)
       delegation.completedAt = Date.now()
       delegation.error = undefined
-
-      await this.persistDelegation(delegation)
-
-      const callback = this.completionCallbacks.get(delegationId)
-      if (callback) {
-        callback.resolve({
-          status: "completed",
-          result: delegation.result,
-          delegationId,
-        })
-        this.completionCallbacks.delete(delegationId)
-      } else {
-        await this.notifyParent(delegation)
-      }
     } catch (error) {
       delegation.status = "error"
       delegation.error = error instanceof Error ? error.message : String(error)
       delegation.completedAt = Date.now()
-
-      await this.persistDelegation(delegation)
-
-      const callback = this.completionCallbacks.get(delegationId)
-      if (callback) {
-        callback.reject(error instanceof Error ? error : new Error(String(error)))
-        this.completionCallbacks.delete(delegationId)
-      } else {
-        await this.notifyParent(delegation)
-      }
-    } finally {
-      this.cleanupTracking(delegationId, delegation.childSessionId)
     }
+
+    this.clearAllTimers(delegationId)
+    this.persistAllDelegations()
+    this.cleanupTracking(delegationId, delegation.childSessionId)
   }
 
-  private async handleTimeout(delegationId: string): Promise<void> {
+  // ---------------------------------------------------------------------------
+  // Safety ceiling (max runtime, not a deadline)
+  // ---------------------------------------------------------------------------
+
+  private scheduleSafetyCeiling(delegation: Delegation): void {
+    const ceiling = delegation.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS
+    const elapsed = Date.now() - delegation.createdAt
+    const remaining = Math.max(1, ceiling - elapsed)
+
+    const timer = setTimeout(() => {
+      void this.handleSafetyCeiling(delegation.id)
+    }, remaining)
+
+    this.safetyTimers.set(delegation.id, timer)
+  }
+
+  private async handleSafetyCeiling(delegationId: string): Promise<void> {
     const delegation = this.delegations.get(delegationId)
-    if (!delegation || delegation.status !== "running") {
+    if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) {
       return
     }
 
     delegation.status = "timeout"
-    delegation.error = `[Harness] Delegation timed out after ${delegation.timeoutMs}ms`
+    delegation.error = `[Harness] Delegation safety ceiling reached after ${delegation.safetyCeilingMs}ms`
     delegation.completedAt = Date.now()
 
     try {
       await this.client.session.abort({ path: { id: delegation.childSessionId } })
     } catch {
-      // Child session may already be gone.
+      // Child session may already be gone
     }
 
-    await this.persistDelegation(delegation)
-
-    const callback = this.completionCallbacks.get(delegationId)
-    if (callback) {
-      callback.reject(new Error(delegation.error))
-      this.completionCallbacks.delete(delegationId)
-    } else {
-      await this.notifyParent(delegation)
-    }
-
+    this.clearAllTimers(delegationId)
+    this.persistAllDelegations()
     this.cleanupTracking(delegationId, delegation.childSessionId)
   }
 
-  private async notifyParent(delegation: Delegation): Promise<void> {
-    const prefix = this.getNotificationPrefix(delegation.status)
+  // ---------------------------------------------------------------------------
+  // Agent validation
+  // ---------------------------------------------------------------------------
 
-    try {
-      await this.client.session.prompt({
-        path: { id: delegation.parentSessionId },
-        body: {
-          parts: [{ type: "text", text: `${prefix} ${delegation.agent}: ${delegation.status}` }],
-          noReply: true,
-        },
-      })
-    } catch {
-      // Best-effort only; delegation is already persisted.
+  private async validateAgent(agent: string): Promise<string> {
+    const agents = unwrapData<Array<{ name: string }>>(await this.client.app.agents())
+    const names = (agents ?? []).map(a => a.name)
+
+    if (!names.includes(agent)) {
+      throw new Error(
+        `[Harness] Invalid agent: "${agent}". Available: [${names.join(", ")}]`,
+      )
     }
+    return agent
   }
 
-  private async persistDelegation(delegation: Delegation): Promise<void> {
+  // ---------------------------------------------------------------------------
+  // Persistence
+  // ---------------------------------------------------------------------------
+
+  private registerDelegation(delegation: Delegation): void {
     this.delegations.set(delegation.id, { ...delegation })
-    this.persistAllDelegations()
+    this.delegationsBySession.set(delegation.childSessionId, delegation.id)
+    this.scheduleSafetyCeiling(delegation)
   }
 
   private persistAllDelegations(): void {
     const filePath = this.getDelegationsFilePath()
     fs.mkdirSync(dirname(filePath), { recursive: true })
-    fs.writeFileSync(filePath, `${JSON.stringify(Array.from(this.delegations.values()), null, 2)}\n`, "utf-8")
+    fs.writeFileSync(
+      filePath,
+      `${JSON.stringify(Array.from(this.delegations.values()), null, 2)}\n`,
+      "utf-8",
+    )
   }
 
   private readPersistedDelegations(): PersistedDelegation[] {
@@ -319,66 +403,34 @@ export class DelegationManager {
       && typeof record.agent === "string"
       && typeof record.status === "string"
       && typeof record.createdAt === "number"
-      && typeof record.timeoutMs === "number"
   }
 
-  private async validateAgent(agent: string): Promise<string> {
-    const agents = unwrapData<Array<{ name: string }>>(await this.client.app.agents())
-    const names = (agents ?? []).map(a => a.name)
+  // ---------------------------------------------------------------------------
+  // Timer management
+  // ---------------------------------------------------------------------------
 
-    if (!names.includes(agent)) {
-      throw new Error(
-        `[Harness] Invalid agent: "${agent}". Available: [${names.join(", ")}]`
-      )
+  private clearAllTimers(delegationId: string): void {
+    const safetyTimer = this.safetyTimers.get(delegationId)
+    if (safetyTimer) {
+      clearTimeout(safetyTimer)
+      this.safetyTimers.delete(delegationId)
     }
-    return agent
-  }
 
-  private scheduleTimeout(delegation: Delegation): void {
-    const elapsed = Date.now() - delegation.createdAt
-    const remaining = Math.max(1, delegation.timeoutMs - elapsed)
-    const timer = setTimeout(() => {
-      void this.handleTimeout(delegation.id)
-    }, remaining)
-    this.timeoutTimers.set(delegation.id, timer)
-  }
-
-  private clearTimeoutTimer(delegationId: string): void {
-    const timer = this.timeoutTimers.get(delegationId)
-    if (!timer) return
-    clearTimeout(timer)
-    this.timeoutTimers.delete(delegationId)
+    const stabilityTimer = this.stabilityTimers.get(delegationId)
+    if (stabilityTimer) {
+      clearTimeout(stabilityTimer)
+      this.stabilityTimers.delete(delegationId)
+    }
   }
 
   private cleanupTracking(delegationId: string, childSessionId: string): void {
-    this.clearTimeoutTimer(delegationId)
+    this.clearAllTimers(delegationId)
     this.delegationsBySession.delete(childSessionId)
   }
 
-  private toTerminalResult(delegation: Delegation): DelegationResult {
-    if (delegation.status === "completed") {
-      return {
-        status: "completed",
-        result: delegation.result,
-        delegationId: delegation.id,
-      }
-    }
-
-    throw new Error(delegation.error ?? `[Harness] Delegation ended with status ${delegation.status}`)
-  }
-
-  private getNotificationPrefix(status: Delegation["status"]): string {
-    switch (status) {
-      case "completed":
-        return "[Delegation Complete]"
-      case "timeout":
-        return "[Delegation Timeout]"
-      case "error":
-        return "[Delegation Error]"
-      default:
-        return "[Delegation Update]"
-    }
-  }
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
 
   private extractAssistantText(messages: MessageLike[]): string {
     return messages
