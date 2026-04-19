@@ -1,97 +1,108 @@
 ---
-phase: 14-delegate-task-truth-reset-archive-phases-09-13-remove-trash
+phase: 14-delegate-task-truth-reset-archive-phases-09-13-remove-trash-
 plan: 02
-subsystem: infra
-tags: [delegation, opencode-sdk, persistence, recovery, vitest]
+subsystem: delegation
+tags: [waiter-model, delegation-status, tool-wiring, tdd, dual-signal]
+
+# Dependency graph
 requires:
   - phase: 14-01
-    provides: clean-slate lifecycle shell and compile-safe Phase 02 baseline
+    provides: DelegationManager with WaiterModel dispatch, dual-signal completion, safety ceiling
 provides:
-  - durable DelegationManager with sync dispatch, async dispatch, timeout aborts, and recovery
-  - delegation type surface for persisted execution state and result handoff
-  - focused runtime-truthful unit coverage for delegation lifecycle behaviors
-affects: [14-03, delegate-task, lifecycle-manager, plugin]
+  - Rewritten delegate-task tool with corrected safetyCeilingMs range (60000-3600000)
+  - New delegation-status tool for querying delegation state and retrieving results
+  - plugin.ts wiring both tools with DelegationManager event routing
+  - AGENTS.md updated with delegation-status documentation
+affects: [delegate-task tool, delegation-status tool, plugin composition, agent instructions]
+
+# Tech tracking
 tech-stack:
   added: []
-  patterns: [single-class delegation orchestration, persistence-before-resolution, timeout-driven abort cleanup]
+  patterns: [dedicated status-poll tool (D-14), Zod-validated tool inputs, standard ToolResponse envelope]
+
 key-files:
   created:
-    - src/lib/delegation-manager.ts
-    - tests/lib/delegation-manager.test.ts
-    - .planning/phases/14-delegate-task-truth-reset-archive-phases-09-13-remove-trash-/14-02-SUMMARY.md
+    - src/tools/delegation-status.ts
+    - tests/tools/delegation-status.test.ts
   modified:
-    - src/lib/types.ts
+    - src/tools/delegate-task.ts
+    - src/plugin.ts
+    - AGENTS.md
+    - tests/tools/delegate-task.test.ts
+
 key-decisions:
-  - "Use the existing continuity storage directory as the delegations.json home so delegation durability follows the canonical harness state location."
-  - "Persist delegation status before resolving sync callbacks or notifying async parents to avoid the recovery race identified in research."
+  - "safetyCeilingMs range set to 60000-3600000 (1-60 min) per plan spec, replacing 1000-1800000"
+  - "delegation-status tool supports both single-delegation lookup and list-with-filter in one tool"
+  - "No REFACTOR commit needed — both tools are concise and follow established patterns"
+
 patterns-established:
-  - "Track child-session lifecycle with in-memory maps plus delegations.json persistence."
-  - "Recover pending delegations by reconciling persisted running state against live SDK session status."
-requirements-completed: [REQ-14-05, REQ-14-06]
-duration: 5 min
-completed: 2026-04-17
+  - "Dedicated status-poll tool (D-14): separate tool for delegation state queries instead of overloading delegate-task"
+  - "Consistent tool pattern: Zod schema + DelegationManager methods + ToolResponse envelope"
+
+requirements-completed: [REQ-14-05, REQ-14-08]
+
+# Metrics
+duration: 5min
+completed: 2026-04-19
 ---
 
-# Phase 14 Plan 02: DelegationManager core Summary
+# Phase 14 Plan 02: Delegate-Task Rewrite + Delegation-Status Tool Summary
 
-**DelegationManager now drives sync and async child-session delegation with persisted running state, timeout aborts, and recovery-backed result handling.**
+**delegate-task safetyCeilingMs corrected to 1-60 min range, new delegation-status tool created for dedicated state polling, plugin.ts wires both tools with dual-signal event routing**
 
 ## Performance
 
-- **Duration:** 5 min
-- **Started:** 2026-04-17T11:04:25Z
-- **Completed:** 2026-04-17T11:09:07Z
-- **Tasks:** 2
-- **Files modified:** 4
+- **Duration:** ~5 min
+- **Started:** 2026-04-19T11:44:51Z
+- **Completed:** 2026-04-19T11:49:48Z
+- **Tasks:** 2 (1 TDD: RED + GREEN, 1 wiring)
+- **Files modified:** 5
 
 ## Accomplishments
-
-- Added the new `DelegationManager` core with `delegateSync`, `delegateAsync`, `handleSessionIdle`, `handleSessionDeleted`, timeout handling, and `recoverPending`.
-- Extended `src/lib/types.ts` with delegation status/result contracts and default timeout constants for the rebuilt delegation corridor.
-- Added focused Vitest coverage for sync completion, timeout rejection, deletion cleanup, async persistence, recovery, and parent notification flows.
+- Fixed delegate-task safetyCeilingMs validation range from 1000-1800000 to 60000-3600000 (1-60 min)
+- Created dedicated delegation-status tool (D-14) for querying delegation state and retrieving results
+- plugin.ts imports and registers delegation-status alongside delegate-task
+- AGENTS.md updated with delegation-status in project structure and Where to Find Things table
+- All 372 tests pass, typecheck clean
 
 ## Task Commits
 
-Work for this plan was committed atomically per the execution instruction.
+Each task was committed atomically:
 
-1. **Task 1-2: DelegationManager core + durability** - `10d8786d` (feat)
+1. **Task 1 RED: Failing tests** - `6e9d35fa` (test)
+2. **Task 1 GREEN: Implementation** - `be909e48` (feat)
+3. **Task 2: Plugin wiring + AGENTS.md** - `733d6277` (feat)
 
 ## Files Created/Modified
-
-- `src/lib/delegation-manager.ts` - single-class delegation orchestrator with queue acquisition, persistence, timeout aborts, and recovery.
-- `src/lib/types.ts` - adds delegation status/result contracts and timeout constants.
-- `tests/lib/delegation-manager.test.ts` - verifies sync, async, timeout, recovery, and notification behavior.
-- `.planning/phases/14-delegate-task-truth-reset-archive-phases-09-13-remove-trash-/14-02-SUMMARY.md` - records execution, verification, and readiness for the next plan.
+- `src/tools/delegation-status.ts` - New dedicated status polling tool (68 LOC)
+- `tests/tools/delegation-status.test.ts` - 7 tests for delegation-status tool
+- `src/tools/delegate-task.ts` - Fixed safetyCeilingMs range to 60000-3600000
+- `tests/tools/delegate-task.test.ts` - 12 tests (updated + expanded for new range)
+- `src/plugin.ts` - Added import + registration for delegation-status tool
+- `AGENTS.md` - Updated project structure + Where to Find Things table
 
 ## Decisions Made
-
-- Used `getContinuityStoragePath()` to anchor `delegations.json` in the same harness state directory as canonical continuity storage instead of inventing a second location contract.
-- Persisted delegation transitions before resolving sync callbacks or async notifications so crash recovery never observes stale in-memory-only completion.
+- **safetyCeilingMs range 60000-3600000:** Plan specified 1-60 min as the valid range; previous 1000-1800000 was from an earlier iteration before WaiterModel architecture stabilized
+- **Single delegation-status tool with dual mode:** One tool handles both single-delegation lookup (by ID) and list-with-filter (by status) rather than separate tools — keeps tool surface minimal
+- **No REFACTOR commit:** Both tools are concise (~60-68 LOC each), follow the same pattern, and are well under 500 LOC limit
 
 ## Deviations from Plan
 
 None - plan executed exactly as written.
 
 ## Issues Encountered
-
-- The SDK type surface differs from the plan sketch: `session.status()` returns a session-status map and SDK responses require `unwrapData()`. The implementation aligned with the repository’s typed helpers without changing plan scope.
-- `gsd-tools requirements mark-complete REQ-14-05 REQ-14-06` reported both IDs as `not_found`, so `REQUIREMENTS.md` could not be updated for this plan even though the summary frontmatter records the completed requirements.
+None.
 
 ## User Setup Required
-
 None - no external service configuration required.
 
 ## Next Phase Readiness
-
-- Plan 14-03 can now rebuild the `delegate-task` tool on top of a concrete `DelegationManager` instead of the temporary lifecycle shell.
-- The repository has targeted delegation tests plus a passing `npm run typecheck`, so the next plan can focus on tool integration instead of re-establishing core session behavior.
-
-## Self-Check
-
-- `src/lib/delegation-manager.ts` exists and is 363 LOC (under the 500 LOC guardrail).
-- `tests/lib/delegation-manager.test.ts` exists and passes with `CI=true npx vitest run tests/lib/delegation-manager.test.ts`.
-- Work commit `10d8786d` exists and contains the atomic Plan 14-02 implementation.
+- delegate-task and delegation-status tools fully operational
+- Plugin wiring complete with both tools registered
+- Event routing for session.idle and session.deleted already wired in plugin.ts
+- All 372 tests passing, typecheck clean
+- Ready for Phase 14 Plan 03 (if any) or next phase
 
 ---
-*Phase: 14-delegate-task-truth-reset-archive-phases-09-13-remove-trash*
-*Completed: 2026-04-17*
+*Phase: 14-delegate-task-truth-reset-archive-phases-09-13-remove-trash-*
+*Completed: 2026-04-19*

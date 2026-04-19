@@ -228,11 +228,11 @@ Plans:
 **Goal:** Rebuild delegate-task with corrected architecture: WaiterModel always-background execution (no sync/async split), dual-signal completion detection (session.idle + message count stability, no fixed timeouts), hybrid persistence (disk + in-memory), and a dedicated delegation-status tool for polling results. Cleanup half is DONE; this is the rebuild.
 **Requirements**: REQ-14-01 through REQ-14-08
 **Depends on:** Phase 12 (truthful start semantics baseline)
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
-- [ ] 14-01-PLAN.md — DelegationManager Rewrite: WaiterModel dispatch + dual-signal completion + hybrid persistence (Wave 1, TDD)
-- [ ] 14-02-PLAN.md — Tools + Wiring: Rewrite delegate-task tool, create delegation-status tool, wire in plugin.ts, update AGENTS.md (Wave 2, TDD)
+- [x] 14-01-PLAN.md — DelegationManager Rewrite: WaiterModel dispatch + dual-signal completion + hybrid persistence (Wave 1, TDD)
+- [x] 14-02-PLAN.md — Tools + Wiring: Rewrite delegate-task tool, create delegation-status tool, wire in plugin.ts, update AGENTS.md (Wave 2, TDD)
 - [ ] 14-03-PLAN.md — Test Hardening: Audit and expand all delegation tests for runtime-truthful coverage per D-08 (Wave 3, TDD)
 
 ### Phase 15: Security & Quality Remediation — fix all 26 audit issues from comprehensive codebase audit
