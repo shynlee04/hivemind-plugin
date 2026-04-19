@@ -55,6 +55,10 @@ describe("delegate-task tool", () => {
     }
   })
 
+  // ---------------------------------------------------------------------------
+  // Plugin registration
+  // ---------------------------------------------------------------------------
+
   it("is registered in the plugin tool surface as delegate-task", async () => {
     const plugin = await HarnessControlPlane({ client: createPluginClient() } as never)
     expect(plugin.tool["delegate-task"]).toBeDefined()
@@ -75,6 +79,10 @@ describe("delegate-task tool", () => {
 
     expect(idleSpy).toHaveBeenCalledWith("child-from-info-id")
   })
+
+  // ---------------------------------------------------------------------------
+  // Dispatch behavior
+  // ---------------------------------------------------------------------------
 
   it("dispatches to DelegationManager.dispatch() and returns delegationId", async () => {
     const manager = createManagerStub()
@@ -97,6 +105,44 @@ describe("delegate-task tool", () => {
     })
   })
 
+  it("extracts parentSessionId from context.sessionID first", async () => {
+    const manager = createManagerStub()
+    const tool = createDelegateTaskTool(manager as never)
+    const ctx = { ...mockCtx, sessionID: "ctx-session-id" }
+
+    await tool.execute({ agent: "builder", prompt: "work" } as never, ctx)
+
+    expect(manager.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ parentSessionId: "ctx-session-id" }),
+    )
+  })
+
+  it("falls back to process.env.OPENCODE_SESSION_ID when context.sessionID is undefined", async () => {
+    const manager = createManagerStub()
+    const tool = createDelegateTaskTool(manager as never)
+    const ctxNoSession = { ...mockCtx, sessionID: undefined }
+    const previousEnv = process.env.OPENCODE_SESSION_ID
+    process.env.OPENCODE_SESSION_ID = "env-session-id"
+
+    try {
+      await tool.execute({ agent: "builder", prompt: "work" } as never, ctxNoSession)
+
+      expect(manager.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ parentSessionId: "env-session-id" }),
+      )
+    } finally {
+      if (previousEnv === undefined) {
+        delete process.env.OPENCODE_SESSION_ID
+      } else {
+        process.env.OPENCODE_SESSION_ID = previousEnv
+      }
+    }
+  })
+
+  // ---------------------------------------------------------------------------
+  // Schema validation
+  // ---------------------------------------------------------------------------
+
   it("validates required agent parameter (min 1 char)", async () => {
     const tool = createDelegateTaskTool(createManagerStub() as never)
     await expect(tool.execute({ prompt: "work" } as never, mockCtx)).rejects.toHaveProperty("name", "ZodError")
@@ -107,7 +153,7 @@ describe("delegate-task tool", () => {
     await expect(tool.execute({ agent: "builder" } as never, mockCtx)).rejects.toHaveProperty("name", "ZodError")
   })
 
-  it("passes optional title parameter through", async () => {
+  it("passes optional title parameter through to dispatch", async () => {
     const manager = createManagerStub()
     const tool = createDelegateTaskTool(manager as never)
 
@@ -118,7 +164,7 @@ describe("delegate-task tool", () => {
     )
   })
 
-  it("passes optional safetyCeilingMs parameter through (min 60000, max 3600000)", async () => {
+  it("passes optional safetyCeilingMs parameter through (60000-3600000 range)", async () => {
     const manager = createManagerStub()
     const tool = createDelegateTaskTool(manager as never)
 
@@ -129,25 +175,29 @@ describe("delegate-task tool", () => {
     )
   })
 
-  it("validates safetyCeilingMs range (min 60000, max 3600000)", () => {
+  it("validates safetyCeilingMs range — rejects below 60000 and above 3600000", () => {
     // Below minimum (60000)
     expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 59_999 })).toThrow()
     // Above maximum (3600000)
     expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 3_600_001 })).toThrow()
-    // At minimum boundary
+    // At minimum boundary — valid
     expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 60_000 })).not.toThrow()
-    // At maximum boundary
+    // At maximum boundary — valid
     expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 3_600_000 })).not.toThrow()
   })
 
-  it("has no async parameter in schema (sync/async split removed)", () => {
+  it("has no async parameter in schema — sync/async split removed", () => {
     const shape = DelegateTaskInputSchema.shape
     expect(shape).not.toHaveProperty("async")
     expect(shape).not.toHaveProperty("isAsync")
     expect(shape).not.toHaveProperty("sync")
   })
 
-  it("returns structured success response with delegationId", async () => {
+  // ---------------------------------------------------------------------------
+  // Response structure
+  // ---------------------------------------------------------------------------
+
+  it("returns structured success response with delegationId and agent name in message", async () => {
     const manager = createManagerStub()
     const tool = createDelegateTaskTool(manager as never)
 
@@ -160,7 +210,7 @@ describe("delegate-task tool", () => {
     expect((result.data as Record<string, unknown>)?.status).toBe("dispatched")
   })
 
-  it("returns error response when DelegationManager.dispatch() throws", async () => {
+  it("returns error response when DelegationManager.dispatch() throws with [Harness] prefix", async () => {
     const manager = createManagerStub()
     manager.dispatch = vi.fn().mockRejectedValue(new Error('[Harness] Invalid agent: "nonexistent"'))
 
@@ -170,9 +220,10 @@ describe("delegate-task tool", () => {
 
     expect(result.kind).toBe("error")
     expect(result.message).toContain("Invalid agent")
+    expect(result.message).toContain("[Harness]")
   })
 
-  it("returns error when parentSessionId unavailable", async () => {
+  it("returns error when parentSessionId unavailable from both context and env", async () => {
     const tool = createDelegateTaskTool(createManagerStub() as never)
     const ctxWithoutSession = { ...mockCtx, sessionID: undefined }
     const previousEnv = process.env.OPENCODE_SESSION_ID
@@ -186,5 +237,17 @@ describe("delegate-task tool", () => {
     } finally {
       process.env.OPENCODE_SESSION_ID = previousEnv
     }
+  })
+
+  it("returns error response for non-Error thrown values", async () => {
+    const manager = createManagerStub()
+    manager.dispatch = vi.fn().mockRejectedValue("string error")
+
+    const tool = createDelegateTaskTool(manager as never)
+    const raw = await tool.execute({ agent: "builder", prompt: "work" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toBe("string error")
   })
 })

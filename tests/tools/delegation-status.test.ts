@@ -61,6 +61,10 @@ describe("delegation-status tool", () => {
     }
   })
 
+  // ---------------------------------------------------------------------------
+  // Single delegation lookup
+  // ---------------------------------------------------------------------------
+
   it("returns delegation status when given valid delegationId", async () => {
     const delegation = makeDelegation({ id: "del-001", status: "running" })
     const manager = createManagerStub([delegation])
@@ -125,6 +129,49 @@ describe("delegation-status tool", () => {
     expect(data.error).toBe("Child session crashed")
   })
 
+  it("returns timeout error for timed-out delegations", async () => {
+    const delegation = makeDelegation({
+      id: "del-timeout",
+      status: "timeout",
+      error: "[Harness] Delegation safety ceiling reached",
+      completedAt: Date.now(),
+    })
+    const manager = createManagerStub([delegation])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-timeout" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+    const data = result.data as Record<string, unknown>
+    expect(data.status).toBe("timeout")
+    expect(data.error).toContain("safety ceiling")
+  })
+
+  it("includes createdAt and completedAt timestamps in response", async () => {
+    const now = Date.now()
+    const delegation = makeDelegation({
+      id: "del-ts",
+      status: "completed",
+      result: "done",
+      createdAt: now - 5000,
+      completedAt: now,
+    })
+    const manager = createManagerStub([delegation])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-ts" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    const data = result.data as Record<string, unknown>
+    expect(data.createdAt).toBe(now - 5000)
+    expect(data.completedAt).toBe(now)
+  })
+
+  // ---------------------------------------------------------------------------
+  // List all delegations
+  // ---------------------------------------------------------------------------
+
   it("lists all delegations when no delegationId provided", async () => {
     const delegations = [
       makeDelegation({ id: "del-001", status: "running" }),
@@ -140,6 +187,19 @@ describe("delegation-status tool", () => {
     expect(manager.getAllDelegations).toHaveBeenCalled()
     const data = result.data as Delegation[]
     expect(data).toHaveLength(2)
+  })
+
+  it("handles empty delegation list", async () => {
+    const manager = createManagerStub([])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({} as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+    expect(result.message).toContain("0 delegation")
+    const data = result.data as Delegation[]
+    expect(data).toHaveLength(0)
   })
 
   it("filters by status when status parameter provided", async () => {
@@ -160,13 +220,45 @@ describe("delegation-status tool", () => {
     expect(data.every(d => d.status === "running")).toBe(true)
   })
 
-  it("validates delegationId format when provided as empty string", async () => {
+  it("returns empty list when filter matches no delegations", async () => {
+    const delegations = [
+      makeDelegation({ id: "del-001", status: "running" }),
+    ]
+    const manager = createManagerStub(delegations)
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ status: "completed" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+    const data = result.data as Delegation[]
+    expect(data).toHaveLength(0)
+  })
+
+  // ---------------------------------------------------------------------------
+  // Schema validation
+  // ---------------------------------------------------------------------------
+
+  it("validates delegationId format — rejects empty string", async () => {
     const manager = createManagerStub([])
     const tool = createDelegationStatusTool(manager as never)
 
-    // Empty delegationId should be rejected by schema (min 1)
     await expect(
       tool.execute({ delegationId: "" } as never, mockCtx),
     ).rejects.toHaveProperty("name", "ZodError")
+  })
+
+  it("accepts both delegationId and status filter together", async () => {
+    // When both are provided, delegationId takes precedence (single lookup)
+    const delegation = makeDelegation({ id: "del-both", status: "running" })
+    const manager = createManagerStub([delegation])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-both", status: "completed" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    // delegationId lookup takes priority — returns the delegation regardless of status filter
+    expect(result.kind).toBe("success")
+    expect(manager.getStatus).toHaveBeenCalledWith("del-both")
   })
 })

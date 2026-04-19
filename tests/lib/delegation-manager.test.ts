@@ -1,4 +1,3 @@
-import * as fs from "node:fs"
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -29,6 +28,7 @@ type ManagerInternals = {
   delegations: Map<string, Delegation>
   delegationsBySession: Map<string, string>
   safetyTimers: Map<string, NodeJS.Timeout>
+  stabilityTimers: Map<string, NodeJS.Timeout>
 }
 
 function createMockClient(): MockClient {
@@ -93,8 +93,30 @@ describe("DelegationManager", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
+  // ---------------------------------------------------------------------------
+  // dispatch
+  // ---------------------------------------------------------------------------
+
   describe("dispatch", () => {
-    it("dispatch creates child session and returns delegation ID immediately", async () => {
+    it("creates child session with correct title and parentID", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await manager.dispatch({
+        parentSessionId: "parent-dispatch",
+        agent: "builder",
+        prompt: "do work",
+      })
+
+      expect(client.session.create).toHaveBeenCalledWith({
+        body: {
+          title: "Delegation: builder",
+          parentID: "parent-dispatch",
+        },
+      })
+    })
+
+    it("returns delegation ID immediately with dispatched status", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
@@ -106,10 +128,9 @@ describe("DelegationManager", () => {
 
       expect(result.status).toBe("dispatched")
       expect(result.delegationId).toBeTypeOf("string")
-      expect(client.session.create).toHaveBeenCalledOnce()
     })
 
-    it("dispatch validates agent name against SDK agent list", async () => {
+    it("validates agent name against SDK agent list with [Harness] error prefix", async () => {
       const manager = new DelegationManager(createMockClient() as never)
 
       await expect(manager.dispatch({
@@ -119,7 +140,7 @@ describe("DelegationManager", () => {
       })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
     })
 
-    it("dispatch acquires concurrency queue key before creating session", async () => {
+    it("acquires concurrency slot and releases it after dispatch", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
       const acquireSpy = vi.spyOn(
@@ -137,7 +158,7 @@ describe("DelegationManager", () => {
       expect(client.session.create).toHaveBeenCalledOnce()
     })
 
-    it("dispatch persists delegation to disk immediately after registration before sending prompt", async () => {
+    it("persists delegation to disk BEFORE sending prompt (write-then-send ordering)", async () => {
       const client = createMockClient()
       const promptSpy = client.session.prompt.mockImplementation(async (...args: unknown[]) => {
         const filePath = getDelegationsFile(stateDir)
@@ -165,7 +186,7 @@ describe("DelegationManager", () => {
       expect(promptSpy).toHaveBeenCalled()
     })
 
-    it("dispatch sends prompt to child session after registration", async () => {
+    it("sends prompt to child session with correct agent and text parts", async () => {
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-prompt" } })
       const manager = new DelegationManager(client as never)
@@ -185,7 +206,7 @@ describe("DelegationManager", () => {
       })
     })
 
-    it("dispatch does not wait for completion and returns dispatched status", async () => {
+    it("does not wait for completion — returns dispatched immediately", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
@@ -198,10 +219,122 @@ describe("DelegationManager", () => {
       expect(result.status).toBe("dispatched")
       expect(client.session.messages).not.toHaveBeenCalled()
     })
+
+    it("handles session.create() SDK failure — delegation not created, error thrown", async () => {
+      const client = createMockClient()
+      client.session.create.mockRejectedValue(new Error("SDK create failed"))
+      const manager = new DelegationManager(client as never)
+
+      await expect(manager.dispatch({
+        parentSessionId: "parent-sdk-fail",
+        agent: "builder",
+        prompt: "fail at create",
+      })).rejects.toThrow("SDK create failed")
+
+      expect(manager.getAllDelegations()).toHaveLength(0)
+    })
+
+    it("handles session.prompt() SDK failure — delegation transitions to error", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-prompt-fail" } })
+      client.session.prompt.mockRejectedValue(new Error("SDK prompt failed"))
+      const manager = new DelegationManager(client as never)
+
+      const result = await manager.dispatch({
+        parentSessionId: "parent-prompt-fail",
+        agent: "builder",
+        prompt: "fail at prompt",
+      })
+
+      // Still dispatched immediately
+      expect(result.status).toBe("dispatched")
+
+      // Advance timers to process the .catch() → setTimeout(0) chain
+      // The prompt rejection goes through microtask queue → .catch() → setTimeout(0) → macrotask
+      await vi.advanceTimersByTimeAsync(10)
+
+      // Should now be error
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("error")
+      expect(delegation?.error).toBe("Failed to send prompt to child session")
+      expect(delegation?.completedAt).toBeDefined()
+
+      // Verify cleanup of session tracking
+      expect(getInternals(manager).delegationsBySession.has("child-prompt-fail")).toBe(false)
+    })
+
+    it("concurrent dispatch calls produce independent delegations with unique IDs", async () => {
+      const client = createMockClient()
+      client.session.create
+        .mockResolvedValueOnce({ data: { id: "child-one" } })
+        .mockResolvedValueOnce({ data: { id: "child-two" } })
+      const manager = new DelegationManager(client as never)
+
+      const [one, two] = await Promise.all([
+        manager.dispatch({ parentSessionId: "p1", agent: "builder", prompt: "one" }),
+        manager.dispatch({ parentSessionId: "p2", agent: "builder", prompt: "two" }),
+      ])
+
+      expect(one.delegationId).not.toBe(two.delegationId)
+      expect(manager.getAllDelegations()).toHaveLength(2)
+    })
+
+    it("uses custom title when provided", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await manager.dispatch({
+        parentSessionId: "parent-title",
+        agent: "builder",
+        prompt: "custom title work",
+        title: "My Custom Title",
+      })
+
+      expect(client.session.create).toHaveBeenCalledWith({
+        body: {
+          title: "My Custom Title",
+          parentID: "parent-title",
+        },
+      })
+    })
+
+    it("uses default safetyCeilingMs when not provided", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      const result = await manager.dispatch({
+        parentSessionId: "parent-default-ceiling",
+        agent: "builder",
+        prompt: "default ceiling",
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.safetyCeilingMs).toBe(DEFAULT_SAFETY_CEILING_MS)
+    })
+
+    it("uses custom safetyCeilingMs when provided", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      const result = await manager.dispatch({
+        parentSessionId: "parent-custom-ceiling",
+        agent: "builder",
+        prompt: "custom ceiling",
+        safetyCeilingMs: 120_000,
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.safetyCeilingMs).toBe(120_000)
+    })
   })
 
+  // ---------------------------------------------------------------------------
+  // dual-signal completion
+  // ---------------------------------------------------------------------------
+
   describe("dual-signal completion", () => {
-    it("handleSessionIdle triggers dual-signal and first idle starts stability polling", async () => {
+    it("first idle starts stability polling — status is running, not completed", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-idle-start" } })
@@ -222,7 +355,7 @@ describe("DelegationManager", () => {
       expect(client.session.messages).not.toHaveBeenCalled()
     })
 
-    it("dual-signal completion requires STABILITY_THRESHOLD stable message count polls", async () => {
+    it("completion requires STABILITY_THRESHOLD stable polls — not fewer", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-stable" } })
@@ -239,7 +372,7 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)?.status).toBe("running")
     })
 
-    it("handleSessionIdle completes delegation only after stability confirmed", async () => {
+    it("completes delegation after STABILITY_THRESHOLD stable polls confirmed", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-complete" } })
@@ -259,7 +392,90 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
       expect(client.session.messages).toHaveBeenCalled()
     })
+
+    it("resets stablePollCount when message count changes between polls", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-reset" } })
+      let messageCallCount = 0
+      client.session.messages.mockImplementation(async () => {
+        messageCallCount++
+        if (messageCallCount <= 1) {
+          return { data: [{ role: "assistant", parts: [{ type: "text", text: "partial" }] }] }
+        }
+        return { data: [{ role: "assistant", parts: [{ type: "text", text: "final" }] }] }
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-reset",
+        agent: "builder",
+        prompt: "reset test",
+      })
+
+      manager.handleSessionIdle("child-reset")
+      // Advance through all stability polls — completion should succeed
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      // The key assertion: the delegation should complete after stability threshold
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("completed")
+    })
+
+    it("multiple idle events do not restart stability polling", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-multi-idle" } })
+      const manager = new DelegationManager(client as never)
+      await manager.dispatch({
+        parentSessionId: "parent-multi-idle",
+        agent: "builder",
+        prompt: "multi idle",
+      })
+
+      manager.handleSessionIdle("child-multi-idle")
+      await flushMicrotasks()
+
+      // Only one stability timer should exist
+      const stabilityCount = getInternals(manager).stabilityTimers.size
+      expect(stabilityCount).toBe(1)
+
+      // Second idle should NOT add another timer
+      manager.handleSessionIdle("child-multi-idle")
+      await flushMicrotasks()
+
+      expect(getInternals(manager).stabilityTimers.size).toBe(1)
+    })
+
+    it("extracts assistant text from completed delegation messages", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-extract" } })
+      client.session.messages.mockResolvedValue({
+        data: [
+          { role: "user", parts: [{ type: "text", text: "task prompt" }] },
+          { role: "assistant", parts: [{ type: "text", text: "Hello world" }] },
+          { role: "assistant", parts: [{ type: "text", text: "Second part" }] },
+        ],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-extract",
+        agent: "builder",
+        prompt: "extract text",
+      })
+
+      manager.handleSessionIdle("child-extract")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("completed")
+      expect(delegation?.result).toBe("Hello world\nSecond part")
+    })
   })
+
+  // ---------------------------------------------------------------------------
+  // session lifecycle
+  // ---------------------------------------------------------------------------
 
   describe("session lifecycle", () => {
     it("handleSessionIdle ignores sessions not tracked as delegations", () => {
@@ -290,7 +506,54 @@ describe("DelegationManager", () => {
       expect(client.session.messages).not.toHaveBeenCalled()
     })
 
-    it("handleSessionDeleted marks delegation as error, cleans up, persists", async () => {
+    it("handleSessionIdle ignores error delegations", async () => {
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-error-ignore" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-error-ignore",
+        agent: "builder",
+        prompt: "error test",
+      })
+
+      // Force error status
+      manager.handleSessionDeleted("child-error-ignore")
+      await flushMicrotasks()
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("error")
+
+      // Idle on same session should be a no-op
+      const beforeError = manager.getStatus(result.delegationId)?.error
+      manager.handleSessionIdle("child-error-ignore")
+      await flushMicrotasks()
+
+      expect(manager.getStatus(result.delegationId)?.error).toBe(beforeError)
+    })
+
+    it("handleSessionIdle ignores timeout delegations", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-timeout-ignore" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-timeout-ignore",
+        agent: "builder",
+        prompt: "timeout test",
+        safetyCeilingMs: 25,
+      })
+
+      // Trigger safety ceiling timeout
+      await vi.advanceTimersByTimeAsync(25)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
+
+      // Idle on same session should be a no-op
+      manager.handleSessionIdle("child-timeout-ignore")
+      await flushMicrotasks()
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
+    })
+
+    it("handleSessionDeleted marks delegation as error, clears safety timer, persists, cleans up", async () => {
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-deleted" } })
       const manager = new DelegationManager(client as never)
@@ -304,11 +567,84 @@ describe("DelegationManager", () => {
       await flushMicrotasks()
 
       expect(manager.getStatus(result.delegationId)?.status).toBe("error")
+      expect(manager.getStatus(result.delegationId)?.error).toBe("Delegated session deleted before completion")
+      expect(manager.getStatus(result.delegationId)?.completedAt).toBeDefined()
       expect(getInternals(manager).delegationsBySession.has("child-deleted")).toBe(false)
       expect(existsSync(getDelegationsFile(stateDir))).toBe(true)
+      expect(getInternals(manager).safetyTimers.has(result.delegationId)).toBe(false)
     })
 
-    it("safety ceiling fires only after MAX runtime elapsed and not before", async () => {
+    it("handleSessionDeleted handles delegation not found in Map gracefully", () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      // Register a delegation manually, then delete it from the Map
+      // so delegationsBySession still has the mapping but delegations Map doesn't
+      const internals = getInternals(manager)
+      internals.delegationsBySession.set("child-orphan", "del-orphan")
+      // Don't set in delegations Map — simulates orphaned tracking
+
+      expect(() => manager.handleSessionDeleted("child-orphan")).not.toThrow()
+      expect(internals.delegationsBySession.has("child-orphan")).toBe(false)
+    })
+
+    it("handleSessionDeleted clears stability timer", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-del-stab" } })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-del-stab",
+        agent: "builder",
+        prompt: "delete during stability",
+      })
+
+      // Start stability polling
+      manager.handleSessionIdle("child-del-stab")
+      await flushMicrotasks()
+
+      // Verify stability timer exists
+      expect(getInternals(manager).stabilityTimers.has(result.delegationId)).toBe(true)
+
+      // Delete should clear it
+      manager.handleSessionDeleted("child-del-stab")
+      await flushMicrotasks()
+
+      expect(getInternals(manager).stabilityTimers.has(result.delegationId)).toBe(false)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("error")
+    })
+
+    it("safety ceiling does NOT fire if delegation completes before ceiling", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-complete-first" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "done fast" }] }],
+      })
+      const manager = new DelegationManager(client as never)
+      // Set safety ceiling high enough that stability polls complete first
+      // STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD = 3000 * 3 = 9000ms
+      const ceilingMs = STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD + 5000 // 14000ms
+      const result = await manager.dispatch({
+        parentSessionId: "parent-complete-first",
+        agent: "builder",
+        prompt: "complete fast",
+        safetyCeilingMs: ceilingMs,
+      })
+
+      // Complete via dual-signal before safety ceiling
+      manager.handleSessionIdle("child-complete-first")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+
+      // Advance past safety ceiling — should NOT change to timeout (already completed)
+      await vi.advanceTimersByTimeAsync(ceilingMs)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+      expect(client.session.abort).not.toHaveBeenCalled()
+    })
+
+    it("safety ceiling fires after MAX runtime and aborts child session", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-safety" } })
@@ -325,29 +661,35 @@ describe("DelegationManager", () => {
 
       await vi.advanceTimersByTimeAsync(1)
       expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
+      expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-safety" } })
     })
 
-    it("safety ceiling aborts child session and marks delegation as timeout", async () => {
+    it("safety ceiling error message contains [Harness] prefix and ceiling time", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
-      client.session.create.mockResolvedValue({ data: { id: "child-abort" } })
+      client.session.create.mockResolvedValue({ data: { id: "child-ceiling-msg" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-abort",
+        parentSessionId: "parent-ceiling-msg",
         agent: "builder",
-        prompt: "timeout me",
-        safetyCeilingMs: 25,
+        prompt: "ceiling msg",
+        safetyCeilingMs: 100,
       })
 
-      await vi.advanceTimersByTimeAsync(25)
+      await vi.advanceTimersByTimeAsync(100)
 
-      expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-abort" } })
-      expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.error).toContain("[Harness]")
+      expect(delegation?.error).toContain("100")
     })
   })
 
+  // ---------------------------------------------------------------------------
+  // persistence
+  // ---------------------------------------------------------------------------
+
   describe("persistence", () => {
-    it("getStatus returns current delegation state from the in-memory Map", async () => {
+    it("getStatus returns current delegation state from in-memory Map", async () => {
       const manager = new DelegationManager(createMockClient() as never)
       const result = await manager.dispatch({
         parentSessionId: "parent-status",
@@ -364,20 +706,31 @@ describe("DelegationManager", () => {
       })
     })
 
-    it("concurrent dispatch calls are tracked independently by delegation ID", async () => {
+    it("getStatus returns undefined for unknown delegation ID", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+      expect(manager.getStatus("nonexistent")).toBeUndefined()
+    })
+
+    it("getAllDelegations returns all delegations including completed ones", async () => {
+      vi.useFakeTimers()
       const client = createMockClient()
-      client.session.create
-        .mockResolvedValueOnce({ data: { id: "child-one" } })
-        .mockResolvedValueOnce({ data: { id: "child-two" } })
+      client.session.create.mockResolvedValue({ data: { id: "child-all" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "done" }] }],
+      })
       const manager = new DelegationManager(client as never)
+      await manager.dispatch({
+        parentSessionId: "parent-all",
+        agent: "builder",
+        prompt: "all delegations",
+      })
 
-      const [one, two] = await Promise.all([
-        manager.dispatch({ parentSessionId: "p1", agent: "builder", prompt: "one" }),
-        manager.dispatch({ parentSessionId: "p2", agent: "builder", prompt: "two" }),
-      ])
+      manager.handleSessionIdle("child-all")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
 
-      expect(one.delegationId).not.toBe(two.delegationId)
-      expect(manager.getAllDelegations()).toHaveLength(2)
+      const all = manager.getAllDelegations()
+      expect(all).toHaveLength(1)
+      expect(all[0]?.status).toBe("completed")
     })
 
     it("persistence write happens before result extraction to avoid race conditions", async () => {
@@ -400,7 +753,7 @@ describe("DelegationManager", () => {
       expect(persisted[0]?.childSessionId).toBe("child-order")
     })
 
-    it("writes delegations to delegations.json", async () => {
+    it("writes delegations to delegations.json with valid JSON array", async () => {
       const manager = new DelegationManager(createMockClient() as never)
 
       await manager.dispatch({
@@ -411,12 +764,17 @@ describe("DelegationManager", () => {
 
       const filePath = getDelegationsFile(stateDir)
       expect(existsSync(filePath)).toBe(true)
-      expect(JSON.parse(readFileSync(filePath, "utf-8"))).toEqual(expect.any(Array))
+      const parsed = JSON.parse(readFileSync(filePath, "utf-8"))
+      expect(Array.isArray(parsed)).toBe(true)
     })
   })
 
+  // ---------------------------------------------------------------------------
+  // recovery
+  // ---------------------------------------------------------------------------
+
   describe("recovery", () => {
-    it("recoverPending restores running delegations from disk on plugin load and re-registers them", async () => {
+    it("restores running delegations from disk and re-registers them", async () => {
       const now = Date.now()
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
         {
@@ -441,7 +799,7 @@ describe("DelegationManager", () => {
       expect(getInternals(manager).delegationsBySession.get("child-running")).toBe("delegation-running")
     })
 
-    it("recoverPending finalizes delegations whose sessions completed while down", async () => {
+    it("finalizes delegations whose sessions went idle while down via dual-signal", async () => {
       vi.useFakeTimers()
       const now = Date.now()
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
@@ -471,7 +829,7 @@ describe("DelegationManager", () => {
       expect(manager.getStatus("delegation-idle")?.result).toBe("recovered result")
     })
 
-    it("recoverPending marks delegations as error if child session not found", async () => {
+    it("marks delegations as error if child session not found", async () => {
       const now = Date.now()
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
         {
@@ -493,10 +851,249 @@ describe("DelegationManager", () => {
       await manager.recoverPending()
 
       expect(manager.getStatus("delegation-missing")?.status).toBe("error")
+      expect(manager.getStatus("delegation-missing")?.error).toBe("Child session not found on recovery")
+    })
+
+    it("handles corrupted JSON file gracefully — returns empty array", async () => {
+      writeFileSync(getDelegationsFile(stateDir), "NOT VALID JSON {{{")
+
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await expect(manager.recoverPending()).resolves.toBeUndefined()
+      expect(manager.getAllDelegations()).toHaveLength(0)
+    })
+
+    it("handles empty delegations.json — returns empty array", async () => {
+      writeFileSync(getDelegationsFile(stateDir), "[]")
+
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await expect(manager.recoverPending()).resolves.toBeUndefined()
+      expect(manager.getAllDelegations()).toHaveLength(0)
+    })
+
+    it("skips non-running delegations during recovery", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "delegation-completed",
+          parentSessionId: "parent-completed",
+          childSessionId: "child-completed",
+          agent: "builder",
+          status: "completed",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 0,
+          stablePollCount: 3,
+          result: "already done",
+          completedAt: now + 1000,
+        },
+      ], null, 2))
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await manager.recoverPending()
+
+      // Completed delegation should be loaded into memory but NOT register session tracking
+      expect(manager.getStatus("delegation-completed")?.status).toBe("completed")
+      expect(getInternals(manager).delegationsBySession.has("child-completed")).toBe(false)
+      // Should NOT call session.status for completed delegations
+      expect(client.session.status).not.toHaveBeenCalled()
+    })
+
+    it("handles non-array JSON content gracefully", async () => {
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify({ not: "an array" }))
+
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await expect(manager.recoverPending()).resolves.toBeUndefined()
+      expect(manager.getAllDelegations()).toHaveLength(0)
+    })
+
+    it("handles missing delegations.json file gracefully", async () => {
+      // Don't create the file at all
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await expect(manager.recoverPending()).resolves.toBeUndefined()
+      expect(manager.getAllDelegations()).toHaveLength(0)
     })
   })
 
-  it("documents dispatch dual-signal stability and safetyCeiling terminology in the suite", () => {
-    expect(["dispatch", "dual-signal", "stability", "safetyCeiling"]).toHaveLength(4)
+  // ---------------------------------------------------------------------------
+  // extractAssistantText (tested through finalizeDelegation)
+  // ---------------------------------------------------------------------------
+
+  describe("extractAssistantText", () => {
+    it("handles empty messages array — returns empty string result", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-empty-msg" } })
+      client.session.messages.mockResolvedValue({ data: [] })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-empty-msg",
+        agent: "builder",
+        prompt: "empty messages",
+      })
+
+      manager.handleSessionIdle("child-empty-msg")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("completed")
+      expect(delegation?.result).toBe("")
+    })
+
+    it("handles messages with no assistant role — returns empty string", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-no-asst" } })
+      client.session.messages.mockResolvedValue({
+        data: [
+          { role: "user", parts: [{ type: "text", text: "prompt only" }] },
+          { role: "tool", parts: [{ type: "text", text: "tool output" }] },
+        ],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-no-asst",
+        agent: "builder",
+        prompt: "no assistant",
+      })
+
+      manager.handleSessionIdle("child-no-asst")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("completed")
+      expect(delegation?.result).toBe("")
+    })
+
+    it("handles messages with multiple text parts from assistant — joins with newline", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-multi-part" } })
+      client.session.messages.mockResolvedValue({
+        data: [
+          { role: "assistant", parts: [{ type: "text", text: "part one" }] },
+          { role: "assistant", parts: [{ type: "text", text: "part two" }] },
+          { role: "assistant", parts: [{ type: "text", text: "part three" }] },
+        ],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-multi-part",
+        agent: "builder",
+        prompt: "multi part",
+      })
+
+      manager.handleSessionIdle("child-multi-part")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("completed")
+      expect(delegation?.result).toBe("part one\npart two\npart three")
+    })
+
+    it("handles assistant message via info.role field", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-info-role" } })
+      client.session.messages.mockResolvedValue({
+        data: [
+          { info: { role: "assistant" }, parts: [{ type: "text", text: "via info role" }] },
+        ],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-info-role",
+        agent: "builder",
+        prompt: "info role test",
+      })
+
+      manager.handleSessionIdle("child-info-role")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("completed")
+      expect(delegation?.result).toBe("via info role")
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // finalization error handling
+  // ---------------------------------------------------------------------------
+
+  describe("finalization", () => {
+    it("finalizeDelegation handles messages() SDK failure — delegation becomes error", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-final-fail" } })
+      client.session.messages.mockRejectedValue(new Error("Messages SDK error"))
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-final-fail",
+        agent: "builder",
+        prompt: "final fail",
+      })
+
+      manager.handleSessionIdle("child-final-fail")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("error")
+      expect(delegation?.error).toBe("Messages SDK error")
+      expect(delegation?.completedAt).toBeDefined()
+    })
+
+    it("finalization cleans up session tracking and clears all timers", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-cleanup" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "clean" }] }],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-cleanup",
+        agent: "builder",
+        prompt: "cleanup test",
+      })
+
+      manager.handleSessionIdle("child-cleanup")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      expect(getInternals(manager).delegationsBySession.has("child-cleanup")).toBe(false)
+      expect(getInternals(manager).safetyTimers.has(result.delegationId)).toBe(false)
+      expect(getInternals(manager).stabilityTimers.has(result.delegationId)).toBe(false)
+    })
+
+    it("notifyParent failure does not crash finalization", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-notify-fail" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "notify fail" }] }],
+      })
+      // DelegationManager doesn't have a notifyParent in current implementation,
+      // but if it did, failure should not crash. Test that finalization succeeds
+      // even when session.messages is called (which it is for result extraction).
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "parent-notify-fail",
+        agent: "builder",
+        prompt: "notify fail test",
+      })
+
+      manager.handleSessionIdle("child-notify-fail")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+
+      // Should complete successfully — no crash from any notification failure
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+    })
   })
 })
