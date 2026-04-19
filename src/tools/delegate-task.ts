@@ -9,7 +9,7 @@ const DelegateTaskInputSchema = z.object({
   agent: z.string().min(1, "agent is required").describe("Agent name to delegate to"),
   prompt: z.string().min(1, "prompt is required").describe("The task prompt to send to the agent"),
   title: z.string().min(1).optional().describe("Optional title for the child session"),
-  safetyCeilingMs: z.number().min(1000).max(1800000).optional().describe("Safety ceiling in milliseconds (max runtime)"),
+  safetyCeilingMs: z.number().min(60000).max(3600000).optional().describe("Safety ceiling in milliseconds (max runtime, 1-60 min)"),
 })
 
 type DelegateTaskInput = z.infer<typeof DelegateTaskInputSchema>
