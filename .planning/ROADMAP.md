@@ -247,6 +247,19 @@ Plans:
 - [x] 15-02-PLAN.md — High-severity command & skill fixes: add frontmatter, quote $ARGUMENTS, add files_to_read blocks, resolve dangling skill refs (Wave 2)
 - [x] 15-03-PLAN.md — Remaining fixes + cross-phase risk verification: narrow triggers, verify XPR-1 through XPR-4 closure (Wave 3)
 
+### Phase 16: Background Delegation Revamp + PTY Integration -- Rebuild background delegation to overcome all current limitations (read-only restriction, 15-min timeout, no undo/branching parity, no write-capable background) by synthesizing architecture from oh-my-openagent background-agent/spawner/concurrency/tmux stack, opencode-background-agents lifecycle plugin, and opencode-pty interactive PTY. Produce a superior delegate-task that rivals or surpasses OpenCode built-in task tool while adding PTY interactive background processes as default. Depends on: Phase 14, Phase 15
+
+**Goal:** Write-capable background delegations run through parent-linked PTY-first child sessions with extracted spawner modules, truthful single-owner lifecycle orchestration, and status polling that preserves WaiterModel + dual-signal completion semantics.
+**Requirements**: TBD
+**Depends on:** Phase 15
+**Plans:** 4 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — add node-pty dependency, canonical PTY/spawner contracts, and shared assistant-text extraction foundation
+- [ ] 16-02-PLAN.md — build and test the PTY manager + bounded PTY buffer subsystem
+- [ ] 16-03-PLAN.md — build and test the dedicated spawner subsystem (session creator, directory resolver, key resolver, PTY-first setup)
+- [ ] 16-04-PLAN.md — integrate spawner + PTY into DelegationManager, collapse lifecycle ambiguity, and expose execution metadata through tools/plugin
+
 ---
 
 ### Phase 9.3: Module Restructuring + Config

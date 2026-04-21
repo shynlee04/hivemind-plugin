@@ -1,0 +1,272 @@
+{
+  "audit_metadata": {
+    "report_date": "2026-04-17",
+    "auditor": "harness-synthesis-auditor",
+    "phases_audited": [1, 2, 3, 4, 5, 6],
+    "profile_version": "1.0.0"
+  },
+  "executive_summary": {
+    "total_issues": 26,
+    "critical_issues": 3,
+    "warnings": 12,
+    "low_info": 9,
+    "phases_passed": "1/6",
+    "overall_status": "FAILED - 3 critical issues require immediate remediation"
+  },
+  "critical_issues": [
+    {
+      "id": "C-1",
+      "phase": 1,
+      "title": "Hardcoded $HOME path in harness-delegation-inspection",
+      "severity": "critical",
+      "evidence": [
+        "harness-delegation-inspection/SKILL.md:45",
+        "references/gsd-execution-patterns.md:15,25,26,76,124,130"
+      ],
+      "impact": "Skill completely broken on any system except developer's - uses $HOME/.claude/get-shit-done/",
+      "remediation": "Replace with environment variable ${OPENCODE_HARNESS_BIN_DIR} or similar"
+    },
+    {
+      "id": "C-2",
+      "phase": 5,
+      "title": "Wildcard skill permission + profanity in build.md",
+      "severity": "critical",
+      "evidence": ["build.md:1-11", "build.md:13-16"],
+      "impact": "Privilege escalation - skill: *: allow grants full admin access; vulgar language violates professional standards",
+      "remediation": "Delete build.md or strip wildcard permissions and rewrite with professional language"
+    },
+    {
+      "id": "C-3",
+      "phase": 5,
+      "title": "Excessive permissions without scoping in conductor.md",
+      "severity": "critical",
+      "evidence": ["conductor.md permission block"],
+      "impact": "Violates least-privilege security principle - read/edit/write/bash/task/skill all set to allow with no restrictions",
+      "remediation": "Apply deny-by-default pattern: read: { '*': 'deny', '*.json': 'allow', '*.md': 'allow' }"
+    }
+  ],
+  "warnings": [
+    {
+      "id": "W-1",
+      "phase": 2,
+      "title": "Missing frontmatter in deep-init.md and deep-research-synthesis-repomix.md",
+      "severity": "warning",
+      "evidence": ["Both files start with content directly, no --- delimiters"],
+      "likelihood": "High"
+    },
+    {
+      "id": "W-2",
+      "phase": 2,
+      "title": "Unquoted $ARGUMENTS in 4 command files",
+      "severity": "warning",
+      "evidence": [
+        "hf-absorb.md:9",
+        "hf-prompt-enhance.md:22",
+        "ultrawork.md:31",
+        "hf-prompt-enhance-to-plan.md:226"
+      ],
+      "likelihood": "Medium"
+    },
+    {
+      "id": "W-3",
+      "phase": 1,
+      "title": "Missing files_to_read blocks in 5 skills",
+      "severity": "warning",
+      "evidence": [
+        "coordinating-loop - references 7 scripts without files_to_read",
+        "user-intent-interactive-loop - references 5 scripts without files_to_read",
+        "use-authoring-skills - references 5 scripts without files_to_read",
+        "harness-audit - references scripts/compile-bundle.sh, scripts/validate-skill.sh",
+        "agent-authorization - references references/gates.md without files_to_read"
+      ],
+      "likelihood": "High"
+    },
+    {
+      "id": "W-4",
+      "phase": 5,
+      "title": "Dangling skill references - skill-creator and skill-judge don't exist",
+      "severity": "warning",
+      "evidence": [
+        "conductor.md references skill-creator (doesn't exist)",
+        "hivefiver-agent-builder.md references skill-judge (doesn't exist)"
+      ],
+      "likelihood": "High"
+    },
+    {
+      "id": "W-5",
+      "phase": 5,
+      "title": "Non-standard agent schema in orchestrator.md",
+      "severity": "warning",
+      "evidence": ["orchestrator.md:1-9 uses textVerbosity + nested skill instead of permission record"],
+      "likelihood": "Medium"
+    },
+    {
+      "id": "W-6",
+      "phase": 5,
+      "title": "Role overlap - coordinator and conductor both labeled primary orchestrator",
+      "severity": "warning",
+      "evidence": ["coordinator.md and conductor.md have near-identical role descriptions"],
+      "likelihood": "Medium"
+    },
+    {
+      "id": "W-7",
+      "phase": 6,
+      "title": "Tool allowlists not implemented - AGENT_TOOLS referenced in docs but no code",
+      "severity": "warning",
+      "evidence": [
+        "src/lib/AGENTS.md:51 references AGENT_TOOLS",
+        "plugin.ts has no corresponding AGENT_TOOLS implementation",
+        "create-tool-guard-hooks.ts governance evaluation is no-op"
+      ],
+      "likelihood": "High"
+    },
+    {
+      "id": "W-8",
+      "phase": 6,
+      "title": "Task config schema gaps - missing priority, constraints, category fields",
+      "severity": "warning",
+      "evidence": [
+        "DelegateTaskInputSchema missing priority despite concurrency.ts:24 accepting QueuePriority",
+        "DelegateTaskInputSchema missing constraints despite lifecycle-manager.ts:31 supporting them",
+        "DelegateTaskInputSchema missing category despite DelegationMeta having it"
+      ],
+      "likelihood": "Medium"
+    },
+    {
+      "id": "W-9",
+      "phase": 2,
+      "title": "Hardcoded absolute path in hf-prompt-enhance-to-plan.md",
+      "severity": "warning",
+      "evidence": ["hf-prompt-enhance-to-plan.md:226 - @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/..."],
+      "likelihood": "High"
+    },
+    {
+      "id": "W-10",
+      "phase": 1,
+      "title": "Generic trigger phrases in hm-deep-research and hm-detective",
+      "severity": "warning",
+      "evidence": [
+        "hm-deep-research:3 - triggers: 'research, investigate, analyze, compare, explore, evaluate, deep dive'",
+        "hm-detective:3 - triggers: 'navigate codebase, read efficiently, search across files, understand this codebase'"
+      ],
+      "likelihood": "Medium"
+    },
+    {
+      "id": "W-11",
+      "phase": 5,
+      "title": "Orchestrator hierarchy confusion - 4 agents serve as primary orchestrator",
+      "severity": "warning",
+      "evidence": ["coordinator, conductor, hivefiver, orchestrator all labeled primary orchestrator"],
+      "likelihood": "High"
+    },
+    {
+      "id": "W-12",
+      "phase": 1,
+      "title": "Intentional trigger overlaps between meta-builder and specialist skills",
+      "severity": "info",
+      "evidence": ["meta-builder routes to use-authoring-skills, command-dev, custom-tools-dev, agents-and-subagents-dev"],
+      "likelihood": "Low"
+    }
+  ],
+  "cross_phase_risks": [
+    {
+      "id": "XPR-1",
+      "title": "Governance stripped + wildcard permissions = privilege escalation",
+      "phases_affected": [5, 6],
+      "propagation": "build.md skill:*:allow combined with AGENT_TOOLS not implemented means no tool restrictions enforced",
+      "severity": "critical"
+    },
+    {
+      "id": "XPR-2",
+      "title": "Dangling skill refs + missing files_to_read = cascade failure",
+      "phases_affected": [1, 5],
+      "propagation": "skill-creator/skill-judge don't exist + scripts not declared = agent load failures",
+      "severity": "high"
+    },
+    {
+      "id": "XPR-3",
+      "title": "Portability gap",
+      "phases_affected": [1, 2],
+      "propagation": "$HOME hardcoded + /Users/apple/ absolute paths = complete failure on other systems",
+      "severity": "high"
+    },
+    {
+      "id": "XPR-4",
+      "title": "Role overlap creates delegation ambiguity",
+      "phases_affected": [1, 5],
+      "propagation": "meta-builder routing intentional; coordinator/conductor overlap unintentional = wrong agent spawned",
+      "severity": "medium"
+    }
+  ],
+  "per_phase_findings": {
+    "phase_1_skills": {
+      "status": "warning",
+      "total_skills": 21,
+      "passed": 16,
+      "failed": 5,
+      "critical": 1,
+      "high": 5,
+      "medium": 7,
+      "low": 0
+    },
+    "phase_2_commands": {
+      "status": "warning",
+      "total_commands": 14,
+      "errors": 2,
+      "warnings": 4,
+      "info": 0
+    },
+    "phase_3_tools": {
+      "status": "passed",
+      "builtin_tools": 14,
+      "custom_tools": 4,
+      "schema_valid": true,
+      "gaps": []
+    },
+    "phase_4_permissions": {
+      "status": "passed",
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 5,
+      "info": 4,
+      "notes": "2 medium issues are intentional security hardening patterns"
+    },
+    "phase_5_agents": {
+      "status": "failed",
+      "total_agents": 49,
+      "checks_passed": 0,
+      "warnings": 3,
+      "failures": 2,
+      "critical_issues": ["build.md wildcard permissions + profanity", "conductor.md excessive permissions"]
+    },
+    "phase_6_subagents": {
+      "status": "warning",
+      "spawn_patterns": "pass",
+      "session_inheritance": "pass",
+      "parent_child_cycles": "pass",
+      "task_config": "warning",
+      "tool_restrictions": "warning"
+    }
+  },
+  "recommendations": {
+    "immediate": [
+      "Remove or rewrite build.md (delete wildcard permissions, remove profanity)",
+      "Fix conductor.md permissions - apply deny-by-default pattern like coordinator.md",
+      "Replace hardcoded $HOME/.claude/get-shit-done/ with ${OPENCODE_HARNESS_BIN_DIR} environment variable"
+    ],
+    "short_term": [
+      "Add proper --- frontmatter to deep-init.md and deep-research-synthesis-repomix.md",
+      "Quote all bare $ARGUMENTS in 4 command files",
+      "Add files_to_read blocks to 5 skills that reference scripts",
+      "Either create skill-creator.md and skill-judge.md or remove dangling references",
+      "Implement AGENT_TOOLS in plugin.ts or document tool restrictions are not enforced"
+    ],
+    "long_term": [
+      "Consolidate orchestrator hierarchy - clarify coordinator vs conductor vs hivefiver vs orchestrator",
+      "Fix orchestrator.md to use standard permission record schema",
+      "Complete DelegateTaskInputSchema with priority, constraints, category fields",
+      "Specialize generic triggers in hm-deep-research and hm-detective"
+    ]
+  }
+}

@@ -688,22 +688,22 @@ async recoverPending(): Promise<void> {
 
 **Risk mitigation:** All assumptions can be validated with a single smoke test: create child session, prompt it, wait for idle, read messages. This should be the first test the user runs.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does `parentID` in session.create() actually establish a parent-child relationship that survives process restart?**
    - What we know: SDK docs mention `parentID` parameter, oh-my-openagent uses it
    - What's unclear: Whether OpenCode tracks this server-side or just stores it as metadata
-   - Recommendation: Test with a simple script before building full delegation
+   - **Resolution (2026-04-18):** Deferred to planner's discretion per D-11. Plan 14-01 uses parentID in session.create() and will validate during TDD. If it fails, dispatch() works without parentID as fallback.
 
 2. **Are plugin hooks scoped to all sessions or only the current user session?**
    - What we know: opencode-pty and opencode-background-agents both receive events for child sessions
    - What's unclear: Whether this works in all plugin hook configurations
-   - Recommendation: Verify during implementation; if not, use polling fallback from oh-my-openagent
+   - **Resolution (2026-04-18):** Assumption A6 accepted. Plan 14-01 wires into hooks assuming child session events work. If not, dual-signal pattern provides polling fallback per oh-my-openagent reference.
 
 3. **Should adapter files (result-capture, runtime-policy, continuity-clone, continuity-normalizers) be kept or deleted?**
    - What we know: They contain some correct fixes but depend on deleted modules
    - What's unclear: Exact dependency graph for each file
-   - Recommendation: Planner should include explicit evaluation step — read each file, check imports, decide
+   - **Resolution (2026-04-18):** DONE in cleanup half (REQ-14-04). CONTEXT.md confirms evaluation completed.
 
 ## Environment Availability
 

@@ -38,7 +38,7 @@ GSD > INTEL
 
 Intel system is disabled. To activate:
 
-  node /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs config-set intel.enabled true
+  gsd-sdk query config-set intel.enabled true
 
 Then run /gsd-intel refresh to build the initial index.
 ```
@@ -76,7 +76,7 @@ Modes:
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs intel query <term>
+gsd-sdk query intel.query <term>
 ```
 
 Parse the JSON output and display results:
@@ -91,7 +91,7 @@ Parse the JSON output and display results:
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs intel status
+gsd-sdk query intel.status
 ```
 
 Parse the JSON output and display each intel file with:
@@ -106,7 +106,7 @@ Parse the JSON output and display each intel file with:
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs intel diff
+gsd-sdk query intel.diff
 ```
 
 Parse the JSON output and display:
@@ -136,15 +136,15 @@ Task(
   prompt="You are the gsd-intel-updater agent. Your job is to analyze this codebase and write/update intelligence files in .planning/intel/.
 
 Project root: ${CWD}
-gsd-tools path: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs
+Prefer: gsd-sdk query <subcommand> (installed gsd-sdk on PATH). Legacy: node /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs
 
 Instructions:
 1. Analyze the codebase structure, dependencies, APIs, and architecture
 2. Write JSON intel files to .planning/intel/ (stack.json, api-map.json, dependency-graph.json, file-roles.json, arch-decisions.json)
 3. Each file must have a _meta object with updated_at timestamp
-4. Use gsd-tools intel extract-exports <file> to analyze source files
-5. Use gsd-tools intel patch-meta <file> to update timestamps after writing
-6. Use gsd-tools intel validate to check your output
+4. Use `gsd-sdk query intel.extract-exports <file>` to analyze source files
+5. Use `gsd-sdk query intel.patch-meta <file>` to update timestamps after writing
+6. Use `gsd-sdk query intel.validate` to check your output
 
 When complete, output: ## INTEL UPDATE COMPLETE
 If something fails, output: ## INTEL UPDATE FAILED with details."
@@ -160,7 +160,7 @@ Wait for the agent to complete.
 After the agent completes, run:
 
 ```bash
-node /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs intel status
+gsd-sdk query intel.status
 ```
 
 Display a summary showing:

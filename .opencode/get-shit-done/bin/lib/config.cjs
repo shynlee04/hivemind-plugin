@@ -4,7 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { output, error, planningRoot, CONFIG_DEFAULTS } = require('./core.cjs');
+const { output, error, planningDir, withPlanningLock, CONFIG_DEFAULTS, atomicWriteFileSync } = require('./core.cjs');
 const {
   VALID_PROFILES,
   getAgentToModelMapForProfile,
@@ -15,19 +15,28 @@ const VALID_CONFIG_KEYS = new Set([
   'mode', 'granularity', 'parallelization', 'commit_docs', 'model_profile',
   'search_gitignored', 'brave_search', 'firecrawl', 'exa_search',
   'workflow.research', 'workflow.plan_check', 'workflow.verifier',
-  'workflow.nyquist_validation', 'workflow.ui_phase', 'workflow.ui_safety_gate',
+  'workflow.nyquist_validation', 'workflow.ai_integration_phase', 'workflow.ui_phase', 'workflow.ui_safety_gate',
   'workflow.auto_advance', 'workflow.node_repair', 'workflow.node_repair_budget',
+  'workflow.tdd_mode',
   'workflow.text_mode',
   'workflow.research_before_questions',
   'workflow.discuss_mode',
   'workflow.skip_discuss',
+  'workflow.auto_prune_state',
   'workflow._auto_chain_active',
   'workflow.use_worktrees',
   'workflow.code_review',
   'workflow.code_review_depth',
+  'workflow.code_review_command',
+  'workflow.pattern_mapper',
+  'workflow.plan_bounce',
+  'workflow.plan_bounce_script',
+  'workflow.plan_bounce_passes',
   'git.branching_strategy', 'git.base_branch', 'git.phase_branch_template', 'git.milestone_branch_template', 'git.quick_branch_template',
   'planning.commit_docs', 'planning.search_gitignored',
+  'workflow.cross_ai_execution', 'workflow.cross_ai_command', 'workflow.cross_ai_timeout',
   'workflow.subagent_timeout',
+  'workflow.inline_plan_threshold',
   'hooks.context_warnings',
   'features.thinking_partner',
   'context',
@@ -36,6 +45,10 @@ const VALID_CONFIG_KEYS = new Set([
   'project_code', 'phase_naming',
   'manager.flags.discuss', 'manager.flags.plan', 'manager.flags.execute',
   'response_language',
+  'intel.enabled',
+  'graphify.enabled',
+  'graphify.build_timeout',
+  'claude_md_path',
 ]);
 
 /**
@@ -47,6 +60,8 @@ function isValidConfigKey(keyPath) {
   if (VALID_CONFIG_KEYS.has(keyPath)) return true;
   // Allow agent_skills.<agent-type> with any agent type string
   if (/^agent_skills\.[a-zA-Z0-9_-]+$/.test(keyPath)) return true;
+  // Allow review.models.<cli-name> for per-CLI model selection in /gsd-review
+  if (/^review\.models\.[a-zA-Z0-9_-]+$/.test(keyPath)) return true;
   // Allow features.<feature_name> — dynamic namespace for feature flags.
   // Intentionally open-ended so new flags (e.g., features.global_learnings) work
   // without updating VALID_CONFIG_KEYS each time.
@@ -61,9 +76,11 @@ const CONFIG_KEY_SUGGESTIONS = {
   'hooks.research_questions': 'workflow.research_before_questions',
   'workflow.research_questions': 'workflow.research_before_questions',
   'workflow.codereview': 'workflow.code_review',
+  'workflow.review_command': 'workflow.code_review_command',
   'workflow.review': 'workflow.code_review',
   'workflow.code_review_level': 'workflow.code_review_depth',
   'workflow.review_depth': 'workflow.code_review_depth',
+  'review.model': 'review.models.<cli-name>',
 };
 
 function validateKnownConfigKeyPath(keyPath) {
@@ -143,12 +160,20 @@ function buildNewProjectConfig(userChoices) {
       node_repair_budget: 2,
       ui_phase: true,
       ui_safety_gate: true,
+      ai_integration_phase: true,
+      tdd_mode: false,
       text_mode: false,
       research_before_questions: false,
       discuss_mode: 'discuss',
       skip_discuss: false,
       code_review: true,
       code_review_depth: 'standard',
+      code_review_command: null,
+      pattern_mapper: true,
+      plan_bounce: false,
+      plan_bounce_script: null,
+      plan_bounce_passes: 2,
+      auto_prune_state: false,
     },
     hooks: {
       context_warnings: true,
@@ -156,6 +181,7 @@ function buildNewProjectConfig(userChoices) {
     project_code: null,
     phase_naming: 'sequential',
     agent_skills: {},
+    claude_md_path: './CLAUDE.md',
   };
 
   // Three-level deep merge: hardcoded <- userDefaults <- choices
@@ -196,7 +222,7 @@ function buildNewProjectConfig(userChoices) {
  * Idempotent: if config.json already exists, returns { created: false }.
  */
 function cmdConfigNewProject(cwd, choicesJson, raw) {
-  const planningBase = planningRoot(cwd);
+  const planningBase = planningDir(cwd);
   const configPath = path.join(planningBase, 'config.json');
 
   // Idempotent: don't overwrite existing config
@@ -227,7 +253,7 @@ function cmdConfigNewProject(cwd, choicesJson, raw) {
   const config = buildNewProjectConfig(userChoices);
 
   try {
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+    atomicWriteFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
     output({ created: true, path: '.planning/config.json' }, raw, 'created');
   } catch (err) {
     error('Failed to write config.json: ' + err.message);
@@ -241,7 +267,7 @@ function cmdConfigNewProject(cwd, choicesJson, raw) {
  * the happy path. But note that `error()` will still `exit(1)` out of the process.
  */
 function ensureConfigFile(cwd) {
-  const planningBase = planningRoot(cwd);
+  const planningBase = planningDir(cwd);
   const configPath = path.join(planningBase, 'config.json');
 
   // Ensure .planning directory exists
@@ -261,7 +287,7 @@ function ensureConfigFile(cwd) {
   const config = buildNewProjectConfig({});
 
   try {
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+    atomicWriteFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
     return { created: true, path: '.planning/config.json' };
   } catch (err) {
     error('Failed to create config.json: ' + err.message);
@@ -291,38 +317,40 @@ function cmdConfigEnsureSection(cwd, raw) {
  * the happy path. But note that `error()` will still `exit(1)` out of the process.
  */
 function setConfigValue(cwd, keyPath, parsedValue) {
-  const configPath = path.join(planningRoot(cwd), 'config.json');
+  const configPath = path.join(planningDir(cwd), 'config.json');
 
-  // Load existing config or start with empty object
-  let config = {};
-  try {
-    if (fs.existsSync(configPath)) {
-      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  return withPlanningLock(cwd, () => {
+    // Load existing config or start with empty object
+    let config = {};
+    try {
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      }
+    } catch (err) {
+      error('Failed to read config.json: ' + err.message);
     }
-  } catch (err) {
-    error('Failed to read config.json: ' + err.message);
-  }
 
-  // Set nested value using dot notation (e.g., "workflow.research")
-  const keys = keyPath.split('.');
-  let current = config;
-  for (let i = 0; i < keys.length - 1; i++) {
-    const key = keys[i];
-    if (current[key] === undefined || typeof current[key] !== 'object') {
-      current[key] = {};
+    // Set nested value using dot notation (e.g., "workflow.research")
+    const keys = keyPath.split('.');
+    let current = config;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i];
+      if (current[key] === undefined || typeof current[key] !== 'object') {
+        current[key] = {};
+      }
+      current = current[key];
     }
-    current = current[key];
-  }
-  const previousValue = current[keys[keys.length - 1]]; // Capture previous value before overwriting
-  current[keys[keys.length - 1]] = parsedValue;
+    const previousValue = current[keys[keys.length - 1]]; // Capture previous value before overwriting
+    current[keys[keys.length - 1]] = parsedValue;
 
-  // Write back
-  try {
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
-    return { updated: true, key: keyPath, value: parsedValue, previousValue };
-  } catch (err) {
-    error('Failed to write config.json: ' + err.message);
-  }
+    // Write back
+    try {
+      atomicWriteFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+      return { updated: true, key: keyPath, value: parsedValue, previousValue };
+    } catch (err) {
+      error('Failed to write config.json: ' + err.message);
+    }
+  });
 }
 
 /**
@@ -361,17 +389,21 @@ function cmdConfigSet(cwd, keyPath, value, raw) {
   output(setConfigValueResult, raw, `${keyPath}=${parsedValue}`);
 }
 
-function cmdConfigGet(cwd, keyPath, raw) {
-  const configPath = path.join(planningRoot(cwd), 'config.json');
+function cmdConfigGet(cwd, keyPath, raw, defaultValue) {
+  const configPath = path.join(planningDir(cwd), 'config.json');
+  const hasDefault = defaultValue !== undefined;
 
   if (!keyPath) {
-    error('Usage: config-get <key.path>');
+    error('Usage: config-get <key.path> [--default <value>]');
   }
 
   let config = {};
   try {
     if (fs.existsSync(configPath)) {
       config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    } else if (hasDefault) {
+      output(defaultValue, raw, String(defaultValue));
+      return;
     } else {
       error('No config.json found at ' + configPath);
     }
@@ -385,12 +417,14 @@ function cmdConfigGet(cwd, keyPath, raw) {
   let current = config;
   for (const key of keys) {
     if (current === undefined || current === null || typeof current !== 'object') {
+      if (hasDefault) { output(defaultValue, raw, String(defaultValue)); return; }
       error(`Key not found: ${keyPath}`);
     }
     current = current[key];
   }
 
   if (current === undefined) {
+    if (hasDefault) { output(defaultValue, raw, String(defaultValue)); return; }
     error(`Key not found: ${keyPath}`);
   }
 
@@ -461,6 +495,17 @@ function getCmdConfigSetModelProfileResultMessage(
   return paragraphs.join('\n\n');
 }
 
+/**
+ * Print the resolved config.json path (workstream-aware). Used by settings.md
+ * so the workflow writes/reads the correct file when a workstream is active (#2282).
+ */
+function cmdConfigPath(cwd) {
+  // Always emit as plain text — a file path is used via shell substitution,
+  // never consumed as JSON. Passing raw=true forces plain-text output.
+  const configPath = path.join(planningDir(cwd), 'config.json');
+  output(configPath, true, configPath);
+}
+
 module.exports = {
   VALID_CONFIG_KEYS,
   cmdConfigEnsureSection,
@@ -468,4 +513,5 @@ module.exports = {
   cmdConfigGet,
   cmdConfigSetModelProfile,
   cmdConfigNewProject,
+  cmdConfigPath,
 };

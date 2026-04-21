@@ -27,6 +27,16 @@ const WORKSTREAM_SESSION_ENV_KEYS = [
 let cachedControllingTtyToken = null;
 let didProbeControllingTtyToken = false;
 
+// Track all .planning/.lock files held by this process so they can be removed
+// on exit. process.on('exit') fires even on process.exit(1), unlike try/finally
+// which is skipped when error() calls process.exit(1) inside a locked region (#1916).
+const _heldPlanningLocks = new Set();
+process.on('exit', () => {
+  for (const lockPath of _heldPlanningLocks) {
+    try { fs.unlinkSync(lockPath); } catch { /* already gone */ }
+  }
+});
+
 // ─── Path helpers ────────────────────────────────────────────────────────────
 
 /** Normalize a relative path to always use forward slashes (cross-platform). */
@@ -149,14 +159,25 @@ function findProjectRoot(startDir) {
  * @param {number} opts.maxAgeMs - max age in ms before removal (default: 5 min)
  * @param {boolean} opts.dirsOnly - if true, only remove directories (default: false)
  */
+/**
+ * Dedicated GSD temp directory: path.join(os.tmpdir(), 'gsd').
+ * Created on first use. Keeps GSD temp files isolated from the system
+ * temp directory so reap scans only GSD files (#1975).
+ */
+const GSD_TEMP_DIR = path.join(require('os').tmpdir(), 'gsd');
+
+function ensureGsdTempDir() {
+  fs.mkdirSync(GSD_TEMP_DIR, { recursive: true });
+}
+
 function reapStaleTempFiles(prefix = 'gsd-', { maxAgeMs = 5 * 60 * 1000, dirsOnly = false } = {}) {
   try {
-    const tmpDir = require('os').tmpdir();
+    ensureGsdTempDir();
     const now = Date.now();
-    const entries = fs.readdirSync(tmpDir);
+    const entries = fs.readdirSync(GSD_TEMP_DIR);
     for (const entry of entries) {
       if (!entry.startsWith(prefix)) continue;
-      const fullPath = path.join(tmpDir, entry);
+      const fullPath = path.join(GSD_TEMP_DIR, entry);
       try {
         const stat = fs.statSync(fullPath);
         if (now - stat.mtimeMs > maxAgeMs) {
@@ -185,7 +206,8 @@ function output(result, raw, rawValue) {
     // Write to tmpfile and output the path prefixed with @file: so callers can detect it.
     if (json.length > 50000) {
       reapStaleTempFiles();
-      const tmpPath = path.join(require('os').tmpdir(), `gsd-${Date.now()}.json`);
+      ensureGsdTempDir();
+      const tmpPath = path.join(GSD_TEMP_DIR, `gsd-${Date.now()}.json`);
       fs.writeFileSync(tmpPath, json, 'utf-8');
       data = '@file:' + tmpPath;
     } else {
@@ -229,6 +251,7 @@ const CONFIG_DEFAULTS = {
   plan_checker: true,
   verifier: true,
   nyquist_validation: true,
+  ai_integration_phase: true,
   parallelization: true,
   brave_search: false,
   firecrawl: false,
@@ -302,7 +325,7 @@ function loadConfig(cwd) {
       // Section containers that hold nested sub-keys
       'git', 'workflow', 'planning', 'hooks', 'features',
       // Internal keys loadConfig reads but config-set doesn't expose
-      'model_overrides', 'agent_skills', 'context_window', 'resolve_model_ids',
+      'model_overrides', 'agent_skills', 'context_window', 'resolve_model_ids', 'claude_md_path',
       // Deprecated keys (still accepted for migration, not in config-set)
       'depth', 'multiRepo',
     ]);
@@ -352,7 +375,11 @@ function loadConfig(cwd) {
       brave_search: get('brave_search') ?? defaults.brave_search,
       firecrawl: get('firecrawl') ?? defaults.firecrawl,
       exa_search: get('exa_search') ?? defaults.exa_search,
+      tdd_mode: get('tdd_mode', { section: 'workflow', field: 'tdd_mode' }) ?? false,
       text_mode: get('text_mode', { section: 'workflow', field: 'text_mode' }) ?? defaults.text_mode,
+      auto_advance: get('auto_advance', { section: 'workflow', field: 'auto_advance' }) ?? false,
+      _auto_chain_active: get('_auto_chain_active', { section: 'workflow', field: '_auto_chain_active' }) ?? false,
+      mode: get('mode') ?? 'interactive',
       sub_repos: get('sub_repos', { section: 'planning', field: 'sub_repos' }) ?? defaults.sub_repos,
       resolve_model_ids: get('resolve_model_ids') ?? defaults.resolve_model_ids,
       context_window: get('context_window') ?? defaults.context_window,
@@ -363,6 +390,7 @@ function loadConfig(cwd) {
       agent_skills: parsed.agent_skills || {},
       manager: parsed.manager || {},
       response_language: get('response_language') || null,
+      claude_md_path: get('claude_md_path') || null,
     };
   } catch {
     // Fall back to ~/.gsd/defaults.json only for truly pre-project contexts (#1683)
@@ -400,7 +428,11 @@ function loadConfig(cwd) {
 
 // ─── Git utilities ────────────────────────────────────────────────────────────
 
+const _gitIgnoredCache = new Map();
+
 function isGitIgnored(cwd, targetPath) {
+  const key = cwd + '::' + targetPath;
+  if (_gitIgnoredCache.has(key)) return _gitIgnoredCache.get(key);
   try {
     // --no-index checks .gitignore rules regardless of whether the file is tracked.
     // Without it, git check-ignore returns "not ignored" for tracked files even when
@@ -412,8 +444,10 @@ function isGitIgnored(cwd, targetPath) {
       cwd,
       stdio: 'pipe',
     });
+    _gitIgnoredCache.set(key, true);
     return true;
   } catch {
+    _gitIgnoredCache.set(key, false);
     return false;
   }
 }
@@ -576,6 +610,98 @@ function resolveWorktreeRoot(cwd) {
 }
 
 /**
+ * Parse `git worktree list --porcelain` output into an array of
+ * { path, branch } objects.  Entries with a detached HEAD (no branch line)
+ * are skipped because we cannot safely reason about their merge status.
+ *
+ * @param {string} porcelain - raw output from git worktree list --porcelain
+ * @returns {{ path: string, branch: string }[]}
+ */
+function parseWorktreePorcelain(porcelain) {
+  const entries = [];
+  let current = null;
+  for (const line of porcelain.split('\n')) {
+    if (line.startsWith('worktree ')) {
+      current = { path: line.slice('worktree '.length).trim(), branch: null };
+    } else if (line.startsWith('branch refs/heads/') && current) {
+      current.branch = line.slice('branch refs/heads/'.length).trim();
+    } else if (line === '' && current) {
+      if (current.branch) entries.push(current);
+      current = null;
+    }
+  }
+  // flush last entry if file doesn't end with blank line
+  if (current && current.branch) entries.push(current);
+  return entries;
+}
+
+/**
+ * Remove linked git worktrees whose branch has already been merged into the
+ * current HEAD of the main worktree.  Also runs `git worktree prune` to clear
+ * any stale references left by manually-deleted worktree directories.
+ *
+ * Safe guards:
+ *  - Never removes the main worktree (first entry in --porcelain output).
+ *  - Never removes the worktree at process.cwd().
+ *  - Never removes a worktree whose branch has unmerged commits.
+ *  - Skips detached-HEAD worktrees (no branch name).
+ *
+ * @param {string} repoRoot - absolute path to the main (or any) worktree of
+ *   the repository; used as `cwd` for git commands.
+ * @returns {string[]} list of worktree paths that were removed
+ */
+function pruneOrphanedWorktrees(repoRoot) {
+  const pruned = [];
+  const cwd = process.cwd();
+
+  try {
+    // 1. Get all worktrees in porcelain format
+    const listResult = execGit(repoRoot, ['worktree', 'list', '--porcelain']);
+    if (listResult.exitCode !== 0) return pruned;
+
+    const worktrees = parseWorktreePorcelain(listResult.stdout);
+    if (worktrees.length === 0) {
+      execGit(repoRoot, ['worktree', 'prune']);
+      return pruned;
+    }
+
+    // 2. First entry is the main worktree — never touch it
+    const mainWorktreePath = worktrees[0].path;
+
+    // 3. Check each non-main worktree
+    for (let i = 1; i < worktrees.length; i++) {
+      const { path: wtPath, branch } = worktrees[i];
+
+      // Never remove the worktree for the current process directory
+      if (wtPath === cwd || cwd.startsWith(wtPath + path.sep)) continue;
+
+      // Check if the branch is fully merged into HEAD (main)
+      // git merge-base --is-ancestor <branch> HEAD exits 0 when merged
+      const ancestorCheck = execGit(repoRoot, [
+        'merge-base', '--is-ancestor', branch, 'HEAD',
+      ]);
+
+      if (ancestorCheck.exitCode !== 0) {
+        // Not yet merged — leave it alone
+        continue;
+      }
+
+      // Remove the worktree and delete the branch
+      const removeResult = execGit(repoRoot, ['worktree', 'remove', '--force', wtPath]);
+      if (removeResult.exitCode === 0) {
+        execGit(repoRoot, ['branch', '-D', branch]);
+        pruned.push(wtPath);
+      }
+    }
+  } catch { /* never crash the caller */ }
+
+  // 4. Always run prune to clear stale references (e.g. manually-deleted dirs)
+  execGit(repoRoot, ['worktree', 'prune']);
+
+  return pruned;
+}
+
+/**
  * Acquire a file-based lock for .planning/ writes.
  * Prevents concurrent worktrees from corrupting shared planning files.
  * Lock is auto-released after the callback completes.
@@ -598,10 +724,15 @@ function withPlanningLock(cwd, fn) {
         acquired: new Date().toISOString(),
       }), { flag: 'wx' });
 
+      // Register for exit-time cleanup so process.exit(1) inside a locked region
+      // cannot leave a stale lock file (#1916).
+      _heldPlanningLocks.add(lockPath);
+
       // Lock acquired — run the function
       try {
         return fn();
       } finally {
+        _heldPlanningLocks.delete(lockPath);
         try { fs.unlinkSync(lockPath); } catch { /* already released */ }
       }
     } catch (err) {
@@ -670,19 +801,23 @@ function planningRoot(cwd) {
 }
 
 /**
- * Get common .planning file paths, workstream-aware.
- * Scoped paths (state, roadmap, phases, requirements) resolve to the active workstream.
- * Shared paths (project, config) always resolve to the root .planning/.
+ * Get common .planning file paths, project-and-workstream-aware.
+ *
+ * All paths route through planningDir(cwd, ws), which honors the GSD_PROJECT
+ * env var and active workstream. This matches loadConfig() above (line 256),
+ * which has always read config.json via planningDir(cwd). Previously project
+ * and config were resolved against the unrouted .planning/ root, which broke
+ * `gsd-tools config-get` in multi-project layouts (the CRUD writers and the
+ * reader pointed at different files).
  */
 function planningPaths(cwd, ws) {
   const base = planningDir(cwd, ws);
-  const root = path.join(cwd, '.planning');
   return {
     planning: base,
     state: path.join(base, 'STATE.md'),
     roadmap: path.join(base, 'ROADMAP.md'),
-    project: path.join(root, 'PROJECT.md'),
-    config: path.join(root, 'config.json'),
+    project: path.join(base, 'PROJECT.md'),
+    config: path.join(base, 'config.json'),
     phases: path.join(base, 'phases'),
     requirements: path.join(base, 'REQUIREMENTS.md'),
   };
@@ -879,7 +1014,10 @@ function normalizePhaseName(phase) {
   const match = stripped.match(/^(\d+)([A-Z])?((?:\.\d+)*)/i);
   if (match) {
     const padded = match[1].padStart(2, '0');
-    const letter = match[2] ? match[2].toUpperCase() : '';
+    // Preserve original case of letter suffix (#1962).
+    // Uppercasing causes directory/roadmap mismatches on case-sensitive filesystems
+    // (e.g., "16c" in ROADMAP.md → directory "16C-name" → progress can't match).
+    const letter = match[2] || '';
     const decimal = match[3] || '';
     return padded + letter + decimal;
   }
@@ -1485,6 +1623,64 @@ function readSubdirectories(dirPath, sort = false) {
   }
 }
 
+// ─── Atomic file writes ───────────────────────────────────────────────────────
+
+/**
+ * Write a file atomically using write-to-temp-then-rename.
+ *
+ * On POSIX systems, `fs.renameSync` is atomic when the source and destination
+ * are on the same filesystem. This prevents a process killed mid-write from
+ * leaving a truncated file that is unparseable on next read.
+ *
+ * The temp file is placed alongside the target so it is guaranteed to be on
+ * the same filesystem (required for rename atomicity). The PID is embedded in
+ * the temp file name so concurrent writers use distinct paths.
+ *
+ * If `renameSync` fails (e.g. cross-device move), the function falls back to a
+ * direct `writeFileSync` so callers always get a best-effort write.
+ *
+ * @param {string} filePath  Absolute path to write.
+ * @param {string|Buffer} content  File content.
+ * @param {string} [encoding='utf-8']  Encoding passed to writeFileSync.
+ */
+function atomicWriteFileSync(filePath, content, encoding = 'utf-8') {
+  const tmpPath = filePath + '.tmp.' + process.pid;
+  try {
+    fs.writeFileSync(tmpPath, content, encoding);
+    fs.renameSync(tmpPath, filePath);
+  } catch (renameErr) {
+    // Clean up the temp file if rename failed, then fall back to direct write.
+    try { fs.unlinkSync(tmpPath); } catch { /* already gone or never created */ }
+    fs.writeFileSync(filePath, content, encoding);
+  }
+}
+
+/**
+ * Format a Date as a fuzzy relative time string (e.g. "5 minutes ago").
+ * @param {Date} date
+ * @returns {string}
+ */
+function timeAgo(date) {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 5) return 'just now';
+  if (seconds < 60) return `${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes === 1) return '1 minute ago';
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return '1 hour ago';
+  if (hours < 24) return `${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return '1 day ago';
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  if (months === 1) return '1 month ago';
+  if (months < 12) return `${months} months ago`;
+  const years = Math.floor(days / 365);
+  if (years === 1) return '1 year ago';
+  return `${years} years ago`;
+}
+
 module.exports = {
   output,
   error,
@@ -1517,6 +1713,7 @@ module.exports = {
   findProjectRoot,
   detectSubRepos,
   reapStaleTempFiles,
+  GSD_TEMP_DIR,
   MODEL_ALIAS_MAP,
   CONFIG_DEFAULTS,
   planningDir,
@@ -1530,4 +1727,7 @@ module.exports = {
   readSubdirectories,
   getAgentsDir,
   checkAgentsInstalled,
+  atomicWriteFileSync,
+  timeAgo,
+  pruneOrphanedWorktrees,
 };

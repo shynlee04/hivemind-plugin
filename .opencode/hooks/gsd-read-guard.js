@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.34.2
+// gsd-hook-version: 1.38.1
 // GSD Read Guard — PreToolUse hook
 // Injects advisory guidance when Write/Edit targets an existing file,
 // reminding the model to Read the file first.
@@ -33,6 +33,11 @@ process.stdin.on('end', () => {
 
     // Only intercept Write and Edit tool calls
     if (toolName !== 'Write' && toolName !== 'Edit') {
+      process.exit(0);
+    }
+
+    // Claude Code natively enforces read-before-edit — skip the advisory (#1984, #2344)
+    if (process.env.CLAUDE_SESSION_ID || process.env.CLAUDECODE) {
       process.exit(0);
     }
 

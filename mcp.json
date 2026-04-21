@@ -12,7 +12,7 @@
     },
     "gitmcp": {
       "httpUrl": "https://gitmcp.io",
-      "timeout": 15000
+      "timeout": 35000
     },
     "fetcher": {
       "command": "npx",
@@ -126,7 +126,7 @@
     },
     "tavily": {
       "httpUrl": "https://mcp.tavily.com/mcp/?tavilyApiKey=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",
-      "timeout": 25000
+      "timeout": 35000
     },
     "brave-search": {
       "command": "npx",
