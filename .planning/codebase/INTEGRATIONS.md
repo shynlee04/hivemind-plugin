@@ -1,192 +1,158 @@
 # External Integrations
 
-> Generated: 2026-04-21
-> Agent: gsd-codebase-mapper (tech-focus)
+**Analysis Date:** 2026-04-22
 
-## OpenCode Plugin SDK Integration
+## APIs & External Services
 
-**Primary Integration:**
-- `@opencode-ai/plugin` `>=1.1.0` (peer dependency)
-  - Plugin type: `Plugin` — used in `src/plugin.ts` to define `HarnessControlPlane`
-  - Tool factory: `tool()` from `@opencode-ai/plugin/tool` — used in `src/tools/delegate-task.ts`, `src/tools/delegation-status.ts`, and prompt tools
-  - Schema builder: `tool.schema` — used for defining tool argument schemas inline
+**OpenCode Platform:**
+- OpenCode SDK (`@opencode-ai/sdk`) — Core session orchestration API
+  - Session CRUD: `client.session.create()`, `client.session.get()`, `client.session.abort()`
+  - Messaging: `client.session.messages()`, `client.session.prompt()`, `client.session.promptAsync()`
+  - Status polling: `client.session.status()`
+  - Auth: Built into SDK client instance passed to plugin
 
-**SDK Client (`@opencode-ai/sdk` `^1.4.2`):**
-- Client type: `OpenCodeClient = ReturnType<typeof createOpencodeClient>` — defined in `src/lib/session-api.ts`
-- Used throughout: `src/plugin.ts`, `src/lib/delegation-manager.ts`, `src/lib/lifecycle-manager.ts`, `src/hooks/create-session-hooks.ts`
+**Search & Web Services (via MCP):**
+- Tavily — Web search and content extraction
+  - Config: `mcp.json` → `tavily` (HTTP MCP server)
+  - Auth: API key embedded in MCP URL
+- Brave Search — Web and local search
+  - Config: `mcp.json` → `brave-search` (npx command)
+  - Auth: `BRAVE_API_KEY` env var
+- Exa — Semantic web search
+  - Config: `mcp.json` → `exa` (npx mcp-remote)
+  - Auth: `EXA_API_KEY` env var
+- Z.AI (web-search-prime, web-reader, zread) — Chinese AI platform web services
+  - Config: `mcp.json` → `web-search-prime`, `web-reader`, `zread` (HTTP MCP servers)
+  - Auth: `ZAI_API_KEY` env var
 
-**SDK Surface Used:**
+**Code & Repository Services:**
+- GitHub — Repository management, PRs, issues
+  - Config: `mcp.json` → `github` (npx command)
+  - Auth: `GITHUB_PAT` env var
+- Repomix — Codebase packaging for AI analysis
+  - Config: `mcp.json` → `repomix` (npx command)
+- DeepWiki — GitHub repository documentation
+  - Config: `mcp.json` → `deepwiki` (HTTP MCP server)
+- Context7 — Library documentation lookup
+  - Config: `mcp.json` → `context7` (HTTP MCP server)
+- GitMCP — GitHub documentation and code search
+  - Config: `mcp.json` → `gitmcp` (HTTP MCP server)
 
-| SDK Method | Location | Purpose |
-|------------|----------|---------|
-| `client.session.create()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Create child sessions for delegation |
-| `client.session.get()` | `src/lib/session-api.ts` | Retrieve session details |
-| `client.session.status()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Get status map for all sessions |
-| `client.session.abort()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Abort running sessions |
-| `client.session.messages()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Retrieve message history |
-| `client.session.prompt()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Send prompt to session (sync) |
-| `client.session.promptAsync()` | `src/lib/session-api.ts` | Send prompt to session (async, 204) |
-| `client.session.delete()` | Referenced in event handling | Session cleanup |
-| `client.app.agents()` | `src/lib/delegation-manager.ts` | Validate agent names at dispatch time |
-| `client.session.sendMessage()` | Referenced in lifecycle manager | Send messages to sessions |
+**Productivity:**
+- Notion — Workspace and document management
+  - Config: `mcp.json` → `notion` (HTTP MCP server)
+  - Auth: `NOTION_API_TOKEN` env var
+- Stitch — Google UI design generation
+  - Config: `mcp.json` → `stitch` (HTTP MCP server)
+  - Auth: Built into Google MCP endpoint
 
-## Plugin Registration Points
+**Deployment:**
+- Netlify — Hosting and deployment
+  - Config: `mcp.json` → `netlify` (npx command)
+  - Auth: `NETLIFY_PAT` env var
 
-**Composition Root:** `src/plugin.ts` — `HarnessControlPlane`
-
-**Registered Tools (5):**
-
-| Tool Name | Factory | Purpose |
-|-----------|---------|---------|
-| `delegate-task` | `createDelegateTaskTool()` in `src/tools/delegate-task.ts` | Dispatch work to specialist agents (WaiterModel) |
-| `delegation-status` | `createDelegationStatusTool()` in `src/tools/delegation-status.ts` | Poll delegation status, list/filter delegations |
-| `prompt-skim` | `createPromptSkimTool()` in `src/tools/prompt-skim/index.ts` | Quantitative prompt triage (word count, complexity score) |
-| `prompt-analyze` | `createPromptAnalyzeTool()` in `src/tools/prompt-analyze/index.ts` | Deep prompt analysis (contradictions, vagueness, scope gaps) |
-| `session-patch` | `createSessionPatchTool()` in `src/tools/session-patch/index.ts` | Patch session state file sections with backup |
-
-**Registered Hooks (8):**
-
-| Hook Name | Factory | Purpose |
-|-----------|---------|---------|
-| `event` | `createCoreHooks()` in `src/hooks/create-core-hooks.ts` | Route SDK events to lifecycle manager + observers |
-| `system.transform` | `createCoreHooks()` | System prompt injection (currently no-op stub) |
-| `experimental.chat.system.transform` | `createCoreHooks()` | Chat system prompt injection (currently no-op stub) |
-| `messages.transform` | `createCoreHooks()` | Inject context packets for prompt-enhance sessions |
-| `shell.env` | `createCoreHooks()` | Force non-interactive shell env (CI=true, TERM=dumb) |
-| `event` (session) | `createSessionHooks()` in `src/hooks/create-session-hooks.ts` | Auto-loop retry on `session.idle` for delegation packets |
-| `experimental.session.compacting` | `createSessionHooks()` | Inject harness context into compaction payload |
-| `tool.execute.before` | `createToolGuardHooks()` in `src/hooks/create-tool-guard-hooks.ts` | Circuit breaker, tool budget enforcement |
-| `tool.execute.after` | `createToolGuardHooks()` | Inject `_harness` metadata into tool outputs |
+**Development Tools:**
+- Playwright — Browser automation and E2E testing
+  - Config: `mcp.json` → `mcp-playwright` (npx command)
+- Fetcher — Web page fetching
+  - Config: `mcp.json` → `fetcher` (npx command)
+- Fetch — Python MCP fetch server
+  - Config: `mcp.json` → `fetch` (uvx command)
+- Desktop Commander — Desktop automation via Smithery
+  - Config: `mcp.json` → `desktop-commander` (npx @smithery/cli)
+  - Auth: `SMITHERY_CLI_KEY` env var
+- Sequential Thinking — Structured reasoning tool
+  - Config: `mcp.json` → `sequential-thinking` (npx command)
+- Memory — MCP memory server for persistent context
+  - Config: `mcp.json` → `memory` (npx command)
 
 ## Data Storage
 
-**Durable Persistence:**
-- Continuity Store: JSON file on disk
-  - Location: `.opencode/state/opencode-harness/continuity.json` (default)
-  - Override: `OPENCODE_HARNESS_STATE_DIR` env var changes base directory
-  - Override: `OPENCODE_HARNESS_CONTINUITY_FILE` env var changes file path
-  - Implementation: `src/lib/continuity.ts` — `loadStoreFromDisk()`, `persistStore()`
-  - Pattern: Deep-clone-on-read (prevents mutation aliasing)
-  - Schema: `ContinuityStoreFile` type in `src/lib/types.ts`
-
-- Delegation Store: JSON file on disk
-  - Location: `.opencode/state/opencode-harness/delegations.json`
-  - Implementation: `src/lib/delegation-manager.ts` — `persistAllDelegations()`, `readPersistedDelegations()`
-  - Schema: Array of `Delegation` objects
-
-**In-Memory State:**
-- `src/lib/state.ts` — Maps for `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta`
-- Warning cap: 25 per session
-- Hydrated from continuity store on plugin startup
+**Databases:**
+- None — No external database connections
 
 **File Storage:**
-- Local filesystem only (via `node:fs`)
-- No cloud/object storage integration
+- Local filesystem — Continuity store at `.opencode/state/opencode-harness/session-continuity.json`
+  - Format: JSON file with versioned schema (`CONTINUITY_VERSION = 1`)
+  - Deep-clone-on-read to prevent mutation aliasing
+  - Module-level `storeCache` singleton for in-memory caching
 
 **Caching:**
-- Module-level `storeCache` singleton in `src/lib/continuity.ts`
-- No external caching service
+- In-memory Maps (`src/lib/state.ts`) — `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta`
+- Dual-layer state: durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`), hydrated on startup
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- None — the harness delegates auth to the OpenCode runtime
-- SDK client receives authentication context from the plugin host
-- No custom auth tokens or API keys stored by the harness
-
-## Internal Module Graph
-
-**Dependency Tree (max depth: 2):**
-
-```
-src/lib/types.ts (leaf — no imports)
-├── src/lib/task-status.ts → types.ts
-├── src/lib/state.ts → types.ts
-├── src/lib/helpers.ts → types.ts
-├── src/lib/continuity.ts → types.ts
-├── src/lib/runtime-policy.ts → types.ts
-├── src/lib/session-api.ts → helpers.ts
-├── src/lib/runtime.ts → helpers.ts, types.ts
-├── src/lib/notification-handler.ts → helpers.ts
-├── src/lib/completion-detector.ts (self-contained — no imports)
-├── src/lib/concurrency.ts (self-contained — no imports)
-├── src/lib/delegation-manager.ts → concurrency.ts, continuity.ts, helpers.ts, types.ts
-└── src/lib/lifecycle-manager.ts → concurrency.ts, continuity.ts, helpers.ts, session-api.ts, state.ts, types.ts
-```
-
-**Shared Utilities:**
-- `src/shared/tool-helpers.ts` — `renderToolResult()` JSON serializer
-- `src/shared/tool-response.ts` — `ToolResponse<T>` envelope type with `success()`, `error()`, `pending()` constructors
-
-**Schema Kernel:**
-- `src/schema-kernel/prompt-enhance.schema.ts` — Zod schemas for pipeline contracts (PromptSkimResult, PromptAnalysisResult, etc.)
-- `src/schema-kernel/index.ts` — Barrel re-exports
-
-**Hooks Layer:**
-- `src/hooks/types.ts` — `HookDependencies` interface (lifecycle manager, client, state manager)
-- `src/hooks/create-core-hooks.ts` → helpers.ts, continuity.ts, session-api.ts, messages-transform.ts, types.ts
-- `src/hooks/create-session-hooks.ts` → continuity.ts, helpers.ts, session-api.ts, types.ts
-- `src/hooks/create-tool-guard-hooks.ts` → continuity.ts, helpers.ts, runtime-policy.ts, types.ts, state.ts
-- `src/hooks/messages-transform.ts` → continuity.ts
-
-**Placeholder Directories (`.gitkeep` only):**
-- `src/kernel/` — Reserved for future kernel module
-- `src/cli/` — Reserved for future CLI substrate
-- `src/harness/` — Reserved for future harness orchestration
-- `src/plugins/` — Empty, no content
-
-## Environment Configuration
-
-**Required env vars:**
-- None for build/test
-
-**Runtime env vars:**
-- `OPENCODE_SESSION_ID` — Fallback parent session ID in `src/tools/delegate-task.ts` when context doesn't provide one
-- `OPENCODE_HARNESS_STATE_DIR` — Override base directory for state storage
-- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
-
-**Injected env vars (via `shell.env` hook):**
-- `CI=true` — Forces non-interactive mode
-- `GIT_TERMINMAL_PROMPT=0` — Disables git prompts
-- `NO_COLOR=1` — Disables color output
-- `TERM=dumb` — Minimal terminal capability
-
-**Secrets location:**
-- None — the harness stores no secrets
-
-## Runtime Policy Configuration
-
-**Default Policy (`src/lib/runtime-policy.ts`):**
-- Concurrency: `globalLimit: 3`
-- Budget: `maxToolCallsPerSession: 400`, `repeatedSignatureThreshold: 16`, `warningCap: 25`
-- Trusted Runtime: `builtinAsyncBackgroundChildSessions: false`
-
-**Policy Override Chain:**
-1. Hardcoded defaults → `DEFAULT_RUNTIME_POLICY`
-2. Workspace-level policy (optional, passed to `loadRuntimePolicy()`)
-3. Per-session overrides from trusted delegation metadata (`SessionPolicyOverride`)
-
-**Resolution:** `getRuntimePolicyForSession()` in `src/lib/runtime-policy.ts`
-
-## Webhooks & Callbacks
-
-**Incoming:**
-- None — the harness reacts to OpenCode SDK events, not HTTP webhooks
-
-**Outgoing:**
-- None — no external HTTP calls beyond the OpenCode SDK client
+- None built into harness — authentication delegated to OpenCode platform
+- MCP servers handle their own auth via env vars and HTTP headers
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- None — errors are `[Harness]`-prefixed and thrown/caught locally
-- Warnings stored per-session in memory (`state.ts`) with 25 cap
+- None — Errors thrown with `[Harness]` prefix for identification
 
 **Logs:**
-- No structured logging framework
-- Error messages use `[Harness]` prefix convention
-- No log aggregation or shipping
+- Console output via OpenCode session messaging
+- Session continuity metadata tracks: status, description, delegation info, pending notifications, result capture, compaction checkpoints
+
+## CI/CD & Deployment
+
+**Hosting:**
+- npm registry — Package published as `opencode-harness`
+- Entrypoints: `opencode-harness` (library), `opencode-harness/plugin` (plugin)
+
+**CI Pipeline:**
+- GitHub Actions — `.github/workflows/opencode.yml`
+- Triggers: issue_comment, pull_request_review_comment containing `/oc` or `/opencode`
+- Model: `zai-coding-plan/glm-5.1`
+- Additional workflows: Qwen triage, invoke, scheduled triage, review, dispatch
+
+## Environment Configuration
+
+**Required env vars (for MCP servers, not harness itself):**
+- `TAVILY_API_KEY` — Tavily web search
+- `ZAI_API_KEY` — Z.AI web services
+- `BRAVE_API_KEY` — Brave search
+- `GITHUB_PAT` — GitHub API access
+- `EXA_API_KEY` — Exa semantic search
+- `NOTION_API_TOKEN` — Notion API
+- `SMITHERY_CLI_KEY` — Smithery CLI tools
+- `NETLIFY_PAT` — Netlify deployment
+
+**Harness runtime env vars:**
+- `OPENCODE_HARNESS_STATE_DIR` — Override state directory path
+- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
+
+**Secrets location:**
+- `.env` file (local development, gitignored)
+- GitHub Secrets (CI/CD pipelines)
+
+## Webhooks & Callbacks
+
+**Incoming:**
+- OpenCode session events: `session.idle`, `session.deleted`, `session.error`
+  - Handled by `DelegationManager.handleSessionIdle()` and `handleSessionDeleted()`
+  - Event observers registered in `plugin.ts` via `createCoreHooks()`
+
+**Outgoing:**
+- None — Harness operates within OpenCode session lifecycle, no external webhook dispatch
+
+## MCP Server Architecture
+
+**Connection Types:**
+- HTTP MCP servers (remote): Notion, Stitch, GitMCP, Context7, DeepWiki, Tavily, Z.AI services
+- npx MCP servers (local): GitHub, Exa, Fetcher, Playwright, Memory, Netlify, Brave Search, Repomix, Sequential Thinking, Desktop Commander
+- uvx MCP servers: Fetch (Python-based)
+
+**Timeout Configuration:**
+- Notion: 15s
+- GitMCP: 35s
+- Fetcher: 30s
+- Tavily: 35s
+- DeepWiki: 15s
+- Z.AI services: default (no explicit timeout)
 
 ---
 
-*Integration audit: 2026-04-21*
+*Integration audit: 2026-04-22*
