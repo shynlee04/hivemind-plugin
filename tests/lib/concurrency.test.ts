@@ -1,4 +1,8 @@
-import { DelegationConcurrencyQueue, reserveSubagentSpawn } from "../../src/lib/concurrency.js"
+import {
+  buildDelegationQueueKey,
+  DelegationConcurrencyQueue,
+  reserveSubagentSpawn,
+} from "../../src/lib/concurrency.js"
 import { TaskStateManager } from "../../src/lib/state.js"
 import { MAX_DESCENDANTS_PER_ROOT } from "../../src/lib/types.js"
 
@@ -225,6 +229,59 @@ describe("DelegationConcurrencyQueue", () => {
       expect(queue.dequeue("priority-key")?.id).toBe("normal-2")
       expect(queue.dequeue("priority-key")).toBeUndefined()
     })
+  })
+})
+
+describe("buildDelegationQueueKey", () => {
+  it("prefers provider+model lanes over all fallback dimensions", () => {
+    expect(
+      buildDelegationQueueKey({
+        provider: "openai",
+        model: "gpt-5.4",
+        agent: "builder",
+        category: "implementation",
+      }),
+    ).toBe("provider:openai:model:gpt-5.4")
+  })
+
+  it("preserves the model-only fallback lane", () => {
+    expect(
+      buildDelegationQueueKey({
+        model: "gpt-5.4",
+        agent: "builder",
+        category: "implementation",
+      }),
+    ).toBe("model:gpt-5.4")
+  })
+
+  it("preserves the agent+category fallback lane", () => {
+    expect(
+      buildDelegationQueueKey({
+        agent: "builder",
+        category: "implementation",
+      }),
+    ).toBe("agent:builder:category:implementation")
+  })
+
+  it("preserves the agent-only fallback lane", () => {
+    expect(buildDelegationQueueKey({ agent: "builder" })).toBe("agent:builder")
+  })
+
+  it("preserves the category-only fallback lane", () => {
+    expect(buildDelegationQueueKey({ category: "implementation" })).toBe("category:implementation")
+  })
+
+  it("falls back to default when no routing dimensions are provided", () => {
+    expect(buildDelegationQueueKey({})).toBe("default")
+  })
+
+  it("normalizes provider and model values before building the key", () => {
+    expect(
+      buildDelegationQueueKey({
+        provider: " OpenAI ",
+        model: " GPT-5.4 ",
+      }),
+    ).toBe("provider:openai:model:gpt-5.4")
   })
 })
 

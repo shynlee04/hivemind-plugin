@@ -45,6 +45,25 @@ describe("session-api typed wrappers", () => {
       })
     })
 
+    it("forwards a provided permission field unchanged", async () => {
+      const client = mockClient()
+      client.session.create.mockResolvedValue({ data: { id: "s3" } })
+      const permission = [
+        { permission: "read", action: "allow" },
+        { permission: "write", action: "allow" },
+      ]
+
+      const { createSession } = await import("../../src/lib/session-api.js")
+      await createSession(client, {
+        title: "test",
+        permission,
+      })
+
+      expect(client.session.create).toHaveBeenCalledWith({
+        body: { title: "test", permission },
+      })
+    })
+
     it("rejects invalid parent session IDs before calling the SDK", async () => {
       const client = mockClient()
 
