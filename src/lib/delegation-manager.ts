@@ -533,10 +533,12 @@ export class DelegationManager {
   }
 
   private buildRuntimeEnv(): Record<string, string> {
-    const entries = Object.entries(process.env)
-      .filter((entry): entry is [string, string] => typeof entry[1] === "string")
-
-    return Object.fromEntries(entries)
+    const keys = ["PATH", "HOME", "TERM", "LANG", "PWD"]
+    return Object.fromEntries(
+      keys
+        .map((key) => [key, process.env[key]])
+        .filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+    )
   }
 
   private readPtyArgsFromEnv(): string[] {
