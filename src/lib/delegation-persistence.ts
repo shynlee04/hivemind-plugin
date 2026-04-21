@@ -35,6 +35,16 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     return null
   }
 
+  const fallbackReason = typeof record.fallbackReason === "string" ? record.fallbackReason : undefined
+  const rawExecutionMode = record.executionMode
+  const executionMode: Delegation["executionMode"] = rawExecutionMode === "pty"
+    ? "pty"
+    : rawExecutionMode === "sdk"
+      ? "sdk"
+      : fallbackReason
+        ? "headless"
+        : "sdk"
+
   return {
     id: record.id,
     parentSessionId: record.parentSessionId,
@@ -48,10 +58,10 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     safetyCeilingMs: typeof record.safetyCeilingMs === "number" ? record.safetyCeilingMs : undefined,
     lastMessageCount: typeof record.lastMessageCount === "number" ? record.lastMessageCount : 0,
     stablePollCount: typeof record.stablePollCount === "number" ? record.stablePollCount : 0,
-    executionMode: record.executionMode === "pty" ? "pty" : "headless",
+    executionMode,
     workingDirectory: typeof record.workingDirectory === "string" ? record.workingDirectory : process.cwd(),
     ptySessionId: typeof record.ptySessionId === "string" ? record.ptySessionId : undefined,
-    fallbackReason: typeof record.fallbackReason === "string" ? record.fallbackReason : undefined,
+    fallbackReason,
     queueKey: typeof record.queueKey === "string" ? record.queueKey : "",
   }
 }

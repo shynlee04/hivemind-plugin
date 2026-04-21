@@ -11,6 +11,8 @@
 
 import type { PtyExecutionMode } from "../pty/pty-types.js"
 
+export type DelegationExecutionMode = "sdk" | PtyExecutionMode
+
 // ---------------------------------------------------------------------------
 // Permission profiles
 // ---------------------------------------------------------------------------
@@ -49,7 +51,7 @@ export interface DelegationSpawnRequest {
   /** Working directory for the child session. */
   workingDirectory: string
   /** Execution mode: PTY by default, headless as fallback. */
-  executionMode: PtyExecutionMode
+  executionMode: DelegationExecutionMode
   /** Maximum runtime ceiling in milliseconds (NOT a deadline). */
   safetyCeilingMs: number
   /** Permission profile controlling the child's tool access. */
@@ -70,7 +72,7 @@ export interface DelegationSpawnResult {
   /** Session ID of the created child session. */
   childSessionId: string
   /** Actual execution mode used for this delegation. */
-  executionMode: PtyExecutionMode
+  executionMode: DelegationExecutionMode
   /** Working directory the child session was started in. */
   workingDirectory: string
   /** PTY session ID (when PTY mode was used). */

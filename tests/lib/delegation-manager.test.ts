@@ -383,15 +383,15 @@ describe("DelegationManager", () => {
       const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
 
       expect(delegation).toEqual(expect.objectContaining({
-        executionMode: expect.stringMatching(/^(pty|headless)$/),
+        executionMode: "sdk",
         workingDirectory: expect.any(String),
       }))
+      expect(delegation?.ptySessionId).toBeUndefined()
       expect(persisted).toEqual(expect.arrayContaining([
         expect.objectContaining({
           id: result.delegationId,
-          executionMode: expect.stringMatching(/^(pty|headless)$/),
+          executionMode: "sdk",
           workingDirectory: expect.any(String),
-          fallbackReason: expect.anything(),
         }),
       ]))
     })
@@ -423,14 +423,13 @@ describe("DelegationManager", () => {
       expect(result.ptySessionId).toBeUndefined()
       expect(delegation).toEqual(expect.objectContaining({
         executionMode: "sdk",
-        ptySessionId: undefined,
         queueKey: "provider:anthropic:model:claude-3-5-sonnet",
       }))
+      expect(delegation?.ptySessionId).toBeUndefined()
       expect(persisted).toEqual(expect.arrayContaining([
         expect.objectContaining({
           id: result.delegationId,
           executionMode: "sdk",
-          ptySessionId: undefined,
         }),
       ]))
     })
@@ -517,9 +516,9 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)).toEqual(expect.objectContaining({
         executionMode: "headless",
         fallbackReason: expect.any(String),
-        ptySessionId: undefined,
         queueKey: "category:implementation",
       }))
+      expect(manager.getStatus(result.delegationId)?.ptySessionId).toBeUndefined()
     })
 
     it("sends prompt to child session with correct agent and text parts", async () => {

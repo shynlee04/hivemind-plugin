@@ -30,6 +30,13 @@ export interface PtySpawnRequest {
   cwd: string
   /** Environment variables forwarded to the child process. */
   env: Record<string, string>
+  /** Optional shared-session metadata for delegation/tool provenance. */
+  metadata?: {
+    source: "delegation" | "tool"
+    title?: string
+    parentSessionId?: string
+    delegationId?: string
+  }
   /** Initial terminal column width (optional). */
   cols?: number
   /** Initial terminal row height (optional). */
@@ -48,6 +55,16 @@ export interface PtySessionRecord {
   mode: PtyExecutionMode
   /** Working directory the session was started in. */
   cwd: string
+  /** Original command invoked for this PTY session. */
+  command?: string
+  /** Original args invoked for this PTY session. */
+  args?: string[]
+  /** Provenance marker so delegations and tools share one registry truthfully. */
+  source?: "delegation" | "tool"
+  /** Optional human-facing label/title. */
+  title?: string
+  parentSessionId?: string
+  delegationId?: string
   /** Epoch timestamp (ms) when the session was created. */
   startedAt: number
   /** OS process ID of the child (when available). */

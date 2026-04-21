@@ -360,7 +360,7 @@ export interface Delegation {
   lastMessageCount: number
   /** Number of consecutive stable polls (message count unchanged) */
   stablePollCount: number
-  executionMode: "pty" | "headless"
+  executionMode: "sdk" | "pty" | "headless"
   workingDirectory: string
   ptySessionId?: string
   fallbackReason?: string
@@ -372,11 +372,28 @@ export interface DelegationResult {
   result?: string
   error?: string
   delegationId: string
-  executionMode?: "pty" | "headless"
+  executionMode?: "sdk" | "pty" | "headless"
   workingDirectory?: string
   ptySessionId?: string
   fallbackReason?: string
   queueKey?: string
+}
+
+export type CommandDelegationParams = {
+  parentSessionId: string
+  command: string
+  args?: string[]
+  cwd?: string
+  env?: Record<string, string>
+  title?: string
+  queueContext?: {
+    provider?: string
+    model?: string
+    agent?: string
+    category?: string
+  }
+  /** Advisory watchdog threshold only — not a fixed completion timeout. */
+  safetyCeilingMs?: number
 }
 
 /** Safety ceiling — MAX runtime, not a deadline. Tasks may complete faster. */

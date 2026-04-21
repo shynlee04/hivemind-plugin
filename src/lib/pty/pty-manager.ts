@@ -37,6 +37,12 @@ export class PtyManager {
       id: sessionId,
       mode: "pty",
       cwd: request.cwd,
+      command: request.command,
+      args: [...request.args],
+      source: request.metadata?.source,
+      title: request.metadata?.title,
+      parentSessionId: request.metadata?.parentSessionId,
+      delegationId: request.metadata?.delegationId,
       startedAt: Date.now(),
       pid: process.pid,
     }
