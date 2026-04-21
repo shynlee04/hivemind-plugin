@@ -6,6 +6,7 @@ import {
   readPersistedDelegations,
 } from "./delegation-persistence.js"
 import { unwrapData } from "./helpers.js"
+import type { PtyManager } from "./pty/pty-manager.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
 import { spawnDelegatedSession } from "./spawner/session-creator.js"
@@ -511,12 +512,12 @@ export class DelegationManager {
     }
   }
 
-  private async resolveRuntimePtyManager(): Promise<{ spawn: (request: unknown) => { id: string; cwd: string } }> {
+  private async resolveRuntimePtyManager(): Promise<Pick<PtyManager, "spawn">> {
     if (typeof globalThis.Bun !== "undefined" && process.env.OPENCODE_HARNESS_DELEGATION_PTY_COMMAND) {
       const module = await import("./pty/pty-manager.js")
       const ptyManager = new module.PtyManager()
       if (ptyManager.isSupported()) {
-        return ptyManager as { spawn: (request: unknown) => { id: string; cwd: string } }
+        return ptyManager as Pick<PtyManager, "spawn">
       }
     }
 
@@ -528,7 +529,7 @@ export class DelegationManager {
             : "[Harness] PTY runtime unavailable in current environment",
         )
       },
-    }
+    } as Pick<PtyManager, "spawn">
   }
 
   private buildRuntimeEnv(): Record<string, string> {
