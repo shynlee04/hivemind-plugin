@@ -8,6 +8,7 @@ import {
   makeToolSignature,
   getPromptToolCompatibility,
   buildPromptText,
+  extractAssistantText,
 } from "../../src/lib/helpers.js"
 import type { PermissionRule } from "../../src/lib/types.js"
 
@@ -448,5 +449,57 @@ describe("buildPromptText with session context", () => {
     const mustDoIndex = result.indexOf("MUST DO:")
     const sessionIndex = result.indexOf("## Session Context")
     expect(sessionIndex).toBeGreaterThan(mustDoIndex)
+  })
+})
+
+describe("extractAssistantText", () => {
+  it("returns the last assistant message text when info.role === 'assistant'", () => {
+    const messages = [
+      { role: "user", parts: [{ type: "text", text: "hello" }] },
+      { info: { role: "assistant" }, parts: [{ type: "text", text: "first response" }] },
+      { info: { role: "assistant" }, parts: [{ type: "text", text: "last response" }] },
+    ]
+    expect(extractAssistantText(messages)).toBe("last response")
+  })
+
+  it("falls back to top-level role when info.role is missing", () => {
+    const messages = [
+      { role: "user", parts: [{ type: "text", text: "hello" }] },
+      { role: "assistant", parts: [{ type: "text", text: "fallback response" }] },
+    ]
+    expect(extractAssistantText(messages)).toBe("fallback response")
+  })
+
+  it("joins only type=text parts and trims the final string", () => {
+    const messages = [
+      {
+        info: { role: "assistant" },
+        parts: [
+          { type: "text", text: "hello " },
+          { type: "tool-use", text: "ignored" },
+          { type: "text", text: " world " },
+        ],
+      },
+    ]
+    expect(extractAssistantText(messages)).toBe("hello  world")
+  })
+
+  it("returns an empty string when no assistant message exists", () => {
+    const messages = [
+      { role: "user", parts: [{ type: "text", text: "hello" }] },
+      { role: "system", parts: [{ type: "text", text: "system msg" }] },
+    ]
+    expect(extractAssistantText(messages)).toBe("")
+  })
+
+  it("returns empty string for empty messages array", () => {
+    expect(extractAssistantText([])).toBe("")
+  })
+
+  it("returns empty string when assistant message has no parts array", () => {
+    const messages = [
+      { info: { role: "assistant" } },
+    ]
+    expect(extractAssistantText(messages)).toBe("")
   })
 })
