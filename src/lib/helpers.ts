@@ -88,6 +88,44 @@ export function asString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined
 }
 
+/**
+ * Extract the text content of the last assistant message from an array of
+ * session messages.
+ *
+ * Searches backward from the end of the array. The first message whose role
+ * is `"assistant"` (checked at `info.role` first, then top-level `role`) is
+ * selected. Only parts with `type === "text"` are included; their `text`
+ * values are concatenated with an empty separator and trimmed.
+ *
+ * Returns `""` when no assistant message is found or the message has no text
+ * parts.
+ */
+export function extractAssistantText(messages: unknown[]): string {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index]
+    const role =
+      asString(getNestedValue(message, ["info", "role"])) ??
+      asString(getNestedValue(message, ["role"]))
+
+    if (role !== "assistant") {
+      continue
+    }
+
+    const parts = getNestedValue(message, ["parts"])
+    if (!Array.isArray(parts)) {
+      return ""
+    }
+
+    return parts
+      .filter((part) => getNestedValue(part, ["type"]) === "text")
+      .map((part) => asString(getNestedValue(part, ["text"])) ?? "")
+      .join("")
+      .trim()
+  }
+
+  return ""
+}
+
 export function getPromptToolCompatibility(
   permissionRules: PermissionRule[]
 ): Record<string, boolean> | undefined {

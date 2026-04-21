@@ -11,7 +11,7 @@ import {
   getContinuityStoragePath,
   getSessionContinuity,
 } from "../lib/continuity.js"
-import { asString, getNestedValue } from "../lib/helpers.js"
+import { asString, extractAssistantText, getNestedValue } from "../lib/helpers.js"
 import {
   getEventSessionID,
   getSessionMessages,
@@ -69,32 +69,6 @@ function getAutoLoopState(
   }
   autoLoopStates.set(sessionID, nextState)
   return nextState
-}
-
-function extractAssistantText(messages: unknown[]): string {
-  for (let index = messages.length - 1; index >= 0; index -= 1) {
-    const message = messages[index]
-    const role =
-      asString(getNestedValue(message, ["info", "role"])) ??
-      asString(getNestedValue(message, ["role"]))
-
-    if (role !== "assistant") {
-      continue
-    }
-
-    const parts = getNestedValue(message, ["parts"])
-    if (!Array.isArray(parts)) {
-      return ""
-    }
-
-    return parts
-      .filter((part) => getNestedValue(part, ["type"]) === "text")
-      .map((part) => asString(getNestedValue(part, ["text"])) ?? "")
-      .join("")
-      .trim()
-  }
-
-  return ""
 }
 
 function buildAutoLoopPrompt(args: {
