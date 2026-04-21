@@ -27,6 +27,8 @@ function createManagerStub(): ToolManagerStub {
     dispatch: vi.fn().mockResolvedValue({
       status: "dispatched",
       delegationId: "delegation-dispatch-123",
+      executionMode: "pty",
+      workingDirectory: "/tmp/harness-child",
     }),
   }
 }
@@ -102,6 +104,8 @@ describe("delegate-task tool", () => {
     expect(result.data).toEqual({
       status: "dispatched",
       delegationId: "delegation-dispatch-123",
+      executionMode: "pty",
+      workingDirectory: "/tmp/harness-child",
     })
   })
 
@@ -208,6 +212,8 @@ describe("delegate-task tool", () => {
     expect(result.message).toContain("builder")
     expect((result.data as Record<string, unknown>)?.delegationId).toBe("delegation-dispatch-123")
     expect((result.data as Record<string, unknown>)?.status).toBe("dispatched")
+    expect((result.data as Record<string, unknown>)?.executionMode).toBe("pty")
+    expect((result.data as Record<string, unknown>)?.workingDirectory).toBe("/tmp/harness-child")
   })
 
   it("returns error response when DelegationManager.dispatch() throws with [Harness] prefix", async () => {

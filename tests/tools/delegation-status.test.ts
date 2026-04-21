@@ -168,6 +168,27 @@ describe("delegation-status tool", () => {
     expect(data.completedAt).toBe(now)
   })
 
+   it("includes execution metadata fields in single-delegation responses", async () => {
+    const delegation = makeDelegation({
+      id: "del-runtime",
+      executionMode: "pty",
+      workingDirectory: "/tmp/runtime-child",
+      ptySessionId: "pty-123",
+      fallbackReason: "pty unsupported",
+    })
+    const manager = createManagerStub([delegation])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-runtime" } as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Record<string, unknown>
+
+    expect(data.executionMode).toBe("pty")
+    expect(data.workingDirectory).toBe("/tmp/runtime-child")
+    expect(data.ptySessionId).toBe("pty-123")
+    expect(data.fallbackReason).toBe("pty unsupported")
+  })
+
   // ---------------------------------------------------------------------------
   // List all delegations
   // ---------------------------------------------------------------------------
@@ -233,6 +254,27 @@ describe("delegation-status tool", () => {
     expect(result.kind).toBe("success")
     const data = result.data as Delegation[]
     expect(data).toHaveLength(0)
+  })
+
+  it("includes execution metadata fields in list responses", async () => {
+    const delegations = [
+      makeDelegation({
+        id: "del-list-runtime",
+        executionMode: "headless",
+        workingDirectory: "/tmp/list-child",
+        fallbackReason: "pty unavailable",
+      }),
+    ]
+    const manager = createManagerStub(delegations)
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({} as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Array<Record<string, unknown>>
+
+    expect(data[0]?.executionMode).toBe("headless")
+    expect(data[0]?.workingDirectory).toBe("/tmp/list-child")
+    expect(data[0]?.fallbackReason).toBe("pty unavailable")
   })
 
   // ---------------------------------------------------------------------------

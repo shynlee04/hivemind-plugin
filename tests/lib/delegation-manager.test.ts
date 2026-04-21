@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import {
   DEFAULT_SAFETY_CEILING_MS,
@@ -158,6 +159,80 @@ describe("DelegationManager", () => {
       expect(client.session.create).toHaveBeenCalledOnce()
     })
 
+    it("derives one canonical provider/model queue key for both acquire-path and spawn-path runtime calls", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [
+          {
+            name: "builder",
+            model: "claude-3-5-sonnet",
+            provider: "anthropic",
+            category: "implementation",
+          },
+        ],
+      })
+      const manager = new DelegationManager(client as never)
+      const acquireSpy = vi.spyOn(
+        (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
+        "acquire",
+      )
+      const resolveSpy = vi.spyOn(spawnerConcurrencyKey, "resolveDelegationConcurrencyKey")
+
+      await manager.dispatch({
+        parentSessionId: "parent-provider-model",
+        agent: "builder",
+        prompt: "run with canonical metadata",
+      })
+
+      expect(resolveSpy).toHaveBeenCalledWith({
+        provider: "anthropic",
+        model: "claude-3-5-sonnet",
+        agent: "builder",
+        category: "implementation",
+      })
+      expect(acquireSpy).toHaveBeenCalledWith(
+        "provider:anthropic:model:claude-3-5-sonnet",
+        undefined,
+        undefined,
+      )
+    })
+
+    it("uses canonical fallback semantics from concurrency.ts when only agent/category metadata exists", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [
+          {
+            name: "builder",
+            category: "implementation",
+          },
+        ],
+      })
+      const manager = new DelegationManager(client as never)
+      const acquireSpy = vi.spyOn(
+        (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
+        "acquire",
+      )
+      const resolveSpy = vi.spyOn(spawnerConcurrencyKey, "resolveDelegationConcurrencyKey")
+
+      await manager.dispatch({
+        parentSessionId: "parent-agent-category",
+        agent: "builder",
+        prompt: "fallback canonical key",
+      })
+
+      expect(resolveSpy).toHaveBeenCalledWith({
+        provider: undefined,
+        model: undefined,
+        agent: "builder",
+        category: "implementation",
+      })
+      expect(acquireSpy).toHaveBeenCalledWith(
+        "agent:builder:category:implementation",
+        undefined,
+        undefined,
+      )
+    })
+
     it("persists delegation to disk BEFORE sending prompt (write-then-send ordering)", async () => {
       const client = createMockClient()
       const promptSpy = client.session.prompt.mockImplementation(async (...args: unknown[]) => {
@@ -184,6 +259,33 @@ describe("DelegationManager", () => {
       })
 
       expect(promptSpy).toHaveBeenCalled()
+    })
+
+    it("records truthful execution metadata on the in-memory and persisted delegation record", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      const result = await manager.dispatch({
+        parentSessionId: "parent-runtime-metadata",
+        agent: "builder",
+        prompt: "persist execution metadata",
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
+
+      expect(delegation).toEqual(expect.objectContaining({
+        executionMode: expect.stringMatching(/^(pty|headless)$/),
+        workingDirectory: expect.any(String),
+      }))
+      expect(persisted).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          id: result.delegationId,
+          executionMode: expect.stringMatching(/^(pty|headless)$/),
+          workingDirectory: expect.any(String),
+          fallbackReason: expect.anything(),
+        }),
+      ]))
     })
 
     it("sends prompt to child session with correct agent and text parts", async () => {
