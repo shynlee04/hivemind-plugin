@@ -7,6 +7,7 @@ import { buildDelegationQueueKey } from "../../src/lib/concurrency.js"
 import * as sessionApi from "../../src/lib/session-api.js"
 import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
+import { readPersistedDelegations } from "../../src/lib/delegation-persistence.js"
 import {
   DEFAULT_SAFETY_CEILING_MS,
   STABILITY_POLL_INTERVAL_MS,
@@ -32,6 +33,57 @@ type ManagerInternals = {
   delegationsBySession: Map<string, string>
   safetyTimers: Map<string, NodeJS.Timeout>
   stabilityTimers: Map<string, NodeJS.Timeout>
+}
+
+type ManagerOptions = {
+  ptyManager?: {
+    isSupported?: () => boolean
+    spawn?: (request: unknown) => {
+      id: string
+      mode?: "pty" | "headless"
+      cwd: string
+      startedAt: number
+      pid?: number
+      exitCode?: number
+      fallbackReason?: string
+    }
+    getSession?: (sessionId: string) => {
+      id: string
+      mode?: "pty" | "headless"
+      cwd: string
+      startedAt: number
+      pid?: number
+      exitCode?: number
+      fallbackReason?: string
+    } | undefined
+    terminate?: (sessionId: string) => Promise<void>
+  } | null
+}
+
+type CommandDispatchParams = {
+  parentSessionId: string
+  command: string
+  args?: string[]
+  cwd?: string
+  env?: Record<string, string>
+  title?: string
+  queueContext?: {
+    provider?: string
+    model?: string
+    agent?: string
+    category?: string
+  }
+  safetyCeilingMs?: number
+}
+
+type CommandDispatchResult = {
+  status: string
+  delegationId: string
+  executionMode?: string
+  workingDirectory?: string
+  ptySessionId?: string
+  fallbackReason?: string
+  queueKey?: string
 }
 
 function createMockClient(): MockClient {
@@ -64,6 +116,26 @@ function createMockClient(): MockClient {
 
 function getInternals(manager: DelegationManager): ManagerInternals {
   return manager as unknown as ManagerInternals
+}
+
+function createManager(client: MockClient, options?: ManagerOptions): DelegationManager {
+  const DelegationManagerCtor = DelegationManager as unknown as new (
+    client: MockClient,
+    options?: ManagerOptions,
+  ) => DelegationManager
+
+  return new DelegationManagerCtor(client, options)
+}
+
+async function dispatchCommand(
+  manager: DelegationManager,
+  params: CommandDispatchParams,
+): Promise<CommandDispatchResult> {
+  const commandCapableManager = manager as unknown as {
+    dispatchCommand: (commandParams: CommandDispatchParams) => Promise<CommandDispatchResult>
+  }
+
+  return commandCapableManager.dispatchCommand(params)
 }
 
 function getDelegationsFile(stateDir: string): string {
@@ -322,6 +394,132 @@ describe("DelegationManager", () => {
           fallbackReason: expect.anything(),
         }),
       ]))
+    })
+
+    it("records sdk execution metadata truthfully for agent dispatches without PTY session state", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [
+          {
+            name: "builder",
+            provider: "anthropic",
+            model: "claude-3-5-sonnet",
+            category: "implementation",
+          },
+        ],
+      })
+      const manager = createManager(client)
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-sdk-truth",
+        agent: "builder",
+        prompt: "stay on the sdk path",
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
+
+      expect(result.executionMode).toBe("sdk")
+      expect(result.ptySessionId).toBeUndefined()
+      expect(delegation).toEqual(expect.objectContaining({
+        executionMode: "sdk",
+        ptySessionId: undefined,
+        queueKey: "provider:anthropic:model:claude-3-5-sonnet",
+      }))
+      expect(persisted).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          id: result.delegationId,
+          executionMode: "sdk",
+          ptySessionId: undefined,
+        }),
+      ]))
+    })
+
+    it("dispatchCommand uses canonical queue governance and records real PTY session state", async () => {
+      const client = createMockClient()
+      const manager = createManager(client, {
+        ptyManager: {
+          isSupported: () => true,
+          spawn: vi.fn().mockReturnValue({
+            id: "pty-command-123",
+            mode: "pty",
+            cwd: "/tmp/command-runtime",
+            startedAt: Date.now(),
+            pid: 2222,
+          }),
+          getSession: vi.fn().mockReturnValue({
+            id: "pty-command-123",
+            mode: "pty",
+            cwd: "/tmp/command-runtime",
+            startedAt: Date.now(),
+            pid: 2222,
+          }),
+          terminate: vi.fn().mockResolvedValue(undefined),
+        },
+      })
+      const acquireSpy = vi.spyOn(
+        (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
+        "acquire",
+      )
+
+      const result = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-command-pty",
+        command: "echo",
+        args: ["hello"],
+        cwd: "/tmp/command-runtime",
+        queueContext: {
+          provider: "anthropic",
+          model: "claude-3-5-sonnet",
+          category: "implementation",
+        },
+      })
+
+      expect(acquireSpy).toHaveBeenCalledWith(
+        "provider:anthropic:model:claude-3-5-sonnet",
+        undefined,
+        undefined,
+      )
+      expect(result.executionMode).toBe("pty")
+      expect(result.ptySessionId).toBe("pty-command-123")
+      expect(manager.getStatus(result.delegationId)).toEqual(expect.objectContaining({
+        executionMode: "pty",
+        ptySessionId: "pty-command-123",
+        queueKey: "provider:anthropic:model:claude-3-5-sonnet",
+      }))
+    })
+
+    it("dispatchCommand degrades truthfully to headless with fallbackReason when PTY is unavailable", async () => {
+      const client = createMockClient()
+      const manager = createManager(client, { ptyManager: null })
+      const acquireSpy = vi.spyOn(
+        (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
+        "acquire",
+      )
+
+      const result = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-command-headless",
+        command: "echo",
+        args: ["fallback"],
+        cwd: "/tmp/command-headless",
+        queueContext: {
+          category: "implementation",
+        },
+      })
+
+      expect(acquireSpy).toHaveBeenCalledWith(
+        "category:implementation",
+        undefined,
+        undefined,
+      )
+      expect(result.executionMode).toBe("headless")
+      expect(result.fallbackReason).toBeTruthy()
+      expect(result.ptySessionId).toBeUndefined()
+      expect(manager.getStatus(result.delegationId)).toEqual(expect.objectContaining({
+        executionMode: "headless",
+        fallbackReason: expect.any(String),
+        ptySessionId: undefined,
+        queueKey: "category:implementation",
+      }))
     })
 
     it("sends prompt to child session with correct agent and text parts", async () => {
@@ -1022,6 +1220,43 @@ describe("DelegationManager", () => {
       await manager.recoverPending()
 
       expect(manager.getStatus("legacy-del-1")?.queueKey).toBe("")
+    })
+
+    it("normalizes legacy agent-history headless records to sdk without rewriting real command fallback records", () => {
+      writeFileSync(
+        getDelegationsFile(stateDir),
+        `${JSON.stringify([
+          {
+            id: "legacy-agent-record",
+            parentSessionId: "ses-parent-legacy",
+            childSessionId: "ses-child-legacy",
+            agent: "builder",
+            status: "completed",
+            createdAt: Date.now(),
+            executionMode: "headless",
+            workingDirectory: "/tmp/legacy-agent",
+            queueKey: "agent:builder",
+          },
+          {
+            id: "real-command-fallback",
+            parentSessionId: "ses-parent-command",
+            childSessionId: "ses-child-command",
+            agent: "command-runner",
+            status: "error",
+            createdAt: Date.now(),
+            executionMode: "headless",
+            workingDirectory: "/tmp/command-fallback",
+            queueKey: "category:implementation",
+            fallbackReason: "PTY unavailable in current environment",
+          },
+        ], null, 2)}\n`,
+        "utf-8",
+      )
+
+      const delegations = readPersistedDelegations()
+
+      expect(delegations.find((entry) => entry.id === "legacy-agent-record")?.executionMode).toBe("sdk")
+      expect(delegations.find((entry) => entry.id === "real-command-fallback")?.executionMode).toBe("headless")
     })
 
     it("restores running delegations from disk and re-registers them", async () => {
