@@ -25,11 +25,17 @@ export type QueuedTask = {
 }
 
 export function buildDelegationQueueKey(args: {
+  provider?: string
   model?: string
   agent?: string
   category?: string
 }): string {
+  const provider = args.provider?.trim().toLowerCase()
   const model = args.model?.trim().toLowerCase()
+  if (provider && model) {
+    return `provider:${provider}:model:${model}`
+  }
+
   if (model) {
     return `model:${model}`
   }
