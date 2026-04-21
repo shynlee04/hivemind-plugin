@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 4
-status: ready_for_verification
-stopped_at: Completed 16-background-delegation-revamp-pty-integration-rebuild-backgro-04-PLAN.md
-last_updated: "2026-04-21T11:50:13.832Z"
+current_plan: 6
+status: executing
+stopped_at: Completed 16-background-delegation-revamp-pty-integration-rebuild-backgro-05-PLAN.md
+last_updated: "2026-04-21T14:45:38.495Z"
 progress:
   total_phases: 18
-  completed_phases: 6
-  total_plans: 23
-  completed_plans: 23
-  percent: 100
+  completed_phases: 5
+  total_plans: 25
+  completed_plans: 24
+  percent: 96
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 16 — Background Delegation Revamp + PTY Integration
+**Current focus:** Phase --phase — 16
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,12 +29,12 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 16 — READY FOR VERIFICATION
-Plan: 4 of 4
+Phase: 16 — EXECUTING
+Plan: 6 of 6
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** 4
-**Progress:** [██████████] 100%
+**Current plan:** 6
+**Progress:** [██████████] 96%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -76,7 +76,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Phase | Status | Detail |
 |-------|--------|--------|
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
-| Phase 16 | READY FOR VERIFICATION | 4/4 plans complete; runtime queue-key adoption, lifecycle facade wiring, and truthful execution metadata landed with full test/typecheck/build verification |
+| Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
 
 ## Known Issues
 
@@ -106,6 +106,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Phase 14 P03 | 425s | 1 tasks | 3 files |
 | Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P02 | 5min | 2 tasks | 4 files |
 | Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P04 | 8 min | 3 tasks | 11 files |
+| Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P05 | 7 min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -150,6 +151,8 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - Validated agent metadata now feeds one canonical queue-key context, and DelegationManager hard-fails on queue-key drift between acquire and spawn paths.
 - Delegation persistence moved into a dedicated helper that normalizes older records so new execution metadata does not break recovery.
 - HarnessLifecycleManager now acts as a DelegationManager facade, while lazy PTY loading preserves truthful fallback metadata without breaking Node-based verification.
+- Persist the canonical queue key on each delegation record so dispatch and status surfaces report the same runtime concurrency context used at acquire time.
+- Use a session-api message-count wrapper that returns null on transient failures so stability polling never invents progress.
 
 ### Todos
 
@@ -176,7 +179,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 16-background-delegation-revamp-pty-integration-rebuild-backgro-04-PLAN.md
+**Stopped At:** Completed 16-background-delegation-revamp-pty-integration-rebuild-backgro-05-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
