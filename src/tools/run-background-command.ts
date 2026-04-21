@@ -11,7 +11,7 @@ const RunActionSchema = z.object({
   command: z.string().min(1),
   args: z.array(z.string()).optional(),
   cwd: z.string().optional(),
-  env: z.record(z.string()).optional(),
+  env: z.record(z.string(), z.string()).optional(),
 })
 
 const OutputActionSchema = z.object({
@@ -64,7 +64,7 @@ export function createRunBackgroundCommandTool(args: {
       command: s.string().optional(),
       args: s.array(s.string()).optional(),
       cwd: s.string().optional(),
-      env: s.record(s.string()).optional(),
+      env: s.record(s.string(), s.string()).optional(),
       sessionId: s.string().optional(),
       offset: s.number().optional(),
       input: s.string().optional(),
