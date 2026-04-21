@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
+import { PtyManager } from "../../src/lib/pty/pty-manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 
 function createPluginClient() {
@@ -30,6 +31,17 @@ describe("plugin lifecycle wiring", () => {
 
     expect(plugin.tool["delegate-task"]).toBeDefined()
     expect(plugin.tool["delegation-status"]).toBeDefined()
+  })
+
+  it("registers run-background-command when a shared PTY manager is supported", async () => {
+    vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(true)
+
+    const plugin = await HarnessControlPlane({
+      client: createPluginClient(),
+      directory: process.cwd(),
+    } as never)
+
+    expect(plugin.tool["run-background-command"]).toBeDefined()
   })
 
   it("treats HarnessLifecycleManager.launchDelegatedSession as a usable facade instead of a stub throw-path", async () => {
