@@ -1,5 +1,15 @@
 import { describe, expect, it, vi } from "vitest"
 
+vi.mock("bun-pty", () => ({
+  spawn: vi.fn(() => ({
+    pid: 4242,
+    write: vi.fn(),
+    kill: vi.fn(),
+    onData: vi.fn(() => ({ dispose: vi.fn() })),
+    onExit: vi.fn(() => ({ dispose: vi.fn() })),
+  })),
+}))
+
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
 import { PtyManager } from "../../src/lib/pty/pty-manager.js"

@@ -98,6 +98,10 @@ export class PtyManager {
     return session ? { ...session.record } : undefined
   }
 
+  listSessions(): PtySessionRecord[] {
+    return Array.from(this.sessions.values()).map((session) => ({ ...session.record }))
+  }
+
   private requireSession(sessionId: string): PtySessionState {
     const session = this.sessions.get(sessionId)
     if (!session) {

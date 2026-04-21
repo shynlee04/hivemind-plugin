@@ -6,6 +6,7 @@
  * individual hook factory modules and tool implementations.
  */
 import type { Plugin } from "@opencode-ai/plugin"
+
 import { createHarnessLifecycleManager } from "./lib/lifecycle-manager.js"
 import { DelegationManager } from "./lib/delegation-manager.js"
 import { taskState } from "./lib/state.js"
@@ -19,6 +20,7 @@ import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
 import { createDelegateTaskTool } from "./tools/delegate-task.js"
 import { createDelegationStatusTool } from "./tools/delegation-status.js"
+import { createRunBackgroundCommandTool } from "./tools/run-background-command.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
@@ -26,7 +28,18 @@ const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routi
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // Load workspace-level runtime policy once at startup.
   const runtimePolicy = loadRuntimePolicy()
-  const delegationManager = new DelegationManager(client)
+  let ptyManager: import("./lib/pty/pty-manager.js").PtyManager | null = null
+  try {
+    const ptyModule = await import("./lib/pty/pty-manager.js")
+    const candidate = new ptyModule.PtyManager()
+    if (candidate.isSupported()) {
+      ptyManager = candidate
+    }
+  } catch {
+    ptyManager = null
+  }
+
+  const delegationManager = new DelegationManager(client, { ptyManager })
   await delegationManager.recoverPending()
 
   const lifecycleManager = createHarnessLifecycleManager({
@@ -68,6 +81,9 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
       "delegation-status": createDelegationStatusTool(delegationManager),
+      ...(ptyManager ? {
+        "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
+      } : {}),
       "prompt-skim": createPromptSkimTool(directory),
       "prompt-analyze": createPromptAnalyzeTool(directory),
       "session-patch": createSessionPatchTool(directory),
