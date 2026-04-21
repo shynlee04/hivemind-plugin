@@ -15,6 +15,7 @@
     "_auto_chain_active": false,
     "ui_phase": true,
     "ui_safety_gate": true,
+    "ai_integration_phase": true,
     "research_before_questions": true,
     "discuss_mode": "discuss",
     "skip_discuss": false,

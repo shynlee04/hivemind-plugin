@@ -16,6 +16,7 @@
 
 #### PTY Interactive Integration
 - **D-04:** PTY interactive processes are the DEFAULT execution mode for ALL delegations. Every delegated task runs in a PTY unless PTY is unavailable (then falls back to headless).
+- **D-04A (Verification-backed amendment):** Gap-closure work for Plans 05-06 supersedes the "for ALL delegations" wording in D-04. Agent delegations MUST use the truthful SDK child-session path when that is the actual execution path; PTY remains the default interactive runtime for command/process execution surfaces (explicit command delegations and the standalone PTY tool) using the same shared PTY subsystem and queue/safety policy. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md]
 - **D-05:** The PTY integration MUST come from studying opencode-pty's architecture (`https://github.com/shekohex/opencode-pty`). The researcher must analyze how opencode-pty enables interactive input to background processes and design an integration that fits the harness plugin architecture.
 
 #### Spawner Architecture
@@ -60,20 +61,21 @@
 
 ## Summary
 
-Phase 16 should **keep the current WaiterModel and dual-signal completion core, but replace the current spawn path with a dedicated spawner subsystem and a PTY-backed execution path by default**. The strongest external evidence is that oh-my-openagent succeeds because background work stays inside the OpenCode session tree, while opencode-background-agents explicitly documents failure modes caused by running outside that tree. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent] [CITED: https://github.com/kdcokenny/opencode-background-agents] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md]
+Phase 16 should **keep the current WaiterModel and dual-signal completion core, but split execution truthfully by surface**: agent delegations stay on the SDK child-session path, while PTY becomes the default runtime for command/process execution surfaces and the standalone PTY tool. The strongest external evidence is that oh-my-openagent succeeds because background work stays inside the OpenCode session tree, while opencode-background-agents explicitly documents failure modes caused by running outside that tree. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent] [CITED: https://github.com/kdcokenny/opencode-background-agents] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
 
-The harness already has the right foundations: WaiterModel semantics, dual-signal completion detection, keyed concurrency, durable continuity, and parent-session notification hooks. The missing pieces are architectural separation and PTY-backed child execution. Specifically, `DelegationManager` is overloaded, PTY support is absent, lifecycle ownership is split between a real manager and a stub, and helper extraction is incomplete. [VERIFIED: src/lib/delegation-manager.ts] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: src/lib/concurrency.ts] [VERIFIED: src/plugin.ts]
+The harness already has the right foundations: WaiterModel semantics, dual-signal completion detection, keyed concurrency, durable continuity, and parent-session notification hooks. The missing pieces are architectural separation, truthful dual-mode execution, and a shared PTY subsystem broad enough to serve both command delegations and a standalone PTY tool surface. Specifically, `DelegationManager` is overloaded, PTY support is absent, lifecycle ownership is split between a real manager and a stub, and helper extraction is incomplete. [VERIFIED: src/lib/delegation-manager.ts] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: src/lib/concurrency.ts] [VERIFIED: src/plugin.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
 
-**Primary recommendation:** Use **session-tree child sessions + PTY-by-default + extracted spawner modules + existing dual-signal completion detector**. Do **not** adopt opencode-background-agents' isolated-session model or its fixed timeout posture. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent] [CITED: https://github.com/shekohex/opencode-pty] [CITED: https://github.com/kdcokenny/opencode-background-agents]
+**Primary recommendation:** Use **session-tree SDK child sessions for agent delegations + PTY-by-default for command/process surfaces + a standalone PTY tool on the same `PtyManager` + extracted spawner modules + DelegationManager-owned dual-signal completion that borrows reset/no-op patterns from `completion-detector`**. Do **not** adopt opencode-background-agents' isolated-session model or its fixed timeout posture. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent] [CITED: https://github.com/shekohex/opencode-pty] [CITED: https://github.com/kdcokenny/opencode-background-agents] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
 
 ## Architectural Responsibility Map
 
 | Capability | Primary Tier | Secondary Tier | Rationale |
 |------------|-------------|----------------|-----------|
 | Delegation dispatch API | Plugin tool layer | Delegation orchestration | `delegate-task` remains the write-side entrypoint; orchestration should stay behind it. [VERIFIED: src/tools/delegate-task.ts] |
+| Command/process background execution | Plugin tool layer | PTY manager | Command-oriented surfaces should route into one shared PTY subsystem instead of pretending SDK child sessions are PTY-backed. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md] |
 | Child session creation | Spawner | Session API wrapper | Session creation must be isolated from orchestration so write-capable/session-tree logic is testable and reusable. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent/spawner] |
 | PTY process lifecycle | PTY manager | Spawner | PTY setup, I/O buffering, and termination are process concerns, not tool concerns. [CITED: https://github.com/shekohex/opencode-pty] |
-| Completion detection | Completion detector | Delegation orchestration | Phase 14 locked dual-signal completion already belongs in shared runtime logic. [VERIFIED: src/lib/completion-detector.ts] |
+| Completion detection | Delegation orchestration | Completion detector | DelegationManager remains the single owner for delegation completion state, but it should copy the proven reset/no-op stability semantics already embodied in `completion-detector`. [VERIFIED: src/lib/delegation-manager.ts] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md] |
 | Persistence and recovery | Continuity store | In-memory task state | Durable state must remain separate from orchestration; in-memory state accelerates polling and routing. [VERIFIED: src/lib/continuity.ts] [VERIFIED: src/lib/state.ts] |
 | Parent notification | Notification handler | Hook layer | Completion reporting belongs in async notification logic, not in PTY or spawn code. [VERIFIED: src/lib/notification-handler.ts] |
 | Concurrency limiting | Concurrency module | Spawner key resolver | Queue semantics already exist; Phase 16 should only improve key derivation and usage. [VERIFIED: src/lib/concurrency.ts] |
@@ -84,9 +86,9 @@ The harness already has the right foundations: WaiterModel semantics, dual-signa
 ### Core
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| `@opencode-ai/sdk` | project uses `^1.4.2` | Session creation, session prompting, runtime integration | This is the existing OpenCode integration surface and should remain the only session-control API. [VERIFIED: package.json] |
+| `@opencode-ai/sdk` | project uses `^1.14.19` | Session creation, session prompting, runtime integration | This is the existing OpenCode integration surface and should remain the only session-control API. [VERIFIED: package.json] |
 | `@opencode-ai/plugin` | `1.14.19` current registry | Plugin host contract | The harness is a plugin; Phase 16 should stay within plugin boundaries instead of inventing a sidecar service. [VERIFIED: npm registry] [VERIFIED: package.json] |
-| `node-pty` | `1.1.0` current registry | PTY child process management for Node runtime | The project is Node-based, so PTY integration should use a Node PTY library rather than Bun-specific infrastructure. [VERIFIED: npm registry] [VERIFIED: package.json] |
+| `bun-pty` | `^0.4.8` current registry | PTY child process management for Bun runtime | The project runs as a Bun-hosted OpenCode plugin, so PTY integration uses `bun-pty`, matching the upstream `opencode-pty` (shekohex) reference. [VERIFIED: npm registry] [VERIFIED: package.json] |
 | `zod` | `4.3.6` current registry | Tool input/output validation | Existing validation stack; keep it for PTY tool payloads and spawner config schemas. [VERIFIED: npm registry] [VERIFIED: package.json] |
 
 ### Supporting
@@ -100,16 +102,16 @@ The harness already has the right foundations: WaiterModel semantics, dual-signa
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| `node-pty` | `bun-pty` | `opencode-pty` proves the PTY pattern, but this project targets Node `>=20`, not Bun-first runtime semantics. Use Bun-specific implementation details only as architecture inspiration. [CITED: https://github.com/shekohex/opencode-pty] [VERIFIED: package.json] |
+| `bun-pty` (primary) | `node-pty` (alternative) | The project runs as a Bun-hosted OpenCode plugin. `bun-pty` is the correct choice; the upstream `opencode-pty` (shekohex) uses `bun-pty` directly. `node-pty` would be the alternative only for a Node fallback path. [CITED: https://github.com/shekohex/opencode-pty] [VERIFIED: package.json] |
 | session-tree child sessions | isolated background sessions | Isolated sessions are simpler, but opencode-background-agents documents loss of undo/branching parity; this directly violates Phase 16 goals. [CITED: https://github.com/kdcokenny/opencode-background-agents] |
 | existing completion-detector | fixed timeout watchdog | Fixed timeouts are explicitly locked out by D-13 and D-17. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] |
 
 **Installation:**
 ```bash
-npm install node-pty zod
+npm install bun-pty
 ```
 
-**Version verification:** `@opencode-ai/plugin 1.14.19`, `node-pty 1.1.0`, `zod 4.3.6`, `vitest 4.1.4`, and `typescript 6.0.3` were verified against the npm registry during this research session. [VERIFIED: npm registry]
+**Version verification:** `@opencode-ai/plugin ^1.14.19`, `bun-pty ^0.4.8`, `zod 4.3.6`, `vitest 4.1.4`, and `typescript 6.0.3` were verified against the package.json and npm registry during this research session. [VERIFIED: npm registry]
 
 ## Architecture Patterns
 
@@ -119,15 +121,15 @@ npm install node-pty zod
 caller/tool invocation
     |
     v
-delegate-task tool
+delegate-task tool / standalone PTY tool
     |
     v
 DelegationManager (orchestrator only)
     |-------------------------------> continuity/state lookup
     |
-    +--> spawner/session-creator ----> OpenCode child session (parent-linked)
+    +--> agent path: spawner/session-creator ----> OpenCode child session (parent-linked, executionMode=sdk)
     |
-    +--> spawner/pty-setup ----------> PTY process + buffer + input channel
+    +--> command path / standalone PTY tool ----> PTY manager ----> PTY process + buffer + input channel (executionMode=pty)
     |
     +--> concurrency reservation ----> per provider/model queue
     |
@@ -167,7 +169,7 @@ src/
 ├── tools/
 │   ├── delegate-task.ts           # dispatch only
 │   ├── delegation-status.ts       # poll/retrieve only
-│   └── delegation-pty-write.ts    # optional follow-up PTY input tool if needed
+│   └── run-background-command.ts  # standalone PTY command surface on shared PtyManager
 └── hooks/
     └── create-core-hooks.ts       # idle/deleted event integration stays here
 ```
@@ -189,10 +191,10 @@ const child = await sessionApi.createSession({
 })
 ```
 
-### Pattern 2: PTY-by-default execution with headless fallback
-**What:** Every delegation gets a PTY session unless PTY setup fails or is unsupported.
+### Pattern 2: PTY-by-default execution for command/process surfaces
+**What:** PTY is the default runtime for explicit command/process execution surfaces, including the standalone PTY tool, while agent delegations remain truthful SDK child sessions.
 
-**When to use:** Always, per D-04. Fallback to headless only after PTY initialization failure is detected and recorded. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] [CITED: https://github.com/shekohex/opencode-pty]
+**When to use:** Use this path for command delegations and standalone PTY interactions. Fallback to headless only after PTY initialization failure is detected and recorded. Do not wrap ordinary SDK child sessions in fake PTY metadata. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md] [CITED: https://github.com/shekohex/opencode-pty]
 
 **Example:**
 ```typescript
@@ -201,7 +203,21 @@ const child = await sessionApi.createSession({
 const executionMode = ptyManager.isSupported() ? 'pty' : 'headless'
 const runtime = executionMode === 'pty'
   ? await ptyManager.spawnForDelegation(config)
-  : await sessionSpawner.spawnHeadless(config)
+  : await commandFallback.spawnHeadless(config)
+```
+
+### Pattern 2A: Standalone PTY tool on the same PTY session universe
+**What:** Provide a dedicated PTY tool surface for command/process work, but back it with the same `PtyManager`, queue policy, and session metadata used by command delegations.
+
+**When to use:** When the caller needs explicit background command/process control rather than agent-style delegation. This is in scope for Phase 16 gap closure and should not create a second PTY registry. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md] [CITED: https://github.com/shekohex/opencode-pty]
+
+**Example:**
+```typescript
+// Source: Phase 16 Plan 06 + opencode-pty tool surface
+const tool = createRunBackgroundCommandTool({
+  delegationManager,
+  ptyManager,
+})
 ```
 
 ### Pattern 3: Orchestrator/spawner separation
@@ -217,19 +233,36 @@ const spawnResult = await spawner.start(request)
 await orchestration.track(reservation, spawnResult)
 ```
 
+### Pattern 4: Single-owner completion with borrowed stability semantics
+**What:** Keep delegation completion/finalization in `DelegationManager`, but align its stability polling rules with `completion-detector`: message-count changes reset stability, invalid counts are ignored, and completion is not inferred from PTY exit alone.
+
+**When to use:** For all delegation records, regardless of whether the work started on the SDK path or PTY path. PTY exit is a signal that feeds orchestration; it is not a separate completion authority. [VERIFIED: src/lib/delegation-manager.ts] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
+
+**Example:**
+```typescript
+// Source: src/lib/completion-detector.ts + Phase 16 Plan 05 expectations
+if (currentMessageCount !== delegation.lastMessageCount) {
+  delegation.lastMessageCount = currentMessageCount
+  delegation.stablePollCount = 0
+  return
+}
+delegation.stablePollCount += 1
+```
+
 ### Anti-Patterns to Avoid
 - **Isolated background sessions:** They break the parity goal that Phase 16 exists to restore. [CITED: https://github.com/kdcokenny/opencode-background-agents]
 - **Fixed timeout completion:** Phase 14 already replaced this with dual-signal completion; do not regress. [VERIFIED: src/lib/completion-detector.ts]
 - **DelegationManager as a god object:** Current 450 LOC density is already identified as a concern. [VERIFIED: .planning/codebase/CONCERNS.md] [VERIFIED: src/lib/delegation-manager.ts]
-- **PTY logic in tool wrappers:** Tool handlers should validate inputs and call orchestrators, not manage terminals.
+- **PTY logic in tool wrappers:** Tool handlers should validate inputs and call orchestrators / the shared `PtyManager`, not manage separate terminal registries.
+- **Fake PTY metadata on SDK sessions:** Reporting `executionMode: "pty"` without a real PTY process creates architectural dishonesty and broke verification. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
 - **Second lifecycle source of truth:** Remove the stub or make it a facade; do not keep two independent lifecycle managers. [VERIFIED: src/plugin.ts]
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| PTY transport | Custom pseudo-terminal wrapper | `node-pty`-based PTY manager | PTY edge cases (signals, exit handling, buffering) are already hard; use a battle-tested PTY library. [VERIFIED: npm registry] |
-| Completion heuristics | Timeout-only completion logic | Existing dual-signal completion detector | Phase 14 already solved the correctness problem more safely. [VERIFIED: src/lib/completion-detector.ts] |
+| PTY transport | Custom pseudo-terminal wrapper | `bun-pty`-based PTY manager | PTY edge cases (signals, exit handling, buffering) are already hard; use a battle-tested PTY library. [VERIFIED: npm registry] |
+| Completion heuristics | Separate PTY-only or timeout-only completion owner | DelegationManager finalization + `completion-detector`-style stability rules | Phase 14 already solved the correctness problem more safely; Plan 05 only needs DelegationManager to borrow the proven stability semantics, not invent a second owner. [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: src/lib/delegation-manager.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md] |
 | Queue scheduler | New concurrency queue | Existing keyed semaphore in `concurrency.ts` | FIFO reservations and queue release semantics already exist locally. [VERIFIED: src/lib/concurrency.ts] |
 | Background result storage | Ad hoc markdown dump logic | Existing continuity + task state layers | The project already has a dual-layer persistence model; keep it coherent. [VERIFIED: src/lib/continuity.ts] [VERIFIED: src/lib/state.ts] |
 | Parent notification channel | Custom out-of-band notifier | Existing notification handler + system message path | The harness already notifies parent sessions asynchronously. [VERIFIED: src/lib/notification-handler.ts] |
@@ -324,7 +357,8 @@ try {
 |--------------|------------------|--------------|--------|
 | Isolated background sessions | Parent-linked child sessions | Current background-agent patterns in oh-my-openagent | Restores lineage, recovery, and parity with foreground workflows. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent] |
 | Fixed timeout task expiry | Dual-signal completion without fixed timeout | Phase 14 local baseline | Reduces false completion and respects long-running delegations. [VERIFIED: src/lib/completion-detector.ts] |
-| Headless-only background tools | PTY-capable delegated execution | Current opencode-pty pattern | Enables interactive commands, stdin, and better parity with real shells. [CITED: https://github.com/shekohex/opencode-pty] |
+| Pretend PTY metadata on SDK sessions | Truthful dual-mode runtime (`sdk` for agent child sessions, `pty` for command/process surfaces) | D-04A / Plan 06 gap-closure work | Removes execution-mode dishonesty and gives PTY a reusable subsystem scope. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md] |
+| Headless-only background command tools | Shared PTY subsystem + standalone PTY tool surface | Current opencode-pty pattern + Plan 06 | Enables interactive commands, stdin, and better parity with real shells without distorting SDK agent delegations. [CITED: https://github.com/shekohex/opencode-pty] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md] |
 | Monolithic orchestrator | Orchestrator + spawner + PTY manager split | Current best fit for this codebase | Keeps modules inside the project's 500 LOC architectural rule. [VERIFIED: AGENTS.md] |
 
 **Deprecated/outdated:**
@@ -336,52 +370,49 @@ try {
 | Area | Verdict | Notes |
 |------|---------|-------|
 | Write-capable child sessions | Feasible now | Current harness already uses OpenCode session APIs and can extend child-session spawning without leaving plugin boundaries. [VERIFIED: src/lib/session-api.ts] [VERIFIED: package.json] |
-| PTY-by-default runtime | Feasible now | Node runtime is available locally and supports adding a PTY dependency. [VERIFIED: package.json] [VERIFIED: npm registry] [VERIFIED: environment] |
+| PTY-by-default command/process runtime | Feasible now | The plugin runs on the Bun runtime, and `bun-pty` is the native PTY library matching the upstream `opencode-pty` reference. PTY is the truthful default for command/process surfaces, while agent delegations remain SDK-backed per D-04A. [VERIFIED: package.json] [VERIFIED: npm registry] [VERIFIED: environment] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] |
 | DelegationManager reduction below 350 LOC | Feasible now | The main removals are spawn logic, helper duplication, and lifecycle ambiguity. [VERIFIED: src/lib/delegation-manager.ts] |
-| Full parity with builtin `task` tool | Feasible enough for Phase 16 target | Matching every builtin behavior is not required; meeting the locked parity goals plus PTY-by-default is sufficient. [VERIFIED: 16-CONTEXT.md] |
+| Full parity with builtin `task` tool | Feasible enough for Phase 16 target | Matching every builtin behavior is not required; meeting the locked parity goals plus truthful dual-mode execution is sufficient. [VERIFIED: 16-CONTEXT.md] |
 
 ## Recommended Architecture
 
-1. **Keep `delegate-task` and `delegation-status` as the public API.** Do not expand Phase 16 into a task-tool replacement effort. [VERIFIED: src/tools/delegate-task.ts] [VERIFIED: src/tools/delegation-status.ts]
-2. **Make `DelegationManager` orchestration-only.** It should own: dispatch coordination, task-state transitions, completion finalization, persistence calls, and parent notification.
-3. **Create `src/lib/spawner/`.** Minimum modules: `session-creator.ts`, `concurrency-key.ts`, `parent-directory.ts`, `pty-setup.ts`, `spawner-types.ts`. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent/spawner]
-4. **Create `src/lib/pty/`.** Minimum modules: `pty-manager.ts`, `pty-buffer.ts`, `pty-types.ts`. Use `node-pty`, not `bun-pty`, because this project is a Node package. [VERIFIED: package.json] [CITED: https://github.com/shekohex/opencode-pty]
-5. **Preserve Phase 14 completion semantics.** PTY exit, session idle, and message stability are all signals, but terminal truth remains dual-signal completion. [VERIFIED: src/lib/completion-detector.ts]
+1. **Keep `delegate-task` and `delegation-status` as the agent-delegation API, and add a standalone PTY command tool for process surfaces.** Do not expand Phase 16 into a task-tool replacement effort, but do make the PTY surface explicit and shared. [VERIFIED: src/tools/delegate-task.ts] [VERIFIED: src/tools/delegation-status.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
+2. **Make `DelegationManager` orchestration-only and single-owner for delegation completion.** It should own: dispatch coordination, task-state transitions, completion finalization, persistence calls, and parent notification. Its stability polling should borrow the reset/no-op rules from `completion-detector`, not relocate completion ownership. [VERIFIED: src/lib/delegation-manager.ts] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md]
+3. **Create `src/lib/spawner/`.** Minimum modules: `session-creator.ts`, `concurrency-key.ts`, `parent-directory.ts`, `pty-setup.ts`, `spawner-types.ts`. Use it for truthful SDK child-session spawning and PTY bootstrap plumbing, not fake PTY metadata. [CITED: https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent/spawner] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
+4. **Create / keep `src/lib/pty/` as a broader subsystem.** Minimum modules: `pty-manager.ts`, `pty-buffer.ts`, `pty-types.ts`. Use `bun-pty` (`^0.4.8`), not `node-pty`, because this project runs as a Bun-hosted OpenCode plugin. This subsystem must be shared by command delegations and the standalone PTY tool. [VERIFIED: package.json] [CITED: https://github.com/shekohex/opencode-pty] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
+5. **Preserve Phase 14 completion semantics.** PTY exit, session idle, and message stability are all signals, but terminal truth remains dual-signal completion under one owner. [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md]
 6. **Collapse lifecycle ownership.** Prefer removing the stub `HarnessLifecycleManager`; second choice is a facade that forwards directly to `DelegationManager` with no independent status logic. [VERIFIED: src/plugin.ts]
 7. **Unify text extraction now.** Move `extractAssistantText` to `helpers.ts` during the same phase because it reduces drift risk and directly supports status/report parity. [VERIFIED: src/lib/helpers.ts]
 
-## Open Questions
+## Execution Clarifications (resolved for planning)
 
-1. **Should PTY input be exposed through a new tool in Phase 16?**
-   - What we know: `opencode-pty` exposes explicit write/read tools; Phase 16 requires PTY-by-default, not necessarily a full PTY control plane. [CITED: https://github.com/shekohex/opencode-pty]
-   - What's unclear: Whether delegated agents need mid-flight interactive input from the foreground in this phase.
-   - Recommendation: Keep Phase 16 scope to PTY runtime + status visibility. Add a dedicated PTY write/read tool only if a concrete use case appears during planning.
+1. **Safety ceiling / watchdog behavior**
+   - Fixed completion timeouts remain disallowed. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md]
+   - Any runtime ceiling or watchdog added in Phase 16 must be **non-terminal**: it may mark a delegation as overdue, emit warnings, surface abort/cleanup candidates, or queue operator review, but it must **not** auto-complete, auto-fail, or otherwise replace Phase 14's dual-signal completion gate. PTY exit and watchdog expiry are signals into orchestration, not terminal truth. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-CONTEXT.md] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md]
 
-2. **What safety ceiling should replace fixed timeouts?**
-   - What we know: Fixed completion timeouts are explicitly disallowed.
-   - What's unclear: Whether a separate zombie-session cleanup threshold should exist.
-   - Recommendation: Use non-terminal watchdogs (warning/cleanup candidates) rather than timeout-based forced completion.
+2. **Minimum truthful persistence shape for execution planning**
+    - Plan 05 already requires persisted `queueKey`, `lastMessageCount`, and `stablePollCount`; Plan 06 requires truthful `executionMode` (`"sdk" | "pty" | "headless"`) plus legacy `headless` → `sdk` normalization only for old agent-history records. Real command/process PTY-unavailable fallback remains `"headless"`. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
+    - Therefore the **minimum execution record schema** for Phase 16 planning is: existing delegation identity/status fields + `queueKey: string` + `executionMode: "sdk" | "pty" | "headless"` + `workingDirectory: string` + `lastMessageCount: number` + `stablePollCount: number` + optional `ptySessionId?: string` + optional `fallbackReason?: string` + optional `safetyCeilingMs?: number` when a non-terminal watchdog is configured. `headless` is reserved for real PTY-unavailable command/process fallback, and `safetyCeilingMs` remains advisory only. This is sufficient for execution planning; no separate schema blocker remains. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md]
 
-3. **Should PTY mode be persisted on every task record?**
-   - What we know: This will simplify debugging and fallback analysis.
-   - What's unclear: Exact persistence schema shape.
-   - Recommendation: Yes — persist `executionMode`, `ptySessionId?`, and fallback reason if headless is used.
+**Closed by research / no longer blocking planning:**
+- The standalone PTY surface is in scope for Phase 16 gap closure as a dedicated command/process tool backed by the shared `PtyManager`; this is not deferred anymore. [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-06-PLAN.md] [CITED: https://github.com/shekohex/opencode-pty]
+- Plan 05 should keep completion-stability ownership in `DelegationManager` while borrowing the reset/no-op message-count semantics from `completion-detector`; no second completion owner is needed. [VERIFIED: src/lib/delegation-manager.ts] [VERIFIED: src/lib/completion-detector.ts] [VERIFIED: .planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16-05-PLAN.md]
 
 ## Environment Availability
 
 | Dependency | Required By | Available | Version | Fallback |
 |------------|------------|-----------|---------|----------|
-| Node.js | Plugin runtime, PTY integration | ✓ | `v25.9.0` | — |
+| Bun | Plugin runtime, PTY integration | ✓ | `1.3.13` | — |
+| Node.js | Background tooling / npm script compatibility | ✓ | `v25.9.0` | Not required for plugin runtime |
 | npm | Dependency install / scripts | ✓ | `11.12.1` | — |
 | npx | Tooling / verification | ✓ | `11.12.1` | — |
-| Bun | Optional reference parity with `opencode-pty` | ✓ | `1.3.13` | Not required |
-| `node-pty` package | PTY runtime implementation | ✗ installed / ✓ available on npm | `1.1.0` current registry | Headless fallback until installed |
+| `bun-pty` package | PTY runtime implementation | ✗ installed / ✓ available on npm | `^0.4.8` current registry | Headless fallback until installed |
 
 **Missing dependencies with no fallback:**
 - None.
 
 **Missing dependencies with fallback:**
-- `node-pty` is not currently installed; use headless delegation temporarily if implementation begins before installation. [VERIFIED: package.json] [VERIFIED: npm registry]
+- `bun-pty` (`^0.4.8`) is not currently installed; use headless delegation temporarily if implementation begins before installation. [VERIFIED: package.json] [VERIFIED: npm registry]
 
 ## Validation Architecture
 
@@ -390,20 +421,20 @@ try {
 |----------|-------|
 | Framework | `vitest` (`4.1.4` current registry; project configured locally) |
 | Config file | `vitest.config.ts` |
-| Quick run command | `npx vitest run tests/lib/delegation-manager.test.ts -x` |
+| Quick run command | `npx vitest run tests/lib/delegation-manager.test.ts` |
 | Full suite command | `npm test` |
 
 ### Phase Requirements → Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| D-01 | Write-capable child sessions can be spawned | integration | `npx vitest run tests/lib/spawner/session-creator.test.ts -x` | ❌ Wave 0 |
-| D-04 | Delegation chooses PTY by default and records fallback | integration | `npx vitest run tests/lib/pty/pty-manager.test.ts -x` | ❌ Wave 0 |
-| D-09 | Single lifecycle owner after cleanup | unit | `npx vitest run tests/plugins/plugin-lifecycle.test.ts -x` | ❌ Wave 0 |
+| D-01 | Write-capable child sessions can be spawned | integration | `npx vitest run tests/lib/spawner/session-creator.test.ts` | ❌ Wave 0 |
+| D-04A / D-05 | Command/process surfaces choose PTY truthfully and record fallback while agent delegations stay SDK-backed | integration | `npx vitest run tests/lib/pty/pty-manager.test.ts tests/tools/run-background-command.test.ts` | ❌ Wave 0 |
+| D-09 | Single lifecycle owner after cleanup | unit | `npx vitest run tests/plugins/plugin-lifecycle.test.ts` | ❌ Wave 0 |
 | D-10 | Shared text extraction used across code paths | unit | `npx vitest run tests/lib/helpers.test.ts -t extractAssistantText` | ⚠ existing file likely reusable |
-| D-13 / D-17 | Dual-signal completion stays authoritative | unit/integration | `npx vitest run tests/lib/completion-detector.test.ts -x` | ⚠ extend existing/nearby coverage |
+| D-13 / D-17 | Dual-signal completion stays authoritative | unit/integration | `npx vitest run tests/lib/completion-detector.test.ts` | ⚠ extend existing/nearby coverage |
 
 ### Sampling Rate
-- **Per task commit:** `npx vitest run tests/lib/spawner/**/*.test.ts tests/lib/pty/**/*.test.ts -x`
+- **Per task commit:** `npx vitest run tests/lib/spawner/**/*.test.ts tests/lib/pty/**/*.test.ts`
 - **Per wave merge:** `npm test`
 - **Phase gate:** `npm test && npm run typecheck && npm run build`
 
@@ -441,7 +472,7 @@ try {
 |---|-------|---------|---------------|
 | A1 | OpenCode permission sets can be widened safely for write-capable child sessions without host-side policy blockers | Security Domain / Recommended Architecture | Medium — planner may need an additional compatibility task |
 | A2 | No new authentication or cryptography surface is introduced by PTY-backed delegation in this phase | Security Domain | Low — could add unexpected security review work |
-| A3 | A separate PTY write/read tool can be deferred unless planning finds a concrete interactive foreground use case | Open Questions | Medium — user workflow may require extra scope |
+| A3 | The exact standalone PTY tool UX (single command tool vs split write/read helpers around the shared PtyManager) can remain a planning/detail decision | Execution Clarifications (resolved for planning) | Low — architecture stays stable as long as one shared PtyManager remains the backend |
 
 ## Sources
 
@@ -450,13 +481,13 @@ try {
 - `src/lib/completion-detector.ts` — locked dual-signal completion baseline
 - `src/lib/concurrency.ts` — existing keyed FIFO concurrency
 - `src/plugin.ts` — dual lifecycle wiring evidence
-- `package.json` — runtime, dependency, and Node target facts
+- `package.json` — runtime, dependency, and Bun-hosted plugin facts
 - `vitest.config.ts` — current test framework configuration
 - `https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent` — background-agent architecture, session-tree approach
 - `https://github.com/code-yeongyu/oh-my-openagent/tree/dev/src/features/background-agent/spawner` — spawner decomposition pattern
 - `https://github.com/shekohex/opencode-pty` — PTY manager/tool/plugin architecture
 - `https://github.com/kdcokenny/opencode-background-agents` — limitations to avoid (read-only, timeout, parity issues)
-- npm registry checks for `@opencode-ai/plugin`, `node-pty`, `zod`, `vitest`, `typescript`
+- npm registry checks for `@opencode-ai/plugin`, `bun-pty`, `zod`, `vitest`, `typescript`
 
 ### Secondary (MEDIUM confidence)
 - `.planning/codebase/ARCHITECTURE.md` — current codebase architectural summary
@@ -470,7 +501,7 @@ try {
 
 **Confidence breakdown:**
 - Standard stack: HIGH - local runtime facts and npm registry versions were verified directly.
-- Architecture: HIGH - recommendation aligns with locked local decisions plus two contrasting external architectures.
+- Architecture: HIGH - recommendation now aligns with locked local decisions, D-04A, Plans 05-06, and the external PTY/session-tree references.
 - Pitfalls: HIGH - all major pitfalls are grounded in either current local concerns or documented external failure modes.
 
 **Research date:** 2026-04-21  

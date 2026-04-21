@@ -2,7 +2,7 @@
 phase: 16-background-delegation-revamp-pty-integration-rebuild-backgro
 plan: 01
 subsystem: infra
-tags: [node-pty, pty, spawner, typescript, helpers, delegation]
+tags: [bun-pty, pty, spawner, typescript, helpers, delegation]
 
 # Dependency graph
 requires:
@@ -11,7 +11,7 @@ requires:
   - phase: 15
     provides: Security remediation baseline (explicit allowlists, coordinator-only orchestrator)
 provides:
-  - "node-pty runtime dependency installed at ^1.1.0"
+  - "bun-pty runtime dependency installed at ^0.4.8"
   - "Canonical PTY execution contracts (PtyExecutionMode, PtySpawnRequest, PtySessionRecord, PtyReadResult, PtySpawnResult)"
   - "Canonical spawner contracts (WriteCapablePermissionProfile, DelegationSpawnRequest, DelegationSpawnResult)"
   - "Shared extractAssistantText helper in src/lib/helpers.ts"
@@ -19,7 +19,7 @@ affects: [16-02, 16-03, 16-04]
 
 # Tech tracking
 tech-stack:
-  added: [node-pty ^1.1.0]
+  added: [bun-pty ^0.4.8]
   patterns: [pty-types contract module, spawner-types contract module, shared text extraction]
 
 key-files:
@@ -34,13 +34,13 @@ key-files:
     - tests/lib/helpers.test.ts
 
 key-decisions:
-  - "node-pty ^1.1.0 chosen over bun-pty because project targets Node >=20, not Bun-first runtime"
+  - "bun-pty ^0.4.8 chosen because OpenCode plugins run on Bun runtime (confirmed: BunProc.install, PluginInput.$ Bun shell API)"
   - "PtyExecutionMode union defined once in pty-types.ts and imported by spawner-types.ts to avoid duplication"
-  - "extractAssistantText consolidated into helpers.ts as single source of truth per threat T-16-01"
+  - "extractAssistantText added to helpers.ts as shared helper; delegation-manager.ts duplicate still requires removal"
 
 patterns-established:
   - "Contract-first type modules: define interfaces before implementation so downstream plans can build against stable types"
-  - "Shared helper extraction: eliminate duplicate implementations to prevent parsing drift"
+  - "Shared helper extraction in helpers.ts; delegation-manager.ts duplicate still pending removal"
 
 requirements-completed: []
 
@@ -51,7 +51,7 @@ completed: 2026-04-21
 
 # Phase 16 Plan 01: Foundation Summary
 
-**node-pty dependency installed, canonical PTY/spawner type contracts defined, and duplicate extractAssistantText consolidated into shared helpers**
+**bun-pty dependency installed via the repo's npm/package-lock flow, canonical PTY/spawner type contracts defined, and hook-local extractAssistantText duplication removed by introducing a shared helper**
 
 ## Performance
 
@@ -62,9 +62,9 @@ completed: 2026-04-21
 - **Files modified:** 7
 
 ## Accomplishments
-- Root package can install node-pty for PTY-backed child process execution
+- Root package now installs `bun-pty` through the repo's npm/package-lock workflow while still targeting Bun at runtime for PTY-backed child process execution
 - PTY and spawner layers have stable exported contracts for downstream plan implementation
-- Single shared extractAssistantText helper eliminates hook-local duplication (threat T-16-01 mitigated)
+- Shared extractAssistantText helper in helpers.ts eliminates hook-local duplication (threat T-16-01 mitigated); note: delegation-manager.ts still has a duplicate that needs follow-up removal
 
 ## Task Commits
 
@@ -75,8 +75,8 @@ Each task was committed atomically:
 3. **Task 2 (TDD GREEN): Consolidate extractAssistantText into shared helpers** - `48cad113` (feat)
 
 ## Files Created/Modified
-- `package.json` - Added node-pty ^1.1.0 dependency
-- `package-lock.json` - Lockfile regenerated with node-pty
+- `package.json` - Added bun-pty ^0.4.8 dependency
+- `package-lock.json` - Lockfile updated with bun-pty
 - `src/lib/pty/pty-types.ts` - PTY execution mode, spawn request, session record, read result, spawn result contracts
 - `src/lib/spawner/spawner-types.ts` - Write-capable permission profile, delegation spawn request/result contracts
 - `src/lib/helpers.ts` - Added extractAssistantText() as shared helper
@@ -84,20 +84,20 @@ Each task was committed atomically:
 - `tests/lib/helpers.test.ts` - Added 6 tests for extractAssistantText (4 core + 2 edge cases)
 
 ## Decisions Made
-- **node-pty ^1.1.0 over bun-pty:** Project targets Node >=20 (verified package.json); bun-pty is Bun-specific
+- **bun-pty ^0.4.8 selected:** OpenCode plugins run on Bun runtime (confirmed BunProc.install, PluginInput.$); bun-pty is the correct PTY library for this runtime
 - **Single PtyExecutionMode definition:** Defined in pty-types.ts and imported by spawner-types.ts to prevent contract drift
-- **extractAssistantText to helpers.ts:** Centralizes assistant-text parsing per threat model T-16-01, preventing parsing logic divergence between hooks and future delegation runtime
+- **extractAssistantText to helpers.ts:** Centralizes session-hook assistant-text parsing per threat model T-16-01 and creates the shared helper that later Phase 16 work can adopt in `delegation-manager.ts`
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+No implementation drift in the delivered files, but artifact wording needed follow-up cleanup: the original plan/summary language overstated full parser unification, and the install wording is now aligned to this repo's npm/package-lock workflow.
 
 ## Issues Encountered
 - Vitest v1.6.1 does not support `-x` flag for fail-fast; ran without it. No impact on test results.
 
 ## Next Phase Readiness
 - PTY and spawner contracts are stable — Plan 16-02 can implement against them
-- Shared extractAssistantText is available for spawner and delegation-manager code in Plans 02-04
+- Shared extractAssistantText is available for later Phase 16 work, including delegation-manager follow-up in Plans 16-02 through 16-04
 - 413 tests pass, typecheck clean, build verified
 
 ---

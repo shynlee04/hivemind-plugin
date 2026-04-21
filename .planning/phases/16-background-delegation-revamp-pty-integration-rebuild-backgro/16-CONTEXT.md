@@ -10,7 +10,7 @@ Rebuild background delegation to overcome all current Phase 14 limitations (read
 
 **In scope:**
 1. Write-capable background delegation (overcome read-only restriction)
-2. PTY interactive background processes as default execution mode
+2. PTY interactive background processes as a first-class execution surface, with truthful mode selection per execution path
 3. Full spawner architecture extraction (dedicated `src/lib/spawner/` directory)
 4. Targeted codebase cleanup: dual-lifecycle resolution, duplicate helper consolidation, DelegationManager decomposition
 5. Research and synthesize architecture from: oh-my-openagent (background-agent, spawner, background-task tools, background-notification hooks, tmux), opencode-background-agents (lifecycle plugin, disk persistence), opencode-pty (PTY interactive)
@@ -39,6 +39,7 @@ Rebuild background delegation to overcome all current Phase 14 limitations (read
 
 ### PTY Interactive Integration
 - **D-04:** PTY interactive processes are the DEFAULT execution mode for ALL delegations. Every delegated task runs in a PTY unless PTY is unavailable (then falls back to headless).
+- **D-04A (Verification-backed amendment):** Gap-closure work for Plans 05-06 supersedes the "for ALL delegations" wording in D-04. Agent delegations MUST use the truthful SDK child-session path when that is the actual execution path; PTY remains the default interactive runtime for command/process execution surfaces (explicit command delegations and the standalone PTY tool) using the same shared PTY subsystem and queue/safety policy. This amendment exists because verification proved the earlier PTY-for-all wording produced disconnected metadata rather than truthful execution.
 - **D-05:** The PTY integration MUST come from studying opencode-pty's architecture (`https://github.com/shekohex/opencode-pty`). The researcher must analyze how opencode-pty enables interactive input to background processes and design an integration that fits the harness plugin architecture.
 
 ### Spawner Architecture
@@ -161,7 +162,7 @@ Rebuild background delegation to overcome all current Phase 14 limitations (read
 
 - **oh-my-openagent spawner pattern** — 6-file dedicated spawner/ directory is proven at scale (30 files, ~10k LOC in background-agent feature alone). Adopt this pattern for the harness.
 - **opencode-background-agents limitations are the requirements** — the 3 explicit limitations (read-only, 15-min timeout, no undo parity) become the success criteria for Phase 16. If all 3 are overcome, Phase 16 succeeds.
-- **PTY as default** — every delegation gets interactive capability automatically. This is a differentiator over both opencode-background-agents and OpenCode's native task tool.
+- **PTY as first-class interactive runtime** — PTY remains the default for command/process execution surfaces and is shared across delegation-adjacent tooling, while SDK-backed agent delegations stay truthful about their actual child-session execution path.
 - **The user explicitly wants to "produce a superior delegate-task that rivals or surpasses OpenCode's built-in task tool"** — this is the quality bar.
 - Phase 09/12/13 produced "trash code" — Phase 16 must NOT repeat that pattern. Clean, well-structured, well-tested code only.
 - The user's prompt-2026-04-21.md contains detailed repo links, AGENTS.md excerpts from oh-my-openagent, and specific areas to investigate. The researcher MUST use this as primary input.
