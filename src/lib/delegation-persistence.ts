@@ -52,6 +52,7 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     workingDirectory: typeof record.workingDirectory === "string" ? record.workingDirectory : process.cwd(),
     ptySessionId: typeof record.ptySessionId === "string" ? record.ptySessionId : undefined,
     fallbackReason: typeof record.fallbackReason === "string" ? record.fallbackReason : undefined,
+    queueKey: typeof record.queueKey === "string" ? record.queueKey : "",
   }
 }
 

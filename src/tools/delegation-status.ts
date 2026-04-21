@@ -50,6 +50,7 @@ export function createDelegationStatusTool(
             workingDirectory: delegation.workingDirectory,
             ptySessionId: delegation.ptySessionId,
             fallbackReason: delegation.fallbackReason,
+            queueKey: delegation.queueKey,
           }))
         }
 

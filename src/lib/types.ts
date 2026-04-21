@@ -364,6 +364,7 @@ export interface Delegation {
   workingDirectory: string
   ptySessionId?: string
   fallbackReason?: string
+  queueKey: string
 }
 
 export interface DelegationResult {
@@ -375,6 +376,7 @@ export interface DelegationResult {
   workingDirectory?: string
   ptySessionId?: string
   fallbackReason?: string
+  queueKey?: string
 }
 
 /** Safety ceiling — MAX runtime, not a deadline. Tasks may complete faster. */

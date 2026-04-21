@@ -246,8 +246,9 @@ describe("delegate-task tool", () => {
     }
     const manager = new DelegationManager(client as never)
     const tool = createDelegateTaskTool(manager)
+    const integrationCtx = { ...mockCtx, sessionID: "ses-parent-session" }
 
-    const raw = await tool.execute({ agent: "builder", prompt: "ship queue key" } as never, mockCtx)
+    const raw = await tool.execute({ agent: "builder", prompt: "ship queue key" } as never, integrationCtx)
     const result = parseResult(raw)
     const data = result.data as Record<string, unknown>
 

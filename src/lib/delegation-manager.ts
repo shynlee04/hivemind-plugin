@@ -123,6 +123,7 @@ export class DelegationManager {
         workingDirectory: runtime.workingDirectory,
         ptySessionId: runtime.ptySessionId,
         fallbackReason: runtime.fallbackReason,
+        queueKey: acquireQueueKey,
       }
 
       this.registerDelegation(delegation)
@@ -167,6 +168,7 @@ export class DelegationManager {
         workingDirectory: delegation.workingDirectory,
         ptySessionId: delegation.ptySessionId,
         fallbackReason: delegation.fallbackReason,
+        queueKey: delegation.queueKey,
       }
     } finally {
       release()
