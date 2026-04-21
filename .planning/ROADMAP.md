@@ -252,13 +252,15 @@ Plans:
 **Goal:** Write-capable background delegations run through parent-linked PTY-first child sessions with extracted spawner modules, truthful single-owner lifecycle orchestration, and status polling that preserves WaiterModel + dual-signal completion semantics.
 **Requirements**: TBD
 **Depends on:** Phase 15
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 16-01-PLAN.md — add bun-pty dependency, canonical PTY/spawner contracts, and shared assistant-text extraction foundation
 - [x] 16-02-PLAN.md — build and test the PTY manager + bounded PTY buffer subsystem
-- [ ] 16-03-PLAN.md — build and test the dedicated spawner subsystem (session creator, directory resolver, key resolver, PTY-first setup)
-- [ ] 16-04-PLAN.md — integrate spawner + PTY into DelegationManager, collapse lifecycle ambiguity, and expose execution metadata through tools/plugin
+- [x] 16-03-PLAN.md — build and test the dedicated spawner subsystem (session creator, directory resolver, key resolver, PTY-first setup)
+- [x] 16-04-PLAN.md — integrate spawner + PTY into DelegationManager, collapse lifecycle ambiguity, and expose execution metadata through tools/plugin
+
+**Execution status:** READY FOR VERIFICATION. All 4 Phase 16 plans are complete; 16-04 landed live canonical queue-key adoption, truthful execution metadata, and lifecycle-facade cleanup with `npm test && npm run typecheck && npm run build` passing.
 
 ---
 
