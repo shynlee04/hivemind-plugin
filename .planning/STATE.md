@@ -172,6 +172,12 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 
 - None active. The next task is planning/verification choice, not an unresolved blocker.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260421-u9n | Update AGENTS.md files to match current codebase state | 2026-04-21 | 82572ba9 | [260421-u9n-update-agents-md-files-to-match-current-](./quick/260421-u9n-update-agents-md-files-to-match-current-/) |
+
 ## Session Continuity
 
 **Worktree:** `/Users/apple/hivemind-plugin/.worktrees/harness-experiment`
