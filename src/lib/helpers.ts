@@ -211,3 +211,47 @@ export function buildPromptText(args: {
 
   return [task, expectedOutcome, requiredToolsSection, mustDo, mustNotDo, context].join("\n---\n") + sessionSection
 }
+
+/**
+ * Extract text content from ALL assistant messages in an array, joined with newline.
+ *
+ * Unlike {@link extractAssistantText} which returns only the LAST assistant message,
+ * this collects text from every assistant message — suitable for delegation result
+ * extraction where the full assistant output is needed.
+ */
+export function extractAllAssistantText(messages: unknown[]): string {
+  const textParts: string[] = []
+
+  for (const message of messages) {
+    const role =
+      asString(getNestedValue(message, ["info", "role"])) ??
+      asString(getNestedValue(message, ["role"]))
+
+    if (role !== "assistant") {
+      continue
+    }
+
+    const parts = getNestedValue(message, ["parts"])
+    if (!Array.isArray(parts)) {
+      continue
+    }
+
+    for (const part of parts) {
+      if (getNestedValue(part, ["type"]) === "text") {
+        const text = getNestedValue(part, ["text"])
+        if (typeof text === "string") {
+          textParts.push(text)
+        }
+      }
+    }
+  }
+
+  return textParts.join("\n")
+}
+
+/**
+ * Convert an unknown error value to a human-readable string message.
+ */
+export function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
