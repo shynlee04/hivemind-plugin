@@ -21,9 +21,9 @@ describe("startDelegationRuntime", () => {
     }
 
     await expect(
-      startDelegationRuntime({ ptyManager, request, spawnHeadless }),
+      startDelegationRuntime({ childSessionId: "ses_child_1", ptyManager, request, spawnHeadless }),
     ).resolves.toEqual({
-      childSessionId: "pty-session-1",
+      childSessionId: "ses_child_1",
       executionMode: "pty",
       workingDirectory: "/tmp/worktree",
       ptySessionId: "pty-session-1",
@@ -50,7 +50,7 @@ describe("startDelegationRuntime", () => {
     }
 
     await expect(
-      startDelegationRuntime({ ptyManager, request, spawnHeadless }),
+      startDelegationRuntime({ childSessionId: "ses_child_2", ptyManager, request, spawnHeadless }),
     ).resolves.toEqual({
       childSessionId: "ses_child_2",
       executionMode: "headless",
