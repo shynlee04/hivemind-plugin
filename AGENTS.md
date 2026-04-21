@@ -52,7 +52,7 @@ HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm packa
 
 ### Runtime features this project delivers
 
-Background agents, auto-loop/ralph-loop, delegation chain with task persistence, task queuing, category system, session recovery. See `docs/draft/architecture-proposal-hivemind-v3.md` for feature-to-code mapping.
+Background agents, auto-loop/ralph-loop, WaiterModel delegation with dual-signal completion, task queuing with queue-key validation, category system, session recovery, PTY integration (lazy-loaded bun-pty with graceful fallback). See `docs/draft/architecture-proposal-hivemind-v3.md` for feature-to-code mapping.
 
 ---
 
@@ -93,14 +93,21 @@ src/
     ├── state.ts               # In-memory Maps (sessionStats, rootBudgets)
     ├── helpers.ts             # Pure utilities only
     ├── concurrency.ts         # Keyed semaphore (FIFO queue)
-    ├── continuity.ts          # Durable JSON persistence (~635 LOC)
+    ├── continuity.ts          # Durable JSON persistence (~401 LOC)
     ├── session-api.ts         # Typed OpenCode SDK wrappers
     ├── runtime.ts             # Event→status mapping
     ├── completion-detector.ts # Two-signal completion detection
     ├── notification-handler.ts # Async completion notification
-    ├── lifecycle-manager.ts   # Session lifecycle state machine (~500 LOC)
+    ├── lifecycle-manager.ts   # Session lifecycle state machine (~152 LOC, STUB)
     ├── runtime-policy.ts      # Trusted runtime policy loading and resolution
-    └── delegation-manager.ts  # Core delegation orchestrator
+    ├── delegation-manager.ts  # Core delegation orchestrator
+    └── delegation-persistence.ts # Delegation record persistence helper
+shared/                      # Cross-cutting tool utilities
+    ├── tool-response.ts      # Standard tool response envelope
+    └── tool-helpers.ts       # Tool helper conventions
+schema-kernel/                # Zod schemas for prompt-enhance pipeline
+    ├── index.ts              # Schema re-exports
+    └── prompt-enhance.schema.ts  # Prompt skim/analyze/patch schemas
 
 tests/lib/                     # Unit tests (vitest, globals: true)
 tests/tools/                   # Tool-focused unit tests
@@ -114,6 +121,7 @@ tests/tools/                   # Tool-focused unit tests
 - `lifecycle-manager.ts` depends on most modules (deepest chain: 2 levels)
 - No circular dependencies
 - Max module size: 500 LOC
+- `delegation-persistence.ts` — depends on `types.ts`, `continuity.ts` (delegation record I/O)
 
 ### Where to find things
 
@@ -130,6 +138,9 @@ tests/tools/                   # Tool-focused unit tests
 | Change task status transitions | `src/lib/task-status.ts` |
 | Change agent config (temperature, tools) | `src/plugin.ts` — `AGENT_DEFAULTS`, `AGENT_TOOLS` |
 | Change circuit breaker / tool budget | `src/plugin.ts` — `CIRCUIT_BREAKER_THRESHOLD`, `MAX_TOOL_CALLS_PER_SESSION` |
+| Persist delegation records | `src/lib/delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
+| Change tool response envelope | `src/shared/tool-response.ts` — standard response wrapper |
+| Change prompt-enhance schemas | `src/schema-kernel/prompt-enhance.schema.ts` — Zod schemas for skim/analyze/patch |
 
 ---
 
@@ -174,9 +185,9 @@ tests/tools/                   # Tool-focused unit tests
 
 - Plugin loaded via `.opencode/plugins/harness-control-plane.ts` (thin wrapper re-exporting `dist/`)
 - Config: `opencode.json` at repo root — references `AGENTS.md` as instructions
-- 6 agents defined in `.opencode/agents/`: coordinator, conductor, researcher, builder, critic, explore
-- 5 skills in `.opencode/skills/`: meta-builder, user-intent-interactive-loop, coordinating-loop, planning-with-files, use-authoring-skills
-- 6 commands in `.opencode/commands/`: start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork
+- 57 agents in `.opencode/agents/`: 6 core (coordinator, conductor, researcher, builder, critic, explore) + 30+ GSD specialist agents + 21 hivefiver/meta agents
+- 22 skills in `.opencode/skills/`: 5 core (meta-builder, coordinating-loop, planning-with-files, use-authoring-skills, user-intent-interactive-loop) + 17 extended (agent-authorization, command-dev, custom-tools-dev, harness-audit, hm-deep-research, hm-detective, hm-synthesis, hf-context-absorb, gsd-agent-composition, agents-and-subagents-dev, command-parser, harness-delegation-inspection, oh-my-openagent-reference, opencode-non-interactive-shell, opencode-platform-reference, session-context-manager, phase-loop)
+- 13 commands in `.opencode/commands/`: 6 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack, harness-audit)
 
 ---
 
