@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { buildDelegationQueueKey } from "../../src/lib/concurrency.js"
 import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import {
@@ -195,6 +196,39 @@ describe("DelegationManager", () => {
         undefined,
         undefined,
       )
+    })
+
+    it("persists canonical queueKey on the stored delegation record and returns it from dispatch", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [
+          {
+            name: "builder",
+            model: "claude-3-5-sonnet",
+            provider: "anthropic",
+            category: "implementation",
+          },
+        ],
+      })
+      const manager = new DelegationManager(client as never)
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-queuekey",
+        agent: "builder",
+        prompt: "persist queue key",
+      })
+
+      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
+      const expectedQueueKey = buildDelegationQueueKey({
+        provider: "anthropic",
+        model: "claude-3-5-sonnet",
+        agent: "builder",
+        category: "implementation",
+      })
+
+      expect(persisted[0]?.queueKey).toBe(expectedQueueKey)
+      expect(manager.getStatus(result.delegationId)?.queueKey).toBe(expectedQueueKey)
+      expect(result.queueKey).toBe(expectedQueueKey)
     })
 
     it("uses canonical fallback semantics from concurrency.ts when only agent/category metadata exists", async () => {
@@ -876,6 +910,34 @@ describe("DelegationManager", () => {
   // ---------------------------------------------------------------------------
 
   describe("recovery", () => {
+    it("normalizes persisted delegations that predate queueKey with an empty-string default", async () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      writeFileSync(
+        getDelegationsFile(stateDir),
+        `${JSON.stringify([
+          {
+            id: "legacy-del-1",
+            parentSessionId: "ses-parent-legacy",
+            childSessionId: "child-legacy",
+            agent: "builder",
+            status: "completed",
+            createdAt: Date.now(),
+            executionMode: "headless",
+            workingDirectory: process.cwd(),
+            lastMessageCount: 0,
+            stablePollCount: 0,
+          },
+        ])}\n`,
+        "utf-8",
+      )
+
+      await manager.recoverPending()
+
+      expect(manager.getStatus("legacy-del-1")?.queueKey).toBe("")
+    })
+
     it("restores running delegations from disk and re-registers them", async () => {
       const now = Date.now()
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([

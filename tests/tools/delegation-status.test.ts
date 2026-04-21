@@ -30,6 +30,7 @@ function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
     stablePollCount: 0,
     executionMode: "headless",
     workingDirectory: process.cwd(),
+    queueKey: "agent:builder",
     ...overrides,
   }
 }
@@ -170,13 +171,14 @@ describe("delegation-status tool", () => {
     expect(data.completedAt).toBe(now)
   })
 
-   it("includes execution metadata fields in single-delegation responses", async () => {
+  it("includes execution metadata fields in single-delegation responses", async () => {
     const delegation = makeDelegation({
       id: "del-runtime",
       executionMode: "pty",
       workingDirectory: "/tmp/runtime-child",
       ptySessionId: "pty-123",
       fallbackReason: "pty unsupported",
+      queueKey: "provider:anthropic:model:claude-3-5-sonnet",
     })
     const manager = createManagerStub([delegation])
     const tool = createDelegationStatusTool(manager as never)
@@ -189,6 +191,7 @@ describe("delegation-status tool", () => {
     expect(data.workingDirectory).toBe("/tmp/runtime-child")
     expect(data.ptySessionId).toBe("pty-123")
     expect(data.fallbackReason).toBe("pty unsupported")
+    expect(data.queueKey).toBe("provider:anthropic:model:claude-3-5-sonnet")
   })
 
   // ---------------------------------------------------------------------------
@@ -265,6 +268,7 @@ describe("delegation-status tool", () => {
         executionMode: "headless",
         workingDirectory: "/tmp/list-child",
         fallbackReason: "pty unavailable",
+        queueKey: "provider:anthropic:model:gpt-5-mini",
       }),
     ]
     const manager = createManagerStub(delegations)
@@ -277,6 +281,7 @@ describe("delegation-status tool", () => {
     expect(data[0]?.executionMode).toBe("headless")
     expect(data[0]?.workingDirectory).toBe("/tmp/list-child")
     expect(data[0]?.fallbackReason).toBe("pty unavailable")
+    expect(data[0]?.queueKey).toBe("provider:anthropic:model:gpt-5-mini")
   })
 
   // ---------------------------------------------------------------------------

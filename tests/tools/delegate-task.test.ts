@@ -29,6 +29,7 @@ function createManagerStub(): ToolManagerStub {
       delegationId: "delegation-dispatch-123",
       executionMode: "pty",
       workingDirectory: "/tmp/harness-child",
+      queueKey: "provider:anthropic:model:claude-3-5-sonnet",
     }),
   }
 }
@@ -108,6 +109,7 @@ describe("delegate-task tool", () => {
       delegationId: "delegation-dispatch-123",
       executionMode: "pty",
       workingDirectory: "/tmp/harness-child",
+      queueKey: "provider:anthropic:model:claude-3-5-sonnet",
     })
   })
 
@@ -216,6 +218,42 @@ describe("delegate-task tool", () => {
     expect((result.data as Record<string, unknown>)?.status).toBe("dispatched")
     expect((result.data as Record<string, unknown>)?.executionMode).toBe("pty")
     expect((result.data as Record<string, unknown>)?.workingDirectory).toBe("/tmp/harness-child")
+    expect((result.data as Record<string, unknown>)?.queueKey).toBe("provider:anthropic:model:claude-3-5-sonnet")
+  })
+
+  it("surfaces queueKey through the public delegate-task tool using a real DelegationManager", async () => {
+    const client = {
+      session: {
+        create: vi.fn().mockResolvedValue({ data: { id: "child-real-queue" } }),
+        prompt: vi.fn().mockResolvedValue(undefined),
+        status: vi.fn().mockResolvedValue({ data: {} }),
+        messages: vi.fn().mockResolvedValue({
+          data: [{ role: "assistant", parts: [{ type: "text", text: "done" }] }],
+        }),
+      },
+      app: {
+        agents: vi.fn().mockResolvedValue({
+          data: [
+            {
+              name: "builder",
+              provider: "anthropic",
+              model: "claude-3-5-sonnet",
+              category: "implementation",
+            },
+          ],
+        }),
+      },
+    }
+    const manager = new DelegationManager(client as never)
+    const tool = createDelegateTaskTool(manager)
+
+    const raw = await tool.execute({ agent: "builder", prompt: "ship queue key" } as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Record<string, unknown>
+
+    expect(result.kind).toBe("success")
+    expect(data.queueKey).toBe("provider:anthropic:model:claude-3-5-sonnet")
+    expect(manager.getStatus(String(data.delegationId))?.queueKey).toBe("provider:anthropic:model:claude-3-5-sonnet")
   })
 
   it("returns error response when DelegationManager.dispatch() throws with [Harness] prefix", async () => {
