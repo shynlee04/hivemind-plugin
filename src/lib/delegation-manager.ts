@@ -226,7 +226,9 @@ export class DelegationManager {
 
   /**
    * Recover pending delegations from disk on plugin load.
-   * Re-registers running delegations and checks their session status.
+   * Re-registers dispatched and running delegations and reconciles their
+   * child-session state before resuming polling, scheduling safety ceilings,
+   * or failing closed.
    */
   async recoverPending(): Promise<void> {
     const persistedDelegations = readPersistedDelegations()
@@ -235,7 +237,7 @@ export class DelegationManager {
       // Register all delegations in memory
       this.delegations.set(delegation.id, { ...delegation })
 
-      if (delegation.status !== "running") {
+      if (delegation.status !== "running" && delegation.status !== "dispatched") {
         continue
       }
 
