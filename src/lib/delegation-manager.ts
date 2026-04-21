@@ -499,6 +499,7 @@ export class DelegationManager {
       env: this.buildRuntimeEnv(),
     }
     const runtime = await startDelegationRuntime({
+      childSessionId: args.childSessionId,
       ptyManager: await this.resolveRuntimePtyManager(),
       request: runtimeRequest,
       spawnHeadless: async () => ({ childSessionId: args.childSessionId }),

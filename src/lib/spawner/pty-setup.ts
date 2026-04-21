@@ -7,6 +7,7 @@ type SpawnHeadlessResult = {
 }
 
 type StartDelegationRuntimeArgs = {
+  childSessionId: string
   ptyManager: Pick<PtyManager, "spawn">
   request: PtySpawnRequest
   spawnHeadless: () => Promise<SpawnHeadlessResult>
@@ -18,7 +19,7 @@ export async function startDelegationRuntime(
   try {
     const ptySession = args.ptyManager.spawn(args.request)
     return {
-      childSessionId: ptySession.id,
+      childSessionId: args.childSessionId,
       executionMode: "pty",
       workingDirectory: ptySession.cwd,
       ptySessionId: ptySession.id,
