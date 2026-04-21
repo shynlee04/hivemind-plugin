@@ -2,9 +2,13 @@ import { describe, expect, it, vi } from "vitest"
 
 const createSession = vi.fn()
 
-vi.mock("../../../src/lib/session-api.js", () => ({
-  createSession,
-}))
+vi.mock("../../../src/lib/session-api.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../src/lib/session-api.js")>()
+  return {
+    ...actual,
+    createSession,
+  }
+})
 
 describe("spawnDelegatedSession", () => {
   it("creates a parent-linked child session with the write-capable permission profile", async () => {
