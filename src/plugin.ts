@@ -23,7 +23,7 @@ import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
 
-export const HarnessControlPlane: Plugin = async ({ client }) => {
+export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // Load workspace-level runtime policy once at startup.
   const runtimePolicy = loadRuntimePolicy()
   const delegationManager = new DelegationManager(client)
@@ -67,9 +67,9 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
       "delegation-status": createDelegationStatusTool(delegationManager),
-      "prompt-skim": createPromptSkimTool(process.cwd()),
-      "prompt-analyze": createPromptAnalyzeTool(process.cwd()),
-      "session-patch": createSessionPatchTool(process.cwd()),
+      "prompt-skim": createPromptSkimTool(directory),
+      "prompt-analyze": createPromptAnalyzeTool(directory),
+      "session-patch": createSessionPatchTool(directory),
     },
   }
 }
