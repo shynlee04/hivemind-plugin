@@ -14,7 +14,11 @@ const DelegateTaskInputSchema = z.object({
 
 type DelegateTaskInput = z.infer<typeof DelegateTaskInputSchema>
 
-type ToolContext = { sessionID?: string }
+type ToolContext = {
+  sessionID?: string
+  directory?: string
+  worktree?: string
+}
 
 export function createDelegateTaskTool(
   delegationManager: DelegationManager,
@@ -46,6 +50,8 @@ export function createDelegateTaskTool(
           prompt: args.prompt,
           title: args.title,
           safetyCeilingMs: args.safetyCeilingMs,
+          workingDirectory: context.directory,
+          worktree: context.worktree,
         })
 
         return renderToolResult(success(`Delegation dispatched to ${args.agent}`, result))

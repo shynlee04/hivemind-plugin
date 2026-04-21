@@ -28,6 +28,8 @@ function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
     safetyCeilingMs: 180_000,
     lastMessageCount: 0,
     stablePollCount: 0,
+    executionMode: "headless",
+    workingDirectory: process.cwd(),
     ...overrides,
   }
 }

@@ -46,6 +46,10 @@ export function createDelegationStatusTool(
             error: delegation.error,
             createdAt: delegation.createdAt,
             completedAt: delegation.completedAt,
+            executionMode: delegation.executionMode,
+            workingDirectory: delegation.workingDirectory,
+            ptySessionId: delegation.ptySessionId,
+            fallbackReason: delegation.fallbackReason,
           }))
         }
 

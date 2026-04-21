@@ -1,14 +1,17 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 
 function createPluginClient() {
   return {
     session: {
+      create: vi.fn().mockResolvedValue({ data: { id: "child-session" } }),
       status: vi.fn().mockResolvedValue({ data: {} }),
       abort: vi.fn().mockResolvedValue(undefined),
       prompt: vi.fn().mockResolvedValue(undefined),
+      messages: vi.fn().mockResolvedValue({ data: [] }),
     },
     app: {
       agents: vi.fn().mockResolvedValue({
@@ -33,10 +36,11 @@ describe("plugin lifecycle wiring", () => {
     const lifecycle = createHarnessLifecycleManager({
       client: createPluginClient() as never,
       pollTimeoutMs: 180_000,
+      delegationManager: new DelegationManager(createPluginClient() as never),
     })
 
     await expect(lifecycle.launchDelegatedSession({
-      sessionID: "parent-session",
+      sessionID: "ses-parent-session",
       description: "delegate work",
       agent: "builder",
       promptText: "ship it",

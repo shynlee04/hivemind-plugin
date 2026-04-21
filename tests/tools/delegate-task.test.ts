@@ -93,13 +93,15 @@ describe("delegate-task tool", () => {
     const raw = await tool.execute({ agent: "builder", prompt: "ship it" } as never, mockCtx)
     const result = parseResult(raw)
 
-    expect(manager.dispatch).toHaveBeenCalledWith({
+    expect(manager.dispatch).toHaveBeenCalledWith(expect.objectContaining({
       parentSessionId: "parent-session",
       agent: "builder",
       prompt: "ship it",
       title: undefined,
       safetyCeilingMs: undefined,
-    })
+      workingDirectory: process.cwd(),
+      worktree: process.cwd(),
+    }))
     expect(result.kind).toBe("success")
     expect(result.data).toEqual({
       status: "dispatched",

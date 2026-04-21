@@ -33,6 +33,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     client,
     pollTimeoutMs: WATCH_TIMEOUT_MS,
     runtimePolicy,
+    delegationManager,
   })
   lifecycleManager.hydrateFromContinuity()
 

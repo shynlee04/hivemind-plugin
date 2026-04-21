@@ -6,6 +6,7 @@
  */
 import { CompletionDetector } from "./completion-detector.js"
 import { getSessionContinuity, listSessionContinuity, patchSessionContinuity } from "./continuity.js"
+import type { DelegationManager } from "./delegation-manager.js"
 import type { OpenCodeClient } from "./session-api.js"
 import { hydrateDelegationState, taskState } from "./state.js"
 import type {
@@ -20,6 +21,7 @@ type HarnessLifecycleManagerOptions = {
   pollTimeoutMs: number
   runtimePolicy?: RuntimePolicy
   backgroundManager?: unknown
+  delegationManager?: DelegationManager
 }
 
 export type LaunchDelegatedSessionArgs = {
@@ -44,9 +46,11 @@ export class HarnessLifecycleManager {
   private readonly concurrencyLimit: number
   private readonly completionDetector = new CompletionDetector()
   private readonly client: OpenCodeClient
+  private readonly delegationManager?: DelegationManager
 
   constructor(options: HarnessLifecycleManagerOptions) {
     this.client = options.client
+    this.delegationManager = options.delegationManager
     this.concurrencyLimit = parseInt(process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3", 10)
     if (Number.isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
       this.concurrencyLimit = 3
@@ -119,8 +123,21 @@ export class HarnessLifecycleManager {
     taskState.resetStats(sessionID)
   }
 
-  async launchDelegatedSession(_args: LaunchDelegatedSessionArgs): Promise<string> {
-    throw new Error("[Harness] launchDelegatedSession not yet restored — see Plan 14-02 (DelegationManager)")
+  async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
+    if (!this.delegationManager) {
+      throw new Error("[Harness] DelegationManager is required for launchDelegatedSession facade")
+    }
+
+    const result = await this.delegationManager.dispatch({
+      parentSessionId: args.parentSessionID ?? args.sessionID,
+      agent: args.agent,
+      prompt: args.promptText,
+      title: args.description,
+      category: args.category,
+      model: args.model,
+    })
+
+    return result.delegationId
   }
 
   getCompletionDetector(): CompletionDetector {
