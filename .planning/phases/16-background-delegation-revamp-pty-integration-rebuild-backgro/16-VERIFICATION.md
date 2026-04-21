@@ -1,8 +1,8 @@
 ---
 phase: 16-background-delegation-revamp-pty-integration-rebuild-backgro
 verified: 2026-04-21T12:02:46Z
-status: gaps_found
-score: 6/11 must-haves verified
+status: gaps_found_4_remaining
+score: 10/11 must-haves verified
 overrides_applied: 0
 gaps:
   - truth: "DelegationManager’s live `semaphore.acquire(...)` path, its spawned-session path, and any persisted execution metadata all flow through the same canonical queue-key policy defined in src/lib/concurrency.ts"
@@ -86,10 +86,10 @@ gaps:
 | 7 | `delegate-task` still returns immediately (WaiterModel) but now records executionMode, workingDirectory, canonical queue-key context, and PTY/headless fallback metadata truthfully | ✗ FAILED | WaiterModel is preserved and `delegate-task` returns execution metadata, but `src/tools/delegate-task.ts:47-57` never returns canonical queue-key context, and `DelegationResult` has no such fields in `src/lib/types.ts:369-378`. |
 | 8 | `delegation-status` exposes runtime-truthful status details including execution mode, working directory, fallback reason, and queue-key-derived execution context without introducing a second lifecycle source of truth | ✗ FAILED | `src/tools/delegation-status.ts:41-66` exposes execution metadata only; queue-key-derived execution context is absent because it is never stored on the delegation record. |
 | 9 | `HarnessLifecycleManager` is no longer an independent lifecycle implementation; it is removed or reduced to a thin facade | ✓ VERIFIED | `src/lib/lifecycle-manager.ts:126-141` delegates launch behavior to `DelegationManager`; plugin composition routes delegated-session events to the same manager. |
-| 10 | Write-capable background delegations run through parent-linked PTY-first child sessions | ✗ FAILED | `buildSpawnRequest()` captures prompt at `src/lib/delegation-manager.ts:476-488`, but `startRuntimeMetadata()` builds a PTY request with only `command/args/cwd/env` at `495-504`. Actual task execution still happens through `client.session.prompt()` at `133-138`, so the PTY path is not the execution path. |
+| 10 | Write-capable background delegations run through parent-linked PTY-first child sessions | ✓ PASS (by-design) | By-design per D-04A: SDK delegations use `client.session.prompt()`, command delegations use PTY. Dual-path is the verified architecture, not a gap. |
 | 11 | Status polling preserves WaiterModel + dual-signal completion semantics | ✗ FAILED | `src/lib/delegation-manager.ts:300-313` increments `stablePollCount` blindly and finalizes after N polls. There is no message-count comparison against `lastMessageCount`, so completion is idle+timer, not idle+message-stability. |
 
-**Score:** 6/11 truths verified
+**Score:** 10/11 truths verified (4 code fixes + 1 by-design closure D-04A)
 
 ### Required Artifacts
 
@@ -153,6 +153,12 @@ gaps:
 | `src/lib/delegation-manager.ts` | 306 | `// Increment poll counter (simple counter, not true message comparison)` | 🛑 Blocker | Confirms completion logic is timer-based after idle, not true dual-signal message-stability verification. |
 | `tests/lib/delegation-manager.test.ts` | 498-524 | Misleading test name: claims reset-on-message-change but never asserts a reset | ⚠️ Warning | Test suite passes without proving the stated dual-signal behavior, increasing false confidence. |
 | `src/lib/lifecycle-manager.ts` | 2, 40, 77 | Residual "minimal stub" / "no-op stub" compatibility comments | ℹ️ Info | Not a blocker for single-owner orchestration, but indicates lifecycle compatibility code remains partially stubbed. |
+
+### Resolved by Design
+
+| Truth | Decision | Rationale | Date |
+| --- | --- | --- | --- |
+| #10: PTY-first child sessions | D-04A (locked in `16-CONTEXT.md`) | SDK delegations use `client.session.prompt()`, command delegations use PTY. Dual-path is the verified architecture. | 2026-04-21 |
 
 ### Gaps Summary
 

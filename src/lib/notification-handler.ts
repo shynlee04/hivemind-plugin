@@ -1,3 +1,13 @@
+/**
+ * @deprecated This module is NOT imported by any active delegation path.
+ * WaiterModel uses stability polling + message-count detection (see SdkDelegationHandler)
+ * instead of push notifications. This module is retained for potential future
+ * re-integration if push notification semantics are needed. If not used by Phase 20,
+ * remove entirely.
+ *
+ * Audit: G-01 closed as by-design (2026-04-21)
+ */
+
 import type { OpenCodeClient } from "./session-api.js"
 import type { SessionContinuityRecord, TaskNotification } from "./types.js"
 
