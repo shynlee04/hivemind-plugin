@@ -6,13 +6,14 @@ Business logic layer for the harness control plane. All modules are imported by 
 
 | Module | LOC | Role | Key Exports |
 |--------|-----|------|-------------|
-| `continuity.ts` | ~635 | Durable JSON persistence + normalization + deep-clone | `getSessionContinuity`, `recordSessionContinuity`, `patchSessionContinuity`, `hydrateFromContinuity` |
-| `lifecycle-manager.ts` | ~500 | Session lifecycle: create→queue→dispatch→run→complete/error + CompletionDetector integration | `createHarnessLifecycleManager`, `launchDelegatedSession`, `handleEvent`, `cancelDelegatedSession` |
+| `continuity.ts` | ~401 | Durable JSON persistence + normalization + deep-clone | `getSessionContinuity`, `recordSessionContinuity`, `patchSessionContinuity`, `hydrateFromContinuity` |
+| `lifecycle-manager.ts` | ~152 | Session lifecycle state machine — STUB (launchDelegatedSession() throws, pending restoration). Currently provides: isValidTransition(), hydrateFromContinuity(), handleEvent(), cancelDelegatedSession() | `createHarnessLifecycleManager`, `launchDelegatedSession`, `handleEvent`, `cancelDelegatedSession` |
 | `session-api.ts` | ~109 | Typed OpenCode SDK wrappers (no multi-path fallback, no completion detection) | `createSession`, `getSession`, `abortSession`, `getSessionMessages`, `sendPrompt`, `getSessionID`, `getParentID`, `getEventSessionID`, `getEventParentID`, `walkParentChain` |
 | `completion-detector.ts` | ~120 | Two-signal completion detection: session.idle + stability timer | `CompletionDetector` class with `feed()`, `watch()`, `cancel()`, `feedMessageCount()` |
 | `notification-handler.ts` | ~100 | Notification flow for async completion | `buildNotificationMessage`, `notifyParentSession` |
 | `task-status.ts` | ~100 | Task status type system + transition guards | `TaskStatus`, `canTransition()`, `isTerminal()`, `VALID_TRANSITIONS` |
-| `helpers.ts` | ~107 | Pure utilities only (no agent config) | `isObject`, `asString`, `getNestedValue`, `unwrapData`, `stableStringify`, `makeToolSignature`, `buildPromptText`, `getPromptToolCompatibility` |
+| `delegation-persistence.ts` | ~78 | Delegation record persistence helper (extracted from delegation-manager) | `getDelegationsFilePath`, `persistDelegations`, `readPersistedDelegations` |
+| `helpers.ts` | ~107 | Pure utilities only (no agent config) | `isObject`, `asString`, `getNestedValue`, `unwrapData`, `stableStringify`, `makeToolSignature`, `buildPromptText`, `getPromptToolCompatibility`, `extractSdkErrorMessage` |
 | `runtime.ts` | ~43 | Event→status mapping only (platform handles agent/model/temperature) | `inferContinuityStatusFromEvent` |
 | `state.ts` | ~106 | In-memory Maps: sessionStats, rootBudgets, sessionToRoot, sessionDelegationMeta | `ensureSessionStats`, `reserveDescendant`, `getDelegationMeta`, `setDelegationMeta` |
 | `concurrency.ts` | ~98 | Keyed semaphore (FIFO queue per model+agent+category key) | `DelegationConcurrencyQueue`, `buildDelegationQueueKey` |
@@ -27,11 +28,14 @@ types.ts (leaf — no imports)
 ├── helpers.ts → types.ts
 ├── concurrency.ts (self-contained — no imports)
 ├── continuity.ts → types.ts
+├── delegation-persistence.ts → types.ts, continuity.ts
 ├── session-api.ts → helpers.ts
 ├── runtime.ts → helpers.ts + types.ts
 ├── completion-detector.ts (self-contained — no imports)
 ├── notification-handler.ts → helpers.ts
 └── lifecycle-manager.ts → concurrency.ts + continuity.ts + helpers.ts + session-api.ts + state.ts + types.ts
+
+delegation-manager.ts → concurrency.ts + continuity.ts + delegation-persistence.ts + helpers.ts + types.ts, @opencode-ai/sdk
 ```
 
 **Max chain:** 2 levels. `types.ts` changes ripple to most modules.
@@ -47,6 +51,7 @@ types.ts (leaf — no imports)
 | Change completion detection | `completion-detector.ts` — `feed()`, `watch()`, `cancel()`, `feedMessageCount()` |
 | Change notification flow | `notification-handler.ts` — `buildNotificationMessage()`, `notifyParentSession()` |
 | Change task status transitions | `task-status.ts` — `VALID_TRANSITIONS` map + `canTransition()` guard |
+| Persist / read delegation records | `delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
 | Change agent temperature config | `plugin.ts` — `AGENT_DEFAULTS` constant |
 | Change tool restriction for agent | `plugin.ts` — `AGENT_TOOLS` constant |
 | Change circuit breaker threshold | `plugin.ts` — `CIRCUIT_BREAKER_THRESHOLD` constant |
@@ -64,8 +69,8 @@ types.ts (leaf — no imports)
 
 ## CODE SMELLS
 
-1. **`continuity.ts` (635 LOC)** — Mixed: normalization + clone + CRUD. Could split into `continuity-normalizer.ts` + `continuity-clone.ts` + `continuity.ts` (CRUD only)
-2. **`lifecycle-manager.ts` (~500 LOC)** — `observeBackgroundCompletion` alone ~115 LOC. Could extract into `background-observer.ts`
+1. **`continuity.ts` (401 LOC)** — Still mixed (normalization + clone + CRUD) but under split threshold. Monitor if it grows past 500.
+2. **`delegation-manager.ts` (450 LOC)** — Largest functional module. WaiterModel dispatch + stability polling + persistence. Could extract PTY-specific logic if it grows.
 3. **`asString` duplicated** in `helpers.ts` and `continuity.ts` — consolidation pending
 4. **`continuity.ts:26` module-level `storeCache` singleton** — prevents isolated unit testing
 
