@@ -177,6 +177,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260421-u9n | Update AGENTS.md files to match current codebase state | 2026-04-21 | 82572ba9 | [260421-u9n-update-agents-md-files-to-match-current-](./quick/260421-u9n-update-agents-md-files-to-match-current-/) |
+| 260421-x8j | Create agents-md-sync skill + sync-agents-md command | 2026-04-21 | 25e2aa7a | [260421-x8j-create-agents-md-sync-skill-for-routine-](./quick/260421-x8j-create-agents-md-sync-skill-for-routine-/) |
 
 ## Session Continuity
 
