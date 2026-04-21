@@ -86,6 +86,18 @@ export async function getSessionMessages(
   return Array.isArray(response) ? response : []
 }
 
+export async function getSessionMessageCount(
+  client: OpenCodeClient,
+  sessionID: string,
+): Promise<number | null> {
+  try {
+    const messages = await getSessionMessages(client, sessionID)
+    return messages.length
+  } catch {
+    return null
+  }
+}
+
 function getMessageRole(message: unknown): string | undefined {
   return (
     asString(getNestedValue(message, ["info", "role"])) ??

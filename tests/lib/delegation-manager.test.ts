@@ -83,6 +83,7 @@ describe("DelegationManager", () => {
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
     stateDir = mkdtempSync(join(tmpdir(), "delegation-manager-"))
     process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+    vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
   })
 
   afterEach(() => {
@@ -534,7 +535,7 @@ describe("DelegationManager", () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "ses-child-reset" } })
-      const messageCountSpy = vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
+      const messageCountSpy = vi.mocked(sessionApi.getSessionMessageCount).mockResolvedValue(0)
       const manager = new DelegationManager(client as never)
 
       await manager.dispatch({
@@ -553,7 +554,7 @@ describe("DelegationManager", () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "ses-child-reset-count" } })
-      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(2)
+      vi.mocked(sessionApi.getSessionMessageCount).mockResolvedValue(2)
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-reset-count",
@@ -574,7 +575,7 @@ describe("DelegationManager", () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "ses-child-stable-count" } })
-      vi.spyOn(sessionApi, "getSessionMessageCount")
+      vi.mocked(sessionApi.getSessionMessageCount)
         .mockResolvedValueOnce(2)
         .mockResolvedValueOnce(2)
       const manager = new DelegationManager(client as never)
@@ -597,7 +598,7 @@ describe("DelegationManager", () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "ses-child-null-count" } })
-      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(null)
+      vi.mocked(sessionApi.getSessionMessageCount).mockResolvedValue(null)
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-null-count",
@@ -621,7 +622,7 @@ describe("DelegationManager", () => {
       client.session.messages.mockResolvedValue({
         data: [{ role: "assistant", parts: [{ type: "text", text: "final result" }] }],
       })
-      vi.spyOn(sessionApi, "getSessionMessageCount")
+      vi.mocked(sessionApi.getSessionMessageCount)
         .mockResolvedValueOnce(1)
         .mockResolvedValueOnce(2)
         .mockResolvedValueOnce(2)

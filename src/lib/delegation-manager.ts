@@ -7,6 +7,7 @@ import {
 } from "./delegation-persistence.js"
 import { unwrapData } from "./helpers.js"
 import type { PtyManager } from "./pty/pty-manager.js"
+import { getSessionMessageCount } from "./session-api.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
 import { spawnDelegatedSession } from "./spawner/session-creator.js"
@@ -117,6 +118,7 @@ export class DelegationManager {
         status: "dispatched",
         createdAt: Date.now(),
         safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
+        // Compared against real child-session message counts; failed polls must not advance stability.
         lastMessageCount: 0,
         stablePollCount: 0,
         executionMode: runtime.executionMode,
@@ -307,17 +309,32 @@ export class DelegationManager {
       return
     }
 
-    // Increment poll counter (simple counter, not true message comparison)
-    delegation.stablePollCount += 1
-    this.persistAllDelegations()
+    const currentMessageCount = await getSessionMessageCount(
+      this.client,
+      delegation.childSessionId,
+    )
+
+    if (currentMessageCount === null) {
+      if (!this.stabilityTimers.has(delegationId)) {
+        this.scheduleStabilityPoll(delegationId)
+      }
+      return
+    }
+
+    if (currentMessageCount !== delegation.lastMessageCount) {
+      delegation.lastMessageCount = currentMessageCount
+      delegation.stablePollCount = 0
+      this.persistAllDelegations()
+    } else {
+      delegation.stablePollCount += 1
+      this.persistAllDelegations()
+    }
 
     if (delegation.stablePollCount >= STABILITY_THRESHOLD) {
-      // Stability confirmed — finalize
       await this.finalizeDelegation(delegationId)
       return
     }
 
-    // Not yet stable — schedule next poll (if not already scheduled)
     if (!this.stabilityTimers.has(delegationId)) {
       this.scheduleStabilityPoll(delegationId)
     }
