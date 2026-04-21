@@ -104,17 +104,17 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       await manager.dispatch({
-        parentSessionId: "parent-dispatch",
+        parentSessionId: "ses-parent-dispatch",
         agent: "builder",
         prompt: "do work",
       })
 
-      expect(client.session.create).toHaveBeenCalledWith({
-        body: {
+      expect(client.session.create).toHaveBeenCalledWith(expect.objectContaining({
+        body: expect.objectContaining({
           title: "Delegation: builder",
-          parentID: "parent-dispatch",
-        },
-      })
+          parentID: "ses-parent-dispatch",
+        }),
+      }))
     })
 
     it("returns delegation ID immediately with dispatched status", async () => {
@@ -122,7 +122,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
-        parentSessionId: "parent-dispatch",
+        parentSessionId: "ses-parent-dispatch",
         agent: "builder",
         prompt: "do work",
       })
@@ -135,7 +135,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(createMockClient() as never)
 
       await expect(manager.dispatch({
-        parentSessionId: "parent-1",
+          parentSessionId: "ses-parent-1",
         agent: "not-real",
         prompt: "do work",
       })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
@@ -150,7 +150,7 @@ describe("DelegationManager", () => {
       )
 
       await manager.dispatch({
-        parentSessionId: "parent-queue",
+        parentSessionId: "ses-parent-queue",
         agent: "builder",
         prompt: "queued work",
       })
@@ -179,7 +179,7 @@ describe("DelegationManager", () => {
       const resolveSpy = vi.spyOn(spawnerConcurrencyKey, "resolveDelegationConcurrencyKey")
 
       await manager.dispatch({
-        parentSessionId: "parent-provider-model",
+        parentSessionId: "ses-parent-provider-model",
         agent: "builder",
         prompt: "run with canonical metadata",
       })
@@ -215,7 +215,7 @@ describe("DelegationManager", () => {
       const resolveSpy = vi.spyOn(spawnerConcurrencyKey, "resolveDelegationConcurrencyKey")
 
       await manager.dispatch({
-        parentSessionId: "parent-agent-category",
+        parentSessionId: "ses-parent-agent-category",
         agent: "builder",
         prompt: "fallback canonical key",
       })
@@ -242,7 +242,7 @@ describe("DelegationManager", () => {
         expect(persisted).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              parentSessionId: "parent-persist",
+              parentSessionId: "ses-parent-persist",
               childSessionId: "child-ses-123",
               agent: "builder",
             }),
@@ -253,7 +253,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       await manager.dispatch({
-        parentSessionId: "parent-persist",
+        parentSessionId: "ses-parent-persist",
         agent: "builder",
         prompt: "persist first",
       })
@@ -266,7 +266,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
-        parentSessionId: "parent-runtime-metadata",
+        parentSessionId: "ses-parent-runtime-metadata",
         agent: "builder",
         prompt: "persist execution metadata",
       })
@@ -294,7 +294,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       await manager.dispatch({
-        parentSessionId: "parent-prompt",
+        parentSessionId: "ses-parent-prompt",
         agent: "builder",
         prompt: "hello child",
       })
@@ -313,7 +313,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
-        parentSessionId: "parent-fast-return",
+        parentSessionId: "ses-parent-fast-return",
         agent: "builder",
         prompt: "return now",
       })
@@ -328,7 +328,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       await expect(manager.dispatch({
-        parentSessionId: "parent-sdk-fail",
+        parentSessionId: "ses-parent-sdk-fail",
         agent: "builder",
         prompt: "fail at create",
       })).rejects.toThrow("SDK create failed")
@@ -344,7 +344,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
-        parentSessionId: "parent-prompt-fail",
+        parentSessionId: "ses-parent-prompt-fail",
         agent: "builder",
         prompt: "fail at prompt",
       })
@@ -374,8 +374,8 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       const [one, two] = await Promise.all([
-        manager.dispatch({ parentSessionId: "p1", agent: "builder", prompt: "one" }),
-        manager.dispatch({ parentSessionId: "p2", agent: "builder", prompt: "two" }),
+        manager.dispatch({ parentSessionId: "ses-p1", agent: "builder", prompt: "one" }),
+        manager.dispatch({ parentSessionId: "ses-p2", agent: "builder", prompt: "two" }),
       ])
 
       expect(one.delegationId).not.toBe(two.delegationId)
@@ -387,18 +387,18 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       await manager.dispatch({
-        parentSessionId: "parent-title",
+        parentSessionId: "ses-parent-title",
         agent: "builder",
         prompt: "custom title work",
         title: "My Custom Title",
       })
 
-      expect(client.session.create).toHaveBeenCalledWith({
-        body: {
+      expect(client.session.create).toHaveBeenCalledWith(expect.objectContaining({
+        body: expect.objectContaining({
           title: "My Custom Title",
-          parentID: "parent-title",
-        },
-      })
+          parentID: "ses-parent-title",
+        }),
+      }))
     })
 
     it("uses default safetyCeilingMs when not provided", async () => {
@@ -406,7 +406,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
-        parentSessionId: "parent-default-ceiling",
+        parentSessionId: "ses-parent-default-ceiling",
         agent: "builder",
         prompt: "default ceiling",
       })
@@ -420,7 +420,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
-        parentSessionId: "parent-custom-ceiling",
+        parentSessionId: "ses-parent-custom-ceiling",
         agent: "builder",
         prompt: "custom ceiling",
         safetyCeilingMs: 120_000,
@@ -445,7 +445,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const statusResult = await manager.dispatch({
-        parentSessionId: "parent-idle-start",
+        parentSessionId: "ses-parent-idle-start",
         agent: "builder",
         prompt: "idle start",
       })
@@ -463,7 +463,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-stable" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-stable",
+        parentSessionId: "ses-parent-stable",
         agent: "builder",
         prompt: "stability",
       })
@@ -483,7 +483,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-complete",
+        parentSessionId: "ses-parent-complete",
         agent: "builder",
         prompt: "complete",
       })
@@ -509,7 +509,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-reset",
+        parentSessionId: "ses-parent-reset",
         agent: "builder",
         prompt: "reset test",
       })
@@ -529,7 +529,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-multi-idle" } })
       const manager = new DelegationManager(client as never)
       await manager.dispatch({
-        parentSessionId: "parent-multi-idle",
+        parentSessionId: "ses-parent-multi-idle",
         agent: "builder",
         prompt: "multi idle",
       })
@@ -561,7 +561,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-extract",
+        parentSessionId: "ses-parent-extract",
         agent: "builder",
         prompt: "extract text",
       })
@@ -592,7 +592,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-completed-ignore" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-completed-ignore",
+        parentSessionId: "ses-parent-completed-ignore",
         agent: "builder",
         prompt: "done once",
       })
@@ -613,7 +613,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-error-ignore" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-error-ignore",
+        parentSessionId: "ses-parent-error-ignore",
         agent: "builder",
         prompt: "error test",
       })
@@ -638,7 +638,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-timeout-ignore" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-timeout-ignore",
+        parentSessionId: "ses-parent-timeout-ignore",
         agent: "builder",
         prompt: "timeout test",
         safetyCeilingMs: 25,
@@ -660,7 +660,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-deleted" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-deleted",
+        parentSessionId: "ses-parent-deleted",
         agent: "builder",
         prompt: "delete me",
       })
@@ -696,7 +696,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-del-stab" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-del-stab",
+        parentSessionId: "ses-parent-del-stab",
         agent: "builder",
         prompt: "delete during stability",
       })
@@ -728,7 +728,7 @@ describe("DelegationManager", () => {
       // STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD = 3000 * 3 = 9000ms
       const ceilingMs = STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD + 5000 // 14000ms
       const result = await manager.dispatch({
-        parentSessionId: "parent-complete-first",
+        parentSessionId: "ses-parent-complete-first",
         agent: "builder",
         prompt: "complete fast",
         safetyCeilingMs: ceilingMs,
@@ -752,7 +752,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-safety" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-safety",
+        parentSessionId: "ses-parent-safety",
         agent: "builder",
         prompt: "wait forever",
         safetyCeilingMs: 25,
@@ -772,7 +772,7 @@ describe("DelegationManager", () => {
       client.session.create.mockResolvedValue({ data: { id: "child-ceiling-msg" } })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-ceiling-msg",
+        parentSessionId: "ses-parent-ceiling-msg",
         agent: "builder",
         prompt: "ceiling msg",
         safetyCeilingMs: 100,
@@ -794,7 +794,7 @@ describe("DelegationManager", () => {
     it("getStatus returns current delegation state from in-memory Map", async () => {
       const manager = new DelegationManager(createMockClient() as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-status",
+        parentSessionId: "ses-parent-status",
         agent: "builder",
         prompt: "status check",
       })
@@ -822,7 +822,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       await manager.dispatch({
-        parentSessionId: "parent-all",
+        parentSessionId: "ses-parent-all",
         agent: "builder",
         prompt: "all delegations",
       })
@@ -846,7 +846,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       await manager.dispatch({
-        parentSessionId: "parent-order",
+        parentSessionId: "ses-parent-order",
         agent: "builder",
         prompt: "ordered",
       })
@@ -859,7 +859,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(createMockClient() as never)
 
       await manager.dispatch({
-        parentSessionId: "parent-file",
+        parentSessionId: "ses-parent-file",
         agent: "builder",
         prompt: "file please",
       })
@@ -1037,7 +1037,7 @@ describe("DelegationManager", () => {
       client.session.messages.mockResolvedValue({ data: [] })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-empty-msg",
+        parentSessionId: "ses-parent-empty-msg",
         agent: "builder",
         prompt: "empty messages",
       })
@@ -1062,7 +1062,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-no-asst",
+        parentSessionId: "ses-parent-no-asst",
         agent: "builder",
         prompt: "no assistant",
       })
@@ -1088,7 +1088,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-multi-part",
+        parentSessionId: "ses-parent-multi-part",
         agent: "builder",
         prompt: "multi part",
       })
@@ -1112,7 +1112,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-info-role",
+        parentSessionId: "ses-parent-info-role",
         agent: "builder",
         prompt: "info role test",
       })
@@ -1138,7 +1138,7 @@ describe("DelegationManager", () => {
       client.session.messages.mockRejectedValue(new Error("Messages SDK error"))
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-final-fail",
+        parentSessionId: "ses-parent-final-fail",
         agent: "builder",
         prompt: "final fail",
       })
@@ -1161,7 +1161,7 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-cleanup",
+        parentSessionId: "ses-parent-cleanup",
         agent: "builder",
         prompt: "cleanup test",
       })
@@ -1186,7 +1186,7 @@ describe("DelegationManager", () => {
       // even when session.messages is called (which it is for result extraction).
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
-        parentSessionId: "parent-notify-fail",
+        parentSessionId: "ses-parent-notify-fail",
         agent: "builder",
         prompt: "notify fail test",
       })

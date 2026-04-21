@@ -360,6 +360,10 @@ export interface Delegation {
   lastMessageCount: number
   /** Number of consecutive stable polls (message count unchanged) */
   stablePollCount: number
+  executionMode: "pty" | "headless"
+  workingDirectory: string
+  ptySessionId?: string
+  fallbackReason?: string
 }
 
 export interface DelegationResult {
@@ -367,6 +371,10 @@ export interface DelegationResult {
   result?: string
   error?: string
   delegationId: string
+  executionMode?: "pty" | "headless"
+  workingDirectory?: string
+  ptySessionId?: string
+  fallbackReason?: string
 }
 
 /** Safety ceiling — MAX runtime, not a deadline. Tasks may complete faster. */

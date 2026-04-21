@@ -1,10 +1,16 @@
-import fs from "node:fs"
-import { dirname, join } from "node:path"
 import type { OpencodeClient as OpenCodeClient } from "@opencode-ai/sdk"
 
 import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
-import { getContinuityStoragePath } from "./continuity.js"
+import {
+  persistDelegations,
+  readPersistedDelegations,
+} from "./delegation-persistence.js"
 import { unwrapData } from "./helpers.js"
+import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
+import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
+import { spawnDelegatedSession } from "./spawner/session-creator.js"
+import { startDelegationRuntime } from "./spawner/pty-setup.js"
+import type { DelegationSpawnRequest } from "./spawner/spawner-types.js"
 import {
   DEFAULT_SAFETY_CEILING_MS,
   STABILITY_POLL_INTERVAL_MS,
@@ -19,11 +25,30 @@ type DelegateParams = {
   prompt: string
   title?: string
   safetyCeilingMs?: number
+  workingDirectory?: string
+  worktree?: string
+  provider?: string
+  model?: string
+  category?: string
 }
 
-type PersistedDelegation = Delegation
+type ValidatedAgent = {
+  name: string
+  provider?: string
+  model?: string
+  category?: string
+}
+
+type CanonicalQueueContext = {
+  provider?: string
+  model?: string
+  agent: string
+  category?: string
+}
+
 type TextPart = { type?: string; text?: string }
 type MessageLike = { role?: string; info?: { role?: string }; parts?: TextPart[] }
+type DelegationRuntimeMetadata = Pick<Delegation, "executionMode" | "workingDirectory" | "ptySessionId" | "fallbackReason">
 
 /**
  * DelegationManager — WaiterModel execution pattern.
@@ -55,28 +80,48 @@ export class DelegationManager {
    */
   async dispatch(params: DelegateParams): Promise<DelegationResult> {
     const agent = await this.validateAgent(params.agent)
-    const queueKey = buildDelegationQueueKey({ agent })
-    // Explicit undefined args — spy checks argument count via toHaveBeenCalledWith
-    const release = await this.semaphore.acquire(queueKey, undefined, undefined)
+    const canonicalContext = this.buildCanonicalQueueContext(agent, params)
+    const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
+    const spawnQueueKey = resolveDelegationConcurrencyKey(canonicalContext)
+    if (spawnQueueKey !== acquireQueueKey) {
+      throw new Error("[Harness] Canonical delegation queue-key drift detected.")
+    }
+
+    const release = await this.semaphore.acquire(acquireQueueKey, undefined, undefined)
 
     try {
-      const child = unwrapData<{ id: string }>(await this.client.session.create({
-        body: {
-          title: params.title ?? `Delegation: ${agent}`,
-          parentID: params.parentSessionId,
-        },
-      }))
+      const workingDirectory = resolveParentWorkingDirectory({
+        contextDirectory: params.workingDirectory,
+        worktree: params.worktree,
+      })
+      const spawnRequest = this.buildSpawnRequest({
+        params,
+        agent,
+        workingDirectory,
+      })
+      const child = await spawnDelegatedSession({
+        client: this.client as never,
+        request: spawnRequest,
+      })
+      const runtime = await this.startRuntimeMetadata({
+        childSessionId: child.childSessionId,
+        workingDirectory,
+      })
 
       const delegation: Delegation = {
         id: crypto.randomUUID(),
         parentSessionId: params.parentSessionId,
-        childSessionId: child.id,
-        agent,
+        childSessionId: child.childSessionId,
+        agent: agent.name,
         status: "dispatched",
         createdAt: Date.now(),
         safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
         lastMessageCount: 0,
         stablePollCount: 0,
+        executionMode: runtime.executionMode,
+        workingDirectory: runtime.workingDirectory,
+        ptySessionId: runtime.ptySessionId,
+        fallbackReason: runtime.fallbackReason,
       }
 
       this.registerDelegation(delegation)
@@ -88,7 +133,7 @@ export class DelegationManager {
         path: { id: delegation.childSessionId },
         body: {
           parts: [{ type: "text", text: params.prompt }],
-          agent,
+          agent: agent.name,
         },
       }).then(() => {
         // setTimeout(0) macrotask: real-timers won't fire before await returns,
@@ -117,6 +162,10 @@ export class DelegationManager {
       return {
         status: "dispatched",
         delegationId: delegation.id,
+        executionMode: delegation.executionMode,
+        workingDirectory: delegation.workingDirectory,
+        ptySessionId: delegation.ptySessionId,
+        fallbackReason: delegation.fallbackReason,
       }
     } finally {
       release()
@@ -179,7 +228,7 @@ export class DelegationManager {
    * Re-registers running delegations and checks their session status.
    */
   async recoverPending(): Promise<void> {
-    const persistedDelegations = this.readPersistedDelegations()
+    const persistedDelegations = readPersistedDelegations()
 
     for (const delegation of persistedDelegations) {
       // Register all delegations in memory
@@ -340,16 +389,23 @@ export class DelegationManager {
   // Agent validation
   // ---------------------------------------------------------------------------
 
-  private async validateAgent(agent: string): Promise<string> {
-    const agents = unwrapData<Array<{ name: string }>>(await this.client.app.agents())
-    const names = (agents ?? []).map(a => a.name)
+  private async validateAgent(agent: string): Promise<ValidatedAgent> {
+    const agents = unwrapData<Array<Record<string, unknown>>>(await this.client.app.agents())
+    const validAgents = (agents ?? []).map((entry) => ({
+      name: typeof entry.name === "string" ? entry.name : "",
+      provider: typeof entry.provider === "string" ? entry.provider : undefined,
+      model: typeof entry.model === "string" ? entry.model : undefined,
+      category: typeof entry.category === "string" ? entry.category : undefined,
+    })).filter((entry) => entry.name.length > 0)
+    const names = validAgents.map(a => a.name)
 
     if (!names.includes(agent)) {
       throw new Error(
         `[Harness] Invalid agent: "${agent}". Available: [${names.join(", ")}]`,
       )
     }
-    return agent
+
+    return validAgents.find((entry) => entry.name === agent) ?? { name: agent }
   }
 
   // ---------------------------------------------------------------------------
@@ -363,46 +419,7 @@ export class DelegationManager {
   }
 
   private persistAllDelegations(): void {
-    const filePath = this.getDelegationsFilePath()
-    fs.mkdirSync(dirname(filePath), { recursive: true })
-    fs.writeFileSync(
-      filePath,
-      `${JSON.stringify(Array.from(this.delegations.values()), null, 2)}\n`,
-      "utf-8",
-    )
-  }
-
-  private readPersistedDelegations(): PersistedDelegation[] {
-    const filePath = this.getDelegationsFilePath()
-    if (!fs.existsSync(filePath)) {
-      return []
-    }
-
-    try {
-      const raw = fs.readFileSync(filePath, "utf-8")
-      const parsed = JSON.parse(raw) as unknown
-      if (!Array.isArray(parsed)) {
-        return []
-      }
-
-      return parsed.filter(this.isPersistedDelegation)
-    } catch {
-      return []
-    }
-  }
-
-  private isPersistedDelegation(value: unknown): value is PersistedDelegation {
-    if (typeof value !== "object" || value === null) {
-      return false
-    }
-
-    const record = value as Record<string, unknown>
-    return typeof record.id === "string"
-      && typeof record.parentSessionId === "string"
-      && typeof record.childSessionId === "string"
-      && typeof record.agent === "string"
-      && typeof record.status === "string"
-      && typeof record.createdAt === "number"
+    persistDelegations(Array.from(this.delegations.values()))
   }
 
   // ---------------------------------------------------------------------------
@@ -441,9 +458,96 @@ export class DelegationManager {
       .join("\n")
   }
 
-  private getDelegationsFilePath(): string {
-    const continuityStore = dirname(getContinuityStoragePath())
-    return join(continuityStore, "delegations.json")
+  private buildCanonicalQueueContext(agent: ValidatedAgent, params: DelegateParams): CanonicalQueueContext {
+    return {
+      provider: params.provider ?? agent.provider,
+      model: params.model ?? agent.model,
+      agent: agent.name,
+      category: params.category ?? agent.category,
+    }
+  }
+
+  private buildSpawnRequest(args: {
+    params: DelegateParams
+    agent: ValidatedAgent
+    workingDirectory: string
+  }): DelegationSpawnRequest {
+    return {
+      parentSessionId: args.params.parentSessionId,
+      agent: args.agent.name,
+      title: args.params.title ?? `Delegation: ${args.agent.name}`,
+      prompt: args.params.prompt,
+      workingDirectory: args.workingDirectory,
+      executionMode: "pty",
+      safetyCeilingMs: args.params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
+      permissionProfile: {
+        mode: "write-capable",
+        tools: ["read", "edit", "write", "bash", "glob", "grep"],
+      },
+    }
+  }
+
+  private async startRuntimeMetadata(args: {
+    childSessionId: string
+    workingDirectory: string
+  }): Promise<DelegationRuntimeMetadata> {
+    const runtimeRequest = {
+      command: process.env.OPENCODE_HARNESS_DELEGATION_PTY_COMMAND ?? "opencode",
+      args: this.readPtyArgsFromEnv(),
+      cwd: args.workingDirectory,
+      env: this.buildRuntimeEnv(),
+    }
+    const runtime = await startDelegationRuntime({
+      ptyManager: await this.resolveRuntimePtyManager(),
+      request: runtimeRequest,
+      spawnHeadless: async () => ({ childSessionId: args.childSessionId }),
+    })
+
+    return {
+      executionMode: runtime.executionMode,
+      workingDirectory: runtime.workingDirectory,
+      ptySessionId: runtime.ptySessionId,
+      fallbackReason: runtime.fallbackReason,
+    }
+  }
+
+  private async resolveRuntimePtyManager(): Promise<{ spawn: (request: unknown) => { id: string; cwd: string } }> {
+    if (typeof globalThis.Bun !== "undefined" && process.env.OPENCODE_HARNESS_DELEGATION_PTY_COMMAND) {
+      const module = await import("./pty/pty-manager.js")
+      const ptyManager = new module.PtyManager()
+      if (ptyManager.isSupported()) {
+        return ptyManager as { spawn: (request: unknown) => { id: string; cwd: string } }
+      }
+    }
+
+    return {
+      spawn: () => {
+        throw new Error(
+          typeof globalThis.Bun !== "undefined"
+            ? "[Harness] PTY delegation runtime command not configured"
+            : "[Harness] PTY runtime unavailable in current environment",
+        )
+      },
+    }
+  }
+
+  private buildRuntimeEnv(): Record<string, string> {
+    const entries = Object.entries(process.env)
+      .filter((entry): entry is [string, string] => typeof entry[1] === "string")
+
+    return Object.fromEntries(entries)
+  }
+
+  private readPtyArgsFromEnv(): string[] {
+    const rawArgs = process.env.OPENCODE_HARNESS_DELEGATION_PTY_ARGS
+    if (!rawArgs) {
+      return []
+    }
+
+    return rawArgs
+      .split(/\s+/)
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
   }
 }
 
