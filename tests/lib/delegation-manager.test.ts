@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { buildDelegationQueueKey } from "../../src/lib/concurrency.js"
+import * as sessionApi from "../../src/lib/session-api.js"
 import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import {
@@ -529,32 +530,116 @@ describe("DelegationManager", () => {
       expect(client.session.messages).toHaveBeenCalled()
     })
 
-    it("resets stablePollCount when message count changes between polls", async () => {
+    it("uses the session-api message-count wrapper during stability polling", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
-      client.session.create.mockResolvedValue({ data: { id: "child-reset" } })
-      let messageCallCount = 0
-      client.session.messages.mockImplementation(async () => {
-        messageCallCount++
-        if (messageCallCount <= 1) {
-          return { data: [{ role: "assistant", parts: [{ type: "text", text: "partial" }] }] }
-        }
-        return { data: [{ role: "assistant", parts: [{ type: "text", text: "final" }] }] }
-      })
+      client.session.create.mockResolvedValue({ data: { id: "ses-child-reset" } })
+      const messageCountSpy = vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
       const manager = new DelegationManager(client as never)
-      const result = await manager.dispatch({
+
+      await manager.dispatch({
         parentSessionId: "ses-parent-reset",
         agent: "builder",
         prompt: "reset test",
       })
 
-      manager.handleSessionIdle("child-reset")
-      // Advance through all stability polls — completion should succeed
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      manager.handleSessionIdle("ses-child-reset")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
 
-      // The key assertion: the delegation should complete after stability threshold
+      expect(messageCountSpy).toHaveBeenCalledWith(client, "ses-child-reset")
+    })
+
+    it("resets stablePollCount and updates lastMessageCount when message count changes", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses-child-reset-count" } })
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(2)
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-reset-count",
+        agent: "builder",
+        prompt: "reset count test",
+      })
+
+      manager.handleSessionIdle("ses-child-reset-count")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
+
       const delegation = manager.getStatus(result.delegationId)
-      expect(delegation?.status).toBe("completed")
+      expect(delegation?.status).toBe("running")
+      expect(delegation?.lastMessageCount).toBe(2)
+      expect(delegation?.stablePollCount).toBe(0)
+    })
+
+    it("increments stablePollCount only when the fetched message count is unchanged", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses-child-stable-count" } })
+      vi.spyOn(sessionApi, "getSessionMessageCount")
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(2)
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-stable-count",
+        agent: "builder",
+        prompt: "stable count test",
+      })
+
+      manager.handleSessionIdle("ses-child-stable-count")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * 2)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("running")
+      expect(delegation?.lastMessageCount).toBe(2)
+      expect(delegation?.stablePollCount).toBe(1)
+    })
+
+    it("does not advance stability when message-count fetch fails transiently", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses-child-null-count" } })
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(null)
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-null-count",
+        agent: "builder",
+        prompt: "null count test",
+      })
+
+      manager.handleSessionIdle("ses-child-null-count")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("running")
+      expect(delegation?.lastMessageCount).toBe(0)
+      expect(delegation?.stablePollCount).toBe(0)
+    })
+
+    it("only finalizes after STABILITY_THRESHOLD unchanged message-count polls", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses-child-threshold-count" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "final result" }] }],
+      })
+      vi.spyOn(sessionApi, "getSessionMessageCount")
+        .mockResolvedValueOnce(1)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(2)
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-threshold-count",
+        agent: "builder",
+        prompt: "threshold count test",
+      })
+
+      manager.handleSessionIdle("ses-child-threshold-count")
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * 4)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("running")
+
+      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
     })
 
     it("multiple idle events do not restart stability polling", async () => {

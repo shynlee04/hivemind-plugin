@@ -174,6 +174,29 @@ describe("session-api typed wrappers", () => {
     })
   })
 
+  describe("getSessionMessageCount", () => {
+    it("returns the current child-session message count through the SDK wrapper", async () => {
+      const client = mockClient()
+      client.session.messages.mockResolvedValue({ data: [{ id: "m1" }, { id: "m2" }] })
+
+      const { getSessionMessageCount } = await import("../../src/lib/session-api.js")
+      const result = await getSessionMessageCount(client, "ses_1")
+
+      expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "ses_1" } })
+      expect(result).toBe(2)
+    })
+
+    it("returns null when the message-count fetch fails transiently", async () => {
+      const client = mockClient()
+      client.session.messages.mockRejectedValue(new Error("temporary failure"))
+
+      const { getSessionMessageCount } = await import("../../src/lib/session-api.js")
+      const result = await getSessionMessageCount(client, "ses_1")
+
+      expect(result).toBeNull()
+    })
+  })
+
   describe("sendPrompt", () => {
     it("calls client.session.prompt with correct shape", async () => {
       const client = mockClient()
