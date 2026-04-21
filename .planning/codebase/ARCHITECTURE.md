@@ -1,289 +1,340 @@
 # Architecture
 
-**Analysis Date:** 2026-04-06
+> Generated: 2026-04-21
+> Agent: gsd-codebase-mapper (arch-focus)
 
 ## Pattern Overview
 
-**Overall:** CQRS (Command Query Responsibility Segregation) with Plugin Hook Assembly
-
-The codebase enforces a strict CQRS boundary:
-- **Tools** (`src/tools/`) own write-side operations — they mutate session state, create child sessions, patch files
-- **Hooks** (`src/hooks/`) own read-side context injection — they transform system prompts and message history without durable writes
-- **Plugin** (`src/plugin.ts`) is the composition layer — it assembles tools + hooks + event handlers with zero business logic
+**Overall:** Plugin-based runtime composition engine for OpenCode
 
 **Key Characteristics:**
-- Dual-layer state: in-memory Maps (`src/lib/state.ts`) for fast access + durable JSON file (`src/lib/continuity.ts`) for persistence
-- Event-driven lifecycle: OpenCode SDK events flow through `HarnessLifecycleManager` to drive session state machines
-- Keyed concurrency queues: per-model/agent/category lanes with configurable limits
-- Schema-validated tool outputs: all prompt-enhance tool results validated against Zod contracts in `src/schema-kernel/`
+- Thin plugin assembly — `plugin.ts` is a pure composition root (77 LOC)
+- Two halves: Hard Harness (`src/`) and Soft Meta-Concepts (`.opencode/`)
+- Dual-layer state: durable JSON file + in-memory Maps
+- WaiterModel delegation (always-background, fire-and-forget dispatch)
+- CQRS separation: tools are write-side, hooks are read-side
+- Leaf-first dependency graph (max chain depth: 2)
+
+## Two Halves
+
+| Half | What | Where |
+|------|------|-------|
+| **Hard Harness** | TypeScript npm package: tools, hooks, plugin, shared, lib | `src/` |
+| **Soft Meta-Concepts** | User-configurable skills, agents, commands, rules | `.opencode/` |
+
+The hard harness provides the runtime engine. The soft meta-concepts provide user-configurable behavior templates. The plugin assembly in `src/plugin.ts` wires them together at load time.
 
 ## Layers
 
-**Composition Layer (Plugin):**
-- Purpose: Assembly of tools, hooks, event handlers, and lifecycle management
-- Location: `src/plugin.ts` (~450 LOC)
-- Contains: Plugin export, hook registrations, tool definitions, circuit breaker logic
-- Depends on: All `src/lib/*` modules, all `src/tools/*` modules, `src/hooks/*`
-- Used by: OpenCode runtime via `@opencode-ai/plugin` interface
+### Plugin Assembly (`src/plugin.ts`)
+- Purpose: Composition root — instantiates shared dependencies, wires hook factories, registers tools
+- Location: `src/plugin.ts`
+- Contains: Plugin entry point, dependency injection
+- Depends on: All hook factories, all tool factories, `DelegationManager`, `lifecycle-manager`, `state`, `runtime-policy`
+- Used by: OpenCode runtime (loaded via `.opencode/plugins/`)
 
-**Core Library Layer:**
-- Purpose: Shared business logic for delegation, continuity, concurrency, and lifecycle
-- Location: `src/lib/`
-- Contains: 11 modules (types, state, continuity, lifecycle-manager, concurrency, completion-detector, session-api, runtime, notification-handler, helpers, task-status, agent-registry)
-- Depends on: OpenCode SDK (`@opencode-ai/sdk`), Node.js fs/path
-- Used by: Plugin layer, tools, hooks
+### Core Library (`src/lib/`)
+- Purpose: Business logic modules — no OpenCode plugin API awareness
+- Location: `src/lib/*.ts`
+- Contains: State management, delegation orchestration, persistence, SDK wrappers, concurrency
+- Depends on: Each other (per dependency graph), `@opencode-ai/sdk`
+- Used by: `src/plugin.ts`, `src/hooks/`, `src/tools/`
 
-**Tool Layer (Write-Side):**
-- Purpose: LLM-facing operations that perform actions
-- Location: `src/tools/` (4 prompt-enhance tools + 1 delegation tool in plugin)
-- Contains: `prompt-skim`, `prompt-analyze`, `context-budget`, `session-patch`, `delegate-task`
-- Depends on: `src/lib/helpers.ts`, `src/shared/tool-helpers.ts`, `src/shared/tool-response.ts`, `src/schema-kernel/`
-- Used by: LLM agents via OpenCode tool interface
+### Hooks — Read Side (`src/hooks/`)
+- Purpose: Event-reactive hooks that observe and transform OpenCode runtime events
+- Location: `src/hooks/*.ts`
+- Contains: Core event routing, session lifecycle hooks, tool guard hooks, message transform
+- Depends on: `src/lib/` modules
+- Used by: `src/plugin.ts` (hook registration)
 
-**Hook Layer (Read-Side):**
-- Purpose: Context injection into OpenCode's prompt/message pipeline
-- Location: `src/hooks/`
-- Contains: `system-transform.ts`, `messages-transform.ts`
-- Depends on: `src/lib/state.ts`, `src/lib/continuity.ts`
-- Used by: OpenCode plugin hooks (`system.transform`, `messages.transform`)
+### Tools — Write Side (`src/tools/`)
+- Purpose: Plugin tools exposed to agents for delegation, status polling, prompt analysis, session patching
+- Location: `src/tools/**/*.ts`
+- Contains: `delegate-task`, `delegation-status`, `prompt-skim`, `prompt-analyze`, `session-patch`
+- Depends on: `src/lib/`, `src/shared/`, `@opencode-ai/plugin/tool`, `zod`
+- Used by: `src/plugin.ts` (tool registration)
 
-**Schema Kernel:**
-- Purpose: Machine-authoritative Zod contracts for tool outputs and pipeline state
-- Location: `src/schema-kernel/`
-- Contains: `prompt-enhance.schema.ts` (6 Zod schemas), `index.ts` (barrel re-export)
+### Shared (`src/shared/`)
+- Purpose: Cross-cutting utilities used by tools
+- Location: `src/shared/*.ts`
+- Contains: Tool response envelope, tool result rendering
+- Depends on: Nothing
+- Used by: All tools in `src/tools/`
+
+### Schema Kernel (`src/schema-kernel/`)
+- Purpose: Zod schemas for the prompt-enhance pipeline contracts
+- Location: `src/schema-kernel/*.ts`
+- Contains: Schema definitions for `PromptSkimResult`, `PromptAnalysisResult`, `SessionPatchRecord`, etc.
 - Depends on: `zod`
-- Used by: All prompt-enhance tools for output validation
+- Used by: Prompt-enhance tools, schema validation tests
 
-**Shared Utilities:**
-- Purpose: Pure helper functions and response envelopes
-- Location: `src/shared/`
-- Contains: `tool-helpers.ts` (result rendering), `tool-response.ts` (success/error/pending envelope)
-- Depends on: Nothing (leaf modules)
-- Used by: All tools
+## Core Modules
+
+### `src/lib/types.ts` (378 LOC) — LEAF
+- **Role:** Shared type definitions and constants — the canonical type authority
+- **Key exports:** `TaskStatus`, `HarnessStatus`, `SessionLifecyclePhase`, `DelegationMeta`, `Delegation`, `RuntimePolicy`, all continuity types, governance types
+- **Constants:** `MAX_DESCENDANTS_PER_ROOT` (10), `VALID_DELEGATION_CATEGORIES`, `DEFAULT_SAFETY_CEILING_MS` (30 min), `STABILITY_THRESHOLD` (3), `STABILITY_POLL_INTERVAL_MS` (3000ms), `MAX_DELEGATION_DEPTH` (1)
+- **Dependency rule:** Imports nothing — this is the leaf node
+
+### `src/lib/delegation-manager.ts` (450 LOC)
+- **Role:** Core delegation orchestrator — WaiterModel execution pattern
+- **Key class:** `DelegationManager`
+- **Pattern:** D-02 (always-background dispatch), D-04 (dual-signal completion: `session.idle` + message count stability), D-13 (safety ceiling, not deadline)
+- **Public API:** `dispatch()`, `handleSessionIdle()`, `handleSessionDeleted()`, `recoverPending()`, `getStatus()`, `getAllDelegations()`
+- **State:** In-memory Maps (`delegations`, `delegationsBySession`, `safetyTimers`, `stabilityTimers`)
+- **Persistence:** JSON file at `.opencode/state/opencode-harness/delegations.json`
+- **Flow:** dispatch → fire-and-forget prompt → session.idle triggers stability polling → STABILITY_THRESHOLD consecutive stable polls → finalize (extract assistant text) → persist
+- **Depends on:** `concurrency.ts`, `continuity.ts`, `helpers.ts`, `types.ts`
+
+### `src/lib/continuity.ts` (401 LOC)
+- **Role:** Durable JSON persistence — deep-clone-on-read store
+- **Key exports:** `getSessionContinuity`, `recordSessionContinuity`, `patchSessionContinuity`, `patchSessionDelegationPacket`, `deleteSessionContinuity`, `listSessionContinuity`, `getContinuityStoragePath`, governance helpers
+- **Storage:** `.opencode/state/opencode-harness/session-continuity.json`
+- **Pattern:** Module-level `storeCache` singleton — loads on first access, persists on every write
+- **Clone strategy:** Every read deep-clones to prevent mutation aliasing; every patch clones the incoming values before persisting
+- **Depends on:** `types.ts` only
+
+### `src/lib/concurrency.ts` (298 LOC)
+- **Role:** Keyed semaphore with priority queue — FIFO concurrency control
+- **Key class:** `DelegationConcurrencyQueue`
+- **Key exports:** `buildDelegationQueueKey()`, `SpawnReservation`, `reserveSubagentSpawn()`
+- **Pattern:** Per-key lanes with active count + pending queue + high/normal priority queues
+- **SpawnReservation:** Budget-aware reservation with release/rollback lifecycle
+- **Depends on:** `types.ts`, `state.ts`
+
+### `src/lib/state.ts` (251 LOC)
+- **Role:** In-memory Maps — process-wide state store
+- **Key class:** `TaskStateManager`
+- **Key exports:** `taskState` singleton + backward-compatible wrapper functions
+- **Maps:** `rootBudgets`, `sessionToRoot`, `sessionStats`, `sessionDelegationMeta`, `subagentSessions`
+- **Pattern:** Singleton class with thin function wrappers for backward compatibility
+- **Warning cap:** 25 warnings per session
+- **Depends on:** `types.ts`
+
+### `src/lib/runtime-policy.ts` (237 LOC)
+- **Role:** Runtime policy loading, validation, and per-session resolution
+- **Key exports:** `DEFAULT_RUNTIME_POLICY`, `loadRuntimePolicy()`, `getRuntimePolicyForSession()`, `resolveConcurrencyForKey()`, `resolveBudgetForSession()`
+- **Defaults:** `globalLimit: 3`, `maxToolCallsPerSession: 400`, `repeatedSignatureThreshold: 16`, `warningCap: 25`, `resetOnCompact: true`
+- **Pattern:** Workspace policy → validate → merge with session overrides → validate again
+- **Depends on:** `types.ts`
+
+### `src/lib/session-api.ts` (230 LOC)
+- **Role:** Typed wrappers around OpenCode SDK client calls
+- **Key exports:** `createSession`, `getSession`, `getSessionStatusMap`, `abortSession`, `getSessionMessages`, `sendPrompt`, `sendPromptAsync`, `getSessionID`, `getParentID`, `getEventSessionID`, `getEventParentID`, `walkParentChain`
+- **Type:** `OpenCodeClient` = `ReturnType<typeof createOpencodeClient>`
+- **Pattern:** Canonical call shapes, assertValidSessionID guard, unwrapData for error handling
+- **Depends on:** `helpers.ts`, `@opencode-ai/sdk`
+
+### `src/lib/helpers.ts` (175 LOC)
+- **Role:** Pure utilities only — no agent config, no state
+- **Key exports:** `isObject`, `asString`, `getNestedValue`, `unwrapData`, `stableStringify`, `makeToolSignature`, `buildPromptText`, `getPromptToolCompatibility`, `extractSdkErrorMessage` (internal)
+- **Pattern:** All functions are pure — no side effects, no state mutation
+- **Depends on:** `types.ts`
+
+### `src/lib/notification-handler.ts` (169 LOC)
+- **Role:** Async completion notification — builds and delivers messages to parent sessions
+- **Key exports:** `buildNotificationMessage()`, `formatToastMessage()`, `buildTaskNotificationFromContinuity()`, `notifyParentSession()`
+- **Pattern:** Formats XML-tagged system reminders, delivers via `client.session.prompt` with `noReply: true`
+- **Depends on:** `session-api.ts`, `types.ts`
+
+### `src/lib/lifecycle-manager.ts` (135 LOC) — STUB
+- **Role:** Session lifecycle state machine — currently minimal stub after clean slate
+- **Key class:** `HarnessLifecycleManager`
+- **Key exports:** `createHarnessLifecycleManager()`, `isValidTransition()`, `hydrateFromContinuity()`, `handleEvent()`, `cancelDelegatedSession()`, `requestAutoLoopRetry()`, `recordCompactionCheckpoint()`
+- **Status:** Stripped to compile; `launchDelegatedSession()` throws with "not yet restored" error
+- **Depends on:** `completion-detector.ts`, `continuity.ts`, `session-api.ts`, `state.ts`, `types.ts`
+
+### `src/lib/completion-detector.ts` (126 LOC) — SELF-CONTAINED
+- **Role:** Two-signal completion detection — session.idle + stability timer
+- **Key class:** `CompletionDetector`
+- **Key exports:** `feed()`, `watch()`, `cancel()`, `feedMessageCount()`
+- **Pattern:** Watchers register for a session; when terminal event arrives, watcher resolves. Cached results for events that arrive before watch() is called.
+- **Depends on:** Nothing (self-contained)
+
+### `src/lib/runtime.ts` (95 LOC)
+- **Role:** Event→status inference only — maps transport signals to continuity statuses
+- **Key exports:** `inferContinuityStatusFromEvent()`
+- **Pattern:** Multi-path signal extraction from event objects, evidence-gated running inference
+- **Depends on:** `helpers.ts`, `types.ts`
+
+### `src/lib/task-status.ts` (22 LOC) — LEAF
+- **Role:** Task status type system + transition guard table
+- **Key exports:** `VALID_TASK_STATUSES`, `VALID_TRANSITIONS`, `canTransition()`, `isTerminal()`
+- **Terminal states:** `completed`, `failed`, `error`, `cancelled`
+- **Depends on:** `types.ts`
+
+## Hook Factories
+
+### `src/hooks/create-core-hooks.ts` (136 LOC)
+- **Produces:** `event`, `system.transform`, `experimental.chat.system.transform`, `messages.transform`, `shell.env`
+- **Behavior:** Routes events to lifecycle manager, delegates message transform, sets non-interactive shell env vars (`CI=true`, `GIT_TERMINAL_PROMPT=0`, `NO_COLOR=1`, `TERM=dumb`)
+
+### `src/hooks/create-session-hooks.ts` (295 LOC)
+- **Produces:** `event` (session.idle auto-loop), `experimental.session.compacting`
+- **Behavior:** Auto-loop retry on `session.idle` when delegation packet exists (checks for `<promise>DONE</promise>` signal, max 5 iterations, 1s backoff). Compacting hook injects lifecycle/continuity context.
+
+### `src/hooks/create-tool-guard-hooks.ts` (153 LOC)
+- **Produces:** `tool.execute.before`, `tool.execute.after`
+- **Behavior:** Before: circuit breaker (repeated signature detection), tool call budget enforcement. After: injects `_harness` metadata into tool output.
+
+### `src/hooks/messages-transform.ts` (92 LOC)
+- **Produces:** `transformMessages()` function (used by core hooks)
+- **Behavior:** Detects prompt-enhance trigger phrases in messages, injects context packet (session ID, status, agent, category) before first user message.
+
+### `src/hooks/types.ts` (28 LOC)
+- **Role:** Shared hook dependency types
+- **Key type:** `HookDependencies` — lifecycleManager, client, stateManager, eventObservers, autoLoopConfig
+
+## Tools
+
+### `src/tools/delegate-task.ts` (60 LOC)
+- **API:** `agent` (string, required), `prompt` (string, required), `title` (optional), `safetyCeilingMs` (optional, 60s–60min)
+- **Returns:** Immediate `{ status: "dispatched", delegationId }` via WaiterModel
+
+### `src/tools/delegation-status.ts` (71 LOC)
+- **API:** `delegationId` (optional), `status` (optional filter)
+- **Returns:** Specific delegation state or filtered list of all delegations
+
+### `src/tools/prompt-skim/` (tools.ts: 85 LOC + types.ts: 18 LOC + index.ts: 6 LOC)
+- **API:** `content` (string), `workspaceRoot` (string)
+- **Returns:** Word/line/token counts, URL extraction, file path verification, complexity score
+
+### `src/tools/prompt-analyze/` (tools.ts: 155 LOC + types.ts: 17 LOC + index.ts: 6 LOC)
+- **API:** `content` (string)
+- **Returns:** Contradiction/vagueness/missing-scope/clarity analysis
+
+### `src/tools/session-patch/` (tools.ts: 103 LOC + types.ts: 19 LOC + index.ts: 6 LOC)
+- **API:** `sessionFilePath` (string), `section` (string), `newContent` (string)
+- **Returns:** Patched session file content
 
 ## Data Flow
 
-### Session Delegation Flow (parent → child)
-
-1. **Initiation**: LLM calls `delegate-task` tool in parent session (`src/plugin.ts` lines 228-310)
-2. **Validation**: Agent name validated against `VALID_AGENTS` ("researcher", "builder", "critic"), category normalized against `VALID_DELEGATION_CATEGORIES`
-3. **Parent Chain Resolution**: `walkParentChain()` in `src/lib/session-api.ts` traverses parent→root, detecting cycles
-4. **Depth Check**: `childDepth = chain.length - 1`, rejected if > `MAX_DEPTH` (3)
-5. **Budget Reservation**: `reserveDescendant(rootID, MAX_DESCENDANTS_PER_ROOT)` in `src/lib/state.ts` checks against limit of 10
-6. **Permission Computation**: `getPermissionRulesForAgent()` generates allow/deny rules per agent type
-7. **Session Creation**: `createSession()` via OpenCode SDK with parentID, title, permission rules
-8. **Continuity Recording**: `recordSessionContinuity()` writes durable JSON with toolProfile, promptParams, metadata
-9. **Queue Acquisition**: `DelegationConcurrencyQueue.acquire()` waits for lane slot (keyed by model/agent/category)
-10. **Prompt Dispatch**: `sendPrompt()` fires in background (async) or blocks (sync)
-11. **Completion Detection**: `CompletionDetector.watch()` monitors terminal events
-12. **Parent Notification**: `notifyParentSession()` injects `<system_reminder>` into parent session
-
-### State Tracking Flow
-
-1. **Tool Call Tracking**: `tool.execute.before` hook increments `SessionStats.total` and per-tool counts in `src/lib/state.ts`
-2. **Circuit Breaker Check**: Repeated tool signature detection — if same tool+args called ≥16 times, throws error
-3. **Tool Budget Check**: If `total > 400`, throws error
-4. **Lifecycle Patching**: Every tool event calls `noteObservedActivity()` → `patchSessionContinuity()` updates durable JSON
-5. **Event Processing**: `event` hook feeds `lifecycleManager.handleEvent()` which maps SDK events to continuity status
-6. **Compaction Context**: `experimental.session.compacting` hook injects full harness state snapshot into compaction prompt
-
-### Continuity Hydration Flow
-
-1. **Startup**: `lifecycleManager.hydrateFromContinuity()` reads all records from `session-continuity.json`
-2. **State Rebuild**: For each record, `hydrateDelegationState()` restores in-memory Maps (sessionToRoot, rootBudgets, sessionDelegationMeta)
-3. **Event Replay**: Subsequent SDK events (`session.created`, `session.updated`) call `inheritRootFromParent()` to restore parent-child links
-
-## State Management
-
-### Dual-Layer Architecture
-
-**Layer 1: In-Memory Maps** (`src/lib/state.ts`)
-- `rootBudgets: Map<string, RootBudget>` — tracks descendant sets and reservations per root
-- `sessionToRoot: Map<string, string>` — maps any session to its root ID
-- `sessionStats: Map<string, SessionStats>` — tool call counts, loop detection, warnings
-- `sessionDelegationMeta: Map<string, DelegationMeta>` — agent, depth, category, model, queueKey
-
-**Layer 2: Durable JSON** (`src/lib/continuity.ts`)
-- File: `.opencode/state/opencode-harness/session-continuity.json` (configurable via `OPENCODE_HARNESS_CONTINUITY_FILE` or `OPENCODE_HARNESS_STATE_DIR`)
-- Schema: `ContinuityStoreFile` with `version: 1`, `updatedAt`, `sessions: Record<string, SessionContinuityRecord>`
-- Each record: `sessionID`, `toolProfile`, `promptParams`, `metadata` (full delegation chain, lifecycle state)
-- Deep-clone-on-read: `cloneContinuityRecord()` prevents mutation of cached objects
-- Write-through: `persistStore()` serializes to disk on every mutation
-
-**Synchronization Strategy:**
-- In-memory Maps are the fast-path for hot reads (tool.execute.before/after hooks)
-- Durable JSON is the source of truth for continuity across restarts
-- On startup, Maps are hydrated from JSON via `hydrateFromContinuity()`
-- SDK events (`session.created`, `session.updated`) trigger `inheritRootFromParent()` to keep Maps in sync
-
-## Lifecycle Model
-
-### Session Phases
-
-Defined in `src/lib/types.ts` as `SessionLifecyclePhase`:
-
-| Phase | Trigger | Next Possible |
-|-------|---------|---------------|
-| `created` | `recordSessionContinuity()` called during `launchDelegatedSession()` | `queued`, `dispatching` |
-| `queued` | Queue lane full (`active >= limit`) | `dispatching` |
-| `dispatching` | Queue lane acquired, prompt about to fire | `running` |
-| `running` | Prompt dispatched (sync or async) | `completed`, `failed` |
-| `completed` | Assistant response ready (sync) or idle detected (async) | terminal |
-| `failed` | Error, timeout, cancellation, or deletion | terminal |
-
-### Status → Phase Mapping
-
-`mapStatusToPhase()` in `src/lib/lifecycle-manager.ts`:
-
-| Continuity Status | Mapped Phase |
-|-------------------|--------------|
-| `pending` | `created` (or previous phase) |
-| `queued` | `queued` |
-| `running` | `running` (or previous phase if queued/dispatching) |
-| `completed` | `completed` |
-| `error` | `failed` |
-| `cancelled` | `failed` |
-| `interrupt` | `running` (or previous phase if queued/dispatching) |
-
-### Event Handling
-
-Events flow through `HarnessLifecycleManager.handleEvent()` in `src/lib/lifecycle-manager.ts`:
-
-1. **Terminal Events**: `session.idle`, `session.error`, `session.deleted` fed to `CompletionDetector.feed()`
-2. **Session Created/Updated**: `inheritRootFromParent()` restores root mapping, `hydrateDelegationState()` restores delegation meta
-3. **Session Deleted**: `forgetSession()` cleans all in-memory Maps, `deleteSessionContinuity()` removes from JSON
-4. **Status Inference**: `inferContinuityStatusFromEvent()` in `src/lib/runtime.ts` maps SDK event signals to continuity status
-5. **Lifecycle Patch**: `patchSessionContinuity()` updates phase, timestamps, observation, and queue state
-
-### Run Modes
-
-- **Sync** (`run_in_background: false`): `sendPrompt()` blocks until assistant completes, returns assistant text directly
-- **Async** (`run_in_background: true`): `sendPrompt()` fires in background, returns task metadata immediately, `observeBackgroundCompletion()` polls for completion
-
-## Completion Detection Mechanism
-
-**Location:** `src/lib/completion-detector.ts`
-
-**Two-Signal Detection:**
-
-1. **Terminal Event Signal**: Listens for OpenCode SDK events:
-   - `session.idle` → `"idle"` (completed successfully)
-   - `session.error` → `"error"` (failed with error)
-   - `session.deleted` → `"deleted"` (session removed)
-
-2. **Message Stability Signal**: Monitors message count changes:
-   - On first message count or count change: starts `stabilityTimeoutMs` (10s) timer
-   - If count unchanged for 10s: resolves as `"idle"`
-   - If count changes during timer: resets timer
-
-**Watch Pattern:**
-- `watch(sessionID, timeoutMs)`: Returns promise that resolves with `CompletionResult`
-- Pre-cached results: If terminal event arrived before `watch()` called, returns cached immediately
-- Timeout: After `timeoutMs` (180000ms from plugin config), resolves as `"timeout"`
-- Cancel: `cancel(sessionID)` resolves as `"cancelled"`
-
-**Background Completion Flow:**
+### Delegation Flow (WaiterModel)
 ```
-sendPrompt() fires (background)
-  → observeBackgroundCompletion() calls completionDetector.watch()
-    → Terminal event arrives → patchLifecycle(completed/failed)
-    → notifyParentSession() injects <system_reminder> into parent
-    → releaseQueue("background-complete")
+Agent calls delegate-task tool
+  → DelegationManager.dispatch()
+    → validateAgent() (SDK call to list available agents)
+    → semaphore.acquire() (concurrency slot)
+    → client.session.create() (child session)
+    → registerDelegation() (in-memory maps + safety timer)
+    → persistAllDelegations() (JSON file)
+    → client.session.prompt() (fire-and-forget, .then() transitions to "running")
+  → Returns immediately: { status: "dispatched", delegationId }
+
+Later: session.idle event arrives via hooks
+  → DelegationManager.handleSessionIdle()
+    → Transitions "dispatched" → "running"
+    → scheduleStabilityPoll() (3s intervals)
+    → After STABILITY_THRESHOLD (3) consecutive stable polls:
+      → finalizeDelegation()
+        → client.session.messages() (fetch output)
+        → extractAssistantText()
+        → Mark "completed", persist, cleanup timers
+
+Safety ceiling timer fires (30 min default):
+  → handleSafetyCeiling()
+    → Mark "timeout", abort child session, persist, cleanup
 ```
 
-## Circuit Breaker and Tool Budget System
-
-**Location:** `src/plugin.ts` (lines 110-145, `tool.execute.before` hook)
-
-**Circuit Breaker:**
-- Threshold: `CIRCUIT_BREAKER_THRESHOLD = 16`
-- Detection: `makeToolSignature(toolName, args)` creates stable hash of tool+args
-- Window: Consecutive identical signatures increment `stats.loop.count`
-- Trip: When `count >= 16`, throws `[Harness] Circuit breaker tripped...`
-- Reset: Different tool or different args resets `count` to 1 and updates `signature`
-
-**Tool Budget:**
-- Limit: `MAX_TOOL_CALLS_PER_SESSION = 400`
-- Tracking: `stats.total` incremented on every `tool.execute.before`
-- Enforcement: When `total > 400`, throws `[Harness] Session exceeded the tool call budget`
-
-**Warning Accumulation:**
-- `addWarning(sessionID, message)` stores up to 25 warnings per session
-- Warnings surface in `tool.execute.after` metadata and compaction context
-
-## Delegation Chain
-
-**Location:** `src/plugin.ts` (delegate-task tool), `src/lib/state.ts` (budget tracking)
-
-**Chain Structure:**
+### Lifecycle Flow
 ```
-Root Session (depth 0)
-  └── Child Session (depth 1) — researcher/builder/critic
-        └── Grandchild Session (depth 2)
-              └── Great-Grandchild Session (depth 3) ← MAX_DEPTH
+Plugin loads:
+  → loadRuntimePolicy() (workspace policy)
+  → new DelegationManager(client)
+  → delegationManager.recoverPending() (rehydrate from disk)
+  → createHarnessLifecycleManager() (concurrency limit from env or default 3)
+  → lifecycleManager.hydrateFromContinuity() (load delegation state for tracked sessions)
+
+Event arrives:
+  → createCoreHooks.event()
+    → lifecycleManager.handleEvent()
+      → CompletionDetector.feed() (idle/error/deleted signals)
+    → replayPendingNotificationsForEvent()
+    → Observers: delegationEventObserver (routes idle→DM, deleted→DM), sessionEventObserver (auto-loop)
+
+session.idle + delegation packet:
+  → createSessionHooks.event()
+    → Auto-loop: check for completion signal, retry with backoff, max 5 iterations
+
+Compacting:
+  → createSessionHooks.compacting()
+    → Inject lifecycle state + continuity snapshot into context
 ```
 
-**Constraints:**
-- `MAX_DEPTH = 3`: Maximum delegation depth
-- `MAX_DESCENDANTS_PER_ROOT = 10`: Maximum total descendants per root session
-- `VALID_AGENTS = ["researcher", "builder", "critic"]`: Allowed specialist agents
-- `VALID_DELEGATION_CATEGORIES = ["research", "implementation", "review", "visual-engineering"]`: Routing categories
+### Continuity Flow (Dual-Layer State)
+```
+Read path:
+  ensureStoreLoaded() → loadStoreFromDisk() if cache miss
+  getSessionContinuity(id) → cloneContinuityRecord() (deep clone)
 
-**Permission Scoping by Agent:**
+Write path:
+  recordSessionContinuity(record) → normalize + clone → store in cache → persistStore() (JSON file)
+  patchSessionContinuity(id, patch) → merge with clone → persistStore()
 
-| Permission | researcher | builder | critic |
-|------------|-----------|---------|--------|
-| edit | deny | allow | deny |
-| write | deny | allow | deny |
-| bash | deny | allow | allow |
-| read | allow | allow | allow |
-| grep | allow | allow | allow |
-| glob | allow | allow | allow |
-| task | deny | deny | deny |
-| delegate-task | deny | deny | deny |
+Hydration path:
+  lifecycleManager.hydrateFromContinuity()
+    → listSessionContinuity() (all records)
+    → For each with delegation metadata: hydrateDelegationState() → populate in-memory maps
 
-**Tool Compatibility by Agent:**
-- **Researcher**: `required: [read, glob, grep, webfetch]`, `mustNot: [edit, write, bash, task]`
-- **Builder**: `required: [read, glob, grep, edit, write, bash]`, `mustNot: [task]`
-- **Critic**: `required: [read, glob, grep, bash]`, `mustNot: [edit, write, task]`
+Tool call tracking (in-memory only):
+  tool.execute.before → stateManager.ensureStats() → increment total, track loop signature
+  tool.execute.after → inject _harness metadata into output
+```
 
-**Queue Key Resolution** (`buildDelegationQueueKey()` in `src/lib/concurrency.ts`):
-1. If `model` specified: `model:<model>` (per-model lane)
-2. If `agent` + `category`: `agent:<agent>:category:<category>`
-3. If only `agent`: `agent:<agent>`
-4. If only `category`: `category:<category>`
-5. Default: `"default"`
+## Dependency Graph
 
-## Error Handling
+```
+types.ts (LEAF — no imports)
+├── task-status.ts → types.ts
+├── state.ts → types.ts
+├── helpers.ts → types.ts
+├── continuity.ts → types.ts
+├── concurrency.ts → types.ts, state.ts
+├── session-api.ts → helpers.ts, @opencode-ai/sdk
+├── runtime.ts → helpers.ts, types.ts
+├── completion-detector.ts → (SELF-CONTAINED)
+├── notification-handler.ts → session-api.ts, types.ts
+├── runtime-policy.ts → types.ts
+└── lifecycle-manager.ts → completion-detector.ts, continuity.ts, session-api.ts, state.ts, types.ts
 
-**Strategy:** Fail-fast with context preservation
+delegation-manager.ts → concurrency.ts, continuity.ts, helpers.ts, types.ts, @opencode-ai/sdk
 
-**Patterns:**
-- All errors prefixed with `[Harness]` for identification
-- Circuit breaker and budget violations throw immediately (no graceful degradation)
-- Session creation failures rollback reservation via `rollbackReservation(rootID)`
-- Notification failures are best-effort (caught and swallowed in `notifyParentSession()`)
-- Continuity load failures return empty store (no crash on corrupted JSON)
-- Cycle detection in `walkParentChain()` throws on parent loop
+hooks/ → lib/ modules (no cross-hook imports)
+tools/ → lib/ modules, shared/, @opencode-ai/plugin/tool, zod
+shared/ → (no imports)
+schema-kernel/ → zod
+```
 
-## Cross-Cutting Concerns
+**Max dependency chain:** 2 levels. `types.ts` changes ripple to most modules.
 
-**Logging:**
-- `client.app.log()` for structured logging (per OpenCode SDK convention)
-- Warnings accumulated in `SessionStats.warnings` (max 25 per session)
-- Errors surfaced in tool metadata (`_harness.recentWarnings`)
+## Design Patterns
 
-**Validation:**
-- Zod schemas in `src/schema-kernel/prompt-enhance.schema.ts` validate all tool outputs
-- Agent names validated against `VALID_AGENTS` enum
-- Categories validated against `VALID_DELEGATION_CATEGORIES` enum
-- Tool signatures use `stableStringify()` for deterministic comparison
+### Dual-Layer State
+Durable JSON file (`continuity.ts`) provides persistence; in-memory Maps (`state.ts`) provide fast access. Hydrated on startup, deep-cloned on read.
 
-**Environment Configuration:**
-- `OPENCODE_HARNESS_STATE_DIR`: Override continuity state directory
-- `OPENCODE_HARNESS_CONTINUITY_FILE`: Override continuity file path directly
-- `OPENCODE_HARNESS_CONCURRENCY_LIMIT`: Override concurrency limit (default: 3)
+### CQRS Tools
+Tools (`delegate-task`, `delegation-status`) are write-side / query-side. Hooks are read-side (observe events, transform messages). No tool writes to hook state and no hook directly invokes tools.
+
+### WaiterModel (Always-Background)
+`delegate-task` dispatches and returns immediately with a delegation ID. Completion is detected asynchronously via dual-signal (session.idle + stability). Parent agent polls `delegation-status` to get results.
+
+### Dual-Signal Completion Detection
+Two independent signals confirm completion:
+1. `session.idle` event — the session stopped producing output
+2. Message count stability — 3 consecutive polls with unchanged message count
+
+### Safety Ceiling (Not Deadline)
+`DEFAULT_SAFETY_CEILING_MS` (30 min) is a MAX runtime, not a target. Tasks complete when dual-signal confirms. Safety ceiling only fires if the session hangs.
+
+### Deep-Clone-on-Read
+Every `getSessionContinuity()` call returns a deep clone. Every `patchSessionContinuity()` clones incoming values before persisting. Prevents mutation aliasing across the codebase.
+
+### Circuit Breaker
+Tool guard hook detects repeated identical tool calls (same tool name + same args). Trips after `repeatedSignatureThreshold` (default: 16) consecutive calls.
+
+### SpawnReservation Budget
+`reserveSubagentSpawn()` reserves a descendant slot before session creation. `release()` confirms spawn; `rollback()` returns the slot on failure. Idempotent — double-call is a no-op.
 
 ---
 
-*Architecture analysis: 2026-04-06*
+*Architecture analysis: 2026-04-21*

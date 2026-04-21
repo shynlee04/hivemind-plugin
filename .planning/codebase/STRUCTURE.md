@@ -1,270 +1,305 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-04-06
+> Generated: 2026-04-21
+> Agent: gsd-codebase-mapper (arch-focus)
 
 ## Directory Layout
 
 ```
-opencode-harness/
-├── src/                          # Source code (npm package)
-│   ├── plugin.ts                 # Composition root (~450 LOC)
-│   ├── index.ts                  # Public API re-exports (barrel)
+harness-experiment/
+├── src/                          # Hard Harness — TypeScript plugin source
+│   ├── plugin.ts                 # Composition root (77 LOC)
+│   ├── index.ts                  # Public API re-exports (14 LOC)
 │   ├── lib/                      # Core library modules
-│   │   ├── types.ts              # Shared types + constants (leaf — no imports)
-│   │   ├── task-status.ts        # Task status transitions + guards (leaf)
-│   │   ├── helpers.ts            # Pure utilities (leaf)
-│   │   ├── state.ts              # In-memory Maps (sessionStats, rootBudgets)
-│   │   ├── continuity.ts         # Durable JSON persistence (~635 LOC)
-│   │   ├── concurrency.ts        # Keyed semaphore (FIFO queue)
-│   │   ├── completion-detector.ts # Two-signal completion detection
-│   │   ├── session-api.ts        # Typed OpenCode SDK wrappers
-│   │   ├── runtime.ts            # Event→status mapping
-│   │   ├── notification-handler.ts # Async completion notification
-│   │   ├── lifecycle-manager.ts  # Session lifecycle state machine (~500 LOC)
-│   │   └── agent-registry.ts     # Agent config parsing (frontmatter)
-│   ├── tools/                    # LLM-facing tools (write-side)
-│   │   ├── prompt-skim/          # Fast prompt content scanning
-│   │   │   ├── index.ts          # Public API re-export
-│   │   │   ├── tools.ts          # Tool implementation
-│   │   │   └── types.ts          # Type definitions
-│   │   ├── prompt-analyze/       # Line-by-line prompt analysis
-│   │   │   ├── index.ts          # Public API re-export
-│   │   │   ├── tools.ts          # Tool implementation
-│   │   │   └── types.ts          # Type definitions
-│   │   ├── context-budget/       # Context budget calculation
-│   │   │   ├── index.ts          # Public API re-export
-│   │   │   ├── tools.ts          # Tool implementation
-│   │   │   └── types.ts          # Type definitions
-│   │   └── session-patch/        # Session file section patching
-│   │       ├── index.ts          # Public API re-export
-│   │       ├── tools.ts          # Tool implementation
-│   │       └── types.ts          # Type definitions
-│   ├── hooks/                    # Read-side context injection
-│   │   ├── system-transform.ts   # Injects prompt-enhance contract into system prompt
-│   │   └── messages-transform.ts # Injects context packets for prompt-enhance sessions
-│   ├── shared/                   # Transitional utilities (leaf modules)
-│   │   ├── tool-helpers.ts       # renderToolResult()
-│   │   └── tool-response.ts      # success/error/pending envelope
-│   ├── schema-kernel/            # Zod contracts (machine-authoritative)
-│   │   ├── index.ts              # Barrel re-export
-│   │   └── prompt-enhance.schema.ts # 6 Zod schemas for prompt-enhance pipeline
-│   └── plugins/                  # Additional plugin exports
-│       └── prompt-enhance.ts     # Standalone prompt-enhance plugin (compaction tracking)
-├── tests/                        # Unit + integration tests (vitest)
-│   ├── lib/                      # Mirror of src/lib/
-│   │   ├── helpers.test.ts
-│   │   ├── task-status.test.ts
-│   │   ├── session-api.test.ts
-│   │   ├── notification-handler.test.ts
-│   │   ├── completion-detector.test.ts
-│   │   └── agent-registry.test.ts
-│   ├── tools/                    # Tool tests
-│   │   ├── prompt-skim.test.ts
-│   │   ├── prompt-analyze.test.ts
-│   │   ├── context-budget.test.ts
-│   │   └── session-patch.test.ts
-│   ├── schema-kernel/            # Schema validation tests
-│   │   └── prompt-enhance.schema.test.ts
-│   ├── integration/              # Integration tests
-│   │   └── prompt-enhance-pipeline.test.ts
-│   └── plugins/                  # Plugin tests
-│       └── prompt-enhance-compaction.test.ts
-├── .opencode/                    # Soft meta-concepts (user-configurable)
-│   ├── agents/                   # Agent definitions (coordinator, builder, etc.)
-│   ├── commands/                 # Slash commands (start-work, plan, etc.)
-│   ├── rules/                    # Governance rules
-│   ├── plugins/                  # Runtime plugin stubs
-│   ├── hivefiver/                # Hivefiver workflow definitions
-│   ├── trashskills/              # Deprecated/unused skills
-│   └── tools/                    # Tool definitions
-├── package.json                  # Package manifest
-├── tsconfig.json                 # TypeScript config (ES2022, strict)
-├── vitest.config.ts              # Vitest config (globals: true)
-├── opencode.json                 # OpenCode plugin config
-├── AGENTS.md                     # Project governance
-├── README.md                     # Package documentation
-└── LICENSE                       # MIT license
+│   │   ├── types.ts              # Shared types + constants — LEAF (378 LOC)
+│   │   ├── delegation-manager.ts # Delegation orchestrator — WaiterModel (450 LOC)
+│   │   ├── continuity.ts         # Durable JSON persistence (401 LOC)
+│   │   ├── concurrency.ts        # Keyed semaphore + SpawnReservation (298 LOC)
+│   │   ├── state.ts              # In-memory Maps — TaskStateManager (251 LOC)
+│   │   ├── runtime-policy.ts     # Policy loading, validation, resolution (237 LOC)
+│   │   ├── session-api.ts        # Typed OpenCode SDK wrappers (230 LOC)
+│   │   ├── helpers.ts            # Pure utilities (175 LOC)
+│   │   ├── notification-handler.ts # Async completion notification (169 LOC)
+│   │   ├── lifecycle-manager.ts  # Session lifecycle — STUB (135 LOC)
+│   │   ├── completion-detector.ts # Two-signal completion detection (126 LOC)
+│   │   ├── runtime.ts            # Event→status inference (95 LOC)
+│   │   └── task-status.ts        # Status transition guards (22 LOC)
+│   ├── hooks/                    # Event hook factories (read-side)
+│   │   ├── types.ts              # Hook dependency types (28 LOC)
+│   │   ├── create-core-hooks.ts  # event, system.transform, shell.env (136 LOC)
+│   │   ├── create-session-hooks.ts # Auto-loop, compaction (295 LOC)
+│   │   ├── create-tool-guard-hooks.ts # Circuit breaker, budget, metadata (153 LOC)
+│   │   └── messages-transform.ts  # Prompt-enhance context injection (92 LOC)
+│   ├── tools/                    # Plugin tools (write-side)
+│   │   ├── delegate-task.ts      # Delegation dispatch tool (60 LOC)
+│   │   ├── delegation-status.ts  # Delegation status polling (71 LOC)
+│   │   ├── prompt-skim/          # Prompt skimming tool
+│   │   │   ├── index.ts          # Factory (6 LOC)
+│   │   │   ├── tools.ts          # Implementation (85 LOC)
+│   │   │   └── types.ts          # Types (18 LOC)
+│   │   ├── prompt-analyze/       # Prompt analysis tool
+│   │   │   ├── index.ts          # Factory (6 LOC)
+│   │   │   ├── tools.ts          # Implementation (155 LOC)
+│   │   │   └── types.ts          # Types (17 LOC)
+│   │   └── session-patch/        # Session patching tool
+│   │       ├── index.ts          # Factory (6 LOC)
+│   │       ├── tools.ts          # Implementation (103 LOC)
+│   │       └── types.ts          # Types (19 LOC)
+│   ├── shared/                   # Cross-cutting tool utilities
+│   │   ├── tool-response.ts      # Standard response envelope (71 LOC)
+│   │   └── tool-helpers.ts       # Tool result rendering (9 LOC)
+│   └── schema-kernel/            # Zod schemas for prompt-enhance pipeline
+│       ├── index.ts              # Barrel re-exports (24 LOC)
+│       └── prompt-enhance.schema.ts # Schema definitions (169 LOC)
+├── tests/                        # Test files (vitest)
+│   ├── lib/                      # Unit tests for lib/ modules
+│   │   ├── delegation-manager.test.ts  (1099 LOC)
+│   │   ├── session-api.test.ts         (478 LOC)
+│   │   ├── helpers.test.ts             (452 LOC)
+│   │   ├── concurrency.test.ts         (375 LOC)
+│   │   ├── completion-detector.test.ts (326 LOC)
+│   │   ├── notification-handler.test.ts (262 LOC)
+│   │   ├── runtime-policy.test.ts      (253 LOC)
+│   │   ├── completion-detector-crash.test.ts (238 LOC)
+│   │   ├── state.test.ts               (207 LOC)
+│   │   ├── task-status.test.ts         (199 LOC)
+│   │   └── helpers/
+│   │       └── in-memory-client.ts     (58 LOC) — test helper
+│   ├── tools/                    # Tool-focused tests
+│   │   ├── delegation-status.test.ts   (264 LOC)
+│   │   ├── delegate-task.test.ts       (253 LOC)
+│   │   ├── session-patch.test.ts       (193 LOC)
+│   │   ├── prompt-analyze.test.ts      (129 LOC)
+│   │   └── prompt-skim.test.ts         (120 LOC)
+│   ├── schema-kernel/
+│   │   └── prompt-enhance.schema.test.ts (457 LOC)
+│   ├── integration/
+│   │   └── prompt-enhance-pipeline.test.ts (250 LOC)
+│   └── plugins/
+│       └── prompt-enhance-compaction.test.ts (10 LOC)
+├── .opencode/                    # Soft Meta-Concepts (user-configurable)
+│   ├── plugins/                  # Plugin loader
+│   ├── agents/                   # Agent definitions
+│   ├── skills/                   # Skill definitions
+│   ├── commands/                 # Slash commands
+│   └── rules/                    # Governance rules
+├── dist/                         # Compiled output (generated)
+├── docs/                         # Documentation
+├── bin/                          # CLI scripts
+├── templates/                    # Template files
+├── package.json                  # npm package manifest
+├── tsconfig.json                 # TypeScript configuration
+├── vitest.config.ts              # Test configuration
+└── opencode.json                 # OpenCode runtime configuration
 ```
 
-## Directory Purposes
+## Module Sizes
 
-**`src/`** — npm package source. Compiled to `dist/` via `tsc -p tsconfig.json`. Two entry points:
-- `src/index.ts` → `opencode-harness` (library exports)
-- `src/plugin.ts` → `opencode-harness/plugin` (OpenCode plugin)
+### Source Files (`src/`) — Total: 4,581 LOC
 
-**`src/lib/`** — Core business logic. 11 modules with clear dependency ordering:
-- Leaf (no imports from lib/): `types.ts`, `task-status.ts`, `helpers.ts`
-- Near-leaf: `concurrency.ts`, `completion-detector.ts`
-- Mid-level: `state.ts`, `continuity.ts`, `session-api.ts`, `runtime.ts`, `notification-handler.ts`, `agent-registry.ts`
-- Deepest: `lifecycle-manager.ts` (depends on most modules, 2 levels deep)
+| File | LOC | Category |
+|------|-----|----------|
+| `src/lib/delegation-manager.ts` | 450 | Core Library |
+| `src/lib/continuity.ts` | 401 | Core Library |
+| `src/lib/types.ts` | 378 | Core Library (LEAF) |
+| `src/lib/concurrency.ts` | 298 | Core Library |
+| `src/hooks/create-session-hooks.ts` | 295 | Hooks |
+| `src/lib/state.ts` | 251 | Core Library |
+| `src/lib/runtime-policy.ts` | 237 | Core Library |
+| `src/lib/session-api.ts` | 230 | Core Library |
+| `src/lib/helpers.ts` | 175 | Core Library |
+| `src/schema-kernel/prompt-enhance.schema.ts` | 169 | Schema Kernel |
+| `src/lib/notification-handler.ts` | 169 | Core Library |
+| `src/tools/prompt-analyze/tools.ts` | 155 | Tools |
+| `src/hooks/create-tool-guard-hooks.ts` | 153 | Hooks |
+| `src/hooks/create-core-hooks.ts` | 136 | Hooks |
+| `src/lib/lifecycle-manager.ts` | 135 | Core Library (STUB) |
+| `src/lib/completion-detector.ts` | 126 | Core Library |
+| `src/tools/session-patch/tools.ts` | 103 | Tools |
+| `src/lib/runtime.ts` | 95 | Core Library |
+| `src/hooks/messages-transform.ts` | 92 | Hooks |
+| `src/tools/prompt-skim/tools.ts` | 85 | Tools |
+| `src/plugin.ts` | 77 | Plugin Assembly |
+| `src/tools/delegation-status.ts` | 71 | Tools |
+| `src/shared/tool-response.ts` | 71 | Shared |
+| `src/tools/delegate-task.ts` | 60 | Tools |
+| `src/hooks/types.ts` | 28 | Hooks |
+| `src/schema-kernel/index.ts` | 24 | Schema Kernel |
+| `src/lib/task-status.ts` | 22 | Core Library |
+| `src/tools/session-patch/types.ts` | 19 | Tools |
+| `src/tools/prompt-skim/types.ts` | 18 | Tools |
+| `src/tools/prompt-analyze/types.ts` | 17 | Tools |
+| `src/index.ts` | 14 | Public API |
+| `src/shared/tool-helpers.ts` | 9 | Shared |
+| `src/tools/session-patch/index.ts` | 6 | Tools |
+| `src/tools/prompt-skim/index.ts` | 6 | Tools |
+| `src/tools/prompt-analyze/index.ts` | 6 | Tools |
 
-**`src/tools/`** — LLM-facing tools. Each tool follows the pattern: `index.ts` (barrel), `tools.ts` (implementation), `types.ts` (type definitions). Tools use `tool.schema` (Zod) for arg definitions and validate outputs against `src/schema-kernel/` contracts.
+### Size Breakdown by Layer
 
-**`src/hooks/`** — Read-side OpenCode plugin hooks. No durable writes. Transform system prompts and message history based on session continuity data.
+| Layer | LOC | % of Total |
+|-------|-----|-----------|
+| Core Library (`src/lib/`) | 2,817 | 61.5% |
+| Hooks (`src/hooks/`) | 704 | 15.4% |
+| Tools (`src/tools/`) | 546 | 11.9% |
+| Schema Kernel (`src/schema-kernel/`) | 193 | 4.2% |
+| Shared (`src/shared/`) | 80 | 1.7% |
+| Plugin Assembly (`src/plugin.ts`) | 77 | 1.7% |
+| Public API (`src/index.ts`) | 14 | 0.3% |
+| AGENTS.md notes (`src/lib/AGENTS.md`) | — | — |
 
-**`src/shared/`** — Transitional utilities. Leaf modules with no internal dependencies. `tool-helpers.ts` provides `renderToolResult()`, `tool-response.ts` provides the `success/error/pending` envelope pattern.
+## Test Coverage Map
 
-**`src/schema-kernel/`** — Machine-authoritative Zod contracts. 6 schemas for the prompt-enhance pipeline: `PromptSkimResultSchema`, `PromptAnalysisResultSchema`, `ContextBudgetRecordSchema`, `SessionPatchRecordSchema`, `EnhancedPromptOutputSchema`, `PipelineStateSchema`.
+### Test Files — Total: 5,623 LOC
 
-**`src/plugins/`** — Additional plugin exports. `prompt-enhance.ts` is a standalone plugin for compaction tracking (separate from the main harness control plane).
+| Source Module | Test File | Test LOC | Status |
+|--------------|-----------|----------|--------|
+| `src/lib/delegation-manager.ts` | `tests/lib/delegation-manager.test.ts` | 1099 | ✅ Covered |
+| `src/lib/session-api.ts` | `tests/lib/session-api.test.ts` | 478 | ✅ Covered |
+| `src/lib/helpers.ts` | `tests/lib/helpers.test.ts` | 452 | ✅ Covered |
+| `src/lib/concurrency.ts` | `tests/lib/concurrency.test.ts` | 375 | ✅ Covered |
+| `src/lib/completion-detector.ts` | `tests/lib/completion-detector.test.ts` | 326 | ✅ Covered |
+| `src/lib/completion-detector.ts` | `tests/lib/completion-detector-crash.test.ts` | 238 | ✅ Covered (crash scenarios) |
+| `src/lib/notification-handler.ts` | `tests/lib/notification-handler.test.ts` | 262 | ✅ Covered |
+| `src/lib/runtime-policy.ts` | `tests/lib/runtime-policy.test.ts` | 253 | ✅ Covered |
+| `src/lib/state.ts` | `tests/lib/state.test.ts` | 207 | ✅ Covered |
+| `src/lib/task-status.ts` | `tests/lib/task-status.test.ts` | 199 | ✅ Covered |
+| `src/lib/continuity.ts` | — | — | ❌ No dedicated test file |
+| `src/lib/runtime.ts` | — | — | ❌ No dedicated test file |
+| `src/lib/lifecycle-manager.ts` | — | — | ❌ No dedicated test file (stub) |
+| `src/tools/delegate-task.ts` | `tests/tools/delegate-task.test.ts` | 253 | ✅ Covered |
+| `src/tools/delegation-status.ts` | `tests/tools/delegation-status.test.ts` | 264 | ✅ Covered |
+| `src/tools/session-patch/` | `tests/tools/session-patch.test.ts` | 193 | ✅ Covered |
+| `src/tools/prompt-analyze/` | `tests/tools/prompt-analyze.test.ts` | 129 | ✅ Covered |
+| `src/tools/prompt-skim/` | `tests/tools/prompt-skim.test.ts` | 120 | ✅ Covered |
+| `src/schema-kernel/` | `tests/schema-kernel/prompt-enhance.schema.test.ts` | 457 | ✅ Covered |
+| Integration | `tests/integration/prompt-enhance-pipeline.test.ts` | 250 | ✅ Covered |
+| Plugin | `tests/plugins/prompt-enhance-compaction.test.ts` | 10 | ⚠️ Minimal |
 
-**`tests/`** — Mirrors `src/` structure. Uses vitest with globals enabled (no imports needed for `describe`, `it`, `expect`). Coverage targets `src/**/*.ts`, excludes `src/index.ts`.
+### Coverage Gaps
 
-**`.opencode/`** — User-local runtime configuration. Not part of the npm package. Contains agent definitions, commands, rules, and workflow definitions for OpenCode consumption.
+| Module | Risk | Priority |
+|--------|------|----------|
+| `continuity.ts` (401 LOC) | HIGH — persistence layer has no direct tests | High |
+| `runtime.ts` (95 LOC) | MEDIUM — event→status mapping untested | Medium |
+| `lifecycle-manager.ts` (135 LOC) | LOW — stub, will need tests when restored | Low |
 
-## Key File Locations
+## Public API Surface
 
-**Entry Points:**
-- `src/plugin.ts`: OpenCode plugin composition root — exports `HarnessControlPlane`
-- `src/index.ts`: Library re-exports — exports all `src/lib/*` modules
-- `src/plugins/prompt-enhance.ts`: Standalone prompt-enhance plugin — exports `PromptEnhancePlugin`
+`src/index.ts` re-exports the following for external consumers:
 
-**Configuration:**
-- `package.json`: Package manifest, build scripts, peer dependencies
-- `tsconfig.json`: TypeScript strict mode, ES2022 target, NodeNext module resolution
-- `vitest.config.ts`: Test configuration, coverage settings
-- `opencode.json`: OpenCode plugin registration
+```typescript
+// Primary export
+export { HarnessControlPlane } from "./plugin.js"
+export { HarnessControlPlane as default } from "./plugin.js"
 
-**Core Logic:**
-- `src/lib/lifecycle-manager.ts`: Session lifecycle state machine (~500 LOC)
-- `src/lib/continuity.ts`: Durable JSON persistence (~635 LOC)
-- `src/lib/concurrency.ts`: Keyed semaphore with FIFO queue
-- `src/lib/completion-detector.ts`: Two-signal completion detection
-- `src/lib/state.ts`: In-memory Maps for fast-path state access
-
-**Testing:**
-- `tests/lib/`: Unit tests for library modules
-- `tests/tools/`: Unit tests for tools
-- `tests/schema-kernel/`: Schema validation tests
-- `tests/integration/`: Integration tests for prompt-enhance pipeline
-- `tests/plugins/`: Plugin tests for compaction tracking
-
-## Dependency Graph
-
+// Core library re-exports
+export * from "./lib/concurrency.js"          // DelegationConcurrencyQueue, SpawnReservation, reserveSubagentSpawn
+export * from "./lib/continuity.js"           // getSessionContinuity, recordSessionContinuity, patchSessionContinuity, etc.
+export * from "./lib/helpers.js"              // isObject, asString, getNestedValue, unwrapData, buildPromptText, etc.
+export * from "./lib/lifecycle-manager.js"    // HarnessLifecycleManager, createHarnessLifecycleManager
+export * from "./lib/runtime.js"              // inferContinuityStatusFromEvent
+export * from "./lib/session-api.js"          // createSession, getSession, sendPrompt, getSessionID, etc.
+export * from "./lib/state.js"                // taskState, ensureSessionStats, getDelegationMeta, etc.
+export * from "./lib/types.js"                // All types, constants, status enums
+export * from "./lib/task-status.js"          // VALID_TRANSITIONS, canTransition, isTerminal
+export * from "./lib/completion-detector.js"  // CompletionDetector, CompletionSignal, CompletionResult
+export * from "./lib/runtime-policy.js"       // DEFAULT_RUNTIME_POLICY, loadRuntimePolicy, getRuntimePolicyForSession
 ```
-plugin.ts (composition root)
-├── lib/continuity.ts
-│   └── lib/types.ts (leaf)
-├── lib/helpers.ts (leaf)
-│   └── lib/types.ts (leaf)
-├── lib/lifecycle-manager.ts
-│   ├── lib/concurrency.ts
-│   │   └── (leaf — no internal deps)
-│   ├── lib/completion-detector.ts
-│   │   └── (leaf — no internal deps)
-│   ├── lib/continuity.ts
-│   ├── lib/helpers.ts
-│   ├── lib/notification-handler.ts
-│   │   └── lib/session-api.ts
-│   │       ├── lib/helpers.ts
-│   │       └── @opencode-ai/sdk (peer)
-│   ├── lib/runtime.ts
-│   │   └── lib/helpers.ts
-│   ├── lib/session-api.ts
-│   ├── lib/state.ts
-│   │   └── lib/types.ts
-│   └── lib/types.ts
-├── lib/session-api.ts
-├── lib/state.ts
-├── lib/types.ts
-├── tools/prompt-skim/index.ts
-│   ├── tools/prompt-skim/tools.ts
-│   │   ├── shared/tool-helpers.ts (leaf)
-│   │   ├── shared/tool-response.ts (leaf)
-│   │   └── schema-kernel/prompt-enhance.schema.ts
-│   └── tools/prompt-skim/types.ts
-│       └── schema-kernel/prompt-enhance.schema.ts
-├── tools/prompt-analyze/index.ts (same pattern)
-├── tools/context-budget/index.ts (same pattern)
-├── tools/session-patch/index.ts (same pattern)
-├── hooks/system-transform.ts
-│   └── lib/state.ts
-└── hooks/messages-transform.ts
-    └── lib/continuity.ts
-```
 
-**Dependency Rules (enforced by design):**
-- `types.ts` is leaf — depends on nothing within the package
-- `helpers.ts`, `concurrency.ts`, `completion-detector.ts` — leaf or near-leaf
-- `lifecycle-manager.ts` depends on most modules (deepest chain: 2 levels)
-- No circular dependencies
-- Max module size: 500 LOC (continuity.ts at ~635 LOC exceeds this — known debt)
+**NOT re-exported (internal only):**
+- `src/lib/delegation-manager.ts` — accessed via tools, not direct API
+- `src/lib/notification-handler.ts` — internal hook consumer
+- `src/hooks/*` — registered by plugin, not exposed
+- `src/tools/*` — registered by plugin as named tools
+- `src/shared/*` — tool-internal utilities
+- `src/schema-kernel/*` — pipeline-internal schemas
 
-## Naming Conventions
+## File Ownership
 
-**Files:**
-- kebab-case for all files: `lifecycle-manager.ts`, `completion-detector.ts`
-- `*.test.ts` for test files: `helpers.test.ts`, `task-status.test.ts`
-- `index.ts` for barrel re-exports in tool directories
-- `types.ts` for type definitions co-located with tool implementations
-- `tools.ts` for tool implementation
-
-**Directories:**
-- kebab-case: `prompt-skim/`, `context-budget/`, `schema-kernel/`
-- Singular: `lib/`, `tools/`, `hooks/`, `shared/`
-
-**Exports:**
-- PascalCase for classes: `HarnessLifecycleManager`, `DelegationConcurrencyQueue`, `CompletionDetector`
-- camelCase for functions: `createHarnessLifecycleManager()`, `buildPromptText()`, `inferContinuityStatusFromEvent()`
-- SCREAMING_SNAKE_CASE for constants: `MAX_DESCENDANTS_PER_ROOT`, `VALID_AGENTS`, `CIRCUIT_BREAKER_THRESHOLD`
+| File | Owns | Responsibility |
+|------|------|----------------|
+| `src/plugin.ts` | Plugin lifecycle | Wires all dependencies, returns Plugin object |
+| `src/index.ts` | Public API | Barrel re-exports for npm package |
+| `src/lib/types.ts` | Type authority | All shared types and constants |
+| `src/lib/delegation-manager.ts` | Delegation lifecycle | WaiterModel dispatch, dual-signal completion, persistence |
+| `src/lib/continuity.ts` | Durable state | JSON file I/O, normalization, deep cloning |
+| `src/lib/concurrency.ts` | Concurrency control | Keyed semaphore, priority queues, budget reservations |
+| `src/lib/state.ts` | In-memory state | Session stats, root budgets, delegation metadata |
+| `src/lib/runtime-policy.ts` | Policy resolution | Validation, workspace/session merge |
+| `src/lib/session-api.ts` | SDK interface | Typed wrappers, session ID validation |
+| `src/lib/helpers.ts` | Pure utilities | No side effects, no state |
+| `src/lib/notification-handler.ts` | Notifications | Message formatting and delivery |
+| `src/lib/lifecycle-manager.ts` | Session lifecycle | State machine (currently stub) |
+| `src/lib/completion-detector.ts` | Completion signals | Watcher pattern, stability detection |
+| `src/lib/runtime.ts` | Event mapping | Transport signal → continuity status |
+| `src/lib/task-status.ts` | Status guards | Transition validation table |
+| `src/hooks/create-core-hooks.ts` | Core event routing | event, system.transform, shell.env |
+| `src/hooks/create-session-hooks.ts` | Session behavior | Auto-loop, compaction context |
+| `src/hooks/create-tool-guard-hooks.ts` | Tool guards | Circuit breaker, budget, metadata |
+| `src/hooks/messages-transform.ts` | Message transform | Prompt-enhance context injection |
+| `src/hooks/types.ts` | Hook types | HookDependencies interface |
+| `src/tools/delegate-task.ts` | Delegation tool | Agent dispatch via WaiterModel |
+| `src/tools/delegation-status.ts` | Status tool | Delegation query/filter |
+| `src/tools/prompt-skim/` | Prompt analysis | Word/token count, URL extraction |
+| `src/tools/prompt-analyze/` | Prompt analysis | Contradiction/vagueness detection |
+| `src/tools/session-patch/` | Session patching | File section replacement |
+| `src/shared/tool-response.ts` | Response envelope | success/error/pending + type guards |
+| `src/shared/tool-helpers.ts` | Tool utilities | JSON serialization helper |
+| `src/schema-kernel/` | Schema contracts | Zod schemas for prompt-enhance pipeline |
 
 ## Where to Add New Code
 
-**New Tool:**
-- Create directory: `src/tools/<tool-name>/`
-- Add `tools.ts` with `create<ToolName>Tool()` function using `tool()` from `@opencode-ai/plugin/tool`
-- Add `types.ts` with `Action`, `Args`, and result types (re-export from schema-kernel if applicable)
-- Add `index.ts` barrel re-export
-- Register in `src/plugin.ts` under the `tool` object
-- Add Zod schema to `src/schema-kernel/prompt-enhance.schema.ts` if output needs validation
-- Add test: `tests/tools/<tool-name>.test.ts`
+### New Core Module
+- **Location:** `src/lib/<module-name>.ts`
+- **Rules:** Import from `types.ts` first; max 2-level dependency chain; max 500 LOC
+- **Test:** `tests/lib/<module-name>.ts`
+- **Export:** Add to `src/index.ts` if part of public API
 
-**New Library Module:**
-- Add file: `src/lib/<module-name>.ts`
-- Re-export from `src/index.ts`
-- Add test: `tests/lib/<module-name>.test.ts`
+### New Hook
+- **Location:** `src/hooks/create-<hook-name>.ts`
+- **Factory pattern:** Export function that takes `HookDependencies` and returns hook handlers
+- **Registration:** Wire in `src/plugin.ts` within `HarnessControlPlane`
+- **Test:** `tests/hooks/` (create directory if needed)
 
-**New Hook:**
-- Add file: `src/hooks/<hook-name>.ts`
-- Register in `src/plugin.ts` under the appropriate hook key
-- Hooks should be read-only — no durable writes
+### New Tool
+- **Location:** `src/tools/<tool-name>/index.ts` (factory), `tools.ts` (implementation), `types.ts` (types)
+- **Use:** `import { tool } from "@opencode-ai/plugin/tool"` and `zod` for schemas
+- **Response:** Use `success()`/`error()` from `src/shared/tool-response.ts`
+- **Registration:** Add to `src/plugin.ts` → `tool: { ... }` object
+- **Test:** `tests/tools/<tool-name>.ts`
 
-**New Schema:**
-- Add Zod schema to `src/schema-kernel/prompt-enhance.schema.ts`
-- Export type via `src/schema-kernel/index.ts`
-- Tool types re-export from schema-kernel, not defined locally
+### New Type/Constant
+- **Location:** `src/lib/types.ts` (LEAF — no imports)
+- **Rules:** If a type needs imports, put it in the module that owns it, not types.ts
+
+### Change Existing Module
+- **See:** File Ownership table above for which file owns what
+- **Verify:** Run `npm run typecheck` and `npm test` after changes
 
 ## Special Directories
 
-**`.opencode/`** — User-local runtime configuration. Not shipped with npm package. Contains:
-- `agents/`: Agent definitions (coordinator, builder, critic, researcher, etc.)
-- `commands/`: Slash commands (start-work, plan, deep-init, etc.)
-- `rules/`: Governance rules (anti-patterns, commit governance, etc.)
-- `plugins/`: Runtime plugin stubs (thin wrappers re-exporting `dist/`)
-- `hivefiver/`: Hivefiver-specific workflow definitions
-- `trashskills/`: Deprecated/unused skills (should be cleaned up)
+### `dist/`
+- Purpose: Compiled TypeScript output
+- Generated: Yes (by `npm run build`)
+- Committed: Yes (for npm package resolution)
+- Clean: `npm run build` does clean rebuild
 
-**`dist/`** — Compiled output. Generated by `npm run build`. Not committed to git. Contains:
-- `dist/index.js`, `dist/index.d.ts` — Library entry point
-- `dist/plugin.js`, `dist/plugin.d.ts` — Plugin entry point
-- `dist/lib/` — Compiled library modules
-- `dist/tools/` — Compiled tools
-- `dist/hooks/` — Compiled hooks
+### `.opencode/`
+- Purpose: Soft meta-concepts — skills, agents, commands, rules
+- Generated: Partially (some generated, some hand-written)
+- Committed: Yes
 
-**`.opencode/state/opencode-harness/`** — Runtime state directory (outside package source). Contains `session-continuity.json`. Created on first plugin load. Configurable via `OPENCODE_HARNESS_STATE_DIR` or `OPENCODE_HARNESS_CONTINUITY_FILE`.
+### `.planning/`
+- Purpose: GSD planning documents (ROADMAP.md, phase plans, codebase maps)
+- Generated: Yes (by GSD commands)
+- Committed: Yes
 
-## Dead Code and Discrepancies
-
-**`.opencode/trashskills/`** — Contains deprecated skills (`wisdom-accumulation`, `shell-safety`, `planning-with-files`, `harness-overview`). These are not referenced by any active code and should be removed.
-
-**`src/plugins/prompt-enhance.ts`** — Standalone plugin for compaction tracking. Not registered in `src/plugin.ts`. Loaded separately via `.opencode/plugins/prompt-enhance.ts`. This is intentional (separate plugin surface) but creates a parallel state file at `.hivemind/state/session-context-prompt.md` that is distinct from the main continuity store.
-
-**`src/lib/continuity.ts` at ~635 LOC** — Exceeds the 500 LOC module size guideline. The bulk is normalization functions (`normalizePermissionRule`, `normalizeToolProfile`, `normalizeDelegationMeta`, etc.). Could be decomposed into a `src/lib/continuity/normalize.ts` module.
-
-**`src/plugins/prompt-enhance.ts` duplicates logic** — The `ensurePromptEnhanceState()` and `recordCompaction()` functions replicate patterns found in `src/tools/context-budget/tools.ts` and `src/tools/session-patch/tools.ts` (file I/O, frontmatter parsing). Consider extracting shared state-file utilities.
-
-**`_projectRoot` parameter unused** — All tool factory functions (`createPromptSkimTool`, `createPromptAnalyzeTool`, `createContextBudgetTool`, `createSessionPatchTool`) accept a `_projectRoot` parameter that is currently unused (reserved for future path resolution).
+### `docs/`
+- Purpose: Architecture proposals, design documents
+- Generated: No
+- Committed: Yes
 
 ---
 
-*Structure analysis: 2026-04-06*
+*Structure analysis: 2026-04-21*

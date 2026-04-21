@@ -1,150 +1,124 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-06
+> Generated: 2026-04-21
+> Agent: gsd-codebase-mapper (tech-focus)
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.3+ — all source code in `src/**/*.ts`
+- TypeScript 5.x (`^5.0.0`) — All source code in `src/`, strict mode enabled
+
+**Secondary:**
+- Not applicable — pure TypeScript project, no embedded languages
 
 ## Runtime
 
 **Environment:**
-- Node.js >= 20.0.0 (enforced via `engines` in `package.json`)
+- Node.js `>=20.0.0` (specified in `engines` field)
+- ES2022 target compilation
+- ESM modules (`"type": "module"` in `package.json`, `"module": "NodeNext"` in tsconfig)
 
 **Package Manager:**
-- npm
-- Lockfile: `package-lock.json` present
+- npm (inferred from `package.json` — no `pnpm-lock.yaml` or `yarn.lock`)
+- Lockfile: Not verified in worktree
 
-**Module System:**
-- ES Modules (`"type": "module"` in `package.json`)
-
-## Language & Compiler
-
-**TypeScript Configuration** (`tsconfig.json`):
-- Target: `ES2022`
-- Module: `NodeNext`
-- Module Resolution: `NodeNext`
-- Lib: `["ES2022"]`
-- Output: `./dist`
-- Source root: `./src`
-
-**Strict Mode** (all enabled):
-- `strict: true`
-- `noUnusedLocals: true`
-- `noUnusedParameters: true`
-- `noImplicitReturns: true`
-- `noFallthroughCasesInSwitch: true`
-- `verbatimModuleSyntax: true` — requires `import type` for type-only imports
-- `forceConsistentCasingInFileNames: true`
-
-**Output Artifacts:**
-- Declarations (`.d.ts`) + declaration maps (`.d.ts.map`)
-- Source maps (`.js.map`)
-- `types: ["node", "vitest/globals"]`
-
-## Package & Distribution
-
-**Package:** `opencode-harness` v0.1.0
-**Description:** Standalone OpenCode harness control plane package for delegated sessions, continuity, and runtime guardrails.
-
-**Entrypoints** (`package.json` exports):
-- `opencode-harness` → `./dist/index.js` (with types `./dist/index.d.ts`)
-- `opencode-harness/plugin` → `./dist/plugin.js` (with types `./dist/plugin.d.ts`)
-
-**Published Files:** `dist/`, `.opencode/`, `opencode.json`, `README.md`, `LICENSE`
-
-**Peer Dependencies:**
-- `@opencode-ai/plugin` >= 1.1.0
-
-## Dependencies
-
-**Production:**
-- None (relies on peer dependency `@opencode-ai/plugin`)
-
-**Development:**
-- `@types/node` ^20.10.0 — Node.js type definitions
-- `typescript` ^5.3.0 — TypeScript compiler
-- `vitest` ^4.1.2 — Test runner
-
-**Runtime Contract (peer):**
-- `@opencode-ai/plugin` — OpenCode plugin SDK providing:
-  - `tool` — tool definition factory
-  - `tool.schema` — Zod re-export for type-safe arg definitions
-  - Plugin hook system (`event`, `tool.execute.before`, `tool.execute.after`, `system.transform`, `messages.transform`, `shell.env`, `experimental.session.compacting`)
-  - `client.*` API surface (`client.session`, `client.tool`, `client.app`, etc.)
-
-**No external runtime dependencies** — all logic is self-contained within the package. No database drivers, no HTTP clients, no external SDKs beyond OpenCode plugin interface.
-
-## Frameworks & Libraries
+## Frameworks
 
 **Core:**
-- OpenCode Plugin SDK — runtime composition engine for tools, hooks, and lifecycle management
-- Source: `src/plugin.ts` defines `HarnessControlPlane` as the main plugin
+- `@opencode-ai/sdk` `^1.4.2` — OpenCode client SDK for session management, delegation, and event handling
+- `@opencode-ai/plugin` `>=1.1.0` (peer dependency) — OpenCode plugin API for tool/hook registration
+
+**Schema Validation:**
+- `zod` `^4.0.0` — Runtime schema validation for tool inputs, pipeline contracts, and config validation
 
 **Testing:**
-- Vitest 4.1.2 — test runner with globals mode
-- No separate assertion library — uses Vitest built-in `expect`
+- `vitest` `^1.0.0` — Test runner with globals mode enabled
+- Config: `vitest.config.ts` — globals: true, includes `tests/**/*.test.ts`
 
-**No linting/formatting tools detected** — no `.eslintrc`, `.prettierrc`, `biome.json`, or `eslint.config.*` present.
+**Build/Dev:**
+- `typescript` `^5.0.0` (dev) — TypeScript compiler
+- `@types/node` `^20.0.0` (dev) — Node.js type definitions
 
-## Build Commands
+## Key Dependencies
 
-```bash
-npm run clean          # Remove dist/ directory
-npm run build          # Clean + compile TypeScript to dist/ with declarations and source maps
-npm run typecheck      # Type-check without emitting output (gate before commit)
-npm test               # Run all tests via vitest run
-npm run test:watch     # Vitest watch mode
-npm run test:coverage  # Coverage report (covers src/**/*.ts, excludes src/index.ts)
-npm run prepack        # Auto-runs build before npm pack/publish
-```
+**Critical:**
+- `@opencode-ai/sdk` `^1.4.2` — Provides `createOpencodeClient`, session CRUD, prompt sending, event subscription. Used throughout `src/lib/session-api.ts`, `src/lib/delegation-manager.ts`
+- `zod` `^4.0.0` — Schema definitions for all tool inputs (`src/tools/delegate-task.ts`, `src/tools/delegation-status.ts`) and pipeline contracts (`src/schema-kernel/prompt-enhance.schema.ts`)
+- `@opencode-ai/plugin` `>=1.1.0` (peer) — Provides `Plugin` type, `tool()` factory, `tool.schema` builder. Used in `src/plugin.ts` and all tool files
 
-## Test Framework
+**Infrastructure:**
+- `node:fs` — File persistence for continuity store (`src/lib/continuity.ts`) and delegations (`src/lib/delegation-manager.ts`)
+- `node:path` — Path utilities for storage locations
+- `node:crypto` — UUID generation for delegation IDs (`crypto.randomUUID()`)
 
-**Runner:** Vitest 4.1.2
-**Config:** `vitest.config.ts`
+## TypeScript Configuration
 
-**Settings:**
-- `globals: true` — `describe`, `it`, `expect` available without imports
-- `include: ["tests/**/*.test.ts"]`
-- `coverage.include: ["src/**/*.ts"]`
-- `coverage.exclude: ["src/index.ts"]` (re-export file)
-- `typecheck.enabled: false` — type checking done separately via `npm run typecheck`
+**Strict Mode (all enabled):**
+- `strict: true` — Full strict mode
+- `noUnusedLocals: true` — Error on unused local variables
+- `noUnusedParameters: true` — Error on unused function parameters
+- `noImplicitReturns: true` — Error on missing return statements
+- `noFallthroughCasesInSwitch: true` — Error on switch fallthrough
+- `verbatimModuleSyntax: true` — Must use `import type` for type-only imports
 
-**Test Files (13 total):**
-- `tests/lib/*.test.ts` — unit tests for library modules
-- `tests/tools/*.test.ts` — tool-level tests
-- `tests/schema-kernel/*.test.ts` — schema validation tests
-- `tests/integration/*.test.ts` — integration tests
-- `tests/plugins/*.test.ts` — plugin-level tests
+**Compilation:**
+- Target: `ES2022`
+- Module: `NodeNext` (ESM with `.js` extension imports)
+- Module Resolution: `NodeNext`
+- Output: `./dist/` (from `./src/`)
+- Declarations: enabled (`declaration: true`, `declarationMap: true`)
+- Source Maps: enabled (`sourceMap: true`)
+- Skip lib check: enabled (`skipLibCheck: true`)
 
-## Configuration Files
+**Important:** Import paths must use `.js` extensions (e.g., `import { X } from "./module.js"`) due to `NodeNext` module resolution, even though source files are `.ts`.
 
-| File | Purpose |
-|------|---------|
-| `package.json` | Package manifest, scripts, dependencies, exports |
-| `tsconfig.json` | TypeScript compiler configuration |
-| `vitest.config.ts` | Test runner configuration |
-| `opencode.json` | OpenCode plugin configuration |
-| `.gitignore` | Git ignore rules |
+## Build System
 
-**No detected:** `.eslintrc*`, `.prettierrc*`, `biome.json`, `.editorconfig`, `.nvmrc`, `.env*`
+**Scripts:**
+| Command | Purpose |
+|---------|---------|
+| `npm run build` | Compile TypeScript (`tsc`) — outputs to `dist/` |
+| `npm run typecheck` | Type-check only (`tsc --noEmit`) |
+| `npm run test` | Run all tests (`vitest run`) |
+| `npm run test:watch` | Watch mode (`vitest`) |
+| `npm run test:coverage` | Coverage report (`vitest run --coverage`) |
+| `npm run prepack` | Auto-build before `npm pack` / `npm publish` |
 
-## Project Structure Summary
+**Package Entrypoints:**
+- `opencode-harness` → `./dist/index.js` (main + types)
+- `opencode-harness/plugin` → `./dist/plugin.js` (import + types)
 
-**Source (33 files):**
-- `src/plugin.ts` — Main plugin composition (tools + hooks assembly)
-- `src/index.ts` — Public API re-exports
-- `src/lib/*.ts` — Core library (11 modules: types, helpers, state, concurrency, continuity, lifecycle-manager, session-api, runtime, completion-detector, notification-handler, agent-registry, task-status)
-- `src/tools/*/` — Tool implementations (4 tools: prompt-skim, prompt-analyze, context-budget, session-patch)
-- `src/hooks/*.ts` — Plugin hooks (system-transform, messages-transform)
-- `src/shared/*.ts` — Shared utilities (tool-helpers, tool-response)
-- `src/schema-kernel/*.ts` — Schema contracts (prompt-enhance schema)
-- `src/plugins/*.ts` — Additional plugins (prompt-enhance)
+**File inclusion:** Only `dist/` directory is published (via `files` field)
 
-**Tests (13 files):** Mirror `src/lib/` structure plus tool, schema, integration, and plugin tests.
+## Tooling
+
+**Test Framework:**
+- Vitest `^1.0.0` with globals enabled (no imports needed for `describe`, `it`, `expect`)
+- Config: `vitest.config.ts`
+- Test location: `tests/` directory (mirrors `src/` structure)
+- Coverage: `src/**/*.ts`, excludes `src/index.ts` and `src/**/index.ts`
+- Coverage reporters: text, lcov
+
+**Linting/Formatting:**
+- No dedicated linter config detected (no `.eslintrc`, `eslint.config.*`, `biome.json`)
+- TypeScript strict mode serves as primary code quality enforcement
+- No `.prettierrc` or formatting config detected
+
+**CLI Tools:**
+- None — this is a library package, not a CLI
+
+## Platform Requirements
+
+**Development:**
+- Node.js >= 20.0.0
+- npm (for dependency management)
+- No external services required for build/test
+
+**Production:**
+- OpenCode runtime environment (provides the `@opencode-ai/plugin` peer dependency)
+- File system access for continuity store and delegation persistence
+- Default state directory: `.opencode/state/opencode-harness/`
 
 ---
 
-*Stack analysis: 2026-04-06*
+*Stack analysis: 2026-04-21*

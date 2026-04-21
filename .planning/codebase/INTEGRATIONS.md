@@ -1,203 +1,192 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-06
+> Generated: 2026-04-21
+> Agent: gsd-codebase-mapper (tech-focus)
 
-## OpenCode Plugin Hooks
+## OpenCode Plugin SDK Integration
 
-This package integrates with OpenCode via its plugin system. All hooks are registered in `src/plugin.ts` (the `HarnessControlPlane` plugin).
+**Primary Integration:**
+- `@opencode-ai/plugin` `>=1.1.0` (peer dependency)
+  - Plugin type: `Plugin` — used in `src/plugin.ts` to define `HarnessControlPlane`
+  - Tool factory: `tool()` from `@opencode-ai/plugin/tool` — used in `src/tools/delegate-task.ts`, `src/tools/delegation-status.ts`, and prompt tools
+  - Schema builder: `tool.schema` — used for defining tool argument schemas inline
 
-### Lifecycle Hooks
+**SDK Client (`@opencode-ai/sdk` `^1.4.2`):**
+- Client type: `OpenCodeClient = ReturnType<typeof createOpencodeClient>` — defined in `src/lib/session-api.ts`
+- Used throughout: `src/plugin.ts`, `src/lib/delegation-manager.ts`, `src/lib/lifecycle-manager.ts`, `src/hooks/create-session-hooks.ts`
 
-| Hook | File | Purpose |
-|------|------|---------|
-| `event` | `src/plugin.ts` (line ~147) | Receives all OpenCode lifecycle events. Extracts `event.type` and `sessionID`, then delegates to `lifecycleManager.handleEvent()` for session state transitions. |
-| `tool.execute.before` | `src/plugin.ts` (line ~103) | Pre-tool execution guard. Tracks tool call counts per session, enforces `MAX_TOOL_CALLS_PER_SESSION` (400), detects repeated call loops, and trips circuit breaker at `CIRCUIT_BREAKER_THRESHOLD` (16 repeated identical calls). |
-| `tool.execute.after` | `src/plugin.ts` (line ~134) | Post-tool execution observer. Attaches `_harness` metadata to tool output containing session stats, delegation metadata, continuity status, lifecycle snapshot, and routing info. |
-| `shell.env` | `src/plugin.ts` (line ~213) | Injects deterministic shell environment variables: `CI=true`, `GIT_TERMINAL_PROMPT=0`, `NO_COLOR=1`, `TERM=dumb`. Ensures non-interactive, non-TTY behavior for all subprocesses. |
+**SDK Surface Used:**
 
-### Transform Hooks
+| SDK Method | Location | Purpose |
+|------------|----------|---------|
+| `client.session.create()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Create child sessions for delegation |
+| `client.session.get()` | `src/lib/session-api.ts` | Retrieve session details |
+| `client.session.status()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Get status map for all sessions |
+| `client.session.abort()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Abort running sessions |
+| `client.session.messages()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Retrieve message history |
+| `client.session.prompt()` | `src/lib/session-api.ts`, `src/lib/delegation-manager.ts` | Send prompt to session (sync) |
+| `client.session.promptAsync()` | `src/lib/session-api.ts` | Send prompt to session (async, 204) |
+| `client.session.delete()` | Referenced in event handling | Session cleanup |
+| `client.app.agents()` | `src/lib/delegation-manager.ts` | Validate agent names at dispatch time |
+| `client.session.sendMessage()` | Referenced in lifecycle manager | Send messages to sessions |
 
-| Hook | File | Purpose |
-|------|------|---------|
-| `system.transform` | `src/plugin.ts` (line ~222) → `src/hooks/system-transform.ts` | Injects the "Prompt-Enhance Output Contract" (YAML frontmatter + XML body validation rules) into the system prompt for sessions with delegation metadata. Normal sessions pass through unchanged. |
-| `messages.transform` | `src/plugin.ts` (line ~230) → `src/hooks/messages-transform.ts` | Scans message history for prompt-enhance triggers (`"enhance this prompt"`, `"audit this prompt"`, `"repack this prompt"`, `"prompt-enhance"`, `"/hf-prompt-enhance"`). When detected, injects a context packet (session ID, continuity status, agent, category) before the first user message. |
-| `experimental.session.compacting` | `src/plugin.ts` (line ~164) | Injects a harness state snapshot into the compaction context. Includes tool call counts, delegation metadata (root session, depth, budget, agent, category, model, concurrency key), lifecycle phase/run mode/queue status, observation signals, cleanup reasons, and warnings. Also pushes a full continuity JSON snapshot. |
+## Plugin Registration Points
 
-## OpenCode Plugin Tools
+**Composition Root:** `src/plugin.ts` — `HarnessControlPlane`
 
-All tools are registered under the `tool` namespace in `src/plugin.ts`.
+**Registered Tools (5):**
 
-### `delegate-task`
+| Tool Name | Factory | Purpose |
+|-----------|---------|---------|
+| `delegate-task` | `createDelegateTaskTool()` in `src/tools/delegate-task.ts` | Dispatch work to specialist agents (WaiterModel) |
+| `delegation-status` | `createDelegationStatusTool()` in `src/tools/delegation-status.ts` | Poll delegation status, list/filter delegations |
+| `prompt-skim` | `createPromptSkimTool()` in `src/tools/prompt-skim/index.ts` | Quantitative prompt triage (word count, complexity score) |
+| `prompt-analyze` | `createPromptAnalyzeTool()` in `src/tools/prompt-analyze/index.ts` | Deep prompt analysis (contradictions, vagueness, scope gaps) |
+| `session-patch` | `createSessionPatchTool()` in `src/tools/session-patch/index.ts` | Patch session state file sections with backup |
 
-- **Definition:** Inline in `src/plugin.ts` (line ~243)
-- **Description:** Creates a restricted child session for researcher, builder, or critic work. Optionally runs asynchronously.
-- **Args:**
-  - `description` (string, required) — Short task description
-  - `prompt` (string, required) — Full task prompt for the delegated agent
-  - `agent` (string, optional) — Explicit specialist agent (`researcher`, `builder`, `critic`); overrides category default
-  - `category` (string, optional) — Routing category for agent/model/temperature resolution
-  - `run_in_background` (boolean, required) — Run asynchronously and return task metadata immediately
-  - `session_id` (string, optional) — Override parent session
-  - `scope` (string, optional) — Explicit task scope
-  - `constraints` (string[], optional) — Constraint list passed into child prompt
-  - `model` (string, optional) — Explicit model to request and use as concurrency key
-- **Validation:**
-  - Agent must be one of `researcher`, `builder`, `critic`
-  - Category must be a valid `DelegationCategory`
-  - Delegation depth capped at `MAX_DEPTH` (3)
-  - Descendant count limited by `MAX_DESCENDANTS_PER_ROOT`
-- **Permission rules per agent:**
-  - `researcher`: read-only (deny edit/write/bash/task/delegate-task)
-  - `builder`: full file access (deny task/delegate-task)
-  - `critic`: read + grep + glob + bash allowed (deny edit/write/task/delegate-task)
+**Registered Hooks (8):**
 
-### `prompt-skim`
-
-- **Definition:** `src/tools/prompt-skim/index.ts` → `src/tools/prompt-skim/tools.ts`
-- **Description:** Rapid prompt quality assessment. Scans a prompt for clarity, completeness, and actionability.
-- **Types exported:** `PromptSkimAction`, `PromptSkimArgs`, `PromptSkimResult` (from `src/tools/prompt-skim/types.ts`)
-
-### `prompt-analyze`
-
-- **Definition:** `src/tools/prompt-analyze/index.ts` → `src/tools/prompt-analyze/tools.ts`
-- **Description:** Deep prompt analysis with structured findings. Evaluates prompt structure, intent clarity, and potential ambiguities.
-- **Types exported:** `PromptAnalyzeAction`, `PromptAnalyzeArgs`, `PromptAnalysisFinding`, `PromptAnalysisResult` (from `src/tools/prompt-analyze/types.ts`)
-
-### `context-budget`
-
-- **Definition:** `src/tools/context-budget/index.ts` → `src/tools/context-budget/tools.ts`
-- **Description:** Manages context window budgeting. Tracks and reports context usage per session.
-- **Types exported:** `ContextBudgetAction`, `ContextBudgetArgs`, `ContextBudgetRecord` (from `src/tools/context-budget/types.ts`)
-
-### `session-patch`
-
-- **Definition:** `src/tools/session-patch/index.ts` → `src/tools/session-patch/tools.ts`
-- **Description:** Applies patches to session state. Enables targeted updates to session continuity records.
-- **Types exported:** `SessionPatchAction`, `SessionPatchArgs`, `SessionPatchRecord` (from `src/tools/session-patch/types.ts`)
-
-## APIs & External Services
-
-**OpenCode SDK:**
-- SDK: `@opencode-ai/plugin` (peer dependency `>=1.1.0`)
-- Auth: Handled by OpenCode runtime — no separate credentials needed
-- Used for: `tool` definitions, plugin hooks (`event`, `tool.execute.before/after`, `shell.env`, `system.transform`, `messages.transform`, `experimental.session.compacting`)
-
-**OpenCode Client API:**
-- `client` object injected into plugin factory
-- Used for: `walkParentChain()` to resolve delegation ancestry in `src/lib/session-api.ts`
+| Hook Name | Factory | Purpose |
+|-----------|---------|---------|
+| `event` | `createCoreHooks()` in `src/hooks/create-core-hooks.ts` | Route SDK events to lifecycle manager + observers |
+| `system.transform` | `createCoreHooks()` | System prompt injection (currently no-op stub) |
+| `experimental.chat.system.transform` | `createCoreHooks()` | Chat system prompt injection (currently no-op stub) |
+| `messages.transform` | `createCoreHooks()` | Inject context packets for prompt-enhance sessions |
+| `shell.env` | `createCoreHooks()` | Force non-interactive shell env (CI=true, TERM=dumb) |
+| `event` (session) | `createSessionHooks()` in `src/hooks/create-session-hooks.ts` | Auto-loop retry on `session.idle` for delegation packets |
+| `experimental.session.compacting` | `createSessionHooks()` | Inject harness context into compaction payload |
+| `tool.execute.before` | `createToolGuardHooks()` in `src/hooks/create-tool-guard-hooks.ts` | Circuit breaker, tool budget enforcement |
+| `tool.execute.after` | `createToolGuardHooks()` | Inject `_harness` metadata into tool outputs |
 
 ## Data Storage
 
-**Continuity Store:**
-- Location: Configurable via `OPENCODE_HARNESS_STATE_DIR` or default `.opencode/state/opencode-harness/`
-- Client: `src/lib/continuity.ts` — durable JSON file persistence
-- Format: JSON files per session with deep-clone-on-read semantics
-- Metadata includes: `status`, `route`, `delegation` (agent, category, model), `promptParams`, `toolProfile`
+**Durable Persistence:**
+- Continuity Store: JSON file on disk
+  - Location: `.opencode/state/opencode-harness/continuity.json` (default)
+  - Override: `OPENCODE_HARNESS_STATE_DIR` env var changes base directory
+  - Override: `OPENCODE_HARNESS_CONTINUITY_FILE` env var changes file path
+  - Implementation: `src/lib/continuity.ts` — `loadStoreFromDisk()`, `persistStore()`
+  - Pattern: Deep-clone-on-read (prevents mutation aliasing)
+  - Schema: `ContinuityStoreFile` type in `src/lib/types.ts`
+
+- Delegation Store: JSON file on disk
+  - Location: `.opencode/state/opencode-harness/delegations.json`
+  - Implementation: `src/lib/delegation-manager.ts` — `persistAllDelegations()`, `readPersistedDelegations()`
+  - Schema: Array of `Delegation` objects
 
 **In-Memory State:**
-- Location: `src/lib/state.ts`
-- Structures: `Map<string, SessionStats>` for tool call tracking, `Map<string, DelegationMeta>` for delegation metadata
-- Ephemeral — reconstructed from continuity store on hydrate
+- `src/lib/state.ts` — Maps for `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta`
+- Warning cap: 25 per session
+- Hydrated from continuity store on plugin startup
 
 **File Storage:**
-- Local filesystem only — no cloud storage integration
+- Local filesystem only (via `node:fs`)
+- No cloud/object storage integration
 
 **Caching:**
-- None. All state is either in-memory Maps or durable JSON continuity files.
+- Module-level `storeCache` singleton in `src/lib/continuity.ts`
+- No external caching service
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- Delegated to OpenCode runtime
-- No independent auth flows
+- None — the harness delegates auth to the OpenCode runtime
+- SDK client receives authentication context from the plugin host
+- No custom auth tokens or API keys stored by the harness
 
-**Permission Model:**
-- Agent-scoped permission rules defined in `src/plugin.ts` (`getPermissionRulesForAgent()`)
-- Rules follow `{ permission, pattern, action }` structure
-- Applied per specialist agent (researcher/builder/critic)
+## Internal Module Graph
 
-## Monitoring & Observability
+**Dependency Tree (max depth: 2):**
 
-**Error Tracking:**
-- No external error tracking
-- Errors thrown with `[Harness]` prefix for identification
+```
+src/lib/types.ts (leaf — no imports)
+├── src/lib/task-status.ts → types.ts
+├── src/lib/state.ts → types.ts
+├── src/lib/helpers.ts → types.ts
+├── src/lib/continuity.ts → types.ts
+├── src/lib/runtime-policy.ts → types.ts
+├── src/lib/session-api.ts → helpers.ts
+├── src/lib/runtime.ts → helpers.ts, types.ts
+├── src/lib/notification-handler.ts → helpers.ts
+├── src/lib/completion-detector.ts (self-contained — no imports)
+├── src/lib/concurrency.ts (self-contained — no imports)
+├── src/lib/delegation-manager.ts → concurrency.ts, continuity.ts, helpers.ts, types.ts
+└── src/lib/lifecycle-manager.ts → concurrency.ts, continuity.ts, helpers.ts, session-api.ts, state.ts, types.ts
+```
 
-**Logs:**
-- In-band via `_harness` metadata attached to tool output in `tool.execute.after`
-- Warnings accumulated per session in `SessionStats.warnings`
-- Circuit breaker trips logged as warnings and thrown errors
+**Shared Utilities:**
+- `src/shared/tool-helpers.ts` — `renderToolResult()` JSON serializer
+- `src/shared/tool-response.ts` — `ToolResponse<T>` envelope type with `success()`, `error()`, `pending()` constructors
 
-**Observability surface:**
-- `_harness` metadata on every tool response includes: `totalToolCalls`, `recentWarnings`, `repeatedSignatureCount`, `rootSessionID`, `delegationDepth`, `rootBudgetUsed`, `specialistAgent`, `specialistCategory`, `specialistModel`, `concurrencyKey`, `continuityStatus`, `lifecycle`, `routing`, `continuityStorage`, `continuity`
+**Schema Kernel:**
+- `src/schema-kernel/prompt-enhance.schema.ts` — Zod schemas for pipeline contracts (PromptSkimResult, PromptAnalysisResult, etc.)
+- `src/schema-kernel/index.ts` — Barrel re-exports
 
-## CI/CD & Deployment
+**Hooks Layer:**
+- `src/hooks/types.ts` — `HookDependencies` interface (lifecycle manager, client, state manager)
+- `src/hooks/create-core-hooks.ts` → helpers.ts, continuity.ts, session-api.ts, messages-transform.ts, types.ts
+- `src/hooks/create-session-hooks.ts` → continuity.ts, helpers.ts, session-api.ts, types.ts
+- `src/hooks/create-tool-guard-hooks.ts` → continuity.ts, helpers.ts, runtime-policy.ts, types.ts, state.ts
+- `src/hooks/messages-transform.ts` → continuity.ts
 
-**Hosting:**
-- npm package: `opencode-harness`
-
-**CI Pipeline:**
-- None detected in repository
-
-**Build Pipeline:**
-- `npm run build` → `tsc` compile to `dist/`
-- `npm run typecheck` → `tsc --noEmit` gate
-- `npm test` → `vitest run`
-- `prepack` script auto-runs build before publish
+**Placeholder Directories (`.gitkeep` only):**
+- `src/kernel/` — Reserved for future kernel module
+- `src/cli/` — Reserved for future CLI substrate
+- `src/harness/` — Reserved for future harness orchestration
+- `src/plugins/` — Empty, no content
 
 ## Environment Configuration
 
 **Required env vars:**
-- None required for build/test
-- `OPENCODE_HARNESS_STATE_DIR` (optional) — override continuity storage directory
-- `OPENCODE_HARNESS_CONTINUITY_FILE` (optional) — override continuity file path
+- None for build/test
+
+**Runtime env vars:**
+- `OPENCODE_SESSION_ID` — Fallback parent session ID in `src/tools/delegate-task.ts` when context doesn't provide one
+- `OPENCODE_HARNESS_STATE_DIR` — Override base directory for state storage
+- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
+
+**Injected env vars (via `shell.env` hook):**
+- `CI=true` — Forces non-interactive mode
+- `GIT_TERMINMAL_PROMPT=0` — Disables git prompts
+- `NO_COLOR=1` — Disables color output
+- `TERM=dumb` — Minimal terminal capability
 
 **Secrets location:**
-- No secrets managed by this package
-- Auth delegated to OpenCode runtime
+- None — the harness stores no secrets
+
+## Runtime Policy Configuration
+
+**Default Policy (`src/lib/runtime-policy.ts`):**
+- Concurrency: `globalLimit: 3`
+- Budget: `maxToolCallsPerSession: 400`, `repeatedSignatureThreshold: 16`, `warningCap: 25`
+- Trusted Runtime: `builtinAsyncBackgroundChildSessions: false`
+
+**Policy Override Chain:**
+1. Hardcoded defaults → `DEFAULT_RUNTIME_POLICY`
+2. Workspace-level policy (optional, passed to `loadRuntimePolicy()`)
+3. Per-session overrides from trusted delegation metadata (`SessionPolicyOverride`)
+
+**Resolution:** `getRuntimePolicyForSession()` in `src/lib/runtime-policy.ts`
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- `event` hook — receives all OpenCode lifecycle events
+- None — the harness reacts to OpenCode SDK events, not HTTP webhooks
 
 **Outgoing:**
-- None
+- None — no external HTTP calls beyond the OpenCode SDK client
 
-## Package Exports
+## Monitoring & Observability
 
-From `package.json`:
+**Error Tracking:**
+- None — errors are `[Harness]`-prefixed and thrown/caught locally
+- Warnings stored per-session in memory (`state.ts`) with 25 cap
 
-| Export Path | Resolves To | Types |
-|-------------|-------------|-------|
-| `opencode-harness` (main) | `./dist/index.js` | `./dist/index.d.ts` |
-| `opencode-harness/plugin` | `./dist/plugin.js` | `./dist/plugin.d.ts` |
-| `opencode-harness/package.json` | `./package.json` | — |
-
-**Published files:** `dist/`, `.opencode/`, `opencode.json`, `README.md`, `LICENSE`
-
-**Runtime requirements:**
-- Node.js `>=20.0.0`
-- Peer: `@opencode-ai/plugin >=1.1.0`
-
-## Specialist Agent Configuration
-
-**Agent tool profiles** (defined in `src/plugin.ts`):
-
-| Agent | Temperature | Required Tools | Denied Tools |
-|-------|-------------|----------------|--------------|
-| `researcher` | 0.1 | `read`, `glob`, `grep`, `webfetch` | `edit`, `write`, `bash`, `task` |
-| `builder` | 0.15 | `read`, `glob`, `grep`, `edit`, `write`, `bash` | `task` |
-| `critic` | 0.05 | `read`, `glob`, `grep`, `bash` | `edit`, `write`, `task` |
-
-## Guardrail Constants
-
-| Constant | Value | Location | Purpose |
-|----------|-------|----------|---------|
-| `MAX_DEPTH` | 3 | `src/plugin.ts` | Maximum delegation nesting depth |
-| `WATCH_TIMEOUT_MS` | 180000 | `src/plugin.ts` | Lifecycle watch timeout (3 min) |
-| `CIRCUIT_BREAKER_THRESHOLD` | 16 | `src/plugin.ts` | Repeated identical tool call limit before trip |
-| `MAX_TOOL_CALLS_PER_SESSION` | 400 | `src/plugin.ts` | Total tool call budget per session |
+**Logs:**
+- No structured logging framework
+- Error messages use `[Harness]` prefix convention
+- No log aggregation or shipping
 
 ---
 
-*Integration audit: 2026-04-06*
+*Integration audit: 2026-04-21*

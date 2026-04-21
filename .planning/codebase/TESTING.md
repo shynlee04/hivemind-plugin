@@ -1,181 +1,173 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-04-06
+> Generated: 2026-04-21
+> Agent: gsd-codebase-mapper (quality-focus)
 
 ## Test Framework
 
 **Runner:**
-- Vitest `^4.1.2`
+- Vitest ^1.0.0
 - Config: `vitest.config.ts`
-- Globals: `true` — `describe`, `it`, `expect`, `vi`, `beforeEach`, `afterEach` available without import
 
 **Assertion Library:**
-- Vitest built-in `expect` (Jest-compatible API)
+- Vitest built-in (`expect`, `describe`, `it`, `beforeEach`, `afterEach`, `vi`)
 
 **Run Commands:**
 ```bash
-npm test                    # Run all tests (vitest run)
-npm run test:watch          # Watch mode (vitest)
-npm run test:coverage       # Coverage report (vitest run --coverage)
-npx vitest run tests/lib/helpers.test.ts        # Single test file
-npx vitest run -t "should allow pending"        # Tests matching pattern
+npm test                  # Run all tests (vitest run)
+npm run test:watch        # Watch mode (vitest)
+npm run test:coverage     # Coverage report — REQUIRES @vitest/coverage-v8 (not installed)
+npm run typecheck         # Type-check without emitting (tsc --noEmit)
+```
+
+**Vitest Config:**
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    globals: true,                        // No imports needed for describe/it/expect
+    include: ['tests/**/*.test.ts'],      // Test file pattern
+    coverage: {
+      include: ['src/**/*.ts'],           // Only measure coverage on src/
+      exclude: ['src/index.ts', 'src/**/index.ts'],  // Exclude barrel files
+      reporter: ['text', 'lcov'],
+    },
+  },
+})
 ```
 
 ## Test File Organization
 
-**Location:**
-- Tests mirror `src/lib/` structure under `tests/lib/`
-- Tool tests under `tests/tools/`
-- Schema tests under `tests/schema-kernel/`
-- Integration tests under `tests/integration/`
-- Plugin tests under `tests/plugins/`
+**Location:** Separate directory — `tests/` mirrors `src/` structure
 
-**Naming:**
-- `*.test.ts` suffix: `tests/lib/helpers.test.ts`, `tests/tools/prompt-skim.test.ts`
-
-**Structure:**
+**Directory Structure:**
 ```
 tests/
-├── lib/                          # Unit tests for core library modules
-│   ├── helpers.test.ts           # Pure function tests
-│   ├── task-status.test.ts       # Status transition tests
-│   ├── session-api.test.ts       # SDK wrapper tests (mocked)
-│   ├── completion-detector.test.ts # Timer-based async tests
-│   ├── notification-handler.test.ts # Notification formatting tests
-│   └── agent-registry.test.ts    # Frontmatter parsing tests
-├── tools/                        # Tool execution tests
-│   ├── prompt-skim.test.ts
-│   ├── prompt-analyze.test.ts
-│   ├── context-budget.test.ts
-│   └── session-patch.test.ts
-├── schema-kernel/                # Zod contract tests
-│   └── prompt-enhance.schema.test.ts
-├── integration/                  # End-to-end pipeline tests
-│   └── prompt-enhance-pipeline.test.ts
-└── plugins/                      # Plugin hook tests
-    └── prompt-enhance-compaction.test.ts
+├── lib/                                      # Unit tests for src/lib/
+│   ├── helpers.test.ts                       # 452 LOC, 59 tests
+│   ├── concurrency.test.ts                   # 375 LOC, 24 tests
+│   ├── completion-detector.test.ts           # 326 LOC, 24 tests
+│   ├── completion-detector-crash.test.ts     # 238 LOC, 11 tests
+│   ├── delegation-manager.test.ts            # 1099 LOC, 49 tests
+│   ├── notification-handler.test.ts          # 262 LOC, 15 tests
+│   ├── runtime-policy.test.ts                # 253 LOC, 22 tests
+│   ├── session-api.test.ts                   # 478 LOC, 39 tests
+│   ├── state.test.ts                         # 207 LOC, 20 tests
+│   └── task-status.test.ts                   # 199 LOC, 34 tests
+├── tools/                                    # Tool-focused tests
+│   ├── delegate-task.test.ts                 # 253 LOC, 15 tests
+│   ├── delegation-status.test.ts             # 264 LOC, 12 tests
+│   ├── prompt-analyze.test.ts                # 129 LOC, 9 tests
+│   ├── prompt-skim.test.ts                   # 120 LOC, 8 tests
+│   └── session-patch.test.ts                 # 193 LOC, 8 tests
+├── schema-kernel/                            # Schema validation tests
+│   └── prompt-enhance.schema.test.ts         # 457 LOC, 46 tests
+├── integration/                              # E2E integration tests
+│   └── prompt-enhance-pipeline.test.ts       # 250 LOC, 12 tests
+└── plugins/                                  # Plugin-specific tests
+    └── prompt-enhance-compaction.test.ts     # 10 LOC, 1 test (skipped)
 ```
 
-**Coverage config** (`vitest.config.ts`):
-```typescript
-coverage: {
-  include: ["src/**/*.ts"],
-  exclude: ["src/index.ts"],  // Barrel re-exports excluded
-}
-```
+**Naming Convention:**
+- Test files: `{source-module-name}.test.ts`
+- Test file path mirrors source path: `src/lib/helpers.ts` → `tests/lib/helpers.test.ts`
+- Import paths use `../../src/` relative paths
 
 ## Test Structure
 
-**Suite Organization** — typical pattern from `tests/lib/helpers.test.ts`:
-```typescript
-import { describe, it, expect } from "vitest"
-import { isObject, getNestedValue, asString } from "../../src/lib/helpers.js"
+### Suite Organization Pattern
 
-describe("isObject", () => {
-  it("returns true for plain objects", () => {
-    expect(isObject({})).toBe(true)
-    expect(isObject({ a: 1 })).toBe(true)
+```typescript
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { functionUnderTest } from "../../src/lib/module.js"
+import type { TypeNeeded } from "../../src/lib/types.js"
+
+describe("ModuleName", () => {
+  // Shared state (reset in beforeEach)
+  let instance: ModuleClass
+
+  beforeEach(() => {
+    instance = new ModuleClass()
   })
 
-  it("returns false for null", () => {
-    expect(isObject(null)).toBe(false)
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  // Logical grouping with nested describe blocks
+  describe("feature area", () => {
+    it("should do something specific", () => {
+      // Arrange
+      const input = ...
+      // Act
+      const result = functionUnderTest(input)
+      // Assert
+      expect(result).toBe(expected)
+    })
+  })
+
+  describe("edge cases", () => {
+    it("handles edge case", () => { ... })
   })
 })
 ```
 
-**Dynamic import pattern** — used in `tests/lib/task-status.test.ts` and `tests/lib/session-api.test.ts`:
+### Section Separator Pattern
+Tests use comment separators to visually group test areas:
 ```typescript
-it("should allow pending -> queued", async () => {
-  const { canTransition } = await import("../../src/lib/task-status.js")
-  expect(canTransition("pending", "queued")).toBe(true)
-})
-```
-Every test uses `await import(...)` instead of top-level import. This is a **known anti-pattern** — see Known Issues below.
+// ---------------------------------------------------------------------------
+// Feature area description
+// ---------------------------------------------------------------------------
 
-**Setup/Teardown** — from `tests/lib/completion-detector.test.ts`:
-```typescript
-let detector: CompletionDetector
-
-beforeEach(() => {
-  vi.useFakeTimers()
-  detector = new CompletionDetector(100)
-})
-
-afterEach(() => {
-  vi.useRealTimers()
-})
+describe("feature area", () => { ... })
 ```
 
-**Plugin-level tests** — from `tests/plugins/prompt-enhance-compaction.test.ts`:
+### Dynamic Import Pattern
+Some test files use dynamic imports to avoid side effects:
 ```typescript
-beforeEach(() => {
-  mkdirSync(testDir, { recursive: true })
-  process.chdir(testDir)
-})
-
-afterEach(() => {
-  process.chdir(originalCwd)
-  try { rmSync(testDir, { recursive: true, force: true }) } catch { /* ignore */ }
+describe("task-status", () => {
+  it("should contain all 8 statuses", async () => {
+    const { VALID_TASK_STATUSES } = await import("../../src/lib/task-status.js")
+    expect(VALID_TASK_STATUSES).toHaveLength(8)
+  })
 })
 ```
 
 ## Mocking
 
-**Framework:** Vitest `vi.fn()` and `vi.mock()`
+### Framework
+Vitest built-in mocking via `vi`:
 
-**Mock client pattern** — from `tests/lib/session-api.test.ts`:
 ```typescript
-function mockClient() {
-  return {
-    session: {
-      create: vi.fn(),
-      get: vi.fn(),
-      abort: vi.fn(),
-      messages: vi.fn(),
-      prompt: vi.fn(),
-    },
-  } as any
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+```
+
+### Stub/Factory Pattern
+Tests create typed stubs for dependencies rather than using mock frameworks:
+
+```typescript
+type ManagerStub = {
+  dispatch: ReturnType<typeof vi.fn>
 }
 
-// Usage:
-const client = mockClient()
-client.session.create.mockResolvedValue({ data: { id: "s1", title: "test" } })
+function createManagerStub(): ManagerStub {
+  return {
+    dispatch: vi.fn().mockResolvedValue({
+      status: "dispatched",
+      delegationId: "delegation-dispatch-123",
+    }),
+  }
+}
+
+// Usage — cast with `as never` for stub-to-real substitution
+const tool = createDelegateTaskTool(createManagerStub() as never)
 ```
 
-**Important:** Tests use `as any` for mock client typing rather than proper `Mock` types. This is a code quality gap.
-
-**Timer mocking** — from `tests/lib/completion-detector.test.ts`:
-```typescript
-beforeEach(() => {
-  vi.useFakeTimers()
-})
-
-it("resolves with timeout when no event arrives", async () => {
-  const resultPromise = detector.watch("ses_1", 50)
-  vi.advanceTimersByTime(60)
-  await expect(resultPromise).resolves.toEqual({
-    signal: "timeout",
-    sessionID: "ses_1",
-  })
-})
-```
-
-**What to Mock:**
-- OpenCode SDK client methods (`client.session.*`)
-- File system operations (via `tmpdir()` + `process.chdir()`)
-- Time-dependent behavior (via `vi.useFakeTimers()`)
-
-**What NOT to Mock:**
-- Pure utility functions (`helpers.ts`)
-- Zod schema validation
-- Tool implementations — test against real tool code
-
-## Fixtures and Factories
-
-**Test Data — mock context for tools** (repeated across `tests/tools/*.test.ts`):
+### Mock Context Pattern
+Tool tests define a reusable mock context:
 ```typescript
 const mockCtx = {
-  sessionID: "test_001",
+  sessionID: "parent-session",
   agent: "builder",
   directory: process.cwd(),
   worktree: process.cwd(),
@@ -184,209 +176,259 @@ const mockCtx = {
   ask: async () => ({ state: "approved" as const }),
 }
 ```
-This pattern is duplicated in `tests/tools/prompt-skim.test.ts`, `tests/tools/prompt-analyze.test.ts`, and `tests/integration/prompt-enhance-pipeline.test.ts`. **Should be extracted to a shared test fixture.**
 
-**Temporary directory pattern** — from `tests/plugins/prompt-enhance-compaction.test.ts`:
+### Spy Pattern
+Use `vi.spyOn` for observing method calls on real objects:
 ```typescript
-const testDir = join(tmpdir(), "prompt-enhance-compaction-test")
+const idleSpy = vi.spyOn(DelegationManager.prototype, "handleSessionIdle")
+// ... exercise code ...
+expect(idleSpy).toHaveBeenCalledWith("child-from-info-id")
+```
+
+### Fake Timers
+Timer-dependent code uses fake timers:
+```typescript
 beforeEach(() => {
-  mkdirSync(testDir, { recursive: true })
-  process.chdir(testDir)
+  vi.useFakeTimers()
+  detector = new CompletionDetector(100)
 })
+
 afterEach(() => {
-  process.chdir(originalCwd)
-  rmSync(testDir, { recursive: true, force: true })
+  vi.useRealTimers()
+})
+
+// In tests:
+vi.advanceTimersByTime(100)
+```
+
+### What to Mock
+- **External SDK clients** — `client.session.prompt`, `client.session.status`
+- **DelegationManager** — stub with `vi.fn()` for dispatch/getStatus
+- **File system** — use `tmpdir()` for real temp files in integration tests
+- **Environment variables** — save and restore in `beforeEach`/`afterEach`
+
+### What NOT to Mock
+- **Pure utility functions** — test `isObject()`, `asString()`, `stableStringify()` directly
+- **State transitions** — test `canTransition()`, `isTerminal()` with real data
+- **Data transformations** — test `transformMessages()`, `buildNotificationMessage()` with real inputs
+- **Concurrency logic** — test `DelegationConcurrencyQueue` with real async operations
+
+## Fixtures and Factories
+
+### Test Data Factories
+Tests define factory functions for creating test data:
+
+```typescript
+function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
+  return {
+    id: "del-001",
+    parentSessionId: "parent-session",
+    childSessionId: "child-session",
+    agent: "builder",
+    status: "running",
+    createdAt: Date.now(),
+    safetyCeilingMs: 180_000,
+    lastMessageCount: 0,
+    stablePollCount: 0,
+    ...overrides,
+  }
+}
+
+const makeValidMeta = (rootID: string): DelegationMeta => ({
+  rootID,
+  depth: 1,
+  budgetUsed: 1,
+  agent: "builder",
+  queueKey: "default",
 })
 ```
 
-**Location:** No dedicated `tests/fixtures/` or `tests/factories/` directory exists. Shared patterns are duplicated inline.
+### Test Helpers
+Common patterns extracted as test-local helpers:
+```typescript
+function parseResult(raw: string): Record<string, unknown> {
+  return JSON.parse(raw) as Record<string, unknown>
+}
+```
+
+### Temp Files for Integration Tests
+Integration tests use Node.js `tmpdir()`:
+```typescript
+const testDir = join(tmpdir(), `pipeline-e2e-${Date.now()}`)
+mkdirSync(testDir, { recursive: true })
+// ... use testDir ...
+afterEach(() => {
+  try { rmSync(testDir, { recursive: true, force: true }) } catch { /* ignore */ }
+})
+```
 
 ## Coverage
 
-**Requirements:** No minimum threshold enforced in config.
+**Requirements:** `@vitest/coverage-v8` is NOT currently installed. Coverage reports cannot be generated.
 
-**View Coverage:**
-```bash
-npm run test:coverage
-```
+**Coverage Config:**
+- Include: `src/**/*.ts`
+- Exclude: `src/index.ts`, `src/**/index.ts` (barrel files)
+- Reporter: text, lcov
 
-**Excluded from coverage:** `src/index.ts` (barrel re-exports)
+**Estimated Coverage by Module:**
 
-**Known coverage gaps:**
-- `src/plugin.ts` — complex hook logic (tool.execute.before/after, event, shell.env, system.transform, messages.transform, session.compacting) has no dedicated unit tests
-- `src/lib/lifecycle-manager.ts` — the largest module (705 LOC) has no direct unit tests; behavior is only tested indirectly through integration tests
-- `src/lib/state.ts` — no dedicated test file exists
-- `src/lib/runtime.ts` — no dedicated test file exists
-- `src/hooks/system-transform.ts` — no dedicated test file
-- `src/hooks/messages-transform.ts` — no dedicated test file
-- `src/shared/tool-response.ts` — no dedicated test file
-- `src/plugins/prompt-enhance.ts` — only partially covered by `tests/plugins/prompt-enhance-compaction.test.ts`
+| Source Module | Has Test File | Test Count | Notes |
+|---|---|---|---|
+| `src/lib/helpers.ts` | ✅ `tests/lib/helpers.test.ts` | 59 tests | Comprehensive |
+| `src/lib/task-status.ts` | ✅ `tests/lib/task-status.test.ts` | 34 tests | Exhaustive transitions |
+| `src/lib/state.ts` | ✅ `tests/lib/state.test.ts` | 20 tests | Full coverage |
+| `src/lib/concurrency.ts` | ✅ `tests/lib/concurrency.test.ts` | 24 tests | Includes SpawnReservation |
+| `src/lib/completion-detector.ts` | ✅ 2 test files | 35 tests | Normal + crash scenarios |
+| `src/lib/delegation-manager.ts` | ✅ `tests/lib/delegation-manager.test.ts` | 49 tests | Largest test file (1099 LOC) |
+| `src/lib/notification-handler.ts` | ✅ `tests/lib/notification-handler.test.ts` | 15 tests | Bug regression included |
+| `src/lib/session-api.ts` | ✅ `tests/lib/session-api.test.ts` | 39 tests | SDK wrapper tests |
+| `src/lib/runtime-policy.ts` | ✅ `tests/lib/runtime-policy.test.ts` | 22 tests | Validation + merging |
+| `src/lib/continuity.ts` | ❌ None | 0 tests | **GAP — 401 LOC, no direct tests** |
+| `src/lib/lifecycle-manager.ts` | ❌ None | 0 tests | **GAP — 135 LOC, no direct tests** |
+| `src/lib/runtime.ts` | ❌ None | 0 tests | Small (95 LOC), tested indirectly |
+| `src/tools/delegate-task.ts` | ✅ `tests/tools/delegate-task.test.ts` | 15 tests | Plugin registration + dispatch |
+| `src/tools/delegation-status.ts` | ✅ `tests/tools/delegation-status.test.ts` | 12 tests | Filtering + validation |
+| `src/tools/prompt-skim/` | ✅ `tests/tools/prompt-skim.test.ts` | 8 tests | |
+| `src/tools/prompt-analyze/` | ✅ `tests/tools/prompt-analyze.test.ts` | 9 tests | |
+| `src/tools/session-patch/` | ✅ `tests/tools/session-patch.test.ts` | 8 tests | |
+| `src/schema-kernel/` | ✅ `tests/schema-kernel/` | 46 tests | Schema validation |
+| `src/hooks/` | ⚠️ Indirect only | — | Tested via integration tests |
+| `src/plugin.ts` | ⚠️ Indirect only | — | Tested via integration + tool tests |
 
 ## Test Types
 
-**Unit Tests:**
-- Located in `tests/lib/` and `tests/tools/`
-- Test pure functions, status transitions, SDK wrappers, tool execution
-- Use vitest globals, fake timers, mock clients
+### Unit Tests
+- **Scope:** Individual functions, classes, and modules in isolation
+- **Location:** `tests/lib/`, `tests/tools/`, `tests/schema-kernel/`
+- **Pattern:** Import source directly, stub dependencies, test behavior
+- **Total:** ~407 passing unit tests across 17 test files
 
-**Integration Tests:**
-- `tests/integration/prompt-enhance-pipeline.test.ts` — end-to-end pipeline tests
-- `tests/plugins/prompt-enhance-compaction.test.ts` — plugin hook integration
-- Test schema contracts across tools, full tool pipelines, compaction tracking
+### Integration Tests
+- **Scope:** Cross-module interactions, schema-to-tool pipeline, plugin registration
+- **Location:** `tests/integration/`
+- **Pattern:** Create real tool instances, exercise full pipeline, validate end-to-end
+- **File:** `tests/integration/prompt-enhance-pipeline.test.ts` — 12 tests
+- **Tests:**
+  - Schema contracts match tool outputs
+  - messages.transform detects triggers
+  - Full pipeline E2E (skim → analyze → patch → transform)
+  - Plugin tool registration
 
-**E2E Tests:**
-- Not used. No Playwright, no browser automation for this project.
+### E2E Tests
+- No dedicated E2E test framework
+- The integration tests serve as lightweight E2E tests with real file I/O
 
-## Known Issues
+## Common Patterns
 
-### 1. Unnecessary dynamic imports in every test
-
-**File:** `tests/lib/task-status.test.ts` (all 27 tests), `tests/lib/session-api.test.ts` (many tests)
-
-**Issue:** Every test uses `await import("../../src/lib/task-status.js")` instead of a top-level import. This pattern:
-- Masks import-time errors until test execution
-- Adds unnecessary async overhead
-- Makes test output harder to trace
-- Prevents static analysis of test dependencies
-
-**Correct pattern** (used in `tests/lib/helpers.test.ts`):
+### Async Testing
 ```typescript
-import { isObject, getNestedValue } from "../../src/lib/helpers.js"
+it("concurrent acquires serialize when limit is 1", async () => {
+  const results: number[] = []
+  const limit = 1
 
-describe("isObject", () => {
-  it("returns true for plain objects", () => {
-    expect(isObject({})).toBe(true)
-  })
-})
-```
-
-### 2. Overly granular test cases masking structural gaps
-
-**File:** `tests/lib/task-status.test.ts`
-
-**Issue:** 27 individual tests for a 14-line module (`src/lib/task-status.ts`). Each transition is tested as a separate `it()` block:
-```typescript
-it("pending should transition to queued and cancelled", async () => { ... })
-it("queued should transition to running and cancelled", async () => { ... })
-it("running should transition to completed, error, cancelled, interrupt", async () => { ... })
-```
-
-Meanwhile, `src/lib/lifecycle-manager.ts` (705 LOC) has zero dedicated tests. Test effort is disproportionate to code complexity.
-
-### 3. Duplicate test fixtures
-
-The `mockCtx` object is copy-pasted across:
-- `tests/tools/prompt-skim.test.ts`
-- `tests/tools/prompt-analyze.test.ts`
-- `tests/integration/prompt-enhance-pipeline.test.ts`
-- `tests/tools/context-budget.test.ts`
-- `tests/tools/session-patch.test.ts`
-
-Should be extracted to `tests/fixtures/mock-context.ts`.
-
-### 4. `as any` in test mocks
-
-**File:** `tests/lib/session-api.test.ts`
-
-**Issue:** `mockClient()` returns `as any`, bypassing TypeScript type checking:
-```typescript
-function mockClient() {
-  return { session: { create: vi.fn(), get: vi.fn(), ... } } as any
-}
-```
-
-This masks mismatched mock signatures. Should use Vitest's `Mock` types or the SDK's actual client type.
-
-### 5. No tests for critical paths
-
-**Untested modules:**
-| Module | LOC | Risk |
-|--------|-----|------|
-| `src/lib/lifecycle-manager.ts` | 705 | Highest — delegation launch, queue management, background completion |
-| `src/lib/state.ts` | 106 | Medium — in-memory state management |
-| `src/lib/runtime.ts` | 69 | Medium — event-to-status inference |
-| `src/plugin.ts` hooks | 477 | High — tool.execute.before/after circuit breaker, event handling |
-| `src/hooks/system-transform.ts` | — | Medium — system prompt transformation |
-| `src/hooks/messages-transform.ts` | 92 | Medium — message transformation |
-| `src/shared/tool-response.ts` | 71 | Low — result rendering |
-
-### 6. Bug-masking: silent catch blocks in production code
-
-**File:** `src/lib/lifecycle-manager.ts` (lines 200–204)
-
-```typescript
-try {
-  if (this.options.client?.session?.abort) {
-    await this.options.client.session.abort({ path: { id: sessionID } })
+  const run = async (n: number) => {
+    const release = await queue.acquire("limit-1-key", limit)
+    results.push(n)
+    await Promise.resolve()  // Yield tick
+    release()
   }
-} catch {
-  // Graceful handling — harness-internal state cleanup proceeds
-}
-```
 
-The empty catch block means tests cannot verify whether `abort` was called or failed. This masks SDK integration bugs.
-
-### 7. Integration test complexity
-
-**File:** `tests/integration/prompt-enhance-pipeline.test.ts` — 406 lines
-
-This single file tests schema contracts, tool execution, hook behavior, and pipeline orchestration. Should be split into focused test files by concern.
-
-## Async Testing
-
-**Pattern with fake timers** — from `tests/lib/completion-detector.test.ts`:
-```typescript
-it("resolves with idle when session.idle is fed", async () => {
-  const resultPromise = detector.watch("ses_1", 5000)
-  detector.feed("session.idle", "ses_1")
-
-  await expect(resultPromise).resolves.toEqual({
-    signal: "idle",
-    sessionID: "ses_1",
-  })
+  await Promise.all([run(1), run(2), run(3)])
+  expect(results.sort()).toEqual([1, 2, 3])
 })
 ```
 
-**Pattern with real async** — from `tests/tools/prompt-skim.test.ts`:
+### Error Testing
 ```typescript
-it("counts words and lines correctly", async () => {
-  const raw = await tool.execute(
-    { content: "Hello world\nThis is a test", workspaceRoot: process.cwd() },
-    mockCtx,
-  )
-  const result = parseResult(raw) as Record<string, unknown>
-  expect(result.data.word_count).toBe(6)
+it("throws [Harness]-prefixed error when budget exceeded", () => {
+  for (let i = 0; i < MAX_DESCENDANTS_PER_ROOT; i++) {
+    reserveSubagentSpawn(`parent-${i}`, "root-limit", mgr)
+  }
+  expect(() =>
+    reserveSubagentSpawn("parent-over", "root-limit", mgr)
+  ).toThrow(/^\[Harness\]/)
 })
 ```
 
-## Error Testing
-
-**Pattern — expecting throws:**
+### Rejection Testing
 ```typescript
-it("throws on error property with string message", () => {
-  expect(() => unwrapData({ error: "Something went wrong" })).toThrow(
-    "Something went wrong"
-  )
+it("rejects with [Harness] error on timeout", async () => {
+  const r1 = await queue.acquire("timeout-key", 1)
+  await expect(
+    queue.acquire("timeout-key", 1, 50),
+  ).rejects.toThrow(/\[Harness\].*timed out/)
+  r1()
 })
 ```
 
-**Pattern — expecting rejection:**
+### Zod Schema Validation Testing
 ```typescript
-it("detects cyclic chains", async () => {
-  const { walkParentChain } = await import("../../src/lib/session-api.js")
-  await expect(walkParentChain(client, "a")).rejects.toThrow(/\[Harness\].*cyclic/)
+it("validates required agent parameter", async () => {
+  const tool = createDelegateTaskTool(createManagerStub() as never)
+  await expect(
+    tool.execute({ prompt: "work" } as never, mockCtx)
+  ).rejects.toHaveProperty("name", "ZodError")
 })
 ```
 
-**Pattern — best-effort (no throw):**
+### Environment Variable Testing
 ```typescript
-it("should not throw if prompt fails (best-effort notification)", async () => {
-  const mockPrompt = vi.fn().mockRejectedValue(new Error("session not found"))
-  const client = { session: { prompt: mockPrompt } }
-  await expect(notifyParentSession(client, "parent-2", task)).resolves.toBeUndefined()
+let previousStateDir: string | undefined
+
+beforeEach(() => {
+  previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  if (previousStateDir === undefined) {
+    delete process.env.OPENCODE_HARNESS_STATE_DIR
+  } else {
+    process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+  }
 })
 ```
+
+## Test Gaps
+
+### Critical Missing Tests
+
+**`src/lib/continuity.ts` (401 LOC) — NO direct tests:**
+- File I/O operations (load, persist, normalize)
+- Deep-clone-on-read behavior
+- Session CRUD operations
+- Governance persistence
+- Hydration logic
+- This is the largest untested module and handles durable state
+
+**`src/lib/lifecycle-manager.ts` (135 LOC) — NO direct tests:**
+- Session lifecycle state machine transitions
+- Event→status mapping
+- Background completion observation
+- Cancellation handling
+- Note: Reduced from ~500 LOC but still critical
+
+**`src/hooks/` (5 files) — NO direct tests:**
+- `create-core-hooks.ts` — event routing, system.transform, shell.env
+- `create-session-hooks.ts` — session lifecycle hooks
+- `create-tool-guard-hooks.ts` — tool budget enforcement
+- `create-session-hooks.ts` — largest at 295 LOC
+- Only tested indirectly via integration tests
+
+### Recommended Coverage Improvements
+
+1. **Install `@vitest/coverage-v8`** — enables actual coverage metrics
+2. **Add `tests/lib/continuity.test.ts`** — test CRUD, normalization, cloning, file I/O
+3. **Add `tests/lib/lifecycle-manager.test.ts`** — test state machine, event handling
+4. **Add `tests/hooks/` directory** — test each hook factory in isolation
+5. **Add `tests/lib/runtime.test.ts`** — test `inferContinuityStatusFromEvent()`
+
+### Test-to-Source Ratio
+- Source: ~4,581 LOC across 35 files
+- Tests: ~5,565 LOC across 18 test files
+- Ratio: **1.21:1** (tests slightly exceed source — healthy)
 
 ---
 
-*Testing analysis: 2026-04-06*
+*Testing analysis: 2026-04-21*
