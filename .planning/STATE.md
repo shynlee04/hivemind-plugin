@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 1
-status: unknown
-stopped_at: Phase 16 context gathered (discuss mode)
-last_updated: "2026-04-21T02:42:03.239Z"
+current_plan: 3
+status: executing
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-04-21T10:26:06.184Z"
 progress:
   total_phases: 18
   completed_phases: 5
   total_plans: 23
-  completed_plans: 19
-  percent: 83
+  completed_plans: 21
+  percent: 91
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase --phase — 16
+**Current focus:** Phase 16 — background delegation revamp + PTY integration
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,12 +29,12 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: --phase (16) — EXECUTING
-Plan: 1 of --name
+Phase: 16 — EXECUTING
+Plan: 3 of 4
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** 1
-**Progress:** [██████████] 100%
+**Current plan:** 3
+**Progress:** [█████████░] 91%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -103,6 +103,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Phase 15 P02 | 5min | 3 tasks | 12 files |
 | Phase 14 P02 | 5min | 2 tasks | 5 files |
 | Phase 14 P03 | 425s | 1 tasks | 3 files |
+| Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P02 | 5min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,9 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - [Phase 14]: safetyCeilingMs range set to 60000-3600000 (1-60 min) replacing 1000-1800000 — Plan spec requires 1-60 min range for WaiterModel architecture
 - [Phase 14]: delegation-status tool supports both single-delegation lookup and list-with-filter in one tool — Keeps tool surface minimal while covering D-14 requirement for dedicated status polling
 - [Phase 14]: D-08 runtime-truthful tests complete: 372→407 tests, transport-boundary-only mocking, timer precision fixes
+- [Phase 16]: PTY buffers use global character offsets so truncated readers can resume deterministically
+- [Phase 16]: PtyManager preserves exitCode until explicit terminate() cleanup
+- [Phase 16]: PTY support detection requires both bun-pty and Bun runtime presence
 
 ### Todos
 
@@ -167,7 +171,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase 16 context gathered (discuss mode)
+**Stopped At:** Completed 16-02-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 

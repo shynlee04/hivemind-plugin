@@ -255,8 +255,8 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — add node-pty dependency, canonical PTY/spawner contracts, and shared assistant-text extraction foundation
-- [ ] 16-02-PLAN.md — build and test the PTY manager + bounded PTY buffer subsystem
+- [x] 16-01-PLAN.md — add bun-pty dependency, canonical PTY/spawner contracts, and shared assistant-text extraction foundation
+- [x] 16-02-PLAN.md — build and test the PTY manager + bounded PTY buffer subsystem
 - [ ] 16-03-PLAN.md — build and test the dedicated spawner subsystem (session creator, directory resolver, key resolver, PTY-first setup)
 - [ ] 16-04-PLAN.md — integrate spawner + PTY into DelegationManager, collapse lifecycle ambiguity, and expose execution metadata through tools/plugin
 
