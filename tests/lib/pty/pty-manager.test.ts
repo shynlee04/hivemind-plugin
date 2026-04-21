@@ -96,7 +96,7 @@ describe("PtyManager", () => {
     expect(manager.read(session.id, 3)).toEqual({
       content: "def",
       nextOffset: 6,
-      truncated: false,
+      truncated: true,
     })
     expect(manager.read(session.id, 0)).toEqual({
       content: "bcdef",
