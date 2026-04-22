@@ -55,6 +55,7 @@ export class DelegationManager {
       persistAllDelegations: () => dm.persistAllDelegations(),
       buildResult: (d) => dm.buildResult(d),
       cleanupTracking: (id, sid) => dm.cleanupTracking(id, sid),
+      onTerminal: (id, state, err) => dm.transitionToTerminal(id, state, err),
     })
     this.sdkHandler = new SdkDelegationHandler(client, {
       getDelegation: (id) => dm.delegations.get(id),
@@ -62,6 +63,7 @@ export class DelegationManager {
       cleanupTracking: (id, sid) => dm.cleanupTracking(id, sid),
       scheduleSafetyCeiling: (d) => dm.scheduleSafetyCeiling(d),
       onSessionIdle: (sid) => dm.handleSessionIdle(sid),
+      onTerminal: (id, state, err) => dm.transitionToTerminal(id, state, err),
     })
   }
 
@@ -115,11 +117,7 @@ export class DelegationManager {
         setTimeout(() => {
           const current = this.delegations.get(delegation.id)
           if (current && current.status === "dispatched") {
-            current.status = "error"
-            current.error = "Failed to send prompt to child session"
-            current.completedAt = Date.now()
-            this.persistAllDelegations()
-            this.cleanupTracking(delegation.id, delegation.childSessionId)
+            this.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
           }
         }, 0)
       })
@@ -163,11 +161,7 @@ export class DelegationManager {
       this.cleanupTracking(delegationId, sessionId)
       return
     }
-    delegation.status = "error"
-    delegation.error = "Delegated session deleted before completion"
-    delegation.completedAt = Date.now()
-    this.persistAllDelegations()
-    this.cleanupTracking(delegationId, sessionId)
+    this.transitionToTerminal(delegationId, "error", "Delegated session deleted before completion")
   }
 
   async recoverPending(): Promise<void> {
@@ -258,12 +252,43 @@ export class DelegationManager {
   private async handleSafetyCeiling(delegationId: string): Promise<void> {
     const delegation = this.delegations.get(delegationId)
     if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) return
-    delegation.status = "timeout"
-    delegation.error = `[Harness] Delegation safety ceiling reached after ${delegation.safetyCeilingMs}ms`
-    delegation.completedAt = Date.now()
+    this.transitionToTerminal(delegationId, "timeout", `[Harness] Delegation safety ceiling reached after ${delegation.safetyCeilingMs}ms`)
     try { await this.client.session.abort({ path: { id: delegation.childSessionId } }) } catch { /* no-op */ }
+  }
+
+  /**
+   * Unified terminal state transition for all delegation completion paths.
+   * Handles status setting, persistence, cleanup, logging, and notification scheduling.
+   */
+  private transitionToTerminal(
+    delegationId: string,
+    newState: DelegationStatus,
+    error?: string,
+  ): void {
+    const delegation = this.delegations.get(delegationId)
+    if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) {
+      return
+    }
+
+    const previousStatus = delegation.status
+    delegation.status = newState
+    delegation.completedAt = Date.now()
+    if (error !== undefined) {
+      delegation.error = error
+    }
+    if (newState === "completed") {
+      delegation.error = undefined
+    }
+
+    this.clearAllTimers(delegationId)
     this.persistAllDelegations()
     this.cleanupTracking(delegationId, delegation.childSessionId)
+
+    // R-OBS-01: Log state transitions with [Harness] prefix
+    console.error(`[Harness] Delegation ${delegationId} transitioned: ${previousStatus} → ${newState}${error ? ` (error: ${error})` : ""}`)
+
+    // Placeholder for R-NOTIF-01: Parent notification (Wave 4)
+    // Placeholder for R-LC-01: Grace period scheduling (Wave 3)
   }
 
   private clearAllTimers(delegationId: string): void {

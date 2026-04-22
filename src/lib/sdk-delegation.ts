@@ -18,6 +18,7 @@ type SdkDelegationCallbacks = {
   cleanupTracking: (delegationId: string, childSessionId: string) => void
   scheduleSafetyCeiling: (delegation: Delegation) => void
   onSessionIdle: (sessionId: string) => void
+  onTerminal: (delegationId: string, newState: "completed" | "error" | "timeout", error?: string) => void
 }
 
 // ---------------------------------------------------------------------------
@@ -70,11 +71,7 @@ export class SdkDelegationHandler {
 
       this.callbacks.scheduleSafetyCeiling(delegation)
     } catch {
-      delegation.status = "error"
-      delegation.error = "Child session not found on recovery"
-      delegation.completedAt = Date.now()
-      this.callbacks.persistAllDelegations()
-      this.callbacks.cleanupTracking(delegation.id, delegation.childSessionId)
+      this.callbacks.onTerminal(delegation.id, "error", "Child session not found on recovery")
     }
   }
 
@@ -145,17 +142,10 @@ export class SdkDelegationHandler {
           path: { id: delegation.childSessionId },
         }),
       )
-      delegation.status = "completed"
       delegation.result = extractAllAssistantText(Array.isArray(messages) ? messages : [])
-      delegation.error = undefined
-      delegation.completedAt = Date.now()
+      this.callbacks.onTerminal(delegationId, "completed")
     } catch (error) {
-      delegation.status = "error"
-      delegation.error = error instanceof Error ? error.message : String(error)
-      delegation.completedAt = Date.now()
+      this.callbacks.onTerminal(delegationId, "error", error instanceof Error ? error.message : String(error))
     }
-
-    this.callbacks.persistAllDelegations()
-    this.callbacks.cleanupTracking(delegationId, delegation.childSessionId)
   }
 }

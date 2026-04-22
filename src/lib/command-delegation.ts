@@ -19,6 +19,7 @@ type CommandDelegationCallbacks = {
   persistAllDelegations: () => void
   buildResult: (delegation: Delegation) => DelegationResult
   cleanupTracking: (delegationId: string, childSessionId: string) => void
+  onTerminal: (delegationId: string, newState: "completed" | "error" | "timeout", error?: string) => void
 }
 
 const COMMAND_POLL_INTERVAL_MS = 250
@@ -233,26 +234,19 @@ export class CommandDelegationHandler {
       return
     }
 
-    delegation.completedAt = Date.now()
     delegation.result = outcome.output
 
     if (outcome.error) {
-      delegation.status = "error"
-      delegation.error = outcome.error
+      this.callbacks.onTerminal(delegationId, "error", outcome.error)
     } else if ((outcome.exitCode ?? 0) === 0) {
-      delegation.status = "completed"
-      delegation.error = undefined
+      this.callbacks.onTerminal(delegationId, "completed")
     } else {
-      delegation.status = "error"
-      delegation.error = `[Harness] Command exited with code ${outcome.exitCode}`
+      this.callbacks.onTerminal(delegationId, "error", `[Harness] Command exited with code ${outcome.exitCode}`)
     }
 
     if (delegation.executionMode === "headless") {
       this.headlessCommands.delete(delegation.id)
     }
-
-    this.callbacks.persistAllDelegations()
-    this.callbacks.cleanupTracking(delegationId, delegation.childSessionId)
   }
 
   // -------------------------------------------------------------------------
