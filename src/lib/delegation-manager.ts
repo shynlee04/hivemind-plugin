@@ -2,6 +2,7 @@ import type { OpencodeClient as OpenCodeClient } from "@opencode-ai/sdk"
 
 import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
 import { persistDelegations, readPersistedDelegations } from "./delegation-persistence.js"
+import { notifyDelegationTerminal } from "./notification-handler.js"
 import { unwrapData } from "./helpers.js"
 import type { PtyManager } from "./pty/pty-manager.js"
 import { CommandDelegationHandler } from "./command-delegation.js"
@@ -314,7 +315,8 @@ export class DelegationManager {
     // R-LC-01: Schedule grace period cleanup for terminal delegations
     this.scheduleGracePeriodCleanup(delegationId)
 
-    // Placeholder for R-NOTIF-01: Parent notification (Wave 4)
+    // R-NOTIF-01: Notify parent session of terminal state (fire-and-forget)
+    void notifyDelegationTerminal(this.client, delegation)
   }
 
   private scheduleGracePeriodCleanup(delegationId: string): void {

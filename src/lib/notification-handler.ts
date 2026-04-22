@@ -1,14 +1,14 @@
 /**
- * @deprecated This module is NOT imported by any active delegation path.
- * WaiterModel uses stability polling + message-count detection (see SdkDelegationHandler)
- * instead of push notifications. This module is retained for potential future
- * re-integration if push notification semantics are needed. If not used by Phase 20,
- * remove entirely.
+ * Notification delivery for parent sessions.
+ *
+ * Re-activated in Phase 16.2 for terminal-state delegation notifications.
+ * Provides fire-and-forget SDK prompt delivery with structured payload.
  *
  * Audit: G-01 closed as by-design (2026-04-21)
  */
 
 import type { OpenCodeClient } from "./session-api.js"
+import type { Delegation } from "./types.js"
 import type { SessionContinuityRecord, TaskNotification } from "./types.js"
 
 type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
@@ -174,6 +174,45 @@ export async function notifyParentSession(
   }
 
   return delivered
+}
+
+/**
+ * Fire-and-forget notification of a delegation's terminal state to its parent session.
+ *
+ * R-NOTIF-02: Payload contains taskId, terminalState, resultSummary, duration.
+ * R-NOTIF-03: Delivery failure does NOT block the terminal transition.
+ * R-NOTIF-04: Delivered via direct `client.session.prompt()` call.
+ */
+export async function notifyDelegationTerminal(
+  client: OpenCodeClient,
+  delegation: Delegation,
+): Promise<void> {
+  const duration = delegation.completedAt
+    ? delegation.completedAt - delegation.createdAt
+    : Date.now() - delegation.createdAt
+
+  const resultSummary =
+    delegation.result?.slice(0, MAX_PREVIEW_LENGTH) ??
+    delegation.error?.slice(0, MAX_PREVIEW_LENGTH) ??
+    ""
+
+  const message = JSON.stringify({
+    taskId: delegation.id,
+    terminalState: delegation.status,
+    resultSummary: resultSummary || undefined,
+    duration,
+  })
+
+  try {
+    await client.session.prompt({
+      path: { id: delegation.parentSessionId },
+      body: { noReply: true, parts: [{ type: "text", text: message }] },
+    })
+  } catch (error) {
+    console.error(
+      `[Harness] Failed to notify parent session ${delegation.parentSessionId} of delegation ${delegation.id} terminal state: ${error instanceof Error ? error.message : String(error)}`
+    )
+  }
 }
 
 export type { TaskNotification }
