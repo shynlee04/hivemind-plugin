@@ -58,6 +58,12 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     safetyCeilingMs: typeof record.safetyCeilingMs === "number" ? record.safetyCeilingMs : undefined,
     lastMessageCount: typeof record.lastMessageCount === "number" ? record.lastMessageCount : 0,
     stablePollCount: typeof record.stablePollCount === "number" ? record.stablePollCount : 0,
+    lastMessageCountChangeAt:
+      typeof record.lastMessageCountChangeAt === "number"
+        ? record.lastMessageCountChangeAt
+        : typeof record.createdAt === "number"
+          ? record.createdAt
+          : Date.now(),
     executionMode,
     workingDirectory: typeof record.workingDirectory === "string" ? record.workingDirectory : process.cwd(),
     ptySessionId: typeof record.ptySessionId === "string" ? record.ptySessionId : undefined,

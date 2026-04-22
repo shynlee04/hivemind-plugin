@@ -118,6 +118,7 @@ export class DelegationManager {
         safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
         lastMessageCount: 0,
         stablePollCount: 0,
+        lastMessageCountChangeAt: Date.now(),
         nestingDepth,
         executionMode: "sdk",
         workingDirectory,
