@@ -54,6 +54,7 @@ export class CommandDelegationHandler {
   async dispatchCommand(
     params: CommandDelegationParams,
     queueKey: string,
+    nestingDepth: number,
   ): Promise<DelegationResult> {
     const delegationId = crypto.randomUUID()
     const workingDirectory = params.cwd ?? process.cwd()
@@ -85,7 +86,7 @@ export class CommandDelegationHandler {
           safetyCeilingMs: params.safetyCeilingMs,
           lastMessageCount: 0,
           stablePollCount: 0,
-          nestingDepth: 1,
+          nestingDepth,
           executionMode: "pty",
           workingDirectory,
           ptySessionId: session.id,
@@ -99,13 +100,13 @@ export class CommandDelegationHandler {
         return this.callbacks.buildResult(delegation)
       } catch (error) {
         return this.dispatchHeadlessCommand(
-          params, queueKey, workingDirectory, delegationId, describeError(error),
+          params, queueKey, workingDirectory, delegationId, nestingDepth, describeError(error),
         )
       }
     }
 
     return this.dispatchHeadlessCommand(
-      params, queueKey, workingDirectory, delegationId,
+      params, queueKey, workingDirectory, delegationId, nestingDepth,
       "[Harness] PTY runtime unavailable in current environment",
     )
   }
@@ -114,10 +115,7 @@ export class CommandDelegationHandler {
   recoverPtyDelegation(delegation: Delegation): void {
     const session = this.resolvePtyManager()?.getSession(delegation.ptySessionId ?? "")
     if (!session) {
-      delegation.status = "error"
-      delegation.error = "[Harness] PTY session not found on recovery"
-      delegation.completedAt = Date.now()
-      this.callbacks.persistAllDelegations()
+      this.callbacks.onTerminal(delegation.id, "error", "[Harness] PTY session not found on recovery")
       return
     }
 
@@ -150,6 +148,7 @@ export class CommandDelegationHandler {
     queueKey: string,
     workingDirectory: string,
     delegationId: string,
+    nestingDepth: number,
     fallbackReason: string,
   ): Promise<DelegationResult> {
     const child = spawnHeadlessProcess(params.command, params.args ?? [], {
@@ -168,7 +167,7 @@ export class CommandDelegationHandler {
       safetyCeilingMs: params.safetyCeilingMs,
       lastMessageCount: 0,
       stablePollCount: 0,
-      nestingDepth: 1,
+      nestingDepth,
       executionMode: "headless",
       workingDirectory,
       fallbackReason,

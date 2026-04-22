@@ -18,6 +18,8 @@ import {
   type DelegationStatus,
   MAX_DELEGATIONS_BEFORE_PRUNE,
   DEFAULT_PRUNE_MAX_AGE_MS,
+  MAX_DELEGATION_DEPTH,
+  TASK_CLEANUP_DELAY_MS,
 } from "./types.js"
 
 type DelegateParams = {
@@ -40,6 +42,7 @@ export class DelegationManager {
   private readonly delegations = new Map<string, Delegation>()
   private readonly delegationsBySession = new Map<string, string>()
   private readonly safetyTimers = new Map<string, NodeJS.Timeout>()
+  private readonly gracePeriodTimers = new Map<string, NodeJS.Timeout>()
   private readonly semaphore = new DelegationConcurrencyQueue()
   private readonly commandHandler: CommandDelegationHandler
   private readonly sdkHandler: SdkDelegationHandler
@@ -67,7 +70,25 @@ export class DelegationManager {
     })
   }
 
+  private resolveNestingDepth(parentSessionId: string): number {
+    const parentDelegationId = this.delegationsBySession.get(parentSessionId)
+    if (!parentDelegationId) return 1
+    const parentDelegation = this.delegations.get(parentDelegationId)
+    return (parentDelegation?.nestingDepth ?? 0) + 1
+  }
+
+  private checkNestingDepth(parentSessionId: string): void {
+    const depth = this.resolveNestingDepth(parentSessionId)
+    if (depth > MAX_DELEGATION_DEPTH) {
+      throw new Error(
+        `[Harness] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
+        `Current depth: ${depth}. Use result retrieval pattern instead of further delegation.`,
+      )
+    }
+  }
+
   async dispatch(params: DelegateParams): Promise<DelegationResult> {
+    this.checkNestingDepth(params.parentSessionId)
     const agent = await this.validateAgent(params.agent)
     const canonicalContext = this.buildCanonicalQueueContext(agent, params)
     const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
@@ -85,6 +106,7 @@ export class DelegationManager {
         client: this.client as never,
         request: this.buildSpawnRequest({ params, agent, workingDirectory }),
       })
+      const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
       const delegation: Delegation = {
         id: crypto.randomUUID(),
         parentSessionId: params.parentSessionId,
@@ -95,7 +117,7 @@ export class DelegationManager {
         safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
         lastMessageCount: 0,
         stablePollCount: 0,
-        nestingDepth: 1,
+        nestingDepth,
         executionMode: "sdk",
         workingDirectory,
         queueKey: acquireQueueKey,
@@ -128,11 +150,13 @@ export class DelegationManager {
   }
 
   async dispatchCommand(params: CommandDelegationParams): Promise<DelegationResult> {
+    this.checkNestingDepth(params.parentSessionId)
     const queueContext = this.buildCommandQueueContext(params)
     const queueKey = buildDelegationQueueKey(queueContext)
     const release = await this.semaphore.acquire(queueKey, undefined, undefined)
     try {
-      return await this.commandHandler.dispatchCommand(params, queueKey)
+      const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
+      return await this.commandHandler.dispatchCommand(params, queueKey, nestingDepth)
     } finally {
       release()
     }
@@ -287,13 +311,30 @@ export class DelegationManager {
     // R-OBS-01: Log state transitions with [Harness] prefix
     console.error(`[Harness] Delegation ${delegationId} transitioned: ${previousStatus} → ${newState}${error ? ` (error: ${error})` : ""}`)
 
+    // R-LC-01: Schedule grace period cleanup for terminal delegations
+    this.scheduleGracePeriodCleanup(delegationId)
+
     // Placeholder for R-NOTIF-01: Parent notification (Wave 4)
-    // Placeholder for R-LC-01: Grace period scheduling (Wave 3)
+  }
+
+  private scheduleGracePeriodCleanup(delegationId: string): void {
+    const existingTimer = this.gracePeriodTimers.get(delegationId)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+    }
+    const timer = setTimeout(() => {
+      this.gracePeriodTimers.delete(delegationId)
+      // R-LC-03: Remove from in-memory Map only — do NOT touch persistence file
+      this.delegations.delete(delegationId)
+    }, TASK_CLEANUP_DELAY_MS)
+    this.gracePeriodTimers.set(delegationId, timer)
   }
 
   private clearAllTimers(delegationId: string): void {
     const t = this.safetyTimers.get(delegationId)
     if (t) { clearTimeout(t); this.safetyTimers.delete(delegationId) }
+    const gt = this.gracePeriodTimers.get(delegationId)
+    if (gt) { clearTimeout(gt); this.gracePeriodTimers.delete(delegationId) }
     this.sdkHandler.clearTimers(delegationId)
     this.commandHandler.clearTimers(delegationId)
   }
