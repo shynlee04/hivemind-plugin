@@ -164,8 +164,6 @@ export const HARNESS_STATUS_TO_LIFECYCLE_PHASE: Record<
 // ---------------------------------------------------------------------------
 // Runtime policy types (RESEARCH D-16: supplements OpenCode built-ins only)
 // ---------------------------------------------------------------------------
-// Runtime policy types (RESEARCH D-16: supplements OpenCode built-ins only)
-// ---------------------------------------------------------------------------
 
 export type PerKeyConcurrencyPolicy = {
   limit: number

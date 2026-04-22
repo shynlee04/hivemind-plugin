@@ -78,18 +78,14 @@ export class DelegationManager {
     return (parentDelegation?.nestingDepth ?? 0) + 1
   }
 
-  private checkNestingDepth(parentSessionId: string): void {
-    const depth = this.resolveNestingDepth(parentSessionId)
-    if (depth > MAX_DELEGATION_DEPTH) {
+  async dispatch(params: DelegateParams): Promise<DelegationResult> {
+    const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
+    if (nestingDepth > MAX_DELEGATION_DEPTH) {
       throw new Error(
         `[Harness] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
-        `Current depth: ${depth}. Use result retrieval pattern instead of further delegation.`,
+        `Current depth: ${nestingDepth}. Use result retrieval pattern instead of further delegation.`,
       )
     }
-  }
-
-  async dispatch(params: DelegateParams): Promise<DelegationResult> {
-    this.checkNestingDepth(params.parentSessionId)
     const agent = await this.validateAgent(params.agent)
     const canonicalContext = this.buildCanonicalQueueContext(agent, params)
     const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
@@ -107,7 +103,6 @@ export class DelegationManager {
         client: this.client as never,
         request: this.buildSpawnRequest({ params, agent, workingDirectory }),
       })
-      const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
       const delegation: Delegation = {
         id: crypto.randomUUID(),
         parentSessionId: params.parentSessionId,
@@ -152,12 +147,17 @@ export class DelegationManager {
   }
 
   async dispatchCommand(params: CommandDelegationParams): Promise<DelegationResult> {
-    this.checkNestingDepth(params.parentSessionId)
+    const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
+    if (nestingDepth > MAX_DELEGATION_DEPTH) {
+      throw new Error(
+        `[Harness] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
+        `Current depth: ${nestingDepth}. Use result retrieval pattern instead of further delegation.`,
+      )
+    }
     const queueContext = this.buildCommandQueueContext(params)
     const queueKey = buildDelegationQueueKey(queueContext)
     const release = await this.semaphore.acquire(queueKey, undefined, undefined)
     try {
-      const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
       return await this.commandHandler.dispatchCommand(params, queueKey, nestingDepth)
     } finally {
       release()
@@ -321,10 +321,16 @@ export class DelegationManager {
   }
 
   private scheduleGracePeriodCleanup(delegationId: string): void {
+    const delegation = this.delegations.get(delegationId)
+    if (!delegation) return
+
     const existingTimer = this.gracePeriodTimers.get(delegationId)
     if (existingTimer) {
       clearTimeout(existingTimer)
     }
+    delegation.gracePeriodExpiresAt = Date.now() + TASK_CLEANUP_DELAY_MS
+    this.persistAllDelegations()
+
     const timer = setTimeout(() => {
       this.gracePeriodTimers.delete(delegationId)
       // R-LC-03: Remove from in-memory Map only — do NOT touch persistence file

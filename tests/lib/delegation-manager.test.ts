@@ -12,8 +12,8 @@ import {
   DEFAULT_PRUNE_MAX_AGE_MS,
   DEFAULT_SAFETY_CEILING_MS,
   MAX_DELEGATIONS_BEFORE_PRUNE,
-  STABILITY_POLL_INTERVAL_MS,
-  STABILITY_THRESHOLD,
+  POLL_INTERVAL_BASE_MS,
+  STABLE_POLLS_REQUIRED,
   type Delegation,
 } from "../../src/lib/types.js"
 
@@ -692,7 +692,7 @@ describe("DelegationManager", () => {
       expect(client.session.messages).not.toHaveBeenCalled()
     })
 
-    it("completion requires STABILITY_THRESHOLD stable polls — not fewer", async () => {
+    it("completion requires STABLE_POLLS_REQUIRED stable polls — not fewer", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-stable" } })
@@ -704,12 +704,12 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-stable")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * (STABILITY_THRESHOLD - 1))
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * (STABLE_POLLS_REQUIRED - 1))
 
       expect(manager.getStatus(result.delegationId)?.status).toBe("running")
     })
 
-    it("completes delegation after STABILITY_THRESHOLD stable polls confirmed", async () => {
+    it("completes delegation after STABLE_POLLS_REQUIRED stable polls confirmed", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-complete" } })
@@ -724,7 +724,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-complete")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
       expect(client.session.messages).toHaveBeenCalled()
@@ -744,7 +744,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("ses-child-reset")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
 
       expect(messageCountSpy).toHaveBeenCalledWith(client, "ses-child-reset")
     })
@@ -762,7 +762,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("ses-child-reset-count")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("running")
@@ -785,7 +785,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("ses-child-stable-count")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * 2)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * 2)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("running")
@@ -806,7 +806,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("ses-child-null-count")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("running")
@@ -814,7 +814,7 @@ describe("DelegationManager", () => {
       expect(delegation?.stablePollCount).toBe(0)
     })
 
-    it("only finalizes after STABILITY_THRESHOLD unchanged message-count polls", async () => {
+    it("only finalizes after STABLE_POLLS_REQUIRED unchanged message-count polls", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "ses-child-threshold-count" } })
@@ -888,7 +888,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-extract")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("completed")
@@ -919,7 +919,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-completed-ignore")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
       client.session.messages.mockClear()
 
       manager.handleSessionIdle("child-completed-ignore")
@@ -1046,8 +1046,8 @@ describe("DelegationManager", () => {
       })
       const manager = new DelegationManager(client as never)
       // Set safety ceiling high enough that stability polls complete first
-      // STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD = 3000 * 3 = 9000ms
-      const ceilingMs = STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD + 5000 // 14000ms
+      // POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED = 3000 * 3 = 9000ms
+      const ceilingMs = POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED + 5000 // 14000ms
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-complete-first",
         agent: "builder",
@@ -1057,7 +1057,7 @@ describe("DelegationManager", () => {
 
       // Complete via dual-signal before safety ceiling
       manager.handleSessionIdle("child-complete-first")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
 
@@ -1149,7 +1149,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-all")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const all = manager.getAllDelegations()
       expect(all).toHaveLength(1)
@@ -1311,7 +1311,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(client as never)
 
       await manager.recoverPending()
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       expect(manager.getStatus("delegation-idle")?.status).toBe("completed")
       expect(manager.getStatus("delegation-idle")?.result).toBe("recovered result")
@@ -1429,7 +1429,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-empty-msg")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("completed")
@@ -1454,7 +1454,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-no-asst")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("completed")
@@ -1480,7 +1480,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-multi-part")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("completed")
@@ -1504,7 +1504,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-info-role")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("completed")
@@ -1530,7 +1530,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-final-fail")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("error")
@@ -1553,7 +1553,7 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-cleanup")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       expect(getInternals(manager).delegationsBySession.has("child-cleanup")).toBe(false)
       expect(getInternals(manager).safetyTimers.has(result.delegationId)).toBe(false)
@@ -1567,9 +1567,17 @@ describe("DelegationManager", () => {
       client.session.messages.mockResolvedValue({
         data: [{ role: "assistant", parts: [{ type: "text", text: "notify fail" }] }],
       })
-      // DelegationManager doesn't have a notifyParent in current implementation,
-      // but if it did, failure should not crash. Test that finalization succeeds
-      // even when session.messages is called (which it is for result extraction).
+      // Make prompt succeed for dispatch but throw for notification.
+      // Dispatch calls prompt once (child session), then notification calls prompt again (parent session).
+      // First call succeeds, second call throws.
+      let promptCallCount = 0
+      client.session.prompt.mockImplementation(async () => {
+        promptCallCount++
+        if (promptCallCount === 1) {
+          return undefined // dispatch prompt succeeds
+        }
+        throw new Error("Notification delivery failed")
+      })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-notify-fail",
@@ -1578,10 +1586,12 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("child-notify-fail")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
-      // Should complete successfully — no crash from any notification failure
+      // Should complete successfully — no crash from notification failure
       expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+      // Verify the notification was attempted (second prompt call)
+      expect(promptCallCount).toBeGreaterThanOrEqual(2)
     })
   })
 

@@ -70,6 +70,10 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     fallbackReason,
     queueKey: typeof record.queueKey === "string" ? record.queueKey : "",
     nestingDepth: typeof record.nestingDepth === "number" ? record.nestingDepth : 1,
+    gracePeriodExpiresAt:
+      typeof record.gracePeriodExpiresAt === "number"
+        ? record.gracePeriodExpiresAt
+        : undefined,
   }
 }
 

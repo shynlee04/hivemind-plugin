@@ -77,7 +77,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 |-------|--------|--------|
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
-| Phase 16.2 | COMPLETE | All 6 waves implemented with 76 tests passing, 0 typecheck errors, 0 build errors. Unified terminal path, nesting depth enforcement, grace-period cleanup, fire-and-forget notifications, adaptive polling with dual stability gate, stale detection, observability enhancements. |
+| Phase 16.2 | PARTIAL | All 6 waves implemented with 76 tests passing, 0 typecheck errors. AUDIT: 3 critical findings (missing test files CR-01, gracePeriodExpiresAt never set CR-03). 6/24 requirements COVERED, 10 PARTIAL, 8 MISSING. Remediation in progress. |
 
 ## Known Issues
 
