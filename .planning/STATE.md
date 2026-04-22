@@ -77,7 +77,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 |-------|--------|--------|
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
-| Phase 16.2 | PLANNED | 24 requirements (8 P0, 10 P1, 6 P2) — 6 already implemented, 18 need new code. SPEC corrected per codebase validation. Plan 16.2-01-PLAN.md created with 6 implementation waves. Prerequisites: fix 3 typecheck errors from partial merge. Ready for /gsd-execute-phase 16.2 |
+| Phase 16.2 | COMPLETE | All 6 waves implemented with 76 tests passing, 0 typecheck errors, 0 build errors. Unified terminal path, nesting depth enforcement, grace-period cleanup, fire-and-forget notifications, adaptive polling with dual stability gate, stale detection, observability enhancements. |
 
 ## Known Issues
 

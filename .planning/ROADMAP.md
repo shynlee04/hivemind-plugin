@@ -289,7 +289,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 16.2-01-PLAN.md — PTY Execution Wiring + OMO Safety Patterns: unified terminal lifecycle, grace-period cleanup, parent notifications, adaptive polling, nesting depth limits, observability (6 waves)
+- [x] 16.2-01-PLAN.md — PTY Execution Wiring + OMO Safety Patterns: unified terminal lifecycle, grace-period cleanup, parent notifications, adaptive polling, nesting depth limits, observability (6 waves)
 
 ---
 
