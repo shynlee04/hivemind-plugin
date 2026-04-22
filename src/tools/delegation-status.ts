@@ -51,6 +51,8 @@ export function createDelegationStatusTool(
             ptySessionId: delegation.ptySessionId,
             fallbackReason: delegation.fallbackReason,
             queueKey: delegation.queueKey,
+            nestingDepth: delegation.nestingDepth,
+            gracePeriodExpiresAt: delegation.gracePeriodExpiresAt,
           }))
         }
 
@@ -64,6 +66,7 @@ export function createDelegationStatusTool(
         return renderToolResult(success(
           `${filtered.length} delegation(s)${args.status ? ` with status "${args.status}"` : ""}`,
           filtered,
+          { total: allDelegations.length },
         ))
       } catch (caughtError) {
         const message = caughtError instanceof Error ? caughtError.message : String(caughtError)

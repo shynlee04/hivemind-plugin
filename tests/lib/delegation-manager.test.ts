@@ -835,10 +835,12 @@ describe("DelegationManager", () => {
       })
 
       manager.handleSessionIdle("ses-child-threshold-count")
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * 4)
+      // After 10s: only 1 stable poll elapsed (dual gate not met yet)
+      await vi.advanceTimersByTimeAsync(10000)
       expect(manager.getStatus(result.delegationId)?.status).toBe("running")
 
-      await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS)
+      // After 25s total: dual gate (MIN_STABILITY_TIME_MS + STABLE_POLLS_REQUIRED) met
+      await vi.advanceTimersByTimeAsync(15000)
       expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
     })
 
@@ -1861,6 +1863,145 @@ describe("DelegationManager", () => {
       expect(manager.getStatus("del-count-1")).toBeUndefined()
       expect(manager.getStatus("del-count-2")).toBeUndefined()
       expect(manager.getStatus("del-count-keep")).toBeDefined()
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // Phase 16.2: nesting depth + grace period + terminal path coverage
+  // ---------------------------------------------------------------------------
+
+  describe("nesting depth enforcement", () => {
+    it("top-level delegation has nestingDepth 1", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-depth-1" } })
+      client.session.prompt.mockResolvedValue(undefined)
+      const manager = new DelegationManager(client as never)
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-depth",
+        agent: "builder",
+        prompt: "depth test",
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.nestingDepth).toBe(1)
+    })
+
+    it("nested delegation inherits parent depth + 1", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-depth-2" } })
+      client.session.prompt.mockResolvedValue(undefined)
+      const manager = new DelegationManager(client as never)
+      const internals = getInternals(manager)
+
+      // Inject a top-level delegation so parentSessionId maps to a child session
+      const parentDelegation: Delegation = {
+        id: "del-parent-nested",
+        parentSessionId: "ses-grandparent",
+        childSessionId: "ses-parent-nested",
+        agent: "builder",
+        status: "running",
+        createdAt: Date.now(),
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        executionMode: "sdk",
+        workingDirectory: "/tmp",
+        queueKey: "agent:builder",
+        nestingDepth: 1,
+      }
+      internals.delegations.set(parentDelegation.id, parentDelegation)
+      internals.delegationsBySession.set(parentDelegation.childSessionId, parentDelegation.id)
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-nested",
+        agent: "builder",
+        prompt: "nested depth",
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.nestingDepth).toBe(2)
+    })
+
+    it("throws when max delegation depth is exceeded", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-depth-exceed" } })
+      client.session.prompt.mockResolvedValue(undefined)
+      const manager = new DelegationManager(client as never)
+      const internals = getInternals(manager)
+
+      // Inject a delegation at max depth (3)
+      const deepDelegation: Delegation = {
+        id: "del-depth-3",
+        parentSessionId: "ses-grandparent",
+        childSessionId: "ses-depth-3",
+        agent: "builder",
+        status: "running",
+        createdAt: Date.now(),
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        executionMode: "sdk",
+        workingDirectory: "/tmp",
+        queueKey: "agent:builder",
+        nestingDepth: 3,
+      }
+      internals.delegations.set(deepDelegation.id, deepDelegation)
+      internals.delegationsBySession.set(deepDelegation.childSessionId, deepDelegation.id)
+
+      await expect(manager.dispatch({
+        parentSessionId: "ses-depth-3",
+        agent: "builder",
+        prompt: "exceed depth",
+      })).rejects.toThrow("Maximum delegation nesting depth")
+    })
+  })
+
+  describe("grace period cleanup", () => {
+    it("keeps terminal delegation in Map during grace period", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-grace" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "grace" }] }],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-grace",
+        agent: "builder",
+        prompt: "grace test",
+      })
+
+      manager.handleSessionIdle("child-grace")
+      await vi.advanceTimersByTimeAsync(30000)
+
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+      // Still in Map during grace period
+      expect(manager.getAllDelegations()).toHaveLength(1)
+    })
+
+    it("removes terminal delegation from Map after grace period expires", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-grace-expire" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "expire" }] }],
+      })
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-grace-expire",
+        agent: "builder",
+        prompt: "grace expire test",
+      })
+
+      manager.handleSessionIdle("child-grace-expire")
+      await vi.advanceTimersByTimeAsync(30000)
+      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+
+      // Advance past grace period (10 minutes = 600000ms)
+      await vi.advanceTimersByTimeAsync(600000)
+      expect(manager.getStatus(result.delegationId)).toBeUndefined()
     })
   })
 })

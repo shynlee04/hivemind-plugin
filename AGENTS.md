@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-## NOTICE BOARD\
+## NOTICE BOARD
 
 **Important Notice to Orchestrator/Coordinator agent**
 
