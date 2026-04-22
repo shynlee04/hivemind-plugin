@@ -2,6 +2,7 @@
 description: "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
 mode: primary
 instruction: [.opencode/rules/universal-rules.md, .opencode/rules/commit-governance.md, .opencode/rules/anti-patterns.md, opencode/rules/coordinator-rules.md,.opencode/rules/execution-loop.md,.opencode/rules/skill-activation.md]
+model: opencode-go/kimi-k2.6
 permission:
   read:
     "*": deny

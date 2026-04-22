@@ -4,10 +4,10 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: executing
-stopped_at: Completed 16-background-delegation-revamp-pty-integration-rebuild-backgro-05-PLAN.md
-last_updated: "2026-04-21T14:45:38.495Z"
+stopped_at: Completed 16.2-SPEC correction and validation, created 16.2-01-PLAN.md, extracted learnings from Phase 8 (08-LEARNINGS.md)
+last_updated: "2026-04-22T16:00:00.000Z"
 progress:
-  total_phases: 18
+  total_phases: 19
   completed_phases: 5
   total_plans: 25
   completed_plans: 24
@@ -77,6 +77,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 |-------|--------|--------|
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
+| Phase 16.2 | PLANNED | 24 requirements (8 P0, 10 P1, 6 P2) — 6 already implemented, 18 need new code. SPEC corrected per codebase validation. Plan 16.2-01-PLAN.md created with 6 implementation waves. Prerequisites: fix 3 typecheck errors from partial merge. Ready for /gsd-execute-phase 16.2 |
 
 ## Known Issues
 
@@ -156,6 +157,8 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 
 ### Todos
 
+- [ ] Fix 3 typecheck errors from partial merge (MAX_DELEGATIONS_BEFORE_PRUNE, DEFAULT_PRUNE_MAX_AGE_MS, DelegationStatus import) — blocking Phase 16.2
+- [ ] Plan Phase 16.2 via /gsd-plan-phase 16.2
 - [ ] Decide the next corrected runtime step for the 09-family corridor (fresh verification, targeted re-plan, or both)
 - [ ] Live verification: spawn real child sessions and confirm end-to-end delegation works from the Phase 12 baseline
 - [ ] Plan Phase 11: Clean Architecture Restructuring
@@ -167,10 +170,25 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - Phase 14 added: delegate-task truth-reset — archive phases 09-13, remove trash artifacts, refactor codebase to stop confusing agents about delegation
 - Phase 15 added: Security & Quality Remediation — fix all 26 audit issues (3 critical, 8 high, 7 medium, 8 low) from comprehensive codebase audit
 - Phase 16 added: Background Delegation Revamp + PTY Integration — rebuild background delegation to overcome all current limitations (read-only restriction, 15-min timeout, no undo/branching parity, no write-capable background) by synthesizing architecture from oh-my-openagent, opencode-background-agents, and opencode-pty
+- Phase 16.2 added: PTY Execution Wiring + OMO Safety Patterns — close verification gaps, add grace periods, parent notifications, adaptive polling, nesting depth limits (SPEC validated, 24 requirements, 6 already implemented)
+- 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
 
-- None active. The next task is planning/verification choice, not an unresolved blocker.
+- **Phase 16.2 prerequisite:** Codebase is broken — 3 typecheck errors from partial merge (MAX_DELEGATIONS_BEFORE_PRUNE, DEFAULT_PRUNE_MAX_AGE_MS, DelegationStatus). Must fix before any 16.2 implementation begins.
+
+### Technical Debt (from Learnings Extraction 2026-04-22)
+
+| Source | Debt Item | Impact | Phase |
+|--------|-----------|--------|-------|
+| 14-LEARNINGS | Stale Phase 02 verification truths referencing deleted APIs | False confidence in runtime behavior | 11 |
+| 14-LEARNINGS | Plan-suggested file paths were fabricated — executor must always verify against disk | Plans may reference non-existent files | All |
+| 14-LEARNINGS | Phase 02 baseline had 80% of needed infrastructure but was never recognized | Redundant re-implementation risk | 11 |
+| 15-LEARNINGS | Git/symlink worktree dual-path structure affects commit staging | Commits may land in wrong tree | All |
+| 16-LEARNINGS | D-04A dual-mode architecture discovered through verification, not planning | Future dual-path decisions need verification-first approach | 16.2 |
+| 16-LEARNINGS | Partial merge left codebase broken (3 undefined constants) | Blocks Phase 16.2 start | 16.2 |
+| 16-LEARNINGS | notification-handler.ts deprecated but still the only viable notification path | Module marked dead but needed for 16.2 | 16.2 |
+| 16-LEARNINGS | 6 of 24 Phase 16.2 requirements already implemented | PTY wiring section is verification-only, not new code | 16.2 |
 
 ### Quick Tasks Completed
 

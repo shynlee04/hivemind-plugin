@@ -15,6 +15,9 @@ import {
   type CommandDelegationParams,
   type Delegation,
   type DelegationResult,
+  type DelegationStatus,
+  MAX_DELEGATIONS_BEFORE_PRUNE,
+  DEFAULT_PRUNE_MAX_AGE_MS,
 } from "./types.js"
 
 type DelegateParams = {
@@ -90,6 +93,7 @@ export class DelegationManager {
         safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
         lastMessageCount: 0,
         stablePollCount: 0,
+        nestingDepth: 1,
         executionMode: "sdk",
         workingDirectory,
         queueKey: acquireQueueKey,
@@ -202,7 +206,46 @@ export class DelegationManager {
   }
 
   private persistAllDelegations(): void {
+    if (this.delegations.size > MAX_DELEGATIONS_BEFORE_PRUNE) {
+      this.pruneCompletedDelegations()
+    }
     persistDelegations(Array.from(this.delegations.values()))
+  }
+
+  /**
+   * Remove terminal delegations (completed, error, timeout) whose completedAt
+   * timestamp is older than `maxAgeMs`. Prevents unbounded memory growth in
+   * the in-memory delegations Map. Syncs durable state after pruning.
+   *
+   * @param maxAgeMs - Maximum age in milliseconds for keeping terminal delegations.
+   *   Defaults to {@link DEFAULT_PRUNE_MAX_AGE_MS} (30 minutes).
+   * @returns Number of delegations pruned.
+   */
+  pruneCompletedDelegations(maxAgeMs: number = DEFAULT_PRUNE_MAX_AGE_MS): number {
+    const now = Date.now()
+    const terminalStatuses: ReadonlySet<DelegationStatus> = new Set(["completed", "error", "timeout"])
+    const toPrune: string[] = []
+
+    for (const [id, delegation] of this.delegations) {
+      if (!terminalStatuses.has(delegation.status)) continue
+      if (delegation.completedAt !== undefined && (now - delegation.completedAt) > maxAgeMs) {
+        toPrune.push(id)
+      }
+    }
+
+    for (const id of toPrune) {
+      const delegation = this.delegations.get(id)
+      if (delegation) {
+        this.cleanupTracking(id, delegation.childSessionId)
+      }
+      this.delegations.delete(id)
+    }
+
+    if (toPrune.length > 0) {
+      persistDelegations(Array.from(this.delegations.values()))
+    }
+
+    return toPrune.length
   }
 
   private scheduleSafetyCeiling(delegation: Delegation): void {

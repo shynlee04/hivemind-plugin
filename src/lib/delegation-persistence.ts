@@ -63,6 +63,7 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     ptySessionId: typeof record.ptySessionId === "string" ? record.ptySessionId : undefined,
     fallbackReason,
     queueKey: typeof record.queueKey === "string" ? record.queueKey : "",
+    nestingDepth: typeof record.nestingDepth === "number" ? record.nestingDepth : 1,
   }
 }
 

@@ -196,6 +196,8 @@ export type RuntimePolicy = {
   concurrency: ConcurrencyPolicy
   budget: BudgetPolicy
   trustedRuntime: TrustedRuntimePolicy
+  /** Maximum delegation nesting depth (default: 3) */
+  maxDelegationDepth?: number
 }
 
 export type SessionBudgetOverride = Partial<BudgetPolicy>
@@ -209,6 +211,8 @@ export type SessionPolicyOverride = {
   concurrency?: SessionConcurrencyOverride
   budget?: SessionBudgetOverride
   trustedRuntime?: Partial<TrustedRuntimePolicy>
+  /** Override for max delegation nesting depth */
+  maxDelegationDepth?: number
 }
 
 export type ResolvedConcurrencyPolicy = {
@@ -360,6 +364,12 @@ export interface Delegation {
   lastMessageCount: number
   /** Number of consecutive stable polls (message count unchanged) */
   stablePollCount: number
+  /** Nesting depth of this delegation (1 = top-level) */
+  nestingDepth: number
+  /** Timestamp when grace period cleanup is scheduled (terminal states only) */
+  gracePeriodExpiresAt?: number
+  /** Timestamp of last observed message count change (for adaptive polling) */
+  lastMessageCountChangeAt?: number
   executionMode: "sdk" | "pty" | "headless"
   workingDirectory: string
   ptySessionId?: string
@@ -377,6 +387,10 @@ export interface DelegationResult {
   ptySessionId?: string
   fallbackReason?: string
   queueKey?: string
+  /** Timestamp when grace period cleanup is scheduled (terminal states only) */
+  gracePeriodExpiresAt?: number
+  /** Total count of matching delegations (for status tool responses) */
+  total?: number
 }
 
 export type CommandDelegationParams = {
@@ -398,8 +412,38 @@ export type CommandDelegationParams = {
 
 /** Safety ceiling — MAX runtime, not a deadline. Tasks may complete faster. */
 export const DEFAULT_SAFETY_CEILING_MS = 30 * 60 * 1000 // 30 minutes
-/** Dual-signal: number of stable polls required to confirm completion */
-export const STABILITY_THRESHOLD = 3
-/** Dual-signal: interval between stability polls (ms) */
-export const STABILITY_POLL_INTERVAL_MS = 3000
-export const MAX_DELEGATION_DEPTH = 1
+/** Maximum delegation nesting depth (default: 3, overridable via RuntimePolicy) */
+export const MAX_DELEGATION_DEPTH = 3
+
+// ---------------------------------------------------------------------------
+// Phase 16.2: Grace period, adaptive polling, and nesting depth constants
+// ---------------------------------------------------------------------------
+
+/** Grace period before in-memory cleanup of terminal delegations (10 minutes) */
+export const TASK_CLEANUP_DELAY_MS = 10 * 60 * 1000
+/** Maximum delegations before batch pruning kicks in */
+export const MAX_DELEGATIONS_BEFORE_PRUNE = 50
+/** Max age for batch pruning of terminal delegations (30 minutes) */
+export const DEFAULT_PRUNE_MAX_AGE_MS = 30 * 60 * 1000
+
+/** Adaptive polling: interval when child is actively producing messages */
+export const POLL_INTERVAL_ACTIVE_MS = 2000
+/** Adaptive polling: interval when child is stable for < 30s */
+export const POLL_INTERVAL_BASE_MS = 5000
+/** Adaptive polling: interval when child is idle for 30s–5min */
+export const POLL_INTERVAL_IDLE_MS = 10000
+/** Adaptive polling: interval when child is deeply idle (> 5min) */
+export const POLL_INTERVAL_DEEP_IDLE_MS = 30000
+
+/** Minimum time a delegation must run before fast-completion deferral expires */
+export const MIN_IDLE_TIME_MS = 5000
+/** Activity-based stale timeout (45 minutes) — NOT a fixed deadline */
+export const DEFAULT_STALE_TIMEOUT_MS = 45 * 60 * 1000
+/** Minimum elapsed time since last message change before stability is declared */
+export const MIN_STABILITY_TIME_MS = 10000
+/** Number of consecutive stable polls required to confirm completion */
+export const STABLE_POLLS_REQUIRED = 3
+/** @deprecated Use STABLE_POLLS_REQUIRED instead */
+export const STABILITY_THRESHOLD = STABLE_POLLS_REQUIRED
+/** @deprecated Use adaptive interval calculation instead */
+export const STABILITY_POLL_INTERVAL_MS = POLL_INTERVAL_BASE_MS

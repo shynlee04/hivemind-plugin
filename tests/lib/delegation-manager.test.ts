@@ -9,7 +9,9 @@ import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import { readPersistedDelegations } from "../../src/lib/delegation-persistence.js"
 import {
+  DEFAULT_PRUNE_MAX_AGE_MS,
   DEFAULT_SAFETY_CEILING_MS,
+  MAX_DELEGATIONS_BEFORE_PRUNE,
   STABILITY_POLL_INTERVAL_MS,
   STABILITY_THRESHOLD,
   type Delegation,
@@ -1578,6 +1580,287 @@ describe("DelegationManager", () => {
 
       // Should complete successfully — no crash from any notification failure
       expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // delegation pruning
+  // ---------------------------------------------------------------------------
+
+  describe("pruning", () => {
+    /** Inject a delegation directly into the internal Map for pruning tests */
+    function injectDelegation(
+      manager: DelegationManager,
+      overrides: Partial<Delegation> & { id: string; childSessionId: string },
+    ): void {
+      const internals = getInternals(manager)
+      const delegation: Delegation = {
+        parentSessionId: "ses-parent-prune",
+        agent: "builder",
+        status: "completed",
+        createdAt: Date.now() - 60 * 60 * 1000, // 1 hour ago
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        executionMode: "sdk",
+        workingDirectory: "/tmp",
+        queueKey: "agent:builder",
+        ...overrides,
+      }
+      internals.delegations.set(delegation.id, delegation)
+      internals.delegationsBySession.set(delegation.childSessionId, delegation.id)
+    }
+
+    it("removes old completed delegations past the default max age", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-old-completed",
+        childSessionId: "child-old",
+        status: "completed",
+        completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 1000, // 31+ min ago
+      })
+
+      const pruned = manager.pruneCompletedDelegations()
+
+      expect(pruned).toBe(1)
+      expect(manager.getStatus("del-old-completed")).toBeUndefined()
+      expect(manager.getAllDelegations()).toHaveLength(0)
+    })
+
+    it("keeps recent completed delegations within the max age window", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-recent",
+        childSessionId: "child-recent",
+        status: "completed",
+        completedAt: Date.now() - 60_000, // 1 minute ago
+      })
+
+      const pruned = manager.pruneCompletedDelegations()
+
+      expect(pruned).toBe(0)
+      expect(manager.getStatus("del-recent")).toBeDefined()
+      expect(manager.getStatus("del-recent")?.status).toBe("completed")
+    })
+
+    it("keeps active (non-terminal) delegations regardless of age", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-running-old",
+        childSessionId: "child-running-old",
+        status: "running",
+        // No completedAt — running delegations don't have it
+      })
+
+      injectDelegation(manager, {
+        id: "del-dispatched-old",
+        childSessionId: "child-dispatched-old",
+        status: "dispatched",
+      })
+
+      const pruned = manager.pruneCompletedDelegations()
+
+      expect(pruned).toBe(0)
+      expect(manager.getStatus("del-running-old")).toBeDefined()
+      expect(manager.getStatus("del-dispatched-old")).toBeDefined()
+    })
+
+    it("prunes terminal delegations with error and timeout statuses", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-old-error",
+        childSessionId: "child-error",
+        status: "error",
+        completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 5000,
+      })
+
+      injectDelegation(manager, {
+        id: "del-old-timeout",
+        childSessionId: "child-timeout",
+        status: "timeout",
+        completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 5000,
+      })
+
+      const pruned = manager.pruneCompletedDelegations()
+
+      expect(pruned).toBe(2)
+      expect(manager.getStatus("del-old-error")).toBeUndefined()
+      expect(manager.getStatus("del-old-timeout")).toBeUndefined()
+    })
+
+    it("supports custom maxAgeMs parameter", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-5min",
+        childSessionId: "child-5min",
+        status: "completed",
+        completedAt: Date.now() - 6 * 60 * 1000, // 6 minutes ago
+      })
+
+      // Default max age (30 min) should keep it
+      expect(manager.pruneCompletedDelegations()).toBe(0)
+      expect(manager.getStatus("del-5min")).toBeDefined()
+
+      // Re-inject since it wasn't pruned
+      injectDelegation(manager, {
+        id: "del-5min",
+        childSessionId: "child-5min",
+        status: "completed",
+        completedAt: Date.now() - 6 * 60 * 1000,
+      })
+
+      // 5-minute max age should prune it (6 min > 5 min)
+      const pruned = manager.pruneCompletedDelegations(5 * 60 * 1000)
+      expect(pruned).toBe(1)
+      expect(manager.getStatus("del-5min")).toBeUndefined()
+    })
+
+    it("syncs persisted state after pruning", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-persist-sync",
+        childSessionId: "child-persist",
+        status: "completed",
+        completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 1000,
+      })
+
+      // Force initial persistence
+      const internals = getInternals(manager)
+      writeFileSync(
+        getDelegationsFile(stateDir),
+        JSON.stringify(Array.from(internals.delegations.values())),
+      )
+
+      manager.pruneCompletedDelegations()
+
+      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
+      expect(persisted.find((d) => d.id === "del-persist-sync")).toBeUndefined()
+    })
+
+    it("cleans up delegationsBySession tracking for pruned entries", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-tracking",
+        childSessionId: "child-tracking",
+        status: "completed",
+        completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 1000,
+      })
+
+      expect(getInternals(manager).delegationsBySession.has("child-tracking")).toBe(true)
+
+      manager.pruneCompletedDelegations()
+
+      expect(getInternals(manager).delegationsBySession.has("child-tracking")).toBe(false)
+    })
+
+    it("auto-prune triggers when Map exceeds MAX_DELEGATIONS_BEFORE_PRUNE threshold", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [{ name: "builder" }],
+      })
+      const manager = new DelegationManager(client as never)
+      const internals = getInternals(manager)
+
+      // Inject MAX_DELEGATIONS_BEFORE_PRUNE + 1 delegations with completed status
+      for (let i = 0; i <= MAX_DELEGATIONS_BEFORE_PRUNE; i++) {
+        const id = `del-auto-${i}`
+        const childId = `child-auto-${i}`
+        internals.delegations.set(id, {
+          id,
+          parentSessionId: "ses-parent-auto",
+          childSessionId: childId,
+          agent: "builder",
+          status: "completed",
+          createdAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 1000,
+          completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 500,
+          lastMessageCount: 0,
+          stablePollCount: 0,
+          executionMode: "sdk",
+          workingDirectory: "/tmp",
+          queueKey: "agent:builder",
+        })
+        internals.delegationsBySession.set(childId, id)
+      }
+
+      expect(internals.delegations.size).toBe(MAX_DELEGATIONS_BEFORE_PRUNE + 1)
+
+      // Add one more via dispatch to trigger persistAllDelegations → auto-prune
+      // Since the delegations are old enough, auto-prune should clear them
+      // But dispatch creates a new delegation, so let's call the internal method
+      // We'll trigger it by using the public dispatch which calls persistAllDelegations
+      // Actually, let's just directly test that persistAllDelegations triggers auto-prune
+
+      // We need a running delegation to test the auto-prune correctly
+      // Add a running delegation that won't be pruned
+      internals.delegations.set("del-running-keep", {
+        id: "del-running-keep",
+        parentSessionId: "ses-parent-auto",
+        childSessionId: "child-running-keep",
+        agent: "builder",
+        status: "running",
+        createdAt: Date.now(),
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        executionMode: "sdk",
+        workingDirectory: "/tmp",
+        queueKey: "agent:builder",
+      })
+      internals.delegationsBySession.set("child-running-keep", "del-running-keep")
+
+      // Trigger persistAllDelegations via dispatch (which internally calls it)
+      // The dispatch will call persistAllDelegations, which should trigger auto-prune
+      client.session.create.mockResolvedValue({ data: { id: "child-auto-dispatch" } })
+      client.session.prompt.mockResolvedValue(undefined)
+
+      await manager.dispatch({
+        parentSessionId: "ses-parent-auto",
+        agent: "builder",
+        prompt: "trigger auto-prune",
+      })
+
+      // After dispatch, the auto-prune should have removed old completed delegations
+      // The running delegation and the new dispatched one should remain
+      const remaining = manager.getAllDelegations()
+      expect(remaining.length).toBeLessThanOrEqual(MAX_DELEGATIONS_BEFORE_PRUNE)
+      expect(manager.getStatus("del-running-keep")).toBeDefined()
+    })
+
+    it("returns correct count of pruned delegations", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+
+      injectDelegation(manager, {
+        id: "del-count-1",
+        childSessionId: "child-count-1",
+        status: "completed",
+        completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 1000,
+      })
+
+      injectDelegation(manager, {
+        id: "del-count-2",
+        childSessionId: "child-count-2",
+        status: "completed",
+        completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 2000,
+      })
+
+      injectDelegation(manager, {
+        id: "del-count-keep",
+        childSessionId: "child-count-keep",
+        status: "completed",
+        completedAt: Date.now() - 10_000, // Recent
+      })
+
+      const pruned = manager.pruneCompletedDelegations()
+
+      expect(pruned).toBe(2)
+      expect(manager.getStatus("del-count-1")).toBeUndefined()
+      expect(manager.getStatus("del-count-2")).toBeUndefined()
+      expect(manager.getStatus("del-count-keep")).toBeDefined()
     })
   })
 })

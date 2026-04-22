@@ -264,6 +264,33 @@ Plans:
 
 **Execution status:** GAP CLOSURE ACTIVE. Plans 01-05 complete; verification gaps 1-3 and 5 are closed via persisted queue-key context and real message-stability completion. Plan 06 remains to close the final honest dual-mode execution gap.
 
+### Phase 16.2: PTY Execution Wiring + OMO Safety Patterns
+
+**Goal:** Close two critical gaps identified in Phase 16 verification: (1) verify PTY execution wiring for command delegations is complete and add unified terminal lifecycle, and (2) backfill OMO-proven safety patterns — grace periods for memory cleanup, parent notifications, adaptive polling, and nesting depth limits.
+
+**Requirements**: 24 requirements (8 × P0, 10 × P1, 6 × P2) — see 16.2-SPEC-2026-04-22.md
+**Depends on:** Phase 16 (plans 01-06 complete or near-complete), Phase 15
+**SPEC:** `.planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16.2-SPEC-2026-04-22.md` (validated against codebase)
+**Validation:** `.planning/phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16.2-SPEC-CODEBASE-VALIDATION-2026-04-22.md`
+**Learnings fed forward:** 14-LEARNINGS.md, 15-LEARNINGS.md, 16-LEARNINGS.md
+
+**Scope:**
+- PTY execution wiring verification (6 of 24 requirements already implemented)
+- Terminal lifecycle with grace period (memory leak fix for delegations never cleaned from Map)
+- Unified transitionToTerminal() method for all 6 terminal paths
+- Parent notification on all terminal paths (fire-and-forget via SDK)
+- Adaptive polling intervals replacing fixed 3-second interval
+- Nesting depth enforcement (MAX_DELEGATION_DEPTH from 1→3 with RuntimePolicy override)
+- Observability: transition logging, structured status counts, terminal path integration tests
+
+**Prerequisites (blocking):**
+- Fix 3 typecheck errors from partial merge (undefined constants + missing import)
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 16.2-01-PLAN.md — PTY Execution Wiring + OMO Safety Patterns: unified terminal lifecycle, grace-period cleanup, parent notifications, adaptive polling, nesting depth limits, observability (6 waves)
+
 ---
 
 ### Phase 9.3: Module Restructuring + Config
@@ -404,6 +431,8 @@ Plans:
 | 9.2 Completion Detection Architecture | 1/3 authoritative (+2 historical/quarantined) | ⚠️ MIXED — Plan 01 authoritative; Plans 02-03 ran historically but are not current proof |
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
+| 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
+| 16.2 PTY Wiring + OMO Safety | 0 plans | SPEC validated, ready for planning |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
@@ -416,10 +445,13 @@ Phase 1 (7 done, 3 pending — planned)
             └─→ Phase 2: Authoritative re-verification (18/18) ✅
                  └─→ Phase 9 family: partial implementation + forensic reset
                       └─→ Phase 12: truthful start-semantics repair + reconciliation ✅
-                           └─→ Next runtime verification / re-planning work from corrected truth
-                                └─→ Phase 9.3: Module Restructuring + Config
-                                     └─→ Phase 11: Clean Architecture Restructuring
-                                          └─→ Phase 3: Schema Definition
-                                               └─→ Phase 4: Migration Gate
-                                                    └─→ Phase 5: Integration Verification
+                           └─→ Phase 14: delegate-task truth-reset ✅
+                                └─→ Phase 15: Security & Quality Remediation ✅
+                                     └─→ Phase 16: Background Delegation Revamp + PTY Integration
+                                          └─→ Phase 16.2: PTY Wiring + OMO Safety Patterns (SPEC validated)
+                                 └─→ Phase 9.3: Module Restructuring + Config
+                                      └─→ Phase 11: Clean Architecture Restructuring
+                                           └─→ Phase 3: Schema Definition
+                                                └─→ Phase 4: Migration Gate
+                                                     └─→ Phase 5: Integration Verification
 ```
