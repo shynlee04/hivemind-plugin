@@ -516,6 +516,19 @@ Complete mapping of all requirements to phases.
 | INT-7f: Specialist routing | P2 | Pending | RUN-3g, SCH-5a, INT-7b |
 | INT-7g: Schema validation | P1 | Pending | SCH-5d, INT-7b |
 
+### Phase 14: delegate-task truth-reset
+
+| Requirement | Priority | Status | Dependencies |
+|-------------|----------|--------|--------------|
+| REQ-14-01: WaiterModel dispatch | P0 | Complete | Phase 12 |
+| REQ-14-02: Dual-signal completion | P0 | Complete | REQ-14-01 |
+| REQ-14-03: Archive stale artifacts | P0 | Complete | Phase 12 |
+| REQ-14-04: Event routing for lifecycle | P0 | Complete | REQ-14-01 |
+| REQ-14-05: DelegationManager core | P0 | Complete | REQ-14-01, REQ-14-02 |
+| REQ-14-06: Hybrid persistence + recovery | P0 | Complete | REQ-14-05 |
+| REQ-14-07: Runtime-truthful tests | P1 | Complete | REQ-14-05, REQ-14-06 |
+| REQ-14-08: Tool surface + plugin wiring | P0 | Complete | REQ-14-05 |
+
 ---
 
 **Coverage Summary:**
@@ -525,8 +538,118 @@ Complete mapping of all requirements to phases.
 - Phase 3 (Schema): 5 requirements — 5 mapped ✓
 - Phase 4 (Migration): 4 requirements — 4 mapped ✓
 - Phase 5 (Integration): 7 requirements — 7 mapped ✓
-- **Grand total: 43 requirements — 43 mapped ✓**
+- Phase 14 (delegate-task truth-reset): 8 requirements — 8 mapped ✓
+- **Grand total: 51 requirements — 51 mapped ✓**
 
 ---
-*Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 — V3 runtime features added as Phase 2+*
+
+## Phase 14: delegate-task truth-reset — WaiterModel + Dual-Signal + Hybrid Persistence
+
+Requirements for rebuilding delegate-task with corrected architecture: WaiterModel always-background execution (no sync/async split), dual-signal completion detection (session.idle + message count stability, no fixed timeouts), hybrid persistence (disk + in-memory), and a dedicated delegation-status tool for polling results.
+
+**Added:** 2026-04-22 (backfilled from Phase 14 implementation evidence — requirements were referenced in ROADMAP.md but never formally defined in REQUIREMENTS.md)
+**Phase status:** COMPLETE — 3/3 plans, 16/16 verification truths, 407 tests passing
+
+### REQ-14-01: WaiterModel Always-Background Dispatch
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-01 |
+| **Category** | Delegation Architecture |
+| **Priority** | P0 — Foundation for all delegation behavior |
+| **Status** | Complete |
+| **Dependencies** | Phase 12 (truthful start semantics baseline) |
+| **Description** | DelegationManager dispatches tasks always in background via WaiterModel pattern — no sync/async mode split. The `dispatch()` method returns `{ status: "dispatched", delegationId }` immediately without blocking the caller. No `delegateSync` or `delegateAsync` methods exist. |
+| **Acceptance Criteria** | 1. `dispatch()` returns immediately with `{ status: "dispatched", delegationId }` — no blocking wait.<br>2. No `delegateSync` or `delegateAsync` methods exist anywhere in the codebase.<br>3. Child session is created and prompted independently; parent continues execution.<br>4. Test: dispatch returns within 100ms regardless of child task duration. |
+
+### REQ-14-02: Dual-Signal Completion Detection
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-02 |
+| **Category** | Delegation Architecture |
+| **Priority** | P0 — Core completion mechanism |
+| **Status** | Complete |
+| **Dependencies** | REQ-14-01 (WaiterModel dispatch) |
+| **Description** | Completion detection uses dual-signal approach: session.idle event + message count stability (3 consecutive stable polls at 3-second intervals). No fixed timeout deadlines — the safety ceiling is an optional max runtime guard, not a response deadline. |
+| **Acceptance Criteria** | 1. `handleSessionIdle()` starts stability polling on session.idle event.<br>2. Stability confirmed when `stablePollCount >= STABILITY_THRESHOLD` (3).<br>3. `STABILITY_POLL_INTERVAL_MS = 3000` (fixed interval; adaptive intervals deferred to Phase 16.2).<br>4. Safety ceiling is optional max runtime, not a deadline.<br>5. Test: dispatch→idle→stability→completion sequence verified. |
+
+### REQ-14-03: Archive Stale Phase Artifacts
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-03 |
+| **Category** | Delegation Architecture |
+| **Priority** | P0 — Removes confusing artifacts that mislead agents |
+| **Status** | Complete |
+| **Dependencies** | Phase 12 (reconciliation baseline) |
+| **Description** | Phase directories for stale/deprecated phases (06, 07, 09, 09.1, 09.2, 09.3, 12, 13) are archived to `.archive/phases/`. The active `.planning/phases/` directory contains only authoritative phase directories. Plugin.ts imports only active modules with no stale deleted-module references. |
+| **Acceptance Criteria** | 1. `.archive/phases/` contains `06`, `07`, `09`, `09.1`, `09.2`, `09.3`, `12`, `13`.<br>2. Active `.planning/phases/` contains only authoritative phase directories.<br>3. `plugin.ts` imports only active modules — no stale deleted-module references.<br>4. AGENTS.md has no "delegate-task is broken" text and reflects WaiterModel architecture. |
+
+### REQ-14-04: Event Routing for Delegation Lifecycle
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-04 |
+| **Category** | Delegation Architecture |
+| **Priority** | P0 — Required for delegation state transitions |
+| **Status** | Complete |
+| **Dependencies** | REQ-14-01 (DelegationManager must exist) |
+| **Description** | Plugin routes `session.idle` and `session.deleted` events to DelegationManager for dual-signal handling and cleanup. These are the primary lifecycle events that drive delegation state transitions. |
+| **Acceptance Criteria** | 1. `session.idle` event routes to `delegationManager.handleSessionIdle()`.<br>2. `session.deleted` event triggers cleanup via `handleSessionDeleted()`.<br>3. Both routes wired in `plugin.ts`.<br>4. Test: session.idle triggers stability polling; session.deleted clears timers and session maps. |
+
+### REQ-14-05: DelegationManager Core Implementation
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-05 |
+| **Category** | Delegation Architecture |
+| **Priority** | P0 — Core module for all delegation behavior |
+| **Status** | Complete |
+| **Dependencies** | REQ-14-01, REQ-14-02 |
+| **Description** | DelegationManager implements WaiterModel dispatch + dual-signal completion + safety ceiling + hybrid persistence. Provides `dispatch()`, `handleSessionIdle()`, `handleSessionDeleted()`, `recoverPending()`, `getStatus()`, and `getAllDelegations()` methods. Concurrent delegations tracked independently by unique task ID with concurrency queue. |
+| **Acceptance Criteria** | 1. DelegationManager exports all 6 methods.<br>2. Safety ceiling fires after configured max runtime and aborts child session.<br>3. Concurrent delegations tracked independently by unique delegation ID.<br>4. Concurrency via `DelegationConcurrencyQueue` with `buildDelegationQueueKey`.<br>5. ~450 LOC, no file exceeds 500 LOC. |
+
+### REQ-14-06: Hybrid Persistence and Recovery
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-06 |
+| **Category** | Delegation Architecture |
+| **Priority** | P0 — Required for delegation durability across restarts |
+| **Status** | Complete |
+| **Dependencies** | REQ-14-05 (DelegationManager core) |
+| **Description** | Delegation state persists to disk after every state transition. On plugin load, `recoverPending()` restores running delegations from `delegations.json` under the continuity storage path. Persistence uses the canonical harness state directory. |
+| **Acceptance Criteria** | 1. `persistAllDelegations()` called after every state transition.<br>2. Persistence goes to `delegations.json` under continuity storage path.<br>3. `recoverPending()` reads persisted delegations on startup and re-registers running ones.<br>4. Test: dispatch→persist→restart→recover→completion sequence verified. |
+
+### REQ-14-07: Runtime-Truthful Test Coverage
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-07 |
+| **Category** | Delegation Architecture |
+| **Priority** | P1 — Required for confidence in delegation behavior |
+| **Status** | Complete |
+| **Dependencies** | REQ-14-05, REQ-14-06 |
+| **Description** | Tests are runtime-truthful per D-08: state transitions, event routing, error handling are tested with transport-boundary-only mocking. No hollow stubs. Test files: delegation-manager.test.ts (49 tests), delegate-task.test.ts (15 tests), delegation-status.test.ts (12 tests). Total 76 delegation tests. |
+| **Acceptance Criteria** | 1. 76 delegation tests passing (49 + 15 + 12).<br>2. Tests mock only SDK transport boundary, not internal business logic.<br>3. Tests cover dispatch→idle→stability→completion sequences, SDK failure paths, persistence, recovery, timer cleanup.<br>4. `npm run typecheck` and `npm test` both pass cleanly. |
+
+### REQ-14-08: Tool Surface and Plugin Wiring
+
+| Field | Value |
+|-------|-------|
+| **ID** | REQ-14-08 |
+| **Category** | Delegation Architecture |
+| **Priority** | P0 — Required for delegation tool access |
+| **Status** | Complete |
+| **Dependencies** | REQ-14-05 (DelegationManager core) |
+| **Description** | The delegate-task tool is Zod-validated with parameters: `agent` (required), `prompt` (required), `title` (optional), `safetyCeilingMs` (60000-3600000, optional). No async parameter. The dedicated delegation-status tool provides single-delegation lookup and list-with-filter functionality. Both tools registered in plugin.ts. |
+| **Acceptance Criteria** | 1. delegate-task tool registered in plugin.ts with Zod schema validation.<br>2. delegation-status tool registered and provides state polling.<br>3. Plugin awaits `recoverPending()` on startup.<br>4. No async parameter on delegate-task tool.<br>5. safetyCeilingMs range: 60000-3600000 (1-60 minutes). |
+
+---
+
+## Master Traceability
+
+Complete mapping of all requirements to phases.
+
+### v1 Harness Cleanup

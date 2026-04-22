@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "./continuity.js"
@@ -15,7 +15,11 @@ export function getDelegationsFilePath(): string {
 export function persistDelegations(delegations: Delegation[]): void {
   const filePath = getDelegationsFilePath()
   mkdirSync(dirname(filePath), { recursive: true })
-  writeFileSync(filePath, `${JSON.stringify(delegations, null, 2)}\n`, "utf-8")
+  // Atomic write: write to temp file first, then rename to prevent
+  // corrupt reads if the process crashes mid-write.
+  const tmpFile = filePath + ".tmp"
+  writeFileSync(tmpFile, `${JSON.stringify(delegations, null, 2)}\n`, "utf-8")
+  renameSync(tmpFile, filePath)
 }
 
 function normalizePersistedDelegation(value: unknown): Delegation | null {

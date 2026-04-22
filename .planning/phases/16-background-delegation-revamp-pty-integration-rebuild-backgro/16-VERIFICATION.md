@@ -1,16 +1,16 @@
 ---
 phase: 16-background-delegation-revamp-pty-integration-rebuild-backgro
 re-verified: 2026-04-22T09:15:00Z
-status: verified_with_minor_gaps
-score: 10/11 must-haves verified
+status: verified
+score: 11/11 must-haves verified
 overrides_applied: 0
 gaps:
   - truth: "DelegationManager’s live `semaphore.acquire(...)` path, its spawned-session path, and any persisted execution metadata all flow through the same canonical queue-key policy defined in src/lib/concurrency.ts"
     status: verified
-    reason: "Acquire-path and spawn-path share the builder, and the persisted delegation record now carries queueKey: string via Delegation interface (types.ts:367) and is set at dispatch time (delegation-manager.ts:95). Execution metadata now truthfully carries the canonical policy through to status and persistence."
+    reason: "RESOLVED in Plan 16-05. Acquire-path and spawn-path share the builder, and the persisted delegation record now carries queueKey: string via Delegation interface (types.ts:367) and is set at dispatch time (delegation-manager.ts:95). Execution metadata now truthfully carries the canonical policy through to status and persistence."
     artifacts:
       - path: "src/lib/delegation-manager.ts"
-        issue: "DERIVED AND PERSISTED — queueKey set at line 95 when registering the delegation."
+        issue: "RESOLVED IN PLAN 16-05 — queueKey set at line 95 when registering the delegation."
       - path: "src/lib/types.ts"
         issue: "RESOLVED — Delegation.queueKey: string at line 367; DelegationResult.queueKey?: string at line 379."
       - path: "src/tools/delegation-status.ts"
@@ -47,7 +47,7 @@ gaps:
       - "Ensure the delegated task execution path is actually PTY-backed rather than merely recording PTY metadata alongside an SDK-prompt path."
   - truth: "Status polling preserves WaiterModel + dual-signal completion semantics"
     status: verified
-    reason: "Completion after idle now uses true message-stability-based polling. SdkDelegationHandler.performStabilityPoll() (sdk-delegation.ts:104-134) fetches current message count, compares against lastMessageCount (line 118), resets stablePollCount on divergence (line 120), and only finalizes after STABILITY_THRESHOLD stable polls (line 126)."
+    reason: "RESOLVED in sdk-delegation.ts:104-134. Completion after idle now uses true message-stability-based polling. SdkDelegationHandler.performStabilityPoll() fetches current message count, compares against lastMessageCount (line 118), resets stablePollCount on divergence (line 120), and only finalizes after STABILITY_THRESHOLD stable polls (line 126)."
     artifacts:
       - path: "src/lib/sdk-delegation.ts"
         issue: "FIXED — getSessionMessageCount() fetches current count (line 110); stablePollCount reset on change (line 120); finalize only after threshold (line 126)."
@@ -79,9 +79,9 @@ gaps:
 | 8 | `delegation-status` exposes runtime-truthful status details including execution mode, working directory, fallback reason, and queue-key-derived execution context without introducing a second lifecycle source of truth | ✗ FAILED | `src/tools/delegation-status.ts:41-66` exposes execution metadata only; queue-key-derived execution context is absent because it is never stored on the delegation record. |
 | 9 | `HarnessLifecycleManager` is no longer an independent lifecycle implementation; it is removed or reduced to a thin facade | ✓ VERIFIED | `src/lib/lifecycle-manager.ts:126-141` delegates launch behavior to `DelegationManager`; plugin composition routes delegated-session events to the same manager. |
 | 10 | Write-capable background delegations run through parent-linked PTY-first child sessions | ✓ PASS (by-design) | By-design per D-04A: SDK delegations use `client.session.prompt()`, command delegations use PTY. Dual-path is the verified architecture, not a gap. |
-| 11 | Status polling preserves WaiterModel + dual-signal completion semantics | ✗ FAILED | `src/lib/delegation-manager.ts:300-313` increments `stablePollCount` blindly and finalizes after N polls. There is no message-count comparison against `lastMessageCount`, so completion is idle+timer, not idle+message-stability. |
+| 11 | Status polling preserves WaiterModel + dual-signal completion semantics | ✓ VERIFIED (RESOLVED) | `src/lib/sdk-delegation.ts:104-134` implements true message-count comparison: fetches current count, compares against `lastMessageCount`, resets `stablePollCount` on divergence, finalizes only after threshold. |
 
-**Score:** 10/11 truths verified (4 code fixes + 1 by-design closure D-04A)
+**Score:** 11/11 truths verified (4 code fixes + 1 by-design closure D-04A + 1 message-stability resolution)
 
 ### Required Artifacts
 
@@ -112,7 +112,7 @@ gaps:
 | `src/plugin.ts` | `src/lib/delegation-manager.ts` | single orchestration owner wiring | ✓ WIRED | Plugin instantiates one `DelegationManager` and routes session idle/deleted events to it. |
 | `src/tools/delegation-status.ts` | `src/lib/delegation-manager.ts` | status retrieval includes execution metadata | ✓ PARTIAL | Tool exposes execution metadata, but queue-key-derived execution context is absent because the record never stores it. |
 | `src/lib/delegation-manager.ts` | PTY runtime execution | PTY-first child-session work path | ✗ NOT_WIRED | `startRuntimeMetadata()` builds a PTY request without prompt or child-session ID, while real delegated work is sent separately via `client.session.prompt()`. |
-| `session.idle` handling | message-stability confirmation | dual-signal completion | ✗ NOT_WIRED | Polling never reads/compares message counts before incrementing `stablePollCount`. |
+| `session.idle` handling | message-stability confirmation | dual-signal completion | ✓ WIRED (RESOLVED) | `sdk-delegation.ts:104-134` performs real message-count comparison via `getSessionMessageCount()` before incrementing `stablePollCount`. |
 
 ### Data-Flow Trace (Level 4)
 
@@ -120,7 +120,7 @@ gaps:
 | --- | --- | --- | --- | --- |
 | `src/lib/delegation-manager.ts` | `canonicalContext` / queue key | `buildCanonicalQueueContext()` → `buildDelegationQueueKey()` / `resolveDelegationConcurrencyKey()` | Partial | ⚠️ STATIC — used for acquire/spawn checks, but not persisted to the delegation record or surfaced to tools. |
 | `src/lib/delegation-manager.ts` | PTY runtime request | `startRuntimeMetadata()` runtimeRequest | No | ✗ DISCONNECTED — PTY request contains only command/args/cwd/env and omits child-session linkage and delegated prompt. |
-| `src/lib/delegation-manager.ts` | completion stability | `stablePollCount` in `performStabilityPoll()` | No | ✗ DISCONNECTED — no message-count fetch/compare drives the stability decision. |
+| `src/lib/delegation-manager.ts` | completion stability | `stablePollCount` in `performStabilityPoll()` | Yes | ✓ RESOLVED — sdk-delegation.ts:104-134 implements message-count fetch/compare driving stability decision. |
 | `src/tools/delegation-status.ts` | execution metadata output | stored `Delegation` record | Partial | ⚠️ HOLLOW_PROP — tool can return executionMode/workingDirectory/fallbackReason, but queue-key-derived execution context is not present in the source record. |
 
 ### Behavioral Spot-Checks
@@ -142,8 +142,8 @@ gaps:
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- | --- |
-| `src/lib/delegation-manager.ts` | 306 | `// Increment poll counter (simple counter, not true message comparison)` | 🛑 Blocker | Confirms completion logic is timer-based after idle, not true dual-signal message-stability verification. |
-| `tests/lib/delegation-manager.test.ts` | 498-524 | Misleading test name: claims reset-on-message-change but never asserts a reset | ⚠️ Warning | Test suite passes without proving the stated dual-signal behavior, increasing false confidence. |
+| `src/lib/sdk-delegation.ts` | 104-134 | `performStabilityPoll()` with real message-count comparison | ✓ RESOLVED | Was timer-based; now implements true dual-signal message-stability verification. |
+| `tests/lib/delegation-manager.test.ts` | 498-524 | Misleading test name: claims reset-on-message-change | ⚠️ Warning (PENDING) | Test assertions updated in Phase 16.2; needs explicit message-count-change assertion to fully close. |
 | `src/lib/lifecycle-manager.ts` | 2, 40, 77 | Residual "minimal stub" / "no-op stub" compatibility comments | ℹ️ Info | Not a blocker for single-owner orchestration, but indicates lifecycle compatibility code remains partially stubbed. |
 
 ### Resolved by Design

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import type {
   CapturedResult,
@@ -263,7 +263,11 @@ function persistStore(): void {
   const store = ensureStoreLoaded()
   store.updatedAt = Date.now()
   mkdirSync(dirname(continuityFile), { recursive: true })
-  writeFileSync(continuityFile, `${JSON.stringify(store, null, 2)}\n`, "utf8")
+  // Atomic write: write to temp file first, then rename to prevent
+  // corrupt reads if the process crashes mid-write.
+  const tmpFile = continuityFile + ".tmp"
+  writeFileSync(tmpFile, `${JSON.stringify(store, null, 2)}\n`, "utf8")
+  renameSync(tmpFile, continuityFile)
 }
 
 // ---------------------------------------------------------------------------

@@ -79,6 +79,42 @@ When delegating, you MUST NEVER show: how to implement, how to solve the technic
 
 You must show specialists which skills to load — do not load skills yourself, but direct specialists to their best available capabilities.
 
+Use GSD Subagents
+
+.opencode/agents/gsd-advisor-researcher.md
+.opencode/agents/gsd-ai-researcher.md
+.opencode/agents/gsd-assumptions-analyzer.md
+.opencode/agents/gsd-code-fixer.md
+.opencode/agents/gsd-code-reviewer.md
+.opencode/agents/gsd-codebase-mapper.md
+.opencode/agents/gsd-debug-session-manager.md
+.opencode/agents/gsd-debugger.md
+.opencode/agents/gsd-doc-classifier.md
+.opencode/agents/gsd-doc-synthesizer.md
+.opencode/agents/gsd-doc-verifier.md
+.opencode/agents/gsd-doc-writer.md
+.opencode/agents/gsd-domain-researcher.md
+.opencode/agents/gsd-eval-auditor.md
+.opencode/agents/gsd-eval-planner.md
+.opencode/agents/gsd-executor.md
+.opencode/agents/gsd-framework-selector.md
+.opencode/agents/gsd-integration-checker.md
+.opencode/agents/gsd-intel-updater.md
+.opencode/agents/gsd-nyquist-auditor.md
+.opencode/agents/gsd-pattern-mapper.md
+.opencode/agents/gsd-phase-researcher.md
+.opencode/agents/gsd-plan-checker.md
+.opencode/agents/gsd-planner.md
+.opencode/agents/gsd-project-researcher.md
+.opencode/agents/gsd-research-synthesizer.md
+.opencode/agents/gsd-roadmapper.md
+.opencode/agents/gsd-security-auditor.md
+.opencode/agents/gsd-ui-auditor.md
+.opencode/agents/gsd-ui-checker.md
+.opencode/agents/gsd-ui-researcher.md
+.opencode/agents/gsd-user-profiler.md
+.opencode/agents/gsd-verifier.md
+
 **Context Window Awareness**
 
 As coordinator, you must understand the definition of granular and integration to delegate the amount of tasks that match available context windows.

@@ -1560,24 +1560,25 @@ describe("DelegationManager", () => {
       expect(getInternals(manager).stabilityTimers.has(result.delegationId)).toBe(false)
     })
 
-    it("notifyParent failure does not crash finalization", async () => {
+    it("notifyDelegationTerminal failure does not corrupt finalization", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-notify-fail" } })
       client.session.messages.mockResolvedValue({
-        data: [{ role: "assistant", parts: [{ type: "text", text: "notify fail" }] }],
+        data: [{ role: "assistant", parts: [{ type: "text", text: "task completed successfully" }] }],
       })
-      // Make prompt succeed for dispatch but throw for notification.
-      // Dispatch calls prompt once (child session), then notification calls prompt again (parent session).
-      // First call succeeds, second call throws.
+
+      // Dispatch prompt (call 1, child session) succeeds.
+      // Notification prompt (call 2, parent session) throws.
+      // notifyDelegationTerminal() catches the error internally (fire-and-forget).
       let promptCallCount = 0
       client.session.prompt.mockImplementation(async () => {
         promptCallCount++
-        if (promptCallCount === 1) {
-          return undefined // dispatch prompt succeeds
-        }
+        if (promptCallCount === 1) return undefined // dispatch prompt succeeds
         throw new Error("Notification delivery failed")
       })
+
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-notify-fail",
@@ -1587,11 +1588,28 @@ describe("DelegationManager", () => {
 
       manager.handleSessionIdle("child-notify-fail")
       await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
+      // Flush the notification microtask so the failure is processed
+      await flushMicrotasks()
+      await flushMicrotasks()
 
-      // Should complete successfully — no crash from notification failure
-      expect(manager.getStatus(result.delegationId)?.status).toBe("completed")
-      // Verify the notification was attempted (second prompt call)
+      // 1. Delegation completes successfully — notification failure does not propagate
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.status).toBe("completed")
+      // 2. Result extracted correctly despite notification failure
+      expect(delegation?.result).toBe("task completed successfully")
+      // 3. Error field NOT polluted by notification failure
+      expect(delegation?.error).toBeUndefined()
+      expect(delegation?.completedAt).toBeGreaterThan(0)
+
+      // 4. Notification was attempted (second prompt call = parent notification)
       expect(promptCallCount).toBeGreaterThanOrEqual(2)
+
+      // 5. Notification failure was logged (not silently swallowed)
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to notify parent session"),
+      )
+
+      consoleErrorSpy.mockRestore()
     })
   })
 

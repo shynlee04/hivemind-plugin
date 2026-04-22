@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-14 (Phase 12 reconciliation — false-start repair landed, 09.2 summaries quarantined as non-authoritative runtime proof)
+**Updated:** 2026-04-22 (Phase 16.2 documentation alignment — REQ-14 backfill, Phase 16.2 status update, stale annotation)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -19,6 +19,11 @@
 - [~] **Phase 9.2: Completion Detection Architecture** — MIXED: Plan 01 authoritative; Plans 02-03 executed historically but quarantined as non-authoritative
 - [ ] **Phase 9.3: Module Restructuring + Config** — D-01→D-08, D-28→D-30 (11 decisions)
 - [x] **Phase 12: Correct background session start semantics + planning reconciliation** — 2/2 plans complete, authoritative truth reset established
+- [ ] **Phase 13: Async Result Capture + Persistence** — 0/2 plans
+- [x] **Phase 14: delegate-task truth-reset** — 3/3 plans complete, 16/16 verification truths
+- [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed
+- [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
+- [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -432,7 +437,7 @@ Plans:
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
-| 16.2 PTY Wiring + OMO Safety | 0 plans | SPEC validated, ready for planning |
+| 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 

@@ -1,6 +1,6 @@
 import type { createOpencodeClient } from "@opencode-ai/sdk"
 
-import { asString, getNestedValue, unwrapData } from "./helpers.js"
+import { asString, getNestedValue, isObject, unwrapData } from "./helpers.js"
 
 export type OpenCodeClient = ReturnType<typeof createOpencodeClient>
 
@@ -8,6 +8,45 @@ type SessionRecord = Record<string, unknown>
 type SessionCreateRequest = Parameters<OpenCodeClient["session"]["create"]>[0]
 type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
 type SessionMessagesRequest = Parameters<OpenCodeClient["session"]["messages"]>[0]
+
+/**
+ * Attempt to extract raw response data from an SDK error object.
+ * When the OpenCode server returns malformed data that fails Zod validation,
+ * the SDK error may contain the raw response in various locations.
+ */
+function extractRawDataFromSdkError(error: unknown): Record<string, unknown> | undefined {
+  if (!isObject(error)) return undefined
+
+  const locations = [
+    ["response", "data"],
+    ["data"],
+    ["response"],
+    ["body"],
+    ["config", "data"],
+    ["cause", "response", "data"],
+  ]
+
+  for (const path of locations) {
+    let current: unknown = error
+    for (const key of path) {
+      if (!isObject(current) || !(key in current)) {
+        current = undefined
+        break
+      }
+      current = current[key]
+    }
+    if (current && isObject(current) && "id" in current && typeof current.id === "string") {
+      return current
+    }
+  }
+
+  // Fallback: scan the error object itself for an "id" field
+  if ("id" in error && typeof error.id === "string") {
+    return error as Record<string, unknown>
+  }
+
+  return undefined
+}
 
 type CreateSessionOptions = {
   parentID?: string
@@ -45,7 +84,32 @@ export async function createSession(client: OpenCodeClient, opts: CreateSessionO
     ...(directory ? { query: { directory } } : {}),
   }
 
-  return unwrapData(await client.session.create(request))
+  try {
+    return unwrapData(await client.session.create(request))
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    // R-SESSION-01: OpenCode server occasionally returns session records with
+    // missing required fields, causing SDK Zod validation errors.
+    if (message.includes("expected string, received undefined")) {
+      const rawData = extractRawDataFromSdkError(error)
+      if (rawData && typeof rawData.id === "string") {
+        console.warn(
+          `[Harness] Session creation response validation failed. Using raw session data. ID: ${rawData.id}`,
+        )
+        return rawData
+      }
+      // If we can't extract raw data, try unwrapData on the error itself in case
+      // it was already wrapped as { error: { ... } }
+      try {
+        const unwrapped = unwrapData(error)
+        if (isObject(unwrapped) && "id" in unwrapped && typeof unwrapped.id === "string") {
+          console.warn(`[Harness] Session creation response validation failed. Using unwrapped data. ID: ${unwrapped.id}`)
+          return unwrapped as SessionRecord
+        }
+      } catch { /* unwrapData also failed, fall through */ }
+    }
+    throw error
+  }
 }
 
 export async function getSession(client: OpenCodeClient, sessionID: string): Promise<SessionRecord> {

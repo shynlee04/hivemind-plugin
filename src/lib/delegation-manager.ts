@@ -99,10 +99,12 @@ export class DelegationManager {
         contextDirectory: params.workingDirectory,
         worktree: params.worktree,
       })
+
       const child = await spawnDelegatedSession({
         client: this.client as never,
         request: this.buildSpawnRequest({ params, agent, workingDirectory }),
       })
+
       const delegation: Delegation = {
         id: crypto.randomUUID(),
         parentSessionId: params.parentSessionId,
@@ -354,7 +356,26 @@ export class DelegationManager {
   }
 
   private async validateAgent(agent: string): Promise<ValidatedAgent> {
-    const agents = unwrapData<Array<Record<string, unknown>>>(await this.client.app.agents())
+    let agents: Array<Record<string, unknown>> | undefined
+
+    try {
+      const rawResponse = await this.client.app.agents()
+      agents = unwrapData<Array<Record<string, unknown>>>(rawResponse)
+    } catch (error) {
+      // R-AGENT-01: OpenCode server's /agent endpoint occasionally returns agents
+      // with missing required string fields, causing SDK Zod validation errors
+      // ("expected string, received undefined"). We gracefully degrade to
+      // unvalidated agent acceptance rather than blocking all delegation.
+      const message = error instanceof Error ? error.message : String(error)
+      if (message.includes("expected string, received undefined")) {
+        console.warn(
+          `[Harness] Agent list validation skipped — server returned agents with missing fields. Proceeding with unvalidated agent "${agent}".`,
+        )
+        return { name: agent }
+      }
+      throw error
+    }
+
     const validAgents = (agents ?? []).map((e) => ({
       name: typeof e.name === "string" ? e.name : "",
       provider: typeof e.provider === "string" ? e.provider : undefined,

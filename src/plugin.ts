@@ -40,7 +40,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   }
 
   const delegationManager = new DelegationManager(client, { ptyManager })
-  await delegationManager.recoverPending()
+  // Recovery runs asynchronously — must not block plugin init.
+  // If a second OpenCode instance starts, recoverPending() would await SDK calls
+  // for sessions that belong to the first instance, causing a hang.
+  void delegationManager.recoverPending()
 
   const lifecycleManager = createHarnessLifecycleManager({
     client,

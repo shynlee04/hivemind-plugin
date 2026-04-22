@@ -78,10 +78,16 @@ export class SdkDelegationHandler {
   /** Recover an SDK delegation that was running before restart. */
   async recoverSdkDelegation(delegation: Delegation): Promise<void> {
     try {
-      const statusMap = unwrapData<Record<string, { type?: string }>>(
-        await this.client.session.status(),
-      )
-      const status = statusMap[delegation.childSessionId]
+      // Timeout protection: if the SDK client is not ready (e.g., second OpenCode
+      // instance starting up), don't hang recovery indefinitely.
+      const statusMap = await Promise.race([
+        this.client.session.status(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Recovery timeout")), 5000),
+        ),
+      ])
+      const unwrapped = unwrapData<Record<string, { type?: string }>>(statusMap)
+      const status = unwrapped[delegation.childSessionId]
       if (!status?.type) {
         throw new Error("missing")
       }

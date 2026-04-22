@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 6
 status: executing
-stopped_at: Completed 16.2-SPEC correction and validation, created 16.2-01-PLAN.md, extracted learnings from Phase 8 (08-LEARNINGS.md)
+stopped_at: Wave 1 stale-item closure + artifact updates (02-UAT, 16-VERIFICATION, 16.2-REVIEW-FIX)
 last_updated: "2026-04-22T16:00:00.000Z"
 progress:
   total_phases: 19
@@ -77,7 +77,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 |-------|--------|--------|
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
-| Phase 16.2 | PARTIAL | All 6 waves implemented with 76 tests passing, 0 typecheck errors. AUDIT: 3 critical findings (missing test files CR-01, gracePeriodExpiresAt never set CR-03). 6/24 requirements COVERED, 10 PARTIAL, 8 MISSING. Remediation in progress. |
+| Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
 
 ## Known Issues
 
