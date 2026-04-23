@@ -1,10 +1,24 @@
 # Hivemind Skills Refactor Playbook
 
-**Version:** 1.0
-**Date:** 2026-04-23
-**Audience:** Hivefiver orchestrators, skill-authors, agent-builders, and any Devin/OpenCode session operating on the `feature/harness-implementation` (or equivalent) worktree
-**Purpose:** Canonical reference for the upcoming skill-improvement and refactoring cycle. Synthesises the Hivemind philosophy (`docs/draft/HIVEMIND-*`), the OpenCode meta-concepts stack, the 3-level-depth coordination model, the validated-only constitution, and the existing skills-audit research artifacts into one actionable playbook.
+**Version:** 2.0
+**Date:** 2026-04-23 (revised post-GSD Phase 17)
+**Supersedes:** v1.0 (2026-04-23) — same day, same worktree, structural revision driven by user-issued corrections captured in `.hivefiver-meta-builder/SKILLS-REFACTORING-REVAMP.md` plus the executed reality of GSD Phase 17 (`.planning/phases/17-hivemind-skills-refactor/`).
+**Audience:** Hivefiver orchestrators, skill-authors, agent-builders, and any Devin/OpenCode session operating on the `feature/harness-implementation` (or equivalent) worktree.
+**Purpose:** Canonical reference for the skill-improvement and refactoring cycle. Synthesises the Hivemind philosophy (`docs/draft/HIVEMIND-*`), the OpenCode meta-concepts stack, the 3-level-depth coordination model, the validated-only constitution, the skills-audit research artifacts, and the GSD-aligned execution pattern proven in Phase 17 into one actionable playbook.
 **Scope:** Skills, agents, commands, rules, permissions, tools, hooks, plugins, MCP servers, LSP, GitHub, and the Hivefiver lab → `.opencode/` → TS-runtime shipping pipeline.
+
+### v2.0 Revision Drivers (what changed vs. v1.0)
+
+1. **Lineage inversion corrected (I.1, I.3).** v1.0 miscast the hivefiver / hiveminder boundary as "meta-builder vs. project-builder — do not touch the other". The corrected model treats **hiveminder** as the runtime consumer of the built-in Hivemind harness plus end-user-authored OpenCode meta-concepts, and **hivefiver** as the meta-builder module whose *exclusive* skills are the meta-builder-group (skill/agent/command/custom-tool authoring, audit, doctor). The rest of the skill catalogue is **cross-over / shared** between both lineages.
+2. **Hard-harness truth (I.3).** The current `.md` skill/agent/command files are **pre-runtime drafts**, not a permanent "soft harness". Once the delegation engine stabilises and `refactor/product-detox-concerns` is merged back, they migrate to **code files with Zod schema + SDK** — i.e., a hard harness with TS types. The playbook now treats soft-meta artifacts as **staging** for runtime integration, not an end-state.
+3. **6-NON systemic failure modes (I.5).** New mandatory section capturing the six audit-absence patterns that produced the current fragmented skill ecosystem. Every future phase must explicitly show how it defuses all six.
+4. **Third-party framework policy (I.6).** `gsd-*`, `superpower-*`, `bmad-*`, `speckit-*` and similar are **reference material, not built-ins**. Beneficial patterns must be re-authored into hm-* skills. Long-term, Hivemind will expose a **bridge-over selector** letting end-users pick one spec-driven framework as a secondary lineage.
+5. **Differential skill groups (V.3).** v1.0's "cover everything" mindset is replaced with a **differential target set** — only four group axes demonstrably make the difference (looping/guardrails, spec/TDD, research/investigation/synthesis, debug/refactor/planning/execution). All other skill work is secondary.
+6. **hm-\* naming mandate (V.8).** All project-lineage skills adopt the `hm-` prefix, matching the `gsd-` convention. Meta-builder-group skills retain `hivefiver-*` agent names but their underlying skills also carry the `hm-` prefix when they are cross-over. Scheduled for GSD Phase 18.
+7. **Phase 0 completion reconciliation (VI.0).** GSD Phase 17 = Playbook Phase 0 is **complete** (C1–C5 resolved, tech-registry schema unified). v2.0 records the delta from the plan-v1.0 table.
+8. **CONTEXT-AND-RESEARCH phase (VI.CR).** A new mandatory phase inserted between Phase 0 and Phase 1, designed per the `SKILLS-REFACTORING-REVAMP.md` spec. Every downstream phase depends on its deliverables.
+9. **GSD-aligned execution pattern (Part IX).** The CONTEXT → RESEARCH → PLAN → EXECUTE → VERIFICATION → REVIEW loop proven by `.planning/phases/17-hivemind-skills-refactor/` is now the mandated shape for Phases 1–6.
+10. **Runtime-integration preparation (VI.6).** A new Phase 6 seals the loop: translate validated skills into Zod config schema + SDK hooks so end-users can compose them at runtime without forking the harness.
 
 ---
 
@@ -15,9 +29,10 @@
 - **Part III — 3-level-depth coordination** is the *who*. Load whenever you delegate.
 - **Part IV — OpenCode meta-concepts** is the *what*. Load when composing skills/agents/commands.
 - **Part V — Skills Pipeline** is the *how*. Load for every skill write/audit.
-- **Part VI — Refactor plan** is the *when*. Drives phase selection.
+- **Part VI — Refactor plan** is the *when*. Drives phase selection. v2.0 records Phase 0 as complete and inserts a CONTEXT-AND-RESEARCH phase before Phase 1.
 - **Part VII — Tool usage** is the *with what*. Drives `skill-creator` / `skill-judge` / `skill-writing` invocations.
-- **Part VIII — Iron laws** is the *must-not*. Load on every subagent dispatch.
+- **Part VIII — Routing, workflow, iron laws** is the *must-not*. Load on every subagent dispatch.
+- **Part IX — GSD-aligned execution pattern** (new in v2.0) is the *execution loop shape*. Every Phase 1–6 plan must mirror it.
 
 Every statement in this playbook is cross-referenced with an evidence file path inside `/home/ubuntu/repos/hivemind-plugin/` (or the user's equivalent worktree). If a statement is not grounded, it is marked `⚠️ synthesised`.
 
@@ -44,39 +59,57 @@ ls .hivefiver-meta-builder/skills-lab/active/refactoring/<skill-name>/SKILL.md 2
 
 If the probe fails, the agent must **either** (a) route the user request to `hivefiver-skill-author` via the meta-builder routing table to create/adopt the skill, **or** (b) decline the stack and report the gap. Silent fall-through to a sibling skill is forbidden.
 
-### I.1.2 The 20-skill validated inventory (as of 2026-04-09 audit)
+### I.1.2 The 24-skill inventory (post-Phase-17 reality, 2026-04-23)
 
-The following skills are present in `.hivefiver-meta-builder/skills-lab/active/refactoring/` (and therefore symlinked into `.opencode/skills/`) on the `feature/harness-implementation` branch. Anything outside this list is **not** considered referenceable by end-users:
+The following skills are currently in `.hivefiver-meta-builder/skills-lab/active/refactoring/` and symlinked into `.opencode/skills/` on the `feature/harness-implementation` branch. The "Phase 17 Δ" column records the delta from GSD Phase 17 (= Playbook Phase 0 = C1–C5 + tech-registry unification):
 
-| # | Skill | Layer | Audit Grade | Target Grade |
-|---|-------|-------|-------------|--------------|
-| 1 | `meta-builder` | 0 — router | B+ | A- |
-| 2 | `use-authoring-skills` | 4 — domain-execution | B | A |
-| 3 | `agents-and-subagents-dev` | 2 | D | B |
-| 4 | `command-dev` | 2 | D (PASS) | B |
-| 5 | `custom-tools-dev` | 2 | D (PASS) | B |
-| 6 | `coordinating-loop` | 1 | A | A |
-| 7 | `phase-loop` | 2 | D | B |
-| 8 | `planning-with-files` | 1 | PASS | A |
-| 9 | `user-intent-interactive-loop` | 1 | A | A |
-| 10 | `opencode-platform-reference` | 3 — reference | C+ | B |
-| 11 | `opencode-non-interactive-shell` | 2 | C (PASS / gold) | A |
-| 12 | `oh-my-openagent-reference` | 3 | D | B |
-| 13 | `hm-deep-research` | 2 | C+ (gold) | A |
-| 14 | `hm-detective` | 2 | — | B |
-| 15 | `hm-synthesis` | 2 | — | B |
-| 16 | `hf-context-absorb` | 1 | — | B |
-| 17 | `harness-audit` | 2 | — | B *(rename → `opencode-project-audit`)* |
-| 18 | `harness-delegation-inspection` | 2 | — | *(split → `subagent-delegation-patterns` + `opencode-project-inspection`)* |
-| 19 | `agent-authorization` | 2 | — | B *(rename → `delegation-gates`)* |
-| 20 | `gsd-agent-composition` | 2 | — | B |
-| 21 | `command-parser` | 2 | C (PASS) | A |
-| 22 | `agents-md-sync` | 2 | — | — |
-| 23 | `session-context-manager` | — | FAIL | *(merge → `planning-with-files`)* |
+| # | Current Name | Planned Name (Phase 18) | Lineage | Layer | v1.0 Grade | Phase 17 Δ | Target Grade |
+|---|--------------|-------------------------|---------|-------|------------|-------------|--------------|
+| 1 | `meta-builder` | `hm-meta-builder` | shared | 0 | B+ | +4 depth refs filled (166/125/144/217 LOC) + registered in Ref Map (17-03) | A- |
+| 2 | `use-authoring-skills` | `hivefiver-use-authoring-skills` | **hivefiver-exclusive** | 4 | B | — | A |
+| 3 | `agents-and-subagents-dev` | `hivefiver-agents-and-subagents-dev` | **hivefiver-exclusive** | 2 | D | — | B |
+| 4 | `command-dev` | `hivefiver-command-dev` | **hivefiver-exclusive** | 2 | D (PASS) | — | B |
+| 5 | `custom-tools-dev` | `hivefiver-custom-tools-dev` | **hivefiver-exclusive** | 2 | D (PASS) | — | B |
+| 6 | `coordinating-loop` | `hm-coordinating-loop` | shared | 1 | A | — | A |
+| 7 | `phase-loop` | `hm-phase-loop` | shared | 2 | D | — | B |
+| 8 | `planning-with-files` | `hm-planning-with-files` | shared | 1 | PASS | — | A |
+| 9 | `user-intent-interactive-loop` | `hm-user-intent-interactive-loop` | shared | 1 | A | — | A |
+| 10 | `opencode-platform-reference` | `hm-opencode-platform-reference` | shared | 3 | C+ | — | B |
+| 11 | `opencode-non-interactive-shell` | `hm-opencode-non-interactive-shell` | shared | 2 | C (PASS / gold) | — | A |
+| 12 | `oh-my-openagent-reference` | `hm-omo-reference` | shared | 3 | D | +tech-stack.md (81 LOC) generated; 0 dead refs verified; C4 resolved at 674 LOC (17-04) | B |
+| 13 | `hm-deep-research` | `hm-deep-research` | hiveminder-leaning (shared) | 2 | C+ (gold) | +Version-Matched Context7 Research section + `research-patterns.md` pattern (17-05) | A |
+| 14 | `hm-detective` | `hm-detective` | hiveminder-leaning (shared) | 2 | — | +SCAN (Tech Stack) 4th reading mode; canonical `.tech-registry.json` schema source (17-05) | B |
+| 15 | `hm-synthesis` | `hm-synthesis` | hiveminder-leaning (shared) | 2 | — | +Tech-Stack Detection section; `artifact-export.md` unified to hm-detective schema (17-05) | B |
+| 16 | `hf-context-absorb` | `hivefiver-context-absorb` | **hivefiver-exclusive** | 1 | — | — | B |
+| 17 | `harness-audit` | `hm-opencode-project-audit` | shared | 2 | — | — | B *(rename)* |
+| 18 | `harness-delegation-inspection` | `hm-subagent-delegation-patterns` + `hm-opencode-project-inspection` | shared | 2 | — | — | *(split)* |
+| 19 | `agent-authorization` | `hivefiver-delegation-gates` | **hivefiver-exclusive** | 2 | — | — | B *(rename)* |
+| 20 | `gsd-agent-composition` | `hm-agent-composition` *(re-authored, see I.6)* | shared | 2 | — | — | B |
+| 21 | `command-parser` | `hm-command-parser` | shared | 2 | C (PASS) | — | A |
+| 22 | `agents-md-sync` | `hm-agents-md-sync` | shared | 2 | — | — | — |
+| 23 | `session-context-manager` | *(merge → `hm-planning-with-files`)* | shared | — | FAIL | — | *(merge)* |
+| 24 | `skill-synthesis` | `hm-skill-synthesis` | **hivefiver-exclusive** | 3 | *(was retired)* | **RESTORED** from `retired/` → `active/refactoring/` (17-01); 174 LOC SKILL.md, 5 refs, 7 scripts, 2 evals, 2 templates | B |
 
-Source: `.hivemind/research/skills-audit/planning/target-architecture-2026-04-09.md`, `.hivemind/research/skills-audit/planning/master-revamp-plan-2026-04-09.md`.
+**Retired (partially salvageable per user policy — see I.6):** `repomix-exploration-guide`, `repomix-explorer`, `research-operations`. These are broken-but-usable archives; beneficial patterns must be re-authored into hm-* skills, not restored verbatim.
 
-> ⚠️ **Runtime verification required.** Count and names can drift. The *current state* is always determined by `ls .hivefiver-meta-builder/skills-lab/active/refactoring/`, not by this table.
+Source: `.hivemind/research/skills-audit/planning/target-architecture-2026-04-09.md`, `.hivemind/research/skills-audit/planning/master-revamp-plan-2026-04-09.md`, `.planning/phases/17-hivemind-skills-refactor/` (execution reality).
+
+> ⚠️ **Runtime verification required.** Count, names, and grades drift. The *current state* is always determined by `ls .hivefiver-meta-builder/skills-lab/active/refactoring/` + fresh `skill-judge` grading, not by this table.
+
+### I.1.3 Phase 17 Completion Snapshot (what Phase 0 actually delivered)
+
+From `.planning/phases/17-hivemind-skills-refactor/17-VERIFICATION.md` (status: PASS):
+
+| Critical | Resolution | Commit(s) |
+|----------|-----------|-----------|
+| C1 — `validate-gate.sh synthesize` pointed to a retired skill | `skill-synthesis` moved from `retired/` → `active/refactoring/`; `.opencode/skills/skill-synthesis` resolves; `meta-builder` routing table line 323 still references it | `5a8299a3` |
+| C2 — 4 meta-builder depth references were 12–18-LOC stubs | All filled with 125–217 LOC of real content + registered in the SKILL.md Reference Map with loading triggers | `50044c41` |
+| C3 — phantom `tech-stack.md` in `oh-my-openagent-reference` | `references/tech-stack.md` generated (81 LOC) from packed repo metadata; `SKILL.md` updated with Tech Stack Quick Reference + table entry | `(in 17-04)` |
+| C4 — "empty" `project-structure.md` | Verified **already resolved** — file is 674 LOC, not a stub. Marked closed. | `(no-op)` |
+| C5 — duplicate skills across `.claude/` and `.opencode/` | `.claude/skills/` confirmed absent. IDE sync artifacts (`.trae/`, `.windsurf/`, `.codex/`, `.github/skills/`) gitignored; `AGENTS.md` documents `.opencode/skills/` as the only canonical project location. | `06c30332` |
+| **BONUS** — `.tech-registry.json` schema drift between `hm-detective` and `hm-synthesis` | Unified on the `hm-detective` schema (`project`/`last_updated`/`stack`/`concerns`/`modules`); `hm-synthesis/references/artifact-export.md` migrated; `hm-deep-research` consumer pattern documented; `hm-detective` SCAN mode added | `1e3bde8d` |
+
+**Phase 17 hard constraints respected:** zero `src/` code changes, zero agent/command refactors, zero IDE-directory modifications. Only soft meta-concept edits. This is the template for Phases 1–6.
 
 ## I.2 Iron Laws (from `.hivefiver-meta-builder/AGENTS.md`)
 
@@ -88,29 +121,78 @@ Source: `.hivemind/research/skills-audit/planning/target-architecture-2026-04-09
 6. **NO DEAD REFERENCES** — every file path, script, skill, or command referenced from a SKILL.md body must exist.
 7. **NO BIG-BANG REWRITES** — one skill/agent/command at a time. Validate. Commit. Move on.
 
-## I.3 The Two-Halves Boundary (never confuse)
+## I.3 The Two-Halves Boundary (corrected in v2.0)
+
+### I.3.1 Hard Harness vs. Staging Meta-Concepts
 
 | Half | What | Where | Mutability |
 |------|------|-------|------------|
-| **Hard Harness** | npm package `opencode-harness`: tools (write-side CQRS), hooks (read-side CQRS), plugin assembly, shared leaf modules | `src/` → `dist/` | Versioned, ships via npm. Agents DO NOT edit. |
-| **Soft Meta-Concepts** | skills, agents, commands, rules, permissions | `.hivefiver-meta-builder/*-lab/active/refactoring/` → symlinked into `.opencode/` | User-configurable, committed to repo, lab → symlink → live testing → ship. |
+| **Hard Harness** (current) | npm package `opencode-harness`: tools (write-side CQRS), hooks (read-side CQRS), plugin assembly, shared leaf modules, Zod schemas | `src/` → `dist/` | Versioned, ships via npm. Agents DO NOT edit except through dedicated phase work. |
+| **Staging Meta-Concepts** (today) | skills, agents, commands, rules, permissions authored as `.md` files | `.hivefiver-meta-builder/*-lab/active/refactoring/` → symlinked into `.opencode/` | Lab → symlink → live OpenCode testing → commit. These are **pre-runtime drafts**. |
+| **Hard Harness** (post-migration) | The same skills/agents/commands expressed as TS modules with Zod-validated config + SDK hooks exposed to end-users | `src/hivefiver/*`, `src/hiveminder/*` (planned) | Shipped as typed API. Users configure via JSON/TS, not by editing `.md`. |
 
-- Hivefiver's entire remit is **Half 2** (Soft Meta-Concepts). It does **not** touch `src/`.
-- Hiveminder's remit is project-builder work (NextJS apps etc.). **Do not confuse Hivefiver with Hiveminder** (`.hivefiver-meta-builder/AGENTS.md` line 16).
+> **v1.0 called Half 2 "Soft Meta-Concepts" and implied `.md` files were the end-state. That is wrong.** The `.md` files are **staging** for runtime integration. When the delegation engine stabilises and `refactor/product-detox-concerns` is merged back, the validated skill/agent/command bodies become **code files with Zod schema + SDK**, giving end-users a typed configuration surface instead of free-form markdown editing. Everything in this playbook is written to make that migration mechanical, not a rewrite.
+
+### I.3.2 Lineage Truth: hivefiver vs. hiveminder vs. shared
+
+The two "lineages" are **not two parallel product modules that must never touch each other**. They are two *consumption modes* over a shared catalogue:
+
+| Lineage | Consumer | Exclusive skill/agent groups |
+|---------|----------|------------------------------|
+| **hivefiver** (meta-builder module) | End-user sessions asking Hivemind to *configure, customise, stack, doctor, or chain* OpenCode meta-concept primitives — without forking the harness. | Meta-builder-group only: skill authoring / agent+subagent authoring / command authoring / custom-tool authoring + the audit & doctor skills that police them (e.g. `hivefiver-skill-author`, `hivefiver-agent-builder`, `hivefiver-command-builder`, `hivefiver-use-authoring-skills`, `hivefiver-delegation-gates`, `hivefiver-context-absorb`). |
+| **hiveminder** (project-builder module) | End-user sessions building real projects on top of the Hivemind harness (NextJS apps, data pipelines, plugins, etc.). Consumes the built-in Hivemind harness plus the meta-concept primitives produced via hivefiver. | None exclusively — hiveminder leans on the shared catalogue plus the harness-native runtime. |
+| **shared / cross-over** | Both lineages. This is the majority of the catalogue. | Everything else: routing, coordination, planning, research, detection, synthesis, audit, platform references, non-interactive shell, etc. |
+
+**Why the v1.0 framing confused us:** we are currently *using the harness to build itself*, so hivefiver-exclusive skills get invoked during harness development too. That is a **temporary operational reality**, not a permanent lineage claim. Once the harness ships its SDK, end-users will still invoke hivefiver when customising meta-concepts and hiveminder when building products, with the shared catalogue serving both.
+
+**Operational rule:**
+1. Any skill in the **meta-builder-group** must be picked **only by hivefiver orchestrators / subagents**. A hiveminder project-builder session picking `hivefiver-skill-author` is a routing bug.
+2. Any skill in the **shared catalogue** must be pickable by both — with identical behaviour — or it is mis-scoped and needs splitting.
+3. No skill may silently assume it is running under a specific lineage. Lineage context arrives through the delegation envelope, not through implicit state.
 
 ## I.4 The Skills-Lab → `.opencode/` → TS-runtime Pipeline
 
 ```
-.hivefiver-meta-builder/**-lab/active/refactoring/     ← EDIT HERE (source of truth)
+.hivefiver-meta-builder/**-lab/active/refactoring/     ← EDIT HERE (source of truth, staging)
         ↓ (symlinks, instant)
 .opencode/{agents,commands,skills,hivefiver}/          ← LIVE TEST (OpenCode reads here)
-        ↓ (when validated)
-TS runtime builder (opencode-harness npm package)      ← FINAL SHIP
+        ↓ (when validated + graded)
+TS runtime builder (opencode-harness npm package)      ← FINAL SHIP as Zod-typed SDK
+        ↓ (when end-user configures)
+User's opencode.json / opencode-harness.config.ts       ← RUNTIME COMPOSITION by end-users
 ```
 
 - Never edit files inside `.opencode/` directly — they are symlinks.
 - Every edit lands in the lab; every commit covers lab + any harness-code changes together.
 - The TS-runtime packer is the responsibility of `hivefiver-tool-builder` + `builder`, not `hivefiver-skill-author`.
+- Phase 6 (new in v2.0) is where validated skills flow from stage 2 → stage 3 (code + SDK).
+
+## I.5 The 6-NON Systemic Failure Modes (why v1.0 produced fragmented skills)
+
+Every skill built without explicit defences against the following six "NON-" modes will regress toward incomplete / conflicting / overlapping / context-poisoning behaviour. Every future phase must document, per skill, how it defuses **all six** before the skill can be graded ≥ B.
+
+| ID | Failure Mode | What it looks like in a skill | Defence |
+|----|--------------|-------------------------------|---------|
+| **NON-1** | **Non-audit** — skill written without systematically auditing parent → child → state → stage across the 3-level-depth delegation model | Generic SKILL.md body with no evidence that the author walked the coordination tree; body repeats what the agent already knows | Mandatory pre-authoring audit pass (see Phase CR) that produces a `skill-audit-<name>.md` note with the parent/child/state/stage map. Skill body cites it. |
+| **NON-2** | **Non-mapping** — no classification / grouping against the actual complex-project reality; skill exists in isolation from the skill ecosystem | SKILL.md has no "stacks with / clashes with" section; description is interchangeable with a sibling | Every skill must fill the delta-map (what it adds vs. nearest sibling) and register its stack-compatibility in `check-overlaps.sh`. |
+| **NON-3** | **Non-starting-pipelines / non-cycles** — the skill teaches a monolithic procedure instead of placing itself inside a pipeline with explicit starts and cycles | "Do step 1, step 2, step 3" with no entry gate, no exit gate, no loop-back | Skill body must include: entry trigger, exit criterion, loop-back path for `DONE_WITH_CONCERNS`/`BLOCKED`, handoff envelope for the next stage. |
+| **NON-4** | **Non-hierarchy** — skill has no opinion on which hierarchy layer picks it; ends up picked by both front-facing orchestrators and level-3 task-completers, producing opposite behaviour | `metadata.layer` missing or set incorrectly; description contains triggers that fire for both "plan X" and "do X" | Frontmatter must declare `metadata.layer` and `metadata.role`; description must contain at least one exclusion (`NOT for …`) that prevents cross-layer pickup. |
+| **NON-5** | **Non-ecosystem-evaluation** — skill passes `validate-skill.sh` in isolation but was never evaluated as part of a stacked workflow | Skill works in trigger-query evals, fails the moment it is loaded with `coordinating-loop` + `planning-with-files` | Eval suite must include at least one *stacked* scenario reflecting a real GSD phase, not just isolated prompts. |
+| **NON-6** | **Non-systematic pattern choice** — P1 / P2 / P3 picked ad-hoc; scripts bundled without edge-case coverage; references written without progressive disclosure | SKILL.md is 800 LOC of prose, or 40 LOC shell with 12 unused reference files | Pattern decision must be documented in `task_plan.md` with the four axes: size of body, number of decision branches, whether scripts are deterministic, whether reference loading needs progressive disclosure. |
+
+> **Every phase deliverable must include a 6-NON defence table.** A skill that cannot show its defences in writing is not accepted, regardless of `skill-judge` grade.
+
+## I.6 Third-Party Framework Policy (re-author, do not adopt)
+
+Skills and agents prefixed with `gsd-*`, `superpower-*`, `bmad-*`, `speckit-*`, and similar third-party spec-driven frameworks are **reference material, not Hivemind built-ins**. They currently live in `.opencode/get-shit-done/` (for GSD) and in retired archives (for superpower patterns).
+
+**Policy:**
+1. **Do not restore third-party skills verbatim.** If a pattern is beneficial, re-author it into an `hm-*` skill with the pattern rebuilt on Hivemind primitives (coordinating-loop, planning-with-files, hm-detective, hm-synthesis, etc.).
+2. **`gsd-agent-composition` is the one surviving exception** in the current catalogue; Phase 19 will re-author it as `hm-agent-composition` and retire the `gsd-` name (the harness ships its own agent-composition skill; users who still want the GSD flavour keep it as a sidecar in `.opencode/get-shit-done/`).
+3. **Retired skills in `.hivefiver-meta-builder/skills-lab/retired/`** are "broken-but-usable archives". Salvage patterns, do not restore files. The one exception already executed was `skill-synthesis` in Phase 17 (17-01), which was salvaged because its integration points were still live and its structure was intact.
+4. **Long-term bridge-over.** Once the harness ships (Phase 6 + beyond), end-users will be able to select one spec-driven framework (GSD, BMAD, Speckit, any future compatible one) as a **secondary lineage** via `opencode-harness.config.ts`. That selector is the only sanctioned place for `gsd-*` / `bmad-*` / `speckit-*` names to leak into a running project. It is explicitly **not** implemented as more skills — it is implemented as a runtime-config switch that mounts the chosen framework's own SKILL.md tree under a namespaced path.
+
+**Anti-pattern to reject on sight:** any PR that adds a new skill with `gsd-`, `superpower-`, `bmad-`, or `speckit-` prefix to `.hivefiver-meta-builder/skills-lab/active/refactoring/` or `.opencode/skills/`.
 
 ---
 
@@ -387,12 +469,33 @@ Skills pass through six sequential gates. Fail any gate = refactor debt (tracked
 
 ## V.3 Task-Orientation Groups
 
+### V.3.1 The two axes (retained from v1.0)
+
 | Group | Character | Example skills | Failure mode |
 |-------|-----------|----------------|---------------|
-| **Group 1 — How-to-Process** | Coordination, orchestration, verification, gatekeeping, iterative loops, review cycles. Must teach **validation conditions**. | `coordinating-loop`, `phase-loop`, `user-intent-interactive-loop`, `planning-with-files`, `meta-builder`, `use-authoring-skills`, `delegation-gates`, `opencode-project-audit` | Generic language; no edge cases; mechanical-feeling; does not stack with hierarchy skills |
-| **Group 2 — How-to-Implement** | Tactical/expert tasks with specific tech patterns. Advanced patterns applied in depth. | `command-dev`, `custom-tools-dev`, `agents-and-subagents-dev`, `hm-deep-research`, `hm-detective`, `hm-synthesis`, `opencode-non-interactive-shell`, `command-parser`, `skill-synthesis`, `eval-driven-development` | Generic AI-written tone; throws document links instead of showing steps; no stacking guidance |
+| **Group 1 — How-to-Process** | Coordination, orchestration, verification, gatekeeping, iterative loops, review cycles. Must teach **validation conditions**. | `hm-coordinating-loop`, `hm-phase-loop`, `hm-user-intent-interactive-loop`, `hm-planning-with-files`, `hm-meta-builder`, `hivefiver-use-authoring-skills`, `hivefiver-delegation-gates`, `hm-opencode-project-audit` | Generic language; no edge cases; mechanical-feeling; does not stack with hierarchy skills |
+| **Group 2 — How-to-Implement** | Tactical/expert tasks with specific tech patterns. Advanced patterns applied in depth. | `hivefiver-command-dev`, `hivefiver-custom-tools-dev`, `hivefiver-agents-and-subagents-dev`, `hm-deep-research`, `hm-detective`, `hm-synthesis`, `hm-opencode-non-interactive-shell`, `hm-command-parser`, `hm-skill-synthesis`, `hm-eval-driven-development` | Generic AI-written tone; throws document links instead of showing steps; no stacking guidance |
 
-**Banned in description** (immediate fail): "grep", "glob", "quick-search" keywords. These produce false keyword-matches and are a common deception vector. (`SKILL-CRITERIA-SHORT.md` sidebar.)
+### V.3.2 The differential target set (new in v2.0 — do not try to "cover" everything)
+
+v1.0 treated every gap in the catalogue as equally worth filling. The user audit after Phase 17 was explicit: **only four clusters demonstrably make the difference between a harness that works and one that regresses**. Phases 1–5 prioritise these; the rest is secondary debt.
+
+| Cluster | Why it matters | What the catalogue must deliver (hm-* names) | Current state |
+|---------|---------------|-----------------------------------------------|---------------|
+| **G-A — Looping / guardrails / gatekeeping / self-verification / subagent delegation** | The harness lives or dies by its ability to loop until completion without regressions. This is the cluster v1.0 most aggressively underbuilt. | `hm-coordinating-loop` (exists — needs hardening); `hm-phase-loop` (D → B); `hm-completion-looping` (**NEW** — non-regression guardrail + subagent dispatch + self-verification envelope); `hm-delegation-gates` (rename of `agent-authorization`); `hm-subagent-delegation-patterns` (split from `harness-delegation-inspection`) | Partial — core skills exist as placeholders; completion-looping skill missing entirely |
+| **G-B — Spec-driven + test-driven development** | Current skills make vague claims about "spec compliance" and "TDD" with no integration to planning artifacts or real test commands. The user called these "full of lies". | `hm-spec-driven-authoring` (**NEW** — turn a SPEC into falsifiable requirements + tests); `hm-test-driven-execution` (**NEW** — red-green-refactor integrated with `hm-planning-with-files` + `hm-phase-loop`); `hm-eval-driven-development` (rename of `eval-harness`) | Mostly absent — eval-driven has a scaffold; spec-driven and test-driven need to be authored from scratch |
+| **G-C — Research / investigation / synthesis** | Fragmented today: three skills (`hm-deep-research`, `hm-detective`, `hm-synthesis`) share a tech-registry but do not teach MCP-tool sequencing or cross-skill chaining with OpenCode built-ins (`webfetch`, `glob`, `grep`, `skill`, `todowrite`). | `hm-deep-research` (gold → A, plus MCP matrix); `hm-detective` (add chaining patterns with OpenCode built-ins); `hm-synthesis` (add compression tiers × tool matrix); `hm-research-chain` (**NEW** — short meta-skill showing the canonical chain: detective → deep-research → synthesis → artifact) | Integration partially delivered by Phase 17 (shared schema); chaining + MCP patterns still missing |
+| **G-D — Debug / refactor / planning / execution** | Everything outside GSD's own `gsd-*` tree is, in the user's words, "trash". Hivemind must have its own opinionated debug/refactor/planning/execution skills native to the harness. | `hm-debug` (**NEW** — systematic debugging with persistent state); `hm-refactor` (**NEW** — surgical vs. structural refactor taxonomy); `hm-planning-with-files` (existing; raise to A); `hm-phase-execution` (**NEW** — wave-based execution loop mirroring GSD's pattern but native) | Mostly absent — only `hm-planning-with-files` exists. All others need to be authored against GSD's pattern and re-expressed in Hivemind's primitives (per I.6 third-party policy) |
+
+**Prioritisation rule:** a phase is not allowed to deliver Group-B / Group-2 work on shared skills if any **G-A / G-B / G-C / G-D** critical gap remains open. Exceptions require explicit user approval and a `deferred-<phase>.md` note.
+
+**Coverage banned (reject on sight):** phases titled "broad skill-quality sweep", "description rewrite for all skills", "100% eval coverage" that do not prioritise the four differential clusters first. v1.0's "Description Rewrite Sprint" is allowed **only** for skills inside the differential clusters; the rest are parked.
+
+### V.3.3 Banned keywords in descriptions
+
+(Retained from v1.0, applies to all clusters.)
+
+**Banned in description** (immediate fail): "grep", "glob", "quick-search" keywords. These produce false keyword-matches and are a common deception vector. (`SKILL-CRITERIA-SHORT.md` sidebar.) Also banned: "This skill should be used when …" openers, any internal harness vocabulary (`OMO`, `GSD`, `/hf-*`, `hivefiver-*` as trigger, `harness`).
 
 ## V.4 Bundle Standard (every shipped skill)
 
@@ -453,115 +556,251 @@ Hierarchy mismatch = Gate 5 failure. Cross-batch synthesis (2026-04-09) flagged 
 - **opencode-project-audit** (renamed from `harness-audit`) — "Audit OpenCode projects across skills, commands, tools, permissions, agents, and subagents. Use when checking boundaries, verifying architecture, or validating setup. NOT for code review."
 - **eval-driven-development** (renamed from `eval-harness`) — "Implement eval-driven development with define-run-grade-improve cycles. Use when writing evals, benchmarking skill quality, or measuring trigger accuracy. NOT for general testing."
 
+## V.8 The `hm-*` Naming Mandate (new in v2.0)
+
+**Decision (user-locked for Phase 18):** every project-lineage and shared skill adopts the `hm-*` prefix, matching the `gsd-*` convention used by the GSD reference tree. The meta-builder-group (hivefiver-exclusive) skills instead adopt the `hivefiver-*` prefix. Final catalogue names are listed in the "Planned Name (Phase 18)" column of I.1.2.
+
+### V.8.1 Prefix policy
+
+| Prefix | Scope | Example |
+|--------|-------|---------|
+| `hm-*` | Project / shared catalogue (hiveminder-facing + cross-over) | `hm-coordinating-loop`, `hm-deep-research`, `hm-detective`, `hm-planning-with-files`, `hm-phase-loop` |
+| `hivefiver-*` | Meta-builder-group (hivefiver-exclusive) | `hivefiver-skill-author`, `hivefiver-agent-builder`, `hivefiver-command-builder`, `hivefiver-use-authoring-skills`, `hivefiver-delegation-gates` |
+| `gsd-*` | **Reserved for reference only** — do NOT use for new Hivemind skills (see I.6) | `gsd-agent-composition` (to be re-authored as `hm-agent-composition`) |
+| `bmad-*`, `speckit-*`, `superpower-*`, etc. | Forbidden as Hivemind skill names. Only legal inside third-party sidecars under `.opencode/<framework>/`. | — |
+
+### V.8.2 Why prefix at all
+
+1. **Runtime discoverability.** Users typing `skill hm-` in OpenCode get a clean list of Hivemind skills; `skill hivefiver-` reveals the meta-builder surface; nothing else leaks.
+2. **Authoring discipline.** Every new skill must make a lineage decision *up front*. The prefix is the cheapest lineage-declaration mechanism.
+3. **Phase 6 migration clarity.** When skills become TS modules, the namespace falls out naturally: `src/hivemind/skills/coordinating-loop.ts`, `src/hivefiver/skills/skill-author.ts`.
+
+### V.8.3 Rename plan guardrails
+
+- Renames happen in **Phase 18 (= GSD Phase 18 = Playbook Phase 1)** only. Never during Phases 2–5.
+- Rename = directory move + symlink regeneration + update every call-site (routing table, `.opencode/agents/*.md` permission lists, `.opencode/get-shit-done/workflows/*` references, documentation).
+- Every rename is its own atomic commit. The 24 current skills rename into at most 24 commits.
+- A rename MUST preserve the `description` trigger phrases (description-rewrite sprint is a later phase). If triggers need updating, that is a separate commit per skill.
+- `check-overlaps.sh` must run after every rename to detect stale trigger collisions.
+
+### V.8.4 Exceptions
+
+- `meta-builder` → `hm-meta-builder` loses the 3-word-kebab constraint if it grows to 4 tokens. Accepted because this is the Layer-0 router and its name ships in the routing table.
+- Already `hm-*`-prefixed skills (`hm-deep-research`, `hm-detective`, `hm-synthesis`) are unchanged. Already implicitly `hivefiver-*`-prefixed skills (`hf-context-absorb`) get a single rename to the full prefix.
+
 ---
 
-# PART VI — THE REFACTORING PLAN (SYNTHESISED)
+# PART VI — THE REFACTORING PROGRAM (v2.0 — supersedes v1.0 VI.1–VI.7)
 
-Source: `.hivemind/research/skills-audit/planning/master-revamp-plan-2026-04-09.md`, `.hivemind/research/skills-audit/planning/target-architecture-2026-04-09.md`, `.hivemind/research/skills-audit/synthesis/cross-batch-findings-2026-04-09.md`.
+Source: `.hivemind/research/skills-audit/planning/master-revamp-plan-2026-04-09.md`, `.hivemind/research/skills-audit/planning/target-architecture-2026-04-09.md`, `.hivemind/research/skills-audit/synthesis/cross-batch-findings-2026-04-09.md`, `.planning/phases/17-hivemind-skills-refactor/` (execution evidence), `SKILLS-REFACTORING-REVAMP.md` (v2.0 14-section spec for the Context & Research phase).
 
-## VI.1 Current vs Target State
+## VI.0 Phase 0 — Critical Fixes (STATUS: COMPLETE — delivered as GSD Phase 17)
 
-| Metric | Current | Target |
-|--------|---------|--------|
-| Live skills count | 19 | ~20 |
-| Average grade | C | B+ |
-| PASS-grade skills | 8 | 15+ |
-| Critical bugs | 4 | 0 |
-| Vocabulary leaks | 7 | 0 |
-| Eval coverage | 25% | 60%+ |
-| Formulaic descriptions | 5 | 0 |
-| `.claude/` vs `.opencode/` duplicates | 5+ | 0 (single canonical location) |
+Phase 0 is **closed**. It was executed in five sub-phases 17-01 through 17-05 on the `feature/harness-implementation` branch and verified in `.planning/phases/17-hivemind-skills-refactor/17-VERIFICATION.md` (status: PASS; review `.../17-REVIEW.md` status: 0 critical / 0 warning / 0 info findings across 33 files).
 
-## VI.2 Critical Issues (Phase 0 — must fix before any other work)
+### VI.0.1 Critical issues resolved
 
-| ID | Issue | Skill | Fix |
-|----|-------|-------|-----|
-| C1 | `validate-gate.sh synthesize` → guaranteed failure | `skill-synthesis` | Add `synthesize` action OR change SKILL.md to use `create` |
-| C2 | 4 depth references are stubs | `meta-builder` | Write real content or remove references |
-| C3 | Phantom `tech-stack.md` reference | `oh-my-openagent-reference` | Generate file or remove from `summary.md` |
-| C4 | Empty `project-structure.md` (4 lines) | `oh-my-openagent-reference` | Regenerate with actual directory tree |
-| C5 | Duplicate skills across `.claude/` and `.opencode/` | 5 skills | Determine canonical, delete duplicates |
+| ID | Original Issue | Resolution | Sub-phase | Commit |
+|----|-----------------|------------|-----------|--------|
+| C1 | `validate-gate.sh synthesize` pointed at retired skill | `skill-synthesis` restored from `retired/` → `active/refactoring/`; 174 LOC SKILL.md + 5 refs + 7 scripts + 2 evals + 2 templates intact; `.opencode/skills/skill-synthesis` resolves; `meta-builder` routing table line 323 still reaches it | 17-01 | `5a8299a3` |
+| C2 | 4 meta-builder depth references were 12–18-LOC stubs | `depth-repo-analysis.md` (166 LOC), `depth-github-stacks.md` (125 LOC), `depth-built-in-tools.md` (144 LOC), `depth-skill-synthesis.md` (217 LOC) authored with real procedural content, loading triggers, edge cases; Reference Map entries added | 17-03 | `50044c41` |
+| C3 | Phantom `tech-stack.md` in `oh-my-openagent-reference` | `references/tech-stack.md` generated (81 LOC) from packed repo metadata; Tech Stack Quick Reference section added to SKILL.md; reference table updated; link now resolves | 17-04 | *(17-04 commit)* |
+| C4 | "Empty" `project-structure.md` (4 LOC) | Verified already resolved — file is 674 LOC, not a stub. Closed as no-op. | 17-04 | *(no-op)* |
+| C5 | Duplicate skills across `.claude/` vs `.opencode/` | `.claude/skills/` confirmed absent. IDE sync artifacts (`.trae/`, `.windsurf/`, `.codex/`, `.github/skills/`) added to `.gitignore`; `AGENTS.md` declares `.opencode/skills/` as the only canonical project location | 17-02 | `06c30332` |
+| **BONUS — B1** | `.tech-registry.json` schema drift across `hm-detective`, `hm-synthesis`, `hm-deep-research` | Unified on the `hm-detective` schema (`project` / `last_updated` / `stack` / `concerns` / `modules`). `hm-synthesis/references/artifact-export.md` migrated. `hm-deep-research` received a `research-patterns.md` Version-Matched Context7 Research Pattern. `hm-detective` received a SCAN (Tech Stack) reading mode. | 17-05 | `1e3bde8d` |
 
-## VI.3 Systemic Issues (Phases 3–4)
+### VI.0.2 Phase 0 execution metrics (= template for Phases 1–5)
 
-| ID | Issue | Affected | Severity | Fix |
-|----|-------|----------|----------|-----|
-| S1 | Internal vocabulary leak in descriptions | 7 skills | Critical | Description rewrite with universal triggers |
-| S2 | Formulaic "This skill should be used when..." | 5 skills | High | Active-voice, unique opening per skill |
-| S3 | Source-of-truth duplication (`.claude/` vs `.opencode/`) | 5+ skills | Critical | Choose canonical (`.claude/skills/`); merge unique content; delete the other |
-| S4 | Script deps without fallbacks | 6 skills | Medium | Inline fallback procedure in body for every script call |
+| Metric | Target | Actual |
+|--------|--------|--------|
+| Plans executed | 5 | 5/5 |
+| Commits per sub-phase | 1 atomic | 1 atomic each (5 total) |
+| `src/` changes | 0 | 0 |
+| Agent / command refactors | 0 | 0 |
+| IDE-dir modifications | 0 | 0 |
+| Code-review findings | 0 critical | 0/0/0 |
+| UAT criteria met | 100% | 100% (all REQ-17-0x met, all D-01..D-16 covered) |
 
-## VI.4 Structural Changes (Phase 2)
+**Lesson locked for all downstream phases:** the discipline that made Phase 0 land cleanly — atomic-per-plan commits, zero-src-changes constraint, explicit sub-phase SUMMARYs, and a verification doc enumerating every decision — is mandatory for Phases 1–5. See Part IX for the required loop.
 
-### Merges (−1)
+## VI.CR Phase CR — CONTEXT & RESEARCH (new, mandatory, must complete before Phase 1)
 
-| Source | Into | Rationale |
-|--------|------|-----------|
-| `session-context-manager` (FAIL) | `planning-with-files` | Functional overlap — one cross-session persistence system |
+Per `SKILLS-REFACTORING-REVAMP.md`, the 14 sections below form the required contract for Phase CR. The phase exists to prevent the 6-NON failures (I.5) from regressing the downstream phases. Phase CR does **not** refactor skills; it produces the evidence base and audit posture that Phases 1–5 consume.
 
-### Splits (+1)
+### VI.CR.1 Phase Purpose
+Provide a single source of truth for (a) the current skill ecosystem's real state, (b) the deltas required per differential cluster (V.3.2), (c) the third-party patterns that will be re-authored into `hm-*` (per I.6), and (d) the runtime-integration readiness for Phase 6.
 
-| Source | Result A | Result B |
-|--------|----------|----------|
-| `harness-delegation-inspection` | `subagent-delegation-patterns` | `opencode-project-inspection` |
+### VI.CR.2 Position in the Program
+Between Phase 0 (complete) and Phase 1. No Phase 1 plan may be written until Phase CR's deliverables are merged.
 
-### Renames (0 net)
+### VI.CR.3 Scope
+**In:** every active skill (`.hivefiver-meta-builder/skills-lab/active/refactoring/`), every retired skill partial (archive review), every third-party reference tree (`.opencode/get-shit-done/`, any superpower/bmad/speckit trees present), every call-site of each skill (routing table + agent permission lists + workflow files + command bodies).
+**Out:** `src/` code changes; agent/command refactors; new skill authoring. Those belong to later phases.
 
-| Current | Target |
-|---------|--------|
-| `eval-harness` | `eval-driven-development` |
-| `harness-audit` | `opencode-project-audit` |
-| `agent-authorization` | `delegation-gates` |
+### VI.CR.4 Core Principles
+1. Every claim must be grounded in a fresh runtime probe (`ls`, `grep`, `wc -l`), not in cached memory or v1.0 tables.
+2. Every finding must map to at least one 6-NON failure mode (I.5) or to one differential cluster (V.3.2). Unmapped findings are noise, reject them.
+3. No third-party content is copied verbatim — patterns are abstracted and attributed.
+4. Evidence is file-and-line-cite, not prose.
 
-### Creations (+2)
+### VI.CR.5 Context Model (what counts as "context")
+The 3-level delegation hierarchy (front-facing orchestrator → pure-orchestrator → task-completer) times the 6-NON axes times the 4 differential clusters. Any finding that does not place itself on this grid is under-specified.
 
-| New skill | Domain | Template |
-|-----------|--------|----------|
-| `eval-execution` | Eval / benchmarking | `hm-deep-research` (methodology pattern) |
-| `agent-lifecycle-events` | Subagent management | `command-dev` (lean pattern) |
+### VI.CR.6 Research Model (how research is conducted)
+Canonical chain: `hm-detective` (SCAN) → `hm-deep-research` (version-matched + MCP matrix) → `hm-synthesis` (compression + artifact export) → `hm-skill-synthesis` (pattern extraction if needed). Each skill writes to the unified `.tech-registry.json` established in 17-05. No research is performed with ad-hoc grep-and-read outside this chain.
 
-Net delta: 19 → 20 skills.
+### VI.CR.7 Skills-First Priorities
+1. G-A (looping / guardrails / gatekeeping) — highest priority. Missing entirely.
+2. G-B (spec-driven + test-driven) — highest priority. Currently dishonest.
+3. G-C (research / investigation / synthesis) — high priority. Partially delivered by 17-05.
+4. G-D (debug / refactor / planning / execution) — high priority. Mostly absent.
+5. Description-rewrite sprint + eval coverage expansion — secondary. Parked unless inside a G-A..G-D skill.
 
-## VI.5 Phase Order (dependency-first)
+### VI.CR.8 Hivefiver vs Hiveminder Impact Mapping
+Every Phase CR finding must declare its impact as one of: `hivefiver-exclusive` (meta-builder-group only), `hiveminder-primary` (project-builder-leaning), `shared`. Findings that affect multiple lineages must list them all. Findings without a lineage label are rejected.
 
-```
-Phase 0 — Critical Fixes (C1–C5)
-    ↓
-Phase 1 — Canonical Location + Duplicate Resolution (S3)
-    ↓
-Phase 2 — Structural Changes (merge/split/rename/create)
-    ↓
-Phase 3 — Description Rewrite Sprint (S1 + S2) — 11 skills
-    ↓
-Phase 4 — Script Dependency Hardening (S4) — 6 skills
-    ↓
-Phase 5 — Body Quality + Eval Expansion — 3–5 skills
-```
+### VI.CR.9 Tooling Decision Framework
+For every skill in a differential cluster, Phase CR must decide whether the skill needs: (a) no change, (b) description-only rewrite, (c) body rewrite, (d) bundle expansion (new references/scripts/evals), (e) rename (Phase 1), (f) split, (g) merge, (h) creation, (i) retirement. Decisions are recorded in `.planning/phases/CR-context-and-research/CR-DECISIONS.md` with evidence citations.
 
-Every phase requires **explicit user authorisation** before execution. Within each phase, the Hivefiver routing table (see VIII.2) determines which specialist is dispatched.
+### VI.CR.10 Deliverables
+1. `CR-CONTEXT.md` — the phase-level context envelope mirroring 17-CONTEXT.md.
+2. `CR-RESEARCH.md` — the grounded research document consuming the detective→deep-research→synthesis chain.
+3. `CR-AUDIT-ECOSYSTEM.md` — per-skill 6-NON defence posture (audit grid).
+4. `CR-GAP-MAP.md` — one row per differential-cluster gap, with owning phase + severity.
+5. `CR-THIRD-PARTY-HARVEST.md` — patterns salvaged from `gsd-*` / `superpower-*` / retired skills, re-authored into hm-* pseudocode (no files written yet).
+6. `CR-RUNTIME-READINESS.md` — maps every soft meta-concept to its post-migration TS-runtime target (per I.3.1 stage 3), flagging anything that cannot yet be expressed as a Zod-typed SDK surface.
+7. `CR-DECISIONS.md` — the Tooling Decision Framework table (VI.CR.9) fully populated.
+8. `CR-VERIFICATION.md` — verification report mirroring 17-VERIFICATION.md.
 
-## VI.6 Uncovered Domains (Post-Revamp Gaps)
+### VI.CR.11 Exit Criteria
+- All 8 deliverables committed under `.planning/phases/CR-context-and-research/`.
+- `check-overlaps.sh` run against the current catalogue and the results attached.
+- At least one stacked-workflow eval run (e.g. `hm-coordinating-loop` + `hm-planning-with-files` + `hm-phase-loop`) reporting coverage per V.3.2.
+- User signs off in `CR-DISCUSSION-LOG.md`.
 
-Even after the 6-phase revamp, these gaps remain and should be addressed in a subsequent cycle:
+### VI.CR.12 Failure Signals (abort and redesign if any appear)
+1. Any finding that cannot be mapped to a 6-NON mode **and** a differential cluster.
+2. Any deliverable that restores a third-party skill verbatim (I.6 violation).
+3. Any deliverable that assumes `.md` staging is the final form (I.3 violation).
+4. A decision table with more than 20% "no change" rows (indicates audit was shallow).
+
+### VI.CR.13 Next Phases
+Phase CR's `CR-GAP-MAP.md` feeds directly into Phase 1's rename sprint and Phase 2's structural work. Phases 3–5 consume the cluster priorities from VI.CR.7.
+
+### VI.CR.14 Immediate Application (day-1 backlog)
+1. Run `ls .hivefiver-meta-builder/skills-lab/active/refactoring/ | wc -l` and reconcile against I.1.2's count.
+2. Run `check-overlaps.sh` across the catalogue.
+3. Pull the live call-site set: `rg -n "skill: \"" .opencode/agents/ .opencode/commands/ .opencode/get-shit-done/workflows/`.
+4. Open a worktree-isolated branch for Phase CR.
+
+## VI.1 Phase 1 — Rename Sprint (hm-*/hivefiver-* namespace migration)
+
+**Entry gate:** Phase CR exit criteria all met.
+**Deliverable:** every skill in I.1.2 moved from current name → Planned Name. One atomic commit per skill.
+**Non-goals:** body edits, description edits, bundle changes, eval changes. If a skill needs any of those, they are deferred to Phase 3/5.
+**Verification:** `check-overlaps.sh` passes; every routing-table / agent-permission call-site updated; `validate-skill.sh` green for every renamed skill.
+**Call-site update matrix:**
+
+| Call-site | File(s) to touch |
+|-----------|------------------|
+| Routing table | `.hivefiver-meta-builder/skills-lab/active/refactoring/meta-builder/SKILL.md` + its workflow files |
+| Agent permissions | `.opencode/agents/*.md` every `permission.skill` block |
+| GSD workflows (if any reference hm-*) | `.opencode/get-shit-done/workflows/*.md` |
+| Command bodies | `.opencode/commands/*.md` |
+| Documentation | `AGENTS.md`, `.hivefiver-meta-builder/AGENTS.md`, this playbook |
+
+## VI.2 Phase 2 — Structural Changes (merge / split / targeted creation)
+
+**Entry gate:** Phase 1 complete on the main development worktree.
+**Deliverable:**
+- Merge `session-context-manager` → `hm-planning-with-files`.
+- Split `harness-delegation-inspection` → `hm-subagent-delegation-patterns` + `hm-opencode-project-inspection`.
+- Create **G-A differential skills** — `hm-completion-looping`, `hm-subagent-delegation-patterns` (from split).
+- Create **G-B differential skills** — `hm-spec-driven-authoring`, `hm-test-driven-execution`.
+- Create **G-C differential skill** — `hm-research-chain`.
+- Create **G-D differential skills** — `hm-debug`, `hm-refactor`, `hm-phase-execution`.
+
+Every creation follows Phase 17's template: SKILL.md ≤500 LOC, references ≥100 LOC each, scripts with non-zero-exit on failure, evals including at least one stacked-workflow scenario, 6-NON defence table at the top.
+
+**Verification:** `skill-judge` ≥ B for every new skill; stacked-workflow eval passes; call-sites wired.
+
+## VI.3 Phase 3 — Description Rewrite Sprint (differential-cluster skills only)
+
+**Entry gate:** Phase 2 complete.
+**Deliverable:** every skill inside G-A / G-B / G-C / G-D gets its description rewritten against V.7 template (active verb, ≤10 words for "what it does", 5–8 natural triggers, 1–2 "NOT for" exclusions, no banned keywords, no internal vocabulary). Skills outside differential clusters are parked.
+**Verification:** `run-trigger-evals.sh` per skill; trigger-accuracy ≥ 80% on the new trigger-queries dataset.
+
+## VI.4 Phase 4 — Script Dependency Hardening + 6-NON Defence Pass
+
+**Entry gate:** Phase 3 complete.
+**Deliverable:**
+1. Every `bash …/scripts/…` call in every differential-cluster SKILL.md has an inline fallback procedure so the skill still works if the script is missing.
+2. Every differential-cluster skill grows a **6-NON Defence Table** at the top of its SKILL.md, documenting how it defuses each of NON-1..NON-6.
+3. Cross-skill stacking evals (G-A ∪ G-B, G-C ∪ G-D) added to the eval suites.
+
+**Verification:** running the skill with `chmod -x scripts/*.sh` still produces correct agent behaviour; 6-NON defence grid ≥ 5/6 per skill.
+
+## VI.5 Phase 5 — Body Quality + Eval Expansion (differential clusters only)
+
+**Entry gate:** Phase 4 complete.
+**Deliverable:** raise body quality (progressive disclosure, TOC, reference loading guidance, edge-case coverage) for every differential-cluster skill to `skill-judge` ≥ A−. Eval coverage for differential clusters ≥ 75%. Non-differential skills stay at Phase 0 levels.
+**Verification:** `skill-judge --grade` per skill; eval coverage report committed; stacked-workflow evals green.
+
+## VI.6 Phase 6 — Runtime Integration Preparation (new in v2.0)
+
+**Entry gate:** Phase 5 complete; `refactor/product-detox-concerns` branch surveyed and ready to merge back.
+**Goal:** move validated skills/agents/commands from **stage 2 (staging markdown)** to **stage 3 (Zod-typed TS modules with SDK)** per I.3.1.
+
+**Sub-phases (each its own GSD phase):**
+1. **VI.6.1 — Typed schema extraction.** For every differential-cluster skill, author a Zod schema in `src/hivefiver/skills/<name>.schema.ts` that captures: frontmatter (name, description, triggers, metadata.layer, pattern, allowed-tools), bundle contract (references[], scripts[], evals[], templates[]), and activation config.
+2. **VI.6.2 — SDK surface.** Expose `defineSkill()`, `defineAgent()`, `defineCommand()` factories in `src/hivefiver/index.ts`, mirroring the style of `src/lib/delegation-manager.ts` — leaf-first, no governance, no circular deps.
+3. **VI.6.3 — Skill body migration.** The validated SKILL.md body becomes a long-string export (for now); later phases can chunk into typed sections once the SDK is stable. Migration is mechanical — body text is not rewritten, only wrapped.
+4. **VI.6.4 — End-user config surface.** Extend `opencode-harness.config.ts` schema so end-users can enable/disable/stack skills and select a third-party spec-driven framework (I.6) as a sidecar lineage.
+5. **VI.6.5 — Deprecation markers.** The old `.md`-only skills stay in the lab (symlinked for transitional compat) but flip to `status: legacy` in frontmatter. Removal is a post-v2.0 decision.
+
+**Verification:** `npm run build` + `npm run test` + `npm run typecheck` all green; at least three end-to-end scenarios run entirely off the TS SDK with no `.md` fallbacks; public API documented in `docs/runtime-sdk.md`.
+
+**Non-goals:** rewriting validated skill bodies, re-grading skills, opening new features. Phase 6 is a wrapping phase, not a rewriting phase.
+
+## VI.7 GSD-to-Playbook Phase Mapping (source: `.planning/ROADMAP.md`)
+
+| Playbook Phase | GSD Phase | Status |
+|----------------|-----------|--------|
+| Phase 0 — Critical Fixes | GSD Phase 17 | **COMPLETE** |
+| Phase CR — Context & Research | GSD Phase 18 (was: Rename Sprint — now CR inserted) | PENDING |
+| Phase 1 — Rename Sprint | GSD Phase 19 | PENDING |
+| Phase 2 — Structural Changes | GSD Phase 20 | PENDING |
+| Phase 3 — Description Rewrite | GSD Phase 21 | PENDING |
+| Phase 4 — Script Hardening + 6-NON | GSD Phase 22 | PENDING |
+| Phase 5 — Body + Eval Expansion | GSD Phase 23 | PENDING |
+| Phase 6 — Runtime Integration | GSD Phases 24–28 (one per sub-phase) | PENDING |
+
+`.planning/ROADMAP.md` must be updated by the next GSD roadmap touch to reflect this re-mapping (the insertion of Phase CR shifts every downstream GSD phase by one).
+
+## VI.8 Uncovered Domains (post-program gaps, parked)
+
+Even after the 8-phase program completes, the following remain parked for a subsequent cycle. They are explicitly **not** part of Phases CR..6:
 
 | Gap | Severity | Recommendation |
 |-----|----------|----------------|
-| Permission enforcement (no runtime validation skill) | High | `agent-lifecycle-events` with permission hooks |
-| Hook/event system (no reactive-agent patterns) | Medium | Expand `opencode-platform-reference` with a new hook section |
-| Context compaction protocol (no shrink procedure) | Medium | Extend `planning-with-files` with a compaction schema |
-| Non-OpenCode platforms (multi-platform deployment) | Low | Expand `use-authoring-skills/06-cross-platform-activation.md` |
+| Permission enforcement (runtime validation skill) | High | New skill after Phase 6 once the SDK supports permission introspection |
+| Hook/event system patterns | Medium | Extension of `hm-opencode-platform-reference` |
+| Context compaction protocol | Medium | Extension of `hm-planning-with-files` |
+| Non-OpenCode platform activation | Low | Extension of `hivefiver-use-authoring-skills/06-cross-platform-activation.md` |
 
-## VI.7 Gold-Standard Templates
+## VI.9 Gold-Standard Templates (retained from v1.0, renamed)
 
-Use these as copy-start templates for new skills (per cross-batch synthesis):
+Use these as copy-start templates for new skills:
 
 | Template for | Use this skill | Why |
 |--------------|----------------|-----|
-| Reference skills | `opencode-platform-reference` | Key patterns section, TOC, progressive disclosure |
-| Tactical skills | `command-dev` | Lean 80 LOC, Iron Law, clear anatomy |
+| Reference skills | `hm-opencode-platform-reference` | Key patterns section, TOC, progressive disclosure |
+| Tactical skills | `hivefiver-command-dev` | Lean 80 LOC, Iron Law, clear anatomy |
 | Methodology skills | `hm-deep-research` | Stage gates, tool matrix, anti-patterns, "when NOT to" |
-| Behavioural skills | `opencode-non-interactive-shell` | BAD/GOOD examples, self-contained, no background deps |
-| Planning skills | `planning-with-files` | Complete schemas, tiered response, subagent envelope |
+| Behavioural skills | `hm-opencode-non-interactive-shell` | BAD/GOOD examples, self-contained, no background deps |
+| Planning skills | `hm-planning-with-files` | Complete schemas, tiered response, subagent envelope |
+| Differential G-A skills | `hm-coordinating-loop` + Phase 17 sub-phases as execution template | 3-level hierarchy, loop structure, gatekeeping |
+| Differential G-C skills | `hm-detective` (post-17-05) | SCAN + reading modes, unified tech-registry, stacked with deep-research and synthesis |
 
 ---
 
@@ -714,22 +953,32 @@ This is the main path the upcoming 6-phase revamp will use.
 | Phase 5 | — | Quality gates (VIII.4). |
 | Phase 6 | — | Session recovery (if interrupted) via git + planning files. |
 
-## VIII.2 Routing Table
+## VIII.2 Routing Table (v2.0 — uses planned hm-*/hivefiver-* names per V.8)
+
+Skill names shown as **current / planned**; use current until Phase 1 rename sprint (VI.1) lands, then switch to planned atomically.
 
 | User says | Route to (skill) | Dispatch to (specialist) |
 |-----------|-----------------|---------------------------|
-| "create a skill" | `use-authoring-skills` | `hivefiver-skill-author` |
-| "audit this skill" / "review skill" | `use-authoring-skills` (doctor) | `hivefiver-skill-author` |
-| "refactor skill X" | `use-authoring-skills` (iterative) | `hivefiver-skill-author` |
-| "create an agent" | `agents-and-subagents-dev` | `hivefiver-agent-builder` |
-| "set up a command" | `command-dev` | `hivefiver-command-builder` |
-| "build a custom tool" | `custom-tools-dev` | `hivefiver-tool-builder` |
-| "stack skills" | `meta-builder` + targets | self (orchestrate) |
-| "configure OpenCode" | `opencode-platform-reference` | self (research + report) |
-| "audit my project" | `opencode-project-audit` (post-rename) | self + `critic` subagent |
-| "inspect delegation" | `subagent-delegation-patterns` (post-split) | self |
-| "set up delegation gates" | `delegation-gates` (post-rename) | self |
-| "write an eval" | `eval-driven-development` (post-rename) | self |
+| "create a skill" | `use-authoring-skills` → `hivefiver-use-authoring-skills` | `hivefiver-skill-author` |
+| "audit this skill" / "review skill" | `use-authoring-skills` (doctor) → `hivefiver-use-authoring-skills` | `hivefiver-skill-author` |
+| "refactor skill X" | `use-authoring-skills` (iterative) → `hivefiver-use-authoring-skills` | `hivefiver-skill-author` |
+| "create an agent" | `agents-and-subagents-dev` → `hivefiver-agents-and-subagents-dev` | `hivefiver-agent-builder` |
+| "set up a command" | `command-dev` → `hivefiver-command-dev` | `hivefiver-command-builder` |
+| "build a custom tool" | `custom-tools-dev` → `hivefiver-custom-tools-dev` | `hivefiver-tool-builder` |
+| "stack skills" | `meta-builder` → `hm-meta-builder` + targets | self (orchestrate) |
+| "configure OpenCode" | `opencode-platform-reference` → `hm-opencode-platform-reference` | self (research + report) |
+| "audit my project" | `harness-audit` → `hm-opencode-project-audit` | self + `critic` subagent |
+| "inspect delegation" | `harness-delegation-inspection` → `hm-subagent-delegation-patterns` (split) | self |
+| "set up delegation gates" | `agent-authorization` → `hivefiver-delegation-gates` | self |
+| "write an eval" | *(N/A)* → `hm-eval-driven-development` (Phase 2 creation) | self |
+| **[NEW — G-A]** "loop until done" / "guardrail my workflow" | *(N/A)* → `hm-completion-looping` (Phase 2 creation) | self + delegated subagent |
+| **[NEW — G-B]** "lock a spec" / "turn spec into tests" | *(N/A)* → `hm-spec-driven-authoring` (Phase 2 creation) | self |
+| **[NEW — G-B]** "write tests first" / "TDD this phase" | *(N/A)* → `hm-test-driven-execution` (Phase 2 creation) | self |
+| **[NEW — G-C]** "detect → research → synthesise" | *(N/A)* → `hm-research-chain` (Phase 2 creation) | self |
+| **[NEW — G-D]** "debug this" / "root-cause this" | *(N/A)* → `hm-debug` (Phase 2 creation) | self |
+| **[NEW — G-D]** "refactor this module" | *(N/A)* → `hm-refactor` (Phase 2 creation) | self |
+| **[NEW — G-D]** "execute this phase" | *(N/A)* → `hm-phase-execution` (Phase 2 creation) | self |
+| **[Retained]** research / investigation / synthesis | `hm-deep-research` / `hm-detective` / `hm-synthesis` | self (chained via `hm-research-chain` once created) |
 
 ## VIII.3 Execution Protocols
 
@@ -783,6 +1032,85 @@ This is the main path the upcoming 6-phase revamp will use.
 | **The Hallucinator** | Architectural assumption without evidence | Ground in lineage. Read session exports. Verify with grep. |
 | **The Session-History Leaker** | Passing chat log into delegation envelope | Full task text only. Never history. |
 | **The Governance Dictator** | Skill tries to enforce policy (belongs to rules/permissions) | Move enforcement to `.opencode/rules/` or permission frontmatter. |
+
+---
+
+# PART IX — THE GSD-ALIGNED EXECUTION PATTERN (new in v2.0)
+
+Phase 17's success was not an accident. The loop the sub-phases followed is the loop every Phase CR..6 must follow. This part codifies that loop as a mandatory shape for every sub-phase plan.
+
+## IX.1 The Required Loop
+
+```
+CONTEXT  →  RESEARCH  →  PLAN  →  EXECUTE  →  VERIFICATION  →  REVIEW  →  (next sub-phase)
+   ↑                                                                          │
+   └──────────────── feedback if REVIEW opens concerns ───────────────────────┘
+```
+
+Each stage has a required deliverable, a required gate, and a required owner. No stage may be skipped. No sub-phase may commit execution code before the prior stage's deliverable lands.
+
+## IX.2 Stage-by-Stage Contract
+
+| # | Stage | Deliverable (file) | Gate (must pass before next stage) | Owner |
+|---|-------|--------------------|-------------------------------------|-------|
+| 1 | **CONTEXT** | `<phase-id>-CONTEXT.md` — domain boundary, in/out of scope, decisions D-01..D-N, requirements REQ-<phase>-0x | User sign-off; 6-NON grid declared per target skill | Front-facing orchestrator + user |
+| 2 | **RESEARCH** | `<phase-id>-RESEARCH.md` — grounded evidence via `hm-detective` → `hm-deep-research` → `hm-synthesis`; citations to source files; resolution options per finding | Every D-0x decision has at least one evidence citation | `researcher` subagent or pure-orchestrator using research chain |
+| 3 | **PLAN** | `<phase-id>-NN-PLAN.md` per sub-phase — tasks, acceptance criteria, verification steps, rollback procedure, expected commit | PLAN covers every D-0x and REQ-<phase>-0x relevant to the sub-phase | Front-facing orchestrator or planning specialist |
+| 4 | **EXECUTE** | Git commits (one atomic per sub-phase), plus `<phase-id>-NN-SUMMARY.md` noting files touched + verification evidence | All tasks ticked off; no `src/` or agent/command drift unless authorised; `validate-skill.sh` green | `builder` subagent / `hivefiver-skill-author` |
+| 5 | **VERIFICATION** | `<phase-id>-VERIFICATION.md` — enumerate every D-0x and REQ with PASS/FAIL + evidence; wave structure confirmed; plan quality scored | Status = PASS; any FAIL loops back to PLAN (step 3) | `critic` subagent |
+| 6 | **REVIEW** | `<phase-id>-REVIEW.md` — code review across files touched; 0/0/0 critical/warning/info target; list any dead refs | 0 critical findings; warnings triaged | `critic` subagent |
+| 7 | **DISCUSSION-LOG** | `<phase-id>-DISCUSSION-LOG.md` — append-only record of user-facing options presented + selections made | User's last selection recorded before execution starts | Front-facing orchestrator |
+
+**Evidence from Phase 17:** every one of these seven files exists in `.planning/phases/17-hivemind-skills-refactor/` with the exact names above (substitute `17` for `<phase-id>`). The pattern is not theoretical.
+
+## IX.3 Decision & Requirement Numbering
+
+- Decisions: `D-01`, `D-02`, ... `D-NN` per phase. Never shared across phases. Each decision is a discrete yes/no or multi-choice the user made in DISCUSSION-LOG, with an option set (`O-A`, `O-B`, `O-C`, ...) for traceability.
+- Requirements: `REQ-<phase-id>-01`, `REQ-<phase-id>-02`, ... Mirrors the decisions but expressed as testable assertions. VERIFICATION.md must list every `REQ-*` with PASS/FAIL + one-line evidence.
+
+## IX.4 Wave Structure for Multi-Plan Sub-Phases
+
+When a phase has N > 1 sub-phases (like Phase 17 had 5), sub-phases are either **waves** (parallelisable; no ordering constraint) or **dependent** (sequential; later wave consumes earlier wave's artefacts). Every PLAN must declare its wave membership (`Wave: 1`, `Wave: 2/depends:17-01`). VERIFICATION.md must confirm wave ordering held.
+
+## IX.5 Commit Discipline
+
+- One atomic commit per sub-phase. Commit message format: `phase: <phase-id>-<NN> — <one-line summary>`. Example from Phase 17: `phase: 17-01 — restore skill-synthesis from retired to active`.
+- Never batch sub-phases. Never amend. Never force-push after verification passes.
+- `src/` changes and agent/command refactors are **forbidden** inside a soft-meta phase commit. If they are needed, open a separate phase.
+
+## IX.6 Sub-Agent Delegation Envelope
+
+When the front-facing orchestrator dispatches a builder/critic/researcher subagent, the dispatch envelope must contain:
+1. **Task text** (full, verbatim — never "read the plan file").
+2. **Scene-setting** (where this fits in the phase, the 6-NON axis it defends, the differential cluster it serves).
+3. **Scope** (include paths, exclude paths).
+4. **Status output contract** (one of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED` with specific output requirements).
+5. **Gate reminder** (which `validate-*.sh` scripts must pass before reporting DONE).
+
+This matches `.hivefiver-meta-builder/AGENTS.md` §Delegation Protocol. No session history. No implicit state.
+
+## IX.7 Loop-Back Triggers
+
+The loop returns to PLAN (not CONTEXT) when:
+- VERIFICATION returns FAIL on any REQ-*.
+- REVIEW returns critical findings.
+- A subagent returns `DONE_WITH_CONCERNS` that the orchestrator judges to be correctness concerns (not observations).
+
+The loop returns to CONTEXT (restart the phase) only when:
+- A D-0x decision is invalidated by research evidence (rare).
+- Scope expands enough that the in/out-of-scope list no longer reflects reality.
+
+## IX.8 Verification Against Part IX
+
+Before marking any Phase CR..6 complete, run this checklist:
+- [ ] All 7 stage files exist with the expected names.
+- [ ] `<phase-id>-VERIFICATION.md` status = PASS.
+- [ ] `<phase-id>-REVIEW.md` critical count = 0.
+- [ ] Every D-0x has a DISCUSSION-LOG entry.
+- [ ] Every REQ-* has a VERIFICATION evidence line.
+- [ ] Every sub-phase has an atomic commit with the `phase: <id>-<NN> —` prefix.
+- [ ] Every dispatched subagent received a full envelope (no session-history leaks).
+- [ ] `.planning/ROADMAP.md` and `.planning/STATE.md` updated to reflect the phase's completion.
 
 ---
 
@@ -955,6 +1283,108 @@ Cross-check the output against the target inventory in I.1.2. Any divergence is 
 
 ---
 
-**End of Playbook.**
+# APPENDIX F — Differential Skill Groups and hm-* Naming Inventory (new in v2.0)
 
-*This document is itself a meta-artifact. Treat it as a reference, not a skill — it does not ship into `.opencode/skills/`. Keep it in `docs/playbooks/` (or wherever your project conventions place reference docs) and update it as the refactor progresses.*
+## F.1 Differential Cluster Roster
+
+Cross-reference to V.3.2. Existing skills listed with current name; planned creations tagged `[NEW]`.
+
+### F.1.1 G-A — Looping / Guardrails / Gatekeeping / Self-verification / Subagent Delegation
+
+| Status | Planned Name | Current Name | Role in Cluster |
+|--------|--------------|--------------|-----------------|
+| Exists (harden) | `hm-coordinating-loop` | `coordinating-loop` | 3-level coordination hierarchy + handoff protocols |
+| Exists (raise grade) | `hm-phase-loop` | `phase-loop` | Revision loop scaffold for phase-bound work |
+| [NEW] | `hm-completion-looping` | — | Non-regression guardrail + subagent dispatch + self-verification envelope. Authors must embed explicit loop-back triggers. |
+| Rename | `hivefiver-delegation-gates` | `agent-authorization` | Pre-delegation authorization gates + capability matrix |
+| Split | `hm-subagent-delegation-patterns` | `harness-delegation-inspection` (split half) | Delegation patterns for subagent dispatch — envelope templates + status protocols |
+
+### F.1.2 G-B — Spec-driven + Test-driven Development
+
+| Status | Planned Name | Current Name | Role in Cluster |
+|--------|--------------|--------------|-----------------|
+| [NEW] | `hm-spec-driven-authoring` | — | Turn a SPEC into falsifiable REQ-* assertions + acceptance tests. Integrates with CONTEXT.md authoring from Part IX. |
+| [NEW] | `hm-test-driven-execution` | — | Red-green-refactor loop integrated with `hm-planning-with-files` + `hm-phase-loop`. Never claim test coverage without running the tests. |
+| Rename | `hm-eval-driven-development` | (N/A — gap) | Define-run-grade-improve cycles for eval quality. Consumes the existing `use-authoring-skills` eval templates. |
+
+### F.1.3 G-C — Research / Investigation / Synthesis
+
+| Status | Planned Name | Current Name | Role in Cluster |
+|--------|--------------|--------------|-----------------|
+| Exists (A target) | `hm-deep-research` | `hm-deep-research` | Version-matched Context7 research + MCP tool matrix. Post-17-05 includes `research-patterns.md`. |
+| Exists (B target) | `hm-detective` | `hm-detective` | Primary investigator. SCAN (Tech Stack), READ, SCAN (Repo), DEEP modes. Canonical `.tech-registry.json` schema source. |
+| Exists (B target) | `hm-synthesis` | `hm-synthesis` | Compression tiers + artifact export. Post-17-05 uses unified hm-detective schema. |
+| [NEW] | `hm-research-chain` | — | Short meta-skill documenting the canonical chain: `hm-detective` (SCAN) → `hm-deep-research` (version-matched) → `hm-synthesis` (compression + artefact) → optional `hm-skill-synthesis` (pattern extraction). |
+
+### F.1.4 G-D — Debug / Refactor / Planning / Execution
+
+| Status | Planned Name | Current Name | Role in Cluster |
+|--------|--------------|--------------|-----------------|
+| [NEW] | `hm-debug` | — | Systematic debugging with persistent state across context resets. Re-authored from GSD's `/gsd-debug` pattern (I.6). |
+| [NEW] | `hm-refactor` | — | Surgical vs. structural refactor taxonomy. Decision tree for scope + safety + rollback. |
+| Exists (A target) | `hm-planning-with-files` | `planning-with-files` | Planning schemas + tiered response + subagent envelope. Gold-standard template. |
+| [NEW] | `hm-phase-execution` | — | Wave-based execution loop mirroring GSD's pattern but native to Hivemind primitives. Matches Part IX stage 4. |
+
+## F.2 Complete hm-* / hivefiver-* Rename Inventory
+
+Full source-of-truth table. Used by Phase 1 (VI.1) rename sprint. Any skill not listed here is either (a) out of scope for the program, (b) scheduled for retirement, or (c) will be created new by Phase 2.
+
+| # | Current Name | Planned Name | Rename Action | Notes |
+|---|--------------|--------------|---------------|-------|
+| 1 | `meta-builder` | `hm-meta-builder` | Move + update routing table | L0 router; highest-touch call-site count |
+| 2 | `use-authoring-skills` | `hivefiver-use-authoring-skills` | Move + update `hivefiver-skill-author` permissions | L4 authoring — hivefiver-exclusive |
+| 3 | `agents-and-subagents-dev` | `hivefiver-agents-and-subagents-dev` | Move + update permissions | hivefiver-exclusive |
+| 4 | `command-dev` | `hivefiver-command-dev` | Move + update permissions | hivefiver-exclusive |
+| 5 | `custom-tools-dev` | `hivefiver-custom-tools-dev` | Move + update permissions | hivefiver-exclusive |
+| 6 | `coordinating-loop` | `hm-coordinating-loop` | Move + update routing | shared — G-A |
+| 7 | `phase-loop` | `hm-phase-loop` | Move + update routing | shared — G-A |
+| 8 | `planning-with-files` | `hm-planning-with-files` | Move + update routing | shared — G-D + gold template |
+| 9 | `user-intent-interactive-loop` | `hm-user-intent-interactive-loop` | Move + update routing | shared |
+| 10 | `opencode-platform-reference` | `hm-opencode-platform-reference` | Move + update routing | shared — L3 reference |
+| 11 | `opencode-non-interactive-shell` | `hm-opencode-non-interactive-shell` | Move + update routing | shared — gold template |
+| 12 | `oh-my-openagent-reference` | `hm-omo-reference` | Move + update routing | shared — L3 reference |
+| 13 | `hm-deep-research` | `hm-deep-research` | No-op (already prefixed) | G-C |
+| 14 | `hm-detective` | `hm-detective` | No-op (already prefixed) | G-C |
+| 15 | `hm-synthesis` | `hm-synthesis` | No-op (already prefixed) | G-C |
+| 16 | `hf-context-absorb` | `hivefiver-context-absorb` | Move (full prefix) + update permissions | hivefiver-exclusive |
+| 17 | `harness-audit` | `hm-opencode-project-audit` | Move + rename (compound) | shared |
+| 18 | `harness-delegation-inspection` | `hm-subagent-delegation-patterns` + `hm-opencode-project-inspection` | Split (Phase 2, not Phase 1) | shared |
+| 19 | `agent-authorization` | `hivefiver-delegation-gates` | Move + rename | hivefiver-exclusive — G-A |
+| 20 | `gsd-agent-composition` | `hm-agent-composition` | Move + re-author per I.6 (not just rename) | shared — I.6 exception |
+| 21 | `command-parser` | `hm-command-parser` | Move + update routing | shared |
+| 22 | `agents-md-sync` | `hm-agents-md-sync` | Move + update routing | shared |
+| 23 | `session-context-manager` | *(merge → `hm-planning-with-files`)* | Merge (Phase 2, not Phase 1) | FAIL-grade — drop |
+| 24 | `skill-synthesis` | `hm-skill-synthesis` | Move + update routing | hivefiver-exclusive — restored by 17-01 |
+
+**Phase-2 creations (no current name, born `hm-*`/`hivefiver-*`):**
+`hm-completion-looping`, `hm-spec-driven-authoring`, `hm-test-driven-execution`, `hm-eval-driven-development`, `hm-research-chain`, `hm-debug`, `hm-refactor`, `hm-phase-execution`, `hm-opencode-project-inspection` (split sibling).
+
+## F.3 Agent Rename (downstream of Phase 1)
+
+Agent frontmatter `permission.skill:` blocks must be updated in lock-step with Phase 1. Specifically:
+
+| Agent | Pre-rename permission | Post-rename permission |
+|-------|------------------------|-------------------------|
+| `hivefiver-skill-author` | `use-authoring-skills: allow`, `skill-judge: allow`, `skill-creator: allow`, `opencode-platform-reference: allow` | `hivefiver-use-authoring-skills: allow` + unchanged globals + `hm-opencode-platform-reference: allow` |
+| `hivefiver-agent-builder` | `agents-and-subagents-dev: allow`, `opencode-platform-reference: allow` | `hivefiver-agents-and-subagents-dev: allow`, `hm-opencode-platform-reference: allow` |
+| `hivefiver-command-builder` | `command-dev: allow`, `opencode-non-interactive-shell: allow` | `hivefiver-command-dev: allow`, `hm-opencode-non-interactive-shell: allow` |
+| Every front-facing orchestrator | `meta-builder: allow`, `coordinating-loop: allow`, `planning-with-files: allow` | `hm-meta-builder: allow`, `hm-coordinating-loop: allow`, `hm-planning-with-files: allow` |
+
+## F.4 Ordering Contract for the Rename Sprint
+
+1. Rename the skill directory under `.hivefiver-meta-builder/skills-lab/active/refactoring/`.
+2. Regenerate the symlink inside `.opencode/skills/`.
+3. Update routing-table entries in `hm-meta-builder`'s SKILL.md + workflow files.
+4. Update every agent `permission.skill` block that references the old name.
+5. Update every workflow file under `.opencode/get-shit-done/workflows/` and every command body under `.opencode/commands/` that references the old name.
+6. Update this playbook's internal references (Appendix F.2 marks the source of truth).
+7. Run `validate-skill.sh` + `check-overlaps.sh` across the full catalogue.
+8. Commit atomically with message `phase: <gsd-phase>-<NN> — rename <old> → <new>`.
+
+No step may be skipped. No two skills may be renamed in one commit.
+
+---
+
+**End of Playbook (v2.0).**
+
+*This document is itself a meta-artifact. Treat it as a reference, not a skill — it does not ship into `.opencode/skills/`. Keep it in `.hivefiver-meta-builder/` and update it as the refactor progresses. Every change to this file that affects a skill call-site or phase contract must be accompanied by a matching `.planning/ROADMAP.md` + `.planning/STATE.md` update.*
