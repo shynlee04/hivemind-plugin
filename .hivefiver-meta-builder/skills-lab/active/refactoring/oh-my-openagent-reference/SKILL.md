@@ -6,6 +6,7 @@ metadata:
   role: "reference"
   pattern: P2
   version: "1.0.0"
+  context-bomb: true
 allowed-tools:
   - Read
   - Grep
@@ -23,7 +24,8 @@ Repomix also generated structured markdown references from the packed output:
 | File | Contents |
 |------|----------|
 | `references/summary.md` | **Start here** - Purpose, format explanation, and statistics |
-| `references/project-structure.md` | Directory tree with line counts per file |
+| `references/project-structure.md` | Directory tree with line counts per file (674 lines, verified 2026-04-23) |
+| `references/tech-stack.md` | Technology stack: language, runtime, frameworks, dependencies |
 | `references/files.md` | All file contents (search with `## File: <path>`) |
 
 ## How to Use
@@ -49,6 +51,16 @@ function calculateTotal
 ### 4. Use the raw XML
 
 The complete packed repo is in `references/oh-my-openagent-full.xml` (original repomix XML format). Use `attach_packed_output` or `grep_repomix_output` tools to explore it.
+
+## Tech Stack Quick Reference
+
+Load `references/tech-stack.md` when you need to understand:
+- What language and runtime the codebase uses (TypeScript + Bun)
+- Key frameworks and dependencies (OpenCode Plugin SDK, LSP, ast-grep)
+- Build and test tooling (tsc, bun:test)
+- Overall architecture patterns (plugin system, hook system, agent composition)
+
+Do NOT load for simple file lookups or code searches — use `references/project-structure.md` or grep `references/files.md` instead.
 
 ## Anti-Patterns
 
