@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: 1
 status: partial
-stopped_at: Phase 21 COMPLETE — descriptions rewritten for 7 Phase 20 skills with pushy trigger pattern. Phase 22-23 still need work.
-last_updated: "2026-04-23T19:10:00.000Z"
+stopped_at: Phase 24 PLANNED — 3 plans across 3 waves to fix 22 failed hm-* skills (6-NON removal, onboarding headings, banned vocab, self-correction blocks, Iron Law reorg)
+last_updated: "2026-04-23T21:30:00.000Z"
 progress:
-  total_phases: 23
+  total_phases: 24
   completed_phases: 10
-  total_plans: 38
+  total_plans: 41
   completed_plans: 34
-  percent: 89
+  percent: 83
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase --phase — 18
+**Current focus:** Phase 24 — Fix 22 failed hm-* skills (3 plans, 3 waves, ready to execute)
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -62,7 +62,8 @@ Phase 19: Rename Sprint ............ COMPLETE (21/21 skills renamed, 368 files c
 Phase 20: Structural Changes ........ COMPLETE (merge: session-context-manager→hm-planning-with-files; split: harness-delegation-inspection→2 skills; create: 7 differential cluster skills)
 Phase 21: Description Rewrite ....... COMPLETE (7 differential cluster skills rewritten per V.7 template)
 Phase 22: Script Hardening + 6-NON .. COMPLETE (6-NON defence tables added to 7 core skills)
-Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger queries for 6 new skills)
+Phase 23: PARTIAL — eval files expanded for some skills, but only 1/9 has stacked scenario
+Phase 24: PLANNED — 3 plans in 3 waves to fix 22 failed hm-* skills (6-NON removal, onboarding, banned vocab, self-correction, Iron Law reorg)
 ```
 
 ## Phase Completion Details
@@ -104,6 +105,7 @@ Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger quer
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
+| Phase 24 | PLANNED | 3 plans, 3 waves, ready to execute — fix 22 failed hm-* skills |
 
 ## Known Issues
 
