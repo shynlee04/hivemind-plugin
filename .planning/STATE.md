@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: 1
-status: partial
-stopped_at: Phase 24 PLANNED — 3 plans across 3 waves to fix 22 failed hm-* skills (6-NON removal, onboarding headings, banned vocab, self-correction blocks, Iron Law reorg)
-last_updated: "2026-04-23T21:30:00.000Z"
+current_plan: Repair pass for Phases 22-23
+status: unknown
+stopped_at: Completed 24-01-PLAN.md — 6-NON Defence Tables removed from 18 skills, Iron Law repositioned in 16 skills. Ready for 24-02.
+last_updated: "2026-04-23T14:50:36Z"
 progress:
   total_phases: 24
-  completed_phases: 10
+  completed_phases: 8
   total_plans: 41
-  completed_plans: 34
-  percent: 83
+  completed_plans: 37
+  percent: 90
 ---
 
 # STATE: Harness Cleanup
@@ -63,7 +63,7 @@ Phase 20: Structural Changes ........ COMPLETE (merge: session-context-manager�
 Phase 21: Description Rewrite ....... COMPLETE (7 differential cluster skills rewritten per V.7 template)
 Phase 22: Script Hardening + 6-NON .. COMPLETE (6-NON defence tables added to 7 core skills)
 Phase 23: PARTIAL — eval files expanded for some skills, but only 1/9 has stacked scenario
-Phase 24: PLANNED — 3 plans in 3 waves to fix 22 failed hm-* skills (6-NON removal, onboarding, banned vocab, self-correction, Iron Law reorg)
+Phase 24: EXECUTING — Plan 01 complete (6-NON removed, Iron Law repositioned), Plans 02-03 pending
 ```
 
 ## Phase Completion Details
@@ -105,7 +105,7 @@ Phase 24: PLANNED — 3 plans in 3 waves to fix 22 failed hm-* skills (6-NON rem
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
-| Phase 24 | PLANNED | 3 plans, 3 waves, ready to execute — fix 22 failed hm-* skills |
+| Phase 24 | EXECUTING | Plan 01 complete (6-NON removed from 18 skills, Iron Law repositioned in 16), Plans 02-03 pending |
 
 ## Known Issues
 
