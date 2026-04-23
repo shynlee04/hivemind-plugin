@@ -109,8 +109,12 @@ export function createRunBackgroundCommandTool(args: {
         }
 
         if (parsed.action === "terminate") {
+          const cancellation = await args.delegationManager.markCommandCancellationForPtySession(parsed.sessionId)
           await args.ptyManager.terminate(parsed.sessionId)
-          return renderToolResult(success(`Terminated ${parsed.sessionId}`))
+          return renderToolResult(success(
+            `Cancellation requested for ${parsed.sessionId}`,
+            cancellation ?? { sessionId: parsed.sessionId, explicitCancellation: true },
+          ))
         }
 
         return renderToolResult(success("Shared PTY sessions", args.ptyManager.listSessions()))

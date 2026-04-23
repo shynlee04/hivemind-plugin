@@ -34,13 +34,19 @@ export function createDelegationStatusTool(
         if (args.delegationId) {
           const delegation = delegationManager.getStatus(args.delegationId)
 
-          if (!delegation) {
-            return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
-          }
+        if (!delegation) {
+          return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
+        }
 
-          return renderToolResult(success(`Delegation ${delegation.id} status: ${delegation.status}`, {
-            delegationId: delegation.id,
-            status: delegation.status,
+        const terminalLabel = delegation.terminalKind ?? delegation.status
+        const signalSuffix = delegation.terminationSignal ? ` (${delegation.terminationSignal})` : ""
+        const message = delegation.terminalKind
+          ? `Delegation ${delegation.id} terminal state: ${terminalLabel}${signalSuffix}`
+          : `Delegation ${delegation.id} status: ${delegation.status}`
+
+        return renderToolResult(success(message, {
+          delegationId: delegation.id,
+          status: delegation.status,
             agent: delegation.agent,
             result: delegation.result,
             error: delegation.error,

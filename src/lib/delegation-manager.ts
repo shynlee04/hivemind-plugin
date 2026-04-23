@@ -241,6 +241,24 @@ export class DelegationManager {
     return Array.from(this.delegations.values())
   }
 
+  markCommandCancellationForPtySession(ptySessionId: string): DelegationResult | undefined {
+    for (const delegation of this.delegations.values()) {
+      if (delegation.ptySessionId !== ptySessionId) {
+        continue
+      }
+      if (delegation.status !== "running" && delegation.status !== "dispatched") {
+        return this.buildResult(delegation)
+      }
+
+      delegation.explicitCancellation = true
+      delegation.terminalKind = "cancelled"
+      this.persistAllDelegations()
+      return this.buildResult(delegation)
+    }
+
+    return undefined
+  }
+
   private withContractDefaults(delegation: Delegation): Delegation {
     return {
       ...delegation,
