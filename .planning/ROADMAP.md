@@ -277,6 +277,20 @@ Plans:
 
 **Execution status:** GAP CLOSURE ACTIVE. Plans 01-05 complete; verification gaps 1-3 and 5 are closed via persisted queue-key context and real message-stability completion. Plan 06 remains to close the final honest dual-mode execution gap.
 
+### Phase 16.3: Delegation Subsystem Hardening — Fix critical gaps in parent resumption, notification delivery, and signal handling (INSERTED)
+
+**Goal:** Harden the existing delegation subsystem so recovery, notification delivery, and terminal reporting remain truthful by surface: SDK delegations resume reliably, PTY command sessions stay best-effort resumable, headless fallback is explicitly non-resumable after restart, and parent completion delivery works notification-first with signal-aware terminal detail.
+**Requirements**: TBD
+**Depends on:** Phase 16
+**Plans:** 3 plans
+
+**Execution status:** IN PROGRESS. Plan 01 is complete; Plans 02-03 remain.
+
+Plans:
+- [x] 16.3-01-PLAN.md — publish truthful surface-specific recovery contracts for delegation records and tools
+- [ ] 16.3-02-PLAN.md — make completion delivery notification-first, durable, and replayable
+- [ ] 16.3-03-PLAN.md — preserve surface-aware terminal and signal semantics across runtime surfaces
+
 ### Phase 16.2: PTY Execution Wiring + OMO Safety Patterns
 
 **Goal:** Close two critical gaps identified in Phase 16 verification: (1) verify PTY execution wiring for command delegations is complete and add unified terminal lifecycle, and (2) backfill OMO-proven safety patterns — grace periods for memory cleanup, parent notifications, adaptive polling, and nesting depth limits.
@@ -417,8 +431,6 @@ Plans:
 - Create G-D skills: `hm-debug`, `hm-refactor`, `hm-phase-execution`
 
 **Hard constraints:** Zero `src/` changes; zero IDE-directory modifications
-
----
 
 ### Phase 9.3: Module Restructuring + Config
 
@@ -586,6 +598,7 @@ Plans:
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
+| 16.3 Delegation Subsystem Hardening | 1/3 plans | IN PROGRESS — 16.3-01 complete |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
 | 19. Rename Sprint (Playbook Phase 1) | 19/21 skills (2 deferred) | ⚠️ PARTIAL — 19 renamed, stale refs remain, `.windsurf/` touched (violated constraint) |

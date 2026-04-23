@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: Phase 24 complete
-status: phase-complete
-stopped_at: Completed 24-03-PLAN.md — Self-Correction blocks added to 5 coordinator skills
-last_updated: "2026-04-23T15:13:03Z"
+current_plan: 2
+status: executing
+stopped_at: Completed 16.3-01-PLAN.md
+last_updated: "2026-04-23T19:18:56.964Z"
 progress:
-  total_phases: 24
-  completed_phases: 10
-  total_plans: 41
+  total_phases: 25
+  completed_phases: 9
+  total_plans: 44
   completed_plans: 40
-  percent: 98
+  percent: 91
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 24 — COMPLETE (3/3 plans done)
+**Current focus:** Phase 16.3 — delegation-subsystem-hardening-fix-critical-gaps-in-parent-r
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,7 +29,8 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 21 — COMPLETE (descriptions rewritten for 7 Phase 20 skills)
+Phase: 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — EXECUTING
+Plan: 2 of 3
 Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
 Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
 Phase 21: COMPLETE — 7 differential cluster skills rewritten with pushy trigger pattern per V.7 template
@@ -39,8 +40,8 @@ Phase 17: COMPLETE — Hivemind Skills Refactor (C1-C5 resolved, tech-stack synt
 Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 deliverables committed)
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** Repair pass for Phases 22-23
-**Progress:** [█████████░] 93%
+**Current plan:** 2
+**Progress:** [█████████░] 91%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -138,6 +139,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P04 | 8 min | 3 tasks | 11 files |
 | Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P05 | 7 min | 2 tasks | 9 files |
 | Delegate-task Wave A fix (PermissionRule pattern) | 5 min | 1 task | 2 files |
+| Phase 16.3 P01 | 8 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -187,6 +189,9 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - **2026-04-23:** Delegate-task 8× Zod error root cause is `session-creator.ts` local `PermissionRule` missing required `pattern` field — NOT `validateAgent()` or SDK/server schema drift. 8 rules × 1 missing field = 8 errors. Fix: import canonical `PermissionRule` from `types.ts` + add `pattern: "*"` to all 8 rules.
 - **2026-04-23:** Independent Devin investigation reached identical conclusion by inspecting OpenCode server source (`Permission.Rule` requires `pattern: Schema.String`) and oh-my-openagent reference (16+ call sites all include `pattern`). Third-party validation confirms root cause.
 - **2026-04-23:** R-AGENT-01 shim in `delegation-manager.ts` was masking the symptom (treating `app.agents()` as the source) but not the cause (`session.create` permission payload). Shim should be reverted in Wave B once runtime verified.
+- DelegationManager now hydrates surface and recovery defaults from executionMode so all tool outputs stay aligned.
+- Legacy persisted records keep the existing sdk-vs-headless inference rule, then receive explicit truthful recovery guarantees.
+- Child delegated sessions remain non-delegating; contract hardening does not relax deny rules for delegate-task or task.
 
 ### Todos
 
@@ -247,7 +252,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 24-03-PLAN.md — Self-Correction blocks added to 5 coordinator skills (Phase 24 complete)
+**Stopped At:** Completed 16.3-01-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
@@ -255,4 +260,4 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 *State initialized: 2026-04-06*
 *Forensic reset + reconciliation: 2026-04-14 — false-start corridor corrected and 09-family truth quarantined where needed*
 
-**Planned Phase:** Repair Phases 19-23 — audit revealed incomplete acceptance, stale refs, missing phase dirs
+**Planned Phase:** 16.3 (Delegation Subsystem Hardening — Fix critical gaps in parent resumption, notification delivery, and signal handling) — 3 plans — 2026-04-23T18:49:59.938Z
