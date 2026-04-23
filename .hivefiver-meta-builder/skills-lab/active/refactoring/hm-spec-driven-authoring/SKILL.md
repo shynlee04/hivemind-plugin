@@ -1,6 +1,14 @@
 ---
 name: hm-spec-driven-authoring
-description: Turn a specification into falsifiable requirements and acceptance tests. Use when locking a spec, turning requirements into tests, or verifying implementation against a written contract. NOT for exploratory coding or prototyping without a spec.
+description: >
+  Turn a specification into falsifiable requirements and acceptance tests.
+  Use when locking a spec, turning requirements into tests, verifying implementation against
+  a written contract, when the user has a PRD or spec document, or when building features
+  that need formal acceptance criteria. Even when the user says "make sure it matches the spec"
+  or "verify against the requirements."
+  Triggers: "spec", "specification", "requirements", "acceptance tests", "falsifiable",
+  "verify implementation", "contract", "PRD", "formal verification".
+  NOT for exploratory coding or prototyping without a spec.
 metadata:
   layer: "2"
   role: "domain-execution"
