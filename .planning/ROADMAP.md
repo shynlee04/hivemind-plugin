@@ -24,7 +24,7 @@
 - [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed
 - [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
-- [ ] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 0 plans (Playbook Phase 0 → GSD continuation)
+- [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup

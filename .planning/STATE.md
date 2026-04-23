@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 6
+current_plan: 17-hivemind-skills-refactor
 status: executing
-stopped_at: Wave 1 stale-item closure + artifact updates (02-UAT, 16-VERIFICATION, 16.2-REVIEW-FIX)
-last_updated: "2026-04-22T16:00:00.000Z"
+stopped_at: Phase 17 complete — 5/5 plans executed, all verification checks pass
+last_updated: "2026-04-23T11:30:00.000Z"
 progress:
-  total_phases: 19
-  completed_phases: 5
-  total_plans: 25
-  completed_plans: 24
-  percent: 96
+  total_phases: 20
+  completed_phases: 6
+  total_plans: 31
+  completed_plans: 29
+  percent: 94
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase --phase — 16
+**Current focus:** Phase 17 COMPLETE — 5/5 plans executed, 6 critical issues resolved
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,12 +29,13 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 16 — EXECUTING
-Plan: 6 of 6
+Phase: 17 — COMPLETE
+Plan: 5 of 5
+Phase 17: COMPLETE — Hivemind Skills Refactor (C1-C5 resolved, tech-stack synthesis integrated)
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** 6
-**Progress:** [██████████] 96%
+**Current plan:** 5
+**Progress:** [████████████] 94%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -50,6 +51,7 @@ Phase 9.1: Critical Bug Fixes ..... COMPLETE WITH CAVEATS (test rewrites done, l
 Phase 9.2: Completion Detection .... PARTIAL — implementation exists, but 09.2-02/03 summaries are quarantined as non-authoritative runtime proof
 Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
+Phase 17: Hivemind Skills Refactor . COMPLETE (C1-C5 resolved, tech-stack synthesis integrated)
 ```
 
 ## Phase Completion Details
@@ -179,6 +181,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - Phase 15 added: Security & Quality Remediation — fix all 26 audit issues (3 critical, 8 high, 7 medium, 8 low) from comprehensive codebase audit
 - Phase 16 added: Background Delegation Revamp + PTY Integration — rebuild background delegation to overcome all current limitations (read-only restriction, 15-min timeout, no undo/branching parity, no write-capable background) by synthesizing architecture from oh-my-openagent, opencode-background-agents, and opencode-pty
 - Phase 16.2 added: PTY Execution Wiring + OMO Safety Patterns — close verification gaps, add grace periods, parent notifications, adaptive polling, nesting depth limits (SPEC validated, 24 requirements, 6 already implemented)
+- Phase 17 added: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) — first of 6 continuation phases mapping HIVEMIND-SKILLS-REFACTOR-PLAYBOOK into GSD phases 17–22. Covers C1–C5 critical issues, hm-* rename mandate, soft→hard bridge model, runtime compilation model. Specification: .hivemind/state/session-context-prompt-v4.md
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
