@@ -1,6 +1,6 @@
 ---
 name: hm-agent-composition
-description: Teaches agents how to compose GSD specialist agents from user intent using XML markup grammar, step protocols, structured return formats, and chaining patterns. Use when creating new GSD agents, designing agent definitions, composing multi-agent workflows, writing agent XML blocks, structuring execution flows, defining deviation rules, setting checkpoint protocols, or building structured return templates. Triggers on: create agent, design agent, compose agents, write agent definition, XML markup for agents, step protocol, structured returns, deviation rules, checkpoint protocol, agent chaining, multi-agent workflow, GSD agent patterns.
+description: Teaches agents how to compose specialist agents from user intent using XML markup grammar, step protocols, and structured return formats. Use when creating agents, designing agent definitions, composing multi-agent workflows, writing agent XML blocks, structuring execution flows, defining deviation rules, setting checkpoint protocols, or building structured return templates. NOT for direct code implementation.
 metadata:
   layer: "2"
   role: "composition"

@@ -1,6 +1,6 @@
 ---
 name: hm-opencode-project-audit
-description: This skill should be used when the user asks to "audit my OpenCode project", "check boundaries", "verify architecture", "audit skills", "check governance", "context poisoning", "cross-platform audit", "full harness audit", "validate opencode setup". Audits skills, commands, tools (built-in and custom), permissions, agents, and subagents.
+description: Audit OpenCode projects across skills, commands, tools, permissions, agents, and subagents. Use when checking boundaries, verifying architecture, mapping ecosystem structure, or auditing setup. NOT for code review or direct implementation.
 metadata:
   layer: "1"
   role: "auditor"

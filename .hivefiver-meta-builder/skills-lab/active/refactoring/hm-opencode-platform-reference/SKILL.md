@@ -1,6 +1,6 @@
 ---
 name: hm-opencode-platform-reference
-description: This skill should be used when needing OpenCode platform capabilities — agents, plugins, tools, SDK, permissions, skills, commands, configs, MCP servers, rules, or models. Triggers on: "OpenCode agents", "OpenCode SDK", "plugin hooks", "tool definitions", "permission model", "MCP server config", "OpenCode architecture". Essential reference for building harness systems.
+description: Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models. Use when needing OpenCode agents, SDK, plugin hooks, tool definitions, permission model, MCP server config, or platform architecture. NOT for general coding tasks.
 metadata:
   layer: "3"
   role: "reference"

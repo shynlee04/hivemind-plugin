@@ -1,6 +1,6 @@
 ---
 name: hm-omo-reference
-description: This skill should be used when referencing oh-my-openagent architecture for harness design patterns. Triggers on: "oh-my-openagent reference", "OMO architecture", "plugin system design", "hook system patterns", "circuit breaker design", "session continuity patterns", "skill loader architecture", "compare harness to OMO". Provides complete oh-my-openagent repo as packed reference.
+description: Provides the complete oh-my-openagent architecture as a packed reference for agent plugin design. Use when referencing oh-my-openagent architecture, plugin system design, hook system patterns, circuit breaker design, session continuity patterns, or skill loader architecture. NOT for direct code implementation.
 metadata:
   layer: "3"
   role: "reference"
