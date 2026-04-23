@@ -12,6 +12,17 @@ allowed-tools:
   - Glob
 ---
 
+## 6-NON Defence Table
+
+| NON | Defence |
+|-----|---------|
+| NON-1 | 20 reference files mapped from actual OpenCode platform documentation and source code; Key Composition Patterns section synthesizes 3 canonical patterns (Permission Cascading, Tool Hook Pipeline, Agent-Skill Two-Phase Loading) from live platform behavior |
+| NON-2 | Cross-References table maps boundaries to command-dev (writes vs. lists), non-interactive-shell (execution safety vs. capability reference), meta-builder (routes vs. provides content) |
+| NON-3 | Reference Files table defines entry conditions for each of 20 files; Anti-Patterns define 4 misuse exits (Memorizer, Outdated Citer, Over-Loader, Assumer) |
+| NON-4 | metadata.layer="3", role="reference", pattern="P2", version="1.0.0" declared; description has trigger exclusions |
+| NON-5 | Anti-Patterns table provides 4 eval scenarios (Memorizer, Outdated Citer, Over-Loader, Assumer) with Detection/Correction columns; 20 reference files provide depth coverage for spot-checking |
+| NON-6 | No scripts; version="1.0.0" tracks freshness; repomix-opencode.md and repomix-opencode.xml provide source-level verification against platform drift |
+
 # OpenCode Platform Reference
 
 Complete OpenCode documentation and source code for building harness systems.
