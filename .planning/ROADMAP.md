@@ -30,7 +30,8 @@
 - [x] **Phase 20: Structural Changes — Playbook Phase 2** — 1 merge, 1 split, 7 new skills created
 - [x] **Phase 21: Description Rewrite — Playbook Phase 3** — 7 differential cluster skills rewritten per V.7 template
 - [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — 6-NON defence tables added to 7 core skills
-- [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — eval expansion with trigger queries for 6 new skills
+ - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — eval expansion with trigger queries for 6 new skills
+ - [ ] **Phase 24: Fix 22 Failed hm-* Skills** — 0/5 fix categories
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -540,6 +541,33 @@ Plans:
 | Scope creep into uncertain directories | HIGH | AS-IS flag on src/cli/; UNCERTAIN set deferred to Plan 11-01 analysis |
 | No validation gate | HIGH | Explicit gate: npm run typecheck && npm test must pass |
 
+### Phase 24: Fix 22 Failed hm-* Skills
+
+**Goal:** Fix 22 failed hm-* skills: (1) Remove 6-NON Defence Tables from all skills — these are development process guidance, NOT skill content. (2) Add onboarding headings that explain WHAT each skill is and WHEN to use it. (3) Remove banned vocabulary (GSD, harness, BMAD, HiveMind) from descriptions. (4) Add self-correction blocks to 5 coordinator skills. (5) Reorganize Iron Law/HARD GATES sections after onboarding. Use skill-creator, skill-development, skill-judge for quality validation. Follow SKILL-CRITERIA-SHORT.md 6-gate criteria and HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md V.2-V.7 standards.
+**Requirements:** TBD
+**Depends on:** Phase 23 (complete)
+**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` V.2-V.7
+**Standards:** `.hivefiver-meta-builder/SKILL-CRITERIA-SHORT.md`
+
+**Scope (5 fix categories across 22 skills):**
+
+| # | Fix Category | Skills Affected | Action |
+|---|-------------|-----------------|--------|
+| 1 | Remove 6-NON Defence Tables | All hm-* skills with 6-NON sections | Strip NON-1..NON-6 tables — process guidance not skill content |
+| 2 | Add onboarding headings | All 22 hm-* skills | Add WHAT/WHEN heading explaining skill purpose and use cases |
+| 3 | Remove banned vocabulary | All 22 hm-* skill descriptions | Remove: GSD, harness, BMAD, HiveMind from YAML description |
+| 4 | Add self-correction blocks | 5 coordinator skills | hm-coordinating-loop, hm-phase-loop, hm-phase-execution, hm-completion-looping, hm-user-intent-interactive-loop |
+| 5 | Reorganize sections | All skills with Iron Law/HARD GATES | Move Iron Law/HARD GATES after onboarding section |
+
+**Hard constraints:** Zero `src/` changes; zero IDE-directory modifications; all changes are SKILL.md body edits only
+
+**Plans:** 3 plans
+
+Plans:
+- [ ] 24-01-PLAN.md — Remove 6-NON Defence Tables from 18 skills + reorganize Iron Law/HARD GATES in 16 skills (Wave 1)
+- [ ] 24-02-PLAN.md — Add onboarding headings to 25 skills + remove banned vocabulary from 4 descriptions (Wave 1)
+- [ ] 24-03-PLAN.md — Add Self-Correction blocks to 5 coordinator skills (Wave 2, depends on 24-01 + 24-02)
+
 ## Progress Table
 
 | Phase | Items Complete | Status |
@@ -564,7 +592,8 @@ Plans:
 | 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ⚠️ PARTIAL — moves landed, but some new skills missing evals/6-NON tables |
 | 21. Description Rewrite (Playbook Phase 3) | 7/7 skills | ✅ COMPLETE — pushy trigger pattern applied to all 7 Phase 20 skills |
 | 22. Script Hardening + 6-NON (Playbook Phase 4) | 0/7 skills | ❌ NOT SUBSTANTIATED — no phase dir, commit scope doesn't match claims |
-| 23. Body Quality + Eval (Playbook Phase 5) | 1/9 skills | ⚠️ PARTIAL — eval files expanded, only 1/9 has stacked scenario |
+ | 23. Body Quality + Eval (Playbook Phase 5) | 1/9 skills | ⚠️ PARTIAL — eval files expanded, only 1/9 has stacked scenario |
+ | 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 0/3 plans | Planned — 3 plans in 2 waves |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
@@ -587,7 +616,8 @@ Phase 1 (7 done, 3 pending — planned)
                                                            └─→ Phase 20: Structural Changes (Playbook Phase 2) ✅
                                                                 └─→ Phase 21: Description Rewrite (Playbook Phase 3) ✅
                                                                      └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4) ✅
-                                                                          └─→ Phase 23: Body Quality + Eval (Playbook Phase 5) ✅
+                                                                           └─→ Phase 23: Body Quality + Eval (Playbook Phase 5) ✅
+                                                                                └─→ Phase 24: Fix 22 Failed hm-* Skills (Playbook Phase 6)
                                                                └─→ Phase 21: Description Rewrite (Playbook Phase 3)
                                                                     └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4)
                                                                          └─→ Phase 23: Body Quality + Eval (Playbook Phase 5)
