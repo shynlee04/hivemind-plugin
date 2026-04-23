@@ -25,7 +25,9 @@
 - [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
-- [ ] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 0/8 deliverables
+- [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
+- [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
+- [ ] **Phase 20: Structural Changes — Playbook Phase 2** — In progress (merge, split, new skill creation)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -386,7 +388,40 @@ Plans:
 - [ ] 18-01-PLAN.md — Wave 1: Ecosystem audit — CR-CONTEXT.md + CR-RESEARCH.md (fresh runtime probe, per-skill inventory, call-site mapping) [Wave 1]
 - [ ] 18-02-PLAN.md — Wave 2: 6-NON defence grid + differential cluster gap map — CR-AUDIT-ECOSYSTEM.md + CR-GAP-MAP.md (per-skill audit, missing skills, severity) [Wave 2]
 - [ ] 18-03-PLAN.md — Wave 3: Third-party pattern harvest + runtime-readiness — CR-THIRD-PARTY-HARVEST.md + CR-RUNTIME-READINESS.md (GSD/superpower patterns, Zod/SDK feasibility) [Wave 3]
-- [ ] 18-04-PLAN.md — Wave 4: Tooling decisions + verification + sign-off — CR-DECISIONS.md + CR-VERIFICATION.md + CR-DISCUSSION-LOG.md (decision table, exit criteria, user sign-off) [Wave 4]
+- [x] 18-04-PLAN.md — Wave 4: Tooling decisions + verification + sign-off — CR-DECISIONS.md + CR-VERIFICATION.md + CR-DISCUSSION-LOG.md (decision table, exit criteria, user sign-off) [Wave 4]
+
+---
+
+### Phase 19: Rename Sprint — Playbook Phase 1
+
+**Goal:** Execute the `hm-*` / `hivefiver-*` namespace migration for all 21 skills requiring rename per CR-DECISIONS.md.
+**Requirements:** All skills in I.1.2 moved from current name → Planned Name; all call-sites updated
+**Depends on:** Phase 18 (complete)
+**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` §VI.1
+
+**Scope:** 21 skill renames + call-site updates across agents, commands, playbook, AGENTS.md
+**Hard constraints:** Zero `src/` changes; zero agent/command structural refactors (only `permission.skill` updates); zero IDE-directory modifications
+
+**Execution status:** ✅ COMPLETE. Commit `7b686311`. 368 files changed, 8176 insertions, 3250 deletions. All renames detected as git renames. All agent permissions, command bodies, routing tables, and playbook references updated.
+
+---
+
+### Phase 20: Structural Changes — Playbook Phase 2
+
+**Goal:** Merge, split, and create skills per differential cluster gap map (G-A through G-D).
+**Requirements:** CR-GAP-MAP.md + CR-DECISIONS.md decisions (c), (f), (g), (h)
+**Depends on:** Phase 19 (complete)
+**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` §VI.2
+
+**Scope:**
+- Merge `session-context-manager` → `hm-planning-with-files`
+- Split `harness-delegation-inspection` → `hm-subagent-delegation-patterns` + `hm-opencode-project-inspection`
+- Create G-A skills: `hm-completion-looping`, `hm-subagent-delegation-patterns`
+- Create G-B skills: `hm-spec-driven-authoring`, `hm-test-driven-execution`
+- Create G-C skill: `hm-research-chain`
+- Create G-D skills: `hm-debug`, `hm-refactor`, `hm-phase-execution`
+
+**Hard constraints:** Zero `src/` changes; zero IDE-directory modifications
 
 ---
 
@@ -531,7 +566,9 @@ Plans:
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
-| 18. Context & Research (Playbook Phase CR) | 8/8 deliverables | ✅ COMPLETE (pending user sign-off) — all deliverables committed |
+| 18. Context & Research (Playbook Phase CR) | 8/8 deliverables | ✅ COMPLETE — all deliverables committed, user sign-off received |
+| 19. Rename Sprint (Playbook Phase 1) | 21/21 skills | ✅ COMPLETE — 368 files changed, all call-sites updated, commit `7b686311` |
+| 20. Structural Changes (Playbook Phase 2) | — | 🔄 IN PROGRESS |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
@@ -549,9 +586,9 @@ Phase 1 (7 done, 3 pending — planned)
                                      └─→ Phase 16: Background Delegation Revamp + PTY Integration
                                           └─→ Phase 16.2: PTY Wiring + OMO Safety Patterns (SPEC validated)
                                            └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) ✅
-                                                └─→ Phase 18: Context & Research (Playbook Phase CR)
-                                                     └─→ Phase 19: Rename Sprint (Playbook Phase 1)
-                                                          └─→ Phase 20: Structural Changes (Playbook Phase 2)
+                                                 └─→ Phase 18: Context & Research (Playbook Phase CR) ✅
+                                                      └─→ Phase 19: Rename Sprint (Playbook Phase 1) ✅
+                                                           └─→ Phase 20: Structural Changes (Playbook Phase 2) 🔄
                                                                └─→ Phase 21: Description Rewrite (Playbook Phase 3)
                                                                     └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4)
                                                                          └─→ Phase 23: Body Quality + Eval (Playbook Phase 5)
