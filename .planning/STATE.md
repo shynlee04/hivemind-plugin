@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: Repair pass for Phases 22-23
 status: unknown
-stopped_at: Completed 24-01-PLAN.md — 6-NON Defence Tables removed from 18 skills, Iron Law repositioned in 16 skills. Ready for 24-02.
-last_updated: "2026-04-23T14:50:36Z"
+stopped_at: Completed 24-02-PLAN.md — onboarding headings added to 25 skills, banned vocab removed from 4 descriptions
+last_updated: "2026-04-23T15:07:20.130Z"
 progress:
   total_phases: 24
   completed_phases: 8
   total_plans: 41
-  completed_plans: 37
-  percent: 90
+  completed_plans: 38
+  percent: 93
 ---
 
 # STATE: Harness Cleanup
@@ -40,7 +40,7 @@ Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
 **Current plan:** Repair pass for Phases 22-23
-**Progress:** [██████████░░] 89%
+**Progress:** [█████████░] 93%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -247,7 +247,7 @@ Phase 24: EXECUTING — Plan 01 complete (6-NON removed, Iron Law repositioned),
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase 20 PARTIAL — structural changes landed but acceptance incomplete. Phase 19 partial (19/21 renamed, stale refs remain). Phases 21-23 NOT substantiated (no phase dirs, commit scopes mismatch claims). Repair pass in progress.
+**Stopped At:** Completed 24-02-PLAN.md — onboarding headings added to 25 skills, banned vocab removed from 4 descriptions
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
