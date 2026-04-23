@@ -11,6 +11,17 @@ allowed-tools:
   - Bash
 ---
 
+## 6-NON Defence Table
+
+| NON | Defence |
+|-----|---------|
+| NON-1 | "Iron Law" and Core Mandates derived from actual OpenCode shell behavior (no TTY/PTY); references/ contains 4 structured docs documenting command tables, env variables, cognitive patterns, and prompt handling |
+| NON-2 | Cross-References table maps boundaries to command-dev (writes commands vs. executes safely) and platform-reference (capability lookup vs. execution safety) |
+| NON-3 | "Iron Law" defines entry (never interactive); Core Mandates define 5 safety rules; Anti-Patterns define 5 misuse exits (Prompter, Editor, REPL, Git Pager, Silent Hang) |
+| NON-4 | metadata.layer="3", role="reference", pattern="P3", version="2.0.0" declared; description has trigger exclusions |
+| NON-5 | Anti-Patterns table provides 5 eval scenarios (Prompter, Editor, REPL, Git Pager, Silent Hang) with Detection/Correction columns; references/cognitive-patterns.md provides behavioral eval criteria |
+| NON-6 | No scripts; version="2.0.0" tracks evolution; references/command-tables.md documents non-interactive flags per command family for guard replication |
+
 # Shell Non-Interactive Strategy
 
 ## The Iron Law
