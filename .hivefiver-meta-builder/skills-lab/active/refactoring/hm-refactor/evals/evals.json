@@ -1,9 +1,9 @@
 {
   "skill": "hm-refactor",
-  "evals": [
-    {
-      "query": "Test trigger query for hm-refactor",
-      "expected_loaded": true
-    }
+  "trigger_queries": [
+    {"query": "surgical vs structural refactor decision", "expected_loaded": true},
+    {"query": "restructure this module safely", "expected_loaded": true},
+    {"query": "clean up this code with rollback plan", "expected_loaded": true},
+    {"query": "rewrite this feature", "expected_loaded": false}
   ]
 }

@@ -1,9 +1,9 @@
 {
   "skill": "hm-debug",
-  "evals": [
-    {
-      "query": "Test trigger query for hm-debug",
-      "expected_loaded": true
-    }
+  "trigger_queries": [
+    {"query": "systematically debug this failure", "expected_loaded": true},
+    {"query": "trace root cause with persistent state", "expected_loaded": true},
+    {"query": "structured failure analysis", "expected_loaded": true},
+    {"query": "fix typo in variable name", "expected_loaded": false}
   ]
 }

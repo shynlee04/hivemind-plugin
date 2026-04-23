@@ -1,9 +1,9 @@
 {
   "skill": "hm-research-chain",
-  "evals": [
-    {
-      "query": "Test trigger query for hm-research-chain",
-      "expected_loaded": true
-    }
+  "trigger_queries": [
+    {"query": "detect research then synthesize into artifact", "expected_loaded": true},
+    {"query": "chain investigation skills together", "expected_loaded": true},
+    {"query": "orchestrate the full research pipeline", "expected_loaded": true},
+    {"query": "look up one API method", "expected_loaded": false}
   ]
 }

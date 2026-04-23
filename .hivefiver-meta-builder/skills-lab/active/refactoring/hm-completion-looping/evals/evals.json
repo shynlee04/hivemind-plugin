@@ -1,9 +1,38 @@
 {
   "skill": "hm-completion-looping",
-  "evals": [
+  "trigger_queries": [
     {
-      "query": "Test trigger query for hm-completion-looping",
+      "query": "guardrail my workflow so it doesn't finish early",
       "expected_loaded": true
+    },
+    {
+      "query": "loop until this task is actually verified complete",
+      "expected_loaded": true
+    },
+    {
+      "query": "make sure the subagent doesn't claim done prematurely",
+      "expected_loaded": true
+    },
+    {
+      "query": "add completion detection to this phase",
+      "expected_loaded": true
+    },
+    {
+      "query": "self-verifying subagent dispatch",
+      "expected_loaded": true
+    },
+    {
+      "query": "write a simple hello world script",
+      "expected_loaded": false
+    },
+    {
+      "query": "fix this one bug",
+      "expected_loaded": false
     }
-  ]
+  ],
+  "stacked_scenario": {
+    "skills": ["hm-coordinating-loop", "hm-planning-with-files", "hm-completion-looping"],
+    "query": "Plan and execute a multi-subagent task with completion verification",
+    "expected_behavior": "hm-planning-with-files creates plan, hm-coordinating-loop dispatches subagents, hm-completion-looping verifies outputs before accepting DONE"
+  }
 }

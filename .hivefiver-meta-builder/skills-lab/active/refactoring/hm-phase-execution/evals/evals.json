@@ -1,9 +1,9 @@
 {
   "skill": "hm-phase-execution",
-  "evals": [
-    {
-      "query": "Test trigger query for hm-phase-execution",
-      "expected_loaded": true
-    }
+  "trigger_queries": [
+    {"query": "execute multi-plan phase with waves", "expected_loaded": true},
+    {"query": "recover from mid-phase interruption", "expected_loaded": true},
+    {"query": "run wave-based parallel execution", "expected_loaded": true},
+    {"query": "do this one task now", "expected_loaded": false}
   ]
 }

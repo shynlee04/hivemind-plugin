@@ -1,9 +1,10 @@
 {
   "skill": "hm-test-driven-execution",
-  "evals": [
-    {
-      "query": "Test trigger query for hm-test-driven-execution",
-      "expected_loaded": true
-    }
+  "trigger_queries": [
+    {"query": "write tests first before implementation", "expected_loaded": true},
+    {"query": "run red green refactor cycle", "expected_loaded": true},
+    {"query": "verify test coverage claims", "expected_loaded": true},
+    {"query": "TDD this feature", "expected_loaded": true},
+    {"query": "manually test this endpoint", "expected_loaded": false}
   ]
 }
