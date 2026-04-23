@@ -92,7 +92,12 @@ function cloneLifecycleState(state: SessionLifecycleState | undefined): SessionL
 
 function clonePendingNotifications(notifications: PendingNotification[] | undefined): PendingNotification[] {
   if (!Array.isArray(notifications)) return []
-  return [...notifications]
+  return notifications.map((notification) => ({
+    ...notification,
+    metadata: notification.metadata ? { ...notification.metadata } : undefined,
+    artifacts: notification.artifacts ? [...notification.artifacts] : undefined,
+    commits: notification.commits ? [...notification.commits] : undefined,
+  }))
 }
 
 function cloneCapturedResult(result: CapturedResult | undefined): CapturedResult | undefined {

@@ -10,6 +10,7 @@
 import type { OpenCodeClient } from "./session-api.js"
 import type { Delegation } from "./types.js"
 import type { SessionContinuityRecord, TaskNotification } from "./types.js"
+import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
 
 type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
 
@@ -68,6 +69,10 @@ export function buildNotificationMessage(task: TaskNotification): string {
   if (task.duration !== undefined) {
     const formatted = formatDuration(task.duration)
     lines.push(`- Duration: ${formatted}`)
+  }
+
+  if (task.metadata) {
+    lines.push(`- Metadata: ${JSON.stringify(task.metadata)}`)
   }
 
   lines.push(`</system_reminder>`)
@@ -142,6 +147,78 @@ export function buildTaskNotificationFromContinuity(
 
 export type ToastFn = (message: string) => void
 
+function buildDelegationSummary(
+  delegation: Delegation,
+  duration: number,
+  summaryPreview?: string,
+): string {
+  const terminalState = delegation.terminalKind ?? delegation.status
+  const previewSuffix = summaryPreview ? ` Summary preview: ${summaryPreview}` : ""
+  return `Delegated work finished with terminal state ${terminalState} after ${formatDuration(duration)}.${previewSuffix}`
+}
+
+function buildDelegationTaskNotification(delegation: Delegation): TaskNotification {
+  const duration = delegation.completedAt
+    ? delegation.completedAt - delegation.createdAt
+    : Date.now() - delegation.createdAt
+
+  const summaryPreview =
+    delegation.result?.slice(0, MAX_PREVIEW_LENGTH) ??
+    delegation.error?.slice(0, MAX_PREVIEW_LENGTH) ??
+    undefined
+
+  return {
+    sessionID: delegation.childSessionId,
+    description: `Delegation: ${delegation.agent}`,
+    agent: delegation.agent,
+    status: delegation.status === "completed" ? "completed" : delegation.explicitCancellation ? "cancelled" : "failed",
+    error: delegation.status === "completed" ? undefined : delegation.error,
+    resultPreview: summaryPreview,
+    briefSummary: buildDelegationSummary(delegation, duration, summaryPreview),
+    outputLink: `session://${delegation.childSessionId}`,
+    duration,
+    metadata: {
+      delegationId: delegation.id,
+      terminalState: delegation.status,
+      recoveryGuarantee: delegation.recoveryGuarantee,
+      summaryPreview,
+    },
+  }
+}
+
+function queuePendingNotification(parentSessionID: string, notification: TaskNotification): void {
+  const queuedNotification = {
+    ...notification,
+    metadata: notification.metadata ? { ...notification.metadata } : undefined,
+    artifacts: notification.artifacts ? [...notification.artifacts] : undefined,
+    commits: notification.commits ? [...notification.commits] : undefined,
+    createdAt: Date.now(),
+    delivered: false,
+  }
+  const current = getSessionContinuity(parentSessionID)
+  const existing = current?.metadata.pendingNotifications ?? []
+
+  if (current) {
+    patchSessionContinuity(parentSessionID, {
+      pendingNotifications: [...existing, queuedNotification],
+    })
+    return
+  }
+
+  recordSessionContinuity({
+    sessionID: parentSessionID,
+    promptParams: {},
+    metadata: {
+      status: "running",
+      description: "Recovered parent session notification queue",
+      delegation: null,
+      constraints: [],
+      pendingNotifications: [queuedNotification],
+      updatedAt: Date.now(),
+    },
+  })
+}
+
 export async function notifyParentSession(
   client: OpenCodeClient,
   parentSessionID: string,
@@ -187,21 +264,8 @@ export async function notifyDelegationTerminal(
   client: OpenCodeClient,
   delegation: Delegation,
 ): Promise<void> {
-  const duration = delegation.completedAt
-    ? delegation.completedAt - delegation.createdAt
-    : Date.now() - delegation.createdAt
-
-  const resultSummary =
-    delegation.result?.slice(0, MAX_PREVIEW_LENGTH) ??
-    delegation.error?.slice(0, MAX_PREVIEW_LENGTH) ??
-    ""
-
-  const message = JSON.stringify({
-    taskId: delegation.id,
-    terminalState: delegation.status,
-    resultSummary: resultSummary || undefined,
-    duration,
-  })
+  const task = buildDelegationTaskNotification(delegation)
+  const message = buildNotificationMessage(task)
 
   try {
     await client.session.prompt({
@@ -209,6 +273,7 @@ export async function notifyDelegationTerminal(
       body: { noReply: true, parts: [{ type: "text", text: message }] },
     })
   } catch (error) {
+    queuePendingNotification(delegation.parentSessionId, task)
     console.error(
       `[Harness] Failed to notify parent session ${delegation.parentSessionId} of delegation ${delegation.id} terminal state: ${error instanceof Error ? error.message : String(error)}`
     )

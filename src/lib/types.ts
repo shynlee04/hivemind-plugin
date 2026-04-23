@@ -12,6 +12,12 @@ export type TaskNotification = {
   duration?: number
   artifacts?: string[]
   commits?: string[]
+  metadata?: {
+    delegationId: string
+    terminalState: DelegationStatus
+    recoveryGuarantee?: DelegationRecoveryGuarantee
+    summaryPreview?: string
+  }
 }
 
 export type PendingNotification = TaskNotification & {
