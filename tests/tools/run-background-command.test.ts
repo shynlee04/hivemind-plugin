@@ -43,9 +43,12 @@ function createDelegationManagerStub() {
       status: "running",
       delegationId: "delegation-command-1",
       executionMode: "pty",
+      surface: "command-process",
+      recoveryGuarantee: "best-effort",
       workingDirectory: "/tmp/shared",
       ptySessionId: "pty-shared-1",
       queueKey: "category:command",
+      explicitCancellation: false,
     }),
   }
 }
@@ -70,7 +73,10 @@ describe("run-background-command tool", () => {
     }))
     expect(result.kind).toBe("success")
     expect(data.executionMode).toBe("pty")
+    expect(data.surface).toBe("command-process")
+    expect(data.recoveryGuarantee).toBe("best-effort")
     expect(data.ptySessionId).toBe("pty-shared-1")
+    expect(data.explicitCancellation).toBe(false)
   })
 
   it("returns incremental output for a shared PTY session", async () => {

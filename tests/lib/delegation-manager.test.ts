@@ -386,13 +386,18 @@ describe("DelegationManager", () => {
 
       expect(delegation).toEqual(expect.objectContaining({
         executionMode: "sdk",
+        surface: "agent-delegation",
+        recoveryGuarantee: "resumable",
         workingDirectory: expect.any(String),
       }))
       expect(delegation?.ptySessionId).toBeUndefined()
+      expect(delegation?.explicitCancellation).toBe(false)
       expect(persisted).toEqual(expect.arrayContaining([
         expect.objectContaining({
           id: result.delegationId,
           executionMode: "sdk",
+          surface: "agent-delegation",
+          recoveryGuarantee: "resumable",
           workingDirectory: expect.any(String),
         }),
       ]))
@@ -422,16 +427,23 @@ describe("DelegationManager", () => {
       const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
 
       expect(result.executionMode).toBe("sdk")
+      expect(result.surface).toBe("agent-delegation")
+      expect(result.recoveryGuarantee).toBe("resumable")
       expect(result.ptySessionId).toBeUndefined()
       expect(delegation).toEqual(expect.objectContaining({
         executionMode: "sdk",
+        surface: "agent-delegation",
+        recoveryGuarantee: "resumable",
         queueKey: "provider:anthropic:model:claude-3-5-sonnet",
       }))
       expect(delegation?.ptySessionId).toBeUndefined()
+      expect(delegation?.explicitCancellation).toBe(false)
       expect(persisted).toEqual(expect.arrayContaining([
         expect.objectContaining({
           id: result.delegationId,
           executionMode: "sdk",
+          surface: "agent-delegation",
+          recoveryGuarantee: "resumable",
         }),
       ]))
     })
@@ -481,9 +493,13 @@ describe("DelegationManager", () => {
         undefined,
       )
       expect(result.executionMode).toBe("pty")
+      expect(result.surface).toBe("command-process")
+      expect(result.recoveryGuarantee).toBe("best-effort")
       expect(result.ptySessionId).toBe("pty-command-123")
       expect(manager.getStatus(result.delegationId)).toEqual(expect.objectContaining({
         executionMode: "pty",
+        surface: "command-process",
+        recoveryGuarantee: "best-effort",
         ptySessionId: "pty-command-123",
         queueKey: "provider:anthropic:model:claude-3-5-sonnet",
       }))
@@ -513,10 +529,14 @@ describe("DelegationManager", () => {
         undefined,
       )
       expect(result.executionMode).toBe("headless")
+      expect(result.surface).toBe("command-process")
+      expect(result.recoveryGuarantee).toBe("non-resumable-after-restart")
       expect(result.fallbackReason).toBeTruthy()
       expect(result.ptySessionId).toBeUndefined()
       expect(manager.getStatus(result.delegationId)).toEqual(expect.objectContaining({
         executionMode: "headless",
+        surface: "command-process",
+        recoveryGuarantee: "non-resumable-after-restart",
         fallbackReason: expect.any(String),
         queueKey: "category:implementation",
       }))

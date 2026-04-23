@@ -29,8 +29,11 @@ function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
     lastMessageCount: 0,
     stablePollCount: 0,
     executionMode: "headless",
+    surface: "command-process",
+    recoveryGuarantee: "non-resumable-after-restart",
     workingDirectory: process.cwd(),
     queueKey: "agent:builder",
+    explicitCancellation: false,
     ...overrides,
   }
 }
@@ -175,6 +178,8 @@ describe("delegation-status tool", () => {
     const delegation = makeDelegation({
       id: "del-runtime",
       executionMode: "pty",
+      surface: "command-process",
+      recoveryGuarantee: "best-effort",
       workingDirectory: "/tmp/runtime-child",
       ptySessionId: "pty-123",
       fallbackReason: "pty unsupported",
@@ -188,10 +193,13 @@ describe("delegation-status tool", () => {
     const data = result.data as Record<string, unknown>
 
     expect(data.executionMode).toBe("pty")
+    expect(data.surface).toBe("command-process")
+    expect(data.recoveryGuarantee).toBe("best-effort")
     expect(data.workingDirectory).toBe("/tmp/runtime-child")
     expect(data.ptySessionId).toBe("pty-123")
     expect(data.fallbackReason).toBe("pty unsupported")
     expect(data.queueKey).toBe("provider:anthropic:model:claude-3-5-sonnet")
+    expect(data.explicitCancellation).toBe(false)
   })
 
   // ---------------------------------------------------------------------------
@@ -266,6 +274,8 @@ describe("delegation-status tool", () => {
       makeDelegation({
         id: "del-list-runtime",
         executionMode: "headless",
+        surface: "command-process",
+        recoveryGuarantee: "non-resumable-after-restart",
         workingDirectory: "/tmp/list-child",
         fallbackReason: "pty unavailable",
         queueKey: "provider:anthropic:model:gpt-5-mini",
@@ -279,9 +289,12 @@ describe("delegation-status tool", () => {
     const data = result.data as Array<Record<string, unknown>>
 
     expect(data[0]?.executionMode).toBe("headless")
+    expect(data[0]?.surface).toBe("command-process")
+    expect(data[0]?.recoveryGuarantee).toBe("non-resumable-after-restart")
     expect(data[0]?.workingDirectory).toBe("/tmp/list-child")
     expect(data[0]?.fallbackReason).toBe("pty unavailable")
     expect(data[0]?.queueKey).toBe("provider:anthropic:model:gpt-5-mini")
+    expect(data[0]?.explicitCancellation).toBe(false)
   })
 
   // ---------------------------------------------------------------------------

@@ -256,6 +256,9 @@ describe("delegate-task tool", () => {
 
     expect(result.kind).toBe("success")
     expect(data.executionMode).toBe("sdk")
+    expect(data.surface).toBe("agent-delegation")
+    expect(data.recoveryGuarantee).toBe("resumable")
+    expect(data.explicitCancellation).toBe(false)
     expect(data.queueKey).toBe("provider:anthropic:model:claude-3-5-sonnet")
     expect(manager.getStatus(String(data.delegationId))?.ptySessionId).toBeUndefined()
   })
