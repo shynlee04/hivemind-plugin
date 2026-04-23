@@ -1,6 +1,13 @@
 ---
 name: hm-phase-execution
-description: Execute GSD-style phase plans with wave-based parallelization and checkpoint recovery. Use when running a multi-plan phase, managing plan dependencies, or recovering from mid-phase interruptions. NOT for single-task execution or unstructured work.
+description: >
+  Execute GSD-style phase plans with wave-based parallelization and checkpoint recovery.
+  Use when running a multi-plan phase, managing plan dependencies, recovering from mid-phase interruptions,
+  when plans need to run in parallel, when execution needs checkpoint gates, or when phase work
+  spans multiple sessions. Even when the user says "run the phase" or "execute the plan."
+  Triggers: "execute phase", "run phase", "phase execution", "wave-based execution",
+  "parallel plans", "checkpoint recovery", "plan dependencies".
+  NOT for single-task execution or unstructured work.
 metadata:
   layer: "1"
   role: "orchestrator"
