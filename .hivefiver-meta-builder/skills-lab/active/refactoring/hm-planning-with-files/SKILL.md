@@ -15,6 +15,8 @@ allowed-tools:
   - Grep
 ---
 
+<!-- ONBOARDING-HEADING-HERE -->
+
 ## The Iron Law
 
 ```

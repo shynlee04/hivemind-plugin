@@ -14,9 +14,7 @@ allowed-tools:
   - Grep
 ---
 
-# agents-md-sync
-
-Detects and fixes AGENTS.md drift. Scan → Diff → Apply. Never regenerates from scratch.
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -26,6 +24,9 @@ SCAN REPORTS FACTS. EDIT FIXES DRIFT. NEVER REGENERATES FROM SCRATCH.
 
 This skill reads the codebase, compares claims to reality, and applies targeted edits. It never overwrites entire files, never generates new AGENTS.md files, and never adds sections that don't already exist.
 
+# agents-md-sync
+
+Detects and fixes AGENTS.md drift. Scan → Diff → Apply. Never regenerates from scratch.
 ## On Load
 
 1. Verify both AGENTS.md targets exist:

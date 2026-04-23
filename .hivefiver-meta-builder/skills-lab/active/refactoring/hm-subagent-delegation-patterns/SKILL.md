@@ -16,7 +16,7 @@ allowed-tools:
   - Task
 ---
 
-# Subagent Delegation Patterns
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -24,6 +24,7 @@ allowed-tools:
 Delegation without session tracking is fire-and-forget. Always track, always resume, never recreate.
 ```
 
+# Subagent Delegation Patterns
 ## On Load
 
 1. Read `references/delegation-envelopes.md` — canonical dispatch envelope templates

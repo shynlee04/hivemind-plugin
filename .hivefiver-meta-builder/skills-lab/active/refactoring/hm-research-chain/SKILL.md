@@ -23,7 +23,7 @@ allowed-tools:
   - Task
 ---
 
-# Research Chain
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -31,6 +31,7 @@ allowed-tools:
 Research without synthesis is hoarding. Synthesis without evidence is hallucination.
 ```
 
+# Research Chain
 ## The Canonical Chain
 
 ```

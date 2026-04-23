@@ -15,6 +15,14 @@ allowed-tools:
   - Task
 ---
 
+<!-- ONBOARDING-HEADING-HERE -->
+
+## The Iron Law
+
+```
+AUDIT REPORTS FACTS. NEVER BLOCKS. NEVER FIXES. NEVER DOES THE WORK ITSELF.
+```
+
 <files_to_read>
 .opencode/skills/harness-audit/references/pointers.md
 .opencode/skills/harness-audit/scripts/compile-bundle.sh
@@ -24,13 +32,6 @@ allowed-tools:
 # harness-audit
 
 Comprehensive audit orchestrator for ANY OpenCode project. Reports facts, leaves judgment to the agent.
-
-## The Iron Law
-
-```
-AUDIT REPORTS FACTS. NEVER BLOCKS. NEVER FIXES. NEVER DOES THE WORK ITSELF.
-```
-
 ## Architecture
 
 ```

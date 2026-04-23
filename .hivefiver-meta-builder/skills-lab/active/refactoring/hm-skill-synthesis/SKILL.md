@@ -8,7 +8,7 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep webfetch websearch codesearch
 ---
 
-# skill-synthesis
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -18,6 +18,7 @@ NO SKILL WITHOUT EVALS
 
 Every skill produced by this pipeline must have `evals/evals.json` and `evals/trigger-queries.json` with at least 3 test cases and 20 trigger queries. A scaffold without evals is incomplete. A skill without executed evals is untested.
 
+# skill-synthesis
 ## On Load
 
 1. **Fetch the canonical spec** — always fresh, never cached:

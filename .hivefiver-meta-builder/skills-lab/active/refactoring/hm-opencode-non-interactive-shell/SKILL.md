@@ -11,6 +11,8 @@ allowed-tools:
   - Bash
 ---
 
+<!-- ONBOARDING-HEADING-HERE -->
+
 ## The Iron Law
 
 ```

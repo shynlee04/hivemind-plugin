@@ -23,7 +23,7 @@ allowed-tools:
   - Grep
 ---
 
-# Completion Looping
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -31,6 +31,7 @@ allowed-tools:
 A task is not done when the subagent says it is done. A task is done when verification proves it is done.
 ```
 
+# Completion Looping
 ## On Load
 
 1. Read `references/verification-checklist.md` — criteria for true completion

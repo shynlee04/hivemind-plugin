@@ -23,7 +23,7 @@ allowed-tools:
   - Task
 ---
 
-# Phase Execution
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -31,6 +31,7 @@ allowed-tools:
 A phase is not a todo list. A phase is a directed acyclic graph of plans grouped into waves.
 ```
 
+# Phase Execution
 ## On Load
 
 1. Read `references/wave-protocol.md` — how to group plans into waves

@@ -22,7 +22,7 @@ allowed-tools:
   - Grep
 ---
 
-# Refactor Decision Framework
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -30,6 +30,7 @@ allowed-tools:
 Refactoring without tests is restructuring. Restructuring without rollback is reckless.
 ```
 
+# Refactor Decision Framework
 ## On Load
 
 1. Read `references/refactor-taxonomy.md` — surgical vs. structural refactor decision tree

@@ -22,7 +22,7 @@ allowed-tools:
   - Grep
 ---
 
-# Test-Driven Execution
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -30,6 +30,7 @@ allowed-tools:
 Never claim test coverage without running the tests. Fresh output or no claim.
 ```
 
+# Test-Driven Execution
 ## On Load
 
 1. Read `references/red-green-refactor.md` — the canonical TDD cycle

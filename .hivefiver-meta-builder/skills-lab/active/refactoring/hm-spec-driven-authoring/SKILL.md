@@ -23,7 +23,7 @@ allowed-tools:
   - Grep
 ---
 
-# Spec-Driven Authoring
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -31,6 +31,7 @@ allowed-tools:
 If it is not written as a requirement, it is not a requirement. If it is not tested, it does not exist.
 ```
 
+# Spec-Driven Authoring
 ## On Load
 
 1. Read `references/spec-to-req-mapping.md` — how to decompose a spec into REQ-* items

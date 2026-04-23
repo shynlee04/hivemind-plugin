@@ -23,7 +23,7 @@ allowed-tools:
   - Grep
 ---
 
-# Systematic Debugging
+<!-- ONBOARDING-HEADING-HERE -->
 
 ## The Iron Law
 
@@ -31,6 +31,7 @@ allowed-tools:
 Fix the cause, not the symptom. Verify the fix, not the hypothesis.
 ```
 
+# Systematic Debugging
 ## On Load
 
 1. Read `references/debug-state-machine.md` — structured debugging protocol
