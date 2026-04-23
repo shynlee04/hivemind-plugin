@@ -107,3 +107,21 @@ Stall = same or worse issue count after revision attempt.
 ## Example Usage
 
 An orchestrator runs a critic subagent to validate the current output, counts issues by severity, and compares the count to the previous iteration. If issues remain and the count is decreasing, the orchestrator re-spawns an implementer subagent with the critic's feedback. On stall (issue count not decreasing) or max iterations reached, the orchestrator escalates to the user.
+
+## Self-Correction
+
+### When the Task Keeps Failing
+
+If the loop keeps failing at the same gate, check whether the phase entry criteria are actually met before looping again — sometimes STATE.md says a phase is ready but the required artifacts don't exist on disk. Verify STATE.md reflects real progress by cross-referencing with actual file existence. If the same gate fails 3 consecutive iterations with no improvement in issue count, stop the loop and ask the user whether to rework the plan, accept the current state, or escalate. Do not silently increase the max iteration count beyond 3.
+
+### When Unsure About the Next Step
+
+Re-read the phase's PLAN.md for the specific verification criteria — the plan defines what "done" means, not the loop itself. If no PLAN.md exists for the phase, the phase may not be planned yet — suggest planning before execution rather than looping on undefined criteria. If you cannot determine whether issues are WARNINGS or BLOCKERS, treat them as BLOCKERS (the more conservative interpretation) and attempt revision. The safe default is always: re-read the plan, compare current state to acceptance criteria, and proceed only when the comparison is favorable.
+
+### When the User Contradicts Skill Guidance
+
+If the user says the phase is done but verification still shows issues, present the specific failing criteria and ask which to accept as-is versus which to rework — do not silently mark issues as resolved. If the user wants to skip the max-iteration cap, allow it but document why in `progress.md` and warn that stall detection is still active. The user's override takes precedence, but the skill must ensure the user is making an informed decision by showing the exact verification state.
+
+### When an Edge Case Is Encountered
+
+If a phase has zero plans listed, it was likely created but never planned — suggest running the planning workflow before attempting execution loops. If the checker/validator script exits with an unexpected error code (not 0 or 1), treat it as a BLOCKER and investigate the script before continuing the loop. If issue count oscillates (decreasing then increasing), this indicates the revision is introducing regressions — stop the loop, compare the current output against the previous iteration's output, and re-dispatch with a more focused fix scope.

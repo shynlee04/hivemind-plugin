@@ -378,6 +378,26 @@ See `references/05-worked-examples.md` for complete end-to-end examples:
 
 ---
 
+## Self-Correction
+
+### When the Task Keeps Failing
+
+If the user keeps giving unclear or contradictory answers to your questions, switch from open-ended questions to multiple-choice options — present 2-3 specific choices and ask the user to pick one. If the user seems frustrated with the questioning process, stop asking new questions and instead summarize what you understand so far, state your best interpretation, and ask for a single yes/no confirmation. If PROBE phase fails the validation loop 3 times, present the user with a draft `intent.json` based on what you know and ask them to correct the specific fields that are wrong, rather than asking more questions.
+
+### When Unsure About the Next Step
+
+If you cannot determine whether user intent is clear after 3 exchanges, stop probing and present your best understanding as a concrete statement: "I understand you want X, with constraints Y, and success looks like Z. Is this correct?" This forces a yes/no response rather than continued ambiguity. If you're unsure whether to delegate or execute, check the delegation matrix — the decision is based on task scope and ambiguity, not instinct. If you're unsure which phase to return to, default to PROBE — re-confirming intent is always safer than acting on uncertain understanding.
+
+### When the User Contradicts Skill Guidance
+
+If the user contradicts an earlier answer, acknowledge the change explicitly: "You previously said X, now you're saying Y. I'll update my understanding to reflect Y." Then update `intent.json` and `progress.md` with the new information. Do not silently switch — the user should know their changed position was registered. If the user contradicts a skill gate (e.g., wants to proceed without meeting stop conditions), explain which specific condition is unmet and what risk it creates, then allow proceeding if the user explicitly overrides — document the override in `progress.md`.
+
+### When an Edge Case Is Encountered
+
+If the user provides requirements in a format the skill doesn't handle (e.g., a document link, a pasted code block, a voice memo transcription), read and analyze the provided material to extract intent rather than asking the user to restate everything in question-answer format. If the session is interrupted and `intent.json` is corrupted or missing, reconstruct from `progress.md` and `task_plan.md` if they exist — do not restart the PROBE from scratch. If the user's request spans multiple unrelated domains, split it into separate intent capture sessions rather than trying to fit everything into one `intent.json`.
+
+---
+
 ## Platform Adaptation
 
 | Platform | Question Tool | Skill Loading | File Paths |

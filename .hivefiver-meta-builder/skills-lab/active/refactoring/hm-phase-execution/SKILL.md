@@ -116,6 +116,24 @@ If interrupted mid-phase:
 | **The Re-Executer** | Re-runs already completed plans after interruption | Read phase state, skip completed plans |
 | **The Uncommitted Wave** | Executes multiple waves without committing | Commit after each wave |
 
+## Self-Correction
+
+### When the Task Keeps Failing
+
+If a wave plan fails, do not continue to the next wave — abort subsequent waves and investigate the failure first. Check whether the failure is a dependency issue (the plan references files or state from a previous wave that didn't complete correctly) versus a plan-content issue (the plan references non-existent files or has invalid commands). Validate file references against disk before re-dispatching. If the same plan fails twice with the same error, report the failure to the orchestrator with the full error output, the plan's `depends_on` chain, and your diagnosis — do not retry a third time without human input.
+
+### When Unsure About the Next Step
+
+Check the PLAN.md frontmatter for `wave` and `depends_on` fields — these determine execution order, not intuition. If a plan's dependencies are not all marked complete in STATE.md, skip this plan and come back after its prerequisites finish. If the phase directory has no PLAN.md files at all, the phase may need planning before execution — suggest running the planning workflow rather than attempting to execute an empty phase.
+
+### When the User Contradicts Skill Guidance
+
+If the user wants to run plans out of wave order (e.g., execute Wave 2 before Wave 1 completes), warn about specific dependency risks — list which plans depend on which outputs — but allow it if the user explicitly confirms. Document the out-of-order execution in STATE.md with the user's rationale. If the user wants to re-run a completed plan, allow it but note that this may create merge conflicts with subsequent plans that already consumed the original output.
+
+### When an Edge Case Is Encountered
+
+If two plans in the same wave touch the same file, they cannot run in parallel — serialize them and note the file conflict in the wave execution log. If a plan's `verify.sh` script is missing, skip the script-based verification but flag it as a gap in the phase summary. If checkpoint recovery finds a plan that was partially executed (some files committed, others not), treat it as incomplete and re-execute the entire plan rather than attempting to resume mid-task.
+
 ## Reference Map
 
 | File | When to Read |
