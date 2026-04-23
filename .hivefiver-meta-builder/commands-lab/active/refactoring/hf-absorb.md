@@ -16,7 +16,7 @@ subtask: false
 
 ## Your Job
 
-1. **Load skill `hf-context-absorb`** — it contains the full wave protocol, subagent dispatch templates, YAML merge rules, and validation gates.
+1. **Load skill `hivefiver-context-absorb`** — it contains the full wave protocol, subagent dispatch templates, YAML merge rules, and validation gates.
 
 2. **Execute the wave protocol defined in the skill** — Wave 0 through Wave 4 as specified. You are the orchestrator: delegate every wave to subagents via `task` tool. Do NOT process content yourself.
 

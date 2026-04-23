@@ -23,9 +23,9 @@ permission:
   task: deny
   skill:
     "*": deny
-    "custom-tools-dev": allow
-    "opencode-platform-reference": allow
-    "opencode-non-interactive-shell": allow
+    "hivefiver-custom-tools-dev": allow
+    "hm-opencode-platform-reference": allow
+    "hm-opencode-non-interactive-shell": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -50,19 +50,19 @@ No raw TypeScript interfaces for tool args. Zod is the source of truth. Every to
 **Every time you are spawned, run this FIRST:**
 
 ```bash
-# Load the custom-tools-dev skill content
-ls .opencode/skills/custom-tools-dev/ 2>/dev/null
+# Load the hivefiver-custom-tools-dev skill content
+ls .opencode/skills/hivefiver-custom-tools-dev/ 2>/dev/null
 
 # Check existing tools
 ls src/tools/ 2>/dev/null
-ls .opencode/skills/custom-tools-dev/references/ 2>/dev/null
+ls .opencode/skills/hivefiver-custom-tools-dev/references/ 2>/dev/null
 
 # Check git state
 git status --short
 git log --oneline -3
 ```
 
-Read the custom-tools-dev SKILL.md and its references for tool anatomy, Zod patterns, and plugin lifecycle.
+Read the hivefiver-custom-tools-dev SKILL.md and its references for tool anatomy, Zod patterns, and plugin lifecycle.
 
 ## Execution Flow
 
@@ -73,8 +73,8 @@ ls src/tools/ 2>/dev/null
 ls src/schema-kernel/ 2>/dev/null
 
 # Read SDK reference
-cat .opencode/skills/custom-tools-dev/references/plugin-lifecycle.md 2>/dev/null
-cat .opencode/skills/custom-tools-dev/references/zod-patterns.md 2>/dev/null
+cat .opencode/skills/hivefiver-custom-tools-dev/references/plugin-lifecycle.md 2>/dev/null
+cat .opencode/skills/hivefiver-custom-tools-dev/references/zod-patterns.md 2>/dev/null
 ```
 
 ### Step 2: Parse the Request

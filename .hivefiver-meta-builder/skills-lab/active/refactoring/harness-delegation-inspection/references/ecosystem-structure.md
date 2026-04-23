@@ -20,7 +20,7 @@ The Hivefiver ecosystem is NOT a collection of individual files. It's a **pipeli
 ## The Pipeline
 
 ```
-.hivefiver-meta-builder/**-lab/     ← Source of truth (edit here)
+.hivefiver-hm-meta-builder/**-lab/     ← Source of truth (edit here)
         ↓ symlinks
 .opencode/{agents,commands,skills}/  ← Live testing (OpenCode reads here)
         ↓ when validated
@@ -31,11 +31,11 @@ TS runtime builder (opencode-harness) ← Final shipping format
 
 | `.opencode/` path | → Lab directory |
 |---|---|
-| `.opencode/agents/` | `../.hivefiver-meta-builder/agents-lab/active/refactoring/` |
-| `.opencode/commands/` | `../.hivefiver-meta-builder/commands-lab/active/refactoring/` |
-| `.opencode/skills/` | `../.hivefiver-meta-builder/skills-lab/active/refactoring/` |
-| `.opencode/hivefiver/workflows/` | `../../.hivefiver-meta-builder/workflows-lab/active/refactoring/` |
-| `.opencode/hivefiver/references/` | `../../.hivefiver-meta-builder/references-lab/active/refactoring/` |
+| `.opencode/agents/` | `../.hivefiver-hm-meta-builder/agents-lab/active/refactoring/` |
+| `.opencode/commands/` | `../.hivefiver-hm-meta-builder/commands-lab/active/refactoring/` |
+| `.opencode/skills/` | `../.hivefiver-hm-meta-builder/skills-lab/active/refactoring/` |
+| `.opencode/hivefiver/workflows/` | `../../.hivefiver-hm-meta-builder/workflows-lab/active/refactoring/` |
+| `.opencode/hivefiver/references/` | `../../.hivefiver-hm-meta-builder/references-lab/active/refactoring/` |
 
 **Edit in labs → instantly visible via `.opencode/` symlinks for live testing.**
 
@@ -44,7 +44,7 @@ TS runtime builder (opencode-harness) ← Final shipping format
 ## Lab Structure
 
 ```
-.hivefiver-meta-builder/
+.hivefiver-hm-meta-builder/
 ├── agents-lab/
 │   ├── active/refactoring/          ← Agent definitions (source of truth)
 │   └── orchestrator/                ← Coordinator definitions
@@ -142,25 +142,25 @@ TS runtime builder (opencode-harness) ← Final shipping format
 
 | Skill | Pattern | Purpose |
 |-------|---------|---------|
-| **agent-authorization** | P1 | Authorization framework with checkpoint gates |
-| **agents-and-subagents-dev** | P2 | Agent architecture and subagent dispatch |
-| **command-dev** | P2 | Command structure and non-interactive shell |
-| **command-parser** | P1 | $ARGUMENT parsing |
-| **coordinating-loop** | P2 | Multi-agent coordination with validation gates |
-| **custom-tools-dev** | P2 | Plugin SDK and custom tool architecture |
-| **harness-audit** | P1 | OpenCode project audit orchestrator |
-| **meta-builder** | P1 | Routing brain for meta-concept requests |
-| **oh-my-openagent-reference** | P3 | Full OpenCode repo reference |
-| **opencode-non-interactive-shell** | P1 | Shell safety patterns |
-| **opencode-platform-reference** | P3 | Complete platform documentation |
-| **phase-loop** | P1 | Iterative phase execution |
-| **planning-with-files** | P1 | 3-file external memory system |
+| **hivefiver-delegation-gates** | P1 | Authorization framework with checkpoint gates |
+| **hivefiver-hivefiver-agents-and-subagents-dev** | P2 | Agent architecture and subagent dispatch |
+| **hivefiver-hivefiver-command-dev** | P2 | Command structure and non-interactive shell |
+| **hm-hm-command-parser** | P1 | $ARGUMENT parsing |
+| **hm-hm-coordinating-loop** | P2 | Multi-agent coordination with validation gates |
+| **hivefiver-custom-tools-dev** | P2 | Plugin SDK and custom tool architecture |
+| **hm-opencode-project-audit** | P1 | OpenCode project audit orchestrator |
+| **hm-meta-builder** | P1 | Routing brain for meta-concept requests |
+| **hm-omo-reference** | P3 | Full OpenCode repo reference |
+| **hm-opencode-non-interactive-shell** | P1 | Shell safety patterns |
+| **hm-opencode-platform-reference** | P3 | Complete platform documentation |
+| **hm-phase-loop** | P1 | Iterative phase execution |
+| **hm-planning-with-files** | P1 | 3-file external memory system |
 | **repomix-exploration-guide** | P1 | Repomix cheat sheet |
 | **repomix-explorer** | P1 | Repomix CLI usage |
 | **session-context-manager** | P2 | Session persistence across phases |
-| **skill-synthesis** | P3 | GitHub ingestion → skill generation |
-| **use-authoring-skills** | P3 | Skill authoring principles |
-| **user-intent-interactive-loop** | P2 | Intent clarification and delegation |
+| **hm-skill-synthesis** | P3 | GitHub ingestion → skill generation |
+| **hivefiver-use-authoring-skills** | P3 | Skill authoring principles |
+| **hm-user-intent-interactive-loop** | P2 | Intent clarification and delegation |
 
 ---
 
@@ -176,7 +176,7 @@ TS runtime builder (opencode-harness) ← Final shipping format
 
 ## Testing Workflow
 
-1. **Edit in labs** — `.hivefiver-meta-builder/**-lab/active/refactoring/`
+1. **Edit in labs** — `.hivefiver-hm-meta-builder/**-lab/active/refactoring/`
 2. **Test via symlinks** — `.opencode/` resolves to lab directories
 3. **Validate** — Run OpenCode commands, verify agents load, check skill triggers
 4. **Commit** — Changes in labs are committed to git
@@ -191,7 +191,7 @@ If interrupted:
 2. `cd` to the right worktree
 3. `git status` — see what was in progress
 4. `git log --oneline -5` — see recent commits
-5. Read `.hivefiver-meta-builder/plans/` for current plans
+5. Read `.hivefiver-hm-meta-builder/plans/` for current plans
 6. Resume from where you left off
 
 ---

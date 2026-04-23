@@ -63,6 +63,8 @@ Recent GSD commits:
   3. ghi9012 fix(02-03): correct validation logic
 ```
 
+
+**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `{{GSD_ARGS}}` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `conversational prompting` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `conversational prompting` is not available.
 Use conversational prompting to ask:
 - question: "Which commits to revert? Enter numbers (e.g., 1,3) or 'all'"
 - header: "Select"
@@ -277,7 +279,7 @@ Show next steps:
 ```
 ───────────────────────────────────────────────────────────────
 
-## ▶ Next Up
+## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
 
 **Review state** — verify project is in expected state after revert
 

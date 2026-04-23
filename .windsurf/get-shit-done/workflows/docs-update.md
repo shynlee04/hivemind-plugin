@@ -14,9 +14,9 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 Load docs-update context:
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" docs-init)
+INIT=$(gsd-sdk query docs-init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" agent-skills gsd-doc-writer 2>/dev/null)
+AGENT_SKILLS=$(gsd-sdk query agent-skills gsd-doc-writer 2>/dev/null)
 ```
 
 Extract from init JSON:
@@ -84,6 +84,8 @@ Assemble the complete doc queue from always-on docs plus conditional docs from c
 If CONTRIBUTING.md is in the conditional queue AND does NOT appear in the `existing_docs` array from init JSON:
 
 1. If `--force` is present in `{{GSD_ARGS}}`: skip this check, include CONTRIBUTING.md in the queue.
+
+**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `{{GSD_ARGS}}` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `conversational prompting` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `conversational prompting` is not available.
 2. Otherwise, use conversational prompting to confirm:
 
 ```
@@ -1052,7 +1054,7 @@ Only run this step if `commit_docs` is `true` from the init JSON. If `commit_doc
 Assemble the list of files that were actually generated (do not include files that failed or were skipped):
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" commit "docs: generate project documentation" \
+gsd-sdk query commit "docs: generate project documentation" \
   --files README.md docs/ARCHITECTURE.md docs/CONFIGURATION.md docs/GETTING-STARTED.md docs/DEVELOPMENT.md docs/TESTING.md
 # Append any conditional docs that were generated:
 # --files ... docs/API.md docs/DEPLOYMENT.md CONTRIBUTING.md

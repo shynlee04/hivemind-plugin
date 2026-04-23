@@ -2,7 +2,6 @@
 description: "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
 mode: primary
 instruction: [.opencode/rules/universal-rules.md, .opencode/rules/commit-governance.md, .opencode/rules/anti-patterns.md, opencode/rules/coordinator-rules.md,.opencode/rules/execution-loop.md,.opencode/rules/skill-activation.md]
-model: opencode-go/kimi-k2.6
 permission:
   read:
     "*": deny
@@ -14,39 +13,57 @@ permission:
     "*.md": allow
   write:
     "*": deny
+    "*.json": allow
+    "*.md": allow
   bash:
     "*": allow
     "git status*": allow
     "git diff*": allow
     "git log*": allow
     "ls*": allow
-  task: allow
+  question: allow
+  apply_patch: allow
+  lsp: allow
+  todowrite: allow
+  todoread: allow
+  plan: allow
+  switch_mode: allow
+  patch: allow
+  task: 
+    "*": allow
+    "gsd-*": allow
+  delegate:
+    "*": allow
+    "gsd-*": allow
+  delegate-task:
+    "*": allow
+    "gsd-*": allow
   skill:
     "*": allow
     "hm-*": allow
+    "gsd-*": allow
     "hm-deep-research": allow
     "hm-detective": allow
     "hm-synthesis": allow
-    "meta-builder": allow
+    "hm-meta-builder": allow
     "hivefiver": allow
-    "planning-with-files": allow
-    "coordinating-loop": allow
-    "use-authoring-skills": allow
-    "user-intent-interactive-loop": allow
-    "opencode-platform-reference": allow
+    "hm-planning-with-files": allow
+    "hm-coordinating-loop": allow
+    "hivefiver-use-authoring-skills": allow
+    "hm-user-intent-interactive-loop": allow
+    "hm-opencode-platform-reference": allow
     "repomix-exploration-guide": allow
-    "opencode-non-interactive-shell": allow
+    "hm-opencode-non-interactive-shell": allow
     "repomix-explorer": allow
-    "skill-synthesis": allow
-    "agents-and-subagents-dev": allow
-    "command-dev": allow
-    "custom-tools-dev": allow
+    "hm-skill-synthesis": allow
+    "hivefiver-agents-and-subagents-dev": allow
+    "hivefiver-command-dev": allow
+    "hivefiver-custom-tools-dev": allow
   patch: allow
   glob: allow
   grep: allow
   webfetch: allow
   websearch: allow
-step: 5
 ---
 
 <!-- HIERARCHY: This is the SINGLE PRIMARY ORCHESTRATOR for the workspace. All other orchestrator-named agents (conductor, orchestrator, hivefiver) are specialists under this coordinator. -->

@@ -93,6 +93,8 @@ No phase directories found to archive. Phases may have been removed or archived 
 
 Stop here.
 
+
+**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `{{GSD_ARGS}}` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `conversational prompting` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `conversational prompting` is not available.
 conversational prompting: "Proceed with archiving?" with options: "Yes — archive listed phases" | "Cancel"
 
 If "Cancel": Stop.
@@ -122,7 +124,7 @@ Repeat for all milestones in the cleanup set.
 Commit the changes:
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" commit "chore: archive phase directories from completed milestones" --files .planning/milestones/ .planning/phases/
+gsd-sdk query commit "chore: archive phase directories from completed milestones" .planning/milestones/ .planning/phases/
 ```
 
 </step>

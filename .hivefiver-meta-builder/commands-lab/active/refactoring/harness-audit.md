@@ -37,7 +37,7 @@ Dispatch Phases 1-4 in PARALLEL. Wait for all 4 reports. Then run Phase 5 to syn
 </delegation_plan>
 
 <instructions>
-1. Load the `harness-audit` skill — it contains the full dispatch envelopes for each phase.
+1. Load the `hm-opencode-project-audit` skill — it contains the full dispatch envelopes for each phase.
 2. Read the injected state above for current project snapshot.
 3. Dispatch 4 parallel subagents using the Task tool. Each subagent gets:
    - A constructed prompt (full task text, NOT a file reference)

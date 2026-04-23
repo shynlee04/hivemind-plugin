@@ -6,7 +6,7 @@ subtask: false
 
 Sync AGENTS.md files to match the current codebase:
 
-1. Load the `agents-md-sync` skill
+1. Load the `hm-agents-md-sync` skill
 2. Follow its scan → diff → apply workflow exactly:
    - **Phase 1 (Scan):** Gather ground truth from source files and .opencode/ directories
    - **Phase 2 (Diff):** Compare claims against reality, produce a structured drift report

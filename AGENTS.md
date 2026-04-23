@@ -4,6 +4,9 @@
 
 ## NOTICE BOARD
 
+- Please use the builtin `task` tool for delegation; `delegate-task` is on maintainance.
+
+- Do no use `delegate-task` unless explicitly requested by me (the user).
 
 
 ## IMPORTANT UPDATE TO ALL AGENTS
@@ -182,12 +185,12 @@ tests/tools/                   # Tool-focused unit tests
 - Plugin loaded via `.opencode/plugins/harness-control-plane.ts` (thin wrapper re-exporting `dist/`)
 - Config: `opencode.json` at repo root — references `AGENTS.md` as instructions
 - 57 agents in `.opencode/agents/`: 6 core (coordinator, conductor, researcher, builder, critic, explore) + 30+ GSD specialist agents + 21 hivefiver/meta agents
-- 22 skills in `.opencode/skills/`: 5 core (meta-builder, coordinating-loop, planning-with-files, use-authoring-skills, user-intent-interactive-loop) + 17 extended (agent-authorization, command-dev, custom-tools-dev, harness-audit, hm-deep-research, hm-detective, hm-synthesis, hf-context-absorb, gsd-agent-composition, agents-and-subagents-dev, command-parser, harness-delegation-inspection, oh-my-openagent-reference, opencode-non-interactive-shell, opencode-platform-reference, session-context-manager, phase-loop)
-- 13 commands in `.opencode/commands/`: 6 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack, harness-audit)
+- 22 skills in `.opencode/skills/`: 5 core (hm-meta-builder, hm-coordinating-loop, hm-planning-with-files, hivefiver-use-authoring-skills, hm-user-intent-interactive-loop) + 17 extended (hivefiver-delegation-gates, hivefiver-command-dev, hivefiver-custom-tools-dev, hm-opencode-project-audit, hm-deep-research, hm-detective, hm-synthesis, hivefiver-context-absorb, hm-agent-composition, hivefiver-agents-and-subagents-dev, hm-command-parser, harness-delegation-inspection, hm-omo-reference, hm-opencode-non-interactive-shell, hm-opencode-platform-reference, session-context-manager, hm-phase-loop)
+- 13 commands in `.opencode/commands/`: 6 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack, hm-opencode-project-audit)
 
 ### Canonical Skill Location
 
-`.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-meta-builder/skills-lab/active/refactoring/` and is reflected in `.opencode/skills/` via directory-level symlink.
+`.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-hm-meta-builder/skills-lab/active/refactoring/` and is reflected in `.opencode/skills/` via directory-level symlink.
 
 IDE-managed directories (`.trae/skills/`, `.windsurf/skills/`, `.codex/skills/`, `.github/skills/`) are **third-party sync artifacts**, not project deliverables. They are gitignored and must never be committed. `.claude/skills/` does not exist in this repository.
 

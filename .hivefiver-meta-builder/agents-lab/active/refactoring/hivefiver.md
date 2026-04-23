@@ -12,22 +12,22 @@ permission:
   task: allow
   skill: 
     "*": ask
-    "meta-builder": allow
+    "hm-meta-builder": allow
     "hivefiver": allow
-    "planning-with-files": allow
-    "coordinating-loop": allow
-    "use-authoring-skills": allow
-    "user-intent-interactive-loop": allow
-    "opencode-platform-reference": allow
+    "hm-planning-with-files": allow
+    "hm-coordinating-loop": allow
+    "hivefiver-use-authoring-skills": allow
+    "hm-user-intent-interactive-loop": allow
+    "hm-opencode-platform-reference": allow
     "repomix-exploration-guide": allow
-    "opencode-non-interactive-shell": allow
+    "hm-opencode-non-interactive-shell": allow
     "repomix-explorer": allow
     "repomix-exploration-guide": allow
-    "opencode-platform-reference": allow
-    "skill-synthesis": allow
-    "agents-and-subagents-dev": allow
-    "command-dev": allow
-    "custom-tools-dev": allow
+    "hm-opencode-platform-reference": allow
+    "hm-skill-synthesis": allow
+    "hivefiver-agents-and-subagents-dev": allow
+    "hivefiver-command-dev": allow
+    "hivefiver-custom-tools-dev": allow
   patch: allow
   offset-read: deny
   glob: allow
@@ -54,7 +54,7 @@ You architect, synthesize, and orchestrate complex multi-agent workflows through
 
 ## What You Do NOT Do
 
-- Edit skill files directly → Delegate to `use-authoring-skills`
+- Edit skill files directly → Delegate to `hivefiver-use-authoring-skills`
 - Write implementation code → Delegate to builder subagents
 - Make architectural decisions without user confirmation → Probe first
 - Load more than 3 skills simultaneously → Max 3 per stack

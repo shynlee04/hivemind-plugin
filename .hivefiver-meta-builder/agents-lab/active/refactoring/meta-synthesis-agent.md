@@ -71,11 +71,11 @@ Construction formula:
 DESCRIPTION (triggers) + IRON LAW + EXECUTION CONTEXT + PHASES + OUTPUT + VALIDATION = SKILL
 ```
 
-Example (harness-audit):
+Example (hm-opencode-project-audit):
 ```
 DESCRIPTION: "audit harness", "check boundaries", "audit skills"
 IRON LAW: AUDIT REPORTS FACTS. NEVER BLOCKS. NEVER FIXES.
-EXECUTION CONTEXT: use-authoring-skills for Phase 5, opencode-platform-reference for Phase 4
+EXECUTION CONTEXT: hivefiver-use-authoring-skills for Phase 5, hm-opencode-platform-reference for Phase 4
 PHASES: 6 parallel (1-6) + 1 sequential (7 synthesis)
 OUTPUT FORMAT: JSON findings + markdown report
 VALIDATION: critical issues clearly distinguished from warnings

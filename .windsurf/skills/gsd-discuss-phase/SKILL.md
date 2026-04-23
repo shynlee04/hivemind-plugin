@@ -1,6 +1,6 @@
 ---
 name: gsd-discuss-phase
-description: "Gather phase context through adaptive questioning before planning. Use --auto to skip interactive questions (Claude picks recommended defaults). Use --chain for interactive disc..."
+description: "Gather phase context through adaptive questioning before planning. Use --all to skip area selection and discuss all gray areas interactively. Use --auto to skip interactive ques..."
 ---
 
 <windsurf_skill_adapter>
@@ -61,7 +61,7 @@ Context files are resolved in-workflow using `init phase-op` and roadmap/state t
 <process>
 **Mode routing:**
 ```bash
-DISCUSS_MODE=$(node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
+DISCUSS_MODE=$(gsd-sdk query config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
 ```
 
 If `DISCUSS_MODE` is `"assumptions"`: Read and execute @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/workflows/discuss-phase-assumptions.md end-to-end.

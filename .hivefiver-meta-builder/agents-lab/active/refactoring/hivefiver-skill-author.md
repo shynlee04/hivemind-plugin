@@ -23,10 +23,10 @@ permission:
   task: deny
   skill:
     "*": deny
-    "use-authoring-skills": allow
+    "hivefiver-use-authoring-skills": allow
     "skill-judge": allow      # global skill at ~/.agents/skills/skill-judge/
     "skill-creator": allow    # global skill at ~/.agents/skills/skill-creator/
-    "opencode-platform-reference": allow
+    "hm-opencode-platform-reference": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -51,13 +51,13 @@ The description is the ONLY thing the agent sees before deciding to load a skill
 **Every time you are spawned, run this FIRST:**
 
 ```bash
-# Load the use-authoring-skills skill content
+# Load the hivefiver-use-authoring-skills skill content
 # Read its references for pattern guidance
-ls .opencode/skills/use-authoring-skills/references/ 2>/dev/null
-ls .skills-lab/active/refactoring-skills/use-authoring-skills/references/ 2>/dev/null
+ls .opencode/skills/hivefiver-use-authoring-skills/references/ 2>/dev/null
+ls .skills-lab/active/refactoring-skills/hivefiver-use-authoring-skills/references/ 2>/dev/null
 ```
 
-Read the use-authoring-skills SKILL.md and its references/03-three-patterns.md for pattern selection guidance.
+Read the hivefiver-use-authoring-skills SKILL.md and its references/03-three-patterns.md for pattern selection guidance.
 
 ## Execution Flow
 

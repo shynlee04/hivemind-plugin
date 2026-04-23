@@ -4,7 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { escapeRegex, getMilestonePhaseFilter, extractOneLinerFromBody, normalizeMd, planningPaths, output, error } = require('./core.cjs');
+const { escapeRegex, getMilestonePhaseFilter, extractOneLinerFromBody, normalizeMd, planningPaths, output, error, atomicWriteFileSync } = require('./core.cjs');
 const { extractFrontmatter } = require('./frontmatter.cjs');
 const { writeStateMd, stateReplaceFieldWithFallback } = require('./state.cjs');
 
@@ -41,29 +41,30 @@ function cmdRequirementsMarkComplete(cwd, reqIdsRaw, raw) {
     const reqEscaped = escapeRegex(reqId);
 
     // Update checkbox: - [ ] **REQ-ID** → - [x] **REQ-ID**
+    // Use replace() directly and compare — avoids test()+replace() global regex
+    // lastIndex bug where test() advances state and replace() misses matches.
     const checkboxPattern = new RegExp(`(-\\s*\\[)[ ](\\]\\s*\\*\\*${reqEscaped}\\*\\*)`, 'gi');
-    if (checkboxPattern.test(reqContent)) {
-      reqContent = reqContent.replace(checkboxPattern, '$1x$2');
+    const afterCheckbox = reqContent.replace(checkboxPattern, '$1x$2');
+    if (afterCheckbox !== reqContent) {
+      reqContent = afterCheckbox;
       found = true;
     }
 
     // Update traceability table: | REQ-ID | Phase N | Pending | → | REQ-ID | Phase N | Complete |
     const tablePattern = new RegExp(`(\\|\\s*${reqEscaped}\\s*\\|[^|]+\\|)\\s*Pending\\s*(\\|)`, 'gi');
-    if (tablePattern.test(reqContent)) {
-      // Re-read since test() advances lastIndex for global regex
-      reqContent = reqContent.replace(
-        new RegExp(`(\\|\\s*${reqEscaped}\\s*\\|[^|]+\\|)\\s*Pending\\s*(\\|)`, 'gi'),
-        '$1 Complete $2'
-      );
+    const afterTable = reqContent.replace(tablePattern, '$1 Complete $2');
+    if (afterTable !== reqContent) {
+      reqContent = afterTable;
       found = true;
     }
 
     if (found) {
       updated.push(reqId);
     } else {
-      // Check if already complete before declaring not_found
-      const doneCheckbox = new RegExp(`-\\s*\\[x\\]\\s*\\*\\*${reqEscaped}\\*\\*`, 'gi');
-      const doneTable = new RegExp(`\\|\\s*${reqEscaped}\\s*\\|[^|]+\\|\\s*Complete\\s*\\|`, 'gi');
+      // Check if already complete before declaring not_found.
+      // Non-global flag is fine here — we only need to know if a match exists.
+      const doneCheckbox = new RegExp(`-\\s*\\[x\\]\\s*\\*\\*${reqEscaped}\\*\\*`, 'i');
+      const doneTable = new RegExp(`\\|\\s*${reqEscaped}\\s*\\|[^|]+\\|\\s*Complete\\s*\\|`, 'i');
       if (doneCheckbox.test(reqContent) || doneTable.test(reqContent)) {
         alreadyComplete.push(reqId);
       } else {
@@ -73,7 +74,7 @@ function cmdRequirementsMarkComplete(cwd, reqIdsRaw, raw) {
   }
 
   if (updated.length > 0) {
-    fs.writeFileSync(reqPath, reqContent, 'utf-8');
+    atomicWriteFileSync(reqPath, reqContent);
   }
 
   output({
@@ -177,21 +178,21 @@ function cmdMilestoneComplete(cwd, version, options, raw) {
     const existing = fs.readFileSync(milestonesPath, 'utf-8');
     if (!existing.trim()) {
       // Empty file — treat like new
-      fs.writeFileSync(milestonesPath, normalizeMd(`# Milestones\n\n${milestoneEntry}`), 'utf-8');
+      atomicWriteFileSync(milestonesPath, normalizeMd(`# Milestones\n\n${milestoneEntry}`));
     } else {
       // Insert after the header line(s) for reverse chronological order (newest first)
       const headerMatch = existing.match(/^(#{1,3}\s+[^\n]*\n\n?)/);
       if (headerMatch) {
         const header = headerMatch[1];
         const rest = existing.slice(header.length);
-        fs.writeFileSync(milestonesPath, normalizeMd(header + milestoneEntry + rest), 'utf-8');
+        atomicWriteFileSync(milestonesPath, normalizeMd(header + milestoneEntry + rest));
       } else {
         // No recognizable header — prepend the entry
-        fs.writeFileSync(milestonesPath, normalizeMd(milestoneEntry + existing), 'utf-8');
+        atomicWriteFileSync(milestonesPath, normalizeMd(milestoneEntry + existing));
       }
     }
   } else {
-    fs.writeFileSync(milestonesPath, normalizeMd(`# Milestones\n\n${milestoneEntry}`), 'utf-8');
+    atomicWriteFileSync(milestonesPath, normalizeMd(`# Milestones\n\n${milestoneEntry}`));
   }
 
   // Update STATE.md — use shared helpers that handle both **bold:** and plain Field: formats

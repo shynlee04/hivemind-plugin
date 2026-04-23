@@ -158,6 +158,6 @@ Append this block to every subagent prompt before dispatching work. This is the 
 
 | Related Skill | Boundary |
 |---------------|----------|
-| `planning-with-files` | planning-with-files owns task-level planning files (task_plan.md, findings.md, progress.md). This skill owns session-level context (phase tracking, checkpoint schema, context propagation). |
-| `phase-loop` | phase-loop owns iterative loop semantics. This skill owns the context schema that loop iterations read/write. |
-| `coordinating-loop` | coordinating-loop dispatches agents across phases. This skill provides the context persistence those agents use. |
+| `hm-planning-with-files` | hm-planning-with-files owns task-level planning files (task_plan.md, findings.md, progress.md). This skill owns session-level context (phase tracking, checkpoint schema, context propagation). |
+| `hm-phase-loop` | hm-phase-loop owns iterative loop semantics. This skill owns the context schema that loop iterations read/write. |
+| `hm-coordinating-loop` | hm-coordinating-loop dispatches agents across phases. This skill provides the context persistence those agents use. |

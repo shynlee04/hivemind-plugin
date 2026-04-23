@@ -1,6 +1,6 @@
 ---
 name: phase-guardian
-description: "Specialist for phase guardrails and loop termination. Use when managing intra-phase iterations, validating completion criteria, enforcing authorization gates, or determining phase exit. Triggers on: 'guardrail loops', 'phase exit decision', 'validate completion', 'max iterations reached', 'checkpoint authorization'. Invoked by phase-loop skill as loop enforcement executor."
+description: "Specialist for phase guardrails and loop termination. Use when managing intra-phase iterations, validating completion criteria, enforcing authorization gates, or determining phase exit. Triggers on: 'guardrail loops', 'phase exit decision', 'validate completion', 'max iterations reached', 'checkpoint authorization'. Invoked by hm-phase-loop skill as loop enforcement executor."
 mode: subagent
 temperature: 0.25
 steps: 60
@@ -18,8 +18,8 @@ permission:
   delegate-task: deny
   skill:
     "*": deny
-    "agent-authorization": allow
-    "use-authoring-skills": allow
+    "hivefiver-delegation-gates": allow
+    "hivefiver-use-authoring-skills": allow
   glob: allow
   grep: allow
   webfetch: deny
@@ -52,7 +52,7 @@ On entering a new phase, extract and record:
 
 ### Step 2: Authorization Gate Check
 
-Before any task action, enforce all 4 gates using the agent-authorization skill:
+Before any task action, enforce all 4 gates using the hivefiver-delegation-gates skill:
 
 ```
 ⛩ GATE SEQUENCE — [Phase N]

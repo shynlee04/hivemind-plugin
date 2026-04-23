@@ -19,9 +19,9 @@ permission:
   delegate-task: allow
   skill:
     "*": deny
-    "coordinating-loop": allow
-    "use-authoring-skills": allow
-    "planning-with-files": allow
+    "hm-coordinating-loop": allow
+    "hivefiver-use-authoring-skills": allow
+    "hm-planning-with-files": allow
   read:
     "*": deny
     "*.md": allow

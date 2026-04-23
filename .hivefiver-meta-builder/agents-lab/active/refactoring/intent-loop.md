@@ -24,7 +24,7 @@ permission:
   skill:
     "*": ask
     "brainstorming": allow
-    "use-authoring-skills": allow
+    "hivefiver-use-authoring-skills": allow
   glob: allow
   grep: allow
   webfetch: deny
@@ -178,7 +178,7 @@ Iteration N:
 
 This agent uses:
 - **brainstorming**: For structured questioning and user journey mapping
-- **use-authoring-skills**: For spec creation and accessible writing
+- **hivefiver-use-authoring-skills**: For spec creation and accessible writing
 
 ## Output Contract
 

@@ -863,3 +863,43 @@ src/
 | `src/shared/`, `src/schema-kernel/`, `src/kernel/`, `src/harness/` disposition | Requires Phase 1 analysis to determine if they merge into target modules or remain as-is |
 | `src/cli/` refactor | Explicitly excluded — AS-IS per clarification |
 | Pattern language selection (Factory vs Abstract Factory) | Deferred to implementation phase
+
+---
+
+# V4 PROMPT-ENHANCE PIPELINE COMPLETION — 2026-04-23
+
+## Pipeline Status: COMPLETE
+
+**Phases executed:** skim → bridge → investigation (3 parallel lanes) → clarification (3 questions, all answered) → repackage → session-patch
+
+### Skim Results
+- complexity_score: 8/10
+- flooding_risk: HIGH
+- key_findings: 14 absolute claims, 8 ambiguity flags, 0 URLs
+- verdict: COMPLEX
+
+### Investigation Lane Findings
+- Lane 1 (Critic): 2 critical + 5 high + 4 medium contradictions identified; clarity 55/100
+- Lane 2 (Context): 24 skills verified, symlinks are real dirs (drift risk), only 5/24 have evals
+- Lane 3 (Risk): HIGH overall risk, 4 blockers identified, recommended 5-phase decomposition
+
+### Clarification Answers
+- Q1: Playbook phases retained, mapped as GSD continuation (offset from phase 17+)
+- Q2: Skills bridge soft→hard; serve both Hivefiver and Hiveminder with graduation path
+- Q3: GSD stays first-class; ALL builtin skills get hm-* suffix; runtime compilation model for third-party framework selection
+
+### Architectural Decisions
+1. hm-* Suffix Mandate — all 23 builtin skills renamed with hm- prefix
+2. Runtime Compilation Model — skills register third-party frameworks as selectable options
+3. Soft→Hard Bridge — validated skills enable limited non-breaking config extensions
+4. GSD Phase Mapping — playbook Phase 0-5 become continuation phases 17-22
+
+### Output Artifact
+- Enhanced prompt: `.hivemind/state/session-context-prompt-v4.md` (598 lines)
+
+### Blockers for Next Session
+1. Symlinks broken (real dirs, not symlinks to lab)
+2. Stale audit artifacts (14 days old)
+3. 19/23 skills missing evals
+4. oh-my-openagent-reference 11MB context bomb
+5. 5+ duplicate skills across .claude/ and .opencode/

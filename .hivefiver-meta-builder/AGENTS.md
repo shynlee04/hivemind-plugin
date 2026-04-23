@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Hivefiver is the **meta-builder module** of the HiveMind Framework. It creates, audits, stacks, and extends OpenCode soft concepts: skills, agents, commands, tools, workflows, and references.
+Hivefiver is the **hm-meta-builder module** of the HiveMind Framework. It creates, audits, stacks, and extends OpenCode soft concepts: skills, agents, commands, tools, workflows, and references.
 
 **This is NOT a project-builder.** That's Hiveminder's domain. Hivefiver builds the building blocks.
 
@@ -26,7 +26,7 @@ Hivefiver is the **meta-builder module** of the HiveMind Framework. It creates, 
 ### Testing → Shipping Pipeline
 
 ```
-.hivefiver-meta-builder/**-lab/  ← Source of truth (edit here)
+.hivefiver-hm-meta-builder/**-lab/  ← Source of truth (edit here)
         ↓ symlinks
 .opencode/{agents,commands,skills,hivefiver}/  ← Live testing (OpenCode reads here)
         ↓ when validated
@@ -38,7 +38,7 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 ## Lab Structure
 
 ```
-.hivefiver-meta-builder/
+.hivefiver-hm-meta-builder/
 ├── agents-lab/active/refactoring/     ← Agent definitions (source of truth)
 ├── commands-lab/active/refactoring/   ← Command definitions (source of truth)
 ├── skills-lab/active/refactoring/     ← Skill packages (source of truth)
@@ -52,11 +52,11 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 
 | `.opencode/` path | → Lab directory |
 |---|---|
-| `.opencode/agents/` | `../.hivefiver-meta-builder/agents-lab/active/refactoring/` |
-| `.opencode/commands/` | `../.hivefiver-meta-builder/commands-lab/active/refactoring/` |
-| `.opencode/skills/` | `../.hivefiver-meta-builder/skills-lab/active/refactoring/` |
-| `.opencode/hivefiver/workflows/` | `../../.hivefiver-meta-builder/workflows-lab/active/refactoring/` |
-| `.opencode/hivefiver/references/` | `../../.hivefiver-meta-builder/references-lab/active/refactoring/` |
+| `.opencode/agents/` | `../.hivefiver-hm-meta-builder/agents-lab/active/refactoring/` |
+| `.opencode/commands/` | `../.hivefiver-hm-meta-builder/commands-lab/active/refactoring/` |
+| `.opencode/skills/` | `../.hivefiver-hm-meta-builder/skills-lab/active/refactoring/` |
+| `.opencode/hivefiver/workflows/` | `../../.hivefiver-hm-meta-builder/workflows-lab/active/refactoring/` |
+| `.opencode/hivefiver/references/` | `../../.hivefiver-hm-meta-builder/references-lab/active/refactoring/` |
 
 **Edit in labs → instantly visible via `.opencode/` symlinks for live testing.**
 
@@ -204,7 +204,7 @@ Task tool (<specialist>):
 
 ## Testing Workflow
 
-1. **Edit in labs** — `.hivefiver-meta-builder/**-lab/active/refactoring/`
+1. **Edit in labs** — `.hivefiver-hm-meta-builder/**-lab/active/refactoring/`
 2. **Test via symlinks** — `.opencode/` resolves to lab directories
 3. **Validate** — Run OpenCode commands, verify agents load, check skill triggers
 4. **Commit** — Changes in labs are committed to git
@@ -219,5 +219,5 @@ If interrupted:
 2. `cd` to the right worktree
 3. `git status` — see what was in progress
 4. `git log --oneline -5` — see recent commits
-5. Read `.hivefiver-meta-builder/plans/` for current plans
+5. Read `.hivefiver-hm-meta-builder/plans/` for current plans
 6. Resume from where you left off

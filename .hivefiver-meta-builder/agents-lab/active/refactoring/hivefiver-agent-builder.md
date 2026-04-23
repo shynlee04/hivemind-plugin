@@ -22,9 +22,9 @@ permission:
   task: deny
   skill:
     "*": deny
-    "agents-and-subagents-dev": allow
-    "opencode-platform-reference": allow
-    "opencode-non-interactive-shell": allow
+    "hivefiver-agents-and-subagents-dev": allow
+    "hm-opencode-platform-reference": allow
+    "hm-opencode-non-interactive-shell": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -91,8 +91,8 @@ permission:
   task: allow                          # allow spawning subagents
   skill:                               # skill-name matching
     "*": deny                          # default: deny all
-    "meta-builder": allow              # allow specific skills
-    "command-dev": allow
+    "hm-meta-builder": allow              # allow specific skills
+    "hivefiver-command-dev": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -150,9 +150,9 @@ trigger_phrases:            # ❌ INVALID — not a frontmatter field
 **Every time you are spawned, run this FIRST:**
 
 ```bash
-# Load the agents-and-subagents-dev skill content
-ls .opencode/skills/agents-and-subagents-dev/ 2>/dev/null
-ls .skills-lab/active/refactoring-skills/agents-and-subagents-dev/ 2>/dev/null
+# Load the hivefiver-agents-and-subagents-dev skill content
+ls .opencode/skills/hivefiver-agents-and-subagents-dev/ 2>/dev/null
+ls .skills-lab/active/refactoring-skills/hivefiver-agents-and-subagents-dev/ 2>/dev/null
 
 # Check existing agents
 ls .opencode/agents/ 2>/dev/null
@@ -163,7 +163,7 @@ git status --short
 git log --oneline -3
 ```
 
-Read the agents-and-subagents-dev SKILL.md and its references for delegation protocol and worktree control patterns.
+Read the hivefiver-agents-and-subagents-dev SKILL.md and its references for delegation protocol and worktree control patterns.
 
 ## Execution Flow
 
@@ -173,7 +173,7 @@ Read the agents-and-subagents-dev SKILL.md and its references for delegation pro
 ls .opencode/agents/ 2>/dev/null
 
 # Check OpenCode platform reference for agent patterns
-ls .opencode/skills/opencode-platform-reference/references/ 2>/dev/null
+ls .opencode/skills/hm-opencode-platform-reference/references/ 2>/dev/null
 
 # Read existing agent examples for pattern matching
 cat .opencode/agents/*.md 2>/dev/null | head -100

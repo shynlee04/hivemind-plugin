@@ -58,7 +58,7 @@ Normalize phase input in step 1 before any directory lookups.
 ## 0. Initialize Context
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" init phase-op "{{GSD_ARGS}}")
+INIT=$(gsd-sdk query init.phase-op "{{GSD_ARGS}}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -66,13 +66,13 @@ Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`, `phase_found`
 
 Resolve researcher model:
 ```bash
-RESEARCHER_MODEL=$(node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-phase-researcher --raw)
+RESEARCHER_MODEL=$(gsd-sdk query resolve-model gsd-phase-researcher --raw)
 ```
 
 ## 1. Validate Phase
 
 ```bash
-PHASE_INFO=$(node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.windsurf/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${phase_number}")
+PHASE_INFO=$(gsd-sdk query roadmap.get-phase "${phase_number}")
 ```
 
 **If `found` is false:** Error and exit. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.

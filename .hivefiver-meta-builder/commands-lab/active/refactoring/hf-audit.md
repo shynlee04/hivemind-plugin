@@ -11,7 +11,7 @@ Acts as the diagnostic entry point. Scans all meta-concepts, runs validators, pr
 </objective>
 
 <execution_context>
-@.hivefiver-meta-builder/workflows-lab/active/refactoring/audit.md
+@.hivefiver-hm-meta-builder/workflows-lab/active/refactoring/audit.md
 </execution_context>
 
 <context>
@@ -19,6 +19,6 @@ $ARGUMENTS
 </context>
 
 <process>
-Execute the audit workflow from @.hivefiver-meta-builder/workflows-lab/active/refactoring/audit.md end-to-end.
+Execute the audit workflow from @.hivefiver-hm-meta-builder/workflows-lab/active/refactoring/audit.md end-to-end.
 Preserve all workflow gates (scan, validate, overlap detection, report).
 </process>

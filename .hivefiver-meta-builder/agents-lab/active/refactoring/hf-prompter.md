@@ -10,14 +10,14 @@ permission:
   task: allow
   skill:
     "*": deny
-    "opencode-non-interactive-shell": allow
-    "meta-builder": allow
+    "hm-opencode-non-interactive-shell": allow
+    "hm-meta-builder": allow
     "hm-deep-research": allow
     "hm-detective": allow
     "hm-synthesis": allow
-    "use-authoring-skills": allow
-    "command-parser": allow
-    "planning-with-files": allow
+    "hivefiver-use-authoring-skills": allow
+    "hm-command-parser": allow
+    "hm-planning-with-files": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -59,7 +59,7 @@ You MUST classify every incoming task into one of three tiers BEFORE executing:
 For simple prompt optimization with no subagents needed.
 
 ### Workflow
-1. Load `opencode-non-interactive-shell` skill for shell safety
+1. Load `hm-opencode-non-interactive-shell` skill for shell safety
 2. Apply the Prompt Engineering Optimization Toolkit (below) directly
 3. Classify intent → select framework (RTF, CoT, RISEN, etc.)
 4. Transform the prompt

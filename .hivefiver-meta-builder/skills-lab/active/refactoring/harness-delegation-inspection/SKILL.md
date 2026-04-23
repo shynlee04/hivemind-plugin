@@ -132,7 +132,7 @@ cat docs/draft/architecture-proposal-hivemind-v3.md 2>/dev/null
 
 # Map project structure
 find .opencode/ -type f -name "*.md" | head -50
-find .hivefiver-meta-builder/ -type f -name "*.md" | head -50
+find .hivefiver-hm-meta-builder/ -type f -name "*.md" | head -50
 ```
 
 ### Domain-Specific Slices
@@ -197,6 +197,6 @@ For repo access:
 
 | Related Skill | Boundary |
 |---------------|----------|
-| `agents-and-subagents-dev` | agents-and-subagents-dev owns agent definitions and delegation envelope. This skill owns GSD-specific execution patterns (bash→parse→connect→launch→fail-resume). |
-| `coordinating-loop` | coordinating-loop owns general multi-agent dispatch. This skill owns the GSD-specific checkpoint resume and session ID tracking mechanisms. |
-| `planning-with-files` | planning-with-files owns task_plan.md/findings.md/progress.md. This skill inspects those files as part of project state inspection. |
+| `hivefiver-agents-and-subagents-dev` | hivefiver-agents-and-subagents-dev owns agent definitions and delegation envelope. This skill owns GSD-specific execution patterns (bash→parse→connect→launch→fail-resume). |
+| `hm-coordinating-loop` | hm-coordinating-loop owns general multi-agent dispatch. This skill owns the GSD-specific checkpoint resume and session ID tracking mechanisms. |
+| `hm-planning-with-files` | hm-planning-with-files owns task_plan.md/findings.md/progress.md. This skill inspects those files as part of project state inspection. |

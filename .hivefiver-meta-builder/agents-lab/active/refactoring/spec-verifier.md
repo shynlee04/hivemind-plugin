@@ -23,8 +23,8 @@ permission:
   task: deny
   skill:
     "*": deny
-    "use-authoring-skills": allow
-    "planning-with-files": allow
+    "hivefiver-use-authoring-skills": allow
+    "hm-planning-with-files": allow
   glob: allow
   grep: allow
   webfetch: deny
