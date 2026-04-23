@@ -9,6 +9,7 @@
  */
 import { asString, getNestedValue, isObject } from "../lib/helpers.js"
 import { getSessionContinuity, patchSessionContinuity } from "../lib/continuity.js"
+import { replayPendingNotifications } from "../lib/notification-handler.js"
 import { getEventSessionID } from "../lib/session-api.js"
 import { transformMessages } from "./messages-transform.js"
 import type { HookDependencies } from "./types.js"
@@ -67,9 +68,11 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       return
     }
 
-    // Clear pending notifications after replay attempt
     try {
-      patchSessionContinuity(sessionID, { pendingNotifications: [] })
+      const delivered = await replayPendingNotifications(deps.client, sessionID, pendingNotifications)
+      if (delivered) {
+        patchSessionContinuity(sessionID, { pendingNotifications: [] })
+      }
     } catch {
       // Best-effort replay
     }

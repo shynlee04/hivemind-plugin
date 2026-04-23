@@ -253,6 +253,21 @@ export async function notifyParentSession(
   return delivered
 }
 
+export async function replayPendingNotifications(
+  client: OpenCodeClient,
+  parentSessionID: string,
+  notifications: TaskNotification[],
+): Promise<boolean> {
+  for (const notification of notifications) {
+    const delivered = await notifyParentSession(client, parentSessionID, notification)
+    if (!delivered) {
+      return false
+    }
+  }
+
+  return true
+}
+
 /**
  * Fire-and-forget notification of a delegation's terminal state to its parent session.
  *
