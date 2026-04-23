@@ -380,7 +380,13 @@ Plans:
 - Zero IDE-directory modifications
 - Only soft meta-concept research artifacts
 
-**Plans:** 0 plans (not yet planned)
+**Plans:** 4 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — Wave 1: Ecosystem audit — CR-CONTEXT.md + CR-RESEARCH.md (fresh runtime probe, per-skill inventory, call-site mapping) [Wave 1]
+- [ ] 18-02-PLAN.md — Wave 2: 6-NON defence grid + differential cluster gap map — CR-AUDIT-ECOSYSTEM.md + CR-GAP-MAP.md (per-skill audit, missing skills, severity) [Wave 2]
+- [ ] 18-03-PLAN.md — Wave 3: Third-party pattern harvest + runtime-readiness — CR-THIRD-PARTY-HARVEST.md + CR-RUNTIME-READINESS.md (GSD/superpower patterns, Zod/SDK feasibility) [Wave 3]
+- [ ] 18-04-PLAN.md — Wave 4: Tooling decisions + verification + sign-off — CR-DECISIONS.md + CR-VERIFICATION.md + CR-DISCUSSION-LOG.md (decision table, exit criteria, user sign-off) [Wave 4]
 
 ---
 
