@@ -13,6 +13,17 @@ allowed-tools:
   - Glob
 ---
 
+## 6-NON Defence Table
+
+| NON | Defence |
+|-----|---------|
+| NON-1 | Repomix-generated from actual oh-my-openagent repo; references/summary.md explains scope and format; references/project-structure.md includes generation date (2026-04-23) |
+| NON-2 | Cross-References table maps boundaries to command-dev and platform-reference; Anti-Patterns table defines 4 misuse patterns that distinguish this skill from overlapping references |
+| NON-3 | "How to Use" defines 4-step entry workflow (find → read → search → raw); Anti-Patterns define misuse exit criteria (Memorizer, Full-Loader, Pattern Copier, Stale Citer) |
+| NON-4 | metadata.layer="3", role="reference", pattern="P2", version="1.0.0", context-bomb="true" declared; description has trigger exclusions |
+| NON-5 | Anti-Patterns table provides 4 eval scenarios (Memorizer, Full-Loader, Pattern Copier, Stale Citer) with Detection/Correction columns; references/ contains 5 structured docs for depth testing |
+| NON-6 | No scripts; version="1.0.0" and context-bomb metadata enforce reference discipline; repomix generation date in project-structure.md verifies freshness |
+
 # Oh My Openagent Reference
 
 Reference codebase for oh-my-openagent. The full repo is in `references/oh-my-openagent-full.xml`. Use repomix `attach_packed_output` or `grep_repomix_output` to explore.
