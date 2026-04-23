@@ -1,6 +1,13 @@
 ---
 name: hm-research-chain
-description: Orchestrate the canonical research chain: detect → research → synthesize → artifact. Use when starting a research task, chaining investigation skills, or producing a final artifact from multiple sources. NOT for single-source lookups or quick fact-checking.
+description: >
+  Orchestrate the canonical research chain: detect → research → synthesize → artifact.
+  Use when starting a research task, chaining investigation skills, producing a final artifact
+  from multiple sources, when the user needs comprehensive analysis, or when research needs
+  to be structured and repeatable. Even when the user says "look into this" or "find out about."
+  Triggers: "research", "investigate", "analysis", "deep dive", "comprehensive research",
+  "research chain", "multi-source", "synthesize findings".
+  NOT for single-source lookups or quick fact-checking.
 metadata:
   layer: "1"
   role: "orchestrator"
