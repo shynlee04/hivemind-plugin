@@ -174,8 +174,6 @@ These OpenCode built-in tools are the most powerful primitives for meta-builder 
 
 **When to use:** Before routing to a specialist, before committing changes, before loading skills beyond the max-3 limit.
 
-**Depth reference:** `references/depth-built-in-tools.md#question`
-
 ### `todowrite` — Track Progress Visibly
 
 **What it does:** Creates and updates task lists during complex operations.
@@ -192,8 +190,6 @@ These OpenCode built-in tools are the most powerful primitives for meta-builder 
 
 **Note:** Disabled for subagents by default. Enable manually when needed.
 
-**Depth reference:** `references/depth-built-in-tools.md#todowrite`
-
 ### `patch` — Apply Diffs Safely
 
 **What it does:** Applies patch files to your codebase. Controlled by the `edit` permission (along with `edit`, `write`, `multiedit`).
@@ -201,8 +197,6 @@ These OpenCode built-in tools are the most powerful primitives for meta-builder 
 **Why it matters:** When auditing and fixing skills across multiple files, patches are safer than full rewrites. They show exactly what changed.
 
 **When to use:** Applying critic review fixes, syncing lab changes to `.opencode/` copies, updating frontmatter across multiple skills.
-
-**Depth reference:** `references/depth-built-in-tools.md#patch`
 
 ### `grep` + `glob` — Find Before You Read
 
@@ -218,23 +212,17 @@ grep -r "description:" .opencode/skills/*/SKILL.md | grep -v "Use when"
 grep -r '"task"' .opencode/agents/*.md
 ```
 
-**Depth reference:** `references/depth-built-in-tools.md#grep-glob`
-
 ### `lsp` (experimental) — Code Intelligence
 
 **What it does:** Interacts with LSP servers for definitions, references, hover info, call hierarchy. Requires `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`.
 
 **Why it matters:** When auditing TypeScript harness code (`src/`), use LSP to find all references to a function, trace imports, understand dependencies without reading every file.
 
-**Depth reference:** `references/depth-built-in-tools.md#lsp`
-
 ### `skill` — Load Skills On Demand
 
 **What it does:** Loads a SKILL.md file and returns its content in the conversation. This IS the routing mechanism.
 
 **Why it matters:** When meta-builder routes to `use-authoring-skills`, it calls `skill({ name: "use-authoring-skills" })`. This is progressive disclosure in action.
-
-**Depth reference:** `references/depth-built-in-tools.md#skill`
 
 ### `webfetch` + `websearch` — External Knowledge
 
@@ -243,8 +231,6 @@ grep -r '"task"' .opencode/agents/*.md
 **Why it matters:** Fetch canonical specs (agentskills.io/llms.txt), research GitHub repos for skill patterns, verify platform documentation is current.
 
 **Tip:** Use `websearch` when you need to FIND information (discovery). Use `webfetch` when you need to RETRIEVE content from a known URL (retrieval).
-
-**Depth reference:** `references/depth-built-in-tools.md#webfetch-websearch`
 
 ---
 
@@ -367,16 +353,16 @@ For loading order details, MANDATORY — read `references/04-skills-chaining.md`
 | `references/02-deterministic-control.md` | **MANDATORY** when routing decision is ambiguous between 2+ table entries | Pre/during/post execution protocol, rollback rules, retry strategy |
 | `references/03-long-horizon-persistence.md` | Read when task spans sessions or involves subagent delegation | Session recovery, checkpoint protocol, context handoff |
 | `references/04-skills-chaining.md` | **MANDATORY** before any stack operation | Loading order, composition rules, anti-patterns, worked examples |
-| `references/depth-built-in-tools.md` | Read when needing specific built-in tool usage patterns | Detailed guides for question, todowrite, patch, grep, glob, lsp, skill, webfetch, websearch |
-| `references/depth-repo-analysis.md` | Read when analyzing GitHub repos for skill patterns | repomix-explorer quick reference, compression strategies, pattern search |
-| `references/depth-github-stacks.md` | Read when understanding a GitHub stack/project | Prompt-enhancer + deepwiki workflow, session export + CLI chaining |
-| `references/depth-skill-synthesis.md` | Read when ingesting skills from remote repos | GitHub ingestion pipeline, repomix remote, webfetch spec, error handling |
 | `assets/skill-frontmatter.md` | When creating a new skill | YAML skeleton + description formula + trigger phrase template |
 | `assets/agent-frontmatter.md` | When creating a new agent | YAML skeleton + permissions model + delegation config |
 | `assets/command-frontmatter.md` | When creating a new command | YAML skeleton + $ARGUMENTS pattern + bash injection safety |
 | `workflows/skill-creation-flow.md` | When routing to skill creation | Step-by-step: intent → pattern → frontmatter → body → validate |
 | `workflows/agent-creation-flow.md` | When routing to agent creation | Step-by-step: role → tools → permissions → delegation → validate |
 | `workflows/command-creation-flow.md` | When routing to command creation | Step-by-step: intent → arguments → agent binding → shell safety → validate |
+| `references/depth-built-in-tools.md` | Read when needing specific built-in tool usage patterns for meta-builder work | Tool-specific guides with examples and permission recommendations |
+| `references/depth-github-stacks.md` | Read when composing skills from GitHub repos into stacks | GitHub stacking patterns, loading order, composition rules |
+| `references/depth-repo-analysis.md` | Read when analyzing repos for meta-concept extraction | repomix patterns, grep strategies, token efficiency |
+| `references/depth-skill-synthesis.md` | Read when ingesting skills from remote repos | GitHub ingestion pipeline, error handling, shell safety |
 
 **Do NOT load** references/01-03 for simple routing tasks. Only load when the task requires graph traversal, state machine execution, or cross-session persistence.
 
