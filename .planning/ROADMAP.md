@@ -27,7 +27,8 @@
 - [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
 - [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
 - [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
-- [ ] **Phase 20: Structural Changes — Playbook Phase 2** — In progress (merge, split, new skill creation)
+- [x] **Phase 20: Structural Changes — Playbook Phase 2** — 1 merge, 1 split, 7 new skills created
+- [ ] **Phase 21: Description Rewrite — Playbook Phase 3** — In progress (differential cluster skills)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -568,7 +569,8 @@ Plans:
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
 | 18. Context & Research (Playbook Phase CR) | 8/8 deliverables | ✅ COMPLETE — all deliverables committed, user sign-off received |
 | 19. Rename Sprint (Playbook Phase 1) | 21/21 skills | ✅ COMPLETE — 368 files changed, all call-sites updated, commit `7b686311` |
-| 20. Structural Changes (Playbook Phase 2) | — | 🔄 IN PROGRESS |
+| 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ✅ COMPLETE — session-context-manager merged, harness-delegation-inspection split, 7 differential cluster skills created |
+| 21. Description Rewrite (Playbook Phase 3) | — | 🔄 IN PROGRESS |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
