@@ -1,0 +1,9 @@
+{
+  "skill": "hm-completion-looping",
+  "evals": [
+    {
+      "query": "Test trigger query for hm-completion-looping",
+      "expected_loaded": true
+    }
+  ]
+}

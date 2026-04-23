@@ -1,0 +1,9 @@
+{
+  "skill": "hm-refactor",
+  "evals": [
+    {
+      "query": "Test trigger query for hm-refactor",
+      "expected_loaded": true
+    }
+  ]
+}

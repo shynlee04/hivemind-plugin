@@ -1,0 +1,9 @@
+{
+  "skill": "hm-test-driven-execution",
+  "evals": [
+    {
+      "query": "Test trigger query for hm-test-driven-execution",
+      "expected_loaded": true
+    }
+  ]
+}

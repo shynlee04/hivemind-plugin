@@ -1,0 +1,9 @@
+{
+  "skill": "hm-debug",
+  "evals": [
+    {
+      "query": "Test trigger query for hm-debug",
+      "expected_loaded": true
+    }
+  ]
+}

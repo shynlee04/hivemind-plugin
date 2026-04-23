@@ -1,0 +1,9 @@
+{
+  "skill": "hm-spec-driven-authoring",
+  "evals": [
+    {
+      "query": "Test trigger query for hm-spec-driven-authoring",
+      "expected_loaded": true
+    }
+  ]
+}

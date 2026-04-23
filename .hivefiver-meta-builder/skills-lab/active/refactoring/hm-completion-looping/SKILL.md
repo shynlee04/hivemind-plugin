@@ -1,0 +1,103 @@
+---
+name: hm-completion-looping
+description: Guardrail workflows against regression with non-completion detection and automatic loop-back. Use when a task must loop until verified complete, when guarding against premature success claims, or when implementing self-verifying subagent dispatch. NOT for one-shot tasks or simple retry loops.
+metadata:
+  layer: "2"
+  role: "domain-execution"
+  pattern: P2
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+---
+
+# Completion Looping
+
+## 6-NON Defence Table
+
+| NON | Defence |
+|-----|---------|
+| NON-1 | Pre-authoring audit: parent→child→state→stage map in `references/loop-audit.md` |
+| NON-2 | Stacks with `hm-coordinating-loop` + `hm-phase-loop`; clashes with simple retry skills |
+| NON-3 | Entry: task loaded → Exit: verification passed → Loop-back: verification failed |
+| NON-4 | `metadata.layer: 2` — picked by pure-orchestrators and task-completers only |
+| NON-5 | Stacked eval with `hm-coordinating-loop` + `hm-planning-with-files` |
+| NON-6 | P2-hybrid pattern: body ~250 LOC, 3 references, 2 scripts |
+
+## The Iron Law
+
+```
+A task is not done when the subagent says it is done. A task is done when verification proves it is done.
+```
+
+## On Load
+
+1. Read `references/verification-checklist.md` — criteria for true completion
+2. Read `references/loop-patterns.md` — loop types and when to use each
+
+## Completion Detection
+
+### The Three Gates
+
+| Gate | Check | Failure Action |
+|------|-------|---------------|
+| **Output Gate** | Did the subagent produce the expected artifacts? | Re-dispatch with corrected scope |
+| **Quality Gate** | Do artifacts pass basic validation (syntax, structure, references)? | Return DONE_WITH_CONCERNS, fix then re-verify |
+| **Scope Gate** | Does output match the task envelope (nothing extra, nothing missing)? | Re-dispatch with spec-compliance emphasis |
+
+### Loop Types
+
+| Type | Use When | Max Iterations |
+|------|----------|---------------|
+| **Verify-After** | Subagent returns → verify → loop if fail | 5 |
+| **Verify-During** | Subagent works in iterations, verifies each | 10 |
+| **Guardrail** | External monitor watches for premature completion | 3 |
+
+## Self-Verification Envelope
+
+When dispatching a subagent that must self-verify:
+
+```
+## Your Task
+<full task text>
+
+## Verification Requirements
+Before returning DONE, you MUST:
+1. [ ] Run <verification command>
+2. [ ] Confirm <output condition>
+3. [ ] If any check fails, return DONE_WITH_CONCERNS, not DONE
+
+## Loop-Back Trigger
+If verification fails, you will be re-dispatched with:
+- Previous attempt findings
+- Specific check that failed
+- Corrected scope if needed
+```
+
+## Anti-Patterns
+
+| Anti-Pattern | Detection | Correction |
+|-------------|-----------|------------|
+| **The Premature Done** | Subagent returns DONE without running tests/validation | Enforce verification requirements in task envelope |
+| **The Infinite Loop** | Same failing approach retried >5 times | Cap iterations, escalate to orchestrator |
+| **The Silent Fix** | Loop iteration makes changes without logging | Require progress logging in each iteration |
+| **The Skipped Gate** | Quality gate passes but scope gate fails | Run ALL gates before accepting completion |
+
+## Reference Map
+
+| File | When to Read |
+|------|-------------|
+| `references/verification-checklist.md` | Need criteria for true completion |
+| `references/loop-patterns.md` | Need to choose loop type for a task |
+
+## Cross-References
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-coordinating-loop` | Owns general multi-agent dispatch. This skill adds completion guardrails to that dispatch. |
+| `hm-phase-loop` | Owns iterative phase semantics. This skill owns the verification logic within iterations. |
+| `hm-planning-with-files` | Owns task_plan.md tracking. This skill updates verification status in the plan. |

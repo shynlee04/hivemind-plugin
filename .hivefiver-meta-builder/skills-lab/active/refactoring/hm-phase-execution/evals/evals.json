@@ -1,0 +1,9 @@
+{
+  "skill": "hm-phase-execution",
+  "evals": [
+    {
+      "query": "Test trigger query for hm-phase-execution",
+      "expected_loaded": true
+    }
+  ]
+}

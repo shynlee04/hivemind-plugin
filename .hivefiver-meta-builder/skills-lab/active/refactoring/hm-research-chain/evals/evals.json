@@ -1,0 +1,9 @@
+{
+  "skill": "hm-research-chain",
+  "evals": [
+    {
+      "query": "Test trigger query for hm-research-chain",
+      "expected_loaded": true
+    }
+  ]
+}
