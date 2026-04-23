@@ -300,6 +300,52 @@ Produce the artifact. Minimum structure:
 
 ---
 
+## Version-Matched Documentation Research
+
+When researching libraries or frameworks where version matters (APIs, breaking changes, deprecation), use version-specific Context7 queries rather than generic ones. Generic queries return latest-version documentation that may not match the codebase's pinned version.
+
+### When to Use
+
+- Researching a library where the user's version is >1 major behind latest
+- Investigating breaking changes between versions
+- Searching for migration guides or deprecation notices
+- The codebase's `package.json`, `Cargo.toml`, or `go.mod` specifies exact versions
+
+### Protocol
+
+```
+Step 1: Read .tech-registry.json (via hm-detective SCAN or hm-synthesis detection)
+  - Extract resolved versions from stack.framework, stack.runtime, stack.test_framework
+  - Also check lockfiles for transitive dependency versions
+
+Step 2: Resolve versioned library in Context7
+  - Use resolve-library-id with versioned name: "Next.js 14" not just "Next.js"
+  - If resolve-library-id fails with version suffix, try without version, then filter results
+
+Step 3: Query with version-specific questions
+  - "Next.js 14 app router API for middleware"
+  - "React 18 useEffect cleanup behavior changes"
+  - "TypeScript 5.2 satisfies keyword usage"
+
+Step 4: Detect breaking changes
+  - Compare user's version vs. latest documented version
+  - Flag when >2 major versions behind
+  - Search for migration guides: "migrate from X to Y [library]"
+```
+
+### Breaking Change Detection
+
+| Gap | Action | Context7 Query Pattern |
+|-----|--------|------------------------|
+| 1 major version behind | Note in findings, no action | — |
+| 2 major versions behind | Flag as tech debt, estimate effort | "[library] [old] to [new] migration guide" |
+| 3+ major versions behind | Require ADR before recommending upgrade | "[library] [old] breaking changes [new]" |
+| Deprecated API in use | Immediate replacement recommendation | "[library] [version] [api] deprecated alternative" |
+
+**Rule:** Do NOT recommend upgrading across >2 major versions without a dedicated migration research phase. The risk of silent breaking changes exceeds the benefit of newer features.
+
+---
+
 ## Anti-Patterns — Stop When You Detect These
 
 | Anti-Pattern | Detection | Fix |

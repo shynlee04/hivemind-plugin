@@ -1,6 +1,6 @@
 ---
 name: hm-synthesis
-description: "Cross-dependency analysis, selective compression, and validated artifact generation. Use when packing codebases for analysis, extracting interfaces, classifying patterns, resolving dependencies, generating validated playbooks, or producing permanent artifacts from code analysis. Three compression tiers (Snapshot/Focused/Signature at 0%/50%/70% reduction), cross-dep analysis protocol, interface extraction, and corpus-gated pattern classification. Triggers on: pack codebase, analyze dependencies, extract interfaces, classify patterns, generate playbook, validate artifact, compress repo, cross-dependency, interface contract, pattern classification, synthesize findings, produce artifact, pack for agent."
+description: "Cross-dependency analysis, selective compression, and validated artifact generation. Use when packing codebases for analysis, extracting interfaces, classifying patterns, resolving dependencies, generating validated playbooks, or producing permanent artifacts from code analysis. Three compression tiers (Snapshot/Focused/Signature at 0%/50%/70% reduction), cross-dep analysis protocol, interface extraction, and corpus-gated pattern classification. Triggers on: pack codebase, analyze dependencies, extract interfaces, classify patterns, generate playbook, validate artifact, compress repo, cross-dependency, interface contract, pattern classification, create findings, produce artifact, pack for agent."
 metadata:
   layer: "2"
   role: "compression"
@@ -233,6 +233,64 @@ See [references/corpus-gate.md](references/corpus-gate.md) for corpus assembly p
 
 ---
 
+## Tech-Stack Detection
+
+Before any codebase packing operation, detect the technology stack. This informs compression tier selection, reference file loading, and Context7 query generation.
+
+### Trigger
+
+Run tech-stack detection when:
+- `.tech-registry.json` is missing or stale (>30 days since `last_updated`)
+- User asks "what's the tech stack?" or "analyze dependencies"
+- Before repomix packing a new repository (informs `--include` patterns)
+
+### Detection Protocol
+
+```
+Step 1: Check for .tech-registry.json
+  - If present and recent (<30 days): use existing stack data
+  - If missing/stale: proceed to Step 2
+
+Step 2: Detect from repo root files
+  - package.json → Node.js stack (language, runtime, frameworks, dependencies)
+  - go.mod → Go stack (language, runtime, modules)
+  - Cargo.toml → Rust stack (language, runtime, crates)
+  - pyproject.toml / requirements.txt → Python stack
+  - pom.xml / build.gradle → Java stack (Maven/Gradle)
+  - tsconfig.json → TypeScript (supplement to any JS/Node stack)
+  - bunfig.toml → Bun runtime (supplement to Node stack)
+
+Step 3: Parse version information for Context7
+  - package-lock.json / yarn.lock / pnpm-lock.yaml → exact dependency versions
+  - Cargo.lock → exact crate versions
+  - go.sum → exact module versions
+  - Extract versions for Context7 `resolve-library-id` queries
+
+Step 4: Write to .tech-registry.json using unified schema
+  - See references/artifact-export.md for schema and update protocol
+  - Ensure hm-detective and hm-deep-research can consume the same file
+```
+
+### Version Resolution
+
+Extract exact versions from lockfiles and use them for Context7 queries:
+
+| Lockfile | Version Source | Context7 Query Example |
+|----------|---------------|------------------------|
+| package-lock.json | `dependencies["next"].version` | "Next.js 14 app router API" |
+| Cargo.lock | `[[package]] name="tokio" version="1.35"` | "tokio 1.35 async runtime patterns" |
+| go.sum | `github.com/gin-gonic/gin v1.9.1` | "gin 1.9 middleware chaining" |
+
+### Integration with Compression Tiers
+
+- **Tech-stack detection runs at the SCAN tier** (~15% cost): grep for indicator files, read 5-10 key files
+- Results inform which reference files to load during analysis:
+  - Node.js → load `references/node-patterns.md` if available
+  - Rust → load `references/rust-patterns.md` if available
+- Stack data also guides repomix `--include` patterns (e.g., `src/**/*.ts` for TS, `src/**/*.rs` for Rust)
+
+---
+
 ## Session Artifact Export
 
 Investigation findings must survive context compaction. Three export mechanisms:
@@ -269,22 +327,24 @@ For architecture decisions:
 
 ### 3. .tech-registry.json Integration
 
-Append discoveries to the tech registry:
+Append discoveries to the tech registry using the **unified hm-detective schema** (`project`, `last_updated`, `stack`, `concerns`, `modules`):
 
 ```json
 {
   "modules": {
-    "new-module.ts": {
+    "src/new-module.ts": {
       "role": "leaf",
       "loc": 45,
-      "dependencies": ["types.ts"],
-      "classification": "P1"
+      "deps": ["src/types.ts"]
     }
+  },
+  "concerns": {
+    "active": ["new-concern-id"]
   }
 }
 ```
 
-See [references/artifact-export.md](references/artifact-export.md) for export formats, naming conventions, and promotion gates.
+See [references/artifact-export.md](references/artifact-export.md) for the full schema specification, update protocol, and migration notes. The unified schema ensures `hm-detective`, `hm-synthesis`, and `hm-deep-research` all read and write the same `.tech-registry.json` format without corruption.
 
 ---
 

@@ -31,9 +31,10 @@ Every file read costs tokens. Choose the cheapest mode that answers your questio
 |------|-----------|------|-------|
 | **SKIM** | ~5% | Orientation: "what is this?" | glob, ls, frontmatter-only, grep -c |
 | **SCAN** | ~15% | Targeted: "find X" | grep -n, offset reads ±20 lines, TOC navigation |
+| **SCAN (Tech Stack)** | ~10% | Stack detection: "what's this built with?" | grep indicator files, read 5-10 config files |
 | **DEEP** | 100% | Understanding: "need every line" | Read full file, repomix pack + grep |
 
-**Escalation rule**: START → SKIM → (if insufficient) SCAN → (if still need context) DEEP. Never skip to DEEP.
+**Escalation rule**: START → SKIM → (if insufficient) SCAN or SCAN (Tech Stack) → (if still need context) DEEP. Never skip to DEEP.
 
 ### Mode Selection Decision Tree
 
@@ -45,6 +46,9 @@ What do you need?
 |
 +-- "Where is function X defined?" or "What imports Y?"
 |   -> SCAN: grep -n "pattern" file → get line numbers → offset read ±20
+|
++-- "What tech stack is this?" or "What framework is this built with?"
+|   -> SCAN (Tech Stack): grep for package.json/go.mod/Cargo.toml → read 5-10 config files
 |
 +-- "How does this algorithm work?" or "I need to understand every branch"
 |   -> DEEP: Read full file (only after SKIM + SCAN confirm it's the right file)

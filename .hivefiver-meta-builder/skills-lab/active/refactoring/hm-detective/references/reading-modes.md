@@ -194,6 +194,73 @@ Total context consumed: ~1000 lines. Full delegation chain understood.
 
 ---
 
+## SCAN (Tech Stack) Mode (~10% Token Cost)
+
+A specialized SCAN variant for detecting technology stacks, versions, and dependencies. Cheaper than full SCAN because it targets only indicator files.
+
+### Trigger
+
+Use SCAN (Tech Stack) when:
+- User asks "what tech stack is this?" or "what's this built with?"
+- User asks "analyze dependencies"
+- Before any compression or analysis that needs stack-aware `--include` patterns
+- `.tech-registry.json` is missing or stale
+
+### Procedure
+
+```bash
+# Step 1: Detect indicator files (SKIM-level scan)
+ls package.json go.mod Cargo.toml pyproject.toml pom.xml build.gradle tsconfig.json bunfig.toml 2>/dev/null
+
+# Step 2: Read the primary indicator file
+cat package.json  # or go.mod, Cargo.toml, etc.
+
+# Step 3: Read secondary indicators (5-10 files max)
+cat tsconfig.json
+cat bunfig.toml
+cat README.md | head -50  # often describes the stack
+
+# Step 4: Extract versions from lockfiles
+cat package-lock.json | grep -o '"version": "[^"]*"' | head -20
+cat Cargo.lock | grep -A1 '^\[\[package\]\]' | grep 'name = "\|version = "' | head -40
+```
+
+### Output Format
+
+Produce a 5-10 bullet tech stack summary:
+
+```markdown
+## Tech Stack Summary: [project-name]
+
+- **Language:** TypeScript (from tsconfig.json, .ts files)
+- **Runtime:** Bun 1.1.x (from bunfig.toml)
+- **Framework:** OpenCode Plugin SDK (from src/plugin.ts, package.json)
+- **Build Tool:** tsc (from tsconfig.json)
+- **Test Framework:** bun:test (from .test.ts files, bun-test.d.ts)
+- **Key Dependencies:** (from package.json dependencies)
+  - @opencode-ai/plugin
+  - (list top 5)
+- **Architecture:** Plugin system with hooks, agents, skills, tools, commands
+```
+
+### Cost Budget
+
+| Operation | Cost | Notes |
+|-----------|------|-------|
+| Detect indicator files | ~50 tokens | `ls` or `glob` |
+| Read package.json | ~200 tokens | typically 50-100 lines |
+| Read 5 secondary files | ~500 tokens | tsconfig, README head, etc. |
+| Parse lockfile versions | ~100 tokens | `grep` only, no full read |
+| **Total** | **~850 tokens** | vs. ~3000+ for full SCAN of src/ |
+
+### Cross-Skill Integration
+
+- **hm-synthesis**: Tech stack detection runs as SCAN (Tech Stack) before any packing operation. Results inform `repomix --include` patterns.
+- **hm-deep-research**: Version data feeds Context7 `resolve-library-id` queries for version-matched documentation research.
+- **.tech-registry.json**: Write findings using the unified schema (project, last_updated, stack, concerns, modules) so all three skills share the same data.
+
+---
+
 ## Escalation Protocol
 
 ```
@@ -204,7 +271,7 @@ SKIM → Can you answer the question?
   | YES → DONE
   | NO
   v
-SCAN → Can you answer the question?
+SCAN or SCAN (Tech Stack) → Can you answer the question?
   | YES → DONE
   | NO
   v

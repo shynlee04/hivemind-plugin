@@ -465,3 +465,49 @@ Regardless of which archetype you're following, these rules always apply:
 | Context > 50% consumed | Stop fetching, start writing |
 | Research exceeds 2x estimated time | Pause, document what you have, reassess scope |
 | Question keeps expanding | Stop, write scope boundary, enforce it |
+
+---
+
+## Version-Matched Context7 Queries
+
+A specialized pattern for researching libraries and frameworks where documentation changes between versions. Prevents the "latest-doc lie" — when Context7 returns current documentation that doesn't match the codebase's pinned version.
+
+### When to Apply
+
+- The codebase's `.tech-registry.json` or lockfiles pin a specific version
+- You are researching APIs, configuration, or behavior of a library
+- The library has had breaking changes in recent major versions
+
+### Procedure
+
+```
+Step 1: Resolve the versioned library
+  resolve-library-id: "Next.js 14"
+  → If no match, try "Next.js" and note the version in your query
+
+Step 2: Query with version-specific constraints
+  query-docs: "Next.js 14 app router API for middleware"
+  query-docs: "Next.js 14 migration from pages router"
+
+Step 3: Detect version gaps
+  Compare codebase version vs. latest documented version
+  → If 1 major behind: note in findings
+  → If 2 majors behind: flag as tech debt
+  → If 3+ majors behind: require dedicated migration research
+
+Step 4: Search for breaking changes (if gap >1 major)
+  tavily-search: "Next.js 14 to 15 breaking changes"
+  tavily-search: "Next.js 15 migration guide from 14"
+```
+
+### Anti-Patterns
+
+| Anti-Pattern | Why It Fails | Correct Approach |
+|-------------|--------------|----------------|
+| Generic query without version | Returns latest docs, may mislead about available APIs | Always include version in first query attempt |
+| Recommending upgrade without gap analysis | Silent breaking changes destroy runtime stability | Document version gap, estimate migration effort |
+| Ignoring lockfile versions | Transitive dependencies may differ from package.json | Check lockfile for exact resolved versions |
+
+### Integration with Tech Registry
+
+Version-matched queries consume `.tech-registry.json` written by `hm-synthesis` and `hm-detective`. If the registry is missing or stale (>30 days), trigger `hm-synthesis` Tech-Stack Detection first.

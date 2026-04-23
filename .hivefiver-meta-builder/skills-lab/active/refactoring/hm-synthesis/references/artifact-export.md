@@ -134,29 +134,34 @@ When exporting artifact metadata, update the tech registry for cross-session per
 
 ### .tech-registry.json Schema
 
+> **Schema Migration (Phase 17):** This schema was unified with `hm-detective` to prevent cross-skill corruption. The previous `version`/`technologies`/`patterns` format is deprecated. Update any existing `.tech-registry.json` files to the new format.
+
 ```json
 {
-  "version": 1,
-  "updated": "2026-04-08",
-  "technologies": {
-    "opencode-harness": {
-      "type": "package",
-      "language": "typescript",
-      "framework": "opencode-plugin",
-      "key_files": ["src/plugin.ts", "src/lib/types.ts"],
-      "interfaces": ["HarnessPlugin", "SessionState", "TaskStatus"],
-      "dependencies": {
-        "internal": ["concurrency", "continuity", "lifecycle"],
-        "external": ["@opencode-ai/plugin"]
-      },
-      "decisions": ["ADR-0001", "ADR-0003"],
-      "last_analyzed": "2026-04-08"
-    }
+  "project": "project-name",
+  "last_updated": "2026-04-08",
+  "stack": {
+    "language": "TypeScript",
+    "runtime": "Node.js 20",
+    "framework": "OpenCode Plugin SDK",
+    "test_framework": "bun:test",
+    "build_tool": "tsc"
   },
-  "patterns": {
-    "P1-fundamental": ["circuit-breaker", "event-emitter", "state-machine"],
-    "P2-integration": ["plugin-hook", "delegation-chain", "session-recovery"],
-    "P3-utility": ["logger", "helpers", "validators"]
+  "concerns": {
+    "resolved": ["ADR-0001-circuit-breaker", "ADR-0003-state-machine"],
+    "active": ["delegation-timeout", "session-recovery-race"]
+  },
+  "modules": {
+    "src/plugin.ts": {
+      "role": "entry",
+      "loc": 245,
+      "deps": ["src/lib/types.ts", "src/create-hooks.ts"]
+    },
+    "src/lib/types.ts": {
+      "role": "types",
+      "loc": 85,
+      "deps": []
+    }
   }
 }
 ```
@@ -167,16 +172,18 @@ After each analysis session:
 
 1. Read `.tech-registry.json` (create if missing)
 2. Merge new findings into existing entries
-3. Add new technology entries discovered
-4. Update `last_analyzed` timestamp
-5. Write back using full file replacement (not patch — JSON doesn't patch well)
+3. Add new module entries discovered with `{ role, loc, deps }`
+4. Push new concerns to `concerns.active` (or move resolved ones to `concerns.resolved`)
+5. Update `last_updated` timestamp
+6. Write back using full file replacement (not patch — JSON doesn't patch well)
 
 ```bash
 # After analysis
 node -e "
   const reg = require('./.tech-registry.json');
-  reg.technologies['new-module'] = { type: 'module', /* ... */ };
-  reg.updated = new Date().toISOString().split('T')[0];
+  reg.modules['src/new-module.ts'] = { role: 'leaf', loc: 45, deps: [] };
+  reg.concerns.active.push('new-concern-id');
+  reg.last_updated = new Date().toISOString().split('T')[0];
   require('fs').writeFileSync('.tech-registry.json', JSON.stringify(reg, null, 2));
 "
 ```
