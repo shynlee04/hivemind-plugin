@@ -15,26 +15,6 @@ allowed-tools:
   - Grep
 ---
 
-## 6-NON Defence Table
-
-| NON | Defence |
-|-----|---------|
-| NON-1 | Pre-authoring audit documented in references/ |
-| NON-2 | Stacks/clashes documented in Cross-References |
-| NON-3 | Entry trigger, exit criterion, and loop-back path defined |
-| NON-4 | metadata.layer and metadata.role declared; description has exclusions |
-| NON-5 | Eval includes stacked scenario |
-| NON-6 | Pattern decision documented; scripts have non-zero exit |
-
-
-# Phase Loop Skill
-
-Defines iterative loop semantics with the check-revise-escalate pattern for phase-based execution.
-
-<files_to_read>
-- references/revision-loop.md — detailed loop semantics, stall detection, and escalation patterns
-</files_to_read>
-
 ## Core Concept
 
 A **phase loop** iterates on the same document/target with locked paths, applying incremental deltas until stable or max iterations reached.

@@ -25,17 +25,6 @@ allowed-tools:
 
 # Phase Execution
 
-## 6-NON Defence Table
-
-| NON | Defence |
-|-----|---------|
-| NON-1 | Pre-authoring audit: phase→wave→plan hierarchy in `references/phase-audit.md` |
-| NON-2 | Stacks with `hm-coordinating-loop` + `hm-planning-with-files`; clashes with ad-hoc execution |
-| NON-3 | Entry: phase plan loaded → Exit: all plans verified → Loop-back: plan fails |
-| NON-4 | `metadata.layer: 1` — picked by primary coordinators and pure-orchestrators |
-| NON-5 | Stacked eval with `hm-coordinating-loop` + `hm-planning-with-files` + `hm-phase-loop` |
-| NON-6 | P2-hybrid pattern: body ~260 LOC, 3 references, 2 scripts |
-
 ## The Iron Law
 
 ```

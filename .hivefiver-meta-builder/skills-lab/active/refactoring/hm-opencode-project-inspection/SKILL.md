@@ -15,8 +15,6 @@ allowed-tools:
   - Grep
 ---
 
-# OpenCode Project Inspection
-
 ## The Iron Law
 
 ```

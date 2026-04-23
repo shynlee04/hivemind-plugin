@@ -8,22 +8,6 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
-## 6-NON Defence Table
-
-| NON | Defence |
-|-----|---------|
-| NON-1 | Pre-authoring audit documented in references/ |
-| NON-2 | Stacks/clashes documented in Cross-References |
-| NON-3 | Entry trigger, exit criterion, and loop-back path defined |
-| NON-4 | metadata.layer and metadata.role declared; description has exclusions |
-| NON-5 | Eval includes stacked scenario |
-| NON-6 | Pattern decision documented; scripts have non-zero exit |
-
-
-# HM Synthesis
-
-Cross-dependency analysis, selective compression, and validated artifact generation. Takes a codebase (local or packed), analyzes its structure, resolves dependencies, classifies patterns, and produces artifacts that survive context compaction.
-
 ## Quick Jump
 
 | Task | Section | Detail |

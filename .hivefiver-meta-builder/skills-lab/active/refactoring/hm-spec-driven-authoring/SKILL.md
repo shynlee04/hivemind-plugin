@@ -25,17 +25,6 @@ allowed-tools:
 
 # Spec-Driven Authoring
 
-## 6-NON Defence Table
-
-| NON | Defence |
-|-----|---------|
-| NON-1 | Pre-authoring audit: spec→req→test mapping documented in `references/spec-audit.md` |
-| NON-2 | Stacks with `hm-planning-with-files` + `hm-test-driven-execution`; clashes with ad-hoc coding |
-| NON-3 | Entry: spec loaded → Exit: tests pass → Loop-back: tests fail |
-| NON-4 | `metadata.layer: 2` — picked by pure-orchestrators and task-completers |
-| NON-5 | Stacked eval with `hm-planning-with-files` + `hm-phase-loop` |
-| NON-6 | P2-hybrid pattern: body ~250 LOC, 3 references, 2 scripts |
-
 ## The Iron Law
 
 ```

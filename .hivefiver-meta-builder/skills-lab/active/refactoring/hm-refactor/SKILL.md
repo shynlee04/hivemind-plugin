@@ -24,17 +24,6 @@ allowed-tools:
 
 # Refactor Decision Framework
 
-## 6-NON Defence Table
-
-| NON | Defence |
-|-----|---------|
-| NON-1 | Pre-authoring audit: refactor taxonomy in `references/refactor-audit.md` |
-| NON-2 | Stacks with `hm-debug` + `hm-test-driven-execution`; clashes with rewrite-without-tests |
-| NON-3 | Entry: refactor intent identified → Exit: refactored + verified → Loop-back: tests fail |
-| NON-4 | `metadata.layer: 2` — picked by pure-orchestrators and task-completers |
-| NON-5 | Stacked eval with `hm-test-driven-execution` + `hm-planning-with-files` |
-| NON-6 | P2-hybrid pattern: body ~230 LOC, 3 references, 2 scripts |
-
 ## The Iron Law
 
 ```

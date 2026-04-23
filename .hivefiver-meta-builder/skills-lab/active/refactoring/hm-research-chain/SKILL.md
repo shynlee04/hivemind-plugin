@@ -25,17 +25,6 @@ allowed-tools:
 
 # Research Chain
 
-## 6-NON Defence Table
-
-| NON | Defence |
-|-----|---------|
-| NON-1 | Pre-authoring audit: chain stages mapped in `references/chain-audit.md` |
-| NON-2 | Stacks with `hm-detective` + `hm-deep-research` + `hm-synthesis`; clashes with single-skill research |
-| NON-3 | Entry: research intent clarified → Exit: artifact exported → Loop-back: synthesis insufficient |
-| NON-4 | `metadata.layer: 1` — picked by primary coordinators and pure-orchestrators |
-| NON-5 | Stacked eval with full chain: detective → deep-research → synthesis |
-| NON-6 | P1-router pattern: body ~150 LOC, 2 references, 1 script |
-
 ## The Iron Law
 
 ```

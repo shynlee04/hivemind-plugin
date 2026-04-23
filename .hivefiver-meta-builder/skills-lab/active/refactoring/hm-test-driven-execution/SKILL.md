@@ -24,17 +24,6 @@ allowed-tools:
 
 # Test-Driven Execution
 
-## 6-NON Defence Table
-
-| NON | Defence |
-|-----|---------|
-| NON-1 | Pre-authoring audit: TDD cycle mapped to planning files in `references/tdd-audit.md` |
-| NON-2 | Stacks with `hm-spec-driven-authoring` + `hm-planning-with-files`; clashes with test-last workflows |
-| NON-3 | Entry: test written → Exit: test passes + refactored → Loop-back: test fails |
-| NON-4 | `metadata.layer: 2` — picked by pure-orchestrators and task-completers |
-| NON-5 | Stacked eval with `hm-spec-driven-authoring` + `hm-phase-loop` |
-| NON-6 | P2-hybrid pattern: body ~220 LOC, 3 references, 2 scripts |
-
 ## The Iron Law
 
 ```
