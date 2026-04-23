@@ -1,6 +1,13 @@
 ---
 name: hm-test-driven-execution
-description: Execute red-green-refactor cycles integrated with planning and phase loops. Use when writing tests first, running test suites, or verifying coverage claims. NOT for manual testing or test-after development.
+description: >
+  Execute red-green-refactor cycles integrated with planning and phase loops.
+  Use when writing tests first, running test suites, verifying coverage claims, when the user
+  wants to ensure code quality through testing, or when building features that need comprehensive
+  test coverage. Even when the user says "write tests" or "make sure it's tested."
+  Triggers: "TDD", "test-driven", "write tests first", "red-green-refactor", "test coverage",
+  "test suite", "unit tests", "integration tests", "testing workflow".
+  NOT for manual testing or test-after development.
 metadata:
   layer: "2"
   role: "domain-execution"
