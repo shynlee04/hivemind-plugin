@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-23 (Phase 17 added — Hivemind Skills Refactor continuation phases 17–22 mapped from playbook)
+**Updated:** 2026-04-23 (Phase 18 added — Playbook v2.0 Phase CR inserted, continuation phases renumbered 18→23)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -25,6 +25,7 @@
 - [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
+- [ ] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 0/8 deliverables
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -315,15 +316,16 @@ Plans:
 | C4 | Empty `project-structure.md` (4 lines) | `hm-omo-reference` | Regenerate with actual directory tree |
 | C5 | Duplicate skills across `.claude/` and `.opencode/` | 5 skills | Determine canonical, delete duplicates |
 
-**Continuation mapping:**
+**Continuation mapping (v2.0 — Phase CR inserted):**
 
 ```
-Playbook Phase 0 (Critical Fixes)      → GSD Phase 17 (this phase)
-Playbook Phase 1 (Canonical Location)  → GSD Phase 18
-Playbook Phase 2 (Structural Changes)  → GSD Phase 19
-Playbook Phase 3 (Description Rewrite) → GSD Phase 20
-Playbook Phase 4 (Script Hardening)    → GSD Phase 21
-Playbook Phase 5 (Body Quality + Eval) → GSD Phase 22
+Playbook Phase 0 (Critical Fixes)      → GSD Phase 17 (COMPLETE)
+Playbook Phase CR (Context & Research)  → GSD Phase 18 (this phase → next)
+Playbook Phase 1 (Rename Sprint)       → GSD Phase 19
+Playbook Phase 2 (Structural Changes)  → GSD Phase 20
+Playbook Phase 3 (Description Rewrite) → GSD Phase 21
+Playbook Phase 4 (Script Hardening)    → GSD Phase 22
+Playbook Phase 5 (Body Quality + Eval) → GSD Phase 23
 ```
 
 **Exit criteria:** All 5 criticals resolved, no dead references in affected skills, `npm run typecheck` passes (if applicable).
@@ -336,6 +338,49 @@ Plans:
 - [ ] 17-03-PLAN.md — C2: Fill 4 meta-builder depth stubs + register in Reference Map (Wave 1)
 - [ ] 17-04-PLAN.md — C3+C4: OMO dead-reference audit + generate tech-stack.md, verify project-structure.md (Wave 1)
 - [ ] 17-05-PLAN.md — NEW: Unify tech-registry schema + integrate tech-stack synthesis across hm-* skills (Wave 2)
+
+### Phase 18: Context & Research — Skills Refactor Playbook Phase CR
+
+**Goal:** Produce the evidence base and audit posture that Phases 1–5 consume. Prevent 6-NON failures from regressing downstream phases. No skill refactoring in this phase — only research, audit, and decision artifacts.
+**Requirements**: CR-01 through CR-08 (8 deliverables per playbook §VI.CR.10)
+**Depends on:** Phase 17 (complete)
+**Specification:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` §VI.CR (v2.0)
+**Playbook mapping:** Playbook Phase CR → GSD Phase 18
+
+**Scope (research + audit only — NO skill edits):**
+1. Fresh runtime probe of every active skill (count, names, grades vs I.1.2 table)
+2. Per-skill 6-NON audit grid (defence posture against NON-1..NON-6)
+3. Differential cluster gap map (G-A through G-D per §V.3.2)
+4. Third-party pattern harvest (from gsd-*, superpower-*, retired skills)
+5. Runtime-integration readiness assessment (soft→hard migration feasibility)
+6. Tooling decision table (for each skill: no-change / description / body / bundle / rename / split / merge / create / retire)
+
+**Deliverables (per playbook §VI.CR.10):**
+
+| # | Deliverable | File |
+|---|-------------|------|
+| CR-01 | Phase context envelope | `CR-CONTEXT.md` |
+| CR-02 | Grounded research document | `CR-RESEARCH.md` |
+| CR-03 | Per-skill 6-NON audit grid | `CR-AUDIT-ECOSYSTEM.md` |
+| CR-04 | Differential cluster gap map | `CR-GAP-MAP.md` |
+| CR-05 | Third-party pattern harvest | `CR-THIRD-PARTY-HARVEST.md` |
+| CR-06 | Runtime-readiness map | `CR-RUNTIME-READINESS.md` |
+| CR-07 | Tooling decision table | `CR-DECISIONS.md` |
+| CR-08 | Verification report | `CR-VERIFICATION.md` |
+
+**Exit criteria:**
+- All 8 deliverables committed under `.planning/phases/18-context-and-research-phase-cr-for-skills-refactor-playbook-v/`
+- `check-overlaps.sh` run and results attached
+- At least one stacked-workflow eval run (hm-coordinating-loop + hm-planning-with-files + hm-phase-loop)
+- User signs off in CR-DISCUSSION-LOG.md
+
+**Hard constraints (same as Phase 17):**
+- Zero `src/` code changes
+- Zero agent/command refactors
+- Zero IDE-directory modifications
+- Only soft meta-concept research artifacts
+
+**Plans:** 0 plans (not yet planned)
 
 ---
 
@@ -479,7 +524,8 @@ Plans:
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
-| 17. Hivemind Skills Refactor — Critical Fixes | 0/1 plans | Planned — Playbook Phase 0 → GSD continuation, 5 criticals (C1–C5) |
+| 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
+| 18. Context & Research (Playbook Phase CR) | 0/8 deliverables | Not started — research/audit only, no skill edits |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
@@ -496,12 +542,13 @@ Phase 1 (7 done, 3 pending — planned)
                                 └─→ Phase 15: Security & Quality Remediation ✅
                                      └─→ Phase 16: Background Delegation Revamp + PTY Integration
                                           └─→ Phase 16.2: PTY Wiring + OMO Safety Patterns (SPEC validated)
-                                          └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0)
-                                               └─→ Phase 18: Canonical Location + Duplicate Resolution (Playbook Phase 1)
-                                                    └─→ Phase 19: Structural Changes (Playbook Phase 2)
-                                                         └─→ Phase 20: Description Rewrite Sprint (Playbook Phase 3)
-                                                              └─→ Phase 21: Script Hardening (Playbook Phase 4)
-                                                                   └─→ Phase 22: Body Quality + Eval Expansion (Playbook Phase 5)
+                                           └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) ✅
+                                                └─→ Phase 18: Context & Research (Playbook Phase CR)
+                                                     └─→ Phase 19: Rename Sprint (Playbook Phase 1)
+                                                          └─→ Phase 20: Structural Changes (Playbook Phase 2)
+                                                               └─→ Phase 21: Description Rewrite (Playbook Phase 3)
+                                                                    └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4)
+                                                                         └─→ Phase 23: Body Quality + Eval (Playbook Phase 5)
                                  └─→ Phase 9.3: Module Restructuring + Config
                                       └─→ Phase 11: Clean Architecture Restructuring
                                            └─→ Phase 3: Schema Definition
