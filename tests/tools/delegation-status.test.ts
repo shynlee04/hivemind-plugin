@@ -135,6 +135,29 @@ describe("delegation-status tool", () => {
     expect(data.error).toBe("Child session crashed")
   })
 
+  it("uses terminal detail in the single-delegation message when a specific terminal kind is available", async () => {
+    const delegation = makeDelegation({
+      id: "del-signal",
+      status: "error",
+      terminalKind: "interrupted-by-signal",
+      terminationSignal: "SIGTERM",
+      error: "[Harness] Command interrupted by signal SIGTERM",
+      completedAt: Date.now(),
+    })
+    const manager = createManagerStub([delegation])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-signal" } as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Record<string, unknown>
+
+    expect(result.kind).toBe("success")
+    expect(result.message).toContain("interrupted-by-signal")
+    expect(data.terminalKind).toBe("interrupted-by-signal")
+    expect(data.terminationSignal).toBe("SIGTERM")
+    expect(data.explicitCancellation).toBe(false)
+  })
+
   it("returns timeout error for timed-out delegations", async () => {
     const delegation = makeDelegation({
       id: "del-timeout",
@@ -279,6 +302,7 @@ describe("delegation-status tool", () => {
         workingDirectory: "/tmp/list-child",
         fallbackReason: "pty unavailable",
         queueKey: "provider:anthropic:model:gpt-5-mini",
+        terminalKind: "non-resumable-after-restart",
       }),
     ]
     const manager = createManagerStub(delegations)
@@ -294,6 +318,8 @@ describe("delegation-status tool", () => {
     expect(data[0]?.workingDirectory).toBe("/tmp/list-child")
     expect(data[0]?.fallbackReason).toBe("pty unavailable")
     expect(data[0]?.queueKey).toBe("provider:anthropic:model:gpt-5-mini")
+    expect(data[0]?.terminalKind).toBe("non-resumable-after-restart")
+    expect(data[0]?.terminationSignal).toBeUndefined()
     expect(data[0]?.explicitCancellation).toBe(false)
   })
 

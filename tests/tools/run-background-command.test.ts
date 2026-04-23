@@ -50,6 +50,18 @@ function createDelegationManagerStub() {
       queueKey: "category:command",
       explicitCancellation: false,
     }),
+    markCommandCancellationForPtySession: vi.fn().mockResolvedValue({
+      status: "running",
+      delegationId: "delegation-command-1",
+      executionMode: "pty",
+      surface: "command-process",
+      recoveryGuarantee: "best-effort",
+      workingDirectory: "/tmp/shared",
+      ptySessionId: "pty-shared-1",
+      queueKey: "category:command",
+      terminalKind: "cancelled",
+      explicitCancellation: true,
+    }),
   }
 }
 
@@ -110,15 +122,25 @@ describe("run-background-command tool", () => {
 
   it("sends interactive input and terminates through the shared PTY manager", async () => {
     const ptyManager = createPtyManagerStub()
+    const delegationManager = createDelegationManagerStub()
     const tool = createRunBackgroundCommandTool({
-      delegationManager: createDelegationManagerStub() as unknown as DelegationManager,
+      delegationManager: delegationManager as unknown as DelegationManager,
       ptyManager: ptyManager as unknown as PtyManager,
     })
 
     await tool.execute({ action: "input", sessionId: "pty-shared-1", input: "y\n" } as never, mockCtx)
-    await tool.execute({ action: "terminate", sessionId: "pty-shared-1" } as never, mockCtx)
+    const terminateRaw = await tool.execute({ action: "terminate", sessionId: "pty-shared-1" } as never, mockCtx)
+    const terminateResult = parseResult(terminateRaw)
+    const terminateData = terminateResult.data as Record<string, unknown>
 
     expect(ptyManager.write).toHaveBeenCalledWith("pty-shared-1", "y\n")
+    expect(delegationManager.markCommandCancellationForPtySession).toHaveBeenCalledWith("pty-shared-1")
     expect(ptyManager.terminate).toHaveBeenCalledWith("pty-shared-1")
+    expect(
+      delegationManager.markCommandCancellationForPtySession.mock.invocationCallOrder[0],
+    ).toBeLessThan(ptyManager.terminate.mock.invocationCallOrder[0])
+    expect(terminateResult.kind).toBe("success")
+    expect(terminateData.explicitCancellation).toBe(true)
+    expect(terminateData.terminalKind).toBe("cancelled")
   })
 })
