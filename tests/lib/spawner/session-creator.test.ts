@@ -40,14 +40,14 @@ describe("spawnDelegatedSession", () => {
       title: request.title,
       directory: request.workingDirectory,
       permission: [
-        { permission: "read", action: "allow" },
-        { permission: "edit", action: "allow" },
-        { permission: "write", action: "allow" },
-        { permission: "bash", action: "allow" },
-        { permission: "glob", action: "allow" },
-        { permission: "grep", action: "allow" },
-        { permission: "delegate-task", action: "deny" },
-        { permission: "task", action: "deny" },
+        { permission: "read", pattern: "*", action: "allow" },
+        { permission: "edit", pattern: "*", action: "allow" },
+        { permission: "write", pattern: "*", action: "allow" },
+        { permission: "bash", pattern: "*", action: "allow" },
+        { permission: "glob", pattern: "*", action: "allow" },
+        { permission: "grep", pattern: "*", action: "allow" },
+        { permission: "delegate-task", pattern: "*", action: "deny" },
+        { permission: "task", pattern: "*", action: "deny" },
       ],
     })
     expect(result).toEqual({

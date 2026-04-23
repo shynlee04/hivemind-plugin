@@ -86,7 +86,8 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 3. ~~**Background observability mostly blind**~~ — RESOLVED in Phase 14: canonical event extraction, status-aware notifications
 4. ~~**668 tests pass but mock-heavy**~~ — RESOLVED in Phase 14: 351 tests pass, dead-module tests removed
 5. ~~**9 debug sessions, 0 verified fixes**~~ — RESOLVED in Phase 14: session-264b debug closed with all root causes verified
-6. **Next runtime step still needs selection** — downstream planning must decide how to resume live runtime verification/re-planning from the corrected Phase 12 baseline
+6. ~~**Delegate-task runtime failure (8× Zod errors)**~~ — RESOLVED 2026-04-23: missing `pattern` field in `session-creator.ts` PermissionRule fixed, validated by independent Devin investigation
+7. **Next runtime step still needs selection** — downstream planning must decide how to resume live runtime verification/re-planning from the corrected Phase 12 baseline
 
 ## Performance Metrics
 
@@ -108,6 +109,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P02 | 5min | 2 tasks | 4 files |
 | Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P04 | 8 min | 3 tasks | 11 files |
 | Phase 16-background-delegation-revamp-pty-integration-rebuild-backgro P05 | 7 min | 2 tasks | 9 files |
+| Delegate-task Wave A fix (PermissionRule pattern) | 5 min | 1 task | 2 files |
 
 ## Accumulated Context
 
@@ -154,10 +156,16 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - HarnessLifecycleManager now acts as a DelegationManager facade, while lazy PTY loading preserves truthful fallback metadata without breaking Node-based verification.
 - Persist the canonical queue key on each delegation record so dispatch and status surfaces report the same runtime concurrency context used at acquire time.
 - Use a session-api message-count wrapper that returns null on transient failures so stability polling never invents progress.
+- **2026-04-23:** Delegate-task 8× Zod error root cause is `session-creator.ts` local `PermissionRule` missing required `pattern` field — NOT `validateAgent()` or SDK/server schema drift. 8 rules × 1 missing field = 8 errors. Fix: import canonical `PermissionRule` from `types.ts` + add `pattern: "*"` to all 8 rules.
+- **2026-04-23:** Independent Devin investigation reached identical conclusion by inspecting OpenCode server source (`Permission.Rule` requires `pattern: Schema.String`) and oh-my-openagent reference (16+ call sites all include `pattern`). Third-party validation confirms root cause.
+- **2026-04-23:** R-AGENT-01 shim in `delegation-manager.ts` was masking the symptom (treating `app.agents()` as the source) but not the cause (`session.create` permission payload). Shim should be reverted in Wave B once runtime verified.
 
 ### Todos
 
-- [ ] Fix 3 typecheck errors from partial merge (MAX_DELEGATIONS_BEFORE_PRUNE, DEFAULT_PRUNE_MAX_AGE_MS, DelegationStatus import) — blocking Phase 16.2
+- [x] Fix 3 typecheck errors from partial merge — RESOLVED 2026-04-22 (W1 types + constants landed in 16.2)
+- [x] Fix delegate-task runtime 8× Zod validation error — RESOLVED 2026-04-23 (Wave A: canonical PermissionRule import + pattern: "*" on all 8 rules)
+- [ ] Runtime verify delegate-task in fresh OpenCode session (awaiting user)
+- [ ] Revert R-AGENT-01 shim in delegation-manager.ts once runtime verified (Wave B cleanup)
 - [ ] Plan Phase 16.2 via /gsd-plan-phase 16.2
 - [ ] Decide the next corrected runtime step for the 09-family corridor (fresh verification, targeted re-plan, or both)
 - [ ] Live verification: spawn real child sessions and confirm end-to-end delegation works from the Phase 12 baseline
@@ -175,7 +183,12 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 
 ### Blockers
 
-- **Phase 16.2 prerequisite:** Codebase is broken — 3 typecheck errors from partial merge (MAX_DELEGATIONS_BEFORE_PRUNE, DEFAULT_PRUNE_MAX_AGE_MS, DelegationStatus). Must fix before any 16.2 implementation begins.
+- ~~**Phase 16.2 prerequisite:** Codebase is broken — 3 typecheck errors~~ — RESOLVED 2026-04-22
+- **Runtime verification pending:** Delegate-task fix applied but needs live OpenCode session test
+
+### Third-Party Validation
+
+- **2026-04-23:** Devin investigation session `3ac1654154854ed7a7d05c711c8d67ac` independently discovered the identical root cause (`session-creator.ts` local `PermissionRule` missing `pattern`). Validated against OpenCode server source (`Permission.Rule` requires `pattern: Schema.String`) and oh-my-openagent reference (16+ call sites all include `pattern`). Full report: `.planning/reports/2026-04-23-delegate-task-remediation-findings-devin.md`.
 
 ### Technical Debt (from Learnings Extraction 2026-04-22)
 
@@ -204,7 +217,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 16-background-delegation-revamp-pty-integration-rebuild-backgro-05-PLAN.md
+**Stopped At:** Delegate-task Wave A fix applied and verified (build/typecheck/503 tests). Awaiting runtime verification in fresh OpenCode session. Disconnected from parallel Devin session that independently validated root cause.
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 

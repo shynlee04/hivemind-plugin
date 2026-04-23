@@ -6,9 +6,6 @@
 
 **Important Notice to Orchestrator/Coordinator agent**
 
-- Please use the builtin `task` tool for delegation; `delegate-task` is on maintainance.
-
-- Do no use `delegate-task` unless explicitly requested by me (the user).
 
 ## IMPORTANT UPDATE TO ALL AGENTS
 

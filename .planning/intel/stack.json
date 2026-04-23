@@ -1,0 +1,15 @@
+{
+  "_meta": { "updated_at": "2026-04-23T00:00:00Z", "version": 1 },
+  "languages": ["TypeScript"],
+  "frameworks": ["OpenCode Plugin SDK"],
+  "tools": ["Vitest", "TypeScript (tsc)", "Zod"],
+  "build_system": "npm scripts (tsc → dist/)",
+  "test_framework": "Vitest (globals: true)",
+  "package_manager": "npm",
+  "content_formats": [
+    "TypeScript (source, strict mode)",
+    "JSON (continuity persistence, package config)",
+    "YAML (tsconfig, opencode config)",
+    "Markdown (agents, skills, commands, AGENTS.md)"
+  ]
+}
