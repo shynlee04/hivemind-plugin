@@ -1,6 +1,6 @@
 ---
 name: hm-coordinating-loop
-description: This skill should be used when the user asks to "dispatch multiple agents", "decide between sequential vs parallel execution", "orchestrate multi-agent workflow", "coordinate parallel tasks", "set up validation gates for delegation", "ralph loop", "wave-based execution", "manage agent dependencies", "plan agent coordination", or "hand off between agents".
+description: Coordinate multi-agent dispatch with validation gates and handoff protocols. Use when delegating to subagents, managing parallel tasks, routing specialist work, or sequencing agent waves. NOT for single-agent execution or simple file edits.
 metadata:
   layer: "3"
   role: "coordinator"

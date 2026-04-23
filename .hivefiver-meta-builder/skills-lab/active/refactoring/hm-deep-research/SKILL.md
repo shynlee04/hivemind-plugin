@@ -1,6 +1,6 @@
 ---
 name: hm-deep-research
-description: "Multi-stage deep research for technology, market, and codebase investigation. Tutorial-style playbook with real case comparisons, edge case handling, and decision frameworks. Teaches agents to brainstorm, shape features, resolve requirements-vs-spec tradeoffs, and produce validated findings. References hm-detective for reading modes and hm-synthesis for artifact export. Triggers on: deep research on, comprehensive analysis of, multi-source research for, compare X vs Y, deep dive into, investigate in depth, state of the art for, thorough investigation of, how does X work (under the hood), can we build X (feasibility), is X viable (assessment), map architecture of, analyze codebase structure, exhaustive report on."
+description: Conduct version-matched deep research with MCP tools and citation tracking. Use when investigating libraries, verifying API signatures, or gathering multi-source evidence. NOT for quick lookups or single-source checks.
 metadata:
   layer: "2"
   role: "research"

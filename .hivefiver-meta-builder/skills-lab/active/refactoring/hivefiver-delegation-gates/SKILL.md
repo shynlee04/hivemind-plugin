@@ -1,6 +1,6 @@
 ---
 name: hivefiver-delegation-gates
-description: This skill should be used when the user asks to "authorize agent creation", "create agent guardrails", "define specialist agent profile", "set up authorization checkpoints", "checkpoint gate for agents", "authorization gate before dispatch", "agent capability matrix", or "agent permission model".
+description: Enforce pre-delegation authorization gates before agent dispatch. Use when setting up checkpoint gates, defining capability matrices, or validating agent permissions. NOT for orchestration execution or direct implementation.
 version: 1.0.0
 metadata:
   layer: "domain-execution"

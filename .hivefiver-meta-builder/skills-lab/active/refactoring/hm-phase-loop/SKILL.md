@@ -1,6 +1,6 @@
 ---
 name: hm-phase-loop
-description: This skill should be used when the user asks to "define loop semantics", "explain phase loop", "iterate on document", "phase loop architecture", "revision loop pattern", "check-revise-escalate", "how many iterations", "loop exit criteria", "stall detection", or "iterative phase execution".
+description: Manage iterative phase loops with entry gates, exit criteria, and checkpoint recovery. Use when running multi-plan phases, handling mid-phase interruptions, or iterating until completion. NOT for one-shot tasks or unplanned work.
 version: 1.0.0
 metadata:
   layer: "2"

@@ -1,6 +1,6 @@
 ---
 name: hm-planning-with-files
-description: This skill should be used when the user asks to "plan this", "break down", "organize tasks", "dispatch subagents on complex task", "recover after context loss", "save progress", "resume task", "hand off to another agent", or "persist task state". Provides a 3-file external memory system (task_plan.md, findings.md, progress.md) that prevents goal drift across orchestrator-to-subagent handoffs.
+description: Persist task state across sessions with a 3-file external memory system. Use when planning complex tasks, recovering after context loss, or handing off between agents. NOT for simple one-step tasks or in-memory todo lists.
 metadata:
   layer: "2"
   role: "persistent-memory"

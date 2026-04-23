@@ -1,6 +1,6 @@
 ---
 name: hm-synthesis
-description: "Cross-dependency analysis, selective compression, and validated artifact generation. Use when packing codebases for analysis, extracting interfaces, classifying patterns, resolving dependencies, generating validated playbooks, or producing permanent artifacts from code analysis. Three compression tiers (Snapshot/Focused/Signature at 0%/50%/70% reduction), cross-dep analysis protocol, interface extraction, and corpus-gated pattern classification. Triggers on: pack codebase, analyze dependencies, extract interfaces, classify patterns, generate playbook, validate artifact, compress repo, cross-dependency, interface contract, pattern classification, create findings, produce artifact, pack for agent."
+description: Compress research findings into actionable artifacts with tiered reduction. Use when packing codebases, extracting interfaces, or producing validated reports. NOT for raw data collection or unfiltered dumps.
 metadata:
   layer: "2"
   role: "compression"

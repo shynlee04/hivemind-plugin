@@ -1,6 +1,6 @@
 ---
 name: hm-detective
-description: "Strategic codebase investigation and context-efficient retrieval. Use when navigating large codebases, recovering session context, reading walls of text efficiently, searching across files, estimating token budgets, or performing surgical edits. Three reading modes (skim/scan/deep at 5%/15%/100% cost), swarm-based context recovery with 5 parallel agents, hierarchical tech registry for cross-session persistence, and LSP-aware surgical edits. Triggers on: navigate this codebase efficiently, skim scan deep reading modes, surgical edit across files, grep before read pattern, token budget management, context recovery with swarm, recover session context, estimate token budget, offset hop-reading, how is this codebase structured, find where X is defined, too many files to read, context is getting full."
+description: Investigate codebases with SCAN, READ, and DEEP reading modes. Use when navigating large codebases, finding definitions, or recovering session context. NOT for writing code or running tests.
 metadata:
   layer: "2"
   role: "investigation"
