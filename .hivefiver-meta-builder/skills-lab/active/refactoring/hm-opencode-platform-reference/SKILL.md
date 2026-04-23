@@ -12,6 +12,10 @@ allowed-tools:
   - Glob
 ---
 
+## Overview
+
+Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models. Use when building plugin integrations, configuring agents, defining tools, or understanding platform architecture. Contains reference files for all platform capabilities.
+
 ## Reference Files
 
 All files in `references/` directory:

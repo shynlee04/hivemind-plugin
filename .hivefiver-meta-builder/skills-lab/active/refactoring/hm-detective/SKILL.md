@@ -8,6 +8,10 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
+## Overview
+
+Investigate codebases using three reading modes: SCAN for targeted extraction, READ for standard review, and DEEP for interface analysis. Use when navigating large codebases, finding definitions, recovering session context, or estimating token budgets. Produces structured codebase findings with surgical edit guidance.
+
 ## Quick Jump
 
 | Investigation Need | Section | Jump |

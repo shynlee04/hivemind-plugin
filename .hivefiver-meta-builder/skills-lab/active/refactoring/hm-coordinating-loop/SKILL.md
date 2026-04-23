@@ -8,6 +8,10 @@ metadata:
 allowed-tools: Bash Read Write Edit Glob Grep todowrite skill
 ---
 
+## Overview
+
+Coordinate multi-agent dispatch with validation gates and handoff protocols. Use when delegating to subagents, managing parallel tasks, routing specialist work, or sequencing agent waves. Produces validated multi-agent dispatch with error recovery and progress tracking.
+
 ## HIERARCHY ENFORCEMENT — Run This FIRST
 
 This skill is LAYER 3 in the loading chain (coordination). Before any action:

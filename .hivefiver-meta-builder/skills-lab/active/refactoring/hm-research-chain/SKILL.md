@@ -23,7 +23,9 @@ allowed-tools:
   - Task
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Orchestrate the canonical research pipeline: detect → research → synthesize → artifact. Use when starting research tasks, chaining investigation skills, producing final artifacts from multiple sources, or when research needs to be structured and repeatable. Produces synthesized research outputs with citation tracking and evidence persistence.
 
 ## The Iron Law
 

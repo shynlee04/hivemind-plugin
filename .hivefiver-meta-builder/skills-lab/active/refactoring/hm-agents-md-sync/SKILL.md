@@ -14,7 +14,9 @@ allowed-tools:
   - Grep
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Detects and fixes drift between AGENTS.md documentation and actual codebase state. Use when documentation claims don't match reality, after refactoring sprints, or when syncing instructions across platforms. Produces a structured drift report with targeted edits to bring documentation back in line with code.
 
 ## The Iron Law
 

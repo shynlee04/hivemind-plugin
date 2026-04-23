@@ -15,6 +15,10 @@ allowed-tools:
   - Grep
 ---
 
+## Overview
+
+Manage iterative phase loops with entry gates, exit criteria, and checkpoint recovery. Use when running multi-plan phases, handling mid-phase interruptions, iterating until completion, or managing loop termination. Produces stable phase outcomes with max-iteration safeguards.
+
 ## Core Concept
 
 A **phase loop** iterates on the same document/target with locked paths, applying incremental deltas until stable or max iterations reached.

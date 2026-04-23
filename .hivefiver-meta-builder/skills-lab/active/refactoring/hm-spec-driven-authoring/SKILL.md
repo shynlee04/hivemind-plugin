@@ -23,7 +23,9 @@ allowed-tools:
   - Grep
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Turn specifications into falsifiable requirements and acceptance tests. Use when locking a spec before implementation, converting PRDs into testable contracts, or verifying code against written requirements. Produces structured requirement sets with acceptance criteria and verification commands.
 
 ## The Iron Law
 

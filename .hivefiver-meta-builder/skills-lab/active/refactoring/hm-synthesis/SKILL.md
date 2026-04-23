@@ -8,6 +8,10 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
+## Overview
+
+Compress research findings into actionable artifacts with tiered reduction. Use when packing codebases, extracting interfaces, producing validated reports, or classifying patterns. Produces compressed outputs at three reduction tiers with cross-dependency analysis.
+
 ## Quick Jump
 
 | Task | Section | Detail |

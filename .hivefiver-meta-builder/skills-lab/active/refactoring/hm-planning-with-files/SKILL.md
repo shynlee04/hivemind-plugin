@@ -15,7 +15,9 @@ allowed-tools:
   - Grep
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Three-file external memory system for persisting task state across sessions and context resets. Use when planning complex multi-step work, recovering after context loss, or handing off between agents. Produces durable task plans, findings logs, and progress trackers on the filesystem.
 
 ## The Iron Law
 

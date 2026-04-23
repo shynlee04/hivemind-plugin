@@ -15,7 +15,9 @@ allowed-tools:
   - Task
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Comprehensive audit of OpenCode project configuration across skills, agents, commands, tools, and permissions. Use when onboarding to a new project, after structural changes, or when verifying ecosystem integrity. Produces a fact-based audit report covering boundaries, governance, and configuration health.
 
 ## The Iron Law
 

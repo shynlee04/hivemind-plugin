@@ -8,6 +8,10 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
+## Overview
+
+Teaches agents how to compose specialist agents from user intent using XML markup grammar, step protocols, and structured return formats. Use when creating agents, designing agent definitions, composing multi-agent workflows, writing agent XML blocks, or building structured return templates. Produces complete agent definitions ready for deployment.
+
 ## Quick Jump
 
 | Need | Reference |

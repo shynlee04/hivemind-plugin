@@ -22,7 +22,9 @@ allowed-tools:
   - Grep
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Decision framework for choosing between surgical and structural refactoring approaches. Use when cleaning up code, restructuring modules, addressing technical debt, or reorganizing grown-organic codebases. Produces scoped refactoring plans with rollback strategies and safety guardrails.
 
 ## The Iron Law
 

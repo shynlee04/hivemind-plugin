@@ -17,7 +17,9 @@ allowed-tools:
   - Question
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Interactive probing skill for clarifying unclear user intent before delegating work. Use when requirements are ambiguous, sessions span many turns, or when context must be preserved across parent-child task delegation. Produces clarified requirements with confirmed user intent and context handoff documents.
 
 ## HARD GATES — Non-Negotiable Enforcement
 

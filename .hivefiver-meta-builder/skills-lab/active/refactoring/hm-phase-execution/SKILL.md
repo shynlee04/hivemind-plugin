@@ -23,7 +23,9 @@ allowed-tools:
   - Task
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Execute phase plans with wave-based parallelization and checkpoint recovery. Use when running multi-plan phases, managing plan dependencies, recovering from mid-phase interruptions, or coordinating parallel plan execution across sessions. Produces completed phase plans with per-task verification and atomic commits.
 
 ## The Iron Law
 

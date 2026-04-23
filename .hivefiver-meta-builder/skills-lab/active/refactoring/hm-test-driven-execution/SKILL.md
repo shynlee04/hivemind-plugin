@@ -22,7 +22,9 @@ allowed-tools:
   - Grep
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Execute red-green-refactor test-driven development cycles integrated with planning and phase loops. Use when writing tests first, running test suites, verifying coverage claims, or building features that need comprehensive test coverage. Produces well-tested code with verified coverage metrics.
 
 ## The Iron Law
 

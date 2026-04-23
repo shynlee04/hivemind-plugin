@@ -13,6 +13,10 @@ allowed-tools:
   - Glob
 ---
 
+## Overview
+
+Complete oh-my-openagent architecture reference for agent plugin design patterns. Use when referencing plugin systems, hook architectures, circuit breakers, session continuity, or skill loader design. Contains packed repository with structured navigation into project structure, tech stack, and all source files.
+
 ## Repomix-Generated References
 
 Repomix also generated structured markdown references from the packed output:

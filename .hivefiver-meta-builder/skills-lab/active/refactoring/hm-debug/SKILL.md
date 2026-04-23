@@ -23,7 +23,9 @@ allowed-tools:
   - Grep
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Systematic debugging workflow that maintains investigation state across context resets. Use when tracing root causes of complex failures, investigating intermittent issues, or performing structured failure analysis. Produces evidence-grounded diagnosis with hypothesis tracking and verification checkpoints.
 
 ## The Iron Law
 

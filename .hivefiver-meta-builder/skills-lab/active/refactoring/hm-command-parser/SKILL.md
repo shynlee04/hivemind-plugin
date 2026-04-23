@@ -14,6 +14,10 @@ allowed-tools:
   - Grep
 ---
 
+## Overview
+
+Parses `$ARGUMENT` propositional command strings from OpenCode into structured key-value maps. Use when handling named arguments, extracting flags, parsing multi-word quoted values, or resolving propositional expressions. Produces mentally-parsed command maps without code execution.
+
 # Command Parser
 
 Parses `$ARGUMENT` strings passed to OpenCode commands into structured key-value maps. The LLM performs parsing mentally — no code execution required.

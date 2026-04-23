@@ -8,6 +8,10 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
+## Overview
+
+Conduct version-matched deep research with MCP tools and citation tracking. Use when investigating libraries, verifying API signatures, gathering multi-source evidence, or producing comprehensive research reports. Returns structured findings with citations and evidence persistence.
+
 ## Quick Jump
 
 | Research Need | Start Here |

@@ -16,7 +16,9 @@ allowed-tools:
   - Task
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Document and apply delegation patterns for subagent dispatch in OpenCode. Use when dispatching subagents, resuming interrupted sessions, implementing checkpoint protocols, or designing wave-based execution flows. Produces validated delegation configurations with session tracking and recovery procedures.
 
 ## The Iron Law
 

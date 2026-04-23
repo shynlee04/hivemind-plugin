@@ -11,7 +11,9 @@ allowed-tools:
   - Bash
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Shell command safety guide for headless agent execution environments. Use when writing shell commands for CI/CD pipelines, automated scripts, or any context without a TTY. Provides banned command lists, non-interactive flag patterns, and environment variable conventions for safe unattended execution.
 
 ## The Iron Law
 

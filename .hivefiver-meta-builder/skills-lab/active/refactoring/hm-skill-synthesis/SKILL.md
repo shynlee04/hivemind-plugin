@@ -8,7 +8,9 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep webfetch websearch codesearch
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Synthesize new skills from GitHub repositories, existing codebases, or design patterns. Use when creating skills from repos, classifying skill patterns, building template libraries, generating eval frameworks, or creating eval-driven skill scaffolds. Produces complete skill packages with evals and trigger queries.
 
 ## The Iron Law
 

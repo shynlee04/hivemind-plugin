@@ -15,7 +15,9 @@ allowed-tools:
   - Grep
 ---
 
-<!-- ONBOARDING-HEADING-HERE -->
+## Overview
+
+Lightweight inspection of OpenCode project state across skills, agents, commands, and tools. Use when checking ecosystem boundaries, verifying architectural integrity, or mapping project structure. Produces a quick structural overview without making changes.
 
 ## The Iron Law
 
