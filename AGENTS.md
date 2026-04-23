@@ -4,7 +4,6 @@
 
 ## NOTICE BOARD
 
-**Important Notice to Orchestrator/Coordinator agent**
 
 
 ## IMPORTANT UPDATE TO ALL AGENTS
@@ -185,6 +184,12 @@ tests/tools/                   # Tool-focused unit tests
 - 57 agents in `.opencode/agents/`: 6 core (coordinator, conductor, researcher, builder, critic, explore) + 30+ GSD specialist agents + 21 hivefiver/meta agents
 - 22 skills in `.opencode/skills/`: 5 core (meta-builder, coordinating-loop, planning-with-files, use-authoring-skills, user-intent-interactive-loop) + 17 extended (agent-authorization, command-dev, custom-tools-dev, harness-audit, hm-deep-research, hm-detective, hm-synthesis, hf-context-absorb, gsd-agent-composition, agents-and-subagents-dev, command-parser, harness-delegation-inspection, oh-my-openagent-reference, opencode-non-interactive-shell, opencode-platform-reference, session-context-manager, phase-loop)
 - 13 commands in `.opencode/commands/`: 6 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack, harness-audit)
+
+### Canonical Skill Location
+
+`.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-meta-builder/skills-lab/active/refactoring/` and is reflected in `.opencode/skills/` via directory-level symlink.
+
+IDE-managed directories (`.trae/skills/`, `.windsurf/skills/`, `.codex/skills/`, `.github/skills/`) are **third-party sync artifacts**, not project deliverables. They are gitignored and must never be committed. `.claude/skills/` does not exist in this repository.
 
 ---
 

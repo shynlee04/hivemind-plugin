@@ -19,6 +19,12 @@ npm-debug.log*
 .idea/
 .vscode/
 
+# IDE-managed skill sync artifacts (not project deliverables)
+.trae/
+.windsurf/
+.codex/
+.github/skills/
+
 # Runtime state
 .opencode/state/
 .harness/
