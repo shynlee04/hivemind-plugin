@@ -15,13 +15,29 @@ import {
   DEFAULT_SAFETY_CEILING_MS,
   type CommandDelegationParams,
   type Delegation,
+  type DelegationRecoveryGuarantee,
   type DelegationResult,
+  type DelegationSurface,
   type DelegationStatus,
   MAX_DELEGATIONS_BEFORE_PRUNE,
   DEFAULT_PRUNE_MAX_AGE_MS,
   MAX_DELEGATION_DEPTH,
   TASK_CLEANUP_DELAY_MS,
 } from "./types.js"
+
+function deriveDelegationSurface(executionMode: Delegation["executionMode"]): DelegationSurface {
+  return executionMode === "sdk" ? "agent-delegation" : "command-process"
+}
+
+function deriveRecoveryGuarantee(executionMode: Delegation["executionMode"]): DelegationRecoveryGuarantee {
+  if (executionMode === "sdk") {
+    return "resumable"
+  }
+  if (executionMode === "pty") {
+    return "best-effort"
+  }
+  return "non-resumable-after-restart"
+}
 
 type DelegateParams = {
   parentSessionId: string
@@ -221,10 +237,20 @@ export class DelegationManager {
     return Array.from(this.delegations.values())
   }
 
+  private withContractDefaults(delegation: Delegation): Delegation {
+    return {
+      ...delegation,
+      surface: delegation.surface ?? deriveDelegationSurface(delegation.executionMode),
+      recoveryGuarantee: delegation.recoveryGuarantee ?? deriveRecoveryGuarantee(delegation.executionMode),
+      explicitCancellation: delegation.explicitCancellation ?? false,
+    }
+  }
+
   private registerDelegation(delegation: Delegation, scheduleSafetyCeiling: boolean): void {
-    this.delegations.set(delegation.id, { ...delegation })
-    this.delegationsBySession.set(delegation.childSessionId, delegation.id)
-    if (scheduleSafetyCeiling) this.scheduleSafetyCeiling(delegation)
+    const hydratedDelegation = this.withContractDefaults(delegation)
+    this.delegations.set(hydratedDelegation.id, hydratedDelegation)
+    this.delegationsBySession.set(hydratedDelegation.childSessionId, hydratedDelegation.id)
+    if (scheduleSafetyCeiling) this.scheduleSafetyCeiling(hydratedDelegation)
   }
 
   private persistAllDelegations(): void {
@@ -390,14 +416,20 @@ export class DelegationManager {
   }
 
   private buildResult(delegation: Delegation): DelegationResult {
+    const hydratedDelegation = this.withContractDefaults(delegation)
     return {
-      status: delegation.status,
-      delegationId: delegation.id,
-      executionMode: delegation.executionMode,
-      workingDirectory: delegation.workingDirectory,
-      ptySessionId: delegation.ptySessionId,
-      fallbackReason: delegation.fallbackReason,
-      queueKey: delegation.queueKey,
+      status: hydratedDelegation.status,
+      delegationId: hydratedDelegation.id,
+      executionMode: hydratedDelegation.executionMode,
+      surface: hydratedDelegation.surface,
+      recoveryGuarantee: hydratedDelegation.recoveryGuarantee,
+      workingDirectory: hydratedDelegation.workingDirectory,
+      ptySessionId: hydratedDelegation.ptySessionId,
+      fallbackReason: hydratedDelegation.fallbackReason,
+      queueKey: hydratedDelegation.queueKey,
+      terminalKind: hydratedDelegation.terminalKind,
+      terminationSignal: hydratedDelegation.terminationSignal,
+      explicitCancellation: hydratedDelegation.explicitCancellation,
     }
   }
 
