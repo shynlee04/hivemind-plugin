@@ -1,94 +1,202 @@
 #!/usr/bin/env bash
 # validate-skill.sh — Validates gsd-agent-composition SKILL.md frontmatter + structure
+# Usage: bash scripts/validate-skill.sh [<skill-directory>]
 # Exits non-zero on failure, zero on pass.
 
 set -euo pipefail
 
-SKILL_DIR="${1:-.}"
-SKILL_FILE="$SKILL_DIR/SKILL.md"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SKILL_DIR="${1:-$SCRIPT_DIR/..}"
+readonly SKILL_FILE="$SKILL_DIR/SKILL.md"
 
 ERRORS=()
 
-# Check SKILL.md exists
-if [[ ! -f "$SKILL_FILE" ]]; then
-  echo "FAIL: SKILL.md not found at $SKILL_FILE"
+fail() { ERRORS+=("FAIL: $1"); }
+pass() { echo "PASS: $1"; }
+
+# --- Argument Validation ---
+
+if [[ ! -d "$SKILL_DIR" ]]; then
+  echo "FAIL: Directory '$SKILL_DIR' does not exist" >&2
   exit 1
 fi
 
-# Check frontmatter exists
+pass "Skill directory exists: $SKILL_DIR"
+
+# --- Gate 1: SKILL.md Existence ---
+
+if [[ ! -f "$SKILL_FILE" ]]; then
+  echo "FAIL: SKILL.md not found at $SKILL_FILE" >&2
+  exit 1
+fi
+
+pass "SKILL.md exists"
+
+# --- Gate 2: Frontmatter Structure ---
+
 if ! head -1 "$SKILL_FILE" | grep -q '^---$'; then
-  ERRORS+=("FAIL: No YAML frontmatter (file must start with ---)")
+  fail "No YAML frontmatter (file must start with ---)"
+  echo "Cannot continue without frontmatter" >&2
+  exit 1
 fi
 
-# Check name field
-NAME=$(sed -n '/^---$/,/^---$/p' "$SKILL_FILE" | grep '^name:' | sed 's/^name: *//')
+pass "Frontmatter delimiter present"
+
+# Extract frontmatter block (lines between first --- and second ---)
+frontmatter=$(awk 'NR==1{next} /^---$/{exit} {print}' "$SKILL_FILE")
+if [[ -z "$frontmatter" ]]; then
+  fail "Empty or missing frontmatter block"
+  echo "Cannot continue without frontmatter" >&2
+  exit 1
+fi
+
+pass "Frontmatter block present"
+
+# --- Gate 3: Required Fields ---
+
+NAME=$(echo "$frontmatter" | grep '^name:' | head -1 | sed 's/^name: *//' | tr -d '"' | tr -d "'")
 if [[ -z "$NAME" ]]; then
-  ERRORS+=("FAIL: Missing 'name' field in frontmatter")
-elif [[ ! "$NAME" =~ ^[a-z0-9-]+$ ]]; then
-  ERRORS+=("FAIL: name '$NAME' contains invalid chars (lowercase, numbers, hyphens only)")
-elif [[ ${#NAME} -gt 64 ]]; then
-  ERRORS+=("FAIL: name '${#NAME}' chars exceeds 64 char limit")
+  fail "Missing 'name' field in frontmatter"
+else
+  pass "name field present: '$NAME'"
 fi
 
-# Check description field
-DESC=$(sed -n '/^---$/,/^---$/p' "$SKILL_FILE" | grep '^description:' | sed 's/^description: *//')
+DESC=$(echo "$frontmatter" | grep '^description:' | head -1 | sed 's/^description: *//')
 if [[ -z "$DESC" ]]; then
-  ERRORS+=("FAIL: Missing 'description' field in frontmatter")
-elif [[ ${#DESC} -gt 1024 ]]; then
-  ERRORS+=("FAIL: description (${#DESC} chars) exceeds 1024 char limit")
+  fail "Missing 'description' field in frontmatter"
+else
+  pass "description field present"
 fi
 
-# Check description has trigger keywords
-if ! echo "$DESC" | grep -qi 'use when\|triggers on\|when user\|when.*agent'; then
-  ERRORS+=("WARN: Description may lack trigger keywords ('Use when...', 'Triggers on...')")
+# --- Gate 4: Name Validation ---
+
+if [[ -n "$NAME" ]]; then
+  if ! echo "$NAME" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+    fail "Invalid name format '$NAME'. Must be lowercase kebab-case"
+  else
+    pass "Name format valid: '$NAME'"
+  fi
+
+  name_len=${#NAME}
+  if [[ $name_len -gt 64 ]]; then
+    fail "Name '$NAME' exceeds 64 characters (actual: $name_len)"
+  else
+    pass "Name length valid: $name_len chars"
+  fi
+
+  dir_name=$(basename "$SKILL_DIR")
+  if [[ "$NAME" != "$dir_name" ]]; then
+    fail "Name '$NAME' does not match directory name '$dir_name'"
+  else
+    pass "Name matches directory name"
+  fi
 fi
 
-# Check SKILL.md line count (target <500)
-LINES=$(wc -l < "$SKILL_FILE")
-if [[ $LINES -gt 500 ]]; then
-  ERRORS+=("FAIL: SKILL.md has $LINES lines (target: <500 for progressive disclosure)")
+# --- Gate 5: Description Validation ---
+
+if [[ -n "$DESC" ]]; then
+  desc_len=${#DESC}
+  if [[ $desc_len -gt 1024 ]]; then
+    fail "Description exceeds 1024 characters (actual: $desc_len)"
+  else
+    pass "Description length valid: $desc_len chars"
+  fi
+
+  if ! echo "$DESC" | grep -qi 'use when\|triggers on\|when user\|when.*agent'; then
+    fail "Description may lack trigger keywords ('Use when...', 'Triggers on...')"
+  else
+    pass "Description contains trigger keywords"
+  fi
 fi
 
-# Check required XML blocks
+# --- Gate 6: SKILL.md Size ---
+
+LINES=$(wc -l < "$SKILL_FILE" | tr -d ' ')
+if [[ "$LINES" -gt 500 ]]; then
+  fail "SKILL.md has $LINES lines (target: <500 for progressive disclosure)"
+else
+  pass "SKILL.md line count: $LINES (target: <500)"
+fi
+
+# --- Gate 7: Required XML Blocks ---
+
 for BLOCK in "role" "execution_flow" "structured_returns" "success_criteria" "project_context"; do
   if ! grep -q "<$BLOCK>" "$SKILL_FILE" 2>/dev/null; then
-    # Check references mention it
     if grep -q "$BLOCK" "$SKILL_FILE" 2>/dev/null; then
-      : # Referenced in body, OK for SKILL.md
+      pass "<$BLOCK> referenced in body (OK for P2 pattern)"
     else
-      ERRORS+=("WARN: SKILL.md lacks <$BLOCK> block (may be covered in references)")
+      fail "SKILL.md lacks <$BLOCK> block and no reference found"
     fi
+  else
+    pass "<$BLOCK> block present"
   fi
 done
 
-# Check "Mandatory Initial Read" text exists
+# --- Gate 8: Mandatory Initial Read ---
+
 if ! grep -q "Mandatory Initial Read" "$SKILL_FILE" 2>/dev/null; then
-  ERRORS+=("FAIL: Missing 'Mandatory Initial Read' enforcement text")
+  fail "Missing 'Mandatory Initial Read' enforcement text"
+else
+  pass "Mandatory Initial Read enforcement present"
 fi
 
-# Check reference files exist
+# --- Gate 9: Reference Files ---
+
 REFS_DIR="$SKILL_DIR/references"
 if [[ -d "$REFS_DIR" ]]; then
-  REF_COUNT=$(find "$REFS_DIR" -name "*.md" | wc -l)
-  if [[ $REF_COUNT -lt 3 ]]; then
-    ERRORS+=("WARN: Only $REF_COUNT reference files (P2 pattern recommends 3-8)")
+  REF_COUNT=$(find "$REFS_DIR" -name "*.md" | wc -l | tr -d ' ')
+  if [[ "$REF_COUNT" -lt 3 ]]; then
+    fail "Only $REF_COUNT reference files (P2 pattern recommends 3-8)"
+  else
+    pass "Reference files: $REF_COUNT (P2 recommends 3-8)"
   fi
 else
-  ERRORS+=("WARN: No references/ directory (P2 pattern expects references)")
+  fail "No references/ directory (P2 pattern expects references)"
 fi
 
-# Report
-if [[ ${#ERRORS[@]} -eq 0 ]]; then
-  echo "PASS: $SKILL_FILE validates successfully"
-  echo "  - Name: $NAME"
-  echo "  - Description: ${#DESC} chars"
-  echo "  - Lines: $LINES"
-  echo "  - References: $REF_COUNT files"
-  exit 0
-else
-  echo "VALIDATION FAILED: $SKILL_FILE"
+# --- Gate 10: Referenced Files Exist ---
+
+refs_found=0
+refs_missing=0
+
+while IFS= read -r ref; do
+  [[ -z "$ref" ]] && continue
+  ref_path="$SKILL_DIR/$ref"
+
+  if [[ "$ref" == *"*"* ]]; then
+    shopt -s nullglob
+    matches=("$ref_path")
+    shopt -u nullglob
+    if [[ ${#matches[@]} -eq 0 ]]; then
+      fail "Referenced glob pattern '$ref' matches no files"
+      refs_missing=$((refs_missing + 1))
+    else
+      refs_found=$((refs_found + ${#matches[@]}))
+    fi
+  elif [[ -f "$ref_path" ]]; then
+    refs_found=$((refs_found + 1))
+  else
+    fail "Referenced file '$ref' does not exist"
+    refs_missing=$((refs_missing + 1))
+  fi
+done < <(grep -oE '(references|scripts|templates|assets)/[a-zA-Z0-9_./-]+\.(md|sh|py|json|txt)' "$SKILL_FILE" 2>/dev/null | sort -u)
+
+if [[ $refs_found -gt 0 && $refs_missing -eq 0 ]]; then
+  pass "All $refs_found referenced files exist"
+elif [[ $refs_found -eq 0 && $refs_missing -eq 0 ]]; then
+  pass "No file references to validate"
+fi
+
+# --- Summary ---
+
+echo ""
+if [[ ${#ERRORS[@]} -gt 0 ]]; then
+  echo "VALIDATION FAILED: ${#ERRORS[@]} error(s) found" >&2
   for ERR in "${ERRORS[@]}"; do
-    echo "  $ERR"
+    echo "  $ERR" >&2
   done
   exit 1
+else
+  echo "Validation PASSED: All checks passed"
+  exit 0
 fi

@@ -8,6 +8,17 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
+## 6-NON Defence Table
+
+| NON | Defence |
+|-----|---------|
+| NON-1 | "Five Non-Negotiables" synthesized from 24 GSD agent patterns, not copied; references/ holds 6 structured docs + 1 worked example + 1 template |
+| NON-2 | Cross-References table maps boundaries to meta-builder, command-dev, platform-reference; XML Block Quick Reference shows which blocks belong to which agent types |
+| NON-3 | "First Action" defines 6-step entry protocol; "Validation Gate" defines 8-checkpoint exit criteria; Anti-Patterns table defines misuse detection and correction |
+| NON-4 | metadata.layer="2", role="composition", pattern="P2" declared; description has "NOT" exclusions for scope clarity |
+| NON-5 | evals/evals.json exists; Anti-Patterns table provides 6 eval scenarios with Detection/Correction columns; Validation Gate checklist provides acceptance criteria |
+| NON-6 | scripts/validate-skill.sh uses set -euo pipefail + structured error array; scripts/check-markup.sh validates XML structure with non-zero exit on mismatch |
+
 # GSD Agent Composition
 
 Teaches the **composition grammar** for GSD specialist agents — not what agents exist, but HOW to build them. Every GSD agent follows the same structural patterns: XML markup, step protocols, structured returns, deviation rules, and checkpoint gates. Learn these patterns, compose any agent.
