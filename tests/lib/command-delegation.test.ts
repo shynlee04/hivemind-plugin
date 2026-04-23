@@ -278,6 +278,11 @@ describe("CommandDelegationHandler", () => {
       expect(callbacks.onTerminal).toHaveBeenCalledWith(
         expect.any(String),
         "completed",
+        undefined,
+        expect.objectContaining({
+          terminalKind: "completed",
+          explicitCancellation: false,
+        }),
       )
     })
 
@@ -321,6 +326,11 @@ describe("CommandDelegationHandler", () => {
       expect(callbacks.onTerminal).toHaveBeenCalledWith(
         expect.any(String),
         "completed",
+        undefined,
+        expect.objectContaining({
+          terminalKind: "completed",
+          explicitCancellation: false,
+        }),
       )
     })
   })
@@ -360,6 +370,10 @@ describe("CommandDelegationHandler", () => {
         expect.any(String),
         "error",
         expect.stringContaining("exited with code 1"),
+        expect.objectContaining({
+          terminalKind: "error",
+          explicitCancellation: false,
+        }),
       )
     })
 
@@ -386,6 +400,10 @@ describe("CommandDelegationHandler", () => {
         expect.any(String),
         "error",
         expect.stringContaining("PTY session disappeared"),
+        expect.objectContaining({
+          terminalKind: "error",
+          explicitCancellation: false,
+        }),
       )
     })
   })

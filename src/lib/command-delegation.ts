@@ -2,7 +2,7 @@ import { spawn as spawnHeadlessProcess, type ChildProcessWithoutNullStreams } fr
 
 import { describeError } from "./helpers.js"
 import type { PtyManager } from "./pty/pty-manager.js"
-import type { CommandDelegationParams, Delegation, DelegationResult } from "./types.js"
+import type { CommandDelegationParams, Delegation, DelegationResult, DelegationTerminalKind } from "./types.js"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -19,7 +19,16 @@ type CommandDelegationCallbacks = {
   persistAllDelegations: () => void
   buildResult: (delegation: Delegation) => DelegationResult
   cleanupTracking: (delegationId: string, childSessionId: string) => void
-  onTerminal: (delegationId: string, newState: "completed" | "error" | "timeout", error?: string) => void
+  onTerminal: (
+    delegationId: string,
+    newState: "completed" | "error" | "timeout",
+    error?: string,
+    terminalDetail?: {
+      terminalKind?: DelegationTerminalKind
+      terminationSignal?: string
+      explicitCancellation?: boolean
+    },
+  ) => void
 }
 
 const COMMAND_POLL_INTERVAL_MS = 250
@@ -121,8 +130,9 @@ export class CommandDelegationHandler {
 
     if (session.exitCode !== undefined) {
       this.finalizeCommandDelegation(delegation.id, {
-        output: this.resolvePtyManager()?.read(session.id, 0).content ?? "",
+        output: this.readPtyOutput(this.resolvePtyManager(), session.id),
         exitCode: session.exitCode,
+        signal: session.exitSignal,
       })
       return
     }
@@ -184,8 +194,12 @@ export class CommandDelegationHandler {
     child.on("error", (error) => {
       this.finalizeCommandDelegation(delegation.id, { output: state.output, error: describeError(error) })
     })
-    child.on("exit", (exitCode) => {
-      this.finalizeCommandDelegation(delegation.id, { output: state.output, exitCode: exitCode ?? 0 })
+    child.on("exit", (exitCode, signal) => {
+      this.finalizeCommandDelegation(delegation.id, {
+        output: state.output,
+        exitCode: exitCode ?? 0,
+        signal: signal ?? undefined,
+      })
     })
 
     this.headlessCommands.set(delegation.id, state)
@@ -211,13 +225,21 @@ export class CommandDelegationHandler {
       }
 
       if (session.exitCode === undefined) {
+        if (session.exitSignal) {
+          this.finalizeCommandDelegation(delegationId, {
+            output: this.readPtyOutput(ptyManager, sessionId),
+            signal: session.exitSignal,
+          })
+          return
+        }
         this.schedulePtyExitPoll(delegationId, sessionId)
         return
       }
 
       this.finalizeCommandDelegation(delegationId, {
-        output: ptyManager?.read(sessionId, 0).content ?? "",
+        output: this.readPtyOutput(ptyManager, sessionId),
         exitCode: session.exitCode,
+        signal: session.exitSignal,
       })
     }, COMMAND_POLL_INTERVAL_MS)
 
@@ -226,7 +248,7 @@ export class CommandDelegationHandler {
 
   private finalizeCommandDelegation(
     delegationId: string,
-    outcome: { output?: string; exitCode?: number; error?: string },
+    outcome: { output?: string; exitCode?: number; error?: string; signal?: string },
   ): void {
     const delegation = this.callbacks.getDelegation(delegationId)
     if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) {
@@ -234,13 +256,69 @@ export class CommandDelegationHandler {
     }
 
     delegation.result = outcome.output
+    const explicitCancellation = delegation.explicitCancellation ?? false
 
     if (outcome.error) {
-      this.callbacks.onTerminal(delegationId, "error", outcome.error)
+      const terminalKind: DelegationTerminalKind = explicitCancellation
+        ? "cancelled"
+        : outcome.signal
+          ? "interrupted-by-signal"
+          : "error"
+      this.callbacks.onTerminal(
+        delegationId,
+        "error",
+        outcome.error,
+        {
+          terminalKind,
+          terminationSignal: outcome.signal,
+          explicitCancellation,
+        },
+      )
+      if (delegation.executionMode === "headless") {
+        this.headlessCommands.delete(delegation.id)
+      }
+      return
+    }
+
+    if (explicitCancellation) {
+      this.callbacks.onTerminal(
+        delegationId,
+        "error",
+        outcome.signal
+          ? `[Harness] Command cancelled by user (${outcome.signal})`
+          : "[Harness] Command cancelled by user",
+        {
+          terminalKind: "cancelled",
+          terminationSignal: outcome.signal,
+          explicitCancellation: true,
+        },
+      )
+    } else if (outcome.signal) {
+      this.callbacks.onTerminal(
+        delegationId,
+        "error",
+        `[Harness] Command interrupted by signal ${outcome.signal}`,
+        {
+          terminalKind: "interrupted-by-signal",
+          terminationSignal: outcome.signal,
+          explicitCancellation: false,
+        },
+      )
     } else if ((outcome.exitCode ?? 0) === 0) {
-      this.callbacks.onTerminal(delegationId, "completed")
+      this.callbacks.onTerminal(delegationId, "completed", undefined, {
+        terminalKind: "completed",
+        explicitCancellation: false,
+      })
     } else {
-      this.callbacks.onTerminal(delegationId, "error", `[Harness] Command exited with code ${outcome.exitCode}`)
+      this.callbacks.onTerminal(
+        delegationId,
+        "error",
+        `[Harness] Command exited with code ${outcome.exitCode}`,
+        {
+          terminalKind: "error",
+          explicitCancellation: false,
+        },
+      )
     }
 
     if (delegation.executionMode === "headless") {
@@ -262,6 +340,14 @@ export class CommandDelegationHandler {
     }
 
     return this.ptyManager
+  }
+
+  private readPtyOutput(ptyManager: PtyManager | null | undefined, sessionId: string): string {
+    if (!ptyManager || typeof ptyManager.read !== "function") {
+      return ""
+    }
+
+    return ptyManager.read(sessionId, 0).content
   }
 
   private buildMinimalEnv(extraEnv?: Record<string, string>): Record<string, string> {

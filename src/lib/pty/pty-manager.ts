@@ -16,6 +16,25 @@ type PtyManagerOptions = {
   maxBufferChars?: number
 }
 
+function extractExitSignal(event: IExitEvent): string | undefined {
+  const candidates = [
+    (event as IExitEvent & { signal?: unknown }).signal,
+    (event as IExitEvent & { signalCode?: unknown }).signalCode,
+    (event as IExitEvent & { signalName?: unknown }).signalName,
+  ]
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.length > 0) {
+      return candidate
+    }
+    if (typeof candidate === "number" && candidate > 0) {
+      return `SIG${candidate}`
+    }
+  }
+
+  return undefined
+}
+
 export class PtyManager {
   private readonly sessions = new Map<string, PtySessionState>()
   private readonly maxBufferChars: number
@@ -58,6 +77,7 @@ export class PtyManager {
       }
 
       activeSession.record.exitCode = event.exitCode
+      activeSession.record.exitSignal = extractExitSignal(event)
     })
 
     this.sessions.set(sessionId, {
@@ -87,6 +107,7 @@ export class PtyManager {
       return
     }
 
+    session.record.explicitCancellation = true
     session.dataSubscription.dispose()
     session.exitSubscription.dispose()
     session.process.kill()

@@ -356,7 +356,13 @@ export type DelegationSurface = "agent-delegation" | "command-process"
 
 export type DelegationRecoveryGuarantee = "resumable" | "best-effort" | "non-resumable-after-restart"
 
-export type DelegationTerminalKind = "completed" | "error" | "timeout" | "cancelled" | "interrupted-by-signal"
+export type DelegationTerminalKind =
+  | "completed"
+  | "error"
+  | "timeout"
+  | "cancelled"
+  | "interrupted-by-signal"
+  | "non-resumable-after-restart"
 
 export interface Delegation {
   id: string

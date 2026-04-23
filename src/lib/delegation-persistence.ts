@@ -77,6 +77,7 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
       || record.terminalKind === "timeout"
       || record.terminalKind === "cancelled"
       || record.terminalKind === "interrupted-by-signal"
+      || record.terminalKind === "non-resumable-after-restart"
     ? record.terminalKind
     : undefined
 

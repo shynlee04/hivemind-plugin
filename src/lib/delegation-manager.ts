@@ -19,6 +19,7 @@ import {
   type DelegationResult,
   type DelegationSurface,
   type DelegationStatus,
+  type DelegationTerminalKind,
   MAX_DELEGATIONS_BEFORE_PRUNE,
   DEFAULT_PRUNE_MAX_AGE_MS,
   MAX_DELEGATION_DEPTH,
@@ -75,7 +76,7 @@ export class DelegationManager {
       persistAllDelegations: () => dm.persistAllDelegations(),
       buildResult: (d) => dm.buildResult(d),
       cleanupTracking: (id, sid) => dm.cleanupTracking(id, sid),
-      onTerminal: (id, state, err) => dm.transitionToTerminal(id, state, err),
+      onTerminal: (id, state, err, terminalDetail) => dm.transitionToTerminal(id, state, err, terminalDetail),
     })
     this.sdkHandler = new SdkDelegationHandler(client, {
       getDelegation: (id) => dm.delegations.get(id),
@@ -223,6 +224,9 @@ export class DelegationManager {
         continue
       }
       delegation.status = "error"
+      delegation.terminalKind = "non-resumable-after-restart"
+      delegation.terminationSignal = undefined
+      delegation.explicitCancellation = false
       delegation.error = "[Harness] Headless command delegation cannot be recovered after restart"
       delegation.completedAt = Date.now()
       this.persistAllDelegations()
@@ -318,6 +322,11 @@ export class DelegationManager {
     delegationId: string,
     newState: DelegationStatus,
     error?: string,
+    terminalDetail?: {
+      terminalKind?: DelegationTerminalKind
+      terminationSignal?: string
+      explicitCancellation?: boolean
+    },
   ): void {
     const delegation = this.delegations.get(delegationId)
     if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) {
@@ -327,6 +336,9 @@ export class DelegationManager {
     const previousStatus = delegation.status
     delegation.status = newState
     delegation.completedAt = Date.now()
+    delegation.terminalKind = terminalDetail?.terminalKind ?? delegation.terminalKind
+    delegation.terminationSignal = terminalDetail?.terminationSignal ?? delegation.terminationSignal
+    delegation.explicitCancellation = terminalDetail?.explicitCancellation ?? delegation.explicitCancellation ?? false
     if (error !== undefined) {
       delegation.error = error
     }

@@ -71,6 +71,10 @@ export interface PtySessionRecord {
   pid?: number
   /** Exit code captured when the child process terminated. */
   exitCode?: number
+  /** Signal captured when the child process terminated. */
+  exitSignal?: string
+  /** True when termination was explicitly requested by the user/tool surface. */
+  explicitCancellation?: boolean
   /** Human-readable reason when headless fallback was chosen. */
   fallbackReason?: string
 }
