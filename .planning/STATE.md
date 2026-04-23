@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 current_plan: 3
-status: executing
-stopped_at: Completed 16.3-02-PLAN.md
-last_updated: "2026-04-23T19:50:30.000Z"
+status: complete
+stopped_at: Completed 16.3-03-PLAN.md
+last_updated: "2026-04-23T20:16:17.748Z"
 progress:
   total_phases: 25
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 44
-  completed_plans: 41
-  percent: 93
+  completed_plans: 42
+  percent: 95
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 16.3 — delegation-subsystem-hardening-fix-critical-gaps-in-parent-r
+**Current focus:** Phase 16.3 complete — delegation-subsystem-hardening-fix-critical-gaps-in-parent-r
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,8 +29,8 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — EXECUTING
-Plan: 3 of 3
+Phase: 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — COMPLETE
+Plan: 3 of 3 (complete)
 Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
 Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
 Phase 21: COMPLETE — 7 differential cluster skills rewritten with pushy trigger pattern per V.7 template
@@ -41,7 +41,7 @@ Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
 **Current plan:** 3
-**Progress:** [█████████░] 93%
+**Progress:** [██████████] 95%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -141,6 +141,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Delegate-task Wave A fix (PermissionRule pattern) | 5 min | 1 task | 2 files |
 | Phase 16.3 P01 | 8 min | 2 tasks | 8 files |
 | Phase 16.3 P02 | 6 min | 2 tasks | 7 files |
+| Phase 16.3 P03 | 12 min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -196,6 +197,9 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - Terminal notifications now carry one text contract with a concise human summary plus JSON metadata instead of raw JSON-only delivery.
 - Undelivered parent notifications are queued in continuity metadata and replayed through the same notifyParentSession path on resume.
 - Replay clears pendingNotifications only after successful delivery; transient failures leave the queue intact for another resume attempt.
+- Terminal detail now carries non-resumable-after-restart alongside cancelled and interrupted-by-signal so headless restart truth is explicit.
+- DelegationManager records explicit PTY cancellation intent before the PTY layer is terminated, letting later terminal transitions prefer cancelled over generic error wording.
+- delegation-status keeps coarse status for compatibility but prefers terminal-detail wording when specific terminal truth is available.
 
 ### Todos
 
@@ -256,7 +260,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 16.3-02-PLAN.md
+**Stopped At:** Completed 16.3-03-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
