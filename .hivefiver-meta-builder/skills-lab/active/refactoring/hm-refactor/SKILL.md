@@ -1,6 +1,13 @@
 ---
 name: hm-refactor
-description: Decide between surgical and structural refactoring with scope, safety, and rollback planning. Use when cleaning code, restructuring modules, or improving architecture. NOT for rewrites that change behavior or for trivial formatting fixes.
+description: >
+  Decide between surgical and structural refactoring with scope, safety, and rollback planning.
+  Use when cleaning code, restructuring modules, improving architecture, when code has grown
+  organically and needs organization, when technical debt is accumulating, or when the user
+  says "this code is a mess" or "clean this up." Even when they don't explicitly say "refactor."
+  Triggers: "refactor", "clean up code", "restructure", "improve architecture", "technical debt",
+  "code organization", "surgical refactor", "structural refactor".
+  NOT for rewrites that change behavior or for trivial formatting fixes.
 metadata:
   layer: "2"
   role: "domain-execution"
