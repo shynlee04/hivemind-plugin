@@ -364,7 +364,7 @@ Run: npm test -- tests/lib/session-api.ts — all must pass
 | Related Skill | Boundary |
 |---------------|----------|
 | `agents-and-subagents-dev` | agents-and-subagents-dev owns agent definitions and delegation protocol. This skill owns dispatch mechanics and coordination between multiple agents. |
-| `harness-delegation-inspection` | harness-delegation-inspection owns GSD-specific execution patterns (checkpoint resume, session ID tracking). This skill owns general multi-agent orchestration. |
+| `hm-subagent-delegation-patterns` | hm-subagent-delegation-patterns owns GSD-specific execution patterns (checkpoint resume, session ID tracking). This skill owns general multi-agent orchestration. |
 | `user-intent-interactive-loop` | user-intent-interactive-loop owns intent clarification before work begins. This skill owns execution coordination after intent is clear. |
 | `planning-with-files` | planning-with-files owns task-level persistent memory. This skill reads/writes those files as part of coordination but doesn't own them. |
 
