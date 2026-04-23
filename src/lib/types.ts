@@ -346,6 +346,12 @@ export type DelegationStatus =
   | "error"       // Error occurred (child session deleted, SDK error, etc.)
   | "timeout"     // Safety ceiling reached (MAX runtime, not a deadline)
 
+export type DelegationSurface = "agent-delegation" | "command-process"
+
+export type DelegationRecoveryGuarantee = "resumable" | "best-effort" | "non-resumable-after-restart"
+
+export type DelegationTerminalKind = "completed" | "error" | "timeout" | "cancelled" | "interrupted-by-signal"
+
 export interface Delegation {
   id: string
   parentSessionId: string
@@ -369,10 +375,15 @@ export interface Delegation {
   /** Timestamp of last observed message count change (for adaptive polling) */
   lastMessageCountChangeAt?: number
   executionMode: "sdk" | "pty" | "headless"
+  surface?: DelegationSurface
+  recoveryGuarantee?: DelegationRecoveryGuarantee
   workingDirectory: string
   ptySessionId?: string
   fallbackReason?: string
   queueKey: string
+  terminalKind?: DelegationTerminalKind
+  terminationSignal?: string
+  explicitCancellation?: boolean
 }
 
 export interface DelegationResult {
@@ -381,10 +392,15 @@ export interface DelegationResult {
   error?: string
   delegationId: string
   executionMode?: "sdk" | "pty" | "headless"
+  surface?: DelegationSurface
+  recoveryGuarantee?: DelegationRecoveryGuarantee
   workingDirectory?: string
   ptySessionId?: string
   fallbackReason?: string
   queueKey?: string
+  terminalKind?: DelegationTerminalKind
+  terminationSignal?: string
+  explicitCancellation?: boolean
   /** Timestamp when grace period cleanup is scheduled (terminal states only) */
   gracePeriodExpiresAt?: number
   /** Total count of matching delegations (for status tool responses) */
