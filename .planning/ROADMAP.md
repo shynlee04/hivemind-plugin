@@ -531,7 +531,7 @@ Plans:
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
-| 18. Context & Research (Playbook Phase CR) | 0/8 deliverables | Not started — research/audit only, no skill edits |
+| 18. Context & Research (Playbook Phase CR) | 8/8 deliverables | ✅ COMPLETE (pending user sign-off) — all deliverables committed |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
