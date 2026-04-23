@@ -347,18 +347,19 @@ Plans:
 ### Phase 18: Context & Research — Skills Refactor Playbook Phase CR
 
 **Goal:** Produce the evidence base and audit posture that Phases 1–5 consume. Prevent 6-NON failures from regressing downstream phases. No skill refactoring in this phase — only research, audit, and decision artifacts.
+
 **Requirements**: CR-01 through CR-08 (8 deliverables per playbook §VI.CR.10)
 **Depends on:** Phase 17 (complete)
-**Specification:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` §VI.CR (v2.0)
+**Specification:** `.hivemind/state/session-context-prompt-v4.md` (GSD phase-planning specification)
 **Playbook mapping:** Playbook Phase CR → GSD Phase 18
 
 **Scope (research + audit only — NO skill edits):**
 1. Fresh runtime probe of every active skill (count, names, grades vs I.1.2 table)
-2. Per-skill 6-NON audit grid (defence posture against NON-1..NON-6)
+2. Per-skill 6-NON audit grid (defense posture against NON-1..NON-6)
 3. Differential cluster gap map (G-A through G-D per §V.3.2)
 4. Third-party pattern harvest (from gsd-*, superpower-*, retired skills)
 5. Runtime-integration readiness assessment (soft→hard migration feasibility)
-6. Tooling decision table (for each skill: no-change / description / body / bundle / rename / split / merge / create / retire)
+6. Tooling decision table (for each skill: no-change / description / body / bundle / rename / split / merge / retire)
 
 **Deliverables (per playbook §VI.CR.10):**
 
@@ -373,25 +374,15 @@ Plans:
 | CR-07 | Tooling decision table | `CR-DECISIONS.md` |
 | CR-08 | Verification report | `CR-VERIFICATION.md` |
 
-**Exit criteria:**
-- All 8 deliverables committed under `.planning/phases/18-context-and-research-phase-cr-for-skills-refactor-playbook-v/`
-- `check-overlaps.sh` run and results attached
-- At least one stacked-workflow eval run (hm-coordinating-loop + hm-planning-with-files + hm-phase-loop)
-- User signs off in CR-DISCUSSION-LOG.md
+**Status:** ✅ COMPLETE (user sign-off received 2026-04-23)
 
-**Hard constraints (same as Phase 17):**
-- Zero `src/` code changes
-- Zero agent/command refactors
-- Zero IDE-directory modifications
-- Only soft meta-concept research artifacts
-
-**Plans:** 4 plans
+**Plans:** 4 plans (all complete)
 
 Plans:
-- [ ] 18-01-PLAN.md — Wave 1: Ecosystem audit — CR-CONTEXT.md + CR-RESEARCH.md (fresh runtime probe, per-skill inventory, call-site mapping) [Wave 1]
-- [ ] 18-02-PLAN.md — Wave 2: 6-NON defence grid + differential cluster gap map — CR-AUDIT-ECOSYSTEM.md + CR-GAP-MAP.md (per-skill audit, missing skills, severity) [Wave 2]
-- [ ] 18-03-PLAN.md — Wave 3: Third-party pattern harvest + runtime-readiness — CR-THIRD-PARTY-HARVEST.md + CR-RUNTIME-READINESS.md (GSD/superpower patterns, Zod/SDK feasibility) [Wave 3]
-- [x] 18-04-PLAN.md — Wave 4: Tooling decisions + verification + sign-off — CR-DECISIONS.md + CR-VERIFICATION.md + CR-DISCUSSION-LOG.md (decision table, exit criteria, user sign-off) [Wave 4]
+- [x] 18-01-PLAN.md — Wave 1: Ecosystem audit — CR-CONTEXT.md + CR-RESEARCH.md
+- [x] 18-02-PLAN.md — Wave 2: 6-NON defence grid + differential cluster gap map
+- [x] 18-03-PLAN.md — Wave 3: Third-party pattern harvest + runtime-readiness
+- [x] 18-04-PLAN.md — Wave 4: Tooling decisions + verification + sign-off
 
 ---
 
@@ -569,12 +560,11 @@ Plans:
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
-| 18. Context & Research (Playbook Phase CR) | 8/8 deliverables | ✅ COMPLETE — all deliverables committed, user sign-off received |
-| 19. Rename Sprint (Playbook Phase 1) | 21/21 skills | ✅ COMPLETE — 368 files changed, all call-sites updated, commit `7b686311` |
-| 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ✅ COMPLETE — session-context-manager merged, harness-delegation-inspection split, 7 differential cluster skills created |
-| 21. Description Rewrite (Playbook Phase 3) | 7 skills | ✅ COMPLETE — descriptions rewritten per V.7 template |
-| 22. Script Hardening + 6-NON (Playbook Phase 4) | 7 skills | ✅ COMPLETE — 6-NON defence tables added |
-| 23. Body Quality + Eval (Playbook Phase 5) | 6 skills | ✅ COMPLETE — eval expansion with trigger queries |
+| 19. Rename Sprint (Playbook Phase 1) | 19/21 skills (2 deferred) | ⚠️ PARTIAL — 19 renamed, stale refs remain, `.windsurf/` touched (violated constraint) |
+| 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ⚠️ PARTIAL — moves landed, but some new skills missing evals/6-NON tables |
+| 21. Description Rewrite (Playbook Phase 3) | 0/7 skills | ❌ NOT SUBSTANTIATED — no phase dir, commit scope doesn't match claims |
+| 22. Script Hardening + 6-NON (Playbook Phase 4) | 0/7 skills | ❌ NOT SUBSTANTIATED — no phase dir, commit scope doesn't match claims |
+| 23. Body Quality + Eval (Playbook Phase 5) | 1/9 skills | ⚠️ PARTIAL — eval files expanded, only 1/9 has stacked scenario |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 

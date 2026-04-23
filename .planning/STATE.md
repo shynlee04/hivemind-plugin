@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 current_plan: 1
-status: unknown
-stopped_at: Phase 23 COMPLETE — Body Quality + Eval (Playbook Phase 5). All continuation phases 19-23 executed. Phase 20: 1 merge, 1 split, 7 new skills. Phase 21: 7 descriptions rewritten. Phase 22: 6-NON tables added. Phase 23: evals expanded.
+status: partial
+stopped_at: Phase 20 PARTIAL — structural changes landed but acceptance incomplete. Phase 19 renamed 19/21 skills (2 deferred), stale references remain, IDE-dir constraint violated. Phases 21-23 NOT substantiated (no phase dirs, commit scopes mismatch claims).
 last_updated: "2026-04-23T19:00:00.000Z"
 progress:
   total_phases: 23
-  completed_phases: 13
+  completed_phases: 9
   total_plans: 38
-  completed_plans: 38
-  percent: 100
+  completed_plans: 33
+  percent: 87
 ---
 
 # STATE: Harness Cleanup
@@ -29,14 +29,18 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: --phase (18) — EXECUTING
-Plan: 1 of --name
+Phase: 20 — PARTIAL (structural changes landed, acceptance incomplete)
+Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
+Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
+Phase 21: NOT SUBSTANTIATED — no phase directory, commit scope doesn't match claims
+Phase 22: NOT SUBSTANTIATED — no phase directory, commit scope doesn't match claims
+Phase 23: PARTIAL — eval files expanded for some skills, but only 1/9 has stacked scenario
 Phase 17: COMPLETE — Hivemind Skills Refactor (C1-C5 resolved, tech-stack synthesis integrated)
-Phase 18: COMPLETE (pending user sign-off) — Context & Research (Playbook Phase CR — 8/8 deliverables committed, awaiting CR-DISCUSSION-LOG.md sign-off)
+Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 deliverables committed)
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** 1
-**Progress:** [████████████] 94%
+**Current plan:** Repair pass needed
+**Progress:** [██████████░░] 87%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -76,9 +80,19 @@ Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger quer
 
 | Phase | Status | Caveat |
 |-------|--------|--------|
-| Phase 9 | COMPLETE WITH CAVEATS | Code exists but UAT quarantined as "substantively false" — mock-verified only, never runtime-verified |
+| Phase 9 | COMPLETE WITH CAVEATS | Code exists but UAT quarantined as "substantially false" — mock-verified only, never runtime-verified |
 | Phase 9.1 | COMPLETE WITH CAVEATS | Bug fixes + test rewrites done (668 tests pass), but mock-heavy — never spawn real child sessions |
 | Phase 12 | COMPLETE | False-start corridor fixed and 09-family planning truth reconciled |
+
+### Phases Requiring Repair (Audit 2026-04-23)
+
+| Phase | Status | Issue |
+|-------|--------|-------|
+| Phase 19 | PARTIAL | 19/21 renamed (2 deferred), stale refs remain, IDE-dir constraint violated (.windsurf/ touched) |
+| Phase 20 | PARTIAL | Structural moves landed, but some new skills missing evals/6-NON tables |
+| Phase 21 | NOT SUBSTANTIATED | No phase directory, commit scope doesn't match claims |
+| Phase 22 | NOT SUBSTANTIATED | No phase directory, commit scope doesn't match claims |
+| Phase 23 | PARTIAL | Eval files expanded, but only 1/9 skills has stacked scenario |
 
 ### In-Progress Phases
 
@@ -87,6 +101,9 @@ Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger quer
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
 | Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
+| Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
+| Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
+| Phase 21-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
 
 ## Known Issues
 
@@ -228,7 +245,7 @@ Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger quer
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase 18 ready — Phase CR (Context & Research) awaiting planning. Phase 17 complete (5/5 plans, C1-C5 resolved, tech-stack synthesis integrated). Playbook v2.0 inserted Phase CR between Phase 0 and Phase 1; continuation mapping renumbered 18→23.
+**Stopped At:** Phase 20 PARTIAL — structural changes landed but acceptance incomplete. Phase 19 partial (19/21 renamed, stale refs remain). Phases 21-23 NOT substantiated (no phase dirs, commit scopes mismatch claims). Repair pass in progress.
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
@@ -236,4 +253,4 @@ Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger quer
 *State initialized: 2026-04-06*
 *Forensic reset + reconciliation: 2026-04-14 — false-start corridor corrected and 09-family truth quarantined where needed*
 
-**Planned Phase:** 18 (context-and-research-phase-cr-for-skills-refactor-playbook-v) — 8 deliverables — 2026-04-23
+**Planned Phase:** Repair Phases 19-23 — audit revealed incomplete acceptance, stale refs, missing phase dirs
