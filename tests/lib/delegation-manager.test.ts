@@ -1262,6 +1262,97 @@ describe("DelegationManager", () => {
       expect(delegations.find((entry) => entry.id === "real-command-fallback")?.executionMode).toBe("headless")
     })
 
+    it("assigns truthful surface and recovery defaults when normalizing legacy persisted records", () => {
+      writeFileSync(
+        getDelegationsFile(stateDir),
+        `${JSON.stringify([
+          {
+            id: "legacy-sdk-record",
+            parentSessionId: "ses-parent-sdk",
+            childSessionId: "ses-child-sdk",
+            agent: "builder",
+            status: "completed",
+            createdAt: Date.now(),
+            workingDirectory: "/tmp/legacy-sdk",
+            queueKey: "agent:builder",
+          },
+          {
+            id: "legacy-pty-record",
+            parentSessionId: "ses-parent-pty",
+            childSessionId: "pty-child",
+            agent: "command-runner",
+            status: "running",
+            createdAt: Date.now(),
+            executionMode: "pty",
+            workingDirectory: "/tmp/legacy-pty",
+            ptySessionId: "pty-session-legacy",
+            queueKey: "category:command",
+          },
+          {
+            id: "legacy-headless-record",
+            parentSessionId: "ses-parent-headless",
+            childSessionId: "headless-child",
+            agent: "command-runner",
+            status: "error",
+            createdAt: Date.now(),
+            executionMode: "headless",
+            workingDirectory: "/tmp/legacy-headless",
+            fallbackReason: "PTY unavailable in current environment",
+            queueKey: "category:command",
+          },
+        ], null, 2)}\n`,
+        "utf-8",
+      )
+
+      const delegations = readPersistedDelegations()
+
+      expect(delegations.find((entry) => entry.id === "legacy-sdk-record")).toEqual(expect.objectContaining({
+        executionMode: "sdk",
+        surface: "agent-delegation",
+        recoveryGuarantee: "resumable",
+      }))
+      expect(delegations.find((entry) => entry.id === "legacy-pty-record")).toEqual(expect.objectContaining({
+        executionMode: "pty",
+        surface: "command-process",
+        recoveryGuarantee: "best-effort",
+      }))
+      expect(delegations.find((entry) => entry.id === "legacy-headless-record")).toEqual(expect.objectContaining({
+        executionMode: "headless",
+        surface: "command-process",
+        recoveryGuarantee: "non-resumable-after-restart",
+      }))
+    })
+
+    it("hydrates terminal-detail placeholders on normalized persisted delegations", () => {
+      writeFileSync(
+        getDelegationsFile(stateDir),
+        `${JSON.stringify([
+          {
+            id: "legacy-terminal-record",
+            parentSessionId: "ses-parent-terminal",
+            childSessionId: "ses-child-terminal",
+            agent: "builder",
+            status: "completed",
+            createdAt: Date.now(),
+            executionMode: "sdk",
+            workingDirectory: "/tmp/legacy-terminal",
+            queueKey: "agent:builder",
+          },
+        ], null, 2)}\n`,
+        "utf-8",
+      )
+
+      const delegation = readPersistedDelegations().find((entry) => entry.id === "legacy-terminal-record")
+
+      expect(delegation).toBeDefined()
+      expect(delegation).toHaveProperty("terminalKind")
+      expect(delegation).toHaveProperty("terminationSignal")
+      expect(delegation).toHaveProperty("explicitCancellation")
+      expect(delegation?.terminalKind).toBeUndefined()
+      expect(delegation?.terminationSignal).toBeUndefined()
+      expect(delegation?.explicitCancellation).toBe(false)
+    })
+
     it("restores running delegations from disk and re-registers them", async () => {
       const now = Date.now()
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
