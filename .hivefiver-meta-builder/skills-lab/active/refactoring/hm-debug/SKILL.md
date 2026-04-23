@@ -1,6 +1,14 @@
 ---
 name: hm-debug
-description: Systematically debug issues with persistent state across context resets. Use when investigating bugs, tracing root causes, or performing structured failure analysis. NOT for syntax errors or issues solvable by a single log read.
+description: >
+  Systematically debug issues with persistent state across context resets.
+  Use when investigating bugs, tracing root causes, performing structured failure analysis,
+  when agents get stuck in loops, when tests pass locally but fail in CI, when issues
+  appear intermittently, or when multiple attempts to fix have failed.
+  Even when the user says "it's broken" or "something's wrong" without specifics.
+  Triggers: "debug", "investigate", "root cause", "failure analysis", "systematic debugging",
+  "trace the issue", "find the bug", "why is this failing".
+  NOT for syntax errors or issues solvable by a single log read.
 metadata:
   layer: "2"
   role: "domain-execution"
