@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: 1
 status: unknown
-stopped_at: Phase 21 executing — Description Rewrite (Playbook Phase 3). Phase 20 complete (1 merge, 1 split, 7 new skills). Phase 19 complete (21/21 skills renamed). Phase 18 complete (8/8 deliverables).
-last_updated: "2026-04-23T18:30:00.000Z"
+stopped_at: Phase 23 COMPLETE — Body Quality + Eval (Playbook Phase 5). All continuation phases 19-23 executed. Phase 20: 1 merge, 1 split, 7 new skills. Phase 21: 7 descriptions rewritten. Phase 22: 6-NON tables added. Phase 23: evals expanded.
+last_updated: "2026-04-23T19:00:00.000Z"
 progress:
   total_phases: 23
-  completed_phases: 10
+  completed_phases: 13
   total_plans: 38
-  completed_plans: 35
-  percent: 93
+  completed_plans: 38
+  percent: 100
 ---
 
 # STATE: Harness Cleanup
@@ -56,7 +56,9 @@ Phase 17: Hivemind Skills Refactor . COMPLETE (C1-C5 resolved, tech-stack synthe
 Phase 18: Context & Research ....... COMPLETE (8/8 deliverables, user sign-off received)
 Phase 19: Rename Sprint ............ COMPLETE (21/21 skills renamed, 368 files changed, all call-sites updated)
 Phase 20: Structural Changes ........ COMPLETE (merge: session-context-manager→hm-planning-with-files; split: harness-delegation-inspection→2 skills; create: 7 differential cluster skills)
-Phase 21: Description Rewrite ....... EXECUTING (Playbook Phase 3)
+Phase 21: Description Rewrite ....... COMPLETE (7 differential cluster skills rewritten per V.7 template)
+Phase 22: Script Hardening + 6-NON .. COMPLETE (6-NON defence tables added to 7 core skills)
+Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger queries for 6 new skills)
 ```
 
 ## Phase Completion Details

@@ -28,7 +28,9 @@
 - [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
 - [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
 - [x] **Phase 20: Structural Changes — Playbook Phase 2** — 1 merge, 1 split, 7 new skills created
-- [ ] **Phase 21: Description Rewrite — Playbook Phase 3** — In progress (differential cluster skills)
+- [x] **Phase 21: Description Rewrite — Playbook Phase 3** — 7 differential cluster skills rewritten per V.7 template
+- [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — 6-NON defence tables added to 7 core skills
+- [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — eval expansion with trigger queries for 6 new skills
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -570,7 +572,9 @@ Plans:
 | 18. Context & Research (Playbook Phase CR) | 8/8 deliverables | ✅ COMPLETE — all deliverables committed, user sign-off received |
 | 19. Rename Sprint (Playbook Phase 1) | 21/21 skills | ✅ COMPLETE — 368 files changed, all call-sites updated, commit `7b686311` |
 | 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ✅ COMPLETE — session-context-manager merged, harness-delegation-inspection split, 7 differential cluster skills created |
-| 21. Description Rewrite (Playbook Phase 3) | — | 🔄 IN PROGRESS |
+| 21. Description Rewrite (Playbook Phase 3) | 7 skills | ✅ COMPLETE — descriptions rewritten per V.7 template |
+| 22. Script Hardening + 6-NON (Playbook Phase 4) | 7 skills | ✅ COMPLETE — 6-NON defence tables added |
+| 23. Body Quality + Eval (Playbook Phase 5) | 6 skills | ✅ COMPLETE — eval expansion with trigger queries |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
@@ -590,7 +594,10 @@ Phase 1 (7 done, 3 pending — planned)
                                            └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) ✅
                                                  └─→ Phase 18: Context & Research (Playbook Phase CR) ✅
                                                       └─→ Phase 19: Rename Sprint (Playbook Phase 1) ✅
-                                                           └─→ Phase 20: Structural Changes (Playbook Phase 2) 🔄
+                                                           └─→ Phase 20: Structural Changes (Playbook Phase 2) ✅
+                                                                └─→ Phase 21: Description Rewrite (Playbook Phase 3) ✅
+                                                                     └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4) ✅
+                                                                          └─→ Phase 23: Body Quality + Eval (Playbook Phase 5) ✅
                                                                └─→ Phase 21: Description Rewrite (Playbook Phase 3)
                                                                     └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4)
                                                                          └─→ Phase 23: Body Quality + Eval (Playbook Phase 5)
