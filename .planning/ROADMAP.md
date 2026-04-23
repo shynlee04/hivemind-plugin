@@ -562,7 +562,7 @@ Plans:
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
 | 19. Rename Sprint (Playbook Phase 1) | 19/21 skills (2 deferred) | ⚠️ PARTIAL — 19 renamed, stale refs remain, `.windsurf/` touched (violated constraint) |
 | 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ⚠️ PARTIAL — moves landed, but some new skills missing evals/6-NON tables |
-| 21. Description Rewrite (Playbook Phase 3) | 0/7 skills | ❌ NOT SUBSTANTIATED — no phase dir, commit scope doesn't match claims |
+| 21. Description Rewrite (Playbook Phase 3) | 7/7 skills | ✅ COMPLETE — pushy trigger pattern applied to all 7 Phase 20 skills |
 | 22. Script Hardening + 6-NON (Playbook Phase 4) | 0/7 skills | ❌ NOT SUBSTANTIATED — no phase dir, commit scope doesn't match claims |
 | 23. Body Quality + Eval (Playbook Phase 5) | 1/9 skills | ⚠️ PARTIAL — eval files expanded, only 1/9 has stacked scenario |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |

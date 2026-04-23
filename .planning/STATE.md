@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: 1
 status: partial
-stopped_at: Phase 20 PARTIAL — structural changes landed but acceptance incomplete. Phase 19 renamed 19/21 skills (2 deferred), stale references remain, IDE-dir constraint violated. Phases 21-23 NOT substantiated (no phase dirs, commit scopes mismatch claims).
-last_updated: "2026-04-23T19:00:00.000Z"
+stopped_at: Phase 21 COMPLETE — descriptions rewritten for 7 Phase 20 skills with pushy trigger pattern. Phase 22-23 still need work.
+last_updated: "2026-04-23T19:10:00.000Z"
 progress:
   total_phases: 23
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 38
-  completed_plans: 33
-  percent: 87
+  completed_plans: 34
+  percent: 89
 ---
 
 # STATE: Harness Cleanup
@@ -29,18 +29,18 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 20 — PARTIAL (structural changes landed, acceptance incomplete)
+Phase: 21 — COMPLETE (descriptions rewritten for 7 Phase 20 skills)
 Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
 Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
-Phase 21: NOT SUBSTANTIATED — no phase directory, commit scope doesn't match claims
+Phase 21: COMPLETE — 7 differential cluster skills rewritten with pushy trigger pattern per V.7 template
 Phase 22: NOT SUBSTANTIATED — no phase directory, commit scope doesn't match claims
 Phase 23: PARTIAL — eval files expanded for some skills, but only 1/9 has stacked scenario
 Phase 17: COMPLETE — Hivemind Skills Refactor (C1-C5 resolved, tech-stack synthesis integrated)
 Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 deliverables committed)
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** Repair pass needed
-**Progress:** [██████████░░] 87%
+**Current plan:** Repair pass for Phases 22-23
+**Progress:** [██████████░░] 89%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -90,7 +90,7 @@ Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger quer
 |-------|--------|-------|
 | Phase 19 | PARTIAL | 19/21 renamed (2 deferred), stale refs remain, IDE-dir constraint violated (.windsurf/ touched) |
 | Phase 20 | PARTIAL | Structural moves landed, but some new skills missing evals/6-NON tables |
-| Phase 21 | NOT SUBSTANTIATED | No phase directory, commit scope doesn't match claims |
+| Phase 21 | COMPLETE | Descriptions rewritten for 7 Phase 20 skills with pushy trigger pattern |
 | Phase 22 | NOT SUBSTANTIATED | No phase directory, commit scope doesn't match claims |
 | Phase 23 | PARTIAL | Eval files expanded, but only 1/9 skills has stacked scenario |
 
@@ -103,7 +103,7 @@ Phase 23: Body Quality + Eval ....... COMPLETE (eval expansion with trigger quer
 | Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
-| Phase 21-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
+| Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
 
 ## Known Issues
 
