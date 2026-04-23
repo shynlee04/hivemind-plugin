@@ -31,7 +31,7 @@
 - [x] **Phase 21: Description Rewrite — Playbook Phase 3** — 7 differential cluster skills rewritten per V.7 template
 - [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — 6-NON defence tables added to 7 core skills
  - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — eval expansion with trigger queries for 6 new skills
- - [ ] **Phase 24: Fix 22 Failed hm-* Skills** — 0/5 fix categories
+ - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -564,9 +564,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 24-01-PLAN.md — Remove 6-NON Defence Tables from 18 skills + reorganize Iron Law/HARD GATES in 16 skills (Wave 1)
-- [ ] 24-02-PLAN.md — Add onboarding headings to 25 skills + remove banned vocabulary from 4 descriptions (Wave 1)
-- [ ] 24-03-PLAN.md — Add Self-Correction blocks to 5 coordinator skills (Wave 2, depends on 24-01 + 24-02)
+- [x] 24-01-PLAN.md — Remove 6-NON Defence Tables from 18 skills + reorganize Iron Law/HARD GATES in 16 skills (Wave 1) ✅
+- [x] 24-02-PLAN.md — Add onboarding headings to 25 skills + remove banned vocabulary from 4 descriptions (Wave 2) ✅
+- [x] 24-03-PLAN.md — Add Self-Correction blocks to 5 coordinator skills (Wave 3) ✅
 
 ## Progress Table
 
@@ -593,7 +593,7 @@ Plans:
 | 21. Description Rewrite (Playbook Phase 3) | 7/7 skills | ✅ COMPLETE — pushy trigger pattern applied to all 7 Phase 20 skills |
 | 22. Script Hardening + 6-NON (Playbook Phase 4) | 0/7 skills | ❌ NOT SUBSTANTIATED — no phase dir, commit scope doesn't match claims |
  | 23. Body Quality + Eval (Playbook Phase 5) | 1/9 skills | ⚠️ PARTIAL — eval files expanded, only 1/9 has stacked scenario |
- | 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 0/3 plans | Planned — 3 plans in 2 waves |
+ | 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 3/3 plans, 8/8 truths | ✅ COMPLETE — 2026-04-23 |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
