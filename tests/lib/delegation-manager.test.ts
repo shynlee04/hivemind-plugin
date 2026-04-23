@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { buildDelegationQueueKey } from "../../src/lib/concurrency.js"
+import { getSessionContinuity, recordSessionContinuity } from "../../src/lib/continuity.js"
 import * as sessionApi from "../../src/lib/session-api.js"
 import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
@@ -1721,6 +1722,65 @@ describe("DelegationManager", () => {
       )
 
       consoleErrorSpy.mockRestore()
+    })
+
+    it("queues a durable pending notification when direct parent delivery fails", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-pending-notify" } })
+      client.session.messages.mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "notification-first completion delivered" }] }],
+      })
+
+      recordSessionContinuity({
+        sessionID: "ses-parent-pending-notify",
+        promptParams: {},
+        metadata: {
+          status: "running",
+          description: "Parent orchestrator session",
+          delegation: null,
+          constraints: [],
+          pendingNotifications: [],
+          updatedAt: Date.now(),
+        },
+      })
+
+      let promptCallCount = 0
+      client.session.prompt.mockImplementation(async () => {
+        promptCallCount += 1
+        if (promptCallCount === 1) return undefined
+        throw new Error("Parent session unavailable")
+      })
+
+      const manager = new DelegationManager(client as never)
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-pending-notify",
+        agent: "builder",
+        prompt: "queue pending notification",
+      })
+
+      manager.handleSessionIdle("child-pending-notify")
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
+      await flushMicrotasks()
+      await flushMicrotasks()
+
+      const delegation = manager.getStatus(result.delegationId)
+      const continuity = getSessionContinuity("ses-parent-pending-notify")
+      const pending = continuity?.metadata.pendingNotifications ?? []
+
+      expect(delegation?.status).toBe("completed")
+      expect(pending).toHaveLength(1)
+      expect(pending[0]).toEqual(expect.objectContaining({
+        delivered: false,
+        description: "Delegation: builder",
+        briefSummary: expect.stringContaining("terminal state completed"),
+        metadata: expect.objectContaining({
+          delegationId: result.delegationId,
+          terminalState: "completed",
+          recoveryGuarantee: "resumable",
+          summaryPreview: "notification-first completion delivered",
+        }),
+      }))
     })
   })
 

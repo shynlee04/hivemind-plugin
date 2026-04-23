@@ -108,6 +108,29 @@ describe("buildNotificationMessage", () => {
 
     expect(result).toContain("Duration: 5.4s")
   })
+
+  it("emits human summary text and structured metadata in the same delivery contract", () => {
+    const task: TaskNotification = {
+      sessionID: "sess-7a",
+      description: "Ship delegation replay hardening",
+      agent: "builder",
+      status: "completed",
+      briefSummary: "Delegated work finished with terminal state completed after 5.4s.",
+      resultPreview: "Queued replay notification for parent session",
+      duration: 5432,
+      metadata: {
+        delegationId: "del-123",
+        terminalState: "completed",
+        recoveryGuarantee: "resumable",
+        summaryPreview: "Queued replay notification for parent session",
+      },
+    }
+
+    const result = buildNotificationMessage(task)
+
+    expect(result).toContain("Summary: Delegated work finished with terminal state completed after 5.4s.")
+    expect(result).toContain('Metadata: {"delegationId":"del-123","terminalState":"completed","recoveryGuarantee":"resumable","summaryPreview":"Queued replay notification for parent session"}')
+  })
 })
 
 describe("formatToastMessage", () => {
