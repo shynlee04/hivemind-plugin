@@ -544,6 +544,97 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)?.ptySessionId).toBeUndefined()
     })
 
+    it("records interrupted-by-signal terminal detail for PTY sessions killed by a signal", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      const manager = createManager(client, {
+        ptyManager: {
+          isSupported: () => true,
+          spawn: vi.fn().mockReturnValue({
+            id: "pty-signal-123",
+            mode: "pty",
+            cwd: "/tmp/command-signal",
+            startedAt: Date.now(),
+            pid: 3333,
+          }),
+          getSession: vi.fn().mockReturnValue({
+            id: "pty-signal-123",
+            mode: "pty",
+            cwd: "/tmp/command-signal",
+            startedAt: Date.now(),
+            pid: 3333,
+            exitSignal: "SIGTERM",
+          }),
+          terminate: vi.fn().mockResolvedValue(undefined),
+        },
+      })
+
+      const result = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-command-signal",
+        command: "sleep",
+        args: ["10"],
+        cwd: "/tmp/command-signal",
+      })
+
+      await vi.advanceTimersByTimeAsync(500)
+
+      expect(manager.getStatus(result.delegationId)).toEqual(expect.objectContaining({
+        status: "error",
+        terminalKind: "interrupted-by-signal",
+        terminationSignal: "SIGTERM",
+        explicitCancellation: false,
+      }))
+    })
+
+    it("prefers cancelled terminal detail when termination was explicitly requested", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      const manager = createManager(client, {
+        ptyManager: {
+          isSupported: () => true,
+          spawn: vi.fn().mockReturnValue({
+            id: "pty-cancel-123",
+            mode: "pty",
+            cwd: "/tmp/command-cancel",
+            startedAt: Date.now(),
+            pid: 4444,
+          }),
+          getSession: vi.fn().mockReturnValue({
+            id: "pty-cancel-123",
+            mode: "pty",
+            cwd: "/tmp/command-cancel",
+            startedAt: Date.now(),
+            pid: 4444,
+            exitSignal: "SIGTERM",
+          }),
+          terminate: vi.fn().mockResolvedValue(undefined),
+        },
+      })
+
+      const result = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-command-cancel",
+        command: "sleep",
+        args: ["10"],
+        cwd: "/tmp/command-cancel",
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation).toBeDefined()
+      if (!delegation) {
+        throw new Error("expected delegation to exist")
+      }
+      delegation.explicitCancellation = true
+
+      await vi.advanceTimersByTimeAsync(500)
+
+      expect(manager.getStatus(result.delegationId)).toEqual(expect.objectContaining({
+        status: "error",
+        terminalKind: "cancelled",
+        terminationSignal: "SIGTERM",
+        explicitCancellation: true,
+      }))
+    })
+
     it("sends prompt to child session with correct agent and text parts", async () => {
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-prompt" } })
@@ -1452,6 +1543,38 @@ describe("DelegationManager", () => {
 
       expect(manager.getStatus("delegation-missing")?.status).toBe("error")
       expect(manager.getStatus("delegation-missing")?.error).toBe("Child session not found on recovery")
+    })
+
+    it("marks unrecoverable headless delegations with non-resumable-after-restart terminal detail", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "delegation-headless-unrecoverable",
+          parentSessionId: "parent-headless",
+          childSessionId: "headless:delegation-headless-unrecoverable",
+          agent: "builder",
+          status: "running",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 0,
+          stablePollCount: 0,
+          executionMode: "headless",
+          fallbackReason: "[Harness] PTY runtime unavailable in current environment",
+          workingDirectory: "/tmp/headless-unrecoverable",
+          queueKey: "category:command",
+        },
+      ], null, 2))
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+
+      await manager.recoverPending()
+
+      expect(manager.getStatus("delegation-headless-unrecoverable")).toEqual(expect.objectContaining({
+        status: "error",
+        recoveryGuarantee: "non-resumable-after-restart",
+        terminalKind: "non-resumable-after-restart",
+        explicitCancellation: false,
+      }))
     })
 
     it("handles corrupted JSON file gracefully — returns empty array", async () => {
