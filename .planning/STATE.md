@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: Repair pass for Phases 22-23
-status: unknown
-stopped_at: Completed 24-02-PLAN.md — onboarding headings added to 25 skills, banned vocab removed from 4 descriptions
-last_updated: "2026-04-23T15:07:20.130Z"
+current_plan: Phase 24 complete
+status: phase-complete
+stopped_at: Completed 24-03-PLAN.md — Self-Correction blocks added to 5 coordinator skills
+last_updated: "2026-04-23T15:13:03Z"
 progress:
   total_phases: 24
-  completed_phases: 8
+  completed_phases: 10
   total_plans: 41
-  completed_plans: 38
-  percent: 93
+  completed_plans: 40
+  percent: 98
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 24 — Fix 22 failed hm-* skills (3 plans, 3 waves, ready to execute)
+**Current focus:** Phase 24 — COMPLETE (3/3 plans done)
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -63,7 +63,7 @@ Phase 20: Structural Changes ........ COMPLETE (merge: session-context-manager�
 Phase 21: Description Rewrite ....... COMPLETE (7 differential cluster skills rewritten per V.7 template)
 Phase 22: Script Hardening + 6-NON .. COMPLETE (6-NON defence tables added to 7 core skills)
 Phase 23: PARTIAL — eval files expanded for some skills, but only 1/9 has stacked scenario
-Phase 24: EXECUTING — Plan 01 complete (6-NON removed, Iron Law repositioned), Plans 02-03 pending
+Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Correction blocks)
 ```
 
 ## Phase Completion Details
@@ -105,7 +105,7 @@ Phase 24: EXECUTING — Plan 01 complete (6-NON removed, Iron Law repositioned),
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
-| Phase 24 | EXECUTING | Plan 01 complete (6-NON removed from 18 skills, Iron Law repositioned in 16), Plans 02-03 pending |
+| Phase 24 | COMPLETE | 3/3 plans — 6-NON removed from 18 skills, onboarding headings in 25 skills, Self-Correction in 5 coordinator skills |
 
 ## Known Issues
 
@@ -247,7 +247,7 @@ Phase 24: EXECUTING — Plan 01 complete (6-NON removed, Iron Law repositioned),
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 24-02-PLAN.md — onboarding headings added to 25 skills, banned vocab removed from 4 descriptions
+**Stopped At:** Completed 24-03-PLAN.md — Self-Correction blocks added to 5 coordinator skills (Phase 24 complete)
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
