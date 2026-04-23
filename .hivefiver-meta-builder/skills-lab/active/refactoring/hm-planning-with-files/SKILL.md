@@ -40,6 +40,7 @@ Any agent can pick up exactly where work left off by reading these 3 files.
 |------|-------------|
 | `references/file-templates.md` | Need the exact markdown templates for all 3 files |
 | `references/phase-schemas.md` | Need phase patterns by task type (research, debug, feature, etc.) |
+| `references/session-context-protocol.md` | Need cross-session checkpoint schema and context propagation rules |
 
 ## Tiered Response — Not Everything Needs Full Ritual
 
@@ -106,9 +107,24 @@ Do NOT modify: task_plan.md (coordinator owns this)
 
 After /clear, interruption, or new session:
 1. **Read all 3 files**
-2. **Cross-reference with reality** — `git diff --stat` to see what actually changed
-3. **Reconcile** — Update planning files to match current state
-4. **Resume** — Continue from the current phase
+2. **Read session context** — `.hivemind/state/session-context-prompt.md` (see `references/session-context-protocol.md`)
+3. **Cross-reference with reality** — `git diff --stat` to see what actually changed
+4. **Reconcile** — Update planning files to match current state
+5. **Resume** — Continue from the current phase
+
+## Session Context Integration
+
+For multi-session or multi-phase projects, the 3-file system is supplemented by a **session context file** (`.hivemind/state/session-context-prompt.md`). This file tracks:
+- Phase history and outcomes across sessions
+- Persistent constraints and goals
+- Checkpoint state for loop iterations
+
+**When to use session context:**
+- Starting a new phase in a multi-phase project
+- Resuming after interruption
+- Handing off between subagents that need shared state
+
+See `references/session-context-protocol.md` for the full schema, checkpoint types, and propagation rules.
 
 ## Error Discipline
 
@@ -135,6 +151,6 @@ Do NOT silently retry the same failing action.
 
 | Related Skill | Boundary |
 |---------------|----------|
-| `session-context-manager` | session-context-manager owns session-level context schema. This skill owns task-level planning files. |
-| `coordinating-loop` | coordinating-loop dispatches subagents. This skill provides the handoff mechanism those subagents use. |
-| `user-intent-interactive-loop` | user-intent-interactive-loop clarifies requirements. This skill persists those requirements into findings.md. |
+| `hm-coordinating-loop` | hm-coordinating-loop dispatches subagents. This skill provides the handoff mechanism those subagents use. |
+| `hm-user-intent-interactive-loop` | hm-user-intent-interactive-loop clarifies requirements. This skill persists those requirements into findings.md. |
+| `hm-phase-loop` | hm-phase-loop owns iterative loop semantics. This skill provides the context schema that loop iterations read/write. |
