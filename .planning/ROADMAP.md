@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-22 (Phase 16.2 documentation alignment — REQ-14 backfill, Phase 16.2 status update, stale annotation)
+**Updated:** 2026-04-23 (Phase 17 added — Hivemind Skills Refactor continuation phases 17–22 mapped from playbook)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -24,6 +24,7 @@
 - [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed
 - [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
+- [ ] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 0 plans (Playbook Phase 0 → GSD continuation)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -296,6 +297,46 @@ Plans:
 Plans:
 - [x] 16.2-01-PLAN.md — PTY Execution Wiring + OMO Safety Patterns: unified terminal lifecycle, grace-period cleanup, parent notifications, adaptive polling, nesting depth limits, observability (6 waves)
 
+### Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0)
+
+**Goal:** Resolve all critical bugs before any structural skills work begins. First of 6 continuation phases mapping the HIVEMIND-SKILLS-REFACTOR-PLAYBOOK into GSD phases 17–22.
+**Requirements**: C1–C5 (5 critical issues)
+**Depends on:** Phase 16 completion
+**Specification:** `.hivemind/state/session-context-prompt-v4.md` (GSD phase-planning specification)
+**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` (canonical reference)
+
+**Scope (5 critical issues):**
+
+| ID | Issue | Skill | Fix |
+|----|-------|-------|-----|
+| C1 | `validate-gate.sh synthesize` guaranteed failure | `hm-skill-synthesis` | Add `synthesize` action OR change SKILL.md to use `create` |
+| C2 | 4 depth references are stubs | `hm-meta-builder` | Write real content or remove references |
+| C3 | Phantom `tech-stack.md` reference | `hm-omo-reference` | Generate file or remove from `summary.md` |
+| C4 | Empty `project-structure.md` (4 lines) | `hm-omo-reference` | Regenerate with actual directory tree |
+| C5 | Duplicate skills across `.claude/` and `.opencode/` | 5 skills | Determine canonical, delete duplicates |
+
+**Continuation mapping:**
+
+```
+Playbook Phase 0 (Critical Fixes)      → GSD Phase 17 (this phase)
+Playbook Phase 1 (Canonical Location)  → GSD Phase 18
+Playbook Phase 2 (Structural Changes)  → GSD Phase 19
+Playbook Phase 3 (Description Rewrite) → GSD Phase 20
+Playbook Phase 4 (Script Hardening)    → GSD Phase 21
+Playbook Phase 5 (Body Quality + Eval) → GSD Phase 22
+```
+
+**Exit criteria:** All 5 criticals resolved, no dead references in affected skills, `npm run typecheck` passes (if applicable).
+
+**Plans:** 5 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — C1: Restore skill-synthesis from retired/ to active/ + symlink (Wave 1)
+- [ ] 17-02-PLAN.md — C5: Gitignore IDE skill directories + document canonical location in AGENTS.md (Wave 1)
+- [ ] 17-03-PLAN.md — C2: Fill 4 meta-builder depth stubs + register in Reference Map (Wave 1)
+- [ ] 17-04-PLAN.md — C3+C4: OMO dead-reference audit + generate tech-stack.md, verify project-structure.md (Wave 1)
+- [ ] 17-05-PLAN.md — NEW: Unify tech-registry schema + integrate tech-stack synthesis across hm-* skills (Wave 2)
+
 ---
 
 ### Phase 9.3: Module Restructuring + Config
@@ -438,6 +479,7 @@ Plans:
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
+| 17. Hivemind Skills Refactor — Critical Fixes | 0/1 plans | Planned — Playbook Phase 0 → GSD continuation, 5 criticals (C1–C5) |
 | 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
@@ -454,6 +496,12 @@ Phase 1 (7 done, 3 pending — planned)
                                 └─→ Phase 15: Security & Quality Remediation ✅
                                      └─→ Phase 16: Background Delegation Revamp + PTY Integration
                                           └─→ Phase 16.2: PTY Wiring + OMO Safety Patterns (SPEC validated)
+                                          └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0)
+                                               └─→ Phase 18: Canonical Location + Duplicate Resolution (Playbook Phase 1)
+                                                    └─→ Phase 19: Structural Changes (Playbook Phase 2)
+                                                         └─→ Phase 20: Description Rewrite Sprint (Playbook Phase 3)
+                                                              └─→ Phase 21: Script Hardening (Playbook Phase 4)
+                                                                   └─→ Phase 22: Body Quality + Eval Expansion (Playbook Phase 5)
                                  └─→ Phase 9.3: Module Restructuring + Config
                                       └─→ Phase 11: Clean Architecture Restructuring
                                            └─→ Phase 3: Schema Definition
