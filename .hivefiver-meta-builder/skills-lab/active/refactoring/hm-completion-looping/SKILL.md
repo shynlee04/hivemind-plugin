@@ -1,6 +1,14 @@
 ---
 name: hm-completion-looping
-description: Guardrail workflows against regression with non-completion detection and automatic loop-back. Use when a task must loop until verified complete, when guarding against premature success claims, or when implementing self-verifying subagent dispatch. NOT for one-shot tasks or simple retry loops.
+description: >
+  Guardrail workflows against regression with non-completion detection and automatic loop-back.
+  Use when a task must loop until verified complete, when guarding against premature success claims,
+  when implementing self-verifying subagent dispatch, when agents report "done" but verification fails,
+  when building autonomous loops that need completion gates, or when tasks keep failing silently.
+  Even when the user says "make sure it actually works" or "verify before claiming done."
+  Triggers: "loop until complete", "verify completion", "completion detection", "guardrail",
+  "regression guard", "self-verifying", "autonomous loop", "completion gate".
+  NOT for one-shot tasks or simple retry loops.
 metadata:
   layer: "2"
   role: "domain-execution"
