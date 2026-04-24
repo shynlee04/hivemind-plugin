@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import type { DelegationManager } from "../../src/lib/delegation-manager.js"
+import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import type { PtyManager } from "../../src/lib/pty/pty-manager.js"
 import { createRunBackgroundCommandTool } from "../../src/tools/run-background-command.js"
 
@@ -142,5 +142,84 @@ describe("run-background-command tool", () => {
     expect(terminateResult.kind).toBe("success")
     expect(terminateData.explicitCancellation).toBe(true)
     expect(terminateData.terminalKind).toBe("cancelled")
+  })
+
+  it("preserves cancellation wording when terminate deletes the PTY session before poll finalization", async () => {
+    vi.useFakeTimers()
+    try {
+      let sessionExists = true
+      const client = {
+        session: {
+          prompt: vi.fn().mockResolvedValue({}),
+        },
+      }
+      const ptyManager = {
+        isSupported: vi.fn().mockReturnValue(true),
+        spawn: vi.fn().mockReturnValue({
+          id: "pty-delete-on-terminate",
+          mode: "pty" as const,
+          cwd: "/tmp/shared",
+          command: "sleep",
+          args: ["10"],
+          source: "delegation" as const,
+          startedAt: Date.now(),
+        }),
+        getSession: vi.fn(() => sessionExists
+          ? {
+              id: "pty-delete-on-terminate",
+              mode: "pty" as const,
+              cwd: "/tmp/shared",
+              command: "sleep",
+              args: ["10"],
+              source: "delegation" as const,
+              startedAt: Date.now(),
+            }
+          : undefined),
+        read: vi.fn().mockReturnValue({ content: "", nextOffset: 0, truncated: false }),
+        write: vi.fn(),
+        terminate: vi.fn().mockImplementation(() => {
+          sessionExists = false
+          return Promise.resolve()
+        }),
+        listSessions: vi.fn().mockReturnValue([]),
+      }
+      const delegationManager = new DelegationManager(
+        client as never,
+        { ptyManager: ptyManager as unknown as PtyManager },
+      )
+      const tool = createRunBackgroundCommandTool({
+        delegationManager,
+        ptyManager: ptyManager as unknown as PtyManager,
+      })
+
+      const runRaw = await tool.execute({ action: "run", command: "sleep", args: ["10"] } as never, mockCtx)
+      const runResult = parseResult(runRaw)
+      const runData = runResult.data as Record<string, unknown>
+      const delegationId = runData.delegationId as string
+
+      const terminateRaw = await tool.execute({ action: "terminate", sessionId: "pty-delete-on-terminate" } as never, mockCtx)
+      const terminateResult = parseResult(terminateRaw)
+      const terminateData = terminateResult.data as Record<string, unknown>
+
+      expect(delegationManager.markCommandCancellationForPtySession("pty-delete-on-terminate")).toEqual(
+        expect.objectContaining({
+          terminalKind: "cancelled",
+          explicitCancellation: true,
+        }),
+      )
+      expect(terminateResult.kind).toBe("success")
+      expect(terminateData.terminalKind).toBe("cancelled")
+      expect(terminateData.explicitCancellation).toBe(true)
+
+      await vi.advanceTimersByTimeAsync(250)
+
+      const finalDelegation = delegationManager.getStatus(delegationId)
+      expect(finalDelegation?.error).toBe("[Harness] Command cancelled by user")
+      expect(finalDelegation?.error).not.toContain("PTY session disappeared before completion")
+      expect(finalDelegation?.terminalKind).toBe("cancelled")
+      expect(finalDelegation?.explicitCancellation).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
