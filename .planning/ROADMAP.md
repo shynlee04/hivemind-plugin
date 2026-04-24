@@ -24,6 +24,8 @@
 - [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed
 - [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
+- [x] **Phase 16.3: Delegation Subsystem Hardening** — 4/4 plans complete, post-UAT architecture incidents captured; delegation-manifest expansion paused pending 16.4
+- [ ] **Phase 16.4: Harness Architecture Baseline & Migration Control Plane** — INSERTED; architecture baseline before further delegation expansion or product-detox migration
 - [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
 - [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
 - [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
@@ -276,6 +278,16 @@ Plans:
 - [ ] 16-06-PLAN.md — Gap closure: honest dual-mode execution (SDK for agents, PTY for commands) + standalone PTY command tool (Gap 4)
 
 **Execution status:** GAP CLOSURE ACTIVE. Plans 01-05 complete; verification gaps 1-3 and 5 are closed via persisted queue-key context and real message-stability completion. Plan 06 remains to close the final honest dual-mode execution gap.
+
+### Phase 16.4: Harness Architecture Baseline & Migration Control Plane (INSERTED)
+
+**Goal:** Establish a verified architecture baseline and migration control plane for the Hivemind harness before any further delegation-manifest expansion, product-detox migration, agent hierarchy hardening, runtime configuration, user settings, or sidecar/GUI work. This phase must resolve the real starters: state ownership, lifecycle ownership, code-tree organization, soft-vs-hard harness boundaries, extensibility rules, migration gates, and evidence-backed architecture constraints.
+**Requirements**: TBD
+**Depends on:** Phase 16, Phase 16.3 post-UAT incident findings
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 16.4 to break down)
 
 ### Phase 16.3: Delegation Subsystem Hardening — Fix critical gaps in parent resumption, notification delivery, and signal handling (INSERTED)
 

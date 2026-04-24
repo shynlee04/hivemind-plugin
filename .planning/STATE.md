@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: 3
 status: unknown
-stopped_at: Completed 16.3-04-PLAN.md
-last_updated: "2026-04-24T08:33:08.550Z"
+stopped_at: Phase 16.4 architecture baseline executed; ready for verify-work
+last_updated: "2026-04-24T19:49:28.047Z"
 progress:
-  total_phases: 25
+  total_phases: 26
   completed_phases: 10
-  total_plans: 45
+  total_plans: 49
   completed_plans: 43
-  percent: 96
+  percent: 88
 ---
 
 # STATE: Harness Cleanup
@@ -221,6 +221,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - Phase 14 added: delegate-task truth-reset — archive phases 09-13, remove trash artifacts, refactor codebase to stop confusing agents about delegation
 - Phase 15 added: Security & Quality Remediation — fix all 26 audit issues (3 critical, 8 high, 7 medium, 8 low) from comprehensive codebase audit
 - Phase 16 added: Background Delegation Revamp + PTY Integration — rebuild background delegation to overcome all current limitations (read-only restriction, 15-min timeout, no undo/branching parity, no write-capable background) by synthesizing architecture from oh-my-openagent, opencode-background-agents, and opencode-pty
+- Phase 16.4 inserted after Phase 16: Harness Architecture Baseline & Migration Control Plane (URGENT) — pause delegation-manifest expansion and re-baseline harness architecture, migration gates, state ownership, lifecycle boundaries, and code/tree organization before further delegation or product-detox migration work
 - Phase 16.2 added: PTY Execution Wiring + OMO Safety Patterns — close verification gaps, add grace periods, parent notifications, adaptive polling, nesting depth limits (SPEC validated, 24 requirements, 6 already implemented)
 - Phase 17 added: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) — first of 6 continuation phases mapping HIVEMIND-SKILLS-REFACTOR-PLAYBOOK into GSD phases 17–22. Covers C1–C5 critical issues, hm-* rename mandate, soft→hard bridge model, runtime compilation model. Specification: .hivemind/state/session-context-prompt-v4.md
 - Phase 18 added: Context & Research — Skills Refactor Playbook Phase CR. Mandatory research/audit phase before any structural skill work. Per HIVEMIND-SKILLS-REFACTOR-PLAYBOOK v2.0 §VI.CR. Continuation mapping renumbered: old Phase 18→19, 19→20, 20→21, 21→22, 22→23.
@@ -262,7 +263,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 16.3-04-PLAN.md
+**Stopped At:** Phase 16.4 architecture baseline executed; ready for verify-work
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
