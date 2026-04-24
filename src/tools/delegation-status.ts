@@ -70,7 +70,7 @@ export function createDelegationStatusTool(
         // List all delegations (optionally filtered)
         const allDelegations = delegationManager.getAllDelegations()
 
-        const filtered = args.status
+        const filtered = args.status && args.status !== "all"
           ? allDelegations.filter(d => d.status === args.status)
           : allDelegations
 

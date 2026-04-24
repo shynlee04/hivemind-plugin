@@ -277,6 +277,23 @@ describe("delegation-status tool", () => {
     expect(data.every(d => d.status === "running")).toBe(true)
   })
 
+  it("treats status 'all' as unfiltered and returns all delegations", async () => {
+    const delegations = [
+      makeDelegation({ id: "del-001", status: "running" }),
+      makeDelegation({ id: "del-002", status: "completed", result: "done" }),
+      makeDelegation({ id: "del-003", status: "error", error: "fail" }),
+    ]
+    const manager = createManagerStub(delegations)
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ status: "all" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+    const data = result.data as Delegation[]
+    expect(data).toHaveLength(3)
+  })
+
   it("returns empty list when filter matches no delegations", async () => {
     const delegations = [
       makeDelegation({ id: "del-001", status: "running" }),
