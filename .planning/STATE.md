@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 current_plan: 3
-status: complete
-stopped_at: Completed 16.3-03-PLAN.md
-last_updated: "2026-04-23T20:16:17.748Z"
+status: unknown
+stopped_at: Completed 16.3-04-PLAN.md
+last_updated: "2026-04-24T08:33:08.550Z"
 progress:
   total_phases: 25
   completed_phases: 10
-  total_plans: 44
-  completed_plans: 42
-  percent: 95
+  total_plans: 45
+  completed_plans: 43
+  percent: 96
 ---
 
 # STATE: Harness Cleanup
@@ -41,7 +41,7 @@ Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
 **Current plan:** 3
-**Progress:** [██████████] 95%
+**Progress:** [██████████] 96%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -142,6 +142,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 16.3 P01 | 8 min | 2 tasks | 8 files |
 | Phase 16.3 P02 | 6 min | 2 tasks | 7 files |
 | Phase 16.3 P03 | 12 min | 2 tasks | 12 files |
+| Phase 16.3 P04 | 3 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -200,6 +201,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - Terminal detail now carries non-resumable-after-restart alongside cancelled and interrupted-by-signal so headless restart truth is explicit.
 - DelegationManager records explicit PTY cancellation intent before the PTY layer is terminated, letting later terminal transitions prefer cancelled over generic error wording.
 - delegation-status keeps coarse status for compatibility but prefers terminal-detail wording when specific terminal truth is available.
+- [Phase 16.3]: Preserve cancellation-specific wording when PTY command polling finds a missing session with recorded explicit cancellation intent, while keeping generic PTY disappearance wording for ambiguous no-intent missing sessions.
 
 ### Todos
 
@@ -260,7 +262,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 16.3-03-PLAN.md
+**Stopped At:** Completed 16.3-04-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
