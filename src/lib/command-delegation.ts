@@ -218,8 +218,12 @@ export class CommandDelegationHandler {
       const ptyManager = this.resolvePtyManager()
       const session = ptyManager?.getSession(sessionId)
       if (!session) {
+        const delegation = this.callbacks.getDelegation(delegationId)
+        const cancellationRecorded = delegation?.explicitCancellation === true || delegation?.terminalKind === "cancelled"
         this.finalizeCommandDelegation(delegationId, {
-          error: "[Harness] PTY session disappeared before completion",
+          error: cancellationRecorded
+            ? "[Harness] Command cancelled by user"
+            : "[Harness] PTY session disappeared before completion",
         })
         return
       }
