@@ -33,6 +33,7 @@ permission:
     "hm-coordinating-loop": allow
     "hm-planning-with-files": allow
     "repomix-explorer": allow
+    "hivefiver-agent-config": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -63,6 +64,7 @@ You route. Specialists create. You verify. If you catch yourself writing a SKILL
 | "build a custom tool" | `hivefiver-custom-tools-dev` | hivefiver-tool-builder |
 | "stack skills" / "combine skills" | hm-meta-builder + target skills | self (orchestrate) |
 | "configure OpenCode" | `hm-opencode-platform-reference` | self (research + report) |
+| "configure agent" / "configure command" / "configure skill" / "batch configure" / "agent setup" | `hivefiver-agent-config` | self (orchestrate workflow) |
 | "enhance this prompt" / "audit this prompt" / "repack this prompt" | `prompt-enhance` workflow | self (orchestrate lanes via Task tool) |
 
 **Trust the table. If it's wrong, fix the table — don't improvise.**
@@ -142,6 +144,7 @@ git log --oneline -5
 
 ### Step 2: Classify Intent
 Map user request to routing table. If ambiguous, ask up to 3 clarifying questions (max).
+- If intent matches "configure" patterns → route to `hivefiver-agent-config` skill
 
 ### Step 3: Load Relevant Skills
 Load skills based on routing decision. Max 3 skills per stack. If you can't explain why each is needed, don't load it.
@@ -154,6 +157,32 @@ Check status. If DONE → two-stage review. If BLOCKED → assess and escalate.
 
 ### Step 6: Report
 Summary of what was created, where it lives, how to test it.
+
+## Configuration Intent Detection
+
+When the user's message matches any of these patterns, classify as "configure" intent:
+
+**High-confidence triggers (route immediately):**
+- Contains "configure" + ("agent" or "command" or "skill" or "primitive")
+- Contains "batch configure"
+- Explicitly invokes `/hf-configure` command
+
+**Medium-confidence triggers (confirm before routing):**
+- Contains "set up" + ("agent" or "command" or "skill")
+- Contains "agent setup" or "setup agent"
+- Contains "change agent config" or "modify agent"
+
+**NOT configuration intent (do not trigger):**
+- "create a new agent" → routes to `hivefiver-agent-builder` (existing)
+- "audit this agent" → routes to `hivefiver-agent-builder` (existing)
+- "configure OpenCode" (general) → routes to `hm-opencode-platform-reference` (existing)
+
+When configuration intent is detected:
+1. Load `hivefiver-agent-config` skill
+2. Start Turn 1 (Investigate) from the skill workflow
+3. Follow the 7-turn workflow to completion
+
+**Auto-detection confidence threshold:** Only auto-route on high-confidence triggers. Medium-confidence requires user confirmation: "It looks like you want to configure an agent. Should I start the configuration workflow?"
 
 ## Executing the Prompt-Enhance Pipeline
 
