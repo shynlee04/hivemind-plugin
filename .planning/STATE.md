@@ -7,11 +7,11 @@ status: unknown
 stopped_at: Phase 16.4 architecture baseline executed; ready for verify-work
 last_updated: "2026-04-24T19:49:28.047Z"
 progress:
-  total_phases: 26
+  total_phases: 27
   completed_phases: 10
   total_plans: 49
   completed_plans: 43
-  percent: 88
+  percent: 87
 ---
 
 # STATE: Harness Cleanup
@@ -41,7 +41,7 @@ Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
 **Current plan:** 3
-**Progress:** [██████████] 96%
+**Progress:** [█████████_] 87%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -57,6 +57,7 @@ Phase 9.1: Critical Bug Fixes ..... COMPLETE WITH CAVEATS (test rewrites done, l
 Phase 9.2: Completion Detection .... PARTIAL — implementation exists, but 09.2-02/03 summaries are quarantined as non-authoritative runtime proof
 Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
+Phase 16.5: Agents Builder Config .. EXECUTING — Cycle 1 (Zod schema design) in progress
 Phase 17: Hivemind Skills Refactor . COMPLETE (C1-C5 resolved, tech-stack synthesis integrated)
 Phase 18: Context & Research ....... COMPLETE (8/8 deliverables, user sign-off received)
 Phase 19: Rename Sprint ............ COMPLETE (21/21 skills renamed, 368 files changed, all call-sites updated)
@@ -103,6 +104,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
 | Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
+| Phase 16.5 | EXECUTING | Agents Builder Configuration Foundation — Cycle 1 (Zod schema design) in progress; 4/7 schemas done |
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
@@ -222,6 +224,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - Phase 15 added: Security & Quality Remediation — fix all 26 audit issues (3 critical, 8 high, 7 medium, 8 low) from comprehensive codebase audit
 - Phase 16 added: Background Delegation Revamp + PTY Integration — rebuild background delegation to overcome all current limitations (read-only restriction, 15-min timeout, no undo/branching parity, no write-capable background) by synthesizing architecture from oh-my-openagent, opencode-background-agents, and opencode-pty
 - Phase 16.4 inserted after Phase 16: Harness Architecture Baseline & Migration Control Plane (URGENT) — pause delegation-manifest expansion and re-baseline harness architecture, migration gates, state ownership, lifecycle boundaries, and code/tree organization before further delegation or product-detox migration work
+- Phase 16.5 added: Agents Builder Configuration Foundation — Zod schemas for OpenCode primitives, config compiler, cross-primitive validator, interactive workflow skill, auto-detection routing for hivefiver agent configuration; depends on 16.4 architecture baseline
 - Phase 16.2 added: PTY Execution Wiring + OMO Safety Patterns — close verification gaps, add grace periods, parent notifications, adaptive polling, nesting depth limits (SPEC validated, 24 requirements, 6 already implemented)
 - Phase 17 added: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) — first of 6 continuation phases mapping HIVEMIND-SKILLS-REFACTOR-PLAYBOOK into GSD phases 17–22. Covers C1–C5 critical issues, hm-* rename mandate, soft→hard bridge model, runtime compilation model. Specification: .hivemind/state/session-context-prompt-v4.md
 - Phase 18 added: Context & Research — Skills Refactor Playbook Phase CR. Mandatory research/audit phase before any structural skill work. Per HIVEMIND-SKILLS-REFACTOR-PLAYBOOK v2.0 §VI.CR. Continuation mapping renumbered: old Phase 18→19, 19→20, 20→21, 21→22, 22→23.
