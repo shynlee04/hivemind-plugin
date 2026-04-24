@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: 3
-status: unknown
-stopped_at: Phase 16.4 architecture baseline executed; ready for verify-work
-last_updated: "2026-04-24T19:49:28.047Z"
+current_plan: 1
+status: executing
+stopped_at: Phase 16.5 execution starting — 5 plans in 4 waves, Wave 1 (Plans 01+02) dispatching
+last_updated: "2026-04-25T06:00:00.000Z"
 progress:
   total_phases: 27
   completed_phases: 10
@@ -29,8 +29,9 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — COMPLETE
-Plan: 3 of 3 (complete)
+Phase: 16.5 (agents-builder-configuration-foundation) — PLANNED, Ready to Execute
+Plan: 5 of 5 (complete), 4 waves
+Previous: Phase 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — COMPLETE
 Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
 Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
 Phase 21: COMPLETE — 7 differential cluster skills rewritten with pushy trigger pattern per V.7 template
@@ -57,7 +58,7 @@ Phase 9.1: Critical Bug Fixes ..... COMPLETE WITH CAVEATS (test rewrites done, l
 Phase 9.2: Completion Detection .... PARTIAL — implementation exists, but 09.2-02/03 summaries are quarantined as non-authoritative runtime proof
 Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
-Phase 16.5: Agents Builder Config .. EXECUTING — Cycle 1 (Zod schema design) in progress
+Phase 16.5: Agents Builder Config .. PLANNED — 5 plans, 4 waves, ready to execute (Cycle 1 schemas done + fixed)
 Phase 17: Hivemind Skills Refactor . COMPLETE (C1-C5 resolved, tech-stack synthesis integrated)
 Phase 18: Context & Research ....... COMPLETE (8/8 deliverables, user sign-off received)
 Phase 19: Rename Sprint ............ COMPLETE (21/21 skills renamed, 368 files changed, all call-sites updated)
@@ -104,7 +105,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
 | Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
-| Phase 16.5 | EXECUTING | Agents Builder Configuration Foundation — Cycle 1 (Zod schema design) in progress; 4/7 schemas done |
+| Phase 16.5 | EXECUTING | Agents Builder Configuration Foundation — Cycle 1 (Zod schema design) COMPLETE; Cycles 2-6 execution in progress |
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
