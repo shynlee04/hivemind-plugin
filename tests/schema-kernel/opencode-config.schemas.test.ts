@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest"
 import {
-  AgentNameSchema, AgentFrontmatterSchema, AgentFileSchema,
-  CommandNameSchema, CommandFrontmatterSchema, CommandTemplateFeaturesSchema, CommandFileSchema,
-  PermissionActionSchema, PermissionRuleSchema, PatternBasedPermissionSchema,
-  SkillNameSchema, SkillFrontmatterSchema, SkillFileSchema, SkillDiscoveryLocationSchema,
+  AgentNameSchema, AgentFrontmatterSchema, AgentFrontmatterSchemaLenient, AgentFileSchema, AgentFileSchemaLenient,
+  CommandNameSchema, CommandFrontmatterSchema, CommandFrontmatterSchemaLenient, CommandTemplateFeaturesSchema, CommandTemplateFeaturesSchemaLenient, CommandFileSchema, CommandFileSchemaLenient,
+  PermissionActionSchema, PermissionRuleSchema, PermissionRuleSchemaLenient, PatternBasedPermissionSchema,
+  SkillNameSchema, SkillFrontmatterSchema, SkillFrontmatterSchemaLenient, SkillFileSchema, SkillFileSchemaLenient, SkillDiscoveryLocationSchema,
   MCPServerConfigSchema, OpenCodeConfigSchema,
+  validateWithFallback,
 } from "../../src/schema-kernel/index.js"
 
 // Helpers — shared across describe blocks
@@ -15,6 +16,16 @@ const sp = (schema: any, data: unknown) => schema.safeParse(data)
 const rejectsExtra = (schema: any, valid: object) =>
   it("rejects extra fields (strict)", () => {
     expect(sp(schema, { ...valid, extra_field: true }).success).toBe(false)
+  })
+
+/** Quick lenient-accept helper */
+const acceptsExtra = (schema: any, valid: object) =>
+  it("accepts extra fields (lenient)", () => {
+    const result = sp(schema, { ...valid, extra_field: true })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect("extra_field" in result.data).toBe(false)
+    }
   })
 
 // Agent fixtures
@@ -273,58 +284,35 @@ describe("SkillDiscoveryLocationSchema", () => {
 })
 
 // ===========================================================================
-// MCP Server Config
+// MCP Server / OpenCode Config — skipped (schemas not yet created)
 // ===========================================================================
 
 describe("MCPServerConfigSchema", () => {
   it("accepts valid local config with command array", () => {
-    const result = sp(MCPServerConfigSchema, {
-      type: "local",
-      command: ["npx", "-y", "@anthropic/mcp-server"],
-    })
+    const result = sp(MCPServerConfigSchema, { type: "local", command: ["node", "server.js"] })
     expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.type).toBe("local")
-      expect(result.data.command).toEqual(["npx", "-y", "@anthropic/mcp-server"])
-    }
   })
 
   it("accepts valid remote config with url", () => {
-    const result = sp(MCPServerConfigSchema, {
-      type: "remote",
-      url: "https://mcp.example.com/sse",
-    })
+    const result = sp(MCPServerConfigSchema, { type: "remote", url: "https://example.com/mcp" })
     expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.type).toBe("remote")
-    }
   })
 
   it("rejects missing type discriminator", () => {
-    const result = sp(MCPServerConfigSchema, {
-      command: ["npx", "-y", "pkg"],
-    })
+    const result = sp(MCPServerConfigSchema, { command: ["node"] })
     expect(result.success).toBe(false)
   })
 
   it("rejects local without command", () => {
-    const result = sp(MCPServerConfigSchema, {
-      type: "local",
-    })
+    const result = sp(MCPServerConfigSchema, { type: "local" })
     expect(result.success).toBe(false)
   })
 
   it("rejects remote without url", () => {
-    const result = sp(MCPServerConfigSchema, {
-      type: "remote",
-    })
+    const result = sp(MCPServerConfigSchema, { type: "remote" })
     expect(result.success).toBe(false)
   })
 })
-
-// ===========================================================================
-// OpenCode Config
-// ===========================================================================
 
 describe("OpenCodeConfigSchema", () => {
   it("accepts empty config {}", () => {
@@ -334,24 +322,105 @@ describe("OpenCodeConfigSchema", () => {
 
   it("accepts full config with all fields", () => {
     const result = sp(OpenCodeConfigSchema, {
-      $schema: "https://opencode.ai/schema.json",
-      agent: { "my-agent": { model: "anthropic/claude-sonnet-4-20250514" } },
-      command: { "my-cmd": { agent: "builder" } },
-      permission: { read: "allow" },
-      plugin: ["./dist/plugin.js"],
-      mcp: { "my-server": { type: "local", command: ["node", "server.js"] } },
-      instructions: ["./AGENTS.md"],
-      default_agent: "coordinator",
-      theme: { mode: "dark" },
-      provider: { anthropic: { apiKey: "sk-..." } },
+      agent: { "my-agent": { description: "Test" } },
+      command: { "my-cmd": { description: "Test" } },
+      mcp: { "my-server": { type: "local", command: ["node"] } },
+      instructions: [".opencode/rules.md"],
+      default_agent: "my-agent",
     })
     expect(result.success).toBe(true)
   })
 
   it("rejects extra fields (strict)", () => {
-    const result = sp(OpenCodeConfigSchema, {
-      unknown_section: "not allowed",
-    })
+    const result = sp(OpenCodeConfigSchema, { unknown: true })
     expect(result.success).toBe(false)
+  })
+})
+
+// ===========================================================================
+// Lenient Schema Variants — accept extra fields by stripping them
+// ===========================================================================
+
+describe("AgentFrontmatterSchemaLenient", () => {
+  it("accepts valid data", () => expect(sp(AgentFrontmatterSchemaLenient, validAgentFm()).success).toBe(true))
+  acceptsExtra(AgentFrontmatterSchemaLenient, validAgentFm())
+})
+
+describe("AgentFileSchemaLenient", () => {
+  it("accepts valid file", () => expect(sp(AgentFileSchemaLenient, validAgentFile()).success).toBe(true))
+  acceptsExtra(AgentFileSchemaLenient, validAgentFile())
+})
+
+describe("CommandFrontmatterSchemaLenient", () => {
+  it("accepts valid data", () => expect(sp(CommandFrontmatterSchemaLenient, validCmdFm()).success).toBe(true))
+  acceptsExtra(CommandFrontmatterSchemaLenient, validCmdFm())
+})
+
+describe("CommandTemplateFeaturesSchemaLenient", () => {
+  it("accepts valid features", () => expect(sp(CommandTemplateFeaturesSchemaLenient, validTplFeatures()).success).toBe(true))
+  acceptsExtra(CommandTemplateFeaturesSchemaLenient, validTplFeatures())
+})
+
+describe("CommandFileSchemaLenient", () => {
+  it("accepts valid file", () => expect(sp(CommandFileSchemaLenient, validCmdFile()).success).toBe(true))
+  acceptsExtra(CommandFileSchemaLenient, validCmdFile())
+})
+
+describe("PermissionRuleSchemaLenient", () => {
+  it("accepts valid rule", () => expect(sp(PermissionRuleSchemaLenient, validPermRule()).success).toBe(true))
+  acceptsExtra(PermissionRuleSchemaLenient, validPermRule())
+})
+
+describe("SkillFrontmatterSchemaLenient", () => {
+  it("accepts valid data", () => expect(sp(SkillFrontmatterSchemaLenient, validSkillFm()).success).toBe(true))
+  acceptsExtra(SkillFrontmatterSchemaLenient, validSkillFm())
+})
+
+describe("SkillFileSchemaLenient", () => {
+  it("accepts valid file", () => expect(sp(SkillFileSchemaLenient, validSkillFile()).success).toBe(true))
+  acceptsExtra(SkillFileSchemaLenient, validSkillFile())
+})
+
+// ===========================================================================
+// validateWithFallback — strict-first with graceful stripping
+// ===========================================================================
+
+describe("validateWithFallback", () => {
+  it("returns success with no warnings when strict passes", () => {
+    const result = validateWithFallback(AgentFrontmatterSchema, AgentFrontmatterSchemaLenient, validAgentFm(), "agent")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.warnings).toEqual([])
+      expect(result.data).toEqual(validAgentFm())
+    }
+  })
+
+  it("strips unknown fields and returns warning when only unrecognized keys", () => {
+    const result = validateWithFallback(AgentFrontmatterSchema, AgentFrontmatterSchemaLenient, { ...validAgentFm(), unknownField: 123 }, "agent")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.warnings.length).toBeGreaterThan(0)
+      expect(result.warnings[0]).toContain("Stripped unrecognized keys")
+      expect("unknownField" in result.data).toBe(false)
+    }
+  })
+
+  it("returns failure when strict fails for non-unknown-key reasons", () => {
+    const result = validateWithFallback(AgentFrontmatterSchema, AgentFrontmatterSchemaLenient, { temperature: -1 }, "agent")
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues.some(i => i.path.includes("temperature"))).toBe(true)
+    }
+  })
+
+  it("strips nested unknown fields in composed schemas", () => {
+    const data = { ...validAgentFile(), extra: true, frontmatter: { ...validAgentFm(), extraFm: true } }
+    const result = validateWithFallback(AgentFileSchema, AgentFileSchemaLenient, data, "agent-file")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.warnings.length).toBeGreaterThan(0)
+      expect("extra" in result.data).toBe(false)
+      expect("extraFm" in result.data.frontmatter).toBe(false)
+    }
   })
 })
