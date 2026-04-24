@@ -662,7 +662,21 @@ Phase 1 (7 done, 3 pending — planned)
                                                                          └─→ Phase 23: Body Quality + Eval (Playbook Phase 5)
                                  └─→ Phase 9.3: Module Restructuring + Config
                                       └─→ Phase 11: Clean Architecture Restructuring
-                                           └─→ Phase 3: Schema Definition
-                                                └─→ Phase 4: Migration Gate
-                                                     └─→ Phase 5: Integration Verification
+                                            └─→ Phase 3: Schema Definition
+                                                 └─→ Phase 4: Migration Gate
+                                                      └─→ Phase 5: Integration Verification
 ```
+
+## Backlog
+
+### Phase 999.1: Follow-up — Phase 16.4 incomplete verify-work (BACKLOG)
+
+**Goal:** Resolve verify-work and create SUMMARY.md files for Phase 16.4 plans that executed without producing summaries
+**Source phase:** 16.4
+**Deferred at:** 2026-04-25 during /gsd-next advancement to Phase 16.5
+**Status:** Phase 16.4 architecture baseline executed per STATE.md; verify-work and summaries pending
+**Plans:**
+- [ ] 16.4-01: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
+- [ ] 16.4-02: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
+- [ ] 16.4-03: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
+- [ ] 16.4-04: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
