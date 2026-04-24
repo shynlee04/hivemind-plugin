@@ -4,6 +4,7 @@ import {
   CommandNameSchema, CommandFrontmatterSchema, CommandTemplateFeaturesSchema, CommandFileSchema,
   PermissionActionSchema, PermissionRuleSchema, PatternBasedPermissionSchema,
   SkillNameSchema, SkillFrontmatterSchema, SkillFileSchema, SkillDiscoveryLocationSchema,
+  MCPServerConfigSchema, OpenCodeConfigSchema,
 } from "../../src/schema-kernel/index.js"
 
 // Helpers — shared across describe blocks
@@ -272,19 +273,85 @@ describe("SkillDiscoveryLocationSchema", () => {
 })
 
 // ===========================================================================
-// MCP Server / OpenCode Config — skipped (schemas not yet created)
+// MCP Server Config
 // ===========================================================================
 
-describe.skip("MCPServerConfigSchema", () => {
-  it.todo("accepts valid local config with command array")
-  it.todo("accepts valid remote config with url")
-  it.todo("rejects missing type discriminator")
-  it.todo("rejects local without command")
-  it.todo("rejects remote without url")
+describe("MCPServerConfigSchema", () => {
+  it("accepts valid local config with command array", () => {
+    const result = sp(MCPServerConfigSchema, {
+      type: "local",
+      command: ["npx", "-y", "@anthropic/mcp-server"],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.type).toBe("local")
+      expect(result.data.command).toEqual(["npx", "-y", "@anthropic/mcp-server"])
+    }
+  })
+
+  it("accepts valid remote config with url", () => {
+    const result = sp(MCPServerConfigSchema, {
+      type: "remote",
+      url: "https://mcp.example.com/sse",
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.type).toBe("remote")
+    }
+  })
+
+  it("rejects missing type discriminator", () => {
+    const result = sp(MCPServerConfigSchema, {
+      command: ["npx", "-y", "pkg"],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects local without command", () => {
+    const result = sp(MCPServerConfigSchema, {
+      type: "local",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects remote without url", () => {
+    const result = sp(MCPServerConfigSchema, {
+      type: "remote",
+    })
+    expect(result.success).toBe(false)
+  })
 })
 
-describe.skip("OpenCodeConfigSchema", () => {
-  it.todo("accepts empty config {}")
-  it.todo("accepts full config with all fields")
-  it.todo("rejects extra fields (strict)")
+// ===========================================================================
+// OpenCode Config
+// ===========================================================================
+
+describe("OpenCodeConfigSchema", () => {
+  it("accepts empty config {}", () => {
+    const result = sp(OpenCodeConfigSchema, {})
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts full config with all fields", () => {
+    const result = sp(OpenCodeConfigSchema, {
+      $schema: "https://opencode.ai/schema.json",
+      agent: { "my-agent": { model: "anthropic/claude-sonnet-4-20250514" } },
+      command: { "my-cmd": { agent: "builder" } },
+      permission: { read: "allow" },
+      plugin: ["./dist/plugin.js"],
+      mcp: { "my-server": { type: "local", command: ["node", "server.js"] } },
+      instructions: ["./AGENTS.md"],
+      default_agent: "coordinator",
+      theme: { mode: "dark" },
+      provider: { anthropic: { apiKey: "sk-..." } },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects extra fields (strict)", () => {
+    const result = sp(OpenCodeConfigSchema, {
+      unknown_section: "not allowed",
+    })
+    expect(result.success).toBe(false)
+  })
 })
