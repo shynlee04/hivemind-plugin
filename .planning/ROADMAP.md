@@ -305,7 +305,7 @@ Plans:
 - [x] 16.5-04: Workflow Skill (R-04)
 - [x] 16.5-05: Orchestrator Enhancement (R-05)
 - [x] 16.5-fix: UAT intent detection gaps + Turn 0 discovery + batch modify
-- [ ] 16.5-06: Schema Resilience + Discovery Loader (BLOCKER-1, BLOCKER-3) [Wave 1]
+- [x] 16.5-06: Schema Resilience + Discovery Loader (BLOCKER-1, BLOCKER-3) [Wave 1]
 - [ ] 16.5-07: Framework-Agnostic Stacking + Runtime Validation (BLOCKER-2, CRITICAL-4, CRITICAL-7) [Wave 2]
 - [ ] 16.5-08: Mixed-Primitive Batch + Eval Harness (CRITICAL-5, CRITICAL-6, HIGH-10) [Wave 3]
 
@@ -631,7 +631,7 @@ Plans:
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened across delegation surfaces |
-| 16.5. Agents Builder Configuration Foundation | 8/8 plans (5 original + 3 gap closure) | GAP CLOSURE ACTIVE — 6 gaps identified, 3 plans closing BLOCKER-1/2/3, CRITICAL-4/5/6/7, HIGH-10 |
+| 16.5. Agents Builder Configuration Foundation | 8/8 plans (5 original + 3 gap closure) | ✅ COMPLETE — 718 tests pass, BLOCKER-1 and BLOCKER-3 closed |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
 | 19. Rename Sprint (Playbook Phase 1) | 19/21 skills (2 deferred) | ⚠️ PARTIAL — 19 renamed, stale refs remain, `.windsurf/` touched (violated constraint) |

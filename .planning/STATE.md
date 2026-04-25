@@ -29,8 +29,8 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 16.5 (agents-builder-configuration-foundation) — PLANNED, Ready to Execute
-Plan: 5 of 5 (complete), 4 waves
+Phase: 16.5 (agents-builder-configuration-foundation) — COMPLETE
+Plan: 6 of 6 (complete), 4 waves
 Previous: Phase 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — COMPLETE
 Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
 Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
@@ -41,8 +41,8 @@ Phase 17: COMPLETE — Hivemind Skills Refactor (C1-C5 resolved, tech-stack synt
 Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 deliverables committed)
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** 3
-**Progress:** [█████████_] 87%
+**Current plan:** 6
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -105,7 +105,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
 | Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
-| Phase 16.5 | COMPLETE | Agents Builder Configuration Foundation — 5/5 plans executed, 680 tests pass, UAT verified, intent detection expanded |
+| Phase 16.5 | COMPLETE | Agents Builder Configuration Foundation — 6/6 plans executed, 718 tests pass, UAT verified, intent detection expanded, BLOCKER-1 and BLOCKER-3 closed |
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
@@ -146,6 +146,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 16.3 P02 | 6 min | 2 tasks | 7 files |
 | Phase 16.3 P03 | 12 min | 2 tasks | 12 files |
 | Phase 16.3 P04 | 3 min | 2 tasks | 3 files |
+| Phase 16.5 P06 | 21 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -267,7 +268,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase 16.5 gap-closure context gathered — ready for replanning
+**Stopped At:** Phase 16.5 Plan 06 complete — Schema Resilience & Primitive Discovery implemented
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
