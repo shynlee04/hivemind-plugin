@@ -26,9 +26,8 @@ import { createValidateRestartTool } from "./tools/validate-restart.js"
 import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 import {
-  createJourneyEventFromHook,
-  writeSessionJourneyArtifacts,
-} from "./lib/session-journey-events.js"
+  createEventTrackerArtifactsFromHook,
+} from "./lib/event-tracker/index.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
 
@@ -82,8 +81,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   }
   const sessionJourneyEventObserver = async ({ event }: { event?: unknown }) => {
     try {
-      const journeyEvent = createJourneyEventFromHook({ event, source: "plugin.event" })
-      writeSessionJourneyArtifacts({ projectRoot: directory, event: journeyEvent })
+      createEventTrackerArtifactsFromHook({ projectRoot: directory, hook: { event, source: "plugin.event" } })
     } catch {
       // Best-effort audit projection: never block canonical OpenCode event handling.
     }
