@@ -1,34 +1,113 @@
-# Phase 25 Verification — Session Journal + Execution Lineage Bridge
+---
+phase: 25-session-journal-execution-lineage-bridge
+verified: 2026-04-26T03:12:23Z
+status: passed
+score: 11/11 must-haves verified
+overrides_applied: 0
+re_verification:
+  previous_status: passed
+  previous_score: unstructured_pass
+  gaps_closed: []
+  gaps_remaining: []
+  regressions: []
+---
 
-**Verified:** 2026-04-26
-**Verdict:** PASS after event-tracker E2E correction
+# Phase 25: Session Journal + Execution Lineage Bridge Verification Report
 
-## Goal-Backward Verification
+**Phase Goal:** Build the first `.hivemind/`-aligned audit/projection bridge for session journals and execution lineage without replacing continuity/delegation runtime truth. Phase 25 Plan 04 correction specifically requires automatic event-tracker JSON/Markdown write + parse under `.hivemind/event-tracker/`.
+**Verified:** 2026-04-26T03:12:23Z
+**Status:** passed
+**Re-verification:** Yes — previous report existed and claimed PASS; this run re-verified the user-reported event-tracker failure against `session-ses_23a0.md`, code, plugin wiring, and tests.
 
-| Goal | Evidence | Verdict |
-|------|----------|---------|
-| Journal is append-only and independent of continuity runtime status | `src/lib/session-journal.ts`; `tests/lib/session-journal.test.ts` validates idempotent JSONL append and no continuity imports | PASS |
-| `.hivemind/` taxonomy exists with owner/schema/index/retention/rebuild markers | `.hivemind/journal/README.md`, `.hivemind/lineage/README.md`; taxonomy tests | PASS |
-| Execution lineage is rebuildable projection, not terminal authority | `src/lib/execution-lineage.ts`; tests assert immutable inputs and derived projection state role | PASS |
-| Agent quick-read surface exists | `src/tools/session-journal-export.ts`, `src/plugin.ts`, `src/index.ts`; tool tests | PASS |
-| Phase 31 Q3/Q6 impacts are reconciled | `25-CONTEXT.md`, `25-RESEARCH.md`, `25-VALIDATION.md`, plans updated with JOURNAL/HIVEMIND-ROOT traceability | PASS |
-| Automatic event-tracker flow creates paired artifacts | `tests/lib/event-tracker/session-journey-events.test.ts` drives `createEventTrackerArtifactsFromHook()` against a temp project root and asserts `.hivemind/event-tracker/ses_2b7a.json` plus `.md` exist | PASS |
-| JSON and Markdown parse-back prove required selective metadata | Focused E2E parses both artifacts and asserts session ID, artifact stem, status, counters, and event types | PASS |
-| Failure gates are covered | Adapter-backed tests fail on directory creation, JSON write, Markdown write, missing JSON metadata, and missing Markdown metadata | PASS |
-| Path traversal/session injection is sanitized | E2E proves `../../ses_2b7a/evil.json` resolves to `ses_2b7a.json` and `ses_2b7a.md` under `.hivemind/event-tracker/` | PASS |
+## Goal Achievement
 
-## Fresh Verification Commands
+### Observable Truths
 
-- `npm run typecheck` → pass
-- `npx vitest run tests/lib/session-journal.test.ts tests/lib/execution-lineage.test.ts tests/tools/session-journal-export.test.ts` → 3 files passed, 15 tests passed
-- `npx vitest run tests/lib/event-tracker/session-journey-events.test.ts tests/lib/event-tracker/session-artifact-parser.test.ts` → 2 files passed, 9 tests passed
-- `npm run build` → pass
-- `npm test` → 47 passed, 1 skipped; 851 tests passed, 1 todo
+| # | Truth | Status | Evidence |
+|---|-------|--------|----------|
+| 1 | OpenCode session events can automatically create/update `.hivemind/event-tracker/ses_xxxx.json` and `.hivemind/event-tracker/ses_xxxx.md` without a user tool call. | ✓ VERIFIED | `src/plugin.ts:82-93` registers `sessionJourneyEventObserver` in `eventObservers`; observer calls `createEventTrackerArtifactsFromHook()`. `src/plugin.ts:97-109` tool registry has no event-tracker tool. |
+| 2 | Path creation uses `.hivemind/event-tracker/` and a sanitized four-character `ses_xxxx` artifact stem. | ✓ VERIFIED | `src/lib/event-tracker/writer.ts:50-55` derives `ses_` + 4 lowercased sanitized chars; `writer.ts:86-94` joins project root with `.hivemind/event-tracker/{stem}.{json,md}`. Tests assert `ses_2b7a.json`/`.md` and traversal containment at `tests/lib/event-tracker/session-journey-events.test.ts:30-32` and `104-117`. |
+| 3 | JSON artifact is written with bounded selective session metadata and can be parsed back. | ✓ VERIFIED | `writer.ts:216-237` writes JSON; `parser.ts:54-73` parses required JSON meta. Test parses written JSON at `session-journey-events.test.ts:37-41`. |
+| 4 | Markdown artifact is written with bounded selective session metadata and can be parsed back. | ✓ VERIFIED | `writer.ts:188-213` renders Markdown with session ID, artifact stem, status, counters, and table of contents; `parser.ts:80-102` parses required Markdown meta. Test parses written Markdown at `session-journey-events.test.ts:37-43`. |
+| 5 | Failure behavior is proven for directory creation, JSON write, Markdown write, and missing parse metadata. | ✓ VERIFIED | Tests cover directory creation failure (`session-journey-events.test.ts:49-60`), JSON write failure (`63-76`), Markdown write failure (`79-92`), and missing JSON/Markdown metadata parse failures (`95-101`). |
+| 6 | Implementation follows GSD architecture as a deep module/projection, not a runtime authority replacement. | ✓ VERIFIED | `src/lib/event-tracker/` contains `types.ts`, `parser.ts`, `writer.ts`, `index.ts`; grep found no imports of `continuity`, `delegation-manager`, `delegate-task`, `.opencode/state`, or tool constructors inside the module. The writer stores bounded audit metadata only (`writer.ts:61-83`, `174-185`). |
+| 7 | Event tracker is not a tool-call wrapper. | ✓ VERIFIED | `src/plugin.ts:97-109` lists tools and contains no event-tracker tool; grep under `src/tools` found no `event-tracker` or `createEventTrackerArtifactsFromHook` references. Automatic wiring is through event observers, not tool execution. |
+| 8 | Canonical OpenCode lifecycle events shaped as `{ properties: { info: { id } } }` are accepted by automatic writer/plugin flow. | ✓ VERIFIED | `src/lib/event-tracker/writer.ts` delegates session-id extraction to `getEventSessionID()`; tests cover direct writer shape and plugin `HarnessControlPlane.event()` artifact creation. |
+| 9 | Manual exported session Markdown parses actors, main session, sub-session delegation, and bounded last output. | ✓ VERIFIED | `tests/lib/event-tracker/session-artifact-parser.test.ts` reads `session-ses_23a0.md` and asserts Coordinator/user/gsd-executor actors, main session `ses_23a0b5eabffeB413854W6gnUKC`, sub-session `ses_23a09f902ffeZcgOTkaOBE4D2x`, and bounded last output. |
+| 10 | Manual export metadata merges into one bounded root artifact, not limitless per-event files. | ✓ VERIFIED | `mergeSessionExportMarkdownArtifacts()` writes `.hivemind/event-tracker/ses_23a0.{json,md}`, nests `subSessions`, stores `actors`/`lastMessageOutput`, and caps retained events; test asserts `events.length <= 100`. |
+| 11 | Writer does not silently discard malformed JSON and does not regress `updatedAt` on out-of-order events. | ✓ VERIFIED | Focused tests assert `[Harness] Failed to parse event-tracker JSON` and monotonic `updatedAt` remains 200 when an older timestamp 100 arrives later. |
 
-## Known Stubs
+**Score:** 11/11 truths verified
 
-None that block Phase 25. Full Q3 time-machine replay remains explicitly out of Phase 25 scope; Phase 25 provides replay/export-friendly records, rebuildable lineage projections, and bounded automatic event-tracker artifacts.
+### Required Artifacts
 
-## Human Verification
+| Artifact | Expected | Status | Details |
+|---|---|---|---|
+| `src/lib/event-tracker/types.ts` | Type contract for event tracker artifacts, filesystem seam, parsed metadata | ✓ VERIFIED | Exists and defines `SessionJourneyDocument`, artifact paths, fs seam, parser output types, export meta, actors, and sub-session records. |
+| `src/lib/event-tracker/writer.ts` | Automatic hook-to-artifact conversion, safe path creation, JSON/Markdown writer, bounded Markdown rendering | ✓ VERIFIED | Implements `createEventTrackerArtifactsFromHook()`, `sanitizeSessionArtifactStem()`, `.hivemind/event-tracker` paths, and write failure wrapping. |
+| `src/lib/event-tracker/parser.ts` | Parse back required selective JSON and Markdown metadata | ✓ VERIFIED | Implements `parseSessionJourneyJson()` and `parseSessionJourneyMarkdown()` with required-field failures. |
+| `src/lib/event-tracker/index.ts` | Module boundary export | ✓ VERIFIED | Re-exports types, parser, writer. |
+| `src/plugin.ts` | Automatic event observer wiring, no event-tracker tool wrapper | ✓ VERIFIED | Observer registered in `eventObservers`; tool registry has no event-tracker tool. |
+| `src/index.ts` | Public package export | ✓ VERIFIED | Exports `./lib/event-tracker/index.js` at line 17. |
+| `tests/lib/event-tracker/session-journey-events.test.ts` | E2E/failure coverage for corrected event-tracker flow | ✓ VERIFIED | 12 focused tests pass. |
+| `tests/lib/event-tracker/session-artifact-parser.test.ts` | Product-detox/manual export parser compatibility evidence | ✓ VERIFIED | 2 parser tests pass, including required `session-ses_23a0.md` fixture. |
+| `tests/plugins/plugin-lifecycle.test.ts` | Plugin-level automatic event-tracker wiring | ✓ VERIFIED | Canonical event shape writes paired artifacts through `HarnessControlPlane.event()`. |
 
-Not required. All Phase 25 behaviors are covered by automated verification.
+### Key Link Verification
+
+| From | To | Via | Status | Details |
+|---|---|---|---|---|
+| `src/plugin.ts` | `src/lib/event-tracker/index.ts` | import + `sessionJourneyEventObserver` calls `createEventTrackerArtifactsFromHook()` | ✓ WIRED | `src/plugin.ts:29-30`, `82-84`, `93`. |
+| `createEventTrackerArtifactsFromHook()` | `writeSessionJourneyArtifacts()` | hook conversion then writer call | ✓ WIRED | `writer.ts:240-243`. |
+| `writeSessionJourneyArtifacts()` | `.hivemind/event-tracker/{ses_xxxx}.{json,md}` | `getEventTrackerArtifactPaths()` + fs writes | ✓ WIRED | `writer.ts:86-94`, `216-237`. |
+| Written JSON/Markdown | Parser functions | Tests read files and call parsers | ✓ WIRED | `session-journey-events.test.ts:37-43`. |
+| `session-ses_23a0.md` | `.hivemind/event-tracker/ses_23a0.{json,md}` | `mergeSessionExportMarkdownArtifacts()` | ✓ WIRED | Manual fixture parse/merge tests prove main/sub lineage and last output. |
+
+### Data-Flow Trace (Level 4)
+
+| Artifact | Data Variable | Source | Produces Real Data | Status |
+|---|---|---|---|---|
+| `src/plugin.ts` → `writer.ts` | `event` / `sessionId` | OpenCode event observer argument; `resolveSessionId()` reads `sessionID`, `sessionId`, or nested properties | Yes | ✓ FLOWING |
+| `writer.ts` JSON artifact | `document` | Existing JSON read or empty document + appended `SessionJourneyEvent` | Yes | ✓ FLOWING |
+| `writer.ts` Markdown artifact | `document` | Same bounded document rendered to Markdown table/header/event blocks | Yes | ✓ FLOWING |
+| `parser.ts` parse-back | `ParsedSessionJourneyMeta` | JSON parse / Markdown regex over written artifact contents | Yes | ✓ FLOWING |
+
+### Behavioral Spot-Checks
+
+| Behavior | Command | Result | Status |
+|---|---|---|---|
+| Current branch is the requested implementation branch | `git branch --show-current` | `feature/harness-implementation` | ✓ PASS |
+| Phase 25 roadmap data loads | `gsd-sdk query roadmap.get-phase 25 --raw` | Found Phase 25 and Plan 04 event-tracker correction listed complete | ✓ PASS |
+| TypeScript compiles without type errors | `npm run typecheck` | `tsc --noEmit` completed successfully | ✓ PASS |
+| Event-tracker focused tests prove write/parse/failure/plugin behavior | `npx vitest run tests/lib/event-tracker/session-artifact-parser.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` | 3 files passed, 20 tests passed | ✓ PASS |
+| Package build still succeeds | `npm run build` | clean + `tsc` completed successfully | ✓ PASS |
+| Full suite still succeeds | `npm test` | 47 files passed, 1 skipped; 857 tests passed, 1 todo | ✓ PASS |
+
+### Requirements Coverage
+
+| Requirement | Source Plan | Description | Status | Evidence |
+|---|---|---|---|---|
+| ROADMAP-25 | `25-04-PLAN.md` | Phase 25 audit/projection bridge, corrected with event-tracker automatic write/parse | ✓ SATISFIED | Plan 04 acceptance criteria verified against code/tests; roadmap query found Phase 25 complete. |
+| JOURNAL-01 | `25-04-PLAN.md` | Session journal/event timeline independence | ✓ SATISFIED for event-tracker correction | Event tracker module is independent from continuity/delegation runtime truth; no continuity/delegation imports found. |
+| JOURNAL-02 | `25-04-PLAN.md` | Export/read surface supports filtering/quick-read class of metadata | ✓ SATISFIED for event-tracker correction | JSON/Markdown parsers return required selective metadata and event types. |
+| HIVEMIND-ROOT-01 | `25-04-PLAN.md` | Hivemind deep modules write to `.hivemind/` root | ✓ SATISFIED for event-tracker correction | Writer uses `.hivemind/event-tracker`; no `.opencode/state` writer found in event-tracker module. |
+
+### Anti-Patterns Found
+
+| File | Line | Pattern | Severity | Impact |
+|---|---:|---|---|---|
+| `src/lib/event-tracker/parser.ts` | 41 | `return []` for absent event list | ℹ️ Info | Not a stub: parser gracefully treats absent event array as no event types; required session/status/counter metadata still enforced. |
+| `src/lib/event-tracker/writer.ts` | 61 | Comment contains “raw payload” | ℹ️ Info | Not a placeholder: explicitly documents bounded metadata conversion; test asserts raw payload does not render. |
+
+### Human Verification Required
+
+None. The corrected Phase 25 event-tracker goal is code/test-verifiable; no visual, external-service, or subjective UX behavior is required.
+
+### Gaps Summary
+
+No blocking gaps found. The implementation automatically writes paired `.hivemind/event-tracker/ses_xxxx.json` and `.md` artifacts from plugin event observation, parses required selective metadata back from both formats, parses and merges manually exported session Markdown including main/sub-session lineage, proves directory/write/parse failures in tests, uses sanitized four-character stems and Markdown scalar sanitization, stays under `.hivemind/`, and is not exposed as a tool-call wrapper.
+
+---
+
+_Verified: 2026-04-26T03:12:23Z_
+_Verifier: the agent (gsd-verifier)_

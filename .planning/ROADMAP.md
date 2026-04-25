@@ -35,7 +35,7 @@
 - [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis)
 - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis)
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
-- [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 4/4 plans complete; journal/lineage bridge plus automatic event-tracker writer verified under `.hivemind/event-tracker/`
+- [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 4/4 plans complete; journal/lineage bridge plus automatic event-tracker writer and manual export lineage merge verified under `.hivemind/event-tracker/`
 - [ ] **Phase 31: Planning Documentation Refresh** — Synthesize 6 validation decisions (Q1-Q6) + research from phases 16.4-30 into all stale .planning/ core documents
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
@@ -463,7 +463,7 @@ Plans:
 - [x] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
 - [x] 25-04-PLAN.md — event-tracker automatic parser/writer/meta-writer under `.hivemind/event-tracker/`
 
-**Verification:** PASS — `npm run typecheck`, focused Phase 25 + event-tracker vitest suites, `npm run build`, and `npm test` (851 passed, 1 todo, 1 skipped).
+**Verification:** PASS — `npm run typecheck`, focused Phase 25 + event-tracker/plugin vitest suites, `npm run build`, and `npm test` (857 passed, 1 todo, 1 skipped).
 
 ### Phase 31: Planning Documentation Refresh
 

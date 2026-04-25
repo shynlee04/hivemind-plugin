@@ -31,20 +31,23 @@ Phase 25 now includes an E2E-validated automatic event-tracker parser/writer/met
 - Preserved existing runtime authority boundaries: the writer is audit/projection-only and does not mutate continuity/delegation terminal truth.
 - Added parser helpers that prove required selective metadata can be read back from both JSON and Markdown artifacts.
 - Added deterministic filesystem adapter seams for directory, JSON write, and Markdown write failure tests.
+- Corrected the event-tracker lineage merge after user-reported failure: manual `session-ses_23a0.md` exports now parse actors, main/sub-session delegation links, bounded last assistant output, and merge into the canonical `.hivemind/event-tracker/ses_xxxx.{json,md}` root artifact.
+- Aligned writer session-id resolution with `getEventSessionID()` so canonical OpenCode lifecycle events shaped as `{ properties: { info: { id } } }` create artifacts through the automatic plugin observer.
 
 ## Verification
 
 - RED gate: new event-tracker tests initially failed because `src/lib/event-tracker/index.js` did not exist.
-- Focused E2E: `npx vitest run tests/lib/event-tracker/session-journey-events.test.ts tests/lib/event-tracker/session-artifact-parser.test.ts` — passed (2 files, 9 tests).
+- Focused E2E: `npx vitest run tests/lib/event-tracker/session-artifact-parser.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` — passed (3 files, 20 tests).
 - `npm run typecheck` — passed.
 - `npm run build` — passed.
-- `npm test` — passed (47 files passed, 1 skipped; 851 tests passed, 1 todo).
+- `npm test` — passed (47 files passed, 1 skipped; 857 tests passed, 1 todo).
 
 ## Review Fixes
 
 - **Rule 2 - Security:** Sanitized session IDs before using them as journey artifact file names, preventing path traversal while preserving the original session ID inside JSON metadata. Commit: `b500aac9`.
 - **Rule 2 - Correctness:** Corrected artifact path from `.hivemind/sessions/journey-events/` to `.hivemind/event-tracker/` per hard E2E acceptance. Commit: `098a5a34`.
 - **Rule 2 - Architecture:** Moved broad `src/lib` event-tracker files into `src/lib/event-tracker/` and removed the broad files/tests. Commit: `098a5a34`.
+- **Guardrail correction:** Added regression coverage for canonical plugin events, malformed existing JSON surfacing, monotonic `updatedAt`, manual export merge, Markdown scalar sanitization, and bounded event retention.
 
 ## Product-Detox Samples Read
 
