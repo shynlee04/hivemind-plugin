@@ -23,6 +23,7 @@ import { createDelegationStatusTool } from "./tools/delegation-status.js"
 import { createRunBackgroundCommandTool } from "./tools/run-background-command.js"
 import { createConfigurePrimitiveTool } from "./tools/configure-primitive.js"
 import { createValidateRestartTool } from "./tools/validate-restart.js"
+import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
@@ -92,6 +93,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "prompt-skim": createPromptSkimTool(directory),
       "prompt-analyze": createPromptAnalyzeTool(directory),
       "session-patch": createSessionPatchTool(directory),
+      "session-journal-export": createSessionJournalExportTool(),
       "configure-primitive": createConfigurePrimitiveTool(),
       "validate-restart": createValidateRestartTool(),
     },
