@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -66,6 +66,24 @@ describe("plugin lifecycle wiring", () => {
 
     expect(plugin.tool["delegate-task"]).toBeDefined()
     expect(plugin.tool["delegation-status"]).toBeDefined()
+  })
+
+  it("automatically writes event-tracker artifacts for canonical OpenCode lifecycle events", async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-"))
+
+    try {
+      const plugin = await HarnessControlPlane({
+        client: createPluginClient(),
+        directory: projectRoot,
+      } as never)
+
+      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_2b7a" } } } })
+
+      expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_2b7a.json"))).toBe(true)
+      expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_2b7a.md"))).toBe(true)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
   })
 
   it("registers run-background-command when a shared PTY manager is supported", async () => {

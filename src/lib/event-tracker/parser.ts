@@ -3,8 +3,10 @@ import type {
   ParsedDelegationTarget,
   ParsedSessionArtifact,
   ParsedSessionCounters,
+  ParsedSessionExportMeta,
   ParsedSessionHeader,
   ParsedSessionJourneyMeta,
+  ParsedSubSession,
   ParsedSessionTurn,
   ParsedToolInvocation,
   SessionJourneyCounters,
@@ -155,11 +157,16 @@ function summarizeOutput(value: string): string {
   return trimmed.length <= 500 ? trimmed : `${trimmed.slice(0, 499)}…`
 }
 
+function boundText(value: string, maxLength: number): string {
+  const trimmed = value.trim()
+  return trimmed.length <= maxLength ? trimmed : `…${trimmed.slice(-(maxLength - 1))}`
+}
+
 function extractToolInvocations(block: string): ParsedToolInvocation[] {
   const invocations: ParsedToolInvocation[] = []
-  const toolBlocks = block.split(/(?=\*\*Tool:\*\*\s*[^\n]+)/g)
+  const toolBlocks = block.split(/(?=\*\*Tool(?::\*\*\s*|:\s*)[^\n*]+(?:\*\*)?)/g)
   for (const toolBlock of toolBlocks) {
-    const toolName = toolBlock.match(/\*\*Tool:\*\*\s*([^\n]+)/)?.[1]?.trim()
+    const toolName = toolBlock.match(/\*\*Tool(?::\*\*\s*|:\s*)([^\n*]+)(?:\*\*)?/)?.[1]?.trim()
     if (!toolName) continue
     const input = toolBlock.match(/\*\*Input:\*\*\s*\n```(?:json)?\s*\n([\s\S]*?)\n```/)?.[1]?.trim() ?? ""
     const output = toolBlock.match(/\*\*Output:\*\*\s*\n```\s*\n([\s\S]*?)\n```/)?.[1]?.trim() ?? ""
@@ -178,6 +185,7 @@ function extractDelegations(invocations: ParsedToolInvocation[]): ParsedDelegati
       if (!delegatedTo) continue
       delegations.push({
         packetId: typeof parsed.packet_id === "string" ? parsed.packet_id : null,
+        subSessionId: invocation.outputSummary.match(/task_id:\s*(ses_[A-Za-z0-9]+)/)?.[1] ?? null,
         delegatedTo,
         description: typeof parsed.description === "string" ? parsed.description : "",
         subagentType: typeof parsed.subagent_type === "string" ? parsed.subagent_type : delegatedTo,
@@ -187,6 +195,62 @@ function extractDelegations(invocations: ParsedToolInvocation[]): ParsedDelegati
     }
   }
   return delegations
+}
+
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values.filter((value) => value.trim()).map((value) => value.trim())))
+}
+
+function extractAssistantActors(markdown: string): string[] {
+  return Array.from(markdown.matchAll(/^##\s+Assistant\s*\(([^·)]+)/gm)).map((match) => match[1]?.trim() ?? "")
+}
+
+function extractActors(markdown: string, turns: ParsedSessionTurn[]): string[] {
+  const users = turns.some((turn) => turn.userMessage) ? ["user"] : []
+  const assistantActors = extractAssistantActors(markdown)
+  const delegatedActors = turns.flatMap((turn) => turn.delegations.map((delegation) => delegation.subagentType || delegation.delegatedTo))
+  return unique([...users, ...assistantActors, ...delegatedActors])
+}
+
+function extractLastAssistantOutput(markdown: string): string {
+  const matches = Array.from(markdown.matchAll(/^##\s+Assistant\s*\([^)]+\)\s*\n/gm))
+  const last = matches.at(-1)
+  if (!last || last.index === undefined) return ""
+  const start = last.index + last[0].length
+  const nextUser = markdown.slice(start).search(/^---\s*\n\s*##\s+User\s*$/m)
+  const content = nextUser >= 0 ? markdown.slice(start, start + nextUser) : markdown.slice(start)
+  return boundText(content.replace(/\n{3,}/g, "\n\n"), 2_000)
+}
+
+function extractSubSessions(turns: ParsedSessionTurn[], sourceSessionId: string): ParsedSubSession[] {
+  const bySession = new Map<string, ParsedSubSession>()
+  for (const delegation of turns.flatMap((turn) => turn.delegations)) {
+    if (!delegation.subSessionId) continue
+    bySession.set(delegation.subSessionId, {
+      sessionId: delegation.subSessionId,
+      role: delegation.subagentType || delegation.delegatedTo,
+      delegatedTo: delegation.delegatedTo,
+      sourceSessionId,
+      description: delegation.description,
+    })
+  }
+  return Array.from(bySession.values())
+}
+
+function artifactStemFromSessionId(sessionId: string): string {
+  const explicit = sessionId.match(/ses[_-]?([A-Za-z0-9]{4})/i)?.[1]
+  const suffixSource = explicit ?? sessionId.replace(/[^A-Za-z0-9]/g, "").slice(-4)
+  return `ses_${suffixSource.padEnd(4, "0").slice(0, 4).toLowerCase()}`
+}
+
+function buildExportMeta(header: ParsedSessionHeader, turns: ParsedSessionTurn[]): ParsedSessionExportMeta {
+  return {
+    title: header.title,
+    artifactStem: artifactStemFromSessionId(header.sessionId || header.title),
+    created: header.created,
+    updated: header.updated,
+    turnCount: turns.length,
+  }
 }
 
 function count(turns: ParsedSessionTurn[]): ParsedSessionCounters {
@@ -214,5 +278,15 @@ export function parseProductDetoxSessionMarkdown(markdown: string): ParsedSessio
       delegations: extractDelegations(toolInvocations),
     }
   })
-  return { header: parseHeader(markdown), turns, counters: count(turns) }
+  const header = parseHeader(markdown)
+  return {
+    header,
+    turns,
+    counters: count(turns),
+    actors: extractActors(markdown, turns),
+    mainSessionId: header.sessionId,
+    subSessions: extractSubSessions(turns, header.sessionId),
+    lastMessageOutput: extractLastAssistantOutput(markdown),
+    meta: buildExportMeta(header, turns),
+  }
 }

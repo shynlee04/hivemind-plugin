@@ -2,12 +2,16 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
 import { asString, getNestedValue } from "../helpers.js"
+import { getEventSessionID } from "../session-api.js"
+import { parseProductDetoxSessionMarkdown } from "./parser.js"
 import type {
   CreateEventTrackerArtifactsFromHookInput,
   EventTrackerArtifactPaths,
   EventTrackerFileSystem,
   JourneyEventHookInput,
   JourneyEventType,
+  MergeSessionExportMarkdownArtifactsInput,
+  ParsedSubSession,
   SessionJourneyDocument,
   SessionJourneyEvent,
   SessionJourneyTocEntry,
@@ -16,6 +20,7 @@ import type {
 } from "./types.js"
 
 const nodeFs: EventTrackerFileSystem = { existsSync, mkdirSync, readFileSync, writeFileSync }
+const MAX_EVENTS_PER_DOCUMENT = 100
 
 function eventTypeFromHook(type: string): JourneyEventType {
   if (type === "session.created") return "session_start"
@@ -36,7 +41,8 @@ function titleFromType(type: JourneyEventType): string {
 }
 
 function resolveSessionId(event: unknown): string {
-  return (asString(getNestedValue(event, ["sessionID"]))
+  return (getEventSessionID(event)
+    || asString(getNestedValue(event, ["sessionID"]))
     || asString(getNestedValue(event, ["sessionId"]))
     || asString(getNestedValue(event, ["properties", "sessionID"]))
     || asString(getNestedValue(event, ["properties", "sessionId"]))
@@ -100,10 +106,15 @@ function createEmptyDocument(event: SessionJourneyEvent): SessionJourneyDocument
     sessionId: event.sessionId,
     semanticSessionId: event.artifactStem,
     artifactStem: event.artifactStem,
+    mainSessionId: event.sessionId,
     startedAt: null,
     updatedAt: event.timestamp,
     status: "active",
     counters: { eventCount: 0, sessionStartCount: 0, sessionEndCount: 0 },
+    actors: [],
+    subSessions: [],
+    lastMessageOutput: "",
+    exportMeta: null,
     toc: [],
     events: [],
   }
@@ -121,9 +132,23 @@ function readDocument(fs: EventTrackerFileSystem, jsonPath: string, event: Sessi
   }
   try {
     const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as unknown
-    return isJourneyDocument(parsed) ? parsed : createEmptyDocument(event)
-  } catch {
-    return createEmptyDocument(event)
+    if (!isJourneyDocument(parsed)) {
+      throw new Error("invalid schema")
+    }
+    return normalizeDocument(parsed)
+  } catch (error) {
+    throw new Error(`[Harness] Failed to parse event-tracker JSON: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+function normalizeDocument(document: SessionJourneyDocument): SessionJourneyDocument {
+  return {
+    ...document,
+    mainSessionId: document.mainSessionId ?? document.sessionId,
+    actors: Array.isArray(document.actors) ? document.actors : [],
+    subSessions: Array.isArray(document.subSessions) ? document.subSessions : [],
+    lastMessageOutput: typeof document.lastMessageOutput === "string" ? document.lastMessageOutput : "",
+    exportMeta: document.exportMeta ?? null,
   }
 }
 
@@ -143,18 +168,24 @@ function buildToc(events: SessionJourneyEvent[]): SessionJourneyTocEntry[] {
   }))
 }
 
+function retainBoundedEvents(events: SessionJourneyEvent[]): SessionJourneyEvent[] {
+  return events.slice(-MAX_EVENTS_PER_DOCUMENT)
+}
+
 function addEvent(document: SessionJourneyDocument, event: SessionJourneyEvent): { document: SessionJourneyDocument; written: boolean } {
   if (document.events.some((existing) => existing.id === event.id)) {
     return { document, written: false }
   }
-  const events = [...document.events, event].sort((a, b) => a.timestamp - b.timestamp)
+  const events = retainBoundedEvents([...document.events, event].sort((a, b) => a.timestamp - b.timestamp))
+  const maxTimestamp = Math.max(document.updatedAt, event.timestamp, ...events.map((item) => item.timestamp))
   const next: SessionJourneyDocument = {
     ...document,
     sessionId: event.sessionId,
     semanticSessionId: event.artifactStem,
     artifactStem: event.artifactStem,
+    mainSessionId: document.mainSessionId ?? event.sessionId,
     startedAt: document.startedAt ?? (event.type === "session_start" ? event.timestamp : null),
-    updatedAt: event.timestamp,
+    updatedAt: maxTimestamp,
     status: statusFromEvents(events),
     counters: {
       eventCount: events.length,
@@ -168,20 +199,24 @@ function addEvent(document: SessionJourneyDocument, event: SessionJourneyEvent):
 }
 
 function escapeCell(value: string): string {
-  return value.replace(/\|/g, "\\|").replace(/\n/g, "<br>")
+  return sanitizeMarkdownScalar(value).replace(/\|/g, "\\|")
+}
+
+function sanitizeMarkdownScalar(value: string): string {
+  return value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 2_000)
 }
 
 /** Render one bounded journey event block. */
 export function renderJourneyEventMarkdown(event: SessionJourneyEvent): string {
   return [
-    `## ${event.title}`,
+    `## ${sanitizeMarkdownScalar(event.title)}`,
     "",
     `- Timestamp: ${event.timestamp}`,
-    `- Actor: ${event.actor}`,
-    `- Type: ${event.type}`,
-    `- Source: ${event.source}`,
-    `- State role: ${event.stateRole}`,
-    `- Summary: ${event.summary}`,
+    `- Actor: ${sanitizeMarkdownScalar(event.actor)}`,
+    `- Type: ${sanitizeMarkdownScalar(event.type)}`,
+    `- Source: ${sanitizeMarkdownScalar(event.source)}`,
+    `- State role: ${sanitizeMarkdownScalar(event.stateRole)}`,
+    `- Summary: ${sanitizeMarkdownScalar(event.summary)}`,
   ].join("\n")
 }
 
@@ -190,15 +225,19 @@ function renderDocumentMarkdown(document: SessionJourneyDocument): string {
     `| ${entry.index} | ${entry.timestamp} | ${escapeCell(entry.actor)} | ${entry.type} | ${escapeCell(entry.summary)} |`
   ))
   return [
-    `# ${document.artifactStem}`,
+    `# ${sanitizeMarkdownScalar(document.artifactStem)}`,
     "",
-    `**Session ID:** ${document.sessionId}`,
-    `**Artifact Stem:** ${document.artifactStem}`,
+    `**Session ID:** ${sanitizeMarkdownScalar(document.sessionId)}`,
+    `**Artifact Stem:** ${sanitizeMarkdownScalar(document.artifactStem)}`,
+    `**Main Session ID:** ${sanitizeMarkdownScalar(document.mainSessionId ?? "")}`,
     `**Updated:** ${document.updatedAt}`,
     `**Status:** ${document.status}`,
     `**eventCount:** ${document.counters.eventCount}`,
     `**sessionStartCount:** ${document.counters.sessionStartCount}`,
     `**sessionEndCount:** ${document.counters.sessionEndCount}`,
+    `**Actors:** ${sanitizeMarkdownScalar(document.actors.join(", "))}`,
+    `**Sub Sessions:** ${document.subSessions.length}`,
+    `**Last Output:** ${sanitizeMarkdownScalar(document.lastMessageOutput)}`,
     "",
     "---",
     "",
@@ -211,6 +250,34 @@ function renderDocumentMarkdown(document: SessionJourneyDocument): string {
     "---",
     ...document.events.flatMap((event) => [renderJourneyEventMarkdown(event), ""]),
   ].join("\n")
+}
+
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort()
+}
+
+function mergeSubSessions(existing: ParsedSubSession[], incoming: ParsedSubSession[]): ParsedSubSession[] {
+  const bySession = new Map<string, ParsedSubSession>()
+  for (const item of [...existing, ...incoming]) {
+    bySession.set(item.sessionId, item)
+  }
+  return Array.from(bySession.values()).sort((a, b) => a.sessionId.localeCompare(b.sessionId))
+}
+
+function mergeExportMetadata(document: SessionJourneyDocument, event: SessionJourneyEvent, markdown: string): SessionJourneyDocument {
+  const parsed = parseProductDetoxSessionMarkdown(markdown)
+  const { document: withEvent } = addEvent(document, event)
+  return {
+    ...withEvent,
+    sessionId: parsed.header.sessionId,
+    semanticSessionId: parsed.meta.artifactStem,
+    artifactStem: parsed.meta.artifactStem,
+    mainSessionId: parsed.mainSessionId,
+    actors: unique([...withEvent.actors, ...parsed.actors]),
+    subSessions: mergeSubSessions(withEvent.subSessions, parsed.subSessions),
+    lastMessageOutput: parsed.lastMessageOutput,
+    exportMeta: parsed.meta,
+  }
 }
 
 /** Write JSON and Markdown event-tracker artifacts under `.hivemind/event-tracker`. */
@@ -240,4 +307,41 @@ export function writeSessionJourneyArtifacts(input: WriteSessionJourneyArtifacts
 export function createEventTrackerArtifactsFromHook(input: CreateEventTrackerArtifactsFromHookInput): WriteSessionJourneyArtifactsResult {
   const event = createJourneyEventFromHook(input.hook)
   return writeSessionJourneyArtifacts({ projectRoot: input.projectRoot, event, fs: input.fs })
+}
+
+export function mergeSessionExportMarkdownArtifacts(input: MergeSessionExportMarkdownArtifactsInput): WriteSessionJourneyArtifactsResult {
+  const parsed = parseProductDetoxSessionMarkdown(input.markdown)
+  const timestamp = Date.parse(parsed.header.updated) || Date.now()
+  const event: SessionJourneyEvent = {
+    id: buildEventId(parsed.meta.artifactStem, "session_updated", timestamp),
+    sessionId: parsed.header.sessionId,
+    artifactStem: parsed.meta.artifactStem,
+    type: "session_updated",
+    actor: "system",
+    title: "Session export parsed",
+    summary: `Session export parsed (${parsed.counters.delegationCount} delegations, ${parsed.actors.length} actors)`,
+    timestamp,
+    source: input.source ?? "manual-session-export",
+    stateRole: "audit trail",
+  }
+  const fs = input.fs ?? nodeFs
+  const paths = getEventTrackerArtifactPaths(input.projectRoot, event.sessionId)
+  try {
+    fs.mkdirSync(paths.dir, { recursive: true })
+  } catch (error) {
+    throw new Error(`[Harness] Failed to create event-tracker directory: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  const current = readDocument(fs, paths.jsonPath, event)
+  const document = mergeExportMetadata(current, event, input.markdown)
+  try {
+    fs.writeFileSync(paths.jsonPath, `${JSON.stringify(document, null, 2)}\n`, "utf-8")
+  } catch (error) {
+    throw new Error(`[Harness] Failed to write event-tracker JSON: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  try {
+    fs.writeFileSync(paths.markdownPath, `${renderDocumentMarkdown(document)}\n`, "utf-8")
+  } catch (error) {
+    throw new Error(`[Harness] Failed to write event-tracker Markdown: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  return { paths, document, written: true }
 }

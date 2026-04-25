@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
+
 import { parseProductDetoxSessionMarkdown } from "../../../src/lib/event-tracker/index.js"
 
 describe("event-tracker product-detox artifact parser", () => {
@@ -44,5 +47,34 @@ done
     expect(parsed.turns[0]?.toolInvocations).toEqual([expect.objectContaining({ toolName: "task", outputSummary: "done" })])
     expect(parsed.turns[0]?.delegations).toEqual([expect.objectContaining({ packetId: "pkt-1", delegatedTo: "critic" })])
     expect(parsed.counters).toMatchObject({ userMessageCount: 1, assistantOutputCount: 1, toolCallCount: 1, delegationCount: 1 })
+  })
+
+  it("parses required lineage metadata from the manually exported ses_23a0 session fixture", () => {
+    const fixture = readFileSync(join(process.cwd(), "session-ses_23a0.md"), "utf-8")
+    const parsed = parseProductDetoxSessionMarkdown(fixture) as unknown as {
+      header: { sessionId: string }
+      actors: string[]
+      mainSessionId: string
+      subSessions: Array<{ sessionId: string; role: string; delegatedTo: string; sourceSessionId: string }>
+      lastMessageOutput: string
+      meta: { title: string; artifactStem: string; updated: string; turnCount: number }
+    }
+
+    expect(parsed.header.sessionId).toBe("ses_23a0b5eabffeB413854W6gnUKC")
+    expect(parsed.meta.artifactStem).toBe("ses_23a0")
+    expect(parsed.mainSessionId).toBe("ses_23a0b5eabffeB413854W6gnUKC")
+    expect(parsed.actors).toEqual(expect.arrayContaining(["Coordinator", "gsd-executor", "user"]))
+    expect(parsed.subSessions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        sessionId: "ses_23a09f902ffeZcgOTkaOBE4D2x",
+        role: "gsd-executor",
+        delegatedTo: "gsd-executor",
+        sourceSessionId: "ses_23a0b5eabffeB413854W6gnUKC",
+      }),
+    ]))
+    expect(parsed.lastMessageOutput).toContain("Resume verifier")
+    expect(parsed.lastMessageOutput).toContain("gsd-verifier")
+    expect(parsed.lastMessageOutput.length).toBeLessThanOrEqual(2_000)
+    expect(parsed.meta.turnCount).toBeGreaterThan(0)
   })
 })

@@ -6,6 +6,7 @@ import {
   createEventTrackerArtifactsFromHook,
   createJourneyEventFromHook,
   getEventTrackerArtifactPaths,
+  mergeSessionExportMarkdownArtifacts,
   parseSessionJourneyJson,
   parseSessionJourneyMarkdown,
   renderJourneyEventMarkdown,
@@ -41,6 +42,51 @@ describe("event-tracker automatic writer", () => {
       expect(jsonMeta.counters).toMatchObject({ eventCount: 1, sessionStartCount: 1, sessionEndCount: 0 })
       expect(markdownMeta).toMatchObject({ sessionId: "ses_2b7a", artifactStem: "ses_2b7a", status: "active" })
       expect(markdownMeta.eventTypes).toContain("session_start")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("accepts canonical OpenCode event shape with properties.info.id", () => {
+    const projectRoot = tempProjectRoot()
+
+    try {
+      const result = createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_2b7a" } } }, timestamp: 10, source: "canonical-test" },
+      })
+
+      expect(result.paths.jsonPath).toBe(join(projectRoot, ".hivemind", "event-tracker", "ses_2b7a.json"))
+      expect(result.document.sessionId).toBe("ses_2b7a")
+      expect(result.document.events[0]).toMatchObject({ actor: "system", type: "session_start" })
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("merges manual session export metadata into the bounded root lineage artifact", () => {
+    const projectRoot = tempProjectRoot()
+    const fixture = readFileSync(join(process.cwd(), "session-ses_23a0.md"), "utf-8")
+
+    try {
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.updated", properties: { info: { id: "ses_23a0b5eabffeB413854W6gnUKC" } } }, timestamp: 20, source: "canonical-test" },
+      })
+      const result = mergeSessionExportMarkdownArtifacts({ projectRoot, markdown: fixture, source: "manual-export-test" })
+
+      expect(result.paths.jsonPath).toBe(join(projectRoot, ".hivemind", "event-tracker", "ses_23a0.json"))
+      expect(result.document.sessionId).toBe("ses_23a0b5eabffeB413854W6gnUKC")
+      expect(result.document.events.length).toBeLessThanOrEqual(100)
+      expect(result.document.exportMeta).toMatchObject({ artifactStem: "ses_23a0" })
+      expect(result.document.actors).toEqual(expect.arrayContaining(["Coordinator", "gsd-executor", "user"]))
+      expect(result.document.subSessions).toEqual(expect.arrayContaining([
+        expect.objectContaining({ sessionId: "ses_23a09f902ffeZcgOTkaOBE4D2x", delegatedTo: "gsd-executor" }),
+      ]))
+      expect(result.document.lastMessageOutput).toContain("Resume verifier")
+      expect(result.document.lastMessageOutput).toContain("gsd-verifier")
+      expect(result.document.lastMessageOutput.length).toBeLessThanOrEqual(2_000)
+      expect(result.document.counters.eventCount).toBe(result.document.events.length)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
@@ -90,6 +136,37 @@ describe("event-tracker automatic writer", () => {
     expect(() => writeSessionJourneyArtifacts({ projectRoot: "/tmp/project", event, fs })).toThrow(
       "[Harness] Failed to write event-tracker Markdown",
     )
+  })
+
+  it("surfaces malformed existing JSON instead of silently discarding it", () => {
+    const event = createJourneyEventFromHook({ event: { type: "session.created", sessionID: "ses_2b7a" }, timestamp: 1 })
+    const fs: EventTrackerFileSystem = {
+      existsSync: () => true,
+      mkdirSync: () => undefined,
+      readFileSync: () => "{ not valid json",
+      writeFileSync: () => undefined,
+    }
+
+    expect(() => writeSessionJourneyArtifacts({ projectRoot: "/tmp/project", event, fs })).toThrow(
+      "[Harness] Failed to parse event-tracker JSON",
+    )
+  })
+
+  it("keeps updatedAt monotonic when older events arrive after newer events", () => {
+    const projectRoot = tempProjectRoot()
+
+    try {
+      const newer = createJourneyEventFromHook({ event: { type: "session.updated", sessionID: "ses_2b7a" }, timestamp: 200 })
+      const older = createJourneyEventFromHook({ event: { type: "session.created", sessionID: "ses_2b7a" }, timestamp: 100 })
+
+      writeSessionJourneyArtifacts({ projectRoot, event: newer })
+      const result = writeSessionJourneyArtifacts({ projectRoot, event: older })
+
+      expect(result.document.startedAt).toBe(100)
+      expect(result.document.updatedAt).toBe(200)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
   })
 
   it("fails when required selective metadata cannot be parsed from JSON or Markdown", () => {

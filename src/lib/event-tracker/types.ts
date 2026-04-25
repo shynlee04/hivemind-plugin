@@ -37,10 +37,15 @@ export type SessionJourneyDocument = {
   sessionId: string
   semanticSessionId: string
   artifactStem: string
+  mainSessionId: string | null
   startedAt: number | null
   updatedAt: number
   status: "active" | "idle" | "completed"
   counters: SessionJourneyCounters
+  actors: string[]
+  subSessions: ParsedSubSession[]
+  lastMessageOutput: string
+  exportMeta: ParsedSessionExportMeta | null
   toc: SessionJourneyTocEntry[]
   events: SessionJourneyEvent[]
 }
@@ -106,9 +111,26 @@ export type ParsedToolInvocation = {
 
 export type ParsedDelegationTarget = {
   packetId: string | null
+  subSessionId: string | null
   delegatedTo: string
   description: string
   subagentType: string
+}
+
+export type ParsedSubSession = {
+  sessionId: string
+  role: string
+  delegatedTo: string
+  sourceSessionId: string
+  description: string
+}
+
+export type ParsedSessionExportMeta = {
+  title: string
+  artifactStem: string
+  created: string
+  updated: string
+  turnCount: number
 }
 
 export type ParsedSessionTurn = {
@@ -134,4 +156,16 @@ export type ParsedSessionArtifact = {
   header: ParsedSessionHeader
   turns: ParsedSessionTurn[]
   counters: ParsedSessionCounters
+  actors: string[]
+  mainSessionId: string
+  subSessions: ParsedSubSession[]
+  lastMessageOutput: string
+  meta: ParsedSessionExportMeta
+}
+
+export type MergeSessionExportMarkdownArtifactsInput = {
+  projectRoot: string
+  markdown: string
+  source?: string
+  fs?: EventTrackerFileSystem
 }
