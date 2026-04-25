@@ -25,6 +25,10 @@ import { createConfigurePrimitiveTool } from "./tools/configure-primitive.js"
 import { createValidateRestartTool } from "./tools/validate-restart.js"
 import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
+import {
+  createJourneyEventFromHook,
+  writeSessionJourneyArtifacts,
+} from "./lib/session-journey-events.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
 
@@ -76,11 +80,19 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       delegationManager.handleSessionDeleted(sessionId)
     }
   }
+  const sessionJourneyEventObserver = async ({ event }: { event?: unknown }) => {
+    try {
+      const journeyEvent = createJourneyEventFromHook({ event, source: "plugin.event" })
+      writeSessionJourneyArtifacts({ projectRoot: directory, event: journeyEvent })
+    } catch {
+      // Best-effort audit projection: never block canonical OpenCode event handling.
+    }
+  }
 
   return {
     ...createCoreHooks({
       ...deps,
-      eventObservers: [delegationEventObserver, sessionEventObserver],
+      eventObservers: [delegationEventObserver, sessionEventObserver, sessionJourneyEventObserver],
     }),
     ...sessionReadHooks,
     ...createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy }),
