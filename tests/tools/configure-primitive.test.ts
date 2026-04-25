@@ -242,3 +242,127 @@ describe("scope and overwrite", () => {
     cleanupFile(join(process.cwd(), ".opencode", "agents", "overwrite-test.md"))
   })
 })
+
+// ---------------------------------------------------------------------------
+// read action
+// ---------------------------------------------------------------------------
+
+describe("read action", () => {
+  const tool = createConfigurePrimitiveTool()
+
+  it("reads an existing agent file", async () => {
+    const result = parseResult(await tool.execute({
+      action: "read",
+      primitive: "agent",
+      name: "build",
+      scope: "project",
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.name).toBe("build")
+    expect(result.data.type).toBe("agent")
+    expect(result.data.frontmatter).toBeDefined()
+    expect(result.data.body).toBeDefined()
+  })
+
+  it("returns error for non-existent primitive", async () => {
+    const result = parseResult(await tool.execute({
+      action: "read",
+      primitive: "agent",
+      name: "nonexistent-agent-12345",
+      scope: "project",
+    }, mockCtx))
+    expect(result.kind).toBe("error")
+  })
+
+  it("returns error for file with invalid YAML frontmatter", async () => {
+    const result = parseResult(await tool.execute({
+      action: "read",
+      primitive: "agent",
+      name: "coordinator",
+      scope: "project",
+    }, mockCtx))
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("Failed to read")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// list action
+// ---------------------------------------------------------------------------
+
+describe("list action", () => {
+  const tool = createConfigurePrimitiveTool()
+
+  it("lists all primitives when no type filter", async () => {
+    const result = parseResult(await tool.execute({
+      action: "list",
+      primitive: "agent",
+      scope: "project",
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.count).toBeGreaterThan(0)
+    expect(Array.isArray(result.data.items)).toBe(true)
+  })
+
+  it("lists agents only", async () => {
+    const result = parseResult(await tool.execute({
+      action: "list",
+      primitive: "agent",
+      scope: "project",
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.items.every((i: { type: string }) => i.type === "agent")).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// inspect action
+// ---------------------------------------------------------------------------
+
+describe("inspect action", () => {
+  const tool = createConfigurePrimitiveTool()
+
+  it("inspects an existing primitive with cross-reference status", async () => {
+    const result = parseResult(await tool.execute({
+      action: "inspect",
+      primitive: "agent",
+      name: "build",
+      scope: "project",
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.name).toBe("build")
+    expect(result.data.crossRefStatus).toBeDefined()
+    expect(result.data.frontmatter).toBeDefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// decompile action
+// ---------------------------------------------------------------------------
+
+describe("decompile action", () => {
+  const tool = createConfigurePrimitiveTool()
+
+  it("decompiles agent markdown to spec", async () => {
+    const md = `---\ndescription: "Test agent"\nmode: primary\n---\n\n# You are helpful\n`
+    const result = parseResult(await tool.execute({
+      action: "decompile",
+      primitive: "agent",
+      spec: md,
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.spec.frontmatter.description).toBe("Test agent")
+    expect(result.data.body).toContain("You are helpful")
+  })
+
+  it("decompiles skill markdown to spec", async () => {
+    const md = `---\nname: test-skill\ndescription: "Test skill"\n---\n\n# Skill content\n`
+    const result = parseResult(await tool.execute({
+      action: "decompile",
+      primitive: "skill",
+      spec: md,
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.spec.frontmatter.name).toBe("test-skill")
+  })
+})
