@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { createConfigurePrimitiveTool } from "../../src/tools/configure-primitive.js"
+import { mixedBatchCompile } from "../../src/lib/config-compiler.js"
 import { existsSync, unlinkSync, rmdirSync } from "node:fs"
 import { join } from "node:path"
 
@@ -364,5 +365,101 @@ describe("decompile action", () => {
     }, mockCtx))
     expect(result.kind).toBe("success")
     expect(result.data.spec.frontmatter.name).toBe("test-skill")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// mixed-primitive batch (Task 16.5-08)
+// ---------------------------------------------------------------------------
+
+describe("mixed-primitive batch", () => {
+  const tool = createConfigurePrimitiveTool()
+
+  it("accepts primitives array with mixed types", async () => {
+    const result = parseResult(await tool.execute({
+      action: "compile",
+      primitives: [
+        { type: "agent", name: "batch-agent", spec: JSON.stringify({ description: "Batch agent", body: "# A" }) },
+        { type: "command", name: "batch-cmd", spec: JSON.stringify({ description: "Batch cmd", body: "## C" }) },
+        { type: "skill", name: "batch-skill", spec: JSON.stringify({ name: "batch-skill", description: "Batch skill", body: "### S" }) },
+      ],
+      dryRun: true,
+      validate: true,
+      scope: "project",
+      overwrite: false,
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.results).toHaveLength(3)
+    expect(result.data.results[0].type).toBe("agent")
+    expect(result.data.results[1].type).toBe("command")
+    expect(result.data.results[2].type).toBe("skill")
+  })
+
+  it("batchCompile validates cross-primitive conflicts across ALL types", async () => {
+    const result = mixedBatchCompile([
+      { type: "agent", name: "dup", spec: { name: "dup", frontmatter: { description: "Agent dup" }, body: "" } },
+      { type: "command", name: "dup", spec: { name: "dup", frontmatter: { description: "Cmd dup" }, body: "" } },
+    ], { validate: true, scope: "project" })
+    expect(result.success).toBe(false)
+    expect(result.errors.length).toBeGreaterThan(0)
+  })
+
+  it("batchCompile fails fast if any conflict detected", async () => {
+    const result = mixedBatchCompile([
+      { type: "agent", name: "a1", spec: { name: "a1", frontmatter: { description: "A1" }, body: "" } },
+      { type: "agent", name: "a1", spec: { name: "a1", frontmatter: { description: "A1 dup" }, body: "" } },
+    ], { validate: true, scope: "project" })
+    expect(result.success).toBe(false)
+    expect(result.results).toHaveLength(0)
+  })
+
+  it("batchCompile creates all files atomically (all-or-nothing)", async () => {
+    const result = parseResult(await tool.execute({
+      action: "compile",
+      primitives: [
+        { type: "agent", name: "atomic-agent", spec: JSON.stringify({ description: "Atomic agent", body: "# A" }) },
+        { type: "command", name: "atomic-cmd", spec: JSON.stringify({ description: "Atomic cmd", body: "## C" }) },
+      ],
+      dryRun: false,
+      validate: true,
+      scope: "project",
+      overwrite: false,
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(existsSync(join(process.cwd(), ".opencode", "agents", "atomic-agent.md"))).toBe(true)
+    expect(existsSync(join(process.cwd(), ".opencode", "commands", "atomic-cmd.md"))).toBe(true)
+    // Cleanup
+    cleanupFile(join(process.cwd(), ".opencode", "agents", "atomic-agent.md"))
+    cleanupFile(join(process.cwd(), ".opencode", "commands", "atomic-cmd.md"))
+  })
+
+  it("batchCompile with dryRun returns compiled content without writing", async () => {
+    const result = parseResult(await tool.execute({
+      action: "compile",
+      primitives: [
+        { type: "agent", name: "dry-agent", spec: JSON.stringify({ description: "Dry agent", body: "# A" }) },
+      ],
+      dryRun: true,
+      validate: true,
+      scope: "project",
+      overwrite: false,
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.results[0].result.content).toContain("---")
+    expect(existsSync(join(process.cwd(), ".opencode", "agents", "dry-agent.md"))).toBe(false)
+  })
+
+  it("single primitive still works (backward compatible)", async () => {
+    const result = parseResult(await tool.execute({
+      action: "compile",
+      primitive: "agent",
+      spec: JSON.stringify({ description: "Backward compat", body: "# B" }),
+      dryRun: true,
+      validate: true,
+      scope: "project",
+      overwrite: false,
+    }, mockCtx))
+    expect(result.kind).toBe("success")
+    expect(result.data.filePath).toContain("agents")
   })
 })

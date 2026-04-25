@@ -1,6 +1,8 @@
 import { stringify as yamlStringify } from "yaml"
 import matter from "gray-matter"
 import { homedir } from "node:os"
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs"
+import path from "node:path"
 import {
   AgentFrontmatterSchema,
   AgentFrontmatterSchemaLenient,
@@ -44,6 +46,19 @@ export type BatchCompileResult = {
   results: CompileResult[]
   allSucceeded: boolean
   failureReport?: CompileResult
+}
+
+export type MixedPrimitiveSpec = {
+  type: "agent" | "command" | "skill"
+  name: string
+  spec: AgentSpec | CommandSpec | SkillSpec
+}
+
+export type MixedBatchResult = {
+  success: boolean
+  results: { type: string; name: string; result: CompileResult }[]
+  errors: string[]
+  warnings: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -257,6 +272,96 @@ export function batchCompile(
   }
 
   return { results, allSucceeded: !hasFailure }
+}
+
+// ---------------------------------------------------------------------------
+// Mixed-batch compile
+// ---------------------------------------------------------------------------
+
+export function mixedBatchCompile(
+  specs: MixedPrimitiveSpec[],
+  options?: { dryRun?: boolean; validate?: boolean; scope?: "project" | "global" },
+): MixedBatchResult {
+  const warnings: string[] = []
+  const compileOptions: CompileOptions = {
+    scope: options?.scope,
+    skipValidation: options?.validate === false,
+  }
+
+  // 1. Cross-type conflict detection (fail fast)
+  const nameMap = new Map<string, string[]>() // name -> types[]
+  for (const s of specs) {
+    const types = nameMap.get(s.name) || []
+    types.push(s.type)
+    nameMap.set(s.name, types)
+  }
+  const conflicts: string[] = []
+  for (const [name, types] of nameMap) {
+    if (types.length > 1) {
+      conflicts.push(`Name "${name}" used by multiple primitives: ${types.join(", ")}`)
+    }
+  }
+  if (conflicts.length > 0) {
+    return { success: false, results: [], errors: conflicts, warnings }
+  }
+
+  // 2. Compile all specs (dry-run phase)
+  const compiled: { type: string; name: string; result: CompileResult }[] = []
+  for (const s of specs) {
+    let result: CompileResult
+    switch (s.type) {
+      case "agent":
+        result = compileAgent(s.spec as AgentSpec, compileOptions)
+        break
+      case "command":
+        result = compileCommand(s.spec as CommandSpec, compileOptions)
+        break
+      case "skill":
+        result = compileSkill(s.spec as SkillSpec, compileOptions)
+        break
+      default:
+        result = { success: false, content: "", filePath: "", errors: ["Unknown primitive type"] }
+    }
+    compiled.push({ type: s.type, name: s.name, result })
+  }
+
+  const compileErrors = compiled.filter(c => !c.result.success).map(c =>
+    `Compilation failed for ${c.type} "${c.name}": ${c.result.errors?.join("; ") || "unknown error"}`,
+  )
+  if (compileErrors.length > 0) {
+    return { success: false, results: compiled, errors: compileErrors, warnings }
+  }
+
+  // 3. Atomic write (all-or-nothing)
+  if (!options?.dryRun) {
+    const written: string[] = []
+    let writeError: string | null = null
+    for (const c of compiled) {
+      const fp = c.result.filePath
+      try {
+        const dir = path.dirname(fp)
+        if (!existsSync(dir)) {
+          mkdirSync(dir, { recursive: true })
+        }
+        writeFileSync(fp, c.result.content, "utf-8")
+        written.push(fp)
+      } catch (e) {
+        writeError = `Failed to write ${fp}: ${e instanceof Error ? e.message : String(e)}`
+        break
+      }
+    }
+    if (writeError) {
+      // Rollback
+      for (const fp of written) {
+        try {
+          if (existsSync(fp)) unlinkSync(fp)
+        } catch { /* ignore rollback errors */ }
+      }
+      return { success: false, results: compiled, errors: [writeError], warnings }
+    }
+  }
+
+  return { success: true, results: compiled, errors: [], warnings }
 }
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import {
   decompileAgent,
   decompileCommand,
   decompileSkill,
+  mixedBatchCompile,
 } from "../lib/config-compiler.js"
 import { loadPrimitives, loadPrimitive } from "../lib/primitive-loader.js"
 
@@ -19,11 +20,18 @@ import { loadPrimitives, loadPrimitive } from "../lib/primitive-loader.js"
 // Input schema
 // ---------------------------------------------------------------------------
 
+const PrimitiveBatchItemSchema = z.object({
+  type: z.enum(["agent", "command", "skill"]),
+  name: z.string(),
+  spec: z.string(),
+})
+
 export const ConfigurePrimitiveInputSchema = z.object({
   action: z.enum(["compile", "decompile", "read", "list", "inspect"]).default("compile").describe("Operation to perform"),
-  primitive: z.enum(["agent", "command", "skill"]).describe("Type of OpenCode primitive to configure"),
+  primitive: z.enum(["agent", "command", "skill"]).optional().describe("Type of OpenCode primitive to configure"),
   spec: z.string().optional().describe("JSON or YAML string describing the primitive configuration (required for compile/decompile)"),
   name: z.string().optional().describe("Primitive identifier (required for read/inspect)"),
+  primitives: z.array(PrimitiveBatchItemSchema).optional().describe("Batch of mixed primitives to compile atomically"),
   dryRun: z.boolean().default(false).describe("If true, compile without writing — return the would-be content"),
   validate: z.boolean().default(true).describe("If true, run schema validation before compilation"),
   scope: z.enum(["project", "global"]).default("project").describe("Target scope: project writes to .opencode/, global writes to ~/.config/opencode/"),
@@ -31,6 +39,7 @@ export const ConfigurePrimitiveInputSchema = z.object({
 }).refine(
   (data) => {
     if (data.action === "compile" || data.action === "decompile") {
+      if (data.primitives && data.primitives.length > 0) return true
       return !!data.spec && data.spec.length > 0
     }
     if (data.action === "read" || data.action === "inspect") {
@@ -38,7 +47,7 @@ export const ConfigurePrimitiveInputSchema = z.object({
     }
     return true
   },
-  { message: "spec is required for compile/decompile; name is required for read/inspect" },
+  { message: "spec is required for compile/decompile (or use primitives array for batch); name is required for read/inspect" },
 )
 
 // ---------------------------------------------------------------------------
@@ -54,6 +63,7 @@ export function createConfigurePrimitiveTool(): ReturnType<typeof tool> {
       primitive: s.string().describe("Type: agent, command, or skill"),
       spec: s.string().describe("JSON or YAML configuration string (compile/decompile only)"),
       name: s.string().describe("Primitive name identifier (read/inspect only)"),
+      primitives: s.array(s.object({ type: s.string(), name: s.string(), spec: s.string() })).describe("Batch of mixed primitives to compile atomically"),
       dryRun: s.boolean().describe("Preview mode — compile without writing"),
       validate: s.boolean().describe("Run schema validation before compilation"),
       scope: s.string().describe("project or global scope"),
@@ -94,10 +104,20 @@ function handleCompile(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
   _context: unknown,
 ): Promise<string> | string {
+  // Batch mode: primitives array provided
+  if (args.primitives && args.primitives.length > 0) {
+    return handleBatchCompile(args)
+  }
+
+  // Single primitive mode (backward compatible)
+  if (!args.spec) {
+    return renderToolResult(error("spec is required for compile (or use primitives array for batch)"))
+  }
+
   // Parse spec string
   let parsedSpec: Record<string, unknown>
   try {
-    parsedSpec = parseSpec(args.spec!)
+    parsedSpec = parseSpec(args.spec)
   } catch (e) {
     return renderToolResult(error(`Failed to parse spec: ${e instanceof Error ? e.message : String(e)}`))
   }
@@ -151,6 +171,50 @@ function handleCompile(
   return renderToolResult(success("Primitive configured", { filePath, primitive: args.primitive }))
 }
 
+function handleBatchCompile(
+  args: z.infer<typeof ConfigurePrimitiveInputSchema>,
+): string {
+  const specs: import("../lib/config-compiler.js").MixedPrimitiveSpec[] = []
+
+  for (const item of args.primitives!) {
+    let parsedSpec: Record<string, unknown>
+    try {
+      parsedSpec = parseSpec(item.spec)
+    } catch (e) {
+      return renderToolResult(error(`Failed to parse spec for ${item.type} "${item.name}": ${e instanceof Error ? e.message : String(e)}`))
+    }
+
+    const body = typeof parsedSpec.body === "string" ? parsedSpec.body : ""
+    const frontmatter = { ...parsedSpec }
+    delete frontmatter.body
+
+    specs.push({
+      type: item.type,
+      name: item.name,
+      spec: { name: item.name, frontmatter: frontmatter as any, body },
+    })
+  }
+
+  const result = mixedBatchCompile(specs, {
+    dryRun: args.dryRun,
+    validate: args.validate,
+    scope: args.scope,
+  })
+
+  if (!result.success) {
+    return renderToolResult(error("Batch compilation failed", {
+      errors: result.errors,
+      warnings: result.warnings,
+      results: result.results,
+    }))
+  }
+
+  return renderToolResult(success("Batch compilation complete", {
+    results: result.results,
+    warnings: result.warnings,
+  }))
+}
+
 async function handleDecompile(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
 ): Promise<string> {
@@ -185,16 +249,17 @@ async function handleDecompile(
 async function handleRead(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
 ): Promise<string> {
-  const filePath = resolvePrimitivePath(args.primitive, args.name!, args.scope)
-  const result = await loadPrimitive(filePath, args.primitive)
+  const primitive = args.primitive!
+  const filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+  const result = await loadPrimitive(filePath, primitive)
 
   if (!result.success) {
-    return renderToolResult(error(`Failed to read ${args.primitive} "${args.name}": ${result.error}`))
+    return renderToolResult(error(`Failed to read ${primitive} "${args.name}": ${result.error}`))
   }
 
   return renderToolResult(success("Primitive read", {
     name: args.name,
-    type: args.primitive,
+    type: primitive,
     filePath,
     frontmatter: result.data.frontmatter,
     body: result.data.body,
@@ -238,11 +303,12 @@ async function handleInspect(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
   context: unknown,
 ): Promise<string> {
-  const filePath = resolvePrimitivePath(args.primitive, args.name!, args.scope)
-  const readResult = await loadPrimitive(filePath, args.primitive)
+  const primitive = args.primitive!
+  const filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+  const readResult = await loadPrimitive(filePath, primitive)
 
   if (!readResult.success) {
-    return renderToolResult(error(`Failed to inspect ${args.primitive} "${args.name}": ${readResult.error}`))
+    return renderToolResult(error(`Failed to inspect ${primitive} "${args.name}": ${readResult.error}`))
   }
 
   const ctx = context as { directory?: string; worktree?: string }
@@ -251,8 +317,8 @@ async function handleInspect(
 
   // Determine cross-reference status
   let crossRefStatus = "unknown"
-  const collection = args.primitive === "agent" ? loadResult.agents
-    : args.primitive === "command" ? loadResult.commands
+  const collection = primitive === "agent" ? loadResult.agents
+    : primitive === "command" ? loadResult.commands
     : loadResult.skills
   const existsInConfig = collection.has(args.name!)
   const existsOnDisk = existsSync(filePath)
@@ -267,7 +333,7 @@ async function handleInspect(
 
   return renderToolResult(success("Primitive inspection", {
     name: args.name,
-    type: args.primitive,
+    type: primitive,
     filePath,
     frontmatter: readResult.data.frontmatter,
     body: readResult.data.body,
