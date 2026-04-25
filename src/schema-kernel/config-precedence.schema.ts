@@ -1,24 +1,21 @@
 import { z } from "zod"
 
+export const CONFIG_PRECEDENCE_SCHEMA_VERSION = "1.0.0"
+
 // ---------------------------------------------------------------------------
 // 1. Config Precedence Level — resolution order for merged config
 // ---------------------------------------------------------------------------
 
 /**
- * The eight precedence levels for OpenCode configuration resolution,
- * ordered from highest (managed_preferences) to lowest (remote_config).
- * Higher-precedence values override lower ones during merge.
+ * Validates a config precedence level: any non-empty string. Previously a
+ * fixed enum of 8 known levels, now softened to accept future OpenCode
+ * config levels without rejecting valid configs.
+ *
+ * Known values (for reference): managed_preferences, managed_config,
+ * inline_config, opencode_dir, project_config, custom_config, global_config,
+ * remote_config
  */
-export const ConfigPrecedenceLevelSchema = z.enum([
-  "managed_preferences",
-  "managed_config",
-  "inline_config",
-  "opencode_dir",
-  "project_config",
-  "custom_config",
-  "global_config",
-  "remote_config",
-])
+export const ConfigPrecedenceLevelSchema = z.string().min(1)
 
 export type ConfigPrecedenceLevel = z.infer<typeof ConfigPrecedenceLevelSchema>
 
@@ -40,6 +37,11 @@ export const ConfigSourceSchema = z
   .strict()
 
 export type ConfigSource = z.infer<typeof ConfigSourceSchema>
+
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const ConfigSourceSchemaLenient = ConfigSourceSchema.strip()
+
+export type ConfigSourceLenient = z.infer<typeof ConfigSourceSchemaLenient>
 
 // ---------------------------------------------------------------------------
 // 3. OpenCode Config — top-level opencode.json structure
@@ -67,3 +69,8 @@ export const OpenCodeConfigSchema = z
   .strict()
 
 export type OpenCodeConfig = z.infer<typeof OpenCodeConfigSchema>
+
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const OpenCodeConfigSchemaLenient = OpenCodeConfigSchema.strip()
+
+export type OpenCodeConfigLenient = z.infer<typeof OpenCodeConfigSchemaLenient>

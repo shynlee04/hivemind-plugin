@@ -41,6 +41,11 @@ export const ToolDefinitionSchema = z
 
 export type ToolDefinition = z.infer<typeof ToolDefinitionSchema>
 
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const ToolDefinitionSchemaLenient = ToolDefinitionSchema.strip()
+
+export type ToolDefinitionLenient = z.infer<typeof ToolDefinitionSchemaLenient>
+
 // ---------------------------------------------------------------------------
 // 3. Tool File — complete tool file representation
 // ---------------------------------------------------------------------------
@@ -57,3 +62,13 @@ export const ToolFileSchema = z
   .strict()
 
 export type ToolFile = z.infer<typeof ToolFileSchema>
+
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const ToolFileSchemaLenient = z
+  .object({
+    definition: ToolDefinitionSchemaLenient,
+    sourcePath: z.string().min(1),
+  })
+  .strip()
+
+export type ToolFileLenient = z.infer<typeof ToolFileSchemaLenient>

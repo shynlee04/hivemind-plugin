@@ -4,6 +4,52 @@
  * frontmatter, command frontmatter, permission rulesets, and skill metadata.
  */
 
+import { z } from "zod"
+
+// ---------------------------------------------------------------------------
+// validateWithFallback — strict-first with graceful unknown-field stripping
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates data against a strict schema first. If validation fails ONLY
+ * due to unrecognized keys, strips them via the lenient schema and returns
+ * the sanitized data with a warning. Never crashes.
+ */
+export function validateWithFallback<T>(
+  strictSchema: z.ZodSchema<T>,
+  lenientSchema: z.ZodSchema<T>,
+  data: unknown,
+  context: string,
+): { success: true; data: T; warnings: string[] } | { success: false; error: z.ZodError } {
+  const strictResult = strictSchema.safeParse(data)
+  if (strictResult.success) {
+    return { success: true, data: strictResult.data, warnings: [] }
+  }
+
+  // Check if error is ONLY due to unrecognized keys
+  const issues = strictResult.error.issues
+  const hasOnlyUnrecognizedKeys = issues.every((issue) =>
+    issue.message.includes("Unrecognized key") ||
+    issue.code === "unrecognized_keys",
+  )
+
+  if (hasOnlyUnrecognizedKeys) {
+    const lenientResult = lenientSchema.safeParse(data)
+    if (lenientResult.success) {
+      const strippedKeys = issues.map((issue) =>
+        issue.path.join("."),
+      )
+      return {
+        success: true,
+        data: lenientResult.data,
+        warnings: [`${context}: Stripped unrecognized keys: ${strippedKeys.join(", ")}`],
+      }
+    }
+  }
+
+  return { success: false, error: strictResult.error }
+}
+
 // ---------------------------------------------------------------------------
 // Prompt-enhance pipeline schemas
 // ---------------------------------------------------------------------------
@@ -33,17 +79,22 @@ export type {
 // ---------------------------------------------------------------------------
 
 export {
+  AGENT_FRONTMATTER_SCHEMA_VERSION,
   AgentNameSchema,
   AgentModeEnum,
   AgentFrontmatterSchema,
+  AgentFrontmatterSchemaLenient,
   AgentFileSchema,
+  AgentFileSchemaLenient,
 } from "./agent-frontmatter.schema.js"
 
 export type {
   AgentName,
   AgentMode,
   AgentFrontmatter,
+  AgentFrontmatterLenient,
   AgentFile,
+  AgentFileLenient,
 } from "./agent-frontmatter.schema.js"
 
 // ---------------------------------------------------------------------------
@@ -51,17 +102,24 @@ export type {
 // ---------------------------------------------------------------------------
 
 export {
+  COMMAND_FRONTMATTER_SCHEMA_VERSION,
   CommandNameSchema,
   CommandFrontmatterSchema,
+  CommandFrontmatterSchemaLenient,
   CommandTemplateFeaturesSchema,
+  CommandTemplateFeaturesSchemaLenient,
   CommandFileSchema,
+  CommandFileSchemaLenient,
 } from "./command-frontmatter.schema.js"
 
 export type {
   CommandName,
   CommandFrontmatter,
+  CommandFrontmatterLenient,
   CommandTemplateFeatures,
+  CommandTemplateFeaturesLenient,
   CommandFile,
+  CommandFileLenient,
 } from "./command-frontmatter.schema.js"
 
 // ---------------------------------------------------------------------------
@@ -69,24 +127,33 @@ export type {
 // ---------------------------------------------------------------------------
 
 export {
+  PERMISSION_SCHEMA_VERSION,
   PermissionActionSchema,
   PermissionKeySchema,
   PatternEntrySchema,
   PermissionRuleSchema,
+  PermissionRuleSchemaLenient,
   PatternBasedPermissionSchema,
   RulesBasedPermissionSchema,
+  RulesBasedPermissionSchemaLenient,
   PermissionRulesetSchema,
+  PermissionRulesetSchemaLenient,
   AgentPermissionOverrideSchema,
+  AgentPermissionOverrideSchemaLenient,
 } from "./permission.schema.js"
 
 export type {
   PermissionAction,
   PermissionKey,
   PermissionRule,
+  PermissionRuleLenient,
   PatternBasedPermissions,
   RulesBasedPermissions,
+  RulesBasedPermissionsLenient,
   PermissionRuleset,
+  PermissionRulesetLenient,
   AgentPermissionOverride,
+  AgentPermissionOverrideLenient,
 } from "./permission.schema.js"
 
 // ---------------------------------------------------------------------------
@@ -94,16 +161,21 @@ export type {
 // ---------------------------------------------------------------------------
 
 export {
+  SKILL_METADATA_SCHEMA_VERSION,
   SkillNameSchema,
   SkillFrontmatterSchema,
+  SkillFrontmatterSchemaLenient,
   SkillFileSchema,
+  SkillFileSchemaLenient,
   SkillDiscoveryLocationSchema,
 } from "./skill-metadata.schema.js"
 
 export type {
   SkillName,
   SkillFrontmatter,
+  SkillFrontmatterLenient,
   SkillFile,
+  SkillFileLenient,
   SkillDiscoveryLocation,
 } from "./skill-metadata.schema.js"
 
@@ -112,18 +184,25 @@ export type {
 // ---------------------------------------------------------------------------
 
 export {
+  MCP_SERVER_SCHEMA_VERSION,
   MCPServerTypeSchema,
   LocalMCPServerSchema,
+  LocalMCPServerSchemaLenient,
   RemoteMCPServerSchema,
+  RemoteMCPServerSchemaLenient,
   MCPServerConfigSchema,
+  MCPServerConfigSchemaLenient,
   MCPServerRegistrySchema,
 } from "./mcp-server.schema.js"
 
 export type {
   MCPServerType,
   LocalMCPServer,
+  LocalMCPServerLenient,
   RemoteMCPServer,
+  RemoteMCPServerLenient,
   MCPServerConfig,
+  MCPServerConfigLenient,
   MCPServerRegistry,
 } from "./mcp-server.schema.js"
 
@@ -134,13 +213,17 @@ export type {
 export {
   ToolNameSchema,
   ToolDefinitionSchema,
+  ToolDefinitionSchemaLenient,
   ToolFileSchema,
+  ToolFileSchemaLenient,
 } from "./tool-definition.schema.js"
 
 export type {
   ToolName,
   ToolDefinition,
+  ToolDefinitionLenient,
   ToolFile,
+  ToolFileLenient,
 } from "./tool-definition.schema.js"
 
 // ---------------------------------------------------------------------------
@@ -148,13 +231,18 @@ export type {
 // ---------------------------------------------------------------------------
 
 export {
+  CONFIG_PRECEDENCE_SCHEMA_VERSION,
   ConfigPrecedenceLevelSchema,
   ConfigSourceSchema,
+  ConfigSourceSchemaLenient,
   OpenCodeConfigSchema,
+  OpenCodeConfigSchemaLenient,
 } from "./config-precedence.schema.js"
 
 export type {
   ConfigPrecedenceLevel,
   ConfigSource,
+  ConfigSourceLenient,
   OpenCodeConfig,
+  OpenCodeConfigLenient,
 } from "./config-precedence.schema.js"
