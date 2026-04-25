@@ -26,7 +26,7 @@
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [x] **Phase 16.3: Delegation Subsystem Hardening** — 4/4 plans complete, post-UAT architecture incidents captured; delegation-manifest expansion paused pending 16.4
 - [ ] **Phase 16.4: Harness Architecture Baseline & Migration Control Plane** — INSERTED; architecture baseline before further delegation expansion or product-detox migration
-- [x] **Phase 16.5: Agents Builder Configuration Foundation** — ✅ COMPLETE (2026-04-25); 5/5 plans executed, 5/5 SUMMARYs, 680 tests pass, typecheck clean; R-01 through R-06 delivered
+- [x] **Phase 16.5: Agents Builder Configuration Foundation** — INSERTED; Zod schemas for OpenCode primitives, config compiler, cross-primitive validator, workflow skill, auto-detection routing; VERIFIED (5/5 plans, 680 tests, UAT gatekeeping scenario auto-detects)
 - [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
 - [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
 - [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
@@ -292,19 +292,19 @@ Plans:
 
 ### Phase 16.5: Agents Builder Configuration Foundation (INSERTED)
 
-**Goal:** Build the foundation for a configurable agents builder system wired to the hivefiver module — Zod schemas for all OpenCode primitives, cross-primitive conflict validator, config compiler (JSON/YAML ↔ .md round-trip), interactive workflow skill, and auto-detection routing for natural-language agent configuration intent.
-**Requirements**: R-01 through R-06 (6 cycles)
-**Depends on:** Phase 16.4 (architecture baseline)
-**Plans:** 5 plans
-
-**Execution status:** ✅ COMPLETE (2026-04-25). All 5 plans executed across 3 waves. 680 tests pass, typecheck clean.
+**Goal:** Build the foundation for a configurable agents builder system wired to the hivefiver module — Zod schemas for all OpenCode primitives (agent frontmatter, command frontmatter, permission ruleset, skill metadata, MCP server, tool definition, config precedence), cross-primitive conflict validator, config compiler (JSON/YAML ↔ .md round-trip), interactive workflow skill, and auto-detection routing for natural-language agent configuration intent.
+**Requirements**: R-01 through R-06 (6 cycles) — ALL COMPLETE
+**Depends on:** Phase 16.4 (architecture baseline, module boundaries, dependency rules)
+**Plans:** 5/5 plans executed
+**Status:** ✅ VERIFIED — 680 tests, UAT gatekeeping scenario auto-detects, intent detection expanded, Turn 0 discovery added
 
 Plans:
-- [x] 16.5-01-PLAN.md — Cross-Primitive Validator (R-02)
-- [x] 16.5-02-PLAN.md — Config Compiler (R-03)
-- [x] 16.5-03-PLAN.md — Test Harness (R-06)
-- [x] 16.5-04-PLAN.md — Workflow Skill (R-04)
-- [x] 16.5-05-PLAN.md — Orchestrator Enhancement (R-05)
+- [x] 16.5-01: Cross-Primitive Validator (R-02)
+- [x] 16.5-02: Config Compiler (R-03)
+- [x] 16.5-03: Test Harness (R-06)
+- [x] 16.5-04: Workflow Skill (R-04)
+- [x] 16.5-05: Orchestrator Enhancement (R-05)
+- [x] 16.5-fix: UAT intent detection gaps + Turn 0 discovery + batch modify
 
 ### Phase 16.3: Delegation Subsystem Hardening — Fix critical gaps in parent resumption, notification delivery, and signal handling (INSERTED)
 
@@ -628,7 +628,7 @@ Plans:
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened across delegation surfaces |
-| 16.5. Agents Builder Configuration Foundation | 5/5 plans, 6/6 requirements | ✅ COMPLETE (2026-04-25) — 680 tests, typecheck clean |
+| 16.5. Agents Builder Configuration Foundation | 5/5 plans (6 including fix) | ✅ VERIFIED — 680 tests, UAT gatekeeping scenario auto-detects |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
 | 19. Rename Sprint (Playbook Phase 1) | 19/21 skills (2 deferred) | ⚠️ PARTIAL — 19 renamed, stale refs remain, `.windsurf/` touched (violated constraint) |
@@ -654,7 +654,7 @@ Phase 1 (7 done, 3 pending — planned)
                                      └─→ Phase 16: Background Delegation Revamp + PTY Integration
                                            └─→ Phase 16.2: PTY Wiring + OMO Safety Patterns (SPEC validated)
                                            └─→ Phase 16.4: Harness Architecture Baseline
-                                                 └─→ Phase 16.5: Agents Builder Configuration Foundation ✅
+                                                └─→ Phase 16.5: Agents Builder Configuration Foundation (executing — Cycle 1 schemas in progress)
                                            └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) ✅
                                                  └─→ Phase 18: Context & Research (Playbook Phase CR) ✅
                                                       └─→ Phase 19: Rename Sprint (Playbook Phase 1) ✅
