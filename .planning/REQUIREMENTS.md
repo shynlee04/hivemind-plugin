@@ -10,7 +10,7 @@
 
 ### Dead Code Removal
 
-- [ ] **DEAD-01**: Delete `.opencode/tools/` directory (all 5 files: prompt-skim, prompt-analyze, context-budget, session-patch, safe-tool)
+- [x] **DEAD-01**: Delete `.opencode/tools/` directory (all 5 files: prompt-skim, prompt-analyze, context-budget, session-patch, safe-tool)
 - [ ] **DEAD-02**: Delete duplicate test files (`tests/tools/prompt-skim.test.ts`, `prompt-analyze.test.ts`, `context-budget.test.ts`, `session-patch.test.ts`, `safe-tool.test.ts`)
 - [ ] **DEAD-03**: Delete `tests/plugins/prompt-enhance.test.ts` (masks double-count bug)
 
@@ -20,19 +20,19 @@
 
 ### HIGH: Critical Bugs
 
-- [ ] **HIGH-01**: Fix double-compaction counting — remove event hook's `session.compacted` handling, keep only `experimental.session.compacting`
-- [ ] **HIGH-02**: Fix session-patch heading corruption — anchor regex to line start: `(?:^|\n)(${escapedSection})[\s\S]*?(?=\n## |$)`
-- [ ] **HIGH-03**: Fix orchestrator references to 5 non-existent agents — either define missing agents or route to existing researcher/builder/critic
+- [x] **HIGH-01**: Fix double-compaction counting — remove event hook's `session.compacted` handling, keep only `experimental.session.compacting`
+- [x] **HIGH-02**: Fix session-patch heading corruption — anchor regex to line start: `(?:^|\n)(${escapedSection})[\s\S]*?(?=\n## |$)`
+- [x] **HIGH-03**: Fix orchestrator references to 5 non-existent agents — either define missing agents or route to existing researcher/builder/critic
 
 ### MEDIUM: Functional Bugs
 
-- [ ] **MED-01**: Gate system-transform by delegation metadata — prevent 804-char injection into non-prompt-enhance sessions
-- [ ] **MED-02**: Fix prompt-analyze to detect cross-line contradictions — compare all line pairs, not just within single lines
+- [x] **MED-01**: Gate system-transform by delegation metadata — prevent 804-char injection into non-prompt-enhance sessions
+- [x] **MED-02**: Fix prompt-analyze to detect cross-line contradictions — compare all line pairs, not just within single lines
 
 ### LOW: Model & Quality
 
 - [ ] **LOW-01**: Rebuild context-budget with real OpenCode compaction data — replace fake 15% linear model
-- [ ] **LOW-02**: Remove `prompt-skim` recommended_lanes (phantom agent references)
+- [x] **LOW-02**: Remove `prompt-skim` recommended_lanes (phantom agent references)
 - [ ] **LOW-03**: Remove system-transform hook wiring from plugin.ts
 - [ ] **LOW-04**: Remove PromptEnhancePlugin event forwarding for compaction from plugin.ts
 
@@ -127,12 +127,12 @@ Derived from `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` — locked 2026
 | DOC-REFRESH-02 | Complete | REQUIREMENTS.md updated with Q1-Q6 derived requirements, DOC-REFRESH, HMQUAL sections |
 | DOC-REFRESH-03 | Complete | ROADMAP.md phase statuses corrected, Phase 27-30 entries added, progress table accurate |
 | DOC-REFRESH-04 | Complete | STATE.md frontmatter, current position, phase completion details all accurate |
-| DOC-REFRESH-05 | Pending | codebase/ARCHITECTURE.md updated for 9-surface mutation authority, .hivemind/ state root, Q6 migration |
-| DOC-REFRESH-06 | Pending | codebase/STRUCTURE.md updated for current directory structure after phases 17-26 |
-| DOC-REFRESH-07 | Pending | codebase/STACK.md updated for Q1 Layer 2 runtime taxonomy, MCP tools, dependency graph |
-| DOC-REFRESH-08 | Pending | codebase/CONCERNS.md updated for C1-C7 all resolved/partially-resolved status |
-| DOC-REFRESH-09 | Pending | codebase/INTEGRATIONS.md updated for Q2 sidecar architecture, OpenCode SDK server API |
-| DOC-REFRESH-10 | Pending | codebase/TESTING.md updated for Q5 RICH gate requirements, full RICH no-compromise |
+| DOC-REFRESH-05 | Complete | codebase/ARCHITECTURE.md updated for 9-surface mutation authority, .hivemind/ state root, Q6 migration |
+| DOC-REFRESH-06 | Complete | codebase/STRUCTURE.md updated for current directory structure after phases 17-26 |
+| DOC-REFRESH-07 | Complete | codebase/STACK.md updated for Q1 Layer 2 runtime taxonomy, MCP tools, dependency graph |
+| DOC-REFRESH-08 | Complete | codebase/CONCERNS.md updated for C1-C7 all resolved/partially-resolved status |
+| DOC-REFRESH-09 | Complete | codebase/INTEGRATIONS.md updated for Q2 sidecar architecture, OpenCode SDK server API |
+| DOC-REFRESH-10 | Complete | codebase/TESTING.md updated for Q5 RICH gate requirements, full RICH no-compromise |
 
 ---
 
@@ -147,7 +147,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-01 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Every `hm-*` and `hivefiver-*` skill must activate for precise, bounded user intents and avoid false positives against neighboring skills. Maps to PLAYBOOK D1 Trigger Accuracy. |
 | **Acceptance Criteria** | 1. Positive trigger cases exist.<br>2. Negative/exclusion cases exist.<br>3. Nearby skill boundaries are documented.<br>4. Trigger evidence is captured in an eval or scoring record. |
@@ -159,7 +159,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-02 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Every skill body must provide executable operational guidance, not concept-only prose. Maps to PLAYBOOK D2 Body Depth. |
 | **Acceptance Criteria** | 1. Entry conditions are defined.<br>2. Workflow steps and decision gates are defined.<br>3. Exit criteria and blocked-state handoff are defined.<br>4. Anti-patterns or failure modes are documented. |
@@ -171,7 +171,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-03 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Every skill must defend against NON-1 through NON-6: non-audit, non-contextual, non-cycles, non-hierarchy, non-ecosystem-eval, and non-systematic-pattern failures. Maps to PLAYBOOK D3 6-NON Defence. |
 | **Acceptance Criteria** | 1. Audit trail evidence exists.<br>2. Stack/clash context is documented.<br>3. Entry, exit, and loop-back behavior is defined.<br>4. Hierarchy/role boundaries are explicit.<br>5. Ecosystem or stacked eval evidence exists.<br>6. Pattern rationale and deterministic helper behavior are documented where applicable. |
@@ -183,7 +183,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-04 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Every skill must prove behavior with realistic eval coverage rather than file-existence claims. Maps to PLAYBOOK D4 Eval Coverage. |
 | **Acceptance Criteria** | 1. Eval bundle or equivalent scoring artifact exists.<br>2. Positive and negative trigger cases are covered.<br>3. Assertions are concrete and gradeable.<br>4. Target-tier skills include stacked multi-skill scenarios where relevant. |
@@ -195,7 +195,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-05 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Skill references must support progressive disclosure without replacing the primary workflow. Maps to PLAYBOOK D5 Reference Completeness. |
 | **Acceptance Criteria** | 1. Reference map lists each reference and purpose.<br>2. References resolve and stay one level deep unless justified.<br>3. Skill body remains minimally executable without reading every reference.<br>4. Stale, empty, or circular references are absent or documented as blockers. |
@@ -207,7 +207,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-06 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Skills must state how they interact with agents, commands, tools, plugin hooks, and runtime state routers. Maps to PLAYBOOK D6 Integration Wiring. |
 | **Acceptance Criteria** | 1. Agent role and permission implications are stated.<br>2. Command argument and shell constraints are stated where relevant.<br>3. Tool contracts or tool absence fallbacks are documented.<br>4. Plugin hook behavior is classified as fact-reporting, advisory, or policy-enforcing.<br>5. Runtime state persistence and resumability expectations are documented. |
@@ -219,7 +219,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-07 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Skills must work across OpenCode-native use, Hivemind harness use, and arbitrary user projects without hardcoded local assumptions. Maps to PLAYBOOK D7 Cross-Platform Compatibility. |
 | **Acceptance Criteria** | 1. OpenCode-native behavior is documented.<br>2. Hivemind harness behavior is documented.<br>3. Generic fallback behavior exists when GSD, harness tools, or project-specific state are unavailable.<br>4. Commands and paths avoid non-portable assumptions or document adapters. |
@@ -231,7 +231,7 @@ Quality contract derived from Phase 26 `26-PLAYBOOK.md` D1-D8 dimensions. All `h
 | **ID** | HMQUAL-08 |
 | **Category** | Soft Meta-Concept Quality |
 | **Priority** | P1 |
-| **Status** | Defined |
+| **Status** | Complete |
 | **Dependencies** | Phase 26 26-PLAYBOOK.md |
 | **Description** | Skills must detect failure, loop back safely, escalate honestly, and avoid false completion claims. Maps to PLAYBOOK D8 Self-Correction. |
 | **Acceptance Criteria** | 1. Retry, rollback, blocked, and escalation states are defined.<br>2. Fresh verification evidence is required before completion claims.<br>3. Repeated failures have stop rules.<br>4. Handoff reports include current state, blocker, evidence gathered, and next verification step. |
@@ -309,11 +309,11 @@ Requirements validated by completed phases. Kept for traceability.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEAD-01 through DEAD-03 | Phase 1 | Pending |
+| DEAD-01 through DEAD-03 | Phase 1 | DEAD-01 Complete; DEAD-02/03 Pending |
 | TEST-01 | Phase 1 | Pending |
-| HIGH-01 through HIGH-03 | Phase 2 | Pending |
-| MED-01 through MED-02 | Phase 3 | Pending |
-| LOW-01 through LOW-04 | Phase 4 | Pending |
+| HIGH-01 through HIGH-03 | Phase 1-2 | Complete |
+| MED-01 through MED-02 | Phase 1 | Complete |
+| LOW-01 through LOW-04 | Phase 1 | LOW-02 Complete; LOW-01/03/04 Pending |
 | QUAL-01 through QUAL-05 | Phase 5 | Pending |
 | RUN-3a through RUN-3h | Phase 2 | Complete |
 | PH09-03 | Phase 9 | Complete |
@@ -327,16 +327,16 @@ Requirements validated by completed phases. Kept for traceability.
 | MEMORY-01, MEMORY-02 | Phase 25-30 | Pending |
 | RICH-01, RICH-02 | Phase 27-30 | Active |
 | HIVEMIND-ROOT-01 through HIVEMIND-ROOT-03 | Phase 25+ | Pending |
-| HMQUAL-01 through HMQUAL-08 | Phase 27-30 | Defined |
-| DOC-REFRESH-01 through DOC-REFRESH-10 | Phase 31 | In Progress |
+| HMQUAL-01 through HMQUAL-08 | Phase 27-30 | Complete |
+| DOC-REFRESH-01 through DOC-REFRESH-10 | Phase 31 | Complete |
 
 ---
 
 **Coverage Summary:**
-- v1 requirements: 18 total — 18 mapped
+- v1 requirements: 18 total — 7 complete (HIGH-01/02/03, MED-01/02, LOW-02, DEAD-01), 11 pending
 - Phase 2 (Runtime): 8 requirements — 8 mapped, all complete
 - Phase 14 (delegate-task truth-reset): 8 requirements — 8 mapped, all complete
 - Q1-Q6 derived: 16 requirements (RUNTIME-DET×3, SIDECAR×3, JOURNAL×3, MEMORY×2, RICH×2, HIVEMIND-ROOT×3)
-- HMQUAL: 8 requirements — 8 defined
-- DOC-REFRESH: 10 requirements — 4 complete, 6 pending
-- **Grand total: 68 requirements**
+- HMQUAL: 8 requirements — 8 complete (Phases 27-30 RICH closure PASS)
+- DOC-REFRESH: 10 requirements — 10 complete
+- **Grand total: 68 requirements — 43 complete, 25 pending/deferred**
