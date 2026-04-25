@@ -16,6 +16,7 @@ The Phase 25 event tracker must be a bounded context time-machine, not a runtime
 2. `src/lib/event-tracker/writer.ts` mapped every unknown event type to `session_event`.
 3. `src/lib/session-api.ts:getEventSessionID()` accepts `properties.info.id` for all event types; for `message.*` events this is a message ID, not a session ID.
 4. The persisted schema lacked the needed bounded `toolsUsed` and `delegations` read-model fields.
+5. The actual plugin `tool.execute.after` hook was not connected to event-tracker persistence, so tool context was only covered through direct writer-style tests rather than the live plugin hook path.
 
 ## Redesign Contract
 
@@ -29,6 +30,8 @@ The Phase 25 event tracker must be a bounded context time-machine, not a runtime
 ### B. Selective observer filters
 
 Record only meaningful lifecycle/delegation/tool-summary/manual-export context events. Ignore message firehose events such as `message.updated`, `message.part.delta`, `message.part.updated`, `session.diff`, and `session.status`.
+
+`message.*` events must never use `properties.info.id` as a root/session identifier. If a message event carries an explicit `properties.sessionID`, that may be used by non-event-tracker consumers, but event-tracker admission still ignores message firehose types.
 
 ### C. Selective meta schema
 

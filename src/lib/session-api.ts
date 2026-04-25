@@ -211,11 +211,32 @@ function getEventSessionInfo(event: unknown): unknown {
   return getNestedValue(event, ["properties", "info"])
 }
 
+function getEventType(event: unknown): string | undefined {
+  return asString(getNestedValue(event, ["type"]))
+}
+
+function isMessageScopedEvent(event: unknown): boolean {
+  return getEventType(event)?.startsWith("message.") ?? false
+}
+
+function getExplicitEventSessionID(event: unknown): string | undefined {
+  return (
+    asString(getNestedValue(event, ["properties", "sessionID"])) ??
+    asString(getNestedValue(event, ["properties", "sessionId"])) ??
+    asString(getNestedValue(event, ["sessionID"])) ??
+    asString(getNestedValue(event, ["sessionId"]))
+  )
+}
+
 export function getEventSessionID(event: unknown): string | undefined {
+  const explicitSessionID = getExplicitEventSessionID(event)
+  if (isMessageScopedEvent(event)) {
+    return explicitSessionID
+  }
+
   return (
     getSessionID(getEventSessionInfo(event)) ??
-    asString(getNestedValue(event, ["properties", "sessionID"])) ??
-    asString(getNestedValue(event, ["sessionID"]))
+    explicitSessionID
   )
 }
 

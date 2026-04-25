@@ -111,3 +111,33 @@ No blocking gaps found. The implementation automatically writes paired `.hivemin
 
 _Verified: 2026-04-26T03:12:23Z_
 _Verifier: the agent (gsd-verifier)_
+
+---
+
+## Live-Runtime Follow-Up Verification — 2026-04-26
+
+**Trigger:** user reported persistent live `.hivemind/event-tracker/ses_*` artifact generation after clean reinstall/rebuild.
+
+### Reproduction Evidence
+
+- Before cleanup, `.hivemind/event-tracker/` contained 42 generated entries (21 JSON/Markdown pairs), including `ses_3yqs`, `ses_2397`, `ses_g3fs`, `ses_rxnv`, and `ses_s1mf`.
+- Representative bad artifacts were non-contextual:
+  - `ses_3yqs`, `ses_g3fs`, `ses_rxnv`, `ses_s1mf`: `sessionId` began with `msg_`, actors/subSessions/lastMessageOutput were empty, rows were only `Session event (message.updated)`.
+  - `ses_2397`: retained `message.part.updated` and `message.part.delta` rows.
+- After deleting only generated `ses_*.{json,md}` pairs, normal live-style tool/assistant activity regenerated fake message-root artifacts, confirming the observer/runtime path reproduced the failure.
+
+### Fix Verification
+
+| Check | Result |
+|---|---|
+| RED exact bad-shape tests | Failed before patch: message events returned `msg_*`/`ses_2397...` from `getEventSessionID()`; plugin `tool.execute.after` left `toolsUsed` empty. |
+| GREEN exact bad-shape tests | Passed after patch: `npx vitest run tests/lib/session-api.test.ts tests/plugins/plugin-lifecycle.test.ts -t "message.updated info.id\|message.part\|explicit message event sessionID\|records plugin tool completion"` — 2 files / 4 tests. |
+| Focused event-tracker/session-api tests | `tests/lib/session-api.test.ts`, `tests/lib/event-tracker/session-journey-events.test.ts`, and `tests/lib/event-tracker/session-artifact-parser.test.ts` passed. |
+| Typecheck | `npm run typecheck` passed. |
+| Build | `npm run build` passed. |
+| Post-build live-style cleanup/run/list | Cleanup removed 22 generated files; after `git status --short` and `node -e`, `.hivemind/event-tracker/` contained only `ses_23a0.json` and `ses_23a0.md` (no new fake `msg_*` roots observed in the listing). |
+| Artifact quality sample | Manual export merge produced `ses_23a0.json` with 7 actors, 8 subSessions, 11 delegations, tool names including `bash`, `read`, `skill`, `task`, `todowrite`, and bounded `lastMessageOutput` length 2000. |
+
+### Current Blocker
+
+Full `npm test` is not green in this worktree: 44 files passed, 4 tests failed. The failures are delegation notification replay/finalization tests in `tests/plugins/plugin-lifecycle.test.ts` and `tests/lib/delegation-manager.test.ts`, outside the event-tracker fix path. Event-tracker-focused, typecheck, and build verification passed.

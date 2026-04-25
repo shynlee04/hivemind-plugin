@@ -27,9 +27,27 @@ import { createSessionJournalExportTool } from "./tools/session-journal-export.j
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 import {
   createEventTrackerArtifactsFromHook,
+  shouldTrackEventTrackerEvent,
 } from "./lib/event-tracker/index.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
+const TOOL_OUTPUT_SUMMARY_LIMIT = 240
+
+function summarizePluginToolOutput(output: unknown): string {
+  const raw = typeof output === "string" ? output : JSON.stringify(output ?? "completed")
+  const normalized = (raw ?? "completed").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()
+  if (!normalized) return "completed"
+  return normalized.length <= TOOL_OUTPUT_SUMMARY_LIMIT ? normalized : `${normalized.slice(0, TOOL_OUTPUT_SUMMARY_LIMIT - 1)}…`
+}
+
+function resolveToolHookSessionId(args: Record<string, unknown> | undefined): string | undefined {
+  return (
+    asString(getNestedValue(args, ["sessionID"])) ??
+    asString(getNestedValue(args, ["sessionId"])) ??
+    asString(getNestedValue(args, ["rootSessionID"])) ??
+    asString(getNestedValue(args, ["rootSessionId"]))
+  )
+}
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // Load workspace-level runtime policy once at startup.
@@ -81,6 +99,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   }
   const sessionJourneyEventObserver = async ({ event }: { event?: unknown }) => {
     try {
+      if (!shouldTrackEventTrackerEvent(event)) return
       createEventTrackerArtifactsFromHook({ projectRoot: directory, hook: { event, source: "plugin.event" } })
     } catch {
       // Best-effort audit projection: never block canonical OpenCode event handling.
@@ -113,6 +132,26 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       input: { tool: string; args?: Record<string, unknown> },
       _output?: unknown,
     ): Promise<void> => {
+      try {
+        const sessionID = resolveToolHookSessionId(input.args)
+        if (sessionID) {
+          const event = {
+            type: "tool.execute.after",
+            properties: {
+              sessionID,
+              tool: input.tool,
+              status: "completed",
+              resultSummary: summarizePluginToolOutput(_output),
+            },
+          }
+          if (shouldTrackEventTrackerEvent(event)) {
+            createEventTrackerArtifactsFromHook({ projectRoot: directory, hook: { event, source: "plugin.tool.execute.after" } })
+          }
+        }
+      } catch {
+        // Best-effort audit projection: never fail the tool call result.
+      }
+
       if (input.tool !== "configure-primitive") return
       const args = input.args
       if (!args || typeof args.workflowId !== "string" || typeof args.workflowTurn !== "number") return

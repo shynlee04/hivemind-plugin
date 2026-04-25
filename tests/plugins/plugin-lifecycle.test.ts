@@ -130,6 +130,34 @@ describe("plugin lifecycle wiring", () => {
     }
   })
 
+  it("records plugin tool completion as concise contextual metadata when a root session is attachable", async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-tool-"))
+    const rawOutput = `FULL_TOOL_OUTPUT_${"x".repeat(2_000)}`
+
+    try {
+      const plugin = await HarnessControlPlane({
+        client: createPluginClient(),
+        directory: projectRoot,
+      } as never)
+
+      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } } })
+      await plugin["tool.execute.after"]?.({
+        tool: "bash",
+        args: { sessionID: "ses_23a0root", command: "git status --short" },
+      }, rawOutput)
+
+      const artifactPath = join(projectRoot, ".hivemind", "event-tracker", "ses_23a0.json")
+      const document = JSON.parse(readFileSync(artifactPath, "utf-8")) as {
+        toolsUsed?: Array<{ toolName?: string; summary?: string }>
+      }
+      expect(document.toolsUsed).toEqual([expect.objectContaining({ toolName: "bash" })])
+      expect(document.toolsUsed?.[0]?.summary?.length).toBeLessThanOrEqual(240)
+      expect(readFileSync(artifactPath, "utf-8")).not.toContain(rawOutput)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it("registers run-background-command when a shared PTY manager is supported", async () => {
     vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(true)
 

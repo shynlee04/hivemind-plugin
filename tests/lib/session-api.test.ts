@@ -449,6 +449,32 @@ describe("session-api helpers", () => {
       const event = { sessionID: "top-level" }
       expect(getEventSessionID(event)).toBe("top-level")
     })
+
+    it("does not treat message.updated info.id as a session root", async () => {
+      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const event = { type: "message.updated", properties: { info: { id: "msg_dc683580e001KJ4Am2DWo63Yqs" } } }
+
+      expect(getEventSessionID(event)).toBeUndefined()
+    })
+
+    it("does not treat message.part delta/update info.id values as root sessions", async () => {
+      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const deltaEvent = { type: "message.part.delta", properties: { info: { id: "ses_2397d5cf7ffeF57rGCsLddMRvN" } } }
+      const updatedEvent = { type: "message.part.updated", properties: { info: { id: "ses_2397d5cf7ffeF57rGCsLddMRvN" } } }
+
+      expect(getEventSessionID(deltaEvent)).toBeUndefined()
+      expect(getEventSessionID(updatedEvent)).toBeUndefined()
+    })
+
+    it("uses explicit message event sessionID instead of message info.id", async () => {
+      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const event = {
+        type: "message.updated",
+        properties: { info: { id: "msg_dc683580e001KJ4Am2DWo63Yqs" }, sessionID: "ses_23a0b5eabffeB413854W6gnUKC" },
+      }
+
+      expect(getEventSessionID(event)).toBe("ses_23a0b5eabffeB413854W6gnUKC")
+    })
   })
 
   describe("getEventParentID", () => {

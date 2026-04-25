@@ -41,6 +41,13 @@ const TOOL_HOOK_TYPES = new Set([
   "tool.completed",
 ])
 
+const SESSION_HOOK_TYPES = new Set([
+  "session.created",
+  "session.updated",
+  "session.idle",
+  "session.deleted",
+])
+
 function eventTypeFromHook(type: string): JourneyEventType {
   if (type === "session.created") return "session_start"
   if (type === "session.updated") return "session_updated"
@@ -55,6 +62,14 @@ function shouldIgnoreHookType(type: string): boolean {
 
 function isToolHookType(type: string): boolean {
   return TOOL_HOOK_TYPES.has(type)
+}
+
+export function shouldTrackEventTrackerEvent(event: unknown): boolean {
+  const hookType = resolveHookType(event)
+  if (shouldIgnoreHookType(hookType)) return false
+  if (SESSION_HOOK_TYPES.has(hookType)) return true
+  if (isToolHookType(hookType)) return Boolean(resolveSessionId(event))
+  return false
 }
 
 function titleFromType(type: JourneyEventType): string {
@@ -483,7 +498,7 @@ export function writeSessionJourneyArtifacts(input: WriteSessionJourneyArtifacts
 
 export function createEventTrackerArtifactsFromHook(input: CreateEventTrackerArtifactsFromHookInput): WriteSessionJourneyArtifactsResult {
   const hookType = resolveHookType(input.hook.event)
-  if (shouldIgnoreHookType(hookType)) {
+  if (!shouldTrackEventTrackerEvent(input.hook.event)) {
     const skippedSessionId = resolveRootSessionId(input.hook.event) || resolveSessionId(input.hook.event) || "pending"
     const timestamp = input.hook.timestamp ?? Date.now()
     const artifactStem = sanitizeSessionArtifactStem(skippedSessionId)

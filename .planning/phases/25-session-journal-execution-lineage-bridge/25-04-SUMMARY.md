@@ -35,6 +35,7 @@ Phase 25 now includes an E2E-validated automatic event-tracker parser/writer/met
 - Aligned writer session-id resolution with `getEventSessionID()` so canonical OpenCode lifecycle events shaped as `{ properties: { info: { id } } }` create artifacts through the automatic plugin observer.
 - Corrected the Phase 25 artifact-explosion failure: parent/root-linked sub-session events now update the canonical root artifact instead of creating one root pair per sub/session/event, and unknown non-start events are bounded by skipping artifact creation until root context is known.
 - Corrected the event/action-dump failure after live runtime evidence: message firehose events (`message.updated`, `message.part.delta`, `message.part.updated`, `session.diff`, `session.status`) are filtered before persistence, tool events persist only tool names/status/concise summaries, manual exports populate `toolsUsed`/`delegations`, and generated `.hivemind/event-tracker/ses_*` litter can be cleaned back to intended root artifacts.
+- Corrected the persistent live-runtime failure after clean rebuild: `getEventSessionID()` now treats `message.*` `properties.info.id` values as message IDs rather than root sessions, explicit message `properties.sessionID` wins when present, the plugin has an explicit event-tracker admission gate, and actual `tool.execute.after` hooks attach concise tool metadata when a session/root ID is available.
 
 ## Verification
 
@@ -44,6 +45,8 @@ Phase 25 now includes an E2E-validated automatic event-tracker parser/writer/met
 - `npm run typecheck` — passed.
 - `npm run build` — passed.
 - `npm test` — passed (47 files passed, 1 skipped; 875 tests passed, 1 todo).
+- Live-runtime debug follow-up (2026-04-26): RED tests for exact generated bad shapes failed before patch (`message.updated` produced `msg_*`, `message.part.delta` produced `ses_2397...`, explicit sessionID lost to message info ID, actual plugin tool hook left `toolsUsed` empty). GREEN focused tests passed after patch: `npx vitest run tests/lib/session-api.test.ts tests/plugins/plugin-lifecycle.test.ts -t "message.updated info.id|message.part|explicit message event sessionID|records plugin tool completion"` — 2 files / 4 tests.
+- Current verification caveat: `npm run typecheck` and `npm run build` pass; full `npm test` is currently blocked by pre-existing delegation notification replay failures outside the event-tracker slice (4 failures in `tests/plugins/plugin-lifecycle.test.ts` and `tests/lib/delegation-manager.test.ts`).
 
 ## Review Fixes
 
