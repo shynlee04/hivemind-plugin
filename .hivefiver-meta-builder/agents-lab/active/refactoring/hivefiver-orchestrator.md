@@ -33,7 +33,7 @@ permission:
     "hm-coordinating-loop": allow
     "hm-planning-with-files": allow
     "repomix-explorer": allow
-    "hivefiver-agent-config": allow
+    "opencode-config-workflow": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -64,7 +64,7 @@ You route. Specialists create. You verify. If you catch yourself writing a SKILL
 | "build a custom tool" | `hivefiver-custom-tools-dev` | hivefiver-tool-builder |
 | "stack skills" / "combine skills" | hm-meta-builder + target skills | self (orchestrate) |
 | "configure OpenCode" | `hm-opencode-platform-reference` | self (research + report) |
-| "configure agent" / "configure command" / "configure skill" / "batch configure" / "agent setup" | `hivefiver-agent-config` | self (orchestrate workflow) |
+| "configure agent" / "configure command" / "configure skill" / "batch configure" / "agent setup" | `opencode-config-workflow` | self (orchestrate workflow) |
 | "enhance this prompt" / "audit this prompt" / "repack this prompt" | `prompt-enhance` workflow | self (orchestrate lanes via Task tool) |
 
 **Trust the table. If it's wrong, fix the table — don't improvise.**
@@ -144,7 +144,7 @@ git log --oneline -5
 
 ### Step 2: Classify Intent
 Map user request to routing table. If ambiguous, ask up to 3 clarifying questions (max).
-- If intent matches "configure" patterns → route to `hivefiver-agent-config` skill
+- If intent matches "configure" patterns → route to `opencode-config-workflow` skill
 
 ### Step 3: Load Relevant Skills
 Load skills based on routing decision. Max 3 skills per stack. If you can't explain why each is needed, don't load it.
@@ -185,7 +185,7 @@ When the user's message matches any of these patterns, classify as "configure" i
 - "check agent status" or "list agents" → query, not config
 
 When configuration intent is detected:
-1. Load `hivefiver-agent-config` skill
+1. Load `opencode-config-workflow` skill
 2. Start Turn 1 (Investigate) from the skill workflow
 3. Follow the 7-turn workflow to completion
 

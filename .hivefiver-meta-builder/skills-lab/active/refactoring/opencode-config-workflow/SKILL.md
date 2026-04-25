@@ -1,17 +1,19 @@
 ---
-name: hivefiver-agent-config
-description: "Guided workflow for configuring OpenCode agents, commands, and skills programmatically. Turn-based: Discover → Investigate → Collect → Proposal → Validate → Compile → Test → Save. Supports individual and batch configuration with cross-primitive conflict detection. Triggers on: 'configure agent', 'configure command', 'configure skill', 'batch configure', 'agent setup', 'set up agent', 'configure OpenCode primitives', 'update agent', 'modify agent', 'change agent', 'batch update', 'reconfigure', 'gatekeeping setup'."
+name: opencode-config-workflow
+description: "Framework-agnostic guided workflow for configuring OpenCode agents, commands, and skills programmatically. Turn-based: Discover → Investigate → Collect → Proposal → Validate → Compile → Test → Save. Supports individual and batch configuration with cross-primitive conflict detection. Coexists safely with GSD, BMAD, Speckit, and other frameworks. Triggers on: 'configure agent', 'configure command', 'configure skill', 'batch configure', 'agent setup', 'set up agent', 'configure OpenCode primitives', 'update agent', 'modify agent', 'change agent', 'batch update', 'reconfigure', 'gatekeeping setup' ."
 metadata:
   layer: "2"
   role: "workflow-orchestration"
   pattern: "P1-procedural"
-  depends_on_tools: ["configure-primitive"]
-  depends_on_libs: ["cross-primitive-validator", "config-compiler", "schema-kernel"]
+  depends_on_tools: ["configure-primitive", "validate-restart"]
+  depends_on_libs: ["cross-primitive-validator", "config-compiler", "schema-kernel", "framework-detector", "runtime-validator"]
 ---
 
 ## Overview
 
 This skill guides agents through an 8-turn configuration workflow for OpenCode primitives (agents, commands, skills). It does NOT create files directly — it orchestrates the process and delegates to tools.
+
+Works safely alongside GSD (`.planning/`), BMAD (`bmad.yaml`), Speckit (`speckit.json`), and any other framework by detecting their boundaries and namespace-tagging generated configs.
 
 ## The Iron Law
 
@@ -30,17 +32,21 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
      - Scope: project (`.opencode/`) or global (`~/.config/opencode/`)
      - Mode: create new vs. modify existing vs. batch update
      - Category filters: names, roles (e.g., "gatekeeping", "coordinator", "specialist"), or patterns
-  2. If the user mentions a category/role (e.g., "gatekeeping agents", "all coordinators"):
+  2. Detect co-existing frameworks via `framework-detector` to avoid boundary conflicts:
+     - GSD: `.planning/` directory detected → namespace-tag configs with `gsd-` prefix if needed
+     - BMAD: `bmad.yaml` detected → respect `bmad/` boundary
+     - Speckit: `speckit.json` detected → respect `speckit/` boundary
+  3. If the user mentions a category/role (e.g., "gatekeeping agents", "all coordinators"):
      - Scan `.opencode/agents/` for agent `.md` files
      - Read frontmatter from each to find matching agents by description, mode, or role keywords
      - Present the discovered agents: "I found these gatekeeping agents: [list]. Are these the ones you want to configure?"
-  3. If the user provides NO specific names or categories:
+  4. If the user provides NO specific names or categories:
      - Ask: "Which specific agents, commands, or skills do you want to configure? I can also scan for agents matching a role like 'gatekeeping' or 'coordinator'."
-  4. Determine mode:
+  5. Determine mode:
      - `create` — brand new primitive
      - `modify` — update existing: read current frontmatter, present as starting point
      - `batch-modify` — update multiple existing: apply same changes to all matched
-- **Output:** `{ primitives: [...], mode: "create"|"modify"|"batch-modify", scope: "project"|"global" }`
+- **Output:** `{ primitives: [...], mode: "create"|"modify"|"batch-modify", scope: "project"|"global", frameworks: [...] }`
 - **Checkpoint:** "I found these targets. Proceed with configuration?"
 
 ### Turn 1: Investigate
@@ -53,6 +59,7 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
      - Ask: "What primitive are you configuring?" (agent/command/skill)
      - Ask: "Is this a new configuration or modifying an existing one?"
   4. Check for related primitives that might conflict
+  5. Check framework boundaries — warn if proposed config would write into a framework-owned directory
 - **Output:** `{ primitive: "agent"|"command"|"skill", mode: "create"|"modify"|"batch-modify", target?: string | string[] }`
 - **Checkpoint:** Present findings, ask "Proceed to collection?"
 
@@ -65,6 +72,7 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
   3. For commands: description (required), agent, model, subtask, body template
   4. For skills: name (required), description (required), license, compatibility, metadata
   5. Ask user for each field or accept bulk JSON/YAML input
+  6. Apply namespace prefix if framework detection indicated potential collisions
 - **Output:** Complete frontmatter object + body content
 - **Checkpoint:** Show collected fields, ask "Proceed to proposal?"
 
@@ -76,22 +84,25 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
   2. Run dry-run compilation: `configure-primitive(primitive, spec, dryRun: true)`
   3. Show the would-be .md content
   4. Show the would-be file path
+  5. Highlight any framework boundary implications
 - **Output:** Full spec + preview of compiled .md
 - **Checkpoint:** "Review the above configuration. Approve, modify, or cancel?"
 
 ### Turn 4: Validate
 
-- **Goal:** Cross-primitive conflict detection
+- **Goal:** Cross-primitive conflict detection + framework boundary check
 - **Actions:**
   1. Build PrimitiveMap from BOTH existing locations:
      - Project scope: scan `.opencode/agents/`, `.opencode/commands/`, `.opencode/skills/`, `.opencode/tools/`, `.opencode/plugins/`
      - Global scope: scan `~/.config/opencode/` (or `process.env.OPENCODE_CONFIG_DIR`) with same subdirectory structure
      - Project primitives take precedence over global primitives (same name in both → project wins)
-  2. Add the proposed new primitive to the appropriate map
-  3. Call `validateCrossPrimitive(primitives)` — reference the lib function
-  4. If errors (BLOCK severity): report and return to Turn 2 for fixes
-  5. If warnings (WARN severity): present to user for accept/override decision
-  6. If info: note and proceed
+  2. Detect co-existing frameworks and their boundaries
+  3. Add the proposed new primitive to the appropriate map
+  4. Call `validateCrossPrimitive(primitives)` — reference the lib function
+  5. Call `validateRuntime(primitives)` to check for circular dependencies, loading order, and pipeline misalignment
+  6. If errors (BLOCK severity): report and return to Turn 2 for fixes
+  7. If warnings (WARN severity): present to user for accept/override decision
+  8. If info: note and proceed
 - **Output:** Validation report (pass/fail + any warnings accepted)
 - **Checkpoint:** If BLOCK → "Fix these issues first." If WARN → "Accept warnings?"
 
@@ -122,14 +133,15 @@ When Turn 0 discovers multiple existing primitives and mode is "batch-modify":
 
 ### Turn 6: Test
 
-- **Goal:** Verify the compiled configuration is valid
+- **Goal:** Verify the compiled configuration is valid and restart-safe
 - **Actions:**
   1. Read the written .md file
   2. Run decompile on it — verify frontmatter parses correctly
   3. Check that file path is discoverable by OpenCode (correct directory structure)
-  4. Run typecheck if the primitive is a tool AND a `tsconfig.json` exists in the target directory: `npx tsc --noEmit`
+  4. Run `validate-restart` tool to simulate OpenCode discovery and catch runtime issues
+  5. Run typecheck if the primitive is a tool AND a `tsconfig.json` exists in the target directory: `npx tsc --noEmit`
      - Only run TypeScript typecheck when `tsconfig.json` is present; skip for non-TypeScript projects
-  5. Note: `.opencode/rules/` is NOT auto-discovered by OpenCode — rules must be explicitly wired via `instructions` in `opencode.json` or agent frontmatter
+  6. Note: `.opencode/rules/` is NOT auto-discovered by OpenCode — rules must be explicitly wired via `instructions` in `opencode.json` or agent frontmatter
 - **Output:** Test results (pass/fail)
 - **Checkpoint:** "Tests passed. Save and finalize?"
 
@@ -139,6 +151,7 @@ When Turn 0 discovers multiple existing primitives and mode is "batch-modify":
 - **Actions:**
   1. Commit the new/modified file to git with descriptive message
   2. Report summary: what was configured, where, and how to verify
+  3. Mention any detected frameworks and namespace prefixes applied
 - **Output:** Git commit hash + summary
 
 ## Batch Mode
@@ -165,3 +178,4 @@ If the workflow is interrupted:
 | Skipping validation | Did you skip Turn 4? | Always validate before compile. |
 | Accepting BLOCK errors | Did you proceed despite validation BLOCK? | BLOCK means stop. Fix first. |
 | Creating from scratch without investigating existing | Did you skip Turn 1? | Always investigate first. |
+| Ignoring framework boundaries | Did you write into `.planning/` or `bmad/` without checking? | Use framework-detector first. |
