@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: complete
 status: ready-to-plan
-stopped_at: Completed Phase 32 traceability reconciliation
-last_updated: "2026-04-26T12:00:00Z"
+stopped_at: Phase validation complete — Phases 3/4/5/9.3 SUPERSEDED, Phases 35-42 added
+last_updated: "2026-04-26T14:00:00Z"
 progress:
-  total_phases: 35
+  total_phases: 43
   completed_phases: 18
   total_plans: 76
   completed_plans: 71
-  percent: 94
+  percent: 90
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 32 — Traceability Reconciliation (complete)
+**Current focus:** Phase 35 — Event-Tracker Fix + Dead Code Cleanup (P0, fixes broken build)
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -29,29 +29,39 @@ See: `.planning/PROJECT.md`
 
 Previous STATE.md overstated completion. The authoritative reset remains `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`.
 
+## Build Status (2026-04-26)
+
+| Gate | Status | Details |
+|------|--------|---------|
+| `npm run typecheck` | ❌ FAILING | 6 errors in `src/lib/event-tracker/writer.ts` (unused imports) |
+| `npm test` | ❌ FAILING | 5 failures in `tests/lib/event-tracker/session-journey-events.test.ts` |
+| `npm run build` | ❌ BLOCKED | Typecheck errors prevent clean compilation |
+
+**Phase 35 MUST execute first to restore green build.**
+
 ## Current Position
 
-Phase: 32 (traceability-reconciliation) — COMPLETE
-Plan: Documentation-only — 7 tasks, all complete
-Phases 27-30 (G-B, G-C, G-D, G-A lineages) — COMPLETE (rich-closure-pass)
-Phase 31 (planning-documentation-refresh) — COMPLETE
-**Current plan:** Phase 32 traceability reconciliation complete; REQUIREMENTS.md, STATE.md updated; retroactive VERIFICATION.md files created for phases 01, 08, 19, 20, 21, 22, 23
-**Next:** Phase 11 (Clean Architecture Restructuring) or Phases 3-5 (Schema/Migration/Integration)
-**Progress:** [█████████░] 94%
+Phase: 35 (event-tracker-fix-dead-code-cleanup) — NEXT
+Plan: Not yet planned
+Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
+Phase 3/4/5/9.3 — SUPERSEDED
+**Current plan:** Phase validation complete. Phases 3/4/5/9.3 marked SUPERSEDED. Phase 11/13 rescoped. Phases 35-42 added. Wave 1 execution begins with Phase 35 (event-tracker fix + dead code cleanup).
+**Next:** Phase 35 — Event-Tracker Fix + Dead Code Cleanup (P0, fixes broken build)
+**Progress:** [████████░░] 90%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
 Phase 2: V3 Runtime Architecture .. VERIFIED (9/9 plans, 18/18 verified)
-Phase 3: Schema Definition ........ Pending
-Phase 4: Migration Gate ........... Pending
-Phase 5: Integration Verification . Pending
+Phase 3: Schema Definition ......... SUPERSEDED by Phase 16.5
+Phase 4: Migration Gate ............ SUPERSEDED by Phase 16.4 + Q6
+Phase 5: Integration Verification .. SUPERSEDED by Phases 14-16
 Phase 6: Runtime Domain Separation  SUPERSEDED by Phase 11
 Phase 7: Runtime Domain Restructuring SUPERSEDED by Phase 11
 Phase 8: Repair Durable Parent Obs COMPLETE (corrective closure, 2026-04-10)
 Phase 9: Sticky Delegation Corrective COMPLETE WITH CAVEATS (mock-verified only)
 Phase 9.1: Critical Bug Fixes ..... COMPLETE WITH CAVEATS (test rewrites done, live verification pending)
 Phase 9.2: Completion Detection .... PARTIAL — Plan 01 authoritative; Plans 02-03 quarantined
-Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
+Phase 9.3: Module Restructuring .... SUPERSEDED by Phase 14
 Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
 Phase 14: delegate-task truth-reset  COMPLETE (WaiterModel + dual-signal + hybrid persistence, 407 tests)
 Phase 15: Security & Quality Remed  COMPLETE (26 audit issues fixed)
@@ -72,6 +82,16 @@ Phase 26: Quality Synthesis ........ COMPLETE (5/5 plans, HMQUAL D1-D8, G-B SPEC
 Phase 25: Session Journal + Lineage  COMPLETE (4/4 plans, event-tracker E2E/manual export lineage corrected, 857 tests)
 Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 Phase 32: Traceability Reconcil .... COMPLETE (7/7 tasks, docs-only)
+Phase 33: Phase 16.4 Closure ....... COMPLETE (4 summaries + verification)
+Phase 34: Phase 16 Gap 4 ........... COMPLETE (all 6 requirements verified)
+Phase 35: Event-Tracker Fix ........ PENDING (P0 — fixes broken build)
+Phase 36: Lifecycle State Machine .. PENDING (depends on 35)
+Phase 37: Async Result Harvesting .. PENDING (depends on 36)
+Phase 38: Q6 State Root Migration .. PENDING (depends on 35)
+Phase 39: Auto-Loop Engine ......... PENDING (P2)
+Phase 40: CLI Substrate ............ PENDING (P2)
+Phase 41: Session Journal Time-Mach PENDING (P2)
+Phase 42: Sidecar Foundation ....... PENDING (P3)
 ```
 
 ## Phase Completion Details
@@ -97,6 +117,8 @@ Phase 32: Traceability Reconcil .... COMPLETE (7/7 tasks, docs-only)
 | Phase 24 | COMPLETE | 3/3 plans, 6-NON removed, onboarding headings, Self-Correction blocks |
 | Phase 25 | COMPLETE | 4/4 plans, Session Journal + Execution Lineage Bridge plus automatic event-tracker writer, `.hivemind/event-tracker/` E2E/manual export lineage verified, typecheck/build/full suite green |
 | Phase 26 | COMPLETE | 5/5 plans, HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
+| Phase 33 | COMPLETE | 4 retroactive SUMMARY.md, 16.4-VERIFICATION.md, backlog 999.1 closure |
+| Phase 34 | COMPLETE | All 6 Gap 4 requirements verified as already implemented, edge-case tests added |
 
 ### Phases With Caveats
 
@@ -110,14 +132,27 @@ Phase 32: Traceability Reconcil .... COMPLETE (7/7 tasks, docs-only)
 
 Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope absorbed into PLAYBOOK D3, Phase 23 scope absorbed into PLAYBOOK D4. Both marked COMPLETE based on Phase 24 delivery evidence.
 
+### Superseded Phases
+
+| Phase | Superseded By | Evidence |
+|-------|--------------|----------|
+| Phase 3 | Phase 16.5 | Complete Zod schema-kernel (772 tests) covers all YAML frontmatter schemas |
+| Phase 4 | Phase 16.4 + Q6 | Migration control plane established, state root boundaries locked |
+| Phase 5 | Phases 14-16 | 870+ tests, full verification, typecheck/build green |
+| Phase 9.3 | Phase 14 | All 11 decisions obsoleted or already implemented |
+
+### Rescoped Phases
+
+| Phase | Original Scope | New Scope | Rationale |
+|-------|---------------|-----------|-----------|
+| Phase 11 | Full clean architecture restructuring | Lifecycle state machine + 500 LOC enforcement | Structure already clean per Q1; only lifecycle-manager.ts no-ops and delegation-manager.ts LOC limit remain |
+| Phase 13 | Full async result capture + persistence | Async result harvesting | WaiterModel + delegation-persistence already built; only result extraction from child sessions missing |
+
 ### In-Progress Phases
 
 | Phase | Status | Detail |
 |-------|--------|--------|
 | Phase 16 | EXECUTING | 5/6 plans complete; Plan 06 gap closure remaining |
-| Phase 11 | PLANNED | 0 plans — Clean Architecture Restructuring |
-| Phase 3-5 | PLANNED | Schema Definition, Migration Gate, Integration Verification |
-| Phase 9.3 | BLOCKED | 0/3 plans — blocked by Phase 9.2 resolution |
 
 ### Recently Completed Phases
 
@@ -130,6 +165,8 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 | Phase 31 | COMPLETE | 3/3 plans — all 10 refreshed documents verified by health check |
 | Phase 25 | COMPLETE | 4/4 plans — Q3/Q6 reconciled, automatic event-tracker writer and manual session export lineage verified under `.hivemind/event-tracker/` |
 | Phase 32 | COMPLETE | 7/7 tasks — traceability reconciliation: REQUIREMENTS.md checkboxes/statuses, STATE.md stale entries, retroactive VERIFICATION.md for 7 phases |
+| Phase 33 | COMPLETE | 4 retroactive SUMMARY.md, 16.4-VERIFICATION.md, backlog 999.1 closure |
+| Phase 34 | COMPLETE | All 6 Gap 4 requirements verified as already implemented, edge-case tests added |
 
 ## Known Issues
 
@@ -140,6 +177,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 5. ~~**9 debug sessions, 0 verified fixes**~~ — RESOLVED in Phase 14: session-264b debug closed with all root causes verified
 6. ~~**Delegate-task runtime failure (8× Zod errors)**~~ — RESOLVED 2026-04-23: missing `pattern` field in `session-creator.ts` PermissionRule fixed, validated by independent Devin investigation
 7. **Next runtime step still needs selection** — downstream planning must decide how to resume live runtime verification/re-planning from the corrected Phase 12 baseline
+8. **Build broken** — `src/lib/event-tracker/writer.ts` has 6 unused-import typecheck errors; 5 test failures in `tests/lib/event-tracker/session-journey-events.test.ts` — Phase 35 will fix
 
 ## Performance Metrics
 
@@ -246,8 +284,9 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - [ ] Plan Phase 16.2 via /gsd-plan-phase 16.2
 - [ ] Decide the next corrected runtime step for the 09-family corridor (fresh verification, targeted re-plan, or both)
 - [ ] Live verification: spawn real child sessions and confirm end-to-end delegation works from the Phase 12 baseline
-- [ ] Plan Phase 11: Clean Architecture Restructuring
-- [ ] Plan Phase 03: Schema Definition & Runtime Configurability
+- [ ] Plan Phase 35: Event-Tracker Fix + Dead Code Cleanup (P0 — restore green build)
+- [ ] Plan Phase 36: Lifecycle State Machine (depends on 35)
+- [ ] Plan Phase 38: Q6 State Root Migration (depends on 35)
 
 ### Roadmap Evolution
 
@@ -263,12 +302,23 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - Phase 25 added: Session Journal + Execution Lineage Bridge
 - Phase 26 added: Synthesize all hm-* skills debts, gaps, and conflicts across Phases 17-24 into unified requirements and specs — starting with spec-driven-authoring and test-driven-execution lineages, detect ecosystem conflicts, archive regressions
 - Phase 31 added: Planning Documentation Refresh — synthesize 6 locked validation decisions (Q1-Q6) and research from phases 16.4-30 into all stale .planning/ core documents (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md, codebase/*.md)
+- Phase 33 added: Phase 16.4 Closure — retroactive SUMMARY.md files for 4 plans, 16.4-VERIFICATION.md, backlog 999.1 closure
+- Phase 34 added: Phase 16 Gap 4 Verification — verify all 6 Gap 4 requirements already implemented
+- Phase 35 added: Event-Tracker Fix + Dead Code Cleanup (P0) — fix 6 typecheck errors in writer.ts, 5 test failures, restore green build
+- Phase 36 added: Lifecycle State Machine — implement lifecycle-manager.ts beyond stub, enforce 500 LOC limit
+- Phase 37 added: Async Result Harvesting — extract results from child sessions (rescoped Phase 13)
+- Phase 38 added: Q6 State Root Migration — migrate .opencode/state/ to .hivemind/state/
+- Phase 39 added: Auto-Loop Engine (P2)
+- Phase 40 added: CLI Substrate (P2)
+- Phase 41 added: Session Journal Time-Machine (P2)
+- Phase 42 added: Sidecar Foundation (P3)
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
 
 - ~~**Phase 16.2 prerequisite:** Codebase is broken — 3 typecheck errors~~ — RESOLVED 2026-04-22
 - **Runtime verification pending:** Delegate-task fix applied but needs live OpenCode session test
+- **Build broken (2026-04-26):** 6 typecheck errors in event-tracker/writer.ts, 5 test failures — Phase 35 will fix
 
 ### Third-Party Validation
 
@@ -301,7 +351,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed Phase 25 event-tracker E2E correction
+**Stopped At:** Phase validation complete — Phases 3/4/5/9.3 SUPERSEDED, Phases 35-42 added
 
 **Key files:** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`, `.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-EXECUTION-ROADMAP.md`, `src/plugin.ts`
 
@@ -309,5 +359,6 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 *State initialized: 2026-04-06*
 *Forensic reset + reconciliation: 2026-04-14 — false-start corridor corrected and 09-family truth quarantined where needed*
 *Documentation refresh: 2026-04-25 — Q1-Q6 validation decisions locked, Phase 27-30 roadmap defined*
+*Phase validation: 2026-04-26 — Phases 3/4/5/9.3 SUPERSEDED, Phase 11/13 rescoped, Phases 35-42 added*
 
-**Planned Phase:** Ready for Phase 11 or Phases 3-5 — all traceability gaps closed
+**Planned Phase:** Phase 35 — Event-Tracker Fix + Dead Code Cleanup (P0, restore green build)

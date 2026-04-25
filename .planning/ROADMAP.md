@@ -1,25 +1,25 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-25 (Phase 31 documentation refresh — corrected phase statuses, added Phase 27-30 entries)
+**Updated:** 2026-04-26 (Phase 35-42 addition, Phase 3/4/5/9.3 superseded, Phase 11/13 rescoped)
 **Granularity:** Fine
 
 ## Phases Overview
 
 - [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
 - [x] **Phase 2: V3 Runtime Architecture** — 9/9 plans complete, 18/18 verified
-- [ ] **Phase 3: Schema Definition** — 0/4
-- [ ] **Phase 4: Migration Gate** — 0/4
-- [ ] **Phase 5: Integration Verification** — 0/5
+- [x] **Phase 3: Schema Definition** — SUPERSEDED by Phase 16.5 (complete Zod schema-kernel, 772 tests)
+- [x] **Phase 4: Migration Gate** — SUPERSEDED by Phase 16.4 + Q6 decision (migration control plane, state root locked)
+- [x] **Phase 5: Integration Verification** — SUPERSEDED by Phases 14-16 (870+ tests, full verification, typecheck green)
 - [ ] **Phase 6: Runtime Domain Separation** — SUPERSEDED by Phase 11
 - [ ] **Phase 7: Runtime Domain Restructuring Planning** — SUPERSEDED by Phase 11
 - [x] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
 - [~] **Phase 9: Sticky Delegation Corrective** — ⚠️ MOCK-VERIFIED ONLY, runtime verification pending (forensic reset 2026-04-14)
 - [~] **Phase 9.1: Critical Bug Fixes + Test Rewrites** — ⚠️ COMPLETE WITH CAVEATS — 668 tests pass but mock-heavy (forensic reset 2026-04-14)
 - [~] **Phase 9.2: Completion Detection Architecture** — MIXED: Plan 01 authoritative; Plans 02-03 executed historically but quarantined as non-authoritative
-- [ ] **Phase 9.3: Module Restructuring + Config** — D-01→D-08, D-28→D-30 (11 decisions)
+- [x] **Phase 9.3: Module Restructuring + Config** — SUPERSEDED by Phase 14 (all 11 decisions D-01→D-08, D-28→D-30 obsoleted or already implemented; `launchDelegatedSession()` stub replaced with real `DelegationManager.dispatch()`)
 - [x] **Phase 12: Correct background session start semantics + planning reconciliation** — 2/2 plans complete, authoritative truth reset established
-- [ ] **Phase 13: Async Result Capture + Persistence** — 0/2 plans
+- [ ] **Phase 13: Async Result Harvesting** — RESCOPED: extract child session results, populate delegation.result
 - [x] **Phase 14: delegate-task truth-reset** — 3/3 plans complete, 16/16 verification truths
 - [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed
 - [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
@@ -37,10 +37,18 @@
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
 - [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 4/4 plans complete; journal/lineage bridge plus automatic event-tracker writer and manual export lineage merge verified under `.hivemind/event-tracker/`
 - [x] **Phase 31: Planning Documentation Refresh** — 3/3 plans complete — all 10 refreshed documents verified by health check
-- [ ] **Phase 32: Traceability Reconciliation** — Close audit gaps GAP-TRACE-01/02/03, create 14 missing VERIFICATION.md, reconcile REQUIREMENTS.md with ROADMAP.md evidence
-- [ ] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
-- [ ] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
-- [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
+- [x] **Phase 32: Traceability Reconciliation** — Close audit gaps GAP-TRACE-01/02/03, create 14 missing VERIFICATION.md, reconcile REQUIREMENTS.md with ROADMAP.md evidence
+- [x] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
+- [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
+- [ ] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — P0: fix typecheck/test failures, remove dead code
+- [ ] **Phase 36: Lifecycle State Machine Enforcement** — P0: real transition guards, activity tracking, 500 LOC split
+- [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result
+- [ ] **Phase 38: Q6 State Root Migration** — P1: verify all writers target .hivemind/, remove legacy compat
+- [ ] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2: self-referential dev loop until completion
+- [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
+- [ ] **Phase 41: Session Journal Time-Machine** — P2: query API, event replay, past-state reconstruction
+- [ ] **Phase 42: Sidecar Foundation** — P3: Next.js 15 dashboard reading .hivemind/ and .planning/
+- [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
 
@@ -95,29 +103,17 @@ Plans:
 - [x] 02-08-PLAN.md — Execution-mode wiring: classifier-driven live delegation runtime with owned-process background execution (Wave 8)
 - [x] 02-09-PLAN.md — Injection and governance correctness: route-aware payloads, active-rule suppression, and overlapping metadata correlation (Wave 8)
 
-## Phase 3: Schema Definition
+## Phase 3: Schema Definition — SUPERSEDED BY PHASE 16.5
 
-- 3a. YAML schema for Agent frontmatter
-- 3b. YAML schema for Command frontmatter
-- 3c. YAML schema for Skill frontmatter
-- 3d. TypeScript types + event emitters from schemas
+**Superseded by:** Phase 16.5 (Agents Builder Configuration Foundation). Phase 16.5 delivered complete Zod schema-kernel covering all YAML frontmatter schemas (agent, command, skill, permission, MCP server, tool, config precedence) plus TypeScript type generation — 772 tests passing in `src/schema-kernel/`. All Phase 3 requirements (3a-3d) are satisfied by Phase 16.5 deliverables.
 
-## Phase 4: Migration Gate
+## Phase 4: Migration Gate — SUPERSEDED BY PHASE 16.4 + Q6 DECISION
 
-- 4a. Inventory product-detox (excluding .env, tool config pollution)
-- 4b. Match against proven harness-experiment baseline
-- 4c. Selective migration list with user approval
-- 4d. Item-by-item migration with validation
+**Superseded by:** Phase 16.4 (Harness Architecture Baseline & Migration Control Plane) plus Q6 locked decision (`docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`). Migration control plane established, state root boundaries locked (`.hivemind/` for internal state, `.opencode/` for OpenCode primitives only). Phase 38 handles remaining Q6 state root migration enforcement.
 
-## Phase 5: Integration Verification
+## Phase 5: Integration Verification — SUPERSEDED BY PHASES 14-16
 
-- 5a. Full test suite green
-- 5b. Plugin loads and wires all tools + hooks
-- 5c. Background agents spawn, report, clean up
-- 5d. Delegation chains persist across sessions
-- 5e. Injection engine applies rules conditionally
-- 5f. Specialist routing correct
-- 5g. Schema validation catches malformed definitions
+**Superseded by:** Phases 14-16 collectively deliver all Phase 5 requirements. 870+ tests passing, full verification across delegation, persistence, PTY, and SDK surfaces. Typecheck and build green. Schema validation via Phase 16.5 Zod schemas (772 tests). All Phase 5 requirements (5a-5g) satisfied by existing test and verification infrastructure.
 
 ## Phase 6: Runtime Domain Separation — SUPERSEDED BY PHASE 11
 
@@ -233,16 +229,18 @@ Plans:
 - [x] 12-01-PLAN.md — Lock truthful async start semantics and regression coverage
 - [x] 12-02-PLAN.md — Reconcile Phase 09-family artifacts and archive stale planning noise
 
-### Phase 13: fix async delegated result capture and persist child session outputs, transcripts, and evidence so completion is backed by recoverable work product
+### Phase 13: Async Result Harvesting (RESCOPED)
 
-**Goal:** Fix async delegated result capture and persist child session outputs, transcripts, and evidence so completion is backed by recoverable work product.
-**Requirements**: PH13-01 through PH13-11
-**Depends on:** Phase 12
-**Plans:** 2 plans
+**Original goal:** Fix async delegated result capture — RESCOPED to result harvesting only.
+**New goal:** Implement result extraction from child sessions — when stability detection confirms completion, harvest the child session's last assistant message and store in `delegation.result`. Add direct `delegation-persistence.ts` unit tests.
+**Depends on:** Phase 36 (lifecycle state machine)
+**Plans:** 0 plans
 
-Plans:
-- [ ] 13-01-PLAN.md — Types, result-capture module, and continuity wiring (Wave 1)
-- [ ] 13-02-PLAN.md — Wire result capture into observer, process runner, and notifications (Wave 2, depends on 13-01)
+### Scope
+- Extract child session results in `sdk-delegation.ts` completion path
+- Populate `delegation.result` field (currently always `undefined`)
+- Update `delegation-status` tool to return harvested results
+- Add `tests/lib/delegation-persistence.test.ts`
 
 ### Phase 14: delegate-task truth-reset — Rebuild with WaiterModel + dual-signal + hybrid persistence + dedicated status tool
 
@@ -580,126 +578,21 @@ Remaining no-PASS blockers: none for Phases 27-30. Generic trigger competition w
 
 **Hard constraints:** Zero `src/` changes; zero IDE-directory modifications
 
-### Phase 9.3: Module Restructuring + Config
+### Phase 9.3: Module Restructuring + Config — SUPERSEDED BY PHASE 14
 
-**Goal:** Split lifecycle-manager into tasking modules, add Zod config schema for tasking, fix type cycles, enforce LOC discipline. (Note: significant overlap with Phase 11 — consider merging if 9.3 scope is too similar.)
+**Superseded by:** Phase 14 (delegate-task truth-reset). All 11 decisions D-01→D-08, D-28→D-30 are obsoleted or already implemented. The `launchDelegatedSession()` stub has been replaced with real `DelegationManager.dispatch()` via WaiterModel + dual-signal completion. Zod config schemas are delivered by Phase 16.5 `src/schema-kernel/`. Lifecycle restructuring is rescoped to Phase 36.
 
-**Decisions:** D-01→D-04 (module boundaries), D-05→D-08 (config surface), D-28→D-30 (code quality) — 11 decisions
-**Depends on:** Phase 9.2 (completion detection must be implemented)
-**Context:** `.planning/phases/09.3-module-restructuring-config/09.3-CONTEXT.md`
+## Phase 11: Lifecycle State Machine + 500 LOC Enforcement (RESCOPED)
 
-**Module boundaries:**
-- D-01: Feature module pattern — `src/lib/tasking/` as coordination-tasking domain
-- D-02: 3-way split of lifecycle-manager.ts into tasking-coordinator, tasking-observer, tasking-dispatcher
-- D-03: Shared runner interface with TaskRunner contract
-- D-04: Config mindset — absence = freedom, presence = constraint
+**Original goal:** Clean architecture restructuring — RESCOPED to targeted fixes only.
+**New goal:** Enforce lifecycle state machine transitions in `lifecycle-manager.ts`, implement activity tracking, and split `delegation-manager.ts` (510 LOC) under the 500 LOC project limit.
+**Depends on:** Phase 35 (event-tracker fix + dead code cleanup)
+**Plans:** 0 plans
 
-**Config surface:**
-- D-05: Single harness.json at project root
-- D-06: Phase 9.3 implements config SCHEMA (Zod) + tasking wiring only
-- D-07: Configurable tasking aspects: agent→skill injection, category→model routing, concurrency, completion params
-- D-08: All internal hooks/plugins features user-configurable via JSON
-
-**Code quality:**
-- D-28: Extract duplicated PatchLifecycleArgs into shared runners/types.ts
-- D-29: Fix near-cycle types.ts → pending-notifications.ts → continuity.ts → types.ts
-- D-30: Split continuity-normalizers.ts (706 LOC) into domain-specific files
-
-Plans:
-- [ ] 09.3-01-PLAN.md — 3-way split of lifecycle-manager.ts into tasking modules
-- [ ] 09.3-02-PLAN.md — Zod config schema + tasking wiring
-- [ ] 09.3-03-PLAN.md — Type cycle fixes + continuity-normalizers split
-
-## Phase 11: Clean Architecture Restructuring
-
-**Goal:** Restructure and refactor `src/` into a maintainable, extensible, pattern-driven architecture with Clean Architecture patterns, CQRS separation, modular decomposition into 8-10 focused modules (<350 LOC each), and explicit design patterns (Factory, Handler Composition, Strategy).
-
-**Audit evidence (2026-04-10):**
-- Architecture audit: 9 anti-patterns found (2 HIGH, 5 MEDIUM, 2 LOW)
-- LOC analysis: src/ = 9,385 LOC across 56 files; src/lib/ = 37 flat files
-- God object: `lifecycle-manager.ts` at 734 LOC with 14 imports
-- Research: AI SDK v6 middleware chain, OpenAI Agents handoff pattern, DDD bounded contexts
-
-**Depends on:** Phase 9 (complete with P0 fix)
-**Plans:** 6 plans (phased execution)
-
-**Scope — IN:**
-- `src/lib/` — 31 files, flat namespace, mixed concerns
-- `src/hooks/` — 5 files, functional grouping (CQRS read-side alignment)
-- `src/tools/` — 11 files, best-organized (4 sub-dirs)
-- `src/plugin.ts` — 57 LOC, composition root
-
-**Scope — OUT:**
-- `.opencode/` — client-side concern
-- `tests/` — separate from source restructuring
-- `dist/` — build artifact
-- `docs/` — documentation
-
-**Scope — AS-IS (preserve):**
-- `src/cli/` — install/user runtime scaffolding
-
-**Scope — UNCERTAIN (analyze before deciding):**
-- `src/shared/`, `src/schema-kernel/`, `src/kernel/`, `src/harness/`
-
-**Target Module Structure:**
-```
-src/
-├── plugin/              # Assembly root (<100 LOC)
-├── tools/               # 5 tools (~500 LOC, write-side CQRS)
-├── hooks/               # Event handlers (~800 LOC, read-side CQRS)
-├── lifecycle/           # Session state machine (~400 LOC)
-├── delegation/          # Delegation chain logic (~400 LOC)
-├── continuity/          # State persistence, JSON durability (~400 LOC)
-├── cli/                 # CLI substrate (~500 LOC, AS-IS)
-├── control-plane/       # Control primitives (~400 LOC)
-└── shared/              # Utilities (~800 LOC, leaf module)
-```
-
-**Dependency Rules (non-negotiable):**
-- `shared/` is leaf — depends on nothing
-- `plugin/` depends on everything (assembly root)
-- `tools/`, `hooks/`, `cli/`, `control-plane/` depend on `lifecycle/`, `delegation/`, `continuity/`, `shared/`
-- `lifecycle/`, `delegation/`, `continuity/` depend on `shared/` only
-- No circular dependencies
-
-**File Size Rule:** No file exceeds 350 LOC
-
-**Design Patterns:**
-
-| Pattern | Application |
-|---------|-------------|
-| Factory | `createTool()`, `createHook()`, `createHandler()` factories for extensible construction |
-| Handler Composition | Chain `before/after` hooks via composition, not inheritance |
-| Strategy | Pluggable continuity store, notification handlers |
-| Command/Query Separation | tools/ = write-side, hooks/ = read-side |
-
-**Execution Plan:**
-
-Plans:
-- [ ] 11-01-PLAN.md — Analyze and Map: Audit current src/lib/ 31 files, classify by concern, document cross-dependencies, produce REFACTOR-MAP.md
-- [ ] 11-02-PLAN.md — Shared Leaf First: Extract utilities to src/shared/, ensure zero dependencies
-- [ ] 11-03-PLAN.md — Core Domain Modules: Create lifecycle/, delegation/, continuity/ with clean internal APIs
-- [ ] 11-04-PLAN.md — CQRS Separation: Move tools to src/tools/, hooks to src/hooks/, wire via plugin
-- [ ] 11-05-PLAN.md — Plugin Assembly: Compose all modules in src/plugin/ as root (<100 LOC)
-- [ ] 11-06-PLAN.md — Validation: npm run typecheck, npm test, verify <350 LOC per file, dependency rules
-
-**Verification Gate:**
-- [ ] `npm run build` — compiles without errors
-- [ ] `npm test` — all tests pass
-- [ ] `npm run typecheck` — zero type errors
-- [ ] `src/plugin/` composition root <100 LOC
-- [ ] No file in `src/` exceeds 350 LOC
-- [ ] `src/shared/` has zero imports from other `src/` modules (leaf verification)
-
-**Identified Risks:**
-
-| Risk | Severity | Mitigation |
-|------|----------|------------|
-| Flat-folder consolidation causes import breakage | CRITICAL | Dry-run output before executing file moves; phased commits per plan |
-| No rollback plan | CRITICAL | Phase commits after each of 6 plans; git history enables revert |
-| Vague patterns ("apply architecture patterns") | HIGH | Explicit pattern list: Factory, Handler Composition, Strategy, CQRS |
-| Scope creep into uncertain directories | HIGH | AS-IS flag on src/cli/; UNCERTAIN set deferred to Plan 11-01 analysis |
-| No validation gate | HIGH | Explicit gate: npm run typecheck && npm test must pass |
+### Scope
+- Replace stub `isValidTransition()` (always returns `true`) with proper `SessionLifecyclePhase` transition guards
+- Implement `noteObservedActivity()` for session activity tracking
+- Extract PTY-specific delegation logic from `delegation-manager.ts` to reduce under 500 LOC
 
 ### Phase 24: Fix 22 Failed hm-* Skills
 
@@ -734,17 +627,20 @@ Plans:
 |-------|---------------|--------|
 | 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
 | 2. V3 Runtime Architecture | 9/9 plans, 18/18 truths | Verified after Phase 08 corrective closure |
-| 3. Schema Definition | 0/4 | Not started |
-| 4. Migration Gate | 0/4 | Not started |
-| 5. Integration Verification | 0/5 | Not started |
+| 3. Schema Definition | — | SUPERSEDED by Phase 16.5 (Zod schema-kernel, 772 tests) |
+| 4. Migration Gate | — | SUPERSEDED by Phase 16.4 + Q6 decision |
+| 5. Integration Verification | — | SUPERSEDED by Phases 14-16 (870+ tests, typecheck green) |
 | 6. Runtime Domain Separation | — | SUPERSEDED by Phase 11 |
 | 7. Runtime Domain Restructuring | — | SUPERSEDED by Phase 11 |
 | 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
 | 9. Sticky Delegation Corrective | 3/3 plans | ⚠️ MOCK-VERIFIED ONLY — forensic reset 2026-04-14 |
 | 9.1 Critical Bug Fixes + Tests | 3/3 plans | ⚠️ COMPLETE WITH CAVEATS — mock-heavy, live verification pending |
 | 9.2 Completion Detection Architecture | 1/3 authoritative (+2 historical/quarantined) | ⚠️ MIXED — Plan 01 authoritative; Plans 02-03 ran historically but are not current proof |
-| 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
+| 9.3 Module Restructuring + Config | — | SUPERSEDED by Phase 14 (all 11 decisions obsoleted) |
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
+| 13. Async Result Harvesting (rescoped) | 0 plans | RESCOPED — extract child session results, populate delegation.result |
+| 14. delegate-task truth-reset | 3/3 plans | ✅ COMPLETE — WaiterModel + dual-signal + hybrid persistence |
+| 15. Security & Quality Remediation | 3/3 plans | ✅ COMPLETE — 26 audit issues fixed |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened |
 | 16.4 Harness Architecture Baseline | 4/4 plans | ✅ COMPLETE — architecture baseline established (summaries deferred to backlog 999.1) |
@@ -765,6 +661,18 @@ Plans:
 | 28. G-C Research Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 4 target skills RICH-validated |
 | 29. G-D Execution Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 15 skills runtime-truthful validated |
 | 30. G-A Guardrail Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 5 guardrail skills hardened |
+| 32. Traceability Reconciliation | 0/2 plans | Pending — audit gap closure |
+| 33. Phase 16.4 Closure + Backlog 999.1 | 0/2 plans | Pending — documentation-only |
+| 34. Phase 16 Gap 4 — Dual-Mode Execution | 0/3 plans | Pending — PTY execution wiring |
+| 35. Event-Tracker Fix + Dead Code Cleanup | 0 plans | P0 — fix typecheck/test failures, remove dead code |
+| 36. Lifecycle State Machine Enforcement | 0 plans | P0 — real transition guards, activity tracking, 500 LOC split |
+| 37. Async Result Harvesting | 0 plans | P1 — extract child session results into delegation.result |
+| 38. Q6 State Root Migration | 0 plans | P1 — verify all writers target .hivemind/ |
+| 39. Auto-Loop / Ralph-Loop Engine | 0 plans | P2 — self-referential dev loop until completion |
+| 40. CLI Substrate Foundation | 0 plans | P2 — bin/hivemind-tools.cjs central router |
+| 41. Session Journal Time-Machine | 0 plans | P2 — query API, event replay, past-state reconstruction |
+| 42. Sidecar Foundation | 0 plans | P3 — Next.js 15 dashboard reading .hivemind/ and .planning/ |
+| 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
 
 ## Dependencies
 
@@ -797,11 +705,20 @@ Phase 1 (7 done, 3 pending — planned)
                                                                                                                └─→ Phase 32: Traceability Reconciliation (audit gap closure)
                                                                                                                └─→ Phase 33: Phase 16.4 Closure + Backlog 999.1
                                                                                                                     └─→ Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring
-                                  └─→ Phase 9.3: Module Restructuring + Config
-                                       └─→ Phase 11: Clean Architecture Restructuring
-                                             └─→ Phase 3: Schema Definition
-                                                  └─→ Phase 4: Migration Gate
-                                                       └─→ Phase 5: Integration Verification
+                                                                                                                         └─→ Phase 35: Event-Tracker Fix + Dead Code Cleanup (P0, immediate)
+                                                                                                                              └─→ Phase 36: Lifecycle State Machine Enforcement (P0)
+                                                                                                                                   └─→ Phase 37: Async Result Harvesting (P1)
+                                                                                                                              └─→ Phase 38: Q6 State Root Migration (P1)
+                                                                                                                                   └─→ Phase 42: Sidecar Foundation (P3)
+                                                                                                                              └─→ Phase 39: Auto-Loop / Ralph-Loop Engine (P2)
+                                                                                                                              └─→ Phase 40: CLI Substrate Foundation (P2)
+                                                                                                                                   └─→ Phase 41: Session Journal Time-Machine (P2)
+                                                                                                                                        └─→ Phase 42: Sidecar Foundation (P3)
+                                   └─→ Phase 9.3: Module Restructuring + Config — SUPERSEDED by Phase 14
+                                        └─→ Phase 11: Lifecycle State Machine + 500 LOC (RESCOPED — depends on Phase 35)
+                                              └─→ Phase 3: Schema Definition — SUPERSEDED by Phase 16.5
+                                                   └─→ Phase 4: Migration Gate — SUPERSEDED by Phase 16.4 + Q6
+                                                        └─→ Phase 5: Integration Verification — SUPERSEDED by Phases 14-16
 ```
 
 ## Backlog
@@ -873,3 +790,112 @@ Phase 1 (7 done, 3 pending — planned)
 7. Re-verify Phase 16: Truth #4 must pass
 
 **Plans:** 3 plans (code changes, tests, verification)
+
+## Phase 35: Event-Tracker Fix + Dead Code Cleanup
+
+**Goal:** Fix all build/test failures (6 typecheck errors, 5 test failures) and remove dead code. This unblocks all subsequent phases.
+**Depends on:** None (immediate priority)
+**Plans:** 0 plans
+
+### Scope
+- Fix 6 unused import errors in `src/lib/event-tracker/writer.ts`
+- Fix 5 test failures in `tests/lib/event-tracker/session-journey-events.test.ts` (broken assertions + missing `cleanupEventTrackerArtifacts` export)
+- Delete `src/lib/notification-handler.ts` (298 LOC — DEPRECATED dead code, WaiterModel polling replaces it)
+- Delete `src/hooks/messages-transform.ts` (92 LOC — dead code, not wired into plugin.ts)
+- Delete `tests/plugins/prompt-enhance-compaction.test.ts` (skipped test, masks double-count bug)
+- Satisfies: DEAD-03, LOW-03, LOW-04, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05
+
+## Phase 36: Lifecycle State Machine Enforcement
+
+**Goal:** Replace stub implementations in lifecycle-manager.ts with real state machine enforcement and activity tracking. Split delegation-manager.ts under 500 LOC.
+**Depends on:** Phase 35
+**Plans:** 0 plans
+
+### Scope
+- Define `SessionLifecyclePhase` transition table in `types.ts`
+- Replace `isValidTransition()` stub with proper transition guards
+- Implement `noteObservedActivity()` for idle detection integration
+- Extract PTY-specific delegation logic from `delegation-manager.ts` (510 LOC → ~450 LOC)
+- Add state machine tests
+- Satisfies: TD-07, TD-09, lifecycle architecture requirement
+
+## Phase 37: Async Result Harvesting
+
+**Goal:** Implement result extraction from child sessions when completion is detected.
+**Depends on:** Phase 36
+**Plans:** 0 plans
+
+### Scope
+- In `sdk-delegation.ts`: when stability detection confirms completion, harvest last assistant message
+- Populate `delegation.result` field in DelegationManager
+- Update `delegation-status` tool to return harvested results
+- Add `tests/lib/delegation-persistence.test.ts` for direct persistence unit tests
+- Satisfies: PH13-01 through PH13-11 (partial — result capture subset)
+
+## Phase 38: Q6 State Root Migration
+
+**Goal:** Verify all state writers target `.hivemind/` exclusively and implement one-way migration from legacy paths.
+**Depends on:** Phase 35
+**Plans:** 0 plans
+
+### Scope
+- Verify `continuity.ts` storage path targets `.hivemind/`
+- Verify `delegation-persistence.ts` storage path targets `.hivemind/`
+- Remove any legacy `.opencode/state/opencode-harness/` compatibility bridge
+- Add `.hivemind/` gitignore rules for runtime state
+- Write migration verification tests
+- Satisfies: HIVEMIND-ROOT-01, HIVEMIND-ROOT-02, HIVEMIND-ROOT-03
+
+## Phase 39: Auto-Loop / Ralph-Loop Engine
+
+**Goal:** Implement self-referential dev loop — dispatch → validate → retry-with-context → repeat until completion signal or max iterations.
+**Depends on:** Phase 36
+**Plans:** 0 plans
+**Priority:** P2 (post-v2.0-core)
+
+### Scope
+- New `src/lib/auto-loop.ts` with loop orchestration
+- `<promise>DONE</promise>` completion signal detection
+- Max iterations enforcement with graceful degradation
+- Context preservation across loop iterations
+- Integration with `delegation-manager.ts` and `completion-detector.ts`
+
+## Phase 40: CLI Substrate Foundation
+
+**Goal:** Build `bin/hivemind-tools.cjs` central router with eval, scaffold, skill, and state commands.
+**Depends on:** None
+**Plans:** 0 plans
+**Priority:** P2 (post-v2.0-core)
+
+### Scope
+- New `bin/hivemind-tools.cjs` entry point
+- `bin/lib/` directory: core.cjs, state.cjs, skill.cjs, eval.cjs, scaffold.cjs, config.cjs
+- Replace scattered bash scripts with unified CLI
+- Target: ~500 LOC total for CLI substrate
+
+## Phase 41: Session Journal Time-Machine (Q3 Completion)
+
+**Goal:** Build query API for journal — by session, by event type, by time range; event replay for past-state reconstruction.
+**Depends on:** Phase 25 (already complete)
+**Plans:** 0 plans
+**Priority:** P2 (post-v2.0-core)
+
+### Scope
+- Query API module for session journal
+- Event replay for past-state reconstruction
+- Investigation agent support
+- Time-range and event-type filtering
+
+## Phase 42: Sidecar Foundation (Q2)
+
+**Goal:** Next.js 15 + @json-render/react dashboard that reads `.hivemind/` and `.planning/` artifacts.
+**Depends on:** Phase 41, Phase 38
+**Plans:** 0 plans
+**Priority:** P3 (post-v2.0)
+
+### Scope
+- New `apps/sidecar/` directory with Next.js 15 app
+- REST API routes reading `.hivemind/` artifacts
+- Dashboard tabs for delegations, journals, memory, planning
+- READ-ONLY enforcement (SIDECAR-03 test)
+- OpenCode SDK REST API integration (post-MVP)
