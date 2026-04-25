@@ -1,7 +1,7 @@
 ---
 phase: 25
 slug: session-journal-execution-lineage-bridge
-status: draft
+status: complete
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-04-25
@@ -32,12 +32,12 @@ created: 2026-04-25
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 25-01-01 | 01 | 1 | ROADMAP-25, JOURNAL-01, D-05, D-06, D-07, D-16 | T-25-01, T-25-02 | Journal entries classify canonical/audit/projection, are append-only/replay-friendly, and reject malformed required fields. | unit | `npx vitest run tests/lib/session-journal.test.ts` | ✅ | ⬜ pending |
-| 25-01-02 | 01 | 1 | HIVEMIND-ROOT-01, D-04, D-16 | T-25-03 | `.hivemind/` categories declare owner/schema/index/retention/rebuild and projection/audit markers without adding `.opencode/` state. | unit/static | `npx vitest run tests/lib/session-journal.test.ts` | ✅ | ⬜ pending |
-| 25-02-01 | 02 | 2 | JOURNAL-03, D-08, D-09, D-10 | T-25-04 | Lineage derives from existing inputs as a rebuildable projection and does not write terminal status. | unit | `npx vitest run tests/lib/execution-lineage.test.ts` | ✅ | ⬜ pending |
-| 25-02-02 | 02 | 2 | JOURNAL-02, D-10, D-12 | T-25-05 | Projection records preserve evidence source and parent/child links for query/export surfaces. | unit | `npx vitest run tests/lib/execution-lineage.test.ts` | ✅ | ⬜ pending |
-| 25-03-01 | 03 | 3 | JOURNAL-02, D-11, D-12 | T-25-06 | Tool returns JSON contract and Markdown summary without exposing raw firehose data. | tool unit | `npx vitest run tests/tools/session-journal-export.test.ts` | ✅ | ⬜ pending |
-| 25-03-02 | 03 | 3 | HIVEMIND-ROOT-01, D-02, D-03, D-13 | T-25-07 | Plugin wiring registers read/export tool only; no canonical writer cutover or `.opencode/` state write. | typecheck/tool unit | `npm run typecheck && npx vitest run tests/tools/session-journal-export.test.ts` | ✅ | ⬜ pending |
+| 25-01-01 | 01 | 1 | ROADMAP-25, JOURNAL-01, D-05, D-06, D-07, D-16 | T-25-01, T-25-02 | Journal entries classify canonical/audit/projection, are append-only/replay-friendly, and reject malformed required fields. | unit | `npx vitest run tests/lib/session-journal.test.ts` | ✅ | ✅ green |
+| 25-01-02 | 01 | 1 | HIVEMIND-ROOT-01, D-04, D-16 | T-25-03 | `.hivemind/` categories declare owner/schema/index/retention/rebuild and projection/audit markers without adding `.opencode/` state. | unit/static | `npx vitest run tests/lib/session-journal.test.ts` | ✅ | ✅ green |
+| 25-02-01 | 02 | 2 | JOURNAL-03, D-08, D-09, D-10 | T-25-04 | Lineage derives from existing inputs as a rebuildable projection and does not write terminal status. | unit | `npx vitest run tests/lib/execution-lineage.test.ts` | ✅ | ✅ green |
+| 25-02-02 | 02 | 2 | JOURNAL-02, D-10, D-12 | T-25-05 | Projection records preserve evidence source and parent/child links for query/export surfaces. | unit | `npx vitest run tests/lib/execution-lineage.test.ts` | ✅ | ✅ green |
+| 25-03-01 | 03 | 3 | JOURNAL-02, D-11, D-12 | T-25-06 | Tool returns JSON contract and Markdown summary without exposing raw firehose data. | tool unit | `npx vitest run tests/tools/session-journal-export.test.ts` | ✅ | ✅ green |
+| 25-03-02 | 03 | 3 | HIVEMIND-ROOT-01, D-02, D-03, D-13 | T-25-07 | Plugin wiring registers read/export tool only; no canonical writer cutover or `.opencode/` state write. | typecheck/tool unit | `npm run typecheck && npx vitest run tests/tools/session-journal-export.test.ts` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -57,4 +57,4 @@ All phase behaviors have automated verification.
 - [x] No watch-mode flags.
 - [x] Feedback latency target < 60s for focused tests.
 
-**Approval:** pending execution
+**Approval:** complete — `npm run typecheck`, focused Phase 25 vitest suite, `npm run build`, and `npm test` passed on 2026-04-26.

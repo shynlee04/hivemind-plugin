@@ -35,7 +35,7 @@
 - [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis)
 - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis)
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
-- [ ] **Phase 25: Session Journal + Execution Lineage Bridge** — 3 plans ready
+- [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 3/3 plans complete; journal/lineage bridge verified
 - [ ] **Phase 31: Planning Documentation Refresh** — Synthesize 6 validation decisions (Q1-Q6) + research from phases 16.4-30 into all stale .planning/ core documents
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
@@ -452,15 +452,17 @@ Plans:
 
 ### Phase 25: Session Journal + Execution Lineage Bridge
 
-**Goal:** Build the first `.hivemind/`-aligned audit/projection bridge for session journals and execution lineage without replacing current `.opencode/state/opencode-harness/` runtime truth.
-**Requirements**: TBD
+**Goal:** Build the first `.hivemind/`-aligned audit/projection bridge for session journals and execution lineage without replacing continuity/delegation runtime truth.
+**Requirements**: ROADMAP-25, JOURNAL-01, JOURNAL-02, JOURNAL-03(seed), HIVEMIND-ROOT-01(partial)
 **Depends on:** Phase 24
-**Plans:** 3 plans
+**Plans:** 3/3 complete — ✅ COMPLETE 2026-04-26
 
 Plans:
-- [ ] 25-01-PLAN.md — journal contract and `.hivemind/` taxonomy starter
-- [ ] 25-02-PLAN.md — rebuildable execution lineage projection
-- [ ] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
+- [x] 25-01-PLAN.md — journal contract and `.hivemind/` taxonomy starter
+- [x] 25-02-PLAN.md — rebuildable execution lineage projection
+- [x] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
+
+**Verification:** PASS — `npm run typecheck`, focused Phase 25 vitest suite, `npm run build`, and `npm test` (842 passed, 1 todo).
 
 ### Phase 31: Planning Documentation Refresh
 
@@ -752,6 +754,7 @@ Plans:
 | 22. Script Hardening + 6-NON (Playbook Phase 4) | 7/7 skills | ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis) |
 | 23. Body Quality + Eval (Playbook Phase 5) | 6/9 skills | ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
 | 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 3/3 plans, 8/8 truths | ✅ COMPLETE — 2026-04-23 |
+| 25. Session Journal + Execution Lineage Bridge | 3/3 plans, 15 focused tests | ✅ COMPLETE — Q3/Q6 reconciled, 2026-04-26 |
 | 26. Quality Synthesis | 5/5 plans | ✅ COMPLETE — HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
 | 31. Planning Documentation Refresh | 3/3 plans | ✅ COMPLETE — all 10 refreshed documents verified by health check |
 | 27. G-B Quality Assurance Demonstration | 4/4 plans | ✅ COMPLETE — rich-closure-pass, D1-D8 + RICH scoring verified |

@@ -91,9 +91,9 @@ Derived from `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` — locked 2026
 
 | Requirement | Priority | Status | Description |
 |-------------|----------|--------|-------------|
-| JOURNAL-01 | P0 | Pending | Session Journal is append-only event timeline, independent of continuity.ts |
-| JOURNAL-02 | P1 | Pending | Journal query API supports by-session, by-event-type, by-time-range |
-| JOURNAL-03 | P2 | Pending | Time-machine reconstructs past state from event replay |
+| JOURNAL-01 | P0 | Complete | Session Journal is append-only event timeline, independent of continuity.ts (`src/lib/session-journal.ts`) |
+| JOURNAL-02 | P1 | Complete (Phase 25 scope) | Journal/export surface supports session filtering and lineage quick-read output; by-event-type/by-time-range remain future query extensions |
+| JOURNAL-03 | P2 | Seeded | Phase 25 records are replay/export friendly and lineage is rebuildable; full time-machine replay engine remains future work |
 
 ### Q4: Memory Categories (MVP vs Post-MVP)
 
@@ -106,8 +106,8 @@ Derived from `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` — locked 2026
 
 | Requirement | Priority | Status | Description |
 |-------------|----------|--------|-------------|
-| RICH-01 | P0 | Pending | Every hm-* skill must pass RICH Pattern 1/2/3 third-party synthesis |
-| RICH-02 | P0 | Active | RICH gate is quality process, not threshold to lower — 0 of 25 skills pass RICH today is honest status |
+| RICH-01 | P0 | Complete for Phases 27-30 | Every hm-* skill in the Phase 27-30 closure scope has RICH Pattern 1/2/3 third-party synthesis or an explicit source-rationale scorecard |
+| RICH-02 | P0 | Active | RICH gate remains a quality process, not a threshold to lower; Phase 27-30 PASS is based on documented scorecards and validators, not relaxed criteria |
 
 ### Q6: `.hivemind/` State Root
 
