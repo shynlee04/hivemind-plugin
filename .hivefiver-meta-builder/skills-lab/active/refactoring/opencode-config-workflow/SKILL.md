@@ -21,11 +21,16 @@ Works safely alongside GSD (`.planning/`), BMAD (`bmad.yaml`), Speckit (`speckit
 NO DIRECT FILE CREATION — USE configure-primitive TOOL
 ```
 
+1. **Workflow enforcement:** Pass `workflowTurn` and `workflowId` on every `configure-primitive` call. The tool rejects out-of-order turns.
+2. **State persistence:** Workflow state is automatically persisted to disk. It survives context resets and session interruptions.
+3. **Resume capability:** Use `action: "resume"` with `workflowId` to recover state after interruption.
+
 ## 8-Turn Workflow
 
 ### Turn 0: Discovery
 
 - **Goal:** Understand what needs configuration and discover existing resources
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 0, workflowId: "<id>", ...)`
 - **Actions:**
   1. Parse user's request for:
      - Primitive type(s): agents, commands, skills, or all
@@ -52,6 +57,7 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
 ### Turn 1: Investigate
 
 - **Goal:** Understand what the user wants to configure
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 1, workflowId: "<id>", ...)`
 - **Actions:**
   1. If Turn 0 discovered targets and determined mode: Start from Turn 0's output. Show the discovered targets. Do NOT re-ask "what primitive" or "new or modifying" — they're already known.
   2. If modifying or batch-modify: Read existing file(s), extract current frontmatter (decompile)
@@ -66,6 +72,7 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
 ### Turn 2: Collect
 
 - **Goal:** Gather all required frontmatter fields
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 2, workflowId: "<id>", ...)`
 - **Actions:**
   1. List required fields for the primitive type (from schema-kernel schemas)
   2. For agents: description (required), mode, model, temperature, color, steps, permission, etc.
@@ -79,6 +86,7 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
 ### Turn 3: Proposal
 
 - **Goal:** Present a complete spec for user approval
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 3, workflowId: "<id>", ...)`
 - **Actions:**
   1. Assemble final frontmatter + body into spec object
   2. Run dry-run compilation: `configure-primitive(primitive, spec, dryRun: true)`
@@ -91,6 +99,7 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
 ### Turn 4: Validate
 
 - **Goal:** Cross-primitive conflict detection + framework boundary check
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 4, workflowId: "<id>", ...)`
 - **Actions:**
   1. Build PrimitiveMap from BOTH existing locations:
      - Project scope: scan `.opencode/agents/`, `.opencode/commands/`, `.opencode/skills/`, `.opencode/tools/`, `.opencode/plugins/`
@@ -109,6 +118,7 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
 ### Turn 5: Compile
 
 - **Goal:** Compile the validated spec to .md format
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 5, workflowId: "<id>", ...)`
 - **Actions:**
   1. Call `configure-primitive(primitive, spec, dryRun: false, validate: true)`
   2. This writes the .md file to the correct location
@@ -134,6 +144,7 @@ When Turn 0 discovers multiple existing primitives and mode is "batch-modify":
 ### Turn 6: Test
 
 - **Goal:** Verify the compiled configuration is valid and restart-safe
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 6, workflowId: "<id>", ...)`
 - **Actions:**
   1. Read the written .md file
   2. Run decompile on it — verify frontmatter parses correctly
@@ -148,6 +159,7 @@ When Turn 0 discovers multiple existing primitives and mode is "batch-modify":
 ### Turn 7: Save
 
 - **Goal:** Finalize and report
+- **Tool call:** `configure-primitive(action: "compile", workflowTurn: 7, workflowId: "<id>", ...)`
 - **Actions:**
   1. Commit the new/modified file to git with descriptive message
   2. Report summary: what was configured, where, and how to verify
@@ -165,10 +177,13 @@ When user provides multiple specs at once (JSON array or YAML manifest):
 ## Resume Protocol
 
 If the workflow is interrupted:
-1. The skill tracks current turn in conversation context
-2. On resume, identify last completed turn from conversation
-3. Re-read any written files to verify state
-4. Resume from the next turn
+
+1. Call `configure-primitive(action: "resume", workflowId: "<id>")` to recover state
+2. The tool returns: current turn, completed turns, last output
+3. Resume from the returned turn — do NOT re-do completed turns
+4. Always pass `workflowTurn` and `workflowId` on each `configure-primitive` call for enforcement
+
+The tool-backed workflow enforces turn order — attempts to skip turns are rejected with a descriptive error.
 
 ## Anti-Patterns
 
