@@ -35,7 +35,7 @@
 - [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis)
 - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis)
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
-- [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 3/3 plans complete; journal/lineage bridge verified
+- [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 4/4 plans complete; journal/lineage bridge plus automatic journey writer verified
 - [ ] **Phase 31: Planning Documentation Refresh** — Synthesize 6 validation decisions (Q1-Q6) + research from phases 16.4-30 into all stale .planning/ core documents
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
@@ -455,14 +455,15 @@ Plans:
 **Goal:** Build the first `.hivemind/`-aligned audit/projection bridge for session journals and execution lineage without replacing continuity/delegation runtime truth.
 **Requirements**: ROADMAP-25, JOURNAL-01, JOURNAL-02, JOURNAL-03(seed), HIVEMIND-ROOT-01(partial)
 **Depends on:** Phase 24
-**Plans:** 3/3 complete — ✅ COMPLETE 2026-04-26
+**Plans:** 4/4 complete — ✅ COMPLETE 2026-04-26
 
 Plans:
 - [x] 25-01-PLAN.md — journal contract and `.hivemind/` taxonomy starter
 - [x] 25-02-PLAN.md — rebuildable execution lineage projection
 - [x] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
+- [x] 25-04-PLAN.md — event-tracker-style automatic session journey writer
 
-**Verification:** PASS — `npm run typecheck`, focused Phase 25 vitest suite, `npm run build`, and `npm test` (842 passed, 1 todo).
+**Verification:** PASS — `npm run typecheck`, focused Phase 25 vitest suite, `npm run build`, and `npm test` (848 passed, 1 todo, 1 skipped).
 
 ### Phase 31: Planning Documentation Refresh
 

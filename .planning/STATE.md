@@ -4,8 +4,8 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: complete
 status: ready-to-plan
-stopped_at: Phase 25 complete — ready for Phase 11 or Phases 3-5
-last_updated: "2026-04-26T01:50:00.000Z"
+stopped_at: Phase 25 automatic journey writer migration complete — ready for Phase 11 or Phases 3-5
+last_updated: "2026-04-26T02:27:00.000Z"
 progress:
   total_phases: 31
   completed_phases: 20
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 25 — session-journal-execution-lineage-bridge (complete)
+**Current focus:** Phase 25 — session-journal-execution-lineage-bridge (complete, corrected automatic journey writer scope)
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -32,10 +32,10 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 ## Current Position
 
 Phase: 25 (session-journal-execution-lineage-bridge) — COMPLETE
-Plan: 3 of 3 complete (25-01 journal contract, 25-02 execution lineage, 25-03 export tool)
+Plan: 4 of 4 complete (25-01 journal contract, 25-02 execution lineage, 25-03 export tool, 25-04 automatic journey writer)
 Phases 27-30 (G-B, G-C, G-D, G-A lineages) — COMPLETE (rich-closure-pass)
 Previous: Phase 31 (planning-documentation-refresh) — COMPLETE
-**Current plan:** Phase 25 recovery/update complete after Phase 31 Q3/Q6 reconciliation
+**Current plan:** Phase 25 recovery/update complete after Phase 31 Q3/Q6 reconciliation and product-detox event-tracker migration correction
 **Next:** Phase 11 (Clean Architecture Restructuring) or Phases 3-5 (Schema/Migration/Integration)
 **Progress:** [████████▌░] 85%
 
@@ -69,7 +69,7 @@ Phase 22: Script Hardening + 6-NON . COMPLETE (6-NON defence tables added to 7 c
 Phase 23: Body Quality + Eval ...... COMPLETE (eval expansion with trigger queries for 6 skills)
 Phase 24: Fix 22 Failed hm-* Skills  COMPLETE (3/3 plans, 6-NON removed, onboarding, Self-Correction)
 Phase 26: Quality Synthesis ........ COMPLETE (5/5 plans, HMQUAL D1-D8, G-B SPECs, execution roadmap)
-Phase 25: Session Journal + Lineage  COMPLETE (3/3 plans, 15 focused tests)
+Phase 25: Session Journal + Lineage  COMPLETE (4/4 plans, 21 focused tests)
 Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 ```
 
@@ -94,7 +94,7 @@ Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 | Phase 22 | COMPLETE | 6-NON defence tables added to 7 core skills (per Phase 24 synthesis) |
 | Phase 23 | COMPLETE | Eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
 | Phase 24 | COMPLETE | 3/3 plans, 6-NON removed, onboarding headings, Self-Correction blocks |
-| Phase 25 | COMPLETE | 3/3 plans, Session Journal + Execution Lineage Bridge, 15 focused tests, typecheck/build/full suite green |
+| Phase 25 | COMPLETE | 4/4 plans, Session Journal + Execution Lineage Bridge plus automatic journey writer, 21 focused tests, typecheck/build/full suite green |
 | Phase 26 | COMPLETE | 5/5 plans, HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
 
 ### Phases With Caveats
@@ -127,7 +127,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 | Phase 29 | COMPLETE | rich-closure-pass — G-D Execution Lineage |
 | Phase 30 | COMPLETE | rich-closure-pass — G-A Guardrail Lineage |
 | Phase 31 | COMPLETE | 3/3 plans — all 10 refreshed documents verified by health check |
-| Phase 25 | COMPLETE | 3/3 plans — Q3/Q6 reconciled, journal/lineage bridge verified |
+| Phase 25 | COMPLETE | 4/4 plans — Q3/Q6 reconciled, automatic journey writer verified |
 
 ## Known Issues
 
