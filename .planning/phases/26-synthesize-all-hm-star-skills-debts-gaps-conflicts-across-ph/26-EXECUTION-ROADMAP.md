@@ -171,6 +171,8 @@ Cross-lineage integration testing and end-to-end meta-concept validation are exc
 
 Copy-paste verification command:
 
+This command is the Phase 26 closure readiness gate: it checks the five prefixed Phase 26 deliverables and confirms `.planning/REQUIREMENTS.md` contains `HMQUAL-08` before Phase 27 planning begins.
+
 ```bash
 test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-PLAYBOOK.md && test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-ECOLOGY-AUDIT.md && test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-G-B-SPEC-hm-spec-driven-authoring.md && test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-G-B-SPEC-hm-test-driven-execution.md && test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-ARCHIVE-REPORT.md && grep -q "HMQUAL-08" .planning/REQUIREMENTS.md
 ```
