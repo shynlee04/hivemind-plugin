@@ -2326,4 +2326,329 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)).toBeUndefined()
     })
   })
+
+  // ---------------------------------------------------------------------------
+  // Phase 34: dual-mode dispatch edge-case verification
+  // ---------------------------------------------------------------------------
+
+  describe("dual-mode dispatch recovery edge cases", () => {
+    it("recovers dispatched-state SDK delegation and routes to sdk handler", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "del-dispatched-sdk",
+          parentSessionId: "parent-dispatched-sdk",
+          childSessionId: "child-dispatched-sdk",
+          agent: "builder",
+          status: "dispatched",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 0,
+          stablePollCount: 0,
+          executionMode: "sdk",
+          workingDirectory: "/tmp/dispatched-sdk",
+          queueKey: "agent:builder",
+        },
+      ], null, 2))
+      const client = createMockClient()
+      client.session.status.mockResolvedValue({ data: { "child-dispatched-sdk": { type: "busy" } } })
+      const manager = new DelegationManager(client as never)
+
+      await manager.recoverPending()
+
+      const delegation = manager.getStatus("del-dispatched-sdk")
+      expect(delegation).toBeDefined()
+      expect(delegation?.status).toBe("dispatched")
+      expect(delegation?.executionMode).toBe("sdk")
+      expect(getInternals(manager).delegationsBySession.get("child-dispatched-sdk")).toBe("del-dispatched-sdk")
+      expect(client.session.status).toHaveBeenCalled()
+    })
+
+    it("recovers dispatched-state PTY delegation and routes to command handler", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "del-dispatched-pty",
+          parentSessionId: "parent-dispatched-pty",
+          childSessionId: "pty:pty-session-dispatched",
+          agent: "command-runner",
+          status: "dispatched",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 0,
+          stablePollCount: 0,
+          executionMode: "pty",
+          workingDirectory: "/tmp/dispatched-pty",
+          ptySessionId: "pty-session-dispatched",
+          queueKey: "category:command",
+        },
+      ], null, 2))
+      const client = createMockClient()
+      const manager = createManager(client, {
+        ptyManager: {
+          isSupported: () => true,
+          spawn: vi.fn(),
+          getSession: vi.fn().mockReturnValue({
+            id: "pty-session-dispatched",
+            mode: "pty",
+            cwd: "/tmp/dispatched-pty",
+            startedAt: now,
+            pid: 9999,
+          }),
+          terminate: vi.fn().mockResolvedValue(undefined),
+        },
+      })
+
+      await manager.recoverPending()
+
+      const delegation = manager.getStatus("del-dispatched-pty")
+      expect(delegation).toBeDefined()
+      expect(delegation?.status).toBe("dispatched")
+      expect(delegation?.executionMode).toBe("pty")
+      expect(delegation?.ptySessionId).toBe("pty-session-dispatched")
+    })
+
+    it("dead-PTY delegation on recovery falls back to error with descriptive message", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "del-dead-pty",
+          parentSessionId: "parent-dead-pty",
+          childSessionId: "pty:pty-session-dead",
+          agent: "command-runner",
+          status: "running",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 0,
+          stablePollCount: 0,
+          executionMode: "pty",
+          workingDirectory: "/tmp/dead-pty",
+          ptySessionId: "pty-session-dead",
+          queueKey: "category:command",
+        },
+      ], null, 2))
+      const client = createMockClient()
+      const manager = createManager(client, {
+        ptyManager: {
+          isSupported: () => true,
+          spawn: vi.fn(),
+          getSession: vi.fn().mockReturnValue(undefined),
+          terminate: vi.fn().mockResolvedValue(undefined),
+        },
+      })
+
+      await manager.recoverPending()
+
+      const delegation = manager.getStatus("del-dead-pty")
+      expect(delegation).toBeDefined()
+      expect(delegation?.status).toBe("error")
+      expect(delegation?.error).toBe("[Harness] PTY session not found on recovery")
+      expect(delegation?.completedAt).toBeDefined()
+    })
+
+    it("dead-PTY on dispatch degrades to headless with fallbackReason recorded", async () => {
+      const client = createMockClient()
+      const ptyManager = {
+        isSupported: () => true,
+        spawn: vi.fn().mockImplementation(() => {
+          throw new Error("bun-pty native module not available")
+        }),
+        getSession: vi.fn().mockReturnValue(undefined),
+        terminate: vi.fn().mockResolvedValue(undefined),
+      }
+      const manager = createManager(client, { ptyManager })
+
+      const result = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-pty-dead",
+        command: "echo",
+        args: ["fallback-pty-dead"],
+        cwd: "/tmp/pty-dead-fallback",
+        queueContext: { provider: "anthropic", model: "claude-3-5-sonnet" },
+      })
+
+      expect(result.executionMode).toBe("headless")
+      expect(result.fallbackReason).toBeTruthy()
+      expect(result.fallbackReason).toContain("bun-pty")
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation).toEqual(expect.objectContaining({
+        executionMode: "headless",
+        fallbackReason: expect.stringContaining("bun-pty"),
+        queueKey: "provider:anthropic:model:claude-3-5-sonnet",
+        recoveryGuarantee: "non-resumable-after-restart",
+      }))
+    })
+
+    it("SDK and command delegations produce identical queue key format from concurrency.ts", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [{
+          name: "builder",
+          provider: "anthropic",
+          model: "claude-3-5-sonnet",
+          category: "implementation",
+        }],
+      })
+      const manager = createManager(client, { ptyManager: null })
+
+      const sdkResult = await manager.dispatch({
+        parentSessionId: "ses-parent-sdk-qk",
+        agent: "builder",
+        prompt: "sdk queue key test",
+      })
+
+      const cmdResult = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-cmd-qk",
+        command: "echo",
+        args: ["queue key test"],
+        queueContext: {
+          provider: "anthropic",
+          model: "claude-3-5-sonnet",
+        },
+      })
+
+      const expectedKey = buildDelegationQueueKey({
+        provider: "anthropic",
+        model: "claude-3-5-sonnet",
+        agent: "builder",
+        category: "implementation",
+      })
+      const expectedCmdKey = buildDelegationQueueKey({
+        provider: "anthropic",
+        model: "claude-3-5-sonnet",
+      })
+
+      expect(sdkResult.queueKey).toBe(expectedKey)
+      expect(cmdResult.queueKey).toBe(expectedCmdKey)
+
+      const sdkDelegation = manager.getStatus(sdkResult.delegationId)
+      const cmdDelegation = manager.getStatus(cmdResult.delegationId)
+      expect(sdkDelegation?.queueKey).toBe(expectedKey)
+      expect(cmdDelegation?.queueKey).toBe(expectedCmdKey)
+    })
+
+    it("queue key format matches across all precedence levels for both dispatch paths", () => {
+      const cases: Array<{ args: Parameters<typeof buildDelegationQueueKey>[0]; expected: string }> = [
+        { args: { provider: "anthropic", model: "claude-3-5-sonnet" }, expected: "provider:anthropic:model:claude-3-5-sonnet" },
+        { args: { model: "claude-3-5-sonnet" }, expected: "model:claude-3-5-sonnet" },
+        { args: { agent: "builder", category: "implementation" }, expected: "agent:builder:category:implementation" },
+        { args: { agent: "builder" }, expected: "agent:builder" },
+        { args: { category: "implementation" }, expected: "category:implementation" },
+        { args: {}, expected: "default" },
+      ]
+
+      for (const { args, expected } of cases) {
+        expect(buildDelegationQueueKey(args)).toBe(expected)
+      }
+    })
+
+    it("handler injection uses callbacks without logic duplication — SDK path delegates to SdkDelegationHandler", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-handler-verify" } })
+      const manager = new DelegationManager(client as never)
+      const internals = getInternals(manager)
+
+      await manager.dispatch({
+        parentSessionId: "ses-parent-handler-verify",
+        agent: "builder",
+        prompt: "handler injection test",
+      })
+
+      expect(internals.delegationsBySession.has("child-handler-verify")).toBe(true)
+      expect(internals.safetyTimers.size).toBe(1)
+
+      manager.handleSessionIdle("child-handler-verify")
+      await flushMicrotasks()
+      expect(internals.stabilityTimers.size).toBe(1)
+    })
+
+    it("handler injection uses callbacks without logic duplication — command path delegates to CommandDelegationHandler", async () => {
+      const client = createMockClient()
+      const manager = createManager(client, {
+        ptyManager: {
+          isSupported: () => true,
+          spawn: vi.fn().mockReturnValue({
+            id: "pty-handler-verify",
+            mode: "pty",
+            cwd: "/tmp/handler-verify",
+            startedAt: Date.now(),
+            pid: 5555,
+          }),
+          getSession: vi.fn().mockReturnValue({
+            id: "pty-handler-verify",
+            mode: "pty",
+            cwd: "/tmp/handler-verify",
+            startedAt: Date.now(),
+            pid: 5555,
+          }),
+          terminate: vi.fn().mockResolvedValue(undefined),
+        },
+      })
+
+      const result = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-cmd-handler",
+        command: "sleep",
+        args: ["0.1"],
+        cwd: "/tmp/handler-verify",
+      })
+
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation).toBeDefined()
+      expect(delegation?.executionMode).toBe("pty")
+      expect(delegation?.ptySessionId).toBe("pty-handler-verify")
+      expect(delegation?.surface).toBe("command-process")
+      expect(delegation?.recoveryGuarantee).toBe("best-effort")
+    })
+
+    it("dispatched-state delegations are included in status filtering alongside running delegations", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [{ name: "builder" }],
+      })
+      const manager = createManager(client, { ptyManager: null })
+
+      const sdkResult = await manager.dispatch({
+        parentSessionId: "ses-parent-filter",
+        agent: "builder",
+        prompt: "sdk dispatched",
+      })
+
+      const cmdResult = await dispatchCommand(manager, {
+        parentSessionId: "ses-parent-filter-cmd",
+        command: "echo",
+        args: ["cmd dispatched"],
+      })
+
+      const all = manager.getAllDelegations()
+      const dispatched = all.filter((d) => d.status === "dispatched" || d.status === "running")
+      expect(dispatched).toHaveLength(2)
+      expect(dispatched.map((d) => d.id)).toEqual(
+        expect.arrayContaining([sdkResult.delegationId, cmdResult.delegationId]),
+      )
+    })
+
+    it("SDK stability polling uses real message-count fetch via session-api wrapper", async () => {
+      vi.useFakeTimers()
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-real-poll" } })
+      const messageCountSpy = vi.mocked(sessionApi.getSessionMessageCount).mockResolvedValue(5)
+      const manager = new DelegationManager(client as never)
+
+      await manager.dispatch({
+        parentSessionId: "ses-parent-real-poll",
+        agent: "builder",
+        prompt: "real poll test",
+      })
+
+      manager.handleSessionIdle("child-real-poll")
+      await flushMicrotasks()
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+
+      expect(messageCountSpy).toHaveBeenCalledWith(client, "child-real-poll")
+
+      const delegation = manager.getAllDelegations()[0]
+      expect(delegation?.lastMessageCount).toBe(5)
+    })
+  })
 })
