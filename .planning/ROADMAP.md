@@ -26,7 +26,7 @@
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [x] **Phase 16.3: Delegation Subsystem Hardening** — 4/4 plans complete, post-UAT architecture incidents captured; delegation-manifest expansion paused pending 16.4
 - [ ] **Phase 16.4: Harness Architecture Baseline & Migration Control Plane** — INSERTED; architecture baseline before further delegation expansion or product-detox migration
-- [x] **Phase 16.5: Agents Builder Configuration Foundation** — INSERTED; Zod schemas for OpenCode primitives, config compiler, cross-primitive validator, workflow skill, auto-detection routing; VERIFIED (5/5 plans, 680 tests, UAT gatekeeping scenario auto-detects)
+- [x] **Phase 16.5: Agents Builder Configuration Foundation** — INSERTED; Zod schemas for OpenCode primitives, config compiler, cross-primitive validator, workflow skill, auto-detection routing; VERIFIED (8/8 plans, 772 tests, 3 gap-closure waves, 1 pre-existing delegation-manager test failure)
 - [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
 - [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
 - [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
@@ -297,7 +297,7 @@ Plans:
 **Requirements**: R-01 through R-06 (6 cycles) — ALL COMPLETE
 **Depends on:** Phase 16.4 (architecture baseline, module boundaries, dependency rules)
 **Plans:** 8/8 plans (5 original + 3 gap closure)
-**Status:** ✅ VERIFIED (original 5 plans) + GAP CLOSURE ACTIVE (3 plans closing 6 gaps)
+**Status:** ✅ COMPLETE — All 8 plans verified (5 original + 3 gap closure). 772 tests pass. BLOCKER-1/2/3 closed, CRITICAL-4/5/6/7 resolved, HIGH-10 resolved.
 
 Plans:
 - [x] 16.5-01: Cross-Primitive Validator (R-02)
@@ -670,7 +670,7 @@ Phase 1 (7 done, 3 pending — planned)
                                      └─→ Phase 16: Background Delegation Revamp + PTY Integration
                                            └─→ Phase 16.2: PTY Wiring + OMO Safety Patterns (SPEC validated)
                                            └─→ Phase 16.4: Harness Architecture Baseline
-                                                └─→ Phase 16.5: Agents Builder Configuration Foundation (executing — Cycle 1 schemas in progress)
+                                                 └─→ Phase 16.5: Agents Builder Configuration Foundation ✅ COMPLETE (8/8 plans, 772 tests)
                                            └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) ✅
                                                  └─→ Phase 18: Context & Research (Playbook Phase CR) ✅
                                                       └─→ Phase 19: Rename Sprint (Playbook Phase 1) ✅

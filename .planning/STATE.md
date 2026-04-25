@@ -58,7 +58,7 @@ Phase 9.1: Critical Bug Fixes ..... COMPLETE WITH CAVEATS (test rewrites done, l
 Phase 9.2: Completion Detection .... PARTIAL — implementation exists, but 09.2-02/03 summaries are quarantined as non-authoritative runtime proof
 Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
-Phase 16.5: Agents Builder Config .. PLANNED — 5 plans, 4 waves, ready to execute (Cycle 1 schemas done + fixed)
+Phase 16.5: Agents Builder Config .. COMPLETE — 8/8 plans executed, 772 tests, 3 gap-closure waves landed (06-08)
 Phase 17: Hivemind Skills Refactor . COMPLETE (C1-C5 resolved, tech-stack synthesis integrated)
 Phase 18: Context & Research ....... COMPLETE (8/8 deliverables, user sign-off received)
 Phase 19: Rename Sprint ............ COMPLETE (21/21 skills renamed, 368 files changed, all call-sites updated)
@@ -125,7 +125,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Test suite | Pass | 351 passed |
+| Test suite | Pass | 771 passed (1 pre-existing failure in delegation-manager.ts persistAllDelegations — missing state dir) |
 | Typecheck | Pass | Pass (0 errors) |
 | Build | Pass | Pass |
 | Runtime-verified delegation | Working | CORRECTED — event routing, sync race, notifications, VALID_AGENTS all fixed |
