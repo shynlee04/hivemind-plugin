@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 current_plan: 6
-status: unknown
-stopped_at: Phase 26 context gathered (discuss mode)
-last_updated: "2026-04-25T11:10:42.253Z"
+status: phase-complete
+stopped_at: Completed 26-05-PLAN.md
+last_updated: "2026-04-25T11:40:19.784Z"
 progress:
   total_phases: 30
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 65
-  completed_plans: 51
-  percent: 78
+  completed_plans: 56
+  percent: 86
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 16.3 complete — delegation-subsystem-hardening-fix-critical-gaps-in-parent-r
+**Current focus:** Phase 26 complete — hm-* quality synthesis handoff ready for Phase 27
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,8 +29,8 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 16.5 (agents-builder-configuration-foundation) — COMPLETE
-Plan: 6 of 6 (complete), 4 waves
+Phase: 26 (synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph) — COMPLETE
+Plan: 5 of 5 (complete)
 Previous: Phase 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — COMPLETE
 Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
 Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
@@ -42,7 +42,7 @@ Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
 **Current plan:** 6
-**Progress:** [██████████] 100%
+**Progress:** [█████████░] 86%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -147,6 +147,8 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 16.3 P03 | 12 min | 2 tasks | 12 files |
 | Phase 16.3 P04 | 3 min | 2 tasks | 3 files |
 | Phase 16.5 P06 | 21 min | 3 tasks | 9 files |
+| Phase 26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph P04 | 1m15s | 2 tasks | 2 files |
+| Phase 26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph P05 | 3m20s | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -206,6 +208,11 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - DelegationManager records explicit PTY cancellation intent before the PTY layer is terminated, letting later terminal transitions prefer cancelled over generic error wording.
 - delegation-status keeps coarse status for compatibility but prefers terminal-detail wording when specific terminal truth is available.
 - [Phase 16.3]: Preserve cancellation-specific wording when PTY command polling finds a missing session with recorded explicit cancellation intent, while keeping generic PTY disappearance wording for ambiguous no-intent missing sessions.
+- [Phase 26 Plan 04] Phase 22 remains historical intent only; its 6-NON scope is absorbed into PLAYBOOK D3.
+- [Phase 26 Plan 04] Phase 23 remains partial historical evidence only; its eval scope is absorbed into PLAYBOOK D4.
+- [Phase 26 Plan 05] Phase 27 starts with G-B demonstration skills before G-C, G-D, and G-A lineage work.
+- [Phase 26 Plan 05] HMQUAL-01 through HMQUAL-08 are the project-level requirement IDs for PLAYBOOK D1-D8.
+- [Phase 26 Plan 05] Phase 31 remains excluded from Phase 27-30 and owns cross-lineage E2E validation.
 
 ### Todos
 
@@ -270,7 +277,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase 26 context gathered (discuss mode)
+**Stopped At:** Completed 26-05-PLAN.md
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 

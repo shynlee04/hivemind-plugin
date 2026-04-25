@@ -458,6 +458,20 @@ Plans:
 - [ ] 25-02-PLAN.md — rebuildable execution lineage projection
 - [ ] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
 
+### Phase 26: Synthesize all hm-star skills debts gaps conflicts across Phases 17-24 into unified requirements and specs starting with spec-driven-authoring and test-driven-execution lineages first detect ecosystem conflicts archive regressions
+
+**Goal:** Synthesize hm-* skill quality debts into a playbook, audit, G-B specs, archive report, execution roadmap, and HMQUAL requirements for Phase 27-30 execution.
+**Requirements**: SYN-01, SYN-02, SYN-03, SYN-04, SYN-05, SYN-06
+**Depends on:** Phase 25
+**Plans:** 5/5 complete — ✅ COMPLETE 2026-04-25
+
+Plans:
+- [x] 26-01-PLAN.md — write hm-* skill quality playbook
+- [x] 26-02-PLAN.md — audit canonical hm/hivefiver skill ecology
+- [x] 26-03-PLAN.md — write G-B demonstration SPECs
+- [x] 26-04-PLAN.md — archive Phase 22/23 scope truth
+- [x] 26-05-PLAN.md — execution roadmap and HMQUAL requirements
+
 ---
 
 ### Phase 20: Structural Changes — Playbook Phase 2
