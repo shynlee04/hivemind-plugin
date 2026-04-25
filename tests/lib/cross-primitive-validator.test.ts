@@ -6,6 +6,7 @@ import {
 } from "../../src/lib/cross-primitive-validator.js"
 import type { AgentFile, CommandFile, SkillFile, ToolFile } from "../../src/schema-kernel/index.js"
 import type { MCPServerConfig, OpenCodeConfig } from "../../src/schema-kernel/index.js"
+import type { DetectedFramework } from "../../src/lib/framework-detector.js"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -205,5 +206,112 @@ describe("report structure", () => {
     const report = validateCrossPrimitive(makePrimitiveMap({ agents }))
     expect(report.valid).toBe(true)
     expect(report.warnings.length).toBeGreaterThan(0)
+  })
+})
+
+describe("framework boundary validation", () => {
+  it("warns when frameworks have overlapping boundaries", () => {
+    const frameworks: DetectedFramework[] = [
+      {
+        marker: {
+          name: "gsd",
+          configFiles: [".planning/ROADMAP.md"],
+          boundaryDirs: [".planning"],
+          namespacePrefix: "gsd",
+        },
+        rootPath: "/project",
+        configPath: "/project/.planning",
+        boundaryPaths: ["/project/.planning"],
+      },
+      {
+        marker: {
+          name: "hivemind",
+          configFiles: [],
+          boundaryDirs: [".opencode"],
+          namespacePrefix: "hivemind",
+        },
+        rootPath: "/project",
+        configPath: "/project/.opencode",
+        boundaryPaths: ["/project/.opencode"],
+      },
+    ]
+
+    const report = validateCrossPrimitive(makePrimitiveMap(), frameworks)
+    expect(report.warnings.some(w => w.category === "framework-conflict")).toBe(false)
+  })
+
+  it("detects actual boundary overlap", () => {
+    const frameworks: DetectedFramework[] = [
+      {
+        marker: {
+          name: "gsd",
+          configFiles: [".planning/ROADMAP.md"],
+          boundaryDirs: [".planning"],
+          namespacePrefix: "gsd",
+        },
+        rootPath: "/project",
+        configPath: "/project/.planning",
+        boundaryPaths: ["/project/.planning"],
+      },
+      {
+        marker: {
+          name: "other",
+          configFiles: [],
+          boundaryDirs: [".planning"],
+          namespacePrefix: "other",
+        },
+        rootPath: "/project",
+        configPath: "/project/.planning",
+        boundaryPaths: ["/project/.planning"],
+      },
+    ]
+
+    const report = validateCrossPrimitive(makePrimitiveMap(), frameworks)
+    expect(report.warnings.some(w => w.category === "framework-conflict")).toBe(true)
+  })
+})
+
+describe("runtime validation integration", () => {
+  it("reports loading-order errors for circular dependencies", () => {
+    const agents = new Map<string, AgentFile>([
+      ["agent-a", makeAgentFile("agent-a", {}, "Uses command-c")],
+    ])
+    const commands = new Map<string, CommandFile>([
+      ["command-c", makeCommandFile("command-c", { agent: "agent-a" })],
+    ])
+
+    const report = validateCrossPrimitive(makePrimitiveMap({ agents, commands }))
+    expect(report.errors.some(e => e.category === "loading-order")).toBe(true)
+    expect(report.valid).toBe(false)
+  })
+
+  it("reports resolution-order errors for missing dependencies", () => {
+    const commands = new Map<string, CommandFile>([
+      ["command-c", makeCommandFile("command-c", { agent: "missing-agent" })],
+    ])
+
+    const report = validateCrossPrimitive(makePrimitiveMap({ commands }))
+    // resolution-order AND agent-command-binding both detect this
+    expect(report.errors.some(e => e.category === "resolution-order" || e.category === "agent-command-binding")).toBe(true)
+  })
+
+  it("reports inheritance-chain warnings for permission contradictions", () => {
+    const agents = new Map<string, AgentFile>([
+      ["agent-a", makeAgentFile("agent-a", { permission: { read: "deny" } })],
+    ])
+    const config = { instructions: [], permission: { read: "allow" } }
+
+    const report = validateCrossPrimitive(makePrimitiveMap({ agents, config: config as any }))
+    expect(report.warnings.some(w => w.category === "inheritance-chain")).toBe(true)
+  })
+
+  it("reports pipeline-position warnings for overlapping primary agents", () => {
+    const agents = new Map<string, AgentFile>([
+      ["a1", makeAgentFile("a1", { mode: "primary" }, "Coordinates all work across the system")],
+      ["a2", makeAgentFile("a2", { mode: "primary" }, "Coordinates tasks and delegates work across modules")],
+    ])
+
+    const report = validateCrossPrimitive(makePrimitiveMap({ agents }))
+    expect(report.warnings.some(w => w.category === "pipeline-position")).toBe(true)
   })
 })

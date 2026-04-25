@@ -2,6 +2,7 @@ import type {
   AgentFile, CommandFile, SkillFile, ToolFile,
   MCPServerConfig, OpenCodeConfig,
 } from "../schema-kernel/index.js"
+import { validateRuntime } from "./runtime-validator.js"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,6 +19,11 @@ export type ValidationCategory =
   | "rule-file-gap"
   | "missing-model"
   | "command-skill-ref"
+  | "framework-conflict"
+  | "loading-order"
+  | "resolution-order"
+  | "inheritance-chain"
+  | "pipeline-position"
 
 export type ValidationIssue = {
   severity: ValidationSeverity
@@ -47,7 +53,10 @@ export type PrimitiveMap = {
 // Main entrypoint
 // ---------------------------------------------------------------------------
 
-export function validateCrossPrimitive(primitives: PrimitiveMap): ValidationReport {
+export function validateCrossPrimitive(
+  primitives: PrimitiveMap,
+  frameworks?: import("./framework-detector.js").DetectedFramework[],
+): ValidationReport {
   const issues: ValidationIssue[] = [
     ...detectMissingAgentBindings(primitives.commands, primitives.agents),
     ...detectPermissionDeadlocks(primitives.agents, primitives.commands),
@@ -55,6 +64,8 @@ export function validateCrossPrimitive(primitives: PrimitiveMap): ValidationRepo
     ...detectMissingSkillDependencies(primitives.agents, primitives.skills),
     ...detectMCPServerGaps(primitives.tools, primitives.mcpServers),
     ...detectRuleFileGaps(primitives.config),
+    ...validateFrameworkBoundaries(primitives, frameworks),
+    ...validateRuntimeIntegration(primitives),
   ]
 
   const { errors, warnings, info } = partitionBySeverity(issues)
@@ -250,6 +261,98 @@ function detectRuleFileGaps(config: OpenCodeConfig): ValidationIssue[] {
         category: "rule-file-gap",
         message: `Config instructions[${i}] is not a valid path`,
         source: { type: "config", name: "instructions" },
+      })
+    }
+  }
+
+  return issues
+}
+
+// ---------------------------------------------------------------------------
+// Framework boundary validation
+// ---------------------------------------------------------------------------
+
+function validateFrameworkBoundaries(
+  _primitives: PrimitiveMap,
+  frameworks?: import("./framework-detector.js").DetectedFramework[],
+): ValidationIssue[] {
+  const issues: ValidationIssue[] = []
+  if (!frameworks || frameworks.length === 0) return issues
+
+  for (let i = 0; i < frameworks.length; i++) {
+    for (let j = i + 1; j < frameworks.length; j++) {
+      const a = frameworks[i]
+      const b = frameworks[j]
+
+      for (const boundaryA of a.boundaryPaths) {
+        for (const boundaryB of b.boundaryPaths) {
+          if (boundaryA === boundaryB || boundaryA.startsWith(boundaryB + "/") || boundaryB.startsWith(boundaryA + "/")) {
+            issues.push({
+              severity: "warn",
+              category: "framework-conflict",
+              message: `Framework "${a.marker.name}" and "${b.marker.name}" have overlapping boundaries: "${boundaryA}" vs "${boundaryB}"`,
+              source: { type: "framework", name: a.marker.name },
+              target: { type: "framework", name: b.marker.name },
+            })
+          }
+        }
+      }
+    }
+  }
+
+  return issues
+}
+
+// ---------------------------------------------------------------------------
+// Runtime validation integration
+// ---------------------------------------------------------------------------
+
+function validateRuntimeIntegration(primitives: PrimitiveMap): ValidationIssue[] {
+  const issues: ValidationIssue[] = []
+
+  const runtimeReport = validateRuntime(primitives)
+
+  if (!runtimeReport.loadingOrder.valid) {
+    for (const cycle of runtimeReport.loadingOrder.cycles) {
+      issues.push({
+        severity: "block",
+        category: "loading-order",
+        message: `Circular dependency detected: ${cycle.join(" → ")}`,
+        source: { type: "runtime", name: "loading-order" },
+      })
+    }
+  }
+
+  if (!runtimeReport.resolutionOrder.valid) {
+    for (const missing of runtimeReport.resolutionOrder.missing) {
+      issues.push({
+        severity: "warn",
+        category: "resolution-order",
+        message: `${missing.source} references missing ${missing.type} target "${missing.target}"`,
+        source: { type: missing.type.split("→")[0] || "primitive", name: missing.source },
+        target: { type: missing.type.split("→")[1] || "primitive", name: missing.target },
+      })
+    }
+  }
+
+  if (!runtimeReport.inheritanceChain.valid) {
+    for (const broken of runtimeReport.inheritanceChain.broken) {
+      issues.push({
+        severity: "warn",
+        category: "inheritance-chain",
+        message: `Agent "${broken.agent}" has broken permission inheritance: ${broken.reason}`,
+        source: { type: "agent", name: broken.agent },
+      })
+    }
+  }
+
+  if (!runtimeReport.pipelinePosition.valid) {
+    for (const misaligned of runtimeReport.pipelinePosition.misaligned) {
+      issues.push({
+        severity: "warn",
+        category: "pipeline-position",
+        message: misaligned.issue,
+        source: { type: "agent", name: misaligned.agent },
       })
     }
   }
