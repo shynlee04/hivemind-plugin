@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: 31-01
+current_plan: 31-03
 status: ready-to-execute
-stopped_at: Executing 31-01-PLAN.md
-last_updated: "2026-04-25T18:00:00.000Z"
+stopped_at: Executing 31-03-PLAN.md
+last_updated: "2026-04-25T23:45:00.000Z"
 progress:
   total_phases: 31
   completed_phases: 19
@@ -23,7 +23,7 @@ See: `.planning/PROJECT.md`
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
 **Current focus:** Phase 31 — planning-documentation-refresh
 
-**2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`, representative live OpenCode trigger UAT, per-skill D1-D8 + RICH scoring, and a replacement for inaccessible Phase 28 Volces evidence. Latest status: Phase 28 PASS; Phase 27 PASS/PARTIAL; Phases 29-30 PARTIAL/BLOCKED pending remaining resource/eval/source-bundle blockers.
+**2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -32,10 +32,10 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 ## Current Position
 
 Phase: 31 (planning-documentation-refresh) — EXECUTING
-Plan: 1 of 3 (31-01: Core documents refresh)
-Previous: Phase 26 (quality synthesis) — COMPLETE
-Phase 31 is the documentation refresh before Phases 27-30 execution. It synthesizes 6 locked validation decisions (Q1-Q6) from `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` and Phase 26 quality synthesis findings into all stale `.planning/` core documents.
-**Current plan:** 31-01
+Plan: 3 of 3 (31-03: Milestone archive + health check)
+Previous: Plan 31-02 (codebase documents refresh) — COMPLETE
+Phase 31 context: Synthesizes 6 locked validation decisions (Q1-Q6) from phases 16.4-30 into all stale .planning/ core documents.
+**Current plan:** 31-03
 **Progress:** [████████░░] 80%
 
 ```
@@ -111,7 +111,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 | Phase | Status | Detail |
 |-------|--------|--------|
 | Phase 16 | EXECUTING | 5/6 plans complete; Plan 06 gap closure remaining |
-| Phase 31 | EXECUTING | 1/3 plans — Plan 01 (core documents refresh) in progress |
+| Phase 31 | EXECUTING | 2/3 plans complete — Plan 03 (milestone archive + health check) ready |
 | Phase 27-30 | PLANNED | Execution roadmap defined, awaiting Phase 31 completion before planning begins |
 
 ## Known Issues
