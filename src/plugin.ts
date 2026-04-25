@@ -95,6 +95,30 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "configure-primitive": createConfigurePrimitiveTool(),
       "validate-restart": createValidateRestartTool(),
     },
+    // Auto-persist workflow state after configure-primitive calls with workflow params.
+    // Best-effort: failures are silently ignored — does not affect the tool call result.
+    "tool.execute.after": async (
+      input: { tool: string; args?: Record<string, unknown> },
+      _output?: unknown,
+    ): Promise<void> => {
+      if (input.tool !== "configure-primitive") return
+      const args = input.args
+      if (!args || typeof args.workflowId !== "string" || typeof args.workflowTurn !== "number") return
+
+      try {
+        const { readWorkflow, persistWorkflow, advanceTurn, completeCurrentTurn } =
+          await import("./lib/config-workflow/index.js")
+        const workflow = readWorkflow(args.workflowId)
+        if (!workflow) return
+
+        const advanced = advanceTurn(workflow, args.workflowTurn as number)
+        const output = typeof _output === "string" ? _output.substring(0, 500) : "completed"
+        const completed = completeCurrentTurn(advanced, { toolOutput: output })
+        persistWorkflow(completed)
+      } catch {
+        // Best-effort persistence — never fail the tool call
+      }
+    },
   }
 }
 
