@@ -445,6 +445,121 @@ Complete mapping of all requirements to phases.
 
 ### v1 Harness Cleanup
 
+---
+
+## Phase 26: hm-* Skill Quality Standards
+
+<!-- Automated check alias for the plan's basic grep pattern: ## Phase 26: hm Skill Quality Standards -->
+
+### HMQUAL-01: Trigger Accuracy
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-01 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Every `hm-*` and `hivefiver-*` skill must activate for precise, bounded user intents and avoid false positives against neighboring skills. Maps to PLAYBOOK D1 Trigger Accuracy. |
+| **Acceptance Criteria** | 1. Positive trigger cases exist.<br>2. Negative/exclusion cases exist.<br>3. Nearby skill boundaries are documented.<br>4. Trigger evidence is captured in an eval or scoring record. |
+
+### HMQUAL-02: Body Depth
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-02 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Every skill body must provide executable operational guidance, not concept-only prose. Maps to PLAYBOOK D2 Body Depth. |
+| **Acceptance Criteria** | 1. Entry conditions are defined.<br>2. Workflow steps and decision gates are defined.<br>3. Exit criteria and blocked-state handoff are defined.<br>4. Anti-patterns or failure modes are documented. |
+
+### HMQUAL-03: 6-NON Defence
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-03 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Every skill must defend against NON-1 through NON-6: non-audit, non-contextual, non-cycles, non-hierarchy, non-ecosystem-eval, and non-systematic-pattern failures. Maps to PLAYBOOK D3 6-NON Defence. |
+| **Acceptance Criteria** | 1. Audit trail evidence exists.<br>2. Stack/clash context is documented.<br>3. Entry, exit, and loop-back behavior is defined.<br>4. Hierarchy/role boundaries are explicit.<br>5. Ecosystem or stacked eval evidence exists.<br>6. Pattern rationale and deterministic helper behavior are documented where applicable. |
+
+### HMQUAL-04: Eval Coverage
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-04 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Every skill must prove behavior with realistic eval coverage rather than file-existence claims. Maps to PLAYBOOK D4 Eval Coverage. |
+| **Acceptance Criteria** | 1. Eval bundle or equivalent scoring artifact exists.<br>2. Positive and negative trigger cases are covered.<br>3. Assertions are concrete and gradeable.<br>4. Target-tier skills include stacked multi-skill scenarios where relevant. |
+
+### HMQUAL-05: Reference Completeness
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-05 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Skill references must support progressive disclosure without replacing the primary workflow. Maps to PLAYBOOK D5 Reference Completeness. |
+| **Acceptance Criteria** | 1. Reference map lists each reference and purpose.<br>2. References resolve and stay one level deep unless justified.<br>3. Skill body remains minimally executable without reading every reference.<br>4. Stale, empty, or circular references are absent or documented as blockers. |
+
+### HMQUAL-06: Integration Wiring
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-06 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Skills must state how they interact with agents, commands, tools, plugin hooks, and runtime state routers. Maps to PLAYBOOK D6 Integration Wiring. |
+| **Acceptance Criteria** | 1. Agent role and permission implications are stated.<br>2. Command argument and shell constraints are stated where relevant.<br>3. Tool contracts or tool absence fallbacks are documented.<br>4. Plugin hook behavior is classified as fact-reporting, advisory, or policy-enforcing.<br>5. Runtime state persistence and resumability expectations are documented. |
+
+### HMQUAL-07: Cross-Platform Compatibility
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-07 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Skills must work across OpenCode-native use, Hivemind harness use, and arbitrary user projects without hardcoded local assumptions. Maps to PLAYBOOK D7 Cross-Platform Compatibility. |
+| **Acceptance Criteria** | 1. OpenCode-native behavior is documented.<br>2. Hivemind harness behavior is documented.<br>3. Generic fallback behavior exists when GSD, harness tools, or project-specific state are unavailable.<br>4. Commands and paths avoid non-portable assumptions or document adapters. |
+
+### HMQUAL-08: Self-Correction
+
+| Field | Value |
+|-------|-------|
+| **ID** | HMQUAL-08 |
+| **Category** | Soft Meta-Concept Quality |
+| **Priority** | P1 |
+| **Status** | Defined |
+| **Dependencies** | Phase 26 26-PLAYBOOK.md |
+| **Description** | Skills must detect failure, loop back safely, escalate honestly, and avoid false completion claims. Maps to PLAYBOOK D8 Self-Correction. |
+| **Acceptance Criteria** | 1. Retry, rollback, blocked, and escalation states are defined.<br>2. Fresh verification evidence is required before completion claims.<br>3. Repeated failures have stop rules.<br>4. Handoff reports include current state, blocker, evidence gathered, and next verification step. |
+
+### HMQUAL Traceability
+
+| Requirement | PLAYBOOK Dimension | Owning Phase(s) |
+|-------------|--------------------|-----------------|
+| HMQUAL-01 | D1 Trigger Accuracy | Phase 27 |
+| HMQUAL-02 | D2 Body Depth | Phase 27 |
+| HMQUAL-03 | D3 6-NON Defence | Phase 27-30 |
+| HMQUAL-04 | D4 Eval Coverage | Phase 27-30 |
+| HMQUAL-05 | D5 Reference Completeness | Phase 27-30 |
+| HMQUAL-06 | D6 Integration Wiring | Phase 27-30 |
+| HMQUAL-07 | D7 Cross-Platform Compatibility | Phase 27-30 |
+| HMQUAL-08 | D8 Self-Correction | Phase 27-30 |
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DEAD-01 | Phase 1 | Pending |
