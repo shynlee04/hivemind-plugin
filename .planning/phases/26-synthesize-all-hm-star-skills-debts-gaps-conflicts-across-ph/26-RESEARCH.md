@@ -348,14 +348,16 @@ Source pattern: `hm-completion-looping` eval bundle. [VERIFIED: `.opencode/skill
 | A1 | Phase 27 should target exactly the two G-B skills before G-C/G-D/G-A execution. [ASSUMED] | Dependency Map | Low: user context strongly implies G-B first, but exact phase count/order remains under agent discretion. |
 | A2 | D8 Self-Correction should be a standalone PLAYBOOK dimension rather than folded into 6-NON. [ASSUMED] | Quality Dimensions | Medium: if the planner wants fewer dimensions, D8 can merge into D3/NON-3 without losing substance. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `hivefiver-*` skills be scored in the same audit table as `hm-*` skills?**
+   - RESOLVED: Yes. Phase 26 audit artifacts must score both `hm-*` and `hivefiver-*` skills in the same audit table, while distinguishing primary `hm-*` lineage rows from support `hivefiver-*` lineage rows.
    - What we know: The canonical directory contains both prefixes, and Phase 26 context says full hm-* ecosystem but also references hivefiver/meta integration. [VERIFIED: `.opencode/skills` directory read; `26-CONTEXT.md`:71-97]
    - What's unclear: Whether non-hm hivefiver support skills need HMQUAL requirements or a separate support tier.
    - Recommendation: Include both in ECOSYSTEM-AUDIT.md, but distinguish primary `hm-*` lineage from support `hivefiver-*` lineage. [ASSUMED]
 
 2. **Should Phase 26 update existing already-created 26 PLAN/VALIDATION artifacts?**
+   - RESOLVED: Yes. Phase 26 must update existing 26 PLAN/VALIDATION artifacts when checker feedback identifies stale structure or unresolved questions; these targeted revisions reconcile artifacts against the current authoritative research without replanning from scratch.
    - What we know: `init phase-op 26` reported `has_plans: true`, `plan_count: 4`, and `has_research: true`. [VERIFIED: GSD init command output, 2026-04-25]
    - What's unclear: The orchestrator requested research-before-planning, but planning artifacts already exist in the phase directory.
    - Recommendation: Planner should treat this revised research as authoritative and reconcile any already-existing plans against it before execution. [ASSUMED]
