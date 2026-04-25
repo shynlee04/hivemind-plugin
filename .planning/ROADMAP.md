@@ -295,8 +295,8 @@ Plans:
 **Goal:** Build the foundation for a configurable agents builder system wired to the hivefiver module — Zod schemas for all OpenCode primitives (agent frontmatter, command frontmatter, permission ruleset, skill metadata, MCP server, tool definition, config precedence), cross-primitive conflict validator, config compiler (JSON/YAML ↔ .md round-trip), interactive workflow skill, and auto-detection routing for natural-language agent configuration intent.
 **Requirements**: R-01 through R-06 (6 cycles) — ALL COMPLETE
 **Depends on:** Phase 16.4 (architecture baseline, module boundaries, dependency rules)
-**Plans:** 5/5 plans executed
-**Status:** ✅ VERIFIED — 680 tests, UAT gatekeeping scenario auto-detects, intent detection expanded, Turn 0 discovery added
+**Plans:** 8/8 plans (5 original + 3 gap closure)
+**Status:** ✅ VERIFIED (original 5 plans) + GAP CLOSURE ACTIVE (3 plans closing 6 gaps)
 
 Plans:
 - [x] 16.5-01: Cross-Primitive Validator (R-02)
@@ -305,6 +305,9 @@ Plans:
 - [x] 16.5-04: Workflow Skill (R-04)
 - [x] 16.5-05: Orchestrator Enhancement (R-05)
 - [x] 16.5-fix: UAT intent detection gaps + Turn 0 discovery + batch modify
+- [ ] 16.5-06: Schema Resilience + Discovery Loader (BLOCKER-1, BLOCKER-3) [Wave 1]
+- [ ] 16.5-07: Framework-Agnostic Stacking + Runtime Validation (BLOCKER-2, CRITICAL-4, CRITICAL-7) [Wave 2]
+- [ ] 16.5-08: Mixed-Primitive Batch + Eval Harness (CRITICAL-5, CRITICAL-6, HIGH-10) [Wave 3]
 
 ### Phase 16.3: Delegation Subsystem Hardening — Fix critical gaps in parent resumption, notification delivery, and signal handling (INSERTED)
 
@@ -628,7 +631,7 @@ Plans:
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
 | 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened across delegation surfaces |
-| 16.5. Agents Builder Configuration Foundation | 5/5 plans (6 including fix) | ✅ VERIFIED — 680 tests, UAT gatekeeping scenario auto-detects |
+| 16.5. Agents Builder Configuration Foundation | 8/8 plans (5 original + 3 gap closure) | GAP CLOSURE ACTIVE — 6 gaps identified, 3 plans closing BLOCKER-1/2/3, CRITICAL-4/5/6/7, HIGH-10 |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
 | 19. Rename Sprint (Playbook Phase 1) | 19/21 skills (2 deferred) | ⚠️ PARTIAL — 19 renamed, stale refs remain, `.windsurf/` touched (violated constraint) |
