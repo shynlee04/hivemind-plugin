@@ -166,16 +166,23 @@ When the user's message matches any of these patterns, classify as "configure" i
 - Contains "configure" + ("agent" or "command" or "skill" or "primitive")
 - Contains "batch configure"
 - Explicitly invokes `/hf-configure` command
+- Contains "update" + ("agent" or "command" or "skill" or "primitive") — e.g., "update agents", "update my commands"
+- Contains "modify" + ("agent" or "command" or "skill" or "primitive") — e.g., "modify agents"
+- Contains "change" + ("agent" or "command" or "skill") — e.g., "change agent config"
+- Contains "reconfigure" + ("agent" or "command" or "skill") — e.g., "reconfigure agents"
 
 **Medium-confidence triggers (confirm before routing):**
 - Contains "set up" + ("agent" or "command" or "skill")
 - Contains "agent setup" or "setup agent"
-- Contains "change agent config" or "modify agent"
+- Contains "gatekeeping" or "coordinator" or "specialist" + ("agent" or "agents" or "command" or "skill") — semantic category hints
+- Contains "model" + "setting" or "model" + "config" or "model" + "temperature" — model configuration intent
+- Contains "permission" + ("agent" or "command" or "skill") — permission configuration intent
 
 **NOT configuration intent (do not trigger):**
 - "create a new agent" → routes to `hivefiver-agent-builder` (existing)
 - "audit this agent" → routes to `hivefiver-agent-builder` (existing)
 - "configure OpenCode" (general) → routes to `hm-opencode-platform-reference` (existing)
+- "check agent status" or "list agents" → query, not config
 
 When configuration intent is detected:
 1. Load `hivefiver-agent-config` skill

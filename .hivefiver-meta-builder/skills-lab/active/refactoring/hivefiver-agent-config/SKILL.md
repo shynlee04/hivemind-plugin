@@ -1,6 +1,6 @@
 ---
 name: hivefiver-agent-config
-description: "Guided workflow for configuring OpenCode agents, commands, and skills programmatically. Turn-based: Investigate → Collect → Proposal → Validate → Compile → Test → Save. Supports individual and batch configuration with cross-primitive conflict detection. Triggers on: 'configure agent', 'configure command', 'configure skill', 'batch configure', 'agent setup', 'set up agent', 'configure OpenCode primitives'."
+description: "Guided workflow for configuring OpenCode agents, commands, and skills programmatically. Turn-based: Discover → Investigate → Collect → Proposal → Validate → Compile → Test → Save. Supports individual and batch configuration with cross-primitive conflict detection. Triggers on: 'configure agent', 'configure command', 'configure skill', 'batch configure', 'agent setup', 'set up agent', 'configure OpenCode primitives', 'update agent', 'modify agent', 'change agent', 'batch update', 'reconfigure', 'gatekeeping setup'."
 metadata:
   layer: "2"
   role: "workflow-orchestration"
@@ -11,7 +11,7 @@ metadata:
 
 ## Overview
 
-This skill guides agents through a 7-turn configuration workflow for OpenCode primitives (agents, commands, skills). It does NOT create files directly — it orchestrates the process and delegates to tools.
+This skill guides agents through an 8-turn configuration workflow for OpenCode primitives (agents, commands, skills). It does NOT create files directly — it orchestrates the process and delegates to tools.
 
 ## The Iron Law
 
@@ -19,17 +19,41 @@ This skill guides agents through a 7-turn configuration workflow for OpenCode pr
 NO DIRECT FILE CREATION — USE configure-primitive TOOL
 ```
 
-## 7-Turn Workflow
+## 8-Turn Workflow
+
+### Turn 0: Discovery
+
+- **Goal:** Understand what needs configuration and discover existing resources
+- **Actions:**
+  1. Parse user's request for:
+     - Primitive type(s): agents, commands, skills, or all
+     - Scope: project (`.opencode/`) or global (`~/.config/opencode/`)
+     - Mode: create new vs. modify existing vs. batch update
+     - Category filters: names, roles (e.g., "gatekeeping", "coordinator", "specialist"), or patterns
+  2. If the user mentions a category/role (e.g., "gatekeeping agents", "all coordinators"):
+     - Scan `.opencode/agents/` for agent `.md` files
+     - Read frontmatter from each to find matching agents by description, mode, or role keywords
+     - Present the discovered agents: "I found these gatekeeping agents: [list]. Are these the ones you want to configure?"
+  3. If the user provides NO specific names or categories:
+     - Ask: "Which specific agents, commands, or skills do you want to configure? I can also scan for agents matching a role like 'gatekeeping' or 'coordinator'."
+  4. Determine mode:
+     - `create` — brand new primitive
+     - `modify` — update existing: read current frontmatter, present as starting point
+     - `batch-modify` — update multiple existing: apply same changes to all matched
+- **Output:** `{ primitives: [...], mode: "create"|"modify"|"batch-modify", scope: "project"|"global" }`
+- **Checkpoint:** "I found these targets. Proceed with configuration?"
 
 ### Turn 1: Investigate
 
 - **Goal:** Understand what the user wants to configure
 - **Actions:**
-  1. Ask: "What primitive are you configuring?" (agent/command/skill)
-  2. Ask: "Is this a new configuration or modifying an existing one?"
-  3. If modifying: Read existing file, extract current frontmatter
+  1. If Turn 0 discovered targets and determined mode: Start from Turn 0's output. Show the discovered targets. Do NOT re-ask "what primitive" or "new or modifying" — they're already known.
+  2. If modifying or batch-modify: Read existing file(s), extract current frontmatter (decompile)
+  3. If no Turn 0 was run (direct Turn 1 entry):
+     - Ask: "What primitive are you configuring?" (agent/command/skill)
+     - Ask: "Is this a new configuration or modifying an existing one?"
   4. Check for related primitives that might conflict
-- **Output:** `{ primitive: "agent"|"command"|"skill", mode: "create"|"modify", target?: string }`
+- **Output:** `{ primitive: "agent"|"command"|"skill", mode: "create"|"modify"|"batch-modify", target?: string | string[] }`
 - **Checkpoint:** Present findings, ask "Proceed to collection?"
 
 ### Turn 2: Collect
@@ -80,6 +104,21 @@ NO DIRECT FILE CREATION — USE configure-primitive TOOL
   3. Verify the file was written (read it back)
 - **Output:** Written file path + confirmation
 - **Checkpoint:** "File written to {path}. Proceed to testing?"
+
+## Batch Modification Mode
+
+When Turn 0 discovers multiple existing primitives and mode is "batch-modify":
+1. Read each existing agent's current frontmatter (decompile)
+2. Present all current configs side-by-side as a table
+3. Ask: "What fields do you want to change across ALL of these agents?"
+4. Apply the same changes to all targets:
+   - If changing model: update `model` field on all matched agents
+   - If changing temperature: update `temperature` on all matched agents
+   - If changing permissions: update `permission` on all matched agents
+   - If changing instructions: update body content on all matched agents
+5. Run dry-run for all targets in batch
+6. Compile ALL in atomic batch (all-or-nothing)
+7. If any fails validation, roll back ALL
 
 ### Turn 6: Test
 
