@@ -29,6 +29,25 @@ The standard applies to agents, commands, tools, plugin hooks, runtime state int
 
 ## Quality Dimensions
 
+## Added RICH Skill Quality Gate
+
+Any `hm-*` or `hivefiver-*` skill that provides how-to-implement guidance, specialist behavior, or end-user-project-development lineage is a **RICH SKILL**. RICH SKILL completion requires D1-D8 plus the reusable gate in `.planning/RICH-SKILL-QUALITY-GATE.md`.
+
+**PASS Criteria**
+- Top 3 relevant third-party skills/repositories are selected through skills.sh / `npx skills find` / GitHub search and crawled beyond SKILL.md.
+- Bundled assets, references, samples, guidelines, templates, metrics, workflows, and aiding scripts are reviewed and transformed into the local package where appropriate.
+- Pattern 1, Pattern 2, and/or Pattern 3 alternatives are compared with explicit adopt/adapt/reject/defer decisions.
+- Horizontal integration, routing integration, independence audit, gap documentation, and D1-D8 plus RICH `skill-judge` scoring exist.
+
+**FAIL Criteria**
+- D1-D8-only score is used as completion evidence for a RICH SKILL.
+- Third-party-source evidence is absent.
+- Bundled-resource evidence is absent or generic.
+- Local-only GSD/BMAD/OMO/Spec-kit assumptions are required for end-user OpenCode operation.
+
+**Verification Command**
+`test -f .planning/RICH-SKILL-QUALITY-GATE.md && grep -n "RICH-1\|RICH-8\|third-party" .planning/RICH-SKILL-QUALITY-GATE.md`
+
 ## D1: Trigger Accuracy
 
 **Description**

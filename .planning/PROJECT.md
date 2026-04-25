@@ -17,7 +17,7 @@ HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm packa
 
 All Hivemind internal deep modules write to `.hivemind/` at project root. `.opencode/` is ONLY for OpenCode primitives (agents, commands, skills). See Q6 decision below for migration details.
 
-## Core Value
+## Core Value 
 
 Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
 
