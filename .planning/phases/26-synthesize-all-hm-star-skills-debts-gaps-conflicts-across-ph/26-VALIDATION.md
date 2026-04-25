@@ -2,7 +2,7 @@
 phase: 26
 slug: synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-04-25
 ---
@@ -17,20 +17,20 @@ created: 2026-04-25
 
 | Property | Value |
 |----------|-------|
-| **Framework** | none — synthesis phase, artifact-based validation |
-| **Config file** | none |
-| **Quick run command** | `ls .planning/phases/26-*/{PLAYBOOK,ECOSYSTEM-AUDIT,SPEC-*,ROADMAP-27-30,ARCHIVE-22,ARCHIVE-23}.md 2>/dev/null | wc -l` |
-| **Full suite command** | `grep -c "PASS Criteria" .planning/phases/26-*/PLAYBOOK.md && grep -c "FAIL Criteria" .planning/phases/26-*/PLAYBOOK.md` |
-| **Estimated runtime** | ~2 seconds |
+| **Framework** | vitest for harness code; markdown/file-structure checks for planning artifacts |
+| **Config file** | `vitest.config.ts`; phase-local artifact checks via shell/grep |
+| **Quick run command** | `npm run typecheck` |
+| **Full suite command** | `npm test` |
+| **Estimated runtime** | ~60-180 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run artifact existence check (6 target files)
-- **After every plan wave:** Run full PLAYBOOK dimension count check
-- **Before `/gsd-verify-work`:** All 6 artifacts must exist, PLAYBOOK must have ≥8 dimensions with PASS/FAIL criteria
-- **Max feedback latency:** 2 seconds
+- **After every artifact-writing task:** Run artifact existence + required-section grep checks.
+- **After every plan wave:** Run `npm run typecheck` and artifact coverage checks.
+- **Before `$gsd-verify-work`:** Required Phase 26 artifacts must exist and pass section coverage checks.
+- **Max feedback latency:** 180 seconds for automated checks; manual review required for content quality sign-off.
 
 ---
 
@@ -38,12 +38,10 @@ created: 2026-04-25
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 26-01-01 | 01 | 1 | D-03 | — | N/A | artifact | `test -f .planning/phases/26-*/PLAYBOOK.md` | ❌ W0 | ⬜ pending |
-| 26-01-02 | 01 | 1 | D-05a | — | N/A | artifact | `test -f .planning/phases/26-*/ECOSYSTEM-AUDIT.md` | ❌ W0 | ⬜ pending |
-| 26-01-03 | 01 | 1 | D-04 | — | N/A | artifact | `test -f .planning/phases/26-*/SPEC-hm-spec-driven-authoring.md && test -f .planning/phases/26-*/SPEC-hm-test-driven-execution.md` | ❌ W0 | ⬜ pending |
-| 26-01-04 | 01 | 1 | D-05c | — | N/A | artifact | `test -f .planning/phases/26-*/ROADMAP-27-30.md` | ❌ W0 | ⬜ pending |
-| 26-01-05 | 01 | 1 | D-08/D-09 | — | N/A | artifact | `test -f .planning/phases/26-*/ARCHIVE-22.md && test -f .planning/phases/26-*/ARCHIVE-23.md` | ❌ W0 | ⬜ pending |
-| 26-01-06 | 01 | 1 | D-01/D-03 | — | N/A | quality | `grep -c "PASS Criteria" .planning/phases/26-*/PLAYBOOK.md` | ❌ W0 | ⬜ pending |
+| 26-01-01 | 01 | 1 | Phase 26 D-01..D-11 | N/A | No source or skill mutation during audit | artifact | `test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-PLAYBOOK.md` | ❌ W0 | ⬜ pending |
+| 26-02-01 | 02 | 1 | G-B demonstration specs | N/A | SPECs are planning artifacts only | artifact | `ls .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-*-SPEC.md` | ❌ W0 | ⬜ pending |
+| 26-03-01 | 03 | 2 | Phase 22 archive + Phase 23 absorption | N/A | Existing phase evidence preserved, false claims archived | grep | `grep -R "Phase 22" .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph` | ❌ W0 | ⬜ pending |
+| 26-04-01 | 04 | 2 | hm-* ecosystem roadmap | N/A | No hard harness mutation | git | `git diff --name-only | grep '^src/' && exit 1 || exit 0` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,11 +49,9 @@ created: 2026-04-25
 
 ## Wave 0 Requirements
 
-- No test infrastructure needed — this is an artifact-based synthesis phase
-- All artifacts are created by planner tasks, not by test scaffolding
-- Verification uses file existence + content pattern checks
-
-*Existing infrastructure covers all phase requirements.*
+- [ ] Establish artifact filenames in Phase 26 plans (`26-PLAYBOOK.md`, `26-ECOLOGY-AUDIT.md`, `26-ARCHIVE-REPORT.md`, G-B SPEC files).
+- [ ] Define grep-verifiable section headings for every artifact.
+- [ ] Ensure all plans include read-only constraints for `.opencode/skills/**/SKILL.md` and `src/**`.
 
 ---
 
@@ -63,21 +59,18 @@ created: 2026-04-25
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| PLAYBOOK quality dimension measurability | D-03 | Requires semantic review of PASS/FAIL criteria | Read each dimension in PLAYBOOK.md; verify each has a concrete verification command, not vague language |
-| G-B SPEC falsifiability | D-04 | Falsifiability requires human judgment | Read SPEC files; verify each REQ-* item can be objectively verified as PASS or FAIL |
-| Cross-platform compatibility check | D-07 | Platform-specific assumptions require context | Read all artifacts; verify no hardcoded paths, tool assumptions, or environment-specific language |
-
-*If none: "All phase behaviors have automated verification."*
+| PLAYBOOK quality is actually useful, not template filler | D-03, D-06, D-07 | Requires semantic judgment against user mandate | Review `26-PLAYBOOK.md` for concrete examples, integration wiring, cross-platform applicability, and falsifiable skill-quality criteria |
+| G-B SPECs are standalone-superior and GSD-comparable | D-01, D-02, D-04 | Requires comparison against benchmark skill outputs | Compare G-B SPEC requirements against GSD benchmark capabilities listed in CONTEXT canonical refs |
 
 ---
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 2s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [ ] All Phase 26 artifacts exist with required section headings.
+- [ ] All plan tasks have grep-verifiable acceptance criteria.
+- [ ] No `src/` code changed.
+- [ ] No `.opencode/skills/**/SKILL.md` files mutated during Phase 26.
+- [ ] Phase 22 archive and Phase 23 absorption are explicit and source-cited.
+- [ ] `nyquist_compliant: true` remains set in frontmatter.
 
-**Approval:** {pending / approved YYYY-MM-DD}
+**Approval:** pending

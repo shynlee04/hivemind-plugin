@@ -1,501 +1,462 @@
-# Phase 26: Synthesize hm-* Skill Debts into Unified Quality Requirements — Research
+# Phase 26: Synthesize hm-* Skill Debts into Unified Quality Requirements - Research
 
-**Researched:** 2026-04-25
-**Domain:** Soft meta-concept quality audit, skill ecosystem synthesis, playbook derivation
-**Confidence:** HIGH (based on direct file reads of all 32 skills + Phase 18 audit artifacts)
-
-## Summary
-
-The hm-* skill ecosystem contains 26 hm-* prefixed skills and 6 hivefiver-* prefixed skills (32 total soft meta-concepts). Phase 18's CR-AUDIT-ECOSYSTEM.md scored only 3 of 24 original skills as fully DEFENDED across all 6-NON dimensions. The G-B cluster (hm-spec-driven-authoring, hm-test-driven-execution) was created in Phase 20 as minimum-viable skeletons — 107 and 119 LOC respectively — with trigger-query-only evals and zero 6-NON defence. Phase 22 was archived as NOT SUBSTANTIATED (no verifiable 6-NON tables exist in skill files). Phase 23 delivered only 1/9 skills with stacked eval scenarios.
-
-The core problem: template-driven creation in Phase 20 produced structurally valid but substantively hollow skills. The "minimum viable" pattern became the ceiling, not the floor. Phase 24 removed 6-NON tables (process guidance, not skill content) and added onboarding headings, but the body-depth and eval-coverage gaps remain open.
-
-Phase 26 must produce: (1) a unified quality PLAYBOOK.md with measurable dimensions, (2) G-B demonstration SPECs proving the playbook is actionable, (3) an ecosystem audit catalog scoring all 32 skills, and (4) a Phase 27-30 execution roadmap.
-
-**Primary recommendation:** Derive PLAYBOOK dimensions from the 3 fully-DEFENDED skills (hm-coordinating-loop, hm-user-intent-interactive-loop, hivefiver-use-authoring-skills) as exemplar patterns, then measure all others against that bar.
-
----
+**Researched:** 2026-04-25  
+**Domain:** Soft meta-concept quality synthesis, OpenCode skill ecosystem governance, GSD-comparable quality standards  
+**Confidence:** HIGH for local ecosystem facts; MEDIUM for cross-ecosystem quality recommendations
 
 <user_constraints>
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
-- **D-01:** hm-* skills must be standalone-superior — independently valuable without GSD dependency
-- **D-02:** Benchmark quality bar = GSD skill ecosystem output quality
-- **D-03:** Phase 26 delivers a unified quality PLAYBOOK.md covering ALL hm-* skills across all lineages
-- **D-04:** G-B cluster receives full SPEC files as the demonstration template
-- **D-05:** Phase 26 also produces: ecosystem audit catalog, Phase 27-30 roadmap, updated REQUIREMENTS.md entries
-- **D-06:** Each PLAYBOOK dimension must address agent/command/tool/plugin-hook/runtime-state integration
-- **D-07:** Skills must be platform-agnostic — no hardcoded assumptions about tools, paths, or project structure
-- **D-08:** Phase 22 is ARCHIVED as NOT SUBSTANTIATED — its scope absorbed into PLAYBOOK standards
-- **D-09:** Phase 23 scope is ABSORBED into PLAYBOOK standards — no separate re-execution needed
-- **D-10:** Full hm-* ecosystem scope for audit (all 24+ skills). G-B is first improvement wave. G-C/G-D deferred to Phases 27-30
-- **D-11:** Two lineages: "Quality Assurance" (G-B) and "Research + Execution" (G-C + G-D)
+- **D-01:** hm-* skills must be standalone-superior — independently valuable without GSD dependency, comparable in quality to GSD's battle-tested skill ecosystem (gsd-spec-phase, gsd-add-tests, gsd-verify-work). Designed as an opt-in cohesive "quality assurance" lineage that works in any project regardless of what other frameworks exist.
+- **D-02:** Benchmark quality bar = GSD skill ecosystem output quality. Each hm-* skill must produce artifacts as concrete and actionable as GSD counterparts (SPEC.md with falsifiable REQ-*, verification reports with pass/fail gates, eval bundles with stacked scenarios).
+- **D-03:** Phase 26 delivers a unified quality PLAYBOOK.md covering ALL hm-* skills across all lineages (G-A through G-D). This is the canonical quality standard — every future hm-* skill improvement is measured against it.
+- **D-04:** The G-B cluster (hm-spec-driven-authoring, hm-test-driven-execution) receives full SPEC files as the demonstration template. These SPECs prove the PLAYBOOK standards are actionable and serve as the pattern for G-C, G-D, and remaining lineages.
+- **D-05:** Phase 26 also produces: (a) an ecosystem audit catalog (all 24+ hm-* skills scored against PLAYBOOK dimensions), (b) a Phase 27-30 execution roadmap sequencing the remaining improvement waves, (c) updated `.planning/REQUIREMENTS.md` entries for hm-* skill quality standards.
+- **D-06:** Skills are runtime components, not standalone `.md` files. Each PLAYBOOK quality dimension must address: agent integration (allowed-tools, permissions, temperature), command integration (!bash injection, $ARGUMENTS parsing), tool integration (Zod schema alignment), plugins SDK hooks (PreToolUse, PostToolUse), and runtime state routers (continuity, lifecycle-manager).
+- **D-07:** Skills must be platform-agnostic — designed for OpenCode native, Hivemind harness runtime, and arbitrary end-user project environments. No hardcoded assumptions about available tools, file paths, or project structure.
+- **D-08:** Phase 22 (Script Hardening + 6-NON tables) is ARCHIVED as NOT SUBSTANTIATED. STATE.md confirms the commit doesn't match claims. Its intended scope (6-NON defence tables) is absorbed into the PLAYBOOK.md quality standards with proper evidence requirements.
+- **D-09:** Phase 23 (Body Quality + Eval) scope is ABSORBED. Its eval bundle work (only 1/9 skills has stacked scenarios) is subsumed into PLAYBOOK standards that require complete eval bundles with stacked scenarios for every skill. No separate Phase 23 re-execution needed.
+- **D-10:** Full hm-* ecosystem scope for audit (all 24+ skills across Phases 17-24). G-B cluster is the first improvement wave and demonstration template. G-C (research lineage) and G-D (execution lineage) are deferred to Phases 27-30 with explicit dependency on the PLAYBOOK standards.
+- **D-11:** Two lineages identified: the "Quality Assurance" lineage (G-B: spec-driven + test-driven + hm-phase-loop + hm-planning-with-files) forms a self-contained unit users can opt into independently. The "Research + Execution" lineage (G-C + G-D) forms the complementary set.
 
-### Agent's Discretion
-- Exact PLAYBOOK structure and dimension count
-- Benchmark comparison methodology
+### the agent's Discretion
+- Exact PLAYBOOK structure and dimension count (minimum: trigger accuracy, body depth, 6-NON, eval coverage, reference completeness, integration wiring, cross-platform compatibility)
+- Benchmark comparison methodology (side-by-side output quality vs. GSD equivalents)
 - Phase 27-30 sequencing order and phase count
 - Archive metadata format for Phase 22 and Phase 23 closure
 
 ### Deferred Ideas (OUT OF SCOPE)
 - Full hm-* skill rewrites (G-B execution) — Phase 27
-- G-C lineage improvement — Phase 28
-- G-D lineage improvement — Phase 29
-- G-A lineage improvement — Phase 30
-- Cross-lineage integration testing — Phase 31
-- Third-party skill registry benchmarking beyond GSD
+- G-C lineage (research chain: hm-deep-research, hm-detective, hm-synthesis, hm-research-chain) improvement — Phase 28
+- G-D lineage (execution: hm-debug, hm-refactor, hm-phase-execution, hm-planning-with-files) improvement — Phase 29
+- G-A lineage (guardrails: hm-completion-looping, hm-subagent-delegation-patterns, hm-user-intent-interactive-loop) improvement — Phase 30
+- Cross-lineage integration testing and end-to-end meta-concept validation — Phase 31
+- Third-party skill registry benchmarking beyond GSD ecosystem — deferred until PLAYBOOK baseline is established
 </user_constraints>
 
 <phase_requirements>
 ## Phase Requirements
 
-Phase 26 requirements are derived from the synthesis process itself (not from REQUIREMENTS.md). The phase must deliver:
-
 | ID | Description | Research Support |
 |----|-------------|------------------|
-| SYN-01 | Unified quality PLAYBOOK.md with measurable dimensions | Quality Dimension Framework section below |
-| SYN-02 | G-B demonstration SPECs for hm-spec-driven-authoring and hm-test-driven-execution | G-B Cluster Analysis section below |
-| SYN-03 | Ecosystem audit catalog scoring all 32 hm-*/hivefiver-* skills | Ecosystem Audit section below |
-| SYN-04 | Phase 27-30 execution roadmap with sequencing rationale | Phase 27-30 Roadmap Basis section below |
-| SYN-05 | Updated REQUIREMENTS.md entries for hm-* skill quality standards | Gap Consolidation section below |
-| SYN-06 | Phase 22/23 formal closure with scope absorption | Gap Consolidation section below |
+| SYN-01 | Produce unified `PLAYBOOK.md` with measurable hm-/hivefiver-* quality dimensions. | Quality Dimensions, Artifact Recommendations, Validation Architecture |
+| SYN-02 | Produce G-B demonstration SPECs without mutating `SKILL.md` files. | G-B Demonstration Strategy, Don't Hand-Roll, Validation Architecture |
+| SYN-03 | Produce ecosystem audit catalog from current canonical `.opencode/skills/` state. | Standard Stack, Architecture Patterns, Risk Register |
+| SYN-04 | Produce Phase 27+ dependency and sequencing roadmap. | Dependency Map, Planning Implications |
+| SYN-05 | Update project requirements with hm-* quality requirements. | Artifact Recommendations, Validation Architecture |
+| SYN-06 | Archive Phase 22 and absorb Phase 23 scope without losing valid evidence. | Phase 22/23 Absorption Strategy, Risk Register |
 </phase_requirements>
 
----
-
-## 1. Ecosystem Audit
-
-### Complete Skill Inventory
-
-**Total skills:** 32 (26 hm-* + 6 hivefiver-*)
-
-| # | Skill | LOC | Refs | Evals | Scripts | Cluster | Quality Tier |
-|---|-------|-----|------|-------|---------|---------|-------------|
-| 1 | hm-coordinating-loop | 411 | 4 | 2 (evals.json + trigger-queries.json) | 8 | G-A | **EXEMPLAR** |
-| 2 | hm-user-intent-interactive-loop | 422 | 5 | 2 (evals.json + trigger-queries.json) | 5 | G-A | **EXEMPLAR** |
-| 3 | hm-meta-builder | 389 | 8 | 2 (evals.json + trigger-queries.json) | 6 | G-D | **EXEMPLAR** |
-| 4 | hm-deep-research | 380 | 6 | 0 | 0 | G-C | SUBSTANTIVE |
-| 5 | hm-synthesis | 371 | 7 | 0 | 0 | G-C | SUBSTANTIVE |
-| 6 | hm-detective | 225 | 6 | 0 | 0 | G-C | SUBSTANTIVE |
-| 7 | hm-skill-synthesis | 177 | 5 | 2 (evals.json + trigger-queries.json) | 7 | G-C | SUBSTANTIVE |
-| 8 | hm-subagent-delegation-patterns | 160 | 3 | 0 | 0 | G-A | THIN |
-| 9 | hm-planning-with-files | 158 | 3 | 0 | 0 | G-A/G-D | THIN |
-| 10 | hm-agent-composition | 158 | 6 | 1 (evals.json only) | 0 | G-D | THIN |
-| 11 | hm-opencode-project-audit | 161 | 1 | 0 | 0 | G-D | THIN |
-| 12 | hm-agents-md-sync | 155 | 0 | 0 | 0 | G-D | THIN |
-| 13 | hm-phase-execution | 151 | 2 | 1 (evals.json only) | 0 | G-D | THIN |
-| 14 | hm-debug | 136 | 2 | 1 (evals.json only) | 0 | G-D | THIN |
-| 15 | hm-phase-loop | 127 | 1 | 0 | 0 | G-A | THIN |
-| 16 | hm-opencode-project-inspection | 125 | 3 | 0 | 0 | G-D | THIN |
-| 17 | hm-refactor | 121 | 2 | 1 (evals.json only) | 0 | G-D | THIN |
-| 18 | hm-completion-looping | 119 | 2 | 1 (evals.json only) | 0 | G-A | THIN |
-| 19 | hm-test-driven-execution | 119 | 2 | 1 (evals.json only) | 0 | G-B | THIN |
-| 20 | hm-command-parser | 114 | 1 | 0 | 0 | G-D | THIN |
-| 21 | hm-research-chain | 113 | 2 | 1 (evals.json only) | 0 | G-C | THIN |
-| 22 | hm-spec-driven-authoring | 107 | 2 | 1 (evals.json only) | 0 | G-B | THIN |
-| 23 | hm-opencode-platform-reference | 79 | 20 | 0 | 0 | G-D | HOLLOW |
-| 24 | hm-omo-reference | 76 | 5 | 0 | 0 | G-C | HOLLOW |
-| 25 | hm-opencode-non-interactive-shell | 65 | 4 | 0 | 0 | G-D | HOLLOW |
-| 26 | hm-command-parser | 114 | 1 | 0 | 0 | G-D | THIN |
-| 27 | hivefiver-use-authoring-skills | 266 | 12 | 2 (evals.json + trigger-queries.json) | 8 | G-D | **EXEMPLAR** |
-| 28 | hivefiver-delegation-gates | 249 | 0 | 0 | 0 | G-A | THIN |
-| 29 | hivefiver-agents-and-subagents-dev | 202 | 2 | 0 | 0 | G-D | THIN |
-| 30 | hivefiver-custom-tools-dev | 121 | 2 | 0 | 0 | G-D | THIN |
-| 31 | hivefiver-context-absorb | 117 | 4 | 0 | 0 | G-C | THIN |
-| 32 | hivefiver-command-dev | 80 | 2 | 0 | 0 | G-D | HOLLOW |
-
-### Quality Tier Distribution
-
-| Tier | Count | Criteria | Skills |
-|------|-------|----------|--------|
-| **EXEMPLAR** | 4 | ≥250 LOC, ≥4 refs, ≥2 evals (with trigger-queries.json), ≥5 scripts, all 6-NON DEFENDED | hm-coordinating-loop, hm-user-intent-interactive-loop, hm-meta-builder, hivefiver-use-authoring-skills |
-| **SUBSTANTIVE** | 4 | ≥175 LOC, ≥5 refs, body has real workflow steps, but missing evals or scripts | hm-deep-research, hm-synthesis, hm-detective, hm-skill-synthesis |
-| **THIN** | 18 | 100-175 LOC, 0-3 refs, minimal body depth, skeleton workflows | hm-spec-driven-authoring, hm-test-driven-execution, hm-phase-execution, hm-debug, hm-refactor, hm-completion-looping, hm-phase-loop, hm-planning-with-files, hm-subagent-delegation-patterns, hm-agent-composition, hm-agents-md-sync, hm-opencode-project-audit, hm-opencode-project-inspection, hm-command-parser, hm-research-chain, hivefiver-delegation-gates, hivefiver-agents-and-subagents-dev, hivefiver-custom-tools-dev |
-| **HOLLOW** | 3 | <80 LOC, body is mostly reference pointers or shell | hm-opencode-platform-reference, hm-omo-reference, hm-opencode-non-interactive-shell, hivefiver-command-dev |
-
-### Eval Coverage Status
-
-| Evals Present | Count | Skills |
-|---------------|-------|--------|
-| evals.json + trigger-queries.json (stacked) | 4 | hm-coordinating-loop, hm-meta-builder, hm-skill-synthesis, hm-user-intent-interactive-loop |
-| evals.json only (trigger queries, no stacked) | 9 | hm-spec-driven-authoring, hm-test-driven-execution, hm-completion-looping, hm-debug, hm-refactor, hm-phase-execution, hm-research-chain, hm-agent-composition, hivefiver-use-authoring-skills (has both) |
-| No evals | 19 | All remaining skills |
-
-**Key finding:** Only 4/32 skills have stacked eval scenarios (evals.json + trigger-queries.json). 9 have trigger-query-only evals. 19 have zero evals.
-
----
-
-## 2. G-B Cluster Analysis
-
-### hm-spec-driven-authoring vs. GSD gsd-spec-phase
-
-| Dimension | hm-spec-driven-authoring | GSD gsd-spec-phase |
-|-----------|--------------------------|-------------------|
-| LOC | 107 | ~300+ (estimated from agent prompt complexity) |
-| Workflow steps | 5 (Lock → Derive → Red → Green → Refactor) | Ambiguity scoring → requirement extraction → falsifiable REQ-* → verification loop |
-| Reference files | 2 (spec-to-req-mapping.md, acceptance-test-patterns.md) | Embedded in agent prompt, references GSD planning artifacts |
-| Evals | 1 (trigger queries only: 4 positive, 1 negative) | N/A (agent, not skill) |
-| Scripts | 1 (validate-skill.sh) | N/A |
-| Anti-patterns | 4 (Vague Spec, Untestable Req, Green Before Red, Missing Negative) | Embedded in workflow |
-| Entry/Exit gates | None explicit | Check-Revise-Escalate cycle |
-| 6-NON defence | 0/6 EXPOSED | N/A (agent definition, not skill) |
-| Integration points | Cross-references hm-test-driven-execution, hm-planning-with-files | Wired into gsd-executor, gsd-verifier agents |
-
-**Specific gaps:**
-1. No entry trigger gate (when exactly does this skill activate?)
-2. No exit criterion (when is the skill's work done?)
-3. No stacked eval scenario (only trigger queries)
-4. No audit trail section (NON-1 EXPOSED)
-5. No context map / stacks-with section (NON-2 EXPOSED)
-6. Body is a linear pipeline, not a decision tree with loop-back paths
-7. No integration with hard harness tools (Zod schemas, prompt-skim, session-patch)
-
-### hm-test-driven-execution vs. GSD gsd-add-tests + gsd-verify-work
-
-| Dimension | hm-test-driven-execution | GSD gsd-add-tests + gsd-verify-work |
-|-----------|--------------------------|-------------------------------------|
-| LOC | 119 | ~400+ combined |
-| Workflow steps | 3 (Red → Green → Refactor) | UAT criteria derivation → test generation → verification loop → pass/fail gate |
-| Reference files | 2 (red-green-refactor.md, coverage-verification.md) | Embedded in agent prompts |
-| Evals | 1 (trigger queries only) | N/A |
-| Coverage claims | Has "Valid Claim" vs "Invalid Claim" pattern | gsd-verify-work produces VERIFICATION.md with pass/fail |
-| Anti-patterns | 4 (Test-After, Fake Green, Refactor-First, Coverage Lie) | Embedded |
-| Integration | Cross-references hm-spec-driven-authoring, hm-planning-with-files | Wired into gsd-executor pipeline |
-
-**Specific gaps:**
-1. No coverage threshold enforcement (what percentage is "enough"?)
-2. No integration with `npm run test:coverage` output parsing
-3. No stacked eval scenario
-4. No connection to hard harness test infrastructure (vitest, 771 tests)
-5. Missing: how to handle flaky tests, how to handle test isolation, how to handle mock-heavy vs. runtime-truthful
-
-### G-B Cluster as Demonstration Template
-
-The G-B cluster must prove the PLAYBOOK standards are actionable. Current state:
-- Both skills are THIN tier (107-119 LOC)
-- Both have trigger-query-only evals (no stacked scenarios)
-- Both reference each other and hm-planning-with-files (good cross-referencing)
-- Both have clear Iron Law statements (good)
-- Both have anti-pattern tables (good)
-- Both missing: entry/exit gates, audit trail, context map, integration wiring
-
-**Demonstration SPEC requirements (D-04):**
-Each G-B SPEC must define falsifiable REQ-* items covering: trigger accuracy, body depth, 6-NON defence, eval coverage, reference completeness, integration wiring, cross-platform compatibility.
-
----
-
-## 3. Quality Dimension Framework
-
-### Derived Dimensions
-
-From the 4 EXEMPLAR skills and Phase 18 audit criteria, 8 measurable quality dimensions emerge:
-
-| # | Dimension | What It Measures | PASS Criteria | FAIL Criteria | Exemplar Skill |
-|---|-----------|-----------------|---------------|---------------|----------------|
-| D1 | **Trigger Accuracy** | Does the skill activate on correct queries and reject incorrect ones? | ≥4 positive trigger queries + ≥1 negative in evals.json; description contains explicit "NOT for" clause | Missing evals.json or no negative triggers | hm-coordinating-loop |
-| D2 | **Body Depth** | Does the skill body contain substantive procedural guidance, not just outlines? | ≥200 LOC body (excluding frontmatter); contains worked example or step-by-step workflow with decision points | <120 LOC; body is mostly headers and bullet points | hm-user-intent-interactive-loop |
-| D3 | **6-NON Defence** | Does the skill defend against all 6 non-failure modes? | All 6 NON cells DEFENDED in audit grid | ≥3 EXPOSED cells | hm-coordinating-loop |
-| D4 | **Eval Coverage** | Does the skill have stacked eval scenarios (not just trigger queries)? | evals.json + trigger-queries.json present; stacked scenario tests multi-step workflow | No evals/ directory or only trigger queries | hm-meta-builder |
-| D5 | **Reference Completeness** | Does the skill reference supporting documents that deepen its guidance? | ≥3 reference files in references/ directory; each referenced from SKILL.md body | 0 reference files or references not cited in body | hm-deep-research |
-| D6 | **Integration Wiring** | Does the skill connect to agents, commands, tools, and plugin hooks? | Cross-references section lists ≥2 related skills; allowed-tools matches workflow needs; no hardcoded paths | No cross-references; hardcoded file paths; assumes specific tools | hm-coordinating-loop |
-| D7 | **Cross-Platform Compatibility** | Does the skill work across OpenCode, Hivemind harness, and arbitrary projects? | Platform Adaptation section present; no GSD/harness-specific assumptions in body | References `.hivemind/` paths, assumes GSD commands, hardcodes project structure | hm-coordinating-loop |
-| D8 | **Self-Correction** | Does the skill handle failure modes and edge cases explicitly? | Self-Correction section with "When X fails" patterns; escalation criteria defined | No failure handling guidance; assumes happy path only | hm-completion-looping |
-
-### Dimension Scoring Matrix
-
-Each skill receives a score per dimension: **PASS** (meets criteria), **PARTIAL** (partially meets), **FAIL** (does not meet).
-
-**Minimum viable skill:** D1 PASS + D2 PASS + D3 ≥4 DEFENDED + D4 PARTIAL + D5 PASS + D6 PASS
-**Target quality skill:** All 8 dimensions PASS
-**Exemplar skill:** All 8 dimensions PASS + worked example + scripts + ≥2 stacked evals
-
-### Patterns Extracted from EXEMPLAR Skills
-
-From hm-coordinating-loop (411 LOC, all 6-NON DEFENDED):
-1. **Script-backed gates:** 8 scripts enforce behavioral contracts, not just documentation
-2. **Worked example:** Full 5-phase walkthrough with real file paths and gate checks
-3. **Platform adaptation:** Explicit sections for OpenCode, Claude.ai, Cowork, No-Subagent fallback
-4. **Anti-pattern table:** 8 anti-patterns with Detection + Correction columns
-5. **Self-Correction blocks:** 4 failure scenarios with explicit escalation paths
-6. **Kit Bundle Contents:** Table listing every file in the skill package with purpose
-
-From hm-user-intent-interactive-loop (422 LOC, all 6-NON DEFENDED):
-1. **Hierarchical workflow:** Clear entry → process → exit with loop-back paths
-2. **Cross-references with boundary clarification:** Each related skill has explicit boundary statement
-3. **Metadata completeness:** layer, role, pattern, version all declared
-
-From hm-meta-builder (389 LOC, 2 evals with stacked scenarios):
-1. **Routing logic:** Classifies intent before acting
-2. **Stacked eval scenarios:** Tests multi-step workflows, not just trigger matching
-3. **Reference depth:** 8 reference files covering all operational modes
-
----
-
-## 4. Integration Architecture
-
-### Agent Integration (57 agents)
-
-Agents reference skills via `allowed-tools: [Skill]` in YAML frontmatter. Key patterns:
-
-| Agent Category | Count | hm-* Skill References | Pattern |
-|----------------|-------|----------------------|---------|
-| GSD specialists (gsd-*) | 30 | Indirect (via orchestrator routing) | Agent prompt references GSD workflow, not hm-* skills directly |
-| Hivefiver specialists (hivefiver-*) | 6 | Direct (allowed-tools includes Skill) | hivefiver-orchestrator routes to hm-* skills |
-| Core agents (coordinator, conductor, etc.) | 8 | Some reference hm-* skills | coordinator.md references hm-coordinating-loop |
-| Meta agents (orchestrator, intent-loop, etc.) | 13 | Varies | orchestrator.md references hm-phase-execution |
-
-**Integration gap:** Most GSD agents don't reference hm-* skills. The hm-* ecosystem is opt-in — agents must explicitly load skills. D-06 mandates each PLAYBOOK dimension address agent integration.
-
-### Command Integration (16 commands)
-
-Commands invoke skills via `Skill(skill="...", args="...")` in command bodies:
-
-| Command | hm-* Skills Referenced | Pattern |
-|---------|----------------------|---------|
-| hf-create | hm-meta-builder, hm-agent-composition | Routes creation requests to specialist skills |
-| hf-audit | hm-opencode-project-audit | Routes audit requests |
-| plan | hm-planning-with-files (indirect) | GSD planning workflow |
-| ultrawork | hm-spec-driven-authoring, hm-test-driven-execution (indirect) | Full workflow orchestration |
-
-**Integration gap:** Most commands don't directly reference hm-* skills. The wiring is indirect through orchestrator agents.
-
-### Tool Integration (src/tools/)
-
-Hard harness tools that skills can use:
-
-| Tool | Purpose | hm-* Alignment |
-|------|---------|---------------|
-| delegate-task | Dispatch subagent tasks | hm-coordinating-loop, hm-subagent-delegation-patterns |
-| delegation-status | Poll delegation results | hm-completion-looping |
-| prompt-skim | Fast prompt analysis | hm-spec-driven-authoring (could use for spec decomposition) |
-| prompt-analyze | Deep prompt analysis | hm-debug (could use for failure analysis) |
-| session-patch | Patch session sections | hm-planning-with-files (could use for plan updates) |
-| configure-primitive | Configure OpenCode primitives | hm-meta-builder, hivefiver-* skills |
-| validate-restart | Validate after restart | hm-completion-looping (verification) |
-
-**Integration gap:** No hm-* skill currently references hard harness tools in its workflow. D-06 requires skills to address tool integration.
-
-### Plugin Hook Integration (src/plugin.ts)
-
-Plugin composition root wires:
-- `createCoreHooks` — session lifecycle events
-- `createSessionHooks` — session state transitions
-- `createToolGuardHooks` — tool call budget enforcement
-- `DelegationManager` — delegation dispatch + dual-signal completion
-- `PtyManager` — background PTY execution
-
-**Integration gap:** Skills don't reference plugin hooks. hm-phase-execution could integrate with DelegationManager. hm-completion-looping could integrate with tool-guard hooks.
-
-### Runtime State Integration
-
-| State Path | Purpose | hm-* Relevance |
-|------------|---------|---------------|
-| `.opencode/state/opencode-harness/` | Continuity, delegations | hm-planning-with-files could reference |
-| `.hivemind/state/` | Session context | hm-planning-with-files already references |
-| `.coordination/` | Multi-agent coordination state | hm-coordinating-loop owns this |
-
----
-
-## 5. Gap Consolidation
-
-### Phase 22 (NOT SUBSTANTIATED) — Absorption Plan
-
-**Claimed:** 6-NON defence tables added to 7 core skills
-**Reality:** STATE.md confirms "no phase directory, commit scope doesn't match claims"
-**Evidence:** CR-AUDIT-ECOSYSTEM.md shows all skills still EXPOSED on multiple NON dimensions
-
-**Absorption into PLAYBOOK:**
-- PLAYBOOK D3 (6-NON Defence) becomes the measurable standard
-- Each skill improvement phase must produce verifiable 6-NON evidence
-- Evidence format: audit grid cell with hit count (e.g., "DEFENDED [4 hits: audit evidence]")
-- No more "6-NON tables" as standalone sections — defence must be woven into skill body
-
-### Phase 23 (PARTIAL) — Absorption Plan
-
-**Claimed:** Eval expansion with trigger queries for 6 new skills
-**Reality:** Only 1/9 skills has stacked scenario (hm-completion-looping per CONTEXT.md, but current state shows it only has evals.json, not trigger-queries.json)
-**Actual state:** 4 skills have stacked evals (hm-coordinating-loop, hm-meta-builder, hm-skill-synthesis, hm-user-intent-interactive-loop). 9 have trigger-query-only evals. 19 have zero.
-
-**Absorption into PLAYBOOK:**
-- PLAYBOOK D4 (Eval Coverage) becomes the measurable standard
-- Minimum: evals.json with ≥4 positive + ≥1 negative trigger queries
-- Target: evals.json + trigger-queries.json with stacked multi-step scenario
-- Each skill improvement phase must deliver eval bundles
-
-### CR-GAP-MAP Closure Status
-
-| Gap # | Severity | Status | Notes |
-|-------|----------|--------|-------|
-| 1 (hm-completion-looping missing) | CRITICAL | **CLOSED** — skill exists (119 LOC, created Phase 20) | Body still THIN tier |
-| 2 (phase-loop no audit) | CRITICAL | **OPEN** — 0 audit hits in current skill | Needs body rewrite |
-| 3 (agent-authorization lacks context) | CRITICAL | **OPEN** — renamed to hm-subagent-delegation-patterns, still 0 context-map | Needs body rewrite |
-| 4 (harness-delegation-inspection split) | CRITICAL | **CLOSED** — split into hm-subagent-delegation-patterns + hm-opencode-project-inspection | Both still THIN |
-| 5 (user-intent evals unverified) | HIGH | **PARTIAL** — has trigger-queries.json but stacked scenario unverified | Needs verification |
-| 6 (hm-spec-driven-authoring missing) | CRITICAL | **CLOSED** — skill exists (107 LOC, created Phase 20) | Body still THIN |
-| 7 (hm-test-driven-execution missing) | CRITICAL | **CLOSED** — skill exists (119 LOC, created Phase 20) | Body still THIN |
-| 8 (gsd-agent-composition lacks context) | HIGH | **OPEN** — renamed to hm-agent-composition, still 3 EXPOSED | Needs body rewrite |
-| 9-13 (G-C cluster gaps) | HIGH | **OPEN** — hm-deep-research, hm-detective, hm-synthesis all missing evals + context | Phase 28 scope |
-| 14-22 (G-D cluster gaps) | HIGH | **OPEN** — hm-debug, hm-refactor, hm-phase-execution all THIN | Phase 29 scope |
-| 23-26 (remaining gaps) | MEDIUM-HIGH | **OPEN** | Various |
-
-**Summary:** 4/26 CRITICAL gaps closed (skills exist). 0/26 gaps fully resolved (all skills still below EXEMPLAR quality). 18 HIGH gaps remain open. 4 MEDIUM gaps remain open.
-
----
-
-## 6. Phase 27-30 Roadmap Basis
-
-### Natural Sequencing
-
-```
-Phase 26 (this phase): PLAYBOOK + G-B SPECs + ecosystem audit + roadmap
-  └─→ Phase 27: G-B execution — rewrite hm-spec-driven-authoring + hm-test-driven-execution to EXEMPLAR
-       └─→ Phase 28: G-C execution — rewrite hm-deep-research + hm-detective + hm-synthesis + hm-research-chain
-            └─→ Phase 29: G-D execution — rewrite hm-debug + hm-refactor + hm-phase-execution + remaining G-D
-                 └─→ Phase 30: G-A execution — rewrite hm-completion-looping + hm-phase-loop + hm-subagent-delegation-patterns
-                      └─→ Phase 31: Cross-lineage integration testing
+## Summary
+
+Phase 26 is a synthesis and standards phase, not an implementation phase: it must convert locked decisions D-01 through D-11 into durable planning artifacts while leaving `.opencode/skills/**/SKILL.md` and `src/` untouched. [VERIFIED: `.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-CONTEXT.md`:7-24,28-58]
+
+The current canonical soft meta-concept inventory contains 31 `hm-*` / `hivefiver-*` skill directories under `.opencode/skills/`; 13 have at least one eval JSON file, 18 have zero eval JSON files, and only `hm-completion-looping` currently contains a `stacked_scenario` key. [VERIFIED: local Python inventory command, 2026-04-25; `.opencode/skills/hm-completion-looping/evals/evals.json`:33-37]
+
+The planning recommendation is prescriptive: make `PLAYBOOK.md` the root quality contract, create two G-B SPECs as read-only demonstration contracts, create an ecosystem audit catalog scored against the playbook, create explicit archive records for Phase 22/23, then use these artifacts as the only allowed inputs for Phase 27+ skill rewrites. [VERIFIED: `26-CONTEXT.md`:35-50,145-154]
+
+**Primary recommendation:** Use an 8-dimension PLAYBOOK: Trigger Accuracy, Body Depth, 6-NON Defence, Eval Coverage, Reference Completeness, Integration Wiring, Cross-Platform Compatibility, and Self-Correction. [VERIFIED: `26-CONTEXT.md`:52-56; `.opencode/skills/hivefiver-use-authoring-skills/references/05-skill-quality-matrix.md`:3-21,89-108]
+
+## Project Constraints (from AGENTS.md)
+
+- Phase 26 must not confuse the harness project with arbitrary user projects; standards must generalize across languages, frameworks, task types, and project states. [VERIFIED: `AGENTS.md`:80-83]
+- Canonical project skills live in `.opencode/skills/`; IDE-managed skill directories are sync artifacts and must not be committed as deliverables. [VERIFIED: `AGENTS.md`:271-275]
+- The product is a runtime composition engine, not a skill-pack project; skill standards must account for the hard harness (`src/`) and soft meta-concepts (`.opencode/`). [VERIFIED: `AGENTS.md`:121-130]
+- Generated folders must be navigable and tracked; new directories require `.gitkeep` where otherwise empty. [VERIFIED: `AGENTS.md`:9-13]
+- Documentation artifacts must be evidence-backed; agents must not skip validation, verification, review, or gatekeeping. [VERIFIED: `AGENTS.md`:76-80]
+- No `src/` changes are in scope for Phase 26 because the locked context excludes hard harness changes. [VERIFIED: `26-CONTEXT.md`:19-24]
+
+## Architectural Responsibility Map
+
+| Capability | Primary Tier | Secondary Tier | Rationale |
+|------------|-------------|----------------|-----------|
+| PLAYBOOK quality contract | Soft Meta-Concept / Planning Artifacts | OpenCode Skill Runtime | The playbook governs skills as runtime-loaded components, but the Phase 26 deliverable is a planning artifact. [VERIFIED: `26-CONTEXT.md`:35-43] |
+| G-B demonstration SPECs | Soft Meta-Concept / Planning Artifacts | Test Validation | SPECs define falsifiable requirements for future skill rewrites; Phase 26 does not execute those rewrites. [VERIFIED: `26-CONTEXT.md`:35-38,145-149] |
+| Ecosystem audit catalog | Soft Meta-Concept / Audit Artifacts | OpenCode Skill Runtime | The audit reads `.opencode/skills/` and scores skills; it does not mutate skill content. [VERIFIED: `26-CONTEXT.md`:11-18,19-24] |
+| Agent/command/tool integration standards | OpenCode Runtime Configuration | Hard Harness Plugin | OpenCode docs define skills, agents, commands, tools, and plugins as runtime surfaces; the local harness plugin registers tools and hooks. [CITED: https://opencode.ai/docs/skills/; https://opencode.ai/docs/agents/; https://opencode.ai/docs/commands/; https://opencode.ai/docs/custom-tools/; https://opencode.ai/docs/plugins/] [VERIFIED: `src/plugin.ts`:79-123] |
+| Phase 22/23 archival | Planning Artifacts | Roadmap / State | STATE and phase plans mark Phase 22 as not substantiated and Phase 23 as partial; Phase 26 must preserve evidence while absorbing scope. [VERIFIED: `.planning/STATE.md`:91-112; `22-PLAN.md`:1-21; `23-PLAN.md`:1-28] |
+
+## Standard Stack
+
+### Core
+
+| Library / Surface | Version | Purpose | Why Standard |
+|-------------------|---------|---------|--------------|
+| Markdown planning artifacts | n/a | `PLAYBOOK.md`, `SPEC-*.md`, `ECOSYSTEM-AUDIT.md`, archive records | Existing GSD and project phase artifacts are Markdown-based planning contracts. [VERIFIED: `.planning/ROADMAP.md`:395-433; `26-CONTEXT.md`:35-39] |
+| `.opencode/skills/SKILL.md` | OpenCode current docs | Canonical skill package entry point | OpenCode documents skills as `SKILL.md` packages loaded by the `skill` tool. [CITED: https://opencode.ai/docs/skills/] |
+| OpenCode agents / commands / tools / plugins | `@opencode-ai/plugin` 1.14.24 current registry; project peer `^1.14.20` | Runtime integration surfaces for skill quality dimensions | Phase D-06 requires agent, command, tool, plugin hook, and state-router coverage. [VERIFIED: `package.json`:29-38; `npm view @opencode-ai/plugin version` → `1.14.24`; `26-CONTEXT.md`:40-43] |
+| Zod | 4.3.6 | Schema-aligned tool/config contracts | OpenCode custom tools use Zod schemas, and the harness already uses Zod in `src/schema-kernel/`. [CITED: https://opencode.ai/docs/custom-tools/] [VERIFIED: `package.json`:29-35; `src/schema-kernel/prompt-enhance.schema.ts`:1-31] |
+
+### Supporting
+
+| Library / Surface | Version | Purpose | When to Use |
+|-------------------|---------|---------|-------------|
+| Vitest | project `^1.0.0`; current registry 4.1.5 | Validation of hard harness code when future phases touch `src/` | Phase 26 should not run code tests as proof of skill artifact quality, but validation architecture can cite project commands. [VERIFIED: `package.json`:20-27,39-44; `npm view vitest version` → `4.1.5`] |
+| TypeScript | project `^5.0.0`; current registry 6.0.3 | Hard harness compile/type verification | Only relevant to future `src/` integration work, not Phase 26 artifacts. [VERIFIED: `package.json`:20-27,39-44; `npm view typescript version` → `6.0.3`] |
+| Node.js / npm / git | Node v25.9.0, npm 11.13.0, git 2.54.0 available locally | Local artifact verification and inventory scripts | Use for non-mutating counts and grep-like artifact checks. [VERIFIED: local environment audit command, 2026-04-25] |
+
+### Alternatives Considered
+
+| Instead of | Could Use | Tradeoff |
+|------------|-----------|----------|
+| Markdown artifact contracts | JSON-only score manifests | JSON is easier to parse, but current GSD planning and user review workflows consume Markdown. [VERIFIED: `.planning/ROADMAP.md`:395-433] |
+| Existing eval JSON pattern | New eval runner format | New format would create Phase 26 tooling scope; existing eval files already use `trigger_queries` and `stacked_scenario`. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/evals/evals.json`:1-10; `.opencode/skills/hm-completion-looping/evals/evals.json`:1-38] |
+| GSD-only benchmark | OpenCode + GSD + project exemplar benchmark | D-01 requires standalone-superior skills independent of GSD, so the quality bar must compare to GSD while remaining OpenCode-native. [VERIFIED: `26-CONTEXT.md`:31-43] |
+
+**Installation:** No packages should be installed in Phase 26. [VERIFIED: `26-CONTEXT.md`:19-24]
+
+**Version verification:** `npm view @opencode-ai/plugin version`, `npm view @opencode-ai/sdk version`, `npm view zod version`, `npm view vitest version`, and `npm view typescript version` were run on 2026-04-25. [VERIFIED: npm registry command output]
+
+## Architecture Patterns
+
+### System Architecture Diagram
+
+```text
+Phase 18 evidence + Phase 22/23 reality + current .opencode/skills inventory
+        |
+        v
+  Phase 26 Research Synthesis
+        |
+        +--> PLAYBOOK.md quality contract (D1-D8)
+        |        |
+        |        v
+        |   ECOSYSTEM-AUDIT.md scores every canonical hm-/hivefiver-* skill
+        |
+        +--> SPEC-hm-spec-driven-authoring.md
+        +--> SPEC-hm-test-driven-execution.md
+        |        |
+        |        v
+        |   Phase 27 G-B rewrite plan inputs only (no Phase 26 mutation)
+        |
+        +--> ARCHIVE-22.md / ARCHIVE-23.md
+        |        |
+        |        v
+        |   Roadmap/state evidence preserved; scope absorbed into PLAYBOOK D3/D4
+        |
+        v
+  ROADMAP-27-30.md + REQUIREMENTS.md HMQUAL entries
 ```
 
-### Prerequisites for Phase 27
+### Recommended Project Structure
 
-1. **PLAYBOOK.md must exist** with all 8 dimensions defined and PASS/FAIL criteria
-2. **G-B SPECs must exist** with falsifiable REQ-* items per skill
-3. **Exemplar patterns documented** — what a "done" skill looks like (from hm-coordinating-loop, hm-user-intent-interactive-loop)
-4. **Eval bundle template** — standard format for evals.json + trigger-queries.json
+```text
+.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/
+├── 26-RESEARCH.md              # This research artifact
+├── PLAYBOOK.md                 # Canonical hm-* quality standard
+├── ECOSYSTEM-AUDIT.md          # Deduplicated skill scoring catalog
+├── SPEC-hm-spec-driven-authoring.md
+├── SPEC-hm-test-driven-execution.md
+├── ROADMAP-27-30.md            # Sequenced improvement waves
+├── ARCHIVE-22.md               # Formal NOT SUBSTANTIATED closure
+└── ARCHIVE-23.md               # Formal PARTIAL absorption closure
+```
 
-### Phase 17-24 Pattern Harvest
+### Pattern 1: Evidence-First Quality Dimension
 
-**What worked:**
-- Phase 17 (Critical Fixes): Targeted 5 specific issues, each with verifiable fix — HIGH quality
-- Phase 18 (Audit): Produced 8 evidence-based deliverables — HIGH quality, reusable
-- Phase 24 (Fix 22 Failed): 3 focused plans, 8/8 must-haves verified — HIGH quality
+**What:** Each PLAYBOOK dimension must define `Description`, `PASS Criteria`, `FAIL Criteria`, `Verification Command`, and runtime integration coverage. [VERIFIED: `26-CONTEXT.md`:52-56]  
+**When to use:** Use for all D1-D8 dimensions so Phase 27+ plans can create task-level verification gates. [VERIFIED: `gsd-validate-phase/SKILL.md`:16-22]
 
-**What regressed:**
-- Phase 20 (Structural Changes): Created 7 new skills but all THIN tier — template-driven creation produced hollow skeletons
-- Phase 21 (Description Rewrite): Only touched descriptions, not body — surface-level fix
-- Phase 22 (Script Hardening): Claimed but unsubstantiated — integrity failure
-- Phase 23 (Body Quality + Eval): Only 1/9 stacked evals — incomplete execution
+### Pattern 2: SPEC as Future Rewrite Contract
 
-**Lesson:** Focused, verifiable phases (17, 18, 24) produce quality. Broad, template-driven phases (20, 21, 22, 23) produce hollow results. Phase 27-30 should follow the focused pattern: one cluster per phase, with EXEMPLAR as the target and verifiable evidence per skill.
+**What:** G-B SPECs should define `REQ-*` items with acceptance criteria and verification methods, mirroring `hm-spec-driven-authoring`'s own requirement format. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/SKILL.md`:77-84]  
+**When to use:** Use for `hm-spec-driven-authoring` and `hm-test-driven-execution` only in Phase 26; do not apply rewrites until Phase 27. [VERIFIED: `26-CONTEXT.md`:145-149]
 
-### Deferred Tooling Decisions (from CR-DECISIONS.md)
+### Pattern 3: Scope Absorption Archive
 
-| Decision | Deferred To | Impact on 27-30 |
-|----------|-------------|-----------------|
-| (c) body rewrites | Phase 20+ | 16 skills need body rewrites — spread across Phases 27-30 |
-| (d) bundle expansion | Phase 20+ | 22 skills need eval/reference expansion — every improvement phase |
-| (f) split | Phase 20 | Already executed (harness-delegation-inspection split) |
-| (g) merge | Phase 20 | Already executed (session-context-manager merged into hm-planning-with-files) |
-| (h) create new | Phase 20-21 | 8 new skills created, all need quality improvement |
+**What:** Preserve historical claims, verified reality, absorbed scope, and closure decision in `ARCHIVE-22.md` and `ARCHIVE-23.md`. [VERIFIED: `.planning/STATE.md`:91-112]  
+**When to use:** Use when a phase contains valid intent but invalid or partial evidence, as with Phase 22/23. [VERIFIED: `22-PLAN.md`:13-17; `23-PLAN.md`:13-18]
 
----
+### Anti-Patterns to Avoid
 
-## 7. Research Conclusions
+- **Mutating skills during synthesis:** Phase 26 explicitly excludes skill file mutations. [VERIFIED: `26-CONTEXT.md`:19-24]
+- **Counting existence as quality closure:** Phase 20 created G-B skills, but current G-B skills are 107/119-line skeletons with one eval JSON each. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/SKILL.md`:1-107; `.opencode/skills/hm-test-driven-execution/SKILL.md`:1-119]
+- **Standalone 6-NON tables as proof:** Phase 24 context removed 6-NON tables as process guidance, and Phase 26 D-08 requires proper evidence requirements instead. [VERIFIED: `26-CONTEXT.md`:44-47; `.planning/ROADMAP.md`:611-629]
+- **GSD-only assumptions:** D-07 requires arbitrary project compatibility, so artifact language must include non-GSD validation equivalents. [VERIFIED: `26-CONTEXT.md`:40-43]
 
-### Key Findings
+## Don't Hand-Roll
 
-1. **The ecosystem is 87.5% below EXEMPLAR quality.** Only 4/32 skills meet the target bar. 18 are THIN (skeleton workflows). 3 are HOLLOW (<80 LOC).
+| Problem | Don't Build | Use Instead | Why |
+|---------|-------------|-------------|-----|
+| Skill quality rubric | A new subjective rubric from scratch | Phase 18 6-NON audit + hivefiver quality matrix + GSD benchmark patterns | Existing evidence already defines trigger accuracy, action coherence, reference integrity, eval coverage, and 6-NON failure modes. [VERIFIED: `CR-AUDIT-ECOSYSTEM.md`:9-18; `.opencode/skills/hivefiver-use-authoring-skills/references/05-skill-quality-matrix.md`:3-21] |
+| Eval format | A new eval runner or schema | Existing `evals/evals.json`, `trigger_queries`, and `stacked_scenario` pattern | Current skills already use this shape; creating a new runner would violate Phase 26 synthesis scope. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/evals/evals.json`:1-10; `.opencode/skills/hm-completion-looping/evals/evals.json`:33-37] |
+| Integration taxonomy | Hardcoded local-only paths | OpenCode docs + project integration surfaces | OpenCode supports project/global skills, agents, commands, custom tools, and plugins; local harness plugin registers tools and hooks. [CITED: https://opencode.ai/docs/skills/; https://opencode.ai/docs/plugins/] [VERIFIED: `src/plugin.ts`:79-123] |
+| Phase 22/23 repair | Re-run Phase 22/23 separately | Archive + absorb into PLAYBOOK D3/D4 | D-08 and D-09 explicitly select archival and absorption, not re-execution. [VERIFIED: `26-CONTEXT.md`:44-47] |
 
-2. **Eval coverage is the deepest gap.** 19/32 skills have zero evals. Only 4 have stacked scenarios. The PLAYBOOK must make eval bundles mandatory.
+**Key insight:** Phase 26 should standardize what counts as evidence, not create new runtime machinery. [VERIFIED: `26-CONTEXT.md`:19-24,35-43]
 
-3. **The G-B cluster is the weakest link in the "Quality Assurance" lineage.** hm-spec-driven-authoring (107 LOC) and hm-test-driven-execution (119 LOC) are the thinnest skills in the G-B group. They must become the strongest to serve as demonstration templates.
+## Current Evidence Inventory
 
-4. **Phase 22 integrity failure is confirmed.** No 6-NON tables exist in any skill file. The PLAYBOOK must not repeat this pattern — defence must be woven into body content, not added as standalone tables.
+| Evidence | Finding | Planning Implication |
+|----------|---------|----------------------|
+| Phase 18 6-NON audit | Only 3 of 24 audited skills were fully DEFENDED across all 6 NON dimensions. [VERIFIED: `CR-AUDIT-ECOSYSTEM.md`:49-57] | PLAYBOOK D3 must require source-backed DEFENDED/PARTIAL/EXPOSED scoring. |
+| Phase 18 gap map | G-B originally had missing spec-driven and test-driven skills; these now exist but remain thin. [VERIFIED: `CR-GAP-MAP.md`:26-28; `.opencode/skills/hm-spec-driven-authoring/SKILL.md`:1-107; `.opencode/skills/hm-test-driven-execution/SKILL.md`:1-119] | SPECs must target quality uplift, not existence. |
+| Current inventory | 31 canonical hm-/hivefiver-* skill dirs; 18 zero-eval skills; 1 stacked scenario. [VERIFIED: local Python inventory command, 2026-04-25] | ECOSYSTEM-AUDIT.md must deduplicate by actual directory basename and avoid old 32-row duplication. |
+| GSD benchmark skills | `gsd-spec-phase` has ambiguity scoring and falsifiable SPEC output; `gsd-add-tests` preserves classification/test-plan/RED-GREEN gates; `gsd-verify-work` produces UAT tracking; eval/validate skills produce audit remediation artifacts. [VERIFIED: `/Users/apple/.claude/skills/gsd-spec-phase/SKILL.md`:15-28,56-62; `/Users/apple/.agents/skills/gsd-add-tests/SKILL.md`:16-21,35-38; `/Users/apple/.agents/skills/gsd-verify-work/SKILL.md`:15-20; `/Users/apple/.claude/skills/gsd-eval-review/SKILL.md`:15-18; `/Users/apple/.agents/skills/gsd-validate-phase/SKILL.md`:16-22] | GSD-comparable means artifacts with gates, not merely longer skill bodies. |
 
-5. **Integration wiring is completely absent.** No hm-* skill references hard harness tools, plugin hooks, or Zod schemas. D-06 requires this dimension.
+## Quality Dimensions for PLAYBOOK.md
 
-6. **The 4 EXEMPLAR skills provide a clear quality pattern.** hm-coordinating-loop, hm-user-intent-interactive-loop, hm-meta-builder, and hivefiver-use-authoring-skills demonstrate: script-backed gates, worked examples, platform adaptation, anti-pattern tables, self-correction blocks, and kit bundle contents.
+| # | Dimension | PASS Standard | Evidence Source |
+|---|-----------|---------------|-----------------|
+| D1 | Trigger Accuracy | Positive and negative trigger cases exist, and description contains explicit exclusions. | [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/evals/evals.json`:3-9; `.opencode/skills/hivefiver-use-authoring-skills/references/05-skill-quality-matrix.md`:25-40] |
+| D2 | Body Depth | Skill body has clear entry, process, exit, decision points, and non-trivial operational guidance. | [VERIFIED: `.opencode/skills/hivefiver-use-authoring-skills/references/05-skill-quality-matrix.md`:41-57] |
+| D3 | 6-NON Defence | Audit grid can score all six failure modes as DEFENDED with cited evidence. | [VERIFIED: `CR-AUDIT-ECOSYSTEM.md`:9-18] |
+| D4 | Eval Coverage | Eval bundle includes realistic prompts, assertions, and at target level a stacked multi-step scenario. | [VERIFIED: `.opencode/skills/hivefiver-use-authoring-skills/references/10-eval-lifecycle.md`:13-44,46-54; `.opencode/skills/hm-completion-looping/evals/evals.json`:33-37] |
+| D5 | Reference Completeness | References deepen workflow guidance and are cited from the skill body. | [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/SKILL.md`:95-100] |
+| D6 | Integration Wiring | Skill states agent, command, tool, plugin-hook, and runtime-state implications. | [VERIFIED: `26-CONTEXT.md`:40-43; `src/plugin.ts`:79-123] |
+| D7 | Cross-Platform Compatibility | Skill avoids GSD-only, path-only, or tool-only assumptions and provides adaptation notes. | [VERIFIED: `26-CONTEXT.md`:40-43; `AGENTS.md`:80-83] |
+| D8 | Self-Correction | Skill includes failure handling, loop-back, and escalation criteria. | [VERIFIED: `.opencode/skills/hm-test-driven-execution/SKILL.md`:52-74,98-105; `.opencode/skills/hivefiver-use-authoring-skills/references/05-skill-quality-matrix.md`:89-104] |
 
-### Risks
+## G-B Demonstration Strategy
 
-| Risk | Severity | Mitigation |
-|------|----------|------------|
-| PLAYBOOK becomes another unsubstantiated artifact (like Phase 22) | CRITICAL | Every dimension must have measurable PASS/FAIL criteria and verification command |
-| G-B SPECs are too abstract to guide implementation | HIGH | SPECs must reference exemplar skills as concrete templates |
-| Phase 27-30 become another template-driven creation wave | HIGH | Each phase targets 2-4 skills with EXEMPLAR quality, not 10+ skills at THIN quality |
-| Eval bundles are created but never run | MEDIUM | PLAYBOOK must require eval execution evidence (command output) |
-| Integration wiring is specified but never tested | MEDIUM | Phase 31 (cross-lineage integration) must verify wiring |
+Phase 26 should use `hm-spec-driven-authoring` and `hm-test-driven-execution` as demonstration SPEC subjects, not mutation targets. [VERIFIED: `26-CONTEXT.md`:35-38,145-149]
 
-### Recommendations for the Planner
+| Skill | Current Evidence | Demonstration SPEC Focus |
+|-------|------------------|--------------------------|
+| `hm-spec-driven-authoring` | 107-line SKILL.md, 2 reference files, one `evals.json`, no stacked scenario. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/SKILL.md`:1-107; `.opencode/skills/hm-spec-driven-authoring/evals/evals.json`:1-10] | `REQ-SDA-*` requirements for D1-D8, with hard requirement for falsifiable REQ format and acceptance-test mapping. |
+| `hm-test-driven-execution` | 119-line SKILL.md, 2 reference files, one `evals.json`, no stacked scenario. [VERIFIED: `.opencode/skills/hm-test-driven-execution/SKILL.md`:1-119; `.opencode/skills/hm-test-driven-execution/evals/evals.json`:1-10] | `REQ-TDE-*` requirements for D1-D8 plus coverage-claim verification and runtime-truthful vs mock-heavy guidance. |
 
-1. **Structure PLAYBOOK as a checklist, not a narrative.** Each dimension gets: definition, PASS criteria, FAIL criteria, verification command, exemplar reference.
+**Planning implication:** The G-B SPECs should be scoped to future Phase 27 changes and should include `Current State`, `Target State`, `Requirements`, `Integration Contract`, `Eval Contract`, `Verification Commands`, and `Phase 27 Execution Notes`. [VERIFIED: `gsd-spec-phase/SKILL.md`:15-28,56-62]
 
-2. **G-B SPECs should be per-skill, not per-cluster.** hm-spec-driven-authoring and hm-test-driven-execution each get their own SPEC with REQ-* items.
+## Phase 22/23 Absorption Strategy
 
-3. **Phase 27 scope: 2 skills only.** Rewrite hm-spec-driven-authoring and hm-test-driven-execution to EXEMPLAR quality. This proves the PLAYBOOK before scaling.
+| Phase | Verified Status | Keep | Absorb Into | Planning Action |
+|-------|-----------------|------|-------------|-----------------|
+| 22 | NOT SUBSTANTIATED; phase directory exists now but prior work was not supported by matching evidence. [VERIFIED: `.planning/STATE.md`:91-99; `22-PLAN.md`:1-17] | The intended concern: 6-NON defence. | PLAYBOOK D3, plus `ARCHIVE-22.md`. | Do not re-run Phase 22; produce closure record with original claim, verified reality, absorbed scope, evidence, closure decision. |
+| 23 | PARTIAL; eval files expanded for some skills but coverage is incomplete. [VERIFIED: `.planning/STATE.md`:91-99; `23-PLAN.md`:1-18] | Valid concern: eval bundle and stacked scenario coverage. | PLAYBOOK D4, plus `ARCHIVE-23.md`. | Do not re-run Phase 23; produce closure record and make Phase 27-30 responsible for per-skill eval completion. |
 
-4. **Phase 28-30 scope: 3-5 skills each.** Focused improvement waves, not bulk rewrites.
+## Artifact Recommendations
 
-5. **Include a "Quality Gate" in each improvement phase.** Before moving to the next phase, verify: all target skills score PASS on all 8 PLAYBOOK dimensions.
+| Artifact | Required Content | Why Planner Needs It |
+|----------|------------------|----------------------|
+| `PLAYBOOK.md` | D1-D8 quality dimensions, quality tiers, evidence requirements, integration wiring requirements, cross-platform rules. [VERIFIED: `26-CONTEXT.md`:35-43,52-56] | Provides the canonical standard for all future hm-/hivefiver-* quality work. |
+| `ECOSYSTEM-AUDIT.md` | Current canonical inventory, deduplicated skill rows, D1-D8 score matrix, open gap register. [VERIFIED: local inventory command, 2026-04-25; `CR-AUDIT-ECOSYSTEM.md`:20-47] | Prevents Phase 27+ from relying on stale Phase 18 names or existence-only closure. |
+| `SPEC-hm-spec-driven-authoring.md` | Current state, target state, `REQ-SDA-*`, integration contract, eval contract, verification commands. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/SKILL.md`:77-84] | Makes Phase 27 rewrite requirements falsifiable without touching the skill in Phase 26. |
+| `SPEC-hm-test-driven-execution.md` | Current state, target state, `REQ-TDE-*`, coverage verification, runtime-truthful testing guidance, cross-platform coverage adapters. [VERIFIED: `.opencode/skills/hm-test-driven-execution/SKILL.md`:76-105] | Makes Phase 27 testing-quality requirements concrete and GSD-comparable. |
+| `ROADMAP-27-30.md` | Phase 27 G-B, Phase 28 G-C, Phase 29 G-D, Phase 30 G-A sequencing with entry/exit gates. [VERIFIED: `26-CONTEXT.md`:145-154] | Converts synthesis into ordered future work while keeping Phase 31 deferred. |
+| `ARCHIVE-22.md` / `ARCHIVE-23.md` | Original claim, verified reality, absorbed scope, evidence, closure decision. [VERIFIED: `.planning/STATE.md`:91-112; `22-PLAN.md`:1-21; `23-PLAN.md`:1-28] | Preserves valid historical evidence while preventing stale closure claims from being reused. |
+| `.planning/REQUIREMENTS.md` HMQUAL entries | `HMQUAL-01` through `HMQUAL-08`, mapped to D1-D8. [VERIFIED: `26-CONTEXT.md`:35-39] | Makes the quality standards project-level requirements, not a one-off phase note. |
 
-6. **Archive Phase 22/23 with explicit closure records.** Document what was claimed, what was verified, and what scope was absorbed into PLAYBOOK.
+## Planning Implications
 
----
+- Plan 26 tasks should be artifact-first and read-only against `.opencode/skills/**/SKILL.md` and `src/`. [VERIFIED: `26-CONTEXT.md`:19-24]
+- Plan 26 should reconcile already-existing 26 plan artifacts against this research because `init phase-op 26` reported `has_plans: true` and `plan_count: 4`. [VERIFIED: GSD init command output, 2026-04-25]
+- Plan 26 verification should prioritize content checks over code tests because this phase writes planning artifacts, not TypeScript runtime code. [VERIFIED: `26-CONTEXT.md`:19-24; `package.json`:20-27]
+- Phase 27 should not begin until PLAYBOOK, ECOSYSTEM-AUDIT, and both G-B SPEC files exist and pass the Validation Architecture checks. [VERIFIED: `26-CONTEXT.md`:35-50]
+- Phase 27+ should treat a skill as complete only when it passes all D1-D8 dimensions with cited evidence, not when files merely exist. [VERIFIED: `CR-GAP-MAP.md`:48-78; local inventory command, 2026-04-25]
+
+## Risk Register
+
+| Risk | Severity | Evidence | Mitigation |
+|------|----------|----------|------------|
+| Existing Phase 26 plans may reflect the older research artifact rather than this revised source-provenance version. | HIGH | `init phase-op 26` reported existing plans and research. [VERIFIED: GSD init command output, 2026-04-25] | Planner must reconcile plans against this revised `26-RESEARCH.md` before execution. |
+| Audit count drift can create false coverage claims. | HIGH | Current canonical count is 31, while older research counted 32 due a duplicate row. [VERIFIED: local inventory command, 2026-04-25] | ECOSYSTEM-AUDIT.md must derive inventory from actual directories and dedupe by basename. |
+| Phase 26 could accidentally become Phase 27 implementation. | CRITICAL | Locked scope excludes skill mutations and full rewrites. [VERIFIED: `26-CONTEXT.md`:19-24,145-149] | Restrict Phase 26 writes to planning artifacts plus requirements update. |
+| Eval coverage could remain trigger-only. | HIGH | G-B eval files contain only `trigger_queries`; only `hm-completion-looping` has `stacked_scenario`. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/evals/evals.json`:1-10; `.opencode/skills/hm-test-driven-execution/evals/evals.json`:1-10; `.opencode/skills/hm-completion-looping/evals/evals.json`:33-37] | PLAYBOOK D4 and G-B SPECs must require stacked scenario definitions for target quality. |
+| Integration wiring could remain theoretical. | MEDIUM | D-06 requires integration across agents, commands, tools, plugin hooks, and runtime state routers. [VERIFIED: `26-CONTEXT.md`:40-43] | D6 must include explicit fields for every integration surface and cite `src/plugin.ts`/OpenCode docs. |
+
+## OpenCode / Hivemind Integration Planning
+
+| Surface | Current Evidence | PLAYBOOK Requirement |
+|---------|------------------|----------------------|
+| Agents | 57 local agent files exist. [VERIFIED: local integration surface count command, 2026-04-25] OpenCode agents support tool/permission configuration and subagent modes. [CITED: https://opencode.ai/docs/agents/] | Every skill quality score should verify agent compatibility: when loaded directly, delegated, or restricted by permissions. |
+| Commands | 16 local command files exist. [VERIFIED: local integration surface count command, 2026-04-25] OpenCode command docs support Markdown command files, arguments, agent binding, and subtask behavior. [CITED: https://opencode.ai/docs/commands/] | Every skill should state whether it is invoked directly, through a command, or only as a reference. |
+| Tools | Harness plugin registers `delegate-task`, `delegation-status`, `run-background-command` when PTY is available, `prompt-skim`, `prompt-analyze`, `session-patch`, `configure-primitive`, and `validate-restart`. [VERIFIED: `src/plugin.ts`:86-97] | D6 should require tool integration analysis without requiring all tools to be used. |
+| Plugin hooks | Harness plugin wires core/session/tool guard hooks and `tool.execute.after`; OpenCode docs list plugin events including `tool.execute.before`, `tool.execute.after`, and session events. [VERIFIED: `src/plugin.ts`:79-123] [CITED: https://opencode.ai/docs/plugins/] | PLAYBOOK should require hook-awareness for skills that affect runtime behavior. |
+| Runtime state routers | Project runtime state path is `.opencode/state/opencode-harness/`; state overrides are documented as `OPENCODE_HARNESS_STATE_DIR` and `OPENCODE_HARNESS_CONTINUITY_FILE`. [VERIFIED: `AGENTS.md`:149-152,252-259] | Skill guidance must adapt to arbitrary user projects and not assume this repo's state paths exist. |
+
+## Dependency Map and Phase 27+ Sequencing
+
+```text
+Phase 26: PLAYBOOK + audit + G-B SPECs + archive records + HMQUAL requirements
+  └─ Phase 27: G-B Quality Assurance Demonstration
+       Inputs: PLAYBOOK.md, ECOSYSTEM-AUDIT.md, SPEC-hm-spec-driven-authoring.md, SPEC-hm-test-driven-execution.md
+       Scope: Rewrite/expand exactly hm-spec-driven-authoring + hm-test-driven-execution
+       Exit: both pass D1-D8 and include stacked evals
+  └─ Phase 28: G-C Research Lineage
+       Depends on: Phase 27 proves PLAYBOOK is executable
+       Scope: hm-deep-research, hm-detective, hm-synthesis, hm-research-chain
+  └─ Phase 29: G-D Execution Lineage
+       Depends on: G-B/G-C patterns for specs, tests, research
+       Scope: hm-debug, hm-refactor, hm-phase-execution, hm-planning-with-files, remaining G-D gaps
+  └─ Phase 30: G-A Guardrail Lineage
+       Depends on: execution and research patterns stabilized
+       Scope: hm-completion-looping, hm-phase-loop, hm-subagent-delegation-patterns, hm-user-intent-interactive-loop
+  └─ Phase 31: deferred cross-lineage E2E integration validation
+```
+
+This sequence follows the locked deferred-scope ordering for G-B, G-C, G-D, G-A, and Phase 31. [VERIFIED: `26-CONTEXT.md`:145-154]
+
+## Common Pitfalls
+
+### Pitfall 1: Repeating Phase 22's unsubstantiated-claim failure
+**What goes wrong:** A plan writes standards but does not require evidence. [VERIFIED: `.planning/STATE.md`:91-99]  
+**How to avoid:** Every PLAYBOOK dimension must include verification commands and source-backed PASS/FAIL rules. [VERIFIED: `gsd-validate-phase/SKILL.md`:16-22]
+
+### Pitfall 2: Treating G-B SPECs as implementation
+**What goes wrong:** The planner mutates `SKILL.md` files in Phase 26, violating locked scope. [VERIFIED: `26-CONTEXT.md`:19-24]  
+**How to avoid:** SPECs are contracts for Phase 27; Phase 26 only writes planning artifacts. [VERIFIED: `26-CONTEXT.md`:35-39,145-149]
+
+### Pitfall 3: Auditing stale or duplicate skill names
+**What goes wrong:** Old Phase 18 names or duplicated rows inflate counts. [VERIFIED: `CR-DECISIONS.md`:22-63]  
+**How to avoid:** Inventory the current `.opencode/skills/` directory, filter `hm-*` and `hivefiver-*`, sort, and deduplicate by directory basename. [VERIFIED: local Python inventory command, 2026-04-25]
+
+### Pitfall 4: GSD-only quality language
+**What goes wrong:** Standards become unusable in arbitrary OpenCode user projects. [VERIFIED: `26-CONTEXT.md`:40-43]  
+**How to avoid:** Pair each GSD comparison with OpenCode-native and generic fallback equivalents. [CITED: https://opencode.ai/docs/skills/]
+
+## Code Examples
+
+Verified artifact patterns from local sources:
+
+### SPEC Requirement Shape
+```markdown
+### REQ-SDA-01: Trigger Accuracy
+**Description:** The skill activates only for spec-to-requirement tasks.
+**Acceptance Criteria:** Positive and negative trigger cases exist in evals/evals.json.
+**Verification Method:** Inspect eval JSON for expected_loaded true and false cases.
+**Maps To PLAYBOOK Dimension:** D1 Trigger Accuracy
+```
+Source pattern: `hm-spec-driven-authoring` requirement format. [VERIFIED: `.opencode/skills/hm-spec-driven-authoring/SKILL.md`:77-84]
+
+### Eval Stacked Scenario Shape
+```json
+{
+  "stacked_scenario": {
+    "skills": ["hm-coordinating-loop", "hm-planning-with-files", "hm-completion-looping"],
+    "query": "Plan and execute a multi-subagent task with completion verification",
+    "expected_behavior": "..."
+  }
+}
+```
+Source pattern: `hm-completion-looping` eval bundle. [VERIFIED: `.opencode/skills/hm-completion-looping/evals/evals.json`:33-37]
+
+## State of the Art
+
+| Old Approach | Current Approach | When Changed | Impact |
+|--------------|------------------|--------------|--------|
+| Static skill skeletons with minimal body text | Skill packages with frontmatter, references, evals, scripts, and self-correction | Phase 20 created skeletons; Phase 26 must define quality contract. [VERIFIED: `.planning/ROADMAP.md`:473-489; `26-CONTEXT.md`:126-131] | Future work must improve body depth and evidence, not just create files. |
+| Standalone 6-NON tables | Embedded evidence-backed defenses scored by audit | Phase 24 removed 6-NON tables as skill content; Phase 26 D-08 absorbs real defense into PLAYBOOK. [VERIFIED: `.planning/ROADMAP.md`:611-629; `26-CONTEXT.md`:44-47] | PLAYBOOK D3 should require audit evidence, not visible table sections. |
+| Trigger-query-only evals | Stacked eval scenarios with multi-skill workflow behavior | Existing stacked example appears in `hm-completion-looping`. [VERIFIED: `.opencode/skills/hm-completion-looping/evals/evals.json`:33-37] | D4 should distinguish basic trigger coverage from target stacked scenarios. |
+
+**Deprecated/outdated:** Treating Phase 22 as complete is deprecated for planning because STATE marks it NOT SUBSTANTIATED and its scope is absorbed into Phase 26. [VERIFIED: `.planning/STATE.md`:91-99; `26-CONTEXT.md`:44-47]
+
+## Assumptions Log
+
+| # | Claim | Section | Risk if Wrong |
+|---|-------|---------|---------------|
+| A1 | Phase 27 should target exactly the two G-B skills before G-C/G-D/G-A execution. [ASSUMED] | Dependency Map | Low: user context strongly implies G-B first, but exact phase count/order remains under agent discretion. |
+| A2 | D8 Self-Correction should be a standalone PLAYBOOK dimension rather than folded into 6-NON. [ASSUMED] | Quality Dimensions | Medium: if the planner wants fewer dimensions, D8 can merge into D3/NON-3 without losing substance. |
+
+## Open Questions
+
+1. **Should `hivefiver-*` skills be scored in the same audit table as `hm-*` skills?**
+   - What we know: The canonical directory contains both prefixes, and Phase 26 context says full hm-* ecosystem but also references hivefiver/meta integration. [VERIFIED: `.opencode/skills` directory read; `26-CONTEXT.md`:71-97]
+   - What's unclear: Whether non-hm hivefiver support skills need HMQUAL requirements or a separate support tier.
+   - Recommendation: Include both in ECOSYSTEM-AUDIT.md, but distinguish primary `hm-*` lineage from support `hivefiver-*` lineage. [ASSUMED]
+
+2. **Should Phase 26 update existing already-created 26 PLAN/VALIDATION artifacts?**
+   - What we know: `init phase-op 26` reported `has_plans: true`, `plan_count: 4`, and `has_research: true`. [VERIFIED: GSD init command output, 2026-04-25]
+   - What's unclear: The orchestrator requested research-before-planning, but planning artifacts already exist in the phase directory.
+   - Recommendation: Planner should treat this revised research as authoritative and reconcile any already-existing plans against it before execution. [ASSUMED]
+
+## Environment Availability
+
+| Dependency | Required By | Available | Version | Fallback |
+|------------|-------------|-----------|---------|----------|
+| Node.js | inventory scripts and npm package verification | ✓ | v25.9.0 | Use manual file reads if unavailable. [VERIFIED: environment audit command] |
+| npm | package version verification | ✓ | 11.13.0 | Use package.json only, lower confidence. [VERIFIED: environment audit command] |
+| git | artifact tracking / optional commit | ✓ | 2.54.0 | Write artifact without commit if git unavailable. [VERIFIED: environment audit command] |
+| GSD tools | phase init and path resolution | ✓ | n/a | User-provided paths were sufficient. [VERIFIED: GSD init command output] |
+| OpenCode runtime | future integration validation | not probed as live app | project package target `>=1.14.20` | Use docs/local config until live OpenCode verification. [VERIFIED: `package.json`:45-47] |
+
+**Missing dependencies with no fallback:** None for research artifact writing. [VERIFIED: environment audit command]
+
+**Missing dependencies with fallback:** Live OpenCode runtime verification was not required for Phase 26 research; future Phase 31 should test end-to-end runtime loading. [VERIFIED: `26-CONTEXT.md`:151-152]
 
 ## Validation Architecture
 
-### Post-Planning Verification (PLAN.md quality gates)
+### Test Framework
 
-| Check | Command | Expected |
-|-------|---------|----------|
-| PLAYBOOK.md exists with 8 dimensions | `ls .planning/phases/26-*/PLAYBOOK.md` | File exists |
-| Each dimension has PASS/FAIL criteria | `grep -c "PASS Criteria" .planning/phases/26-*/PLAYBOOK.md` | ≥8 |
-| G-B SPECs exist for both skills | `ls .planning/phases/26-*/SPEC-hm-spec-driven-authoring.md .planning/phases/26-*/SPEC-hm-test-driven-execution.md` | Both exist |
-| Ecosystem audit catalog exists | `ls .planning/phases/26-*/ECOSYSTEM-AUDIT.md` | File exists |
-| Phase 27-30 roadmap exists | `ls .planning/phases/26-*/ROADMAP-27-30.md` | File exists |
-| Phase 22/23 closure records exist | `ls .planning/phases/26-*/ARCHIVE-22.md .planning/phases/26-*/ARCHIVE-23.md` | Both exist |
+| Property | Value |
+|----------|-------|
+| Framework | Artifact validation through shell/file checks; project test framework is Vitest for code changes. [VERIFIED: `package.json`:20-27,39-44] |
+| Config file | No Phase 26-specific test config required; `.planning/config.json` enables `workflow.nyquist_validation`. [VERIFIED: `.planning/config.json`:9-14] |
+| Quick run command | `test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/PLAYBOOK.md && test -f .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/ECOSYSTEM-AUDIT.md` |
+| Full suite command | `grep -c "PASS Criteria" .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/PLAYBOOK.md && grep -c "REQ-SDA-" .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/SPEC-hm-spec-driven-authoring.md && grep -c "REQ-TDE-" .planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/SPEC-hm-test-driven-execution.md` |
 
-### Post-Execution Verification (artifact existence + dimension coverage)
+### Phase Requirements → Test Map
 
-| Check | Method | Expected |
-|-------|--------|----------|
-| All 32 skills scored in audit catalog | Count entries in ECOSYSTEM-AUDIT.md | ≥32 |
-| Each G-B SPEC has ≥5 REQ-* items | Count REQ-* in SPEC files | ≥10 total |
-| Each PLAYBOOK dimension has exemplar reference | Verify each dimension cites a skill name | 8 citations |
-| PLAYBOOK dimensions are measurable | Each dimension has a verification command | 8 commands |
-| No vague language in PLAYBOOK | Grep for "improve", "enhance", "consider" | 0 matches (use "must", "shall", "verify") |
+| Req ID | Behavior | Test Type | Automated Command | File Exists? |
+|--------|----------|-----------|-------------------|--------------|
+| SYN-01 | PLAYBOOK exists with D1-D8 measurable dimensions | artifact/content | `grep -c "PASS Criteria" PLAYBOOK.md` expecting ≥8 | ❌ Wave 0 |
+| SYN-02 | Two G-B SPEC files exist with falsifiable REQ IDs | artifact/content | `grep -c "REQ-SDA-" SPEC-hm-spec-driven-authoring.md && grep -c "REQ-TDE-" SPEC-hm-test-driven-execution.md` | ❌ Wave 0 |
+| SYN-03 | Ecosystem audit scores current canonical skills once | artifact/content | `grep -q "Canonical Inventory" ECOSYSTEM-AUDIT.md` | ❌ Wave 0 |
+| SYN-04 | Phase 27-30 roadmap exists and excludes Phase 31 execution | artifact/content | `grep -q "Deferred Scope" ROADMAP-27-30.md` | ❌ Wave 0 |
+| SYN-05 | REQUIREMENTS.md has HMQUAL entries | content | `grep -c "HMQUAL-" .planning/REQUIREMENTS.md` expecting ≥8 | ❌ Wave 0 |
+| SYN-06 | Phase 22/23 archive records exist | artifact/content | `grep -q "NOT SUBSTANTIATED" ARCHIVE-22.md && grep -q "PARTIAL" ARCHIVE-23.md` | ❌ Wave 0 |
 
-### Dimension Measurability Verification
+### Sampling Rate
+- **Per task commit:** Run the specific artifact/content command for the artifact created in that task. [VERIFIED: `gsd-validate-phase/SKILL.md`:16-22]
+- **Per wave merge:** Run the full suite command above. [VERIFIED: `.planning/config.json`:9-14]
+- **Phase gate:** All six SYN requirements must have artifact evidence before `/gsd-verify-work`. [VERIFIED: `gsd-verify-work/SKILL.md`:15-20]
 
-| Dimension | How to Verify It's Measurable |
-|-----------|------------------------------|
-| D1 Trigger Accuracy | Has evals.json with expected_loaded field per query |
-| D2 Body Depth | LOC count excluding frontmatter (automatable) |
-| D3 6-NON Defence | CR-AUDIT-ECOSYSTEM grid cell status (EXPOSED/PARTIAL/DEFENDED) |
-| D4 Eval Coverage | ls evals/ directory — count files present |
-| D5 Reference Completeness | ls references/ directory — count files; grep SKILL.md for citations |
-| D6 Integration Wiring | Grep SKILL.md for cross-references and related skill names |
-| D7 Cross-Platform Compatibility | Grep SKILL.md for platform-specific paths or assumptions |
-| D8 Self-Correction | Grep SKILL.md for "Self-Correction" or "When.*fails" patterns |
+### Wave 0 Gaps
+- [ ] `PLAYBOOK.md` — covers SYN-01 / D-01 through D-07.
+- [ ] `ECOSYSTEM-AUDIT.md` — covers SYN-03.
+- [ ] `SPEC-hm-spec-driven-authoring.md` — covers SYN-02 / G-B demonstration.
+- [ ] `SPEC-hm-test-driven-execution.md` — covers SYN-02 / G-B demonstration.
+- [ ] `ROADMAP-27-30.md` — covers SYN-04.
+- [ ] `ARCHIVE-22.md` and `ARCHIVE-23.md` — cover SYN-06.
+- [ ] `.planning/REQUIREMENTS.md` HMQUAL section — covers SYN-05.
 
----
+## Security Domain
+
+### Applicable ASVS Categories
+
+| ASVS Category | Applies | Standard Control |
+|---------------|---------|------------------|
+| V2 Authentication | no | No auth surface changes in Phase 26. [VERIFIED: `26-CONTEXT.md`:19-24] |
+| V3 Session Management | no | No runtime session state mutation in Phase 26. [VERIFIED: `26-CONTEXT.md`:19-24] |
+| V4 Access Control | yes | Preserve read-only synthesis boundary; no skill/src mutations. [VERIFIED: `26-CONTEXT.md`:19-24] |
+| V5 Input Validation | yes | Validate artifact structure through grep/file checks and sourced evidence. [VERIFIED: `.planning/config.json`:9-14] |
+| V6 Cryptography | no | No cryptographic operations in scope. [VERIFIED: `26-CONTEXT.md`:19-24] |
+
+### Known Threat Patterns for Phase 26
+
+| Pattern | STRIDE | Standard Mitigation |
+|---------|--------|---------------------|
+| Unsubstantiated quality claims | Repudiation | Require every finding to cite path/line or command output. [VERIFIED: Phase 22 failure in `.planning/STATE.md`:91-99] |
+| Scope creep into skill rewrites | Tampering | Keep Phase 26 writes limited to planning artifacts and REQUIREMENTS.md update. [VERIFIED: `26-CONTEXT.md`:19-24,35-39] |
+| Stale inventory | Information Disclosure / Integrity | Inventory current `.opencode/skills/`, not old Phase 18 names. [VERIFIED: local Python inventory command, 2026-04-25] |
+| GSD-only coupling | Denial of Service | Require OpenCode-native and arbitrary-project adaptation notes. [VERIFIED: `26-CONTEXT.md`:40-43] |
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- CR-AUDIT-ECOSYSTEM.md — Phase 18 deliverable, direct file read, 24 skills scored
-- CR-GAP-MAP.md — Phase 18 deliverable, 26 gaps identified with severity
-- CR-DECISIONS.md — Phase 18 deliverable, 32 skill decisions documented
-- All 32 SKILL.md files — direct reads of current state
-- CONTEXT.md — 11 locked decisions from user
-- STATE.md — Phase 22 NOT SUBSTANTIATED, Phase 23 PARTIAL confirmation
+- `.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-CONTEXT.md` — locked decisions D-01 through D-11 and scope boundaries.
+- `.planning/STATE.md` — Phase 22/23 status and current project state.
+- `.planning/ROADMAP.md` — Phase lineage and dependencies.
+- `.planning/phases/18-context-and-research-phase-cr-for-skills-refactor-playbook-v/CR-AUDIT-ECOSYSTEM.md` — 6-NON criteria and original audit grid.
+- `.planning/phases/18-context-and-research-phase-cr-for-skills-refactor-playbook-v/CR-GAP-MAP.md` — G-A through G-D gap lineage.
+- `.planning/phases/18-context-and-research-phase-cr-for-skills-refactor-playbook-v/CR-DECISIONS.md` — per-skill decisions.
+- `.opencode/skills/hm-spec-driven-authoring/SKILL.md` and `.opencode/skills/hm-test-driven-execution/SKILL.md` — G-B current state.
+- Local inventory command over `.opencode/skills/` — canonical count/eval/script/reference facts.
 
 ### Secondary (MEDIUM confidence)
-- ROADMAP.md — Phase lineage and dependency chain
-- plugin.ts — composition root integration patterns
+- OpenCode official docs: skills, agents, commands, custom tools, plugins. [CITED: https://opencode.ai/docs/skills/; https://opencode.ai/docs/agents/; https://opencode.ai/docs/commands/; https://opencode.ai/docs/custom-tools/; https://opencode.ai/docs/plugins/]
+- npm registry version checks for `@opencode-ai/plugin`, `@opencode-ai/sdk`, `zod`, `vitest`, `typescript`.
 
 ### Tertiary (LOW confidence)
-- GSD skill quality estimates (gsd-spec-phase LOC is estimated, not measured)
-
----
+- None intentionally used as authoritative; assumptions are listed in Assumptions Log.
 
 ## Metadata
 
 **Confidence breakdown:**
-- Standard Stack: HIGH — all 32 skills directly read and measured
-- Architecture: HIGH — integration points verified against source files
-- Pitfalls: HIGH — Phase 22/23 failures confirmed by STATE.md evidence
-- GSD benchmark comparison: MEDIUM — GSD skills not directly measured (estimated from agent prompt complexity)
+- Standard stack: HIGH — verified via local `package.json`, npm registry checks, and official OpenCode docs.
+- Architecture: HIGH — verified against `src/plugin.ts`, AGENTS.md, and OpenCode docs.
+- Pitfalls: HIGH — verified against Phase 18 artifacts, Phase 22/23 plans, and STATE.md.
+- Phase 27+ sequencing: MEDIUM — locked context names deferred lineages, but exact sequencing remains partly at agent discretion.
 
-**Research date:** 2026-04-25
-**Valid until:** 2026-05-25 (30 days — stable domain, soft meta-concepts change slowly)
+**Research date:** 2026-04-25  
+**Valid until:** 2026-05-25 for local project facts; 2026-05-02 for OpenCode/npm version facts.
