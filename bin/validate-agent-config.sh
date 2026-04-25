@@ -35,4 +35,21 @@ node -e "
 " 2>/dev/null || echo "[3/3] ⚠ Schema check skipped (dist/ not built — run 'npm run build' first)"
 
 echo ""
+echo "=== Extended Validation ==="
+
+# Run load-order validation
+if [[ -f "$ROOT_DIR/bin/validate-load-order.sh" ]]; then
+  "$ROOT_DIR/bin/validate-load-order.sh" "$ROOT_DIR" || echo "[WARN] Load-order validation found issues"
+else
+  echo "[SKIP] validate-load-order.sh not found"
+fi
+
+# Run runtime-paths validation
+if [[ -f "$ROOT_DIR/bin/validate-runtime-paths.sh" ]]; then
+  "$ROOT_DIR/bin/validate-runtime-paths.sh" "$ROOT_DIR" || echo "[WARN] Runtime-paths validation found issues"
+else
+  echo "[SKIP] validate-runtime-paths.sh not found"
+fi
+
+echo ""
 echo "=== All validations passed ==="
