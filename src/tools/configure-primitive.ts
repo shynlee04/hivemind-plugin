@@ -15,6 +15,15 @@ import {
   mixedBatchCompile,
 } from "../lib/config-compiler.js"
 import { loadPrimitives, loadPrimitive } from "../lib/primitive-loader.js"
+import {
+  canAdvanceTurn,
+  getTurnName,
+  isWorkflowComplete,
+  readWorkflow,
+  validateTurnPrecondition,
+  TOTAL_TURNS,
+} from "../lib/config-workflow/index.js"
+import type { WorkflowResumeResult } from "../lib/types.js"
 
 // ---------------------------------------------------------------------------
 // Input schema
@@ -27,7 +36,7 @@ const PrimitiveBatchItemSchema = z.object({
 })
 
 export const ConfigurePrimitiveInputSchema = z.object({
-  action: z.enum(["compile", "decompile", "read", "list", "inspect"]).default("compile").describe("Operation to perform"),
+  action: z.enum(["compile", "decompile", "read", "list", "inspect", "resume"]).default("compile").describe("Operation to perform"),
   primitive: z.enum(["agent", "command", "skill"]).optional().describe("Type of OpenCode primitive to configure"),
   spec: z.string().optional().describe("JSON or YAML string describing the primitive configuration (required for compile/decompile)"),
   name: z.string().optional().describe("Primitive identifier (required for read/inspect)"),
@@ -36,6 +45,10 @@ export const ConfigurePrimitiveInputSchema = z.object({
   validate: z.boolean().default(true).describe("If true, run schema validation before compilation"),
   scope: z.enum(["project", "global"]).default("project").describe("Target scope: project writes to .opencode/, global writes to ~/.config/opencode/"),
   overwrite: z.boolean().default(false).describe("If true, overwrite existing files. Default false — rejects if file exists"),
+  workflowTurn: z.number().min(0).max(7).optional()
+    .describe("Workflow turn number (0-7). When provided, validates turn order before executing."),
+  workflowId: z.string().optional()
+    .describe("Workflow state ID for turn-order enforcement and auto-persistence."),
 }).refine(
   (data) => {
     if (data.action === "compile" || data.action === "decompile") {
@@ -68,6 +81,8 @@ export function createConfigurePrimitiveTool(): ReturnType<typeof tool> {
       validate: s.boolean().describe("Run schema validation before compilation"),
       scope: s.string().describe("project or global scope"),
       overwrite: s.boolean().describe("Overwrite existing files"),
+      workflowTurn: s.number().describe("Workflow turn (0-7) for turn-order enforcement"),
+      workflowId: s.string().describe("Workflow state ID for turn-order enforcement and auto-persistence"),
     },
     async execute(rawArgs, context): Promise<string> {
       // 1. Validate args
@@ -89,6 +104,8 @@ export function createConfigurePrimitiveTool(): ReturnType<typeof tool> {
           return handleList(args, context)
         case "inspect":
           return handleInspect(args, context)
+        case "resume":
+          return handleResume(args)
         default:
           return renderToolResult(error(`Unknown action: ${args.action}`))
       }
@@ -104,6 +121,25 @@ function handleCompile(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
   _context: unknown,
 ): Promise<string> | string {
+  // Workflow turn enforcement — validate turn order if workflow params present
+  if (args.workflowTurn !== undefined && args.workflowId) {
+    const workflow = readWorkflow(args.workflowId)
+    if (!workflow) {
+      return renderToolResult(error(`Workflow ${args.workflowId} not found`))
+    }
+    if (!canAdvanceTurn(workflow, args.workflowTurn)) {
+      return renderToolResult(error(
+        `Invalid turn transition: cannot advance to turn ${args.workflowTurn}. ` +
+        `Current turn is ${workflow.currentTurn} (${getTurnName(workflow.currentTurn)}). ` +
+        `Expected turn ${workflow.currentTurn + 1} or any turn <= ${workflow.currentTurn}.`,
+      ))
+    }
+    const guard = validateTurnPrecondition(workflow, args.workflowTurn)
+    if (!guard.valid) {
+      return renderToolResult(error(`Turn precondition failed: ${guard.errors.join("; ")}`))
+    }
+  }
+
   // Batch mode: primitives array provided
   if (args.primitives && args.primitives.length > 0) {
     return handleBatchCompile(args)
@@ -340,6 +376,37 @@ async function handleInspect(
     crossRefStatus,
     warnings: loadResult.warnings.filter(w => w.includes(args.name!)),
   }))
+}
+
+// ---------------------------------------------------------------------------
+// Resume handler (workflow state recovery)
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle the "resume" action — return current workflow state for the caller
+ * to resume from the correct turn.
+ *
+ * @param args - Validated tool arguments (must include workflowId).
+ * @returns Tool result with resume context or error.
+ */
+function handleResume(args: z.infer<typeof ConfigurePrimitiveInputSchema>): string {
+  if (!args.workflowId) {
+    return renderToolResult(error("workflowId is required for resume action"))
+  }
+  const workflow = readWorkflow(args.workflowId)
+  if (!workflow) {
+    return renderToolResult(error(`Workflow ${args.workflowId} not found`))
+  }
+  const result: WorkflowResumeResult = {
+    workflowId: workflow.id,
+    currentTurn: workflow.currentTurn,
+    currentTurnName: getTurnName(workflow.currentTurn),
+    completedTurns: Object.values(workflow.turns).filter(t => t.status === "complete").length,
+    totalTurns: TOTAL_TURNS,
+    lastOutput: workflow.turns[workflow.currentTurn - 1]?.output ?? null,
+    canContinue: !isWorkflowComplete(workflow),
+  }
+  return renderToolResult(success("Workflow resume", { resume: result }))
 }
 
 // ---------------------------------------------------------------------------
