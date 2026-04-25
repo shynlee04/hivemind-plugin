@@ -82,13 +82,47 @@ The reconciliation rule for downstream phases is: current directory existence is
 
 ## 8-Dimension Score Matrix
 
-Task 2 will replace this placeholder with the D1-D8 PASS/PARTIAL/FAIL matrix. This section exists in Task 1 so the artifact shell matches the required ecology-audit structure before scoring is populated.
+Score labels are restricted to `PASS`, `PARTIAL`, and `FAIL`. Evidence summarizes the current package metrics plus Phase 18 gap lineage where applicable; existence alone is never treated as quality closure.
+
+| Skill | D1 Trigger | D2 Body | D3 6-NON | D4 Eval | D5 Refs | D6 Integration | D7 Platform | D8 Self-Correction | Evidence |
+|-------|------------|---------|----------|---------|---------|----------------|-------------|--------------------|----------|
+| `hivefiver-agents-and-subagents-dev` | PARTIAL | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 202 LOC, 2 refs, 0 evals; Phase 18 predecessor had 4 EXPOSED modes. |
+| `hivefiver-command-dev` | PARTIAL | FAIL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | FAIL | 80 LOC, 2 refs, 0 evals; Phase 18 command-dev gap remains body/eval-heavy. |
+| `hivefiver-context-absorb` | PARTIAL | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 117 LOC, 4 refs, 0 evals; Phase 18 hf-context-absorb lacked audit/evals. |
+| `hivefiver-custom-tools-dev` | PARTIAL | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 121 LOC, 2 refs, 0 evals; D6 subject matter exists but proof is incomplete. |
+| `hivefiver-delegation-gates` | PARTIAL | PARTIAL | PARTIAL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 249 LOC, 1 ref, 2 scripts, 0 evals; gate behavior lacks stacked validation. |
+| `hivefiver-use-authoring-skills` | PASS | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | PARTIAL | PASS | 266 LOC, 12 refs, 2 evals, 8 scripts; strong authoring bundle but no stacked scenario. |
+| `hm-agent-composition` | PARTIAL | PARTIAL | FAIL | PARTIAL | PASS | PARTIAL | PARTIAL | PARTIAL | 158 LOC, 6 refs, 1 eval; Phase 18 gsd-agent-composition had context/cycle gaps. |
+| `hm-agents-md-sync` | PARTIAL | PARTIAL | FAIL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | 155 LOC, 0 refs, 0 evals; G-D gap persists without bundle evidence. |
+| `hm-command-parser` | PARTIAL | FAIL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | FAIL | 114 LOC, 1 ref, 0 evals; Phase 18 command-parser had audit/context/cycle/eval gaps. |
+| `hm-completion-looping` | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | PARTIAL | PARTIAL | PASS | 119 LOC, 2 refs, 1 eval, 1 script; only current `stacked_scenario` carrier. |
+| `hm-coordinating-loop` | PASS | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | PARTIAL | PASS | 411 LOC, 4 refs, 2 evals, 8 scripts; Phase 18 predecessor was fully defended but stacked status still needs current proof. |
+| `hm-debug` | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 136 LOC, 2 refs, 1 eval, 1 script; post-Phase-18 created skill still needs D1-D8 proof. |
+| `hm-deep-research` | PASS | PASS | FAIL | FAIL | PASS | PARTIAL | PARTIAL | PARTIAL | 380 LOC, 6 refs, 0 evals; Phase 18 listed context/cycle/eval gaps. |
+| `hm-detective` | PASS | PARTIAL | FAIL | FAIL | PASS | PARTIAL | PARTIAL | PARTIAL | 225 LOC, 6 refs, 0 evals; Phase 18 listed audit/context/eval gaps. |
+| `hm-meta-builder` | PASS | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | PARTIAL | PARTIAL | 389 LOC, 8 refs, 2 evals, 6 scripts; Phase 18 cycle hardening remained medium gap. |
+| `hm-omo-reference` | PARTIAL | FAIL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | FAIL | 76 LOC, 5 refs, 0 evals; reference skill remains thin. |
+| `hm-opencode-non-interactive-shell` | PARTIAL | FAIL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | FAIL | 65 LOC, 4 refs, 0 evals; portability subject exists but evidence is absent. |
+| `hm-opencode-platform-reference` | PARTIAL | FAIL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | FAIL | 79 LOC, 20 refs, 0 evals; reference-heavy and eval-empty. |
+| `hm-opencode-project-audit` | PARTIAL | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 161 LOC, 1 ref, 2 scripts, 0 evals; audit workflow lacks eval proof. |
+| `hm-opencode-project-inspection` | PARTIAL | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 125 LOC, 3 refs, 1 script, 0 evals; split-lineage validation pending. |
+| `hm-phase-execution` | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PASS | 151 LOC, 2 refs, 1 eval, 1 script; recovery guidance exists but D6 proof incomplete. |
+| `hm-phase-loop` | PASS | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 127 LOC, 1 ref, 0 evals; Phase 18 critical G-A gap remains quality-open. |
+| `hm-planning-with-files` | PASS | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 158 LOC, 3 refs, 0 evals; merged session-context quality not proved. |
+| `hm-refactor` | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 121 LOC, 2 refs, 1 eval, 1 script; post-Phase-18 created skill needs deeper proof. |
+| `hm-research-chain` | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 113 LOC, 2 refs, 1 eval, 1 script; chain behavior needs stacked eval proof. |
+| `hm-skill-synthesis` | PASS | PARTIAL | PARTIAL | PARTIAL | PASS | PARTIAL | PARTIAL | PARTIAL | 177 LOC, 5 refs, 2 evals, 7 scripts; bundle exists but stacked eval absent. |
+| `hm-spec-driven-authoring` | PARTIAL | PARTIAL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 107 LOC, 2 refs, 1 eval, 1 script; G-B existence closed, quality open. |
+| `hm-subagent-delegation-patterns` | PARTIAL | PARTIAL | FAIL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 160 LOC, 3 refs, 1 script, 0 evals; split-lineage eval proof missing. |
+| `hm-synthesis` | PASS | PASS | FAIL | FAIL | PASS | PARTIAL | PARTIAL | PARTIAL | 371 LOC, 7 refs, 0 evals; Phase 18 context/eval gaps remain. |
+| `hm-test-driven-execution` | PARTIAL | PARTIAL | FAIL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | 119 LOC, 2 refs, 1 eval, 1 script; G-B existence closed, quality open. |
+| `hm-user-intent-interactive-loop` | PASS | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | PARTIAL | PASS | 422 LOC, 5 refs, 2 evals, 5 scripts; strong body, stacked scenario verification pending. |
 
 ## Tier Distribution
 
 | Tier | Count | Skills |
 |------|-------|--------|
-| EXEMPLARY | 0 | None yet; no row currently proves all D1-D8 with stacked eval evidence. |
+| EXEMPLAR | 0 | None yet; no row currently proves all D1-D8 with stacked eval evidence. |
 | SUBSTANTIVE | 6 | `hivefiver-use-authoring-skills`, `hm-completion-looping`, `hm-coordinating-loop`, `hm-meta-builder`, `hm-skill-synthesis`, `hm-user-intent-interactive-loop` |
 | THIN | 19 | Most current packages have useful structure but lack complete D1-D8 proof. |
 | HOLLOW | 6 | `hivefiver-command-dev`, `hm-agents-md-sync`, `hm-command-parser`, `hm-omo-reference`, `hm-opencode-non-interactive-shell`, `hm-opencode-platform-reference` |
@@ -105,8 +139,28 @@ Task 2 will replace this placeholder with the D1-D8 PASS/PARTIAL/FAIL matrix. Th
 
 ## Phase 18 Decision Reconciliation
 
-Task 2 will populate this section with G-A through G-D reconciliation details.
+| Gap Group | Phase 18 Finding | Current Phase 26 Evidence | Reconciliation | Future Owner |
+|-----------|------------------|---------------------------|----------------|--------------|
+| G-A | Guardrail/looping lineage had missing or under-defended completion, phase-loop, delegation, and intent-loop capabilities. | `hm-completion-looping`, `hm-phase-loop`, `hm-subagent-delegation-patterns`, and `hm-user-intent-interactive-loop` now exist, but D4 stacked/eval proof is mostly absent. | Existence is partially closed; quality remains open. | Phase 30 |
+| G-B | Spec-driven and test-driven skills were missing. | `hm-spec-driven-authoring` and `hm-test-driven-execution` now exist with 1 eval each, but both remain THIN. | G-B existence is closed, quality is not closed. | Phase 27 |
+| G-C | Research/investigation/synthesis lineage lacked context maps, evals, and chained proof. | `hm-deep-research`, `hm-detective`, `hm-synthesis`, and `hm-research-chain` exist, but three of four have zero evals and no stacked proof. | Current inventory does not close research-lineage quality gaps. | Phase 28 |
+| G-D | Execution/refactor/debug/platform/configuration lineage had body, cycle, integration, and eval gaps. | `hm-debug`, `hm-refactor`, `hm-phase-execution`, `hm-planning-with-files`, `hm-command-parser`, and platform skills exist with mixed refs/evals. | Current inventory does not close execution-lineage quality gaps. | Phase 29 |
+
+Phase 22 6-NON scope is absorbed into PLAYBOOK D3.
+
+Phase 23 eval scope is absorbed into PLAYBOOK D4.
+
+existence does not equal quality closure.
 
 ## Open Gap Register
 
-Task 2 will populate this section with Phase 18 gap counts and future ownership.
+| Gap Register Item | Count / Owner | Evidence and Handling |
+|-------------------|---------------|-----------------------|
+| Phase 18 gaps tracked | 26 Phase 18 gaps tracked | `CR-GAP-MAP.md` contains 26 gap rows across G-A through G-D. |
+| Fully resolved by quality evidence | 0 fully resolved by quality evidence | No canonical row currently proves PASS across D1-D8 with stacked eval evidence. |
+| G-B ownership | Phase 27 owns G-B quality uplift | G-B existence is closed through current directories, but D1-D8 quality remains open. |
+| G-C ownership | Phase 28 owns G-C | Research lineage needs chained evals, context mapping, and reference integration proof. |
+| G-D ownership | Phase 29 owns G-D | Execution lineage needs runtime-truthful verification, recovery, and integration proof. |
+| G-A ownership | Phase 30 owns G-A | Guardrail lineage needs loop termination, false-completion, and stacked delegation evidence. |
+
+Downstream closure rule: a future phase may mark a gap resolved only when the target skill has current D1-D8 evidence, eval status, reference status, integration notes, platform notes, self-correction notes, and a verification command result in its summary.
