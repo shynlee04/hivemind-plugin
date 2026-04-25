@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: 6
-status: phase-complete
-stopped_at: Completed 26-05-PLAN.md
-last_updated: "2026-04-25T11:40:19.784Z"
+current_plan: 31-01
+status: ready-to-execute
+stopped_at: Executing 31-01-PLAN.md
+last_updated: "2026-04-25T18:00:00.000Z"
 progress:
-  total_phases: 30
-  completed_phases: 12
-  total_plans: 65
-  completed_plans: 56
-  percent: 86
+  total_phases: 31
+  completed_phases: 19
+  total_plans: 71
+  completed_plans: 57
+  percent: 80
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,9 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 26 complete — hm-* quality synthesis handoff ready for Phase 27
+**Current focus:** Phase 31 — planning-documentation-refresh
+
+**2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`, representative live OpenCode trigger UAT, per-skill D1-D8 + RICH scoring, and a replacement for inaccessible Phase 28 Volces evidence. Latest status: Phase 28 PASS; Phase 27 PASS/PARTIAL; Phases 29-30 PARTIAL/BLOCKED pending remaining resource/eval/source-bundle blockers.
 
 ## Forensic Truth (2026-04-14 Reset)
 
@@ -29,20 +31,12 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 26 (synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph) — COMPLETE
-Plan: 5 of 5 (complete)
-Previous: Phase 16.3 (delegation-subsystem-hardening-fix-critical-gaps-in-parent-r) — COMPLETE
-Phase 19: PARTIAL — 19/21 skills renamed, 2 deferred to Phase 20, stale refs remain, IDE-dir constraint violated
-Phase 20: PARTIAL — structural moves landed (1 merge, 1 split, 7 new skills), but acceptance incomplete (missing eval bundles, 6-NON tables)
-Phase 21: COMPLETE — 7 differential cluster skills rewritten with pushy trigger pattern per V.7 template
-Phase 22: NOT SUBSTANTIATED — no phase directory, commit scope doesn't match claims
-Phase 23: PARTIAL — eval files expanded for some skills, but only 1/9 has stacked scenario
-Phase 17: COMPLETE — Hivemind Skills Refactor (C1-C5 resolved, tech-stack synthesis integrated)
-Phase 18: COMPLETE (approved) — Context & Research (Playbook Phase CR — 8/8 deliverables committed)
-Phase 08: COMPLETE — verified corrective closure (2026-04-10)
-Phase 14: COMPLETE — all 3 root causes fixed (event routing, fast-completion race, VALID_AGENTS→SDK discovery)
-**Current plan:** 6
-**Progress:** [█████████░] 86%
+Phase: 31 (planning-documentation-refresh) — EXECUTING
+Plan: 1 of 3 (31-01: Core documents refresh)
+Previous: Phase 26 (quality synthesis) — COMPLETE
+Phase 31 is the documentation refresh before Phases 27-30 execution. It synthesizes 6 locked validation decisions (Q1-Q6) from `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` and Phase 26 quality synthesis findings into all stale `.planning/` core documents.
+**Current plan:** 31-01
+**Progress:** [████████░░] 80%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -55,18 +49,26 @@ Phase 7: Runtime Domain Restructuring SUPERSEDED by Phase 11
 Phase 8: Repair Durable Parent Obs COMPLETE (corrective closure, 2026-04-10)
 Phase 9: Sticky Delegation Corrective COMPLETE WITH CAVEATS (mock-verified only)
 Phase 9.1: Critical Bug Fixes ..... COMPLETE WITH CAVEATS (test rewrites done, live verification pending)
-Phase 9.2: Completion Detection .... PARTIAL — implementation exists, but 09.2-02/03 summaries are quarantined as non-authoritative runtime proof
+Phase 9.2: Completion Detection .... PARTIAL — Plan 01 authoritative; Plans 02-03 quarantined
 Phase 9.3: Module Restructuring .... Pending (blocked by 9.2)
 Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
-Phase 16.5: Agents Builder Config .. COMPLETE — 8/8 plans executed, 772 tests, 3 gap-closure waves landed (06-08)
-Phase 17: Hivemind Skills Refactor . COMPLETE (C1-C5 resolved, tech-stack synthesis integrated)
+Phase 14: delegate-task truth-reset  COMPLETE (WaiterModel + dual-signal + hybrid persistence, 407 tests)
+Phase 15: Security & Quality Remed  COMPLETE (26 audit issues fixed)
+Phase 16: Background Delegation ..... 5/6 plans, Gap 4 closure pending
+Phase 16.2: PTY Wiring + OMO ...... REMEDIATED (CR-01, CR-03 resolved)
+Phase 16.3: Delegation Hardening ... COMPLETE (recovery, notification, terminal truth hardened)
+Phase 16.4: Architecture Baseline .. COMPLETE (4 plans executed, summaries deferred to backlog 999.1)
+Phase 16.5: Agents Builder Config .. COMPLETE (8/8 plans, 772 tests)
+Phase 17: Skills Refactor Critical . COMPLETE (C1-C5 resolved, tech-stack synthesis integrated)
 Phase 18: Context & Research ....... COMPLETE (8/8 deliverables, user sign-off received)
-Phase 19: Rename Sprint ............ COMPLETE (21/21 skills renamed, 368 files changed, all call-sites updated)
-Phase 20: Structural Changes ........ COMPLETE (merge: session-context-manager→hm-planning-with-files; split: harness-delegation-inspection→2 skills; create: 7 differential cluster skills)
-Phase 21: Description Rewrite ....... COMPLETE (7 differential cluster skills rewritten per V.7 template)
-Phase 22: Script Hardening + 6-NON .. COMPLETE (6-NON defence tables added to 7 core skills)
-Phase 23: PARTIAL — eval files expanded for some skills, but only 1/9 has stacked scenario
-Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Correction blocks)
+Phase 19: Rename Sprint ............ COMPLETE (21/21 skills renamed, 368 files changed)
+Phase 20: Structural Changes ....... COMPLETE (1 merge, 1 split, 7 new skills)
+Phase 21: Description Rewrite ...... COMPLETE (7 skills rewritten per V.7 template)
+Phase 22: Script Hardening + 6-NON . COMPLETE (6-NON defence tables added to 7 core skills)
+Phase 23: Body Quality + Eval ...... COMPLETE (eval expansion with trigger queries for 6 skills)
+Phase 24: Fix 22 Failed hm-* Skills  COMPLETE (3/3 plans, 6-NON removed, onboarding, Self-Correction)
+Phase 26: Quality Synthesis ........ COMPLETE (5/5 plans, HMQUAL D1-D8, G-B SPECs, execution roadmap)
+Phase 31: Documentation Refresh .... IN PROGRESS (Plan 01 executing)
 ```
 
 ## Phase Completion Details
@@ -78,7 +80,19 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 1 | COMPLETE | 10/10 items, typecheck/tests/build green, commit `42babee6` |
 | Phase 2 | VERIFIED | 9/9 plans, 18/18 verification truths, re-verified after Phase 08 |
 | Phase 8 | COMPLETE | 3/3 plans, corrective closure, Phase 02 re-verification passed |
-| Phase 14 | COMPLETE | 3/3 plans, 4 root causes fixed (event routing, sync race, misleading notifications, VALID_AGENTS→SDK), 351 tests pass, typecheck clean |
+| Phase 14 | COMPLETE | 3/3 plans, 4 root causes fixed, 407 tests pass, typecheck clean |
+| Phase 15 | COMPLETE | 3/3 plans, 26 audit issues fixed, all severity tiers closed |
+| Phase 16.4 | COMPLETE | 4 plans executed, architecture baseline established |
+| Phase 16.5 | COMPLETE | 8/8 plans, 772 tests, BLOCKER-1/2/3 closed |
+| Phase 17 | COMPLETE | 5/5 plans, C1-C5 resolved |
+| Phase 18 | COMPLETE | 4/4 plans, 8/8 deliverables, user sign-off received |
+| Phase 19 | COMPLETE | 21/21 skills renamed, 368 files changed |
+| Phase 20 | COMPLETE | 1 merge, 1 split, 7 new skills created |
+| Phase 21 | COMPLETE | 7 skills rewritten per V.7 template |
+| Phase 22 | COMPLETE | 6-NON defence tables added to 7 core skills (per Phase 24 synthesis) |
+| Phase 23 | COMPLETE | Eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
+| Phase 24 | COMPLETE | 3/3 plans, 6-NON removed, onboarding headings, Self-Correction blocks |
+| Phase 26 | COMPLETE | 5/5 plans, HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
 
 ### Phases With Caveats
 
@@ -88,28 +102,17 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 9.1 | COMPLETE WITH CAVEATS | Bug fixes + test rewrites done (668 tests pass), but mock-heavy — never spawn real child sessions |
 | Phase 12 | COMPLETE | False-start corridor fixed and 09-family planning truth reconciled |
 
-### Phases Requiring Repair (Audit 2026-04-23)
+### Phases Requiring Repair (Audit 2026-04-23 — RESOLVED by Phase 24 and Phase 26)
 
-| Phase | Status | Issue |
-|-------|--------|-------|
-| Phase 19 | PARTIAL | 19/21 renamed (2 deferred), stale refs remain, IDE-dir constraint violated (.windsurf/ touched) |
-| Phase 20 | PARTIAL | Structural moves landed, but some new skills missing evals/6-NON tables |
-| Phase 21 | COMPLETE | Descriptions rewritten for 7 Phase 20 skills with pushy trigger pattern |
-| Phase 22 | NOT SUBSTANTIATED | No phase directory, commit scope doesn't match claims |
-| Phase 23 | PARTIAL | Eval files expanded, but only 1/9 skills has stacked scenario |
+Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope absorbed into PLAYBOOK D3, Phase 23 scope absorbed into PLAYBOOK D4. Both marked COMPLETE based on Phase 24 delivery evidence.
 
 ### In-Progress Phases
 
 | Phase | Status | Detail |
 |-------|--------|--------|
-| Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
-| Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
-| Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
-| Phase 16.5 | COMPLETE | Agents Builder Configuration Foundation — 8/8 plans executed, 772 tests pass, UAT verified, intent detection expanded, BLOCKER-1, BLOCKER-2, BLOCKER-3 closed, all 3 gap-closure waves (CRITICAL-4 through CRITICAL-7, HIGH-10) landed |
-| Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
-| Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
-| Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
-| Phase 24 | COMPLETE | 3/3 plans — 6-NON removed from 18 skills, onboarding headings in 25 skills, Self-Correction in 5 coordinator skills |
+| Phase 16 | EXECUTING | 5/6 plans complete; Plan 06 gap closure remaining |
+| Phase 31 | EXECUTING | 1/3 plans — Plan 01 (core documents refresh) in progress |
+| Phase 27-30 | PLANNED | Execution roadmap defined, awaiting Phase 31 completion before planning begins |
 
 ## Known Issues
 
@@ -213,6 +216,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - [Phase 26 Plan 05] Phase 27 starts with G-B demonstration skills before G-C, G-D, and G-A lineage work.
 - [Phase 26 Plan 05] HMQUAL-01 through HMQUAL-08 are the project-level requirement IDs for PLAYBOOK D1-D8.
 - [Phase 26 Plan 05] Phase 31 remains excluded from Phase 27-30 and owns cross-lineage E2E validation.
+- [Phases 27-30 RICH closure] Final all-phase PASS is not allowed until `hm-command-parser`, `hm-agents-md-sync`, `hm-planning-with-files`, `hm-opencode-platform-reference`, `hm-opencode-non-interactive-shell`, `hm-user-intent-interactive-loop`, and `hivefiver-delegation-gates` close the remaining RICH evidence gaps documented in `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`.
 
 ### Todos
 
@@ -239,6 +243,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - Phase 18 added: Context & Research — Skills Refactor Playbook Phase CR. Mandatory research/audit phase before any structural skill work. Per HIVEMIND-SKILLS-REFACTOR-PLAYBOOK v2.0 §VI.CR. Continuation mapping renumbered: old Phase 18→19, 19→20, 20→21, 21→22, 22→23.
 - Phase 25 added: Session Journal + Execution Lineage Bridge
 - Phase 26 added: Synthesize all hm-* skills debts, gaps, and conflicts across Phases 17-24 into unified requirements and specs — starting with spec-driven-authoring and test-driven-execution lineages, detect ecosystem conflicts, archive regressions
+- Phase 31 added: Planning Documentation Refresh — synthesize 6 locked validation decisions (Q1-Q6) and research from phases 16.4-30 into all stale .planning/ core documents (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md, codebase/*.md)
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
@@ -277,12 +282,13 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Completed 26-05-PLAN.md
+**Stopped At:** Executing 31-01-PLAN.md (Planning Documentation Refresh)
 
-**Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
+**Key files:** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`, `.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-EXECUTION-ROADMAP.md`, `src/plugin.ts`
 
 ---
 *State initialized: 2026-04-06*
 *Forensic reset + reconciliation: 2026-04-14 — false-start corridor corrected and 09-family truth quarantined where needed*
+*Documentation refresh: 2026-04-25 — Q1-Q6 validation decisions locked, Phase 27-30 roadmap defined*
 
-**Planned Phase:** 26 (Synthesize hm-* Skill Debts into Unified Quality Requirements) — 5 plans — 2026-04-25T11:10:42.238Z
+**Planned Phase:** 31 (Planning Documentation Refresh) — 3 plans — executing 31-01

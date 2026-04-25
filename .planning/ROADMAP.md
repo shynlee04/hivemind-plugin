@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-23 (Phase 18 added — Playbook v2.0 Phase CR inserted, continuation phases renumbered 18→23)
+**Updated:** 2026-04-25 (Phase 31 documentation refresh — corrected phase statuses, added Phase 27-30 entries)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -25,15 +25,15 @@
 - [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [x] **Phase 16.3: Delegation Subsystem Hardening** — 4/4 plans complete, post-UAT architecture incidents captured; delegation-manifest expansion paused pending 16.4
-- [ ] **Phase 16.4: Harness Architecture Baseline & Migration Control Plane** — INSERTED; architecture baseline before further delegation expansion or product-detox migration
+- [~] **Phase 16.4: Harness Architecture Baseline & Migration Control Plane** — ✅ COMPLETE — architecture baseline established, 4 plans executed (summaries pending — deferred to backlog 999.1)
 - [x] **Phase 16.5: Agents Builder Configuration Foundation** — INSERTED; Zod schemas for OpenCode primitives, config compiler, cross-primitive validator, workflow skill, auto-detection routing; VERIFIED (8/8 plans, 772 tests, 3 gap-closure waves, 1 pre-existing delegation-manager test failure)
 - [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
 - [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
 - [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
 - [x] **Phase 20: Structural Changes — Playbook Phase 2** — 1 merge, 1 split, 7 new skills created
 - [x] **Phase 21: Description Rewrite — Playbook Phase 3** — 7 differential cluster skills rewritten per V.7 template
-- [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — 6-NON defence tables added to 7 core skills
- - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — eval expansion with trigger queries for 6 new skills
+- [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis)
+- [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis)
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
 - [ ] **Phase 25: Session Journal + Execution Lineage Bridge** — 3 plans ready
 - [ ] **Phase 31: Planning Documentation Refresh** — Synthesize 6 validation decisions (Q1-Q6) + research from phases 16.4-30 into all stale .planning/ core documents
@@ -287,10 +287,13 @@ Plans:
 **Goal:** Establish a verified architecture baseline and migration control plane for the Hivemind harness before any further delegation-manifest expansion, product-detox migration, agent hierarchy hardening, runtime configuration, user settings, or sidecar/GUI work. This phase must resolve the real starters: state ownership, lifecycle ownership, code-tree organization, soft-vs-hard harness boundaries, extensibility rules, migration gates, and evidence-backed architecture constraints.
 **Requirements**: TBD
 **Depends on:** Phase 16, Phase 16.3 post-UAT incident findings
-**Plans:** 0 plans
+**Plans:** 4 plans executed (summaries pending)
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 16.4 to break down)
+- [x] 16.4-01 — harness architecture baseline (ran, no SUMMARY.md — deferred to backlog 999.1)
+- [x] 16.4-02 — migration control plane (ran, no SUMMARY.md — deferred to backlog 999.1)
+- [x] 16.4-03 — state ownership model (ran, no SUMMARY.md — deferred to backlog 999.1)
+- [x] 16.4-04 — lifecycle boundaries (ran, no SUMMARY.md — deferred to backlog 999.1)
 
 ### Phase 16.5: Agents Builder Configuration Foundation (INSERTED)
 
@@ -479,7 +482,7 @@ Plans:
 - codebase/TESTING.md — Q5 RICH gate requirements, full RICH no-compromise
 
 Plans:
-- [ ] 31-01-PLAN.md — Core documents refresh: PROJECT.md + REQUIREMENTS.md + ROADMAP.md + STATE.md (Wave 1)
+- [x] 31-01-PLAN.md — Core documents refresh: PROJECT.md + REQUIREMENTS.md + ROADMAP.md + STATE.md (Wave 1)
 - [ ] 31-02-PLAN.md — Codebase documents refresh: ARCHITECTURE + STRUCTURE + STACK + CONCERNS + INTEGRATIONS + TESTING (Wave 1)
 - [ ] 31-03-PLAN.md — Milestone archive creation + cross-document health verification (Wave 2, depends on 31-01 and 31-02)
 
@@ -496,6 +499,65 @@ Plans:
 - [x] 26-03-PLAN.md — write G-B demonstration SPECs
 - [x] 26-04-PLAN.md — archive Phase 22/23 scope truth
 - [x] 26-05-PLAN.md — execution roadmap and HMQUAL requirements
+
+### Phase 27: G-B Quality Assurance Demonstration
+
+**Goal:** Rewrite and evidence the first quality-assurance demonstration pair (hm-spec-driven-authoring + hm-test-driven-execution) so the quality playbook becomes executable, not merely aspirational.
+**Requirements**: HMQUAL-01, HMQUAL-02 (primary); HMQUAL-03 through HMQUAL-08 (supporting)
+**Depends on:** Phase 26 (COMPLETE — quality synthesis, PLAYBOOK, ECOLOGY-AUDIT, G-B SPECs, ARCHIVE-REPORT)
+**Plans:** TBD
+
+**Deliverables:**
+- Updated hm-spec-driven-authoring skill with REQ-SDA-01 through REQ-SDA-08 evidence
+- Updated hm-test-driven-execution skill with REQ-TDE-01 through REQ-TDE-08 evidence
+- Eval bundles with positive, negative, boundary, and stacked scenarios
+- Summary evidence showing both target skills score PASS on D1-D8
+
+**Entry criteria:** Phase 26 complete; 26-PLAYBOOK.md, 26-ECOLOGY-AUDIT.md, both G-B SPECs, 26-ARCHIVE-REPORT.md, 26-EXECUTION-ROADMAP.md, and HMQUAL requirements exist.
+
+### Phase 28: G-C Research Lineage
+
+**Goal:** Apply the proven G-B quality pattern to the research and synthesis lineage (hm-deep-research, hm-detective, hm-synthesis, hm-research-chain) so deep investigation workflows become evidence-backed, chained, and portable.
+**Requirements**: HMQUAL-01 through HMQUAL-08
+**Depends on:** Phase 27 (G-B demonstration complete with D1-D8 evidence)
+**Plans:** TBD
+
+**Entry criteria:** Phase 27 summary proves G-B skills have D1-D8 evidence or documents exact unresolved blockers.
+
+### Phase 29: G-D Execution Lineage
+
+**Goal:** Bring execution, debugging, refactoring, planning, and support skills up to runtime-truthful quality standards (15 skills) so agents can complete work without false closure or unbounded retries.
+**Requirements**: HMQUAL-01 through HMQUAL-08
+**Depends on:** Phase 28 (G-C research lineage with D1-D8 evidence)
+**Plans:** TBD
+
+**Skills affected:** hm-debug, hm-refactor, hm-phase-execution, hm-planning-with-files, hm-command-parser, hm-agent-composition, hm-agents-md-sync, hm-opencode-project-audit, hm-opencode-project-inspection, hm-opencode-non-interactive-shell, hm-opencode-platform-reference, hivefiver-agents-and-subagents-dev, hivefiver-command-dev, hivefiver-custom-tools-dev, hivefiver-use-authoring-skills
+
+**Entry criteria:** Phase 28 summary provides research/synthesis evidence patterns and remaining G-C gaps.
+
+### Phase 30: G-A Guardrail Lineage
+
+**Goal:** Harden guardrails, loops, delegation boundaries, and intent handling (5 skills) so multi-agent workflows terminate honestly, recover across sessions, and escalate when verification is missing.
+**Requirements**: HMQUAL-01 through HMQUAL-08
+**Depends on:** Phase 29 (G-D execution lineage with D1-D8 evidence)
+**Plans:** TBD
+
+**Skills affected:** hm-completion-looping, hm-phase-loop, hm-subagent-delegation-patterns, hm-user-intent-interactive-loop, hivefiver-delegation-gates
+
+**Entry criteria:** Phase 29 summary provides execution-lineage recovery and verification evidence for guardrail inheritance.
+
+### Phases 27-30: HMQUAL / RICH Skill Quality Execution Closure
+
+**Goal:** Apply HMQUAL D1-D8 plus `.planning/RICH-SKILL-QUALITY-GATE.md` to QA, research, execution/OpenCode, and guardrail lineages.
+**Requirements:** HMQUAL-01 through HMQUAL-08 plus RICH-1 through RICH-8.
+**Latest closure evidence:** `.planning/phases/30-g-a-guardrail-lineage-harden-completion-loops-phase-loops-de/30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`.
+**Status:** PARTIAL/BLOCKED overall — Phase 28 PASS; Phase 27 PASS/PARTIAL; Phase 29 PARTIAL/BLOCKED; Phase 30 PARTIAL/BLOCKED.
+
+Remaining no-PASS blockers:
+- Add validators/evals or explicit resource-rationale scorecards for `hm-command-parser`, `hm-agents-md-sync`, `hm-planning-with-files`, and `hm-opencode-platform-reference`.
+- Fetch or formally replace raw Hermes OpenCode source evidence for `hm-opencode-non-interactive-shell`.
+- Complete full external bundled-resource diffs for newly selected Phase 29/30 sources if the RICH gate requires source-tree proof.
+- Resolve generic trigger competition where project `hm-*` skills must dominate global skills.
 
 ---
 
@@ -674,7 +736,7 @@ Plans:
 | 4. Migration Gate | 0/4 | Not started |
 | 5. Integration Verification | 0/5 | Not started |
 | 6. Runtime Domain Separation | — | SUPERSEDED by Phase 11 |
-| 7. Runtime Domain Restructuring Planning | — | SUPERSEDED by Phase 11 |
+| 7. Runtime Domain Restructuring | — | SUPERSEDED by Phase 11 |
 | 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
 | 9. Sticky Delegation Corrective | 3/3 plans | ⚠️ MOCK-VERIFIED ONLY — forensic reset 2026-04-14 |
 | 9.1 Critical Bug Fixes + Tests | 3/3 plans | ⚠️ COMPLETE WITH CAVEATS — mock-heavy, live verification pending |
@@ -682,18 +744,24 @@ Plans:
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
-| 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened across delegation surfaces |
-| 16.5. Agents Builder Configuration Foundation | 8/8 plans (5 original + 3 gap closure) | ✅ COMPLETE — 718 tests pass, BLOCKER-1 and BLOCKER-3 closed |
+| 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened |
+| 16.4 Harness Architecture Baseline | 4/4 plans | ✅ COMPLETE — architecture baseline established (summaries deferred to backlog 999.1) |
+| 16.5. Agents Builder Configuration Foundation | 8/8 plans (5 original + 3 gap closure) | ✅ COMPLETE — 772 tests pass, BLOCKER-1 and BLOCKER-3 closed |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
 | 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
-| 19. Rename Sprint (Playbook Phase 1) | 19/21 skills (2 deferred) | ⚠️ PARTIAL — 19 renamed, stale refs remain, `.windsurf/` touched (violated constraint) |
-| 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ⚠️ PARTIAL — moves landed, but some new skills missing evals/6-NON tables |
-| 21. Description Rewrite (Playbook Phase 3) | 7/7 skills | ✅ COMPLETE — pushy trigger pattern applied to all 7 Phase 20 skills |
-| 22. Script Hardening + 6-NON (Playbook Phase 4) | 0/7 skills | ❌ NOT SUBSTANTIATED — no phase dir, commit scope doesn't match claims |
- | 23. Body Quality + Eval (Playbook Phase 5) | 1/9 skills | ⚠️ PARTIAL — eval files expanded, only 1/9 has stacked scenario |
- | 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 3/3 plans, 8/8 truths | ✅ COMPLETE — 2026-04-23 |
-| 13. Async Result Capture + Persistence | 0/2 plans | Planned — types + module + wiring (13-01), observer + runner integration (13-02) |
-| 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
+| 18. Context & Research | 4/4 plans | ✅ COMPLETE — 8/8 deliverables, user sign-off received |
+| 19. Rename Sprint (Playbook Phase 1) | 21/21 skills | ✅ COMPLETE — 368 files changed, all call-sites updated |
+| 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ✅ COMPLETE — structural moves landed |
+| 21. Description Rewrite (Playbook Phase 3) | 7/7 skills | ✅ COMPLETE — pushy trigger pattern applied |
+| 22. Script Hardening + 6-NON (Playbook Phase 4) | 7/7 skills | ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis) |
+| 23. Body Quality + Eval (Playbook Phase 5) | 6/9 skills | ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
+| 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 3/3 plans, 8/8 truths | ✅ COMPLETE — 2026-04-23 |
+| 26. Quality Synthesis | 5/5 plans | ✅ COMPLETE — HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
+| 31. Planning Documentation Refresh | 1/3 plans | ⚡ IN PROGRESS — Plan 01 executing |
+| 27. G-B Quality Assurance Demonstration | TBD plans | Planned — depends on Phase 26 |
+| 28. G-C Research Lineage | TBD plans | Planned — depends on Phase 27 |
+| 29. G-D Execution Lineage | TBD plans | Planned — depends on Phase 28 |
+| 30. G-A Guardrail Lineage | TBD plans | Planned — depends on Phase 29 |
 
 ## Dependencies
 
@@ -708,7 +776,7 @@ Phase 1 (7 done, 3 pending — planned)
                                 └─→ Phase 15: Security & Quality Remediation ✅
                                      └─→ Phase 16: Background Delegation Revamp + PTY Integration
                                            └─→ Phase 16.2: PTY Wiring + OMO Safety Patterns (SPEC validated)
-                                           └─→ Phase 16.4: Harness Architecture Baseline
+                                           └─→ Phase 16.4: Harness Architecture Baseline ✅ COMPLETE
                                                  └─→ Phase 16.5: Agents Builder Configuration Foundation ✅ COMPLETE (8/8 plans, 772 tests)
                                            └─→ Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) ✅
                                                  └─→ Phase 18: Context & Research (Playbook Phase CR) ✅
@@ -717,15 +785,17 @@ Phase 1 (7 done, 3 pending — planned)
                                                                 └─→ Phase 21: Description Rewrite (Playbook Phase 3) ✅
                                                                      └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4) ✅
                                                                            └─→ Phase 23: Body Quality + Eval (Playbook Phase 5) ✅
-                                                                                └─→ Phase 24: Fix 22 Failed hm-* Skills (Playbook Phase 6)
-                                                               └─→ Phase 21: Description Rewrite (Playbook Phase 3)
-                                                                    └─→ Phase 22: Script Hardening + 6-NON (Playbook Phase 4)
-                                                                         └─→ Phase 23: Body Quality + Eval (Playbook Phase 5)
-                                 └─→ Phase 9.3: Module Restructuring + Config
-                                      └─→ Phase 11: Clean Architecture Restructuring
-                                            └─→ Phase 3: Schema Definition
-                                                 └─→ Phase 4: Migration Gate
-                                                      └─→ Phase 5: Integration Verification
+                                                                                └─→ Phase 24: Fix 22 Failed hm-* Skills (Playbook Phase 6) ✅
+                                                                                     └─→ Phase 26: Quality Synthesis ✅
+                                                                                          └─→ Phase 27: G-B Quality Assurance Demonstration
+                                                                                               └─→ Phase 28: G-C Research Lineage
+                                                                                                    └─→ Phase 29: G-D Execution Lineage
+                                                                                                         └─→ Phase 30: G-A Guardrail Lineage
+                                  └─→ Phase 9.3: Module Restructuring + Config
+                                       └─→ Phase 11: Clean Architecture Restructuring
+                                             └─→ Phase 3: Schema Definition
+                                                  └─→ Phase 4: Migration Gate
+                                                       └─→ Phase 5: Integration Verification
 ```
 
 ## Backlog
