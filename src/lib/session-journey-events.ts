@@ -173,6 +173,10 @@ function journeyDir(projectRoot: string): string {
   return join(projectRoot, ".hivemind", "sessions", "journey-events")
 }
 
+function safeFileStem(sessionId: string): string {
+  return sessionId.replace(/[^A-Za-z0-9_.-]/g, "_")
+}
+
 function escapeCell(value: string): string {
   return value.replace(/\|/g, "\\|").replace(/\n/g, "<br>")
 }
@@ -218,8 +222,9 @@ function renderDocumentMarkdown(document: SessionJourneyDocument): string {
 /** Write JSON and Markdown journey artifacts under `.hivemind/sessions/journey-events`. */
 export function writeSessionJourneyArtifacts(input: WriteSessionJourneyArtifactsInput): WriteSessionJourneyArtifactsResult {
   const dir = journeyDir(input.projectRoot)
-  const jsonPath = join(dir, `${input.event.sessionId}.json`)
-  const markdownPath = join(dir, `${input.event.sessionId}.md`)
+  const fileStem = safeFileStem(input.event.sessionId)
+  const jsonPath = join(dir, `${fileStem}.json`)
+  const markdownPath = join(dir, `${fileStem}.md`)
   mkdirSync(dirname(jsonPath), { recursive: true })
   const current = readDocument(jsonPath, input.event.sessionId, input.event.timestamp)
   const { document, written } = addEvent(current, input.event)

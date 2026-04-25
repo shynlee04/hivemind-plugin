@@ -55,6 +55,26 @@ describe("session journey event writer", () => {
     }
   })
 
+  it("sanitizes session IDs before using them as artifact file names", () => {
+    const dir = mkdtempSync(join(tmpdir(), "journey-events-path-"))
+
+    try {
+      const event = createJourneyEventFromHook({
+        event: { type: "session.created", sessionID: "../ses/unsafe" },
+        timestamp: 1_777_000_000_003,
+        source: "unit-test",
+      })
+
+      const result = writeSessionJourneyArtifacts({ projectRoot: dir, event })
+
+      expect(result.jsonPath).toBe(join(dir, ".hivemind", "sessions", "journey-events", ".._ses_unsafe.json"))
+      const json = JSON.parse(readFileSync(result.jsonPath, "utf-8")) as Record<string, unknown>
+      expect(json.sessionId).toBe("../ses/unsafe")
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it("renders a concise event block without raw hook payload firehose", () => {
     const event = createJourneyEventFromHook({
       event: { type: "session.updated", sessionID: "ses_render", properties: { raw: "SHOULD_NOT_RENDER" } },
