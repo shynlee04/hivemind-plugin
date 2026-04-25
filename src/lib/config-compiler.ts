@@ -3,8 +3,12 @@ import matter from "gray-matter"
 import { homedir } from "node:os"
 import {
   AgentFrontmatterSchema,
+  AgentFrontmatterSchemaLenient,
   CommandFrontmatterSchema,
+  CommandFrontmatterSchemaLenient,
   SkillFrontmatterSchema,
+  SkillFrontmatterSchemaLenient,
+  validateWithFallback,
 } from "../schema-kernel/index.js"
 import type {
   AgentFrontmatter,
@@ -68,14 +72,22 @@ export function validateOutputPath(filePath: string, _basePath: string): string 
 // ---------------------------------------------------------------------------
 
 export function compileAgent(spec: AgentSpec, options?: CompileOptions): CompileResult {
+  let validatedData = spec.frontmatter as Record<string, unknown>
+
   if (!options?.skipValidation) {
-    const frontmatterResult = validateFrontmatter(AgentFrontmatterSchema, spec.frontmatter, "agent frontmatter")
+    const frontmatterResult = validateWithFallback(
+      AgentFrontmatterSchema,
+      AgentFrontmatterSchemaLenient,
+      spec.frontmatter,
+      `agent "${spec.name}" frontmatter`,
+    )
     if (!frontmatterResult.success) {
       return { success: false, content: "", filePath: "", errors: formatCompileError(frontmatterResult.error) }
     }
+    validatedData = frontmatterResult.data as unknown as Record<string, unknown>
   }
 
-  const content = buildMarkdown(spec.frontmatter as Record<string, unknown>, spec.body)
+  const content = buildMarkdown(validatedData, spec.body)
   const basePath = resolveBasePath(options)
   const relativePath = `agents/${spec.name}.md`
   const pathError = validateOutputPath(relativePath, basePath)
@@ -88,14 +100,22 @@ export function compileAgent(spec: AgentSpec, options?: CompileOptions): Compile
 }
 
 export function compileCommand(spec: CommandSpec, options?: CompileOptions): CompileResult {
+  let validatedData = spec.frontmatter as Record<string, unknown>
+
   if (!options?.skipValidation) {
-    const frontmatterResult = validateFrontmatter(CommandFrontmatterSchema, spec.frontmatter, "command frontmatter")
+    const frontmatterResult = validateWithFallback(
+      CommandFrontmatterSchema,
+      CommandFrontmatterSchemaLenient,
+      spec.frontmatter,
+      `command "${spec.name}" frontmatter`,
+    )
     if (!frontmatterResult.success) {
       return { success: false, content: "", filePath: "", errors: formatCompileError(frontmatterResult.error) }
     }
+    validatedData = frontmatterResult.data as unknown as Record<string, unknown>
   }
 
-  const content = buildMarkdown(spec.frontmatter as Record<string, unknown>, spec.body)
+  const content = buildMarkdown(validatedData, spec.body)
   const basePath = resolveBasePath(options)
   const relativePath = `commands/${spec.name}.md`
   const pathError = validateOutputPath(relativePath, basePath)
@@ -108,14 +128,22 @@ export function compileCommand(spec: CommandSpec, options?: CompileOptions): Com
 }
 
 export function compileSkill(spec: SkillSpec, options?: CompileOptions): CompileResult {
+  let validatedData = spec.frontmatter as Record<string, unknown>
+
   if (!options?.skipValidation) {
-    const frontmatterResult = validateFrontmatter(SkillFrontmatterSchema, spec.frontmatter, "skill frontmatter")
+    const frontmatterResult = validateWithFallback(
+      SkillFrontmatterSchema,
+      SkillFrontmatterSchemaLenient,
+      spec.frontmatter,
+      `skill "${spec.name}" frontmatter`,
+    )
     if (!frontmatterResult.success) {
       return { success: false, content: "", filePath: "", errors: formatCompileError(frontmatterResult.error) }
     }
+    validatedData = frontmatterResult.data as unknown as Record<string, unknown>
   }
 
-  const content = buildMarkdown(spec.frontmatter as Record<string, unknown>, spec.body)
+  const content = buildMarkdown(validatedData, spec.body)
   const basePath = resolveBasePath(options)
   const relativePath = `skills/${spec.name}/SKILL.md`
   const pathError = validateOutputPath(relativePath, basePath)
@@ -133,22 +161,32 @@ export function compileSkill(spec: SkillSpec, options?: CompileOptions): Compile
 
 export function decompileAgent(md: string): DecompileResult<AgentSpec> {
   const parsed = matter(md)
-  const frontmatterResult = validateFrontmatter(AgentFrontmatterSchema, parsed.data, "decompile agent")
+  const frontmatterResult = validateWithFallback(
+    AgentFrontmatterSchema,
+    AgentFrontmatterSchemaLenient,
+    parsed.data,
+    "decompile agent",
+  )
   if (!frontmatterResult.success) {
-    return { success: false, spec: null, body: parsed.content, warnings: formatCompileError(frontmatterResult.error) }
+    return { success: false, spec: null, body: parsed.content.trim(), warnings: formatCompileError(frontmatterResult.error) }
   }
   const body = parsed.content.trim()
   return {
     success: true,
     spec: { name: "unknown", frontmatter: frontmatterResult.data, body },
     body,
-    warnings: [],
+    warnings: frontmatterResult.warnings || [],
   }
 }
 
 export function decompileCommand(md: string): DecompileResult<CommandSpec> {
   const parsed = matter(md)
-  const frontmatterResult = validateFrontmatter(CommandFrontmatterSchema, parsed.data, "decompile command")
+  const frontmatterResult = validateWithFallback(
+    CommandFrontmatterSchema,
+    CommandFrontmatterSchemaLenient,
+    parsed.data,
+    "decompile command",
+  )
   if (!frontmatterResult.success) {
     const body = parsed.content.trim()
     return { success: false, spec: null, body, warnings: formatCompileError(frontmatterResult.error) }
@@ -158,13 +196,18 @@ export function decompileCommand(md: string): DecompileResult<CommandSpec> {
     success: true,
     spec: { name: "unknown", frontmatter: frontmatterResult.data, body },
     body,
-    warnings: [],
+    warnings: frontmatterResult.warnings || [],
   }
 }
 
 export function decompileSkill(md: string): DecompileResult<SkillSpec> {
   const parsed = matter(md)
-  const frontmatterResult = validateFrontmatter(SkillFrontmatterSchema, parsed.data, "decompile skill")
+  const frontmatterResult = validateWithFallback(
+    SkillFrontmatterSchema,
+    SkillFrontmatterSchemaLenient,
+    parsed.data,
+    "decompile skill",
+  )
   if (!frontmatterResult.success) {
     const body = parsed.content.trim()
     return { success: false, spec: null, body, warnings: formatCompileError(frontmatterResult.error) }
@@ -175,7 +218,7 @@ export function decompileSkill(md: string): DecompileResult<SkillSpec> {
     success: true,
     spec: { name, frontmatter: frontmatterResult.data, body },
     body,
-    warnings: [],
+    warnings: frontmatterResult.warnings || [],
   }
 }
 
@@ -224,18 +267,6 @@ function buildMarkdown(frontmatter: Record<string, unknown>, body: string): stri
   const yaml = yamlStringify(frontmatter, { lineWidth: -1 })
   const yamlBlock = yaml.endsWith("\n") ? yaml : yaml + "\n"
   return `---\n${yamlBlock}---\n\n${body}\n`
-}
-
-function validateFrontmatter<T>(
-  schema: import("zod").ZodSchema<T>,
-  data: unknown,
-  _context: string,
-): { success: true; data: T } | { success: false; error: import("zod").ZodError } {
-  const result = schema.safeParse(data)
-  if (result.success) {
-    return { success: true, data: result.data }
-  }
-  return { success: false, error: result.error }
 }
 
 function formatCompileError(zodError: import("zod").ZodError): string[] {
