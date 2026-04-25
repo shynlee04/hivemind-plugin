@@ -11,7 +11,7 @@ import type {
   ConfigWorkflowState,
   WorkflowTurn,
   WorkflowTurnRecord,
-} from "../types.js"
+} from "./workflow-types.js"
 
 /** Ordered turn names for the 8-turn configuration workflow. */
 export const TURN_NAMES: WorkflowTurn[] = [

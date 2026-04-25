@@ -23,7 +23,7 @@ import {
   validateTurnPrecondition,
   TOTAL_TURNS,
 } from "../lib/config-workflow/index.js"
-import type { WorkflowResumeResult } from "../lib/types.js"
+import type { WorkflowResumeResult } from "../lib/config-workflow/workflow-types.js"
 
 // ---------------------------------------------------------------------------
 // Input schema

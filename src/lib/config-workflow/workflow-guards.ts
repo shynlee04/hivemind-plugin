@@ -8,7 +8,7 @@
  * @module config-workflow/workflow-guards
  */
 
-import type { ConfigWorkflowState } from "../types.js"
+import type { ConfigWorkflowState } from "./workflow-types.js"
 
 type GuardPass = { valid: true }
 type GuardFail = { valid: false; errors: string[] }

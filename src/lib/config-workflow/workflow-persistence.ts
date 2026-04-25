@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "../continuity.js"
-import type { ConfigWorkflowState } from "../types.js"
+import type { ConfigWorkflowState } from "./workflow-types.js"
 
 // ---------------------------------------------------------------------------
 // Store format

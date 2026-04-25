@@ -1,9 +1,19 @@
 /**
  * Barrel export for the config-workflow module.
- * All 16 symbols from workflow-state, workflow-persistence, and workflow-guards.
+ * All symbols from workflow-types, workflow-state, workflow-persistence, and workflow-guards.
  *
  * @module config-workflow
  */
+
+export type {
+  ConfigWorkflowState,
+  WorkflowTurn,
+  WorkflowTurnRecord,
+  WorkflowTurnStatus,
+  WorkflowResumeResult,
+} from "./workflow-types.js"
+
+export { WORKFLOW_TURNS } from "./workflow-types.js"
 
 export {
   createWorkflowState,
