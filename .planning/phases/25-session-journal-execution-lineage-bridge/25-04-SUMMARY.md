@@ -5,36 +5,73 @@ completed_date: 2026-04-26
 status: implemented
 key_files:
   created:
-    - src/lib/session-artifact-parser.ts
-    - src/lib/session-journey-events.ts
-    - tests/lib/session-artifact-parser.test.ts
-    - tests/lib/session-journey-events.test.ts
+    - src/lib/event-tracker/index.ts
+    - src/lib/event-tracker/parser.ts
+    - src/lib/event-tracker/writer.ts
+    - src/lib/event-tracker/types.ts
+    - tests/lib/event-tracker/session-artifact-parser.test.ts
+    - tests/lib/event-tracker/session-journey-events.test.ts
   modified:
     - src/plugin.ts
     - src/index.ts
+    - .planning/phases/25-session-journal-execution-lineage-bridge/25-04-PLAN.md
+    - .planning/phases/25-session-journal-execution-lineage-bridge/25-ARCHITECTURE-AUDIT-2026-04-26.md
 ---
 
-# Phase 25 Plan 04: Event-Tracker-Style Automatic Writer Summary
+# Phase 25 Plan 04: Event-Tracker Automatic Parser/Writer/Meta-Writer Summary
 
-Phase 25 now includes an automatic event-tracker-style parser/writer/meta-writer slice, not only an explicit export tool.
+Phase 25 now includes an E2E-validated automatic event-tracker parser/writer/meta-writer slice, not only an explicit export tool.
 
 ## Delivered
 
-- Added markdown session artifact parsing for bounded header, turn, tool, delegation, and counter metadata.
-- Added session journey event classification and paired JSON/Markdown writer under `.hivemind/sessions/journey-events/`.
-- Wired a best-effort plugin event observer that writes journey metadata automatically from OpenCode session events.
+- Added a coherent `src/lib/event-tracker/` deep module boundary for parser, writer, and types.
+- Added product-detox-style markdown session artifact parsing for bounded header, turn, tool, delegation, and counter metadata.
+- Added automatic session journey event classification plus paired JSON/Markdown writer under `.hivemind/event-tracker/`.
+- Wired a best-effort plugin event observer that writes event-tracker artifacts automatically from OpenCode session events.
 - Preserved existing runtime authority boundaries: the writer is audit/projection-only and does not mutate continuity/delegation terminal truth.
+- Added parser helpers that prove required selective metadata can be read back from both JSON and Markdown artifacts.
+- Added deterministic filesystem adapter seams for directory, JSON write, and Markdown write failure tests.
 
 ## Verification
 
-- `npx vitest run tests/lib/session-artifact-parser.test.ts tests/lib/session-journey-events.test.ts` — passed (7 tests after path-sanitization review fix).
-- `npm run typecheck && npm run build && npm test` — passed (849 passed, 1 todo, 1 skipped).
+- RED gate: new event-tracker tests initially failed because `src/lib/event-tracker/index.js` did not exist.
+- Focused E2E: `npx vitest run tests/lib/event-tracker/session-journey-events.test.ts tests/lib/event-tracker/session-artifact-parser.test.ts` — passed (2 files, 9 tests).
+- `npm run typecheck` — passed.
+- `npm run build` — passed.
+- `npm test` — passed (47 files passed, 1 skipped; 851 tests passed, 1 todo).
 
 ## Review Fixes
 
 - **Rule 2 - Security:** Sanitized session IDs before using them as journey artifact file names, preventing path traversal while preserving the original session ID inside JSON metadata. Commit: `b500aac9`.
+- **Rule 2 - Correctness:** Corrected artifact path from `.hivemind/sessions/journey-events/` to `.hivemind/event-tracker/` per hard E2E acceptance. Commit: `098a5a34`.
+- **Rule 2 - Architecture:** Moved broad `src/lib` event-tracker files into `src/lib/event-tracker/` and removed the broad files/tests. Commit: `098a5a34`.
+
+## Product-Detox Samples Read
+
+- `code-ske.md`: sparse diagnostics Markdown skeleton.
+- `ses_2b7a.json` / `ses_2b7a.md`: compact session/v3 JSON plus Markdown header and table-of-contents shape.
+- `ses_2b7b.md`: large Markdown with skill/tool blocks; `ses_2b7b.json` exists but was unreadable as text in this environment.
+- `ses_2b92.json` / `ses_2b92.md`: compact counters plus skill invocation Markdown.
+- `ses_2b93.json` / `ses_2b93.md`: high-counter session with compaction count and assistant metadata.
+
+Distilled schema: bounded session document with `_schema`, original `sessionId`, sanitized `artifactStem`, status, counters, `toc`, and event list; Markdown mirrors required session ID, artifact stem, status, counters, and table-of-contents rows.
 
 ## Deviations from Earlier Phase 25 Interpretation
 
 - Corrected the Phase 25 meaning from explicit tool-call wrapper toward automatic event-level journey metadata writing.
 - Kept `session-journal-export` as a read surface, but did not make it the central Phase 25 capability.
+- Corrected the previous product-detox target-path mismatch; no compatibility bridge was added because the hard requirement explicitly requires `.hivemind/event-tracker/`.
+
+## Known Stubs
+
+None. Empty arrays/defaults in event-tracker documents are initialized counters/collections, not UI-facing stubs.
+
+## Threat Flags
+
+None. The new `.hivemind/event-tracker/` write surface is covered by the replanned threat model and guarded by bounded payload rendering plus sanitized artifact stems.
+
+## Self-Check: PASSED
+
+- Found `src/lib/event-tracker/index.ts`, `parser.ts`, `writer.ts`, and `types.ts`.
+- Found focused E2E tests under `tests/lib/event-tracker/`.
+- Found commits `6a32801b` and `098a5a34` in git history.

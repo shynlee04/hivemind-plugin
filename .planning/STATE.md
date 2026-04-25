@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: complete
 status: ready-to-plan
-stopped_at: Phase 25 automatic journey writer migration complete — ready for Phase 11 or Phases 3-5
-last_updated: "2026-04-26T02:27:00.000Z"
+stopped_at: Completed Phase 25 event-tracker E2E correction
+last_updated: "2026-04-25T19:44:13.937Z"
 progress:
-  total_phases: 31
-  completed_phases: 20
-  total_plans: 71
-  completed_plans: 60
-  percent: 85
+  total_phases: 35
+  completed_phases: 18
+  total_plans: 76
+  completed_plans: 71
+  percent: 93
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 25 — session-journal-execution-lineage-bridge (complete, corrected automatic journey writer scope)
+**Current focus:** Phase 25 — session-journal-execution-lineage-bridge (complete, corrected automatic event-tracker E2E scope)
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -31,13 +31,13 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 25 (session-journal-execution-lineage-bridge) — COMPLETE
+Phase: 25 (session-journal-execution-lineage-bridge) — COMPLETE after event-tracker E2E correction
 Plan: 4 of 4 complete (25-01 journal contract, 25-02 execution lineage, 25-03 export tool, 25-04 automatic journey writer)
 Phases 27-30 (G-B, G-C, G-D, G-A lineages) — COMPLETE (rich-closure-pass)
 Previous: Phase 31 (planning-documentation-refresh) — COMPLETE
-**Current plan:** Phase 25 recovery/update complete after Phase 31 Q3/Q6 reconciliation and product-detox event-tracker migration correction
+**Current plan:** Phase 25 recovery/update complete after Phase 31 Q3/Q6 reconciliation and product-detox event-tracker migration correction; hard E2E gates now target `.hivemind/event-tracker/`
 **Next:** Phase 11 (Clean Architecture Restructuring) or Phases 3-5 (Schema/Migration/Integration)
-**Progress:** [████████▌░] 85%
+**Progress:** [█████████░] 93%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -69,7 +69,7 @@ Phase 22: Script Hardening + 6-NON . COMPLETE (6-NON defence tables added to 7 c
 Phase 23: Body Quality + Eval ...... COMPLETE (eval expansion with trigger queries for 6 skills)
 Phase 24: Fix 22 Failed hm-* Skills  COMPLETE (3/3 plans, 6-NON removed, onboarding, Self-Correction)
 Phase 26: Quality Synthesis ........ COMPLETE (5/5 plans, HMQUAL D1-D8, G-B SPECs, execution roadmap)
-Phase 25: Session Journal + Lineage  COMPLETE (4/4 plans, 22 focused tests)
+Phase 25: Session Journal + Lineage  COMPLETE (4/4 plans, event-tracker E2E corrected, 851 tests)
 Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 ```
 
@@ -94,7 +94,7 @@ Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 | Phase 22 | COMPLETE | 6-NON defence tables added to 7 core skills (per Phase 24 synthesis) |
 | Phase 23 | COMPLETE | Eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
 | Phase 24 | COMPLETE | 3/3 plans, 6-NON removed, onboarding headings, Self-Correction blocks |
-| Phase 25 | COMPLETE | 4/4 plans, Session Journal + Execution Lineage Bridge plus automatic journey writer, 22 focused tests, typecheck/build/full suite green |
+| Phase 25 | COMPLETE | 4/4 plans, Session Journal + Execution Lineage Bridge plus automatic event-tracker writer, `.hivemind/event-tracker/` E2E verified, typecheck/build/full suite green |
 | Phase 26 | COMPLETE | 5/5 plans, HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
 
 ### Phases With Caveats
@@ -127,7 +127,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 | Phase 29 | COMPLETE | rich-closure-pass — G-D Execution Lineage |
 | Phase 30 | COMPLETE | rich-closure-pass — G-A Guardrail Lineage |
 | Phase 31 | COMPLETE | 3/3 plans — all 10 refreshed documents verified by health check |
-| Phase 25 | COMPLETE | 4/4 plans — Q3/Q6 reconciled, automatic journey writer verified |
+| Phase 25 | COMPLETE | 4/4 plans — Q3/Q6 reconciled, automatic event-tracker writer verified under `.hivemind/event-tracker/` |
 
 ## Known Issues
 
@@ -143,7 +143,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Test suite | Pass | 771 passed (1 pre-existing failure in delegation-manager.ts persistAllDelegations — missing state dir) |
+| Test suite | Pass | 851 passed, 1 todo, 1 skipped |
 | Typecheck | Pass | Pass (0 errors) |
 | Build | Pass | Pass |
 | Runtime-verified delegation | Working | CORRECTED — event routing, sync race, notifications, VALID_AGENTS all fixed |
@@ -167,6 +167,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 | Phase 16.5 P06 | 21 min | 3 tasks | 9 files |
 | Phase 26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph P04 | 1m15s | 2 tasks | 2 files |
 | Phase 26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph P05 | 3m20s | 3 tasks | 3 files |
+| Phase 25 P04 | 4m | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -232,6 +233,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - [Phase 26 Plan 05] HMQUAL-01 through HMQUAL-08 are the project-level requirement IDs for PLAYBOOK D1-D8.
 - [Phase 26 Plan 05] Phase 31 remains excluded from Phase 27-30 and owns cross-lineage E2E validation.
 - [Phases 27-30 RICH closure] Final all-phase PASS is not allowed until `hm-command-parser`, `hm-agents-md-sync`, `hm-planning-with-files`, `hm-opencode-platform-reference`, `hm-opencode-non-interactive-shell`, `hm-user-intent-interactive-loop`, and `hivefiver-delegation-gates` close the remaining RICH evidence gaps documented in `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`.
+- [Phase 25]: Event-tracker automatic artifacts write under .hivemind/event-tracker with sanitized ses_xxxx stems; no compatibility bridge to .hivemind/sessions/journey-events.
 
 ### Todos
 
@@ -297,7 +299,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Executing 31-01-PLAN.md (Planning Documentation Refresh)
+**Stopped At:** Completed Phase 25 event-tracker E2E correction
 
 **Key files:** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`, `.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-EXECUTION-ROADMAP.md`, `src/plugin.ts`
 
