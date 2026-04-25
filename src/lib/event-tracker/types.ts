@@ -8,6 +8,7 @@ export type JourneyEventType =
 export type SessionJourneyEvent = {
   id: string
   sessionId: string
+  rootSessionId?: string
   artifactStem: string
   type: JourneyEventType
   actor: "system" | "agent" | "human" | "tool"
@@ -67,6 +68,7 @@ export type EventTrackerFileSystem = {
   existsSync(path: string): boolean
   mkdirSync(path: string, options: { recursive: true }): void
   readFileSync(path: string, encoding: BufferEncoding): string
+  readdirSync?: (path: string) => string[]
   writeFileSync(path: string, data: string, encoding: BufferEncoding): void
 }
 

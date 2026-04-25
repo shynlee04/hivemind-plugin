@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { basename, dirname, join } from "node:path"
 
@@ -92,6 +92,71 @@ describe("event-tracker automatic writer", () => {
     }
   })
 
+  it("routes known sub-session events into the exported root artifact instead of creating sub-session root files", () => {
+    const projectRoot = tempProjectRoot()
+    const fixture = readFileSync(join(process.cwd(), "session-ses_23a0.md"), "utf-8")
+    const rootSessionId = "ses_23a0b5eabffeB413854W6gnUKC"
+    const knownSubSessionId = "ses_23a09f902ffeZcgOTkaOBE4D2x"
+
+    try {
+      mergeSessionExportMarkdownArtifacts({ projectRoot, markdown: fixture, source: "manual-export-test" })
+
+      const subEventResult = createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: {
+          event: {
+            type: "session.updated",
+            properties: { info: { id: knownSubSessionId, parentID: rootSessionId } },
+          },
+          timestamp: 30,
+          source: "sub-session-test",
+        },
+      })
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: {
+          event: {
+            type: "session.updated",
+            properties: { info: { id: "ses_bgr5", parentID: rootSessionId } },
+          },
+          timestamp: 31,
+          source: "sub-session-test",
+        },
+      })
+
+      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
+      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
+      expect(subEventResult.paths.jsonPath).toBe(join(artifactDir, "ses_23a0.json"))
+      expect(subEventResult.document.sessionId).toBe(rootSessionId)
+      expect(subEventResult.document.mainSessionId).toBe(rootSessionId)
+      expect(subEventResult.document.events).toEqual(expect.arrayContaining([
+        expect.objectContaining({ sessionId: knownSubSessionId, type: "session_updated" }),
+      ]))
+      expect(subEventResult.document.subSessions).toEqual(expect.arrayContaining([
+        expect.objectContaining({ sessionId: knownSubSessionId, delegatedTo: "gsd-executor" }),
+      ]))
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("does not create arbitrary root artifacts for unknown non-start events", () => {
+    const projectRoot = tempProjectRoot()
+
+    try {
+      const result = createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.updated", properties: { info: { id: "ses_randomSubOnly" } } }, timestamp: 40, source: "unknown-root-test" },
+      })
+
+      expect(result.written).toBe(false)
+      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
+      expect(existsSync(artifactDir) ? readdirSync(artifactDir) : []).toEqual([])
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it("fails if the event-tracker directory cannot be created", () => {
     const event = createJourneyEventFromHook({ event: { type: "session.created", sessionID: "ses_2b7a" }, timestamp: 1 })
     const fs: EventTrackerFileSystem = {
@@ -156,7 +221,7 @@ describe("event-tracker automatic writer", () => {
     const projectRoot = tempProjectRoot()
 
     try {
-      const newer = createJourneyEventFromHook({ event: { type: "session.updated", sessionID: "ses_2b7a" }, timestamp: 200 })
+      const newer = createJourneyEventFromHook({ event: { type: "session.updated", sessionID: "ses_2b7a", rootSessionID: "ses_2b7a" }, timestamp: 200 })
       const older = createJourneyEventFromHook({ event: { type: "session.created", sessionID: "ses_2b7a" }, timestamp: 100 })
 
       writeSessionJourneyArtifacts({ projectRoot, event: newer })

@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -81,6 +81,28 @@ describe("plugin lifecycle wiring", () => {
 
       expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_2b7a.json"))).toBe(true)
       expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_2b7a.md"))).toBe(true)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("automatically routes parent-linked sub-session lifecycle events to the parent event-tracker artifact", async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-root-"))
+
+    try {
+      const plugin = await HarnessControlPlane({
+        client: createPluginClient(),
+        directory: projectRoot,
+      } as never)
+
+      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } } })
+      await plugin.event({ event: { type: "session.updated", properties: { info: { id: "ses_bgr5", parentID: "ses_23a0root" } } } })
+
+      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
+      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
+      const document = JSON.parse(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")) as { sessionId?: string; events?: Array<{ sessionId?: string }> }
+      expect(document.sessionId).toBe("ses_23a0root")
+      expect(document.events).toEqual(expect.arrayContaining([expect.objectContaining({ sessionId: "ses_bgr5" })]))
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }

@@ -1,8 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
 import { asString, getNestedValue } from "../helpers.js"
-import { getEventSessionID } from "../session-api.js"
+import { getEventParentID, getEventSessionID } from "../session-api.js"
 import { parseProductDetoxSessionMarkdown } from "./parser.js"
 import type {
   CreateEventTrackerArtifactsFromHookInput,
@@ -19,7 +19,7 @@ import type {
   WriteSessionJourneyArtifactsResult,
 } from "./types.js"
 
-const nodeFs: EventTrackerFileSystem = { existsSync, mkdirSync, readFileSync, writeFileSync }
+const nodeFs: EventTrackerFileSystem = { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync }
 const MAX_EVENTS_PER_DOCUMENT = 100
 
 function eventTypeFromHook(type: string): JourneyEventType {
@@ -49,6 +49,25 @@ function resolveSessionId(event: unknown): string {
     || "")
 }
 
+function resolveRootSessionId(event: unknown): string {
+  return (asString(getNestedValue(event, ["properties", "info", "rootID"]))
+    || asString(getNestedValue(event, ["properties", "info", "rootId"]))
+    || asString(getNestedValue(event, ["properties", "info", "rootSessionID"]))
+    || asString(getNestedValue(event, ["properties", "info", "rootSessionId"]))
+    || asString(getNestedValue(event, ["properties", "info", "mainSessionID"]))
+    || asString(getNestedValue(event, ["properties", "info", "mainSessionId"]))
+    || getEventParentID(event)
+    || asString(getNestedValue(event, ["properties", "rootSessionID"]))
+    || asString(getNestedValue(event, ["properties", "rootSessionId"]))
+    || asString(getNestedValue(event, ["properties", "parentID"]))
+    || asString(getNestedValue(event, ["properties", "parentId"]))
+    || asString(getNestedValue(event, ["rootSessionID"]))
+    || asString(getNestedValue(event, ["rootSessionId"]))
+    || asString(getNestedValue(event, ["parentID"]))
+    || asString(getNestedValue(event, ["parentId"]))
+    || "")
+}
+
 function resolveHookType(event: unknown): string {
   return asString(getNestedValue(event, ["type"])) || "unknown"
 }
@@ -74,10 +93,12 @@ export function createJourneyEventFromHook(input: JourneyEventHookInput): Sessio
   const type = eventTypeFromHook(hookType)
   const timestamp = input.timestamp ?? Date.now()
   const title = titleFromType(type)
-  const artifactStem = sanitizeSessionArtifactStem(sessionId)
+  const rootSessionId = resolveRootSessionId(input.event)
+  const artifactStem = sanitizeSessionArtifactStem(rootSessionId || sessionId)
   return {
     id: buildEventId(artifactStem, type, timestamp),
     sessionId,
+    ...(rootSessionId ? { rootSessionId } : {}),
     artifactStem,
     type,
     actor: "system",
@@ -100,13 +121,14 @@ export function getEventTrackerArtifactPaths(projectRoot: string, sessionId: str
   }
 }
 
-function createEmptyDocument(event: SessionJourneyEvent): SessionJourneyDocument {
+function createEmptyDocument(event: SessionJourneyEvent, targetSessionId = event.rootSessionId ?? event.sessionId): SessionJourneyDocument {
+  const artifactStem = sanitizeSessionArtifactStem(targetSessionId)
   return {
     _schema: "harness/event-tracker/v1",
-    sessionId: event.sessionId,
-    semanticSessionId: event.artifactStem,
-    artifactStem: event.artifactStem,
-    mainSessionId: event.sessionId,
+    sessionId: targetSessionId,
+    semanticSessionId: artifactStem,
+    artifactStem,
+    mainSessionId: targetSessionId,
     startedAt: null,
     updatedAt: event.timestamp,
     status: "active",
@@ -126,9 +148,9 @@ function isJourneyDocument(value: unknown): value is SessionJourneyDocument {
     && Array.isArray((value as { events?: unknown }).events)
 }
 
-function readDocument(fs: EventTrackerFileSystem, jsonPath: string, event: SessionJourneyEvent): SessionJourneyDocument {
+function readDocument(fs: EventTrackerFileSystem, jsonPath: string, event: SessionJourneyEvent, targetSessionId?: string): SessionJourneyDocument {
   if (!fs.existsSync(jsonPath)) {
-    return createEmptyDocument(event)
+    return createEmptyDocument(event, targetSessionId)
   }
   try {
     const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as unknown
@@ -150,6 +172,43 @@ function normalizeDocument(document: SessionJourneyDocument): SessionJourneyDocu
     lastMessageOutput: typeof document.lastMessageOutput === "string" ? document.lastMessageOutput : "",
     exportMeta: document.exportMeta ?? null,
   }
+}
+
+function readExistingDocumentForScan(fs: EventTrackerFileSystem, jsonPath: string): SessionJourneyDocument | null {
+  const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as unknown
+  return isJourneyDocument(parsed) ? normalizeDocument(parsed) : null
+}
+
+function documentContainsSession(document: SessionJourneyDocument, sessionId: string): boolean {
+  return document.sessionId === sessionId
+    || document.mainSessionId === sessionId
+    || document.subSessions.some((subSession) => subSession.sessionId === sessionId)
+    || document.events.some((event) => event.sessionId === sessionId)
+}
+
+function findKnownRootSessionId(fs: EventTrackerFileSystem, projectRoot: string, sessionId: string): string | null {
+  const dir = getEventTrackerArtifactPaths(projectRoot, sessionId).dir
+  if (!fs.existsSync(dir) || !fs.readdirSync) return null
+  const files = fs.readdirSync(dir).filter((file) => file.endsWith(".json")).sort()
+  for (const file of files) {
+    const document = readExistingDocumentForScan(fs, join(dir, file))
+    if (document && documentContainsSession(document, sessionId)) {
+      return document.mainSessionId ?? document.sessionId
+    }
+  }
+  return null
+}
+
+function resolveTargetSessionId(fs: EventTrackerFileSystem, projectRoot: string, event: SessionJourneyEvent): string | null {
+  if (event.rootSessionId) return event.rootSessionId
+
+  const knownRoot = findKnownRootSessionId(fs, projectRoot, event.sessionId)
+  if (knownRoot) return knownRoot
+
+  const ownPaths = getEventTrackerArtifactPaths(projectRoot, event.sessionId)
+  if (fs.existsSync(ownPaths.jsonPath)) return event.sessionId
+
+  return event.type === "session_start" ? event.sessionId : null
 }
 
 function statusFromEvents(events: SessionJourneyEvent[]): SessionJourneyDocument["status"] {
@@ -180,10 +239,10 @@ function addEvent(document: SessionJourneyDocument, event: SessionJourneyEvent):
   const maxTimestamp = Math.max(document.updatedAt, event.timestamp, ...events.map((item) => item.timestamp))
   const next: SessionJourneyDocument = {
     ...document,
-    sessionId: event.sessionId,
-    semanticSessionId: event.artifactStem,
-    artifactStem: event.artifactStem,
-    mainSessionId: document.mainSessionId ?? event.sessionId,
+    sessionId: document.sessionId,
+    semanticSessionId: document.semanticSessionId,
+    artifactStem: document.artifactStem,
+    mainSessionId: document.mainSessionId ?? document.sessionId,
     startedAt: document.startedAt ?? (event.type === "session_start" ? event.timestamp : null),
     updatedAt: maxTimestamp,
     status: statusFromEvents(events),
@@ -283,13 +342,17 @@ function mergeExportMetadata(document: SessionJourneyDocument, event: SessionJou
 /** Write JSON and Markdown event-tracker artifacts under `.hivemind/event-tracker`. */
 export function writeSessionJourneyArtifacts(input: WriteSessionJourneyArtifactsInput): WriteSessionJourneyArtifactsResult {
   const fs = input.fs ?? nodeFs
-  const paths = getEventTrackerArtifactPaths(input.projectRoot, input.event.sessionId)
+  const targetSessionId = resolveTargetSessionId(fs, input.projectRoot, input.event)
+  const paths = getEventTrackerArtifactPaths(input.projectRoot, targetSessionId ?? input.event.sessionId)
+  if (!targetSessionId) {
+    return { paths, document: createEmptyDocument(input.event), written: false }
+  }
   try {
     fs.mkdirSync(paths.dir, { recursive: true })
   } catch (error) {
     throw new Error(`[Harness] Failed to create event-tracker directory: ${error instanceof Error ? error.message : String(error)}`)
   }
-  const current = readDocument(fs, paths.jsonPath, input.event)
+  const current = readDocument(fs, paths.jsonPath, input.event, targetSessionId)
   const { document, written } = addEvent(current, input.event)
   try {
     fs.writeFileSync(paths.jsonPath, `${JSON.stringify(document, null, 2)}\n`, "utf-8")
