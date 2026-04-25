@@ -463,7 +463,7 @@ Plans:
 - [x] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
 - [x] 25-04-PLAN.md — event-tracker-style automatic session journey writer
 
-**Verification:** PASS — `npm run typecheck`, focused Phase 25 vitest suite, `npm run build`, and `npm test` (848 passed, 1 todo, 1 skipped).
+**Verification:** PASS — `npm run typecheck`, focused Phase 25 vitest suite, `npm run build`, and `npm test` (849 passed, 1 todo, 1 skipped).
 
 ### Phase 31: Planning Documentation Refresh
 

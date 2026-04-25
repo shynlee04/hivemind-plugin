@@ -27,8 +27,12 @@ Phase 25 now includes an automatic event-tracker-style parser/writer/meta-writer
 
 ## Verification
 
-- `npx vitest run tests/lib/session-artifact-parser.test.ts tests/lib/session-journey-events.test.ts` — passed (6 tests).
-- `npm run typecheck && npm run build && npm test` — passed (848 passed, 1 todo, 1 skipped).
+- `npx vitest run tests/lib/session-artifact-parser.test.ts tests/lib/session-journey-events.test.ts` — passed (7 tests after path-sanitization review fix).
+- `npm run typecheck && npm run build && npm test` — passed (849 passed, 1 todo, 1 skipped).
+
+## Review Fixes
+
+- **Rule 2 - Security:** Sanitized session IDs before using them as journey artifact file names, preventing path traversal while preserving the original session ID inside JSON metadata. Commit: `b500aac9`.
 
 ## Deviations from Earlier Phase 25 Interpretation
 

@@ -69,7 +69,7 @@ Phase 22: Script Hardening + 6-NON . COMPLETE (6-NON defence tables added to 7 c
 Phase 23: Body Quality + Eval ...... COMPLETE (eval expansion with trigger queries for 6 skills)
 Phase 24: Fix 22 Failed hm-* Skills  COMPLETE (3/3 plans, 6-NON removed, onboarding, Self-Correction)
 Phase 26: Quality Synthesis ........ COMPLETE (5/5 plans, HMQUAL D1-D8, G-B SPECs, execution roadmap)
-Phase 25: Session Journal + Lineage  COMPLETE (4/4 plans, 21 focused tests)
+Phase 25: Session Journal + Lineage  COMPLETE (4/4 plans, 22 focused tests)
 Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 ```
 
@@ -94,7 +94,7 @@ Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 | Phase 22 | COMPLETE | 6-NON defence tables added to 7 core skills (per Phase 24 synthesis) |
 | Phase 23 | COMPLETE | Eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
 | Phase 24 | COMPLETE | 3/3 plans, 6-NON removed, onboarding headings, Self-Correction blocks |
-| Phase 25 | COMPLETE | 4/4 plans, Session Journal + Execution Lineage Bridge plus automatic journey writer, 21 focused tests, typecheck/build/full suite green |
+| Phase 25 | COMPLETE | 4/4 plans, Session Journal + Execution Lineage Bridge plus automatic journey writer, 22 focused tests, typecheck/build/full suite green |
 | Phase 26 | COMPLETE | 5/5 plans, HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
 
 ### Phases With Caveats
