@@ -359,12 +359,46 @@ Minimum integration review questions:
 
 ## Evidence Requirements
 
-Evidence records must connect every quality claim to a path, command, eval result, or reviewer note. The schema is intentionally expanded in the anti-regression task so future phases can score skills consistently.
+Evidence records must connect every quality claim to a path, command, eval result, or reviewer note. Every skill score created in Phase 27+ must include exactly these fields:
+
+| Field | Required content | Mechanical check |
+|-------|------------------|------------------|
+| `skill_path` | Canonical `.opencode/skills/<name>/SKILL.md` path or explicitly documented external skill path. | File exists or external package reference is cited. |
+| `quality_tier` | One of `EXEMPLAR`, `SUBSTANTIVE`, `THIN`, or `HOLLOW`. | Value matches a tier defined above. |
+| `dimension_scores` | D1-D8 score map with `PASS`, `PARTIAL`, or `FAIL` plus one evidence note per dimension. | All eight keys exist. |
+| `verification_commands` | Commands used to verify trigger, body, 6-NON, eval, reference, integration, platform, and self-correction claims. | Commands are copied verbatim into the audit record. |
+| `eval_bundle_status` | Eval file state, trigger coverage state, stacked scenario state, and latest run/grade evidence. | `evals/evals.json` checked or absence documented. |
+| `reference_bundle_status` | Reference count, reference purpose map, stale-link status, and depth/circularity status. | Reference directory checked or absence documented. |
+| `integration_wiring_notes` | Agent, command, tool, plugin hook, and runtime state applicability notes. | Each surface marked applicable, not applicable, or deferred. |
+| `cross_platform_notes` | OpenCode-native, Hivemind harness, and arbitrary user-project adaptation notes. | All three environments addressed. |
+| `self_correction_notes` | Retry, escalation, rollback, blocked-state, and handoff behavior. | Failure-handling section cited. |
+
+Evidence must be current to the skill package being scored. Historical Phase 18, Phase 22, or Phase 23 artifacts may explain background but cannot substitute for current `skill_path` evidence.
 
 ## Anti-Regression Rules
 
-Anti-regression rules protect the project from repeating Phase 22 and Phase 23 false-closure patterns. They are enforced by later audit and roadmap plans with grep-verifiable phrases and explicit evidence records.
+Anti-regression rules protect the project from repeating Phase 22 and Phase 23 false-closure patterns. Later audits must grep these exact rule names and cite evidence before marking a skill complete:
+
+1. **No template-only skills** — a skill with frontmatter and headings but no operational workflow is `HOLLOW` until rewritten.
+2. **No eval claim without eval files** — eval coverage cannot be claimed unless the skill package contains an eval file or an explicit external eval artifact.
+3. **No 6-NON claim without cited evidence** — DEFENDED/PARTIAL/EXPOSED labels require path, line, command, or reviewer evidence.
+4. **No GSD-only dependency for hm-* operation** — GSD may be a benchmark, but hm-* skills must include OpenCode-native and generic project fallback behavior.
+5. **No absolute project paths in shipped skill content** — local absolute paths are allowed in planning evidence, not as reusable skill requirements.
+6. **No source mutation during synthesis phases** — synthesis phases write planning artifacts and requirements only; they do not mutate `src/**` or `.opencode/skills/**/SKILL.md`.
+
+Any violation blocks `EXEMPLAR` and `SUBSTANTIVE` tiers. If a violation is intentional, it must be recorded as a deferred issue with owner, phase, and verification gate.
 
 ## Applying This Playbook in Phase 27+
 
 Future phases must treat this playbook as the entry contract before any `hm-*` or `hivefiver-*` skill rewrite. A future skill is complete only when it has D1-D8 evidence, passes required verification commands, and records the resulting score in the relevant audit catalog.
+
+Required sequence for every Phase 27+ skill-quality task:
+
+1. **Read current skill package** — inspect `SKILL.md`, `references/`, `evals/`, `scripts/`, related agents, related commands, and relevant tool/plugin surfaces.
+2. **Score D1-D8 before editing** — create a baseline evidence record with `skill_path`, `quality_tier`, and `dimension_scores`.
+3. **Change skill package** — modify only the approved package files for that phase, preserving scope and platform compatibility.
+4. **Run verification commands** — execute the D1-D8 checks, eval checks, reference checks, and integration checks relevant to the changed package.
+5. **Update audit catalog** — record final tier, dimension scores, eval status, reference status, integration notes, cross-platform notes, and self-correction notes.
+6. **Record summary evidence** — summarize what changed, which anti-regression rules were checked, what remains deferred, and which commit contains the work.
+
+This sequence is the minimum bar for preventing false closure. A skill is not complete because it was edited; it is complete only when its evidence record proves the edit moved it to the intended quality tier.
