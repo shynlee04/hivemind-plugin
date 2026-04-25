@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_phase: 16.5
-status: complete
-stopped_at: Phase 16.5 COMPLETE — 5/5 plans executed, 5/5 SUMMARY.md created, 680 tests pass, typecheck clean
-last_updated: "2026-04-25T06:50:00.000Z"
+current_plan: 5
+status: verified
+stopped_at: Phase 16.5 verified — 5/5 plans executed, UAT gaps fixed, 680 tests pass, intent detection expanded for gatekeeping scenarios
+last_updated: "2026-04-25T07:50:00.000Z"
 progress:
   total_phases: 27
   completed_phases: 11
-  total_plans: 54
+  total_plans: 49
   completed_plans: 48
-  percent: 89
+  percent: 92
 ---
 
 # STATE: Harness Cleanup
@@ -105,7 +105,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
 | Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
-| Phase 16.5 | EXECUTING | Agents Builder Configuration Foundation — Cycle 1 (Zod schema design) COMPLETE; Cycles 2-6 execution in progress |
+| Phase 16.5 | COMPLETE | Agents Builder Configuration Foundation — 5/5 plans executed, 680 tests pass, UAT verified, intent detection expanded |
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
