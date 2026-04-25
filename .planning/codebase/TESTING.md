@@ -1,6 +1,6 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-04-22
+**Analysis Date:** 2026-04-25
 
 ## Test Framework
 
@@ -251,6 +251,73 @@ npm run test:coverage
 **E2E Tests:**
 - Not used — no Playwright or browser-based testing
 
+## Quality Gate Testing (Q5)
+
+**RICH Gate Requirements:**
+- RICH = Pattern 1 (third-party synthesis) + Pattern 2 (horizontal integration) + Pattern 3 (vertical routing)
+- Every `hm-*` skill must pass all 3 patterns — no threshold lowering
+- Current honest status: 0 of 25 skills pass RICH
+- Phase 27-30 research artifacts are the input for synthesis
+
+**Required Tests:**
+- Test: Skill selects top 3 relevant third-party skills via `skills.sh` or GitHub search
+- Test: Bundled assets, references, samples are reviewed and transformed
+- Test: Pattern 1/2/3 alternatives compared with adopt/adapt/reject/defer decisions
+- Test: Horizontal integration, routing integration, independence audit documented
+- Test: D1-D8 plus RICH `skill-judge` scoring exists with evidence
+
+**Verification Command:**
+```bash
+test -f .planning/RICH-SKILL-QUALITY-GATE.md && grep -n "RICH-1\|RICH-8\|third-party" .planning/RICH-SKILL-QUALITY-GATE.md
+```
+
+## Time-Machine Testing (Q3)
+
+**Session Journal Testing:**
+- Test: `continuity.ts` passes all existing tests unchanged
+- Test: Journal records events without affecting continuity
+- Test: Journal query returns correct events for session + time range
+- Test: Time-machine reconstructs past state from event replay
+- Test: Journal survives crash (append-only files are crash-safe)
+
+**Required Test Patterns:**
+```typescript
+describe("session-journal", () => {
+  it("records event without mutating continuity", async () => {
+    // journal.append(event) → continuity.store unchanged
+  })
+  it("queries by session + time range", async () => {
+    // journal.query({ sessionId, from, to }) → correct events
+  })
+  it("reconstructs past state from replay", async () => {
+    // replay(events) → reconstructed state matches snapshot
+  })
+})
+```
+
+## Migration Testing (Q6)
+
+**`.hivemind/` State Root Migration:**
+- Test: Compatibility bridge reads existing `.opencode/state/opencode-harness/` during transition
+- Test: New writers target `.hivemind/` exclusively
+- Test: Sidecar CANNOT write to canonical state (enforcement test)
+- Test: One-way migration does not dual-write
+
+**Required Test Patterns:**
+```typescript
+describe("hivemind-migration", () => {
+  it("reads legacy .opencode/state/ during transition", async () => {
+    // bridge.read() → returns legacy data unchanged
+  })
+  it("writes exclusively to .hivemind/", async () => {
+    // writer.write(data) → file exists in .hivemind/, not .opencode/state/
+  })
+  it("sidecar write attempt is rejected", async () => {
+    // sidecar.write() → throws or returns 403
+  })
+})
+```
+
 ## Common Patterns
 
 **Async Testing:**
@@ -382,4 +449,4 @@ const { VALID_TRANSITIONS } = await import("../../src/lib/task-status.js")
 
 ---
 
-*Testing analysis: 2026-04-22*
+*Testing analysis: 2026-04-25*

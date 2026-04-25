@@ -1,6 +1,6 @@
 # Architecture
 
-**Analysis Date:** 2026-04-22
+**Analysis Date:** 2026-04-25
 
 ## Pattern Overview
 
@@ -15,8 +15,60 @@ HiveMind V3 is an OpenCode plugin that acts as a **runtime composition engine** 
 - Dual-layer state — durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`), hydrated on startup
 - WaiterModel delegation — tools return immediately with a delegation ID; completion is detected via dual-signal (session.idle event + stability polling)
 - Safety ceiling (not deadline) — delegations run until dual-signal confirms completion; `safetyCeilingMs` is a MAX runtime abort, not a target
+- State root separation — `.hivemind/` at project root for all internal deep module state; `.opencode/` reserved for OpenCode primitives only (Q6)
+
+## State Root Architecture (Q6)
+
+All Hivemind internal deep module state writes to `.hivemind/` at project root. `.opencode/` is reserved exclusively for OpenCode primitives (agents, commands, skills, rules).
+
+**Migration path:** `.opencode/state/opencode-harness/` → `.hivemind/state/` (one-way, no dual-write)
+
+**Write Surface Table:**
+
+| Module | Canonical Write Location | Type |
+|--------|--------------------------|------|
+| Session Journal | `.hivemind/journal/` | Internal deep module |
+| Continuity store | `.hivemind/state/session-continuity.json` | Internal deep module |
+| Delegation records | `.hivemind/state/delegations.json` | Internal deep module |
+| Future graph projections | `.hivemind/graph/` | Internal deep module |
+| Future vector memory | `.hivemind/vector/` | Internal deep module |
+| Skills | `.opencode/skills/` | OpenCode primitive |
+| Agents | `.opencode/agents/` | OpenCode primitive |
+| Commands | `.opencode/commands/` | OpenCode primitive |
+| Rules | `.opencode/rules/` | OpenCode primitive |
+
+**Compatibility bridge:** Existing `.opencode/state/opencode-harness/` remains readable during transition.
+
+## 9-Surface Mutation Authority
+
+From Phase 16.4 architecture baseline, only the following surfaces may mutate canonical state:
+
+| Surface | Authority | Constraint |
+|---------|-----------|------------|
+| `continuity.ts` | Full CRUD | Durable JSON persistence, deep-clone-on-read |
+| `delegation-persistence.ts` | Delegation record I/O | Normalizes older records, writes to `.hivemind/state/` |
+| `session-journal.ts` (future) | Append-only | Event timeline per session, no updates or deletes |
+| `sidecar` (future) | Read-only | Reads `.hivemind/` and `.planning/` artifacts; CANNOT write |
+| `DelegationManager` | Orchestration | Dispatches through canonical stores, does not bypass |
+| `TaskStateManager` | In-memory state | Maps only, no direct file writes |
+| `plugin.ts` | Composition root | Wires but does not implement business logic |
+| Tool factories | Delegated | Return structured responses, state changes via managers |
+| Hook factories | Observational | Report facts, suppress, or inject metadata; no direct state mutation |
+
+Tools and hooks write ONLY through `DelegationManager` and `continuity`.
 
 ## Layers
+
+**Layer 1 — Harness Core:**
+- `DelegationCategory` (6 current categories) — Model routing with behavioral prompt appends
+- Category prompt appends per delegation type
+- Specialist routing with safe fallback
+
+**Layer 2 — Runtime Intelligence (Q1):**
+- Deep codemap/codescan — Detects project type, language, framework, complexity
+- File watcher — Triggers dependency graph update on package.json changes
+- MCP tools + stack skills — Synthesize tech stack at runtime (Tavily, Context7, GitHub MCP)
+- Dependency graph — Tracks and updates when versions change or new registries added
 
 **Plugin Layer (Composition Root):**
 - Purpose: Assembly and wiring — no business logic
@@ -192,8 +244,8 @@ HiveMind V3 is an OpenCode plugin that acts as a **runtime composition engine** 
 
 **Concurrency Control:** Keyed semaphore with per-lane limits, safety ceiling timers, circuit breaker on repeated tool signatures
 
-**Persistence:** Single JSON file (`session-continuity.json`) for all durable state — sessions, governance rules/violations, versioned schema
+**Persistence:** Durable JSON files in `.hivemind/state/` for all canonical state — `session-continuity.json`, `delegations.json`. Migration from `.opencode/state/opencode-harness/` in progress (Q6).
 
 ---
 
-*Architecture analysis: 2026-04-22*
+*Architecture analysis: 2026-04-25*

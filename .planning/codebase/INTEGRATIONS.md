@@ -1,6 +1,6 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-22
+**Analysis Date:** 2026-04-25
 
 ## APIs & External Services
 
@@ -10,6 +10,27 @@
   - Messaging: `client.session.messages()`, `client.session.prompt()`, `client.session.promptAsync()`
   - Status polling: `client.session.status()`
   - Auth: Built into SDK client instance passed to plugin
+- OpenCode SDK Server API (Q2) — REST API at `http://localhost:PORT` for sidecar communication
+  - Config, settings, sessions accessible via HTTP endpoints
+  - Sidecar uses this API for live session and configuration interaction
+
+**Sidecar Architecture (Q2):**
+- Next.js 15 + React 19 dashboard application
+- `@json-render/react` — Dynamic UI generation from JSON specs without code changes
+- Reads artifacts from `.hivemind/` and `.planning/` directories
+- Renders dashboard tabs based on artifact JSON schemas
+- READ-ONLY constraint — sidecar CANNOT write to canonical state (enforcement test required)
+- Architecture: OpenCode Local HTTP Server ↔ Sidecar (Next.js) via REST
+
+```
+OpenCode Local HTTP Server (https://opencode.ai/docs/server)
+       ↕ REST API
+Sidecar (Next.js 15 + @json-render/react)
+  ├── Reads: artifacts from .hivemind/ and .planning/
+  ├── Renders: JSON-spec-driven dashboard tabs
+  ├── Interacts: OpenCode SDK API for config, settings, sessions
+  └── Constraint: READ-ONLY for canonical state
+```
 
 **Search & Web Services (via MCP):**
 - Tavily — Web search and content extraction
@@ -72,10 +93,13 @@
 - None — No external database connections
 
 **File Storage:**
-- Local filesystem — Continuity store at `.opencode/state/opencode-harness/session-continuity.json`
+- Local filesystem — Canonical state at `.hivemind/state/session-continuity.json` (Q6 migration)
   - Format: JSON file with versioned schema (`CONTINUITY_VERSION = 1`)
   - Deep-clone-on-read to prevent mutation aliasing
   - Module-level `storeCache` singleton for in-memory caching
+  - Legacy path (transition): `.opencode/state/opencode-harness/session-continuity.json`
+- Session Journal (future) — Append-only event timeline at `.hivemind/journal/`
+- Delegation records — `.hivemind/state/delegations.json`
 
 **Caching:**
 - In-memory Maps (`src/lib/state.ts`) — `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta`
@@ -155,4 +179,4 @@
 
 ---
 
-*Integration audit: 2026-04-22*
+*Integration audit: 2026-04-25*

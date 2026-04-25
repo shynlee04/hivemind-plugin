@@ -1,6 +1,6 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-22
+**Analysis Date:** 2026-04-25
 
 ## Languages
 
@@ -38,7 +38,7 @@
 
 **Critical:**
 - `zod` ^4.3.6 — Schema validation for prompt-enhance pipeline (`src/schema-kernel/`)
-- `bun-pty` ^0.4.8 — PTY session management for background command execution (optional, lazy-loaded)
+- `bun-pty` ^0.4.8 — PTY session management for background command execution (optional, lazy-loaded with graceful Node fallback)
 
 **Infrastructure:**
 - `@opencode-ai/plugin` ^1.14.19 (peer) — Plugin interface, hooks, tool registration
@@ -48,7 +48,8 @@
 
 **Environment:**
 - No required env vars for build/test
-- Runtime state path: `.opencode/state/opencode-harness/`
+- Runtime state path: `.hivemind/state/` (Q6 — migrated from `.opencode/state/opencode-harness/`)
+- Legacy path (transition): `.opencode/state/opencode-harness/`
 - Override via `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`
 - `.env` / `.env.example` present — MCP API keys for external services (search, GitHub, Notion, etc.)
 
@@ -62,6 +63,38 @@
 - `verbatimModuleSyntax: true` — Requires `import type` for type-only imports
 - `skipLibCheck: true`
 - Output: `dist/` with declarations (`.d.ts`) and source maps (`.js.map`)
+
+## Layer 2 Runtime Taxonomy Tools (Q1)
+
+**MCP Tools:**
+- Tavily — Web search, content extraction, crawling, deep research (`search_depth`: basic/advanced)
+  - Config: `mcp.json` → `tavily` (HTTP MCP server)
+  - Auth: `TAVILY_API_KEY` env var
+- Context7 — Library documentation lookup (resolve-library-id → query-docs)
+  - Config: `mcp.json` → `context7` (HTTP MCP server)
+- Brave Search — Web search, local search, video search, image search, news search
+  - Config: `mcp.json` → `brave-search` (npx command)
+  - Auth: `BRAVE_API_KEY` env var
+- GitHub MCP — Code search, issue management, PR operations, repository management
+  - Config: `mcp.json` → `github` (npx command)
+  - Auth: `GITHUB_PAT` env var
+
+**Project Detection:**
+- Deep codemap/codescan — Detects project type, language, framework, complexity at runtime
+- File watcher — Triggers dependency graph update on package.json changes
+- Dependency graph — Tracks versions, registries, and framework relationships
+
+## Sidecar Dependencies (Q2)
+
+**Dashboard Framework:**
+- Next.js 15 — Sidecar application framework
+- React 19 — UI component framework
+- `@json-render/react` (Vercel Labs) — Dynamic dashboard rendering from JSON specs without code changes
+
+**Communication:**
+- OpenCode SDK server API — REST API at `http://localhost:PORT` for config, settings, sessions
+- Sidecar reads artifacts from `.hivemind/` and `.planning/`, renders dashboard tabs
+- READ-ONLY constraint — sidecar CANNOT write to canonical state (enforcement test required)
 
 ## Module Architecture
 
@@ -112,4 +145,4 @@
 
 ---
 
-*Stack analysis: 2026-04-22*
+*Technology stack analysis: 2026-04-25*

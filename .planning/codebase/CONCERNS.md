@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-04-22
+**Analysis Date:** 2026-04-25
 
 ## Tech Debt
 
@@ -175,6 +175,22 @@
 - **Risk:** Cache pollution between tests, mutation aliasing bugs.
 - **Priority:** Medium
 
+## Validation Decision Concerns
+
+### C8: 0 of 25 hm-* Skills Pass RICH Gate (Q5)
+- **Issue:** Every `hm-*` skill must pass RICH Pattern 1/2/3 third-party synthesis. Current honest status: 0 of 25 skills pass. This is NOT a threshold to lower — it is a quality process that requires individual crafting.
+- **Files:** `.opencode/skills/hm-*/SKILL.md`, `.planning/RICH-SKILL-QUALITY-GATE.md`
+- **Impact:** Skills may lack real third-party evidence, bundled assets, and comparative analysis. Quality claims are unsubstantiated.
+- **Fix approach:** Phase 27-30 research artifacts feed synthesis. Use `skill-development`, `skill-creator`, and `skill-judge` for crafting. Each skill requires dedicated synthesis — no batch lowering.
+- **Status:** Honest status documented. Resolution is ongoing work, not a bug fix.
+
+### C9: `.hivemind/` Migration Requires Compatibility Bridge (Q6)
+- **Issue:** All internal deep module state must migrate from `.opencode/state/opencode-harness/` to `.hivemind/` at project root. During transition, existing data must remain readable.
+- **Files:** `src/lib/continuity.ts`, `src/lib/delegation-persistence.ts`, future `src/lib/session-journal.ts`
+- **Impact:** Writers may continue targeting old path, creating dual-write or data loss. Other plugins may overwrite `.opencode/` state.
+- **Fix approach:** One-way migration `.opencode/state/` → `.hivemind/`. Compatibility bridge reads existing `.opencode/state/opencode-harness/` during transition. New writers target `.hivemind/` exclusively.
+- **Status:** Architecture documented in PROJECT.md and ARCHITECTURE.md. Implementation pending Phase 25+.
+
 ---
 
-*Concerns audit: 2026-04-22*
+*Concerns audit: 2026-04-25*
