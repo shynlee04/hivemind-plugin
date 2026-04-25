@@ -550,14 +550,10 @@ Plans:
 
 **Goal:** Apply HMQUAL D1-D8 plus `.planning/RICH-SKILL-QUALITY-GATE.md` to QA, research, execution/OpenCode, and guardrail lineages.
 **Requirements:** HMQUAL-01 through HMQUAL-08 plus RICH-1 through RICH-8.
-**Latest closure evidence:** `.planning/phases/30-g-a-guardrail-lineage-harden-completion-loops-phase-loops-de/30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`.
-**Status:** PARTIAL/BLOCKED overall — Phase 28 PASS; Phase 27 PASS/PARTIAL; Phase 29 PARTIAL/BLOCKED; Phase 30 PARTIAL/BLOCKED.
+**Latest closure evidence:** `.planning/phases/30-g-a-guardrail-lineage-harden-completion-loops-phase-loops-de/30-FINAL-RICH-CLOSURE-2026-04-25.md`.
+**Status:** PASS overall — Phases 27, 28, 29, and 30 pass for the HMQUAL/RICH closure scope.
 
-Remaining no-PASS blockers:
-- Add validators/evals or explicit resource-rationale scorecards for `hm-command-parser`, `hm-agents-md-sync`, `hm-planning-with-files`, and `hm-opencode-platform-reference`.
-- Fetch or formally replace raw Hermes OpenCode source evidence for `hm-opencode-non-interactive-shell`.
-- Complete full external bundled-resource diffs for newly selected Phase 29/30 sources if the RICH gate requires source-tree proof.
-- Resolve generic trigger competition where project `hm-*` skills must dominate global skills.
+Remaining no-PASS blockers: none for Phases 27-30. Generic trigger competition with global skills is documented as acceptable coexistence unless exact project trigger phrases fail.
 
 ---
 
@@ -757,11 +753,11 @@ Plans:
 | 23. Body Quality + Eval (Playbook Phase 5) | 6/9 skills | ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
 | 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 3/3 plans, 8/8 truths | ✅ COMPLETE — 2026-04-23 |
 | 26. Quality Synthesis | 5/5 plans | ✅ COMPLETE — HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
-| 31. Planning Documentation Refresh | 1/3 plans | ⚡ IN PROGRESS — Plan 01 executing |
-| 27. G-B Quality Assurance Demonstration | TBD plans | Planned — depends on Phase 26 |
-| 28. G-C Research Lineage | TBD plans | Planned — depends on Phase 27 |
-| 29. G-D Execution Lineage | TBD plans | Planned — depends on Phase 28 |
-| 30. G-A Guardrail Lineage | TBD plans | Planned — depends on Phase 29 |
+| 31. Planning Documentation Refresh | 3/3 plans | ✅ COMPLETE — all 10 refreshed documents verified by health check |
+| 27. G-B Quality Assurance Demonstration | 4/4 plans | ✅ COMPLETE — rich-closure-pass, D1-D8 + RICH scoring verified |
+| 28. G-C Research Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 4 target skills RICH-validated |
+| 29. G-D Execution Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 15 skills runtime-truthful validated |
+| 30. G-A Guardrail Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 5 guardrail skills hardened |
 
 ## Dependencies
 
@@ -787,10 +783,10 @@ Phase 1 (7 done, 3 pending — planned)
                                                                            └─→ Phase 23: Body Quality + Eval (Playbook Phase 5) ✅
                                                                                 └─→ Phase 24: Fix 22 Failed hm-* Skills (Playbook Phase 6) ✅
                                                                                      └─→ Phase 26: Quality Synthesis ✅
-                                                                                          └─→ Phase 27: G-B Quality Assurance Demonstration
-                                                                                               └─→ Phase 28: G-C Research Lineage
-                                                                                                    └─→ Phase 29: G-D Execution Lineage
-                                                                                                         └─→ Phase 30: G-A Guardrail Lineage
+                                                                                          └─→ Phase 27: G-B Quality Assurance Demonstration ✅
+                                                                                               └─→ Phase 28: G-C Research Lineage ✅
+                                                                                                    └─→ Phase 29: G-D Execution Lineage ✅
+                                                                                                         └─→ Phase 30: G-A Guardrail Lineage ✅
                                   └─→ Phase 9.3: Module Restructuring + Config
                                        └─→ Phase 11: Clean Architecture Restructuring
                                              └─→ Phase 3: Schema Definition

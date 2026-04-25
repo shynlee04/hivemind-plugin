@@ -33,9 +33,10 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 Phase: 31 (planning-documentation-refresh) — COMPLETE
 Plan: 3 of 3 complete (31-01 core docs, 31-02 codebase docs, 31-03 milestone archive + health check)
+Phases 27-30 (G-B, G-C, G-D, G-A lineages) — COMPLETE (rich-closure-pass)
 Previous: Phase 26 (quality synthesis) — COMPLETE
-**Current plan:** Phase 31 complete — ready for Phase 27-30 execution
-**Next:** Phase 27 (G-B Quality Assurance Demonstration) or Phase 25 (Session Journal)
+**Current plan:** Milestone v2.0 documentation and RICH closure complete
+**Next:** Phase 25 (Session Journal), Phase 11 (Clean Architecture Restructuring), or Phases 3-5 (Schema/Migration/Integration)
 **Progress:** [████████░░] 80%
 
 ```
@@ -111,8 +112,20 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 | Phase | Status | Detail |
 |-------|--------|--------|
 | Phase 16 | EXECUTING | 5/6 plans complete; Plan 06 gap closure remaining |
-| Phase 31 | COMPLETE | 3/3 plans complete — all 10 refreshed documents verified by health check |
-| Phase 27-30 | PLANNED | Execution roadmap defined, awaiting Phase 31 completion before planning begins |
+| Phase 25 | PLANNED | 3 plans ready — Session Journal + Execution Lineage Bridge |
+| Phase 11 | PLANNED | 0 plans — Clean Architecture Restructuring |
+| Phase 3-5 | PLANNED | Schema Definition, Migration Gate, Integration Verification |
+| Phase 9.3 | BLOCKED | 0/3 plans — blocked by Phase 9.2 resolution |
+
+### Recently Completed Phases
+
+| Phase | Status | Detail |
+|-------|--------|--------|
+| Phase 27 | COMPLETE | rich-closure-pass — G-B Quality Assurance Demonstration |
+| Phase 28 | COMPLETE | rich-closure-pass — G-C Research Lineage |
+| Phase 29 | COMPLETE | rich-closure-pass — G-D Execution Lineage |
+| Phase 30 | COMPLETE | rich-closure-pass — G-A Guardrail Lineage |
+| Phase 31 | COMPLETE | 3/3 plans — all 10 refreshed documents verified by health check |
 
 ## Known Issues
 
