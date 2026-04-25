@@ -36,6 +36,7 @@
  - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — eval expansion with trigger queries for 6 new skills
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
 - [ ] **Phase 25: Session Journal + Execution Lineage Bridge** — 3 plans ready
+- [ ] **Phase 31: Planning Documentation Refresh** — Synthesize 6 validation decisions (Q1-Q6) + research from phases 16.4-30 into all stale .planning/ core documents
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -457,6 +458,30 @@ Plans:
 - [ ] 25-01-PLAN.md — journal contract and `.hivemind/` taxonomy starter
 - [ ] 25-02-PLAN.md — rebuildable execution lineage projection
 - [ ] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
+
+### Phase 31: Planning Documentation Refresh
+
+**Goal:** Synthesize 6 locked validation decisions (Q1-Q6) and research from phases 16.4-30 into all stale `.planning/` core documents. Refresh PROJECT.md, REQUIREMENTS.md, ROADMAP.md phase statuses, STATE.md progress, and all codebase/*.md documents to reflect current architecture reality.
+**Requirements**: DOC-REFRESH-01 through DOC-REFRESH-10 (10 document updates)
+**Depends on:** Phase 26 (COMPLETE — quality synthesis), validation decisions locked in `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`
+**Plans:** 3 plans
+
+**Documents to update:**
+- PROJECT.md — rewrite to reflect V3 composition engine + 6 validation decisions + `.hivemind/` migration
+- REQUIREMENTS.md — add Q1-Q6 decision-derived requirements, remove stale requirements
+- ROADMAP.md — correct phase statuses (16.4 COMPLETE, 27-30 status), remove superseded phases
+- STATE.md — recalculate progress, update current position, reflect validation decisions
+- codebase/ARCHITECTURE.md — 9-surface mutation authority, `.hivemind/` state root, Q6 migration
+- codebase/STRUCTURE.md — current directory structure after phases 17-26
+- codebase/STACK.md — Q1 Layer 2 runtime taxonomy, MCP tools, dependency graph
+- codebase/CONCERNS.md — C1-C7 all resolved/partially-resolved, update status
+- codebase/INTEGRATIONS.md — Q2 sidecar architecture, OpenCode SDK server API
+- codebase/TESTING.md — Q5 RICH gate requirements, full RICH no-compromise
+
+Plans:
+- [ ] 31-01-PLAN.md — Core documents refresh: PROJECT.md + REQUIREMENTS.md + ROADMAP.md + STATE.md (Wave 1)
+- [ ] 31-02-PLAN.md — Codebase documents refresh: ARCHITECTURE + STRUCTURE + STACK + CONCERNS + INTEGRATIONS + TESTING (Wave 1)
+- [ ] 31-03-PLAN.md — Milestone archive creation + cross-document health verification (Wave 2, depends on 31-01 and 31-02)
 
 ### Phase 26: Synthesize all hm-star skills debts gaps conflicts across Phases 17-24 into unified requirements and specs starting with spec-driven-authoring and test-driven-execution lineages first detect ecosystem conflicts archive regressions
 
