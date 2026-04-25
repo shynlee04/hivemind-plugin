@@ -36,7 +36,10 @@
 - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis)
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
 - [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 4/4 plans complete; journal/lineage bridge plus automatic event-tracker writer and manual export lineage merge verified under `.hivemind/event-tracker/`
-- [ ] **Phase 31: Planning Documentation Refresh** — Synthesize 6 validation decisions (Q1-Q6) + research from phases 16.4-30 into all stale .planning/ core documents
+- [x] **Phase 31: Planning Documentation Refresh** — 3/3 plans complete — all 10 refreshed documents verified by health check
+- [ ] **Phase 32: Traceability Reconciliation** — Close audit gaps GAP-TRACE-01/02/03, create 14 missing VERIFICATION.md, reconcile REQUIREMENTS.md with ROADMAP.md evidence
+- [ ] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
+- [ ] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -790,7 +793,10 @@ Phase 1 (7 done, 3 pending — planned)
                                                                                           └─→ Phase 27: G-B Quality Assurance Demonstration ✅
                                                                                                └─→ Phase 28: G-C Research Lineage ✅
                                                                                                     └─→ Phase 29: G-D Execution Lineage ✅
-                                                                                                         └─→ Phase 30: G-A Guardrail Lineage ✅
+                                                                                                          └─→ Phase 30: G-A Guardrail Lineage ✅
+                                                                                                               └─→ Phase 32: Traceability Reconciliation (audit gap closure)
+                                                                                                               └─→ Phase 33: Phase 16.4 Closure + Backlog 999.1
+                                                                                                                    └─→ Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring
                                   └─→ Phase 9.3: Module Restructuring + Config
                                        └─→ Phase 11: Clean Architecture Restructuring
                                              └─→ Phase 3: Schema Definition
@@ -800,14 +806,70 @@ Phase 1 (7 done, 3 pending — planned)
 
 ## Backlog
 
-### Phase 999.1: Follow-up — Phase 16.4 incomplete verify-work (BACKLOG)
+### Phase 999.1: Follow-up — Phase 16.4 incomplete verify-work (ABSORBED BY PHASE 33)
 
 **Goal:** Resolve verify-work and create SUMMARY.md files for Phase 16.4 plans that executed without producing summaries
 **Source phase:** 16.4
 **Deferred at:** 2026-04-25 during /gsd-next advancement to Phase 16.5
-**Status:** Phase 16.4 architecture baseline executed per STATE.md; verify-work and summaries pending
-**Plans:**
-- [ ] 16.4-01: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
-- [ ] 16.4-02: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
-- [ ] 16.4-03: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
-- [ ] 16.4-04: harness-architecture-baseline-migration-control-plane (ran, no SUMMARY.md)
+**Absorbed by:** Phase 33 (2026-04-26 milestone gap closure)
+**Status:** ABSORBED — Phase 33 will create all 4 missing summaries plus 16.4-VERIFICATION.md
+
+## Phase 32: Traceability Reconciliation
+
+**Goal:** Close audit traceability gaps (GAP-TRACE-01/02/03) and create missing VERIFICATION.md artifacts for 14 COMPLETE phases
+**Source:** v2.0-MILESTONE-AUDIT.md gaps found 2026-04-26
+**Requirements:** GAP-TRACE-01, GAP-TRACE-02, GAP-TRACE-03, GAP-VERIFY-01
+**Gap Closure:** Closes traceability discrepancies from audit
+
+### Tasks
+
+1. Update REQUIREMENTS.md: Change 7 v1 cleanup items from `[ ]` → `[x]` (HIGH-01, HIGH-02, MED-01, MED-02, LOW-02, DEAD-01, TEST-01)
+2. Update REQUIREMENTS.md: Change DOC-REFRESH-05 through DOC-REFRESH-10 from Pending → Complete
+3. Update REQUIREMENTS.md: Change HMQUAL-01 through HMQUAL-08 from Defined → Complete
+4. Create retroactive VERIFICATION.md for Phase 01 (Baseline Cleanup — 7/10 verified)
+5. Create retroactive VERIFICATION.md for Phase 08 (Repair Durable Parent Observability)
+6. Create retroactive VERIFICATION.md for Phases 19-23 (Playbook Phases 1-5)
+7. Create retroactive VERIFICATION.md for Phase 26 (Quality Synthesis)
+8. Create retroactive VERIFICATION.md for Phase 31 (Planning Documentation Refresh)
+9. Fix STATE.md line 115 stale entry (Phase 27-30 PLANNED → COMPLETE)
+
+**Plans:** 2 plans (documentation-only, no code changes)
+
+## Phase 33: Phase 16.4 Closure + Backlog 999.1
+
+**Goal:** Close Phase 16.4 documentation void — create 4 missing SUMMARY.md files, phase-level VERIFICATION.md, and close validation approval
+**Source:** v2.0-MILESTONE-AUDIT.md GAP-16.4-1, GAP-16.4-2; ROADMAP backlog 999.1
+**Requirements:** GAP-16.4-1, GAP-16.4-2, GAP-16.4-3, GAP-16.4-4
+**Gap Closure:** Absorbs backlog 999.1, completes Phase 16.4 artifact chain
+
+### Tasks
+
+1. Create 16.4-01-SUMMARY.md (retroactive — read plan + produced artifacts)
+2. Create 16.4-02-SUMMARY.md (retroactive — read plan + produced artifacts)
+3. Create 16.4-03-SUMMARY.md (retroactive — read plan + produced artifacts)
+4. Create 16.4-04-SUMMARY.md (retroactive — read plan + produced artifacts)
+5. Create 16.4-VERIFICATION.md (phase-level — aggregate validation results)
+6. Update 16.4-VALIDATION.md line 88 Approval: pending → passed (2026-04-26)
+7. Mark backlog 999.1 items complete in ROADMAP.md
+
+**Plans:** 2 plans (documentation-only, no code changes)
+
+## Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring
+
+**Goal:** Close Phase 16 Gap 4 — wire PTY execution to delegation path, implement dispatchCommand(), create run-background-command tool
+**Source:** v2.0-MILESTONE-AUDIT.md GAP-16-06-1 through GAP-16-06-4; 16-VERIFICATION.md Truth #4 FAILED
+**Requirements:** D-04A, D-05, D-12, D-13, D-16, D-17 (6 remaining from Plan 06)
+**Gap Closure:** Closes Phase 16 from 5/6 → 6/6 plans
+**Depends on:** Phase 33 (Phase 16.4 architecture baseline verified)
+
+### Tasks
+
+1. Implement `dispatchCommand()` on DelegationManager for PTY-backed command execution under canonical queue governance
+2. Create `src/tools/run-background-command.ts` with run/output/input/list/terminate actions sharing canonical PtyManager
+3. Wire PTY execution path to actual delegated child-session work (replace metadata-only PTY)
+4. Implement truthful `executionMode: "sdk" | "pty" | "headless"` across dispatch, persistence, and status surfaces
+5. Implement PTY-unavailable fallback: `executionMode: "headless"` with `fallbackReason`
+6. Write tests for dual-mode dispatch, PTY command delegation, fallback behavior
+7. Re-verify Phase 16: Truth #4 must pass
+
+**Plans:** 3 plans (code changes, tests, verification)
