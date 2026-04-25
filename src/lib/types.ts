@@ -473,3 +473,50 @@ export const STABLE_POLLS_REQUIRED = 3
 export const STABILITY_THRESHOLD = STABLE_POLLS_REQUIRED
 /** @deprecated Use adaptive interval calculation instead */
 export const STABILITY_POLL_INTERVAL_MS = POLL_INTERVAL_BASE_MS
+
+// ---------------------------------------------------------------------------
+// Config workflow state machine types (Phase 16.5 fix)
+// ---------------------------------------------------------------------------
+
+export const WORKFLOW_TURNS = [
+  "discovery",
+  "investigate",
+  "collect",
+  "proposal",
+  "validate",
+  "compile",
+  "test",
+  "save",
+] as const
+
+export type WorkflowTurn = (typeof WORKFLOW_TURNS)[number]
+
+export type WorkflowTurnStatus = "pending" | "in_progress" | "complete" | "skipped"
+
+export type WorkflowTurnRecord = {
+  status: WorkflowTurnStatus
+  output: Record<string, unknown> | null
+  completedAt?: number
+}
+
+export type ConfigWorkflowState = {
+  id: string
+  type: "agent-config" | "command-config" | "skill-config" | "batch-config"
+  currentTurn: number
+  turns: Record<number, WorkflowTurnRecord>
+  targetPrimitives: Array<{ type: "agent" | "command" | "skill"; name: string }>
+  scope: "project" | "global"
+  mode: "create" | "modify" | "batch-modify"
+  startedAt: number
+  updatedAt: number
+}
+
+export type WorkflowResumeResult = {
+  workflowId: string
+  currentTurn: number
+  currentTurnName: WorkflowTurn
+  completedTurns: number
+  totalTurns: number
+  lastOutput: Record<string, unknown> | null
+  canContinue: boolean
+}
