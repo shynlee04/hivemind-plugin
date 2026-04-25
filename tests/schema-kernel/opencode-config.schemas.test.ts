@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest"
 import {
   AgentNameSchema, AgentFrontmatterSchema, AgentFrontmatterSchemaLenient, AgentFileSchema, AgentFileSchemaLenient,
   CommandNameSchema, CommandFrontmatterSchema, CommandFrontmatterSchemaLenient, CommandTemplateFeaturesSchema, CommandTemplateFeaturesSchemaLenient, CommandFileSchema, CommandFileSchemaLenient,
-  PermissionActionSchema, PermissionRuleSchema, PermissionRuleSchemaLenient, PatternBasedPermissionSchema,
+  PermissionActionSchema, PermissionRuleSchema, PermissionRuleSchemaLenient, PatternBasedPermissionSchema, PermissionKeySchema,
   SkillNameSchema, SkillFrontmatterSchema, SkillFrontmatterSchemaLenient, SkillFileSchema, SkillFileSchemaLenient, SkillDiscoveryLocationSchema,
-  MCPServerConfigSchema, OpenCodeConfigSchema,
+  ToolDefinitionSchema, ToolDefinitionSchemaLenient, ToolFileSchema, ToolFileSchemaLenient,
+  MCPServerConfigSchema, OpenCodeConfigSchema, ConfigPrecedenceLevelSchema, ConfigSourceSchema, ConfigSourceSchemaLenient,
   validateWithFallback,
 } from "../../src/schema-kernel/index.js"
 
@@ -72,6 +73,15 @@ const fullSkillFm = () => ({
 const validSkillFile = () => ({
   frontmatter: validSkillFm(), body: "# Content",
   directoryName: "my-skill", skillPath: ".opencode/skills/my-skill/SKILL.md",
+})
+
+// Tool fixtures
+const validToolDef = () => ({
+  name: "my-tool", description: "A test tool", args: { input: "string" },
+  hasExecute: true, filePath: ".opencode/tools/my-tool.ts", exports: ["default"],
+})
+const validToolFile = () => ({
+  definition: validToolDef(), sourcePath: ".opencode/tools/my-tool.ts",
 })
 
 // ===========================================================================
@@ -216,11 +226,11 @@ describe("PatternBasedPermissionSchema", () => {
   it("rejects invalid action in pattern", () => {
     expect(sp(PatternBasedPermissionSchema, { ...validPatternBased(), bash: { "*": "block" } }).success).toBe(false)
   })
-  it("rejects invalid permission key", () => {
-    expect(sp(PatternBasedPermissionSchema, { "not-a-permission": { "*": "allow" } }).success).toBe(false)
+  it("accepts unknown permission keys (future compatibility)", () => {
+    expect(sp(PatternBasedPermissionSchema, { "future-permission": { "*": "allow" } }).success).toBe(true)
   })
-  it("rejects partial keys (missing required)", () => {
-    expect(sp(PatternBasedPermissionSchema, { bash: { "*": "deny" } }).success).toBe(false)
+  it("accepts partial keys (no longer requires all keys)", () => {
+    expect(sp(PatternBasedPermissionSchema, { bash: { "*": "deny" } }).success).toBe(true)
   })
 })
 
@@ -284,7 +294,52 @@ describe("SkillDiscoveryLocationSchema", () => {
 })
 
 // ===========================================================================
-// MCP Server / OpenCode Config — skipped (schemas not yet created)
+// ToolDefinitionSchema
+// ===========================================================================
+
+describe("ToolDefinitionSchema", () => {
+  it("accepts valid definition", () => expect(sp(ToolDefinitionSchema, validToolDef()).success).toBe(true))
+  it("rejects missing name", () => { const { name, ...r } = validToolDef(); expect(sp(ToolDefinitionSchema, r).success).toBe(false) })
+  it("rejects missing description", () => { const { description, ...r } = validToolDef(); expect(sp(ToolDefinitionSchema, r).success).toBe(false) })
+  rejectsExtra(ToolDefinitionSchema, validToolDef())
+})
+
+describe("ToolFileSchema", () => {
+  it("accepts valid file", () => expect(sp(ToolFileSchema, validToolFile()).success).toBe(true))
+  it("rejects missing sourcePath", () => { const { sourcePath, ...r } = validToolFile(); expect(sp(ToolFileSchema, r).success).toBe(false) })
+  rejectsExtra(ToolFileSchema, validToolFile())
+})
+
+describe("ToolDefinitionSchemaLenient", () => {
+  it("accepts valid data", () => expect(sp(ToolDefinitionSchemaLenient, validToolDef()).success).toBe(true))
+  acceptsExtra(ToolDefinitionSchemaLenient, validToolDef())
+})
+
+describe("ToolFileSchemaLenient", () => {
+  it("accepts valid file", () => expect(sp(ToolFileSchemaLenient, validToolFile()).success).toBe(true))
+  acceptsExtra(ToolFileSchemaLenient, validToolFile())
+})
+
+// ===========================================================================
+// ConfigPrecedenceLevelSchema
+// ===========================================================================
+
+describe("ConfigPrecedenceLevelSchema", () => {
+  it("accepts known levels", () => {
+    for (const level of ["managed_preferences", "managed_config", "inline_config", "opencode_dir", "project_config", "custom_config", "global_config", "remote_config"]) {
+      expect(sp(ConfigPrecedenceLevelSchema, level).success).toBe(true)
+    }
+  })
+  it("accepts future levels", () => {
+    expect(sp(ConfigPrecedenceLevelSchema, "future_level").success).toBe(true)
+  })
+  it("rejects empty string", () => {
+    expect(sp(ConfigPrecedenceLevelSchema, "").success).toBe(false)
+  })
+})
+
+// ===========================================================================
+// MCP Server / OpenCode Config
 // ===========================================================================
 
 describe("MCPServerConfigSchema", () => {
@@ -421,6 +476,24 @@ describe("validateWithFallback", () => {
       expect(result.warnings.length).toBeGreaterThan(0)
       expect("extra" in result.data).toBe(false)
       expect("extraFm" in result.data.frontmatter).toBe(false)
+    }
+  })
+
+  it("accepts future permission keys without warnings (permission field is known)", () => {
+    const data = { ...validAgentFm(), permission: { "future-tool": { "*": "allow" } } }
+    const result = validateWithFallback(AgentFrontmatterSchema, AgentFrontmatterSchemaLenient, data, "agent")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.warnings).toEqual([])
+    }
+  })
+
+  it("accepts future config levels via lenient fallback", () => {
+    const data = { key: "test", value: "val", source: "future_level" }
+    const result = validateWithFallback(ConfigSourceSchema, ConfigSourceSchemaLenient, data, "config")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.warnings).toEqual([])
     }
   })
 })
