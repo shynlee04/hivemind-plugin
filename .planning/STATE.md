@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: 3
-status: unknown
-stopped_at: Phase 16.5 gap-closure context gathered — ready for replanning
-last_updated: "2026-04-25T01:50:34.875Z"
+current_plan: 8
+status: complete
+stopped_at: Phase 16.5 Plan 08 complete — mixed-primitive batch + eval harness + build validation
+last_updated: "2026-04-25T10:15:00Z"
 progress:
-  total_phases: 28
-  completed_phases: 11
-  total_plans: 54
-  completed_plans: 48
-  percent: 89
+  total_phases: 29
+  completed_phases: 10
+  total_plans: 60
+  completed_plans: 51
+  percent: 85
 ---
 
 # STATE: Harness Cleanup
@@ -105,7 +105,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 | Phase 9.2 | PARTIAL | Implementation artifacts exist, but 09.2-02/03 completion summaries were quarantined after Phase 12 proved start semantics were still incomplete |
 | Phase 16 | EXECUTING | 5/6 plans complete; queue-key truth and real message-stability completion landed with full test/typecheck/build verification, leaving Plan 06 as the remaining gap-closure step |
 | Phase 16.2 | REMEDIATED | CR-01 and CR-03 resolved (26 new tests, gracePeriodExpiresAt fixed). WR-02 and WR-03 pending. 19 live-runtime tests remain. |
-| Phase 16.5 | COMPLETE | Agents Builder Configuration Foundation — 6/6 plans executed, 718 tests pass, UAT verified, intent detection expanded, BLOCKER-1 and BLOCKER-3 closed |
+| Phase 16.5 | COMPLETE | Agents Builder Configuration Foundation — 8/8 plans executed, 772 tests pass, UAT verified, intent detection expanded, BLOCKER-1, BLOCKER-2, BLOCKER-3 closed, all 3 gap-closure waves (CRITICAL-4 through CRITICAL-7, HIGH-10) landed |
 | Phase 19 | PARTIAL | Repair needed: stale refs, missing phase directory |
 | Phase 20 | PARTIAL | Repair needed: acceptance criteria not met for new skills |
 | Phase 22-23 | NOT SUBSTANTIATED | Need proper phase directories, planning, and execution |
@@ -230,6 +230,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 - Phase 16.2 added: PTY Execution Wiring + OMO Safety Patterns — close verification gaps, add grace periods, parent notifications, adaptive polling, nesting depth limits (SPEC validated, 24 requirements, 6 already implemented)
 - Phase 17 added: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0) — first of 6 continuation phases mapping HIVEMIND-SKILLS-REFACTOR-PLAYBOOK into GSD phases 17–22. Covers C1–C5 critical issues, hm-* rename mandate, soft→hard bridge model, runtime compilation model. Specification: .hivemind/state/session-context-prompt-v4.md
 - Phase 18 added: Context & Research — Skills Refactor Playbook Phase CR. Mandatory research/audit phase before any structural skill work. Per HIVEMIND-SKILLS-REFACTOR-PLAYBOOK v2.0 §VI.CR. Continuation mapping renumbered: old Phase 18→19, 19→20, 20→21, 21→22, 22→23.
+- Phase 25 added: Session Journal + Execution Lineage Bridge
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
@@ -268,7 +269,7 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase 16.5 Plan 06 complete — Schema Resilience & Primitive Discovery implemented
+**Stopped At:** Phase 16.4 UAT complete — next real work is Session Journal + Execution Lineage Bridge
 
 **Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
@@ -276,4 +277,4 @@ Phase 24: COMPLETE — 3/3 plans (6-NON removed, onboarding headings, Self-Corre
 *State initialized: 2026-04-06*
 *Forensic reset + reconciliation: 2026-04-14 — false-start corridor corrected and 09-family truth quarantined where needed*
 
-**Planned Phase:** 16.3 (Delegation Subsystem Hardening — Fix critical gaps in parent resumption, notification delivery, and signal handling) — 3 plans — 2026-04-23T18:49:59.938Z
+**Planned Phase:** 25 (Session Journal + Execution Lineage Bridge) — 3 plans — 2026-04-25T03:03:41.702Z

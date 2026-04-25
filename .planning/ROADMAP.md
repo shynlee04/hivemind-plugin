@@ -35,6 +35,7 @@
 - [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — 6-NON defence tables added to 7 core skills
  - [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — eval expansion with trigger queries for 6 new skills
  - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
+- [ ] **Phase 25: Session Journal + Execution Lineage Bridge** — 3 plans ready
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -306,8 +307,8 @@ Plans:
 - [x] 16.5-05: Orchestrator Enhancement (R-05)
 - [x] 16.5-fix: UAT intent detection gaps + Turn 0 discovery + batch modify
 - [x] 16.5-06: Schema Resilience + Discovery Loader (BLOCKER-1, BLOCKER-3) [Wave 1]
-- [ ] 16.5-07: Framework-Agnostic Stacking + Runtime Validation (BLOCKER-2, CRITICAL-4, CRITICAL-7) [Wave 2]
-- [ ] 16.5-08: Mixed-Primitive Batch + Eval Harness (CRITICAL-5, CRITICAL-6, HIGH-10) [Wave 3]
+- [x] 16.5-07: Framework-Agnostic Stacking + Runtime Validation (BLOCKER-2, CRITICAL-4, CRITICAL-7) [Wave 2]
+- [x] 16.5-08: Mixed-Primitive Batch + Eval Harness (CRITICAL-5, CRITICAL-6, HIGH-10) [Wave 3]
 
 ### Phase 16.3: Delegation Subsystem Hardening — Fix critical gaps in parent resumption, notification delivery, and signal handling (INSERTED)
 
@@ -444,6 +445,18 @@ Plans:
 **Hard constraints:** Zero `src/` changes; zero agent/command structural refactors (only `permission.skill` updates); zero IDE-directory modifications
 
 **Execution status:** ✅ COMPLETE. Commit `7b686311`. 368 files changed, 8176 insertions, 3250 deletions. All renames detected as git renames. All agent permissions, command bodies, routing tables, and playbook references updated.
+
+### Phase 25: Session Journal + Execution Lineage Bridge
+
+**Goal:** Build the first `.hivemind/`-aligned audit/projection bridge for session journals and execution lineage without replacing current `.opencode/state/opencode-harness/` runtime truth.
+**Requirements**: TBD
+**Depends on:** Phase 24
+**Plans:** 3 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — journal contract and `.hivemind/` taxonomy starter
+- [ ] 25-02-PLAN.md — rebuildable execution lineage projection
+- [ ] 25-03-PLAN.md — JSON/Markdown export tool and plugin wiring
 
 ---
 
