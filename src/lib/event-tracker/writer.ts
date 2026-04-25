@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
 import { asString, getNestedValue } from "../helpers.js"
@@ -6,21 +6,40 @@ import { getEventParentID, getEventSessionID } from "../session-api.js"
 import { parseProductDetoxSessionMarkdown } from "./parser.js"
 import type {
   CreateEventTrackerArtifactsFromHookInput,
+  CleanupEventTrackerArtifactsInput,
+  CleanupEventTrackerArtifactsResult,
   EventTrackerArtifactPaths,
   EventTrackerFileSystem,
   JourneyEventHookInput,
   JourneyEventType,
   MergeSessionExportMarkdownArtifactsInput,
   ParsedSubSession,
+  SessionJourneyDelegation,
   SessionJourneyDocument,
   SessionJourneyEvent,
   SessionJourneyTocEntry,
+  SessionJourneyToolUsage,
   WriteSessionJourneyArtifactsInput,
   WriteSessionJourneyArtifactsResult,
 } from "./types.js"
 
 const nodeFs: EventTrackerFileSystem = { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync }
 const MAX_EVENTS_PER_DOCUMENT = 100
+const MAX_TOOL_SUMMARY_LENGTH = 240
+
+const IGNORED_HOOK_TYPES = new Set([
+  "message.updated",
+  "message.part.delta",
+  "message.part.updated",
+  "session.diff",
+  "session.status",
+])
+
+const TOOL_HOOK_TYPES = new Set([
+  "tool.execute.after",
+  "tool.executed",
+  "tool.completed",
+])
 
 function eventTypeFromHook(type: string): JourneyEventType {
   if (type === "session.created") return "session_start"
@@ -28,6 +47,14 @@ function eventTypeFromHook(type: string): JourneyEventType {
   if (type === "session.idle") return "session_idle"
   if (type === "session.deleted") return "session_end"
   return "session_event"
+}
+
+function shouldIgnoreHookType(type: string): boolean {
+  return IGNORED_HOOK_TYPES.has(type)
+}
+
+function isToolHookType(type: string): boolean {
+  return TOOL_HOOK_TYPES.has(type)
 }
 
 function titleFromType(type: JourneyEventType): string {
@@ -72,6 +99,33 @@ function resolveHookType(event: unknown): string {
   return asString(getNestedValue(event, ["type"])) || "unknown"
 }
 
+function resolveToolName(event: unknown): string {
+  return (asString(getNestedValue(event, ["properties", "tool"]))
+    || asString(getNestedValue(event, ["properties", "toolName"]))
+    || asString(getNestedValue(event, ["tool"]))
+    || asString(getNestedValue(event, ["toolName"]))
+    || "")
+}
+
+function resolveToolStatus(event: unknown): string {
+  return (asString(getNestedValue(event, ["properties", "status"]))
+    || asString(getNestedValue(event, ["properties", "state"]))
+    || asString(getNestedValue(event, ["status"]))
+    || "completed")
+}
+
+function summarizeToolReturn(event: unknown): string {
+  const candidate = (asString(getNestedValue(event, ["properties", "summary"]))
+    || asString(getNestedValue(event, ["properties", "resultSummary"]))
+    || asString(getNestedValue(event, ["properties", "outputSummary"]))
+    || asString(getNestedValue(event, ["summary"]))
+    || asString(getNestedValue(event, ["properties", "output"]))
+    || asString(getNestedValue(event, ["output"]))
+    || "completed")
+  const normalized = candidate.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()
+  return normalized.length <= MAX_TOOL_SUMMARY_LENGTH ? normalized : `${normalized.slice(0, MAX_TOOL_SUMMARY_LENGTH - 1)}…`
+}
+
 export function sanitizeSessionArtifactStem(sessionId: string): string {
   const explicit = sessionId.match(/ses[_-]?([A-Za-z0-9]{4})/i)?.[1]
   const suffixSource = explicit ?? sessionId.replace(/[^A-Za-z0-9]/g, "").slice(-4)
@@ -92,21 +146,29 @@ export function createJourneyEventFromHook(input: JourneyEventHookInput): Sessio
   const hookType = resolveHookType(input.event)
   const type = eventTypeFromHook(hookType)
   const timestamp = input.timestamp ?? Date.now()
-  const title = titleFromType(type)
+  const toolName = isToolHookType(hookType) ? resolveToolName(input.event) : ""
+  const title = toolName ? `Tool ${toolName}` : titleFromType(type)
   const rootSessionId = resolveRootSessionId(input.event)
   const artifactStem = sanitizeSessionArtifactStem(rootSessionId || sessionId)
+  const toolUsage = toolName ? {
+    toolName,
+    status: resolveToolStatus(input.event),
+    summary: summarizeToolReturn(input.event),
+    timestamp,
+  } satisfies SessionJourneyToolUsage : undefined
   return {
     id: buildEventId(artifactStem, type, timestamp),
     sessionId,
     ...(rootSessionId ? { rootSessionId } : {}),
     artifactStem,
     type,
-    actor: "system",
+    actor: toolName ? "tool" : "system",
     title,
-    summary: `${title} (${hookType})`,
+    summary: toolUsage ? `Tool ${toolUsage.toolName} ${toolUsage.status}: ${toolUsage.summary}` : `${title} (${hookType})`,
     timestamp,
     source: input.source ?? "opencode.event",
     stateRole: "audit trail",
+    ...(toolUsage ? { toolUsage } : {}),
   }
 }
 
@@ -135,6 +197,8 @@ function createEmptyDocument(event: SessionJourneyEvent, targetSessionId = event
     counters: { eventCount: 0, sessionStartCount: 0, sessionEndCount: 0 },
     actors: [],
     subSessions: [],
+    delegations: [],
+    toolsUsed: [],
     lastMessageOutput: "",
     exportMeta: null,
     toc: [],
@@ -169,6 +233,8 @@ function normalizeDocument(document: SessionJourneyDocument): SessionJourneyDocu
     mainSessionId: document.mainSessionId ?? document.sessionId,
     actors: Array.isArray(document.actors) ? document.actors : [],
     subSessions: Array.isArray(document.subSessions) ? document.subSessions : [],
+    delegations: Array.isArray(document.delegations) ? document.delegations : [],
+    toolsUsed: Array.isArray(document.toolsUsed) ? document.toolsUsed : [],
     lastMessageOutput: typeof document.lastMessageOutput === "string" ? document.lastMessageOutput : "",
     exportMeta: document.exportMeta ?? null,
   }
@@ -237,8 +303,9 @@ function addEvent(document: SessionJourneyDocument, event: SessionJourneyEvent):
   }
   const events = retainBoundedEvents([...document.events, event].sort((a, b) => a.timestamp - b.timestamp))
   const maxTimestamp = Math.max(document.updatedAt, event.timestamp, ...events.map((item) => item.timestamp))
+  const withMetadata = addDelegation(addToolUsage(document, event.toolUsage), event.delegation)
   const next: SessionJourneyDocument = {
-    ...document,
+    ...withMetadata,
     sessionId: document.sessionId,
     semanticSessionId: document.semanticSessionId,
     artifactStem: document.artifactStem,
@@ -296,6 +363,8 @@ function renderDocumentMarkdown(document: SessionJourneyDocument): string {
     `**sessionEndCount:** ${document.counters.sessionEndCount}`,
     `**Actors:** ${sanitizeMarkdownScalar(document.actors.join(", "))}`,
     `**Sub Sessions:** ${document.subSessions.length}`,
+    `**Delegations:** ${document.delegations.length}`,
+    `**Tools Used:** ${sanitizeMarkdownScalar(document.toolsUsed.map((tool) => tool.toolName).join(", "))}`,
     `**Last Output:** ${sanitizeMarkdownScalar(document.lastMessageOutput)}`,
     "",
     "---",
@@ -323,9 +392,52 @@ function mergeSubSessions(existing: ParsedSubSession[], incoming: ParsedSubSessi
   return Array.from(bySession.values()).sort((a, b) => a.sessionId.localeCompare(b.sessionId))
 }
 
+function mergeToolUsages(existing: SessionJourneyToolUsage[], incoming: SessionJourneyToolUsage[]): SessionJourneyToolUsage[] {
+  const byKey = new Map<string, SessionJourneyToolUsage>()
+  for (const item of [...existing, ...incoming]) {
+    byKey.set(`${item.toolName}:${item.timestamp}:${item.status}:${item.summary}`, item)
+  }
+  return Array.from(byKey.values()).sort((a, b) => a.timestamp - b.timestamp || a.toolName.localeCompare(b.toolName))
+}
+
+function mergeDelegations(existing: SessionJourneyDelegation[], incoming: SessionJourneyDelegation[]): SessionJourneyDelegation[] {
+  const byKey = new Map<string, SessionJourneyDelegation>()
+  for (const item of [...existing, ...incoming]) {
+    byKey.set(item.packetId ?? item.subSessionId ?? `${item.delegatedTo}:${item.description}`, item)
+  }
+  return Array.from(byKey.values()).sort((a, b) => (a.subSessionId ?? a.delegatedTo).localeCompare(b.subSessionId ?? b.delegatedTo))
+}
+
+function addToolUsage(document: SessionJourneyDocument, usage?: SessionJourneyToolUsage): SessionJourneyDocument {
+  if (!usage) return document
+  return { ...document, toolsUsed: mergeToolUsages(document.toolsUsed, [usage]) }
+}
+
+function addDelegation(document: SessionJourneyDocument, delegation?: SessionJourneyDelegation): SessionJourneyDocument {
+  if (!delegation) return document
+  return { ...document, delegations: mergeDelegations(document.delegations, [delegation]) }
+}
+
 function mergeExportMetadata(document: SessionJourneyDocument, event: SessionJourneyEvent, markdown: string): SessionJourneyDocument {
   const parsed = parseProductDetoxSessionMarkdown(markdown)
   const { document: withEvent } = addEvent(document, event)
+  const timestamp = Date.parse(parsed.header.updated) || event.timestamp
+  const parsedTools = parsed.turns.flatMap((turn) => turn.toolInvocations.map((tool): SessionJourneyToolUsage => ({
+    toolName: tool.toolName,
+    status: "observed",
+    summary: tool.toolName === "task"
+      ? (tool.outputSummary.match(/task_id:\s*(ses_[A-Za-z0-9]+)/)?.[0] ?? "task result observed")
+      : "tool invocation observed",
+    timestamp,
+  })))
+  const parsedDelegations = parsed.turns.flatMap((turn) => turn.delegations.map((delegation): SessionJourneyDelegation => ({
+    packetId: delegation.packetId,
+    subSessionId: delegation.subSessionId,
+    delegatedTo: delegation.delegatedTo,
+    description: delegation.description,
+    subagentType: delegation.subagentType,
+    status: delegation.subSessionId ? "linked" : "observed",
+  })))
   return {
     ...withEvent,
     sessionId: parsed.header.sessionId,
@@ -334,6 +446,8 @@ function mergeExportMetadata(document: SessionJourneyDocument, event: SessionJou
     mainSessionId: parsed.mainSessionId,
     actors: unique([...withEvent.actors, ...parsed.actors]),
     subSessions: mergeSubSessions(withEvent.subSessions, parsed.subSessions),
+    toolsUsed: mergeToolUsages(withEvent.toolsUsed, parsedTools),
+    delegations: mergeDelegations(withEvent.delegations, parsedDelegations),
     lastMessageOutput: parsed.lastMessageOutput,
     exportMeta: parsed.meta,
   }
@@ -368,8 +482,47 @@ export function writeSessionJourneyArtifacts(input: WriteSessionJourneyArtifacts
 }
 
 export function createEventTrackerArtifactsFromHook(input: CreateEventTrackerArtifactsFromHookInput): WriteSessionJourneyArtifactsResult {
+  const hookType = resolveHookType(input.hook.event)
+  if (shouldIgnoreHookType(hookType)) {
+    const skippedSessionId = resolveRootSessionId(input.hook.event) || resolveSessionId(input.hook.event) || "pending"
+    const timestamp = input.hook.timestamp ?? Date.now()
+    const artifactStem = sanitizeSessionArtifactStem(skippedSessionId)
+    const skippedEvent: SessionJourneyEvent = {
+      id: buildEventId(artifactStem, "session_event", timestamp),
+      sessionId: skippedSessionId,
+      artifactStem,
+      type: "session_event",
+      actor: "system",
+      title: "Skipped event",
+      summary: `Skipped noisy event (${hookType})`,
+      timestamp,
+      source: input.hook.source ?? "opencode.event",
+      stateRole: "audit trail",
+    }
+    return { paths: getEventTrackerArtifactPaths(input.projectRoot, skippedSessionId), document: createEmptyDocument(skippedEvent), written: false }
+  }
   const event = createJourneyEventFromHook(input.hook)
   return writeSessionJourneyArtifacts({ projectRoot: input.projectRoot, event, fs: input.fs })
+}
+
+export function cleanupEventTrackerArtifacts(input: CleanupEventTrackerArtifactsInput): CleanupEventTrackerArtifactsResult {
+  const dir = getEventTrackerArtifactPaths(input.projectRoot, input.keepArtifactStems[0] ?? "pending").dir
+  const keep = new Set(input.keepArtifactStems.flatMap((stem) => [`${stem}.json`, `${stem}.md`]))
+  if (!existsSync(dir)) {
+    return { dir, kept: [], removed: [] }
+  }
+
+  const kept: string[] = []
+  const removed: string[] = []
+  for (const file of readdirSync(dir).filter((name) => /^ses_[A-Za-z0-9]{4}\.(json|md)$/.test(name)).sort()) {
+    if (keep.has(file)) {
+      kept.push(file)
+      continue
+    }
+    unlinkSync(join(dir, file))
+    removed.push(file)
+  }
+  return { dir, kept, removed }
 }
 
 export function mergeSessionExportMarkdownArtifacts(input: MergeSessionExportMarkdownArtifactsInput): WriteSessionJourneyArtifactsResult {

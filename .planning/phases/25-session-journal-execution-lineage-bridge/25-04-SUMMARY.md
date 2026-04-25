@@ -34,14 +34,16 @@ Phase 25 now includes an E2E-validated automatic event-tracker parser/writer/met
 - Corrected the event-tracker lineage merge after user-reported failure: manual `session-ses_23a0.md` exports now parse actors, main/sub-session delegation links, bounded last assistant output, and merge into the canonical `.hivemind/event-tracker/ses_xxxx.{json,md}` root artifact.
 - Aligned writer session-id resolution with `getEventSessionID()` so canonical OpenCode lifecycle events shaped as `{ properties: { info: { id } } }` create artifacts through the automatic plugin observer.
 - Corrected the Phase 25 artifact-explosion failure: parent/root-linked sub-session events now update the canonical root artifact instead of creating one root pair per sub/session/event, and unknown non-start events are bounded by skipping artifact creation until root context is known.
+- Corrected the event/action-dump failure after live runtime evidence: message firehose events (`message.updated`, `message.part.delta`, `message.part.updated`, `session.diff`, `session.status`) are filtered before persistence, tool events persist only tool names/status/concise summaries, manual exports populate `toolsUsed`/`delegations`, and generated `.hivemind/event-tracker/ses_*` litter can be cleaned back to intended root artifacts.
 
 ## Verification
 
 - RED gate: new event-tracker tests initially failed because `src/lib/event-tracker/index.js` did not exist.
-- Focused E2E: `npx vitest run tests/lib/event-tracker/session-artifact-parser.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` — passed (3 files, 23 tests).
+- Focused E2E: `npx vitest run tests/lib/event-tracker/session-artifact-parser.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` — passed (3 files, 28 tests after selective-filter correction).
+- RED/GREEN selective-filter gate: `npx vitest run tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` first failed 5 tests proving message firehose persistence, missing `toolsUsed`/`delegations`, and missing cleanup helper; after the fix it passed 2 files / 26 tests.
 - `npm run typecheck` — passed.
 - `npm run build` — passed.
-- `npm test` — passed (47 files passed, 1 skipped; 860 tests passed, 1 todo).
+- `npm test` — passed (47 files passed, 1 skipped; 875 tests passed, 1 todo).
 
 ## Review Fixes
 

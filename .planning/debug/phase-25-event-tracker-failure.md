@@ -1,17 +1,23 @@
 ---
-status: awaiting_human_verify
+status: investigating
 trigger: "Phase 25 event-tracker failure: current implementation still fails to capture actors, session delegation, last message output, manual exported interfaces such as session-ses_23a0.md, bounded merged artifacts, and both main/sub sessions."
 created: 2026-04-26T00:00:00Z
-updated: 2026-04-26T12:45:00Z
+updated: 2026-04-26T17:35:00Z
 ---
 
 ## Current Focus
 <!-- OVERWRITE on each update - reflects NOW -->
 
-hypothesis: "Fix self-verified: writer resolves target root from event root/parent metadata or existing exported root documents, preserves document root identity when appending sub events, and skips unknown non-start events without creating files."
-test: "Focused event-tracker/plugin tests, typecheck, build, full test suite, and cleanup/regeneration of `.hivemind/event-tracker/` from `session-ses_23a0.md`."
-expecting: "Awaiting human/runtime confirmation because this agent can self-verify tests and generated artifacts but cannot restart the live OpenCode plugin process that is still producing events during this session."
-next_action: "Commit logical code/test/doc changes, do final generated artifact cleanup/regeneration, then return handoff asking user to verify in a restarted/current OpenCode workflow."
+reasoning_checkpoint:
+  hypothesis: "The artifact explosion is caused by an over-broad observer/data-shape contract: every runtime event is converted to a persisted session_event, and message-event `properties.info.id` values are misclassified as session roots."
+  confirming_evidence:
+    - "`.hivemind/event-tracker/` contains 132 JSON + 132 Markdown artifacts, including fake roots whose sessionId starts with `msg_`."
+    - "`ses_01hb.json` contains only `message.updated` events; `ses_23a0.json` contains many `message.part.delta` rows and empty actors/subSessions/lastMessageOutput."
+    - "`src/plugin.ts:82-85` calls the writer for every event; `writer.ts:25-31` maps unknown events to `session_event`; `session-api.ts:214-219` resolves `properties.info.id` without event-type guard."
+  falsification_test: "If RED tests show message/tool firehose events do not create artifacts and source already filters to selected lifecycle/delegation/manual-export events, this hypothesis is wrong."
+  fix_rationale: "Filtering before persistence and resolving only root-scoped lifecycle/delegation events addresses the root cause, while schema additions preserve the time-machine fields the user needs without raw event output."
+  blind_spots: "Exact live OpenCode tool-event shapes may vary; tests will cover representative shapes and the plugin may need live reload after build."
+next_action: "Inspect git status/diff/log, commit logical source/test/doc changes, perform final runtime cleanup as last action, then return handoff with live reload caveat."
 
 ## Symptoms
 <!-- Written during gathering, then IMMUTABLE -->
@@ -73,11 +79,47 @@ started: Phase 25 current implementation after prior attempted fixes; user repor
   checked: Final required verification after plugin-level regression and Phase 25 summary update
   found: Focused event-tracker/plugin tests passed 3 files / 23 tests. `npm run typecheck && npm run build && npm test` passed; full suite reported 47 files passed, 1 skipped, 860 tests passed, 1 todo. Cleanup/regeneration command produced only `ses_23a0.json` and `ses_23a0.md` immediately after regeneration; subsequent tool calls in this live session re-created extra runtime files because the already-loaded plugin process predates the fix.
   implication: Source fix and test coverage are verified; final cleanup should be run after all tool calls, and real runtime confirmation requires using the rebuilt/restarted plugin.
+- timestamp: 2026-04-26T16:00:00Z
+  checked: New delegated failure correction and existing debug state
+  found: User reports `.hivemind/event-tracker/` still contains many `ses_*.{json,md}` artifacts such as ses_8sbs, ses_9ii0, ses_60do, ses_83xb, ses_239a, ses_239b, ses_bj54, ses_bqnr, ses_cdfv, ses_jxit, ses_rjrn, ses_s46b, ses_veom, ses_xbbd, ses_yfwa, and ses_yrsz. Quote-level requirement clarifies event tracker must be a bounded context time-machine, not an event/action dump.
+  implication: Re-open investigation; prior verification is insufficient because it did not prove selective observer filtering and one-root lineage aggregation under live/generated artifact conditions.
+- timestamp: 2026-04-26T16:10:00Z
+  checked: Current `.hivemind/event-tracker/` generated artifacts and source observer/writer paths
+  found: Directory contains 81 JSON + 81 Markdown `ses_*` artifacts. Samples prove artifacts are created from `message.updated` and `message.part.delta` events: `ses_01hb.json` has sessionId `msg_dc660c9d3001pWcoP5H4NA01Hb` and three `message.updated` events; `ses_239a.json` and `ses_23a0.json` each retain 100 `message.part.delta` session_event rows, empty actors/subSessions/lastMessageOutput. `src/plugin.ts` calls `createEventTrackerArtifactsFromHook()` for every event without filtering, and `getEventSessionID()` accepts `properties.info.id`, which is correct for session events but wrong for message events where `info.id` is a message id.
+  implication: Primary root cause is an observer/data-shape contract bug: no selective event filter and no session-entity guard before artifact writing. Root aggregation alone cannot fix artifacts rooted by message IDs because those are not sessions.
+- timestamp: 2026-04-26T16:30:00Z
+  checked: Current source, tests, docs, and representative generated artifacts after restart
+  found: `src/plugin.ts:82-85` best-effort observer calls the event-tracker writer for every event; `src/lib/event-tracker/writer.ts:25-31` maps all unknown event types to `session_event`; `src/lib/session-api.ts:214-219` resolves `properties.info.id` without checking whether the event type is session-scoped. Existing tests prove root routing for `session.created/session.updated` only, but do not assert that message/tool firehose events are ignored or normalized. `.hivemind/event-tracker/` now has 132 JSON + 132 Markdown artifacts, with many `msg_*` message IDs and 100 retained `message.part.delta` rows.
+  implication: The implementation contract is too broad: it records observed runtime actions rather than a selective context time-machine. Need a selective observer gate plus schema changes for tool names/concise summaries only.
+- timestamp: 2026-04-26T16:35:00Z
+  checked: Manual export fixture `session-ses_23a0.md` and product-detox event-tracker patterns
+  found: The export fixture includes useful time-machine fields: actors (`Coordinator`, `gsd-executor`, `user`), `task` tool invocations with `subagent_type`, task IDs such as `ses_23a09f902ffeZcgOTkaOBE4D2x`, and bounded last output around the resume verifier block. Product-detox classifies selected turn/delegation events and maps them to summaries rather than dumping runtime action payloads; its V3 writer explicitly avoids storing events inside the consolidated session file.
+  implication: Redesign should adapt the selective classification pattern: preserve actors, tool names, concise return summaries, last assistant output, and nested delegation/subsession relationships inside one root artifact; do not mirror every runtime event.
+- timestamp: 2026-04-26T16:45:00Z
+  checked: Phase 25 redesign contract
+  found: Created `.planning/phases/25-session-journal-execution-lineage-bridge/25-EVENT-TRACKER-REDESIGN-2026-04-26.md` with root aggregation, selective observer filters, bounded schema, regression test contract, cleanup contract, and alternatives analysis.
+  implication: Root cause and test contract are explicit; proceed to RED tests before patching source.
+- timestamp: 2026-04-26T17:00:00Z
+  checked: Focused RED regression tests for selective context-time-machine behavior
+  found: `npx vitest run tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` failed 5 tests. Failures prove `message.part.delta` is persisted, `toolsUsed` is undefined for tool events and manual exports, `delegations` is undefined for manual exports, and `cleanupEventTrackerArtifacts` does not exist.
+  implication: RED contract is validated; proceed with minimal source patch.
+- timestamp: 2026-04-26T17:10:00Z
+  checked: Focused GREEN tests after selective event-tracker fix
+  found: `npx vitest run tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` passed 2 files / 26 tests. The new tests prove message firehose events are filtered, tool names/concise summaries are persisted without verbatim output, manual export merge persists tools/delegations/subsessions/last output, cleanup removes litter, and plugin observer ignores message firehose events.
+  implication: Source fix addresses reproduced root cause; proceed to required full verification.
+- timestamp: 2026-04-26T17:20:00Z
+  checked: Required verification suite
+  found: Focused full event-tracker suite passed: `npx vitest run tests/lib/event-tracker/session-artifact-parser.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/plugins/plugin-lifecycle.test.ts` (3 files / 28 tests). `npm run typecheck && npm run build && npm test` also passed; full suite reported 47 files passed, 1 skipped, 875 tests passed, 1 todo.
+  implication: Fix is self-verified across typecheck, build, and full regression suite.
+- timestamp: 2026-04-26T17:25:00Z
+  checked: Generated event-tracker cleanup
+  found: Before cleanup there were 352 generated `ses_*` files (176 JSON + 176 Markdown). Running `cleanupEventTrackerArtifacts({ keepArtifactStems: ['ses_23a0'] })` removed 350 and immediately left only `ses_23a0.json` and `ses_23a0.md`. Subsequent tool calls in this still-running session re-created a few extra files because the live plugin process predates the rebuilt fix.
+  implication: Cleanup helper works; final cleanup should be repeated as the last tool action, and live plugin reload/restart is still required to stop old observer behavior in this current OpenCode process.
 
 ## Resolution
 <!-- OVERWRITE as understanding evolves -->
 
-root_cause: Event tracker was still treating every incoming runtime event session ID as a root artifact key. `writeSessionJourneyArtifacts()` computed paths from `event.sessionId`, `addEvent()` overwrote root document identity from each event, and there was no bounded policy for unknown non-start events. As a result, parent/subsession events for one exported main session could litter `.hivemind/event-tracker/` with arbitrary `ses_xxxx.{json,md}` pairs.
-fix: Added root-target resolution from root/parent metadata and existing exported root documents, preserved root document identity when appending sub-session events, skipped unknown non-start events without file creation, added plugin-level parent-linked routing coverage, added unknown-root/artifact-explosion regression tests, and updated Phase 25 summary schema/verification notes.
-verification: RED tests reproduced extra `ses_bgr5.{json,md}` and unknown-root writes; focused event-tracker/plugin tests then passed (3 files, 23 tests); typecheck passed; build passed; full suite passed (47 files passed, 1 skipped; 860 tests passed, 1 todo); cleanup/regeneration immediately produced only `ses_23a0.{json,md}`.
-files_changed: [src/lib/event-tracker/types.ts, src/lib/event-tracker/writer.ts, tests/lib/event-tracker/session-journey-events.test.ts, tests/plugins/plugin-lifecycle.test.ts, .planning/phases/25-session-journal-execution-lineage-bridge/25-04-SUMMARY.md]
+root_cause: The event-tracker observer/writer still treats runtime events as an event/action dump instead of a context time-machine. Plugin wiring sends every OpenCode event to the writer, `createJourneyEventFromHook()` converts unknown/message/tool events into `session_event`, and `getEventSessionID()` accepts `properties.info.id` without verifying the event is session-scoped; message events therefore become fake session roots such as `msg_*`, and streaming `message.part.delta` events fill arbitrary `ses_*` artifacts.
+fix: Added selective hook filtering for message/session-status firehose events, added bounded tool/delegation schema fields, normalized manual export tools/delegations into root artifacts without full output persistence, added cleanup helper for generated `ses_*.{json,md}` litter, and documented the redesign contract.
+verification: Focused RED tests failed 5 tests before patch; focused GREEN tests passed 2 files / 26 tests; `npm run typecheck && npm run build && npm test` passed with 47 files passed, 1 skipped, 875 tests passed, 1 todo.
+files_changed: [src/lib/event-tracker/types.ts, src/lib/event-tracker/writer.ts, tests/lib/event-tracker/session-journey-events.test.ts, tests/plugins/plugin-lifecycle.test.ts, .planning/phases/25-session-journal-execution-lineage-bridge/25-EVENT-TRACKER-REDESIGN-2026-04-26.md, .planning/phases/25-session-journal-execution-lineage-bridge/25-04-SUMMARY.md]

@@ -17,6 +17,24 @@ export type SessionJourneyEvent = {
   timestamp: number
   source: string
   stateRole: "audit trail"
+  toolUsage?: SessionJourneyToolUsage
+  delegation?: SessionJourneyDelegation
+}
+
+export type SessionJourneyToolUsage = {
+  toolName: string
+  status: string
+  summary: string
+  timestamp: number
+}
+
+export type SessionJourneyDelegation = {
+  packetId: string | null
+  subSessionId: string | null
+  delegatedTo: string
+  description: string
+  subagentType: string
+  status: string
 }
 
 export type SessionJourneyCounters = {
@@ -45,6 +63,8 @@ export type SessionJourneyDocument = {
   counters: SessionJourneyCounters
   actors: string[]
   subSessions: ParsedSubSession[]
+  delegations: SessionJourneyDelegation[]
+  toolsUsed: SessionJourneyToolUsage[]
   lastMessageOutput: string
   exportMeta: ParsedSessionExportMeta | null
   toc: SessionJourneyTocEntry[]
@@ -82,6 +102,17 @@ export type WriteSessionJourneyArtifactsResult = {
   paths: EventTrackerArtifactPaths
   document: SessionJourneyDocument
   written: boolean
+}
+
+export type CleanupEventTrackerArtifactsInput = {
+  projectRoot: string
+  keepArtifactStems: string[]
+}
+
+export type CleanupEventTrackerArtifactsResult = {
+  dir: string
+  kept: string[]
+  removed: string[]
 }
 
 export type CreateEventTrackerArtifactsFromHookInput = {

@@ -108,6 +108,28 @@ describe("plugin lifecycle wiring", () => {
     }
   })
 
+  it("does not write event-tracker artifacts for message firehose plugin events", async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-filter-"))
+
+    try {
+      const plugin = await HarnessControlPlane({
+        client: createPluginClient(),
+        directory: projectRoot,
+      } as never)
+
+      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } } })
+      await plugin.event({ event: { type: "message.updated", properties: { info: { id: "msg_should_not_be_root" }, sessionID: "ses_23a0root" } } })
+      await plugin.event({ event: { type: "message.part.delta", properties: { info: { id: "ses_23a0child", parentID: "ses_23a0root" } } } })
+
+      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
+      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
+      expect(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")).not.toContain("message.part.delta")
+      expect(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")).not.toContain("msg_should_not_be_root")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it("registers run-background-command when a shared PTY manager is supported", async () => {
     vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(true)
 

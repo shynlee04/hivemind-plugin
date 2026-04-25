@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { basename, dirname, join } from "node:path"
 
 import {
+  cleanupEventTrackerArtifacts,
   createEventTrackerArtifactsFromHook,
   createJourneyEventFromHook,
   getEventTrackerArtifactPaths,
@@ -152,6 +153,114 @@ describe("event-tracker automatic writer", () => {
       expect(result.written).toBe(false)
       const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
       expect(existsSync(artifactDir) ? readdirSync(artifactDir) : []).toEqual([])
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("filters message firehose events so one root lineage keeps one artifact pair", () => {
+    const projectRoot = tempProjectRoot()
+
+    try {
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } }, timestamp: 10, source: "root-test" },
+      })
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "message.updated", properties: { info: { id: "msg_fakeMessageRoot1234" }, sessionID: "ses_23a0root" } }, timestamp: 11, source: "root-test" },
+      })
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "message.part.delta", properties: { info: { id: "ses_23a0child", parentID: "ses_23a0root" } } }, timestamp: 12, source: "root-test" },
+      })
+
+      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
+      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
+      const document = JSON.parse(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")) as { toc?: Array<{ summary?: string }>; events?: Array<{ sessionId?: string; summary?: string }> }
+      expect(JSON.stringify(document)).not.toContain("msg_fakeMessageRoot1234")
+      expect(JSON.stringify(document)).not.toContain("message.part.delta")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("persists tool names and concise return summaries without verbatim tool output", () => {
+    const projectRoot = tempProjectRoot()
+    const rawOutput = `SECRET_FULL_OUTPUT_${"x".repeat(2_000)}`
+
+    try {
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } }, timestamp: 10, source: "root-test" },
+      })
+      const result = createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: {
+          event: {
+            type: "tool.execute.after",
+            properties: {
+              sessionID: "ses_23a0root",
+              tool: "bash",
+              output: rawOutput,
+              status: "success",
+            },
+          },
+          timestamp: 11,
+          source: "tool-test",
+        },
+      })
+
+      const document = result.document as unknown as { toolsUsed?: Array<{ toolName: string; status: string; summary: string }> }
+      expect(document.toolsUsed).toEqual([expect.objectContaining({ toolName: "bash", status: "success" })])
+      expect(JSON.stringify(document)).not.toContain(rawOutput)
+      expect(document.toolsUsed?.[0]?.summary.length).toBeLessThanOrEqual(240)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("manual export merge persists actors, tools, delegations, subsessions, and bounded last output in the root artifact", () => {
+    const projectRoot = tempProjectRoot()
+    const fixture = readFileSync(join(process.cwd(), "session-ses_23a0.md"), "utf-8")
+
+    try {
+      const result = mergeSessionExportMarkdownArtifacts({ projectRoot, markdown: fixture, source: "manual-export-test" })
+      const document = result.document as unknown as {
+        toolsUsed?: Array<{ toolName: string; summary: string }>
+        delegations?: Array<{ subSessionId: string | null; delegatedTo: string; subagentType: string; status: string }>
+      }
+
+      expect(result.paths.jsonPath).toBe(join(projectRoot, ".hivemind", "event-tracker", "ses_23a0.json"))
+      expect(result.document.actors).toEqual(expect.arrayContaining(["Coordinator", "gsd-executor", "user"]))
+      expect(result.document.subSessions.length).toBeGreaterThan(0)
+      expect(result.document.lastMessageOutput).toContain("Resume verifier")
+      expect(document.toolsUsed).toEqual(expect.arrayContaining([expect.objectContaining({ toolName: "task" })]))
+      expect(document.delegations).toEqual(expect.arrayContaining([expect.objectContaining({ delegatedTo: "gsd-executor", subagentType: "gsd-executor" })]))
+      expect(JSON.stringify(document.toolsUsed)).not.toContain("<skill_content")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("cleans generated event-tracker litter while preserving intended root artifacts", () => {
+    const projectRoot = tempProjectRoot()
+
+    try {
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } }, timestamp: 10, source: "root-test" },
+      })
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_litter" } } }, timestamp: 11, source: "litter-test" },
+      })
+
+      const result = cleanupEventTrackerArtifacts({ projectRoot, keepArtifactStems: ["ses_23a0"] })
+      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
+
+      expect(result.removed).toEqual(expect.arrayContaining(["ses_litt.json", "ses_litt.md"]))
+      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
