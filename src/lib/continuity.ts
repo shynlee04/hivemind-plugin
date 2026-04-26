@@ -35,20 +35,12 @@ function resolveContinuityFilePath(): string {
     return resolve(resolve(explicitStateDir), "session-continuity.json")
   }
 
-  // Q6: canonical path is .hivemind/state/
-  const canonicalFile = resolve(CANONICAL_STATE_DIR, "session-continuity.json")
-  if (existsSync(canonicalFile)) {
-    return canonicalFile
-  }
+  // Q6: canonical path is always .hivemind/state/ for writes
+  return resolve(CANONICAL_STATE_DIR, "session-continuity.json")
+}
 
-  // Compatibility bridge: fall back to legacy .opencode/state/opencode-harness/
-  // if canonical path does not exist yet (one-way migration, no dual-write)
-  const legacyFile = resolve(LEGACY_STATE_DIR, "session-continuity.json")
-  if (existsSync(legacyFile)) {
-    return legacyFile
-  }
-
-  return canonicalFile
+function resolveLegacyFilePath(): string {
+  return resolve(LEGACY_STATE_DIR, "session-continuity.json")
 }
 
 function getContinuityFile(): string {
@@ -239,45 +231,51 @@ function ensureStoreLoaded(): ContinuityStoreFile {
 
 function loadStoreFromDisk(): ContinuityStoreFile {
   const continuityFile = getContinuityFile()
-  if (!existsSync(continuityFile)) {
-    return emptyStore()
+
+  // Q6: try canonical path first, then legacy for backward compatibility
+  const filePaths = [continuityFile]
+  const legacyFile = resolveLegacyFilePath()
+  if (legacyFile !== continuityFile) {
+    filePaths.push(legacyFile)
   }
 
-  try {
-    const raw = readFileSync(continuityFile, "utf8")
-    if (!raw.trim()) {
-      return emptyStore()
-    }
+  for (const filePath of filePaths) {
+    if (!existsSync(filePath)) continue
 
-    const parsed = JSON.parse(raw) as unknown
-    if (!isParsedStore(parsed)) {
-      return emptyStore()
-    }
+    try {
+      const raw = readFileSync(filePath, "utf8")
+      if (!raw.trim()) continue
 
-    const sessions =
-      typeof parsed.sessions === "object" && parsed.sessions !== null && !Array.isArray(parsed.sessions)
-        ? parsed.sessions
-        : {}
+      const parsed = JSON.parse(raw) as unknown
+      if (!isParsedStore(parsed)) continue
 
-    const normalizedSessions: Record<string, SessionContinuityRecord> = {}
-    for (const [sessionID, value] of Object.entries(sessions)) {
-      const record = normalizeContinuityRecord(sessionID, value)
-      if (record) {
-        normalizedSessions[sessionID] = record
+      const sessions =
+        typeof parsed.sessions === "object" && parsed.sessions !== null && !Array.isArray(parsed.sessions)
+          ? parsed.sessions
+          : {}
+
+      const normalizedSessions: Record<string, SessionContinuityRecord> = {}
+      for (const [sessionID, value] of Object.entries(sessions)) {
+        const record = normalizeContinuityRecord(sessionID, value)
+        if (record) {
+          normalizedSessions[sessionID] = record
+        }
       }
-    }
 
-    return {
-      version: CONTINUITY_VERSION,
-      updatedAt: typeof parsed.updatedAt === "number" && Number.isFinite(parsed.updatedAt) ? parsed.updatedAt : Date.now(),
-      sessions: normalizedSessions,
-      governance: isGovernanceState(parsed.governance)
-        ? cloneGovernanceState(parsed.governance)
-        : emptyStore().governance,
+      return {
+        version: CONTINUITY_VERSION,
+        updatedAt: typeof parsed.updatedAt === "number" && Number.isFinite(parsed.updatedAt) ? parsed.updatedAt : Date.now(),
+        sessions: normalizedSessions,
+        governance: isGovernanceState(parsed.governance)
+          ? cloneGovernanceState(parsed.governance)
+          : emptyStore().governance,
+      }
+    } catch {
+      continue
     }
-  } catch {
-    return emptyStore()
   }
+
+  return emptyStore()
 }
 
 function persistStore(): void {

@@ -29,6 +29,12 @@ npm-debug.log*
 .opencode/state/
 .harness/
 
+# Hivemind runtime state (per Q6 decision — canonical state root)
+.hivemind/state/
+.hivemind/event-tracker/*.json
+.hivemind/event-tracker/*.md
+.hivemind/journal/*.jsonl
+
 # Temporary files
 *.bak
 *.bak.*
