@@ -14,7 +14,8 @@ import type {
 } from "./types.js"
 
 const CONTINUITY_VERSION = 1 as const
-const DEFAULT_STATE_DIR = resolve(process.cwd(), ".opencode", "state", "opencode-harness")
+const CANONICAL_STATE_DIR = resolve(process.cwd(), ".hivemind", "state")
+const LEGACY_STATE_DIR = resolve(process.cwd(), ".opencode", "state", "opencode-harness")
 
 let storeCache: ContinuityStoreFile | undefined
 
@@ -30,8 +31,24 @@ function resolveContinuityFilePath(): string {
   }
 
   const explicitStateDir = getEnvPath("OPENCODE_HARNESS_STATE_DIR")
-  const stateDir = explicitStateDir ? resolve(explicitStateDir) : DEFAULT_STATE_DIR
-  return resolve(stateDir, "session-continuity.json")
+  if (explicitStateDir) {
+    return resolve(resolve(explicitStateDir), "session-continuity.json")
+  }
+
+  // Q6: canonical path is .hivemind/state/
+  const canonicalFile = resolve(CANONICAL_STATE_DIR, "session-continuity.json")
+  if (existsSync(canonicalFile)) {
+    return canonicalFile
+  }
+
+  // Compatibility bridge: fall back to legacy .opencode/state/opencode-harness/
+  // if canonical path does not exist yet (one-way migration, no dual-write)
+  const legacyFile = resolve(LEGACY_STATE_DIR, "session-continuity.json")
+  if (existsSync(legacyFile)) {
+    return legacyFile
+  }
+
+  return canonicalFile
 }
 
 function getContinuityFile(): string {
@@ -391,6 +408,14 @@ export function deleteSessionContinuity(sessionID: string): void {
 
 export function getContinuityStoragePath(): string {
   return getContinuityFile()
+}
+
+export function getCanonicalStateDir(): string {
+  return CANONICAL_STATE_DIR
+}
+
+export function getLegacyStateDir(): string {
+  return LEGACY_STATE_DIR
 }
 
 export function getGovernancePersistenceState(): GovernancePersistenceState {
