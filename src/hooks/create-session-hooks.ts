@@ -35,6 +35,9 @@ const DEFAULT_AUTO_LOOP_CONFIG = {
   backoffMs: 1000,
 } as const
 
+/** Event types that permanently disable delegation-packet auto-loop retries. */
+const TERMINAL_SESSION_EVENTS = new Set(["session.deleted", "session.error"])
+
 export interface SessionHooks {
   event: (input: EventInput) => Promise<void>
   "experimental.session.compacting": (
@@ -122,6 +125,7 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
   const { client, lifecycleManager, sleep, stateManager } = deps
   const autoLoopConfig = resolveAutoLoopConfig(deps)
   const autoLoopStates = new Map<string, AutoLoopState>()
+  const terminalAutoLoopSessions = new Set<string>()
 
   return {
     event: async ({ event }: EventInput): Promise<void> => {
@@ -132,7 +136,13 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
         return
       }
 
-      if (eventType !== "session.idle") {
+      if (TERMINAL_SESSION_EVENTS.has(eventType)) {
+        autoLoopStates.delete(sessionID)
+        terminalAutoLoopSessions.add(sessionID)
+        return
+      }
+
+      if (eventType !== "session.idle" || terminalAutoLoopSessions.has(sessionID)) {
         return
       }
 
@@ -176,6 +186,10 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
 
         try {
           await waitForRetry(autoLoopConfig.backoffMs, sleep)
+          if (terminalAutoLoopSessions.has(sessionID)) {
+            autoLoopStates.delete(sessionID)
+            return
+          }
           await lifecycleManager.requestAutoLoopRetry({
             sessionID,
             promptText: buildAutoLoopPrompt({
@@ -192,7 +206,9 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
           stateManager.addWarning(sessionID, `[Harness] Auto-loop retry failed: ${message}`)
         } finally {
           state.retryPending = false
-          autoLoopStates.set(sessionID, state)
+          if (!terminalAutoLoopSessions.has(sessionID)) {
+            autoLoopStates.set(sessionID, state)
+          }
         }
         return
       }

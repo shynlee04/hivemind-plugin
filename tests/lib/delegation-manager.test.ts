@@ -1256,7 +1256,7 @@ describe("DelegationManager", () => {
 
       expect(manager.getStatus(result.delegationId)).toMatchObject({
         id: result.delegationId,
-        status: "dispatched",
+        status: "running",
         safetyCeilingMs: DEFAULT_SAFETY_CEILING_MS,
         lastMessageCount: 0,
         stablePollCount: 0,
@@ -1637,13 +1637,13 @@ describe("DelegationManager", () => {
       }))
     })
 
-    it("handles corrupted JSON file gracefully — returns empty array", async () => {
+    it("surfaces corrupted JSON file visibly during recovery", async () => {
       writeFileSync(getDelegationsFile(stateDir), "NOT VALID JSON {{{")
 
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
-      await expect(manager.recoverPending()).resolves.toBeUndefined()
+      await expect(manager.recoverPending()).rejects.toThrow(/^\[Harness\]/)
       expect(manager.getAllDelegations()).toHaveLength(0)
     })
 
@@ -1686,13 +1686,13 @@ describe("DelegationManager", () => {
       expect(client.session.status).not.toHaveBeenCalled()
     })
 
-    it("handles non-array JSON content gracefully", async () => {
+    it("surfaces non-array JSON content as invalid persisted shape", async () => {
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify({ not: "an array" }))
 
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
-      await expect(manager.recoverPending()).resolves.toBeUndefined()
+      await expect(manager.recoverPending()).rejects.toThrow(/^\[Harness\].*array/)
       expect(manager.getAllDelegations()).toHaveLength(0)
     })
 

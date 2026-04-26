@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import type {
@@ -45,6 +46,18 @@ function resolveLegacyFilePath(): string {
 
 function getContinuityFile(): string {
   return resolveContinuityFilePath()
+}
+
+/**
+ * Moves a corrupt continuity file aside so recovery evidence remains auditable.
+ *
+ * @param filePath - Path to the unreadable continuity JSON file.
+ * @returns The quarantine path containing the original corrupt payload.
+ */
+function quarantineCorruptFile(filePath: string): string {
+  const quarantinePath = `${filePath}.corrupt-${Date.now()}-${process.pid}-${randomUUID()}`
+  renameSync(filePath, quarantinePath)
+  return quarantinePath
 }
 
 function emptyStore(): ContinuityStoreFile {
@@ -270,8 +283,12 @@ function loadStoreFromDisk(): ContinuityStoreFile {
           ? cloneGovernanceState(parsed.governance)
           : emptyStore().governance,
       }
-    } catch {
-      continue
+    } catch (error) {
+      const quarantinePath = quarantineCorruptFile(filePath)
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(
+        `[Harness] Failed to read continuity store at ${filePath}; corrupt file quarantined at ${quarantinePath}: ${message}`,
+      )
     }
   }
 
@@ -285,7 +302,7 @@ function persistStore(): void {
   mkdirSync(dirname(continuityFile), { recursive: true })
   // Atomic write: write to temp file first, then rename to prevent
   // corrupt reads if the process crashes mid-write.
-  const tmpFile = continuityFile + ".tmp"
+  const tmpFile = `${continuityFile}.${process.pid}.${randomUUID()}.tmp`
   writeFileSync(tmpFile, `${JSON.stringify(store, null, 2)}\n`, "utf8")
   renameSync(tmpFile, continuityFile)
 }

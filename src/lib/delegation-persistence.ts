@@ -37,6 +37,18 @@ function getDelegationStoreDirectory(): string {
   return dirname(getContinuityStoragePath())
 }
 
+/**
+ * Moves a corrupt delegation persistence file aside for operator inspection.
+ *
+ * @param filePath - Path to the unreadable `delegations.json` file.
+ * @returns The quarantine path containing the original corrupt payload.
+ */
+function quarantineCorruptDelegationsFile(filePath: string): string {
+  const quarantinePath = `${filePath}.corrupt-${Date.now()}-${process.pid}-${randomUUID()}`
+  renameSync(filePath, quarantinePath)
+  return quarantinePath
+}
+
 export function getDelegationsFilePath(): string {
   return join(getDelegationStoreDirectory(), "delegations.json")
 }
@@ -97,14 +109,23 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     ? record.terminalKind
     : undefined
 
+  const rawStatus = record.status
+  const normalizedStatus: DelegationStatus = isValidDelegationStatus(rawStatus) ? rawStatus : "error"
+  const normalizedError = typeof record.error === "string"
+    ? record.error
+    : normalizedStatus === rawStatus
+      ? undefined
+      : `[Harness] Invalid persisted delegation status: ${rawStatus}`
+  const normalizedTerminalKind = terminalKind ?? (normalizedStatus === rawStatus ? undefined : "error")
+
   return {
     id: record.id,
     parentSessionId: record.parentSessionId,
     childSessionId: record.childSessionId,
     agent: record.agent,
-    status: isValidDelegationStatus(record.status) ? record.status : "error",
+    status: normalizedStatus,
     result: typeof record.result === "string" ? record.result : undefined,
-    error: typeof record.error === "string" ? record.error : undefined,
+    error: normalizedError,
     createdAt: record.createdAt,
     completedAt: typeof record.completedAt === "number" ? record.completedAt : undefined,
     safetyCeilingMs: typeof record.safetyCeilingMs === "number" ? record.safetyCeilingMs : undefined,
@@ -124,7 +145,7 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     fallbackReason,
     queueKey: typeof record.queueKey === "string" ? record.queueKey : "",
     nestingDepth: typeof record.nestingDepth === "number" ? record.nestingDepth : 1,
-    terminalKind,
+    terminalKind: normalizedTerminalKind,
     terminationSignal: typeof record.terminationSignal === "string" ? record.terminationSignal : undefined,
     explicitCancellation: typeof record.explicitCancellation === "boolean" ? record.explicitCancellation : false,
     gracePeriodExpiresAt:
@@ -144,13 +165,21 @@ export function readPersistedDelegations(): Delegation[] {
     const raw = readFileSync(filePath, "utf-8")
     const parsed = JSON.parse(raw) as unknown
     if (!Array.isArray(parsed)) {
-      return []
+      throw new Error(`[Harness] Invalid persisted delegations shape at ${filePath}: expected JSON array`)
     }
 
     return parsed
       .map((entry) => normalizePersistedDelegation(entry))
       .filter((entry): entry is Delegation => entry !== null)
-  } catch {
-    return []
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("[Harness] Invalid persisted delegations shape")) {
+      throw error
+    }
+
+    const quarantinePath = quarantineCorruptDelegationsFile(filePath)
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(
+      `[Harness] Failed to read persisted delegations at ${filePath}; corrupt file quarantined at ${quarantinePath}: ${message}`,
+    )
   }
 }

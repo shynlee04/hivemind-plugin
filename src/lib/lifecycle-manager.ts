@@ -43,7 +43,7 @@ export type LaunchDelegatedSessionArgs = {
  * │ From         │ To                                           │
  * ├─────────────┼──────────────────────────────────────────────┤
  * │ created     │ queued, dispatching, running, failed         │
- * │ queued      │ dispatching, running, completed, failed      │
+ * │ queued      │ dispatching, running, failed                 │
  * │ dispatching │ running, completed, failed                   │
  * │ running     │ completed, failed                            │
  * │ completed   │ (terminal)                                   │
@@ -52,7 +52,7 @@ export type LaunchDelegatedSessionArgs = {
  */
 const VALID_LIFECYCLE_TRANSITIONS: Record<SessionLifecyclePhase, SessionLifecyclePhase[]> = {
   created:     ["queued", "dispatching", "running", "failed"],
-  queued:      ["dispatching", "running", "completed", "failed"],
+  queued:      ["dispatching", "running", "failed"],
   dispatching: ["running", "completed", "failed"],
   running:     ["completed", "failed"],
   completed:   [],
@@ -120,7 +120,7 @@ export class HarnessLifecycleManager {
       : ""
 
     if (statusSignal === "idle" || eventType === "session.idle") {
-      this.completionDetector.feed(sessionID, "idle")
+      this.completionDetector.feed("session.idle", sessionID)
     }
   }
 

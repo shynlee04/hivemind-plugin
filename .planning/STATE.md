@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: phase-48-degraded
-status: ready-with-runtime-gaps
-stopped_at: Phase 45 residual permission gap remediated; Phase 48 degraded pending live dynamic tool/delegation proof
-last_updated: "2026-04-27T00:30:00Z"
+current_plan: phase-48.1-runtime-correctness
+status: remediation-phases-inserted
+stopped_at: Phase 48 degraded; Phases 48.1-48.5 inserted for production-hardening remediation before resuming runtime proof
+last_updated: "2026-04-27T00:45:00Z"
 progress:
-  total_phases: 49
+  total_phases: 54
   completed_phases: 23
   total_plans: 76
   completed_plans: 76
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 48 runtime gaps — Phase 45 residual selected-agent permission policy gap remediated; Phase 48 live OpenCode proof is degraded pending dynamic tool execution and non-empty model completion evidence.
+**Current focus:** Phase 48 production-hardening remediation — Phase 48 live OpenCode proof degraded, so Phases 48.1-48.5 are inserted to restore runtime correctness, security boundaries, SDK/CQRS alignment, production evidence, and LOC cleanup before final runtime proof closure.
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -41,12 +41,12 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 48 (real-opencode-runtime-integration-verification) — DEGRADED
-Plan: Runtime proof complete with documented gaps
+Phase: 48.1 (runtime-correctness-lifecycle-queue-persistence-truth) — PLANNED (5 plans ready for execution)
+Plan: 5-plan remediation sequence created after degraded Phase 48 proof
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
-**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phase 45 residual permission follow-up applied; Phase 48 live runtime verification degraded for tool-execute/delegation-completion proof.
-**Next:** Provide/authorize a runtime with supported dynamic tool execution and non-empty provider completions, then re-run Phase 48 REM-RUNTIME-04/05.
+**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phase 48 live runtime verification degraded for tool-execute/delegation-completion proof; Phases 48.1-48.5 inserted as the production-hardening remediation sequence.
+**Next:** Execute Phase 48.1, then continue 48.2 → 48.5 in dependency order before re-running final Phase 48 runtime proof closure.
 **Progress:** [█████████░] 92%
 
 ```
@@ -98,6 +98,11 @@ Phase 45: SDK Permission Boundary .. COMPLETE (Critical — CR-02, HIGH-01)
 Phase 46: Delegation Truth ......... COMPLETE (High — HIGH-02/03/04)
 Phase 47: Policy/Buffer Hardening .. COMPLETE (Medium — MED-02/03)
 Phase 48: Runtime Integration Proof  DEGRADED (Live OpenCode health/session/tool IDs pass; hook/tool-exec/delegation completion gaps remain)
+Phase 48.1: Runtime Correctness .... PLANNED (5 plans; lifecycle, queue, persistence truth)
+Phase 48.2: Security Boundaries ..... PENDING (secrets, scope, category gates; depends on 48.1)
+Phase 48.3: SDK/CQRS Alignment ...... PENDING (OpenCode SDK and CQRS surfaces; depends on 48.2)
+Phase 48.4: Evidence/Coverage ....... PENDING (production evidence recovery; depends on 48.3)
+Phase 48.5: LOC Cleanup ............. PENDING (event-tracker writer split; depends on 48.4)
 ```
 
 ## Phase Completion Details
@@ -140,6 +145,11 @@ Phase 48: Runtime Integration Proof  DEGRADED (Live OpenCode health/session/tool
 | Phase 12 | COMPLETE | False-start corridor fixed and 09-family planning truth reconciled |
 | Phase 35 | PARTIAL | Build/test/build gates pass; `notification-handler.ts` retained per local AGENTS.md and `runtime-validator.ts` cast remains |
 | Phase 48 | DEGRADED | Live OpenCode health/session/tool IDs pass; REM-RUNTIME-04/05 require dynamic tool execution and non-empty provider completion proof |
+| Phase 48.1 | PLANNED | 5 plans ready for runtime correctness remediation of lifecycle, queue, and persistence truth; depends on Phase 48 degraded evidence |
+| Phase 48.2 | PENDING | Security boundary hardening for secrets, scope, and category gates; depends on Phase 48.1 |
+| Phase 48.3 | PENDING | OpenCode SDK/CQRS integration alignment; depends on Phase 48.2 |
+| Phase 48.4 | PENDING | Production evidence and coverage recovery; depends on Phase 48.3 |
+| Phase 48.5 | PENDING | Event-tracker writer LOC cleanup after production evidence is recovered; depends on Phase 48.4 |
 
 ### Phases Requiring Repair (Audit 2026-04-23 — RESOLVED by Phase 24 and Phase 26)
 
@@ -307,6 +317,11 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - [x] Plan Phase 46: Delegation Dispatch, Completion & Recovery Truth
 - [x] Plan Phase 47: Runtime Policy & Command Buffer Hardening
 - [x] Plan Phase 48: Real OpenCode Runtime Integration Verification (degraded: REM-RUNTIME-04/05 gaps)
+- [x] Plan Phase 48.1: Runtime Correctness — Lifecycle, Queue, Persistence Truth
+- [ ] Plan Phase 48.2: Security Boundary Hardening — Secrets, Scope, Category Gates
+- [ ] Plan Phase 48.3: OpenCode SDK/CQRS Integration Alignment
+- [ ] Plan Phase 48.4: Production Evidence & Coverage Recovery
+- [ ] Plan Phase 48.5: Architecture LOC Cleanup — Event Tracker Writer Split
 
 ### Roadmap Evolution
 
@@ -338,6 +353,11 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - Phase 46 added: Delegation Dispatch, Completion & Recovery Truth — covers HIGH-02, HIGH-03, HIGH-04
 - Phase 47 added: Runtime Policy & Command Buffer Hardening — covers MED-02 and MED-03
 - Phase 48 added: Real OpenCode Runtime Integration Verification — live OpenCode proof for Phases 43-47 remediation
+- Phase 48.1 inserted after Phase 48: Runtime Correctness — lifecycle, queue, and persistence truth remediation based on degraded runtime evidence
+- Phase 48.2 inserted after Phase 48.1: Security Boundary Hardening — secrets, scope, and category gates after correctness signals are stable
+- Phase 48.3 inserted after Phase 48.2: OpenCode SDK/CQRS Integration Alignment — supported SDK surfaces and write/read separation
+- Phase 48.4 inserted after Phase 48.3: Production Evidence & Coverage Recovery — live evidence and meaningful coverage recovery
+- Phase 48.5 inserted after Phase 48.4: Architecture LOC Cleanup — event-tracker writer split after behavior is proven
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers

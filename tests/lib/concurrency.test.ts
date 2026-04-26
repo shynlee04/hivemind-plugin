@@ -152,6 +152,20 @@ describe("DelegationConcurrencyQueue", () => {
       const r2 = await p2
       r2()
     })
+
+    it("removes the actual pending resolver after timeout and avoids stale release dispatch", async () => {
+      const release = await queue.acquire("stale-timeout-key", 1)
+
+      await expect(queue.acquire("stale-timeout-key", 1, 10)).rejects.toThrow(/timed out/)
+      expect(queue.snapshot("stale-timeout-key")).toMatchObject({ active: 1, pending: 0 })
+
+      release()
+      expect(queue.snapshot("stale-timeout-key")).toMatchObject({ active: 0, pending: 0 })
+
+      const nextRelease = await queue.acquire("stale-timeout-key", 1, 10)
+      expect(typeof nextRelease).toBe("function")
+      nextRelease()
+    })
   })
 
   describe("edge cases", () => {

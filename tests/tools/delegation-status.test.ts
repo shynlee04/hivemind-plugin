@@ -1,6 +1,11 @@
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { Delegation } from "../../src/lib/types.js"
+import { persistDelegations } from "../../src/lib/delegation-persistence.js"
 import { createDelegationStatusTool } from "../../src/tools/delegation-status.js"
 
 const mockCtx = {
@@ -53,9 +58,12 @@ function createManagerStub(delegations: Delegation[] = []): ManagerStub {
 
 describe("delegation-status tool", () => {
   let previousStateDir: string | undefined
+  let stateDir: string
 
   beforeEach(() => {
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    stateDir = mkdtempSync(join(tmpdir(), "delegation-status-"))
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
   })
 
   afterEach(() => {
@@ -65,6 +73,7 @@ describe("delegation-status tool", () => {
     } else {
       process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
     }
+    rmSync(stateDir, { recursive: true, force: true })
   })
 
   // ---------------------------------------------------------------------------
@@ -95,6 +104,28 @@ describe("delegation-status tool", () => {
 
     expect(result.kind).toBe("error")
     expect(result.message).toContain("not found")
+  })
+
+  it("falls back to persisted terminal delegation when memory has been cleaned up", async () => {
+    persistDelegations([
+      makeDelegation({
+        id: "del-persisted",
+        status: "completed",
+        result: "persisted result",
+        completedAt: Date.now(),
+      }),
+    ])
+    const manager = createManagerStub([])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-persisted" } as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Record<string, unknown>
+
+    expect(result.kind).toBe("success")
+    expect(data.delegationId).toBe("del-persisted")
+    expect(data.status).toBe("completed")
+    expect(data.result).toBe("persisted result")
   })
 
   it("returns result text when delegation is completed", async () => {
@@ -275,6 +306,31 @@ describe("delegation-status tool", () => {
     const data = result.data as Delegation[]
     expect(data).toHaveLength(2)
     expect(data.every(d => d.status === "running")).toBe(true)
+  })
+
+  it("merges active memory records with persisted terminal records for list filters", async () => {
+    const active = makeDelegation({ id: "del-active", status: "running" })
+    const persistedTerminal = makeDelegation({
+      id: "del-persisted-terminal",
+      status: "completed",
+      result: "done from disk",
+      completedAt: Date.now(),
+    })
+    persistDelegations([active, persistedTerminal])
+    const manager = createManagerStub([active])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const allRaw = await tool.execute({} as never, mockCtx)
+    const allResult = parseResult(allRaw)
+    expect((allResult.data as Delegation[]).map((d) => d.id)).toEqual(
+      expect.arrayContaining(["del-active", "del-persisted-terminal"]),
+    )
+
+    const filteredRaw = await tool.execute({ status: "completed" } as never, mockCtx)
+    const filteredResult = parseResult(filteredRaw)
+    const filtered = filteredResult.data as Delegation[]
+    expect(filtered).toHaveLength(1)
+    expect(filtered[0]?.id).toBe("del-persisted-terminal")
   })
 
   it("returns empty list when filter matches no delegations", async () => {

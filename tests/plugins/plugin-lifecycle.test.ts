@@ -15,6 +15,7 @@ vi.mock("bun-pty", () => ({
 
 import { getSessionContinuity, recordSessionContinuity } from "../../src/lib/continuity.js"
 import { createCoreHooks } from "../../src/hooks/create-core-hooks.js"
+import { createSessionHooks } from "../../src/hooks/create-session-hooks.js"
 import { TaskStateManager } from "../../src/lib/state.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
@@ -355,6 +356,58 @@ describe("plugin lifecycle wiring", () => {
 
     expect(client.session.prompt).toHaveBeenCalledTimes(1)
     expect(getSessionContinuity("ses-parent-replay-failure")?.metadata.pendingNotifications).toHaveLength(1)
+  })
+
+  it("makes auto-loop retry inert when the session is deleted while retry is pending", async () => {
+    let releaseSleep: (() => void) | undefined
+    const lifecycleManager = {
+      requestAutoLoopRetry: vi.fn().mockResolvedValue(undefined),
+      getLifecycleSnapshot: vi.fn().mockReturnValue(undefined),
+      recordCompactionCheckpoint: vi.fn(),
+    }
+    const client = createPluginClient()
+    client.session.messages.mockResolvedValue({
+      data: [{ role: "assistant", parts: [{ type: "text", text: "not done yet" }] }],
+    })
+
+    recordSessionContinuity({
+      sessionID: "ses-auto-loop-terminal",
+      promptParams: {},
+      metadata: {
+        status: "running",
+        description: "Auto-loop terminal cleanup",
+        delegation: null,
+        constraints: [],
+        delegationPacket: {
+          id: "packet-auto-loop-terminal",
+          createdAt: Date.now(),
+          spec: "finish task",
+          artifacts: [],
+          commits: [],
+          parentChain: [],
+          status: "running",
+          updatedAt: Date.now(),
+        },
+        pendingNotifications: [],
+        updatedAt: Date.now(),
+      },
+    })
+
+    const hooks = createSessionHooks({
+      client: client as never,
+      lifecycleManager: lifecycleManager as never,
+      stateManager: new TaskStateManager(),
+      autoLoopConfig: { backoffMs: 25 },
+      sleep: () => new Promise<void>((resolve) => { releaseSleep = resolve }),
+    })
+
+    const idlePromise = hooks.event({ event: { type: "session.idle", sessionID: "ses-auto-loop-terminal" } })
+    await vi.waitFor(() => expect(releaseSleep).toBeDefined())
+    await hooks.event({ event: { type: "session.deleted", sessionID: "ses-auto-loop-terminal" } })
+    releaseSleep?.()
+    await idlePromise
+
+    expect(lifecycleManager.requestAutoLoopRetry).not.toHaveBeenCalled()
   })
 
 })

@@ -26,6 +26,17 @@ describe("CompletionDetector", () => {
       })
     })
 
+    it("does not accept reversed feed arguments that hide call-site ordering bugs", async () => {
+      const resultPromise = detector.watch("ses_real", 50)
+      detector.feed("ses_real", "session.idle")
+      vi.advanceTimersByTime(60)
+
+      await expect(resultPromise).resolves.toEqual({
+        signal: "timeout",
+        sessionID: "ses_real",
+      })
+    })
+
     it("resolves with error when session.error is fed", async () => {
       const resultPromise = detector.watch("ses_1", 5000)
       detector.feed("session.error", "ses_1", "oops")

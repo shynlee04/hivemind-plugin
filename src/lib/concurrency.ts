@@ -15,6 +15,9 @@ type Lane = {
   }
 }
 
+/** Resolver wrapper stored in a lane while an acquire waits for release. */
+type PendingAcquire = (release: () => void) => void
+
 export type QueuePriority = "high" | "normal"
 
 export type QueuedTask = {
@@ -78,11 +81,17 @@ export class DelegationConcurrencyQueue {
 
     if (timeoutMs !== undefined && timeoutMs > 0) {
       return new Promise<() => void>((resolve, reject) => {
+        const pendingAcquire: PendingAcquire = (release: () => void) => {
+          clearTimeout(timer)
+          resolve(release)
+        }
+
         const timer = setTimeout(() => {
-          const idx = lane.pending.indexOf(resolve)
+          const idx = lane.pending.indexOf(pendingAcquire)
           if (idx >= 0) {
             lane.pending.splice(idx, 1)
           }
+          this.cleanupLane(key, lane)
           reject(
             new Error(
               `[Harness] Concurrency acquire timed out for key "${key}" after ${timeoutMs}ms.`,
@@ -90,10 +99,7 @@ export class DelegationConcurrencyQueue {
           )
         }, timeoutMs)
 
-        lane.pending.push((release: () => void) => {
-          clearTimeout(timer)
-          resolve(release)
-        })
+        lane.pending.push(pendingAcquire)
       })
     }
 

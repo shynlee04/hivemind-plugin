@@ -43,6 +43,25 @@ function deriveRecoveryGuarantee(executionMode: Delegation["executionMode"]): De
 
 type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }
 
+const VALID_DELEGATION_TRANSITIONS: Record<DelegationStatus, DelegationStatus[]> = {
+  dispatched: ["running", "completed", "error", "timeout"],
+  running: ["completed", "error", "timeout"],
+  completed: [],
+  error: [],
+  timeout: [],
+}
+
+/**
+ * Checks whether a delegation status transition is allowed by runtime truth rules.
+ *
+ * @param from - Current delegation status.
+ * @param to - Requested next delegation status.
+ * @returns True when the transition is permitted.
+ */
+function canTransitionDelegationStatus(from: DelegationStatus, to: DelegationStatus): boolean {
+  return VALID_DELEGATION_TRANSITIONS[from].includes(to)
+}
+
 /**
  * Build the OpenCode prompt-time tool map for delegated sessions.
  *
@@ -149,13 +168,12 @@ export class DelegationManager {
             tools: buildDelegationPromptTools(child.allowedTools),
           },
         })
-        delegation.status = "running"
-        this.persistAllDelegations()
+        this.transitionDelegationStatus(delegation.id, "running")
       } catch {
         this.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
         return this.buildResult(this.delegations.get(delegation.id) ?? delegation)
       }
-      return this.buildResult(delegation)
+      return this.buildResult(this.delegations.get(delegation.id) ?? delegation)
     } finally {
       release()
     }
@@ -186,8 +204,7 @@ export class DelegationManager {
     if (!delegation || delegation.executionMode !== "sdk") return
     if (delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout") return
     if (delegation.status === "dispatched") {
-      delegation.status = "running"
-      this.persistAllDelegations()
+      this.transitionDelegationStatus(delegationId, "running")
     }
     if (!this.sdkHandler.isPolling(delegationId)) {
       this.sdkHandler.scheduleStabilityPoll(delegationId)
@@ -219,13 +236,15 @@ export class DelegationManager {
         this.commandHandler.recoverPtyDelegation(delegation)
         continue
       }
-      delegation.status = "error"
-      delegation.terminalKind = "non-resumable-after-restart"
-      delegation.terminationSignal = undefined
-      delegation.explicitCancellation = false
-      delegation.error = "[Harness] Headless command delegation cannot be recovered after restart"
-      delegation.completedAt = Date.now()
-      this.persistAllDelegations()
+      this.transitionToTerminal(
+        delegation.id,
+        "error",
+        "[Harness] Headless command delegation cannot be recovered after restart",
+        {
+          terminalKind: "non-resumable-after-restart",
+          explicitCancellation: false,
+        },
+      )
     }
   }
 
@@ -321,6 +340,28 @@ export class DelegationManager {
     this.safetyTimers.set(delegation.id, timer)
   }
 
+  /**
+   * Applies a guarded delegation status transition without terminal side effects.
+   *
+   * @param delegationId - Delegation record identifier.
+   * @param nextStatus - Non-terminal status to apply.
+   * @returns True when the transition was applied.
+   */
+  private transitionDelegationStatus(delegationId: string, nextStatus: DelegationStatus): boolean {
+    const delegation = this.delegations.get(delegationId)
+    if (!delegation || delegation.status === nextStatus) {
+      return false
+    }
+
+    if (!canTransitionDelegationStatus(delegation.status, nextStatus)) {
+      return false
+    }
+
+    delegation.status = nextStatus
+    this.persistAllDelegations()
+    return true
+  }
+
   private async handleSafetyCeiling(delegationId: string): Promise<void> {
     const delegation = this.delegations.get(delegationId)
     if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) return
@@ -348,6 +389,10 @@ export class DelegationManager {
     }
 
     const previousStatus = delegation.status
+    if (!canTransitionDelegationStatus(previousStatus, newState)) {
+      return
+    }
+
     delegation.status = newState
     delegation.completedAt = Date.now()
     delegation.terminalKind = terminalDetail?.terminalKind ?? delegation.terminalKind

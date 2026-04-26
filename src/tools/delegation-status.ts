@@ -2,8 +2,10 @@ import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
 import type { DelegationManager } from "../lib/delegation-manager.js"
+import { readPersistedDelegations } from "../lib/delegation-persistence.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"
+import type { Delegation } from "../lib/types.js"
 
 const DelegationStatusInputSchema = z.object({
   delegationId: z.string().min(1).optional().describe("Specific delegation ID to check"),
@@ -13,6 +15,54 @@ const DelegationStatusInputSchema = z.object({
 type DelegationStatusInput = z.infer<typeof DelegationStatusInputSchema>
 
 type ToolContext = { sessionID?: string }
+
+/**
+ * Converts a delegation record into the public status-tool response shape.
+ *
+ * @param delegation - Delegation record from memory or persisted fallback.
+ * @returns Serializable status metadata for tool output.
+ */
+function renderDelegation(delegation: Delegation): Record<string, unknown> {
+  return {
+    delegationId: delegation.id,
+    status: delegation.status,
+    agent: delegation.agent,
+    result: delegation.result,
+    error: delegation.error,
+    createdAt: delegation.createdAt,
+    completedAt: delegation.completedAt,
+    executionMode: delegation.executionMode,
+    surface: delegation.surface,
+    recoveryGuarantee: delegation.recoveryGuarantee,
+    workingDirectory: delegation.workingDirectory,
+    ptySessionId: delegation.ptySessionId,
+    fallbackReason: delegation.fallbackReason,
+    queueKey: delegation.queueKey,
+    terminalKind: delegation.terminalKind,
+    terminationSignal: delegation.terminationSignal,
+    explicitCancellation: delegation.explicitCancellation,
+    nestingDepth: delegation.nestingDepth,
+    gracePeriodExpiresAt: delegation.gracePeriodExpiresAt,
+  }
+}
+
+/**
+ * Merges memory and persisted delegations while keeping memory authoritative.
+ *
+ * @param activeDelegations - Delegations currently held by DelegationManager.
+ * @param persistedDelegations - Durable delegation records from disk.
+ * @returns Combined records deduplicated by delegation ID.
+ */
+function mergeDelegations(activeDelegations: Delegation[], persistedDelegations: Delegation[]): Delegation[] {
+  const byId = new Map<string, Delegation>()
+  for (const delegation of persistedDelegations) {
+    byId.set(delegation.id, delegation)
+  }
+  for (const delegation of activeDelegations) {
+    byId.set(delegation.id, delegation)
+  }
+  return Array.from(byId.values())
+}
 
 export function createDelegationStatusTool(
   delegationManager: DelegationManager,
@@ -33,6 +83,7 @@ export function createDelegationStatusTool(
         // Specific delegation lookup
         if (args.delegationId) {
           const delegation = delegationManager.getStatus(args.delegationId)
+            ?? readPersistedDelegations().find((entry) => entry.id === args.delegationId)
 
         if (!delegation) {
           return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
@@ -44,31 +95,14 @@ export function createDelegationStatusTool(
           ? `Delegation ${delegation.id} terminal state: ${terminalLabel}${signalSuffix}`
           : `Delegation ${delegation.id} status: ${delegation.status}`
 
-        return renderToolResult(success(message, {
-          delegationId: delegation.id,
-          status: delegation.status,
-            agent: delegation.agent,
-            result: delegation.result,
-            error: delegation.error,
-            createdAt: delegation.createdAt,
-            completedAt: delegation.completedAt,
-            executionMode: delegation.executionMode,
-            surface: delegation.surface,
-            recoveryGuarantee: delegation.recoveryGuarantee,
-            workingDirectory: delegation.workingDirectory,
-            ptySessionId: delegation.ptySessionId,
-            fallbackReason: delegation.fallbackReason,
-            queueKey: delegation.queueKey,
-            terminalKind: delegation.terminalKind,
-            terminationSignal: delegation.terminationSignal,
-            explicitCancellation: delegation.explicitCancellation,
-            nestingDepth: delegation.nestingDepth,
-            gracePeriodExpiresAt: delegation.gracePeriodExpiresAt,
-          }))
+        return renderToolResult(success(message, renderDelegation(delegation)))
         }
 
         // List all delegations (optionally filtered)
-        const allDelegations = delegationManager.getAllDelegations()
+        const allDelegations = mergeDelegations(
+          delegationManager.getAllDelegations(),
+          readPersistedDelegations(),
+        )
 
         const filtered = args.status && args.status !== "all"
           ? allDelegations.filter(d => d.status === args.status)

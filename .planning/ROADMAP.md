@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-27 (Phases 43-47 executed; Phase 48 live runtime proof degraded)
+**Updated:** 2026-04-27 (Phase 48 degraded; Phases 48.1-48.5 production-hardening remediation inserted)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -54,6 +54,11 @@
 - [x] **Phase 46: Delegation Dispatch, Completion & Recovery Truth** — High: prevent false dispatched/completed/error states
 - [x] **Phase 47: Runtime Policy & Command Buffer Hardening** — Medium: workspace policy input and bounded command output
 - [ ] **Phase 48: Real OpenCode Runtime Integration Verification** — DEGRADED: health/session/tool registration pass; hook/tool-exec/delegation completion gaps remain
+- [ ] **Phase 48.1: Runtime Correctness: Lifecycle, Queue, Persistence Truth** — Remediate lifecycle, queue-key, and persisted delegation truth gaps exposed by Phase 48
+- [ ] **Phase 48.2: Security Boundary Hardening: Secrets, Scope, Category Gates** — Harden secret handling, scope controls, and category gate enforcement after runtime correctness is restored
+- [ ] **Phase 48.3: OpenCode SDK/CQRS Integration Alignment** — Align OpenCode SDK surfaces and CQRS boundaries after runtime and security invariants are stable
+- [ ] **Phase 48.4: Production Evidence & Coverage Recovery** — Recover live evidence and non-mock coverage for the remediated runtime path
+- [ ] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — Split event-tracker writer responsibilities to restore maintainable LOC/module boundaries
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
@@ -1081,3 +1086,95 @@ Phase 1 (7 done, 3 pending — planned)
 - `npm test`
 - `npm run build`
 - Disposable `opencode serve` fixture checks: health, `/doc`, tool IDs, event subscription, delegation status polling
+
+## Phase 48.1: Runtime Correctness: Lifecycle, Queue, Persistence Truth
+
+**Goal:** Restore truthful runtime behavior for lifecycle transitions, queue-key accounting, and durable delegation persistence before any security or SDK remediations depend on those signals.
+**Depends on:** Phase 48 degraded verification evidence
+**Plans:** 5 plans
+**Priority:** P0 production-hardening remediation
+
+### Scope
+- Reconcile lifecycle status transitions with actual OpenCode session and tool-execution events.
+- Verify queue acquisition/release truth, queue-key consistency, and failure recovery semantics.
+- Ensure persisted delegation records cannot overstate started, completed, failed, or recovered states.
+
+### Success Criteria
+1. Lifecycle, queue, and persistence state transitions are backed by runtime evidence rather than inferred optimistic state.
+2. Restart/recovery paths preserve uncertainty instead of converting missing evidence into false terminal truth.
+3. Regression evidence covers queue drift, stale persisted records, and lifecycle edge cases.
+
+Plans:
+- [ ] 48.1-01-PLAN.md — Correct completion event routing and lifecycle/task transition compatibility
+- [ ] 48.1-02-PLAN.md — Route delegation state through guarded transitions and terminal cleanup
+- [ ] 48.1-03-PLAN.md — Make persisted delegation status truthful after memory cleanup and corruption
+- [ ] 48.1-04-PLAN.md — Fix queue timeout cleanup and continuity persistence failure modes
+- [ ] 48.1-05-PLAN.md — Run review, Nyquist validation, and ordered lifecycle/spec/evidence gates
+
+## Phase 48.2: Security Boundary Hardening: Secrets, Scope, Category Gates
+
+**Goal:** Harden runtime security boundaries after correctness signals are trustworthy, with focus on secret redaction, workspace scope controls, and category gate enforcement.
+**Depends on:** Phase 48.1
+**Plans:** 0 plans
+**Priority:** P0 production-hardening remediation
+
+### Scope
+- Verify secret-bearing inputs/outputs are redacted in persisted state, journals, and tool responses.
+- Recheck read/write scope boundaries across harness tools, generated artifacts, and runtime state roots.
+- Enforce category and recursion gates using explicit runtime policy instead of broad fallbacks.
+
+### Success Criteria
+1. No secret material is persisted or surfaced through planning/runtime artifacts outside explicit placeholders.
+2. Tool scope enforcement blocks path traversal and cross-root writes while preserving valid project-local workflows.
+3. Category gates deny unsafe delegation/tool combinations with auditable reasons.
+
+## Phase 48.3: OpenCode SDK/CQRS Integration Alignment
+
+**Goal:** Align harness integration with supported OpenCode SDK and plugin CQRS surfaces so write-side tools and read-side hooks remain separated and version-compatible.
+**Depends on:** Phase 48.2
+**Plans:** 0 plans
+**Priority:** P0 production-hardening remediation
+
+### Scope
+- Revalidate installed OpenCode SDK/plugin request and event contracts against harness adapters.
+- Keep plugin assembly thin while routing mutation through tools and observation through hooks.
+- Remove or document any unsupported SDK assumptions found during Phase 48 runtime probing.
+
+### Success Criteria
+1. SDK calls match installed package contracts and have regression evidence for request shape drift.
+2. CQRS boundaries are explicit: tools mutate, hooks observe, shared modules stay leaf-safe.
+3. Plugin composition has no hidden business logic or unsupported permission/session payload assumptions.
+
+## Phase 48.4: Production Evidence & Coverage Recovery
+
+**Goal:** Recover production-grade verification evidence and coverage for the remediated runtime path, replacing degraded/mock-heavy proof with reproducible live checks.
+**Depends on:** Phase 48.3
+**Plans:** 0 plans
+**Priority:** P0 production-hardening remediation
+
+### Scope
+- Re-run disposable OpenCode runtime checks after 48.1-48.3 corrections.
+- Add coverage for previously degraded tool-execution, hook payload, and child delegation completion paths.
+- Preserve evidence artifacts under `.planning/phases/48.4-production-evidence-coverage-recovery/` without committing runtime state.
+
+### Success Criteria
+1. Live runtime evidence proves tool registration, hook execution, and delegated child completion without false lifecycle states.
+2. Coverage reflects meaningful behavior checks rather than mock-only existence assertions.
+3. Remaining gaps are explicitly classified as blocker, deferred, or external-environment limitations.
+
+## Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split
+
+**Goal:** Split event-tracker writer responsibilities into maintainable modules after production behavior is proven, reducing LOC pressure without changing verified behavior.
+**Depends on:** Phase 48.4
+**Plans:** 0 plans
+**Priority:** P1 production-hardening cleanup
+
+### Scope
+- Split event-tracker writer responsibilities along parse/normalize/write/error-reporting boundaries.
+- Preserve script-rule behavior: helpers report facts and leave judgment to agents.
+- Keep module dependencies leaf-safe and below project LOC limits.
+
+### Success Criteria
+1. Event-tracker writer modules stay below the 500 LOC limit with clear responsibility boundaries.
+2. Existing event-tracker evidence and lineage outputs remain byte/shape compatible or are migration-documented.
+3. Typecheck, tests, and focused event-tracker regression evidence pass after the split.

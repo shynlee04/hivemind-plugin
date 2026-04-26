@@ -82,6 +82,11 @@ describe("task-status", () => {
       expect(canTransition("queued", "running")).toBe(true)
     })
 
+    it("should reject queued -> completed because queued work has no completion evidence", async () => {
+      const { canTransition } = await import("../../src/lib/task-status.js")
+      expect(canTransition("queued", "completed")).toBe(false)
+    })
+
     it("should allow running -> completed", async () => {
       const { canTransition } = await import("../../src/lib/task-status.js")
       expect(canTransition("running", "completed")).toBe(true)

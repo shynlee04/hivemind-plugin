@@ -51,6 +51,10 @@ describe("isValidTransition", () => {
     expect(isValidTransition("queued", "running")).toBe(true)
   })
 
+  it("rejects queued → completed because completion requires running evidence", () => {
+    expect(isValidTransition("queued", "completed")).toBe(false)
+  })
+
   it("allows queued → failed", () => {
     expect(isValidTransition("queued", "failed")).toBe(true)
   })
@@ -230,6 +234,49 @@ describe("HarnessLifecycleManager", () => {
       })
 
       expect(manager.getLifecycleSnapshot("unknown")).toBeUndefined()
+    })
+  })
+
+  describe("handleEvent completion routing", () => {
+    it("feeds session.idle to CompletionDetector by event type and session ID", async () => {
+      const manager = createHarnessLifecycleManager({
+        client: createMockClient() as never,
+        pollTimeoutMs: 180_000,
+      })
+
+      const resultPromise = manager.getCompletionDetector().watch("ses-idle-order", 500)
+      manager.handleEvent({
+        event: { type: "session.idle" },
+        eventType: "session.idle",
+        sessionID: "ses-idle-order",
+      })
+
+      await expect(resultPromise).resolves.toEqual({
+        signal: "idle",
+        sessionID: "ses-idle-order",
+      })
+    })
+
+    it("does not resolve a watcher for non-terminal lifecycle events", async () => {
+      vi.useFakeTimers()
+      const manager = createHarnessLifecycleManager({
+        client: createMockClient() as never,
+        pollTimeoutMs: 180_000,
+      })
+
+      const resultPromise = manager.getCompletionDetector().watch("ses-non-terminal", 50)
+      manager.handleEvent({
+        event: { type: "session.updated" },
+        eventType: "session.updated",
+        sessionID: "ses-non-terminal",
+      })
+
+      vi.advanceTimersByTime(60)
+      await expect(resultPromise).resolves.toEqual({
+        signal: "timeout",
+        sessionID: "ses-non-terminal",
+      })
+      vi.useRealTimers()
     })
   })
 })

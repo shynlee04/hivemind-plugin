@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -74,5 +74,37 @@ describe("delegation persistence", () => {
 
     const persisted = JSON.parse(readFileSync(persistence.getDelegationsFilePath(), "utf-8")) as Delegation[]
     expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]))
+  })
+
+  it("quarantines corrupt delegations.json and throws a visible harness error", async () => {
+    const persistence = await import("../../src/lib/delegation-persistence.js")
+    writeFileSync(persistence.getDelegationsFilePath(), "NOT VALID JSON {{{", "utf-8")
+
+    expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\]/)
+    expect(existsSync(persistence.getDelegationsFilePath())).toBe(false)
+    expect(readdirSync(stateDir).some((name) => name.startsWith("delegations.json.corrupt-"))).toBe(true)
+  })
+
+  it("reports non-array delegations.json as invalid persisted shape", async () => {
+    const persistence = await import("../../src/lib/delegation-persistence.js")
+    writeFileSync(persistence.getDelegationsFilePath(), JSON.stringify({ invalid: true }), "utf-8")
+
+    expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\].*array/)
+  })
+
+  it("normalizes invalid persisted status values to explicit error metadata", async () => {
+    const persistence = await import("../../src/lib/delegation-persistence.js")
+    writeFileSync(
+      persistence.getDelegationsFilePath(),
+      `${JSON.stringify([{ ...makeDelegation("invalid-status"), status: "unknown-success" }])}\n`,
+      "utf-8",
+    )
+
+    const delegations = persistence.readPersistedDelegations()
+    expect(delegations[0]).toEqual(expect.objectContaining({
+      status: "error",
+      terminalKind: "error",
+      error: expect.stringContaining("Invalid persisted delegation status"),
+    }))
   })
 })
