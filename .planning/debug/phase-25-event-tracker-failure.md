@@ -1,17 +1,17 @@
 ---
-status: investigating
+status: verifying
 trigger: "Phase 25 event-tracker failure: current implementation still fails to capture actors, session delegation, last message output, manual exported interfaces such as session-ses_23a0.md, bounded merged artifacts, and both main/sub sessions."
 created: 2026-04-26T00:00:00Z
-updated: 2026-04-26T18:50:00Z
+updated: 2026-04-26T20:43:00Z
 ---
 
 ## Current Focus
 <!-- OVERWRITE on each update - reflects NOW -->
 
-hypothesis: "Event-tracker source fix is verified for the reproduced root cause; remaining full-suite failures are outside the event-tracker slice."
-test: "Commit only event-tracker/session-api/plugin/tests/docs changes, preserving unrelated dirty work and untracked generated state."
-expecting: "Commit should include source, tests, and Phase 25/debug docs only; unrelated skill/refactor/delegation dirty files remain unstaged."
-next_action: "Stage the relevant source/test/GSD docs and commit with `fix(phase25): harden event tracker admission — stop message roots`."
+hypothesis: "Confirmed: notification-handler integration was removed from core hooks and delegation finalization; event-tracker gating is correctly scoped to persistence and did not need broad lifecycle dispatch changes."
+test: "Commit only logical notification replay/finalization fixes plus matching tests and debug state."
+expecting: "Staged diff should include only relevant source/tests/debug file; unrelated dirty skill/refactor/generated files remain unstaged."
+next_action: "Stage relevant files only and commit the verified lifecycle replay regression guard/fix."
 
 ## Symptoms
 <!-- Written during gathering, then IMMUTABLE -->
@@ -129,6 +129,47 @@ started: Phase 25 current implementation after prior attempted fixes; user repor
   checked: Final verification and live-style post-build artifact check
   found: Focused event-tracker/session-api suites passed except unrelated plugin-lifecycle pending-notification tests when running the whole plugin file. `npm run typecheck` passed; `npm run build` passed; `npm test` ran 857 tests with 853 passing and 4 failures in delegation notification replay/finalization tests outside the event-tracker slice. Post-build cleanup removed 22 generated event-tracker files; after `git status --short` and `node -e`, the directory contained only `ses_23a0.{json,md}`. Manual export merge produced contextual `ses_23a0.json` with 7 actors, 8 subSessions, 11 delegations, tool names including bash/read/skill/task/todowrite, and bounded lastMessageOutput length 2000.
   implication: The event-tracker root cause is fixed and buildable; full-suite green remains blocked by pre-existing/non-event-tracker delegation notification failures.
+- timestamp: 2026-04-26T19:05:00Z
+  checked: Fresh coordinator regression report and dirty tree snapshot
+  found: Coordinator verification failed before typecheck/build/full suite because `tests/plugins/plugin-lifecycle.test.ts` expected pending notification replay to call `client.session.prompt` once on `session.created` and `session.updated`, but got zero calls. Working tree also contains many unrelated dirty skill/refactor files, so only lifecycle/event-tracker regression files may be staged.
+  implication: Previous assumption that replay failures were outside the event-tracker slice is now suspect. Re-open investigation focused on lifecycle dispatch ordering and preserve unrelated dirty work.
+- timestamp: 2026-04-26T20:33:00Z
+  checked: Focused reproduction for pending-notification replay tests
+  found: `npx vitest run tests/plugins/plugin-lifecycle.test.ts -t "pending notifications"` failed exactly 2 tests. Both failures report `client.session.prompt` expected 1 call but received 0 on `session.created` and `session.updated`.
+  implication: Regression is reproducible in isolation. Continue with lifecycle dispatch trace rather than broad suite noise.
+- timestamp: 2026-04-26T20:40:00Z
+  checked: Lifecycle dispatch and admission code paths
+  found: `src/plugin.ts` calls `createCoreHooks()` with event observers including `sessionEventObserver` and `sessionJourneyEventObserver`; the event-tracker `shouldTrackEventTrackerEvent()` gate is inside `sessionJourneyEventObserver` only. `src/hooks/create-core-hooks.ts` now calls `lifecycleManager.handleEvent()` and observers, but the prior `replayPendingNotificationsForEvent()` helper/imports are removed and `src/lib/notification-handler.ts` is deleted. The current test file was modified to expect no push replay, contradicting the required regression contract.
+  implication: Initial event-tracker short-circuit hypothesis is disproven for current source. Actual mechanism is removed pending-notification replay code/tests. Fix by restoring replay while preserving event-tracker gate locality.
+- timestamp: 2026-04-26T20:35:00Z
+  checked: Focused GREEN for replay and firehose behavior after patch
+  found: `npx vitest run tests/plugins/plugin-lifecycle.test.ts -t "pending notifications|message firehose"` passed 1 file / 3 tests. The passing set includes both pending notification replay tests and the plugin event-tracker message firehose ignore test.
+  implication: Minimal fix restores lifecycle replay and preserves the event-tracker admission/firehose guard. Proceed to required verification.
+- timestamp: 2026-04-26T20:36:00Z
+  checked: Required verification after replay fix
+  found: Targeted suite passed 3 files / 72 tests; `npm run typecheck` passed; `npm run build` passed. Full `npm test` failed 1 test: `tests/lib/delegation-manager.test.ts > finalization > queues a durable pending notification when direct parent delivery fails`, where pending notifications were expected length 1 but were empty.
+  implication: The immediate lifecycle replay regression is fixed, but full-suite verification exposes a closely related pending-notification queuing regression that must be fixed before committing.
+- timestamp: 2026-04-26T20:37:00Z
+  checked: Delegation terminal notification path after restoring `notifyDelegationTerminal`
+  found: `src/lib/delegation-manager.ts` had also removed the fire-and-forget `notifyDelegationTerminal(this.client, delegation)` call. Restoring the import and call made `npx vitest run tests/lib/delegation-manager.test.ts -t "queues a durable pending notification"` pass 1 test, and stderr showed the expected failed direct delivery followed by durable pending queue behavior.
+  implication: Related full-suite failure shares the same root cause: notification-handler integration was removed, not merely event-tracker gated. Proceed to final verification.
+- timestamp: 2026-04-26T20:38:00Z
+  checked: Full-suite contradictory notification test after terminal notify restore
+  found: Full `npm test` then failed one dirty-tree test that had been modified to expect no push notification (`finalization completes cleanly without push notification — WaiterModel polling replaces push`). Restored the original contract (`notifyDelegationTerminal failure does not corrupt finalization`) and `npx vitest run tests/lib/delegation-manager.test.ts -t "notifyDelegationTerminal failure|queues a durable pending notification"` passed 2 tests.
+  implication: Test suite now consistently matches the required push/pending-notification contract. Proceed to final verification.
+
+- timestamp: 2026-04-26T20:39:00Z
+  checked: Final verification after all code/test changes
+  found: `npx vitest run tests/plugins/plugin-lifecycle.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/lib/session-api.test.ts` passed 3 files / 72 tests. `npm run typecheck` passed. `npm run build` passed. `npm test` passed 46 files / 857 tests.
+  implication: Regression is fixed and verified; proceed to logical commit preserving unrelated dirty work.
+- timestamp: 2026-04-26T20:50:00Z
+  checked: Regression guard coverage gap
+  found: Existing restored tests covered `createCoreHooks()` replay and plugin message firehose filtering separately, but not their combined plugin-level observer dispatch path.
+  implication: Added a plugin-level test proving `HarnessControlPlane.event` replays pending notifications on `session.created` and ignores subsequent `message.updated` firehose artifacts, so event-tracker admission cannot regress into broad lifecycle short-circuiting unnoticed.
+- timestamp: 2026-04-26T20:43:00Z
+  checked: Final verification after plugin-level replay/admission guard
+  found: `npx vitest run tests/plugins/plugin-lifecycle.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/lib/session-api.test.ts` passed 3 files / 73 tests. `npm run typecheck` passed. `npm run build` passed. `npm test` passed 46 files / 858 tests.
+  implication: Final verification is green after the last test change.
 
 ## Resolution
 <!-- OVERWRITE as understanding evolves -->
@@ -137,3 +178,8 @@ root_cause: The persistent live-runtime failure had two remaining mechanisms. Fi
 fix: Added event-scoped session ID resolution that ignores message-event `info.id` and prefers explicit message `properties.sessionID`; added exported `shouldTrackEventTrackerEvent()` admission; gated plugin event-tracker observer before writer calls; connected actual plugin `tool.execute.after` to root-attached concise tool metadata when a session/root ID is available; added RED/GREEN tests using exact live bad shapes and plugin tool completion behavior; updated Phase 25 debug/review/verification docs.
 verification: RED tests failed 4 expected tests before patch; GREEN exact-shape tests passed 2 files / 4 tests; focused event-tracker/session-api tests passed; `npm run typecheck` passed; `npm run build` passed; post-build cleanup/live-style commands left only `ses_23a0.{json,md}`; manual export quality sample had actors/subSessions/delegations/tools/bounded output. Full `npm test` is blocked by 4 unrelated delegation notification replay/finalization failures outside the event-tracker slice.
 files_changed: [src/lib/session-api.ts, src/lib/event-tracker/writer.ts, src/plugin.ts, tests/lib/session-api.test.ts, tests/plugins/plugin-lifecycle.test.ts, .planning/debug/phase-25-event-tracker-failure.md, .planning/phases/25-session-journal-execution-lineage-bridge/25-04-SUMMARY.md, .planning/phases/25-session-journal-execution-lineage-bridge/25-EVENT-TRACKER-REDESIGN-2026-04-26.md, .planning/phases/25-session-journal-execution-lineage-bridge/25-REVIEW.md, .planning/phases/25-session-journal-execution-lineage-bridge/25-VERIFICATION.md]
+
+final_root_cause: Pending notification replay and terminal notification queuing were removed from lifecycle code during dirty Phase 35-style notification-handler removal. `createCoreHooks().event` no longer called `replayPendingNotificationsForEvent()`, `src/lib/notification-handler.ts` was deleted, and `DelegationManager.transitionToTerminal()` no longer scheduled `notifyDelegationTerminal()`. The event-tracker admission gate in `src/plugin.ts` was already scoped to `sessionJourneyEventObserver`, so it did not need to gate or short-circuit shared lifecycle observers.
+final_fix: Restored `notification-handler.ts`, restored pending notification replay in `createCoreHooks().event`, restored fire-and-forget `notifyDelegationTerminal()` scheduling in delegation terminal transitions, and restored regression tests that assert replay/queueing behavior while preserving the plugin firehose test that message events do not create event-tracker artifacts.
+final_verification: `npx vitest run tests/plugins/plugin-lifecycle.test.ts tests/lib/event-tracker/session-journey-events.test.ts tests/lib/session-api.test.ts` passed 3 files / 73 tests; `npm run typecheck` passed; `npm run build` passed; `npm test` passed 46 files / 858 tests.
+final_files_changed: [src/hooks/create-core-hooks.ts, src/lib/delegation-manager.ts, src/lib/notification-handler.ts, tests/lib/delegation-manager.test.ts, tests/plugins/plugin-lifecycle.test.ts, .planning/debug/phase-25-event-tracker-failure.md]

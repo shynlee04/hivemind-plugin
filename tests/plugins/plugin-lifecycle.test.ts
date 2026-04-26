@@ -130,6 +130,61 @@ describe("plugin lifecycle wiring", () => {
     }
   })
 
+  it("keeps lifecycle notification replay independent from event-tracker admission", async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-lifecycle-observers-"))
+    const client = createPluginClient()
+
+    recordSessionContinuity({
+      sessionID: "ses_23a0root",
+      promptParams: {},
+      metadata: {
+        status: "running",
+        description: "Parent plugin replay session",
+        delegation: null,
+        constraints: [],
+        lifecycle: { phase: "created" },
+        pendingNotifications: [
+          {
+            sessionID: "child-session",
+            description: "Delegation: builder",
+            agent: "builder",
+            status: "completed",
+            briefSummary: "Delegated work finished with terminal state completed after 2.0s.",
+            resultPreview: "Replayable completion payload",
+            metadata: {
+              delegationId: "del-plugin-replay",
+              terminalState: "completed",
+              recoveryGuarantee: "resumable",
+              summaryPreview: "Replayable completion payload",
+            },
+            createdAt: Date.now(),
+            delivered: false,
+          },
+        ],
+        updatedAt: Date.now(),
+      },
+    })
+
+    try {
+      const plugin = await HarnessControlPlane({
+        client,
+        directory: projectRoot,
+      } as never)
+
+      await plugin.event({ event: { type: "session.created", sessionID: "ses_23a0root" } })
+      await plugin.event({ event: { type: "message.updated", properties: { info: { id: "msg_not_a_root" }, sessionID: "ses_23a0root" } } })
+
+      expect(client.session.prompt).toHaveBeenCalledTimes(1)
+      expect(getSessionContinuity("ses_23a0root")?.metadata.pendingNotifications).toEqual([])
+
+      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
+      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
+      expect(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")).not.toContain("msg_not_a_root")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it("records plugin tool completion as concise contextual metadata when a root session is attachable", async () => {
     const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-tool-"))
     const rawOutput = `FULL_TOOL_OUTPUT_${"x".repeat(2_000)}`
