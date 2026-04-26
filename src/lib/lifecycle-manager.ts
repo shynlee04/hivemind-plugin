@@ -1,8 +1,8 @@
 /**
- * Harness lifecycle manager — minimal stub.
+ * Harness lifecycle manager — session lifecycle state machine.
  *
- * Stripped to compile after 09-13 module deletion.
- * Plan 14-02 (DelegationManager) will replace this with a full implementation.
+ * Provides transition guards, activity tracking, and event routing
+ * for delegated session lifecycle management.
  */
 import { CompletionDetector } from "./completion-detector.js"
 import { getSessionContinuity, listSessionContinuity, patchSessionContinuity } from "./continuity.js"
@@ -36,10 +36,35 @@ export type LaunchDelegatedSessionArgs = {
   [key: string]: unknown
 }
 
-export function isValidTransition(_from: SessionLifecyclePhase, _to: SessionLifecyclePhase): boolean {
-  // Minimal stub — always allow transitions during clean slate.
-  // Full validation restored in Plan 14-02.
-  return true
+/**
+ * Valid lifecycle phase transitions.
+ *
+ * ┌─────────────┬──────────────────────────────────────────────┐
+ * │ From         │ To                                           │
+ * ├─────────────┼──────────────────────────────────────────────┤
+ * │ created     │ queued, dispatching, running, failed         │
+ * │ queued      │ dispatching, running, completed, failed      │
+ * │ dispatching │ running, completed, failed                   │
+ * │ running     │ completed, failed                            │
+ * │ completed   │ (terminal)                                   │
+ * │ failed      │ (terminal)                                   │
+ * └─────────────┴──────────────────────────────────────────────┘
+ */
+const VALID_LIFECYCLE_TRANSITIONS: Record<SessionLifecyclePhase, SessionLifecyclePhase[]> = {
+  created:     ["queued", "dispatching", "running", "failed"],
+  queued:      ["dispatching", "running", "completed", "failed"],
+  dispatching: ["running", "completed", "failed"],
+  running:     ["completed", "failed"],
+  completed:   [],
+  failed:      [],
+}
+
+export function isValidTransition(from: SessionLifecyclePhase, to: SessionLifecyclePhase): boolean {
+  return VALID_LIFECYCLE_TRANSITIONS[from].includes(to)
+}
+
+export function isTerminalPhase(phase: SessionLifecyclePhase): boolean {
+  return phase === "completed" || phase === "failed"
 }
 
 export class HarnessLifecycleManager {
@@ -73,8 +98,18 @@ export class HarnessLifecycleManager {
     return getSessionContinuity(sessionID)?.metadata.lifecycle
   }
 
-  noteObservedActivity(_sessionID: string, _source: string): void {
-    // No-op stub — full implementation in Plan 14-02
+  noteObservedActivity(sessionID: string, source: string): void {
+    const now = Date.now()
+    const current = getSessionContinuity(sessionID)
+    const currentLifecycle = current?.metadata.lifecycle
+    patchSessionContinuity(sessionID, {
+      lifecycle: {
+        phase: currentLifecycle?.phase ?? "running",
+        ...currentLifecycle,
+        observation: { source, observedAt: now, detail: `activity noted by ${source}` },
+      },
+      lastToolActivityAt: now,
+    })
   }
 
   handleEvent(args: { event: unknown; eventType: string; sessionID: string }): void {
