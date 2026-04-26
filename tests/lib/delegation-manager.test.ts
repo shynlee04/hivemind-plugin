@@ -1374,6 +1374,44 @@ describe("DelegationManager", () => {
       expect(delegations.find((entry) => entry.id === "real-command-fallback")?.executionMode).toBe("headless")
     })
 
+    it("normalizes invalid status values to 'error' instead of passing through unchecked", () => {
+      writeFileSync(
+        getDelegationsFile(stateDir),
+        `${JSON.stringify([
+          {
+            id: "invalid-status-record",
+            parentSessionId: "ses-parent-invalid",
+            childSessionId: "child-invalid",
+            agent: "builder",
+            status: "unknown-garbage-status",
+            createdAt: Date.now(),
+            executionMode: "sdk",
+            workingDirectory: "/tmp/invalid-status",
+            queueKey: "agent:builder",
+          },
+          {
+            id: "valid-status-record",
+            parentSessionId: "ses-parent-valid",
+            childSessionId: "child-valid",
+            agent: "builder",
+            status: "completed",
+            createdAt: Date.now(),
+            executionMode: "sdk",
+            workingDirectory: "/tmp/valid-status",
+            queueKey: "agent:builder",
+          },
+        ])}\n`,
+        "utf-8",
+      )
+
+      const delegations = readPersistedDelegations()
+
+      // Invalid status is normalized to "error" instead of being cast blindly
+      expect(delegations.find((entry) => entry.id === "invalid-status-record")?.status).toBe("error")
+      // Valid statuses pass through unchanged
+      expect(delegations.find((entry) => entry.id === "valid-status-record")?.status).toBe("completed")
+    })
+
     it("assigns truthful surface and recovery defaults when normalizing legacy persisted records", () => {
       writeFileSync(
         getDelegationsFile(stateDir),

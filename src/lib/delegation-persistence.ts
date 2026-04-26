@@ -1,8 +1,21 @@
+import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "./continuity.js"
-import type { Delegation } from "./types.js"
+import type { Delegation, DelegationStatus } from "./types.js"
+
+const VALID_DELEGATION_STATUSES: ReadonlySet<string> = new Set<string>([
+  "dispatched",
+  "running",
+  "completed",
+  "error",
+  "timeout",
+])
+
+function isValidDelegationStatus(value: string): value is DelegationStatus {
+  return VALID_DELEGATION_STATUSES.has(value)
+}
 
 function deriveSurface(executionMode: Delegation["executionMode"]): NonNullable<Delegation["surface"]> {
   return executionMode === "sdk" ? "agent-delegation" : "command-process"
@@ -32,9 +45,12 @@ export function persistDelegations(delegations: Delegation[]): void {
   const filePath = getDelegationsFilePath()
   mkdirSync(dirname(filePath), { recursive: true })
   // Atomic write: write to temp file first, then rename to prevent
-  // corrupt reads if the process crashes mid-write.
-  const tmpFile = filePath + ".tmp"
+  // corrupt reads if the process crashes mid-write. Use a unique temp file
+  // per write so overlapping persistence calls cannot consume each other's
+  // temp file before renameSync runs.
+  const tmpFile = `${filePath}.${process.pid}.${randomUUID()}.tmp`
   writeFileSync(tmpFile, `${JSON.stringify(delegations, null, 2)}\n`, "utf-8")
+  mkdirSync(dirname(filePath), { recursive: true })
   renameSync(tmpFile, filePath)
 }
 
@@ -86,7 +102,7 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     parentSessionId: record.parentSessionId,
     childSessionId: record.childSessionId,
     agent: record.agent,
-    status: record.status as Delegation["status"],
+    status: isValidDelegationStatus(record.status) ? record.status : "error",
     result: typeof record.result === "string" ? record.result : undefined,
     error: typeof record.error === "string" ? record.error : undefined,
     createdAt: record.createdAt,
