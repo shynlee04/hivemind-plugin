@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+export const COMMAND_FRONTMATTER_SCHEMA_VERSION = "1.0.0"
+
 // ---------------------------------------------------------------------------
 // 1. Command Name — validates OpenCode command naming conventions
 // ---------------------------------------------------------------------------
@@ -38,6 +40,11 @@ export const CommandFrontmatterSchema = z
 
 export type CommandFrontmatter = z.infer<typeof CommandFrontmatterSchema>
 
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const CommandFrontmatterSchemaLenient = CommandFrontmatterSchema.strip()
+
+export type CommandFrontmatterLenient = z.infer<typeof CommandFrontmatterSchemaLenient>
+
 // ---------------------------------------------------------------------------
 // 3. Command Template Syntax — detects special syntax in the template body
 // ---------------------------------------------------------------------------
@@ -62,6 +69,11 @@ export const CommandTemplateFeaturesSchema = z
 
 export type CommandTemplateFeatures = z.infer<typeof CommandTemplateFeaturesSchema>
 
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const CommandTemplateFeaturesSchemaLenient = CommandTemplateFeaturesSchema.strip()
+
+export type CommandTemplateFeaturesLenient = z.infer<typeof CommandTemplateFeaturesSchemaLenient>
+
 // ---------------------------------------------------------------------------
 // 4. Command File — complete parsed command `.md` file
 // ---------------------------------------------------------------------------
@@ -79,3 +91,14 @@ export const CommandFileSchema = z
   .strict()
 
 export type CommandFile = z.infer<typeof CommandFileSchema>
+
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const CommandFileSchemaLenient = z
+  .object({
+    frontmatter: CommandFrontmatterSchemaLenient,
+    body: z.string().min(1),
+    filePath: z.string().min(1),
+  })
+  .strip()
+
+export type CommandFileLenient = z.infer<typeof CommandFileSchemaLenient>

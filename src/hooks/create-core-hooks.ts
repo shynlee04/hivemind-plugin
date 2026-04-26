@@ -2,16 +2,15 @@
  * Core hook factory.
  *
  * Produces the `event`, `messages.transform`, and `shell.env` hooks that
- * route SDK events to the lifecycle manager and delegate message
- * transformation to the existing messages-transform module.
+ * route SDK events to the lifecycle manager.
  *
- * Stripped in 14-01: injection-engine, governance-engine, pending-notifications removed.
+ * Stripped in 14-01: injection-engine, governance-engine removed.
+ * Stripped in 35: notification-handler, messages-transform removed (dead code).
  */
 import { asString, getNestedValue, isObject } from "../lib/helpers.js"
 import { getSessionContinuity, patchSessionContinuity } from "../lib/continuity.js"
 import { replayPendingNotifications } from "../lib/notification-handler.js"
 import { getEventSessionID } from "../lib/session-api.js"
-import { transformMessages } from "./messages-transform.js"
 import type { HookDependencies } from "./types.js"
 
 // ---------------------------------------------------------------------------
@@ -74,7 +73,7 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
         patchSessionContinuity(sessionID, { pendingNotifications: [] })
       }
     } catch {
-      // Best-effort replay
+      // Best-effort replay: keep queued notifications for the next parent event.
     }
   }
 
@@ -114,13 +113,8 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       input: MessagesInput,
       output: MessagesOutput,
     ): Promise<void> => {
-      const sessionID = input.sessionID
-      if (!sessionID) {
-        return
-      }
-      const messages = input.messages ?? []
-      const transformed = transformMessages(messages, sessionID)
-      output.messages = transformed
+      // Messages transformation stripped in Phase 35 — messages-transform.ts deleted
+      output.messages = input.messages ?? []
     },
 
     "shell.env": async (

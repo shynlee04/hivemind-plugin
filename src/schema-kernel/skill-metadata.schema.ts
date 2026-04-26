@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+export const SKILL_METADATA_SCHEMA_VERSION = "1.0.0"
+
 // ---------------------------------------------------------------------------
 // 1. Skill Name — kebab-case identifier for OpenCode skills
 // ---------------------------------------------------------------------------
@@ -39,6 +41,11 @@ export const SkillFrontmatterSchema = z
 
 export type SkillFrontmatter = z.infer<typeof SkillFrontmatterSchema>
 
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const SkillFrontmatterSchemaLenient = SkillFrontmatterSchema.strip()
+
+export type SkillFrontmatterLenient = z.infer<typeof SkillFrontmatterSchemaLenient>
+
 // ---------------------------------------------------------------------------
 // 3. Skill File — complete SKILL.md file representation
 // ---------------------------------------------------------------------------
@@ -64,6 +71,25 @@ export const SkillFileSchema = z
   )
 
 export type SkillFile = z.infer<typeof SkillFileSchema>
+
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const SkillFileSchemaLenient = z
+  .object({
+    frontmatter: SkillFrontmatterSchemaLenient,
+    body: z.string().min(1),
+    directoryName: SkillNameSchema,
+    skillPath: z.string().min(1),
+  })
+  .strip()
+  .refine(
+    (data) => data.frontmatter.name === data.directoryName,
+    {
+      message: "frontmatter.name must match the directory name",
+      path: ["frontmatter", "name"],
+    },
+  )
+
+export type SkillFileLenient = z.infer<typeof SkillFileSchemaLenient>
 
 // ---------------------------------------------------------------------------
 // 4. Skill Discovery Location — where skills can be found (priority order)

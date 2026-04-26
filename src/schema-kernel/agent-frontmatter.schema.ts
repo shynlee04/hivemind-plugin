@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+export const AGENT_FRONTMATTER_SCHEMA_VERSION = "1.0.0"
+
 // ---------------------------------------------------------------------------
 // 1. Agent Name Validation
 // ---------------------------------------------------------------------------
@@ -131,6 +133,11 @@ export const AgentFrontmatterSchema = z
 
 export type AgentFrontmatter = z.infer<typeof AgentFrontmatterSchema>
 
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const AgentFrontmatterSchemaLenient = AgentFrontmatterSchema.strip()
+
+export type AgentFrontmatterLenient = z.infer<typeof AgentFrontmatterSchemaLenient>
+
 // ---------------------------------------------------------------------------
 // 4. Agent File — complete parsed .md file representation
 // ---------------------------------------------------------------------------
@@ -148,3 +155,14 @@ export const AgentFileSchema = z
   .strict()
 
 export type AgentFile = z.infer<typeof AgentFileSchema>
+
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const AgentFileSchemaLenient = z
+  .object({
+    frontmatter: AgentFrontmatterSchemaLenient,
+    body: z.string().min(1),
+    filePath: z.string().min(1),
+  })
+  .strip()
+
+export type AgentFileLenient = z.infer<typeof AgentFileSchemaLenient>

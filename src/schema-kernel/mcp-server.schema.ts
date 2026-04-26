@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+export const MCP_SERVER_SCHEMA_VERSION = "1.0.0"
+
 // ---------------------------------------------------------------------------
 // 1. MCP Server Type — discriminated union tag
 // ---------------------------------------------------------------------------
@@ -31,6 +33,11 @@ export const LocalMCPServerSchema = z
 
 export type LocalMCPServer = z.infer<typeof LocalMCPServerSchema>
 
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const LocalMCPServerSchemaLenient = LocalMCPServerSchema.strip()
+
+export type LocalMCPServerLenient = z.infer<typeof LocalMCPServerSchemaLenient>
+
 // ---------------------------------------------------------------------------
 // 3. Remote MCP Server — HTTP/HTTPS endpoint
 // ---------------------------------------------------------------------------
@@ -44,6 +51,8 @@ const MCPOAuthSchema = z
     scope: z.string().optional(),
   })
   .strict()
+
+const MCPOAuthSchemaLenient = MCPOAuthSchema.strip()
 
 /**
  * Configuration for a remote MCP server accessed via HTTP. The `url`
@@ -62,6 +71,20 @@ export const RemoteMCPServerSchema = z
 
 export type RemoteMCPServer = z.infer<typeof RemoteMCPServerSchema>
 
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const RemoteMCPServerSchemaLenient = z
+  .object({
+    type: z.literal("remote"),
+    url: z.string().url(),
+    headers: z.record(z.string(), z.string()).optional(),
+    oauth: MCPOAuthSchemaLenient.optional(),
+    enabled: z.boolean().optional().default(true),
+    timeout: z.number().int().positive().optional(),
+  })
+  .strip()
+
+export type RemoteMCPServerLenient = z.infer<typeof RemoteMCPServerSchemaLenient>
+
 // ---------------------------------------------------------------------------
 // 4. MCP Server Config — discriminated union
 // ---------------------------------------------------------------------------
@@ -76,6 +99,14 @@ export const MCPServerConfigSchema = z.discriminatedUnion("type", [
 ])
 
 export type MCPServerConfig = z.infer<typeof MCPServerConfigSchema>
+
+/** Lenient variant that strips unknown fields instead of rejecting them. */
+export const MCPServerConfigSchemaLenient = z.discriminatedUnion("type", [
+  LocalMCPServerSchemaLenient,
+  RemoteMCPServerSchemaLenient,
+])
+
+export type MCPServerConfigLenient = z.infer<typeof MCPServerConfigSchemaLenient>
 
 // ---------------------------------------------------------------------------
 // 5. MCP Server Registry — named collection in opencode.json

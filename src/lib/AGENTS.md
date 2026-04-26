@@ -19,6 +19,15 @@ Business logic layer for the harness control plane. All modules are imported by 
 | `concurrency.ts` | ~98 | Keyed semaphore (FIFO queue per model+agent+category key) | `DelegationConcurrencyQueue`, `buildDelegationQueueKey` |
 | `types.ts` | ~155 | Shared types + constants — leaf node, imported by most modules | `VALID_AGENTS`, `VALID_DELEGATION_CATEGORIES`, `TaskStatus`, all type definitions |
 
+### Validation Decisions Impact (Q1-Q6)
+
+| Decision | Library Impact |
+|----------|----------------|
+| **Q1** | Layer 2 runtime taxonomy — MCP tools, file watcher, dependency graph integration points |
+| **Q3** | Session Journal append-only timeline — `continuity.ts` unchanged; new journal module independent |
+| **Q5** | RICH gate tests — all `hm-*` skill quality contract enforced at plugin boundary |
+| **Q6** | State root `.hivemind/` — `continuity.ts`, `delegation-persistence.ts`, and all state writes use `.hivemind/state/` (canonical) |
+
 ## DEPENDENCY GRAPH
 
 ```
@@ -44,14 +53,14 @@ delegation-manager.ts → concurrency.ts + continuity.ts + delegation-persistenc
 
 | Task | Location |
 |------|----------|
-| Change session persistence format | `continuity.ts` — `loadStoreFromDisk()`, `persistStore()`, `normalize*()` functions |
+| Change session persistence format | `continuity.ts` — `loadStoreFromDisk()`, `persistStore()`, `normalize*()` functions (canonical path: `.hivemind/state/` per Q6) |
 | Add a session lifecycle phase | `types.ts` (SessionLifecyclePhase) + `lifecycle-manager.ts` state machine |
 | Change SDK call patterns | `session-api.ts` — typed wrappers, canonical call shapes |
 | Change concurrency model | `concurrency.ts` — `DelegationConcurrencyQueue.acquire()/release()` |
 | Change completion detection | `completion-detector.ts` — `feed()`, `watch()`, `cancel()`, `feedMessageCount()` |
 | Change notification flow | `notification-handler.ts` — `buildNotificationMessage()`, `notifyParentSession()` |
 | Change task status transitions | `task-status.ts` — `VALID_TRANSITIONS` map + `canTransition()` guard |
-| Persist / read delegation records | `delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
+| Persist / read delegation records | `delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` (writes to `.hivemind/state/` per Q6) |
 | Change agent temperature config | `plugin.ts` — `AGENT_DEFAULTS` constant |
 | Change tool restriction for agent | `plugin.ts` — `AGENT_TOOLS` constant |
 | Change circuit breaker threshold | `plugin.ts` — `CIRCUIT_BREAKER_THRESHOLD` constant |
@@ -76,6 +85,7 @@ delegation-manager.ts → concurrency.ts + continuity.ts + delegation-persistenc
 
 ## NOTES
 
+- **Q6 State Root Migration** — All deep module persistence now writes to `.hivemind/state/` (canonical). Legacy `.opencode/state/opencode-harness/` is supported via compatibility bridge during transition. One-way migration, no dual-write.
 - `routing.ts` was DELETED — agent `.md` files define temperature/model/permissions natively
 - `session-completion-tracker.ts` was DELETED — replaced by `CompletionDetector` with stability detection
 - `session-api.ts` no longer has multi-path fallback or completion detection — just typed SDK wrappers

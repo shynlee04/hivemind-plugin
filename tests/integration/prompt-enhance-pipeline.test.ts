@@ -17,7 +17,6 @@ import {
 import { createPromptSkimTool } from "../../src/tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "../../src/tools/prompt-analyze/index.js"
 import { createSessionPatchTool } from "../../src/tools/session-patch/index.js"
-import { transformMessages } from "../../src/hooks/messages-transform.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 
 const mockCtx = {
@@ -74,45 +73,6 @@ describe("schema contracts match tool outputs", () => {
     expect(existsSync(parsed.data.backup_path)).toBe(true)
 
     rmSync(testDir, { recursive: true, force: true })
-  })
-})
-
-// ---------------------------------------------------------------------------
-// Test 3: messages.transform detects triggers and injects context
-// ---------------------------------------------------------------------------
-
-describe("messages.transform detects triggers and injects context", () => {
-  it("returns messages unchanged without trigger", () => {
-    const messages = [{ role: "user", content: "Hello world" }]
-    const result = transformMessages(messages, "ses_test")
-    expect(result).toEqual(messages)
-  })
-
-  it("injects system message when trigger phrase found", () => {
-    const messages = [
-      { role: "user", content: "Please enhance this prompt: fix the scope" },
-    ]
-    const result = transformMessages(messages, "ses_test")
-    expect(result.length).toBe(2)
-    // splice inserts AT firstUserIndex, shifting user message to position 1
-    expect(result[0].role).toBe("system")
-    expect(result[0].content).toContain("## Context")
-    expect(result[0].content).toContain("ses_test")
-    expect(result[1]).toEqual(messages[0])
-  })
-
-  it("handles empty messages array", () => {
-    const result = transformMessages([], "ses_test")
-    expect(result).toEqual([])
-  })
-
-  it("handles messages with no user role", () => {
-    const messages = [
-      { role: "system", content: "You are helpful" },
-      { role: "assistant", content: "OK" },
-    ]
-    const result = transformMessages(messages, "ses_test")
-    expect(result).toEqual(messages)
   })
 })
 
@@ -174,13 +134,9 @@ describe("full pipeline E2E", () => {
     expect(patchParsed.data.section).toBe("## Identified Risks")
     expect(patchParsed.metadata.patch_count).toBe(1)
 
-    // Phase 4: Verify messages.transform hook works with pipeline output
-    const messages = [{ role: "user", content: samplePrompt }]
-    const transformed = transformMessages(messages, "ses_pipeline_test")
-    expect(transformed.length).toBe(2)
-    // System message injected at index 0, user message shifted to index 1
-    expect(transformed[0].role).toBe("system")
-    expect(transformed[1]).toEqual(messages[0])
+    // Phase 4: Verify patch applied
+    const patchedContent = readFileSync(sessionFile, "utf-8")
+    expect(patchedContent).toContain("Risk: scope creep detected")
   })
 })
 
@@ -218,33 +174,5 @@ describe("plugin tools are registered and callable", () => {
       mockCtx,
     )
     expect(analyzeResult).toContain("Analysis complete")
-  })
-})
-
-// ---------------------------------------------------------------------------
-// Test 7: Missing edge cases from review
-// ---------------------------------------------------------------------------
-
-describe("additional edge cases", () => {
-  it("messages.transform ignores trigger in assistant messages", () => {
-    const messages = [
-      { role: "system", content: "You are helpful" },
-      { role: "assistant", content: "Let me enhance this prompt for you" },
-      { role: "user", content: "Build the feature" },
-    ]
-    const result = transformMessages(messages, "ses_test")
-    // Should NOT inject context packet — trigger is in assistant, not user message
-    expect(result).toHaveLength(3)
-    expect(result).toEqual(messages)
-  })
-
-  it("messages.transform detects multiple trigger phrases in user messages", () => {
-    const messages = [
-      { role: "user", content: "Please enhance this prompt and audit it too" },
-    ]
-    const result = transformMessages(messages, "ses_test")
-    expect(result).toHaveLength(2)
-    expect(result[0].role).toBe("system")
-    expect(result[0].content).toContain("Context")
   })
 })

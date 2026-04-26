@@ -374,7 +374,9 @@ export class DelegationManager {
     // R-LC-01: Schedule grace period cleanup for terminal delegations
     this.scheduleGracePeriodCleanup(delegationId)
 
-    // R-NOTIF-01: Notify parent session of terminal state (fire-and-forget)
+    // R-NOTIF-01: Notify parent session of terminal state (fire-and-forget).
+    // Delivery failure queues a durable pending notification that core hooks replay
+    // on parent session lifecycle events.
     void notifyDelegationTerminal(this.client, delegation)
   }
 

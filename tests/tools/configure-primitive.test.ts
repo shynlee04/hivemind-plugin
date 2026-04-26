@@ -463,3 +463,123 @@ describe("mixed-primitive batch", () => {
     expect(result.data.filePath).toContain("agents")
   })
 })
+
+// ---------------------------------------------------------------------------
+// resume action (Acceptance Criterion 5)
+// ---------------------------------------------------------------------------
+
+describe("resume action", () => {
+  const tool = createConfigurePrimitiveTool()
+
+  it("should return error when workflowId is missing", async () => {
+    const result = parseResult(await tool.execute({
+      action: "resume",
+    }, mockCtx))
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("workflowId")
+  })
+
+  it("should return error for non-existent workflow ID", async () => {
+    const result = parseResult(await tool.execute({
+      action: "resume",
+      workflowId: "wf-nonexistent-resume-test",
+    }, mockCtx))
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("not found")
+  })
+
+  it("should return correct workflow state on resume", async () => {
+    const { createWorkflowState, completeCurrentTurn, advanceTurn } = await import(
+      "../../src/lib/config-workflow/workflow-state.js"
+    )
+    const { persistWorkflow } = await import(
+      "../../src/lib/config-workflow/workflow-persistence.js"
+    )
+
+    // Create a workflow, advance to turn 3
+    let state = createWorkflowState({
+      type: "batch-config",
+      targetPrimitives: [
+        { type: "agent", name: "resume-agent" },
+        { type: "command", name: "resume-cmd" },
+      ],
+      scope: "project",
+      mode: "batch-modify",
+    })
+
+    // Complete turns 0-2, advance to turn 3
+    state = completeCurrentTurn(state, { discovered: ["agent-a"] })
+    state = advanceTurn(state, 1)
+    state = completeCurrentTurn(state, { investigated: true })
+    state = advanceTurn(state, 2)
+    state = completeCurrentTurn(state, { collected: true })
+    state = advanceTurn(state, 3)
+
+    persistWorkflow(state)
+
+    // Resume should return the correct state
+    const result = parseResult(await tool.execute({
+      action: "resume",
+      workflowId: state.id,
+    }, mockCtx))
+
+    expect(result.kind).toBe("success")
+    const resume = result.data.resume
+    expect(resume.workflowId).toBe(state.id)
+    expect(resume.currentTurn).toBe(3)
+    expect(resume.currentTurnName).toBe("proposal")
+    expect(resume.completedTurns).toBe(3)
+    expect(resume.totalTurns).toBe(8)
+    expect(resume.canContinue).toBe(true)
+    // Last output should be from turn 2
+    expect(resume.lastOutput).toEqual({ collected: true })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// backward compatibility — no workflow params (Acceptance Criterion 9)
+// ---------------------------------------------------------------------------
+
+describe("backward compatibility (no workflow params)", () => {
+  const tool = createConfigurePrimitiveTool()
+
+  it("should work identically without workflowTurn or workflowId", async () => {
+    // Compile without any workflow params — should produce same result as before
+    const result = parseResult(await tool.execute({
+      action: "compile",
+      primitive: "agent",
+      spec: JSON.stringify({ description: "No workflow params", body: "# NoWorkflow" }),
+      dryRun: true,
+      validate: true,
+      scope: "project",
+      overwrite: false,
+      // Explicitly NOT setting workflowTurn or workflowId
+    }, mockCtx))
+
+    expect(result.kind).toBe("success")
+    expect(result.data.content).toContain("---")
+    expect(result.data.filePath).toMatch(/agents[/\\]no-workflow-params\.md/)
+  })
+
+  it("should not require workflow params for decompile", async () => {
+    const md = `---\ndescription: "Backward compat decompile"\nmode: primary\n---\n\n# Body\n`
+    const result = parseResult(await tool.execute({
+      action: "decompile",
+      primitive: "agent",
+      spec: md,
+    }, mockCtx))
+
+    expect(result.kind).toBe("success")
+    expect(result.data.spec.frontmatter.description).toBe("Backward compat decompile")
+  })
+
+  it("should not require workflow params for list action", async () => {
+    const result = parseResult(await tool.execute({
+      action: "list",
+      scope: "project",
+    }, mockCtx))
+
+    expect(result.kind).toBe("success")
+    expect(result.data.count).toBeGreaterThan(0)
+  })
+})
