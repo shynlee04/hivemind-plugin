@@ -10,7 +10,7 @@ import { SdkDelegationHandler } from "./sdk-delegation.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
 import { spawnDelegatedSession } from "./spawner/session-creator.js"
-import type { DelegationSpawnRequest } from "./spawner/spawner-types.js"
+import { buildSdkSpawnRequest, type DelegateParams, type ValidatedAgent } from "./spawner/spawn-request-builder.js"
 import {
   DEFAULT_SAFETY_CEILING_MS,
   type CommandDelegationParams,
@@ -40,20 +40,6 @@ function deriveRecoveryGuarantee(executionMode: Delegation["executionMode"]): De
   return "non-resumable-after-restart"
 }
 
-type DelegateParams = {
-  parentSessionId: string
-  agent: string
-  prompt: string
-  title?: string
-  safetyCeilingMs?: number
-  workingDirectory?: string
-  worktree?: string
-  provider?: string
-  model?: string
-  category?: string
-}
-
-type ValidatedAgent = { name: string; provider?: string; model?: string; category?: string }
 type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }
 
 export class DelegationManager {
@@ -119,7 +105,7 @@ export class DelegationManager {
 
       const child = await spawnDelegatedSession({
         client: this.client as never,
-        request: this.buildSpawnRequest({ params, agent, workingDirectory }),
+        request: buildSdkSpawnRequest(params, agent, workingDirectory),
       })
 
       const delegation: Delegation = {
@@ -480,26 +466,6 @@ export class DelegationManager {
       model: params.queueContext?.model,
       agent: params.queueContext?.agent,
       category: params.queueContext?.category ?? "command",
-    }
-  }
-
-  private buildSpawnRequest(args: {
-    params: DelegateParams
-    agent: ValidatedAgent
-    workingDirectory: string
-  }): DelegationSpawnRequest {
-    return {
-      parentSessionId: args.params.parentSessionId,
-      agent: args.agent.name,
-      title: args.params.title ?? `Delegation: ${args.agent.name}`,
-      prompt: args.params.prompt,
-      workingDirectory: args.workingDirectory,
-      executionMode: "sdk",
-      safetyCeilingMs: args.params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
-      permissionProfile: {
-        mode: "write-capable",
-        tools: ["read", "edit", "write", "bash", "glob", "grep"],
-      },
     }
   }
 
