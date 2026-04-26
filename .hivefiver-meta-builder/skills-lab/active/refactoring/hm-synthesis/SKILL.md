@@ -22,6 +22,7 @@ Compress research findings into actionable artifacts with tiered reduction. Use 
 | "What patterns does this use?" | Pattern Classification | [references/pattern-classifier.md](references/pattern-classifier.md) |
 | "Is my corpus big enough?" | Corpus Gate | [references/corpus-gate.md](references/corpus-gate.md) |
 | "Export findings that last" | Artifact Export | [references/artifact-export.md](references/artifact-export.md) |
+| "Sources disagree" | Contradiction + Consensus | [templates/contradiction-consensus.md](templates/contradiction-consensus.md) |
 
 <execution_context>
 For reading modes during analysis: load skill "hm-detective"
@@ -33,6 +34,18 @@ Reading modes: SKIM for orientation, SCAN for targeted extraction, DEEP for inte
 ## Three Compression Tiers
 
 Every packing operation selects one tier. Default: Focused.
+
+### Evidence-Backed Synthesis Gate
+
+Before producing a final report, plan, or reusable artifact:
+
+1. Group findings into themes only after each theme has cited evidence.
+2. Fill `templates/contradiction-consensus.md` for conflicts, weak consensus, or unresolved claims.
+3. Add a methodology/limitations section when sources are partial, stale, vendor-biased, or inaccessible.
+4. Separate recommendations from facts; recommendations need rationale and alternatives.
+5. Export provenance: source list, reviewed materials, unresolved gaps, and continuation path.
+
+**BLOCKED rule:** If a high-impact contradiction remains unresolved, the artifact may recommend investigation, but it must not claim a settled answer.
 
 | Tier | Reduction | Content | When |
 |------|-----------|---------|------|
@@ -284,9 +297,9 @@ Extract exact versions from lockfiles and use them for Context7 queries:
 ### Integration with Compression Tiers
 
 - **Tech-stack detection runs at the SCAN tier** (~15% cost): grep for indicator files, read 5-10 key files
-- Results inform which reference files to load during analysis:
-  - Node.js → load `references/node-patterns.md` if available
-  - Rust → load `references/rust-patterns.md` if available
+- Results inform which project-local adapters or documented conventions to load during analysis:
+  - Node.js → inspect package metadata, lockfiles, build config, and existing project docs
+  - Rust → inspect Cargo manifests, feature flags, module exports, and existing project docs
 - Stack data also guides repomix `--include` patterns (e.g., `src/**/*.ts` for TS, `src/**/*.rs` for Rust)
 
 ---

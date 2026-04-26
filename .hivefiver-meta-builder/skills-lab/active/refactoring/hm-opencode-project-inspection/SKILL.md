@@ -30,8 +30,22 @@ Inspect before you act. Discovery first, assumptions never.
 1. Read `references/inspection-checklist.md` — structured audit checklist
 2. Read `references/mcp-tool-matrix.md` — available MCP servers and their use cases
 3. Read `references/ecosystem-structure.md` — labs→symlinks→.opencode pipeline
+4. Read `references/opencode-scope-matrix.md` — official OpenCode config/rules/agents/commands discovery scopes
 
 ## Inspection Protocol
+
+### Official Scope Gate
+
+Before inspecting project-specific meta-concepts, classify every source by official OpenCode scope:
+
+| Surface | Official project location | Global/override location | Inspection requirement |
+|---------|---------------------------|--------------------------|------------------------|
+| Agents | `.opencode/agents/`, `opencode.json.agent` | `~/.config/opencode/agents/` | Check mode, description, tools/permissions, subagent/primary fit |
+| Commands | `.opencode/commands/`, `opencode.json.command` | `~/.config/opencode/commands/` | Check frontmatter/config, `$ARGUMENTS`, positional args, shell output, file references |
+| Config | `opencode.json` near project/git root | `~/.config/opencode/opencode.json`, `OPENCODE_CONFIG`, `OPENCODE_CONFIG_DIR`, managed config | Report precedence and overrides; do not assume project config is final truth |
+| Rules | `AGENTS.md`, fallback `CLAUDE.md`, `opencode.json.instructions` | `~/.config/opencode/AGENTS.md`, fallback `~/.claude/CLAUDE.md` | Report winning local/global files and extra instructions |
+
+This matrix is sourced from official OpenCode docs fetched on 2026-04-25. If docs are older than 48 hours in the working context, refresh before platform claims.
 
 ### Phase 0: Stack Discovery (ALWAYS FIRST)
 
@@ -115,6 +129,7 @@ For repo access:
 | `references/inspection-checklist.md` | Always — structured audit checklist |
 | `references/mcp-tool-matrix.md` | When using MCP servers for inspection |
 | `references/ecosystem-structure.md` | When navigating the Hivefiver ecosystem |
+| `references/opencode-scope-matrix.md` | When classifying official OpenCode discovery and precedence scopes |
 
 ## Cross-References
 

@@ -32,8 +32,29 @@ Delegation without session tracking is fire-and-forget. Always track, always res
 1. Read `references/delegation-envelopes.md` — canonical dispatch envelope templates
 2. Read `references/checkpoint-protocols.md` — checkpoint types, return formats, resume logic
 3. Read `references/wave-execution.md` — wave-based parallel execution patterns
+4. Read `references/handoff-edge-guardrails.md` — metadata and guardrails for every agent boundary
 
 ## Delegation Protocol
+
+## Rich Handoff Lineage
+
+Phase 30 adopts handoff and boundary concepts from OpenAI Agents SDK handoffs/guardrails, AutoGen `HandoffMessage`, and Claude Code subagent lifecycle hooks. Local rule: a delegation is a durable handoff edge with metadata, guardrails, and a return envelope; it is not just a prompt.
+
+### Handoff Metadata Required
+
+Every dispatch or resume envelope must include:
+
+| Field | Purpose |
+|-------|---------|
+| `source_agent` | Who initiated the handoff and owns verification. |
+| `target_agent` | Exact specialist identity or configured agent name. |
+| `handoff_reason` | Why this child is the correct boundary crossing. |
+| `allowed_destinations` | Whether the child may delegate further; empty means no. |
+| `history_policy` | What context is included, filtered, or intentionally omitted. |
+| `expected_return` | Status values, artifacts, evidence, and checkpoint format. |
+| `resume_pointer` | Exact continuation point if interrupted. |
+
+Before accepting a child return, run boundary guardrails: output shape, scope compliance, verification evidence, and unauthorized-tool/delegation detection.
 
 ### The Real Execution Model
 
@@ -71,6 +92,15 @@ When a session disconnects:
 4. Check `.planning/phases/NN-name/SUMMARY.md` for completion status
 5. Re-query plan index to get incomplete plans
 6. Re-execute only incomplete plans
+
+### Handoff Edge Guardrails
+
+| Edge | Guardrail | Reject if |
+|------|-----------|-----------|
+| Parent → child | Envelope has identity, scope, allowed destinations, history policy | Missing field or ambiguous owner |
+| Child → tool | Tool use is within envelope permissions | Tool changes out-of-scope files or hidden state |
+| Child → parent | Return includes evidence and status protocol | DONE without verification evidence |
+| Parent → next child | Prior child accepted and trace recorded | Handoff chain has unresolved blocker |
 
 ### Checkpoint Return Format
 
@@ -150,6 +180,7 @@ echo "$TASK_ID" > .planning/phases/${PHASE}/.last-delegation-id
 | `references/delegation-envelopes.md` | Always — canonical dispatch envelopes |
 | `references/checkpoint-protocols.md` | When implementing checkpoint/resume logic |
 | `references/wave-execution.md` | When executing multi-plan phases with dependencies |
+| `references/handoff-edge-guardrails.md` | When accepting/rejecting a child return or designing a handoff edge |
 
 ## Cross-References
 

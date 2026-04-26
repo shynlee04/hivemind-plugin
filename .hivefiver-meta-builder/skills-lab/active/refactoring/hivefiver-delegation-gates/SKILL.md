@@ -1,6 +1,6 @@
 ---
 name: hivefiver-delegation-gates
-description: Enforce pre-delegation authorization gates before agent dispatch. Use when setting up checkpoint gates, defining capability matrices, or validating agent permissions. NOT for orchestration execution or direct implementation.
+description: Enforce pre-delegation authorization gates before agent dispatch. Use when setting up checkpoint gates, defining capability matrices, validating agent permissions, or approving a handoff boundary. NOT for orchestration execution, direct implementation, or generic task planning.
 version: 1.0.0
 metadata:
   layer: "domain-execution"
@@ -28,20 +28,35 @@ allowed-tools:
 
 
 <files_to_read>
-.opencode/skills/agent-authorization/references/gates.md
+.opencode/skills/hivefiver-delegation-gates/references/gates.md
+.opencode/skills/hivefiver-delegation-gates/references/boundary-guardrails.md
+.opencode/skills/hivefiver-delegation-gates/references/rich-resource-rationale.md
 </files_to_read>
 
 # Agent Authorization Framework
 
 ## First Action
 
-When a user requests agent authorization, immediately load `references/gates.md` for the gate structure and specialist profiles. Run the authorization checklist before proceeding.
+When a user requests agent authorization, immediately load `references/gates.md` for the gate structure and specialist profiles plus `references/boundary-guardrails.md` for child/tool/human boundary checks. Run the authorization checklist before proceeding.
 
 ## Authorization Workflow
 
 ```
 [Task Request] → [Gate 1: Skills Check] → [Gate 2: Specialist Check] → [Gate 3: Capability Match] → [Gate 4: Scope Definition] → [Checkpoint: Human Verify] → [Agent Creation]
 ```
+
+## Phase 30 Boundary Guardrails
+
+Delegation gates are boundary checks, not just pre-flight checklists. Adapted from OpenAI guardrail tripwires and Claude hook lifecycle events, authorization must distinguish:
+
+| Boundary | Required gate evidence |
+|----------|------------------------|
+| Workflow boundary | User intent, loaded skills, specialist availability, capability fit, scope document. |
+| Child boundary | Handoff metadata: source agent, target agent, reason, allowed destinations, expected return. |
+| Tool boundary | Permission/tool profile matches the child scope before mutation. |
+| Human boundary | Checkpoint includes options, required response shape, and resume pointer. |
+
+If any boundary is missing evidence, block before dispatch. Do not rely on final review to catch a bad handoff.
 
 ### Authorization Checklist
 
@@ -51,6 +66,8 @@ Complete each gate before proceeding to the next:
 - [ ] **Gate 2:** At least 2 specialist subagents available for the task domain
 - [ ] **Gate 3:** Task matches specialist capabilities
 - [ ] **Gate 4:** File paths and scope defined
+- [ ] **Boundary:** Handoff metadata and allowed destinations defined
+- [ ] **Boundary:** Tool/permission profile matches scope
 - [ ] **Checkpoint:** Human verification (for blocking gates)
 
 ## Gate Definitions
@@ -128,6 +145,8 @@ Requires explicit user approval before proceeding:
 <task type="checkpoint:human-verify" gate="blocking">
   <description>Agent creation requires human approval</description>
   <prompt>Authorize creation of [agent-type] for [task]?</prompt>
+  <required_response_shape>approve | reject | modify</required_response_shape>
+  <resume_pointer>Continue at Gate 5 after explicit approval</resume_pointer>
   <options>
     <option id="approve">
       <name>Approve</name>
@@ -234,6 +253,8 @@ Choice:
 | **Empty Checkpoints** | Human verify with no options | Provide clear approve/reject/modify options |
 | **Scope Creep** | Gate 4 repeatedly failing | Break task into smaller scoped units |
 | **Wrong Specialist** | Task not matching profile | Use capability matrix to re-select |
+| **Final-Only Guardrail** | Checks happen after child already changed files | Block at workflow, child, tool, and human boundaries before dispatch |
+| **Ambiguous Checkpoint** | Human prompt lacks response shape or resume pointer | Include approve/reject/modify and exact continuation step |
 
 ## Validation
 

@@ -23,6 +23,8 @@ Manage iterative phase loops with entry gates, exit criteria, and checkpoint rec
 
 A **phase loop** iterates on the same document/target with locked paths, applying incremental deltas until stable or max iterations reached.
 
+Phase 30 rich-lineage hardening treats a phase loop as a deterministic workflow controller, not a conversational retry. The loop must persist a durable cursor, evaluate composable termination predicates, and pause at human interrupts with a concrete resume pointer.
+
 ## Loop Definition
 
 ```
@@ -40,8 +42,27 @@ LOOP:
      d. If issue_count >= prev_issue_count → stall detected, escalate
      e. prev_issue_count = issue_count
       f. Re-spawn implementer subagent with critic subagent feedback
-     g. Go to LOOP
+      g. Go to LOOP
 ```
+
+### Durable Phase Cursor
+
+Before every revision, checkpoint, or escalation, persist:
+
+```yaml
+phase_id: "<phase>"
+plan_id: "<plan>"
+locked_paths: ["<paths>"]
+iteration: 1
+prev_issue_count: 5
+last_issue_count: 3
+checker_command: "<validator>"
+last_checker_status: WARNING
+termination_predicates: [passed_marker, info_only, max_iterations, stall_detected, human_interrupt]
+resume_pointer: "run checker after applying delta for issues 1-3"
+```
+
+The cursor may live in `.opencode/state/...`, `.planning/phases/.../STATE.md`, or an end-user project's equivalent state root. Document the adapter path in the phase artifact.
 
 ## Key Semantics
 
@@ -85,6 +106,9 @@ Stall = same or worse issue count after revision attempt.
 - [ ] Stall detection active
 - [ ] Max 3 iterations enforced
 - [ ] Escalation path clear
+- [ ] Durable cursor written before pause/resume/escalation
+- [ ] Termination predicates named in the loop artifact
+- [ ] Human interrupts include payload, required response shape, and resume pointer
 
 ## Agent Integration
 

@@ -26,3 +26,27 @@ for wave in waves; do
 
 done
 ```
+
+## Claim Discipline
+
+Before a plan starts, write a claim record. The claim is not a lock that blocks forever; it is evidence for recovery.
+
+```json
+{
+  "phase": "<phase-id>",
+  "plan": "<plan-id>",
+  "wave": 1,
+  "depends_on": [],
+  "executor": "<agent-or-session-id>",
+  "started_at": "<iso-8601>",
+  "stale_after": "<iso-8601>",
+  "status": "claimed"
+}
+```
+
+Rules:
+
+- A plan with unmet dependencies is not runnable.
+- A plan with a live claim is not runnable by another executor.
+- A stale claim can be taken over only after recording why it is stale.
+- A downstream wave cannot start unless every upstream dependency has a `done` marker with verification evidence.

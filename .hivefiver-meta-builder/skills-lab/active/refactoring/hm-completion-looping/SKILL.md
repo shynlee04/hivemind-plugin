@@ -38,8 +38,21 @@ A task is not done when the subagent says it is done. A task is done when verifi
 
 1. Read `references/verification-checklist.md` — criteria for true completion
 2. Read `references/loop-patterns.md` — loop types and when to use each
+3. Read `references/durable-completion-cursors.md` — resumable cursor schema for interrupted loops
 
 ## Completion Detection
+
+## Rich Guardrail Lineage
+
+Phase 30 hardening adopts three third-party guardrail patterns without adding runtime dependencies:
+
+| Pattern | Source lineage | Local rule |
+|---------|----------------|------------|
+| Durable cursor loop | LangGraph durable execution/checkpointers | Persist loop cursor before any resume claim: task id, iteration, verification command, last gate result, and next resume pointer. |
+| Composable termination predicates | AutoGen termination conditions | Completion requires named predicates, not a single "done" sentence: output, quality, scope, max-iteration, timeout/budget, and external/human stop. |
+| Per-edge guardrail evidence | OpenAI guardrails/tracing | Each child return is a traceable guardrail edge; parent must record which gate accepted or rejected it. |
+
+Load `references/durable-completion-cursors.md` when a loop may span turns, sessions, subagents, or human checkpoints.
 
 ### The Three Gates
 
@@ -56,6 +69,22 @@ A task is not done when the subagent says it is done. A task is done when verifi
 | **Verify-After** | Subagent returns → verify → loop if fail | 5 |
 | **Verify-During** | Subagent works in iterations, verifies each | 10 |
 | **Guardrail** | External monitor watches for premature completion | 3 |
+
+### Durable Cursor Fields
+
+Every loop that can resume later MUST write a cursor before stopping or asking a human:
+
+```yaml
+task_id: "<stable task/session id>"
+iteration: 2
+max_iterations: 5
+verification_command: "<command or manual check>"
+last_gate_result: "output:pass quality:fail scope:pass"
+termination_predicates: [output_gate, quality_gate, scope_gate, max_iteration, external_stop]
+resume_pointer: "rerun quality gate after fixing <specific issue>"
+```
+
+No cursor means no resume claim; restart from a verified checkpoint instead of trusting chat memory.
 
 ## Self-Verification Envelope
 
@@ -109,6 +138,7 @@ If a task has no automated verification at all (no test command, no file existen
 |------|-------------|
 | `references/verification-checklist.md` | Need criteria for true completion |
 | `references/loop-patterns.md` | Need to choose loop type for a task |
+| `references/durable-completion-cursors.md` | Need resumable loop state, evidence spans, or human checkpoint continuity |
 
 ## Cross-References
 

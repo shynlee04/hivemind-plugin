@@ -4,18 +4,9 @@ Structured audit checklist for OpenCode project inspection.
 
 ## Pre-Inspection Setup
 
-```bash
-# Create audit directory
-mkdir -p .temp/audit/$(date +%s)/findings
-
-# Initialize audit log
-cat << 'EOF' > .temp/audit/$(date +%s)/audit-log.md
-# Audit Log
-**Started:** $(date -Iseconds)
-**Scope:** <skills | agents | commands | tools | permissions | all>
-**Auditor:** <agent-name>
-EOF
-```
+- [ ] Choose an audit id and create `.temp/audit/<audit-id>/findings/` with the file tool or a non-interactive `mkdir -p` command.
+- [ ] Record audit metadata in `.temp/audit/<audit-id>/audit-log.md` using the file tool; do not use interactive heredocs in generated command examples.
+- [ ] Read official scope matrix before judging OpenCode agents/commands/config/rules.
 
 ## Phase 1: Skills Audit
 
@@ -53,6 +44,8 @@ EOF
 ## Phase 4: Permissions Audit
 
 - [ ] `opencode.json` exists and is valid JSON
+- [ ] Config precedence is reported: remote, global, `OPENCODE_CONFIG`, project, `.opencode`, inline content, managed config
+- [ ] `OPENCODE_CONFIG_DIR` custom agents/commands/plugins/modes are included if configured
 - [ ] No wildcard permissions at top level
 - [ ] Agent permissions are scoped
 - [ ] MCP server permissions are read-only unless explicitly approved
@@ -60,6 +53,9 @@ EOF
 ## Phase 5: Rules Audit
 
 - [ ] Rules in `.opencode/rules/` are documented
+- [ ] Local `AGENTS.md` vs `CLAUDE.md` precedence is reported
+- [ ] Global `~/.config/opencode/AGENTS.md` vs `~/.claude/CLAUDE.md` fallback is reported when relevant
+- [ ] `opencode.json.instructions` extra instruction files/URLs are listed
 - [ ] Rules are hard boundaries (not suggestions)
 - [ ] No contradictory rules
 

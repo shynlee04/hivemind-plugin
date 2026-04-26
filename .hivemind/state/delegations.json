@@ -1,0 +1,25 @@
+[
+  {
+    "id": "84361fcf-d97e-4e8b-b5cf-320e9d12db11",
+    "parentSessionId": "ses-parent-tool",
+    "childSessionId": "pty:pty-delete-on-terminate",
+    "agent": "command-runner",
+    "status": "error",
+    "createdAt": 1777233922593,
+    "lastMessageCount": 0,
+    "stablePollCount": 0,
+    "nestingDepth": 1,
+    "executionMode": "pty",
+    "workingDirectory": "/Users/apple/hivemind-plugin/.worktrees/harness-experiment",
+    "ptySessionId": "pty-delete-on-terminate",
+    "queueKey": "category:command",
+    "surface": "command-process",
+    "recoveryGuarantee": "best-effort",
+    "explicitCancellation": true,
+    "terminalKind": "cancelled",
+    "resultTruncated": false,
+    "completedAt": 1777233922843,
+    "error": "[Harness] Command cancelled by user",
+    "gracePeriodExpiresAt": 1777234522843
+  }
+]

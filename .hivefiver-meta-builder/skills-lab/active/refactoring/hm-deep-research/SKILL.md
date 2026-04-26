@@ -22,6 +22,9 @@ Conduct version-matched deep research with MCP tools and citation tracking. Use 
 | "Where do I draw the line?" | [Interface Tradeoffs](references/interface-tradeoffs.md) |
 | "Turn findings into features" | [Brainstorming & Shaping](references/brainstorming-shaping.md) |
 | "What kind of research am I doing?" | [Research Patterns](references/research-patterns.md) |
+| "This is high-stakes or exhaustive" | [Sequential Research Gates](workflows/sequential-research-gates.md) |
+| "Which sources should I trust?" | [Source Evaluation Template](templates/source-evaluation.md) |
+| "Sources disagree" | [Contradiction Matrix](templates/contradiction-matrix.md) |
 
 <execution_context>
 For reading modes during investigation: load skill "hm-detective"
@@ -211,6 +214,18 @@ Load [references/research-patterns.md](references/research-patterns.md) for comp
 
 Regardless of archetype, every research task follows this skeleton:
 
+### High-Stakes Sequential Gate
+
+For deep, exhaustive, compliance, architecture, or public-facing research, run the gated sequence before the normal loop. This adapts the strict phase-gate pattern from third-party deep-research packages while keeping the workflow harness-neutral.
+
+1. **Frame gate:** write the research question, scope boundary, decision owner, and stop condition.
+2. **Source gate:** collect at least three relevant sources or document why fewer exist; classify each source with `templates/source-evaluation.md`.
+3. **Deep-read gate:** extract claims into a durable note before synthesizing; do not summarize from snippets alone.
+4. **Contradiction gate:** fill `templates/contradiction-matrix.md` for any competing claims, version differences, or source conflicts.
+5. **Artifact gate:** produce a final artifact with source links, unresolved gaps, and continuation IDs if work may resume later.
+
+**Stop rule:** If a gate output is missing, stop and document `BLOCKED`, not `PASS`.
+
 ### Step 1: Frame the Question
 
 Write one sentence. If you cannot, the question is too broad.
@@ -257,6 +272,17 @@ Merge findings into a coherent answer. Structure depends on archetype:
 ### Step 6: Validate
 
 Every claim needs a source. Key claims need direct evidence (source code, official docs) or 2+ corroborating sources.
+
+### Step 7: Persist Provenance
+
+Before handing off, create or update a research artifact with:
+
+- source list with evaluated authority and freshness
+- contradiction matrix entries and resolution status
+- continuation key (`research_id`, upstream issue, PR, URL, or interaction ID)
+- unresolved gaps that must not be hidden behind confident language
+
+Use [workflows/sequential-research-gates.md](workflows/sequential-research-gates.md) when the artifact will feed implementation, planning, or verification.
 
 ```
 Evidence levels:

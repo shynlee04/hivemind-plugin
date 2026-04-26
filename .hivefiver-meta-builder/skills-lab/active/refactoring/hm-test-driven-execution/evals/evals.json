@@ -1,10 +1,130 @@
 {
   "skill": "hm-test-driven-execution",
+  "version": "1.2.0",
   "trigger_queries": [
-    {"query": "write tests first before implementation", "expected_loaded": true},
-    {"query": "run red green refactor cycle", "expected_loaded": true},
-    {"query": "verify test coverage claims", "expected_loaded": true},
-    {"query": "TDD this feature", "expected_loaded": true},
-    {"query": "manually test this endpoint", "expected_loaded": false}
-  ]
+    {
+      "id": "positive-tdd-cycle",
+      "query": "Use TDD to implement this locked requirement with a RED/GREEN/REFACTOR cycle.",
+      "expected_loaded": true,
+      "assertions": [
+        "Requires a failing RED test before implementation",
+        "Runs GREEN verification before refactor",
+        "Reports fresh command output"
+      ]
+    },
+    {
+      "id": "positive-coverage-verification",
+      "query": "Verify these test coverage claims with fresh command output.",
+      "expected_loaded": true,
+      "assertions": [
+        "Runs or identifies coverage command",
+        "Marks coverage_status honestly",
+        "Does not estimate percentages"
+      ]
+    },
+    {
+      "id": "negative-manual-qa",
+      "query": "Manually click through the UI and tell me if it feels okay.",
+      "expected_loaded": false,
+      "assertions": [
+        "Does not claim TDD for manual-only QA",
+        "May suggest a separate manual verification workflow"
+      ]
+    },
+    {
+      "id": "boundary-ambiguous-requirements",
+      "query": "TDD a better checkout flow, but I do not have acceptance criteria yet.",
+      "expected_loaded": false,
+      "assertions": [
+        "Requires hm-spec-driven-authoring or blocked clarification before RED",
+        "Does not invent requirements"
+      ]
+    },
+    {
+      "id": "positive-bug-prove-it",
+      "query": "Prove this bug with a failing regression test, fix it, and rerun the focused and regression commands.",
+      "expected_loaded": true,
+      "source_pattern": "addyosmani/agent-skills@test-driven-development",
+      "scenario_type": "positive",
+      "assertions": [
+        "Treats bug reproduction as RED evidence",
+        "Runs the same reproduction after the fix",
+        "Records whether a permanent regression test now covers the bug"
+      ]
+    },
+    {
+      "id": "negative-no-batched-red",
+      "query": "Write all failing tests for these five requirements first, then implement them together.",
+      "expected_loaded": true,
+      "source_pattern": "helderberto/skills@tdd",
+      "scenario_type": "negative",
+      "assertions": [
+        "Rejects batched RED unless inseparable and justified",
+        "Enforces one test, minimal code, then next test",
+        "Uses public-interface evidence for each cycle"
+      ]
+    },
+    {
+      "id": "boundary-portable-session-state",
+      "query": "Track this TDD session status in a non-Node project without slash-command wrappers.",
+      "expected_loaded": true,
+      "source_pattern": "jellydn/my-ai-tools@tdd",
+      "scenario_type": "boundary",
+      "assertions": [
+        "Uses portable start/red/green/refactor/coverage/status state vocabulary",
+        "Detects the project's runner instead of assuming npm",
+        "Does not require slash commands or local HiveMind state"
+      ]
+    }
+  ],
+  "rich_source_evidence": [
+    {
+      "source": "addyosmani/agent-skills@test-driven-development",
+      "decision": "adopt/adapt",
+      "reviewed_materials": ["GitHub target directory", "raw SKILL.md"],
+      "local_resources": ["SKILL.md", "references/source-synthesis.md", "references/red-green-refactor.md"]
+    },
+    {
+      "source": "helderberto/skills@tdd",
+      "decision": "adopt",
+      "reviewed_materials": ["skills.sh page", "GitHub package", "principles.md", "examples.md", "reference directory listing"],
+      "local_resources": ["references/red-green-refactor.md", "templates/test-case-template.md", "workflows/tdd-session-workflow.md"]
+    },
+    {
+      "source": "jellydn/my-ai-tools@tdd",
+      "decision": "adapt/reject partial",
+      "reviewed_materials": ["skills.sh page", "GitHub skill directory", "templates/test-template.md"],
+      "local_resources": ["templates/test-case-template.md", "workflows/tdd-session-workflow.md"]
+    }
+  ],
+  "failure_scenarios": [
+    {
+      "id": "invalid_red",
+      "prompt": "The RED test passed before implementation.",
+      "expected_behavior": "STOP, classify RED as invalid, rewrite the test or report feature already exists.",
+      "failure_signals": ["Continues to GREEN", "Claims TDD success", "Keeps the passing test unchanged"]
+    },
+    {
+      "id": "coverage_tooling_absent",
+      "prompt": "Coverage tooling is unavailable but tests pass.",
+      "expected_behavior": "Record coverage_status MISSING or PARTIAL with attempted command evidence.",
+      "failure_signals": ["Invents a percentage", "Claims coverage from test pass", "Omits follow-up"]
+    }
+  ],
+  "stacked_scenario": {
+    "id": "spec-to-progress-to-runtime-truthful-tdd",
+    "skills": ["hm-spec-driven-authoring", "hm-planning-with-files", "hm-test-driven-execution"],
+    "prompt": "Consume locked REQ-* items, persist TDD phase progress, run runtime-truthful RED/GREEN/REFACTOR, and verify coverage when available.",
+    "expected_behavior": [
+      "Rejects ambiguous requirements back to hm-spec-driven-authoring",
+      "Persists red/green/refactor/coverage state through hm-planning-with-files or local fallback",
+      "Uses runtime-truthful tests and marks mock-heavy evidence as limited",
+      "Uses npm run test:coverage, pytest --cov, go test ./... -cover, or honest missing-coverage fallback"
+    ],
+    "failure_signals": [
+      "Writes implementation before RED",
+      "Claims coverage without command output",
+      "Treats mock-heavy tests as full runtime proof"
+    ]
+  }
 }

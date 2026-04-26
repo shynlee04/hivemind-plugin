@@ -40,6 +40,20 @@ Refactoring without tests is restructuring. Restructuring without rollback is re
 
 ## Refactor Taxonomy
 
+## Gated Refactor Protocol
+
+Adapted from GitHub `awesome-copilot` `refactor-plan`: refactors are planned as deterministic, reversible sequences with verification between changes. Do not start by editing code. First map affected files, dependency direction, test coverage, and rollback.
+
+| Gate | Required output | Stop condition |
+|------|-----------------|----------------|
+| Scope map | Files/functions/modules touched and why behavior stays unchanged | Unknown callers or side effects |
+| Sequence | Ordered steps: types/interfaces first, implementation moves second, tests/fixtures last | Steps cannot be independently verified |
+| Safety net | Existing tests or characterization tests before structural moves | No way to detect behavior drift |
+| Rollback | Per-step rollback command or commit boundary | Rollback requires blanket reset/clean |
+| Verification | Command after each step and final integration command | Verification unavailable or unrelated |
+
+Use `references/refactor-runbook.md` for the execution worksheet.
+
 ### Surgical Refactor
 
 | Attribute | Value |
@@ -85,6 +99,8 @@ Structural: Are tests comprehensive?
 - [ ] Each incremental step is committed
 - [ ] Tests pass after each commit
 - [ ] Rollback plan is known (branch name or commit hash)
+- [ ] Affected dependency graph is mapped before moving modules
+- [ ] Verification command is attached to every refactor step
 
 ## Rollback Protocol
 
@@ -92,9 +108,21 @@ Structural: Are tests comprehensive?
 # If tests fail after refactor:
 git diff HEAD~1  # See what changed
 git checkout HEAD~1 -- <affected-files>  # Revert specific files
-# OR
-git reset --hard <last-good-commit>  # Nuclear option
 ```
+
+Avoid blanket reset/clean operations in agent worktrees. Prefer file-specific checkout for files changed in the current refactor step, or revert the step commit when the workflow allows commits.
+
+## RICH Gate Source Decisions
+
+| Source | Decision | Local adaptation |
+|--------|----------|------------------|
+| `github/awesome-copilot` refactor-plan | ADOPT | Safe sequence, affected-file/dependency map, verification between changes, and rollback worksheet. |
+| `addyosmani/agent-skills` incremental implementation | ADAPT | Small reversible steps and characterization tests are used as safety gates. |
+| GitHub agent skill resource model | ADAPT | Runbook and evals carry detailed reusable material instead of bloating SKILL.md. |
+
+## Independence Notes
+
+This skill works in any Git-backed end-user project. If no git repository exists, replace commit rollback with copied-file checkpoints and document that rollback is degraded. Do not assume GSD, BMAD, or HiveMind phase state.
 
 ## Anti-Patterns
 
@@ -111,6 +139,8 @@ git reset --hard <last-good-commit>  # Nuclear option
 |------|-------------|
 | `references/refactor-taxonomy.md` | Choosing between surgical and structural |
 | `references/safety-checklist.md` | Pre-refactor safety verification |
+| `references/refactor-runbook.md` | Step worksheet, dependency map, rollback table |
+| `evals/evals.json` | Trigger and pressure scenarios for no-behavior-change compliance |
 
 ## Cross-References
 

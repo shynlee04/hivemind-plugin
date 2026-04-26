@@ -55,6 +55,8 @@ Research without synthesis is hoarding. Synthesis without evidence is hallucinat
 
 **Output:** `.tech-registry.json` + initial findings
 
+**Gate:** detection output must name scope, search modes used, and any missing/inaccessible areas before research starts.
+
 ### Stage 2: Research (hm-deep-research)
 
 **Purpose:** Gather evidence using version-matched documentation and MCP tools.
@@ -67,6 +69,8 @@ Research without synthesis is hoarding. Synthesis without evidence is hallucinat
 
 **Output:** Structured findings with citations
 
+**Gate:** research output must include source evaluation, contradiction status, and blocked-source notes before synthesis starts.
+
 ### Stage 3: Synthesize (hm-synthesis)
 
 **Purpose:** Compress findings into actionable artifacts.
@@ -77,6 +81,27 @@ Research without synthesis is hoarding. Synthesis without evidence is hallucinat
 ```
 
 **Output:** Final artifact (report, plan, or specification)
+
+**Gate:** synthesis output must include methodology/limitations and link each recommendation to evidence.
+
+### Stage 4: Artifact + Continuation
+
+**Purpose:** Persist lineage so a later agent can resume without rediscovering the chain.
+
+**Required artifact metadata:**
+
+```yaml
+research_chain_id: YYYY-MM-DD-topic-slug
+detect_artifact: path-or-summary
+research_artifact: path-or-summary
+synthesis_artifact: path-or-summary
+sources_reviewed: []
+blocked_sources: []
+contradictions: resolved | unresolved | none
+next_action: verify | implement | ask | block
+```
+
+**Stop rule:** If a required stage artifact is missing, return `BLOCKED` with the missing gate. Do not synthesize or mark complete from partial chain state.
 
 ## When to Use the Full Chain
 
@@ -96,6 +121,7 @@ Research without synthesis is hoarding. Synthesis without evidence is hallucinat
 | **The Hoarder** | Gathers 50 sources but never synthesizes | Cap research time, force synthesis stage |
 | **The Single-Source** | Uses only one tool (e.g., only web search) | Use the full MCP matrix |
 | **The Orphan Artifact** | Produces artifact but never links to source evidence | Every claim in artifact must cite source |
+| **The Ungated Chain** | Starts a later stage while prior stage output is missing | Stop and create the missing stage artifact first |
 
 ## Reference Map
 
@@ -103,6 +129,7 @@ Research without synthesis is hoarding. Synthesis without evidence is hallucinat
 |------|-------------|
 | `references/chain-stages.md` | Detailed stage contracts and handoff formats |
 | `references/tool-matrix.md` | Which MCP tool to use for which research question |
+| `templates/chain-continuation.md` | Artifact lineage and continuation metadata |
 
 ## Cross-References
 

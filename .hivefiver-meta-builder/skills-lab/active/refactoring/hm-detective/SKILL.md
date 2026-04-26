@@ -22,6 +22,7 @@ Investigate codebases using three reading modes: SCAN for targeted extraction, R
 | "What tech stack is this?" | Tech Registry | [references/tech-registry.md](references/tech-registry.md) |
 | "How do I edit safely?" | Surgical Edits | [references/surgical-edits.md](references/surgical-edits.md) |
 | "Where do notes go?" | Document Pipeline | [references/document-pipeline.md](references/document-pipeline.md) |
+| "Is this design assumption true?" | Assumption Verification | [templates/assumption-verification.md](templates/assumption-verification.md) |
 
 ## Three Reading Modes
 
@@ -35,6 +36,18 @@ Every file read costs tokens. Choose the cheapest mode that answers your questio
 | **DEEP** | 100% | Understanding: "need every line" | Read full file, repomix pack + grep |
 
 **Escalation rule**: START → SKIM → (if insufficient) SCAN or SCAN (Tech Stack) → (if still need context) DEEP. Never skip to DEEP.
+
+### Assumption Verification Mode
+
+Use this mode when asked to validate a design assumption, locate an existing pattern, prove whether behavior exists, or recover truth from a large codebase.
+
+1. Write the assumption as a falsifiable claim.
+2. Search for at least two independent evidence paths: definitions, call sites, tests, docs, config, runtime state, or git history.
+3. Classify the result using `templates/assumption-verification.md`: confirmed, discrepancy, addition, missing, or blocked.
+4. If nothing is found, report the search paths and exact queries; do not silently treat absence as proof.
+5. End with an answer-first finding and file:line evidence.
+
+**Not-found rule:** A definitive "not found" requires at least two search strategies and a documented scope boundary.
 
 ### Mode Selection Decision Tree
 

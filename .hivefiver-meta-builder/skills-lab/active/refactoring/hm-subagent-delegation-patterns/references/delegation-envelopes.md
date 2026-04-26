@@ -7,6 +7,15 @@ Canonical dispatch envelope templates for subagent delegation across the Hivemin
 ```
 You are <subagent-role-name>, delegated by <parent-role-name>.
 
+## Handoff Metadata
+source_agent: <parent-role-name>
+target_agent: <subagent-role-name>
+handoff_reason: <why this boundary is correct>
+allowed_destinations: []
+history_policy: <verbatim task only | summarized context | filtered files>
+expected_return: <status + artifacts + evidence + checkpoint shape>
+resume_pointer: <where to continue if interrupted>
+
 ## Identity Announcement
 I am subagent <name>, role <role>. I will not delegate further unless this packet
 explicitly allows it. I will return findings in the handoff report below.
@@ -28,7 +37,20 @@ explicitly allows it. I will return findings in the handoff report below.
 - Status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 - Artifacts: <paths>
 - Findings: <structured list, each with file:line evidence>
+- Guardrail Evidence: <commands/checks run and results>
 - Next-step handoff (if not DONE)
+```
+
+## Boundary Guardrail Block
+
+Add this block when correctness depends on strict scope or chain-of-custody:
+
+```markdown
+## Boundary Guardrails
+- You may touch only: <paths>
+- You may use only: <tools>
+- You may NOT delegate unless `allowed_destinations` lists a target.
+- Before DONE, report: output shape check, scope check, verification check, and any unauthorized edge attempted.
 ```
 
 ## Status Protocol
@@ -90,6 +112,7 @@ I will not delegate further unless explicitly allowed.
 - Completed tasks: <list>
 - Current task: <name>
 - Blockers: <list>
+- Cursor: <task_id, iteration, verification state, resume_pointer>
 
 ## Your Task (Resume From)
 <FULL TASK TEXT>
@@ -99,3 +122,11 @@ I will not delegate further unless explicitly allowed.
 - Artifacts: <paths>
 - Findings: <structured list>
 ```
+
+## Handoff Trace
+
+Record one trace row per edge so a later coordinator can audit lineage:
+
+| source_agent | target_agent | reason | guardrail_result | evidence | next |
+|--------------|--------------|--------|------------------|----------|------|
+| parent | child | domain split | pass/fail | file/command | accept/retry/escalate |

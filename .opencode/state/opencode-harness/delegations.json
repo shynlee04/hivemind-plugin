@@ -1,0 +1,21 @@
+[
+  {
+    "id": "7d4180a9-4672-47f2-9602-c25f35519a8d",
+    "parentSessionId": "ses-parent-session",
+    "childSessionId": "child-session",
+    "agent": "builder",
+    "status": "running",
+    "createdAt": 1777211428807,
+    "safetyCeilingMs": 1800000,
+    "lastMessageCount": 0,
+    "stablePollCount": 0,
+    "lastMessageCountChangeAt": 1777211428807,
+    "nestingDepth": 1,
+    "executionMode": "sdk",
+    "workingDirectory": "/Users/apple/hivemind-plugin/.worktrees/harness-experiment",
+    "queueKey": "agent:builder",
+    "surface": "agent-delegation",
+    "recoveryGuarantee": "resumable",
+    "explicitCancellation": false
+  }
+]

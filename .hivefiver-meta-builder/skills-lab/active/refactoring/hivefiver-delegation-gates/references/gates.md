@@ -4,6 +4,8 @@
 
 Gates are sequential authorization checkpoints that must pass before agent creation. Each gate validates a specific dimension of readiness.
 
+Phase 30 adds boundary guardrails: gates must validate workflow readiness, child handoff metadata, tool/permission boundaries, and human checkpoint resume semantics before dispatch.
+
 ```
 Gate Flow:
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────────┐
@@ -164,6 +166,52 @@ GATE_4_BLOCKED:
     4. Re-run Gate 4 validation
 ```
 
+## Gate 5: Handoff Boundary
+
+**Type:** Handoff metadata check  
+**Blocking:** Yes  
+**Purpose:** Ensure delegation edges are explicit before an agent crosses a boundary.
+
+### Validation Criteria
+
+| Check | Method |
+|-------|--------|
+| Source/target named | Handoff packet names parent and specialist. |
+| Reason documented | Packet explains why this specialist/boundary is correct. |
+| Allowed destinations set | Empty list means no further delegation; non-empty list names exact targets. |
+| Expected return defined | Status, artifact, evidence, and checkpoint format are specified. |
+| Resume pointer present | Packet tells a fresh session where to continue. |
+
+### Failure Response
+
+```yaml
+GATE_5_BLOCKED:
+  status: FAIL
+  reason: Handoff boundary metadata incomplete
+  required: [source_agent, target_agent, handoff_reason, allowed_destinations, expected_return, resume_pointer]
+  action: |
+    1. Complete the handoff metadata block.
+    2. Re-check tool and delegation permissions.
+    3. Re-run authorization gates before dispatch.
+```
+
+## Gate 6: Tool Boundary
+
+**Type:** Permission/scope check  
+**Blocking:** Yes  
+**Purpose:** Prevent a specialist from receiving tools that exceed the authorized scope.
+
+### Validation Criteria
+
+| Check | Method |
+|-------|--------|
+| Tool set matches task | Compare agent tool profile to task operations. |
+| Mutating tools justified | Write/Edit/Bash mutation requires explicit file scope. |
+| Secrets/auth boundary explicit | Human-action/auth checkpoints are declared if needed. |
+| Output guardrail defined | Parent knows how to reject unsafe or out-of-scope results. |
+
+If Gate 6 fails, reduce tools, narrow scope, or return to human decision checkpoint.
+
 ## Checkpoint Types
 
 ### Human-Verification Checkpoint
@@ -179,6 +227,8 @@ GATE_4_BLOCKED:
   <specialist>[Selected specialist profile]</specialist>
   <file_paths>[Target files]</file_paths>
   <prompt>Authorize creation of [agent-type] for [task]?</prompt>
+  <required_response_shape>approve | reject | modify</required_response_shape>
+  <resume_pointer>Resume with Gate 5 after explicit approval</resume_pointer>
   <options>
     <option id="approve">
       <name>Approve</name>

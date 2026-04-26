@@ -24,6 +24,35 @@ LOOP:
 
 ## Phase Flow: Check → Revise → Escalate
 
+## Durable State Contract
+
+A phase loop is resumable only when its state is explicit. Store this contract before asking a human, spawning a reviser, or ending a session:
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| `phase_id` / `plan_id` | yes | Stable identity for recovery. |
+| `locked_paths` | yes | Prevents copy loops and accidental scope drift. |
+| `iteration` / `max_iterations` | yes | Deterministic termination. |
+| `prev_issue_count` / `last_issue_count` | yes | Stall detection survives resume. |
+| `checker_command` | yes | Verification remains executable. |
+| `last_checker_status` | yes | Resume knows whether to revise, verify, or escalate. |
+| `resume_pointer` | yes | Next concrete action for a fresh agent. |
+
+This adapts durable execution concepts from LangGraph and Temporal into a dependency-free local state file. If the project does not use `.planning/`, write to its nearest durable state root and name that adapter path in the handoff.
+
+## Termination Predicates
+
+Evaluate these predicates in order:
+
+1. `passed_marker`: checker emits `PASSED`.
+2. `info_only`: only INFO-level findings remain.
+3. `max_iterations`: iteration cap reached.
+4. `stall_detected`: current issue count is greater than or equal to previous count.
+5. `human_interrupt`: decision/action/verification checkpoint is pending.
+6. `external_stop`: auth, budget, timeout, or coordinator cancellation blocks progress.
+
+Only predicates 1-2 are success exits. Predicates 3-6 are blocked/checkpoint exits that must preserve the cursor.
+
 ### 1. Check (Validator)
 
 The checker examines current output and returns structured results with three fields:

@@ -1,6 +1,6 @@
 ---
 name: hm-user-intent-interactive-loop
-description: This skill should be used when user intent is unclear, sessions span many turns, or requirements need probing before delegating work. Triggers on: "unclear intent", "probe requirements", "long session management", "parent child delegation", "context preservation", "iterative engagement", "clarify before delegating". Maintains context across long sessions and manages parent/child task delegation.
+description: This skill should be used when user intent is unclear enough to require interactive probing before delegation, when a long session needs parent-child context preservation, or when requirements must be confirmed before dispatch. Triggers on: "clarify intent before delegating", "probe requirements", "long session management", "parent child delegation", "context preservation", "iterative engagement". NOT for ordinary one-shot clarification or generic conversation.
 metadata:
   layer: "1"
   role: "front-agent"
@@ -25,11 +25,14 @@ Interactive probing skill for clarifying unclear user intent before delegating w
 
 These gates block phase transitions. They are checked by `scripts/intent-verify.sh`, not by self-assessment.
 
+Phase 30 rich-lineage hardening models every user question or checkpoint as a durable human interrupt. Before waiting for the user, persist intent state, question count, required response shape, and resume pointer. This adapts LangGraph interrupts, AutoGen user handoff, and Temporal reentrant workflow state without adding dependencies.
+
 ### Gate 1: Question Tool Cap
 - **Rule:** Max 3 questions per PROBE phase, via OpenCode `question` tool ONLY.
 - **Enforcement:** Each question increments `.opencode/state/question-count.json`. Script reads count.
 - **Violation:** If count > 3, `intent-verify.sh --probe` returns exit 1. PROBE cannot end.
 - **No bypass:** Plain-text questions count toward the cap. Track them too.
+- **Durability:** Persist the increment before asking the question; a disconnected session must not reset the count.
 
 ### Gate 2: PROBE Stop Conditions (ALL 6 Must Be True)
 Each condition maps to a concrete, checkable artifact:
@@ -75,15 +78,32 @@ After intent appears confirmed:
 4. If exit 1 → read failure details, fix `intent.json`, return to PROBE
 5. Repeat until exit 0
 
+### Gate 5: Durable Human Interrupt
+
+Before any user wait state, write an interrupt record:
+
+```yaml
+interrupt_id: "<stable id>"
+phase: PROBE | UNDERSTAND | PLAN | DELEGATE | UPDATE | DELIVER
+question_count: 2
+payload: "<question or checkpoint text>"
+required_response_shape: "<free text | approve/reject/modify | selected option id>"
+intent_snapshot: "<path to intent.json/progress.md>"
+resume_pointer: "<next validation or loop phase>"
+```
+
+If the interrupt record is missing, do not claim the loop is resumable.
+
 ---
 
 <files_to_read>
-.opencode/skills/user-intent-interactive-loop/references/01-question-protocols.md
-.opencode/skills/user-intent-interactive-loop/references/02-context-preservation.md
-.opencode/skills/user-intent-interactive-loop/references/03-brainstorming-patterns.md
-.opencode/skills/user-intent-interactive-loop/references/04-long-session-management.md
-.opencode/skills/user-intent-interactive-loop/scripts/intent-verify.sh
-.opencode/skills/user-intent-interactive-loop/scripts/verify-hierarchy.sh
+.opencode/skills/hm-user-intent-interactive-loop/references/01-question-protocols.md
+.opencode/skills/hm-user-intent-interactive-loop/references/02-context-preservation.md
+.opencode/skills/hm-user-intent-interactive-loop/references/03-brainstorming-patterns.md
+.opencode/skills/hm-user-intent-interactive-loop/references/04-long-session-management.md
+.opencode/skills/hm-user-intent-interactive-loop/references/06-durable-human-interrupts.md
+.opencode/skills/hm-user-intent-interactive-loop/scripts/intent-verify.sh
+.opencode/skills/hm-user-intent-interactive-loop/scripts/verify-hierarchy.sh
 .opencode/get-shit-done/references/thinking-models-execution.md
 </files_to_read>
 
@@ -150,6 +170,7 @@ Front-agent skill for iterative user engagement. The Agent stays in control, pro
 | Session exceeds 50+ turns or hits compaction | → `references/04-long-session-management.md` |
 | Need to decide: execute vs delegate vs clarify | → Core Pattern below |
 | User says "keep going" or "stay on track" | → This skill, full loop |
+| Waiting for user input may span turns/sessions | → `references/06-durable-human-interrupts.md` |
 
 ---
 
@@ -162,6 +183,8 @@ PROBE → UNDERSTAND → PLAN → DELEGATE → UPDATE → DELIVER
 ### Phase 1: PROBE — Extract Intent
 
 Ask targeted questions using the OpenCode `question` tool. **Maximum 3 questions total across entire PROBE phase.**
+
+Before each question, append the durable human interrupt record to the session state location (`.opencode/state/` by default, or the end-user project's documented adapter path).
 
 | Question Type | Purpose | Example |
 |---------------|---------|---------|

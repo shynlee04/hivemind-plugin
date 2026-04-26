@@ -1,6 +1,6 @@
 ---
 name: hm-opencode-platform-reference
-description: Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models. Use when needing OpenCode agents, SDK, plugin hooks, tool definitions, permission model, MCP server config, or platform architecture. NOT for general coding tasks.
+description: Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models. Use when needing OpenCode-specific agents, SDK, plugin hooks, tool definitions, permission model, MCP server config, or platform architecture. NOT for general coding tasks or non-OpenCode framework lookup.
 metadata:
   layer: "3"
   role: "reference"
@@ -15,6 +15,10 @@ allowed-tools:
 ## Overview
 
 Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models. Use when building plugin integrations, configuring agents, defining tools, or understanding platform architecture. Contains reference files for all platform capabilities.
+
+## Source Freshness Gate
+
+OpenCode platform behavior is version-sensitive. Before making a platform claim, prefer the current official docs or the bundled reference file if it has been refreshed within the project's freshness window. For this Phase 29 pass, official docs for agents, commands, config, and rules were fetched on 2026-04-25 and used to update the scope matrix below.
 
 ## Reference Files
 
@@ -42,6 +46,27 @@ All files in `references/` directory:
 | opencode-troubleShooting.md | Troubleshooting guide |
 | repomix-opencode.md | Full OpenCode source code packed by repomix (markdown format) |
 | repomix-opencode.xml | Full OpenCode source code packed by repomix (XML format, use with attach_packed_output) |
+
+## Official Scope Matrix
+
+| Surface | Official project location | Overrides / global locations | Key notes |
+|---------|---------------------------|------------------------------|-----------|
+| Agents | `.opencode/agents/*.md`, `opencode.json.agent` | `~/.config/opencode/agents/`, `OPENCODE_CONFIG_DIR` | Primary agents handle main sessions; subagents are invoked by primary agents or `@mention`; markdown filename becomes agent name. |
+| Commands | `.opencode/commands/*.md`, `opencode.json.command` | `~/.config/opencode/commands/`, `OPENCODE_CONFIG_DIR` | Supports `$ARGUMENTS`, positional args, shell output injection, file references, `agent`, `subtask`, and `model`. |
+| Config | `opencode.json` in project / nearest git root | remote config, global config, `OPENCODE_CONFIG`, `.opencode`, `OPENCODE_CONFIG_CONTENT`, managed config | Configs merge; later precedence overrides conflicting keys. |
+| Rules | project `AGENTS.md`, fallback `CLAUDE.md`, `opencode.json.instructions` | global `AGENTS.md`, fallback `~/.claude/CLAUDE.md` unless disabled | First local/global file match wins; configured instructions are combined. |
+
+## RICH Gate Source Decisions
+
+| Source | Decision | Local adaptation |
+|--------|----------|------------------|
+| OpenCode official docs | ADOPT | Scope matrix and freshness gate align reference claims with current platform docs. |
+| GitHub agent skill resource model | ADAPT | This is intentionally reference-heavy; resource value is the indexed reference corpus, not extra scripts. |
+| Local repomix OpenCode pack | ADAPT | Use for source-code confirmation when official docs are insufficient. |
+
+## Independence Notes
+
+This reference skill must work outside this repository. Avoid local project paths in guidance except examples marked as examples. Verify actual project state through official OpenCode discovery locations before reporting configuration truth.
 
 ## Key Composition Patterns
 

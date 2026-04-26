@@ -2,14 +2,124 @@
 
 ## Project Overview
 
-## NOTICE BOARD
 
-- Please use the builtin `task` tool for delegation; `delegate-task` is on maintainance.
+## NON-NEGOTIABLE RULES
 
-- Do no use `delegate-task` unless explicitly requested by me (the user).
+- design patterns and must be obeyed strictly according to the architecture of the project.
 
+- files creation and structure must be registered and keep track - we love our codetree systematically structured and we **DO Registered** folders and subfolders with `.gitkeep` 
+
+- folders must be created in a way that is easy to navigate and understand, following the best practice of this harness. Folders must be registered with gitkeep files to ensure they are tracked by git. 
+
+- code file must JSDOC (Run JSDOC skill) documented with clear descriptions, parameters, return values, and examples. All functions and classes must be documented.
+
+- The front facing agents must process high-level workflows, validate dependencies of tasks across sessions through faces
+
+- The front facing agents must delegate to suagents of specialist; front facing agents are not allowed to execute any tasks
+
+- The front facing agents are ones converse with USERS and must know the high-level tasks flow, following strict validations, gatekeeping, and coordination of the partificating frameworks
+
+- When delegating to agents these are the list of agents that must learn and delegate to the correct ones. When delegate to subagents make sure setting up strict guardrails, boundaries, success metrics, making sure they are awared that they are subagents and fulfill the tasked within boundaries and without any deviation ans seriously go through gatekeeping.
+
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-advisor-researcher.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ai-researcher.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-assumptions-analyzer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-code-fixer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-code-reviewer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-codebase-mapper.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-debug-session-manager.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-debugger.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-classifier.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-synthesizer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-verifier.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-writer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-domain-researcher.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-eval-auditor.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-eval-planner.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-executor.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-framework-selector.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-integration-checker.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-intel-updater.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-nyquist-auditor.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-pattern-mapper.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-phase-researcher.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-plan-checker.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-planner.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-project-researcher.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-research-synthesizer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-roadmapper.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-security-auditor.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-auditor.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-checker.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-researcher.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-user-profiler.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-verifier.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-prompter.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hivefiver-agent-builder.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hivefiver-command-builder.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hivefiver-orchestrator.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hivefiver-skill-author.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hivefiver-tool-builder.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hivefiver.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/intent-loop.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/meta-synthesis-agent.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/orchestrator.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/phase-guardian.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/prompt-analyzer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/prompt-repackager.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/prompt-skimmer.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/researcher.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/risk-assessor.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/spec-verifier.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/context-mapper.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/context-purifier.md
+
+- For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
+
+- The front facing agents must keep track, monitor, make sure not a single validation, verification, review steps are skips, planning , audit and verification must following format of the participated framework with honest verification and prevention of regressions. 
+
+- **all agents** at every turn (after PER USER's prompt, **even mid-session**, after each turn), entries, shift of workflows there should be matching SKILLS that you must load, load and reload of suitable skills for the task, select ones with framework consistencies. Do not miss loading SKILLS. SKILLS are extremely important
+
+
+- - **all agents** : do not confuse between the project as the harness which you are building so that users can run it with OpenCode under their projects VS. your environment of works -> meaning there are assumptions that ARE NOT ALLOWED to interprete as this sole environment but must be as wider scopes, in terms of how different projects' states, tasks types, langues, frameworks and use cases.
+
+
+## SKILLS TO WORKFLOW ROUTER
+**Important guidelines**
+
+- To load best set of skills agents must know if you are front-facing or being delegated as subagents; knowing your hierarchy of tasks (looking at the meta data marked as `#USER` to confirm it is from the human user, meaning you are front-facing agent, otherwise subagents) 
+
+- consider loading new skill(s) (not always but once **intents** of human users and/or **workflows**, **tasks** shifted this order is a **must**)
+
+- **subagents** (know your agent **domain** by looking at description; analyze **task** to fetch `specilist` skills) fetch skills belong  `how-to-implement` and/or `specialist` classifications.
+
+- **orchestrator/coordinator agents** : loading `how-to-delegate`, `how-to-process/loop/iterative`, `guardrails, gatekeeping, context,`  skills classifications. For complex tasks this group may need to load `outer-cycle-how-to-implement` skills  
+
+- **respecting framework `oneness`** : it is if you are using `gsd` skill sets - pick them first - then pick another only when `gsd` skill sets lack the `domain-specific` or `task-specialist` that you find the superior ones. 
+
+### **going from greater cycles to the inner cycles** for skills to coordinate and orchestrate
+
+- **brainstorming, user-intent discussion** always make sure to understand, think twice load set helping to get clear user-intent through QA and discussion to prevent regressions or conflicts
+
+- **research, investigate, synthesis** do not skip research load `hm-deep-research` - `hm-detectice` (if need to learn about the sector of codebase) and
+
+- **write new code:** load `clean-code` skill
+
+- **debugging:** load `gsd` debug skills and `systematic-debug` skill
+
+- **planning and implementing** must load set of spec-driven and authentic tdd skills
+
+- **iterative loop** coordinating skills and gatekeeping at correct set loop til completione
+
+- **quality gatekeeping** must go through cycles of code-review, validation, verification, then integration gatekeeping. making sure to trace of regression
 
 ## IMPORTANT UPDATE TO ALL AGENTS
+
+- when lost -> access real-time eventracker at `/.hivemind/event-tracker/*.md , *.json - list/glob first - then look for the correct session id -use hm-detective skill to investigate the sessions
+
+- **important tracking path for delegation:**
+.hivemind/state/session-continuity.json
+.hivemind/state/delegations.json 
 
 - If the agents recieve GSD command, all they must is to act following it. THE COMMAND SUPERSEDE ALL ASSUMPTIONS AND LOADING SKILLS OTHER, BECAUSE THE COMMAND OF GSD IS THE SKILL
 
@@ -32,13 +142,10 @@ This is not negotiable. This is not optional. You cannot rationalize your way ou
 
 This override default system prompt behavior, but **user instructions always take precedence**:
 
-1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
-2. **Superpowers skills** — override default system behavior where they conflict
-3. **Default system prompt** — lowest priority
 
 
 
-HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm package (`opencode-harness`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails.
+HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm package (`opencode-harness`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. The project has progressed through 31 phases covering runtime architecture, delegation revamp, skills quality, and planning documentation refresh. Phase 26 completed the quality synthesis that established HMQUAL-01 through HMQUAL-08 as the project-level quality contract for all `hm-*` skills.
 
 **This is NOT a skill-pack project.** Skills are one component. The product is the harness: a TypeScript plugin that wires tools + hooks into OpenCode with zero business logic in the plugin layer.
 
@@ -48,6 +155,7 @@ HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm packa
 |------|------|-------|
 | **Hard Harness** (npm package) | Tools (write-side), Hooks (read-side), Plugin (assembly), Shared (leaf) | `src/` |
 | **Soft Meta-Concepts** (user-configurable) | Skills, Agents, Commands, Rules, Permissions | `.opencode/` |
+| **Internal State** (deep module persistence) | Session journals, execution lineage, runtime state, vector/graph memory | `.hivemind/` |
 
 ### Runtime features this project delivers
 
@@ -110,7 +218,8 @@ schema-kernel/                # Zod schemas for prompt-enhance pipeline
 
 tests/lib/                     # Unit tests (vitest, globals: true)
 tests/tools/                   # Tool-focused unit tests
-.opencode/                 # Soft meta-concepts (skills, agents, commands)
+.opencode/                 # Soft meta-concepts (skills, agents, commands) — NO state storage
+.hivemind/               # Internal deep module state (journals, lineage, runtime state) — canonical per Q6
 ```
 
 ### Dependency rules (non-negotiable)
@@ -176,7 +285,7 @@ tests/tools/                   # Tool-focused unit tests
   - `opencode-harness` → `./dist/index.js`
   - `opencode-harness/plugin` → `./dist/plugin.js`
 - Prepack runs build automatically: `npm pack` / `npm publish`
-- Runtime state path: `.opencode/state/opencode-harness/` (outside package source)
+- Runtime state path: `.hivemind/state/` (canonical per Q6; legacy `.opencode/state/opencode-harness/` supported via compatibility bridge during migration)
 
 ---
 
@@ -188,11 +297,30 @@ tests/tools/                   # Tool-focused unit tests
 - 22 skills in `.opencode/skills/`: 5 core (hm-meta-builder, hm-coordinating-loop, hm-planning-with-files, hivefiver-use-authoring-skills, hm-user-intent-interactive-loop) + 17 extended (hivefiver-delegation-gates, hivefiver-command-dev, hivefiver-custom-tools-dev, hm-opencode-project-audit, hm-deep-research, hm-detective, hm-synthesis, hivefiver-context-absorb, hm-agent-composition, hivefiver-agents-and-subagents-dev, hm-command-parser, harness-delegation-inspection, hm-omo-reference, hm-opencode-non-interactive-shell, hm-opencode-platform-reference, session-context-manager, hm-phase-loop)
 - 13 commands in `.opencode/commands/`: 6 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack, hm-opencode-project-audit)
 
+### State Root Separation (Q6)
+
+`.opencode/` is **ONLY** for OpenCode primitives (agents, commands, skills, rules, permissions). **No internal runtime state** is stored here. All Hivemind deep module state (journals, lineage, runtime state, graph/vector memory) writes to `.hivemind/` at project root. This prevents corruption by other plugins or user dependencies.
+
 ### Canonical Skill Location
 
 `.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-hm-meta-builder/skills-lab/active/refactoring/` and is reflected in `.opencode/skills/` via directory-level symlink.
 
 IDE-managed directories (`.trae/skills/`, `.windsurf/skills/`, `.codex/skills/`, `.github/skills/`) are **third-party sync artifacts**, not project deliverables. They are gitignored and must never be committed. `.claude/skills/` does not exist in this repository.
+
+---
+
+## Locked Validation Decisions (Q1-Q6)
+
+Six architectural decisions locked 2026-04-25 as the foundation for Phases 27-30 and all future work. Source: `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`
+
+| Decision | Description |
+|----------|-------------|
+| **Q1** | Hybrid + Spec-Driven Automated Runtime Detection — deep codemap, file watcher, MCP tools, dependency graph; Layer 2 taxonomy |
+| **Q2** | Artifact-Focused Sidecar — Next.js 15 + `@json-render/react`, reads `.hivemind/` and `.planning/`, READ-ONLY for canonical state |
+| **Q3** | Session Journal as Complement + Time-Machine — append-only event timeline, independent of continuity.ts |
+| **Q4** | MVP = 5 of 8 memory categories; Post-MVP = 3 with explicit gates |
+| **Q5** | Full RICH gate required — 0 of 25 skills pass today is honest status; no threshold lowering |
+| **Q6** | `.hivemind/` is internal state root; `.opencode/` is ONLY for OpenCode primitives — one-way migration |
 
 ---
 

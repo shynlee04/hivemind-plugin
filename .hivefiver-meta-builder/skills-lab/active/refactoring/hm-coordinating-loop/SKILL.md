@@ -35,10 +35,11 @@ This skill is LAYER 3 in the loading chain (coordination). Before any action:
 **If hierarchy check fails → STOP. This skill requires planning context that is not available.**
 
 <files_to_read>
-.opencode/skills/coordinating-loop/references/01-handoff-protocols.md
-.opencode/skills/coordinating-loop/references/02-sequential-vs-parallel.md
-.opencode/skills/coordinating-loop/references/03-parent-child-cycles.md
-.opencode/skills/coordinating-loop/references/04-ralph-loop-integration.md
+.opencode/skills/hm-coordinating-loop/references/01-handoff-protocols.md
+.opencode/skills/hm-coordinating-loop/references/02-sequential-vs-parallel.md
+.opencode/skills/hm-coordinating-loop/references/03-parent-child-cycles.md
+.opencode/skills/hm-coordinating-loop/references/04-ralph-loop-integration.md
+.opencode/skills/hm-coordinating-loop/references/05-edge-guardrails.md
 .opencode/get-shit-done/references/thinking-models-execution.md
 </files_to_read>
 
@@ -64,6 +65,19 @@ Central coordination hub for multi-agent workflows. Manages hand-offs, execution
 ```
 ASSESS → DECIDE MODE → DISPATCH → MONITOR → INTEGRATE → VERIFY → (loop or exit)
 ```
+
+## Rich Coordination Guardrails
+
+Phase 30 hardening treats each coordination step as a deterministic workflow edge with traceable guardrails:
+
+| Pattern | Local adaptation |
+|---------|------------------|
+| Deterministic workflow agent | The coordinator owns the state machine and max loop count; child agents do not decide global completion. |
+| Per-edge guardrails | Run checks at parent→child, child→tool, child→parent, and integration boundaries, not only final VERIFY. |
+| Handoff metadata | Every envelope includes source, target, handoff reason, allowed destinations, history policy, expected return, and resume pointer. |
+| Trace/evidence span | Every accepted or rejected child return is written to findings/progress with command/file evidence. |
+
+Use `references/05-edge-guardrails.md` when coordinating delegated work with more than one agent/tool boundary.
 
 ### Step 1: ASSESS — Build the Task Inventory
 
@@ -111,6 +125,18 @@ Every child Agent receives a **Task Envelope** with exactly 5 required sections:
 | **Expected Output** | Concrete deliverables with format and acceptance criteria |
 | **Verification** | Exact command or check the child must run and report |
 
+Add the Phase 30 handoff metadata block to each envelope:
+
+```yaml
+source_agent: "<coordinator>"
+target_agent: "<child>"
+handoff_reason: "<domain/file boundary>"
+allowed_destinations: []
+history_policy: "<what context is included/filtered>"
+expected_return: "DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED + artifacts + evidence"
+resume_pointer: "<where to continue after interruption>"
+```
+
 **Before dispatching each child:**
 1. Write the envelope to `.coordination/<session>/children/<child-id>/envelope.md`
 2. Run `bash scripts/validate-envelope.sh <session> <child-id>` — **blocks if any of 5 sections missing**
@@ -125,14 +151,15 @@ bash scripts/coordination-check.sh <session> --pre-dispatch
 ### Step 4: MONITOR — Check at Gates, Not Continuously
 
 1. After each child returns — verify output matches expected format.
-2. **Ralph-loop integration:** After each child returns:
+2. Run edge guardrails before accepting the child result: scope, output shape, verification evidence, unauthorized delegation/tool use.
+3. **Ralph-loop integration:** After each child returns:
    ```bash
    bash scripts/run-ralph-loop.sh <session> <child-id>
    ```
    - If validator passes → child accepted
    - If validator fails → fix issues → re-dispatch child → loop (max 3 cycles)
    - If 3 cycles fail → escalate to user with summary
-3. **Gate G3 enforcement:** Run `bash scripts/check-gate.sh <session> G3`. **Blocks if any child orphaned.**
+4. **Gate G3 enforcement:** Run `bash scripts/check-gate.sh <session> G3`. **Blocks if any child orphaned.**
 
 ### Step 5: INTEGRATE — Merge Results
 

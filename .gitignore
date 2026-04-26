@@ -24,16 +24,20 @@ npm-debug.log*
 .windsurf/
 .codex/
 .github/skills/
+.claude/
+.codexdisabled/
+!.hivemind/
+!package-lock.json
 
 # Runtime state
-.opencode/state/
+!.opencode/state/
 .harness/
 
 # Hivemind runtime state (per Q6 decision — canonical state root)
-.hivemind/state/
-.hivemind/event-tracker/*.json
-.hivemind/event-tracker/*.md
-.hivemind/journal/*.jsonl
+!.hivemind/state/
+!.hivemind/event-tracker/*.json
+!.hivemind/event-tracker/*.md
+!.hivemind/journal/*.jsonl
 
 # Temporary files
 *.bak

@@ -30,7 +30,7 @@ Systematic debugging workflow that maintains investigation state across context 
 ## The Iron Law
 
 ```
-Fix the cause, not the symptom. Verify the fix, not the hypothesis.
+NO FIXES BEFORE ROOT-CAUSE INVESTIGATION. Fix the cause, not the symptom. Verify the fix, not the hypothesis.
 ```
 
 # Systematic Debugging
@@ -40,6 +40,22 @@ Fix the cause, not the symptom. Verify the fix, not the hypothesis.
 2. Read `references/evidence-framework.md` — how to collect and rank evidence
 
 ## The Debug Protocol
+
+### Stop-the-Line Entry Gate
+
+When debugging starts, stop feature work and preserve the failing evidence before changing code. This follows the third-party gated discipline pattern from `NousResearch/hermes-agent` systematic debugging and `addyosmani/agent-skills` debugging recovery guidance: reproduce, localize, reduce, prove root cause, guard recurrence, then resume.
+
+**Required evidence before a fix:**
+
+| Evidence | Required proof |
+|----------|----------------|
+| Failure capture | Exact command, input, stack trace, log, UI path, or user action that fails |
+| Boundary trace | Where data/control enters, transforms, and exits the failing subsystem |
+| Competing hypotheses | At least two plausible causes considered, with one selected for falsification |
+| Root-cause prediction | “If this cause is true, then this experiment will show X” |
+| Recurrence guard | Regression test, monitor, invariant, or documented manual verification that catches repeat failure |
+
+If this evidence does not exist, stay in `REPRODUCE`, `GATHER`, or `ISOLATE`; do not enter `FIX`.
 
 ### Step 1: Reproduce
 
@@ -94,6 +110,10 @@ PREDICTION: <if hypothesis is true, then X will happen when Y>
 
 **Gate:** If fix passes but regression tests fail, revert and reconsider.
 
+### Step 6: Guard Recurrence
+
+After verification, add the smallest durable guard that would have caught the bug: regression test, assertion, structured log, invariant check, or runbook note. If the guard is intentionally deferred, write the reason and owner into the debug session state.
+
 ## Persistent Debug State
 
 Across context resets, persist:
@@ -111,6 +131,18 @@ Across context resets, persist:
 
 Store in `.debug/<bug-id>.md`.
 
+## RICH Gate Source Decisions
+
+| Source | Decision | Local adaptation |
+|--------|----------|------------------|
+| `NousResearch/hermes-agent` systematic-debugging | ADOPT | “No fixes before root-cause investigation” is now an explicit iron-law clause. |
+| `addyosmani/agent-skills` debugging-and-error-recovery | ADAPT | Stop-the-line, preserve evidence, root-cause fix, and recurrence guard mapped into the debug state machine. |
+| GitHub agent skill resource model | ADAPT | Heavy details remain in references/evals; SKILL.md stays as the trigger and gate index. |
+
+## Independence Notes
+
+Default state path is `.debug/<bug-id>.md` in the end-user project. If a project already has a debug/journal convention, use that convention and record the path in the session state. Do not assume GSD, BMAD, or this repository's `.planning/` layout.
+
 ## Anti-Patterns
 
 | Anti-Pattern | Detection | Correction |
@@ -126,6 +158,7 @@ Store in `.debug/<bug-id>.md`.
 |------|-------------|
 | `references/debug-state-machine.md` | Structured protocol for each debug phase |
 | `references/evidence-framework.md` | How to collect, rank, and test evidence |
+| `evals/evals.json` | Trigger and pressure scenarios for root-cause gate compliance |
 
 ## Cross-References
 

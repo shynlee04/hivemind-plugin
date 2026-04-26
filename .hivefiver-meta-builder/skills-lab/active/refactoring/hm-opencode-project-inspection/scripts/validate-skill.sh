@@ -6,7 +6,7 @@
 set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SKILL_DIR="${1:-$SCRIPT_DIR/..}"
+readonly SKILL_DIR="$(cd "${1:-$SCRIPT_DIR/..}" && pwd)"
 readonly SKILL_FILE="$SKILL_DIR/SKILL.md"
 
 ERRORS=()

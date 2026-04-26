@@ -1,0 +1,1810 @@
+{
+  "version": 1,
+  "updatedAt": 1777212369850,
+  "sessions": {
+    "ses-parent-session": {
+      "sessionID": "ses-parent-session",
+      "promptParams": {},
+      "metadata": {
+        "status": "running",
+        "description": "Recovered parent session notification queue",
+        "delegation": null,
+        "constraints": [],
+        "pendingNotifications": [
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 56s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 176931,
+            "metadata": {
+              "delegationId": "4ac1e8ab-bdcc-44c9-bd01-99596a0b8eb6",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777018766208,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 46s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 106649,
+            "metadata": {
+              "delegationId": "e6e13dac-015e-4e7f-ac75-a0edda6eb128",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777064521373,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 27.2s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 27152,
+            "metadata": {
+              "delegationId": "3892a041-a9f5-419a-aa77-5faa8fa9366c",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777064549057,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 16s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 136653,
+            "metadata": {
+              "delegationId": "b414a661-5b90-4551-a0a8-f89395de4026",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777064686102,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 12m 7s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 727425,
+            "metadata": {
+              "delegationId": "3ce51201-be36-47fc-a8f0-b150873eb2de",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777065413927,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 42s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 102958,
+            "metadata": {
+              "delegationId": "0a4d333c-6e6d-4fab-88f6-bef5ed3b28dc",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777065517304,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 7m 33s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 453887,
+            "metadata": {
+              "delegationId": "341db06b-e1a4-42a2-b89c-0d601c58d90e",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777065971494,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 5m 54s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 354916,
+            "metadata": {
+              "delegationId": "069dfeda-400c-476d-abf2-b3b7a66e981a",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777066326834,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 27m 4s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 1624619,
+            "metadata": {
+              "delegationId": "9b2171c2-c47d-4434-8cd5-449051fdff63",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777068307041,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 51.0s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 51005,
+            "metadata": {
+              "delegationId": "3806f09b-cdf8-46cd-a900-b88531f7a48b",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777070653654,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 6m 11s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 371918,
+            "metadata": {
+              "delegationId": "8ccf2776-ea07-46d3-bc4f-8bc426872a98",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777071025931,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 14m 24s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 864397,
+            "metadata": {
+              "delegationId": "871854d5-450f-4ab0-aba3-8e0024ea2861",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777071890899,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 4m 5s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 245384,
+            "metadata": {
+              "delegationId": "b2176b50-5272-4f2a-b9b6-ff015f109668",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777072136672,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 10m 9s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 609570,
+            "metadata": {
+              "delegationId": "f925c2f1-2023-400f-a432-8f4f705dda5c",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777072746720,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 37s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 157579,
+            "metadata": {
+              "delegationId": "d3566855-c8bb-4108-8e13-3949b1e7ec37",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777072904821,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 45s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 105197,
+            "metadata": {
+              "delegationId": "54a96505-ee15-4c77-9a29-2908b757bf57",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777073010397,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 181647,
+            "metadata": {
+              "delegationId": "2ada158c-9750-43a3-a5e6-6d1d3f7ecbef",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777073192451,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 3s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 63483,
+            "metadata": {
+              "delegationId": "4449daf4-2976-48dd-abfe-69758a8e527a",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777073256387,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 12m 11s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 731845,
+            "metadata": {
+              "delegationId": "2544ca61-b73c-4e71-95f2-f42ab5718112",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777073988614,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 8m 34s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 514951,
+            "metadata": {
+              "delegationId": "9ef29a81-40a0-4c1f-ba4f-4b7c9cabd1e8",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777074504192,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 32m 5s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 1925811,
+            "metadata": {
+              "delegationId": "e2577a14-7d29-43b3-adde-8b6b9e94ad34",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777076430578,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 5m 31s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 331418,
+            "metadata": {
+              "delegationId": "ae7da6d3-7a22-45a3-9ef1-74855568b0c5",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777076762379,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 3s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 183652,
+            "metadata": {
+              "delegationId": "a813e15b-6fe4-4b1d-8b2b-a0bfed3e12de",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777076946571,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 0s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 120022,
+            "metadata": {
+              "delegationId": "5c10e523-238a-49a9-8717-63a260c0c161",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777077067009,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 9m 13s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 553114,
+            "metadata": {
+              "delegationId": "c021d717-8ac7-405f-ad25-5b0214bb8351",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777077620614,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 9m 59s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 599792,
+            "metadata": {
+              "delegationId": "fc45ca67-0c3a-4c2b-a32e-a191a83b4c8d",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777078220876,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 6m 16s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 376909,
+            "metadata": {
+              "delegationId": "534a76cd-f52b-4a18-ac3f-03ac518cb1da",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777083335913,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 6m 0s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 360793,
+            "metadata": {
+              "delegationId": "6a1182b7-7ac6-4cf0-9c80-7e15ce485eca",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777083697145,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 6m 43s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 403918,
+            "metadata": {
+              "delegationId": "1ddfaf5e-6955-43f3-9d0a-b316081af919",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777084101669,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 21s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 81611,
+            "metadata": {
+              "delegationId": "2241ee02-7545-47ab-ab60-b5500b4845aa",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777084183882,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 61236,
+            "metadata": {
+              "delegationId": "94d1fefe-a124-46c3-bf7d-9e14815ea0bd",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777084381724,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 15m 14s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 914312,
+            "metadata": {
+              "delegationId": "288daad4-f1ad-42e2-a2b0-b55ea83c733a",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777085296626,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 5m 24s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 324808,
+            "metadata": {
+              "delegationId": "9fde0128-9175-4e12-85b8-db83fef0fd25",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777085622033,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 4m 10s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 250708,
+            "metadata": {
+              "delegationId": "12f98b61-d5c3-497e-bc5e-06927d19a77a",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777085873405,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 7m 7s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 427511,
+            "metadata": {
+              "delegationId": "93f1d0e8-13d3-41af-9348-bab9a13a7587",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777086301473,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 208ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 208,
+            "metadata": {
+              "delegationId": "50d6bf6b-525b-45a2-8b89-75471f4b7744",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777086301729,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 10s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 130202,
+            "metadata": {
+              "delegationId": "0d9c4d4e-9cf7-4b99-9f32-0d1b0d478a74",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777086432160,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 5m 3s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 303157,
+            "metadata": {
+              "delegationId": "c930f423-c47c-471a-8252-4bc7ab1c3089",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777086856380,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 164ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 164,
+            "metadata": {
+              "delegationId": "657d29e1-0a0c-4ba1-8188-27bd76b363fb",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777086856585,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 44.0s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 43956,
+            "metadata": {
+              "delegationId": "10e3ec1a-b236-45d9-a247-42ac8e5f2dbb",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777086900778,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 26s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 206394,
+            "metadata": {
+              "delegationId": "1b77e3c7-81e6-42d2-bf3b-d35d3db4de69",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777087107699,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 9m 30s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 570637,
+            "metadata": {
+              "delegationId": "08066ee9-eb14-4087-85bf-131bb1a0b922",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777087678937,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 145ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 145,
+            "metadata": {
+              "delegationId": "b9ba1746-5086-441f-ae25-7c2464d6bce9",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777087679129,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 16m 51s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 1011814,
+            "metadata": {
+              "delegationId": "5ba6746a-46b3-4683-8e5f-15d3165ed256",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777088691160,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 5m 11s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 311102,
+            "metadata": {
+              "delegationId": "51782d05-ecea-48db-b88d-e03a104048f7",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777089002835,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 7m 1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 421958,
+            "metadata": {
+              "delegationId": "1de44a43-4c8c-4421-b7ae-f4efeef5a034",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777093427250,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 129ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 129,
+            "metadata": {
+              "delegationId": "f2a6cc94-0ac9-485b-a736-3b631079cbaf",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777093427432,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 59.8s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 59785,
+            "metadata": {
+              "delegationId": "528b0c0f-94ec-4243-8939-338271fb30eb",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777093487487,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 169ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 169,
+            "metadata": {
+              "delegationId": "925d8fc2-6c13-4f52-8389-00fe775ad9f6",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777093487698,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 9m 7s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 547711,
+            "metadata": {
+              "delegationId": "ba8b1b99-b025-4294-b183-94773fc6acf8",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109006265,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 35.2s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 35226,
+            "metadata": {
+              "delegationId": "ea4eea12-c5d4-42f6-afab-098157c9dea7",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109042203,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 33.6s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 33615,
+            "metadata": {
+              "delegationId": "f10621fc-e2a4-4cc8-91b9-e8e6d6a56f91",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109076405,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 21s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 201405,
+            "metadata": {
+              "delegationId": "cff93a93-d20f-4bf2-88eb-9eaf95956429",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109278419,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 18s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 138267,
+            "metadata": {
+              "delegationId": "c49b34e3-86ef-4e2f-9e63-8c10facafbc0",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109417362,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 8s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 128274,
+            "metadata": {
+              "delegationId": "879176a7-dde2-4181-9e5e-2893d244b7be",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109546266,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 246ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 246,
+            "metadata": {
+              "delegationId": "45416ed2-7963-43c0-b774-8da37f824b39",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109546562,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 54s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 174248,
+            "metadata": {
+              "delegationId": "66b95de2-2abd-41b0-9a39-48740f68827d",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109721003,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 121748,
+            "metadata": {
+              "delegationId": "ca10df8b-bb80-499a-875f-bd6a92bdd73e",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777109843330,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 31m 3s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 1863959,
+            "metadata": {
+              "delegationId": "396f6196-861d-4959-bd96-825a5b0c1812",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777119172652,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1h 9m. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 4141884,
+            "metadata": {
+              "delegationId": "d17530ce-99c9-4d90-9cc8-7e9a7680c68f",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777139750608,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 195ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 195,
+            "metadata": {
+              "delegationId": "0d9ef868-5f0d-497e-bf93-0fbdf76a0b34",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777143206801,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 12m 52s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 772864,
+            "metadata": {
+              "delegationId": "94b81df4-c4dd-449d-aaea-6c1612fcab66",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777143979919,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 13m 43s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 823502,
+            "metadata": {
+              "delegationId": "a2bfd65d-d1c4-4259-9459-3e0162d46772",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777145211224,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 44s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 104109,
+            "metadata": {
+              "delegationId": "b1e633cd-836f-4d3f-be08-4e25189e4ae5",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777145315822,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 61180,
+            "metadata": {
+              "delegationId": "2f56cee0-da26-46b0-a465-902cfad573d5",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777145377606,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 185ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 185,
+            "metadata": {
+              "delegationId": "c937768f-b895-4350-8636-f1a78df1be3f",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777146196189,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 2m 12s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 132514,
+            "metadata": {
+              "delegationId": "53f8ce54-b78b-47bf-9ca8-8062260e72ac",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777146329052,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 26s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 206773,
+            "metadata": {
+              "delegationId": "1013ca9d-111e-4ab7-9059-d866db30eab7",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777146536683,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 35.7s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 35724,
+            "metadata": {
+              "delegationId": "404d811a-f33d-4832-bbdd-b35db80b1533",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777147944678,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 18.1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 18103,
+            "metadata": {
+              "delegationId": "ea9f24f2-a0fb-470c-a4be-c2b0f4e22108",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777148069321,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 14.8s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 14778,
+            "metadata": {
+              "delegationId": "8f2c5cff-1b3f-4995-bb92-6cdb55dcb6fd",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777148288902,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 54.9s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 54896,
+            "metadata": {
+              "delegationId": "6333ae7b-7f68-4b1f-918e-b1f189ea641c",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777148344669,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 23.7s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 23694,
+            "metadata": {
+              "delegationId": "89435810-9fb6-4af8-af63-c53ae635066e",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777149100018,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 361ms. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 361,
+            "metadata": {
+              "delegationId": "8d0b32c5-1ede-46c1-a8dd-9fa49f9f18f3",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777149100494,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 9s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 189666,
+            "metadata": {
+              "delegationId": "5022a9e3-3086-498d-a1c1-835909827feb",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777149290329,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 4s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 184966,
+            "metadata": {
+              "delegationId": "5adc4d36-98cc-4576-880c-a99e97cdea05",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777150078520,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 6m 16s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 376224,
+            "metadata": {
+              "delegationId": "ca63f7f7-e5aa-45f1-9937-d7396dc94713",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777150456373,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 34.3s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 34304,
+            "metadata": {
+              "delegationId": "643a8705-e9ae-4fd2-a5ea-051990391f77",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777150491849,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 40s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 100903,
+            "metadata": {
+              "delegationId": "5de3c7b6-4132-442f-83fb-8434a8912e9c",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777150594435,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 19s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 79931,
+            "metadata": {
+              "delegationId": "566e191a-3563-4e84-ad6d-3d2b47bf5af3",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777151065096,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 4.1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 4107,
+            "metadata": {
+              "delegationId": "ee6a1da6-9c9f-44cb-9064-9cbf57d82fa9",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777151070292,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 13.4s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 13399,
+            "metadata": {
+              "delegationId": "288592fc-3abf-4438-855c-3e2669afe8d8",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777151084559,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 24.5s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 24548,
+            "metadata": {
+              "delegationId": "4ad6df8a-ac4f-4311-892c-f43f735966dc",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777151167333,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 40.3s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 40289,
+            "metadata": {
+              "delegationId": "514c8afb-0460-4382-9d29-7942dbe637b1",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777151209536,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 9.3s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 9279,
+            "metadata": {
+              "delegationId": "b73afde1-fbbc-4791-a1ce-f686ed4c7c55",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777151397758,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 3m 42s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 222423,
+            "metadata": {
+              "delegationId": "ca2c8073-f2ae-44da-8a1a-b5c9dc1ee5b8",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777151620609,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 23.9s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 23882,
+            "metadata": {
+              "delegationId": "322e7cbf-70f9-47d0-af2c-321b71e6a04a",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777210613757,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 29.1s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 29108,
+            "metadata": {
+              "delegationId": "5f0b81e1-7345-404c-964a-e99c1485ba52",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777210711227,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 32.6s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 32594,
+            "metadata": {
+              "delegationId": "74239e2d-42af-4c6a-808f-570137ae1193",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777210927910,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 23s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 83612,
+            "metadata": {
+              "delegationId": "1d43999e-744d-4fb2-9247-6d2a20745b7b",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777211329113,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 1m 43s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 103396,
+            "metadata": {
+              "delegationId": "a6e68122-4743-46e3-a017-3a40d3561804",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777211833812,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-session",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 32.9s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-session",
+            "duration": 32900,
+            "metadata": {
+              "delegationId": "14cdcf5f-fd6b-4817-8594-3f1c3bee01af",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777211901735,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 15.6s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 15575,
+            "metadata": {
+              "delegationId": "7876779c-dac8-4c3a-a468-714a6f8b41f3",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777212103635,
+            "delivered": false
+          },
+          {
+            "sessionID": "child-real-queue",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Child session not found on recovery",
+            "resultPreview": "Child session not found on recovery",
+            "briefSummary": "Delegated work finished with terminal state error after 25.7s. Summary preview: Child session not found on recovery",
+            "outputLink": "session://child-real-queue",
+            "duration": 25723,
+            "metadata": {
+              "delegationId": "af097e42-b0cb-459c-93b4-ac3d76c0ccaa",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Child session not found on recovery"
+            },
+            "createdAt": 1777212369848,
+            "delivered": false
+          }
+        ],
+        "updatedAt": 1777212369849
+      }
+    }
+  },
+  "governance": {
+    "rules": [],
+    "violations": [],
+    "updatedAt": 1777018766200
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "loading_order": [
+    "use-authoring-skills"
+  ],
+  "skills": {
+    "use-authoring-skills": {
+      "status": "loaded",
+      "loaded_at": "2026-04-25T12:56:46Z",
+      "order": 1
+    }
+  },
+  "last_updated": "2026-04-25T12:56:46Z"
+}

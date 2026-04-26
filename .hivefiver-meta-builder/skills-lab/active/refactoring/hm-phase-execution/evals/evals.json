@@ -1,9 +1,25 @@
 {
   "skill": "hm-phase-execution",
+  "rich_gate": {
+    "pattern": "Pattern 2 - file-backed execution state machine",
+    "sources": ["garagon/nanostack conductor", "github/awesome-copilot create-implementation-plan"]
+  },
   "trigger_queries": [
     {"query": "execute multi-plan phase with waves", "expected_loaded": true},
     {"query": "recover from mid-phase interruption", "expected_loaded": true},
     {"query": "run wave-based parallel execution", "expected_loaded": true},
     {"query": "do this one task now", "expected_loaded": false}
+  ],
+  "pressure_scenarios": [
+    {
+      "name": "stale-claim-recovery",
+      "prompt": "A previous executor stopped mid-wave and left a claim file. Continue the phase.",
+      "must_do": ["inspect claim", "verify stale evidence before takeover", "do not rerun done plans", "write recovery artifact"]
+    },
+    {
+      "name": "downstream-block",
+      "prompt": "Wave 2 is ready but one Wave 1 plan failed validation.",
+      "must_do": ["block downstream wave", "write failure evidence", "return recovery action"]
+    }
   ]
 }

@@ -41,6 +41,19 @@ A phase is not a todo list. A phase is a directed acyclic graph of plans grouped
 
 ## Phase Execution Protocol
 
+## File-Backed Execution State Machine
+
+Adapted from Nanostack conductor's claim/dependency/artifact/stale-lock pattern, but mapped to HiveMind/OpenCode project conventions. Use durable state files so a later agent can recover without trusting chat history.
+
+| State artifact | Purpose | Notes |
+|----------------|---------|-------|
+| `.opencode/state/opencode-harness/phase-execution/<phase>/claims/<plan>.json` | Records active executor, started time, wave, dependencies | Atomic creation preferred; never overwrite another active claim without stale evidence |
+| `.opencode/state/opencode-harness/phase-execution/<phase>/artifacts/<plan>.md` | Handoff summary, files changed, validations, blockers | Written before checkpoint or completion |
+| `.opencode/state/opencode-harness/phase-execution/<phase>/done/<plan>.json` | Completion marker with verification evidence | Created only after plan verification passes |
+| `.opencode/state/opencode-harness/phase-execution/<phase>/failures/<plan>.json` | Failure/blocker evidence | Blocks downstream waves until resolved |
+
+Do not import `.nanostack/` paths. If the end-user project has a different state root, use it and document the adapter path in the artifact.
+
 ### Step 1: Load Plan Index
 
 ```bash
@@ -58,6 +71,10 @@ ls .planning/phases/${PHASE}/
 ```
 
 **Gate:** If validation fails, STOP. Fix plans before executing.
+
+### Step 2.5: Claim Runnable Plans
+
+Before dispatching a plan in a wave, create a claim record with executor identity, command/session id if available, dependency list, and stale-after timestamp. If claim creation fails because another live executor owns it, skip that plan and report the owner. If a claim is stale, record the stale evidence before taking over.
 
 ### Step 3: Execute Wave by Wave
 
@@ -83,6 +100,8 @@ Wave N: Final plans â†’ parallel dispatch
 | Plan returns NEEDS_CONTEXT | Provide context; re-dispatch same plan |
 | All plans succeed | Proceed to verification |
 
+Every failure writes `failures/<plan>.json` with the failed command, output path, affected dependencies, and next recovery action. Never let a downstream wave consume a failed or missing upstream artifact.
+
 ### Step 5: Verify and Commit
 
 ```bash
@@ -106,6 +125,25 @@ If interrupted mid-phase:
 # Re-execute only incomplete plans
 # Do NOT re-execute completed plans
 ```
+
+Recovery order:
+
+1. Trust `done/*.json` markers with verification evidence.
+2. Inspect `failures/*.json` and return blockers before executing downstream waves.
+3. Inspect active claims; only resume/take over if the stale-after time has passed or the coordinator explicitly authorizes recovery.
+4. Reconstruct missing artifacts from commits/files only when state markers are absent, and label reconstruction as degraded evidence.
+
+## RICH Gate Source Decisions
+
+| Source | Decision | Local adaptation |
+|--------|----------|------------------|
+| `garagon/nanostack` conductor | ADAPT | File-backed claims, dependency checks, artifacts, and stale-lock recovery mapped to `.opencode/state/opencode-harness/`. |
+| `github/awesome-copilot` create-implementation-plan | ADAPT | Deterministic plan identifiers and measurable validation criteria are reinforced in wave artifacts. |
+| GitHub agent skill resource model | ADAPT | State template and evals are bundled resources; SKILL.md remains the execution index. |
+
+## Independence Notes
+
+This skill does not require GSD. For non-GSD projects, treat any directory of plan files as the phase graph and store execution state under `.opencode/state/opencode-harness/phase-execution/` unless the project provides a safer local state root.
 
 ## Anti-Patterns
 
@@ -140,6 +178,8 @@ If two plans in the same wave touch the same file, they cannot run in parallel â
 |------|-------------|
 | `references/wave-protocol.md` | Grouping plans into waves |
 | `references/checkpoint-recovery.md` | Recovering from mid-phase interruption |
+| `references/execution-state-template.md` | Claim/artifact/done/failure state schema |
+| `evals/evals.json` | Trigger and pressure scenarios for wave recovery |
 
 ## Cross-References
 

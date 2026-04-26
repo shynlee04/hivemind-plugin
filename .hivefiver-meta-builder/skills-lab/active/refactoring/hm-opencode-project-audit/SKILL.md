@@ -60,6 +60,7 @@ harness-audit/
 1. Run `bash scripts/compile-bundle.sh` — compiles all 7 subagent profiles
 2. Run `bash scripts/validate-skill.sh` — validates structure before dispatch
 3. Read project context: `opencode.json`, `AGENTS.md`
+4. Apply the official OpenCode scope matrix before deciding what exists or is missing: agents in `.opencode/agents` or `opencode.json.agent`, commands in `.opencode/commands` or `opencode.json.command`, config overrides from `OPENCODE_CONFIG`/`OPENCODE_CONFIG_DIR`, and rules precedence from `AGENTS.md`/`CLAUDE.md` plus configured instructions.
 
 ## Execution Flow
 
@@ -134,6 +135,19 @@ delegate-task (run_in_background: true)
 |-------|-------------|----------|
 | `target_repo` | Path to OpenCode project | Yes (defaults to cwd) |
 | `scope` | full | No |
+
+## RICH Gate Source Decisions
+
+| Source | Decision | Local adaptation |
+|--------|----------|------------------|
+| OpenCode official agents docs | ADOPT | Audit checks primary/subagent mode, tool permissions, markdown/JSON definition surfaces. |
+| OpenCode official commands docs | ADOPT | Audit includes command frontmatter/config, `$ARGUMENTS`, positional args, shell output, file references, and `subtask`. |
+| OpenCode official config/rules docs | ADOPT | Audit reports config precedence, `OPENCODE_CONFIG_DIR`, managed config, AGENTS/CLAUDE precedence, and configured instruction files. |
+| GitHub agent skill resource model | ADAPT | Bundled profiles/scripts are retained as professional resources; audit outputs remain fact reports. |
+
+## Independence Notes
+
+This skill audits arbitrary OpenCode projects. It must not require HiveMind/GSD/BMAD paths. If a target project lacks `.opencode/`, inspect official global/config override locations before reporting absence.
 
 ## Outputs
 

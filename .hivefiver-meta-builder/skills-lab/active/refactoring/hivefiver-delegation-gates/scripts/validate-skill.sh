@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate-skill.sh — Validates agent-authorization skill structure
+# validate-skill.sh — Validates hivefiver-delegation-gates skill structure
 # Exits non-zero if validation fails
 
 set -e
@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 ERRORS=0
 
-echo "=== Skill Validation: agent-authorization ==="
+echo "=== Skill Validation: hivefiver-delegation-gates ==="
 echo ""
 
 # Check 1: SKILL.md exists
@@ -28,8 +28,8 @@ fi
 # Check 2: Frontmatter validation
 if [[ -f "$SKILL_DIR/SKILL.md" ]]; then
     # Check for required frontmatter fields
-    if ! grep -q "^name: agent-authorization" "$SKILL_DIR/SKILL.md"; then
-        echo -e "${RED}✗ Frontmatter missing 'name: agent-authorization'${NC}"
+    if ! grep -q "^name: hivefiver-delegation-gates" "$SKILL_DIR/SKILL.md"; then
+        echo -e "${RED}✗ Frontmatter missing 'name: hivefiver-delegation-gates'${NC}"
         ERRORS=$((ERRORS + 1))
     else
         echo -e "${GREEN}✓ Frontmatter has correct name${NC}"
@@ -53,7 +53,7 @@ if [[ -f "$SKILL_DIR/SKILL.md" ]]; then
     
     # Check for specific trigger keywords
     TRIGGER_COUNT=0
-    for phrase in "authorize agent creation" "create agent guardrails" "specialist agent profile" "checkpoint gate" "authorization gate"; do
+    for phrase in "checkpoint gate" "authorization gate" "capability matrices" "validating agent permissions"; do
         if echo "$DESCRIPTION" | grep -qi "$phrase"; then
             TRIGGER_COUNT=$((TRIGGER_COUNT + 1))
         fi
@@ -89,9 +89,16 @@ else
     ERRORS=$((ERRORS + 1))
 fi
 
+if [[ -f "$SKILL_DIR/references/boundary-guardrails.md" ]]; then
+    echo -e "${GREEN}✓ references/boundary-guardrails.md exists${NC}"
+else
+    echo -e "${RED}✗ references/boundary-guardrails.md not found${NC}"
+    ERRORS=$((ERRORS + 1))
+fi
+
 # Check 4: SKILL.md uses imperative form (not declarative)
 if [[ -f "$SKILL_DIR/SKILL.md" ]]; then
-    DECLARATIVE_COUNT=$(grep -c "this skill\|the agent should\|is designed to" "$SKILL_DIR/SKILL.md" 2>/dev/null || echo 0)
+    DECLARATIVE_COUNT=$(grep -c "this skill\|the agent should\|is designed to" "$SKILL_DIR/SKILL.md" 2>/dev/null || true)
     if [[ $DECLARATIVE_COUNT -gt 2 ]]; then
         echo -e "${YELLOW}⚠ SKILL.md has $DECLARATIVE_COUNT declarative phrases (recommend: <3)${NC}"
     else
@@ -101,12 +108,21 @@ fi
 
 # Check 5: Gate definitions present in SKILL.md
 if [[ -f "$SKILL_DIR/SKILL.md" ]]; then
-    GATE_COUNT=$(grep -c "^### Gate" "$SKILL_DIR/SKILL.md" || echo 0)
+    GATE_COUNT=$(grep -c "^### Gate" "$SKILL_DIR/SKILL.md" || true)
     if [[ $GATE_COUNT -ge 4 ]]; then
         echo -e "${GREEN}✓ SKILL.md has $GATE_COUNT gate definitions${NC}"
     else
         echo -e "${YELLOW}⚠ SKILL.md has only $GATE_COUNT gate definitions (expected: 4)${NC}"
     fi
+fi
+
+if [[ -f "$SKILL_DIR/SKILL.md" ]]; then
+    for token in "Boundary Guardrails" "Handoff Metadata" "resume pointer"; do
+        if ! grep -qi "$token" "$SKILL_DIR/SKILL.md" "$SKILL_DIR/references/gates.md" "$SKILL_DIR/references/boundary-guardrails.md"; then
+            echo -e "${RED}✗ Missing Phase 30 token: $token${NC}"
+            ERRORS=$((ERRORS + 1))
+        fi
+    done
 fi
 
 # Check 6: Specialist profiles documented

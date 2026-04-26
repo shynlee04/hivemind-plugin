@@ -25,9 +25,18 @@ NEVER run a command that waits for user input. The shell has no TTY. Interactive
 
 1. **Assume `CI=true`**: Act as if running in a headless CI/CD pipeline.
 2. **No Editors/Pagers**: `vim`, `nano`, `less`, `more`, `man` are BANNED.
-3. **Force & Yes**: Always preemptively supply "yes" or "force" flags.
+3. **Force & Yes with care**: Supply `--yes`, `--non-interactive`, or equivalent flags for safe installers/tooling; do not use force flags for destructive operations unless the user explicitly authorized that exact operation.
 4. **Use OpenCode Tools**: Prefer `Read`/`Write`/`Edit` tools over shell manipulation (`sed`, `echo`, `cat`).
 5. **No Interactive Modes**: Never use `-i` or `-p` flags that require user input.
+6. **Danger tier before execution**: Classify commands as ALLOW, WARN, or BLOCK before running. Adapted from Nanostack guard tiers, but this skill reports safety facts and leaves final judgment to the controlling agent/user.
+
+## Danger Tier Matrix
+
+| Tier | Examples | Action |
+|------|----------|--------|
+| ALLOW | `npm test -- --runInBand`, `npx --yes <tool> --help`, `git --no-pager log -n 5` | Run with timeout/non-interactive flags when relevant |
+| WARN | package installs, long-running servers, Docker pulls, network fetches | Add timeout/background strategy and explain side effects |
+| BLOCK | `git clean`, `git reset --hard`, force push, recursive deletion, production database commands, unreviewed remote-code execution | Do not run unless explicit user instruction overrides and project rules allow it |
 
 ## Reference Map
 
@@ -37,6 +46,8 @@ NEVER run a command that waits for user input. The shell has no TTY. Interactive
 | `references/env-variables.md` | Need environment variable configurations |
 | `references/cognitive-patterns.md` | Need cognitive optimization patterns (BAD vs GOOD framing) |
 | `references/prompt-handling.md` | Need workaround patterns for stubborn prompts |
+| `evals/evals.json` | Trigger and pressure scenarios for shell safety compliance |
+| `references/source-evidence.md` | RICH source replacement and bundled-resource scorecard |
 
 ## Cognitive & Behavioral Standards
 
@@ -56,6 +67,19 @@ NEVER run a command that waits for user input. The shell has no TTY. Interactive
 | **The REPL** | Runs `python`, `node` without `-c` or script | Use `python -c "code"` or `python script.py` |
 | **The Git Pager** | Runs `git log` without `--no-pager` | Always add `--no-pager` or `-n <count>` |
 | **The Silent Hang** | No timeout on potentially interactive commands | Wrap with `timeout 30 ...` as last resort |
+| **The Unsafe Force** | Adds `--force` to destructive commands to avoid prompts | Stop; force is not a substitute for authorization |
+
+## RICH Gate Source Decisions
+
+| Source | Decision | Local adaptation |
+|--------|----------|------------------|
+| `garagon/nanostack` guard | ADAPT | ALLOW/WARN/BLOCK danger tiers are adapted as a reasoning aid, not copied as blocking governance scripts. |
+| Hermes OpenCode search evidence | REPLACED | Raw Hermes OpenCode skill source was not inspectable in this workspace, so it is not cited as reviewed evidence. Replacement evidence is official OpenCode command/platform docs plus local repomix OpenCode source pack; see `references/source-evidence.md`. |
+| OpenCode official docs | ADAPT | Commands may inject shell output; command authors must keep injected commands non-interactive and bounded. |
+
+## Independence Notes
+
+This skill applies to arbitrary shell-capable OpenCode projects. It must not assume GNU-only flags on macOS/BSD; prefer portable flags or document platform-specific alternatives. Do not assume HiveMind state paths.
 
 ## Cross-References
 

@@ -1,10 +1,114 @@
 {
   "skill": "hm-spec-driven-authoring",
+  "version": "1.2.0",
   "trigger_queries": [
-    {"query": "turn this spec into tests", "expected_loaded": true},
-    {"query": "write acceptance criteria from requirements", "expected_loaded": true},
-    {"query": "lock this specification into falsifiable requirements", "expected_loaded": true},
-    {"query": "verify implementation against the written contract", "expected_loaded": true},
-    {"query": "just write some code", "expected_loaded": false}
-  ]
+    {
+      "id": "positive-prd-to-reqs",
+      "query": "Turn this PRD into falsifiable REQ-* requirements with acceptance criteria and verification methods.",
+      "expected_loaded": true,
+      "assertions": [
+        "Extracts one-condition requirements",
+        "Includes source trace and verification method",
+        "Rejects vague wording instead of inventing precision"
+      ]
+    },
+    {
+      "id": "positive-contract-compliance",
+      "query": "Verify this implementation against the written contract and list missing acceptance tests.",
+      "expected_loaded": true,
+      "assertions": [
+        "Uses the contract as source of truth",
+        "Produces requirement-to-test mapping",
+        "Separates blocked requirements from verified ones"
+      ]
+    },
+    {
+      "id": "negative-exploratory-coding",
+      "query": "Prototype a quick dashboard however you think is best.",
+      "expected_loaded": false,
+      "assertions": [
+        "Does not activate for unscoped prototyping",
+        "Requests a spec before deriving requirements"
+      ]
+    },
+    {
+      "id": "boundary-handoff-to-tdd",
+      "query": "The requirements are already locked; now execute RED/GREEN/REFACTOR against them.",
+      "expected_loaded": false,
+      "assertions": [
+        "Identifies hm-test-driven-execution as owner",
+        "Does not run TDD execution itself"
+      ]
+    },
+    {
+      "id": "positive-rich-source-traceability",
+      "query": "Create a requirements traceability matrix from this acceptance brief and show source quotes, BDD cases, and mapped tests.",
+      "expected_loaded": true,
+      "source_pattern": "proffesor-for-testing/agentic-qe@qe-requirements-validation",
+      "scenario_type": "positive",
+      "assertions": [
+        "Includes source quote/path for every REQ row",
+        "Uses positive/negative/boundary/integration BDD cases when applicable",
+        "Marks coverage state as mapped, gap, blocked, or not-applicable"
+      ]
+    },
+    {
+      "id": "boundary-drift-sync-without-framework-assumption",
+      "query": "Compare this existing implementation to the spec and classify drift without assuming .spec-driven or GSD files exist.",
+      "expected_loaded": true,
+      "source_pattern": "kw12121212/auto-spec-driven@spec-driven-sync-specs",
+      "scenario_type": "boundary",
+      "assertions": [
+        "Classifies implemented, missing, drifted, orphan-test, ambiguous-source, or blocked-tooling",
+        "Uses project-relative mapping metadata only",
+        "Requests priority rules before rewriting conflicting source requirements"
+      ]
+    },
+    {
+      "id": "negative-no-source-artifact",
+      "query": "Write requirements for a better system from scratch with no PRD or source artifact.",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Blocks requirement locking because no stable source exists",
+        "Returns a smallest-needed source/clarification request",
+        "Does not invent REQ rows as if sourced"
+      ]
+    }
+  ],
+  "rich_source_evidence": [
+    {
+      "source": "addyosmani/agent-skills@spec-driven-development",
+      "decision": "adopt/adapt",
+      "reviewed_materials": ["skills.sh page", "GitHub target directory", "raw SKILL.md"],
+      "local_resources": ["SKILL.md", "workflows/spec-lock-workflow.md", "references/source-synthesis.md"]
+    },
+    {
+      "source": "proffesor-for-testing/agentic-qe@qe-requirements-validation",
+      "decision": "adopt/adapt",
+      "reviewed_materials": ["skills.sh page", "GitHub YAML skill", "repo assets/docs/examples/scripts/tests directories"],
+      "local_resources": ["references/spec-to-req-mapping.md", "references/acceptance-test-patterns.md", "templates/requirement-traceability-matrix.md"]
+    },
+    {
+      "source": "kw12121212/auto-spec-driven@spec-driven-sync-specs",
+      "decision": "adapt/defer",
+      "reviewed_materials": ["skills.sh page", "GitHub skill directory", ".spec-driven directories", "templates", "scripts", "tests"],
+      "local_resources": ["references/spec-to-req-mapping.md", "references/source-synthesis.md"]
+    }
+  ],
+  "stacked_scenario": {
+    "id": "spec-to-tdd-persistent-workflow",
+    "skills": ["hm-spec-driven-authoring", "hm-test-driven-execution", "hm-planning-with-files"],
+    "prompt": "Convert this API spec into REQ-* items, derive acceptance tests, persist progress, then hand off to TDD execution.",
+    "expected_behavior": [
+      "hm-spec-driven-authoring locks falsifiable requirements and acceptance tests",
+      "hm-planning-with-files persists requirement IDs and status when multi-session state is needed",
+      "hm-test-driven-execution receives a handoff packet for RED/GREEN/REFACTOR only after requirements are locked"
+    ],
+    "failure_signals": [
+      "Implementation begins before requirements are locked",
+      "Requirements lack source trace or verification methods",
+      "Progress state omits blocked requirements"
+    ]
+  }
 }
