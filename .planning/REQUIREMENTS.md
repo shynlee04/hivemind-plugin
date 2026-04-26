@@ -1,7 +1,7 @@
 # Requirements: Harness V3 Runtime Composition Engine
 
 **Defined:** 2026-04-06
-**Last Updated:** 2026-04-26 — Phases 3/4/5 superseded, Phases 35-42 added, master traceability updated
+**Last Updated:** 2026-04-26 — Phases 43-48 lifecycle remediation requirements added from harness lifecycle audit
 **Core Value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references. V3 extends the harness into a runtime composition engine with background agents, delegation chains, concurrency control, and schema-driven injection.
 
 ---
@@ -340,12 +340,12 @@ Requirements validated by completed phases. Kept for traceability.
 
 ## Phase 35: Event-Tracker Fix + Dead Code Cleanup
 
-- [ ] **QUAL-03-FIX**: `npm run typecheck` passes (0 errors in event-tracker/writer.ts)
-- [ ] **QUAL-04-FIX**: `npm test` passes (0 failures in session-journey-events.test.ts)
-- [ ] **QUAL-05-FIX**: `npm run build` passes
-- [ ] **DEAD-03**: Delete `tests/plugins/prompt-enhance-compaction.test.ts` (skipped test masking double-count bug)
+- [x] **QUAL-03-FIX**: `npm run typecheck` passes (0 errors in event-tracker/writer.ts)
+- [x] **QUAL-04-FIX**: `npm test` passes (0 failures in session-journey-events.test.ts)
+- [x] **QUAL-05-FIX**: `npm run build` passes
+- [x] **DEAD-03**: Delete `tests/plugins/prompt-enhance-compaction.test.ts` (skipped test masking double-count bug)
 - [ ] **DEAD-NH**: Delete `src/lib/notification-handler.ts` (298 LOC DEPRECATED dead code)
-- [ ] **DEAD-MT**: Delete `src/hooks/messages-transform.ts` (92 LOC dead code, not wired)
+- [x] **DEAD-MT**: Delete `src/hooks/messages-transform.ts` (92 LOC dead code, not wired)
 - [ ] **TD-11-FINAL**: Resolve remaining 2 `as any` casts in runtime-validator.ts and configure-primitive.ts
 
 ---
@@ -412,7 +412,54 @@ Requirements validated by completed phases. Kept for traceability.
 
 ---
 
-## Master Traceability (Phases 35-42)
+## Phase 43: Hook Composition Observability Integrity
+
+- [x] **REM-CR-01**: Plugin `tool.execute.after` composition preserves both tool-guard metadata/activity behavior and plugin-level event-tracker/configure-primitive persistence behavior.
+
+---
+
+## Phase 44: Tool Write-Surface & Secret Hardening
+
+- [x] **REM-CR-03**: `session-patch` rejects arbitrary absolute paths and only writes approved project/worktree session artifacts.
+- [x] **REM-HIGH-05**: `configure-primitive` awaits filesystem writes and reports write failures instead of premature success.
+- [x] **REM-MED-01**: Primitive read/inspect paths reject traversal, absolute paths, path separators, and non-slug names.
+- [x] **REM-SEC-01**: MCP descriptors use environment placeholders for secrets and include guard evidence against literal secret values.
+
+---
+
+## Phase 45: OpenCode SDK Permission Boundary
+
+- [x] **REM-CR-02**: Child session creation uses only OpenCode SDK-supported `session.create` fields and enforces tool restrictions through supported surfaces.
+- [x] **REM-HIGH-01**: Delegation resolves selected-agent primitive policy and applies only harness-level denial overlays for recursion/capability gates.
+
+---
+
+## Phase 46: Delegation Dispatch, Completion & Recovery Truth
+
+- [x] **REM-HIGH-02**: Delegation status distinguishes created/not-yet-prompted from prompt-accepted dispatched state.
+- [x] **REM-HIGH-03**: Completion requires explicit terminal evidence or truthfully reports unknown/stalled/needs-review instead of stability-only success.
+- [x] **REM-HIGH-04**: Recovery persists unverified-after-restart and retries before treating missing status as terminal error.
+
+---
+
+## Phase 47: Runtime Policy & Command Buffer Hardening
+
+- [x] **REM-MED-02**: Runtime policy accepts validated workspace/plugin configuration rather than only in-memory defaults.
+- [x] **REM-MED-03**: Headless command output buffering is capped with truncation metadata.
+
+---
+
+## Phase 48: Real OpenCode Runtime Integration Verification
+
+- [x] **REM-RUNTIME-01**: Package/static checks prove current SDK/plugin versions, typecheck, tests, and build.
+- [x] **REM-RUNTIME-02**: Disposable `opencode serve` fixture proves health, OpenAPI, and session status surfaces.
+- [x] **REM-RUNTIME-03**: Compiled harness plugin loads and registered tool IDs are visible through OpenCode SDK/server.
+- [ ] **REM-RUNTIME-04**: Runtime hook payload probe confirms expected hook keys and payload shapes or documents required adapters. **DEGRADED:** plugin tests cover hook shape; live `/doc` does not expose hook payload surfaces.
+- [ ] **REM-RUNTIME-05**: Real parent/child delegation flow creates, prompts, observes, and polls a child session without false lifecycle states. **DEGRADED:** live prompt accepted but fixture assistant returned empty parts.
+
+---
+
+## Master Traceability (Phases 35-48)
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
@@ -426,6 +473,13 @@ Requirements validated by completed phases. Kept for traceability.
 | CLI-01 through CLI-04 | Phase 40 | Pending |
 | JOURNAL-TIME-01 through JOURNAL-TIME-03 | Phase 41 | Pending |
 | SIDECAR-01 through SIDECAR-03 | Phase 42 | Pending |
+| REM-CR-01 | Phase 43 | Complete |
+| REM-CR-03, REM-HIGH-05, REM-MED-01, REM-SEC-01 | Phase 44 | Complete |
+| REM-CR-02, REM-HIGH-01 | Phase 45 | Complete |
+| REM-HIGH-02, REM-HIGH-03, REM-HIGH-04 | Phase 46 | Complete |
+| REM-MED-02, REM-MED-03 | Phase 47 | Complete |
+| REM-RUNTIME-01 through REM-RUNTIME-03 | Phase 48 | Complete |
+| REM-RUNTIME-04 through REM-RUNTIME-05 | Phase 48 | Degraded |
 
 ---
 
@@ -439,5 +493,6 @@ Requirements validated by completed phases. Kept for traceability.
 - Q1-Q6 derived: 16 requirements (RUNTIME-DET×3, SIDECAR×3, JOURNAL×3, MEMORY×2, RICH×2, HIVEMIND-ROOT×3)
 - HMQUAL: 8 requirements — 8 complete (Phases 27-30 RICH closure PASS)
 - DOC-REFRESH: 10 requirements — 10 complete
-- Phase 35-42: 36 new requirements — 36 pending
-- **Grand total: 112 requirements — 43 complete, 16 superseded, 53 pending/deferred**
+- Phase 35-42: 36 new requirements — 5 complete, 31 pending/deferred
+- Phase 43-48 lifecycle remediation: 17 new requirements — 15 complete, 2 degraded
+- **Grand total: 129 requirements — 63 complete, 16 superseded, 50 pending/deferred/degraded**

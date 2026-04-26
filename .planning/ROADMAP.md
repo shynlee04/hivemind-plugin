@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-26 (Phase 35-42 addition, Phase 3/4/5/9.3 superseded, Phase 11/13 rescoped)
+**Updated:** 2026-04-27 (Phases 43-47 executed; Phase 48 live runtime proof degraded)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -40,7 +40,7 @@
 - [x] **Phase 32: Traceability Reconciliation** — Close audit gaps GAP-TRACE-01/02/03, create 14 missing VERIFICATION.md, reconcile REQUIREMENTS.md with ROADMAP.md evidence
 - [x] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
 - [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
-- [ ] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — P0: fix typecheck/test failures, remove dead code
+- [ ] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — PARTIAL: build/test/build gates pass; notification-handler deletion and TD-11 cast deferred
 - [ ] **Phase 36: Lifecycle State Machine Enforcement** — P0: real transition guards, activity tracking, 500 LOC split
 - [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result
 - [ ] **Phase 38: Q6 State Root Migration** — P1: verify all writers target .hivemind/, remove legacy compat
@@ -48,6 +48,12 @@
 - [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
 - [ ] **Phase 41: Session Journal Time-Machine** — P2: query API, event replay, past-state reconstruction
 - [ ] **Phase 42: Sidecar Foundation** — P3: Next.js 15 dashboard reading .hivemind/ and .planning/
+- [x] **Phase 43: Hook Composition Observability Integrity** — Critical: compose tool-guard and plugin after-hook behavior
+- [x] **Phase 44: Tool Write-Surface & Secret Hardening** — Critical/security: constrain write/read paths, await writes, remove literal secrets
+- [x] **Phase 45: OpenCode SDK Permission Boundary** — Critical: align child-session permission/tool policy with supported SDK surfaces
+- [x] **Phase 46: Delegation Dispatch, Completion & Recovery Truth** — High: prevent false dispatched/completed/error states
+- [x] **Phase 47: Runtime Policy & Command Buffer Hardening** — Medium: workspace policy input and bounded command output
+- [ ] **Phase 48: Real OpenCode Runtime Integration Verification** — DEGRADED: health/session/tool registration pass; hook/tool-exec/delegation completion gaps remain
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
@@ -672,6 +678,12 @@ Plans:
 | 40. CLI Substrate Foundation | 0 plans | P2 — bin/hivemind-tools.cjs central router |
 | 41. Session Journal Time-Machine | 0 plans | P2 — query API, event replay, past-state reconstruction |
 | 42. Sidecar Foundation | 0 plans | P3 — Next.js 15 dashboard reading .hivemind/ and .planning/ |
+| 43. Hook Composition Observability Integrity | 0 plans | Critical — CR-01 hook composition |
+| 44. Tool Write-Surface & Secret Hardening | 0 plans | Critical/Security — CR-03, HIGH-05, MED-01, secret hardening |
+| 45. OpenCode SDK Permission Boundary | 0 plans | Critical — CR-02, HIGH-01 |
+| 46. Delegation Dispatch, Completion & Recovery Truth | 0 plans | High — HIGH-02, HIGH-03, HIGH-04 |
+| 47. Runtime Policy & Command Buffer Hardening | 0 plans | Medium — MED-02, MED-03 |
+| 48. Real OpenCode Runtime Integration Verification | 0 plans | Integration — live OpenCode proof for remediation wave |
 | 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
 
 ## Dependencies
@@ -708,9 +720,15 @@ Phase 1 (7 done, 3 pending — planned)
                                                                                                                          └─→ Phase 35: Event-Tracker Fix + Dead Code Cleanup (P0, immediate)
                                                                                                                               └─→ Phase 36: Lifecycle State Machine Enforcement (P0)
                                                                                                                                    └─→ Phase 37: Async Result Harvesting (P1)
-                                                                                                                              └─→ Phase 38: Q6 State Root Migration (P1)
-                                                                                                                                   └─→ Phase 42: Sidecar Foundation (P3)
-                                                                                                                              └─→ Phase 39: Auto-Loop / Ralph-Loop Engine (P2)
+                                                                                                                               └─→ Phase 38: Q6 State Root Migration (P1)
+                                                                                                                                    └─→ Phase 42: Sidecar Foundation (P3)
+                                                                                                                               └─→ Phase 43: Hook Composition Observability Integrity (Critical)
+                                                                                                                                    └─→ Phase 44: Tool Write-Surface & Secret Hardening (Critical/Security)
+                                                                                                                                         └─→ Phase 45: OpenCode SDK Permission Boundary (Critical)
+                                                                                                                                              └─→ Phase 46: Delegation Dispatch, Completion & Recovery Truth (High)
+                                                                                                                                                   └─→ Phase 47: Runtime Policy & Command Buffer Hardening (Medium)
+                                                                                                                                                        └─→ Phase 48: Real OpenCode Runtime Integration Verification (Live proof)
+                                                                                                                               └─→ Phase 39: Auto-Loop / Ralph-Loop Engine (P2)
                                                                                                                               └─→ Phase 40: CLI Substrate Foundation (P2)
                                                                                                                                    └─→ Phase 41: Session Journal Time-Machine (P2)
                                                                                                                                         └─→ Phase 42: Sidecar Foundation (P3)
@@ -796,6 +814,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Fix all build/test failures (6 typecheck errors, 5 test failures) and remove dead code. This unblocks all subsequent phases.
 **Depends on:** None (immediate priority)
 **Plans:** 0 plans
+**Status:** PARTIAL — typecheck/test/build gates pass; `notification-handler.ts` retained per local AGENTS.md; TD-11 cast remains.
 
 ### Scope
 - Fix 6 unused import errors in `src/lib/event-tracker/writer.ts`
@@ -810,6 +829,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Replace stub implementations in lifecycle-manager.ts with real state machine enforcement and activity tracking. Split delegation-manager.ts under 500 LOC.
 **Depends on:** Phase 35
 **Plans:** 0 plans
+**Status:** COMPLETE — see `.planning/phases/43-hook-composition-observability-integrity/43-SUMMARY-2026-04-27.md`.
 
 ### Scope
 - Define `SessionLifecyclePhase` transition table in `types.ts`
@@ -824,6 +844,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Implement result extraction from child sessions when completion is detected.
 **Depends on:** Phase 36
 **Plans:** 0 plans
+**Status:** COMPLETE — see `.planning/phases/44-tool-write-surface-secret-hardening/44-SUMMARY-2026-04-27.md`.
 
 ### Scope
 - In `sdk-delegation.ts`: when stability detection confirms completion, harvest last assistant message
@@ -837,6 +858,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Verify all state writers target `.hivemind/` exclusively and implement one-way migration from legacy paths.
 **Depends on:** Phase 35
 **Plans:** 0 plans
+**Status:** COMPLETE — see `.planning/phases/45-opencode-sdk-permission-boundary/45-SUMMARY-2026-04-27.md`.
 
 ### Scope
 - Verify `continuity.ts` storage path targets `.hivemind/`
@@ -851,6 +873,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Implement self-referential dev loop — dispatch → validate → retry-with-context → repeat until completion signal or max iterations.
 **Depends on:** Phase 36
 **Plans:** 0 plans
+**Status:** COMPLETE — see `.planning/phases/46-delegation-dispatch-completion-recovery-truth/46-SUMMARY-2026-04-27.md`.
 **Priority:** P2 (post-v2.0-core)
 
 ### Scope
@@ -865,6 +888,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Build `bin/hivemind-tools.cjs` central router with eval, scaffold, skill, and state commands.
 **Depends on:** None
 **Plans:** 0 plans
+**Status:** COMPLETE — see `.planning/phases/47-runtime-policy-command-buffer-hardening/47-SUMMARY-2026-04-27.md`.
 **Priority:** P2 (post-v2.0-core)
 
 ### Scope
@@ -878,6 +902,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Build query API for journal — by session, by event type, by time range; event replay for past-state reconstruction.
 **Depends on:** Phase 25 (already complete)
 **Plans:** 0 plans
+**Status:** DEGRADED — live health/session/tool ID checks pass; REM-RUNTIME-04/05 gaps documented in `.planning/phases/48-real-opencode-runtime-integration-verification/48-VERIFICATION-2026-04-27.md`.
 **Priority:** P2 (post-v2.0-core)
 
 ### Scope
@@ -899,3 +924,160 @@ Phase 1 (7 done, 3 pending — planned)
 - Dashboard tabs for delegations, journals, memory, planning
 - READ-ONLY enforcement (SIDECAR-03 test)
 - OpenCode SDK REST API integration (post-MVP)
+
+## Phase 43: Hook Composition Observability Integrity
+
+**Goal:** Tool-guard after-hook behavior and plugin-level event tracking both run in real OpenCode runtime, preserving lifecycle activity and `_harness` metadata.
+**Source:** `.planning/audits/harness-lifecycle-code-review-2026-04-26.md` CR-01; `.planning/codebase/harness-lifecycle-map-2026-04-26.md` Top Risk Signal 1.
+**Requirements:** REM-CR-01
+**Depends on:** Phase 35
+**Severity coverage:** Critical — CR-01
+**Plans:** 0 plans
+
+### Scope
+- Compose both `tool.execute.after` branches explicitly.
+- Preserve event-tracker/configure-primitive after-hook behavior.
+- Add regression evidence that `_harness` metadata and lifecycle activity survive the composed path.
+
+### Success Criteria
+1. Tool execution after-hooks preserve both metadata injection and event-tracker persistence.
+2. Lifecycle activity is observed after tool execution.
+3. Regression tests fail if either branch is skipped.
+
+### Validation
+- `npm run typecheck`
+- Focused hook/plugin test for composed `tool.execute.after`
+- `npm test`
+
+## Phase 44: Tool Write-Surface & Secret Hardening
+
+**Goal:** Write-capable harness tools cannot write/read outside approved roots, write success is only reported after completion, and MCP descriptors do not contain literal secrets.
+**Source:** Audit CR-03, HIGH-05, MED-01; lifecycle map Top Risk Signal 2.
+**Requirements:** REM-CR-03, REM-HIGH-05, REM-MED-01, REM-SEC-01
+**Depends on:** Phase 43
+**Severity coverage:** Critical — CR-03; High — HIGH-05; Medium — MED-01; Security — inline MCP secret risk
+**Plans:** 0 plans
+
+### Scope
+- Restrict `session-patch` to approved project/worktree session artifact paths.
+- Reject primitive names with path traversal or non-slug characters before read/inspect/write path resolution.
+- Await and catch `configure-primitive` writes before returning success.
+- Replace literal MCP secrets with environment placeholders and add guard evidence.
+
+### Success Criteria
+1. Arbitrary absolute session patch paths are rejected.
+2. Primitive read/inspect traversal inputs are rejected.
+3. Configure-primitive write failures return failure, not success.
+4. MCP descriptors use secret placeholders only.
+
+### Validation
+- `npm run typecheck`
+- Focused `session-patch` and `configure-primitive` security tests
+- Static secret inspection/scan evidence for `mcp.json`
+- `npm test`
+
+## Phase 45: OpenCode SDK Permission Boundary
+
+**Goal:** Delegated child-session permissions and selected-agent capabilities use OpenCode-supported runtime surfaces instead of unsupported `session.create` fields.
+**Source:** Audit CR-02, HIGH-01; OpenCode interface research SDK contract section.
+**Requirements:** REM-CR-02, REM-HIGH-01
+**Depends on:** Phase 44
+**Severity coverage:** Critical — CR-02; High — HIGH-01
+**Plans:** 0 plans
+
+### Scope
+- Remove unsupported `permission` body field from child `session.create` calls.
+- Resolve selected agent primitive policy at runtime.
+- Apply harness denial overlays only for recursion/capability gates.
+- Add installed-SDK request-shape contract tests.
+
+### Success Criteria
+1. Child session creation matches installed SDK request types.
+2. Selected-agent policy is derived from the agent primitive or an explicit documented fallback.
+3. Recursive delegation remains denied without globally overriding user-configured permissions.
+
+### Validation
+- `npm run typecheck`
+- SDK request-shape contract test
+- Focused spawner/delegation tests proving no unsupported session-create permission payload
+- Live proof deferred to Phase 48
+
+## Phase 46: Delegation Dispatch, Completion & Recovery Truth
+
+**Goal:** Delegation status reflects prompt acceptance, explicit completion, and restart uncertainty honestly.
+**Source:** Audit HIGH-02, HIGH-03, HIGH-04.
+**Requirements:** REM-HIGH-02, REM-HIGH-03, REM-HIGH-04
+**Depends on:** Phase 45
+**Severity coverage:** High — HIGH-02, HIGH-03, HIGH-04
+**Plans:** 0 plans
+
+### Scope
+- Await prompt acceptance or introduce a truthful created-not-yet-prompted state.
+- Replace stability-only completion with explicit completion/terminal evidence or `unknown/stalled/needs-review` states.
+- Persist `unverified-after-restart` and retry with backoff before recovery terminalizes a delegation.
+
+### Success Criteria
+1. Prompt-not-yet-accepted and dispatched are distinguishable.
+2. Silent/dead child sessions are not marked complete from stable message counts alone.
+3. Restart recovery does not convert transient missing status into immediate terminal error.
+
+### Validation
+- `npm run typecheck`
+- Focused `delegation-manager`, `sdk-delegation`, and `delegation-status` tests
+- Recovery tests for transient missing status
+- Live proof deferred to Phase 48
+
+## Phase 47: Runtime Policy & Command Buffer Hardening
+
+**Goal:** Runtime policy can be provided from workspace/plugin configuration, and headless command output is bounded.
+**Source:** Audit MED-02, MED-03.
+**Requirements:** REM-MED-02, REM-MED-03
+**Depends on:** Phase 46
+**Severity coverage:** Medium — MED-02, MED-03
+**Plans:** 0 plans
+
+### Scope
+- Accept and validate plugin options or project-local runtime policy.
+- Pass parsed policy into `loadRuntimePolicy(workspacePolicy)`.
+- Cap headless command output and expose truncation metadata.
+
+### Success Criteria
+1. Workspace policy overrides affect runtime behavior through validated input.
+2. Invalid policy is rejected with actionable errors.
+3. Noisy headless command output is capped with visible truncation metadata.
+
+### Validation
+- `npm run typecheck`
+- Runtime-policy tests for defaults, overrides, invalid input
+- Command-delegation output cap tests
+- `npm test`
+
+## Phase 48: Real OpenCode Runtime Integration Verification
+
+**Goal:** Prove the remediated harness loads and behaves correctly in a live OpenCode runtime, not just mocks.
+**Source:** `.planning/research/opencode-interface-research-2026-04-26.md` recommended runtime checks and unresolved uncertainties.
+**Requirements:** REM-RUNTIME-01 through REM-RUNTIME-05
+**Depends on:** Phases 43, 44, 45, 46, 47
+**Severity coverage:** Integration proof for all Critical, High, and Medium remediation findings.
+**Plans:** 0 plans
+
+### Scope
+- Verify package/static contract checks.
+- Start disposable `opencode serve` with auth and fetch health/OpenAPI/session status.
+- Load compiled harness plugin in a disposable fixture project.
+- Verify harness tool registration through SDK/server tool IDs.
+- Probe hook payloads and exercise delegate-task/delegation-status end-to-end.
+
+### Success Criteria
+1. Compiled plugin loads in a disposable OpenCode project.
+2. Harness tool IDs are visible through OpenCode SDK/server listing.
+3. Hook payloads match the source assumptions or documented adapters.
+4. Real parent/child delegation can be created, prompted, observed, and polled without false lifecycle states.
+
+### Validation
+- `npm view @opencode-ai/sdk version time.modified dist-tags --json`
+- `npm view @opencode-ai/plugin version time.modified dist-tags exports --json`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- Disposable `opencode serve` fixture checks: health, `/doc`, tool IDs, event subscription, delegation status polling

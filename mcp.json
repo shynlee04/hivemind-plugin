@@ -125,7 +125,7 @@
       ]
     },
     "tavily": {
-      "httpUrl": "https://mcp.tavily.com/mcp/?tavilyApiKey=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",
+      "httpUrl": "https://mcp.tavily.com/mcp/?tavilyApiKey=$TAVILY_API_KEY",
       "timeout": 35000
     },
     "brave-search": {

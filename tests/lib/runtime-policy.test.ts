@@ -9,6 +9,9 @@
  * RESEARCH D-16: This module supplements OpenCode built-ins — it does NOT
  * replace hook/session surfaces that OpenCode already provides.
  */
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { describe, it, expect } from "vitest"
 import {
   DEFAULT_RUNTIME_POLICY,
@@ -19,6 +22,7 @@ import type {
   RuntimePolicy,
   SessionPolicyOverride,
 } from "../../src/lib/types.js"
+import { resolveWorkspaceRuntimePolicy } from "../../src/lib/workspace-runtime-policy.js"
 
 // ---------------------------------------------------------------------------
 // Test 1: Missing policy file resolves defaults that match current behavior
@@ -74,6 +78,22 @@ describe("loadRuntimePolicy", () => {
     // Budget fields that are provided should come from workspace
     expect(policy.budget.repeatedSignatureThreshold).toBe(16)
     expect(policy.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(true)
+  })
+})
+
+describe("resolveWorkspaceRuntimePolicy", () => {
+  it("reads project-local policy from .hivemind/state", () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "runtime-policy-project-"))
+    try {
+      mkdirSync(join(projectRoot, ".hivemind", "state"), { recursive: true })
+      writeFileSync(join(projectRoot, ".hivemind", "state", "hivemind.runtime-policy.json"), JSON.stringify({
+        concurrency: { globalLimit: 2 },
+      }))
+
+      expect(resolveWorkspaceRuntimePolicy(projectRoot)?.concurrency?.globalLimit).toBe(2)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
   })
 })
 

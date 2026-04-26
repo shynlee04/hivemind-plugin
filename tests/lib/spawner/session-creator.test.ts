@@ -11,7 +11,7 @@ vi.mock("../../../src/lib/session-api.js", async (importOriginal) => {
 })
 
 describe("spawnDelegatedSession", () => {
-  it("creates a parent-linked child session with the write-capable permission profile", async () => {
+  it("creates a parent-linked child session without unsupported session.create permission fields", async () => {
     createSession.mockResolvedValueOnce({ id: "ses_child_1" })
     const { spawnDelegatedSession } = await import("../../../src/lib/spawner/session-creator.js")
 
@@ -39,20 +39,11 @@ describe("spawnDelegatedSession", () => {
       parentID: request.parentSessionId,
       title: request.title,
       directory: request.workingDirectory,
-      permission: [
-        { permission: "read", pattern: "*", action: "allow" },
-        { permission: "edit", pattern: "*", action: "allow" },
-        { permission: "write", pattern: "*", action: "allow" },
-        { permission: "bash", pattern: "*", action: "allow" },
-        { permission: "glob", pattern: "*", action: "allow" },
-        { permission: "grep", pattern: "*", action: "allow" },
-        { permission: "delegate-task", pattern: "*", action: "deny" },
-        { permission: "task", pattern: "*", action: "deny" },
-      ],
     })
     expect(result).toEqual({
       childSession: { id: "ses_child_1" },
       childSessionId: "ses_child_1",
+      allowedTools: request.permissionProfile.tools,
     })
   })
 })

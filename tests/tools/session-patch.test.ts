@@ -24,9 +24,9 @@ function parseResult(raw: string): unknown {
 }
 
 describe("session-patch tool", () => {
-  const tool = createSessionPatchTool(process.cwd())
   const testDir = join(tmpdir(), "session-patch-tool-test")
   const sessionFile = join(testDir, "session.md")
+  const tool = createSessionPatchTool(testDir)
 
   beforeEach(() => {
     mkdirSync(testDir, { recursive: true })
@@ -102,6 +102,29 @@ describe("session-patch tool", () => {
     )
     const result = parseResult(raw) as Record<string, unknown>
     expect(result.kind).toBe("error")
+  })
+
+  it("rejects existing session artifacts outside the project root", async () => {
+    const outsideDir = join(tmpdir(), "session-patch-outside")
+    const outsideFile = join(outsideDir, "session.md")
+    mkdirSync(outsideDir, { recursive: true })
+    writeFileSync(outsideFile, "---\npatch_count: 0\n---\n\n## Test\nold\n")
+
+    try {
+      const raw = await tool.execute(
+        {
+          sessionFilePath: outsideFile,
+          section: "## Test",
+          newContent: "new",
+        },
+        mockCtx,
+      )
+      const result = parseResult(raw) as Record<string, unknown>
+      expect(result.kind).toBe("error")
+      expect(result.message).toContain("project root")
+    } finally {
+      rmSync(outsideDir, { recursive: true, force: true })
+    }
   })
 
   it("increments patch_count in frontmatter", async () => {

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: complete
-status: ready-to-plan
-stopped_at: Phase validation complete — Phases 3/4/5/9.3 SUPERSEDED, Phases 35-42 added
-last_updated: "2026-04-26T14:00:00Z"
+current_plan: phase-48-degraded
+status: ready-with-runtime-gaps
+stopped_at: Phases 43-47 complete; Phase 48 degraded pending live dynamic tool/delegation proof
+last_updated: "2026-04-27T00:10:00Z"
 progress:
-  total_phases: 43
-  completed_phases: 18
+  total_phases: 49
+  completed_phases: 23
   total_plans: 76
-  completed_plans: 71
-  percent: 90
+  completed_plans: 76
+  percent: 92
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 35 — Event-Tracker Fix + Dead Code Cleanup (P0, fixes broken build)
+**Current focus:** Phase 48 runtime gaps — Phases 43-47 lifecycle remediation complete; Phase 48 live OpenCode proof is degraded pending dynamic tool execution and non-empty model completion evidence.
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -29,25 +29,25 @@ See: `.planning/PROJECT.md`
 
 Previous STATE.md overstated completion. The authoritative reset remains `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`.
 
-## Build Status (2026-04-26)
+## Build Status (2026-04-27)
 
 | Gate | Status | Details |
 |------|--------|---------|
-| `npm run typecheck` | ❌ FAILING | 6 errors in `src/lib/event-tracker/writer.ts` (unused imports) |
-| `npm test` | ❌ FAILING | 5 failures in `tests/lib/event-tracker/session-journey-events.test.ts` |
-| `npm run build` | ❌ BLOCKED | Typecheck errors prevent clean compilation |
+| `npm run typecheck` | ✅ PASS | 0 errors |
+| `npm test` | ✅ PASS | 49 files, 899 tests passed |
+| `npm run build` | ✅ PASS | Clean TypeScript build |
 
-**Phase 35 MUST execute first to restore green build.**
+**Phase 35 build gate restored; remaining Phase 35 dead-code/TD items are deferred.**
 
 ## Current Position
 
-Phase: 35 (event-tracker-fix-dead-code-cleanup) — NEXT
-Plan: Not yet planned
+Phase: 48 (real-opencode-runtime-integration-verification) — DEGRADED
+Plan: Runtime proof complete with documented gaps
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
-**Current plan:** Phase validation complete. Phases 3/4/5/9.3 marked SUPERSEDED. Phase 11/13 rescoped. Phases 35-42 added. Wave 1 execution begins with Phase 35 (event-tracker fix + dead code cleanup).
-**Next:** Phase 35 — Event-Tracker Fix + Dead Code Cleanup (P0, fixes broken build)
-**Progress:** [████████░░] 90%
+**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phase 48 live runtime verification degraded for tool-execute/delegation-completion proof.
+**Next:** Provide/authorize a runtime with supported dynamic tool execution and non-empty provider completions, then re-run Phase 48 REM-RUNTIME-04/05.
+**Progress:** [█████████░] 92%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -84,7 +84,7 @@ Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 Phase 32: Traceability Reconcil .... COMPLETE (7/7 tasks, docs-only)
 Phase 33: Phase 16.4 Closure ....... COMPLETE (4 summaries + verification)
 Phase 34: Phase 16 Gap 4 ........... COMPLETE (all 6 requirements verified)
-Phase 35: Event-Tracker Fix ........ PENDING (P0 — fixes broken build)
+Phase 35: Event-Tracker Fix ........ PARTIAL (build/test fixed; DEAD-NH and TD-11 deferred)
 Phase 36: Lifecycle State Machine .. PENDING (depends on 35)
 Phase 37: Async Result Harvesting .. PENDING (depends on 36)
 Phase 38: Q6 State Root Migration .. PENDING (depends on 35)
@@ -92,6 +92,12 @@ Phase 39: Auto-Loop Engine ......... PENDING (P2)
 Phase 40: CLI Substrate ............ PENDING (P2)
 Phase 41: Session Journal Time-Mach PENDING (P2)
 Phase 42: Sidecar Foundation ....... PENDING (P3)
+Phase 43: Hook Composition Obs ..... COMPLETE (Critical — CR-01)
+Phase 44: Write-Surface Hardening .. COMPLETE (Critical/Security — CR-03, HIGH-05, MED-01)
+Phase 45: SDK Permission Boundary .. COMPLETE (Critical — CR-02, HIGH-01)
+Phase 46: Delegation Truth ......... COMPLETE (High — HIGH-02/03/04)
+Phase 47: Policy/Buffer Hardening .. COMPLETE (Medium — MED-02/03)
+Phase 48: Runtime Integration Proof  DEGRADED (Live OpenCode health/session/tool IDs pass; hook/tool-exec/delegation completion gaps remain)
 ```
 
 ## Phase Completion Details
@@ -119,6 +125,11 @@ Phase 42: Sidecar Foundation ....... PENDING (P3)
 | Phase 26 | COMPLETE | 5/5 plans, HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
 | Phase 33 | COMPLETE | 4 retroactive SUMMARY.md, 16.4-VERIFICATION.md, backlog 999.1 closure |
 | Phase 34 | COMPLETE | All 6 Gap 4 requirements verified as already implemented, edge-case tests added |
+| Phase 43 | COMPLETE | Hook after-hook composition preserves `_harness` metadata and event-tracker artifacts |
+| Phase 44 | COMPLETE | Session patch path hardening, primitive name validation, awaited writes, MCP secret placeholder |
+| Phase 45 | COMPLETE | OpenCode SDK session.create boundary aligned; prompt-time tool denial map used |
+| Phase 46 | COMPLETE | Prompt acceptance, empty completion evidence, and restart recovery truth hardened |
+| Phase 47 | COMPLETE | Workspace runtime policy reader and headless output truncation metadata added |
 
 ### Phases With Caveats
 
@@ -127,6 +138,8 @@ Phase 42: Sidecar Foundation ....... PENDING (P3)
 | Phase 9 | COMPLETE WITH CAVEATS | Code exists but UAT quarantined as "substantially false" — mock-verified only, never runtime-verified |
 | Phase 9.1 | COMPLETE WITH CAVEATS | Bug fixes + test rewrites done (668 tests pass), but mock-heavy — never spawn real child sessions |
 | Phase 12 | COMPLETE | False-start corridor fixed and 09-family planning truth reconciled |
+| Phase 35 | PARTIAL | Build/test/build gates pass; `notification-handler.ts` retained per local AGENTS.md and `runtime-validator.ts` cast remains |
+| Phase 48 | DEGRADED | Live OpenCode health/session/tool IDs pass; REM-RUNTIME-04/05 require dynamic tool execution and non-empty provider completion proof |
 
 ### Phases Requiring Repair (Audit 2026-04-23 — RESOLVED by Phase 24 and Phase 26)
 
@@ -177,13 +190,14 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 5. ~~**9 debug sessions, 0 verified fixes**~~ — RESOLVED in Phase 14: session-264b debug closed with all root causes verified
 6. ~~**Delegate-task runtime failure (8× Zod errors)**~~ — RESOLVED 2026-04-23: missing `pattern` field in `session-creator.ts` PermissionRule fixed, validated by independent Devin investigation
 7. **Next runtime step still needs selection** — downstream planning must decide how to resume live runtime verification/re-planning from the corrected Phase 12 baseline
-8. **Build broken** — `src/lib/event-tracker/writer.ts` has 6 unused-import typecheck errors; 5 test failures in `tests/lib/event-tracker/session-journey-events.test.ts` — Phase 35 will fix
+8. ~~**Build broken**~~ — RESOLVED 2026-04-27: `npm run typecheck`, `npm test`, and `npm run build` pass.
+9. **Phase 48 degraded proof** — dynamic tool execution and successful real child delegation completion remain unproven in the available OpenCode fixture.
 
 ## Performance Metrics
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Test suite | Pass | 857 passed, 1 todo, 1 skipped |
+| Test suite | Pass | 899 passed |
 | Typecheck | Pass | Pass (0 errors) |
 | Build | Pass | Pass |
 | Runtime-verified delegation | Working | CORRECTED — event routing, sync race, notifications, VALID_AGENTS all fixed |
@@ -287,6 +301,12 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - [ ] Plan Phase 35: Event-Tracker Fix + Dead Code Cleanup (P0 — restore green build)
 - [ ] Plan Phase 36: Lifecycle State Machine (depends on 35)
 - [ ] Plan Phase 38: Q6 State Root Migration (depends on 35)
+- [x] Plan Phase 43: Hook Composition Observability Integrity (after Phase 35)
+- [x] Plan Phase 44: Tool Write-Surface & Secret Hardening
+- [x] Plan Phase 45: OpenCode SDK Permission Boundary
+- [x] Plan Phase 46: Delegation Dispatch, Completion & Recovery Truth
+- [x] Plan Phase 47: Runtime Policy & Command Buffer Hardening
+- [x] Plan Phase 48: Real OpenCode Runtime Integration Verification (degraded: REM-RUNTIME-04/05 gaps)
 
 ### Roadmap Evolution
 
@@ -312,13 +332,20 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - Phase 40 added: CLI Substrate (P2)
 - Phase 41 added: Session Journal Time-Machine (P2)
 - Phase 42 added: Sidecar Foundation (P3)
+- Phase 43 added: Hook Composition Observability Integrity — covers CR-01 from 2026-04-26 lifecycle audit
+- Phase 44 added: Tool Write-Surface & Secret Hardening — covers CR-03, HIGH-05, MED-01, and inline MCP secret hardening
+- Phase 45 added: OpenCode SDK Permission Boundary — covers CR-02 and HIGH-01
+- Phase 46 added: Delegation Dispatch, Completion & Recovery Truth — covers HIGH-02, HIGH-03, HIGH-04
+- Phase 47 added: Runtime Policy & Command Buffer Hardening — covers MED-02 and MED-03
+- Phase 48 added: Real OpenCode Runtime Integration Verification — live OpenCode proof for Phases 43-47 remediation
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
 
 - ~~**Phase 16.2 prerequisite:** Codebase is broken — 3 typecheck errors~~ — RESOLVED 2026-04-22
 - **Runtime verification pending:** Delegate-task fix applied but needs live OpenCode session test
-- **Build broken (2026-04-26):** 6 typecheck errors in event-tracker/writer.ts, 5 test failures — Phase 35 will fix
+- ~~**Build broken (2026-04-26)**~~ — RESOLVED 2026-04-27 by fresh typecheck/test/build validation.
+- **Runtime remediation proof degraded (2026-04-27):** Phase 48 proved health/session/tool registration but still needs supported dynamic tool execution and non-empty provider completion to close REM-RUNTIME-04/05.
 
 ### Third-Party Validation
 
@@ -360,5 +387,6 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 *Forensic reset + reconciliation: 2026-04-14 — false-start corridor corrected and 09-family truth quarantined where needed*
 *Documentation refresh: 2026-04-25 — Q1-Q6 validation decisions locked, Phase 27-30 roadmap defined*
 *Phase validation: 2026-04-26 — Phases 3/4/5/9.3 SUPERSEDED, Phase 11/13 rescoped, Phases 35-42 added*
+*Lifecycle remediation execution: 2026-04-27 — Phases 43-47 complete; Phase 48 degraded with runtime proof gaps documented*
 
 **Planned Phase:** Phase 35 — Event-Tracker Fix + Dead Code Cleanup (P0, restore green build)

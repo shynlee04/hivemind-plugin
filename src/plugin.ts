@@ -25,6 +25,7 @@ import { createConfigurePrimitiveTool } from "./tools/configure-primitive.js"
 import { createValidateRestartTool } from "./tools/validate-restart.js"
 import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
+import { resolveWorkspaceRuntimePolicy } from "./lib/workspace-runtime-policy.js"
 import {
   createEventTrackerArtifactsFromHook,
   shouldTrackEventTrackerEvent,
@@ -50,8 +51,9 @@ function resolveToolHookSessionId(args: Record<string, unknown> | undefined): st
 }
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
+  const projectDirectory = directory ?? process.cwd()
   // Load workspace-level runtime policy once at startup.
-  const runtimePolicy = loadRuntimePolicy()
+  const runtimePolicy = loadRuntimePolicy(resolveWorkspaceRuntimePolicy(projectDirectory))
   let ptyManager: import("./lib/pty/pty-manager.js").PtyManager | null = null
   try {
     const ptyModule = await import("./lib/pty/pty-manager.js")
@@ -100,11 +102,13 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const sessionJourneyEventObserver = async ({ event }: { event?: unknown }) => {
     try {
       if (!shouldTrackEventTrackerEvent(event)) return
-      createEventTrackerArtifactsFromHook({ projectRoot: directory, hook: { event, source: "plugin.event" } })
+      createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event, source: "plugin.event" } })
     } catch {
       // Best-effort audit projection: never block canonical OpenCode event handling.
     }
   }
+
+  const toolGuardHooks = createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy })
 
   return {
     ...createCoreHooks({
@@ -112,16 +116,16 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       eventObservers: [delegationEventObserver, sessionEventObserver, sessionJourneyEventObserver],
     }),
     ...sessionReadHooks,
-    ...createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy }),
+    ...toolGuardHooks,
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
       "delegation-status": createDelegationStatusTool(delegationManager),
       ...(ptyManager ? {
         "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
       } : {}),
-      "prompt-skim": createPromptSkimTool(directory),
-      "prompt-analyze": createPromptAnalyzeTool(directory),
-      "session-patch": createSessionPatchTool(directory),
+      "prompt-skim": createPromptSkimTool(projectDirectory),
+      "prompt-analyze": createPromptAnalyzeTool(projectDirectory),
+      "session-patch": createSessionPatchTool(projectDirectory),
       "session-journal-export": createSessionJournalExportTool(),
       "configure-primitive": createConfigurePrimitiveTool(),
       "validate-restart": createValidateRestartTool(),
@@ -130,10 +134,14 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     // Best-effort: failures are silently ignored — does not affect the tool call result.
     "tool.execute.after": async (
       input: { tool: string; args?: Record<string, unknown> },
-      _output?: unknown,
+      _output?: { metadata?: unknown; [key: string]: unknown } | string,
     ): Promise<void> => {
+      const sessionID = resolveToolHookSessionId(input.args)
+      if (_output && typeof _output === "object") {
+        await toolGuardHooks["tool.execute.after"]({ ...input, sessionID }, _output)
+      }
+
       try {
-        const sessionID = resolveToolHookSessionId(input.args)
         if (sessionID) {
           const event = {
             type: "tool.execute.after",
@@ -145,7 +153,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
             },
           }
           if (shouldTrackEventTrackerEvent(event)) {
-            createEventTrackerArtifactsFromHook({ projectRoot: directory, hook: { event, source: "plugin.tool.execute.after" } })
+            createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event, source: "plugin.tool.execute.after" } })
           }
         }
       } catch {

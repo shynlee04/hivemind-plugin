@@ -42,6 +42,20 @@ function deriveRecoveryGuarantee(executionMode: Delegation["executionMode"]): De
 
 type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }
 
+/**
+ * Build the OpenCode prompt-time tool map for delegated sessions.
+ *
+ * @param allowedTools - Tool IDs inherited from the resolved spawn policy.
+ * @returns A prompt-compatible tool allow/deny map with recursive delegation disabled.
+ */
+function buildDelegationPromptTools(allowedTools: readonly string[]): Record<string, boolean> {
+  return {
+    ...Object.fromEntries(allowedTools.map((toolName) => [toolName, true])),
+    "delegate-task": false,
+    task: false,
+  }
+}
+
 export class DelegationManager {
   private readonly delegations = new Map<string, Delegation>()
   private readonly delegationsBySession = new Map<string, string>()
@@ -126,25 +140,21 @@ export class DelegationManager {
       }
       this.registerDelegation(delegation, true)
       this.persistAllDelegations()
-      this.client.session.prompt({
-        path: { id: delegation.childSessionId },
-        body: { parts: [{ type: "text", text: params.prompt }], agent: agent.name },
-      }).then(() => {
-        setTimeout(() => {
-          const current = this.delegations.get(delegation.id)
-          if (current && current.status === "dispatched") {
-            current.status = "running"
-            this.persistAllDelegations()
-          }
-        }, 0)
-      }).catch(() => {
-        setTimeout(() => {
-          const current = this.delegations.get(delegation.id)
-          if (current && current.status === "dispatched") {
-            this.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
-          }
-        }, 0)
-      })
+      try {
+        await this.client.session.promptAsync({
+          path: { id: delegation.childSessionId },
+          body: {
+            parts: [{ type: "text", text: params.prompt }],
+            agent: agent.name,
+            tools: buildDelegationPromptTools(child.allowedTools),
+          },
+        })
+        delegation.status = "running"
+        this.persistAllDelegations()
+      } catch {
+        this.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
+        return this.buildResult(this.delegations.get(delegation.id) ?? delegation)
+      }
       return this.buildResult(delegation)
     } finally {
       release()
@@ -437,6 +447,9 @@ export class DelegationManager {
     const hydratedDelegation = this.withContractDefaults(delegation)
     return {
       status: hydratedDelegation.status,
+      result: hydratedDelegation.result,
+      resultTruncated: hydratedDelegation.resultTruncated,
+      error: hydratedDelegation.error,
       delegationId: hydratedDelegation.id,
       executionMode: hydratedDelegation.executionMode,
       surface: hydratedDelegation.surface,

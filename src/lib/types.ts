@@ -371,6 +371,7 @@ export interface Delegation {
   agent: string
   status: DelegationStatus
   result?: string
+  resultTruncated?: boolean
   error?: string
   createdAt: number
   completedAt?: number
@@ -401,6 +402,7 @@ export interface Delegation {
 export interface DelegationResult {
   status: DelegationStatus
   result?: string
+  resultTruncated?: boolean
   error?: string
   delegationId: string
   executionMode?: "sdk" | "pty" | "headless"

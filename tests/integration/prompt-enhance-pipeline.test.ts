@@ -62,7 +62,7 @@ describe("schema contracts match tool outputs", () => {
     const sessionFile = join(testDir, "session.md")
     writeFileSync(sessionFile, "---\npatch_count: 0\n---\n\n## Identified Risks\nNone yet.\n")
 
-    const tool = createSessionPatchTool(process.cwd())
+    const tool = createSessionPatchTool(testDir)
     const raw = await tool.execute(
       { sessionFilePath: sessionFile, section: "## Identified Risks", newContent: "Risk A found" },
       mockCtx,
@@ -124,7 +124,7 @@ describe("full pipeline E2E", () => {
     expect(analyzeResult.clarity_score).toBeLessThanOrEqual(100)
 
     // Phase 3: Session patch
-    const patchTool = createSessionPatchTool(process.cwd())
+    const patchTool = createSessionPatchTool(testDir)
     const patchRaw = await patchTool.execute(
       { sessionFilePath: sessionFile, section: "## Identified Risks", newContent: "Risk: scope creep detected" },
       mockCtx,

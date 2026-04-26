@@ -402,7 +402,7 @@ describe("SdkDelegationHandler", () => {
       expect(callbacks.scheduleSafetyCeiling).toHaveBeenCalledWith(delegation)
     })
 
-    it("marks delegation as error when session status is missing", async () => {
+    it("keeps missing recovery status non-terminal and schedules safety ceiling", async () => {
       const client = createMockClient()
       const delegation = createRunningDelegation()
       const callbacks = createMockCallbacks()
@@ -412,11 +412,9 @@ describe("SdkDelegationHandler", () => {
 
       await handler.recoverSdkDelegation(delegation)
 
-      expect(callbacks.onTerminal).toHaveBeenCalledWith(
-        delegation.id,
-        "error",
-        "Child session not found on recovery",
-      )
+      expect(callbacks.onTerminal).not.toHaveBeenCalled()
+      expect(delegation.error).toContain("unverified after restart")
+      expect(callbacks.scheduleSafetyCeiling).toHaveBeenCalledWith(delegation)
     })
   })
 

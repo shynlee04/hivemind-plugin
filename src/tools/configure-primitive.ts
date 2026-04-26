@@ -117,10 +117,10 @@ export function createConfigurePrimitiveTool(): ReturnType<typeof tool> {
 // Action handlers
 // ---------------------------------------------------------------------------
 
-function handleCompile(
+async function handleCompile(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
   _context: unknown,
-): Promise<string> | string {
+): Promise<string> {
   // Workflow turn enforcement — validate turn order if workflow params present
   if (args.workflowTurn !== undefined && args.workflowId) {
     const workflow = readWorkflow(args.workflowId)
@@ -142,7 +142,7 @@ function handleCompile(
 
   // Batch mode: primitives array provided
   if (args.primitives && args.primitives.length > 0) {
-    return handleBatchCompile(args)
+      return handleBatchCompile(args)
   }
 
   // Single primitive mode (backward compatible)
@@ -201,8 +201,15 @@ function handleCompile(
     return renderToolResult(error("File exists, use overwrite: true to replace", { filePath }))
   }
 
-  mkdirSync(path.dirname(filePath), { recursive: true })
-  fs.writeFile(filePath, result.content, "utf-8")
+  try {
+    mkdirSync(path.dirname(filePath), { recursive: true })
+    await fs.writeFile(filePath, result.content, "utf-8")
+  } catch (writeError) {
+    return renderToolResult(error("Failed to write primitive", {
+      filePath,
+      reason: writeError instanceof Error ? writeError.message : String(writeError),
+    }))
+  }
 
   return renderToolResult(success("Primitive configured", { filePath, primitive: args.primitive }))
 }
@@ -224,11 +231,17 @@ function handleBatchCompile(
     const frontmatter = { ...parsedSpec }
     delete frontmatter.body
 
-    specs.push({
-      type: item.type,
-      name: item.name,
-      spec: { name: item.name, frontmatter: frontmatter as any, body },
-    })
+    switch (item.type) {
+      case "agent":
+        specs.push({ type: item.type, name: item.name, spec: { name: item.name, frontmatter: frontmatter as import("../lib/config-compiler.js").AgentSpec["frontmatter"], body } })
+        break
+      case "command":
+        specs.push({ type: item.type, name: item.name, spec: { name: item.name, frontmatter: frontmatter as import("../lib/config-compiler.js").CommandSpec["frontmatter"], body } })
+        break
+      case "skill":
+        specs.push({ type: item.type, name: item.name, spec: { name: item.name, frontmatter: frontmatter as import("../lib/config-compiler.js").SkillSpec["frontmatter"], body } })
+        break
+    }
   }
 
   const result = mixedBatchCompile(specs, {
@@ -286,7 +299,12 @@ async function handleRead(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
 ): Promise<string> {
   const primitive = args.primitive!
-  const filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+  let filePath: string
+  try {
+    filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+  } catch (pathError) {
+    return renderToolResult(error(pathError instanceof Error ? pathError.message : String(pathError)))
+  }
   const result = await loadPrimitive(filePath, primitive)
 
   if (!result.success) {
@@ -340,7 +358,12 @@ async function handleInspect(
   context: unknown,
 ): Promise<string> {
   const primitive = args.primitive!
-  const filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+  let filePath: string
+  try {
+    filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+  } catch (pathError) {
+    return renderToolResult(error(pathError instanceof Error ? pathError.message : String(pathError)))
+  }
   const readResult = await loadPrimitive(filePath, primitive)
 
   if (!readResult.success) {
@@ -418,6 +441,7 @@ function resolvePrimitivePath(
   name: string,
   scope: "project" | "global",
 ): string {
+  validatePrimitiveName(name)
   const base = scope === "global"
     ? (process.env.OPENCODE_CONFIG_DIR || `${process.env.HOME || "/tmp"}/.config/opencode`)
     : ".opencode"
@@ -431,6 +455,18 @@ function resolvePrimitivePath(
       return path.join(base, "skills", name, "SKILL.md")
     default:
       return path.join(base, `${name}.md`)
+  }
+}
+
+/**
+ * Reject primitive names that could escape the intended primitive directory.
+ *
+ * @param name - Caller-provided primitive identifier.
+ * @throws {Error} When the name contains path traversal or unsupported characters.
+ */
+function validatePrimitiveName(name: string): void {
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/.test(name) || name.includes("..")) {
+    throw new Error("[Harness] Invalid primitive name: use only letters, numbers, dots, underscores, and hyphens.")
   }
 }
 

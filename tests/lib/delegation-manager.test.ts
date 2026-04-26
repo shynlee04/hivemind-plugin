@@ -22,6 +22,7 @@ type MockClient = {
   session: {
     create: ReturnType<typeof vi.fn>
     prompt: ReturnType<typeof vi.fn>
+    promptAsync: ReturnType<typeof vi.fn>
     status: ReturnType<typeof vi.fn>
     messages: ReturnType<typeof vi.fn>
     abort: ReturnType<typeof vi.fn>
@@ -94,6 +95,7 @@ function createMockClient(): MockClient {
     session: {
       create: vi.fn().mockResolvedValue({ data: { id: "child-ses-123" } }),
       prompt: vi.fn().mockResolvedValue(undefined),
+      promptAsync: vi.fn().mockResolvedValue(undefined),
       status: vi.fn().mockResolvedValue({ data: {} }),
       messages: vi.fn().mockResolvedValue({
         data: [
@@ -205,7 +207,7 @@ describe("DelegationManager", () => {
         prompt: "do work",
       })
 
-      expect(result.status).toBe("dispatched")
+      expect(result.status).toBe("running")
       expect(result.delegationId).toBeTypeOf("string")
     })
 
@@ -346,7 +348,7 @@ describe("DelegationManager", () => {
 
     it("persists delegation to disk BEFORE sending prompt (write-then-send ordering)", async () => {
       const client = createMockClient()
-      const promptSpy = client.session.prompt.mockImplementation(async (...args: unknown[]) => {
+      const promptSpy = client.session.promptAsync.mockImplementation(async (...args: unknown[]) => {
         const filePath = getDelegationsFile(stateDir)
         expect(existsSync(filePath)).toBe(true)
         const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
@@ -646,16 +648,26 @@ describe("DelegationManager", () => {
         prompt: "hello child",
       })
 
-      expect(client.session.prompt).toHaveBeenCalledWith({
+      expect(client.session.promptAsync).toHaveBeenCalledWith({
         path: { id: "child-prompt" },
         body: {
           parts: [{ type: "text", text: "hello child" }],
           agent: "builder",
+          tools: {
+            read: true,
+            edit: true,
+            write: true,
+            bash: true,
+            glob: true,
+            grep: true,
+            "delegate-task": false,
+            task: false,
+          },
         },
       })
     })
 
-    it("does not wait for completion — returns dispatched immediately", async () => {
+    it("does not wait for completion — returns running after prompt acceptance", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
@@ -665,7 +677,7 @@ describe("DelegationManager", () => {
         prompt: "return now",
       })
 
-      expect(result.status).toBe("dispatched")
+      expect(result.status).toBe("running")
       expect(client.session.messages).not.toHaveBeenCalled()
     })
 
@@ -683,11 +695,11 @@ describe("DelegationManager", () => {
       expect(manager.getAllDelegations()).toHaveLength(0)
     })
 
-    it("handles session.prompt() SDK failure — delegation transitions to error", async () => {
+    it("handles session.promptAsync() SDK failure — delegation transitions to error", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-prompt-fail" } })
-      client.session.prompt.mockRejectedValue(new Error("SDK prompt failed"))
+      client.session.promptAsync.mockRejectedValue(new Error("SDK prompt failed"))
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
@@ -696,12 +708,7 @@ describe("DelegationManager", () => {
         prompt: "fail at prompt",
       })
 
-      // Still dispatched immediately
-      expect(result.status).toBe("dispatched")
-
-      // Advance timers to process the .catch() → setTimeout(0) chain
-      // The prompt rejection goes through microtask queue → .catch() → setTimeout(0) → macrotask
-      await vi.advanceTimersByTimeAsync(10)
+      expect(result.status).toBe("error")
 
       // Should now be error
       const delegation = manager.getStatus(result.delegationId)
@@ -1192,7 +1199,7 @@ describe("DelegationManager", () => {
       })
 
       await vi.advanceTimersByTimeAsync(24)
-      expect(manager.getStatus(result.delegationId)?.status).toBe("running")
+      expect(["dispatched", "running"]).toContain(manager.getStatus(result.delegationId)?.status)
 
       await vi.advanceTimersByTimeAsync(1)
       expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
@@ -1271,7 +1278,7 @@ describe("DelegationManager", () => {
     it("persistence write happens before result extraction to avoid race conditions", async () => {
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-order" } })
-      client.session.prompt.mockImplementation(async () => {
+      client.session.promptAsync.mockImplementation(async () => {
         const filePath = getDelegationsFile(stateDir)
         expect(existsSync(filePath)).toBe(true)
         return undefined
@@ -1579,8 +1586,8 @@ describe("DelegationManager", () => {
 
       await manager.recoverPending()
 
-      expect(manager.getStatus("delegation-missing")?.status).toBe("error")
-      expect(manager.getStatus("delegation-missing")?.error).toBe("Child session not found on recovery")
+      expect(manager.getStatus("delegation-missing")?.status).toBe("running")
+      expect(manager.getStatus("delegation-missing")?.error).toContain("unverified after restart")
     })
 
     it("marks unrecoverable headless delegations with non-resumable-after-restart terminal detail", async () => {
@@ -1705,7 +1712,7 @@ describe("DelegationManager", () => {
       await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
-      expect(delegation?.status).toBe("completed")
+      expect(delegation?.status).toBe("error")
       expect(delegation?.result).toBe("")
     })
 
@@ -1730,7 +1737,7 @@ describe("DelegationManager", () => {
       await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
 
       const delegation = manager.getStatus(result.delegationId)
-      expect(delegation?.status).toBe("completed")
+      expect(delegation?.status).toBe("error")
       expect(delegation?.result).toBe("")
     })
 
@@ -1841,13 +1848,11 @@ describe("DelegationManager", () => {
         data: [{ role: "assistant", parts: [{ type: "text", text: "task completed successfully" }] }],
       })
 
-      // Dispatch prompt (call 1, child session) succeeds.
-      // Notification prompt (call 2, parent session) throws.
+      // Dispatch prompt uses promptAsync; notification prompt uses prompt and throws.
       // notifyDelegationTerminal() catches the error internally (fire-and-forget).
       let promptCallCount = 0
       client.session.prompt.mockImplementation(async () => {
         promptCallCount++
-        if (promptCallCount === 1) return undefined // dispatch prompt succeeds
         throw new Error("Notification delivery failed")
       })
 
@@ -1874,8 +1879,8 @@ describe("DelegationManager", () => {
       expect(delegation?.error).toBeUndefined()
       expect(delegation?.completedAt).toBeGreaterThan(0)
 
-      // 4. Notification was attempted (second prompt call = parent notification)
-      expect(promptCallCount).toBeGreaterThanOrEqual(2)
+      // 4. Notification was attempted through parent prompt delivery.
+      expect(promptCallCount).toBeGreaterThanOrEqual(1)
 
       // 5. Notification failure was logged (not silently swallowed)
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -1909,7 +1914,6 @@ describe("DelegationManager", () => {
       let promptCallCount = 0
       client.session.prompt.mockImplementation(async () => {
         promptCallCount += 1
-        if (promptCallCount === 1) return undefined
         throw new Error("Parent session unavailable")
       })
 
@@ -2178,7 +2182,7 @@ describe("DelegationManager", () => {
       // Trigger persistAllDelegations via dispatch (which internally calls it)
       // The dispatch will call persistAllDelegations, which should trigger auto-prune
       client.session.create.mockResolvedValue({ data: { id: "child-auto-dispatch" } })
-      client.session.prompt.mockResolvedValue(undefined)
+      client.session.promptAsync.mockResolvedValue(undefined)
 
       await manager.dispatch({
         parentSessionId: "ses-parent-auto",
@@ -2235,7 +2239,7 @@ describe("DelegationManager", () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-depth-1" } })
-      client.session.prompt.mockResolvedValue(undefined)
+      client.session.promptAsync.mockResolvedValue(undefined)
       const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
@@ -2252,7 +2256,7 @@ describe("DelegationManager", () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-depth-2" } })
-      client.session.prompt.mockResolvedValue(undefined)
+      client.session.promptAsync.mockResolvedValue(undefined)
       const manager = new DelegationManager(client as never)
       const internals = getInternals(manager)
 
@@ -2288,7 +2292,7 @@ describe("DelegationManager", () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-depth-exceed" } })
-      client.session.prompt.mockResolvedValue(undefined)
+      client.session.promptAsync.mockResolvedValue(undefined)
       const manager = new DelegationManager(client as never)
       const internals = getInternals(manager)
 

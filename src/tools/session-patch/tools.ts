@@ -3,8 +3,8 @@
  * @module tools/session-patch/tools
  */
 import { tool } from "@opencode-ai/plugin/tool"
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs"
-import { dirname, join } from "node:path"
+import { existsSync, readFileSync, writeFileSync, mkdirSync, realpathSync } from "node:fs"
+import { dirname, join, resolve, relative, basename } from "node:path"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 import { SessionPatchRecordSchema } from "../../schema-kernel/prompt-enhance.schema.js"
@@ -16,7 +16,7 @@ import type { SessionPatchRecord } from "./types.js"
  * @returns Configured OpenCode tool for session file section patching
  */
 export function createSessionPatchTool(
-  _projectRoot: string,
+  projectRoot: string,
 ): ReturnType<typeof tool> {
   const s = tool.schema
 
@@ -37,16 +37,22 @@ export function createSessionPatchTool(
       args: { sessionFilePath: string; section: string; newContent: string },
       _context: { sessionID?: string },
     ): Promise<string> {
-      if (!existsSync(args.sessionFilePath)) {
+      const pathResult = resolveAllowedSessionPath(projectRoot, args.sessionFilePath)
+      if (!pathResult.allowed) {
+        return renderToolResult(error(pathResult.reason))
+      }
+      const sessionFilePath = pathResult.path
+
+      if (!existsSync(sessionFilePath)) {
         return renderToolResult(error("Session file not found"))
       }
 
-      const backupDir = join(dirname(args.sessionFilePath), ".patches")
+      const backupDir = join(dirname(sessionFilePath), ".patches")
       mkdirSync(backupDir, { recursive: true })
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
       const backupPath = join(backupDir, `backup-${timestamp}.md`)
 
-      const original = readFileSync(args.sessionFilePath, "utf-8")
+      const original = readFileSync(sessionFilePath, "utf-8")
       writeFileSync(backupPath, original)
 
       const escapedSection = args.section.replace(
@@ -68,7 +74,7 @@ export function createSessionPatchTool(
         headingRegex,
         `${args.section}\n${args.newContent}\n`,
       )
-      writeFileSync(args.sessionFilePath, updated)
+      writeFileSync(sessionFilePath, updated)
 
       const patchCountMatch = updated.match(/^patch_count:\s*(\d+)/m)
       const currentCount = patchCountMatch
@@ -78,7 +84,7 @@ export function createSessionPatchTool(
         /^patch_count:\s*\d+/m,
         `patch_count: ${currentCount + 1}`,
       )
-      writeFileSync(args.sessionFilePath, withUpdatedCount)
+      writeFileSync(sessionFilePath, withUpdatedCount)
 
       const record: SessionPatchRecord = {
         section: args.section,
@@ -100,4 +106,35 @@ export function createSessionPatchTool(
       )
     },
   })
+}
+
+type SessionPathResult =
+  | { allowed: true; path: string }
+  | { allowed: false; reason: string }
+
+/**
+ * Resolve and validate session-patch targets against the active project root.
+ *
+ * @param projectRoot - OpenCode project root supplied by the plugin.
+ * @param sessionFilePath - Caller-provided session artifact path.
+ * @returns An allowed absolute path or a rejection reason.
+ */
+function resolveAllowedSessionPath(projectRoot: string, sessionFilePath: string): SessionPathResult {
+  const absoluteProjectRoot = realpathSync(resolve(projectRoot))
+  const absoluteTarget = resolve(sessionFilePath)
+  const fileName = basename(absoluteTarget)
+  if (!/^session(?:-context-prompt)?(?:-[a-zA-Z0-9_-]+)?\.md$/.test(fileName)) {
+    return { allowed: false, reason: "Session patch target must be a session*.md artifact." }
+  }
+  if (!existsSync(absoluteTarget)) {
+    return { allowed: true, path: absoluteTarget }
+  }
+
+  const realTarget = realpathSync(absoluteTarget)
+  const rel = relative(absoluteProjectRoot, realTarget)
+  if (rel.startsWith("..") || rel === "" || rel.includes("..")) {
+    return { allowed: false, reason: "Session patch target must stay inside the active project root." }
+  }
+
+  return { allowed: true, path: realTarget }
 }

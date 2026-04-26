@@ -335,6 +335,17 @@ describe("inspect action", () => {
     expect(result.data.crossRefStatus).toBeDefined()
     expect(result.data.frontmatter).toBeDefined()
   })
+
+  it("rejects primitive path traversal names", async () => {
+    const result = parseResult(await tool.execute({
+      action: "inspect",
+      primitive: "agent",
+      name: "../config",
+      scope: "project",
+    }, mockCtx))
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("Invalid primitive name")
+  })
 })
 
 // ---------------------------------------------------------------------------

@@ -213,6 +213,29 @@ describe("plugin lifecycle wiring", () => {
     }
   })
 
+  it("composes tool-guard metadata injection with plugin event-tracker after-hook work", async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-composed-tool-after-"))
+    const output: { metadata?: unknown } = {}
+
+    try {
+      const plugin = await HarnessControlPlane({
+        client: createPluginClient(),
+        directory: projectRoot,
+      } as never)
+
+      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } } })
+      await plugin["tool.execute.before"]?.({ sessionID: "ses_23a0root", tool: "bash" }, { args: { command: "true" } })
+      await plugin["tool.execute.after"]?.({ tool: "bash", args: { sessionID: "ses_23a0root" } }, output)
+
+      expect(output.metadata).toEqual(expect.objectContaining({
+        _harness: expect.objectContaining({ totalToolCalls: 1 }),
+      }))
+      expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_23a0.json"))).toBe(true)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it("registers run-background-command when a shared PTY manager is supported", async () => {
     vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(true)
 

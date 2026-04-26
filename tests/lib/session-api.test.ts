@@ -45,22 +45,17 @@ describe("session-api typed wrappers", () => {
       })
     })
 
-    it("forwards a provided permission field unchanged", async () => {
+    it("does not forward unsupported permission fields to session.create", async () => {
       const client = mockClient()
       client.session.create.mockResolvedValue({ data: { id: "s3" } })
-      const permission = [
-        { permission: "read", action: "allow" },
-        { permission: "write", action: "allow" },
-      ]
 
       const { createSession } = await import("../../src/lib/session-api.js")
       await createSession(client, {
         title: "test",
-        permission,
       })
 
       expect(client.session.create).toHaveBeenCalledWith({
-        body: { title: "test", permission },
+        body: { title: "test" },
       })
     })
 

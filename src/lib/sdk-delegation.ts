@@ -99,7 +99,9 @@ export class SdkDelegationHandler {
 
       this.callbacks.scheduleSafetyCeiling(delegation)
     } catch {
-      this.callbacks.onTerminal(delegation.id, "error", "Child session not found on recovery")
+      delegation.error = "[Harness] Delegation unverified after restart; recovery will retry through safety ceiling."
+      this.callbacks.persistAllDelegations()
+      this.callbacks.scheduleSafetyCeiling(delegation)
     }
   }
 
@@ -196,6 +198,14 @@ export class SdkDelegationHandler {
         }),
       )
       delegation.result = extractAllAssistantText(Array.isArray(messages) ? messages : [])
+      if (!delegation.result.trim()) {
+        this.callbacks.onTerminal(
+          delegationId,
+          "error",
+          "[Harness] Delegation reached stability without assistant completion evidence; manual review required.",
+        )
+        return
+      }
       this.callbacks.onTerminal(delegationId, "completed")
     } catch (error) {
       this.callbacks.onTerminal(delegationId, "error", error instanceof Error ? error.message : String(error))

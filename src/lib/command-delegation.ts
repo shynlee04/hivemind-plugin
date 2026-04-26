@@ -11,6 +11,7 @@ import type { CommandDelegationParams, Delegation, DelegationResult, DelegationT
 export type HeadlessCommandState = {
   process: ChildProcessWithoutNullStreams
   output: string
+  truncated: boolean
 }
 
 type CommandDelegationCallbacks = {
@@ -32,6 +33,7 @@ type CommandDelegationCallbacks = {
 }
 
 const COMMAND_POLL_INTERVAL_MS = 250
+const MAX_HEADLESS_OUTPUT_CHARS = 64_000
 
 // ---------------------------------------------------------------------------
 // CommandDelegationHandler
@@ -184,19 +186,19 @@ export class CommandDelegationHandler {
       queueKey,
     }
 
-    const state: HeadlessCommandState = { process: child, output: "" }
+    const state: HeadlessCommandState = { process: child, output: "", truncated: false }
     child.stdout.on("data", (chunk: Buffer | string) => {
-      state.output += chunk.toString()
+      appendHeadlessOutput(state, chunk.toString())
     })
     child.stderr.on("data", (chunk: Buffer | string) => {
-      state.output += chunk.toString()
+      appendHeadlessOutput(state, chunk.toString())
     })
     child.on("error", (error) => {
-      this.finalizeCommandDelegation(delegation.id, { output: state.output, error: describeError(error) })
+      this.finalizeCommandDelegation(delegation.id, { output: renderHeadlessOutput(state), error: describeError(error) })
     })
     child.on("exit", (exitCode, signal) => {
       this.finalizeCommandDelegation(delegation.id, {
-        output: state.output,
+        output: renderHeadlessOutput(state),
         exitCode: exitCode ?? 0,
         signal: signal ?? undefined,
       })
@@ -260,6 +262,7 @@ export class CommandDelegationHandler {
     }
 
     delegation.result = outcome.output
+    delegation.resultTruncated = outcome.output?.startsWith("[Harness] Headless output truncated") ?? false
     const explicitCancellation = delegation.explicitCancellation ?? false
 
     if (outcome.error) {
@@ -367,4 +370,32 @@ export class CommandDelegationHandler {
       ...(extraEnv ?? {}),
     }
   }
+}
+
+/**
+ * Append process output while bounding retained memory.
+ *
+ * @param state - Mutable headless command tracking state.
+ * @param chunk - New stdout/stderr text.
+ */
+function appendHeadlessOutput(state: HeadlessCommandState, chunk: string): void {
+  state.output += chunk
+  if (state.output.length <= MAX_HEADLESS_OUTPUT_CHARS) {
+    return
+  }
+  state.truncated = true
+  state.output = state.output.slice(state.output.length - MAX_HEADLESS_OUTPUT_CHARS)
+}
+
+/**
+ * Render bounded headless output with visible truncation metadata.
+ *
+ * @param state - Headless command tracking state.
+ * @returns Output string safe to persist in delegation records.
+ */
+function renderHeadlessOutput(state: HeadlessCommandState): string {
+  if (!state.truncated) {
+    return state.output
+  }
+  return `[Harness] Headless output truncated to last ${MAX_HEADLESS_OUTPUT_CHARS} characters.\n${state.output}`
 }

@@ -13,7 +13,6 @@ type CreateSessionOptions = {
   parentID?: string
   title: string
   directory?: string
-  permission?: unknown
 }
 
 type GetSessionMessagesOptions = {
@@ -35,12 +34,11 @@ function assertValidSessionID(sessionID: string, label = "session ID"): string {
 }
 
 export async function createSession(client: OpenCodeClient, opts: CreateSessionOptions): Promise<SessionRecord> {
-  const { directory, permission, ...body } = opts
+  const { directory, ...body } = opts
   const request: SessionCreateRequest = {
     body: {
       ...body,
       ...(body.parentID ? { parentID: assertValidSessionID(body.parentID, "parent session ID") } : {}),
-      ...(permission !== undefined ? { permission } : {}),
     },
     ...(directory ? { query: { directory } } : {}),
   }
