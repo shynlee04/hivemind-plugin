@@ -50,4 +50,40 @@ describe("buildSdkSpawnRequest", () => {
       tools: ["read", "glob", "grep"],
     })
   })
+
+  it("fails closed when restrictive ask and deny permission records do not explicitly allow tools", () => {
+    const profile = resolveDelegationPermissionProfile(
+      { ...baseParams, agent: "review", prompt: "review code" },
+      {
+        name: "review",
+        permission: {
+          edit: "deny",
+          bash: "ask",
+        },
+      },
+    )
+
+    expect(profile).toEqual({
+      mode: "review-only",
+      tools: ["read", "glob", "grep"],
+    })
+  })
+
+  it("does not escalate task intent when an ambiguous restrictive permission record is present", () => {
+    const profile = resolveDelegationPermissionProfile(
+      { ...baseParams, agent: "builder", prompt: "Implement the fix with write access" },
+      {
+        name: "builder",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+        },
+      },
+    )
+
+    expect(profile).toEqual({
+      mode: "read-only",
+      tools: ["read", "glob", "grep"],
+    })
+  })
 })

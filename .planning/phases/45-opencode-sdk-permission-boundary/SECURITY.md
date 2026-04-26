@@ -2,7 +2,7 @@
 
 **Phase:** 45 — OpenCode SDK Permission Boundary  
 **Verified:** 2026-04-27  
-**Baseline:** after residual remediation 2026-04-27  
+**Baseline:** after CR-01 residual blocker remediation following commit `566ffd56` (`fix(45): close residual permission boundary gaps`)
 **ASVS Level:** 1  
 **Threats Closed:** 4/4  
 
@@ -11,9 +11,9 @@
 | Threat ID | Category | Disposition | Status | Evidence |
 |-----------|----------|-------------|--------|----------|
 | P45-T1 | Unsupported permission forwarding to `session.create` | mitigate | CLOSED | `src/lib/session-api.ts:36-47` only sends `parentID`, `title`, and optional `query.directory`; `src/lib/spawner/session-creator.ts:19-23` calls `createSession` without permission fields; `tests/lib/session-api.test.ts:48-60` and `tests/lib/spawner/session-creator.test.ts:14-47` cover this request shape. |
-| P45-T2 | Permission boundary not applied at prompt time | mitigate | CLOSED | `src/lib/delegation-manager.ts:51-57` builds prompt-time tool allow/deny map; `src/lib/delegation-manager.ts:143-151` passes it to `session.promptAsync`; `tests/lib/delegation-manager.test.ts:640-668` verifies the prompt body includes the tool map. |
+| P45-T2 | Permission boundary not applied at prompt time | mitigate | CLOSED | `src/lib/delegation-manager.ts:51-57` builds prompt-time tool allow/deny map; `src/lib/delegation-manager.ts:143-151` passes it to `session.promptAsync`; `tests/lib/delegation-manager.test.ts:640-668` verifies the prompt body includes the tool map and recursive delegation denial. |
 | P45-T3 | Recursive delegation from child sessions | mitigate | CLOSED | `src/lib/delegation-manager.ts:54-55` explicitly denies `delegate-task` and `task`; `tests/lib/delegation-manager.test.ts:651-665` asserts both are false in the prompt-time tool map. |
-| P45-T4 | Hard-coded delegated permission profile | mitigate | CLOSED | `src/lib/spawner/spawn-request-builder.ts` now derives the prompt-time permission profile from selected agent primitive metadata (`permission` / legacy `tools`) and task intent. Unknown agents fall back to read-only tools (`read`, `glob`, `grep`) instead of broad write-capable defaults; review/research/audit/verify tasks resolve to review-only. `src/lib/delegation-manager.ts` enriches live SDK agent metadata from local `.opencode/agents/*.md` when available before spawning. |
+| P45-T4 | Hard-coded delegated permission profile | mitigate | CLOSED | `src/lib/spawner/spawn-request-builder.ts:70-82` derives the prompt-time permission profile from selected agent primitive metadata (`permission` / legacy `tools`) and task intent. `src/lib/spawner/spawn-request-builder.ts:84-113` now treats `ask`/unknown permission states as not auto-allowed, expands restrictive edit/write deny records before task-intent escalation, and fails closed to read-only tools (`read`, `glob`, `grep`) when a permission/tool record is present but no prompt tool is explicitly allowed. `src/lib/spawner/agent-primitive-policy.ts:37-47` enriches live SDK agent metadata from local `.opencode/agents/*.md` when available before spawning. `tests/lib/spawner/spawn-request-builder.test.ts:11-88` covers review-only, write-capable metadata, unknown-agent read-only fallback, restrictive `ask`/`deny` permission maps, and ambiguous restrictive records. |
 
 ## Threat Flags
 
@@ -21,9 +21,10 @@ No `## Threat Flags` section was present in `45-SUMMARY-2026-04-27.md`.
 
 ## Test Evidence
 
-- `npx vitest run tests/lib/delegation-manager.test.ts tests/lib/spawner/spawn-request-builder.test.ts tests/lib/spawner/session-creator.test.ts tests/tools/configure-primitive.test.ts tests/tools/session-patch.test.ts` — **PASS**, 5 files / 143 tests.
+- `npx vitest run tests/lib/spawner/spawn-request-builder.test.ts` — **PASS**, 1 file / 5 tests (includes RED-proven CR-01 restrictive `ask`/`deny` regressions).
+- `npx vitest run tests/lib/spawner/spawn-request-builder.test.ts tests/lib/delegation-manager.test.ts tests/lib/spawner/session-creator.test.ts` — **PASS**, 3 files / 99 tests (targeted spawner/delegation prompt policy suite).
 - `npm run typecheck` — **PASS**.
-- `npm test` — **PASS**, 50 files / 905 tests.
+- `npm test` — **PASS**, 50 files / 907 tests.
 - `npm run build` — **PASS**.
 
 ## Residual Risks

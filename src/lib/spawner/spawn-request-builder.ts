@@ -84,13 +84,31 @@ export function resolveDelegationPermissionProfile(
 function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | undefined {
   if (agent.tools) {
     const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => agent.tools?.[toolName] === true)
-    if (allowed.length > 0) return allowed
+    return allowed.length > 0 ? allowed : READ_ONLY_TOOLS
   }
   if (!agent.permission) return undefined
   const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => isPermissionAllowed(agent.permission?.[toolName]))
   const denied = new Set(WRITE_CAPABLE_TOOLS.filter((toolName) => isPermissionDenied(agent.permission?.[toolName])))
-  const result = (allowed.length > 0 ? allowed : WRITE_CAPABLE_TOOLS).filter((toolName) => !denied.has(toolName))
+  addPromptToolDenialsForPrimitivePolicy(agent.permission, denied)
+  const result = allowed.filter((toolName) => !denied.has(toolName))
   return result.length > 0 ? result : READ_ONLY_TOOLS
+}
+
+/**
+ * Expand OpenCode primitive-level deny records into the prompt-time tool IDs
+ * controlled by the harness delegation layer.
+ *
+ * @param permission - Agent primitive permission map from OpenCode metadata.
+ * @param denied - Mutable set of prompt-time tool names that must not be auto-allowed.
+ */
+function addPromptToolDenialsForPrimitivePolicy(permission: PrimitivePermission, denied: Set<string>): void {
+  if (isPermissionDenied(permission.edit)) {
+    denied.add("edit")
+    denied.add("write")
+  }
+  if (isPermissionDenied(permission.write)) {
+    denied.add("write")
+  }
 }
 
 function isPermissionAllowed(value: unknown): boolean {
@@ -102,7 +120,8 @@ function isPermissionAllowed(value: unknown): boolean {
 function isPermissionDenied(value: unknown): boolean {
   if (value === false || value === "deny") return true
   if (typeof value !== "object" || value === null) return false
-  return Object.values(value as Record<string, unknown>).every(isPermissionDenied)
+  const nestedValues = Object.values(value as Record<string, unknown>)
+  return nestedValues.length > 0 && nestedValues.every(isPermissionDenied)
 }
 
 function isReviewOnlyTask(
