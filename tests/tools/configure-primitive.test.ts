@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest"
 import { createConfigurePrimitiveTool } from "../../src/tools/configure-primitive.js"
 import { mixedBatchCompile } from "../../src/lib/config-compiler.js"
-import { existsSync, unlinkSync, rmdirSync } from "node:fs"
+import { existsSync, unlinkSync, rmdirSync, mkdtempSync, rmSync } from "node:fs"
 import { join } from "node:path"
+import { tmpdir } from "node:os"
 
 // ---------------------------------------------------------------------------
 // Mock context
@@ -242,6 +243,28 @@ describe("scope and overwrite", () => {
     // Cleanup
     cleanupFile(join(process.cwd(), ".opencode", "agents", "overwrite-test.md"))
   })
+
+  it("roots project-scope writes in explicit tool context instead of process cwd", async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), "configure-primitive-root-"))
+    const context = { ...mockCtx, directory: projectRoot, worktree: projectRoot }
+    try {
+      const result = parseResult(await tool.execute({
+        primitive: "agent",
+        spec: JSON.stringify({ description: "Context rooted agent", body: "# Body" }),
+        dryRun: false,
+        validate: true,
+        scope: "project",
+        overwrite: false,
+      }, context))
+
+      const expectedPath = join(projectRoot, ".opencode", "agents", "context-rooted-agent.md")
+      expect(result.kind).toBe("success")
+      expect(result.data.filePath).toBe(expectedPath)
+      expect(existsSync(expectedPath)).toBe(true)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -422,6 +445,22 @@ describe("mixed-primitive batch", () => {
     ], { validate: true, scope: "project" })
     expect(result.success).toBe(false)
     expect(result.results).toHaveLength(0)
+  })
+
+  it("rejects invalid primitive names in batch mode before compilation", async () => {
+    const result = parseResult(await tool.execute({
+      action: "compile",
+      primitives: [
+        { type: "agent", name: "bad/name", spec: JSON.stringify({ description: "Bad", body: "# B" }) },
+      ],
+      dryRun: true,
+      validate: true,
+      scope: "project",
+      overwrite: false,
+    }, mockCtx))
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("Invalid primitive name")
   })
 
   it("batchCompile creates all files atomically (all-or-nothing)", async () => {

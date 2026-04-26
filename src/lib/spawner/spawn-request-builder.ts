@@ -1,7 +1,17 @@
 import type { DelegationSpawnRequest } from "./spawner-types.js"
 import { DEFAULT_SAFETY_CEILING_MS } from "../types.js"
 
-type ValidatedAgent = { name: string; provider?: string; model?: string; category?: string }
+type PrimitivePermission = Record<string, unknown>
+
+type ValidatedAgent = {
+  name: string
+  provider?: string
+  model?: string
+  category?: string
+  description?: string
+  permission?: PrimitivePermission
+  tools?: Record<string, boolean>
+}
 
 type DelegateParams = {
   parentSessionId: string
@@ -17,6 +27,11 @@ type DelegateParams = {
 }
 
 export type { ValidatedAgent, DelegateParams }
+
+const READ_ONLY_TOOLS = ["read", "glob", "grep"] as const
+const WRITE_CAPABLE_TOOLS = ["read", "edit", "write", "bash", "glob", "grep"] as const
+const WRITE_TOOLS = new Set(["edit", "write", "bash"])
+const REVIEW_MARKERS = ["review", "critic", "audit", "verify", "research", "inspect", "read-only"]
 
 /**
  * Build a canonical SDK spawn request from delegation dispatch parameters.
@@ -34,9 +49,69 @@ export function buildSdkSpawnRequest(
     workingDirectory,
     executionMode: "sdk",
     safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
-    permissionProfile: {
-      mode: "write-capable",
-      tools: ["read", "edit", "write", "bash", "glob", "grep"],
-    },
+    permissionProfile: resolveDelegationPermissionProfile(params, agent),
   }
+}
+
+/**
+ * Derive the least-privilege delegated tool profile from selected agent
+ * primitive metadata and task intent.
+ *
+ * @param params - User delegation request details used for task-intent checks.
+ * @param agent - Selected OpenCode agent metadata from live or local primitive data.
+ * @returns Conservative prompt-time tool allowlist for the child session.
+ *
+ * @example
+ * ```typescript
+ * const profile = resolveDelegationPermissionProfile({ agent: "critic", prompt: "review", parentSessionId: "p" }, { name: "critic" });
+ * // profile.mode === "review-only"
+ * ```
+ */
+export function resolveDelegationPermissionProfile(
+  params: Pick<DelegateParams, "agent" | "title" | "prompt" | "category">,
+  agent: ValidatedAgent,
+): DelegationSpawnRequest["permissionProfile"] {
+  const explicitTools = toolsFromAgentMetadata(agent)
+  const intentTools = isReviewOnlyTask(params, agent) ? READ_ONLY_TOOLS : undefined
+  const tools = explicitTools ?? intentTools ?? READ_ONLY_TOOLS
+  const writeCapable = tools.some((toolName) => WRITE_TOOLS.has(toolName))
+  return {
+    mode: writeCapable ? "write-capable" : (isReviewOnlyTask(params, agent) ? "review-only" : "read-only"),
+    tools,
+  }
+}
+
+function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | undefined {
+  if (agent.tools) {
+    const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => agent.tools?.[toolName] === true)
+    if (allowed.length > 0) return allowed
+  }
+  if (!agent.permission) return undefined
+  const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => isPermissionAllowed(agent.permission?.[toolName]))
+  const denied = new Set(WRITE_CAPABLE_TOOLS.filter((toolName) => isPermissionDenied(agent.permission?.[toolName])))
+  const result = (allowed.length > 0 ? allowed : WRITE_CAPABLE_TOOLS).filter((toolName) => !denied.has(toolName))
+  return result.length > 0 ? result : READ_ONLY_TOOLS
+}
+
+function isPermissionAllowed(value: unknown): boolean {
+  if (value === true || value === "allow") return true
+  if (typeof value !== "object" || value === null) return false
+  return Object.values(value as Record<string, unknown>).some(isPermissionAllowed)
+}
+
+function isPermissionDenied(value: unknown): boolean {
+  if (value === false || value === "deny") return true
+  if (typeof value !== "object" || value === null) return false
+  return Object.values(value as Record<string, unknown>).every(isPermissionDenied)
+}
+
+function isReviewOnlyTask(
+  params: Pick<DelegateParams, "agent" | "title" | "prompt" | "category">,
+  agent: ValidatedAgent,
+): boolean {
+  const haystack = [params.agent, params.title, params.prompt, params.category, agent.name, agent.category, agent.description]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLowerCase()
+  return REVIEW_MARKERS.some((marker) => haystack.includes(marker))
 }

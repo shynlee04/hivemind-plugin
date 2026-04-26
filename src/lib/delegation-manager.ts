@@ -7,6 +7,7 @@ import { unwrapData } from "./helpers.js"
 import type { PtyManager } from "./pty/pty-manager.js"
 import { CommandDelegationHandler } from "./command-delegation.js"
 import { SdkDelegationHandler } from "./sdk-delegation.js"
+import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
 import { spawnDelegatedSession } from "./spawner/session-creator.js"
@@ -103,7 +104,11 @@ export class DelegationManager {
         `Current depth: ${nestingDepth}. Use result retrieval pattern instead of further delegation.`,
       )
     }
-    const agent = await this.validateAgent(params.agent)
+    const workingDirectory = resolveParentWorkingDirectory({
+      contextDirectory: params.workingDirectory,
+      worktree: params.worktree,
+    })
+    const agent = await this.validateAgent(params.agent, workingDirectory)
     const canonicalContext = this.buildCanonicalQueueContext(agent, params)
     const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
     const spawnQueueKey = resolveDelegationConcurrencyKey(canonicalContext)
@@ -112,11 +117,6 @@ export class DelegationManager {
     }
     const release = await this.semaphore.acquire(acquireQueueKey, undefined, undefined)
     try {
-      const workingDirectory = resolveParentWorkingDirectory({
-        contextDirectory: params.workingDirectory,
-        worktree: params.worktree,
-      })
-
       const child = await spawnDelegatedSession({
         client: this.client as never,
         request: buildSdkSpawnRequest(params, agent, workingDirectory),
@@ -409,7 +409,7 @@ export class DelegationManager {
     this.delegationsBySession.delete(childSessionId)
   }
 
-  private async validateAgent(agent: string): Promise<ValidatedAgent> {
+  private async validateAgent(agent: string, projectRoot: string): Promise<ValidatedAgent> {
     let agents: Array<Record<string, unknown>> | undefined
 
     try {
@@ -425,7 +425,7 @@ export class DelegationManager {
         console.warn(
           `[Harness] Agent list validation skipped — server returned agents with missing fields. Proceeding with unvalidated agent "${agent}".`,
         )
-        return { name: agent }
+        return enrichAgentFromPrimitives({ name: agent }, projectRoot)
       }
       throw error
     }
@@ -435,12 +435,15 @@ export class DelegationManager {
       provider: typeof e.provider === "string" ? e.provider : undefined,
       model: typeof e.model === "string" ? e.model : undefined,
       category: typeof e.category === "string" ? e.category : undefined,
+      description: typeof e.description === "string" ? e.description : undefined,
+      permission: parsePermissionRecord(e.permission),
+      tools: parseToolBooleans(e.tools),
     })).filter((e) => e.name.length > 0)
     const names = validAgents.map((e) => e.name)
     if (!names.includes(agent)) {
       throw new Error(`[Harness] Invalid agent: "${agent}". Available: [${names.join(", ")}]`)
     }
-    return validAgents.find((e) => e.name === agent) ?? { name: agent }
+    return enrichAgentFromPrimitives(validAgents.find((e) => e.name === agent) ?? { name: agent }, projectRoot)
   }
 
   private buildResult(delegation: Delegation): DelegationResult {

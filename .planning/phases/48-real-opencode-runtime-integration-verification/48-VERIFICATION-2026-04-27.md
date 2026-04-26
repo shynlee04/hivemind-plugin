@@ -1,47 +1,82 @@
 ---
 phase: 48
-status: degraded
-completed_date: 2026-04-27
+verified: 2026-04-27T00:30:00Z
+status: gaps_found_after_residual_permission_fix
+score: 17/18 remediation truths verified
+verdicts:
+  phase_43: PASS
+  phase_44: PASS
+  phase_45: PASS
+  phase_46: PASS
+  phase_47: PASS
+  phase_48: DEGRADED
+gaps:
+  - truth: "Selected-agent policy is derived from the agent primitive or explicit fallback."
+    status: remediated
+    reason: "Residual remediation now derives SDK delegated tool policy from live/local selected-agent metadata when available and falls back to read-only tools for unknown policy shapes."
+    artifacts:
+      - path: "src/lib/spawner/spawn-request-builder.ts"
+        issue: "Contains permission profile resolver and conservative fallback instead of hard-coded write-capable tools."
+      - path: "src/lib/delegation-manager.ts"
+        issue: "Enriches live SDK agent metadata from local .opencode agent primitive data before spawning."
+    missing:
+      - "Live OpenCode SDK may still omit full primitive permission data; fallback remains intentionally conservative."
+  - truth: "Real parent/child delegation can be created, prompted, observed, and polled without false lifecycle states."
+    status: partial
+    reason: "Live prompt_async accepted the prompt and persisted user/assistant records, but assistant parts were empty, so successful real child completion remains unproven."
+    artifacts:
+      - path: ".planning/phases/48-real-opencode-runtime-integration-verification/48-VERIFICATION-2026-04-27.md"
+        issue: "Runtime proof remains degraded for successful delegation completion."
+    missing:
+      - "Re-run live delegation proof with a provider/runtime that produces non-empty assistant completion evidence."
+human_verification:
+  - test: "Live dynamic tool execution / hook payload inspection"
+    expected: "A live runtime endpoint or harness fixture directly invokes a registered dynamic tool and captures the actual tool.execute.after payload shape."
+    why_human: "Installed OpenCode /doc exposes only /auth/{providerID} and /log; /experimental/tool/ids lists tools, but no dynamic tool execution endpoint was available to automate."
 ---
 
-# Phase 48 Verification — Real OpenCode Runtime Integration
+# Phase 48 Verification — Phases 43-48 Runtime Remediation
 
-## PASS Evidence
+I am subagent gsd-verifier; I cannot delegate further; I fulfilled the bounded verification task.
 
-| Requirement | Result | Evidence |
-|-------------|--------|----------|
-| REM-RUNTIME-01 | PASS | Package metadata checks completed; `npm run typecheck`, `npm test`, and `npm run build` passed in the prior execution window. |
-| REM-RUNTIME-02 | PASS | Disposable `opencode serve` fixture returned `{"healthy":true,"version":"0.0.0-dev-202604221948"}` from `/global/health`; session create/get/messages surfaces returned valid JSON. |
-| REM-RUNTIME-03 | PASS | `/experimental/tool/ids` included `delegate-task`, `delegation-status`, `run-background-command`, `prompt-skim`, `prompt-analyze`, `session-patch`, `session-journal-export`, `configure-primitive`, and `validate-restart`. |
+## Fresh Command Evidence
 
-## DEGRADED Evidence
+| Command | Result | Evidence |
+|---|---|---|
+| `npm run typecheck` | PASS | `tsc --noEmit` exited 0. |
+| `npm test` | PASS | 49 test files passed; 899 tests passed. |
+| `npm run build` | PASS | `npm run clean && tsc` exited 0. |
+| `npm view @opencode-ai/sdk version time.modified dist-tags --json` | PASS | Latest package metadata read; version `1.14.25`, modified `2026-04-26T17:14:22.640Z`. |
+| `npm view @opencode-ai/plugin version time.modified dist-tags exports --json` | PASS | Latest package metadata read; version `1.14.25`, exports include `.`, `./tui`, `./tool`. |
+| `opencode --version` | PASS | `0.0.0-dev-202604221948`. |
+| `opencode serve` health/tool IDs | PASS | `/global/health` returned `healthy:true`; `/experimental/tool/ids` listed harness tools including `delegate-task`, `delegation-status`, `run-background-command`, `prompt-skim`, `prompt-analyze`, `session-patch`, `session-journal-export`, `configure-primitive`, `validate-restart`. |
+| `opencode serve` docs/session surfaces | DEGRADED | `/doc` only listed `/auth/{providerID}` and `/log`; session create returned `ses_23532feeeffeg3AkVddmM9Dqns`; session messages initially `[]`. |
+| `prompt_async` live probe | DEGRADED | HTTP 204 accepted; after wait, messages summary was `{count:2, roles:[user,assistant], parts:[1,0]}` — assistant content empty. |
 
-| Requirement | Result | Evidence |
-|-------------|--------|----------|
-| REM-RUNTIME-04 | DEGRADED | OpenCode `/doc` in the fixture only exposed `/auth/{providerID}` and `/log`, while runtime REST endpoints existed outside the OpenAPI document. Hook payload shape remains covered by plugin lifecycle tests, not a live hook payload inspector. |
-| REM-RUNTIME-05 | DEGRADED | Live `prompt_async` accepted a prompt (`HTTP 204`) and persisted user/assistant message records, but the available fixture/provider returned an assistant message with empty parts. This correctly exercises the Phase 46 empty-completion guard but does not prove a successful real child delegation completion. |
+## Verdict Per Phase
 
-## Commands Run
+| Phase | Verdict | Acceptance Criteria Status | Evidence |
+|---|---|---|---|
+| 43 — Hook Composition Observability Integrity | PASS | 3/3 | `src/plugin.ts` composes `toolGuardHooks["tool.execute.after"]` before event-tracker persistence; tests include `tests/plugins/plugin-lifecycle.test.ts`; fresh full suite passed. |
+| 44 — Tool Write-Surface & Secret Hardening | PASS | 4/4 | `session-patch` validates `session*.md` and rejects existing outside-root targets; `configure-primitive` validates primitive names and awaits `fs.writeFile`; `mcp.json` uses env placeholders; fresh full suite passed. |
+| 45 — OpenCode SDK Permission Boundary | PASS | 3/3 | `session-api.ts` `createSession()` body only sends `parentID`/`title`; prompt-time `tools` map is used; `spawn-request-builder.ts` derives selected-agent tool policy from primitive metadata or conservative fallback. |
+| 46 — Delegation Dispatch, Completion & Recovery Truth | PASS | 3/3 | `DelegationManager.dispatch()` awaits `promptAsync` before returning `running`; `sdk-delegation.ts` errors on empty assistant completion evidence; recovery missing status remains non-terminal and schedules safety ceiling; fresh tests passed. |
+| 47 — Runtime Policy & Command Buffer Hardening | PASS | 3/3 | `plugin.ts` passes `resolveWorkspaceRuntimePolicy(projectDirectory)` into `loadRuntimePolicy()`; runtime-policy validation tests exist; `command-delegation.ts` caps output at 64,000 chars and renders truncation metadata. |
+| 48 — Real OpenCode Runtime Integration Verification | DEGRADED | 3/5 | Package/static/build/runtime health/session/tool ID checks passed. Live hook payload/dynamic tool execution and successful non-empty child delegation completion remain unproven. |
 
-```bash
-npm view @opencode-ai/sdk version time.modified dist-tags --json
-npm view @opencode-ai/plugin version time.modified dist-tags exports --json
-npm run typecheck
-npm test
-npm run build
-OPENCODE_SERVER_PASSWORD=devtest opencode serve --hostname 127.0.0.1 --port 4204
-curl -fsS -u opencode:devtest http://127.0.0.1:4204/global/health
-curl -fsS -u opencode:devtest http://127.0.0.1:4204/experimental/tool/ids
-OPENCODE_SERVER_PASSWORD=devtest opencode serve --hostname 127.0.0.1 --port 4205
-curl -fsS -u opencode:devtest -H 'Content-Type: application/json' -d '{"title":"phase48-runtime-fixture"}' http://127.0.0.1:4205/session
-curl -fsS -u opencode:devtest http://127.0.0.1:4205/session/status
-curl -fsS -u opencode:devtest http://127.0.0.1:4205/session/<id>
-curl -fsS -u opencode:devtest http://127.0.0.1:4205/session/<id>/message
-OPENCODE_SERVER_PASSWORD=devtest opencode serve --hostname 127.0.0.1 --port 4206
-curl -sS -u opencode:devtest -H 'Content-Type: application/json' -d '{"parts":[{"type":"text","text":"Say DONE only."}],"agent":"build"}' http://127.0.0.1:4206/session/<id>/prompt_async
-```
+## Acceptance Criteria Gaps
 
-## Blockers / Gaps
+1. **Phase 48 / REM-RUNTIME-04 degraded:** live OpenCode REST documentation did not expose a direct dynamic tool execution endpoint; hook payload assumptions remain unit/integration-test verified, not live-payload inspected.
+2. **Phase 48 / REM-RUNTIME-05 degraded:** live `prompt_async` accepted and persisted messages, but assistant message parts were empty; successful real child completion cannot be proven in this runtime/provider fixture.
 
-- No direct REST endpoint for invoking a dynamic tool was exposed by the installed SDK; only tool listing is available under `/experimental/tool` and `/experimental/tool/ids`.
-- The disposable runtime uses provider `zai-coding-plan/glm-5.1`; prompt acceptance succeeded, but assistant content was empty, preventing successful end-to-end delegation completion proof.
+## Roadmap / State Honesty
+
+Roadmap and STATE are **partially honest**:
+
+- Honest: Phase 48 remains correctly marked `DEGRADED`, and STATE calls out runtime gaps for dynamic tool execution and non-empty provider completion.
+- Updated: Phase 45 can remain `COMPLETE` after residual remediation because HIGH-01 no longer depends on a hard-coded write-capable spawn policy.
+
+---
+
+_Verified: 2026-04-27T00:30:00Z_
+_Verifier: the agent (gsd-verifier)_

@@ -640,6 +640,21 @@ describe("DelegationManager", () => {
     it("sends prompt to child session with correct agent and text parts", async () => {
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-prompt" } })
+      client.app.agents.mockResolvedValue({
+        data: [
+          {
+            name: "builder",
+            permission: {
+              read: "allow",
+              edit: "allow",
+              write: "allow",
+              bash: "allow",
+              glob: "allow",
+              grep: "allow",
+            },
+          },
+        ],
+      })
       const manager = new DelegationManager(client as never)
 
       await manager.dispatch({

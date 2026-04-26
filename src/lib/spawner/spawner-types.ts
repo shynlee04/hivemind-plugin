@@ -2,7 +2,7 @@
  * Canonical spawner contracts for delegated child sessions.
  *
  * These types define the request/result interfaces used by the spawner
- * subsystem to create background child sessions with write-capable permissions.
+ * subsystem to create background child sessions with bounded permissions.
  * The spawner owns session construction, PTY setup, and working-directory
  * resolution — it does NOT own completion detection or lifecycle coordination.
  *
@@ -18,15 +18,17 @@ export type DelegationExecutionMode = "sdk" | PtyExecutionMode
 // ---------------------------------------------------------------------------
 
 /**
- * Write-capable permission profile for delegated child sessions.
+ * Permission profile for delegated child sessions.
  *
- * Grants the child agent full file-system access (read, edit, write) plus
- * bash execution, glob, and grep — matching the minimum toolset required
- * for meaningful background implementation work.
+ * Profiles are derived from selected agent primitive permission metadata when
+ * available, then conservatively reduced by task intent. Unknown agents fall
+ * back to read-only tools instead of broad write-capable defaults.
  */
-export interface WriteCapablePermissionProfile {
-  mode: "write-capable"
-  tools: ["read", "edit", "write", "bash", "glob", "grep"]
+export interface DelegationPermissionProfile {
+  /** Coarse permission posture used for reporting and tests. */
+  mode: "read-only" | "review-only" | "write-capable"
+  /** Prompt-time OpenCode tool identifiers allowed for the child session. */
+  tools: readonly string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -55,7 +57,7 @@ export interface DelegationSpawnRequest {
   /** Maximum runtime ceiling in milliseconds (NOT a deadline). */
   safetyCeilingMs: number
   /** Permission profile controlling the child's tool access. */
-  permissionProfile: WriteCapablePermissionProfile
+  permissionProfile: DelegationPermissionProfile
 }
 
 // ---------------------------------------------------------------------------

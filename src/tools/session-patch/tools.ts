@@ -120,11 +120,16 @@ type SessionPathResult =
  * @returns An allowed absolute path or a rejection reason.
  */
 function resolveAllowedSessionPath(projectRoot: string, sessionFilePath: string): SessionPathResult {
-  const absoluteProjectRoot = realpathSync(resolve(projectRoot))
+  const resolvedProjectRoot = resolve(projectRoot)
+  const absoluteProjectRoot = realpathSync(resolvedProjectRoot)
   const absoluteTarget = resolve(sessionFilePath)
   const fileName = basename(absoluteTarget)
   if (!/^session(?:-context-prompt)?(?:-[a-zA-Z0-9_-]+)?\.md$/.test(fileName)) {
     return { allowed: false, reason: "Session patch target must be a session*.md artifact." }
+  }
+  const lexicalRel = relative(resolvedProjectRoot, absoluteTarget)
+  if (lexicalRel.startsWith("..") || lexicalRel === "" || lexicalRel.includes("..")) {
+    return { allowed: false, reason: "Session patch target must stay inside the active project root." }
   }
   if (!existsSync(absoluteTarget)) {
     return { allowed: true, path: absoluteTarget }

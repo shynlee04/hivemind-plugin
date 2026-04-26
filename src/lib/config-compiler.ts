@@ -280,11 +280,12 @@ export function batchCompile(
 
 export function mixedBatchCompile(
   specs: MixedPrimitiveSpec[],
-  options?: { dryRun?: boolean; validate?: boolean; scope?: "project" | "global" },
+  options?: { dryRun?: boolean; validate?: boolean; scope?: "project" | "global"; basePath?: string },
 ): MixedBatchResult {
   const warnings: string[] = []
   const compileOptions: CompileOptions = {
     scope: options?.scope,
+    basePath: options?.basePath,
     skipValidation: options?.validate === false,
   }
 

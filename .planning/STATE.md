@@ -4,8 +4,8 @@ milestone: v2.0
 milestone_name: milestone
 current_plan: phase-48-degraded
 status: ready-with-runtime-gaps
-stopped_at: Phases 43-47 complete; Phase 48 degraded pending live dynamic tool/delegation proof
-last_updated: "2026-04-27T00:10:00Z"
+stopped_at: Phase 45 residual permission gap remediated; Phase 48 degraded pending live dynamic tool/delegation proof
+last_updated: "2026-04-27T00:30:00Z"
 progress:
   total_phases: 49
   completed_phases: 23
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 48 runtime gaps — Phases 43-47 lifecycle remediation complete; Phase 48 live OpenCode proof is degraded pending dynamic tool execution and non-empty model completion evidence.
+**Current focus:** Phase 48 runtime gaps — Phase 45 residual selected-agent permission policy gap remediated; Phase 48 live OpenCode proof is degraded pending dynamic tool execution and non-empty model completion evidence.
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -45,7 +45,7 @@ Phase: 48 (real-opencode-runtime-integration-verification) — DEGRADED
 Plan: Runtime proof complete with documented gaps
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
-**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phase 48 live runtime verification degraded for tool-execute/delegation-completion proof.
+**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phase 45 residual permission follow-up applied; Phase 48 live runtime verification degraded for tool-execute/delegation-completion proof.
 **Next:** Provide/authorize a runtime with supported dynamic tool execution and non-empty provider completions, then re-run Phase 48 REM-RUNTIME-04/05.
 **Progress:** [█████████░] 92%
 
@@ -127,7 +127,7 @@ Phase 48: Runtime Integration Proof  DEGRADED (Live OpenCode health/session/tool
 | Phase 34 | COMPLETE | All 6 Gap 4 requirements verified as already implemented, edge-case tests added |
 | Phase 43 | COMPLETE | Hook after-hook composition preserves `_harness` metadata and event-tracker artifacts |
 | Phase 44 | COMPLETE | Session patch path hardening, primitive name validation, awaited writes, MCP secret placeholder |
-| Phase 45 | COMPLETE | OpenCode SDK session.create boundary aligned; prompt-time tool denial map used |
+| Phase 45 | COMPLETE | OpenCode SDK session.create boundary aligned; prompt-time tool denial map used; selected-agent tools derived from primitive metadata or conservative read-only fallback |
 | Phase 46 | COMPLETE | Prompt acceptance, empty completion evidence, and restart recovery truth hardened |
 | Phase 47 | COMPLETE | Workspace runtime policy reader and headless output truncation metadata added |
 

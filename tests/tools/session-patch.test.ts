@@ -127,6 +127,21 @@ describe("session-patch tool", () => {
     }
   })
 
+  it("rejects nonexistent session artifacts outside the project root during resolution", async () => {
+    const raw = await tool.execute(
+      {
+        sessionFilePath: join(tmpdir(), "session-patch-missing-outside", "session.md"),
+        section: "## Test",
+        newContent: "new",
+      },
+      mockCtx,
+    )
+
+    const result = parseResult(raw) as Record<string, unknown>
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("project root")
+  })
+
   it("increments patch_count in frontmatter", async () => {
     // First patch
     await tool.execute(

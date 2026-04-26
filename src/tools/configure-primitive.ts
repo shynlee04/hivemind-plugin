@@ -3,6 +3,7 @@ import { z } from "zod"
 import { parse as yamlParse } from "yaml"
 import { promises as fs, existsSync, mkdirSync } from "node:fs"
 import path from "node:path"
+import { resolveContextProjectRoot, resolvePrimitiveFilePath, resolveScopeBasePath } from "./configure-primitive-paths.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { success, error } from "../shared/tool-response.js"
 import {
@@ -99,7 +100,7 @@ export function createConfigurePrimitiveTool(): ReturnType<typeof tool> {
         case "decompile":
           return handleDecompile(args)
         case "read":
-          return handleRead(args)
+          return handleRead(args, context)
         case "list":
           return handleList(args, context)
         case "inspect":
@@ -119,8 +120,9 @@ export function createConfigurePrimitiveTool(): ReturnType<typeof tool> {
 
 async function handleCompile(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
-  _context: unknown,
+  context: unknown,
 ): Promise<string> {
+  const projectRoot = resolveContextProjectRoot(context)
   // Workflow turn enforcement — validate turn order if workflow params present
   if (args.workflowTurn !== undefined && args.workflowId) {
     const workflow = readWorkflow(args.workflowId)
@@ -142,7 +144,7 @@ async function handleCompile(
 
   // Batch mode: primitives array provided
   if (args.primitives && args.primitives.length > 0) {
-      return handleBatchCompile(args)
+      return handleBatchCompile(args, projectRoot)
   }
 
   // Single primitive mode (backward compatible)
@@ -164,7 +166,7 @@ async function handleCompile(
 
   // Route to correct compiler
   let result: import("../lib/config-compiler.js").CompileResult
-  const compileOptions = { scope: args.scope, skipValidation: !args.validate }
+  const compileOptions = { scope: args.scope, basePath: resolveScopeBasePath(args.scope, projectRoot), skipValidation: !args.validate }
 
   switch (args.primitive) {
     case "agent": {
@@ -216,10 +218,16 @@ async function handleCompile(
 
 function handleBatchCompile(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
+  projectRoot: string,
 ): string {
   const specs: import("../lib/config-compiler.js").MixedPrimitiveSpec[] = []
 
   for (const item of args.primitives!) {
+    try {
+      validatePrimitiveName(item.name)
+    } catch (nameError) {
+      return renderToolResult(error(nameError instanceof Error ? nameError.message : String(nameError)))
+    }
     let parsedSpec: Record<string, unknown>
     try {
       parsedSpec = parseSpec(item.spec)
@@ -248,6 +256,7 @@ function handleBatchCompile(
     dryRun: args.dryRun,
     validate: args.validate,
     scope: args.scope,
+    basePath: resolveScopeBasePath(args.scope, projectRoot),
   })
 
   if (!result.success) {
@@ -297,11 +306,13 @@ async function handleDecompile(
 
 async function handleRead(
   args: z.infer<typeof ConfigurePrimitiveInputSchema>,
+  context: unknown,
 ): Promise<string> {
   const primitive = args.primitive!
   let filePath: string
   try {
-    filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+    validatePrimitiveName(args.name!)
+    filePath = resolvePrimitiveFilePath(primitive, args.name!, args.scope, resolveContextProjectRoot(context))
   } catch (pathError) {
     return renderToolResult(error(pathError instanceof Error ? pathError.message : String(pathError)))
   }
@@ -360,7 +371,8 @@ async function handleInspect(
   const primitive = args.primitive!
   let filePath: string
   try {
-    filePath = resolvePrimitivePath(primitive, args.name!, args.scope)
+    validatePrimitiveName(args.name!)
+    filePath = resolvePrimitiveFilePath(primitive, args.name!, args.scope, resolveContextProjectRoot(context))
   } catch (pathError) {
     return renderToolResult(error(pathError instanceof Error ? pathError.message : String(pathError)))
   }
@@ -435,28 +447,6 @@ function handleResume(args: z.infer<typeof ConfigurePrimitiveInputSchema>): stri
 // ---------------------------------------------------------------------------
 // Path resolution
 // ---------------------------------------------------------------------------
-
-function resolvePrimitivePath(
-  primitive: "agent" | "command" | "skill",
-  name: string,
-  scope: "project" | "global",
-): string {
-  validatePrimitiveName(name)
-  const base = scope === "global"
-    ? (process.env.OPENCODE_CONFIG_DIR || `${process.env.HOME || "/tmp"}/.config/opencode`)
-    : ".opencode"
-
-  switch (primitive) {
-    case "agent":
-      return path.join(base, "agents", `${name}.md`)
-    case "command":
-      return path.join(base, "commands", `${name}.md`)
-    case "skill":
-      return path.join(base, "skills", name, "SKILL.md")
-    default:
-      return path.join(base, `${name}.md`)
-  }
-}
 
 /**
  * Reject primitive names that could escape the intended primitive directory.
