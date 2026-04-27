@@ -13,9 +13,10 @@ import { taskState } from "./lib/state.js"
 import { createCoreHooks } from "./hooks/create-core-hooks.js"
 import { createSessionHooks } from "./hooks/create-session-hooks.js"
 import { createToolGuardHooks } from "./hooks/create-tool-guard-hooks.js"
-import { asString, getNestedValue } from "./lib/helpers.js"
-import { redactTextSecrets } from "./lib/security/redaction.js"
-import { getEventSessionID } from "./lib/session-api.js"
+import { createDelegationEventObserver, createSessionJourneyEventObserver } from "./hooks/plugin-event-observers.js"
+import { createToolExecuteAfterHook } from "./hooks/tool-after-composer.js"
+import { summarizePluginToolOutput } from "./lib/plugin-tool-output-summary.js"
+import { createPtyManagerIfSupported } from "./lib/pty/pty-runtime.js"
 import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
@@ -33,39 +34,12 @@ import {
 } from "./lib/event-tracker/index.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
-const TOOL_OUTPUT_SUMMARY_LIMIT = 240
-
-function summarizePluginToolOutput(output: unknown): string {
-  const raw = typeof output === "string" ? output : JSON.stringify(output ?? "completed")
-  const redacted = redactTextSecrets(raw ?? "completed")
-  const normalized = redacted.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()
-  if (!normalized) return "completed"
-  return normalized.length <= TOOL_OUTPUT_SUMMARY_LIMIT ? normalized : `${normalized.slice(0, TOOL_OUTPUT_SUMMARY_LIMIT - 1)}…`
-}
-
-function resolveToolHookSessionId(args: Record<string, unknown> | undefined): string | undefined {
-  return (
-    asString(getNestedValue(args, ["sessionID"])) ??
-    asString(getNestedValue(args, ["sessionId"])) ??
-    asString(getNestedValue(args, ["rootSessionID"])) ??
-    asString(getNestedValue(args, ["rootSessionId"]))
-  )
-}
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const projectDirectory = directory ?? process.cwd()
   // Load workspace-level runtime policy once at startup.
   const runtimePolicy = loadRuntimePolicy(resolveWorkspaceRuntimePolicy(projectDirectory))
-  let ptyManager: import("./lib/pty/pty-manager.js").PtyManager | null = null
-  try {
-    const ptyModule = await import("./lib/pty/pty-manager.js")
-    const candidate = new ptyModule.PtyManager()
-    if (candidate.isSupported()) {
-      ptyManager = candidate
-    }
-  } catch {
-    ptyManager = null
-  }
+  const ptyManager = await createPtyManagerIfSupported()
 
   const delegationManager = new DelegationManager(client, { ptyManager, runtimePolicy })
   // Recovery runs asynchronously — must not block plugin init.
@@ -84,27 +58,23 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const deps = { client, lifecycleManager, stateManager: taskState }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
-  const delegationEventObserver = async ({ event }: { event?: unknown }) => {
-    const eventType = asString(getNestedValue(event, ["type"]))
-    const sessionId = getEventSessionID(event)
-
-    if (!eventType || !sessionId) {
-      return
+  const delegationEventObserver = createDelegationEventObserver()
+  const sessionJourneyEventObserver = createSessionJourneyEventObserver(shouldTrackEventTrackerEvent)
+  const consumeDelegationFact = async ({ event }: { event?: unknown }) => {
+    const fact = await delegationEventObserver({ event })
+    if (fact.kind === "delegation-session-idle") {
+      delegationManager.handleSessionIdle(fact.sessionId)
     }
-
-    if (eventType === "session.idle") {
-      delegationManager.handleSessionIdle(sessionId)
-      return
-    }
-
-    if (eventType === "session.deleted") {
-      delegationManager.handleSessionDeleted(sessionId)
+    if (fact.kind === "delegation-session-deleted") {
+      delegationManager.handleSessionDeleted(fact.sessionId)
     }
   }
-  const sessionJourneyEventObserver = async ({ event }: { event?: unknown }) => {
+  const consumeJourneyFact = async ({ event }: { event?: unknown }) => {
     try {
-      if (!shouldTrackEventTrackerEvent(event)) return
-      createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event, source: "plugin.event" } })
+      const fact = await sessionJourneyEventObserver({ event })
+      if (fact.kind === "session-journey-event") {
+        createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event: fact.event, source: fact.source } })
+      }
     } catch {
       // Best-effort audit projection: never block canonical OpenCode event handling.
     }
@@ -115,7 +85,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   return {
     ...createCoreHooks({
       ...deps,
-      eventObservers: [delegationEventObserver, sessionEventObserver, sessionJourneyEventObserver],
+      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeJourneyFact],
     }),
     ...sessionReadHooks,
     ...toolGuardHooks,
@@ -138,25 +108,13 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       input: { tool: string; args?: Record<string, unknown> },
       _output?: { metadata?: unknown; [key: string]: unknown } | string,
     ): Promise<void> => {
-      const sessionID = resolveToolHookSessionId(input.args)
-      if (_output && typeof _output === "object") {
-        await toolGuardHooks["tool.execute.after"]({ ...input, sessionID }, _output)
-      }
-
+      const fact = await createToolExecuteAfterHook({
+        toolGuardAfterHook: toolGuardHooks["tool.execute.after"],
+        summarizeOutput: summarizePluginToolOutput,
+      })(input, _output)
       try {
-        if (sessionID) {
-          const event = {
-            type: "tool.execute.after",
-            properties: {
-              sessionID,
-              tool: input.tool,
-              status: "completed",
-              resultSummary: summarizePluginToolOutput(_output),
-            },
-          }
-          if (shouldTrackEventTrackerEvent(event)) {
-            createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event, source: "plugin.tool.execute.after" } })
-          }
+        if (fact.kind === "tool-execute-after" && shouldTrackEventTrackerEvent(fact.event)) {
+          createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event: fact.event, source: fact.source } })
         }
       } catch {
         // Best-effort audit projection: never fail the tool call result.
