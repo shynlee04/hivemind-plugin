@@ -248,6 +248,17 @@ describe("plugin lifecycle wiring", () => {
     expect(plugin.tool["run-background-command"]).toBeDefined()
   })
 
+  it("registers run-background-command even when PTY manager is unsupported", async () => {
+    vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(false)
+
+    const plugin = await HarnessControlPlane({
+      client: createPluginClient(),
+      directory: process.cwd(),
+    } as never)
+
+    expect(plugin.tool["run-background-command"]).toBeDefined()
+  })
+
   it("treats HarnessLifecycleManager.launchDelegatedSession as a usable facade instead of a stub throw-path", async () => {
     const lifecycle = createHarnessLifecycleManager({
       client: createPluginClient() as never,
@@ -299,7 +310,7 @@ describe("plugin lifecycle wiring", () => {
 
     const hooks = createCoreHooks({
       client: client as never,
-      lifecycleManager: { handleEvent: vi.fn() } as never,
+      lifecycleManager: createHarnessLifecycleManager({ client: client as never, pollTimeoutMs: 180_000 }),
       stateManager: new TaskStateManager(),
     })
 
@@ -348,7 +359,7 @@ describe("plugin lifecycle wiring", () => {
 
     const hooks = createCoreHooks({
       client: client as never,
-      lifecycleManager: { handleEvent: vi.fn() } as never,
+      lifecycleManager: createHarnessLifecycleManager({ client: client as never, pollTimeoutMs: 180_000 }),
       stateManager: new TaskStateManager(),
     })
 

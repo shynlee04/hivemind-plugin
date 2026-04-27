@@ -17,6 +17,7 @@ import type { RuntimePolicy } from "../lib/types.js"
 import type { HarnessLifecycleManager } from "../lib/lifecycle-manager.js"
 import type { TaskStateManager } from "../lib/state.js"
 import { getDelegationMeta } from "../lib/state.js"
+import { classifyHookEffect } from "./hook-cqrs-boundary.js"
 
 // ---------------------------------------------------------------------------
 // Dependency shape
@@ -63,6 +64,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
 
   return {
     "tool.execute.before": async (input: BeforeInput, output: BeforeOutput): Promise<void> => {
+      classifyHookEffect("tool.execute.before")
       const sessionID = asString(getNestedValue(input, ["sessionID"]))
       const toolName = asString(getNestedValue(input, ["tool"]))
       const rawArgs = getNestedValue(output, ["args"])
@@ -109,6 +111,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
     },
 
     "tool.execute.after": async (input: AfterInput, output: AfterOutput): Promise<void> => {
+      classifyHookEffect("tool.execute.after")
       const sessionID = asString(getNestedValue(input, ["sessionID"]))
       if (!sessionID) {
         return

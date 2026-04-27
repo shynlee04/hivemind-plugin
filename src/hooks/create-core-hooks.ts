@@ -8,9 +8,8 @@
  * Stripped in 35: notification-handler, messages-transform removed (dead code).
  */
 import { asString, getNestedValue, isObject } from "../lib/helpers.js"
-import { getSessionContinuity, patchSessionContinuity } from "../lib/continuity.js"
-import { replayPendingNotifications } from "../lib/notification-handler.js"
 import { getEventSessionID } from "../lib/session-api.js"
+import { classifyHookEffect } from "./hook-cqrs-boundary.js"
 import type { HookDependencies } from "./types.js"
 
 // ---------------------------------------------------------------------------
@@ -49,34 +48,6 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
   const { lifecycleManager } = deps
   const eventObservers = deps.eventObservers ?? []
 
-  const replayPendingNotificationsForEvent = async (
-    sessionID: string,
-    eventType: string,
-  ): Promise<void> => {
-    const continuity = getSessionContinuity(sessionID)
-    const pendingNotifications = continuity?.metadata.pendingNotifications ?? []
-    if (pendingNotifications.length === 0) {
-      return
-    }
-
-    const shouldReplay =
-      (eventType === "session.created" && continuity?.metadata.lifecycle?.phase === "created") ||
-      eventType === "session.updated"
-
-    if (!shouldReplay) {
-      return
-    }
-
-    try {
-      const delivered = await replayPendingNotifications(deps.client, sessionID, pendingNotifications)
-      if (delivered) {
-        patchSessionContinuity(sessionID, { pendingNotifications: [] })
-      }
-    } catch {
-      // Best-effort replay: keep queued notifications for the next parent event.
-    }
-  }
-
   return {
     event: async ({ event }: EventInput): Promise<void> => {
       const eventType = asString(getNestedValue(event, ["type"]))
@@ -87,7 +58,7 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       }
 
       lifecycleManager.handleEvent({ event, eventType, sessionID })
-      await replayPendingNotificationsForEvent(sessionID, eventType)
+      await lifecycleManager.replayPendingNotificationsForEvent?.(sessionID, eventType)
 
       for (const observer of eventObservers) {
         await observer({ event })
@@ -114,6 +85,7 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       output: MessagesOutput,
     ): Promise<void> => {
       // Messages transformation stripped in Phase 35 — messages-transform.ts deleted
+      classifyHookEffect("messages.transform")
       output.messages = input.messages ?? []
     },
 
@@ -121,6 +93,7 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       _input: Record<string, unknown>,
       output: ShellEnvOutput,
     ): Promise<void> => {
+      classifyHookEffect("shell.env")
       output.env = {
         ...(isObject(output.env) ? output.env : {}),
         CI: "true",

@@ -92,9 +92,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
       "delegation-status": createDelegationStatusTool(delegationManager),
-      ...(ptyManager ? {
-        "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
-      } : {}),
+      "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
       "prompt-skim": createPromptSkimTool(projectDirectory),
       "prompt-analyze": createPromptAnalyzeTool(projectDirectory),
       "session-patch": createSessionPatchTool(projectDirectory),

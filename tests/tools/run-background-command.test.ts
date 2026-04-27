@@ -123,6 +123,48 @@ describe("run-background-command tool", () => {
     expect(data.explicitCancellation).toBe(false)
   })
 
+  it("routes run through DelegationManager.dispatchCommand when PTY manager is unavailable", async () => {
+    const delegationManager = createDelegationManagerStub()
+    delegationManager.dispatchCommand.mockResolvedValue({
+      status: "running",
+      delegationId: "delegation-headless-1",
+      executionMode: "headless",
+      surface: "command-process",
+      recoveryGuarantee: "non-resumable-after-restart",
+      workingDirectory: "/tmp/shared",
+      fallbackReason: "[Harness] PTY runtime unavailable in current environment",
+      queueKey: "category:command",
+      explicitCancellation: false,
+    })
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: delegationManager as unknown as DelegationManager,
+      ptyManager: null,
+    })
+
+    const raw = await tool.execute({ action: "run", command: "echo", args: ["hello"] } as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Record<string, unknown>
+
+    expect(result.kind).toBe("success")
+    expect(delegationManager.dispatchCommand).toHaveBeenCalledWith(expect.objectContaining({ command: "echo" }))
+    expect(data.executionMode).toBe("headless")
+  })
+
+  it("returns explicit PTY unavailable errors for interactive actions when no PTY manager exists", async () => {
+    const delegationManager = createDelegationManagerStub()
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: delegationManager as unknown as DelegationManager,
+      ptyManager: null,
+    })
+
+    const raw = await tool.execute({ action: "output", sessionId: "pty-missing" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("[Harness] PTY not available")
+    expect(delegationManager.dispatchCommand).not.toHaveBeenCalled()
+  })
+
   it("returns incremental output for a shared PTY session", async () => {
     const tool = createRunBackgroundCommandTool({
       delegationManager: createDelegationManagerStub() as unknown as DelegationManager,

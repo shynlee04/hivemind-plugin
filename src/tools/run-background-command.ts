@@ -109,10 +109,6 @@ export function createRunBackgroundCommandTool(args: {
     async execute(rawArgs: RunBackgroundCommandInput, context: ToolContext): Promise<string> {
       const parsed = RunBackgroundCommandInputSchema.parse(rawArgs)
 
-      if (!args.ptyManager) {
-        return renderToolResult(error("[Harness] PTY not available in current environment"))
-      }
-
       try {
         if (parsed.action === "run") {
           const parentSessionId = requireCallerSessionId(context, parsed.action)
@@ -131,6 +127,10 @@ export function createRunBackgroundCommandTool(args: {
           })
 
           return renderToolResult(success(`Background command started: ${parsed.command}`, result))
+        }
+
+        if (!args.ptyManager) {
+          return renderToolResult(error(`[Harness] PTY not available in current environment for run-background-command ${parsed.action}`))
         }
 
         if (parsed.action === "output") {

@@ -6,6 +6,7 @@
  */
 import { CompletionDetector } from "./completion-detector.js"
 import { getSessionContinuity, listSessionContinuity, patchSessionContinuity } from "./continuity.js"
+import { replayPendingNotifications } from "./notification-handler.js"
 import type { DelegationManager } from "./delegation-manager.js"
 import { abortSession, sendPrompt, type OpenCodeClient } from "./session-api.js"
 import { hydrateDelegationState, taskState } from "./state.js"
@@ -121,6 +122,37 @@ export class HarnessLifecycleManager {
 
     if (statusSignal === "idle" || eventType === "session.idle") {
       this.completionDetector.feed("session.idle", sessionID)
+    }
+  }
+
+  /**
+   * Replays queued parent-session notifications from the explicit write-side manager boundary.
+   *
+   * @param sessionID - Parent session observed by an OpenCode lifecycle event.
+   * @param eventType - OpenCode event type that may authorize replay.
+   */
+  async replayPendingNotificationsForEvent(sessionID: string, eventType: string): Promise<void> {
+    const continuity = getSessionContinuity(sessionID)
+    const pendingNotifications = continuity?.metadata.pendingNotifications ?? []
+    if (pendingNotifications.length === 0) {
+      return
+    }
+
+    const shouldReplay =
+      (eventType === "session.created" && continuity?.metadata.lifecycle?.phase === "created") ||
+      eventType === "session.updated"
+
+    if (!shouldReplay) {
+      return
+    }
+
+    try {
+      const delivered = await replayPendingNotifications(this.client, sessionID, pendingNotifications)
+      if (delivered) {
+        patchSessionContinuity(sessionID, { pendingNotifications: [] })
+      }
+    } catch {
+      // Best-effort replay: keep queued notifications for the next parent event.
     }
   }
 
