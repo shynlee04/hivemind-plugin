@@ -241,6 +241,20 @@ describe("DelegationManager", () => {
 
       expect(manager.getVisibleDelegationsForSession("ses-parent-owned").map((entry) => entry.id)).toEqual(["del-owned"])
     })
+
+    it("finds the delegation that owns a PTY session ID", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+      const owned = makeDelegation({
+        id: "del-pty-owned",
+        executionMode: "pty",
+        childSessionId: "pty:pty-owned",
+        ptySessionId: "pty-owned",
+      })
+      seedDelegation(manager, owned)
+
+      expect(manager.getDelegationForPtySession("pty-owned")?.id).toBe("del-pty-owned")
+      expect(manager.getDelegationForPtySession("pty-missing")).toBeUndefined()
+    })
   })
 
   // ---------------------------------------------------------------------------

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import type { PtyManager } from "../../src/lib/pty/pty-manager.js"
 import { createRunBackgroundCommandTool } from "../../src/tools/run-background-command.js"
+import type { Delegation } from "../../src/lib/types.js"
 
 function parseResult(raw: string): Record<string, unknown> {
   return JSON.parse(raw) as Record<string, unknown>
@@ -38,6 +39,29 @@ function createPtyManagerStub() {
 }
 
 function createDelegationManagerStub() {
+  const ownedDelegation: Delegation = {
+    id: "delegation-command-1",
+    parentSessionId: "ses-parent-tool",
+    childSessionId: "pty:pty-shared-1",
+    agent: "command-runner",
+    status: "running",
+    createdAt: Date.now(),
+    safetyCeilingMs: 180_000,
+    lastMessageCount: 0,
+    stablePollCount: 0,
+    nestingDepth: 1,
+    executionMode: "pty",
+    workingDirectory: "/tmp/shared",
+    ptySessionId: "pty-shared-1",
+    queueKey: "category:command",
+  }
+  const foreignDelegation: Delegation = {
+    ...ownedDelegation,
+    id: "delegation-foreign-command",
+    parentSessionId: "ses-foreign-parent",
+    childSessionId: "pty:pty-foreign-1",
+    ptySessionId: "pty-foreign-1",
+  }
   return {
     dispatchCommand: vi.fn().mockResolvedValue({
       status: "running",
@@ -62,6 +86,14 @@ function createDelegationManagerStub() {
       terminalKind: "cancelled",
       explicitCancellation: true,
     }),
+    getDelegationForPtySession: vi.fn((ptySessionId: string) => {
+      if (ptySessionId === "pty-shared-1") return ownedDelegation
+      if (ptySessionId === "pty-foreign-1") return foreignDelegation
+      return undefined
+    }),
+    canSessionAccessDelegation: vi.fn((callerSessionId: string | undefined, delegation: Delegation | undefined) => (
+      Boolean(callerSessionId && delegation && delegation.parentSessionId === callerSessionId)
+    )),
   }
 }
 
@@ -118,6 +150,73 @@ describe("run-background-command tool", () => {
 
     expect(result.kind).toBe("success")
     expect(data[0]?.id).toBe("pty-shared-1")
+  })
+
+  it("denies output for foreign PTY sessions before reading", async () => {
+    const ptyManager = createPtyManagerStub()
+    const delegationManager = createDelegationManagerStub()
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: delegationManager as unknown as DelegationManager,
+      ptyManager: ptyManager as unknown as PtyManager,
+    })
+
+    const raw = await tool.execute({ action: "output", sessionId: "pty-foreign-1", offset: 0 } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("[Harness] Access denied for PTY session")
+    expect(ptyManager.read).not.toHaveBeenCalled()
+  })
+
+  it("denies input and terminate for foreign PTY sessions before manager mutation", async () => {
+    const ptyManager = createPtyManagerStub()
+    const delegationManager = createDelegationManagerStub()
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: delegationManager as unknown as DelegationManager,
+      ptyManager: ptyManager as unknown as PtyManager,
+    })
+
+    const inputRaw = await tool.execute({ action: "input", sessionId: "pty-foreign-1", input: "x" } as never, mockCtx)
+    const terminateRaw = await tool.execute({ action: "terminate", sessionId: "pty-foreign-1" } as never, mockCtx)
+
+    expect(parseResult(inputRaw).kind).toBe("error")
+    expect(parseResult(terminateRaw).kind).toBe("error")
+    expect(ptyManager.write).not.toHaveBeenCalled()
+    expect(ptyManager.terminate).not.toHaveBeenCalled()
+    expect(delegationManager.markCommandCancellationForPtySession).not.toHaveBeenCalled()
+  })
+
+  it("denies non-run PTY operations when caller session ID is missing", async () => {
+    const ptyManager = createPtyManagerStub()
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: createDelegationManagerStub() as unknown as DelegationManager,
+      ptyManager: ptyManager as unknown as PtyManager,
+    })
+    const missingContext = { ...mockCtx, sessionID: undefined }
+
+    const raw = await tool.execute({ action: "output", sessionId: "pty-shared-1", offset: 0 } as never, missingContext)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("[Harness] Missing caller session ID for run-background-command output")
+    expect(ptyManager.read).not.toHaveBeenCalled()
+  })
+
+  it("filters list output to caller-owned PTY sessions", async () => {
+    const ptyManager = createPtyManagerStub()
+    ptyManager.listSessions.mockReturnValue([
+      { id: "pty-shared-1", mode: "pty", cwd: "/tmp/shared", startedAt: Date.now() },
+      { id: "pty-foreign-1", mode: "pty", cwd: "/tmp/foreign", startedAt: Date.now() },
+    ])
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: createDelegationManagerStub() as unknown as DelegationManager,
+      ptyManager: ptyManager as unknown as PtyManager,
+    })
+
+    const raw = await tool.execute({ action: "list" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect((result.data as Array<{ id: string }>).map((session) => session.id)).toEqual(["pty-shared-1"])
   })
 
   it("sends interactive input and terminates through the shared PTY manager", async () => {

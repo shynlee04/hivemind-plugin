@@ -298,6 +298,21 @@ export class DelegationManager {
     return this.getAllDelegations().filter((delegation) => this.canSessionAccessDelegation(callerSessionId, delegation))
   }
 
+  /**
+   * Find the active delegation that owns a PTY session ID.
+   *
+   * @param ptySessionId - PTY session ID from `run-background-command` input.
+   * @returns The backing delegation when the PTY session is recorded.
+   */
+  getDelegationForPtySession(ptySessionId: string): Delegation | undefined {
+    for (const delegation of this.delegations.values()) {
+      if (delegation.ptySessionId === ptySessionId) {
+        return delegation
+      }
+    }
+    return undefined
+  }
+
   markCommandCancellationForPtySession(ptySessionId: string): DelegationResult | undefined {
     for (const delegation of this.delegations.values()) {
       if (delegation.ptySessionId !== ptySessionId) {
