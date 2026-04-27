@@ -49,16 +49,19 @@ permission:
     "hivefiver": allow
     "hm-planning-with-files": allow
     "hm-coordinating-loop": allow
-    "hivefiver-use-authoring-skills": allow
+    "hf-use-authoring-skills": allow
     "hm-user-intent-interactive-loop": allow
     "hm-opencode-platform-reference": allow
     "repomix-exploration-guide": allow
     "hm-opencode-non-interactive-shell": allow
     "repomix-explorer": allow
-    "hm-skill-synthesis": allow
-    "hivefiver-agents-and-subagents-dev": allow
-    "hivefiver-command-dev": allow
-    "hivefiver-custom-tools-dev": allow
+    "hf-skill-synthesis": allow
+    "hf-agents-and-subagents-dev": allow
+    "hf-command-dev": allow
+    "hf-custom-tools-dev": allow
+    "gate-evidence-truth": allow
+    "gate-lifecycle-integration": allow
+    "gate-spec-compliance": allow
   patch: allow
   glob: allow
   grep: allow

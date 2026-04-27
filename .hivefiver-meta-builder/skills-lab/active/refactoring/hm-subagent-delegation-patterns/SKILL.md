@@ -186,6 +186,6 @@ echo "$TASK_ID" > .planning/phases/${PHASE}/.last-delegation-id
 
 | Related Skill | Boundary |
 |---------------|----------|
-| `hivefiver-agents-and-subagents-dev` | Owns agent definitions and permission profiles. This skill owns the dispatch patterns and resume protocols. |
+| `hf-agents-and-subagents-dev` | Owns agent definitions and permission profiles. This skill owns the dispatch patterns and resume protocols. |
 | `hm-coordinating-loop` | Owns general multi-agent dispatch and orchestration. This skill owns the subagent-specific execution mechanics. |
 | `hm-planning-with-files` | Owns task_plan.md/findings.md/progress.md. This skill consumes those files for state-aware dispatch. |

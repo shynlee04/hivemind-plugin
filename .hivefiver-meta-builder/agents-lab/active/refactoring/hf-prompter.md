@@ -15,8 +15,8 @@ permission:
     "hm-deep-research": allow
     "hm-detective": allow
     "hm-synthesis": allow
-    "hivefiver-use-authoring-skills": allow
-    "hm-command-parser": allow
+    "hf-use-authoring-skills": allow
+    "hf-command-parser": allow
     "hm-planning-with-files": allow
   glob: allow
   grep: allow

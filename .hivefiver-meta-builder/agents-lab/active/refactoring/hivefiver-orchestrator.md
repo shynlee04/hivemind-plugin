@@ -23,12 +23,12 @@ permission:
   skill:
     "*": ask
     "hm-meta-builder": allow
-    "hivefiver-use-authoring-skills": allow
-    "hivefiver-agents-and-subagents-dev": allow
-    "hivefiver-command-dev": allow
-    "hivefiver-custom-tools-dev": allow
+    "hf-use-authoring-skills": allow
+    "hf-agents-and-subagents-dev": allow
+    "hf-command-dev": allow
+    "hf-custom-tools-dev": allow
     "hm-opencode-platform-reference": allow
-    "hm-skill-synthesis": allow
+    "hf-skill-synthesis": allow
     "skill-judge": allow      # global skill at ~/.agents/skills/skill-judge/
     "hm-coordinating-loop": allow
     "hm-planning-with-files": allow
@@ -57,11 +57,11 @@ You route. Specialists create. You verify. If you catch yourself writing a SKILL
 
 | User Intent | Route To | Specialist Agent |
 |-------------|----------|-----------------|
-| "create a skill" | `hivefiver-use-authoring-skills` | hivefiver-skill-author |
-| "audit this skill" | `hivefiver-use-authoring-skills` | hivefiver-skill-author |
-| "create an agent" | `hivefiver-agents-and-subagents-dev` | hivefiver-agent-builder |
-| "set up a command" | `hivefiver-command-dev` | hivefiver-command-builder |
-| "build a custom tool" | `hivefiver-custom-tools-dev` | hivefiver-tool-builder |
+| "create a skill" | `hf-use-authoring-skills` | hivefiver-skill-author |
+| "audit this skill" | `hf-use-authoring-skills` | hivefiver-skill-author |
+| "create an agent" | `hf-agents-and-subagents-dev` | hivefiver-agent-builder |
+| "set up a command" | `hf-command-dev` | hivefiver-command-builder |
+| "build a custom tool" | `hf-custom-tools-dev` | hivefiver-tool-builder |
 | "stack skills" / "combine skills" | hm-meta-builder + target skills | self (orchestrate) |
 | "configure OpenCode" | `hm-opencode-platform-reference` | self (research + report) |
 | "configure agent" / "configure command" / "configure skill" / "batch configure" / "agent setup" | `opencode-config-workflow` | self (orchestrate workflow) |

@@ -18,8 +18,8 @@ permission:
   delegate-task: deny
   skill:
     "*": deny
-    "hivefiver-delegation-gates": allow
-    "hivefiver-use-authoring-skills": allow
+    "hf-delegation-gates": allow
+    "hf-use-authoring-skills": allow
   glob: allow
   grep: allow
   webfetch: deny
@@ -52,7 +52,7 @@ On entering a new phase, extract and record:
 
 ### Step 2: Authorization Gate Check
 
-Before any task action, enforce all 4 gates using the hivefiver-delegation-gates skill:
+Before any task action, enforce all 4 gates using the hf-delegation-gates skill:
 
 ```
 ⛩ GATE SEQUENCE — [Phase N]

@@ -20,8 +20,11 @@ permission:
   skill:
     "*": deny
     "hm-coordinating-loop": allow
-    "hivefiver-use-authoring-skills": allow
+    "hf-use-authoring-skills": allow
     "hm-planning-with-files": allow
+    "gate-evidence-truth": allow
+    "gate-lifecycle-integration": allow
+    "gate-spec-compliance": allow
   read:
     "*": deny
     "*.md": allow

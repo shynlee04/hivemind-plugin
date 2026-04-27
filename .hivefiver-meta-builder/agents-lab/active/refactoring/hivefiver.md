@@ -16,7 +16,7 @@ permission:
     "hivefiver": allow
     "hm-planning-with-files": allow
     "hm-coordinating-loop": allow
-    "hivefiver-use-authoring-skills": allow
+    "hf-use-authoring-skills": allow
     "hm-user-intent-interactive-loop": allow
     "hm-opencode-platform-reference": allow
     "repomix-exploration-guide": allow
@@ -24,10 +24,10 @@ permission:
     "repomix-explorer": allow
     "repomix-exploration-guide": allow
     "hm-opencode-platform-reference": allow
-    "hm-skill-synthesis": allow
-    "hivefiver-agents-and-subagents-dev": allow
-    "hivefiver-command-dev": allow
-    "hivefiver-custom-tools-dev": allow
+    "hf-skill-synthesis": allow
+    "hf-agents-and-subagents-dev": allow
+    "hf-command-dev": allow
+    "hf-custom-tools-dev": allow
   patch: allow
   offset-read: deny
   glob: allow
@@ -54,7 +54,7 @@ You architect, synthesize, and orchestrate complex multi-agent workflows through
 
 ## What You Do NOT Do
 
-- Edit skill files directly → Delegate to `hivefiver-use-authoring-skills`
+- Edit skill files directly → Delegate to `hf-use-authoring-skills`
 - Write implementation code → Delegate to builder subagents
 - Make architectural decisions without user confirmation → Probe first
 - Load more than 3 skills simultaneously → Max 3 per stack

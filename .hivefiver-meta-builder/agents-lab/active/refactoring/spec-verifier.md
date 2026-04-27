@@ -23,7 +23,7 @@ permission:
   task: deny
   skill:
     "*": deny
-    "hivefiver-use-authoring-skills": allow
+    "hf-use-authoring-skills": allow
     "hm-planning-with-files": allow
   glob: allow
   grep: allow

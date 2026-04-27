@@ -22,7 +22,7 @@ permission:
   task: deny
   skill:
     "*": deny
-    "hivefiver-agents-and-subagents-dev": allow
+    "hf-agents-and-subagents-dev": allow
     "hm-opencode-platform-reference": allow
     "hm-opencode-non-interactive-shell": allow
   glob: allow
@@ -92,7 +92,7 @@ permission:
   skill:                               # skill-name matching
     "*": deny                          # default: deny all
     "hm-meta-builder": allow              # allow specific skills
-    "hivefiver-command-dev": allow
+    "hf-command-dev": allow
   glob: allow
   grep: allow
   webfetch: allow
@@ -150,9 +150,9 @@ trigger_phrases:            # ❌ INVALID — not a frontmatter field
 **Every time you are spawned, run this FIRST:**
 
 ```bash
-# Load the hivefiver-agents-and-subagents-dev skill content
-ls .opencode/skills/hivefiver-agents-and-subagents-dev/ 2>/dev/null
-ls .skills-lab/active/refactoring-skills/hivefiver-agents-and-subagents-dev/ 2>/dev/null
+# Load the hf-agents-and-subagents-dev skill content
+ls .opencode/skills/hf-agents-and-subagents-dev/ 2>/dev/null
+ls .skills-lab/active/refactoring-skills/hf-agents-and-subagents-dev/ 2>/dev/null
 
 # Check existing agents
 ls .opencode/agents/ 2>/dev/null
@@ -163,7 +163,7 @@ git status --short
 git log --oneline -3
 ```
 
-Read the hivefiver-agents-and-subagents-dev SKILL.md and its references for delegation protocol and worktree control patterns.
+Read the hf-agents-and-subagents-dev SKILL.md and its references for delegation protocol and worktree control patterns.
 
 ## Execution Flow
 

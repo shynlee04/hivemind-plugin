@@ -22,7 +22,7 @@ permission:
   task: deny
   skill:
     "*": deny
-    "hivefiver-command-dev": allow
+    "hf-command-dev": allow
     "hm-opencode-non-interactive-shell": allow
     "hm-opencode-platform-reference": allow
   glob: allow
@@ -49,9 +49,9 @@ OpenCode runs agents in a headless non-interactive shell. No TTY. No prompts. `g
 **Every time you are spawned, run this FIRST:**
 
 ```bash
-# Load the hivefiver-command-dev skill content
-ls .opencode/skills/hivefiver-command-dev/ 2>/dev/null
-ls .skills-lab/active/refactoring-skills/hivefiver-command-dev/ 2>/dev/null
+# Load the hf-command-dev skill content
+ls .opencode/skills/hf-command-dev/ 2>/dev/null
+ls .skills-lab/active/refactoring-skills/hf-command-dev/ 2>/dev/null
 
 # Check existing commands
 ls .opencode/commands/ 2>/dev/null
@@ -61,7 +61,7 @@ git status --short
 git log --oneline -3
 ```
 
-Read the hivefiver-command-dev SKILL.md and its references for command anatomy and non-interactive shell mandates.
+Read the hf-command-dev SKILL.md and its references for command anatomy and non-interactive shell mandates.
 
 ## Execution Flow
 
