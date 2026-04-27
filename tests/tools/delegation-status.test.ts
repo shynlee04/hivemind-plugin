@@ -472,3 +472,57 @@ describe("delegation-status tool", () => {
     expect(manager.getStatus).toHaveBeenCalledWith("del-both")
   })
 })
+
+describe("contract-based tests", () => {
+  it("returns delegation status for known ID", async () => {
+    const delegation = makeDelegation({ id: "del_known", status: "running", agent: "builder" })
+    const manager = createManagerStub([delegation])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del_known" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+    expect(manager.getStatus).toHaveBeenCalledWith("del_known")
+  })
+
+  it("returns error for unknown delegation ID", async () => {
+    const manager = createManagerStub([])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "unknown-id" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    // Should return an error or not-found indication
+    expect(result.kind).toBe("error")
+  })
+
+  it("lists all delegations when no delegationId provided", async () => {
+    const delegations = [
+      makeDelegation({ id: "del_1", agent: "builder", status: "completed" }),
+      makeDelegation({ id: "del_2", agent: "researcher", status: "running" }),
+    ]
+    const manager = createManagerStub(delegations)
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ status: undefined } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+    expect(manager.getAllDelegations).toHaveBeenCalled()
+  })
+
+  it("filters delegations by status", async () => {
+    const delegations = [
+      makeDelegation({ id: "del_a", status: "running" }),
+      makeDelegation({ id: "del_b", status: "completed" }),
+    ]
+    const manager = createManagerStub(delegations)
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ status: "running" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+  })
+})

@@ -415,3 +415,67 @@ describe("delegate-task tool", () => {
     }
   })
 })
+
+describe("contract-based tests", () => {
+  it("rejects empty agent name via Zod validation", () => {
+    const result = DelegateTaskInputSchema.safeParse({
+      agent: "",
+      prompt: "do work",
+      parentSessionId: "ses_parent",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty prompt via Zod validation", () => {
+    const result = DelegateTaskInputSchema.safeParse({
+      agent: "builder",
+      prompt: "",
+      parentSessionId: "ses_parent",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts valid input with required fields", () => {
+    const result = DelegateTaskInputSchema.safeParse({
+      agent: "builder",
+      prompt: "build component",
+      parentSessionId: "ses_parent",
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.agent).toBe("builder")
+      expect(result.data.prompt).toBe("build component")
+    }
+  })
+
+  it("rejects missing required fields", () => {
+    const result = DelegateTaskInputSchema.safeParse({
+      agent: "builder",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("delegation record created on successful dispatch via stub manager", async () => {
+    const manager = createManagerStub()
+    const client = createPluginClient()
+    const tool = createDelegateTaskTool(manager as never, client as never)
+    const ctx = {
+      ...mockCtx,
+      sessionID: "ses_contract",
+    }
+
+    const raw = await tool.execute(
+      { agent: "builder", prompt: "build component" } as never,
+      ctx,
+    )
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("success")
+    expect(manager.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        agent: "builder",
+        prompt: "build component",
+      })
+    )
+  })
+})

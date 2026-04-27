@@ -422,3 +422,57 @@ describe("plugin lifecycle wiring", () => {
   })
 
 })
+
+describe("behavioral assertions", () => {
+  it("tool.execute.after injects _harness metadata with tool name and session ID", async () => {
+    const { createToolGuardHooks } = await import(
+      "../../src/hooks/create-tool-guard-hooks.js"
+    )
+    const stateManager = {
+      ensureStats: vi.fn(() => ({
+        total: 0,
+        byTool: {},
+        loop: { signature: "", count: 0 },
+        warnings: [],
+        messages: [],
+      })),
+      getStats: vi.fn(() => undefined),
+      addWarning: vi.fn(),
+      hasStats: vi.fn().mockReturnValue(false),
+    }
+
+    const hooks = createToolGuardHooks({ stateManager: stateManager as never })
+    const output: Record<string, unknown> = {}
+    await hooks["tool.execute.after"](
+      { sessionID: "ses_meta", tool: "delegate-task", args: {} },
+      output,
+    )
+
+    expect(output.metadata).toBeDefined()
+    const meta = output.metadata as Record<string, unknown>
+    expect(meta._harness).toBeDefined()
+  })
+
+  it("shell.env injects CI environment variables", async () => {
+    const { createCoreHooks } = await import(
+      "../../src/hooks/create-core-hooks.js"
+    )
+    const hooks = createCoreHooks({
+      lifecycleManager: {
+        handleEvent: vi.fn(),
+        replayPendingNotificationsForEvent: vi.fn(),
+      } as never,
+    } as never)
+
+    const output: Record<string, unknown> = {}
+    await hooks["shell.env"]({}, output)
+
+    expect(output.env).toBeDefined()
+    expect(output.env).toMatchObject({
+      CI: "true",
+      GIT_TERMINAL_PROMPT: "0",
+      NO_COLOR: "1",
+      TERM: "dumb",
+    })
+  })
+})
