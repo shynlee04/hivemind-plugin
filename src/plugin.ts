@@ -67,7 +67,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     ptyManager = null
   }
 
-  const delegationManager = new DelegationManager(client, { ptyManager })
+  const delegationManager = new DelegationManager(client, { ptyManager, runtimePolicy })
   // Recovery runs asynchronously — must not block plugin init.
   // If a second OpenCode instance starts, recoverPending() would await SDK calls
   // for sessions that belong to the first instance, causing a hang.

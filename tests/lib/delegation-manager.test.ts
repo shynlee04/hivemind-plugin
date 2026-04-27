@@ -3,12 +3,13 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { buildDelegationQueueKey } from "../../src/lib/concurrency.js"
+import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "../../src/lib/concurrency.js"
 import { getSessionContinuity, recordSessionContinuity } from "../../src/lib/continuity.js"
 import * as sessionApi from "../../src/lib/session-api.js"
 import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
 import { readPersistedDelegations } from "../../src/lib/delegation-persistence.js"
+import { DEFAULT_RUNTIME_POLICY } from "../../src/lib/runtime-policy.js"
 import {
   DEFAULT_PRUNE_MAX_AGE_MS,
   DEFAULT_SAFETY_CEILING_MS,
@@ -16,6 +17,7 @@ import {
   POLL_INTERVAL_BASE_MS,
   STABLE_POLLS_REQUIRED,
   type Delegation,
+  type RuntimePolicy,
 } from "../../src/lib/types.js"
 
 type MockClient = {
@@ -62,6 +64,7 @@ type ManagerOptions = {
     } | undefined
     terminate?: (sessionId: string) => Promise<void>
   } | null
+  runtimePolicy?: RuntimePolicy
 }
 
 type CommandDispatchParams = {
@@ -2835,6 +2838,93 @@ describe("DelegationManager", () => {
 
       const delegation = manager.getAllDelegations()[0]
       expect(delegation?.lastMessageCount).toBe(5)
+    })
+  })
+
+  describe("runtime policy dispatch wiring", () => {
+    it("denies delegation through a narrower runtime category policy", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({ data: [{ name: "builder", tools: { bash: true, edit: true } }] })
+      const manager = createManager(client, {
+        runtimePolicy: {
+          ...DEFAULT_RUNTIME_POLICY,
+          categoryGate: {
+            ...DEFAULT_RUNTIME_POLICY.categoryGate,
+            readonlyCategories: ["implementation"],
+          },
+        },
+      })
+
+      await expect(manager.dispatch({
+        parentSessionId: "ses_parent_policy_deny",
+        agent: "builder",
+        prompt: "do work",
+        title: "policy deny",
+        category: "implementation",
+      })).rejects.toThrow("category \"implementation\" cannot use write-capable tools")
+    })
+
+    it("passes per-key runtime concurrency and acquire timeout into SDK dispatch", async () => {
+      const client = createMockClient()
+      const acquireSpy = vi.spyOn(DelegationConcurrencyQueue.prototype, "acquire")
+      const manager = createManager(client, {
+        runtimePolicy: {
+          ...DEFAULT_RUNTIME_POLICY,
+          concurrency: {
+            globalLimit: 3,
+            perKey: {
+              "agent:builder:category:implementation": { limit: 1, acquireTimeoutMs: 250 },
+            },
+          },
+        },
+      })
+
+      await manager.dispatch({
+        parentSessionId: "ses_parent_policy_concurrency",
+        agent: "builder",
+        prompt: "do work",
+        title: "policy concurrency",
+        category: "implementation",
+      })
+
+      expect(acquireSpy).toHaveBeenCalledWith("agent:builder:category:implementation", 1, 250)
+    })
+
+    it("uses synchronous prompt by default when plugin runtime policy distrusts async children", async () => {
+      const client = createMockClient()
+      client.session.prompt.mockResolvedValue({ data: { info: { role: "assistant" }, parts: [{ type: "text", text: "accepted" }] } })
+      const manager = createManager(client, { runtimePolicy: DEFAULT_RUNTIME_POLICY })
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses_parent_policy_sync",
+        agent: "builder",
+        prompt: "do work",
+        title: "policy sync",
+      })
+
+      expect(result.status).toBe("running")
+      expect(client.session.prompt).toHaveBeenCalledWith(expect.objectContaining({ path: { id: "child-ses-123" } }))
+      expect(client.session.promptAsync).not.toHaveBeenCalled()
+    })
+
+    it("uses async prompt only when trusted runtime policy explicitly allows it", async () => {
+      const client = createMockClient()
+      const manager = createManager(client, {
+        runtimePolicy: {
+          ...DEFAULT_RUNTIME_POLICY,
+          trustedRuntime: { builtinAsyncBackgroundChildSessions: true },
+        },
+      })
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses_parent_policy_async",
+        agent: "builder",
+        prompt: "do work",
+        title: "policy async",
+      })
+
+      expect(result.status).toBe("running")
+      expect(client.session.promptAsync).toHaveBeenCalledWith(expect.objectContaining({ path: { id: "child-ses-123" } }))
     })
   })
 })

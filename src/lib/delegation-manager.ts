@@ -7,7 +7,8 @@ import { SdkDelegationHandler } from "./sdk-delegation.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
 import { recordCategoryGateDeny } from "./category-gate-audit.js"
 import { getAppAgents } from "./app-api.js"
-import { abortSession, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
+import { abortSession, sendPrompt, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
+import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "./runtime-policy.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
@@ -22,6 +23,7 @@ import {
   type DelegationSurface,
   type DelegationStatus,
   type DelegationTerminalKind,
+  type RuntimePolicy,
   MAX_DELEGATIONS_BEFORE_PRUNE,
   DEFAULT_PRUNE_MAX_AGE_MS,
   MAX_DELEGATION_DEPTH,
@@ -50,6 +52,22 @@ const VALID_DELEGATION_TRANSITIONS: Record<DelegationStatus, DelegationStatus[]>
   completed: [],
   error: [],
   timeout: [],
+}
+
+const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
+  ...DEFAULT_RUNTIME_POLICY,
+  trustedRuntime: {
+    ...DEFAULT_RUNTIME_POLICY.trustedRuntime,
+    builtinAsyncBackgroundChildSessions: true,
+  },
+}
+
+function resolveAcquireArgs(policy: RuntimePolicy, queueKey: string): { limit?: number; acquireTimeoutMs?: number } {
+  const concurrency = resolveConcurrencyForKey(policy, queueKey)
+  return {
+    limit: concurrency.limit === DEFAULT_RUNTIME_POLICY.concurrency.globalLimit ? undefined : concurrency.limit,
+    acquireTimeoutMs: concurrency.acquireTimeoutMs,
+  }
 }
 
 /**
@@ -85,11 +103,13 @@ export class DelegationManager {
   private readonly semaphore = new DelegationConcurrencyQueue()
   private readonly commandHandler: CommandDelegationHandler
   private readonly sdkHandler: SdkDelegationHandler
+  private readonly runtimePolicy: RuntimePolicy
 
   constructor(
     private readonly client: OpenCodeClient,
-    options: { ptyManager?: PtyManager | null } = {},
+    options: { ptyManager?: PtyManager | null; runtimePolicy?: RuntimePolicy } = {},
   ) {
+    this.runtimePolicy = options.runtimePolicy ?? DEFAULT_MANAGER_RUNTIME_POLICY
     const dm = this
     this.commandHandler = new CommandDelegationHandler(options.ptyManager ?? null, {
       getDelegation: (id) => dm.delegations.get(id),
@@ -135,6 +155,7 @@ export class DelegationManager {
       category: requestedCategory,
       surface: "agent-delegation",
       toolProfileMode: permissionProfile.mode,
+      policy: this.runtimePolicy.categoryGate,
     })
     if (!categoryDecision.allowed) {
       recordCategoryGateDeny({
@@ -152,7 +173,8 @@ export class DelegationManager {
     if (spawnQueueKey !== acquireQueueKey) {
       throw new Error("[Harness] Canonical delegation queue-key drift detected.")
     }
-    const release = await this.semaphore.acquire(acquireQueueKey, undefined, undefined)
+    const concurrency = resolveAcquireArgs(this.runtimePolicy, acquireQueueKey)
+    const release = await this.semaphore.acquire(acquireQueueKey, concurrency.limit, concurrency.acquireTimeoutMs)
     try {
       const child = await spawnDelegatedSession({
         client: this.client as never,
@@ -178,11 +200,16 @@ export class DelegationManager {
       this.registerDelegation(delegation, true)
       this.persistAllDelegations()
       try {
-        await sendPromptAsync(this.client, delegation.childSessionId, {
+        const promptBody = {
           parts: [{ type: "text", text: params.prompt }],
           agent: agent.name,
           tools: buildDelegationPromptTools(child.allowedTools),
-        })
+        }
+        if (this.runtimePolicy.trustedRuntime.builtinAsyncBackgroundChildSessions) {
+          await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
+        } else {
+          await sendPrompt(this.client, delegation.childSessionId, promptBody)
+        }
         this.transitionDelegationStatus(delegation.id, "running")
       } catch {
         this.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
@@ -207,6 +234,7 @@ export class DelegationManager {
       category: "command",
       surface: "command-process",
       toolProfileMode: "write-capable",
+      policy: this.runtimePolicy.categoryGate,
     })
     if (!categoryDecision.allowed) {
       recordCategoryGateDeny({
@@ -219,7 +247,8 @@ export class DelegationManager {
       throw new Error(`[Harness] Category gate denied: ${categoryDecision.reason}`)
     }
     const queueKey = buildDelegationQueueKey(queueContext)
-    const release = await this.semaphore.acquire(queueKey, undefined, undefined)
+    const concurrency = resolveAcquireArgs(this.runtimePolicy, queueKey)
+    const release = await this.semaphore.acquire(queueKey, concurrency.limit, concurrency.acquireTimeoutMs)
     try {
       return await this.commandHandler.dispatchCommand(params, queueKey, nestingDepth)
     } finally {
