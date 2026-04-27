@@ -34,7 +34,7 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 | Gate | Status | Details |
 |------|--------|---------|
 | `npm run typecheck` | ✅ PASS | 0 errors |
-| `npm test` | ✅ PASS | 49 files, 899 tests passed |
+| `npm test` | ✅ PASS | 61 files, 982 tests passed |
 | `npm run build` | ✅ PASS | Clean TypeScript build |
 
 **Phase 35 build gate restored; remaining Phase 35 dead-code/TD items are deferred.**
@@ -100,7 +100,7 @@ Phase 47: Policy/Buffer Hardening .. COMPLETE (Medium — MED-02/03)
 Phase 48: Runtime Integration Proof  DEGRADED (Live OpenCode health/session/tool IDs pass; hook/tool-exec/delegation completion gaps remain)
 Phase 48.1: Runtime Correctness .... PLANNED (5 plans; lifecycle, queue, persistence truth)
 Phase 48.2: Security Boundaries ..... PENDING (secrets, scope, category gates; depends on 48.1)
-Phase 48.3: SDK/CQRS Alignment ...... PENDING (OpenCode SDK and CQRS surfaces; depends on 48.2)
+Phase 48.3: SDK/CQRS Alignment ...... COMPLETE (5/5 plans; SDK wrappers, dispatch policy, plugin extraction, hook CQRS, PTY fallback)
 Phase 48.4: Evidence/Coverage ....... PENDING (production evidence recovery; depends on 48.3)
 Phase 48.5: LOC Cleanup ............. PENDING (event-tracker writer split; depends on 48.4)
 ```
@@ -147,7 +147,7 @@ Phase 48.5: LOC Cleanup ............. PENDING (event-tracker writer split; depen
 | Phase 48 | DEGRADED | Live OpenCode health/session/tool IDs pass; REM-RUNTIME-04/05 require dynamic tool execution and non-empty provider completion proof |
 | Phase 48.1 | PLANNED | 5 plans ready for runtime correctness remediation of lifecycle, queue, and persistence truth; depends on Phase 48 degraded evidence |
 | Phase 48.2 | PENDING | Security boundary hardening for secrets, scope, and category gates; depends on Phase 48.1 |
-| Phase 48.3 | PENDING | OpenCode SDK/CQRS integration alignment; depends on Phase 48.2 |
+| Phase 48.3 | COMPLETE | 5/5 plans executed; SDK request wrappers, runtime policy dispatch, plugin thinness, hook CQRS boundaries, and PTY fallback verified. |
 | Phase 48.4 | PENDING | Production evidence and coverage recovery; depends on Phase 48.3 |
 | Phase 48.5 | PENDING | Event-tracker writer LOC cleanup after production evidence is recovered; depends on Phase 48.4 |
 

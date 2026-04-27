@@ -56,7 +56,7 @@
 - [ ] **Phase 48: Real OpenCode Runtime Integration Verification** — DEGRADED: health/session/tool registration pass; hook/tool-exec/delegation completion gaps remain
 - [ ] **Phase 48.1: Runtime Correctness: Lifecycle, Queue, Persistence Truth** — Remediate lifecycle, queue-key, and persisted delegation truth gaps exposed by Phase 48
 - [ ] **Phase 48.2: Security Boundary Hardening: Secrets, Scope, Category Gates** — Harden secret handling, scope controls, and category gate enforcement after runtime correctness is restored
-- [ ] **Phase 48.3: OpenCode SDK/CQRS Integration Alignment** — Align OpenCode SDK surfaces and CQRS boundaries after runtime and security invariants are stable
+- [x] **Phase 48.3: OpenCode SDK/CQRS Integration Alignment** — Align OpenCode SDK surfaces and CQRS boundaries after runtime and security invariants are stable
 - [ ] **Phase 48.4: Production Evidence & Coverage Recovery** — Recover live evidence and non-mock coverage for the remediated runtime path
 - [ ] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — Split event-tracker writer responsibilities to restore maintainable LOC/module boundaries
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
@@ -245,7 +245,7 @@ Plans:
 **Original goal:** Fix async delegated result capture — RESCOPED to result harvesting only.
 **New goal:** Implement result extraction from child sessions — when stability detection confirms completion, harvest the child session's last assistant message and store in `delegation.result`. Add direct `delegation-persistence.ts` unit tests.
 **Depends on:** Phase 36 (lifecycle state machine)
-**Plans:** 0 plans
+**Plans:** 5 plans
 
 ### Scope
 - Extract child session results in `sdk-delegation.ts` completion path
@@ -598,7 +598,7 @@ Remaining no-PASS blockers: none for Phases 27-30. Generic trigger competition w
 **Original goal:** Clean architecture restructuring — RESCOPED to targeted fixes only.
 **New goal:** Enforce lifecycle state machine transitions in `lifecycle-manager.ts`, implement activity tracking, and split `delegation-manager.ts` (510 LOC) under the 500 LOC project limit.
 **Depends on:** Phase 35 (event-tracker fix + dead code cleanup)
-**Plans:** 0 plans
+**Plans:** 5 plans
 
 ### Scope
 - Replace stub `isValidTransition()` (always returns `true`) with proper `SessionLifecyclePhase` transition guards
@@ -818,7 +818,7 @@ Phase 1 (7 done, 3 pending — planned)
 
 **Goal:** Fix all build/test failures (6 typecheck errors, 5 test failures) and remove dead code. This unblocks all subsequent phases.
 **Depends on:** None (immediate priority)
-**Plans:** 0 plans
+**Plans:** 5 plans
 **Status:** PARTIAL — typecheck/test/build gates pass; `notification-handler.ts` retained per local AGENTS.md; TD-11 cast remains.
 
 ### Scope
@@ -1132,7 +1132,7 @@ Plans:
 
 **Goal:** Align harness integration with supported OpenCode SDK and plugin CQRS surfaces so write-side tools and read-side hooks remain separated and version-compatible.
 **Depends on:** Phase 48.2
-**Plans:** 0 plans
+**Plans:** 5 plans
 **Priority:** P0 production-hardening remediation
 
 ### Scope
@@ -1144,6 +1144,13 @@ Plans:
 1. SDK calls match installed package contracts and have regression evidence for request shape drift.
 2. CQRS boundaries are explicit: tools mutate, hooks observe, shared modules stay leaf-safe.
 3. Plugin composition has no hidden business logic or unsupported permission/session payload assumptions.
+
+Plans:
+- [x] 48.3-01-PLAN.md — SDK wrapper completion and request-shape tests
+- [x] 48.3-02-PLAN.md — Runtime policy dispatch wiring
+- [x] 48.3-03-PLAN.md — Hook CQRS boundary extraction
+- [x] 48.3-04-PLAN.md — Plugin thinness extraction
+- [x] 48.3-05-PLAN.md — PTY fallback reachability correction
 
 ## Phase 48.4: Production Evidence & Coverage Recovery
 
