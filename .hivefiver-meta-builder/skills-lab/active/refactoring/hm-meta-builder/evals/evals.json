@@ -1,5 +1,5 @@
 {
-  "skill_name": "meta-builder",
+  "skill_name": "hm-meta-builder",
   "version": "3.1.0",
   "description": "Evals for meta-builder routing behaviour. Tests trigger detection, routing table accuracy, negative triggers, and coverage gaps.",
   "evals": [

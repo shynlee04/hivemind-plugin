@@ -1,5 +1,5 @@
 {
-  "skill_name": "user-intent-interactive-loop",
+  "skill_name": "hm-user-intent-interactive-loop",
   "evals": [
     {
       "id": "TC-001",

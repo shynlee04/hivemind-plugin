@@ -9,7 +9,7 @@
     },
     {
       "name": "propositional action",
-      "prompt": "extract flags from command: skill:repair hm-command-parser --no-execute priority=high",
+      "prompt": "extract flags from command: skill:repair hf-command-parser --no-execute priority=high",
       "expected": ["entity action", "flag", "named value"]
     },
     {
