@@ -1,5 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+const { spawnHeadlessMock } = vi.hoisted(() => {
+  const createMockChildProcess = () => ({
+    stdout: { on: vi.fn() },
+    stderr: { on: vi.fn() },
+    on: vi.fn(),
+  })
+
+  return {
+    spawnHeadlessMock: vi.fn(createMockChildProcess),
+  }
+})
+
+vi.mock("node:child_process", () => ({
+  spawn: spawnHeadlessMock,
+}))
+
 import { CommandDelegationHandler } from "../../src/lib/command-delegation.js"
 import type { Delegation, DelegationResult } from "../../src/lib/types.js"
 
@@ -92,6 +108,7 @@ function createHandler(ptyManager: MockPtyManager | null, callbacks: MockCallbac
 describe("CommandDelegationHandler", () => {
   beforeEach(() => {
     vi.useFakeTimers()
+    spawnHeadlessMock.mockClear()
   })
 
   afterEach(() => {
@@ -189,6 +206,81 @@ describe("CommandDelegationHandler", () => {
 
       expect(result.executionMode).toBe("headless")
       expect(result.fallbackReason).toContain("PTY spawn error")
+    })
+  })
+
+  describe("headless env isolation", () => {
+    const secretKey = "HIVEMIND_TEST_SECRET_TOKEN"
+    const originalSecret = process.env[secretKey]
+    const originalPath = process.env.PATH
+
+    afterEach(() => {
+      if (originalSecret === undefined) {
+        delete process.env[secretKey]
+      } else {
+        process.env[secretKey] = originalSecret
+      }
+      if (originalPath === undefined) {
+        delete process.env.PATH
+      } else {
+        process.env.PATH = originalPath
+      }
+    })
+
+    it("does not pass parent sentinel secrets to headless spawn env", async () => {
+      process.env[secretKey] = "sentinel-secret-value"
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(null, callbacks)
+
+      await handler.dispatchCommand(
+        {
+          parentSessionId: "ses-parent-headless-secret",
+          command: "echo",
+          args: ["hello"],
+        },
+        "agent:builder",
+        1,
+      )
+
+      expect(spawnHeadlessMock).toHaveBeenCalledOnce()
+      const spawnOptions = spawnHeadlessMock.mock.calls[0]?.[2]
+      expect(spawnOptions?.env).not.toHaveProperty(secretKey)
+    })
+
+    it("passes explicit caller env values to headless spawn env", async () => {
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(null, callbacks)
+
+      await handler.dispatchCommand(
+        {
+          parentSessionId: "ses-parent-headless-explicit",
+          command: "echo",
+          env: { EXPLICIT_ALLOWED: "yes" },
+        },
+        "agent:builder",
+        1,
+      )
+
+      const spawnOptions = spawnHeadlessMock.mock.calls[0]?.[2]
+      expect(spawnOptions?.env).toMatchObject({ EXPLICIT_ALLOWED: "yes" })
+    })
+
+    it("preserves PATH for headless command lookup", async () => {
+      process.env.PATH = "/usr/local/bin:/usr/bin"
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(null, callbacks)
+
+      await handler.dispatchCommand(
+        {
+          parentSessionId: "ses-parent-headless-path",
+          command: "echo",
+        },
+        "agent:builder",
+        1,
+      )
+
+      const spawnOptions = spawnHeadlessMock.mock.calls[0]?.[2]
+      expect(spawnOptions?.env).toMatchObject({ PATH: "/usr/local/bin:/usr/bin" })
     })
   })
 

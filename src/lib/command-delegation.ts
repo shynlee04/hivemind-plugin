@@ -165,7 +165,7 @@ export class CommandDelegationHandler {
   ): Promise<DelegationResult> {
     const child = spawnHeadlessProcess(params.command, params.args ?? [], {
       cwd: workingDirectory,
-      env: { ...process.env, ...this.buildMinimalEnv(params.env) },
+      env: this.buildMinimalEnv(params.env),
       stdio: ["pipe", "pipe", "pipe"],
     })
 
