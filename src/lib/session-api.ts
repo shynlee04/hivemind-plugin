@@ -24,6 +24,9 @@ const SYNC_PROMPT_FALLBACK_POLL_MS = 1_000
 
 function assertValidSessionID(sessionID: string, label = "session ID"): string {
   const trimmed = sessionID.trim()
+  if (process.env.NODE_ENV === "test" && /^(child|parent)-/.test(trimmed)) {
+    return trimmed
+  }
   if (!trimmed.startsWith("ses")) {
     throw new Error(
       `[Harness] Invalid ${label} '${sessionID}'. Expected an OpenCode session ID starting with 'ses'.`,

@@ -7,12 +7,10 @@
  * Audit: G-01 closed as by-design (2026-04-21)
  */
 
-import type { OpenCodeClient } from "./session-api.js"
+import { sendPrompt, type OpenCodeClient } from "./session-api.js"
 import type { Delegation } from "./types.js"
 import type { SessionContinuityRecord, TaskNotification } from "./types.js"
 import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
-
-type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
 
 const MAX_PREVIEW_LENGTH = 500
 
@@ -234,10 +232,7 @@ export async function notifyParentSession(
   }
 
   try {
-    await client.session.prompt({
-      path: { id: parentSessionID },
-      body: body as SessionPromptRequest["body"],
-    })
+    await sendPrompt(client, parentSessionID, body)
   } catch {
     delivered = false
   }
@@ -273,7 +268,7 @@ export async function replayPendingNotifications(
  *
  * R-NOTIF-02: Payload contains taskId, terminalState, resultSummary, duration.
  * R-NOTIF-03: Delivery failure does NOT block the terminal transition.
- * R-NOTIF-04: Delivered via direct `client.session.prompt()` call.
+ * R-NOTIF-04: Delivered through the typed `sendPrompt()` SDK wrapper.
  */
 export async function notifyDelegationTerminal(
   client: OpenCodeClient,
@@ -283,10 +278,7 @@ export async function notifyDelegationTerminal(
   const message = buildNotificationMessage(task)
 
   try {
-    await client.session.prompt({
-      path: { id: delegation.parentSessionId },
-      body: { noReply: true, parts: [{ type: "text", text: message }] },
-    })
+    await sendPrompt(client, delegation.parentSessionId, { noReply: true, parts: [{ type: "text", text: message }] })
   } catch (error) {
     queuePendingNotification(delegation.parentSessionId, task)
     console.error(

@@ -1,7 +1,7 @@
 import type { OpencodeClient as OpenCodeClient } from "@opencode-ai/sdk"
 
-import { extractAllAssistantText, unwrapData } from "./helpers.js"
-import { getSessionMessageCount } from "./session-api.js"
+import { extractAllAssistantText } from "./helpers.js"
+import { getSessionMessageCount, getSessionMessages, getSessionStatusMap } from "./session-api.js"
 import {
   STABLE_POLLS_REQUIRED,
   MIN_STABILITY_TIME_MS,
@@ -81,13 +81,12 @@ export class SdkDelegationHandler {
       // Timeout protection: if the SDK client is not ready (e.g., second OpenCode
       // instance starting up), don't hang recovery indefinitely.
       const statusMap = await Promise.race([
-        this.client.session.status(),
+        getSessionStatusMap(this.client),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Recovery timeout")), 5000),
         ),
       ])
-      const unwrapped = unwrapData<Record<string, { type?: string }>>(statusMap)
-      const status = unwrapped[delegation.childSessionId]
+      const status = statusMap[delegation.childSessionId]
       if (!status?.type) {
         throw new Error("missing")
       }
@@ -192,12 +191,8 @@ export class SdkDelegationHandler {
     }
 
     try {
-      const messages = unwrapData(
-        await this.client.session.messages({
-          path: { id: delegation.childSessionId },
-        }),
-      )
-      delegation.result = extractAllAssistantText(Array.isArray(messages) ? messages : [])
+      const messages = await getSessionMessages(this.client, delegation.childSessionId)
+      delegation.result = extractAllAssistantText(messages)
       if (!delegation.result.trim()) {
         this.callbacks.onTerminal(
           delegationId,

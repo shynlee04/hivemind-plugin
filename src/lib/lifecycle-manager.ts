@@ -7,7 +7,7 @@
 import { CompletionDetector } from "./completion-detector.js"
 import { getSessionContinuity, listSessionContinuity, patchSessionContinuity } from "./continuity.js"
 import type { DelegationManager } from "./delegation-manager.js"
-import type { OpenCodeClient } from "./session-api.js"
+import { abortSession, sendPrompt, type OpenCodeClient } from "./session-api.js"
 import { hydrateDelegationState, taskState } from "./state.js"
 import type {
   CheckpointData,
@@ -126,9 +126,7 @@ export class HarnessLifecycleManager {
 
   async cancelDelegatedSession(sessionID: string): Promise<void> {
     try {
-      if (this.client?.session?.abort) {
-        await this.client.session.abort({ path: { id: sessionID } })
-      }
+      await abortSession(this.client, sessionID)
     } catch {
       // Abort best-effort
     }
@@ -143,13 +141,8 @@ export class HarnessLifecycleManager {
   }
 
   async requestAutoLoopRetry(args: { sessionID: string; promptText: string }): Promise<void> {
-    // Minimal: send prompt to session
-    const { client } = this
-    await client.session.prompt({
-      path: { id: args.sessionID },
-      body: {
-        parts: [{ type: "text", text: args.promptText }],
-      },
+    await sendPrompt(this.client, args.sessionID, {
+      parts: [{ type: "text", text: args.promptText }],
     })
   }
 

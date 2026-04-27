@@ -1,14 +1,13 @@
-import type { OpencodeClient as OpenCodeClient } from "@opencode-ai/sdk"
-
 import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
 import { persistDelegations, readPersistedDelegations } from "./delegation-persistence.js"
 import { notifyDelegationTerminal } from "./notification-handler.js"
-import { unwrapData } from "./helpers.js"
 import type { PtyManager } from "./pty/pty-manager.js"
 import { CommandDelegationHandler } from "./command-delegation.js"
 import { SdkDelegationHandler } from "./sdk-delegation.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
 import { recordCategoryGateDeny } from "./category-gate-audit.js"
+import { getAppAgents } from "./app-api.js"
+import { abortSession, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
@@ -179,13 +178,10 @@ export class DelegationManager {
       this.registerDelegation(delegation, true)
       this.persistAllDelegations()
       try {
-        await this.client.session.promptAsync({
-          path: { id: delegation.childSessionId },
-          body: {
-            parts: [{ type: "text", text: params.prompt }],
-            agent: agent.name,
-            tools: buildDelegationPromptTools(child.allowedTools),
-          },
+        await sendPromptAsync(this.client, delegation.childSessionId, {
+          parts: [{ type: "text", text: params.prompt }],
+          agent: agent.name,
+          tools: buildDelegationPromptTools(child.allowedTools),
         })
         this.transitionDelegationStatus(delegation.id, "running")
       } catch {
@@ -457,7 +453,7 @@ export class DelegationManager {
     const delegation = this.delegations.get(delegationId)
     if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) return
     this.transitionToTerminal(delegationId, "timeout", `[Harness] Delegation safety ceiling reached after ${delegation.safetyCeilingMs}ms`)
-    try { await this.client.session.abort({ path: { id: delegation.childSessionId } }) } catch { /* no-op */ }
+    try { await abortSession(this.client, delegation.childSessionId) } catch { /* no-op */ }
   }
 
   /**
@@ -549,8 +545,9 @@ export class DelegationManager {
     let agents: Array<Record<string, unknown>> | undefined
 
     try {
-      const rawResponse = await this.client.app.agents()
-      agents = unwrapData<Array<Record<string, unknown>>>(rawResponse)
+      agents = (await getAppAgents(this.client)).filter(
+        (entry): entry is Record<string, unknown> => !!entry && typeof entry === "object" && !Array.isArray(entry),
+      )
     } catch (error) {
       // R-AGENT-01: OpenCode server's /agent endpoint occasionally returns agents
       // with missing required string fields, causing SDK Zod validation errors
