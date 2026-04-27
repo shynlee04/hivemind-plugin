@@ -1,309 +1,159 @@
-<!-- generated-by: gsd-doc-writer -->
-
-# Phase SE-2: Complete Planning Pipeline Replacement — CONTEXT
+# Phase SE-2: hm-artifact-hierarchy — Planning Pipeline Foundation — CONTEXT
 
 **Workstream:** skill-ecosystem
 **Phase:** SE-2
-**Depends on:** SE-1 (renames complete, references clean)
-**Status:** AUTHORIZED — ready for planning
+**Depends on:** SE-1 (skill renames complete, references clean)
 **Created:** 2026-04-28
-**Replaces:** Previous SE-2-CONTEXT.md (scoped too narrowly — single skill replacement)
+**Status:** AUTHORIZED
 
-<domain>
-## Phase Boundary
+## Domain
 
-SE-2 creates a **complete self-contained planning pipeline** that replaces GSD's entire discuss → research → plan → execute → verify → review → ship flow with 8+ new `hm-*` skills. This is NOT a single skill replacement — it is the construction of an entire pipeline from project initialization through PR shipping.
+SE-2 is the **FOUNDATION phase** for the entire 8-skill planning pipeline (N1-N8). It creates the persistence backbone, defines the artifact hierarchy, establishes the `.hivemind/` state architecture, and provides the state management layer that ALL downstream skills (SE-3 through SE-7) build on.
 
-The pipeline is **fully self-contained within hm-* skills** using OpenCode's native capabilities. It produces structured artifacts consumed skill-to-skill in a chain pattern. No GSD skills, commands, agents, or artifacts are involved. No external framework dependencies.
+This is NOT a "fix broken references" phase. It is the architectural foundation for replacing GSD's entire planning flow with Hivemind-native hm-* skills.
 
-All planning artifacts are stored in `.hivemind/` at project root per the Q6 decision (`.opencode/` is ONLY for OpenCode primitives — agents, commands, skills).
+## Authorized Decisions
 
-Additionally, SE-2 fixes all 9 existing skills that have broken references to the disabled `hm-planning-with-files`, unblocking coordination, debugging, phase execution, and refactoring workflows that have been hard-blocked since the skill was disabled.
+| Decision | Value | Rationale |
+|----------|-------|-----------|
+| **State root** | `.hivemind/` (Q6) | Hivemind-native. Clean separation from `.opencode/` primitives and `.planning/` (GSD compat). |
+| **Coordinating loop** | Soft boundary — remove hard `verify-hierarchy.sh` dependency | Unblocks hm-coordinating-loop. Graceful fallback to in-memory state if persistence not loaded. |
+| **Skill prefix** | All new pipeline skills are `hm-*` | Product/runtime lineage per playbook. Ship with Hivemind harness. |
+| **Internal vs Shipped** | gate-* skills remain INTERNAL-USE only. hm-* skills SHIP with harness. | Gate skills serve THIS project's quality gatekeeping. |
+| **Artifact promotion** | .scratch → .research → .planning → .verified with promotion gates | Modeled on GSD's proven artifact pipeline, adapted for .hivemind/ |
 
-### Scope IN
-1. Create 8+ new hm-* pipeline skills (D-01, D-06)
-2. Fix 9 existing skills' broken references to `hm-planning-with-files` (D-05)
-3. Archive `donotusethis-hm-planning-with-files` directory
-4. All artifacts stored in `.hivemind/` per Q6 (D-03)
-5. Structured directory tree persistence model (D-04)
-6. Code review + ship as pipeline stages (D-07)
-7. Pipeline chain integration model (D-08)
+## Problem
 
-### Scope OUT
-- Gate-* skills (internal to this project, not shipped)
-- Research chain modifications (already works)
-- Spec-driven-authoring / TDD body modifications (reference fixes only)
-- hf-* lineage skills (separate concern)
-- Agent synthesis (separate workstream)
+The existing hm-* planning pipeline is broken in three ways:
 
-</domain>
+1. **Persistence broken:** `hm-planning-with-files` is disabled. 9 SHIP (hm-*) skills reference it as their state backbone. Without replacement, ALL multi-session capability is broken.
 
-<decisions>
-## Implementation Decisions
+2. **No pipeline exists:** GSD commands (discuss-phase, plan-phase, execute-phase, code-review, verify-work, ship, autonomous) handle the planning flow that hm-* skills should handle. The hm-* skills cover research and execution but no complete planning pipeline exists.
 
-### D-01: Scope = Full Pipeline Replacement
+3. **No routing hierarchy:** There's no structure for how skills route to each other — brainstorm → requirements → spec → research → plan → execute → verify → ship. Skills are flat, not hierarchical.
 
-SE-2 creates 8+ new hm-* skills that replace GSD's entire planning flow (discuss → research → plan → execute → verify → review → ship). This is NOT a single `hm-artifact-hierarchy` skill replacement — that was the original narrow scope which has been expanded after user discussion.
+## The Complete Pipeline (SE-2 through SE-7)
 
-**Rationale:** A single skill cannot express the full lifecycle. Each pipeline stage has distinct inputs, outputs, and failure modes. The chain model (D-08) keeps each skill focused and testable.
+This phase (SE-2) establishes the foundation. The full pipeline spans 9 phases:
 
-### D-02: Self-Contained Pipeline
+```
+SE-2 (FOUNDATION)
+  hm-artifact-hierarchy (persistence backbone)
+  |
+  ├── SE-3 (INPUT — Pre-Gate Skills)
+  │   hm-brainstorm → hm-requirements-analysis
+  │   hm-cross-cutting-change → hm-tech-context-compliance
+  │
+  ├── SE-3.5 (FEATURE ECOSYSTEM — Product & Production)
+  │   hm-feature-ecosystem → hm-production-readiness
+  │   hm-roadmap-maintainability
+  │
+  └── SE-4 (RESEARCH)
+      hm-tech-stack-ingest + research chain fixes
+  |
+  SE-5 (ROUTING)
+  hm-gate-orchestrator + hm-lineage-router
+  |
+  SE-5.5 (INTERNAL GATE HARDENING)
+  gate-evidence-truth, gate-lifecycle-integration, gate-spec-compliance
+  |
+  SE-6 (META-BUILDER)
+  hf-config-workflow + hf-agent-synthesizer
+  |
+  SE-7 (VERIFICATION)
+  Full ecosystem integration test
+```
 
-The pipeline works ENTIRELY within hm-* skills using OpenCode's native capabilities. No GSD skills, commands, agents, or artifacts are used or referenced. The pipeline does not depend on gate-* skills (those are internal-only to this project).
+SE-3, SE-3.5, and SE-4 can run in PARALLEL after SE-2 foundation is laid. All converge at SE-5.
 
-**Rationale:** Users should be able to run the full planning lifecycle with only the hm-* skills installed. No external framework coupling.
+## Scope (WHAT — locked for SE-2)
 
-### D-03: Artifact Storage = .hivemind/ (Q6 Native)
+### Artifact Hierarchy Design
+Define the complete artifact model for `.hivemind/`:
+- **Artifact types:** session-journal, execution-lineage, task-plan, findings, progress, state-continuity, decisions, deferred-ideas
+- **Promotion gates:** `.scratch/` → `.research/` → `.planning/` → `.verified/`
+- **Naming conventions:** kebab-case, date-stamped, bounded-size
+- **State format:** JSON for machine readability, Markdown for human audit
+- **Session recovery protocol:** checkpoint → resume → replay
 
-All planning artifacts are stored in `.hivemind/` at project root. This is a clean break from GSD's `.planning/` structure. Per Q6 decision locked 2026-04-25: `.opencode/` is ONLY for OpenCode primitives (agents, commands, skills). All internal deep module state writes to `.hivemind/`.
+### Persistence Layer
+Create the skill that provides:
+- Task plan persistence (structured tasks with dependencies, waves, status)
+- Findings/evidence storage (research outputs, decisions)
+- Progress tracking (phase completion, plan completion, verification state)
+- Session continuity (what was running, where to resume)
+- Execution lineage (what happened, in what order, with what results)
 
-**Source:** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` — Q6 decision
-
-**Storage layout:**
+### .hivemind/ State Structure
 ```
 .hivemind/
-├── project/           ← hm-project-init creates this
-│   ├── PROJECT.md
-│   └── REQUIREMENTS.md
-├── roadmap/           ← hm-roadmap-manager creates this
-│   ├── ROADMAP.md
-│   └── phases/
-├── tasks/             ← hm-planning-persistence creates this
-│   └── {task-id}/
-│       ├── metadata.json
-│       ├── state.md
-│       └── artifacts/
-│           └── plan.md
-├── state/             ← existing (continuity, delegations)
-├── journal/           ← existing (session journal)
-├── research/          ← existing (research artifacts)
-└── event-tracker/     ← existing (session events)
+  state/
+    session-continuity.json    # Cross-session state (active phase, resume points)
+    task-plan.json              # Active task plan (waves, tasks, dependencies, status)
+    findings.json               # Research findings and evidence
+    progress.json               # Phase/plan/task completion tracking
+    decisions.json              # Locked user decisions
+    delegations.json            # Active delegation records
+    lineage/                    # Execution lineage (append-only event log)
+      latest.json               # Current lineage cursor
+      archive/                  # Completed lineage segments
+    journals/                   # Session journals (append-only)
+      <session-id>.jsonl        # Per-session events
+  memory/                       # Advanced memory (post-MVP)
+    vector/                     # Vector embeddings (post-MVP)
+    graph/                      # Knowledge graph (post-MVP)
 ```
 
-### D-04: Persistence Model = Structured Directory Tree
+### 9 REPLACED Skill References
+The following existing hm-* skills reference the disabled `hm-planning-with-files`. SE-2 replaces those references to use `hm-artifact-hierarchy` instead. These skills are then candidates for RICH-gate reauthorization in SE-7:
 
-Each task gets its own directory with `metadata.json`, `state.md`, `artifacts/`. This is more filesystem-heavy than GSD's flat-file approach but provides:
-- Clear navigation (each task is self-contained)
-- Atomic state (metadata + state + artifacts co-located)
-- Easy cleanup (remove directory = remove task)
-- Git-friendly (each task is a coherent commit unit)
+| Skill | Nature of Replacement |
+|-------|-----------------------|
+| **hm-coordinating-loop** | HARD dependency → soft boundary (remove verify-hierarchy.sh, add graceful fallback to in-memory) |
+| **hm-user-intent-interactive-loop** | planning-with-files → hm-artifact-hierarchy for multi-session intent state |
+| **hm-spec-driven-authoring** | planning-with-files → hm-artifact-hierarchy for spec persistence |
+| **hm-test-driven-execution** | planning-with-files → hm-artifact-hierarchy for test state |
+| **hm-completion-looping** | planning-with-files → hm-artifact-hierarchy for plan tracking |
+| **hm-subagent-delegation-patterns** | task_plan.md → hm-artifact-hierarchy task-plan |
+| **hm-phase-execution** | planning-with-files → hm-artifact-hierarchy for phase state |
+| **hm-debug** | planning-with-files → hm-artifact-hierarchy for session state |
+| **hm-refactor** | planning-with-files → hm-artifact-hierarchy for task planning |
 
-**Convention:** Task IDs are human-readable slugs: `{phase-slug}-{sequence}` (e.g., `SE-2-001`).
+### Archive
+- `donotusethis-hm-planning-with-files`: Add deprecation note pointing to `hm-artifact-hierarchy`
 
-### D-05: Fix Broken References Too
+### RICH Compliance
+- `hm-artifact-hierarchy` SKILL.md must pass RICH-1 through RICH-8
+- Must include: frontmatter (name, description, triggers), boundary rules table, files_to_read with full paths, schematic/example/best-practice sections, bundled scripts if applicable, evals.json with test scenarios, skill-judge scorecard
 
-SE-2 also fixes all 9 existing skills that have broken references to the disabled `hm-planning-with-files`. Without this fix, the following skills are hard-blocked or degraded:
+## Constraints
+- Language-agnostic, framework-independent
+- Must not hardcode paths — use environment variable overrides (OPENCODE_HARNESS_STATE_DIR)
+- Must work with both GSD `.planning/` and Hivemind `.hivemind/` state roots
+- hm-* prefix: shared/cross-lineage per playbook
 
-| Skill | Severity | Reference Type |
-|-------|----------|----------------|
-| hm-coordinating-loop | HARD-BLOCKED | 5 references — requires planning-with-files loaded, reads task_plan.md |
-| hm-user-intent-interactive-loop | DEGRADED | 3 references — routes to planning-with-files after probe |
-| hm-spec-driven-authoring | DEGRADED | 2 references — multi-session plan state |
-| hm-test-driven-execution | DEGRADED | 3 references — RED/GREEN/REFACTOR status persistence |
-| hm-completion-looping | DEGRADED | 1 reference — verification status updates |
-| hm-subagent-delegation-patterns | DEGRADED | 1 reference — task scope convention |
-| hm-phase-execution | DEGRADED | 1 reference — phase plan tracking |
-| hm-debug | DEGRADED | 1 reference — debug session state |
-| hm-refactor | DEGRADED | 1 reference — refactor step tracking |
+## Cross-Phase Impact (SE-3 through SE-7)
 
-**Fix approach:** Replace `hm-planning-with-files` references with `hm-planning-persistence` (the new persistence skill). For hm-coordinating-loop, the hard-block is removed because the new pipeline provides equivalent functionality.
+| Phase | Impact of SE-2 |
+|-------|----------------|
+| **SE-3** (Pre-Gate Skills) | 4 new skills use hm-artifact-hierarchy for artifact persistence. Must follow the artifact model defined here. |
+| **SE-4** (Research Pipeline) | hm-tech-stack-ingest stores bundled repos in `.hivemind/memory/`. Research findings use hm-artifact-hierarchy format. |
+| **SE-5** (Gate Orchestration) | hm-gate-orchestrator reads/writes verdicts to `.hivemind/state/`. Lineage router uses `.hivemind/state/` for routing decisions. |
+| **SE-5.5** (Gate Hardening) | Gate skills must accept `.hivemind/` paths as evidence sources. Must not hardcode project-local paths. |
+| **SE-6** (Meta-Builder) | hf-config-workflow uses `.hivemind/` for session/task state during configuration. |
+| **SE-7** (Verification) | Integrates all SE-2 through SE-6 skills into full pipeline test. |
 
-**Also:** `hm-meta-builder` has 1 reference to `planning-with-files` in its routing table — update to new pipeline entry point.
-
-### D-06: Naming Convention = Verbose Descriptive
-
-Skills use descriptive names that clearly communicate their pipeline role:
-
-| Pipeline Stage | Skill Name | Purpose |
-|----------------|------------|---------|
-| Init | `hm-project-init` | Creates `.hivemind/project/` with PROJECT.md, REQUIREMENTS.md |
-| Roadmap | `hm-roadmap-manager` | Creates `.hivemind/roadmap/` with ROADMAP.md, phases/ |
-| Task Persistence | `hm-planning-persistence` | Creates `.hivemind/tasks/{id}/` with metadata, state, artifacts |
-| Plan Generation | `hm-plan-generator` | Produces structured plan.md (tasks, waves, dependencies) |
-| Execution | `hm-phase-orchestrator` | Dispatches plan tasks to subagents, manages waves |
-| Code Review | `hm-code-review` | Reviews changed files, produces review findings |
-| UAT Verification | `hm-uat-verify` | User-facing acceptance testing |
-| Shipping | `hm-ship` | Creates PR from verified changes |
-
-### D-07: Code Review + Ship = Included in Pipeline
-
-Code review and PR shipping are part of the core pipeline, not optional extras. Every plan that modifies code goes through review → verify → ship in sequence.
-
-**Rationale:** Quality is not optional. If review or verification fails, the pipeline stops and routes to hm-debug or hm-refactor for remediation.
-
-### D-08: Integration Model = Pipeline Chain
-
-Each skill produces structured artifacts the next skill consumes. No hub-and-spoke monolith. The integration pattern is:
-
-```
-Skill A produces artifact X at known path
-    → Skill B reads artifact X from known path
-    → Skill B produces artifact Y at known path
-    → Skill C reads artifact Y...
-```
-
-**Contract:** Each skill declares its inputs (what it reads) and outputs (what it writes) in SKILL.md frontmatter. Skills do NOT call other skills directly — they produce artifacts that downstream skills consume.
-
-</decisions>
-
-<specifics>
-## Pipeline Flow (Locked)
-
-```
-USER INTENT
-    │
-    ▼
-hm-user-intent-interactive-loop ──→ (EXISTING) Clarifies intent via interactive QA
-    │
-    ▼
-hm-project-init ──→ Creates .hivemind/project/ (PROJECT.md, REQUIREMENTS.md)
-    │
-    ▼
-hm-roadmap-manager ──→ Creates .hivemind/roadmap/ (ROADMAP.md, phases/)
-    │
-    ▼
-[per phase loop:]
-    │
-    ├─→ hm-planning-persistence ──→ .hivemind/tasks/{id}/ (metadata.json, state.md, artifacts/)
-    │                                    ↑ Consumed by all downstream skills
-    │
-    ├─→ hm-plan-generator ──→ .hivemind/tasks/{id}/artifacts/plan.md
-    │        │                     ↑ Consumes: hm-deep-research, hm-spec-driven-authoring
-    │        │
-    │        │  (research phase: hm-research-chain → hm-deep-research → hm-synthesis)
-    │        │  (spec phase: hm-spec-driven-authoring locks requirements)
-    │        │
-    ├─→ hm-phase-orchestrator ──→ Dispatches plan tasks to subagents, manages waves
-    │        │                        ↑ Consumes: plan.md tasks/waves
-    │        │                        ↑ Links to: hm-subagent-delegation-patterns, hm-completion-looping
-    │        │
-    │        │  (per-task execution: hm-test-driven-execution, hm-refactor as needed)
-    │        │  (error recovery: hm-debug for investigation)
-    │        │
-    ├─→ hm-code-review ──→ Reviews changed files, produces review findings
-    │        │                  ↑ Consumes: list of changed files from orchestrator
-    │        │
-    ├─→ hm-uat-verify ──→ User-facing acceptance testing
-    │        │              ↑ Consumes: review findings (must pass), plan.md (acceptance criteria)
-    │        │
-    └─→ hm-ship ──→ Creates PR from verified changes
-                     ↑ Consumes: UAT pass result, changed files
-```
-
-## Existing Skills That Integrate (Carry Forward)
-
-These skills are already functional and participate in the pipeline as linked capabilities:
-
-| Skill | Pipeline Link | Integration Point |
-|-------|--------------|-------------------|
-| hm-user-intent-interactive-loop | Upstream of project-init | Routes clarified intent to pipeline entry |
-| hm-spec-driven-authoring | Links to plan-generator | Spec-locking from requirements before plan generation |
-| hm-test-driven-execution | Links to phase-orchestrator | RED/GREEN/REFACTOR for individual plan tasks |
-| hm-debug | Links to phase-orchestrator | Error recovery when task execution fails |
-| hm-refactor | Links to phase-orchestrator | Surgical/structural refactoring for plan tasks |
-| hm-deep-research | Links to plan-generator | Version-matched research for plan context |
-| hm-detective | Utility for research | Codebase investigation (used by research chain) |
-| hm-synthesis | Utility for research | Research compression (used by research chain) |
-| hm-research-chain | Links to plan-generator | Orchestrates research pipeline before plan generation |
-| hm-completion-looping | Links to phase-orchestrator | Guardrail against premature completion claims |
-| hm-subagent-delegation-patterns | Links to phase-orchestrator | Delegation dispatch patterns for wave execution |
-| hm-phase-loop | Links to phase-orchestrator | Iterative loop guard for multi-plan phases |
-
-## Artifact Contracts
-
-Each pipeline skill must declare its I/O contract in SKILL.md:
-
-| Skill | Reads | Writes |
-|-------|-------|--------|
-| hm-project-init | User intent (from conversation) | `.hivemind/project/PROJECT.md`, `.hivemind/project/REQUIREMENTS.md` |
-| hm-roadmap-manager | `.hivemind/project/PROJECT.md` | `.hivemind/roadmap/ROADMAP.md`, `.hivemind/roadmap/phases/` |
-| hm-planning-persistence | Task description (from conversation) | `.hivemind/tasks/{id}/metadata.json`, `.hivemind/tasks/{id}/state.md` |
-| hm-plan-generator | `.hivemind/tasks/{id}/`, research artifacts | `.hivemind/tasks/{id}/artifacts/plan.md` |
-| hm-phase-orchestrator | `.hivemind/tasks/{id}/artifacts/plan.md` | Updated `state.md`, execution results |
-| hm-code-review | Changed file list | `.hivemind/tasks/{id}/artifacts/review.md` |
-| hm-uat-verify | `.hivemind/tasks/{id}/artifacts/review.md`, plan.md | `.hivemind/tasks/{id}/artifacts/uat-result.md` |
-| hm-ship | UAT pass result, changed files | PR URL, commit SHA |
-
-</specifics>
-
-<canonical_refs>
 ## Canonical References
 
-- **Q6 Decision (storage root):** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` — lines 230-260
-- **Architecture Proposal:** `docs/draft/architecture-proposal-hivemind-v3.md` — full harness architecture
-- **Skills Playbook:** `.hivefiver-meta-builder/skills-lab/active/refactoring/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` — lineage model, RICH gates
-- **SE-1 CONTEXT (predecessor):** `.planning/workstreams/skill-ecosystem/phases/SE-1-skill-reclassification-cleanup/SE-1-CONTEXT.md` — skill classification decisions
-- **Workstream ROADMAP:** `.planning/workstreams/skill-ecosystem/ROADMAP.md` — phase dependencies
-- **Workstream STATE:** `.planning/workstreams/skill-ecosystem/STATE.md` — current progress
-- **AGENTS.md:** Root `AGENTS.md` — project structure, dependency rules, canonical skill location
-- **Existing .hivemind/ structure:** `.hivemind/` — event-tracker/, state/, journal/, research/, lineage/
-- **Disabled skill:** `.opencode/skills/donotusethis-hm-planning-with-files/` — reference for persistence patterns to improve upon
-- **Broken reference grep evidence:** 20 references across 9 skills + hm-meta-builder (see code_context)
+- `AGENTS.md` — Project rules, dependency constraints, skill classification
+- `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` — Q6 (.hivemind/ state root)
+- `.opencode/skills/donotusethis-hm-planning-with-files/SKILL-DISABLED.md` — The disabled skill being replaced
+- `.planning/research/SKILL-ECOSYSTEM-GAP-ANALYSIS-2026-04-27.md` — Complete gap analysis (Part 3: N1-N8)
+- `.planning/RICH-AUDIT-HM-SKILLS-REPORT.md` — RICH audit results for all skills
+- `.planning/workstreams/skill-ecosystem/ROADMAP.md` — Phase breakdown
 
-</canonical_refs>
-
-<code_context>
-## Existing Code Insights
-
-### What Already Works
-The following hm-* skills are functional and integrate with the pipeline:
-- **Research chain** (hm-research-chain → hm-deep-research → hm-synthesis → hm-detective) — complete and working
-- **Spec-driven-authoring** — spec-locking from requirements, working
-- **TDD execution** — RED/GREEN/REFACTOR, working
-- **Completion looping** — guardrail against premature claims, working
-- **Phase loop** — iterative loop guard, working
-- **Subagent delegation patterns** — dispatch patterns, working
-
-### What's Broken
-`hm-planning-with-files` is disabled (directory renamed to `donotusethis-hm-planning-with-files`). 20 references across 9 skills + hm-meta-builder point to it:
-
-**Hard-blocked (cannot function without replacement):**
-- `hm-coordinating-loop` — 5 references, requires planning-with-files loaded as prerequisite
-
-**Degraded (work but lose persistence/continuity):**
-- `hm-user-intent-interactive-loop` — 3 references
-- `hm-test-driven-execution` — 3 references
-- `hm-spec-driven-authoring` — 2 references
-- `hm-completion-looping` — 1 reference
-- `hm-subagent-delegation-patterns` — 1 reference
-- `hm-phase-execution` — 1 reference
-- `hm-debug` — 1 reference
-- `hm-refactor` — 1 reference
-- `hm-meta-builder` — 1 reference (routing table)
-
-### Integration Points
-The new pipeline skills must integrate with existing hm-* skills through artifact contracts (not direct skill calls). Each new skill declares what it reads and writes in its SKILL.md, and existing skills are updated to reference the new persistence skill instead of the disabled one.
-
-### .hivemind/ Existing Structure
-The `.hivemind/` directory already exists with:
-- `state/` — session-continuity.json, delegations.json, task_plan.md, progress.md, findings.md
-- `journal/` — session journal (append-only event timeline)
-- `research/` — research artifacts from skills-audit
-- `event-tracker/` — session events
-- `lineage/` — lineage tracking
-- `daily-notes/` — daily developer notes
-
-The new pipeline adds `project/`, `roadmap/`, and `tasks/` directories under `.hivemind/`.
-
-</code_context>
-
-<deferred>
 ## Deferred Ideas
 
-The following are explicitly OUT OF SCOPE for SE-2 and belong to later phases:
-
-| Idea | Destination | Reason |
-|------|-------------|--------|
-| Gate-* skills creation | SE-5.5 | Internal to this project, not shipped to users |
-| Research chain modifications | SE-4 | Already works, enhancement is separate |
-| Spec-driven-authoring body changes | Reference fix only (SE-2) | Working skill, only references need updating |
-| TDD execution body changes | Reference fix only (SE-2) | Working skill, only references need updating |
-| hf-* lineage skills | SE-6 | Separate concern (meta-builder lineage) |
-| Agent synthesis | Separate workstream | Independent research track |
-| Pre-gate skills (brainstorm, requirements) | SE-3 | Different pipeline stage concerns |
-| Feature ecosystem skills | SE-3.5 | Different concern (cross-dependency design) |
-| Tech stack ingestion | SE-4 | Research pipeline concern |
-| Gate orchestration + lineage routing | SE-5 | After all pipeline skills exist |
-| RICH gate reauthorization of all skills | SE-7 | Verification after all changes complete |
-
-</deferred>
+- RICH gate reauthorization of existing SHIP (hm-*) skills → SE-7
+- Vector memory / knowledge graph → post-MVP (Q4)
+- Full automated skill-judge integration → post-MVP
