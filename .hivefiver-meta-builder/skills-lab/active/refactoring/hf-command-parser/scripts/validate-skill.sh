@@ -11,4 +11,4 @@ python3 -m json.tool "$ROOT/evals/evals.json" >/dev/null
 grep -q "RICH Exit Score" "$ROOT/references/rich-resource-rationale.md"
 grep -q "command string" "$ROOT/SKILL.md"
 
-echo "[hm-command-parser] validation passed"
+echo "[hf-command-parser] validation passed"

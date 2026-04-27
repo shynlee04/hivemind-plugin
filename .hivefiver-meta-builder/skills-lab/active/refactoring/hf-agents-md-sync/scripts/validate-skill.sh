@@ -10,4 +10,4 @@ python3 -m json.tool "$ROOT/evals/evals.json" >/dev/null
 grep -q "AGENTS.md" "$ROOT/SKILL.md"
 grep -q "RICH Exit Score" "$ROOT/references/rich-resource-rationale.md"
 
-echo "[hm-agents-md-sync] validation passed"
+echo "[hf-agents-md-sync] validation passed"
