@@ -1,3 +1,7 @@
 export * from "./types.js"
 export * from "./parser.js"
+export * from "./hook-event.js"
+export * from "./document-store.js"
+export * from "./markdown-renderer.js"
+export * from "./artifact-writer.js"
 export * from "./writer.js"

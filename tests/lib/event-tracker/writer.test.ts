@@ -1,11 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import {
   createJourneyEventFromHook,
   sanitizeSessionArtifactStem,
   shouldTrackEventTrackerEvent,
   getEventTrackerArtifactPaths,
+  writeSessionJourneyArtifacts,
+  createEventTrackerArtifactsFromHook,
 } from "../../../src/lib/event-tracker/writer.js"
+import {
+  createJourneyEventFromHook as createJourneyEventFromHookDirect,
+  sanitizeSessionArtifactStem as sanitizeSessionArtifactStemDirect,
+  shouldTrackEventTrackerEvent as shouldTrackEventTrackerEventDirect,
+} from "../../../src/lib/event-tracker/hook-event.js"
+import { renderJourneyEventMarkdown } from "../../../src/lib/event-tracker/markdown-renderer.js"
+import { writeSessionJourneyArtifacts as writeSessionJourneyArtifactsDirect } from "../../../src/lib/event-tracker/artifact-writer.js"
 
 describe("sanitizeSessionArtifactStem", () => {
   it("extracts 4-character alphanumeric suffix from session ID", () => {
@@ -65,6 +76,28 @@ describe("shouldTrackEventTrackerEvent", () => {
         sessionID: "ses_001",
       })
     ).toBe(true)
+  })
+})
+
+describe("hook-event direct imports", () => {
+  it("exposes the same pure hook-event helpers as writer.js", () => {
+    const hook = {
+      type: "tool.execute.after",
+      sessionID: "ses_direct_1",
+      properties: {
+        tool: "delegate-task",
+        status: "completed",
+        summary: "token=secret-1234567890 completed",
+      },
+    }
+
+    expect(sanitizeSessionArtifactStemDirect("ses-direct-1")).toBe(sanitizeSessionArtifactStem("ses-direct-1"))
+    expect(shouldTrackEventTrackerEventDirect(hook)).toBe(shouldTrackEventTrackerEvent(hook))
+
+    const fromWriter = createJourneyEventFromHook({ event: hook, timestamp: 1700000000000 })
+    const fromDirect = createJourneyEventFromHookDirect({ event: hook, timestamp: 1700000000000 })
+    expect(fromDirect).toEqual(fromWriter)
+    expect(fromDirect.summary).not.toContain("secret-1234567890")
   })
 })
 
@@ -136,5 +169,85 @@ describe("createJourneyEventFromHook", () => {
     expect(event.actor).toBe("tool")
     expect(event.toolUsage).toBeDefined()
     expect(event.toolUsage?.toolName).toBe("delegate-task")
+  })
+})
+
+describe("event-tracker artifact compatibility", () => {
+  let projectRoot: string
+
+  beforeEach(() => {
+    projectRoot = mkdtempSync(join(tmpdir(), "event-tracker-writer-"))
+  })
+
+  afterEach(() => {
+    rmSync(projectRoot, { recursive: true, force: true })
+  })
+
+  it("writes compatible JSON and Markdown artifacts without duplicating events", () => {
+    const event = createJourneyEventFromHook({
+      event: { type: "session.created", sessionID: "ses_artifact_1" },
+      timestamp: 1700000000000,
+    })
+
+    const first = writeSessionJourneyArtifacts({ projectRoot, event })
+    const second = writeSessionJourneyArtifactsDirect({ projectRoot, event })
+    const jsonText = readFileSync(first.paths.jsonPath, "utf-8")
+    const document = JSON.parse(jsonText) as { _schema: string; counters: { eventCount: number }; events: unknown[] }
+    const markdown = readFileSync(first.paths.markdownPath, "utf-8")
+
+    expect(first.written).toBe(true)
+    expect(second.written).toBe(false)
+    expect(document._schema).toBe("harness/event-tracker/v1")
+    expect(document.counters.eventCount).toBe(1)
+    expect(document.events).toHaveLength(1)
+    expect(markdown).toContain("# ses_")
+    expect(markdown).toContain("## Table of Contents")
+    expect(markdown).toContain("**eventCount:** 1")
+    expect(markdown).toContain("## Session started")
+  })
+
+  it("redacts and sanitizes tool summaries in Markdown output", () => {
+    writeSessionJourneyArtifacts({
+      projectRoot,
+      event: createJourneyEventFromHook({
+        event: { type: "session.created", sessionID: "ses_tool_2" },
+        timestamp: 1700000000000,
+      }),
+    })
+
+    const result = createEventTrackerArtifactsFromHook({
+      projectRoot,
+      hook: {
+        event: {
+          type: "tool.execute.after",
+          sessionID: "ses_tool_2",
+          tool: "delegate-task",
+          properties: {
+            tool: "delegate-task",
+            status: "completed",
+            output: "api_key=abcdef1234567890\ncompleted",
+          },
+        },
+        timestamp: 1700000000001,
+      },
+    })
+
+    const markdown = readFileSync(result.paths.markdownPath, "utf-8")
+    expect(existsSync(result.paths.jsonPath)).toBe(true)
+    expect(markdown).toContain("Tool delegate-task")
+    expect(markdown).not.toContain("abcdef1234567890")
+    expect(markdown).not.toContain("\ncompleted")
+  })
+
+  it("supports direct renderer and artifact-writer imports", () => {
+    const event = createJourneyEventFromHookDirect({
+      event: { type: "session.created", sessionID: "ses_direct_write" },
+      timestamp: 1700000000002,
+    })
+    const result = writeSessionJourneyArtifactsDirect({ projectRoot, event })
+    const rendered = renderJourneyEventMarkdown(event)
+
+    expect(result.written).toBe(true)
+    expect(rendered).toContain("## Session started")
   })
 })
