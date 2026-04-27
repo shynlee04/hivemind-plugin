@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import type { DelegationManager } from "../lib/delegation-manager.js"
 import { readPersistedDelegations } from "../lib/delegation-persistence.js"
+import { redactTextSecrets } from "../lib/security/redaction.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"
 import type { Delegation } from "../lib/types.js"
@@ -27,8 +28,8 @@ function renderDelegation(delegation: Delegation): Record<string, unknown> {
     delegationId: delegation.id,
     status: delegation.status,
     agent: delegation.agent,
-    result: delegation.result,
-    error: delegation.error,
+    result: delegation.result ? redactTextSecrets(delegation.result) : undefined,
+    error: delegation.error ? redactTextSecrets(delegation.error) : undefined,
     createdAt: delegation.createdAt,
     completedAt: delegation.completedAt,
     executionMode: delegation.executionMode,
@@ -36,7 +37,7 @@ function renderDelegation(delegation: Delegation): Record<string, unknown> {
     recoveryGuarantee: delegation.recoveryGuarantee,
     workingDirectory: delegation.workingDirectory,
     ptySessionId: delegation.ptySessionId,
-    fallbackReason: delegation.fallbackReason,
+    fallbackReason: delegation.fallbackReason ? redactTextSecrets(delegation.fallbackReason) : undefined,
     queueKey: delegation.queueKey,
     terminalKind: delegation.terminalKind,
     terminationSignal: delegation.terminationSignal,

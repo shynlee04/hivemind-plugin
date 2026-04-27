@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "./continuity.js"
+import { redactBoundaryFields } from "./security/redaction.js"
 import type { Delegation, DelegationStatus } from "./types.js"
 
 const VALID_DELEGATION_STATUSES: ReadonlySet<string> = new Set<string>([
@@ -61,7 +62,10 @@ export function persistDelegations(delegations: Delegation[]): void {
   // per write so overlapping persistence calls cannot consume each other's
   // temp file before renameSync runs.
   const tmpFile = `${filePath}.${process.pid}.${randomUUID()}.tmp`
-  writeFileSync(tmpFile, `${JSON.stringify(delegations, null, 2)}\n`, "utf-8")
+  const redactedDelegations = redactBoundaryFields(delegations, {
+    redactFieldNames: ["result", "error", "fallbackReason"],
+  })
+  writeFileSync(tmpFile, `${JSON.stringify(redactedDelegations, null, 2)}\n`, "utf-8")
   mkdirSync(dirname(filePath), { recursive: true })
   renameSync(tmpFile, filePath)
 }

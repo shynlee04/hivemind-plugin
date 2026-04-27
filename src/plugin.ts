@@ -14,6 +14,7 @@ import { createCoreHooks } from "./hooks/create-core-hooks.js"
 import { createSessionHooks } from "./hooks/create-session-hooks.js"
 import { createToolGuardHooks } from "./hooks/create-tool-guard-hooks.js"
 import { asString, getNestedValue } from "./lib/helpers.js"
+import { redactTextSecrets } from "./lib/security/redaction.js"
 import { getEventSessionID } from "./lib/session-api.js"
 import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
@@ -36,7 +37,8 @@ const TOOL_OUTPUT_SUMMARY_LIMIT = 240
 
 function summarizePluginToolOutput(output: unknown): string {
   const raw = typeof output === "string" ? output : JSON.stringify(output ?? "completed")
-  const normalized = (raw ?? "completed").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()
+  const redacted = redactTextSecrets(raw ?? "completed")
+  const normalized = redacted.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()
   if (!normalized) return "completed"
   return normalized.length <= TOOL_OUTPUT_SUMMARY_LIMIT ? normalized : `${normalized.slice(0, TOOL_OUTPUT_SUMMARY_LIMIT - 1)}…`
 }

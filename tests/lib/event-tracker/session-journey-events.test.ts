@@ -24,6 +24,10 @@ describe("event-tracker automatic writer", () => {
     const projectRoot = tempProjectRoot()
 
     try {
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } }, timestamp: 10, source: "root-test" },
+      })
       const result = createEventTrackerArtifactsFromHook({
         projectRoot,
         hook: { event: { type: "session.created", properties: { sessionID: "ses_2b7a" } }, timestamp: 1_777_000_000_000, source: "e2e-test" },
@@ -52,6 +56,10 @@ describe("event-tracker automatic writer", () => {
     const projectRoot = tempProjectRoot()
 
     try {
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } }, timestamp: 10, source: "root-test" },
+      })
       const result = createEventTrackerArtifactsFromHook({
         projectRoot,
         hook: { event: { type: "session.created", properties: { info: { id: "ses_2b7a" } } }, timestamp: 10, source: "canonical-test" },
@@ -215,6 +223,39 @@ describe("event-tracker automatic writer", () => {
       expect(document.toolsUsed).toEqual([expect.objectContaining({ toolName: "bash", status: "success" })])
       expect(JSON.stringify(document)).not.toContain(rawOutput)
       expect(document.toolsUsed?.[0]?.summary.length).toBeLessThanOrEqual(240)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("redacts secret-like tool output before event-tracker summary storage", () => {
+    const projectRoot = tempProjectRoot()
+
+    try {
+      createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: { event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } }, timestamp: 10, source: "root-test" },
+      })
+      const result = createEventTrackerArtifactsFromHook({
+        projectRoot,
+        hook: {
+          event: {
+            type: "tool.execute.after",
+            properties: {
+              sessionID: "ses_23a0root",
+              tool: "bash",
+              output: "OPENAI_API_KEY=sk-test-123",
+              status: "success",
+            },
+          },
+          timestamp: 11,
+          source: "tool-test",
+        },
+      })
+
+      const raw = JSON.stringify(result.document)
+      expect(raw).toContain("OPENAI_API_KEY=[REDACTED:API_KEY]")
+      expect(raw).not.toContain("sk-test-123")
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }

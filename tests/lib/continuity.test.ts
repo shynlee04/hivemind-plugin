@@ -82,4 +82,20 @@ describe("continuity persistence", () => {
     const parsed = JSON.parse(readFileSync(continuity.getContinuityStoragePath(), "utf-8")) as { sessions?: Record<string, unknown> }
     expect(Object.keys(parsed.sessions ?? {})).toEqual(expect.arrayContaining(["ses-one", "ses-two"]))
   })
+
+  it("redacts continuity text fields while preserving session identifiers", async () => {
+    const continuity = await import("../../src/lib/continuity.js")
+    continuity.recordSessionContinuity({
+      ...makeRecord("ses-redaction"),
+      metadata: {
+        ...makeRecord("ses-redaction").metadata,
+        description: "summary includes HIVEMIND_FAKE_TOKEN=secret-value-1234567890",
+      },
+    })
+
+    const raw = readFileSync(continuity.getContinuityStoragePath(), "utf-8")
+    expect(raw).toContain("ses-redaction")
+    expect(raw).toContain("HIVEMIND_FAKE_TOKEN=[REDACTED:TOKEN]")
+    expect(raw).not.toContain("secret-value-1234567890")
+  })
 })

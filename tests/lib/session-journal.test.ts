@@ -97,6 +97,34 @@ describe("session journal contract", () => {
       rmSync(dir, { recursive: true, force: true })
     }
   })
+
+  it("redacts summary secrets in appended JSONL while preserving journal identifiers", () => {
+    const dir = mkdtempSync(join(tmpdir(), "hivemind-journal-redaction-"))
+    const filePath = join(dir, "journal.jsonl")
+
+    try {
+      const entry = createJournalEntry({
+        sessionId: "ses-parent-redaction",
+        childSessionId: "ses-child-redaction",
+        actor: "agent",
+        eventType: "session.idle",
+        timestamp: 1_714_000_000_000,
+        source: "unit-test",
+        summary: "Output contained Authorization: Bearer abc.def.ghi",
+        stateRole: "audit trail",
+      })
+
+      appendJournalEntry({ entry, filePath, idempotencyKey: "ses-parent-redaction:idle" })
+
+      const raw = readFileSync(filePath, "utf-8")
+      expect(raw).toContain("ses-parent-redaction")
+      expect(raw).toContain("ses-child-redaction")
+      expect(raw).toContain("Authorization: Bearer [REDACTED:TOKEN]")
+      expect(raw).not.toContain("abc.def.ghi")
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe(".hivemind journal and lineage taxonomy", () => {

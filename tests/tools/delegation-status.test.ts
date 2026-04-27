@@ -174,6 +174,31 @@ describe("delegation-status tool", () => {
     expect(data.result).toBe("The task was completed successfully.")
   })
 
+  it("redacts public result, error, and fallbackReason text fields", async () => {
+    const delegation = makeDelegation({
+      id: "del-redact-output",
+      status: "completed",
+      result: "OPENAI_API_KEY=sk-test-123",
+      error: "Authorization: Bearer abc.def.ghi",
+      fallbackReason: "PASSWORD=hunter2",
+      completedAt: Date.now(),
+    })
+    const manager = createManagerStub([delegation])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-redact-output" } as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Record<string, unknown>
+
+    expect(data.result).toBe("OPENAI_API_KEY=[REDACTED:API_KEY]")
+    expect(data.error).toBe("Authorization: Bearer [REDACTED:TOKEN]")
+    expect(data.fallbackReason).toBe("PASSWORD=[REDACTED:PASSWORD]")
+    expect(data.workingDirectory).toBe(process.cwd())
+    expect(raw).not.toContain("sk-test-123")
+    expect(raw).not.toContain("abc.def.ghi")
+    expect(raw).not.toContain("hunter2")
+  })
+
   it("returns error message when delegation has error status", async () => {
     const delegation = makeDelegation({
       id: "del-err",

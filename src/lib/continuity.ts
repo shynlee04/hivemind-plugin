@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "./security/path-scope.js"
+import { redactBoundaryFields } from "./security/redaction.js"
 import type {
   CapturedResult,
   CompactionCheckpointData,
@@ -304,7 +305,10 @@ function persistStore(): void {
   // Atomic write: write to temp file first, then rename to prevent
   // corrupt reads if the process crashes mid-write.
   const tmpFile = `${continuityFile}.${process.pid}.${randomUUID()}.tmp`
-  writeFileSync(tmpFile, `${JSON.stringify(store, null, 2)}\n`, "utf8")
+  const redactedStore = redactBoundaryFields(store, {
+    redactFieldNames: ["prompt", "result", "error", "output", "resultSummary", "summary", "lastMessageOutput", "description"],
+  })
+  writeFileSync(tmpFile, `${JSON.stringify(redactedStore, null, 2)}\n`, "utf8")
   renameSync(tmpFile, continuityFile)
 }
 

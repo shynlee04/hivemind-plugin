@@ -3,6 +3,7 @@ import { join } from "node:path"
 
 import { asString, getNestedValue } from "../helpers.js"
 import { assertPathWithinRoot } from "../security/path-scope.js"
+import { redactTextSecrets } from "../security/redaction.js"
 import { getEventParentID, getEventSessionID } from "../session-api.js"
 import { parseProductDetoxSessionMarkdown } from "./parser.js"
 import type {
@@ -138,7 +139,7 @@ function summarizeToolReturn(event: unknown): string {
     || asString(getNestedValue(event, ["properties", "output"]))
     || asString(getNestedValue(event, ["output"]))
     || "completed")
-  const normalized = candidate.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()
+  const normalized = redactTextSecrets(candidate).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()
   return normalized.length <= MAX_TOOL_SUMMARY_LENGTH ? normalized : `${normalized.slice(0, MAX_TOOL_SUMMARY_LENGTH - 1)}…`
 }
 
@@ -464,7 +465,7 @@ function mergeExportMetadata(document: SessionJourneyDocument, event: SessionJou
     subSessions: mergeSubSessions(withEvent.subSessions, parsed.subSessions),
     toolsUsed: mergeToolUsages(withEvent.toolsUsed, parsedTools),
     delegations: mergeDelegations(withEvent.delegations, parsedDelegations),
-    lastMessageOutput: parsed.lastMessageOutput,
+    lastMessageOutput: redactTextSecrets(parsed.lastMessageOutput),
     exportMeta: parsed.meta,
   }
 }

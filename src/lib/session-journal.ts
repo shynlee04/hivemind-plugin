@@ -1,5 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs"
 import { dirname } from "node:path"
+import { redactBoundaryFields } from "./security/redaction.js"
 
 export const SESSION_JOURNAL_STATE_ROLES = [
   "canonical runtime state",
@@ -112,7 +113,7 @@ export function appendJournalEntry({ entry, filePath, idempotencyKey }: SessionJ
     return { ...entry, idempotencyKey }
   }
 
-  const stored = { ...entry, idempotencyKey }
+  const stored = redactBoundaryFields({ ...entry, idempotencyKey }, { redactFieldNames: ["summary"] })
   appendFileSync(filePath, `${JSON.stringify(stored)}\n`, "utf-8")
   return stored
 }

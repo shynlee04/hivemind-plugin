@@ -107,4 +107,32 @@ describe("delegation persistence", () => {
       error: expect.stringContaining("Invalid persisted delegation status"),
     }))
   })
+
+  it("redacts delegation result, error, and fallbackReason while preserving operational identifiers", async () => {
+    const persistence = await import("../../src/lib/delegation-persistence.js")
+    persistence.persistDelegations([
+      {
+        ...makeDelegation("redacted"),
+        parentSessionId: "ses-parent-redacted",
+        childSessionId: "ses-child-redacted",
+        queueKey: "category:command",
+        ptySessionId: "pty-redacted",
+        result: "OPENAI_API_KEY=sk-test-123",
+        error: "Authorization: Bearer abc.def.ghi",
+        fallbackReason: "PASSWORD=hunter2",
+      },
+    ])
+
+    const raw = readFileSync(persistence.getDelegationsFilePath(), "utf-8")
+    expect(raw).toContain("OPENAI_API_KEY=[REDACTED:API_KEY]")
+    expect(raw).toContain("Authorization: Bearer [REDACTED:TOKEN]")
+    expect(raw).toContain("PASSWORD=[REDACTED:PASSWORD]")
+    expect(raw).toContain("ses-parent-redacted")
+    expect(raw).toContain("ses-child-redacted")
+    expect(raw).toContain("category:command")
+    expect(raw).toContain("pty-redacted")
+    expect(raw).not.toContain("sk-test-123")
+    expect(raw).not.toContain("abc.def.ghi")
+    expect(raw).not.toContain("hunter2")
+  })
 })
