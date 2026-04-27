@@ -200,8 +200,29 @@ export type RuntimePolicy = {
   concurrency: ConcurrencyPolicy
   budget: BudgetPolicy
   trustedRuntime: TrustedRuntimePolicy
+  categoryGate?: CategoryGatePolicy
   /** Maximum delegation nesting depth (default: 3) */
   maxDelegationDepth?: number
+}
+
+export type CategoryGateSurface = "agent-delegation" | "command-process"
+
+/** Narrowing-only delegation category gate policy. */
+export type CategoryGatePolicy = {
+  denyUnknownCategories: boolean
+  readonlyCategories: readonly string[]
+  commandCategory: string
+}
+
+/** Auditable category gate allow/deny decision. */
+export type CategoryGateDecision = {
+  allowed: boolean
+  reason: string
+  category?: string
+  audit: {
+    gate: "category"
+    denyReason?: string
+  }
 }
 
 export type SessionBudgetOverride = Partial<BudgetPolicy>

@@ -14,12 +14,14 @@
  */
 import type {
   BudgetPolicy,
+  CategoryGatePolicy,
   ConcurrencyPolicy,
   ResolvedBudgetPolicy,
   RuntimePolicy,
   SessionPolicyOverride,
   TrustedRuntimePolicy,
 } from "./types.js"
+import { DEFAULT_CATEGORY_GATE_POLICY } from "./category-gates.js"
 
 // ---------------------------------------------------------------------------
 // Default policy — mirrors current production constants
@@ -38,6 +40,7 @@ export const DEFAULT_RUNTIME_POLICY: RuntimePolicy = {
   trustedRuntime: {
     builtinAsyncBackgroundChildSessions: false,
   },
+  categoryGate: DEFAULT_CATEGORY_GATE_POLICY,
 }
 
 // ---------------------------------------------------------------------------
@@ -88,6 +91,15 @@ function validateTrustedRuntimePolicy(_policy: TrustedRuntimePolicy): void {
   // Boolean-only policy today; shape validation happens through typing/merge.
 }
 
+function validateCategoryGatePolicy(policy: CategoryGatePolicy): void {
+  if (!Array.isArray(policy.readonlyCategories)) {
+    throw new Error("[Harness] Invalid category gate policy: readonlyCategories must be an array.")
+  }
+  if (typeof policy.commandCategory !== "string" || policy.commandCategory.length === 0) {
+    throw new Error("[Harness] Invalid category gate policy: commandCategory must be a non-empty string.")
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Policy loaders
 // ---------------------------------------------------------------------------
@@ -131,11 +143,27 @@ export function loadRuntimePolicy(
       DEFAULT_RUNTIME_POLICY.trustedRuntime.builtinAsyncBackgroundChildSessions,
   }
 
+  const categoryGate: CategoryGatePolicy = {
+    denyUnknownCategories:
+      workspacePolicy?.categoryGate?.denyUnknownCategories ??
+      DEFAULT_RUNTIME_POLICY.categoryGate?.denyUnknownCategories ??
+      DEFAULT_CATEGORY_GATE_POLICY.denyUnknownCategories,
+    readonlyCategories:
+      workspacePolicy?.categoryGate?.readonlyCategories ??
+      DEFAULT_RUNTIME_POLICY.categoryGate?.readonlyCategories ??
+      DEFAULT_CATEGORY_GATE_POLICY.readonlyCategories,
+    commandCategory:
+      workspacePolicy?.categoryGate?.commandCategory ??
+      DEFAULT_RUNTIME_POLICY.categoryGate?.commandCategory ??
+      DEFAULT_CATEGORY_GATE_POLICY.commandCategory,
+  }
+
   validateConcurrencyPolicy(concurrency)
   validateBudgetPolicy(budget)
   validateTrustedRuntimePolicy(trustedRuntime)
+  validateCategoryGatePolicy(categoryGate)
 
-  return { concurrency, budget, trustedRuntime }
+  return { concurrency, budget, trustedRuntime, categoryGate }
 }
 
 /**
@@ -195,13 +223,15 @@ export function getRuntimePolicyForSession(
       sessionOverride.trustedRuntime?.builtinAsyncBackgroundChildSessions ??
       resolvedWorkspacePolicy.trustedRuntime.builtinAsyncBackgroundChildSessions,
   }
+  const categoryGate = resolvedWorkspacePolicy.categoryGate ?? DEFAULT_CATEGORY_GATE_POLICY
 
   // Validate the merged result
   validateConcurrencyPolicy(concurrency)
   validateBudgetPolicy(budget)
   validateTrustedRuntimePolicy(trustedRuntime)
+  validateCategoryGatePolicy(categoryGate)
 
-  return { concurrency, budget, trustedRuntime }
+  return { concurrency, budget, trustedRuntime, categoryGate }
 }
 
 // ---------------------------------------------------------------------------

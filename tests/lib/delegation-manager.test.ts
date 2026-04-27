@@ -304,6 +304,52 @@ describe("DelegationManager", () => {
       })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
     })
 
+    it("denies unknown delegation category before session create", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({ data: [{ name: "builder", category: "implementation" }] })
+      const manager = new DelegationManager(client as never)
+
+      await expect(manager.dispatch({
+        parentSessionId: "ses-parent-category",
+        agent: "builder",
+        prompt: "do work",
+        category: "mystery",
+      })).rejects.toThrow("[Harness] Category gate denied: unknown delegation category")
+      expect(client.session.create).not.toHaveBeenCalled()
+    })
+
+    it("denies review category with write-capable primitive tools before session create", async () => {
+      const client = createMockClient()
+      client.app.agents.mockResolvedValue({
+        data: [{ name: "critic", category: "review", tools: { edit: true, write: true, bash: true } }],
+      })
+      const manager = new DelegationManager(client as never)
+
+      await expect(manager.dispatch({
+        parentSessionId: "ses-parent-review",
+        agent: "critic",
+        prompt: "review code",
+        category: "review",
+      })).rejects.toThrow('category "review" cannot use write-capable tools')
+      expect(client.session.create).not.toHaveBeenCalled()
+    })
+
+    it("allows command dispatch through explicit command-process category", async () => {
+      const ptyManager = {
+        isSupported: vi.fn().mockReturnValue(true),
+        spawn: vi.fn().mockReturnValue({ id: "pty-category-command", mode: "pty" as const, cwd: "/tmp", startedAt: Date.now() }),
+        getSession: vi.fn().mockReturnValue(undefined),
+        read: vi.fn().mockReturnValue({ content: "", nextOffset: 0, truncated: false }),
+        terminate: vi.fn().mockResolvedValue(undefined),
+      }
+      const manager = createManager(createMockClient(), { ptyManager })
+
+      const result = await dispatchCommand(manager, { parentSessionId: "ses-parent-command", command: "echo" })
+
+      expect(result.executionMode).toBe("pty")
+      expect(ptyManager.spawn).toHaveBeenCalledOnce()
+    })
+
     it("acquires concurrency slot and releases it after dispatch", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)

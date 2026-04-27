@@ -52,6 +52,14 @@ describe("DEFAULT_RUNTIME_POLICY", () => {
   it("builtin async background child-session support defaults to false", () => {
     expect(DEFAULT_RUNTIME_POLICY.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(false)
   })
+
+  it("category gate defaults deny unknown categories and protect review/research", () => {
+    expect(DEFAULT_RUNTIME_POLICY.categoryGate).toMatchObject({
+      denyUnknownCategories: true,
+      commandCategory: "command",
+    })
+    expect(DEFAULT_RUNTIME_POLICY.categoryGate?.readonlyCategories).toEqual(expect.arrayContaining(["review", "research"]))
+  })
 })
 
 describe("loadRuntimePolicy", () => {
@@ -64,6 +72,12 @@ describe("loadRuntimePolicy", () => {
     const policy = loadRuntimePolicy({})
     expect(policy.concurrency.globalLimit).toBe(DEFAULT_RUNTIME_POLICY.concurrency.globalLimit)
     expect(policy.budget.maxToolCallsPerSession).toBe(DEFAULT_RUNTIME_POLICY.budget.maxToolCallsPerSession)
+  })
+
+  it("rejects malformed category gate policy with [Harness] errors", () => {
+    expect(() => loadRuntimePolicy({
+      categoryGate: { denyUnknownCategories: true, readonlyCategories: "review" as never, commandCategory: "command" },
+    })).toThrow("[Harness]")
   })
 
   it("merges workspace-level overrides onto defaults", () => {

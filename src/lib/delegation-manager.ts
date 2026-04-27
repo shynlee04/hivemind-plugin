@@ -7,11 +7,13 @@ import { unwrapData } from "./helpers.js"
 import type { PtyManager } from "./pty/pty-manager.js"
 import { CommandDelegationHandler } from "./command-delegation.js"
 import { SdkDelegationHandler } from "./sdk-delegation.js"
+import { resolveCategoryGateDecision } from "./category-gates.js"
+import { recordCategoryGateDeny } from "./category-gate-audit.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
 import { spawnDelegatedSession } from "./spawner/session-creator.js"
-import { buildSdkSpawnRequest, type DelegateParams, type ValidatedAgent } from "./spawner/spawn-request-builder.js"
+import { buildSdkSpawnRequest, resolveDelegationPermissionProfile, type DelegateParams, type ValidatedAgent } from "./spawner/spawn-request-builder.js"
 import {
   DEFAULT_SAFETY_CEILING_MS,
   type CommandDelegationParams,
@@ -128,6 +130,23 @@ export class DelegationManager {
       worktree: params.worktree,
     })
     const agent = await this.validateAgent(params.agent, workingDirectory)
+    const permissionProfile = resolveDelegationPermissionProfile(params, agent)
+    const requestedCategory = params.category ?? agent.category
+    const categoryDecision = resolveCategoryGateDecision({
+      category: requestedCategory,
+      surface: "agent-delegation",
+      toolProfileMode: permissionProfile.mode,
+    })
+    if (!categoryDecision.allowed) {
+      recordCategoryGateDeny({
+        callerSessionId: params.parentSessionId,
+        requestedAgent: agent.name,
+        requestedCategory,
+        surface: "agent-delegation",
+        denyReason: categoryDecision.reason,
+      })
+      throw new Error(`[Harness] Category gate denied: ${categoryDecision.reason}`)
+    }
     const canonicalContext = this.buildCanonicalQueueContext(agent, params)
     const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
     const spawnQueueKey = resolveDelegationConcurrencyKey(canonicalContext)
@@ -188,6 +207,21 @@ export class DelegationManager {
       )
     }
     const queueContext = this.buildCommandQueueContext(params)
+    const categoryDecision = resolveCategoryGateDecision({
+      category: "command",
+      surface: "command-process",
+      toolProfileMode: "write-capable",
+    })
+    if (!categoryDecision.allowed) {
+      recordCategoryGateDeny({
+        callerSessionId: params.parentSessionId,
+        requestedAgent: queueContext.agent,
+        requestedCategory: "command",
+        surface: "command-process",
+        denyReason: categoryDecision.reason,
+      })
+      throw new Error(`[Harness] Category gate denied: ${categoryDecision.reason}`)
+    }
     const queueKey = buildDelegationQueueKey(queueContext)
     const release = await this.semaphore.acquire(queueKey, undefined, undefined)
     try {
