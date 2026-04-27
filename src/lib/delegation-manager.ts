@@ -256,6 +256,48 @@ export class DelegationManager {
     return Array.from(this.delegations.values())
   }
 
+  /**
+   * Check whether a caller session is in the recorded owner lineage for a delegation.
+   *
+   * @param callerSessionId - Session ID from the current OpenCode tool context.
+   * @param delegation - Target delegation record from memory or persisted storage.
+   * @returns True only for direct owners or explicitly recorded parent/child lineage.
+   */
+  canSessionAccessDelegation(callerSessionId: string | undefined, delegation: Delegation | undefined): boolean {
+    if (!callerSessionId || !delegation) {
+      return false
+    }
+    if (delegation.parentSessionId === callerSessionId) {
+      return true
+    }
+
+    const recordedDelegationId = this.delegationsBySession.get(callerSessionId)
+    if (!recordedDelegationId) {
+      return false
+    }
+    if (recordedDelegationId === delegation.id) {
+      return true
+    }
+
+    const recordedDelegation = this.delegations.get(recordedDelegationId)
+    if (!recordedDelegation) {
+      return false
+    }
+
+    return recordedDelegation.parentSessionId === delegation.childSessionId
+      || recordedDelegation.childSessionId === delegation.parentSessionId
+  }
+
+  /**
+   * Return only active delegations visible to the caller's recorded lineage.
+   *
+   * @param callerSessionId - Session ID from the current OpenCode tool context.
+   * @returns In-memory delegation records visible to that caller.
+   */
+  getVisibleDelegationsForSession(callerSessionId: string): Delegation[] {
+    return this.getAllDelegations().filter((delegation) => this.canSessionAccessDelegation(callerSessionId, delegation))
+  }
+
   markCommandCancellationForPtySession(ptySessionId: string): DelegationResult | undefined {
     for (const delegation of this.delegations.values()) {
       if (delegation.ptySessionId !== ptySessionId) {

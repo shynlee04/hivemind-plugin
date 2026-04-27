@@ -3,8 +3,9 @@
  * @module tools/session-patch/tools
  */
 import { tool } from "@opencode-ai/plugin/tool"
-import { existsSync, readFileSync, writeFileSync, mkdirSync, realpathSync } from "node:fs"
-import { dirname, join, resolve, relative, basename } from "node:path"
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs"
+import { dirname, join, basename } from "node:path"
+import { assertPathWithinRoot } from "../../lib/security/path-scope.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 import { SessionPatchRecordSchema } from "../../schema-kernel/prompt-enhance.schema.js"
@@ -120,26 +121,16 @@ type SessionPathResult =
  * @returns An allowed absolute path or a rejection reason.
  */
 function resolveAllowedSessionPath(projectRoot: string, sessionFilePath: string): SessionPathResult {
-  const resolvedProjectRoot = resolve(projectRoot)
-  const absoluteProjectRoot = realpathSync(resolvedProjectRoot)
-  const absoluteTarget = resolve(sessionFilePath)
+  let absoluteTarget: string
+  try {
+    absoluteTarget = assertPathWithinRoot(projectRoot, sessionFilePath, "session patch")
+  } catch (pathError) {
+    const reason = pathError instanceof Error ? pathError.message : String(pathError)
+    return { allowed: false, reason: `${reason}; target must stay inside the active project root.` }
+  }
   const fileName = basename(absoluteTarget)
   if (!/^session(?:-context-prompt)?(?:-[a-zA-Z0-9_-]+)?\.md$/.test(fileName)) {
     return { allowed: false, reason: "Session patch target must be a session*.md artifact." }
   }
-  const lexicalRel = relative(resolvedProjectRoot, absoluteTarget)
-  if (lexicalRel.startsWith("..") || lexicalRel === "" || lexicalRel.includes("..")) {
-    return { allowed: false, reason: "Session patch target must stay inside the active project root." }
-  }
-  if (!existsSync(absoluteTarget)) {
-    return { allowed: true, path: absoluteTarget }
-  }
-
-  const realTarget = realpathSync(absoluteTarget)
-  const rel = relative(absoluteProjectRoot, realTarget)
-  if (rel.startsWith("..") || rel === "" || rel.includes("..")) {
-    return { allowed: false, reason: "Session patch target must stay inside the active project root." }
-  }
-
-  return { allowed: true, path: realTarget }
+  return { allowed: true, path: absoluteTarget }
 }

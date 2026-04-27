@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFile
 import { join } from "node:path"
 
 import { asString, getNestedValue } from "../helpers.js"
+import { assertPathWithinRoot } from "../security/path-scope.js"
 import { getEventParentID, getEventSessionID } from "../session-api.js"
 import { parseProductDetoxSessionMarkdown } from "./parser.js"
 import type {
@@ -189,7 +190,7 @@ export function createJourneyEventFromHook(input: JourneyEventHookInput): Sessio
 
 export function getEventTrackerArtifactPaths(projectRoot: string, sessionId: string): EventTrackerArtifactPaths {
   const artifactStem = sanitizeSessionArtifactStem(sessionId)
-  const dir = join(projectRoot, ".hivemind", "event-tracker")
+  const dir = assertPathWithinRoot(projectRoot, join(".hivemind", "event-tracker"), "event tracker")
   return {
     dir,
     artifactStem,

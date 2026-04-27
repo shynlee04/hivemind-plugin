@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
+import { assertPathWithinRoot } from "./security/path-scope.js"
 import type {
   CapturedResult,
   CompactionCheckpointData,
@@ -37,7 +38,7 @@ function resolveContinuityFilePath(): string {
   }
 
   // Q6: canonical path is always .hivemind/state/ for writes
-  return resolve(CANONICAL_STATE_DIR, "session-continuity.json")
+  return assertPathWithinRoot(CANONICAL_STATE_DIR, "session-continuity.json", "continuity state")
 }
 
 function resolveLegacyFilePath(): string {

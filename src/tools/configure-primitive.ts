@@ -15,6 +15,7 @@ import {
   decompileSkill,
   mixedBatchCompile,
 } from "../lib/config-compiler.js"
+import { assertPathWithinRoot } from "../lib/security/path-scope.js"
 import { loadPrimitives, loadPrimitive } from "../lib/primitive-loader.js"
 import {
   canAdvanceTurn,
@@ -166,7 +167,8 @@ async function handleCompile(
 
   // Route to correct compiler
   let result: import("../lib/config-compiler.js").CompileResult
-  const compileOptions = { scope: args.scope, basePath: resolveScopeBasePath(args.scope, projectRoot), skipValidation: !args.validate }
+  const scopeBasePath = resolveScopeBasePath(args.scope, projectRoot)
+  const compileOptions = { scope: args.scope, basePath: scopeBasePath, skipValidation: !args.validate }
 
   switch (args.primitive) {
     case "agent": {
@@ -198,7 +200,13 @@ async function handleCompile(
   }
 
   // Write file
-  const filePath = result.filePath
+  let filePath: string
+  const writeBoundaryRoot = args.scope === "project" ? projectRoot : scopeBasePath
+  try {
+    filePath = assertPathWithinRoot(writeBoundaryRoot, result.filePath, "configure-primitive")
+  } catch (pathError) {
+    return renderToolResult(error(pathError instanceof Error ? pathError.message : String(pathError)))
+  }
   if (existsSync(filePath) && !args.overwrite) {
     return renderToolResult(error("File exists, use overwrite: true to replace", { filePath }))
   }

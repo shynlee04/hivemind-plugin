@@ -175,6 +175,75 @@ describe("DelegationManager", () => {
   })
 
   // ---------------------------------------------------------------------------
+  // visibility
+  // ---------------------------------------------------------------------------
+
+  describe("visibility", () => {
+    function seedDelegation(manager: DelegationManager, delegation: Delegation): void {
+      const internals = getInternals(manager)
+      internals.delegations.set(delegation.id, delegation)
+      internals.delegationsBySession.set(delegation.childSessionId, delegation.id)
+    }
+
+    function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
+      return {
+        id: "del-owned",
+        parentSessionId: "ses-parent-owned",
+        childSessionId: "ses-child-owned",
+        agent: "builder",
+        status: "running",
+        createdAt: Date.now(),
+        safetyCeilingMs: DEFAULT_SAFETY_CEILING_MS,
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        nestingDepth: 1,
+        executionMode: "sdk",
+        workingDirectory: process.cwd(),
+        queueKey: "agent:builder",
+        ...overrides,
+      }
+    }
+
+    it("allows direct parent session access to its delegation", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+      const delegation = makeDelegation()
+      seedDelegation(manager, delegation)
+
+      expect(manager.canSessionAccessDelegation("ses-parent-owned", delegation)).toBe(true)
+    })
+
+    it("denies foreign and missing caller sessions", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+      const delegation = makeDelegation()
+      seedDelegation(manager, delegation)
+
+      expect(manager.canSessionAccessDelegation("ses-foreign", delegation)).toBe(false)
+      expect(manager.canSessionAccessDelegation(undefined, delegation)).toBe(false)
+    })
+
+    it("allows child session access only when the child relationship is explicitly recorded", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+      const delegation = makeDelegation()
+      seedDelegation(manager, delegation)
+
+      expect(manager.canSessionAccessDelegation("ses-child-owned", delegation)).toBe(true)
+
+      getInternals(manager).delegationsBySession.delete("ses-child-owned")
+      expect(manager.canSessionAccessDelegation("ses-child-owned", delegation)).toBe(false)
+    })
+
+    it("filters list output to caller-visible delegations", () => {
+      const manager = new DelegationManager(createMockClient() as never)
+      const owned = makeDelegation({ id: "del-owned", parentSessionId: "ses-parent-owned", childSessionId: "ses-child-owned" })
+      const foreign = makeDelegation({ id: "del-foreign", parentSessionId: "ses-parent-foreign", childSessionId: "ses-child-foreign" })
+      seedDelegation(manager, owned)
+      seedDelegation(manager, foreign)
+
+      expect(manager.getVisibleDelegationsForSession("ses-parent-owned").map((entry) => entry.id)).toEqual(["del-owned"])
+    })
+  })
+
+  // ---------------------------------------------------------------------------
   // dispatch
   // ---------------------------------------------------------------------------
 

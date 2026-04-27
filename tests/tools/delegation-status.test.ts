@@ -46,6 +46,7 @@ function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
 type ManagerStub = {
   getStatus: ReturnType<typeof vi.fn>
   getAllDelegations: ReturnType<typeof vi.fn>
+  canSessionAccessDelegation: ReturnType<typeof vi.fn>
 }
 
 function createManagerStub(delegations: Delegation[] = []): ManagerStub {
@@ -53,6 +54,9 @@ function createManagerStub(delegations: Delegation[] = []): ManagerStub {
   return {
     getStatus: vi.fn((id: string) => byId.get(id)),
     getAllDelegations: vi.fn(() => delegations),
+    canSessionAccessDelegation: vi.fn((callerSessionId: string | undefined, delegation: Delegation | undefined) => (
+      Boolean(callerSessionId && delegation && delegation.parentSessionId === callerSessionId)
+    )),
   }
 }
 
@@ -104,6 +108,29 @@ describe("delegation-status tool", () => {
 
     expect(result.kind).toBe("error")
     expect(result.message).toContain("not found")
+  })
+
+  it("denies missing caller session IDs before lookup", async () => {
+    const manager = createManagerStub([makeDelegation()])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-001" } as never, { ...mockCtx, sessionID: undefined })
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("[Harness] Missing caller session ID for delegation-status")
+    expect(manager.getStatus).not.toHaveBeenCalled()
+  })
+
+  it("returns auditable access denied for foreign delegation lookup", async () => {
+    const manager = createManagerStub([makeDelegation({ parentSessionId: "foreign-parent" })])
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({ delegationId: "del-001" } as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("caller session is not in the recorded owner lineage")
   })
 
   it("falls back to persisted terminal delegation when memory has been cleaned up", async () => {
@@ -275,6 +302,20 @@ describe("delegation-status tool", () => {
     expect(manager.getAllDelegations).toHaveBeenCalled()
     const data = result.data as Delegation[]
     expect(data).toHaveLength(2)
+  })
+
+  it("lists only caller-visible delegations", async () => {
+    const delegations = [
+      makeDelegation({ id: "del-owned", parentSessionId: "parent-session" }),
+      makeDelegation({ id: "del-foreign", parentSessionId: "foreign-session" }),
+    ]
+    const manager = createManagerStub(delegations)
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({} as never, mockCtx)
+    const result = parseResult(raw)
+
+    expect((result.data as Delegation[]).map((entry) => entry.id)).toEqual(["del-owned"])
   })
 
   it("handles empty delegation list", async () => {

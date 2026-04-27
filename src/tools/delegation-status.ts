@@ -76,10 +76,14 @@ export function createDelegationStatusTool(
       delegationId: s.string().optional().describe("Specific delegation ID to check"),
       status: s.string().optional().describe("Filter by status: dispatched, running, completed, error, timeout"),
     },
-    async execute(rawArgs: DelegationStatusInput, _context: ToolContext): Promise<string> {
+    async execute(rawArgs: DelegationStatusInput, context: ToolContext): Promise<string> {
       const args = DelegationStatusInputSchema.parse(rawArgs)
 
       try {
+        if (!context.sessionID) {
+          return renderToolResult(error("[Harness] Missing caller session ID for delegation-status"))
+        }
+
         // Specific delegation lookup
         if (args.delegationId) {
           const delegation = delegationManager.getStatus(args.delegationId)
@@ -87,6 +91,12 @@ export function createDelegationStatusTool(
 
         if (!delegation) {
           return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
+        }
+
+        if (!delegationManager.canSessionAccessDelegation(context.sessionID, delegation)) {
+          return renderToolResult(error(
+            `[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`,
+          ))
         }
 
         const terminalLabel = delegation.terminalKind ?? delegation.status
@@ -102,7 +112,7 @@ export function createDelegationStatusTool(
         const allDelegations = mergeDelegations(
           delegationManager.getAllDelegations(),
           readPersistedDelegations(),
-        )
+        ).filter((delegation) => delegationManager.canSessionAccessDelegation(context.sessionID, delegation))
 
         const filtered = args.status && args.status !== "all"
           ? allDelegations.filter(d => d.status === args.status)
