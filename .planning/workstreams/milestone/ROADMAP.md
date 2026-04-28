@@ -60,7 +60,7 @@
 - [ ] **Phase 48.4: Production Evidence & Coverage Recovery** — 5 plans, 4 waves: coverage infra → behavioral tests → mock upgrades → gap classification
 - [x] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — COMPLETE: 3/3 plans, validation PASS WITH RUNTIME GAP RECOMMENDATION
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
-- [ ] **Phase 50: OpenCode Primitive Restart Readiness** — Make configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
+- [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
 - [ ] **Phase 51: Stack Research & Synthesis Skill Runtime Grounding** — Ground stack-feature, OpenCode SDK/plugin, custom-tool, deep-research, and synthesis skills in live harness workflows
 - [ ] **Phase 52: End-User Harness Workflow Acceptance** — Prove real-life orchestrator/subagent workflows complete end-to-end through the production harness surface
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
@@ -694,7 +694,7 @@ Plans:
 | 47. Runtime Policy & Command Buffer Hardening | 0 plans | Medium — MED-02, MED-03 |
 | 48. Real OpenCode Runtime Integration Verification | 0 plans | Integration — live OpenCode proof for remediation wave |
 | 49. UAT Tool Contract & PTY Command Reliability | 0 plans | Pending — ses_22ee tool contract defects and PTY command usability |
-| 50. OpenCode Primitive Restart Readiness | 0 plans | Pending — validate-restart primitive load/runtime issues |
+| 50. OpenCode Primitive Restart Readiness | 1 plan | Complete — validate-restart passes for 58 agents, 18 commands, 49 skills |
 | 51. Stack Research & Synthesis Skill Runtime Grounding | 0 plans | Pending — stack-feature/deep-research/synthesis workflows |
 | 52. End-User Harness Workflow Acceptance | 0 plans | Pending — production E2E user workflows |
 | 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
@@ -1253,7 +1253,7 @@ Plans:
 **Goal:** Project-local OpenCode primitives restart cleanly with valid frontmatter, discoverable references, and non-conflicting permission semantics.
 **Source:** `session-ses_22ee.md` validate-restart and configure-primitive observations
 **Depends on:** Phase 49
-**Plans:** TBD
+**Plans:** 1 plan
 **Priority:** P0 downstream runtime readiness
 
 ### Scope
@@ -1267,7 +1267,9 @@ Plans:
 3. Permission inheritance reports use readable values, not `[object Object]`, and distinguish intentional deny overlays from real conflicts.
 
 Plans:
-- [ ] TBD — derive from Phase 50 discussion and restart validation evidence
+- [x] 50-01-PLAN-2026-04-28.md — Restart-readiness validator, loader, and primitive frontmatter repairs
+
+**Execution status:** COMPLETE. `npm test`, `npm run typecheck`, `npm run build`, and rebuilt `validate-restart` pass; summary and verification artifacts are in `.planning/workstreams/milestone/phases/50-opencode-primitive-restart-readiness/`.
 
 ## Phase 51: Stack Research & Synthesis Skill Runtime Grounding
 

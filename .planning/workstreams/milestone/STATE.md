@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: phase-50-primitive-restart-readiness
-status: phase-49-complete-with-partial-runtime-evidence
-stopped_at: Phase 49 complete; next autonomous phase is Phase 50 primitive restart readiness
+current_plan: phase-51-stack-research-synthesis-skill-runtime-grounding
+status: phase-50-complete
+stopped_at: Phase 50 complete; next autonomous phase is Phase 51 stack research and synthesis skill runtime grounding
 last_updated: "2026-04-28T00:00:00Z"
 progress:
   total_phases: 58
-  completed_phases: 23
+  completed_phases: 24
   total_plans: 76
   completed_plans: 76
   percent: 92
@@ -45,8 +45,8 @@ Phase: 48.1 (runtime-correctness-lifecycle-queue-persistence-truth) — COMPLETE
 Plan: 5-plan remediation sequence created after degraded Phase 48 proof
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
-**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1 and 48.2 complete (runtime correctness + security boundaries); Phase 48.3 complete (SDK/CQRS alignment); Phases 48.4 and 48.5 are closed by workstream artifacts; Phase 49 is complete with partial runtime evidence for command contracts, prompt-tool calibration, and journal export filters.
-**Next:** Execute Phase 50 under the milestone workstream.
+**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1 and 48.2 complete (runtime correctness + security boundaries); Phase 48.3 complete (SDK/CQRS alignment); Phases 48.4 and 48.5 are closed by workstream artifacts; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing for project-local primitives.
+**Next:** Execute Phase 51 under the milestone workstream.
 **Progress:** [█████████░] 92%
 
 ```
@@ -104,7 +104,7 @@ Phase 48.3: SDK/CQRS Alignment ...... COMPLETE (5/5 plans; SDK wrappers, dispatc
 Phase 48.4: Evidence/Coverage ....... COMPLETE WITH DEFERRED RUNTIME GAPS (workstream verification exists)
 Phase 48.5: LOC Cleanup ............. COMPLETE (event-tracker writer split; validation pass)
 Phase 49: UAT Tool Contracts ........ COMPLETE WITH PARTIAL RUNTIME EVIDENCE (focused/full gates pass)
-Phase 50: Primitive Restart Ready .... PENDING (OpenCode primitive restart/load readiness; depends on 49)
+Phase 50: Primitive Restart Ready .... COMPLETE (validate-restart passes; depends on 49)
 Phase 51: Stack Research Grounding ... PENDING (stack-feature/deep-research/synthesis runtime grounding; depends on 50)
 Phase 52: End-User Workflow Accept ... PENDING (production E2E harness workflow acceptance; depends on 51)
 ```
@@ -155,7 +155,7 @@ Phase 52: End-User Workflow Accept ... PENDING (production E2E harness workflow 
 | Phase 48.4 | COMPLETE WITH DEFERRED RUNTIME GAPS | Validation and verification artifacts exist; REM-RUNTIME-04/05 remain deferred |
 | Phase 48.5 | COMPLETE | Event-tracker writer split validated; REM-RUNTIME-04/05 not claimed closed |
 | Phase 49 | COMPLETE WITH PARTIAL RUNTIME EVIDENCE | Command tool contract, prompt heuristics, and journal export filters implemented and verified by focused/full automated gates |
-| Phase 50 | PENDING | OpenCode primitive restart readiness; depends on Phase 49 |
+| Phase 50 | COMPLETE | Restart validation passes for project-local primitives; depends on Phase 49 |
 | Phase 51 | PENDING | Stack research and synthesis skill runtime grounding; depends on Phase 50 |
 | Phase 52 | PENDING | End-user production harness workflow acceptance; depends on Phase 51 |
 
@@ -331,7 +331,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - [ ] Plan Phase 48.4: Production Evidence & Coverage Recovery
 - [ ] Plan Phase 48.5: Architecture LOC Cleanup — Event Tracker Writer Split
 - [ ] Plan Phase 49: UAT Tool Contract & PTY Command Reliability
-- [ ] Plan Phase 50: OpenCode Primitive Restart Readiness
+- [x] Plan Phase 50: OpenCode Primitive Restart Readiness
 - [ ] Plan Phase 51: Stack Research & Synthesis Skill Runtime Grounding
 - [ ] Plan Phase 52: End-User Harness Workflow Acceptance
 
