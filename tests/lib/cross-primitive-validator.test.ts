@@ -274,7 +274,7 @@ describe("framework boundary validation", () => {
 describe("runtime validation integration", () => {
   it("reports loading-order errors for circular dependencies", () => {
     const agents = new Map<string, AgentFile>([
-      ["agent-a", makeAgentFile("agent-a", {}, "Uses command-c")],
+      ["agent-a", makeAgentFile("agent-a", {}, "Uses /command-c")],
     ])
     const commands = new Map<string, CommandFile>([
       ["command-c", makeCommandFile("command-c", { agent: "agent-a" })],
@@ -297,9 +297,9 @@ describe("runtime validation integration", () => {
 
   it("reports inheritance-chain warnings for permission contradictions", () => {
     const agents = new Map<string, AgentFile>([
-      ["agent-a", makeAgentFile("agent-a", { permission: { read: "deny" } })],
+      ["agent-a", makeAgentFile("agent-a", { permission: { read: "allow" } })],
     ])
-    const config = { instructions: [], permission: { read: "allow" } }
+    const config = { instructions: [], permission: { read: "deny" } }
 
     const report = validateCrossPrimitive(makePrimitiveMap({ agents, config: config as any }))
     expect(report.warnings.some(w => w.category === "inheritance-chain")).toBe(true)

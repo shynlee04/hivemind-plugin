@@ -62,7 +62,6 @@ permission:
     "gate-evidence-truth": allow
     "gate-lifecycle-integration": allow
     "gate-spec-compliance": allow
-  patch: allow
   glob: allow
   grep: allow
   webfetch: allow

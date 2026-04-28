@@ -39,7 +39,7 @@ describe("runtime-validator", () => {
       const agents = new Map([
         ["agent-a", {
           frontmatter: { description: "Agent A", mode: "all" as const },
-          body: "Uses command-c",
+          body: "Invokes /command-c",
           filePath: ".opencode/agents/agent-a.md",
         }],
       ])
@@ -59,6 +59,27 @@ describe("runtime-validator", () => {
       expect(cycleNames).toContain("command-c")
     })
 
+    it("does not treat natural language mentions as command dependencies", () => {
+      const agents = new Map([
+        ["conductor", {
+          frontmatter: { description: "Conductor", mode: "primary" as const },
+          body: "Can create a plan and coordinate work.",
+          filePath: ".opencode/agents/conductor.md",
+        }],
+      ])
+      const commands = new Map([
+        ["plan", {
+          frontmatter: { description: "Plan command", agent: "conductor" },
+          body: "Plan work",
+          filePath: ".opencode/commands/plan.md",
+        }],
+      ])
+
+      const result = validateLoadingOrder(makePrimitiveMap({ agents, commands }))
+      expect(result.valid).toBe(true)
+      expect(result.cycles).toHaveLength(0)
+    })
+
     it("detects circular dependencies in agent-skill chain", () => {
       const agents = new Map([
         ["agent-a", {
@@ -70,7 +91,7 @@ describe("runtime-validator", () => {
       const skills = new Map([
         ["skill-s", {
           frontmatter: { name: "skill-s", description: "Skill S" },
-          body: 'Delegate to agent-a',
+          body: 'Delegate to @agent-a',
           directoryName: "skill-s",
           skillPath: ".opencode/skills/skill-s/SKILL.md",
         }],
@@ -141,7 +162,7 @@ describe("runtime-validator", () => {
           frontmatter: {
             description: "Agent A",
             mode: "all" as const,
-            permission: { read: "deny" },
+            permission: { read: "allow" },
           },
           body: "",
           filePath: ".opencode/agents/agent-a.md",
@@ -149,12 +170,34 @@ describe("runtime-validator", () => {
       ])
       const config = {
         instructions: [],
-        permission: { read: "allow" },
+        permission: { read: "deny" },
       }
 
       const result = validateInheritanceChain(makePrimitiveMap({ agents, config: config as any }))
       expect(result.valid).toBe(false)
       expect(result.broken.length).toBeGreaterThan(0)
+    })
+
+    it("allows agents to narrow globally allowed permissions", () => {
+      const agents = new Map([
+        ["critic", {
+          frontmatter: {
+            description: "Critic",
+            mode: "subagent" as const,
+            permission: { edit: "deny", task: "deny" },
+          },
+          body: "Review only",
+          filePath: ".opencode/agents/critic.md",
+        }],
+      ])
+      const config = {
+        instructions: [],
+        permission: { edit: "allow", task: "allow" },
+      }
+
+      const result = validateInheritanceChain(makePrimitiveMap({ agents, config: config as any }))
+      expect(result.valid).toBe(true)
+      expect(result.broken).toHaveLength(0)
     })
 
     it("passes when permissions are consistent", () => {
@@ -241,6 +284,25 @@ describe("runtime-validator", () => {
       ])
 
       const result = validateRuntime(makePrimitiveMap({ agents }))
+      expect(result.valid).toBe(true)
+    })
+
+    it("keeps restart validation passable when only advisory pipeline warnings exist", () => {
+      const agents = new Map([
+        ["conductor", {
+          frontmatter: { description: "Coordinates all work across the system", mode: "primary" as const },
+          body: "Coordinates work",
+          filePath: ".opencode/agents/conductor.md",
+        }],
+        ["coordinator", {
+          frontmatter: { description: "Coordinates tasks and delegates work across modules", mode: "primary" as const },
+          body: "Coordinates work",
+          filePath: ".opencode/agents/coordinator.md",
+        }],
+      ])
+
+      const result = validateRuntime(makePrimitiveMap({ agents }))
+      expect(result.pipelinePosition.valid).toBe(false)
       expect(result.valid).toBe(true)
     })
   })

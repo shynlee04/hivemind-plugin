@@ -22,8 +22,6 @@ permission:
   webbrowse: allow
   todoread: allow
   todowrite: allow
-  todoread: allow
-  todowrite: allow
 ---
 
 # Hivexplorer — Repository Investigator

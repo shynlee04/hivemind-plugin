@@ -1,6 +1,7 @@
 ---
 name: hm-user-intent-interactive-loop
-description: This skill should be used when user intent is unclear enough to require interactive probing before delegation, when a long session needs parent-child context preservation, or when requirements must be confirmed before dispatch. Triggers on: "clarify intent before delegating", "probe requirements", "long session management", "parent child delegation", "context preservation", "iterative engagement". NOT for ordinary one-shot clarification or generic conversation.
+description: >
+  This skill should be used when user intent is unclear enough to require interactive probing before delegation, when a long session needs parent-child context preservation, or when requirements must be confirmed before dispatch. Triggers on: "clarify intent before delegating", "probe requirements", "long session management", "parent child delegation", "context preservation", "iterative engagement". NOT for ordinary one-shot clarification or generic conversation.
 metadata:
   layer: "1"
   role: "front-agent"

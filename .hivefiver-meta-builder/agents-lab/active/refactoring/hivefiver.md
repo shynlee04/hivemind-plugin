@@ -22,8 +22,6 @@ permission:
     "repomix-exploration-guide": allow
     "hm-opencode-non-interactive-shell": allow
     "repomix-explorer": allow
-    "repomix-exploration-guide": allow
-    "hm-opencode-platform-reference": allow
     "hf-skill-synthesis": allow
     "hf-agents-and-subagents-dev": allow
     "hf-command-dev": allow

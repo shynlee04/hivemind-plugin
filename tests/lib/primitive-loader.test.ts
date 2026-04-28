@@ -114,11 +114,18 @@ describe("loadPrimitives", () => {
     expect(result.warnings.length).toBe(0)
   })
 
-  it("warns about orphaned files (exist on disk but not in opencode.json)", async () => {
+  it("does not warn about discovered files when opencode.json omits primitive registries", async () => {
     writeAgent(TEMP_DIR, "orphan-agent", { description: "Orphan agent" })
     writeOpencodeJson(TEMP_DIR, { $schema: "https://opencode.ai/config.json" })
     const result = await loadPrimitives({ projectRoot: TEMP_DIR })
-    // Orphan warning should be present
+    const orphanWarning = result.warnings.find(w => w.includes("orphan") || w.includes("not referenced"))
+    expect(orphanWarning).toBeUndefined()
+  })
+
+  it("warns about orphaned files when an explicit primitive registry exists", async () => {
+    writeAgent(TEMP_DIR, "orphan-agent", { description: "Orphan agent" })
+    writeOpencodeJson(TEMP_DIR, { $schema: "https://opencode.ai/config.json", agent: {} })
+    const result = await loadPrimitives({ projectRoot: TEMP_DIR })
     const orphanWarning = result.warnings.find(w => w.includes("orphan") || w.includes("not referenced"))
     expect(orphanWarning).toBeDefined()
   })
@@ -141,6 +148,45 @@ describe("loadPrimitives", () => {
     expect(result.agents.size).toBe(1)
     expect(result.commands.size).toBe(1)
     expect(result.skills.size).toBe(1)
+  })
+
+  it("accepts OpenCode skill metadata values beyond strings", async () => {
+    const dir = path.join(TEMP_DIR, ".opencode", "skills", "rich-skill")
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(path.join(dir, "SKILL.md"), `---
+name: rich-skill
+description: Skill with rich metadata
+metadata:
+  routes: [gate-a, gate-b]
+  enabled: true
+  weight: 2
+---
+
+# Rich skill
+`)
+
+    const result = await loadPrimitives({ projectRoot: TEMP_DIR })
+    expect(result.skills.has("rich-skill")).toBe(true)
+  })
+
+  it("ignores OpenCode extension frontmatter keys when core fields are valid", async () => {
+    const dir = path.join(TEMP_DIR, ".opencode", "skills", "tool-skill")
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(path.join(dir, "SKILL.md"), `---
+name: tool-skill
+description: Skill with OpenCode tool metadata
+metadata:
+  min-tasks: 2
+allowed-tools:
+  - Read
+  - Bash
+---
+
+# Tool skill
+`)
+
+    const result = await loadPrimitives({ projectRoot: TEMP_DIR })
+    expect(result.skills.has("tool-skill")).toBe(true)
   })
 })
 

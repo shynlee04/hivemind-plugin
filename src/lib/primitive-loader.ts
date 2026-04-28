@@ -282,27 +282,30 @@ async function crossReference(
     return
   }
 
-  // Orphaned agents (on disk but not in opencode.json agent section)
-  const configAgents = new Set(raw.agent && typeof raw.agent === "object" ? Object.keys(raw.agent) : [])
-  for (const [name] of result.agents) {
-    if (!configAgents.has(name)) {
-      result.warnings.push(`Orphaned agent "${name}": exists on disk but not referenced in opencode.json`)
+  if (raw.agent && typeof raw.agent === "object") {
+    const configAgents = new Set(Object.keys(raw.agent))
+    for (const [name] of result.agents) {
+      if (!configAgents.has(name)) {
+        result.warnings.push(`Orphaned agent "${name}": exists on disk but not referenced in opencode.json`)
+      }
     }
   }
 
-  // Orphaned commands
-  const configCommands = new Set(raw.command && typeof raw.command === "object" ? Object.keys(raw.command) : [])
-  for (const [name] of result.commands) {
-    if (!configCommands.has(name)) {
-      result.warnings.push(`Orphaned command "${name}": exists on disk but not referenced in opencode.json`)
+  if (raw.command && typeof raw.command === "object") {
+    const configCommands = new Set(Object.keys(raw.command))
+    for (const [name] of result.commands) {
+      if (!configCommands.has(name)) {
+        result.warnings.push(`Orphaned command "${name}": exists on disk but not referenced in opencode.json`)
+      }
     }
   }
 
-  // Orphaned skills
-  const configSkills = new Set(raw.skill && typeof raw.skill === "object" ? Object.keys(raw.skill) : [])
-  for (const [name] of result.skills) {
-    if (!configSkills.has(name)) {
-      result.warnings.push(`Orphaned skill "${name}": exists on disk but not referenced in opencode.json`)
+  if (raw.skill && typeof raw.skill === "object") {
+    const configSkills = new Set(Object.keys(raw.skill))
+    for (const [name] of result.skills) {
+      if (!configSkills.has(name)) {
+        result.warnings.push(`Orphaned skill "${name}": exists on disk but not referenced in opencode.json`)
+      }
     }
   }
 }

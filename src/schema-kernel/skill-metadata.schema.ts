@@ -35,7 +35,7 @@ export const SkillFrontmatterSchema = z
     description: z.string().min(1).max(1024),
     license: z.string().optional(),
     compatibility: z.string().optional(),
-    metadata: z.record(z.string(), z.string()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   })
   .strict()
 

@@ -1,6 +1,7 @@
 ---
 name: hf-command-dev
-description: This skill should be used when the user asks to "create a command", "add a command", "write a custom command", "update a command", "set up a command with arguments", "create a command with bash injection", "configure command agent", mentions $ARGUMENTS, !bash, @file, agent:, subtask: in command context, or needs guidance on OpenCode command structure and non-interactive shell safety.
+description: >
+  This skill should be used when the user asks to "create a command", "add a command", "write a custom command", "update a command", "set up a command with arguments", "create a command with bash injection", "configure command agent", mentions $ARGUMENTS, !bash, @file, agent:, subtask: in command context, or needs guidance on OpenCode command structure and non-interactive shell safety.
 metadata:
   layer: "2"
   role: "domain-execution"

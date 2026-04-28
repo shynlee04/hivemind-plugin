@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { createConfigurePrimitiveTool } from "../../src/tools/configure-primitive.js"
 import { mixedBatchCompile } from "../../src/lib/config-compiler.js"
-import { existsSync, unlinkSync, rmdirSync, mkdtempSync, rmSync } from "node:fs"
+import { existsSync, unlinkSync, rmdirSync, mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 
@@ -299,12 +299,26 @@ describe("read action", () => {
   })
 
   it("returns error for file with invalid YAML frontmatter", async () => {
+    const tempProject = mkdtempSync(join(tmpdir(), "configure-primitive-invalid-"))
+    mkdirSync(join(tempProject, ".opencode", "agents"), { recursive: true })
+    writeFileSync(
+      join(tempProject, ".opencode", "agents", "bad-agent.md"),
+      `---
+description: "Bad agent
+mode: subagent
+---
+
+# Bad agent
+`,
+    )
+
     const result = parseResult(await tool.execute({
       action: "read",
       primitive: "agent",
-      name: "coordinator",
+      name: "bad-agent",
       scope: "project",
-    }, mockCtx))
+    }, { ...mockCtx, directory: tempProject, worktree: tempProject }))
+    rmSync(tempProject, { recursive: true, force: true })
     expect(result.kind).toBe("error")
     expect(result.message).toContain("Failed to read")
   })

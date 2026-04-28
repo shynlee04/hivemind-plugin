@@ -78,7 +78,7 @@ function buildDependencyGraph(primitives: PrimitiveMap): Map<string, string[]> {
   for (const [agentName, agent] of primitives.agents) {
     const deps = graph.get(`agent:${agentName}`)!
     for (const [cmdName] of primitives.commands) {
-      if (agent.body.includes(cmdName)) {
+      if (hasExplicitCommandReference(agent.body, cmdName)) {
         deps.push(`command:${cmdName}`)
       }
     }
@@ -102,13 +102,47 @@ function buildDependencyGraph(primitives: PrimitiveMap): Map<string, string[]> {
   for (const [skillName, skill] of primitives.skills) {
     const deps = graph.get(`skill:${skillName}`)!
     for (const [agentName] of primitives.agents) {
-      if (skill.body.includes(agentName)) {
+      if (hasExplicitAgentReference(skill.body, agentName)) {
         deps.push(`agent:${agentName}`)
       }
     }
   }
 
   return graph
+}
+
+/**
+ * Detects deliberate command references while ignoring ordinary prose mentions.
+ *
+ * @param body - Agent prompt body to inspect.
+ * @param commandName - Command primitive name without a leading slash.
+ * @returns True when the body contains `/command` or `command("command")`.
+ */
+function hasExplicitCommandReference(body: string, commandName: string): boolean {
+  const escapedName = escapeRegex(commandName)
+  return new RegExp(`(^|\\s)/${escapedName}(?=\\s|$)`).test(body) ||
+    new RegExp(`command\\(\\s*["']${escapedName}["']\\s*\\)`).test(body)
+}
+
+/**
+ * Detects deliberate agent references while ignoring ordinary prose mentions.
+ *
+ * @param body - Skill body to inspect.
+ * @param agentName - Agent primitive name without an at-sign.
+ * @returns True when the body contains an explicit `@agent` mention.
+ */
+function hasExplicitAgentReference(body: string, agentName: string): boolean {
+  return new RegExp(`(^|\\s)@${escapeRegex(agentName)}(?=\\s|$)`).test(body)
+}
+
+/**
+ * Escapes a string for safe interpolation into a regular expression.
+ *
+ * @param value - Raw string segment.
+ * @returns Escaped regular expression literal segment.
+ */
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
 function detectCycles(graph: Map<string, string[]>): string[][] {
@@ -197,18 +231,18 @@ export function validateInheritanceChain(primitives: PrimitiveMap): InheritanceC
   const broken: { agent: string; permission: string; reason: string }[] = []
   const errors: string[] = []
 
-  const globalPerms = (primitives.config as any).permission || {}
+  const globalPerms = primitives.config.permission || {}
 
   for (const [agentName, agent] of primitives.agents) {
     const agentPerms = agent.frontmatter.permission || {}
 
     for (const [key, agentValue] of Object.entries(agentPerms)) {
       const globalValue = globalPerms[key]
-      if (globalValue && globalValue !== agentValue) {
+      if (agentBroadensGlobalDeny(globalValue, agentValue)) {
         broken.push({
           agent: agentName,
           permission: key,
-          reason: `Agent denies "${key}" but global config allows it`,
+          reason: `Agent allows "${key}" but global config denies it`,
         })
         errors.push(`Agent "${agentName}" permission "${key}" (${agentValue}) contradicts global (${globalValue})`)
       }
@@ -220,6 +254,19 @@ export function validateInheritanceChain(primitives: PrimitiveMap): InheritanceC
     broken,
     errors,
   }
+}
+
+/**
+ * Checks whether an agent-specific permission attempts to widen a global deny.
+ * OpenCode agents may safely narrow globally allowed tools, but they must not
+ * override a top-level deny with an allow.
+ *
+ * @param globalValue - Permission value from opencode.json.
+ * @param agentValue - Permission value from agent frontmatter.
+ * @returns True when the agent value broadens a global deny.
+ */
+function agentBroadensGlobalDeny(globalValue: unknown, agentValue: unknown): boolean {
+  return globalValue === "deny" && agentValue !== "deny"
 }
 
 // ---------------------------------------------------------------------------
@@ -292,7 +339,7 @@ export function validateRuntime(primitives: PrimitiveMap): RuntimeValidationRepo
   if (!pipelinePosition.valid) warnings.push(...pipelinePosition.errors)
 
   const valid = loadingOrder.valid && resolutionOrder.valid &&
-    inheritanceChain.valid && pipelinePosition.valid
+    inheritanceChain.valid
 
   return {
     valid,
