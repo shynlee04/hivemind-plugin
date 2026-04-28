@@ -61,7 +61,7 @@
 - [x] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — COMPLETE: 3/3 plans, validation PASS WITH RUNTIME GAP RECOMMENDATION
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
 - [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
-- [ ] **Phase 51: Stack Research & Synthesis Skill Runtime Grounding** — Ground stack-feature, OpenCode SDK/plugin, custom-tool, deep-research, and synthesis skills in live harness workflows
+- [x] **Phase 51: Stack Research & Synthesis Skill Runtime Grounding** — COMPLETE: stack/research/synthesis skills grounded to harness workflows and evidence gates
 - [ ] **Phase 52: End-User Harness Workflow Acceptance** — Prove real-life orchestrator/subagent workflows complete end-to-end through the production harness surface
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
@@ -695,7 +695,7 @@ Plans:
 | 48. Real OpenCode Runtime Integration Verification | 0 plans | Integration — live OpenCode proof for remediation wave |
 | 49. UAT Tool Contract & PTY Command Reliability | 0 plans | Pending — ses_22ee tool contract defects and PTY command usability |
 | 50. OpenCode Primitive Restart Readiness | 1 plan | Complete — validate-restart passes for 58 agents, 18 commands, 49 skills |
-| 51. Stack Research & Synthesis Skill Runtime Grounding | 0 plans | Pending — stack-feature/deep-research/synthesis workflows |
+| 51. Stack Research & Synthesis Skill Runtime Grounding | 1 plan | Complete — skill workflow grounding map created |
 | 52. End-User Harness Workflow Acceptance | 0 plans | Pending — production E2E user workflows |
 | 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
 
@@ -1276,7 +1276,7 @@ Plans:
 **Goal:** Stack-feature skills and research/synthesis workflows produce implementation-ready guidance for OpenCode SDK, plugin, custom-tool, and framework work without stale assumptions.
 **Source:** User request for OpenCode SDK, plugins, custom tools, stack-feature skills, deep research, and synthesis coverage; `ses_22ee` primitive discovery evidence
 **Depends on:** Phase 50
-**Plans:** TBD
+**Plans:** 1 plan
 **Priority:** P1 downstream capability grounding
 
 ### Scope
@@ -1290,7 +1290,9 @@ Plans:
 3. Stack-feature skills correctly route implementation, verification, and gate evidence to the appropriate harness/GSD workflows.
 
 Plans:
-- [ ] TBD — derive from Phase 51 discussion and stack-skill runtime evidence
+- [x] 51-01-PLAN-2026-04-28.md — Ground stack and research/synthesis skills to harness workflows and evidence gates
+
+**Execution status:** COMPLETE. Required stack/research/synthesis skills load through `loadPrimitives()`, and `51-GROUNDING-MAP-2026-04-28.md` provides the routing/evidence handoff for Phase 52.
 
 ## Phase 52: End-User Harness Workflow Acceptance
 
