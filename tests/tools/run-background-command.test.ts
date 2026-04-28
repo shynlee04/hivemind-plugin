@@ -123,6 +123,40 @@ describe("run-background-command tool", () => {
     expect(data.explicitCancellation).toBe(false)
   })
 
+  it("returns actionable guidance for unsupported start and read actions", async () => {
+    const delegationManager = createDelegationManagerStub()
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: delegationManager as unknown as DelegationManager,
+      ptyManager: createPtyManagerStub() as unknown as PtyManager,
+    })
+
+    const startResult = parseResult(await tool.execute({ action: "start", command: "echo" } as never, mockCtx))
+    const readResult = parseResult(await tool.execute({ action: "read", sessionId: "pty-shared-1" } as never, mockCtx))
+
+    expect(startResult.kind).toBe("error")
+    expect(startResult.message).toContain("Use run instead of start")
+    expect(readResult.kind).toBe("error")
+    expect(readResult.message).toContain("output instead of read")
+    expect(delegationManager.dispatchCommand).not.toHaveBeenCalled()
+  })
+
+  it("rejects accidental shell strings before dispatch", async () => {
+    const delegationManager = createDelegationManagerStub()
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: delegationManager as unknown as DelegationManager,
+      ptyManager: createPtyManagerStub() as unknown as PtyManager,
+    })
+
+    const shellResult = parseResult(await tool.execute({ action: "run", command: "echo one && echo two" } as never, mockCtx))
+    const bashStringResult = parseResult(await tool.execute({ action: "run", command: "bash -c \"echo one\"" } as never, mockCtx))
+
+    expect(shellResult.kind).toBe("error")
+    expect(shellResult.message).toContain("expects an executable plus args")
+    expect(bashStringResult.kind).toBe("error")
+    expect(bashStringResult.message).toContain('command: "bash"')
+    expect(delegationManager.dispatchCommand).not.toHaveBeenCalled()
+  })
+
   it("routes run through DelegationManager.dispatchCommand when PTY manager is unavailable", async () => {
     const delegationManager = createDelegationManagerStub()
     delegationManager.dispatchCommand.mockResolvedValue({
@@ -166,9 +200,11 @@ describe("run-background-command tool", () => {
   })
 
   it("returns incremental output for a shared PTY session", async () => {
+    const ptyManager = createPtyManagerStub()
+    ptyManager.read.mockReturnValue({ content: "Line 1\nLine 2\n", nextOffset: 14, truncated: false })
     const tool = createRunBackgroundCommandTool({
       delegationManager: createDelegationManagerStub() as unknown as DelegationManager,
-      ptyManager: createPtyManagerStub() as unknown as PtyManager,
+      ptyManager: ptyManager as unknown as PtyManager,
     })
 
     const raw = await tool.execute({ action: "output", sessionId: "pty-shared-1", offset: 0 } as never, mockCtx)
@@ -176,8 +212,8 @@ describe("run-background-command tool", () => {
     const data = result.data as Record<string, unknown>
 
     expect(result.kind).toBe("success")
-    expect(data.content).toBe("hello\n")
-    expect(data.nextOffset).toBe(6)
+    expect(data.content).toContain("Line 1")
+    expect(data.nextOffset).toBe(14)
   })
 
   it("lists sessions from the canonical shared PTY manager", async () => {

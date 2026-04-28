@@ -11,6 +11,22 @@ import { success } from "../../shared/tool-response.js"
 import { PromptSkimResultSchema } from "../../schema-kernel/prompt-enhance.schema.js"
 import type { PromptSkimResult } from "./types.js"
 
+const REQUIREMENT_RE = /\b(must|should|need(?:s)? to|require(?:s|d)?|acceptance|success criteria|deliver|implement|verify|validate)\b/gi
+const SCOPE_TERM_RE = /\b(api|auth|database|ui|frontend|backend|tool|command|session|journal|export|prompt|test|build|deploy|migration|security|performance|accessibility|documentation)\b/gi
+
+/**
+ * Count regex matches in prompt content without leaking RegExp state.
+ *
+ * @param content - Prompt text to inspect.
+ * @param pattern - Global or non-global expression to count.
+ * @returns Number of matches found in the supplied content.
+ * @example
+ * countMatches("must test", /must/gi)
+ */
+function countMatches(content: string, pattern: RegExp): number {
+  return content.match(pattern)?.length ?? 0
+}
+
 /**
  * Create the prompt-skim tool instance.
  * @param _projectRoot - Reserved for future path resolution (unused)
@@ -47,6 +63,9 @@ export function createPromptSkimTool(_projectRoot: string): ReturnType<typeof to
 
       const absoluteWords =
         args.content.match(/\b(MUST|NEVER|ALWAYS|REQUIRED|FORBIDDEN)\b/gi) ?? []
+      const requirementCount = countMatches(args.content, REQUIREMENT_RE)
+      const scopeBreadth = new Set((args.content.match(SCOPE_TERM_RE) ?? []).map((term) => term.toLowerCase())).size
+      const listLineCount = lines.filter((line) => /^\s*(?:[-*]|\d+[.)])\s+/.test(line)).length
 
       let complexity = 1
       if (wordCount > 200) complexity += 1
@@ -56,6 +75,9 @@ export function createPromptSkimTool(_projectRoot: string): ReturnType<typeof to
       if (urls.length > 5) complexity += 1
       if (absoluteWords.length > 3) complexity += 1
       if (lines.length > 50) complexity += 1
+      if (lines.length > 15 && listLineCount >= 6) complexity += 1
+      if (requirementCount >= 6) complexity += 1
+      if (scopeBreadth >= 5) complexity += 1
       if (verifiedPaths.filter((p) => !p.exists).length > 2) complexity += 1
       if (args.content.includes("```")) complexity += 1
       complexity = Math.min(10, complexity)

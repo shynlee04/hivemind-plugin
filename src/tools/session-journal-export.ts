@@ -15,6 +15,7 @@ const SessionJournalExportInputSchema = z.object({
   format: z.enum(["json", "markdown"]),
   sessionId: z.string().min(1).optional(),
   pipelineKey: z.string().min(1).optional(),
+  pipelineKeyLabel: z.string().min(1).optional(),
 })
 
 type SessionJournalExportInput = z.infer<typeof SessionJournalExportInputSchema>
@@ -43,6 +44,23 @@ function markdownSummary(data: JsonExportData): string {
   ].join("\n")
 }
 
+/**
+ * Filter projected lineage records by pipeline identity without mutating metadata.
+ *
+ * @param records - Derived execution-lineage records.
+ * @param pipelineKey - Optional pipeline key filter from the tool request.
+ * @returns Records matching the requested pipeline key, or all records when unset.
+ * @example
+ * filterLineageByPipeline([{ pipelineKey: "phase-49" }], "phase-49")
+ */
+function filterLineageByPipeline(
+  records: ExecutionLineageRecord[],
+  pipelineKey: string | undefined,
+): ExecutionLineageRecord[] {
+  if (!pipelineKey) return records
+  return records.filter((record) => record.pipelineKey === pipelineKey || record.planId === pipelineKey)
+}
+
 /** Create an agent-facing read/export tool for journal and lineage quick reads. */
 export function createSessionJournalExportTool(): ReturnType<typeof tool> {
   const s = tool.schema
@@ -53,7 +71,8 @@ export function createSessionJournalExportTool(): ReturnType<typeof tool> {
     args: {
       format: s.string().describe("Output format: json or markdown"),
       sessionId: s.string().optional().describe("Optional session ID filter"),
-      pipelineKey: s.string().optional().describe("Optional pipeline key to stamp onto derived lineage records"),
+      pipelineKey: s.string().optional().describe("Optional pipeline key filter for existing lineage records"),
+      pipelineKeyLabel: s.string().optional().describe("Optional label to add to derived lineage records before filtering"),
     },
     async execute(rawArgs: SessionJournalExportInput, _context: ToolContext): Promise<string> {
       try {
@@ -70,15 +89,16 @@ export function createSessionJournalExportTool(): ReturnType<typeof tool> {
           : allDelegations
         const lineage = buildExecutionLineage(
           { continuityRecords, delegations, journalEntries: [] },
-          args.pipelineKey ? { pipelineKey: args.pipelineKey } : {},
+          args.pipelineKeyLabel ? { pipelineKey: args.pipelineKeyLabel } : {},
         )
+        const filteredLineage = filterLineageByPipeline(lineage, args.pipelineKey)
         const data: JsonExportData = {
           journalSummary: {
             sessions: continuityRecords.length,
-            delegations: delegations.length,
+            delegations: filteredLineage.length,
             generatedAt: Date.now(),
           },
-          lineage,
+          lineage: filteredLineage,
         }
 
         if (args.format === "json") {

@@ -44,6 +44,10 @@ const RunBackgroundCommandInputSchema = z.discriminatedUnion("action", [
   TerminateActionSchema,
 ])
 
+const ACTION_GUIDANCE = "Valid actions are: run, output, input, list, terminate. Use run instead of start and output instead of read."
+const SHELL_META_RE = /(?:&&|\|\||;|`|\$\(|>|<|\n)/
+const SHELL_COMMAND_RE = /^(?:bash|sh|zsh)\s+-[lc]\s+/u
+
 type RunBackgroundCommandInput = z.infer<typeof RunBackgroundCommandInputSchema>
 
 type ToolContext = {
@@ -87,6 +91,49 @@ function requireVisiblePtyDelegation(
   return delegation
 }
 
+/**
+ * Parse raw tool input into the supported command contract with actionable errors.
+ *
+ * @param rawArgs - Untrusted OpenCode tool arguments.
+ * @returns Validated run-background-command input.
+ * @throws {Error} When the action is unsupported or the Zod contract fails.
+ * @example
+ * parseRunBackgroundCommandInput({ action: "run", command: "bash", args: ["-lc", "echo ok"] })
+ */
+function parseRunBackgroundCommandInput(rawArgs: unknown): RunBackgroundCommandInput {
+  const rawAction = typeof rawArgs === "object" && rawArgs !== null && "action" in rawArgs
+    ? String((rawArgs as { action?: unknown }).action)
+    : ""
+  if (rawAction === "start" || rawAction === "read") {
+    throw new Error(`[Harness] Unsupported run-background-command action "${rawAction}". ${ACTION_GUIDANCE}`)
+  }
+
+  const parsed = RunBackgroundCommandInputSchema.safeParse(rawArgs)
+  if (!parsed.success) {
+    throw new Error(`[Harness] Invalid run-background-command input. ${ACTION_GUIDANCE}`)
+  }
+  return parsed.data
+}
+
+/**
+ * Reject implicit shell strings before dispatching a local process.
+ *
+ * @param command - Executable name supplied to the command tool.
+ * @param commandArgs - Optional executable arguments supplied separately.
+ * @throws {Error} When the command looks like an accidental shell string.
+ * @example
+ * assertExecutableCommandShape("bash", ["-lc", "echo ok"])
+ */
+function assertExecutableCommandShape(command: string, commandArgs: string[] | undefined): void {
+  if (commandArgs && commandArgs.length > 0) return
+  const trimmed = command.trim()
+  if (SHELL_META_RE.test(trimmed) || SHELL_COMMAND_RE.test(trimmed)) {
+    throw new Error(
+      `[Harness] run-background-command expects an executable plus args. Use command: "bash", args: ["-lc", "<shell command>"] for shell syntax.`,
+    )
+  }
+}
+
 export function createRunBackgroundCommandTool(args: {
   delegationManager: DelegationManager
   ptyManager: PtyManager | null
@@ -107,10 +154,10 @@ export function createRunBackgroundCommandTool(args: {
       input: s.string().optional(),
     },
     async execute(rawArgs: RunBackgroundCommandInput, context: ToolContext): Promise<string> {
-      const parsed = RunBackgroundCommandInputSchema.parse(rawArgs)
-
       try {
+        const parsed = parseRunBackgroundCommandInput(rawArgs)
         if (parsed.action === "run") {
+          assertExecutableCommandShape(parsed.command, parsed.args)
           const parentSessionId = requireCallerSessionId(context, parsed.action)
 
           const result = await args.delegationManager.dispatchCommand({

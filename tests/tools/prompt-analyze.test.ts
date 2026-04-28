@@ -57,6 +57,31 @@ describe("prompt-analyze tool", () => {
     expect(missing.length).toBeGreaterThan(0)
   })
 
+  it("lowers clarity for vague app-improvement prompts", async () => {
+    const raw = await tool.execute(
+      { content: "Make the app better and improve the flow." },
+      mockCtx,
+    )
+    const result = parseResult(raw) as Record<string, unknown>
+    const findings = result.data.findings as Array<{ type: string }>
+
+    expect(result.data.clarity_score).toBeLessThan(100)
+    expect(findings.some((finding) => finding.type === "vagueness" || finding.type === "missing_scope")).toBe(true)
+  })
+
+  it("does not flag complementary event sourcing and CQRS guidance as contradictory", async () => {
+    const raw = await tool.execute(
+      {
+        content: "You must use event sourcing with CQRS and do not couple read and write models.",
+      },
+      mockCtx,
+    )
+    const result = parseResult(raw) as Record<string, unknown>
+    const findings = result.data.findings as Array<{ type: string }>
+
+    expect(findings.some((finding) => finding.type === "contradiction")).toBe(false)
+  })
+
   it("detects contradictions", async () => {
     const raw = await tool.execute(
       { content: "Always use the module but never include it." },

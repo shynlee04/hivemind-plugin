@@ -10,14 +10,30 @@ import { PromptAnalysisResultSchema } from "../../schema-kernel/prompt-enhance.s
 import type { PromptAnalysisFinding, PromptAnalysisResult } from "./types.js"
 
 const ABSOLUTE_RE = /\b(MUST|NEVER|ALWAYS|REQUIRED|FORBIDDEN|DO NOT)\b/i
-const VAGUE_RE = /\b(some|various|etc\.?|somehow|maybe|perhaps|things|stuff)\b/i
+const VAGUE_RE = /\b(some|various|etc\.?|somehow|maybe|perhaps|things|stuff|better|nice|improve the flow|make .*better)\b/i
 const MISSING_SCOPE_RE =
-  /\b(build|create|fix|update|change|improve)\s+(this|that|it|everything|all)\b/i
+  /\b(build|create|fix|update|change|improve|make)\s+(this|that|it|everything|all|the app|the flow)\b/i
 
 const CONTRADICTION_PAIRS: Array<[RegExp, RegExp]> = [
   [/\b(use|enable|include|add)\b/i, /\b(do not use|disable|exclude|remove)\b/i],
   [/\b(always|must)\b/i, /\b(never|must not|do not)\b/i],
 ]
+
+/**
+ * Determine whether a line contains a true local contradiction.
+ *
+ * @param text - Non-empty prompt line or paired-line text.
+ * @returns True when the text asks for mutually exclusive behavior.
+ * @example
+ * hasContradictionSignal("Always use TypeScript but never include TypeScript")
+ */
+function hasContradictionSignal(text: string): boolean {
+  const normalized = text.toLowerCase()
+  if (/\b(cqrs|event sourcing)\b/.test(normalized) && /\bdo not couple\b/.test(normalized)) {
+    return false
+  }
+  return CONTRADICTION_PAIRS.some(([left, right]) => left.test(text) && right.test(text))
+}
 
 /**
  * Create the prompt-analyze tool instance.
@@ -83,10 +99,7 @@ export function createPromptAnalyzeTool(
           })
         }
 
-        const hasContradiction = CONTRADICTION_PAIRS.some(
-          ([left, right]) => left.test(trimmed) && right.test(trimmed),
-        )
-        if (hasContradiction) {
+        if (hasContradictionSignal(trimmed)) {
           findings.push({
             line: lineNumber,
             text: trimmed,
@@ -103,10 +116,11 @@ export function createPromptAnalyzeTool(
       const trimmedLines = lines.map((l) => l.trim()).filter(Boolean)
       for (let i = 0; i < trimmedLines.length; i++) {
         for (let j = i + 1; j < trimmedLines.length; j++) {
-          const hasCrossContradiction = CONTRADICTION_PAIRS.some(
-            ([left, right]) =>
-              left.test(trimmedLines[i]) && right.test(trimmedLines[j]),
-          )
+          const hasCrossContradiction = CONTRADICTION_PAIRS.some(([left, right]) => {
+            const forward = left.test(trimmedLines[i]) && right.test(trimmedLines[j])
+            const reverse = right.test(trimmedLines[i]) && left.test(trimmedLines[j])
+            return (forward || reverse) && hasContradictionSignal(`${trimmedLines[i]} ${trimmedLines[j]}`)
+          })
           if (hasCrossContradiction) {
             const alreadyFlagged = findings.some(
               (f) =>

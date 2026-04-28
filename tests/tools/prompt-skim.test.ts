@@ -80,6 +80,34 @@ describe("prompt-skim tool", () => {
     expect(result.data.verdict).toBe("simple")
   })
 
+  it("raises flooding risk for scope-bloated multi-requirement prompts", async () => {
+    const simpleRaw = await tool.execute(
+      { content: "Add a button to the settings page.", workspaceRoot: process.cwd() },
+      mockCtx,
+    )
+    const bloatedPrompt = [
+      "Build a complete command reliability upgrade with acceptance coverage.",
+      "- Must update API behavior for command execution.",
+      "- Must update tool documentation and prompt output.",
+      "- Should verify session journal export filters.",
+      "- Need tests for backend command lifecycle.",
+      "- Need frontend-style user messages for terminal output.",
+      "- Validate security, performance, accessibility, migration, and documentation concerns.",
+      "- Implement build, test, deploy, and monitoring checks in one pass.",
+      "- Verify auth, database, UI, command, session, journal, and prompt behavior.",
+      "- Required evidence must include tests, build, and manual acceptance notes.",
+    ].join("\n")
+    const bloatedRaw = await tool.execute(
+      { content: bloatedPrompt, workspaceRoot: process.cwd() },
+      mockCtx,
+    )
+    const simple = parseResult(simpleRaw) as Record<string, unknown>
+    const bloated = parseResult(bloatedRaw) as Record<string, unknown>
+
+    expect(bloated.data.complexity_score as number).toBeGreaterThan(simple.data.complexity_score as number)
+    expect(["medium", "high"]).toContain(bloated.data.flooding_risk)
+  })
+
   it("detects high complexity for long content with code blocks", async () => {
     const longContent = Array(60).fill("line").join("\n") + "\n" + "```code```"
     const raw = await tool.execute(

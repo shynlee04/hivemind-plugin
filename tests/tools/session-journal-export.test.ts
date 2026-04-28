@@ -76,7 +76,7 @@ describe("session-journal-export tool", () => {
   it("returns JSON summary and machine-readable lineage", async () => {
     await withStateStore(async () => {
       const tool = createSessionJournalExportTool()
-      const raw = await tool.execute({ format: "json", pipelineKey: "phase-25" } as never, mockCtx)
+      const raw = await tool.execute({ format: "json", pipelineKeyLabel: "phase-25" } as never, mockCtx)
       const result = parseResult(raw)
 
       expect(result.kind).toBe("success")
@@ -84,6 +84,32 @@ describe("session-journal-export tool", () => {
       expect(data).toHaveProperty("journalSummary")
       expect(data).toHaveProperty("lineage")
       expect((data.lineage as unknown[])[0]).toMatchObject({ pipelineKey: "phase-25" })
+    })
+  })
+
+  it("filters by pipelineKey without stamping unmatched lineage records", async () => {
+    await withStateStore(async () => {
+      const tool = createSessionJournalExportTool()
+      const raw = await tool.execute({ format: "json", pipelineKey: "nonexistent-pipeline" } as never, mockCtx)
+      const result = parseResult(raw)
+      const data = result.data as Record<string, unknown>
+
+      expect(result.kind).toBe("success")
+      expect(data.lineage).toEqual([])
+      expect((data.journalSummary as Record<string, unknown>).delegations).toBe(0)
+    })
+  })
+
+  it("keeps pipeline labeling explicit and separate from filtering", async () => {
+    await withStateStore(async () => {
+      const tool = createSessionJournalExportTool()
+      const raw = await tool.execute({ format: "json", pipelineKeyLabel: "phase-49" } as never, mockCtx)
+      const result = parseResult(raw)
+      const data = result.data as Record<string, unknown>
+
+      expect(result.kind).toBe("success")
+      expect((data.lineage as Array<Record<string, unknown>>)[0]?.pipelineKey).toBe("phase-49")
+      expect((data.journalSummary as Record<string, unknown>).delegations).toBe(1)
     })
   })
 
