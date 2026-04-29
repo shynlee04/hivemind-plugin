@@ -8,9 +8,9 @@ phase_count: 17
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-3.6 COMPLETE — SE-5 ready to begin
-**Current Phase:** SE-3.6 (Product Validation Hardening) — COMPLETE
-**Last Activity:** 2026-04-29 (SE-3.6 complete — hm-product-validation hardened to 8/8 RICH-8 with self-correction, evals, metrics scorecard)
+**Status:** SE-5 COMPLETE — AS-3 UNBLOCKED
+**Current Phase:** SE-5 (Gate Orchestration + Lineage Routing) — COMPLETE
+**Last Activity:** 2026-04-29 (SE-5 complete — hm-gate-orchestrator + hm-lineage-router created, dead refs resolved, both 8/8 RICH-8. AS-3 UNBLOCKED)
 
 ## Progress
 | Phase | Status | Plans | Summary |
@@ -21,7 +21,7 @@ phase_count: 17
 | SE-3.5 | ✅ COMPLETE | 1/1 | Harden existing Feature ecosystem skills: hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability — all ≥6/8 RICH-8 |
 | SE-3.6 | ✅ COMPLETE | 1/1 | Harden hm-product-validation: Self-Correction (4 modes), metrics scorecard, evals (3 scenarios), 8/8 RICH-8, no hardcoded paths |
 | SE-4 | ✅ COMPLETE | 1/1 | 5 research chain skills hardened to RICH-8 ≥8/8: hm-tech-stack-ingest (new metrics/evals + self-correction), hm-detective (self-correction + 8/8), hm-deep-research (self-correction + 8/8), hm-synthesis (self-correction + 8/8), hm-research-chain (Stage 0 added, self-correction + 8/8). Bidirectional cross-references fixed across all 5 skills. |
-| SE-5 | PLANNED | 0 | Gate orchestration + lineage routing (hm-gate-orchestrator + hm-lineage-router creation) |
+| SE-5 | ✅ COMPLETE | 1/1 | Gate orchestration + lineage routing: hm-gate-orchestrator (8/8 RICH-8) + hm-lineage-router (8/8 RICH-8). 3 dead refs resolved. AS-3 UNBLOCKED. |
 | SE-5.5 | PLANNED | 0 | Internal gate skills hardening (gate-* — THIS PROJECT ONLY) |
 | SE-6 | PLANNED | 0 | Meta-builder: hf-config-workflow + hf-agent-synthesizer |
 | SE-7 | PLANNED | 0 | Integration verification: RICH audit, cross-ref integrity, E2E workflow test |
@@ -33,16 +33,16 @@ phase_count: 17
 | SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 7/17
-**Phases Authorized:** 7/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-8 ✅)
+**Phases Complete:** 8/17
+**Phases Authorized:** 8/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-5 ✅, SE-8 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
-**Active skills on disk: 49** (all have SKILL.md)
+**Active skills on disk: 51** (all have SKILL.md)
 
 | Lineage | Count | Prefix | Scope |
 |---------|-------|--------|-------|
-| Product dev | 28 | `hm-*` | Shipped — planning, research, execution, quality |
+| Product dev | 30 | `hm-*` | Shipped — planning, research, execution, quality, gate orchestration, lineage routing |
 | Meta-builder | 11 | `hf-*` | Shipped — skill/agent/command/tool authoring |
 | Internal gates | 3 | `gate-*` | THIS PROJECT ONLY — evidence-truth, lifecycle-integration, spec-compliance |
 | Stack reference | 6 | `stack-*` | Shipped — bun-pty, json-render, nextjs, opencode, vitest, zod |
@@ -92,7 +92,7 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
                        SE-3.6 ──┤
                             SE-4 ─┤
                             SE-8 ─┤
-                                  ├──→ SE-5 ──→ SE-5.5 ──→ SE-6 ──→ SE-7 ──→ SE-9 ──┬──→ SE-10 ──→ SE-11 ──┐
+                                  ├──→ SE-5 ✅ ──→ SE-5.5 ──→ SE-6 ──→ SE-7 ──→ SE-9 ──┬──→ SE-10 ──→ SE-11 ──┐
                                                                                         │                          │
                                                                                         └──→ SE-12 ──→ SE-13 ──┴──→ SE-14
 ```
@@ -104,16 +104,16 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-3.6 COMPLETE — hm-product-validation hardened to 8/8 RICH-8
-**Resume:** Move to SE-5 (Gate orchestration + lineage routing) or SE-5.5 (Internal gate skills)
-**Git Commits:** 4283c78c (SE-4 hm-tech-stack-ingest), 1f8b22cf (SE-4 detective/deep-research/synthesis), 33f65ab7 (SE-4 research-chain)
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-3.6-product-validation-hardening/SE-3.6-SUMMARY.md`
+**Stopped At:** SE-5 COMPLETE — hm-gate-orchestrator + hm-lineage-router created, AS-3 UNBLOCKED
+**Resume:** Move to SE-5.5 (Internal gate skills hardening) or SE-6 (Meta-builder skills)
+**Git Commits:** (pending atomic commit for SE-5)
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-5-gate-orchestration/SE-5-SUMMARY.md`
 
 ## Known Issues (2026-04-29 Audit)
 
-1. **AGENTS.md skill count stale** — claims 33 skills, reality is 49 active + 1 disabled (18 skills behind)
-2. **hm-gate-orchestrator does not exist** — referenced by 3 skills (hm-production-readiness, hm-requirements-analysis, hm-roadmap-maintainability) but no SKILL.md (SE-5 deliverable)
-3. **hm-lineage-router does not exist** — needed for skill lineage routing (SE-5 deliverable)
+1. **AGENTS.md skill count stale** — claims 33 skills, reality is 51 active + 1 disabled (18 skills behind)
+2. ~~hm-gate-orchestrator does not exist~~ — RESOLVED 2026-04-29: Created in SE-5 with 8/8 RICH-8. Dead refs in hm-production-readiness, hm-requirements-analysis, hm-roadmap-maintainability resolved.
+3. ~~hm-lineage-router does not exist~~ — RESOLVED 2026-04-29: Created in SE-5 with 8/8 RICH-8. 6 category bundles with max-5-skill enforcement.
 4. ~~SE-2 partially executed~~ — RESOLVED 2026-04-29: All 4 plans executed, 20+ reference fixes applied, disabled skill archived
 5. **hf-meta-builder name mismatch** — directory is `hf-meta-builder` but frontmatter says `name: hr-meta-builder` (wrong `hr-` prefix instead of `hf-`)
 6. ~~Disabled hm-planning-with-files still referenced by 9 active skills~~ — RESOLVED 2026-04-29: All 12 skills fixed, disabled skill archived to .opencode/retired/

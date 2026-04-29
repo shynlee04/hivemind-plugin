@@ -45,7 +45,7 @@ This skill synthesizes patterns from three inspected third-party skills:
 | `hm-brainstorm` | Produces requirements briefs from ideation. This skill diagnoses gaps in those briefs after they exist. |
 | `hm-spec-driven-authoring` | Consumes gap reports as input for spec-locking. This skill produces the gap report and hands off. |
 | `hm-cross-cutting-change` | Receives constraint discovery findings when cross-cutting impacts are detected. |
-| `hm-gate-orchestrator` | May route to this skill when gate validation reveals requirement insufficiency. **[Future: SE-5 deliverable — not yet created]** |
+| `hm-gate-orchestrator` | May route to this skill when gate validation reveals requirement insufficiency. Routes this skill's gap reports through the quality gate triad (lifecycle → spec → evidence). |
 | Exploratory coding | Not enough source truth. Return blocked — "Cannot diagnose requirements without a requirements artifact to analyze." |
 
 ## Entry Gate
