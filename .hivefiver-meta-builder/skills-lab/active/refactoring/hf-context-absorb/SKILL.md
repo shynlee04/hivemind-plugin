@@ -116,3 +116,21 @@ New content appended as:
 - `references/02-yaml-merge-operations.md` — Complete merge operation catalog with schema compatibility matrix and examples
 - `references/03-xml-body-schema.md` — XML tag definitions, nesting rules, attribute specifications, validation
 - `references/04-tool-selection-matrix.md` — Expanded tool comparison with latency and quality tradeoffs
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] Wave 1 fails to categorize ≥80% of input elements after 2 retries. Same URL extraction keeps failing across all fallback tools. YAML merge corrupts the session file and reconstruction also fails.
+[Recovery] STOP advancing waves. For Wave 1 failures: inspect the uncategorized elements — they may be in an unexpected format (binary, encoded, non-text). Flag uncategorized elements in `open_questions` and continue with partial data. For persistent URL failures: flag as `extracted="false"` and add to open_questions. For YAML corruption: save the corrupted file as `.backup`, reconstruct from the last known good state, and append the new content manually with validation.
+
+### When Unsure About the Next Step
+[Detection] Unclear whether Wave 3 (clarification) is needed. Input classification is ambiguous — unsure if it's a URL, narrative, or file reference. Can't determine whether existing session-context-prompt.md content should be replaced or merged.
+[Recovery] For Wave 3: trigger it if there are >5 unresolved questions. For ambiguous input: use the Parser subagent's classification result — if it's low confidence, route to Wave 3 for clarification. For merge vs replace: ALWAYS merge (append). This skill never replaces existing content. If the content truly needs replacement, flag it for human decision.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "just summarize it all in one go, don't split into waves" (violating wave protocol). User says "overwrite the existing context, I don't need the old stuff" (violating append-only rule). User says "skip the tool selection, just use read for everything."
+[Recovery] Acknowledge but explain: "The wave protocol prevents context pollution by processing different input types through specialist subagents. Skipping waves means one agent handles all input types, which degrades quality. The append-only rule preserves historical context — older sessions may contain important decisions." If the user insists, proceed with the shortcut but document it and warn that quality may be affected.
+
+### When an Edge Case Is Encountered
+[Detection] Input contains binary attachments or non-text content. Session-context-prompt.md has grown beyond practical token limits. Multiple absorb sessions running concurrently (race condition on append). YAML frontmatter uses a schema this skill doesn't recognize.
+[Recovery] For binary content: skip with a note in sources that binary content was ignored. For oversized files: suggest archiving older absorb-session blocks to a separate archive file and keeping only recent sessions in the active file. For concurrent sessions: DO NOT proceed — detect the conflict by checking file modification time vs last read time, and wait or escalate. For unknown YAML schemas: preserve all unknown fields (per merge rules), add absorb-specific fields alongside them, and note the unknown schema in the absorb_session metadata.

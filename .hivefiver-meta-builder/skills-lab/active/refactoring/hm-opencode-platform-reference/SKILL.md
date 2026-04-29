@@ -95,6 +95,32 @@ Commands with subtask:true create SubtaskPart → child session → inherits tar
 | **The Over-Loader** | Loads all 20 references at once | Load only the specific reference file needed. SKILL.md is the index, not the content. |
 | **The Assumer** | Assumes platform behavior from training knowledge | Always verify via `context7` or live platform inspection before claiming platform behavior. |
 
+## Self-Correction
+
+### When the Task Keeps Failing
+
+[Detection] If platform claims in code are not matching actual behavior, the reference files may be outdated — check the Source Freshness Gate date and re-verify against live OpenCode behavior using `context7` or official docs. If a specific reference file doesn't contain the needed information, try the repomix OpenCode source pack (`references/repomix-opencode.xml`) for deeper implementation details. If neither official docs nor the repomix pack answer the question, flag it as a documentation gap and suggest a platform inquiry.
+
+[Recovery] Re-run freshness verification by checking official OpenCode docs for updates. Use `context7` or `deepwiki` tools to query the latest platform behavior. Mark any claim that cannot be verified as "unverified" with date.
+
+### When Unsure About the Next Step
+
+[Detection] If you cannot find the right reference file for a platform question, start with the reference file table in SKILL.md — each file's description maps to a platform surface. If the question spans multiple surfaces (e.g., "how do permissions interact with custom tools?"), read the two most relevant files first (permissions.md + custom-tools.md) before expanding. If the question is about runtime behavior, prefer the official scope matrix and composition patterns over static reference content.
+
+[Recovery] Use the reference file table as a lookup index. Load only the specific file needed. For cross-surface questions, load up to 2 reference files at a time.
+
+### When the User Contradicts Skill Guidance
+
+[Detection] If the user makes platform claims that contradict the reference files, present the reference file's content as evidence but acknowledge that the user may have more recent or environment-specific knowledge. If the user wants to configure something in a way the reference files don't document, note the gap and proceed with the user's approach — reference skills report facts, they don't block decisions. If the user's platform version differs from what the reference covers (e.g., a newer OpenCode version), mark all claims as version-dependent.
+
+[Recovery] Cite the specific reference file and section. If the user's claim contradicts, note the discrepancy. If the user's platform version differs, mark version dependency.
+
+### When an Edge Case Is Encountered
+
+[Detection] If the project uses a non-standard OpenCode configuration (e.g., custom `OPENCODE_CONFIG_DIR`, non-standard file locations), the reference files may not accurately describe the project's actual configuration. Inspect the project's actual `opencode.json` and file structure before making claims. If the project has no `.opencode/` directory, check global and config override locations. If a reference file is missing or corrupted, fall back to the repomix XML pack or live platform inspection.
+
+[Recovery] Verify actual project state through OpenCode discovery locations before reporting configuration truth. For missing references, use repomix source pack as fallback. For version mismatches, flag all claims as version-dependent.
+
 ## Cross-References
 
 | Related Skill | Boundary |

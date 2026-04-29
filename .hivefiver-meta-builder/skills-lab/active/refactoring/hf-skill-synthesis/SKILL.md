@@ -175,3 +175,21 @@ All scripts must:
 | `skill-judge` (external) | Provides the 5-dimension quality matrix |
 | `repomix-exploration-guide` | Provides repomix patterns used by ingestion |
 | `opencode-platform-reference` | Source of domain knowledge for OpenCode-specific patterns |
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] repomix returns empty output or non-zero exit after 3 attempts. Classification is low-confidence across all axes. Validation loop hits 5-iteration max without passing.
+[Recovery] STOP the pipeline. Report what failed and where: which phase (INGEST/CLASSIFY/SCAFFOLD/VALIDATE), the specific error, and what was attempted. For repo ingestion failures: verify the repo exists, is public, and contains SKILL.md files. For validation failures: flag specific dimensions from grade-outputs.sh and suggest manual review.
+
+### When Unsure About the Next Step
+[Detection] The user's request doesn't clearly map to a pipeline phase. Classification results are ambiguous (moderate confidence across conflicting axes). Unclear whether to scaffold from templates or synthesize from patterns.
+[Recovery] Run `validate-gate.sh synthesize "<user-request>" <output-dir>` to create a planning scaffold. The task_plan.md Goal field will clarify intent. If still unsure, ask the user up to 3 clarifying questions via the question tool — but default to the full pipeline (INGEST through VALIDATE) if ambiguity persists.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "skip evals, just create the SKILL.md" or "I don't need validation, the output looks fine." User wants to bypass the "NO SKILL WITHOUT EVALS" iron law or validation gates.
+[Recovery] Acknowledge: "This skill's iron law states: NO SKILL WITHOUT EVALS. Skipping evals produces an untestable skill that may fail silently." If the user insists, proceed but document in the output SKILL.md as `## Known Limitations: Evals skipped by user request.` Never claim the skill is "complete" without evals — mark it as "scaffold only."
+
+### When an Edge Case Is Encountered
+[Detection] Repo has non-standard skill format (not agentskills.io spec). Skill content is in a language the classifier can't parse. Multiple repos provided simultaneously. Overlap with existing skill exceeds 80%.
+[Recovery] For non-standard formats: classify best-effort and flag as "non-standard — manual review recommended." For multiple repos: process sequentially, one pipeline per repo. For high overlap: report percentage to user with option to merge vs replace. Always surface edge cases in the classification report rather than silently handling them.

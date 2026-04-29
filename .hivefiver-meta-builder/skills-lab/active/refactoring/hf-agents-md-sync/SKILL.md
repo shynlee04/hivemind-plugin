@@ -153,3 +153,21 @@ For each auto-fixable drift item in the report:
 | **The Skipper** | Applying edits without producing a drift report first | STOP. Always run Phase 2 before Phase 3. |
 | **The Creator** | Generating new AGENTS.md files for directories that don't have one | STOP. This skill syncs existing files. Use `create-agentsmd` skill instead. |
 | **The Over-Scoper** | Scanning `node_modules/`, `dist/`, `.git/`, or other non-source directories | STOP. Only scan the paths listed in Phase 1 Scan Targets table. |
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] Drift report shows same items across 3+ sync attempts. Edit fails because `oldString` not found despite appearing in the drift report. Phase 2 Diff over-corrects (reports drift that doesn't exist because file was already fixed).
+[Recovery] STOP making edits. Re-run Phase 1 Scan to get fresh ground truth. Rebuild the drift report from current state (not cached results). If an edit's `oldString` is not found, the text may have already changed — skip that item and move to the next. If the same drift items persist, the scan extraction rules may be incorrectly matching — verify the extraction GLobs and Grep patterns.
+
+### When Unsure About the Next Step
+[Detection] AGENTS.md structure has changed significantly since last scan. Claimed values in AGENTS.md are in a different section than expected. Unclear whether a discrepancy is drift or intentional divergence.
+[Recovery] Read the relevant AGENTS.md section in full to understand the current structure. If the section was renamed or reorganized: update the "Typical Location" column in the scan table before proceeding. For intentional divergences: flag them as "MANUAL FIX NEEDED — possible intentional divergence" in the drift report rather than auto-fixing.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "just regenerate the whole file" or "use Write instead of Edit" or "add a new section for the new modules." User wants to violate the "NEVER REGENERATES FROM SCRATCH" iron law.
+[Recovery] Acknowledge: "This skill's iron law is SCAN REPORTS FACTS. EDIT FIXES DRIFT. NEVER REGENERATES FROM SCRATCH. Regenerating destroys hand-written context, cross-references, and narrative sections." If the user insists, warn that regeneration will lose narrative content. Proceed only with explicit confirmation, and note in the drift report that regeneration was user-authorized.
+
+### When an Edge Case Is Encountered
+[Detection] AGENTS.md references files that don't exist (phantom entries) but also has file entries not in the scan targets table. Multiple AGENTS.md files exist at different paths. File was renamed but AGENTS.md still uses old name.
+[Recovery] For phantom entries: flag for removal in the drift report with the note "file does not exist." For new files not in scan targets: add them to the scan targets list dynamically and re-scan. For renames: report both the old claimed name and the new actual name with a "rename" fix type. For multiple AGENTS.md files: process them one at a time, starting with the root AGENTS.md.

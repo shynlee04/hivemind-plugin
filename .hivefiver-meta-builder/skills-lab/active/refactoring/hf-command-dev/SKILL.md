@@ -79,3 +79,21 @@ For the complete list, load `references/non-interactive-shell.md`.
 | **The Vague Description** — "helps with X" | Description doesn't have trigger phrases | Include specific phrases users would say |
 | **The Missing Skill Load** — command doesn't specify skills | No "Load skills" section | Always specify which skills to load |
 | **The Self-Executor** — command does everything itself | No delegation to subagents | Commands select agents. Agents delegate. |
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] Command hangs in CI=true despite applying non-interactive flags. Same shell operation fails across 3 command revisions. Command references trigger agents that don't exist in the project.
+[Recovery] STOP the command execution and verify: (1) Check all shell commands against the banned command list (vim, less, git add -p, etc.), (2) Verify all commands have non-interactive equivalents (-m for git, --yes for npm, -f for rm), (3) Check that referenced agents exist in `.opencode/agents/`. If a command still hangs, it may need a timeout wrapper or a fallback path.
+
+### When Unsure About the Next Step
+[Detection] Unclear whether the command should use `subtask: true` or `subtask: false`. Not sure which agent to assign for a hybrid command (mixes research + execution). Command needs skill loading but the skill list is ambiguous.
+[Recovery] For subtask decisions: use `subtask: true` for discrete tasks with clear completion (research, code generation, audits). Use `subtask: false` for interactive workflows (orchestration, debugging, planning). For agent assignment: check the agent descriptions in `.opencode/agents/` — match by capability. If no single agent fits, use the orchestrator as a router agent. For skills: load 2-4 relevant skills covering the command's domain.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "vim is fine, I use it all the time in my terminal" (violating non-interactive shell mandate). User says "git commit without -m works for me" (forgetting CI=true environment). User says "just make the command do everything, don't delegate."
+[Recovery] Explain the CI=true constraint: "Commands in OpenCode run in a headless non-interactive shell. No TTY. No prompts. git commit without -m hangs forever. The agent cannot respond to prompts." If the user insists on a banned command, suggest wrapping it: `echo "message" | git commit -F -` or similar workaround. If no safe equivalent exists, flag it as "cannot be made non-interactive" and suggest an alternative approach.
+
+### When an Edge Case Is Encountered
+[Detection] Command needs to run on both macOS and Linux but uses platform-specific tools. Command file path references differ between development and deployment. Agent selection depends on runtime conditions not known at command definition time. $ARGUMENTS contains shell metacharacters.
+[Recovery] For cross-platform: use POSIX-compatible commands within !bash blocks. Avoid GNU-specific flags (--long-options) when BSD equivalents differ — use the portable form. For variable paths: use environment variables or project-root-relative paths instead of hardcoded absolute paths. For conditional agent selection: use a router agent that inspects context and dispatches to the right specialist. For metacharacters in $ARGUMENTS: always quote variable references and sanitize input before use in shell commands.

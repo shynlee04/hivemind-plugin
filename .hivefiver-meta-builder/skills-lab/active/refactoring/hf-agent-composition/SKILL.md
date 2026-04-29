@@ -156,3 +156,21 @@ Before declaring an agent definition complete:
 - [ ] Read-only enforcement (if verification agent)
 - [ ] Escalation gate pattern
 - [ ] No copy-paste from existing agents — synthesized patterns only
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] Agent definition has missing non-negotiables despite 3 attempts. Structured return format doesn't match any known agent type. XML block selection keeps producing incomplete definitions.
+[Recovery] STOP composing. Check each of the Five Non-Negotiables one by one: (1) Mandatory Initial Read, (2) Project Context Discovery Chain, (3) Read-Only Enforcement (if applicable), (4) Structured Return Enforcement, (5) Escalation Gate Pattern. If all five are present but the agent still fails, the issue is likely the role definition — the agent's identity may not match its execution pattern. Re-examine the agent type before continuing.
+
+### When Unsure About the Next Step
+[Detection] The agent's purpose doesn't clearly match a known agent type (researcher/planner/executor/verifier/auditor). Unclear which XML blocks are required vs optional. Unsure whether the agent needs read-only enforcement.
+[Recovery] Start from `assets/templates/agent-definition.md` for the skeleton. Use the decision rule: if the agent executes tasks → needs `<execution_flow>`. If the agent verifies → needs `<structured_returns>`. If it reports findings without modifying code → needs read-only enforcement. Study `examples/gsd-performance-auditor.md` for a complete reference implementation.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "don't bother with structured returns" or "the agent doesn't need an escalation path" or "skip the initial read enforcement." User wants to omit one of the Five Non-Negotiables.
+[Recovery] Explain which non-negotiable is being challenged and why it matters: "Agents without Mandatory Initial Read hallucinate context. Agents without structured returns produce inconsistent output. Agents without escalation paths make destructive changes when stuck." If the user still insists, document the omission in the agent definition as a deliberate deviation with rationale. Never omit silently.
+
+### When an Edge Case Is Encountered
+[Detection] Agent needs a pattern not covered by the 15 XML blocks (e.g., rate-limiting, retry logic, circuit-breaking). Agent combines multiple execution patterns (executor + verifier hybrid). Agent must work across platforms with different tool names.
+[Recovery] For missing patterns: analyze whether the pattern can be composed from existing XML blocks. Rate-limiting could be a `<deviation_rules>` entry. Circuit-breaking could be an `<analysis_paralysis_guard>` variant. For hybrid agents: apply the strictest pattern. For cross-platform: define the canonical pattern in the agent definition and document platform-specific tool mappings in a platform adapter section.

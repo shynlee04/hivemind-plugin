@@ -182,6 +182,32 @@ echo "$TASK_ID" > .planning/phases/${PHASE}/.last-delegation-id
 | `references/wave-execution.md` | When executing multi-plan phases with dependencies |
 | `references/handoff-edge-guardrails.md` | When accepting/rejecting a child return or designing a handoff edge |
 
+## Self-Correction
+
+### When the Task Keeps Failing
+
+[Detection] If subagent dispatch keeps failing (agent not found, invalid envelope, timeout), first verify that the agent name in the dispatch matches a real `.opencode/agents/` file — typos are the most common cause of silent dispatch failures. Check whether the target agent has the necessary tool permissions for the task scope. If the same subagent returns DONE without verification evidence 3 times, stop re-dispatching and escalate — the subagent may not be capable of the assigned verification.
+
+[Recovery] Verify agent name against filesystem. Check tool permissions match task scope. After 3 evidence-free returns, escalate with exact subagent output and missing evidence types.
+
+### When Unsure About the Next Step
+
+[Detection] If you cannot determine whether to resume an existing delegation or create a new one, check `.last-delegation-id` and `.planning/STATE.md` for the task's current status. If a session ID exists but the task appears to have completed (SUMMARY.md shows done), create a new delegation for follow-up work. If the session ID exists and the task is incomplete, resume using task_id. If no session ID exists and no state files reference the task, create a new delegation.
+
+[Recovery] Check state files before deciding. Resume with task_id for incomplete work. Create new delegation only for genuinely new tasks.
+
+### When the User Contradicts Skill Guidance
+
+[Detection] If the user wants to dispatch without handoff metadata ("just send it"), explain that missing metadata prevents proper session tracking and resume — a fire-and-forget dispatch cannot be recovered if interrupted. If the user insists, dispatch with minimal metadata (at minimum: source_agent, target_agent, expected_return) but document the missing fields as a deviation. If the user wants to exceed the 3-retry fix attempt limit, allow it but warn that repeated retries without approach changes are likely to fail.
+
+[Recovery] Minimum viable metadata: source, target, expected_return. Document deviations from full envelope. Allow retry override with documented warning.
+
+### When an Edge Case Is Encountered
+
+[Detection] If a subagent is dispatched but the session is interrupted before it returns, the delegation state may be lost — check `.hivemind/state/delegations.json` for the delegation record, and if absent, treat as a new dispatch with a note about the possible duplicate. If two parallel subagents modify overlapping files, serialize their execution and use git to resolve conflicts — never let parallel agents write to the same file. If a subagent delegates further (child-of-child), verify that allowed_destinations in the original envelope permitted it before accepting the grandchild's results.
+
+[Recovery] Check delegations.json for lost records. Serialize overlapping-file agents. Verify allowed_destinations before accepting grandchild results.
+
 ## Cross-References
 
 | Related Skill | Boundary |

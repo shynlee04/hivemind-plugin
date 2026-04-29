@@ -142,6 +142,32 @@ This skill works in any Git-backed end-user project. If no git repository exists
 | `references/refactor-runbook.md` | Step worksheet, dependency map, rollback table |
 | `evals/evals.json` | Trigger and pressure scenarios for no-behavior-change compliance |
 
+## Self-Correction
+
+### When the Task Keeps Failing
+
+[Detection] If tests keep breaking after refactor steps, first verify that the refactor is truly behavior-preserving by comparing the test failure against the expected behavior — sometimes tests depend on implementation details that refactoring legitimately changes. If a specific refactor step consistently breaks tests, split it into smaller sub-steps and verify each independently. If 3 consecutive refactor attempts fail, revert to the last known good state (git checkout or branch) and reassess whether the refactor scope is too large for a surgical approach.
+
+[Recovery] Run `git diff HEAD~1` to see exactly what changed. Revert file-specific changes with `git checkout HEAD~1 -- <affected-files>`. Split large refactors into smaller, independently verifiable steps.
+
+### When Unsure About the Next Step
+
+[Detection] If you cannot decide between surgical and structural refactoring, use the decision tree: check behavior change (stop if yes), count affected files (1 file/function → surgical, multiple → structural), and verify test coverage (insufficient → write tests first). If the dependency graph is unclear, map it before choosing an approach — structural refactors with unknown callers risk breaking hidden consumers.
+
+[Recovery] Default to surgical for anything that touches ≤1 module. Map the dependency graph before structural moves. If tests are insufficient, write characterization tests first.
+
+### When the User Contradicts Skill Guidance
+
+[Detection] If the user wants to refactor without tests, warn that this is restructuring without a safety net — the risk of introducing behavior changes without detection is high. If they insist, proceed but label the work as "unguarded refactoring" and document that tests were waived. If the user wants to change behavior during a refactor, stop and explain that behavior changes require a spec and tests before implementation — mixing refactoring with feature work is the most common source of regressions.
+
+[Recovery] Document waived safety checks in commit messages with rationale. If behavior change is needed, complete the refactor first, commit, then implement the behavior change as a separate step with tests.
+
+### When an Edge Case Is Encountered
+
+[Detection] If the project has no git repository (no commit rollback possible), replace git-based rollback with manual copied-file checkpoints — copy the file before editing and note the checkpoint path. If tests depend on external services or databases that are unavailable, note the dependency and test only what is locally verifiable, marking external-dependent tests as blocked. If the refactor touches generated code or build artifacts, exclude those from the refactor scope and only refactor source files — generated code should be regenerated after source changes.
+
+[Recovery] For non-git projects, create `.refactor-backups/` directory with timestamped copies. For missing external dependencies, test locally verifiable behavior only. For generated code, refactor source and regenerate.
+
 ## Cross-References
 
 | Related Skill | Boundary |

@@ -119,3 +119,21 @@ export default tool({
 | **The Fat Plugin** — business logic in plugin layer | Plugin layer >100 LOC, has business logic | Plugin layer is assembly only. Business logic in tools. |
 | **The State Mutator** — scripts mutate state directly | Script writes to state files, modifies config | Scripts report facts. Tools mutate state. Never the reverse. |
 | **The Path Hardcoder** — hardcoded directory paths | Script has `/Users/apple/...` or absolute paths | Use environment variables or config. No hardcoded paths. |
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] Zod schema validation keeps rejecting valid input shapes. Tool execution fails because context object doesn't have expected methods. Plugin registration fails with the SDK despite correct-looking code.
+[Recovery] STOP adding code. For schema issues: simplify — start with a minimal Zod schema that validates only the essential fields, then add optional fields incrementally. For context issues: check the OpenCode SDK version and verify the context API matches. For registration failures: verify the plugin follows the init→register→event loop→shutdown lifecycle in order. Check that tool names are unique across all registered tools.
+
+### When Unsure About the Next Step
+[Detection] Unclear whether logic belongs in a tool (write-side) or a hook (read-side). Not sure if the tool should be split into multiple tools. Unsure which Zod schema type to use for a complex parameter shape.
+[Recovery] For CQRS decisions: if it mutates state → tool. If it observes events → hook. If it does both → split into a tool + hook pair. For splitting: one tool = one thing (name matches behavior). If the tool does multiple things, split it. For Zod types: consult `references/zod-patterns.md` for Good/Bad examples. When in doubt, use the most specific type (z.string().min(1) over z.string(), z.enum() over z.string()).
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "use z.any(), I'll validate in the function" (violating "NO TOOL WITHOUT A ZOD SCHEMA" iron law). User says "put the logic in the plugin layer, it's simpler" (violating thin plugin rule). User says "hardcode the path, it only runs on my machine."
+[Recovery] Explain: "The Zod schema IS the interface. Without it, the agent can't see what the tool expects. z.any() means no interface. Business logic in the plugin layer violates the architecture — plugin should be <100 LOC of assembly only. Hardcoded paths break on different machines." If the user insists on z.any(), document it as a deliberate deviation. If they insist on fat plugin, suggest extracting business logic into a separate tool file while keeping the plugin thin.
+
+### When an Edge Case Is Encountered
+[Detection] Tool needs to call an external API (not covered by existing SDK). Hook needs to intercept an event that the SDK doesn't expose. Tool requires async initialization before it can be registered. Script needs to read a file that might not exist yet.
+[Recovery] For external APIs: wrap the API call in the tool's execute function with proper error handling. The tool is the integration point. For missing SDK events: check if the event can be synthesized from available hooks. If not, document the gap and suggest an SDK feature request. For async init: perform initialization lazily on first execute() call rather than at registration time. For missing files: the script should report "file not found" as a fact (exit 0) and let the agent decide what to do — never crash or exit non-zero on missing optional files.

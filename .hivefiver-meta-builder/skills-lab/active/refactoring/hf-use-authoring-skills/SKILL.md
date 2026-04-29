@@ -264,3 +264,21 @@ Before a skill is done:
 1. **Run validate-gate.sh first** — before reading, writing, or planning anything.
 2. **Procedures over declarations** — teach HOW, not WHAT. Use checklists for 3+ step workflows.
 3. **Validate before done** — run the validation loop (STEP 7–9). No exceptions.
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] validate-skill.sh repeatedly fails (3+ iterations). check-overlaps.sh reports persistent conflicts. Critic subagent keeps flagging the same issues after 3 fix cycles.
+[Recovery] STOP the validation loop. Read the exact failure messages from each failing script. Address the root cause rather than patching symptoms. If overlap conflicts persist: the skill may need scope reduction or should be merged with the overlapping skill. If critic reports are unclear: ask the user which specific principle is violated before continuing. Do not exceed 5 total iterations — beyond that, the skill needs redesign, not refinement.
+
+### When Unsure About the Next Step
+[Detection] The user's request doesn't clearly map to any decision tree path. validate-gate.sh exits with an ambiguous error. Pattern selection (P1/P2/P3) is unclear for the task.
+[Recovery] Run `bash scripts/validate-gate.sh <action> "<user-request>" <dir>` to create task_plan.md — this will clarify intent and pattern. Check the pattern field in task_plan.md: if unset, default to P2 (balanced depth) for most authoring tasks. Use the question tool for up to 3 clarifications — but proceed with reasonable defaults if still unclear after 3 questions.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "don't bother with the checklist" or "skip validation, just write it" or "I know the agentskills.io spec, ignore it." User wants to bypass the 10-step checklist or validation loop.
+[Recovery] Acknowledge the user's authority but warn: "Skipping validation means the skill may have broken frontmatter, phantom references, or dead trigger phrases. The skill may silently fail to load." If the user insists, document skipped steps in task_plan.md and mark the skill as "unvalidated." Never claim a skill passed validation if any gate was skipped.
+
+### When an Edge Case Is Encountered
+[Detection] Skill being audited uses a non-standard frontmatter format (different YAML spec). User wants to author a skill for a platform not in the adaptation table. Script fails due to missing dependency (bash version, jq not installed). Skill has content in multiple languages.
+[Recovery] For non-standard frontmatter: validate against agentskills.io spec and flag deviations. For unsupported platforms: apply agentskills.io patterns as the lowest common denominator, then document platform-specific adaptations. For missing dependencies: check if the script has fallback logic — if not, inform the user which dependency is needed. For multi-language skills: treat the primary language as canonical and flag translations for separate review.

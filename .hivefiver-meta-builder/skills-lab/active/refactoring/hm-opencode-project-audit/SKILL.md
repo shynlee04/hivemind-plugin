@@ -173,3 +173,37 @@ This skill audits arbitrary OpenCode projects. It must not require HiveMind/GSD/
 | CRITICAL | Broken functionality | Must fix |
 | WARNING | May cause failures | Should fix |
 | INFO | Improvement opportunity | Fix when convenient |
+
+## Self-Correction
+
+### When the Task Keeps Failing
+
+[Detection] If subagent bundles fail to compile (scripts/compile-bundle.sh exits non-zero), check whether the `assets/profiles/` directory is populated — on first run, profiles may need to be generated before compilation. If subagents return empty or malformed findings, verify that the dispatch envelope included the correct execution context skill reference and that the target repository path is accessible. If Phase 7 (synthesis) cannot aggregate findings because earlier phases returned errors, re-dispatch only the failed phases rather than restarting the entire audit.
+
+[Recovery] Check profile directory population first. Re-dispatch only failed phases. Verify execution context skill names match actual available skills.
+
+### When Unsure About the Next Step
+
+[Detection] If you cannot determine whether to run a full audit (all 7 phases) or a targeted audit, check the user's request — if they asked about a specific surface (e.g., "check my skills"), run only that phase. If the request is broad ("audit my project"), run all phases. If the project has no `.opencode/` directory, check global and config override locations before reporting absence — OpenCode can be configured entirely through global config.
+
+[Recovery] Match audit scope to user request. Check override locations before reporting absence. For partial audits, note which phases were skipped in the report.
+
+### When the User Contradicts Skill Guidance
+
+[Detection] If the user asks you to fix issues found during the audit, remind them of the Iron Law — the audit reports facts, it does not fix. Offer to route the findings to the appropriate fix workflow (e.g., code review, refactor, debug) but do not apply fixes within the audit session. If the user disagrees with a severity classification (e.g., thinks a WARNING should be INFO), accept their reclassification but document both the original and user-adjusted severity in the audit report.
+
+[Recovery] Route fixes to appropriate workflows. Document severity reclassifications with both values. Never apply fixes within audit.
+
+### When an Edge Case Is Encountered
+
+[Detection] If the target project has a mixed configuration (some primitives in `.opencode/`, some in global config, some in environment variables), the audit must report the actual configuration source for each primitive, not assume `.opencode/` as the default. If a subagent profile references an execution context skill that doesn't exist in the current environment, load the closest available equivalent and note the substitution. If the audit discovers circular dependencies between skills/agents/commands, report the cycle explicitly in the synthesis phase rather than letting subagents handle it independently.
+
+[Recovery] Report actual configuration sources per primitive. Substitute unavailable execution context skills with closest equivalents. Escalate circular dependencies to synthesis phase.
+
+## Self-Correction (continued)
+
+### When the Audit Report Grows Unmanageably Large
+
+[Detection] If the synthesis phase produces a report exceeding reasonable length, prioritize CRITICAL and WARNING findings in the summary. Move INFO-level findings to an appendix. If evidence file references are broken (files moved or deleted during audit), mark them as unverifiable rather than removing them.
+
+[Recovery] Prioritize findings by severity. Move INFO to appendix. Mark broken evidence references as unverifiable.

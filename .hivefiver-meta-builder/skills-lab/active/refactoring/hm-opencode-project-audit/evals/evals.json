@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eval-1",
+    "scenario": "Agent is onboarding to a new OpenCode project and needs to verify ecosystem integrity. User says 'audit this project's OpenCode setup.'",
+    "expected_behavior": "Agent loads hm-opencode-project-audit skill, compiles subagent bundles (scripts/compile-bundle.sh), validates structure (scripts/validate-skill.sh), then dispatches Phases 1-6 in parallel with appropriate specialist profiles.",
+    "pass_condition": "Agent produces audit-report-YYYY-MM-DD.md with per-phase findings, cross-phase risk assessment, and evidence references. Output is fact-based, not prescriptive — no automatic fixes applied."
+  },
+  {
+    "id": "eval-2",
+    "scenario": "Agent is auditing a project that has non-standard OpenCode configuration (different config directory, custom agent locations). User says 'check if the agents in this project are configured correctly.'",
+    "expected_behavior": "Agent applies the official OpenCode scope matrix before deciding what exists or is missing, checking both project-level (.opencode/) and global/config override locations.",
+    "pass_condition": "Agent discovers non-standard configuration locations by checking OPENCODE_CONFIG_DIR, global config paths, and override locations. Audit report notes the actual configuration sources, not just .opencode/."
+  },
+  {
+    "id": "eval-3",
+    "scenario": "Agent is asked to fix issues found in an audit. User says 'the audit found some problems, can you fix them?'",
+    "expected_behavior": "Agent follows the Iron Law ('AUDIT REPORTS FACTS. NEVER BLOCKS. NEVER FIXES.') and refuses to fix, instead providing remediation recommendations in the audit report.",
+    "pass_condition": "Agent correctly identifies the boundary: auditing reports facts, fixing is a separate workflow. Refers to remediation recommendations rather than applying fixes directly."
+  }
+]

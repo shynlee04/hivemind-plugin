@@ -81,6 +81,32 @@ NEVER run a command that waits for user input. The shell has no TTY. Interactive
 
 This skill applies to arbitrary shell-capable OpenCode projects. It must not assume GNU-only flags on macOS/BSD; prefer portable flags or document platform-specific alternatives. Do not assume HiveMind state paths.
 
+## Self-Correction
+
+### When the Task Keeps Failing
+
+[Detection] If shell commands keep hanging or timing out, check whether any command in the chain has an interactive prompt — package managers, installers, and some tools default to interactive mode without explicit non-interactive flags. Verify that commands using pipes or redirections are not accidentally waiting for input from the wrong source. If timeout is the issue, increase the timeout or split long-running operations into smaller steps with progress tracking.
+
+[Recovery] Add `--yes`, `--non-interactive`, `--no-pager`, or equivalent flags. Wrap suspect commands with `timeout 30`. If a command truly requires interaction, report it as BLOCKED and suggest an alternative approach.
+
+### When Unsure About the Next Step
+
+[Detection] If you cannot determine a command's danger tier, default to WARN — assume potential side effects and add timeout/background strategy. If you cannot find a non-interactive flag for a specific tool, check `references/command-tables.md` for known patterns, then search the tool's documentation for CI/headless flags. If no non-interactive option exists, classify as BLOCKED.
+
+[Recovery] Consult `references/command-tables.md` first. If the tool is not documented, search the tool's `--help` output for non-interactive or CI flags.
+
+### When the User Contradicts Skill Guidance
+
+[Detection] If the user explicitly requests a BLOCK-tier command (e.g., git clean, force push), warn them about the specific risk but proceed if they confirm — the danger tier matrix reports safety facts, it does not block authorized operations. If the user wants to run a command without non-interactive flags, warn about potential hangs and suggest adding flags, but honor the user's choice if they insist. Document the override and risk in any session log.
+
+[Recovery] Document BLOCK-tier overrides with timestamp, exact command, and user confirmation. Never silently run BLOCK-tier commands — always require explicit user authorization.
+
+### When an Edge Case Is Encountered
+
+[Detection] If a command works locally but fails in CI (different OS, shell, or environment), check for platform-specific flags — macOS uses BSD variants of some commands where GNU flags differ. If environment variables are needed but their values are unknown, do not guess; report the missing variable and its purpose. If a command produces output that needs parsing but the output format is unpredictable, avoid fragile parsing and use structured alternatives (JSON output flags, dedicated query tools).
+
+[Recovery] For platform differences, consult `references/command-tables.md` for portable alternatives. For missing env vars, report the variable name and what it controls. For fragile parsing, switch to structured output formats.
+
 ## Cross-References
 
 | Related Skill | Boundary |

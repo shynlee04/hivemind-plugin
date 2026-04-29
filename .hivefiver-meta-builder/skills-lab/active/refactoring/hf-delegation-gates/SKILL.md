@@ -268,3 +268,21 @@ After authorization is complete:
 ## Reference Files
 
 - `references/gates.md` — Full gate structure, checkpoint types, prompt templates, specialist profiles
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] A gate repeatedly blocks (3+ attempts). Gate 4 scope keeps expanding. Specialist capability mismatch persists after re-selection.
+[Recovery] STOP attempting authorization. Document which gate is blocking and why. Escalate to the user with: blocked gate number, what was attempted, and suggested scope reduction. Do not bypass gates — a blocked gate means the task is not ready for dispatch.
+
+### When Unsure About the Next Step
+[Detection] Unclear whether to use human-verify, decision, or human-action checkpoint type. Task doesn't clearly match any specialist in the capability matrix.
+[Recovery] Default to `checkpoint:decision` with options presented. Check `.opencode/agents/` for any new specialists that may have been added since this skill was last updated. If no match, use the orchestrator agent as a router.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "skip the gates" or "just dispatch it" or "I approve, don't ask me again." User wants to bypass Gate 1-4.
+[Recovery] Acknowledge the user's authority but document what is being skipped. Record the override in task_plan.md with timestamp and rationale. State: "Proceeding with user-authorized gate bypass. Gates {list} skipped. Risk: {specific risk}." Never silently skip — always record the override.
+
+### When an Edge Case Is Encountered
+[Detection] Task spans multiple specialist domains. No single specialist covers all capabilities. Checkpoint format doesn't fit approve/reject/modify shape.
+[Recovery] For multi-domain tasks: split into sequential sub-tasks, each with its own authorization. For unusual checkpoint shapes: use `checkpoint:human-action` with a free-form prompt describing the unusual situation. Always include a resume pointer so the user knows how to continue.

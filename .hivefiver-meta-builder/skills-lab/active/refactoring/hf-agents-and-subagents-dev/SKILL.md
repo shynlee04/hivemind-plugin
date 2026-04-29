@@ -201,3 +201,21 @@ Step 4: Two-stage review
 | **The File Referrer** — "read the plan file" | Subagent told to read file path instead of getting task text | Paste full task text into the prompt. Always. |
 | **The Parallel Crasher** — parallel tasks on shared files | Subagents conflict, one overwrites the other | Parallel only for independent tasks (no shared files) |
 | **The Trusting Controller** — accepting DONE without review | Subagent missed edge cases | Two-stage review: spec compliance first, then quality |
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] Subagent returns NEEDS_CONTEXT or BLOCKED after 3 dispatch attempts with the same prompt. Same status protocol outcome persists after providing missing context. Subagent keeps missing edge cases in two-stage review.
+[Recovery] STOP re-dispatching. Something fundamental needs to change — not just the prompt text. Options: (1) Split the task into smaller units, (2) Switch to a stronger model, (3) Re-examine the task scope (is it actually achievable?), (4) Add a discovery step before implementation. Never force the same model to retry without changes.
+
+### When Unsure About the Next Step
+[Detection] Unclear whether to use worktree isolation or main branch. Not sure if tasks can run in parallel or must be sequential. Subagent status is DONE_WITH_CONCERNS but the concern is ambiguous.
+[Recovery] For worktree decisions: if the task mutates files → use worktree isolation. Main branch is for integration only. For parallelism: check if subagents share any files — if yes, run sequentially. If no shared files, run in parallel. For ambiguous DONE_WITH_CONCERNS: read the concerns carefully. If about correctness → address before review. If an observation → note and proceed to two-stage review.
+
+### When the User Contradicts Skill Guidance
+[Detection] User says "just run it in the main session, it's simple" (violating delegation mandate). User says "pass the file path, the subagent can read it" (violating constructed context mandate). User says "skip the two-stage review, I trust the output."
+[Recovery] Acknowledge but warn: "The Iron Law states NO SUBAGENT WITHOUT CONSTRUCTED CONTEXT. Passing a file path forces the subagent to guess context. Two-stage review catches edge cases that DONE doesn't guarantee." If the user insists, proceed but document the skipped safety measure and note: "User-authorized shortcut. Risk: [specific risk]."
+
+### When an Edge Case Is Encountered
+[Detection] Subagent needs a tool it doesn't have permission for. Parallel subagents produce merge conflicts despite different files. Delegation chain depth exceeds 3 levels. Session ID tracking can't find the ses_ pattern in state directory.
+[Recovery] For missing tool permissions: either add the tool to the subagent's definition or split the task so the controller handles the tool-requiring step. For merge conflicts: run the conflicting subagents sequentially on the next attempt. For deep delegation chains: flatten — the controller should manage direct dispatch rather than chain. For missing session IDs: check both `.opencode/state/` and `.hivemind/state/` for session files. If not found, the delegation may have failed before creating a session — re-dispatch with a fresh task.

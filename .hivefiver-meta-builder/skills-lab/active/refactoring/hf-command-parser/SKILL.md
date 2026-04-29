@@ -113,3 +113,21 @@ Step 5: Expand propositions → { entity: "skill", value: "create-auth-skill" }
 ## Non-Interactive Shell Compliance
 
 When reconstructing commands from parsed arguments: always add `-y`/`--yes`/`--no-pager` for interactive tools; never produce vim, nano, less, man, `git add -p`, or `git rebase -i`; quote values containing spaces.
+
+## Self-Correction
+
+### When the Task Keeps Failing
+[Detection] The same command string produces inconsistent parse results across 3+ attempts. A specific token pattern (e.g., nested quotes, escaped characters) consistently fails to parse. Verb identification returns null when a verb clearly exists.
+[Recovery] STOP parsing and re-examine the raw command string. Check for edge cases: double `=` in key-value (`key==value` → split on first `=` only), unmatched quotes (rest of input becomes the value), leading/trailing whitespace. If the command syntax is genuinely ambiguous, flag it for human review rather than guessing. Document the ambiguous token and all possible interpretations.
+
+### When Unsure About the Next Step
+[Detection] Token classification is ambiguous (is `--verbose` a flag or a positional value called `--verbose`?). A flag token is followed by what looks like another flag but could be a value. Propositional expression could be either entity=value or entity:action.
+[Recovery] Apply the parsing precedence rules in order: (1) Named arguments (`key=value`), (2) Flag-style (`--flag value`), (3) Propositional (`entity=value` or `entity:action`), (4) Positional (everything else). If a token could match multiple patterns, the first matching pattern wins. Document the precedence decision in the parse trace.
+
+### When the User Contradicts Skill Guidance
+[Detection] User provides a command string that doesn't follow propositional syntax but insists it should parse. User wants to add a new parsing pattern not covered by the five defined patterns. User says the parser should handle natural language, not just structured commands.
+[Recovery] Acknowledge: "This parser handles propositional command syntax only — key=value, --flag, entity:action, and quoted values. Natural language parsing is explicitly excluded." If the user needs a new pattern, evaluate whether it fits the propositional model. If not, route to a natural-language parser or a more general skill. Do not extend the parser beyond its defined grammar without updating `references/parsing-rules.md`.
+
+### When an Edge Case Is Encountered
+[Detection] Command string contains shell operators (`|`, `&&`, `;`, `>`). Token has special characters in value position. Empty string after `=` in key=value. Large values with special Unicode characters. Flag name contains hyphens beyond the leading `--`.
+[Recovery] For shell operators: do NOT expand or execute them — treat them as literal characters in the value or flag as appropriate. For empty values (`key=`): set value to empty string `""`. For special characters: pass through literally in the value, quoting in output. For multi-hyphen flags (`--flag-name`): treat the entire `--flag-name` as the flag key. Always prefer literal preservation over interpretation — the parser should not modify input.
