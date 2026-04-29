@@ -2,6 +2,8 @@
 name: hm-l2-critic
 description: 'Quality verification agent. Ruthless code review, correctness validation, and compliance checking. Read-only with bash for test execution.'
 mode: subagent
+depth: L2
+lineage: hm
 model: opencode-go/kimi-k2.6
 temperature: 0.05
 instructions:

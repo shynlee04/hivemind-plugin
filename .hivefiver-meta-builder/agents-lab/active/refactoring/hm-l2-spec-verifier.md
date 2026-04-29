@@ -2,6 +2,8 @@
 name: hm-l2-spec-verifier
 description: 'Phase 1 specialist for spec verification loop. Triggers on ''verify spec'', ''spec verification loop'', ''check requirements''. Handles Check-Revise-Escalate cycle for spec compliance. Invoked by /ultrawork command as post-implementation verification step.'
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.1
 instruction:
   - .opencode/rules/anti-patterns.md

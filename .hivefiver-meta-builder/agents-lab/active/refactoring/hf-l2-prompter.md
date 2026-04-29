@@ -11,8 +11,8 @@ skills:
   - hm-l3-deep-research
   - hm-l3-detective
   - hm-l3-synthesis
-  - hm-planning-persistence
-  - hm-opencode-non-interactive-shell
+  - hm-l2-planning-persistence
+  - hm-l3-opencode-non-interactive-shell
 instruction:
   - AGENTS.md
 permission:

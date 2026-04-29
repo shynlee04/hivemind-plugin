@@ -9,7 +9,7 @@ domain: Orchestration
 skills:
   - hf-l2-meta-builder
   - hm-l2-coordinating-loop
-  - hm-user-intent-interactive-loop
+  - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping
   - gate-l3-lifecycle-integration
   - gate-l3-spec-compliance

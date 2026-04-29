@@ -10,7 +10,7 @@ skills:
   - hf-l2-meta-builder
   - hf-l2-skill-synthesis
   - hm-l2-coordinating-loop
-  - hm-planning-with-files
+  - hm-l2-planning-persistence
 instruction:
   - AGENTS.md
 permission:
@@ -54,7 +54,7 @@ L2 Specialist. Terminal executor — no delegation capability. Receives structur
 </depth>
 
 <lineage>
-hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for workflow design, skill synthesis, and concept authoring. May access hm-* skills for coordination loops (hm-coordinating-loop), user intent probing (hm-user-intent-interactive-loop), and planning persistence (hm-planning-with-files). Cross-lineage access is always justified in output.
+hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for workflow design, skill synthesis, and concept authoring. May access hm-* skills for coordination loops (hm-coordinating-loop), user intent probing (hm-l2-user-intent-interactive-loop), and planning persistence (hm-l2-planning-persistence). Cross-lineage access is always justified in output.
 </lineage>
 
 <task>

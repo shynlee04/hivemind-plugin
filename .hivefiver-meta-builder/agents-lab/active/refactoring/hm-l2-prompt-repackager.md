@@ -2,6 +2,8 @@
 name: hm-l2-prompt-repackager
 description: Final assembly lane for prompt enhancement. Returns the enhanced prompt payload with YAML frontmatter and XML-tagged sections.
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.2
 instructions:
   - .opencode/rules/anti-patterns.md

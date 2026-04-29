@@ -2,6 +2,8 @@
 name: hm-l2-prompt-analyzer
 description: 'Deep prompt-analysis lane for contradictions, vagueness, missing scope, and clarity issues.'
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.1
 instructions:
   - .opencode/rules/anti-patterns.md

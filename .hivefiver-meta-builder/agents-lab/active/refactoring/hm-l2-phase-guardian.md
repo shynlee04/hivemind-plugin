@@ -2,6 +2,8 @@
 name: hm-l2-phase-guardian
 description: 'Specialist for phase guardrails and loop termination. Use when managing intra-phase iterations, validating completion criteria, enforcing authorization gates, or determining phase exit. Triggers on: ''guardrail loops'', ''phase exit decision'', ''validate completion'', ''max iterations reached'', ''checkpoint authorization''. Invoked by hm-phase-loop skill as loop enforcement executor.'
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.25
 instruction:
   - .opencode/rules/anti-patterns.md

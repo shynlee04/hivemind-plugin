@@ -2,6 +2,8 @@
 name: hm-l2-context-mapper
 description: Ground prompt references against the current repository and report dead or stale references.
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.1
 instructions:
   - .opencode/rules/anti-patterns.md

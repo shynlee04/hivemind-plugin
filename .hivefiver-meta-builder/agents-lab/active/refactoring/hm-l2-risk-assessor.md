@@ -2,6 +2,8 @@
 name: hm-l2-risk-assessor
 description: 'Safety lane for prompt enhancement. Flags destructive, security, and scope-creep risks.'
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.1
 instructions:
   - .opencode/rules/anti-patterns.md

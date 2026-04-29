@@ -2,6 +2,8 @@
 name: hm-l2-context-purifier
 description: Distillation lane for prompt enhancement. Compresses noisy prompts without changing intent.
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.1
 instructions:
   - .opencode/rules/anti-patterns.md

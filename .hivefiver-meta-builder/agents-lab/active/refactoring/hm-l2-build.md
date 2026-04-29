@@ -2,6 +2,8 @@
 name: hm-l2-build
 description: The default primary agent with all tools enabled for development work requiring full access to file operations and system commands. MANDATORY_COMPLIANCE_REQUIRED.
 mode: primary
+depth: L2
+lineage: hm
 permission:
   read: allow
   edit: allow

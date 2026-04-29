@@ -2,6 +2,8 @@
 name: hm-l2-prompt-skimmer
 description: Phase 0 skim agent for prompt enhancement. Use when you need a fast scan before deeper analysis.
 mode: subagent
+depth: L2
+lineage: hm
 temperature: 0.1
 instructions:
   - .opencode/rules/anti-patterns.md
