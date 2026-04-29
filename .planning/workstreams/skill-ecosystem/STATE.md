@@ -8,16 +8,16 @@ phase_count: 17
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-2 COMPLETE — SE-3 ready to begin
-**Current Phase:** SE-3 (Pre-Gate Skills Hardening)
-**Last Activity:** 2026-04-29 (SE-2 complete — 20+ reference fixes, D-04 soft boundary, disabled skill archived)
+**Status:** SE-3 COMPLETE — SE-3.5, SE-3.6, SE-4 ready to begin
+**Current Phase:** SE-3 (Pre-Gate Skills Hardening) — COMPLETE
+**Last Activity:** 2026-04-29 (SE-3 complete — 4 skills hardened to RICH-8 ≥6/8: evals, self-correction, metrics scorecards, path fixes)
 
 ## Progress
 | Phase | Status | Plans | Summary |
 |-------|--------|-------|---------|
 | SE-1 | ✅ COMPLETE | 1/1 | 10 renames, 1 removal, cross-ref fixes, agent permissions, AGENTS.md update, code review fixes |
 | SE-2 | ✅ COMPLETE | 4/4 | Planning pipeline backbone: hm-planning-persistence SKILL.md, 20+ reference fixes across 12 skills, D-04 soft boundary, disabled skill archived |
-| SE-3 | PLANNED (needs refresh) | 0 | Harden existing Pre-Gate skills (15-20KB on disk): hm-brainstorm, hm-requirements-analysis, hm-cross-cutting-change, hm-tech-context-compliance |
+| SE-3 | ✅ COMPLETE | 1/1 | 4 pre-gate skills hardened to RICH-8 ≥6/8: evals (3 scenarios each), self-correction (4 modes), metrics scorecards (D1-D8: A-grade), framework-agnostic paths |
 | SE-3.5 | PLANNED | 0 | Harden existing Feature ecosystem skills (on disk): hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability |
 | SE-3.6 | PLANNED | 0 | Harden existing hm-product-validation (20KB on disk): RICH audit, trigger tuning, quality gate alignment |
 | SE-4 | PLANNED (needs refresh) | 0 | Harden existing hm-tech-stack-ingest + research chain bidirectional fixes |
@@ -33,8 +33,8 @@ phase_count: 17
 | SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 2/17
-**Phases Authorized:** 2/17 (SE-1 ✅, SE-2 ✅)
+**Phases Complete:** 3/17
+**Phases Authorized:** 3/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -104,10 +104,10 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-2 COMPLETE — All 4 plans executed, 20+ reference fixes, disabled skill archived
-**Resume:** Move to SE-3 (Pre-Gate Skills Hardening) — Harden hm-brainstorm, hm-requirements-analysis, hm-cross-cutting-change, hm-tech-context-compliance
-**Git Commits:** 0b850ebe (SE-2 reference fixes), e2ff47f7 (SE-2 archive)
-**Handoff:** `.planning/workstreams/skill-ecosystem/CONTINUE-2026-04-28.md`
+**Stopped At:** SE-3 COMPLETE — All 4 pre-gate skills hardened to RICH-8 ≥6/8
+**Resume:** Move to SE-3.5 (Feature skill hardening: hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability) or SE-4 (Research pipeline: hm-tech-stack-ingest + research chain)
+**Git Commits:** 6dc9fe9e (SE-3 hardening — 13 files)
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-3-pre-gate-skills/SE-3-SUMMARY.md`
 
 ## Known Issues (2026-04-29 Audit)
 
