@@ -129,3 +129,15 @@ None — all sections complete. References directory exists (empty) as placehold
 | RICH-8 (Evals + Metrics) | PASS |
 
 **Final: 8/8 PASS — D1-D8: 108/120 (A)**
+
+## Self-Check: PASSED
+
+- [x] `SKILL.md` FOUND at `.hivefiver-meta-builder/skills-lab/active/refactoring/hf-l2-naming-syndicate/SKILL.md`
+- [x] `evals.json` FOUND at `hf-l2-naming-syndicate/evals/evals.json`
+- [x] `scorecard.md` FOUND at `hf-l2-naming-syndicate/metrics/rich-gate-scorecard.md`
+- [x] `SE-11-SUMMARY.md` FOUND at `.planning/workstreams/skill-ecosystem/phases/SE-11-naming-syndicate-formalization/SE-11-SUMMARY.md`
+- [x] `STATE.md` FOUND at `.planning/workstreams/skill-ecosystem/STATE.md`
+- [x] `SE-11-CONTEXT.md` FOUND at `.planning/workstreams/skill-ecosystem/phases/SE-11-naming-syndicate-formalization/SE-11-CONTEXT.md`
+- [x] Commit `cc27fde7` FOUND in git log
+- [x] No file deletions in commit
+- [x] SE-11 status updated to COMPLETE in STATE.md (12/17 phases)
