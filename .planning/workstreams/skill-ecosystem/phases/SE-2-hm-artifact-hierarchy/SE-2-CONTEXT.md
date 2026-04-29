@@ -519,4 +519,7 @@ Explicit handoff contracts between SE-2 and subsequent phases. Each downstream p
 | SE-5 quality skills can't read SE-2 persistence format | Medium | Medium — quality gates blocked | Schema validation; SE-2 produces migration guide if format evolves |
 | Existing hm-* skills reject new `.hivemind/state/planning/` structure | Low | Medium — integration breaks | SE-2 fixes all references; integration test: run hm-research-chain with new persistence |
 | `.hivemind/state/planning/` directory bloat | High | Low — cleanup is manual | Session-isolated directories make cleanup trivial; SE-5 may add TTL-based archival |
-- **ALL new skills MUST pass SKILL-CRITERIA-SHORT.md gate before ship**
+
+---
+
+> **Phase Constraint:** ALL new skills created in SE-2 through SE-7 MUST pass the SKILL-CRITERIA-SHORT.md quality gate before shipping. Reference: `.hivefiver-meta-builder/SKILL-CRITERIA-SHORT.md`
