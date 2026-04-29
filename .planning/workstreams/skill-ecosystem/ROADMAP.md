@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-27
 **Updated:** 2026-04-29 (audit findings integrated: SE-8, SE-9 added)
-**Status:** IN PROGRESS (1/17 forward phases + 14 historical COMPLETE; 8 of 21 target skills already exist on disk)
+**Status:** IN PROGRESS (2/17 forward phases; SE-2 complete)
 **Workstream:** skill-ecosystem (independent from milestone/main phases)
 **Context:** `.planning/research/SKILL-ECOSYSTEM-GAP-ANALYSIS-2026-04-27.md`
 
@@ -22,7 +22,7 @@
 | Phase | Name | Status | Depends On | Blocks |
 |-------|------|--------|------------|--------|
 | SE-1 | Skill Reclassification & Cleanup | ✅ COMPLETE | — | — |
-| SE-2 | Planning Pipeline Backbone | ⚠️ PARTIALLY COMPLETE | SE-1 | — |
+| SE-2 | Planning Pipeline Backbone | ✅ COMPLETE | SE-1 | — |
 | SE-3 | Pre-Gate Skills Hardening | 📋 PLANNED | SE-2 | — |
 | SE-3.5 | Feature Ecosystem & Production Skills | 📋 PLANNED | SE-2 | — |
 | SE-3.6 | Product Validation Skill Hardening | 📋 PLANNED | SE-3 | — |
@@ -55,22 +55,23 @@ Each phase defines SCOPE only. Actual design decisions, research, and implementa
 
 ---
 
-### Phase SE-2: Planning Pipeline Backbone ⚠️ PARTIALLY COMPLETE
+### Phase SE-2: Planning Pipeline Backbone ✅ COMPLETE
 
 **Goal:** Replace disabled `hm-planning-with-files` with `hm-planning-persistence` using `.hivemind/state/planning/` as canonical path. Fix 11 broken references across all dependent skills. Remove hard dependency from hm-coordinating-loop. Archive disabled skill.
 
 **As-Is (Broken):** `hm-planning-with-files` is DISABLED (`donotusethis-*`). 11 skills reference it. `hm-coordinating-loop` has HARD prerequisite (verify-hierarchy.sh exits 1).
 
-**To-Be:** `hm-planning-persistence` → `.hivemind/state/planning/<session-id>/`. All 11 references updated. Coordinator uses soft boundary (graceful fallback to in-memory state).
+**To-Be:** `hm-planning-persistence` → `.hivemind/state/planning/<session-id>/`. All 12 references updated. Coordinator uses soft boundary (graceful fallback to in-memory state).
 
-**Status:** PARTIALLY COMPLETE — `hm-planning-persistence` SKILL.md exists on disk. 4 plan files were NOT executed. 11 broken references to `donotusethis-hm-planning-with-files` remain unverified. Remaining work: execute SE-2-02 through SE-2-04 plans (reference fixes, archive, integration verification).
-**Plans:** 4 plans (1 of 4 executed)
+**Status:** ✅ COMPLETE — All 4 plans executed. 20+ reference fixes applied across 12 skills and bundled reference files. D-04 soft boundary verified. Disabled skill archived to `.opencode/retired/`.
+**Plans:** 4/4 executed
+**Commits:** 0b850ebe (reference fixes), e2ff47f7 (archive)
 
 Plans:
 - [x] SE-2-01-PLAN.md — Research + Create hm-planning-persistence (Wave 1) ✅ SKILL.md on disk
-- [ ] SE-2-02-PLAN.md — Fix CRITICAL hm-coordinating-loop + 5 references (Wave 2)
-- [ ] SE-2-03-PLAN.md — Fix 5 remaining references + hm-meta-builder (Wave 2)
-- [ ] SE-2-04-PLAN.md — Archive disabled skill + Integration verification (Wave 3)
+- [x] SE-2-02-PLAN.md — Fix CRITICAL hm-coordinating-loop + 5 references (Wave 2) ✅
+- [x] SE-2-03-PLAN.md — Fix 5 remaining references + hm-meta-builder (Wave 2) ✅
+- [x] SE-2-04-PLAN.md — Archive disabled skill + Integration verification (Wave 3) ✅
 
 **Depends on:** SE-1 (renames done, references clean)
 
@@ -418,7 +419,7 @@ These phases were executed under the milestone workstream between 2026-04-22 and
 1. **AGENTS.md is 18 skills behind** — claims 33 skills, reality is 49 active + 1 disabled
 2. **hm-gate-orchestrator does not exist** — referenced by 3 skills (hm-production-readiness, hm-requirements-analysis, hm-roadmap-maintainability) but no SKILL.md. Tracked in SE-5.
 3. **hm-lineage-router does not exist** — needed for SE-5
-4. **SE-2 partially executed** — hm-planning-persistence SKILL.md created but 11 reference fixes may not be complete. Tracked in SE-2 remaining plans.
+4. **SE-2 completed** — hm-planning-persistence now properly integrated, all 12 skills reference it
 5. **hf-meta-builder name mismatch** — frontmatter says `name: hr-meta-builder` (wrong prefix). Tracked in SE-9.
 6. **Disabled hm-planning-with-files** still referenced by 9 active skills. Tracked in SE-2 remaining plans + SE-8 orphan audit.
 7. **25 orphan skills** have never been through a dedicated RICH audit. Tracked in SE-8.

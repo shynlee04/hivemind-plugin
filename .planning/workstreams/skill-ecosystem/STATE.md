@@ -8,15 +8,15 @@ phase_count: 17
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-2 PARTIALLY COMPLETE (hm-planning-persistence exists, 4 plans not executed, 11 references unverified)
-**Current Phase:** SE-2 (Planning Pipeline Backbone)
-**Last Activity:** 2026-04-29 (comprehensive audit — skill count, lineage, dependency chain verified)
+**Status:** SE-2 COMPLETE — SE-3 ready to begin
+**Current Phase:** SE-3 (Pre-Gate Skills Hardening)
+**Last Activity:** 2026-04-29 (SE-2 complete — 20+ reference fixes, D-04 soft boundary, disabled skill archived)
 
 ## Progress
 | Phase | Status | Plans | Summary |
 |-------|--------|-------|---------|
 | SE-1 | ✅ COMPLETE | 1/1 | 10 renames, 1 removal, cross-ref fixes, agent permissions, AGENTS.md update, code review fixes |
-| SE-2 | ⚠️ PARTIAL | 4 | Planning pipeline backbone: hm-planning-persistence SKILL.md created, 4 plans drafted but not executed, 11 reference fixes unverified |
+| SE-2 | ✅ COMPLETE | 4/4 | Planning pipeline backbone: hm-planning-persistence SKILL.md, 20+ reference fixes across 12 skills, D-04 soft boundary, disabled skill archived |
 | SE-3 | PLANNED (needs refresh) | 0 | Harden existing Pre-Gate skills (15-20KB on disk): hm-brainstorm, hm-requirements-analysis, hm-cross-cutting-change, hm-tech-context-compliance |
 | SE-3.5 | PLANNED | 0 | Harden existing Feature ecosystem skills (on disk): hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability |
 | SE-3.6 | PLANNED | 0 | Harden existing hm-product-validation (20KB on disk): RICH audit, trigger tuning, quality gate alignment |
@@ -33,8 +33,8 @@ phase_count: 17
 | SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 1/17
-**Phases Authorized:** 2/17 (SE-1 ✅, SE-2 ⚠️ PARTIAL)
+**Phases Complete:** 2/17
+**Phases Authorized:** 2/17 (SE-1 ✅, SE-2 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -104,9 +104,9 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-2 PARTIALLY COMPLETE — hm-planning-persistence SKILL.md created, 4 PLAN.md files drafted but not executed
-**Resume:** Execute SE-2 remaining plans (01-research+create, 02-critical+fixes, 03-remaining+meta, 04-archive+verify) → verify 11 reference fixes → move to SE-3
-**Git Commits:** e114cdb8, f0c785db, 01f1ccd1 (SE-1), 2f8111e8 (SE-1 review fixes)
+**Stopped At:** SE-2 COMPLETE — All 4 plans executed, 20+ reference fixes, disabled skill archived
+**Resume:** Move to SE-3 (Pre-Gate Skills Hardening) — Harden hm-brainstorm, hm-requirements-analysis, hm-cross-cutting-change, hm-tech-context-compliance
+**Git Commits:** 0b850ebe (SE-2 reference fixes), e2ff47f7 (SE-2 archive)
 **Handoff:** `.planning/workstreams/skill-ecosystem/CONTINUE-2026-04-28.md`
 
 ## Known Issues (2026-04-29 Audit)
@@ -114,8 +114,8 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 1. **AGENTS.md skill count stale** — claims 33 skills, reality is 49 active + 1 disabled (18 skills behind)
 2. **hm-gate-orchestrator does not exist** — referenced by 3 skills (hm-production-readiness, hm-requirements-analysis, hm-roadmap-maintainability) but no SKILL.md (SE-5 deliverable)
 3. **hm-lineage-router does not exist** — needed for skill lineage routing (SE-5 deliverable)
-4. **SE-2 partially executed** — hm-planning-persistence SKILL.md created but 4 plans not executed, 11 reference fixes unverified
+4. ~~SE-2 partially executed~~ — RESOLVED 2026-04-29: All 4 plans executed, 20+ reference fixes applied, disabled skill archived
 5. **hf-meta-builder name mismatch** — directory is `hf-meta-builder` but frontmatter says `name: hr-meta-builder` (wrong `hr-` prefix instead of `hf-`)
-6. **Disabled hm-planning-with-files** still referenced by 9 active skills
+6. ~~Disabled hm-planning-with-files still referenced by 9 active skills~~ — RESOLVED 2026-04-29: All 12 skills fixed, disabled skill archived to .opencode/retired/
 7. **25 orphan skills** not covered by any forward SE phase — triaged to SE-8
 8. **No terminal verification** of full ecosystem coherence exists yet — SE-9 will address this.
