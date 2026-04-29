@@ -3,7 +3,7 @@ slug: phase-52-54-runtime-unblock
 status: investigating
 trigger: Phase 52/53/54 runtime unblock — PTY output gap, journal/lineage gap, recovery proof gap, guidance workflow blocked, Phase 53 NO-SHIP, Phase 54 BLOCKED handoff
 created: 2026-04-29
-updated: 2026-04-29T00:50:00Z
+updated: 2026-04-29T01:00:00Z
 goal: find_and_fix
 tdd_mode: true
 ---
@@ -15,7 +15,7 @@ tdd_mode: true
 - hypothesis: PTY blocker is fixed; journal lineage was an evidence timing/state-refresh gap, because rerun against current persisted delegations returned non-empty lineage for the same Phase 52 parent session.
 - test: Run final verification gates, update Phase 52/53 artifacts honestly, and leave recovery/guidance as blockers until operator-approved recovery proof exists.
 - expecting: Typecheck/build/focused tests pass; Phase 53 remains NO-SHIP with exactly recovery as critical unwaived blocker.
-- next_action: Run npm test if feasible, then return DEBUG COMPLETE or CHECKPOINT with recovery blocker.
+- next_action: Return DEBUG COMPLETE with DONE_WITH_CONCERNS because PTY/journal blockers are closed, but recovery proof still blocks release readiness.
 
 ## Symptoms / Blockers
 
@@ -85,6 +85,10 @@ Phase 52 should produce truthful L1/L2 acceptance evidence for PTY output, journ
   checked: Supporting verification gates after PTY source fix.
   found: `npm run typecheck` passed. `npx vitest run tests/lib/pty/pty-manager.test.ts tests/tools/run-background-command.test.ts tests/tools/session-journal-export.test.ts` passed 3 files / 24 tests. `npm run build` passed.
   implication: Supporting L3/L4 gates pass for changed modules; full `npm test` still pending.
+- timestamp: 2026-04-29T01:00:00Z
+  checked: Full test suite after source/artifact changes.
+  found: `npm test` passed: 69 files, 1112 tests. Vitest emitted pre-existing hoist warnings for `vi.unmock("node:fs")` in continuity/delegation-persistence tests.
+  implication: Full suite supports the PTY fix; warnings do not appear introduced by this workstream.
 
 ## Investigation Log
 
@@ -101,4 +105,4 @@ Phase 52 should produce truthful L1/L2 acceptance evidence for PTY output, journ
 
 - root_cause: PTY immediate-output startup race confirmed; journal lineage closed by rerun/state refresh; recovery remains blocked by missing operator-approved interruption method.
 - fix: PTY listener ordering fixed in `src/lib/pty/pty-manager.ts`; no code fix required for journal export.
-- verification: RED/GREEN focused PTY tests, session-journal rerun evidence, typecheck, focused vitest, and build passed; full npm test pending.
+- verification: RED/GREEN focused PTY tests, session-journal rerun evidence, typecheck, focused vitest, build, and full npm test passed.
