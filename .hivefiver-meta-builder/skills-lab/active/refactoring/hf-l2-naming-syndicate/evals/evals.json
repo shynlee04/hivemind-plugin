@@ -145,6 +145,54 @@
         "Suggests semantic alternative: 'hm-systematic-debug'",
         "Explains: version numbers belong in version field, not names"
       ]
+    },
+    {
+      "id": "positive-glob-l2-specialists",
+      "query": "What glob pattern should I use in an agent allowlist to match all L2 hm specialists?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Returns: '\"hm-l2-*\": allow'",
+        "Explains: matches all L2 hm specialists (execution layer)",
+        "Notes: depth-specific — does NOT match hm-l1-coordinator or hm-l0-orchestrator",
+        "Cross-refs to Agent Allowlist Patterns table"
+      ]
+    },
+    {
+      "id": "positive-glob-exact-match",
+      "query": "How do I allow only the hm-l1-coordinator but not other L1 agents?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Returns: '\"hm-l1-coordinator\": allow'",
+        "Explains: exact-match pattern — no wildcard",
+        "Contrasts with '\"hm-l1-*\": allow' which matches all L1 agents",
+        "Cross-refs to Exact-Match Patterns table"
+      ]
+    },
+    {
+      "id": "negative-glob-cross-lineage",
+      "query": "Can I add '\"hf-l2-*\": allow' to an hm-l1-coordinator's permission allowlist?",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Flags lineage locking violation",
+        "Returns FAIL: hm-* agents MUST use hm-l*-* patterns",
+        "Explains: cross-lineage loading is ONLY for gate-l3-* and stack-l3-* patterns",
+        "Cites Glob Enforcement Rule 1"
+      ]
+    },
+    {
+      "id": "positive-glob-gsd-exclusion",
+      "query": "Should 'gsd-executor' appear in a shipped agent's skill allowlist?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Returns: NO — gsd-* agents are excluded from naming scheme",
+        "Explains: GSD agents are internal project build tools, NOT shipped",
+        "Recommends: 'gsd-*': deny in public-facing agents",
+        "Cites Glob Enforcement Rule 4"
+      ]
     }
   ],
   "rich_source_evidence": [
@@ -155,8 +203,8 @@
     },
     {
       "gate": "RICH-2",
-      "claim": "Multiple validation strategies",
-      "evidence": "Machine-verifiable regex rules + human-review rules. Agent naming includes L0/L1/L2 layer suffixes. Edge cases documented for single-word, compound, and abbreviated names."
+      "claim": "Multiple validation strategies (machine + human + glob)",
+      "evidence": "Machine-verifiable regex rules + human-review rules + glob pattern reference for agent allowlists. Agent naming includes L0/L1/L2 layer suffixes. Edge cases documented for single-word, compound, and abbreviated names."
     },
     {
       "gate": "RICH-3",
@@ -186,7 +234,7 @@
     {
       "gate": "RICH-8",
       "claim": "This evals file + metrics scorecard",
-      "evidence": "12 eval scenarios (6 positive, 4 negative, 2 boundary). metrics/rich-gate-scorecard.md with D1-D8 scoring."
+      "evidence": "16 eval scenarios (8 positive, 6 negative, 2 boundary) covering naming validation + glob patterns. metrics/rich-gate-scorecard.md with D1-D8 scoring."
     }
   ]
 }

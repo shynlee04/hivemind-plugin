@@ -174,6 +174,49 @@ Agent names follow the same prefix scheme but add **layer suffixes** to indicate
 | **Agent name = file name** | The agent file name (e.g., `hm-researcher.md`) MUST match the agent's identity. |
 | **No numeric suffixes** | Avoid `hm-debug2`, `hf-builder-v2`. Use semantic naming instead (e.g., `hm-systematic-debug`). |
 
+### Glob Pattern Reference
+
+Glob patterns used in agent permission allowlists and skill routing tables. These patterns enable machine-verifiable lineage enforcement and automatic classification at load-time.
+
+#### Agent Allowlist Patterns
+
+| Pattern | Scope | Example Match |
+|---------|-------|---------------|
+| `"hm-l0-*": allow` | All L0 hm orchestrators (front-facing) | `hm-l0-orchestrator` |
+| `"hm-l1-*": allow` | All L1 hm coordinators (mid-level) | `hm-l1-coordinator` |
+| `"hm-l2-*": allow` | All L2 hm specialists (execution) | `hm-l2-researcher`, `hm-l2-debugger`, `hm-l2-planner` |
+| `"hf-l0-*": allow` | All L0 hf orchestrators (front-facing) | `hf-l0-orchestrator` |
+| `"hf-l1-*": allow` | All L1 hf coordinators (mid-level) | `hf-l1-coordinator` |
+| `"hf-l2-*": allow` | All L2 hf specialists (meta-builder) | `hf-l2-agent-builder`, `hf-l2-skill-author` |
+| `"gate-l3-*": allow` | All internal quality gates (project only) | `gate-l3-evidence-truth`, `gate-l3-spec-compliance` |
+| `"stack-l3-*": allow` | All stack reference docs | `stack-l3-zod`, `stack-l3-vitest` |
+
+#### Exact-Match Patterns (for specific agents)
+
+| Pattern | Purpose |
+|---------|---------|
+| `"hm-l1-coordinator": allow` | Exact match for the L1 hm coordinator |
+| `"hm-l0-orchestrator": allow` | Exact match for the L0 hm orchestrator |
+| `"hf-l1-coordinator": allow` | Exact match for the L1 hf coordinator |
+| `"hf-l0-orchestrator": allow` | Exact match for the L0 hf orchestrator |
+
+#### Skill Routing Patterns
+
+| Pattern | Scope | Loaded By |
+|---------|-------|-----------|
+| `"hm-l2-*": allow` | All L2 execution/how-to hm skills | hm-l1-coordinator, hm-l0-orchestrator |
+| `"hm-l3-*": allow` | All L3 research/reference hm skills | hm-l1-coordinator, hm-l0-orchestrator |
+| `"hf-l2-*": allow` | All L2 meta-builder hf skills | hf-l1-coordinator, hf-l0-orchestrator |
+| `"gate-l3-*": allow` | All internal gate skills | hm-l0-orchestrator, hm-l1-coordinator |
+| `"stack-l3-*": allow` | All stack reference skills | Any lineage (cross-cutting) |
+
+#### Glob Enforcement Rules
+
+1. **Lineage locking:** `hm-*` agents MUST use `"hm-l*-*": allow` patterns — never `"hf-l*-*": allow` unless explicitly documented in `consumed-by`.
+2. **Depth specificity:** `"hm-l2-*": allow` matches all L2 hm specialists. More specific patterns like `"hm-l2-debugger": allow` match exact agents.
+3. **Cross-lineage patterns:** `"gate-l3-*": allow` and `"stack-l3-*": allow` are permitted in ANY lineage's allowlist since they are shared reference infrastructure.
+4. **gsd-* exclusion:** `gsd-*` agents are internal project build tools — never included in shipped allowlists. Use `"gsd-*": deny` in public-facing agents.
+
 ### Conflict Resolution
 
 When two proposed skills target the same domain + function:
