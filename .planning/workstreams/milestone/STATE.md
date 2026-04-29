@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 current_plan: phase-52-end-user-harness-workflow-acceptance
-status: phase-51-complete
-stopped_at: Phase 51 complete; next autonomous phase is Phase 52 end-user harness workflow acceptance
-last_updated: "2026-04-28T00:00:00Z"
+status: phase-52-ready
+stopped_at: Phase 51 complete; Phase 52 narrowed to end-user E2E acceptance, with follow-up Phases 53 and 54 added for release closure and sidecar/product-detox runway
+last_updated: "2026-04-29T00:00:00Z"
 progress:
-  total_phases: 58
-  completed_phases: 25
-  total_plans: 76
+  total_phases: 54
+  completed_phases: "Conservative: completed through Phase 51 plus completed inserts/rescopes; see phase table below"
+  total_plans: "76 defined/completed through Phase 51; Phase 52-54 plans still pending"
   completed_plans: 76
-  percent: 92
+  percent: "Not recalculated after Phase 52 split; use phase status tables instead of a false-precision percentage"
 ---
 
 # STATE: Harness Cleanup
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 48 production-hardening remediation — Phase 48 live OpenCode proof degraded, so Phases 48.1-48.5 restore runtime correctness, security boundaries, SDK/CQRS alignment, production evidence, and LOC cleanup before downstream Phases 49-52 turn ses_22ee end-user UAT findings into production-ready tool contracts, primitive restart readiness, stack/research grounding, and E2E user acceptance.
+**Current focus:** Approved A + C routing narrows Phase 52 to end-user harness workflow acceptance only. Release-readiness/lifecycle gate closure now belongs to Phase 53, and sidecar/product-detox integration runway now belongs to Phase 54. This keeps user acceptance, release evidence, and future productization as separate truths.
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -29,25 +29,25 @@ See: `.planning/PROJECT.md`
 
 Previous STATE.md overstated completion. The authoritative reset remains `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`.
 
-## Build Status (2026-04-27)
+## Build Status (latest cited milestone evidence: 2026-04-28)
 
 | Gate | Status | Details |
 |------|--------|---------|
-| `npm run typecheck` | ✅ PASS | 0 errors |
-| `npm test` | ✅ PASS | 61 files, 982 tests passed |
-| `npm run build` | ✅ PASS | Clean TypeScript build |
+| `npm run typecheck` | ✅ PASS | Phase 50 verification: `tsc --noEmit` completed successfully |
+| `npm test` | ✅ PASS | Phase 50 verification: 69 files, 1111 tests passed |
+| `npm run build` | ✅ PASS | Phase 50 verification: clean + `tsc` completed successfully |
 
 **Phase 35 build gate restored; remaining Phase 35 dead-code/TD items are deferred.**
 
 ## Current Position
 
-Phase: 48.1 (runtime-correctness-lifecycle-queue-persistence-truth) — COMPLETE (5/5 plans executed, 8/8 truths verified)
-Plan: 5-plan remediation sequence created after degraded Phase 48 proof
+Phase: 51 complete; Phase 52 ready to execute under narrowed end-user acceptance scope
+Plan: Phase 52 plans not yet drafted; routing decision now separates Phase 52 acceptance from Phase 53 release closure and Phase 54 sidecar/product-detox runway
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
-**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1 and 48.2 complete (runtime correctness + security boundaries); Phase 48.3 complete (SDK/CQRS alignment); Phases 48.4 and 48.5 are closed by workstream artifacts; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing; Phase 51 is complete with stack/research grounding mapped to harness workflows.
-**Next:** Execute Phase 52 under the milestone workstream.
-**Progress:** [█████████░] 92%
+**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1-48.5 are closed with documented runtime caveats; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing; Phase 51 is complete with stack/research grounding mapped to harness workflows. Phase 52 now stays narrow: prove end-user E2E acceptance only.
+**Next:** Execute Phase 52, then Phase 53 release-readiness/lifecycle gate closure, then Phase 54 sidecar/product-detox integration runway.
+**Progress:** Roadmap extended truthfully; avoid exact percentage claims until Phase 52-54 plans exist.
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -65,7 +65,7 @@ Phase 9.3: Module Restructuring .... SUPERSEDED by Phase 14
 Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning reconciliation)
 Phase 14: delegate-task truth-reset  COMPLETE (WaiterModel + dual-signal + hybrid persistence, 407 tests)
 Phase 15: Security & Quality Remed  COMPLETE (26 audit issues fixed)
-Phase 16: Background Delegation ..... 5/6 plans, Gap 4 closure pending
+Phase 16: Background Delegation ..... COMPLETE (6/6 plans, Gap 4 closed by Phase 34)
 Phase 16.2: PTY Wiring + OMO ...... REMEDIATED (CR-01, CR-03 resolved)
 Phase 16.3: Delegation Hardening ... COMPLETE (recovery, notification, terminal truth hardened)
 Phase 16.4: Architecture Baseline .. COMPLETE (4 plans executed, summaries deferred to backlog 999.1)
@@ -105,8 +105,10 @@ Phase 48.4: Evidence/Coverage ....... COMPLETE WITH DEFERRED RUNTIME GAPS (works
 Phase 48.5: LOC Cleanup ............. COMPLETE (event-tracker writer split; validation pass)
 Phase 49: UAT Tool Contracts ........ COMPLETE WITH PARTIAL RUNTIME EVIDENCE (focused/full gates pass)
 Phase 50: Primitive Restart Ready .... COMPLETE (validate-restart passes; depends on 49)
-Phase 51: Stack Research Grounding ... COMPLETE (grounding map created; depends on 50)
-Phase 52: End-User Workflow Accept ... PENDING (production E2E harness workflow acceptance; depends on 51)
+Phase 51: Stack Research Grounding ... COMPLETE → MOVED to skill-ecosystem (SE-H14)
+Phase 52: End-User Workflow Accept ... PENDING (narrow end-user E2E harness workflow acceptance only; depends on 51)
+Phase 53: Release Readiness Closure .. PENDING (release/lifecycle gate closure after 52)
+Phase 54: Sidecar/Product Runway ..... PENDING (sidecar + product-detox integration runway after 53)
 ```
 
 ## Phase Completion Details
@@ -139,6 +141,7 @@ Phase 52: End-User Workflow Accept ... PENDING (production E2E harness workflow 
 | Phase 45 | COMPLETE | OpenCode SDK session.create boundary aligned; prompt-time tool denial map used; selected-agent tools derived from primitive metadata or conservative read-only fallback |
 | Phase 46 | COMPLETE | Prompt acceptance, empty completion evidence, and restart recovery truth hardened |
 | Phase 47 | COMPLETE | Workspace runtime policy reader and headless output truncation metadata added |
+| Phases 17-30, 51 | COMPLETE → MOVED | Skill quality work moved to skill-ecosystem workstream (SE-H1 through SE-H14) |
 
 ### Phases With Caveats
 
@@ -157,7 +160,9 @@ Phase 52: End-User Workflow Accept ... PENDING (production E2E harness workflow 
 | Phase 49 | COMPLETE WITH PARTIAL RUNTIME EVIDENCE | Command tool contract, prompt heuristics, and journal export filters implemented and verified by focused/full automated gates |
 | Phase 50 | COMPLETE | Restart validation passes for project-local primitives; depends on Phase 49 |
 | Phase 51 | COMPLETE | Stack/research/synthesis skill grounding mapped to harness workflows; depends on Phase 50 |
-| Phase 52 | PENDING | End-user production harness workflow acceptance; depends on Phase 51 |
+| Phase 52 | PENDING | Narrow end-user E2E harness workflow acceptance only; depends on Phase 51 |
+| Phase 53 | PENDING | Release readiness and lifecycle gate closure follow-up; depends on Phase 52 |
+| Phase 54 | PENDING | Sidecar and product-detox integration runway follow-up; depends on Phase 53 |
 
 ### Phases Requiring Repair (Audit 2026-04-23 — RESOLVED by Phase 24 and Phase 26)
 
@@ -181,9 +186,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 
 ### In-Progress Phases
 
-| Phase | Status | Detail |
-|-------|--------|--------|
-| Phase 16 | EXECUTING | 5/6 plans complete; Plan 06 gap closure remaining |
+_No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Phase 34)._
 
 ### Recently Completed Phases
 
@@ -215,7 +218,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Test suite | Pass | 899 passed |
+| Test suite | Pass | 1111 passed (Phase 50 verification) |
 | Typecheck | Pass | Pass (0 errors) |
 | Build | Pass | Pass |
 | Runtime-verified delegation | Working | CORRECTED — event routing, sync race, notifications, VALID_AGENTS all fixed |
@@ -326,14 +329,17 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - [x] Plan Phase 47: Runtime Policy & Command Buffer Hardening
 - [x] Plan Phase 48: Real OpenCode Runtime Integration Verification (degraded: REM-RUNTIME-04/05 gaps)
 - [x] Plan Phase 48.1: Runtime Correctness — Lifecycle, Queue, Persistence Truth
-- [ ] Plan Phase 48.2: Security Boundary Hardening — Secrets, Scope, Category Gates
-- [ ] Plan Phase 48.3: OpenCode SDK/CQRS Integration Alignment
-- [ ] Plan Phase 48.4: Production Evidence & Coverage Recovery
-- [ ] Plan Phase 48.5: Architecture LOC Cleanup — Event Tracker Writer Split
-- [ ] Plan Phase 49: UAT Tool Contract & PTY Command Reliability
+- [x] Plan Phase 48.2: Security Boundary Hardening — Secrets, Scope, Category Gates
+- [x] Plan Phase 48.3: OpenCode SDK/CQRS Integration Alignment
+- [x] Plan Phase 48.4: Production Evidence & Coverage Recovery
+- [x] Plan Phase 48.5: Architecture LOC Cleanup — Event Tracker Writer Split
+- [x] Plan Phase 49: UAT Tool Contract & PTY Command Reliability
 - [x] Plan Phase 50: OpenCode Primitive Restart Readiness
 - [x] Plan Phase 51: Stack Research & Synthesis Skill Runtime Grounding
 - [ ] Plan Phase 52: End-User Harness Workflow Acceptance
+- [ ] Plan Phase 53: Release Readiness & Lifecycle Gate Closure
+- [ ] Plan Phase 54: Sidecar & Product-Detox Integration Runway
+- [x] Phases 17-30, 51 (skill quality work) — MOVED to skill-ecosystem workstream 2026-04-29
 
 ### Roadmap Evolution
 
@@ -373,15 +379,18 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 - Phase 49 added after Phase 48.5: UAT Tool Contract & PTY Command Reliability — converts `ses_22ee` end-user tool findings into stable harness tool contracts and PTY command reliability goals
 - Phase 50 added after Phase 49: OpenCode Primitive Restart Readiness — addresses validate-restart/configure-primitive evidence for frontmatter, discovery, permission inheritance, and restart validity
 - Phase 51 added after Phase 50: Stack Research & Synthesis Skill Runtime Grounding — covers stack-feature skills, OpenCode SDK/plugin/custom-tool guidance, deep research, and synthesis handoff reliability
-- Phase 52 added after Phase 51: End-User Harness Workflow Acceptance — proves production-ready Hivemind/OpenCode workflows from an end-user perspective
+- Phase 52 added after Phase 51: End-User Harness Workflow Acceptance — now intentionally narrowed to end-user E2E acceptance only
+- Phase 53 added after Phase 52: Release Readiness & Lifecycle Gate Closure — closes release/runtime gate truth after Phase 52 acceptance evidence exists
+- Phase 54 added after Phase 53: Sidecar & Product-Detox Integration Runway — keeps sidecar/productization planning out of the narrower acceptance/release phases
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
 
 - ~~**Phase 16.2 prerequisite:** Codebase is broken — 3 typecheck errors~~ — RESOLVED 2026-04-22
-- **Runtime verification pending:** Delegate-task fix applied but needs live OpenCode session test
+- **End-user acceptance evidence missing:** `52-RUNTIME-EVIDENCE-HANDOFF-2026-04-28.md` still records no fresh L1/L2 parent-child runtime proof for a full user workflow.
 - ~~**Build broken (2026-04-26)**~~ — RESOLVED 2026-04-27 by fresh typecheck/test/build validation.
 - **Runtime remediation proof degraded (2026-04-27):** Phase 48 proved health/session/tool registration but still needs supported dynamic tool execution and non-empty provider completion to close REM-RUNTIME-04/05.
+- **Release closure intentionally deferred:** Phase 52 should not be treated as implicit release readiness; Phase 53 exists because current evidence is still fragmented across Phase 48 degradation, Phases 49-51 local readiness, and the pending Phase 52 acceptance run.
 
 ### Third-Party Validation
 
@@ -414,7 +423,7 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase validation complete — Phases 3/4/5/9.3 SUPERSEDED, Phases 35-42 added
+**Stopped At:** Phase 51 complete; Phase 52 narrowed; Phases 53-54 added as explicit follow-up routing; Phases 17-30, 51 moved to skill-ecosystem workstream (2026-04-29)
 
 **Key files:** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`, `.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-EXECUTION-ROADMAP.md`, `src/plugin.ts`
 
@@ -425,5 +434,8 @@ Phase 22 and 23 status was corrected during Phase 26 synthesis: Phase 22 scope a
 *Phase validation: 2026-04-26 — Phases 3/4/5/9.3 SUPERSEDED, Phase 11/13 rescoped, Phases 35-42 added*
 *Lifecycle remediation execution: 2026-04-27 — Phases 43-47 complete; Phase 48 degraded with runtime proof gaps documented*
 *Downstream UAT acceptance expansion: 2026-04-28 — Phases 49-52 added under milestone workstream from ses_22ee end-user harness tool evidence*
+*Approved A + C routing update: 2026-04-28 — Phase 52 narrowed to end-user E2E acceptance; Phase 53 added for release-readiness/lifecycle closure; Phase 54 added for sidecar/product-detox runway*
 
-**Planned Phase:** Phase 35 — Event-Tracker Fix + Dead Code Cleanup (P0, restore green build)
+**Planned Phase:** Phase 52 — End-User Harness Workflow Acceptance (narrow end-user E2E scope)
+
+*Workstream reorganization: 2026-04-29 — 14 skill-only phases (17-30, 51) moved from milestone to skill-ecosystem workstream as historical phases SE-H1 through SE-H14. Milestone ROADMAP now tracks code phases only. Phase 16 corrected to COMPLETE (Gap 4 closed by Phase 34).*

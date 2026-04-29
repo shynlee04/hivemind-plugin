@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-28 (Phases 49-52 added from ses_22ee live UAT evidence)
+**Updated:** 2026-04-29 (Skill phases 17-30, 51 moved to skill-ecosystem workstream; Phase 16 corrected to COMPLETE; Phases 37-40 status fixed)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -22,22 +22,15 @@
 - [ ] **Phase 13: Async Result Harvesting** — RESCOPED: extract child session results, populate delegation.result
 - [x] **Phase 14: delegate-task truth-reset** — 3/3 plans complete, 16/16 verification truths
 - [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed
-- [~] **Phase 16: Background Delegation Revamp + PTY Integration** — 5/6 plans, Gap 4 closure pending
+- [x] **Phase 16: Background Delegation Revamp + PTY Integration** — ✅ COMPLETE (6/6 plans; Gap 4 closed by Phase 34)
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [x] **Phase 16.3: Delegation Subsystem Hardening** — 4/4 plans complete, post-UAT architecture incidents captured; delegation-manifest expansion paused pending 16.4
 - [~] **Phase 16.4: Harness Architecture Baseline & Migration Control Plane** — ✅ COMPLETE — architecture baseline established, 4 plans executed (summaries pending — deferred to backlog 999.1)
 - [x] **Phase 16.5: Agents Builder Configuration Foundation** — INSERTED; Zod schemas for OpenCode primitives, config compiler, cross-primitive validator, workflow skill, auto-detection routing; VERIFIED (8/8 plans, 772 tests, 3 gap-closure waves, 1 pre-existing delegation-manager test failure)
-- [x] **Phase 17: Hivemind Skills Refactor — Critical Fixes** — 5/5 plans complete (C1-C5 resolved, tech-stack synthesis integrated)
-- [x] **Phase 18: Context & Research — Skills Refactor Playbook Phase CR** — 8/8 deliverables committed, user sign-off received
-- [x] **Phase 19: Rename Sprint — Playbook Phase 1** — 21/21 skills renamed, 368 files changed, all call-sites updated
-- [x] **Phase 20: Structural Changes — Playbook Phase 2** — 1 merge, 1 split, 7 new skills created
-- [x] **Phase 21: Description Rewrite — Playbook Phase 3** — 7 differential cluster skills rewritten per V.7 template
-- [x] **Phase 22: Script Hardening + 6-NON — Playbook Phase 4** — ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis)
-- [x] **Phase 23: Body Quality + Eval — Playbook Phase 5** — ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis)
- - [x] **Phase 24: Fix 22 Failed hm-* Skills** — 3/3 plans complete, 8/8 must-haves verified ✅ (2026-04-23)
+- [x] **Phase 17-30, 51: Skill Quality Work** — ✅ COMPLETE — MOVED to skill-ecosystem workstream as historical phases SE-H1 through SE-H14 (2026-04-29)
 - [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 4/4 plans complete; journal/lineage bridge plus automatic event-tracker writer and manual export lineage merge verified under `.hivemind/event-tracker/`
-- [x] **Phase 31: Planning Documentation Refresh** — 3/3 plans complete — all 10 refreshed documents verified by health check
 - [x] **Phase 32: Traceability Reconciliation** — Close audit gaps GAP-TRACE-01/02/03, create 14 missing VERIFICATION.md, reconcile REQUIREMENTS.md with ROADMAP.md evidence
+- [x] **Phase 31: Planning Documentation Refresh** — 3/3 plans complete — all 10 refreshed documents verified by health check
 - [x] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
 - [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
 - [ ] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — PARTIAL: build/test/build gates pass; notification-handler deletion and TD-11 cast deferred
@@ -54,15 +47,17 @@
 - [x] **Phase 46: Delegation Dispatch, Completion & Recovery Truth** — High: prevent false dispatched/completed/error states
 - [x] **Phase 47: Runtime Policy & Command Buffer Hardening** — Medium: workspace policy input and bounded command output
 - [ ] **Phase 48: Real OpenCode Runtime Integration Verification** — DEGRADED: health/session/tool registration pass; hook/tool-exec/delegation completion gaps remain
-- [ ] **Phase 48.1: Runtime Correctness: Lifecycle, Queue, Persistence Truth** — Remediate lifecycle, queue-key, and persisted delegation truth gaps exposed by Phase 48
-- [ ] **Phase 48.2: Security Boundary Hardening: Secrets, Scope, Category Gates** — Harden secret handling, scope controls, and category gate enforcement after runtime correctness is restored
+- [x] **Phase 48.1: Runtime Correctness: Lifecycle, Queue, Persistence Truth** — COMPLETE: lifecycle, queue-key, and persisted delegation truth remediated after Phase 48 degradation
+- [x] **Phase 48.2: Security Boundary Hardening: Secrets, Scope, Category Gates** — COMPLETE: secret handling, scope controls, and category gate enforcement hardened after runtime correctness was restored
 - [x] **Phase 48.3: OpenCode SDK/CQRS Integration Alignment** — Align OpenCode SDK surfaces and CQRS boundaries after runtime and security invariants are stable
-- [ ] **Phase 48.4: Production Evidence & Coverage Recovery** — 5 plans, 4 waves: coverage infra → behavioral tests → mock upgrades → gap classification
+- [x] **Phase 48.4: Production Evidence & Coverage Recovery** — COMPLETE WITH DEFERRED RUNTIME GAPS: coverage/evidence classification closed without claiming REM-RUNTIME-04/05
 - [x] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — COMPLETE: 3/3 plans, validation PASS WITH RUNTIME GAP RECOMMENDATION
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
 - [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
-- [x] **Phase 51: Stack Research & Synthesis Skill Runtime Grounding** — COMPLETE: stack/research/synthesis skills grounded to harness workflows and evidence gates
-- [ ] **Phase 52: End-User Harness Workflow Acceptance** — Prove real-life orchestrator/subagent workflows complete end-to-end through the production harness surface
+- [x] **Phase 51: Stack Research Grounding** — ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14
+- [ ] **Phase 52: End-User Harness Workflow Acceptance** — NARROWED: end-user E2E acceptance only, without release-gate or sidecar-runway overload
+- [ ] **Phase 53: Release Readiness & Lifecycle Gate Closure** — Follow-up release-gate closure after Phase 52 acceptance evidence exists
+- [ ] **Phase 54: Sidecar & Product-Detox Integration Runway** — Follow-up runway for read-only sidecar/productization work after acceptance and release closure
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
@@ -286,7 +281,7 @@ Plans:
 **Goal:** Write-capable background delegations run through parent-linked PTY-first child sessions with extracted spawner modules, truthful single-owner lifecycle orchestration, and status polling that preserves WaiterModel + dual-signal completion semantics.
 **Requirements**: TBD
 **Depends on:** Phase 15
-**Plans:** 6 plans (5 complete, 1 gap closure)
+**Plans:** 6 plans (all complete, Gap 4 closed by Phase 34)
 
 Plans:
 - [x] 16-01-PLAN.md — add bun-pty dependency, canonical PTY/spawner contracts, and shared assistant-text extraction foundation
@@ -294,9 +289,9 @@ Plans:
 - [x] 16-03-PLAN.md — build and test the dedicated spawner subsystem (session creator, directory resolver, key resolver, PTY-first setup)
 - [x] 16-04-PLAN.md — integrate spawner + PTY into DelegationManager, collapse lifecycle ambiguity, and expose execution metadata through tools/plugin
 - [x] 16-05-PLAN.md — Gap closure: persist queue-key context + fix true dual-signal message-stability completion (Gaps 1-3, 5)
-- [ ] 16-06-PLAN.md — Gap closure: honest dual-mode execution (SDK for agents, PTY for commands) + standalone PTY command tool (Gap 4)
+- [x] 16-06-PLAN.md — Gap closure: honest dual-mode execution (SDK for agents, PTY for commands) + standalone PTY command tool (Gap 4) — CLOSED by Phase 34
 
-**Execution status:** GAP CLOSURE ACTIVE. Plans 01-05 complete; verification gaps 1-3 and 5 are closed via persisted queue-key context and real message-stability completion. Plan 06 remains to close the final honest dual-mode execution gap.
+**Execution status:** ✅ COMPLETE (6/6 plans; Gap 4 closed by Phase 34). Plans 01-05 complete; verification gaps 1-3 and 5 closed via persisted queue-key context and real message-stability completion. Plan 06 closed by Phase 34 dual-mode execution wiring.
 
 ### Phase 16.4: Harness Architecture Baseline & Migration Control Plane (INSERTED)
 
@@ -371,100 +366,14 @@ Plans:
 Plans:
 - [x] 16.2-01-PLAN.md — PTY Execution Wiring + OMO Safety Patterns: unified terminal lifecycle, grace-period cleanup, parent notifications, adaptive polling, nesting depth limits, observability (6 waves)
 
-### Phase 17: Hivemind Skills Refactor — Critical Fixes (Playbook Phase 0)
+### Phase 17: Hivemind Skills Refactor — Critical Fixes — MOVED to skill-ecosystem workstream (SE-H1)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-**Goal:** Resolve all critical bugs before any structural skills work begins. First of 6 continuation phases mapping the HIVEMIND-SKILLS-REFACTOR-PLAYBOOK into GSD phases 17–22.
-**Requirements**: C1–C5 (5 critical issues)
-**Depends on:** Phase 16 completion
-**Specification:** `.hivemind/state/session-context-prompt-v4.md` (GSD phase-planning specification)
-**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` (canonical reference)
+### Phase 18: Context & Research — MOVED to skill-ecosystem workstream (SE-H2)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-**Scope (5 critical issues):**
-
-| ID | Issue | Skill | Fix |
-|----|-------|-------|-----|
-| C1 | `validate-gate.sh synthesize` guaranteed failure | `hm-skill-synthesis` | Add `synthesize` action OR change SKILL.md to use `create` |
-| C2 | 4 depth references are stubs | `hm-meta-builder` | Write real content or remove references |
-| C3 | Phantom `tech-stack.md` reference | `hm-omo-reference` | Generate file or remove from `summary.md` |
-| C4 | Empty `project-structure.md` (4 lines) | `hm-omo-reference` | Regenerate with actual directory tree |
-| C5 | Duplicate skills across `.claude/` and `.opencode/` | 5 skills | Determine canonical, delete duplicates |
-
-**Continuation mapping (v2.0 — Phase CR inserted):**
-
-```
-Playbook Phase 0 (Critical Fixes)      → GSD Phase 17 (COMPLETE)
-Playbook Phase CR (Context & Research)  → GSD Phase 18 (this phase → next)
-Playbook Phase 1 (Rename Sprint)       → GSD Phase 19
-Playbook Phase 2 (Structural Changes)  → GSD Phase 20
-Playbook Phase 3 (Description Rewrite) → GSD Phase 21
-Playbook Phase 4 (Script Hardening)    → GSD Phase 22
-Playbook Phase 5 (Body Quality + Eval) → GSD Phase 23
-```
-
-**Exit criteria:** All 5 criticals resolved, no dead references in affected skills, `npm run typecheck` passes (if applicable).
-
-**Plans:** 5 plans
-
-Plans:
-- [ ] 17-01-PLAN.md — C1: Restore skill-synthesis from retired/ to active/ + symlink (Wave 1)
-- [ ] 17-02-PLAN.md — C5: Gitignore IDE skill directories + document canonical location in AGENTS.md (Wave 1)
-- [ ] 17-03-PLAN.md — C2: Fill 4 meta-builder depth stubs + register in Reference Map (Wave 1)
-- [ ] 17-04-PLAN.md — C3+C4: OMO dead-reference audit + generate tech-stack.md, verify project-structure.md (Wave 1)
-- [ ] 17-05-PLAN.md — NEW: Unify tech-registry schema + integrate tech-stack synthesis across hm-* skills (Wave 2)
-
-### Phase 18: Context & Research — Skills Refactor Playbook Phase CR
-
-**Goal:** Produce the evidence base and audit posture that Phases 1–5 consume. Prevent 6-NON failures from regressing downstream phases. No skill refactoring in this phase — only research, audit, and decision artifacts.
-
-**Requirements**: CR-01 through CR-08 (8 deliverables per playbook §VI.CR.10)
-**Depends on:** Phase 17 (complete)
-**Specification:** `.hivemind/state/session-context-prompt-v4.md` (GSD phase-planning specification)
-**Playbook mapping:** Playbook Phase CR → GSD Phase 18
-
-**Scope (research + audit only — NO skill edits):**
-1. Fresh runtime probe of every active skill (count, names, grades vs I.1.2 table)
-2. Per-skill 6-NON audit grid (defense posture against NON-1..NON-6)
-3. Differential cluster gap map (G-A through G-D per §V.3.2)
-4. Third-party pattern harvest (from gsd-*, superpower-*, retired skills)
-5. Runtime-integration readiness assessment (soft→hard migration feasibility)
-6. Tooling decision table (for each skill: no-change / description / body / bundle / rename / split / merge / retire)
-
-**Deliverables (per playbook §VI.CR.10):**
-
-| # | Deliverable | File |
-|---|-------------|------|
-| CR-01 | Phase context envelope | `CR-CONTEXT.md` |
-| CR-02 | Grounded research document | `CR-RESEARCH.md` |
-| CR-03 | Per-skill 6-NON audit grid | `CR-AUDIT-ECOSYSTEM.md` |
-| CR-04 | Differential cluster gap map | `CR-GAP-MAP.md` |
-| CR-05 | Third-party pattern harvest | `CR-THIRD-PARTY-HARVEST.md` |
-| CR-06 | Runtime-readiness map | `CR-RUNTIME-READINESS.md` |
-| CR-07 | Tooling decision table | `CR-DECISIONS.md` |
-| CR-08 | Verification report | `CR-VERIFICATION.md` |
-
-**Status:** ✅ COMPLETE (user sign-off received 2026-04-23)
-
-**Plans:** 4 plans (all complete)
-
-Plans:
-- [x] 18-01-PLAN.md — Wave 1: Ecosystem audit — CR-CONTEXT.md + CR-RESEARCH.md
-- [x] 18-02-PLAN.md — Wave 2: 6-NON defence grid + differential cluster gap map
-- [x] 18-03-PLAN.md — Wave 3: Third-party pattern harvest + runtime-readiness
-- [x] 18-04-PLAN.md — Wave 4: Tooling decisions + verification + sign-off
-
----
-
-### Phase 19: Rename Sprint — Playbook Phase 1
-
-**Goal:** Execute the `hm-*` / `hivefiver-*` namespace migration for all 21 skills requiring rename per CR-DECISIONS.md.
-**Requirements:** All skills in I.1.2 moved from current name → Planned Name; all call-sites updated
-**Depends on:** Phase 18 (complete)
-**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` §VI.1
-
-**Scope:** 21 skill renames + call-site updates across agents, commands, playbook, AGENTS.md
-**Hard constraints:** Zero `src/` changes; zero agent/command structural refactors (only `permission.skill` updates); zero IDE-directory modifications
-
-**Execution status:** ✅ COMPLETE. Commit `7b686311`. 368 files changed, 8176 insertions, 3250 deletions. All renames detected as git renames. All agent permissions, command bodies, routing tables, and playbook references updated.
+### Phase 19: Rename Sprint — MOVED to skill-ecosystem workstream (SE-H3)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ### Phase 25: Session Journal + Execution Lineage Bridge
 
@@ -505,93 +414,28 @@ Plans:
 - [ ] 31-02-PLAN.md — Codebase documents refresh: ARCHITECTURE + STRUCTURE + STACK + CONCERNS + INTEGRATIONS + TESTING (Wave 1)
 - [ ] 31-03-PLAN.md — Milestone archive creation + cross-document health verification (Wave 2, depends on 31-01 and 31-02)
 
-### Phase 26: Synthesize all hm-star skills debts gaps conflicts across Phases 17-24 into unified requirements and specs starting with spec-driven-authoring and test-driven-execution lineages first detect ecosystem conflicts archive regressions
+### Phase 26: Quality Synthesis — MOVED to skill-ecosystem workstream (SE-H10)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-**Goal:** Synthesize hm-* skill quality debts into a playbook, audit, G-B specs, archive report, execution roadmap, and HMQUAL requirements for Phase 27-30 execution.
-**Requirements**: SYN-01, SYN-02, SYN-03, SYN-04, SYN-05, SYN-06
-**Depends on:** Phase 25
-**Plans:** 5/5 complete — ✅ COMPLETE 2026-04-25
+### Phase 27: G-B Quality Assurance Demonstration — MOVED to skill-ecosystem workstream (SE-H11)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-Plans:
-- [x] 26-01-PLAN.md — write hm-* skill quality playbook
-- [x] 26-02-PLAN.md — audit canonical hm/hivefiver skill ecology
-- [x] 26-03-PLAN.md — write G-B demonstration SPECs
-- [x] 26-04-PLAN.md — archive Phase 22/23 scope truth
-- [x] 26-05-PLAN.md — execution roadmap and HMQUAL requirements
+### Phase 28: G-C Research Lineage — MOVED to skill-ecosystem workstream (SE-H12)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phase 27: G-B Quality Assurance Demonstration
+### Phase 29: G-D Execution Lineage — MOVED to skill-ecosystem workstream (SE-H13)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-**Goal:** Rewrite and evidence the first quality-assurance demonstration pair (hm-spec-driven-authoring + hm-test-driven-execution) so the quality playbook becomes executable, not merely aspirational.
-**Requirements**: HMQUAL-01, HMQUAL-02 (primary); HMQUAL-03 through HMQUAL-08 (supporting)
-**Depends on:** Phase 26 (COMPLETE — quality synthesis, PLAYBOOK, ECOLOGY-AUDIT, G-B SPECs, ARCHIVE-REPORT)
-**Plans:** 3 plans
+### Phase 30: G-A Guardrail Lineage — MOVED to skill-ecosystem workstream (SE-H13b)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-**Deliverables:**
-- Updated hm-spec-driven-authoring skill with REQ-SDA-01 through REQ-SDA-08 evidence
-- Updated hm-test-driven-execution skill with REQ-TDE-01 through REQ-TDE-08 evidence
-- Eval bundles with positive, negative, boundary, and stacked scenarios
-- Summary evidence showing both target skills score PASS on D1-D8
-
-**Entry criteria:** Phase 26 complete; 26-PLAYBOOK.md, 26-ECOLOGY-AUDIT.md, both G-B SPECs, 26-ARCHIVE-REPORT.md, 26-EXECUTION-ROADMAP.md, and HMQUAL requirements exist.
-
-### Phase 28: G-C Research Lineage
-
-**Goal:** Apply the proven G-B quality pattern to the research and synthesis lineage (hm-deep-research, hm-detective, hm-synthesis, hm-research-chain) so deep investigation workflows become evidence-backed, chained, and portable.
-**Requirements**: HMQUAL-01 through HMQUAL-08
-**Depends on:** Phase 27 (G-B demonstration complete with D1-D8 evidence)
-**Plans:** TBD
-
-**Entry criteria:** Phase 27 summary proves G-B skills have D1-D8 evidence or documents exact unresolved blockers.
-
-### Phase 29: G-D Execution Lineage
-
-**Goal:** Bring execution, debugging, refactoring, planning, and support skills up to runtime-truthful quality standards (15 skills) so agents can complete work without false closure or unbounded retries.
-**Requirements**: HMQUAL-01 through HMQUAL-08
-**Depends on:** Phase 28 (G-C research lineage with D1-D8 evidence)
-**Plans:** TBD
-
-**Skills affected:** hm-debug, hm-refactor, hm-phase-execution, hm-planning-with-files, hm-command-parser, hm-agent-composition, hm-agents-md-sync, hm-opencode-project-audit, hm-opencode-project-inspection, hm-opencode-non-interactive-shell, hm-opencode-platform-reference, hivefiver-agents-and-subagents-dev, hivefiver-command-dev, hivefiver-custom-tools-dev, hivefiver-use-authoring-skills
-
-**Entry criteria:** Phase 28 summary provides research/synthesis evidence patterns and remaining G-C gaps.
-
-### Phase 30: G-A Guardrail Lineage
-
-**Goal:** Harden guardrails, loops, delegation boundaries, and intent handling (5 skills) so multi-agent workflows terminate honestly, recover across sessions, and escalate when verification is missing.
-**Requirements**: HMQUAL-01 through HMQUAL-08
-**Depends on:** Phase 29 (G-D execution lineage with D1-D8 evidence)
-**Plans:** TBD
-
-**Skills affected:** hm-completion-looping, hm-phase-loop, hm-subagent-delegation-patterns, hm-user-intent-interactive-loop, hivefiver-delegation-gates
-
-**Entry criteria:** Phase 29 summary provides execution-lineage recovery and verification evidence for guardrail inheritance.
-
-### Phases 27-30: HMQUAL / RICH Skill Quality Execution Closure
-
-**Goal:** Apply HMQUAL D1-D8 plus `.planning/RICH-SKILL-QUALITY-GATE.md` to QA, research, execution/OpenCode, and guardrail lineages.
-**Requirements:** HMQUAL-01 through HMQUAL-08 plus RICH-1 through RICH-8.
-**Latest closure evidence:** `.planning/phases/30-g-a-guardrail-lineage-harden-completion-loops-phase-loops-de/30-FINAL-RICH-CLOSURE-2026-04-25.md`.
-**Status:** PASS overall — Phases 27, 28, 29, and 30 pass for the HMQUAL/RICH closure scope.
-
-Remaining no-PASS blockers: none for Phases 27-30. Generic trigger competition with global skills is documented as acceptable coexistence unless exact project trigger phrases fail.
+### Phases 27-30: HMQUAL / RICH Skill Quality Execution Closure — MOVED to skill-ecosystem workstream
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ---
 
-### Phase 20: Structural Changes — Playbook Phase 2
-
-**Goal:** Merge, split, and create skills per differential cluster gap map (G-A through G-D).
-**Requirements:** CR-GAP-MAP.md + CR-DECISIONS.md decisions (c), (f), (g), (h)
-**Depends on:** Phase 19 (complete)
-**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` §VI.2
-
-**Scope:**
-- Merge `session-context-manager` → `hm-planning-with-files`
-- Split `harness-delegation-inspection` → `hm-subagent-delegation-patterns` + `hm-opencode-project-inspection`
-- Create G-A skills: `hm-completion-looping`, `hm-subagent-delegation-patterns`
-- Create G-B skills: `hm-spec-driven-authoring`, `hm-test-driven-execution`
-- Create G-C skill: `hm-research-chain`
-- Create G-D skills: `hm-debug`, `hm-refactor`, `hm-phase-execution`
-
-**Hard constraints:** Zero `src/` changes; zero IDE-directory modifications
+### Phase 20: Structural Changes — MOVED to skill-ecosystem workstream (SE-H4)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ### Phase 9.3: Module Restructuring + Config — SUPERSEDED BY PHASE 14
 
@@ -609,32 +453,8 @@ Remaining no-PASS blockers: none for Phases 27-30. Generic trigger competition w
 - Implement `noteObservedActivity()` for session activity tracking
 - Extract PTY-specific delegation logic from `delegation-manager.ts` to reduce under 500 LOC
 
-### Phase 24: Fix 22 Failed hm-* Skills
-
-**Goal:** Fix 22 failed hm-* skills: (1) Remove 6-NON Defence Tables from all skills — these are development process guidance, NOT skill content. (2) Add onboarding headings that explain WHAT each skill is and WHEN to use it. (3) Remove banned vocabulary (GSD, harness, BMAD, HiveMind) from descriptions. (4) Add self-correction blocks to 5 coordinator skills. (5) Reorganize Iron Law/HARD GATES sections after onboarding. Use skill-creator, skill-development, skill-judge for quality validation. Follow SKILL-CRITERIA-SHORT.md 6-gate criteria and HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md V.2-V.7 standards.
-**Requirements:** TBD
-**Depends on:** Phase 23 (complete)
-**Playbook:** `.hivefiver-meta-builder/HIVEMIND-SKILLS-REFACTOR-PLAYBOOK.md` V.2-V.7
-**Standards:** `.hivefiver-meta-builder/SKILL-CRITERIA-SHORT.md`
-
-**Scope (5 fix categories across 22 skills):**
-
-| # | Fix Category | Skills Affected | Action |
-|---|-------------|-----------------|--------|
-| 1 | Remove 6-NON Defence Tables | All hm-* skills with 6-NON sections | Strip NON-1..NON-6 tables — process guidance not skill content |
-| 2 | Add onboarding headings | All 22 hm-* skills | Add WHAT/WHEN heading explaining skill purpose and use cases |
-| 3 | Remove banned vocabulary | All 22 hm-* skill descriptions | Remove: GSD, harness, BMAD, HiveMind from YAML description |
-| 4 | Add self-correction blocks | 5 coordinator skills | hm-coordinating-loop, hm-phase-loop, hm-phase-execution, hm-completion-looping, hm-user-intent-interactive-loop |
-| 5 | Reorganize sections | All skills with Iron Law/HARD GATES | Move Iron Law/HARD GATES after onboarding section |
-
-**Hard constraints:** Zero `src/` changes; zero IDE-directory modifications; all changes are SKILL.md body edits only
-
-**Plans:** 3 plans
-
-Plans:
-- [x] 24-01-PLAN.md — Remove 6-NON Defence Tables from 18 skills + reorganize Iron Law/HARD GATES in 16 skills (Wave 1) ✅
-- [x] 24-02-PLAN.md — Add onboarding headings to 25 skills + remove banned vocabulary from 4 descriptions (Wave 2) ✅
-- [x] 24-03-PLAN.md — Add Self-Correction blocks to 5 coordinator skills (Wave 3) ✅
+### Phase 24: Fix 22 Failed hm-* Skills — MOVED to skill-ecosystem workstream (SE-H8)
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ## Progress Table
 
@@ -656,26 +476,14 @@ Plans:
 | 13. Async Result Harvesting (rescoped) | 0 plans | RESCOPED — extract child session results, populate delegation.result |
 | 14. delegate-task truth-reset | 3/3 plans | ✅ COMPLETE — WaiterModel + dual-signal + hybrid persistence |
 | 15. Security & Quality Remediation | 3/3 plans | ✅ COMPLETE — 26 audit issues fixed |
-| 16. Background Delegation Revamp | 5/6 plans | GAP CLOSURE ACTIVE — Plan 06 remaining |
+| 16. Background Delegation Revamp | 6/6 plans | ✅ COMPLETE (Gap 4 closed by Phase 34) |
 | 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened |
 | 16.4 Harness Architecture Baseline | 4/4 plans | ✅ COMPLETE — architecture baseline established (summaries deferred to backlog 999.1) |
 | 16.5. Agents Builder Configuration Foundation | 8/8 plans (5 original + 3 gap closure) | ✅ COMPLETE — 772 tests pass, BLOCKER-1 and BLOCKER-3 closed |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
-| 17. Hivemind Skills Refactor — Critical Fixes | 5/5 plans | ✅ COMPLETE — C1-C5 resolved, tech-stack synthesis integrated |
-| 18. Context & Research | 4/4 plans | ✅ COMPLETE — 8/8 deliverables, user sign-off received |
-| 19. Rename Sprint (Playbook Phase 1) | 21/21 skills | ✅ COMPLETE — 368 files changed, all call-sites updated |
-| 20. Structural Changes (Playbook Phase 2) | 1 merge, 1 split, 7 new | ✅ COMPLETE — structural moves landed |
-| 21. Description Rewrite (Playbook Phase 3) | 7/7 skills | ✅ COMPLETE — pushy trigger pattern applied |
-| 22. Script Hardening + 6-NON (Playbook Phase 4) | 7/7 skills | ✅ COMPLETE — 6-NON defence tables added to 7 core skills (per Phase 24 synthesis) |
-| 23. Body Quality + Eval (Playbook Phase 5) | 6/9 skills | ✅ COMPLETE — eval expansion with trigger queries for 6 new skills (per Phase 24 synthesis) |
-| 24. Fix 22 Failed hm-* Skills (Playbook Phase 6) | 3/3 plans, 8/8 truths | ✅ COMPLETE — 2026-04-23 |
-| 25. Session Journal + Execution Lineage Bridge | 3/3 plans, 15 focused tests | ✅ COMPLETE — Q3/Q6 reconciled, 2026-04-26 |
-| 26. Quality Synthesis | 5/5 plans | ✅ COMPLETE — HMQUAL D1-D8 contract, G-B SPECs, archive report, execution roadmap |
+| 17-30, 51. Skill Quality Work | All COMPLETE | MOVED to skill-ecosystem workstream (SE-H1 through SE-H14) |
+| 25. Session Journal + Execution Lineage Bridge | 4/4 plans | ✅ COMPLETE — Q3/Q6 reconciled, 2026-04-26 |
 | 31. Planning Documentation Refresh | 3/3 plans | ✅ COMPLETE — all 10 refreshed documents verified by health check |
-| 27. G-B Quality Assurance Demonstration | 4/4 plans | ✅ COMPLETE — rich-closure-pass, D1-D8 + RICH scoring verified |
-| 28. G-C Research Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 4 target skills RICH-validated |
-| 29. G-D Execution Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 15 skills runtime-truthful validated |
-| 30. G-A Guardrail Lineage | 1/1 plans | ✅ COMPLETE — rich-closure-pass, 5 guardrail skills hardened |
 | 32. Traceability Reconciliation | 0/2 plans | Pending — audit gap closure |
 | 33. Phase 16.4 Closure + Backlog 999.1 | 0/2 plans | Pending — documentation-only |
 | 34. Phase 16 Gap 4 — Dual-Mode Execution | 0/3 plans | Pending — PTY execution wiring |
@@ -695,7 +503,7 @@ Plans:
 | 48. Real OpenCode Runtime Integration Verification | 0 plans | Integration — live OpenCode proof for remediation wave |
 | 49. UAT Tool Contract & PTY Command Reliability | 0 plans | Pending — ses_22ee tool contract defects and PTY command usability |
 | 50. OpenCode Primitive Restart Readiness | 1 plan | Complete — validate-restart passes for 58 agents, 18 commands, 49 skills |
-| 51. Stack Research & Synthesis Skill Runtime Grounding | 1 plan | Complete — skill workflow grounding map created |
+| 51. Stack Research Grounding | 1 plan | ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14 |
 | 52. End-User Harness Workflow Acceptance | 0 plans | Pending — production E2E user workflows |
 | 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
 
@@ -861,8 +669,8 @@ Phase 1 (7 done, 3 pending — planned)
 
 **Goal:** Implement result extraction from child sessions when completion is detected.
 **Depends on:** Phase 36
-**Plans:** 0 plans
-**Status:** COMPLETE — see `.planning/phases/44-tool-write-surface-secret-hardening/44-SUMMARY-2026-04-27.md`.
+**Plans:** 5 plans
+**Status:** PENDING (depends on Phase 36)
 
 ### Scope
 - In `sdk-delegation.ts`: when stability detection confirms completion, harvest last assistant message
@@ -875,8 +683,8 @@ Phase 1 (7 done, 3 pending — planned)
 
 **Goal:** Verify all state writers target `.hivemind/` exclusively and implement one-way migration from legacy paths.
 **Depends on:** Phase 35
-**Plans:** 0 plans
-**Status:** COMPLETE — see `.planning/phases/45-opencode-sdk-permission-boundary/45-SUMMARY-2026-04-27.md`.
+**Plans:** 3 plans
+**Status:** PENDING (depends on Phase 35)
 
 ### Scope
 - Verify `continuity.ts` storage path targets `.hivemind/`
@@ -891,7 +699,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Implement self-referential dev loop — dispatch → validate → retry-with-context → repeat until completion signal or max iterations.
 **Depends on:** Phase 36
 **Plans:** 0 plans
-**Status:** COMPLETE — see `.planning/phases/46-delegation-dispatch-completion-recovery-truth/46-SUMMARY-2026-04-27.md`.
+**Status:** PENDING (P2 — post-v2.0-core)
 **Priority:** P2 (post-v2.0-core)
 
 ### Scope
@@ -906,7 +714,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Build `bin/hivemind-tools.cjs` central router with eval, scaffold, skill, and state commands.
 **Depends on:** None
 **Plans:** 0 plans
-**Status:** COMPLETE — see `.planning/phases/47-runtime-policy-command-buffer-hardening/47-SUMMARY-2026-04-27.md`.
+**Status:** PENDING (P2 — post-v2.0-core)
 **Priority:** P2 (post-v2.0-core)
 
 ### Scope
@@ -1128,7 +936,7 @@ Plans:
 
 **Goal:** Harden runtime security boundaries after correctness signals are trustworthy, with focus on secret redaction, workspace scope controls, and category gate enforcement.
 **Depends on:** Phase 48.1
-**Plans:** 0 plans
+**Plans:** 5 plans
 **Priority:** P0 production-hardening remediation
 
 ### Scope
@@ -1203,7 +1011,7 @@ Plans:
 
 **Goal:** Split event-tracker writer responsibilities into maintainable modules after production behavior is proven, reducing LOC pressure without changing verified behavior.
 **Depends on:** Phase 48.4
-**Plans:** 0 plans
+**Plans:** 3 plans
 **Priority:** P1 production-hardening cleanup
 
 ### Scope
@@ -1271,46 +1079,69 @@ Plans:
 
 **Execution status:** COMPLETE. `npm test`, `npm run typecheck`, `npm run build`, and rebuilt `validate-restart` pass; summary and verification artifacts are in `.planning/workstreams/milestone/phases/50-opencode-primitive-restart-readiness/`.
 
-## Phase 51: Stack Research & Synthesis Skill Runtime Grounding
+## Phase 51: Stack Research Grounding — MOVED to skill-ecosystem workstream (SE-H14)
 
-**Goal:** Stack-feature skills and research/synthesis workflows produce implementation-ready guidance for OpenCode SDK, plugin, custom-tool, and framework work without stale assumptions.
-**Source:** User request for OpenCode SDK, plugins, custom tools, stack-feature skills, deep research, and synthesis coverage; `ses_22ee` primitive discovery evidence
-**Depends on:** Phase 50
-**Plans:** 1 plan
-**Priority:** P1 downstream capability grounding
-
-### Scope
-- Ground `stack-opencode`, `stack-bun-pty`, `stack-zod`, `stack-vitest`, `stack-nextjs`, and custom-tool authoring paths against current project/runtime contracts.
-- Connect `hm-deep-research`, `hm-research-chain`, and `hm-synthesis` outputs to project-local implementation handoffs that can be verified by harness tools.
-- Ensure stack guidance respects CQRS boundaries, primitive/state-root separation, and project-local OpenCode plugin constraints.
-
-### Success Criteria
-1. User can request stack guidance for OpenCode SDK/plugin/custom-tool work and receive version-grounded, project-compatible guidance.
-2. User can run a research-to-synthesis workflow that produces concise handoff artifacts without reading or writing outside approved project roots.
-3. Stack-feature skills correctly route implementation, verification, and gate evidence to the appropriate harness/GSD workflows.
-
-Plans:
-- [x] 51-01-PLAN-2026-04-28.md — Ground stack and research/synthesis skills to harness workflows and evidence gates
-
-**Execution status:** COMPLETE. Required stack/research/synthesis skills load through `loadPrimitives()`, and `51-GROUNDING-MAP-2026-04-28.md` provides the routing/evidence handoff for Phase 52.
+See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ## Phase 52: End-User Harness Workflow Acceptance
 
-**Goal:** Real users can complete production-ready Hivemind/OpenCode harness workflows end-to-end through orchestrator, subagent, tool, journal, and restart surfaces.
-**Source:** `ses_22ee` end-user UAT session and downstream production-readiness request
+**Goal:** Real end users can complete a narrow, observable harness workflow end-to-end through the production orchestrator/subagent/tool/journal surfaces, with acceptance evidence captured as a user-facing lifecycle transcript.
+**Source:** `session-ses_22ee.md`; `52-RUNTIME-EVIDENCE-HANDOFF-2026-04-28.md`
 **Depends on:** Phase 51
 **Plans:** TBD
-**Priority:** P1 production acceptance
+**Priority:** P1 end-user acceptance
 
 ### Scope
-- Define end-user workflows that combine delegation, PTY command execution, primitive configuration, restart validation, journal export, and status polling.
-- Verify orchestrator/subagent role boundaries, recovery handoffs, and evidence capture across interrupted sessions.
-- Package acceptance criteria around real-life usable workflows rather than isolated tool success.
+- Run a real parent-led end-user workflow through the production harness surface and capture the full delegation → status → lineage/journal lifecycle.
+- Retest the user-visible workflow seams that previously failed or only partially closed in `session-ses_22ee.md`, but as composed E2E acceptance scenarios rather than isolated tool checks.
+- Capture interruption/recovery evidence for the same end-user workflow without turning this phase into a broader release gate or sidecar-planning phase.
 
 ### Success Criteria
-1. User can complete a full orchestrator-led workflow that delegates to a specialist, executes a background command, captures status, and exports lineage evidence.
-2. User can recover after interruption and continue from persisted `.hivemind/` state without false completion or lost context.
-3. User-facing acceptance evidence distinguishes pass, partial, failed, and externally-blocked runtime behavior.
+1. User can complete at least one real orchestrator-led workflow that reaches delegation, terminal status polling, and lineage/journal evidence as one end-to-end run.
+2. User can interrupt and recover that workflow from persisted `.hivemind/` state without false completion or lost task state.
+3. Acceptance evidence distinguishes pass, partial, failed, and externally blocked behavior without claiming release readiness by implication.
 
 Plans:
-- [ ] TBD — derive from Phase 52 discussion and end-user acceptance scenarios
+- [ ] TBD — derive thin end-user E2E acceptance scenarios from `52-RUNTIME-EVIDENCE-HANDOFF-2026-04-28.md`
+
+## Phase 53: Release Readiness & Lifecycle Gate Closure
+
+**Goal:** Convert Phase 48 degradation evidence plus Phase 52 acceptance results into an explicit release-readiness verdict, without assuming that end-user acceptance alone closes lifecycle/runtime gates.
+**Source:** `52-RUNTIME-EVIDENCE-HANDOFF-2026-04-28.md`; `.planning/codebase/CONCERNS.md`; Phase 49-51 verification artifacts
+**Depends on:** Phase 52
+**Plans:** TBD
+**Priority:** P0 release closure
+
+### Scope
+- Close, downgrade, or explicitly defer the remaining runtime/lifecycle release blockers carried forward from Phase 48 degradation and the Phase 52 acceptance transcript.
+- Re-run release-relevant composed harness surfaces with evidence appropriate for a real release decision rather than inherited local summaries.
+- Package the release-readiness conclusion so future planners/researchers do not have to reconstruct it from scattered verification files.
+
+### Success Criteria
+1. Remaining release-blocking lifecycle/runtime gaps are either closed with live evidence or truthfully left open with explicit release impact.
+2. The release-readiness record covers the composed harness surfaces instead of assuming tool-level passes imply whole-product readiness.
+3. Future release decisions can rely on a single truthful closure artifact rather than reverse-engineering Phases 48-52.
+
+Plans:
+- [ ] TBD — derive lifecycle/release closure plans from Phase 52 acceptance evidence and current blocker set
+
+## Phase 54: Sidecar & Product-Detox Integration Runway
+
+**Goal:** Establish the next runway for read-only sidecar work and product-detox/maintainability follow-up after acceptance and release closure are separated and truthfully recorded.
+**Source:** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` (Q2/Q6); `.planning/codebase/CONCERNS.md`; approved A + C routing decision
+**Depends on:** Phase 53
+**Plans:** TBD
+**Priority:** P1 runway planning
+
+### Scope
+- Define the sidecar runway against the locked read-only/state-root boundaries rather than leaving Sidecar Foundation as a generic unresolved backlog item.
+- Convert the current product-detox concerns most likely to burden sidecar/product expansion into explicit, ordered runway work.
+- Produce a future-facing integration runway that keeps sidecar/productization out of the narrower Phase 52 and release-focused Phase 53 scopes.
+
+### Success Criteria
+1. Sidecar/product runway work is explicitly ordered after acceptance and release closure instead of being implicitly bundled into them.
+2. Read-only sidecar behavior and `.hivemind/` / `.opencode/` boundary rules remain preserved in the runway definition.
+3. Future planners can pick up a concrete sidecar/product-detox sequence without reopening Phase 52 scope.
+
+Plans:
+- [ ] TBD — derive ordered runway slices from Q2/Q6 constraints and current maintainability concerns
