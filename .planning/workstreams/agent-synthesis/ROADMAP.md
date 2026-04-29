@@ -28,7 +28,7 @@ Design and implement a synthesized agent definition system for the Hivemind harn
 
 | Phase | Name | Wave | Status | Depends On |
 |-------|------|------|--------|-----------|
-| AS-0 | Agent Inventory & Classification Audit | W1 | NOT STARTED | None |
+| AS-0 | Agent Inventory & Classification Audit | W1 | COMPLETE | None |
 | AS-1 | Agent Architecture Synthesis | W1 | NOT STARTED | AS-0 |
 | AS-2 | Lineage Classification & Schema Design | W2 | NOT STARTED | AS-1 |
 | AS-3 | L0/L1 Orchestrator & Coordinator Creation | W3 | NOT STARTED | AS-2, skill-ecosystem SE-5 |
@@ -91,25 +91,35 @@ AS-0 (Inventory Audit)
 
 ## Phase Details
 
-### AS-0: Agent Inventory & Classification Audit
+### AS-0: Agent Inventory & Classification Audit ✅
 
 **Wave:** W1 (research-only, no blockers)
-**Status:** NOT STARTED
+**Status:** COMPLETE (2026-04-29)
+**Artifact:** `AGENT-INVENTORY.md` (424 lines, 11 sections)
+**Commits:** `af2d8b5e` (plan), `b354ae3a` (inventory)
 
-Produce a complete inventory and classification matrix of all 58 agents on disk plus 1 ghost agent (`explore`). Every agent gets quality-scored on frontmatter completeness, body depth, execution flow presence, and output contract clarity.
+Produced a complete inventory and classification matrix of all 59 agents (58 on disk + 1 ghost `explore`). Every agent quality-scored on frontmatter completeness, body depth, execution flow presence, and output contract clarity.
 
 **Deliverables:**
-- `AGENT-INVENTORY.md` — full classification matrix (agent × quality dimensions)
-- `AGENT-BODY-CATALOG.md` — body format catalog (XML tagged vs markdown vs flat)
-- Defect register (9 known issues + any new ones discovered)
+- [x] `AGENT-INVENTORY.md` — full classification matrix (59 rows × 11 columns)
+- [x] Body format catalog: XML (35), MD (20), Mixed (1), Flat (1), None (1)
+- [x] Defect register (11 items: 4 resolved, 5 confirmed, 2 new)
+
+**Key Findings:**
+- 4 of 9 original defects RESOLVED (KI-02, KI-05, KI-06, KI-07)
+- 1 revised: KI-01 (hf-meta-builder has no agent file — not a name mismatch)
+- 2 new defects: KI-10 (13 agents missing name field), KI-11 (hf-meta-builder skill-only)
+- Orchestrator and general expanded from stubs to full XML bodies
+- GSD agents: all HIGH quality, 5 with explicit step tags, 28 prose-flow
+- 11 recommendations for AS-1 through AS-11
 
 **Acceptance Criteria:**
-- [ ] All 58 on-disk agents cataloged with frontmatter extraction
-- [ ] Each agent classified: gsd-* (33), hivefiver-* (6), hf-* (1), core (18)
-- [ ] Quality score assigned per agent (HIGH/MEDIUM/LOW/NONE)
-- [ ] Body format cataloged: GSD XML (25), Markdown (6), Mixed (4), Flat (24)
-- [ ] All 9 known defects confirmed or resolved
-- [ ] Ghost agent `explore` documented as missing-from-disk
+- [x] All 58 on-disk agents cataloged with frontmatter extraction
+- [x] Each agent classified: gsd-* (33), hivefiver* (6), hf-* (1), core (18)
+- [x] Quality score assigned per agent (HIGH/MEDIUM/LOW/NONE)
+- [x] Body format cataloged: XML (35), MD (20), Mixed (1), Flat (1), None (1)
+- [x] All 9 known defects confirmed or resolved (11 total)
+- [x] Ghost agent `explore` documented as missing-from-disk
 
 ---
 
