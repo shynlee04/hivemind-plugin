@@ -443,6 +443,69 @@ Load references ONLY when the SKILL.md is insufficient for your task.
 | Single-option evaluation | case-comparison.md, competitive patterns | No comparison needed |
 | Context > 50% consumed | ALL references | Synthesize what you have, document gaps |
 
+## Self-Correction
+
+When research produces unreliable findings or reaches a dead end, use these correction modes before escalating:
+
+### Mode 1: Contradictory Sources (two authoritative sources disagree)
+
+```
+1. Check publication dates — newer source wins, but verify its changelog
+2. Check version alignment — does the contradiction stem from version differences?
+3. Fill templates/contradiction-matrix.md with both claims and evidence
+4. If unresolvable: flag as UNRESOLVED, document both positions, recommend investigation
+5. If resolvable: document the winning claim with rationale
+```
+
+### Mode 2: Source Failure (MCP tool returned empty, error, or irrelevant results)
+
+```
+Which tool failed?
+├── Context7 → re-resolve library ID without version, then filter results; fall back to deepwiki
+├── Tavily → refine query: add "docs", "API", or "reference"; try brave-search as fallback
+├── DeepWiki → use repomix_pack_remote_repository instead; search GitHub directly
+├── Repomix → try context7 for API surface; use web extraction for docs
+├── Exa → try tavily-search with same query; use brave-search
+└── All tools failed → document as BLOCKED in findings, proceed with available evidence
+```
+
+### Mode 3: Infinite Research Loop (3rd search iteration with no new findings)
+
+```
+1. STOP. Do not run another search.
+2. Review existing findings: is the question actually answered?
+   ├── YES → Synthesize what you have, document remaining gaps
+   └── NO → Reframe the question more narrowly, limit to 1 more search cycle
+3. If still looping after reframed question → document as NEEDS_CONTEXT
+```
+
+### Mode 4: Premature Specification (research bleeding into spec territory)
+
+```
+Self-check:
+└── Are you defining function signatures? → STOP. Move to requirements framing.
+└── Are you saying "we should" instead of "they offer"? → STOP. Return to research.
+└── Are you writing acceptance criteria? → STOP. Acknowledge the transition.
+```
+
+### Mode 5: Stale or Missing Version Match (researched docs don't match installed version)
+
+```
+1. Re-read .tech-registry.json for the exact pinned version
+2. If hm-tech-stack-ingest has cached this version → use cached API signatures (highest priority)
+3. If not cached → run version-specific Context7 query with the exact version
+4. If latest docs don't match → check migration guides, changelogs, breaking change notices
+5. If version gap > 2 majors → require ADR before recommending upgrade
+```
+
+### Maximum Correction Attempts
+
+3 per research task. After 3 correction cycles without resolution:
+- Document findings with evidence levels (DIRECT, CORROBORATED, TESTIMONIAL, ABSENCE)
+- Flag unresolved contradictions in the matrix
+- Write continuation key for future investigation
+- Export artifact with methodology, limitations, and gap documentation
+
 ## Cross-References
 
 ### Research Chain Position

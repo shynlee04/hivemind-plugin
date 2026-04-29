@@ -236,6 +236,58 @@ Load references ONLY when the SKILL.md procedures are insufficient for your task
 | Already know the tech stack | tech-registry.md | Read .tech-registry.json directly |
 | Context > 50% consumed | ALL references | Use cheapest mode available, document gaps |
 
+## Self-Correction
+
+When investigation produces unexpected results or gets stuck, use these correction modes before escalating:
+
+### Mode 1: Mode Escalation Failure (SKIM too shallow, moved to DEEP too early)
+
+```
+Did SKIM return enough context?
+├── NO → Run SCAN instead: grep -n target line → offset read ±20
+├── YES but SCAN missed → Run SCAN with broader pattern: grep -rn "related_term" --include="*.ts"
+└── SKIM + SCAN both insufficient → Run DEEP on the specific file (only after confirmed relevance)
+```
+
+### Mode 2: Assumption Verification Loop (not-found or ambiguous)
+
+```
+What did the first search strategy return?
+├── 0 results → try a second strategy: switch from grep to glob, or from file content to git history
+├── 1 result → try a third strategy: check call sites, imports, tests, or config files
+├── ≥2 results, contradictory → re-verify file paths and versions; check for duplicate definitions
+└── Still not found after 2+ strategies → document search paths, exact queries, scope boundary
+```
+
+### Mode 3: Swarm Recovery Partial (some agents returned empty)
+
+```
+Which agent returned empty?
+├── TOC Agent → re-run with broader heading patterns (include ##, ###, ####)
+├── Metadata Agent → check for frontmatter-less files; read first 30 lines of each
+├── Git Agent → expand log range (--oneline -50), check reflog
+├── Diff Agent → expand diff range (HEAD~10), check staged changes
+├── Registry Agent → run full discovery (SCAN Tech Stack mode)
+└── 2+ agents empty → context may be too damaged; document what IS available
+```
+
+### Mode 4: Token Budget Exceeded (investigation consuming too much context)
+
+```
+1. Pause the current investigation
+2. Write all findings to .scratch/ immediately
+3. Re-estimate budget using references/token-budget.md
+4. Switch to the cheapest reading mode that still answers the question
+5. If budget still insufficient → document gaps, promote to .research/ for next session
+```
+
+### Maximum Correction Attempts
+
+3 per investigation task. After 3 correction cycles without resolution:
+- Document what was tried and what remains blocked
+- Write findings to `.scratch/recovery-brief-YYYY-MM-DD.md`
+- Promote to `.research/` with gap documentation
+
 ## Cross-References
 
 ### Research Chain Position

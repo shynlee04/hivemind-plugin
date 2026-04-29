@@ -392,6 +392,67 @@ Load references ONLY when the SKILL.md procedures are insufficient for your task
 - **[Validated Playbooks](references/validated-playbooks.md)** — End-to-end synthesis workflows with validation gates
 - **[Artifact Export](references/artifact-export.md)** — Export formats, naming conventions, promotion gates
 
+## Self-Correction
+
+When synthesis produces unreliable artifacts or hits a dead end, use these correction modes:
+
+### Mode 1: Over-Compression (Signature tier used where Snapshot was needed)
+
+```
+What was the compression objective?
+├── Security audit, legal compliance → MUST use Snapshot (0% reduction). Re-run with compress=false.
+├── Code review, onboarding → Focused is appropriate. If still too thin, re-run with compress=false on key files.
+├── Architecture planning → Signature may be sufficient. If missing crucial impl details, escalate to Focused.
+└── Unsure → Default to Focused. Never use Signature for audit/security work.
+```
+
+### Mode 2: Corpus Gate Failure (insufficient evidence for classification)
+
+```
+Which criterion failed?
+├── Repos < 3 → expand search: add GitHub trending repos, related orgs, language-specific repos
+├── Artifacts < 10 → widen scope: include test files, config patterns, build scripts
+├── Single org → add repos from different organizations or community projects
+├── Pattern exhaustion (no new patterns after 20 artifacts) → stop classification, document what you have, flag for manual review
+└── All criteria met but classification is shaky → produce a gap report, do NOT force classification
+```
+
+### Mode 3: Contradiction Consensus Failure (sources disagree, no resolution)
+
+```
+1. Fill templates/contradiction-consensus.md with each position and evidence
+2. If high-impact contradiction → artifact recommends investigation, does NOT claim settled answer
+3. If low-impact → document the disagreement, pick one with rationale, note the alternative
+4. If tied on evidence → document both, flag for external decision
+```
+
+### Mode 4: Artifact Validation Failure (generated artifact doesn't match source)
+
+```
+1. Re-read the source findings from hm-deep-research or hm-detective
+2. Check if the source was stale (re-run staleness check on .tech-registry.json)
+3. If hm-tech-stack-ingest has cached API signatures → validate artifact claims against cached source
+4. If validation still fails → re-run the synthesis from scratch with fresh source reads
+5. If source itself is questionable → route back to hm-deep-research for re-investigation
+```
+
+### Mode 5: Dependency Graph Staleness (package.json changed since last MAP)
+
+```
+1. Compare timestamps: ls -la package.json against .tech-registry.json last_updated
+2. If out of sync → re-run MAP step: grep import/require/emit
+3. Re-run CLASSIFY → DETECT → RESOLVE sequence
+4. Validate: npm run typecheck && npm run build && npm test
+```
+
+### Maximum Correction Attempts
+
+3 per synthesis task. After 3 correction cycles without resolution:
+- Produce artifact with methodology/limitations section
+- Document unresolved contradictions and gaps
+- Export provenance: sources reviewed, blocked sources, continuation path
+- Do NOT claim settled answers for unresolved high-impact contradictions
+
 ## Cross-References
 
 ### Research Chain Position
