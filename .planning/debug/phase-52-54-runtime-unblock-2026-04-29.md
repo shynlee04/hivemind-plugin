@@ -3,7 +3,7 @@ slug: phase-52-54-runtime-unblock
 status: investigating
 trigger: Phase 52/53/54 runtime unblock — PTY output gap, journal/lineage gap, recovery proof gap, guidance workflow blocked, Phase 53 NO-SHIP, Phase 54 BLOCKED handoff
 created: 2026-04-29
-updated: 2026-04-29T00:20:00Z
+updated: 2026-04-29T00:35:00Z
 goal: find_and_fix
 tdd_mode: true
 ---
@@ -12,10 +12,10 @@ tdd_mode: true
 
 ## Current Focus
 
-- hypothesis: Two high-probability candidates emerged: (1) PTY output may be lost because termination deletes the session before final output can be read/persisted; (2) journal export returns zero because sessionId filtering only checks continuity/delegations for exact parent/child IDs and ignores current-context or persisted delegation lineage when continuity has no parent record.
-- test: Use live `run-background-command` against a trivial shell command to see whether current runtime reproduces Phase 52's empty PTY output before adding tests.
-- expecting: If Phase 52 blocker is still present, output polling for `printf 'debug-pty-ok\n'; sleep 2` will return empty content despite an active listed PTY session.
-- next_action: Run `run-background-command` live, poll output, list, then terminate if needed; record exact tool-level output.
+- hypothesis: PTY empty output is caused by a startup race where very early child output can arrive before `PtyManager.spawn()` subscribes to `process.onData`; delayed output works, immediate output can be lost.
+- test: Verify RED test for early PTY output loss, move data subscription before metadata access, then verify GREEN focused tests and supporting gates.
+- expecting: Unit regression should fail before source change and pass after subscribing to output before reading PTY metadata such as `pid`.
+- next_action: Run typecheck/build/focused tests, then continue journal lineage investigation because live export still returns zero records for the current runtime session.
 
 ## Symptoms / Blockers
 
@@ -63,17 +63,33 @@ Phase 52 should produce truthful L1/L2 acceptance evidence for PTY output, journ
   checked: Focused baseline tests before source mutation.
   found: `npx vitest run tests/lib/pty/pty-manager.test.ts tests/tools/run-background-command.test.ts tests/tools/session-journal-export.test.ts` passed: 3 files, 23 tests.
   implication: Existing tests do not reproduce the Phase 52 blockers; RED tests are required before any implementation changes.
+- timestamp: 2026-04-29T00:25:00Z
+  checked: Live runtime PTY probes.
+  found: Immediate command `printf 'debug-pty-ok\n'; sleep 2` returned empty content both during running and after completion (`summaryPreview: ""`). Delayed command `sleep 1; printf 'delayed-pty-ok\n'; sleep 2` returned `delayed-pty-ok\r\n` and completed with matching summary preview.
+  implication: PTY output pipeline works after listener setup; output emitted immediately at process startup can be lost.
+- timestamp: 2026-04-29T00:30:00Z
+  type: red-green
+  red: `npx vitest run tests/lib/pty/pty-manager.test.ts -t "captures PTY output emitted before session metadata is returned"` failed because `manager.read(...).content` was empty instead of `early-output\r\n`.
+  fix: `src/lib/pty/pty-manager.ts` now creates the PTY buffer before spawn and subscribes to `process.onData` immediately after spawn, before reading session metadata such as `pid`.
+  green: The same focused RED test passed after the fix; `npx vitest run tests/lib/pty/pty-manager.test.ts tests/tools/run-background-command.test.ts` passed 2 files, 18 tests.
+  commits: `207dbd9a` RED test, `e8104bbd` source fix.
+- timestamp: 2026-04-29T00:35:00Z
+  checked: Live `session-journal-export` probe for current parent session `ses_226714ad6ffepwIkRr1lYKgA0o` with `pipelineKeyLabel: phase-52-54-debug`.
+  found: Tool returned success but `journalSummary.sessions: 0`, `journalSummary.delegations: 0`, and empty `lineage`.
+  implication: Journal/lineage blocker remains open after PTY fix and needs separate RED-first investigation.
 
 ## Investigation Log
 
 - 2026-04-29: Session initialized. Awaiting debugger investigation.
+- 2026-04-29: Confirmed PTY immediate-output race with live contrasting probes and RED/GREEN unit coverage. Journal lineage export remains unresolved.
 
 ## Specialist Review
 
-_Pending root cause._
+- PTY E52-02 root cause found: `PtyManager.spawn()` attached `onData` after constructing session metadata, so output emitted during immediate startup/metadata access could be missed. Delayed output proved the PTY buffer/read path itself works.
+- Journal E52-03 root cause not yet confirmed: live export still returns zero records for the current runtime session.
 
 ## Resolution
 
-- root_cause: not determined
-- fix: not applied
-- verification: pending
+- root_cause: PTY immediate-output startup race confirmed; journal/recovery blockers still under investigation.
+- fix: PTY listener ordering fixed in `src/lib/pty/pty-manager.ts`.
+- verification: RED/GREEN focused PTY tests passed; broader gates pending.
