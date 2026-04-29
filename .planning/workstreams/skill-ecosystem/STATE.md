@@ -38,15 +38,18 @@ phase_count: 17
 
 ## Skills Inventory (2026-04-29 Verified)
 
-**Active skills on disk: 51** (all have SKILL.md)
+**Active skills on disk: 51** (all have SKILL.md) — **ALL RENAMED** 2026-04-30 to `{lineage}-{depth}-{name}` format.
 
-| Lineage | Count | Prefix | Scope |
-|---------|-------|--------|-------|
-| Product dev | 30 | `hm-*` | Shipped — planning, research, execution, quality, gate orchestration, lineage routing |
-| Meta-builder | 11 | `hf-*` | Shipped — skill/agent/command/tool authoring |
-| Internal gates | 3 | `gate-*` | THIS PROJECT ONLY — evidence-truth, lifecycle-integration, spec-compliance |
-| Stack reference | 6 | `stack-*` | Shipped — bun-pty, json-render, nextjs, opencode, vitest, zod |
-| Unprefixed | 1 | `opencode-config-workflow` | Shipped — framework-agnostic config workflow |
+| Lineage | Count | Old Prefix | New Prefix | Scope |
+|---------|-------|------------|------------|-------|
+| Product dev L2 | 20 | `hm-*` | `hm-l2-*` | Shipped — planning, research, execution, quality, gate orchestration, lineage routing |
+| Product dev L3 | 10 | `hm-*` | `hm-l3-*` | Shipped — detective, deep research, synthesis, research chain, tech stack, platform reference |
+| Meta-builder L2 | 13 | `hf-*` | `hf-l2-*` | Shipped — skill/agent/command/tool authoring |
+| Internal gates L3 | 3 | `gate-*` | `gate-l3-*` | THIS PROJECT ONLY — evidence-truth, lifecycle-integration, spec-compliance |
+| Stack reference L3 | 6 | `stack-*` | `stack-l3-*` | Shipped — bun-pty, json-render, nextjs, opencode, vitest, zod |
+| Unprefixed | 1 | `opencode-config-workflow` | `opencode-config-workflow` | Shipped — framework-agnostic config workflow (unchanged) |
+
+**Total: 52 skill directories (51 active + 1 disabled); all renamed to depth-qualified names.**
 
 **Disabled:** 1 (`donotusethis-hm-planning-with-files` — directory exists, no SKILL.md)
 **Orphan skills (not in any forward SE phase):** 25 (covered by SE-8)

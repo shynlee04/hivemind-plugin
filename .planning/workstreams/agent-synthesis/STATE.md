@@ -44,10 +44,13 @@ progress:
 
 | Category | Count | Prefix | Files | Shipped? |
 |----------|-------|--------|-------|----------|
-| GSD specialist | 33 | `gsd-*` | `gsd-advisor-researcher.md` through `gsd-verifier.md` | No (internal only) |
-| Hivefiver meta | 6 | `hivefiver-*` | `hivefiver.md`, `hivefiver-agent-builder.md`, `hivefiver-command-builder.md`, `hivefiver-orchestrator.md`, `hivefiver-skill-author.md`, `hivefiver-tool-builder.md` | Candidate for hf-* |
-| Hivemind (hm-*) | 30 | `hm-*` | `hm-orchestrator.md` (L0), `hm-coordinator.md` (L1), plus 28 L2 specialists spanning 11 domains | Yes ★ |
-| Hivemind (hf-*) | 10 | `hf-*` | `hf-orchestrator.md` (L0), `hf-coordinator.md` (L1), plus 8 L2 specialists spanning 7 domains | Yes ★ |
+| GSD specialist | 33 | `gsd-*` | `gsd-advisor-researcher.md` through `gsd-verifier.md` (unchanged) | No (internal only) |
+| Hivefiver meta (merged→hf) | 0 | (merged) | Merged into hf-l2-* and hf-l0-orchestrator (8 duplicates + 1 classified) | N/A |
+| Core agents (classified→hm) | 15 | `hm-l2-*` | Build, conductor, context-mapper, context-purifier, critic, general, intent-loop, meta-synthesis, phase-guardian, prompt-analyzer, prompt-repackager, prompt-skimmer, risk-assessor, spec-verifier, test-router | Yes ★ (renamed) |
+| Hivemind (hm-*) | 47 | `hm-*` | `hm-l0-orchestrator.md` (L0), `hm-l1-coordinator.md` (L1), plus 30 L2 hm-domain specialists + 15 core→hm-l2 specialists (45 total hm-* agents) | Yes ★ |
+| Hivemind (hf-*) | 11 | `hf-*` | `hf-l0-orchestrator.md` (L0), `hf-l1-coordinator.md` (L1), plus 8 L2 specialists + 1 hf-l2-meta-builder (11 total hf-* agents) | Yes ★ |
+
+**Agent rename summary (2026-04-30): 9 duplicates merged+deleted, 15 core agents classified to hm-l2-*, 1 new hf-l2-meta-builder created, 53 skills renamed. Total hm-* + hf-* agents: 56 (45 hm + 11 hf).**
 | Core (unprefixed) | 18 | various | `build.md`, `conductor.md`, etc. | Candidate for hm-* |
 | Ghost (missing) | 1 | — | `explore` (referenced in AGENTS.md, not on disk) | TBD |
 
