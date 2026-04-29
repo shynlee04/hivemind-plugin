@@ -17,10 +17,10 @@ skills:
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md
-color: "#8B5CF6"
-steps: 100
 permission:
   # ── Native OpenCode ───────────────────────
+color: "#8B5CF6"
+steps: 100
   read: allow
   edit: deny
   write: deny
