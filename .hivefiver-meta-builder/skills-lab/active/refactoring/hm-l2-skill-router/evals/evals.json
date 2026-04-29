@@ -1,133 +1,118 @@
 {
-  "skill": "hm-skill-router",
-  "version": "1.0.0",
+  "skill": "hm-l2-skill-router",
+  "version": "2.0.0",
   "trigger_queries": [
     {
-      "id": "positive-research-dispatch",
-      "query": "I need to investigate the codebase structure and research best practices for implementing a circuit breaker. Load the right hm skills.",
+      "id": "positive-research-bundle",
+      "query": "I need to investigate why the delegation system is failing. Load the right hm skills for me.",
       "expected_loaded": true,
       "scenario_type": "positive",
       "assertions": [
-        "Classifies as Research domain (primary signals: 'investigate', 'research')",
-        "Dispatches hm-detective + hm-deep-research",
-        "Loading order: detective first, then deep-research",
+        "Classifies as Debug domain (primary signal: 'failing')",
+        "Routes to hm-l2-debug + hm-l2-completion-looping",
+        "Notes research overlap: hm-l3-detective available if investigation needed",
         "Stays within 3-skill limit"
       ]
     },
     {
-      "id": "positive-implementation-dispatch",
-      "query": "Execute phase 7 plans for the delegation module. It touches multiple layers across the codebase.",
+      "id": "positive-implementation-bundle",
+      "query": "Load skills for implementing phase 5 of the authentication module.",
       "expected_loaded": true,
       "scenario_type": "positive",
       "assertions": [
-        "Classifies as Implementation domain (signals: 'execute')",
-        "Dispatches hm-phase-execution as primary",
-        "Adds hm-cross-cutting-change since code touches multiple layers",
-        "Loading order: phase-execution first, then cross-cutting-change"
+        "Classifies as Implementation domain",
+        "Routes to hm-l2-phase-execution as primary",
+        "Adds hm-l2-cross-cutting-change if touching multiple layers",
+        "Provides loading order with depth-qualified names"
       ]
     },
     {
-      "id": "positive-architecture-dispatch",
-      "query": "We need to refactor the continuity module — it's grown to 650 LOC and is hard to maintain.",
+      "id": "positive-guardrail-bundle",
+      "query": "I need to set up a phase loop with entry gates and exit criteria for the authentication module.",
       "expected_loaded": true,
       "scenario_type": "positive",
       "assertions": [
-        "Classifies as Architecture domain (signals: 'refactor', 'hard to maintain')",
-        "Dispatches hm-refactor + hm-roadmap-maintainability",
-        "Loading order: refactor first, then roadmap-maintainability",
-        "Correctly distinguishes from Debug domain (no 'fix' or 'broken' signal)"
+        "Classifies as Guardrail domain (signals: 'phase loop', 'entry gates', 'exit criteria')",
+        "Routes to hm-l2-phase-loop + hm-l2-completion-looping",
+        "Provides loading order: phase-loop first, then completion-looping"
       ]
     },
     {
-      "id": "positive-closure-dispatch",
-      "query": "Is the task done? I need to verify completion and run final checks before submitting.",
+      "id": "positive-research-chain-bundle",
+      "query": "Run the full research chain: ingest the tech stack docs, detect patterns in the codebase, then synthesize findings.",
       "expected_loaded": true,
       "scenario_type": "positive",
       "assertions": [
-        "Classifies as Closure domain (signals: 'done', 'verify completion', 'final checks')",
-        "Dispatches hm-completion-looping + hm-test-driven-execution",
-        "Loading order: completion-looping first, then TDD for final verification",
-        "Correctly distinguishes from Quality domain (closure signals are end-of-workflow)"
+        "Classifies as Research Chain domain (signals: 'research chain', 'ingest', 'detect', 'synthesize')",
+        "Routes to hm-l3-research-chain + hm-l3-synthesis",
+        "All names use l3 depth qualification"
       ]
     },
     {
       "id": "negative-meta-builder",
-      "query": "Create a new skill for managing database migrations in the hm lineage.",
+      "query": "Create a new skill for managing WebSocket connections.",
       "expected_loaded": true,
       "scenario_type": "negative",
       "assertions": [
         "Detects meta-builder intent (signal: 'create a new skill')",
+        "Routes to hf-l2-skill-router instead of hm-* skills",
         "Does NOT load any hm-* skill bundle",
-        "Routes to hf-skill-router instead",
-        "Explains boundary: hm-skill-router handles product-dev tasks only"
+        "Explains boundary: hm-l2-skill-router handles product-dev tasks only"
       ]
     },
     {
-      "id": "boundary-multi-domain",
-      "query": "Analyze the requirements for the notification system and plan the implementation approach.",
+      "id": "boundary-review-with-evidence-gate",
+      "query": "We're about to ship. Review the phase output and check the evidence gate.",
       "expected_loaded": true,
       "scenario_type": "boundary",
       "assertions": [
-        "Detects multi-domain: Analysis + Planning",
-        "Primary: Analysis (hm-requirements-analysis + hm-product-validation)",
-        "Secondary add: hm-spec-driven-authoring (1 skill from Planning)",
-        "Total: 3 skills (within 3-skill limit)",
-        "Loading order: Analysis skills first, then planning skill"
-      ]
-    },
-    {
-      "id": "negative-overload",
-      "query": "Research the problem, analyze requirements, plan the solution, and implement the fix for the session journal.",
-      "expected_loaded": true,
-      "scenario_type": "negative",
-      "assertions": [
-        "Detects 3+ domains (Research + Analysis + Planning + Implementation)",
-        "Refuses to load all 4 domains",
-        "Recommends splitting into subtasks",
-        "Suggests picking primary domain: Implementation (signal: 'implement the fix')"
+        "Classifies as Review domain (signals: 'ship', 'review', 'evidence gate')",
+        "Routes to hm-l2-production-readiness + gate-l3-evidence-truth",
+        "Includes gate-* skill for terminal evidence verification",
+        "Max 3 skill limit not exceeded"
       ]
     }
   ],
   "rich_source_evidence": [
     {
       "gate": "RICH-1",
-      "claim": "Task-domain-to-skill routing with 12 domain bundles",
-      "evidence": "SKILL.md defines 12 task domains with 1-2 skills each. Max 3 per bundle enforced by Iron Law. Priority ordering is binding per domain."
+      "claim": "Task-to-skill routing with 12 domain bundles using depth-qualified names",
+      "evidence": "SKILL.md defines 12 domains with 1-3 skills each. Max 3 per bundle enforced by Iron Law. All names use {lineage}-{depth}-{name} format."
     },
     {
       "gate": "RICH-2",
-      "claim": "Multiple dispatch strategies for domain classification",
-      "evidence": "Single-domain dispatch (default), multi-domain resolution (primary + secondary add), 3+ domain split enforcement. Domain-overlap resolution table with verb+noun qualification."
+      "claim": "Multiple routing strategies for task classification",
+      "evidence": "Single-domain routing, multi-domain resolution (primary + secondary add), 3+ domain split. Intent signal matching per domain."
     },
     {
       "gate": "RICH-3",
-      "claim": "Cross-references to 17+ sibling skills",
-      "evidence": "12 domain bundles × 1-2 skills = 17 unique skill references. 5 cross-referenced skills (hm-lineage-router, hm-coordinating-loop, hm-phase-execution, hm-subagent-delegation-patterns, hf-skill-router)."
+      "claim": "Cross-references to 7 sibling skills + 12 domain-referenced skills",
+      "evidence": "7 skills in Cross-References table (hm-l2-lineage-router, hm-l2-coordinating-loop, hm-l2-phase-execution, hm-l2-subagent-delegation-patterns, hf-l2-skill-router, hm-l2-gate-orchestrator, gate-l3-evidence-truth). 19 skill references across 12 domains."
     },
     {
       "gate": "RICH-4",
-      "claim": "Structured dispatch with decision tree and overlap resolution",
-      "evidence": "12-domain dispatch map. Multi-domain resolution decision tree. Domain-overlap resolution table with 8 entries. 5 loading rules."
+      "claim": "Structured routing with decision tree and loading rules",
+      "evidence": "6 loading rules. Multi-domain resolution decision tree. Domain-to-lineage routing chain. Domain overlap resolution protocol."
     },
     {
       "gate": "RICH-5",
       "claim": "Progressive disclosure via reference files",
-      "evidence": "SKILL.md (dispatch map + loading rules) + references/routing-map.md (detailed signal tables, overlap resolution table, bundle size limits)."
+      "evidence": "SKILL.md (dispatch map + loading rules) + references/routing-map.md (detailed signal tables, multi-domain combos, exclusion rules)."
     },
     {
       "gate": "RICH-6",
-      "claim": "Works across project types and task complexities",
-      "evidence": "12 domains cover all product-dev workflows from ideation to closure. Multi-domain resolution handles complex tasks. 3-skill cap prevents context bloat. Domain granularity allows precise dispatch."
+      "claim": "Works across project types and task scales",
+      "evidence": "Domain-based routing adapts to any project. Multi-domain resolution handles complex tasks. 3-skill limit prevents overload. Depth-qualified names ensure correct file resolution."
     },
     {
       "gate": "RICH-7",
-      "claim": "Honest gap tracking",
-      "evidence": "Self-correction documents 4 anti-patterns: Domain Ambiguity, Wrong Router, Bundle Overload, Stale Dispatch. Domain granularity limitations honestly documented."
+      "claim": "Honest gap tracking with self-correction",
+      "evidence": "Self-correction documents 4 anti-patterns. Multi-domain limit honestly documented. Wrong Router pattern routes to sibling hf-l2-skill-router."
     },
     {
       "gate": "RICH-8",
-      "claim": "This evals file + metrics scorecard",
-      "evidence": "7 eval scenarios (4 positive, 2 negative, 1 boundary). metrics/rich-gate-scorecard.md with D1-D8 scoring."
+      "claim": "This evals file + metrics scorecard on disk",
+      "evidence": "6 eval scenarios (3 positive, 1 negative, 2 boundary). metrics/rich-gate-scorecard.md with D1-D8 scoring."
     }
   ]
 }

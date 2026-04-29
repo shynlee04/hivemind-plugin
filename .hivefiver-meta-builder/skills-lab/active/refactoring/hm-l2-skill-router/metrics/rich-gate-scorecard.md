@@ -1,38 +1,38 @@
-# RICH Gate Scorecard: hm-skill-router
+# RICH Gate Scorecard: hm-l2-skill-router
 
-**Date:** 2026-04-30 | **Auditor:** gsd-executor (SE-10) | **Version:** 1.0.0
+**Date:** 2026-04-30 | **Auditor:** gsd-executor (SE-10) | **Version:** 2.0.0
 
 ## RICH Classification: RICH
-Domain-execution dispatch router — maps 12 agent task domains to concrete hm-* skill loading bundles with priority ordering, max-3-skill enforcement, multi-domain resolution, and overlap signal tables.
+Domain-execution router — maps task domains to hm-* skill loading bundles across 12 domains with max-3-skill enforcement, depth-qualified names, multi-domain resolution, and self-correction.
 
 ## D1-D8 Quality Scores
 
 | Dimension | Score | Max | Notes |
 |-----------|-------|-----|-------|
-| D1: Knowledge Delta | 14 | 20 | Domain-to-skill dispatch: 12 task domains, priority ordering per bundle, dependency chains, multi-domain resolution, overlap resolution table with 8 entries, verb+noun signal qualification. Could deepen with per-skill loading prerequisites and context-budget-aware dispatch optimization. |
-| D2: Mindset + Procedures | 14 | 15 | Iron law: "Max 3 skills per bundle. Priority ordering is binding." 5 loading rules. Multi-domain resolution decision tree. Bundle size limits with rationale. |
-| D3: Anti-Pattern Quality | 14 | 15 | Four anti-patterns: Domain Ambiguity (3+ domain match), Wrong Router (meta-builder vs product-dev), Bundle Overload (>3 skills), Stale Dispatch (missing skill). Each with detection logic, correction action, and signal text. |
-| D4: Spec Compliance | 14 | 15 | Valid frontmatter with lineage, routes-to, input-from, consumed-by. 12 trigger phrases. Clear negatives (NOT for executing skills). 17+ skill references across 12 domain bundles and 5 cross-refs. |
-| D5: Progressive Disclosure | 14 | 15 | SKILL.md (dispatch map + loading rules + domain-to-lineage routing) + references/routing-map.md (detailed signal tables, 12 signal-to-bundle tables, overlap resolution matrix, bundle size limits). On-load instructions for reference pre-reading. |
-| D6: Freedom Calibration | 13 | 15 | 12 domains cover all product-dev workflows (brainstorm to closure). Multi-domain resolution provides flexibility. 3-skill cap preserves context budget. Verb+noun signal qualification enables precise matching. Slightly prescriptive in domain mapping — could benefit from user-overridable dispatch hints. |
-| D7: Pattern Recognition | 9 | 10 | Dispatch router pattern with granular domain-to-bundle mapping. Multi-domain resolution with priority-weighted secondary add. Overlap signal resolution table. Downstream integration from hm-lineage-router creates dual-router dispatch chain. |
-| D8: Practical Usability | 14 | 15 | Dispatch table immediately usable. Signal tables provide clear trigger matching. Overlap resolution table answers "which domain when signals conflict?". Domain-to-lineage routing diagram clarifies the two-router chain. |
-| **D1-D8 Total** | **106/120 (88%)** | | **Grade: A-** |
+| D1: Knowledge Delta | 14 | 20 | Task-to-skill routing knowledge: 12 domain bundles, priority ordering, dependency chains, multi-domain resolution, exclusion rules. Depth-qualified names (l2/l3) ensure correct skill file resolution. Includes gate-* skills (gate-l3-evidence-truth). Could deepen with per-skill version constraints and cross-bundle dependency analysis. |
+| D2: Mindset + Procedures | 15 | 15 | Iron law: "Max 3 skills per bundle." Clear classification protocol. Multi-domain decision tree with split rule for 3+ domains. 6 loading rules with depth qualification mandate. |
+| D3: Anti-Pattern Quality | 15 | 15 | Four anti-patterns: Domain Ambiguity (3+ domains without clear primary), Wrong Router (meta-builder vs product-dev), Bundle Overload (>3 skills), Stale Dispatch (renamed/retired skill). Each with detection and correction logic. |
+| D4: Spec Compliance | 14 | 15 | Valid frontmatter with lineage, routes-to (hm-* + gate-*), input-from, consumed-by. 16 trigger phrases. Clear negatives (NOT for executing skills). Cross-skill routing table with 7+ references. Depth-qualified names throughout. |
+| D5: Progressive Disclosure | 14 | 15 | SKILL.md (dispatch map + loading rules) + references/routing-map.md (detailed signal tables, multi-domain combos, exclusion rules). On-load instructions for reference pre-reading. |
+| D6: Freedom Calibration | 14 | 15 | 12 domains adapt to different project types. Multi-domain resolution is flexible. Does not mandate specific project structure. Exclusion rules handle non-hm-* tasks. |
+| D7: Pattern Recognition | 9 | 10 | Router pattern with domain-based classification and bundle loading. Multi-domain resolution is a novel composition. 3-skill cap prevents runaway loading. Bridge between lineage-router (6 categories) and concrete skill loading (12 domains). |
+| D8: Practical Usability | 14 | 15 | Routing table immediately usable. Multi-domain combo table provides quick resolution. Loading order is explicit per bundle. Depth-qualified names prevent stale references. |
+| **D1-D8 Total** | **109/120 (91%)** | | **Grade: A** |
 
 ## RICH Gate Evidence
 
 | Gate | Score | Evidence |
 |------|-------|----------|
-| RICH-1 | PASS | Domain-to-skill dispatch: 12 domains, priority ordering, dependency chains, multi-domain resolution. |
-| RICH-2 | PASS | Three dispatch strategies: single-domain, multi-domain (primary + secondary add), 3+ domain split. Overlap resolution table with 8 entries. |
-| RICH-3 | PASS | Cross-refs to 17+ sibling skills across 12 domain bundles + 5 consumer/sibling skills. |
-| RICH-4 | PASS | 5 loading rules. Multi-domain decision tree. Overlap resolution matrix. Bundle size limits. Iron law enforcement. |
-| RICH-5 | PASS | Progressive disclosure: SKILL.md (dispatch map + rules) + references/routing-map.md (signal tables, overlap resolution, limits). |
-| RICH-6 | PASS | 12 domains span all product-dev workflows. Multi-domain resolution handles complex tasks. 3-skill cap preserves context. Signal-based matching works across project types. |
-| RICH-7 | PASS | Self-correction with 4 anti-patterns. Honest about being a dispatch router only. Downstream positioning documented. |
-| RICH-8 | PASS | This scorecard. Evals with 7 scenarios (4 positive, 2 negative, 1 boundary). Self-correction with 4 anti-patterns. |
+| RICH-1 | PASS | Task-to-skill routing: 12 domains, priority ordering, dependency chains, multi-domain resolution. |
+| RICH-2 | PASS | Three routing strategies: single-domain bundle, multi-domain resolution (primary + secondary add), 3+ domain split with subtask decomposition. |
+| RICH-3 | PASS | Cross-refs to 7 sibling skills + 19 domain skill references across 12 domains. |
+| RICH-4 | PASS | 6 loading rules. Multi-domain decision tree. Domain overlap resolution. Iron law enforcement. |
+| RICH-5 | PASS | Progressive disclosure: SKILL.md (routing + rules) + references/routing-map.md (signal tables, combos, exclusions). |
+| RICH-6 | PASS | Domain-based routing works across project types. Multi-domain resolution handles complex tasks. Exclusion rules handle non-hm-* intents. |
+| RICH-7 | PASS | Self-correction with 4 anti-patterns. Honest about being a router only — does not execute skills. Wrong Router pattern routes to sibling hf-l2-skill-router. |
+| RICH-8 | PASS | This scorecard. Evals with 6 scenarios. Self-correction with 4 anti-patterns. |
 
 ## Exit Decision: PASS
 **RICH-8 Score:** 8/8 ✅
 
-All RICH gates pass. D1-D8 score: 106/120 (A-). Domain-to-skill dispatch router with 12 task domains, multi-domain resolution, 3-skill cap enforcement, overlap signal resolution, and integration with hm-lineage-router for dual-router dispatch. Enables precise hm-* skill loading without overloading agent context.
+All RICH gates pass. D1-D8 score: 109/120 (A). Task-to-skill router with 12 domain bundles, multi-domain resolution, 3-skill cap enforcement, depth-qualified names, and structured exclusion rules. Enables hm-* ecosystem skill loading without overloading agent context.

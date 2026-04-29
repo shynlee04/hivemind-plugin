@@ -1,203 +1,221 @@
-# Dispatch Map — HM Skill Router
+# Routing Map — hm-l2-skill-router
 
 ## Overview
 
-This reference documents the complete dispatch map used by `hm-skill-router` to map task domains to concrete hm-* skill bundles. Each domain entry includes intent signals, the skill bundle with priority ordering, and domain resolution guidelines.
+This reference documents the complete routing map used by `hm-l2-skill-router` to map task domains to skill loading bundles. Includes priority ordering, dependency chains, multi-domain resolution rules, and exclusion rules.
 
-## Domain Signal Tables
+## Domain Definitions
 
 ### Research
 
 | Signal | Example |
 |--------|---------|
-| "investigate" | "Investigate why delegation persistence is failing" |
-| "research" | "Research the latest patterns for circuit breaker design" |
-| "find out" | "Find out which version of the AI SDK supports tool streaming" |
-| "analyze" | "Analyze the codebase for memory leaks in the event loop" |
-| "look into" | "Look into the performance regression in session recovery" |
-| "explore" | "Explore the plugin SDK surface for hook registration" |
-| "gather information" | "Gather information about the task queue architecture" |
+| "investigate" | "Investigate why the auth module fails under load" |
+| "research" | "Research the latest patterns for WebSocket reconnection" |
+| "find out" | "Find out which version of Zod supports v4 schemas" |
+| "analyze codebase" | "Analyze the codebase for circular dependencies" |
+| "look into" | "Look into the performance regression in the API layer" |
+| "explore" | "Explore the plugin SDK surface for tool registration" |
+| "gather information" | "Gather information about the session lifecycle" |
 
-**Bundle:** hm-detective (P1) → hm-deep-research (P2)
-**Dependency chain:** detective scans the codebase first, deep-research collects external evidence after.
+**Bundle:** hm-l3-tech-stack-ingest → hm-l3-detective → hm-l3-deep-research
+
+**Dependency chain:** tech-stack-ingest (cache deps) → detective (scan codebase) → deep-research (multi-source evidence)
 
 ### Planning
 
 | Signal | Example |
 |--------|---------|
-| "plan" | "Plan the implementation for the notification handler" |
-| "spec" | "Write the spec for the circuit breaker module" |
-| "write requirements" | "Write requirements for the session journal system" |
-| "design the interface" | "Design the interface between continuity and persistence" |
-| "architect" | "Architect the delegation manager's completion detection" |
+| "plan" | "Plan the implementation for phase 5" |
+| "spec" | "Write the spec for the authentication feature" |
+| "write requirements" | "Write requirements for the notification system" |
+| "design the interface" | "Design the interface between the auth and user modules" |
+| "architect" | "Architect the session persistence layer" |
+| "spec-driven" | "Do a spec-driven approach for the new feature" |
 
-**Bundle:** hm-planning-persistence (P1) → hm-spec-driven-authoring (P2)
-**Dependency chain:** persistence sets up planning scaffold, spec-driven-authoring produces the locked spec.
+**Bundle:** hm-l2-planning-persistence → hm-l2-spec-driven-authoring
+
+**Dependency chain:** planning-persistence (setup files) → spec-driven-authoring (produce locked spec)
 
 ### Implementation
 
 | Signal | Example |
 |--------|---------|
-| "implement" | "Implement the dual-signal completion detector" |
-| "build" | "Build the background task queuing system" |
-| "execute" | "Execute phase 5 plans for the auth module" |
-| "code" | "Code the session patch tool with Zod schemas" |
-| "write" | "Write the delegation persistence helper" |
-| "run the phase" | "Run the phase for notification handler" |
+| "implement" | "Implement the delegation persistence module" |
+| "build" | "Build the completion detection pipeline" |
+| "execute" | "Execute phase 3 plans" |
+| "run the phase" | "Run the phase for the auth module" |
+| "code" | "Code the session recovery feature" |
+| "write" | "Write the delegation dispatch tool" |
 
-**Bundle:** hm-phase-execution (P1) → hm-cross-cutting-change (P2)
-**Dependency chain:** phase-execution dispatches waves, cross-cutting-change activates when changes span multiple layers.
+**Bundle:** hm-l2-phase-execution → hm-l2-cross-cutting-change (when touching multiple layers)
+
+**Dependency chain:** phase-execution (wave dispatch) → cross-cutting-change (safety for multi-layer changes)
 
 ### Quality
 
 | Signal | Example |
 |--------|---------|
-| "test" | "Test the concurrency module with vitest" |
-| "verify" | "Verify the implementation matches the quality contract" |
-| "validate quality" | "Validate quality gates for the delegation system" |
-| "TDD" | "Use TDD for the new lifecycle manager" |
-| "red-green-refactor" | "Follow red-green-refactor for session recovery" |
-| "check coverage" | "Check test coverage for src/lib/" |
+| "test" | "Test the delegation manager with TDD" |
+| "verify" | "Verify the implementation matches the spec" |
+| "validate quality" | "Validate the quality of the phase output" |
+| "TDD" | "Use TDD for the new feature" |
+| "red-green-refactor" | "Follow red-green-refactor for the auth module" |
+| "check coverage" | "Check test coverage for the concurrency module" |
 
-**Bundle:** hm-test-driven-execution (P1) → hm-gate-orchestrator (P2)
-**Dependency chain:** TDD execution first, then gate validation against the triad.
+**Bundle:** hm-l2-test-driven-execution → hm-l2-gate-orchestrator
+
+**Dependency chain:** test-driven-execution (RED/GREEN/REFACTOR) → gate-orchestrator (validate against triad)
 
 ### Debug
 
 | Signal | Example |
 |--------|---------|
-| "debug" | "Debug the failing completion detection test" |
-| "fix" | "Fix the race condition in concurrency manager" |
-| "broken" | "The build is broken after the last refactor" |
+| "debug" | "Debug the failing session recovery test" |
+| "fix" | "Fix the race condition in the concurrency module" |
+| "broken" | "The build is broken after the last commit" |
 | "failing" | "Tests are failing in CI but pass locally" |
-| "error" | "Getting a TypeError in plugin initialization" |
-| "investigate issue" | "Investigate the memory leak in event handlers" |
-| "root cause" | "Find the root cause of session journal corruption" |
+| "error" | "Getting a type error in the plugin initialization" |
+| "investigate issue" | "Investigate the memory leak in the event handler" |
+| "root cause" | "Find the root cause of the intermittent timeout" |
 
-**Bundle:** hm-debug (P1) → hm-completion-looping (P2)
-**Dependency chain:** debug investigates and fixes, completion-looping verifies the fix actually resolved the issue.
+**Bundle:** hm-l2-debug → hm-l2-completion-looping
+
+**Dependency chain:** hm-l2-debug (investigate + fix) → hm-l2-completion-looping (verify fix actually works)
 
 ### Review
 
 | Signal | Example |
 |--------|---------|
 | "review" | "Review the phase output for production readiness" |
-| "audit" | "Audit the skill ecosystem for quality gaps" |
+| "audit" | "Audit the skill ecosystem for quality" |
 | "readiness" | "Check production readiness before shipping" |
-| "deploy check" | "Run the deployment check before release" |
-| "ship ready" | "Is this ready to ship to production?" |
-| "pre-release" | "Pre-release verification of the harness plugin" |
+| "deploy check" | "Run the deployment check" |
+| "ship ready" | "Is this ready to ship?" |
+| "pre-release" | "Pre-release verification pass" |
+| "evidence check" | "Check the evidence gate before shipping" |
 
-**Bundle:** hm-production-readiness (P1 only)
-**Note:** Single-skill bundle. Review tasks are focused on deployment safety verification across 8 dimensions.
+**Bundle:** hm-l2-production-readiness → gate-l3-evidence-truth
+
+**Dependency chain:** production-readiness (evidence collection) → evidence-truth (terminal gate with L1-L5 hierarchy)
 
 ### Architecture
 
 | Signal | Example |
 |--------|---------|
-| "refactor" | "Refactor the delegation manager to reduce complexity" |
-| "clean up" | "Clean up the continuity module — it's 650 LOC" |
-| "restructure" | "Restructure the tools directory to group by domain" |
-| "architecture review" | "Architecture review of the control plane" |
-| "technical debt" | "Address technical debt in the lifecycle manager" |
-| "code organization" | "Improve code organization in src/lib/" |
+| "refactor" | "Refactor the concurrency module" |
+| "clean up" | "Clean up the lifecycle manager" |
+| "restructure" | "Restructure the module hierarchy" |
+| "architecture review" | "Review the architecture for maintainability" |
+| "technical debt" | "Address technical debt in the delegation system" |
+| "code organization" | "Improve code organization in src/tools/" |
 
-**Bundle:** hm-refactor (P1) → hm-roadmap-maintainability (P2)
-**Dependency chain:** refactor decides scope and approach, roadmap-maintainability evaluates long-term maintainability impact.
+**Bundle:** hm-l2-refactor → hm-l2-roadmap-maintainability
+
+**Dependency chain:** hm-l2-refactor (decide surgical vs structural) → hm-l2-roadmap-maintainability (evaluate long-term impact)
 
 ### Analysis
 
 | Signal | Example |
 |--------|---------|
-| "analyze requirements" | "Analyze requirements for the notification system" |
-| "diagnose gaps" | "Diagnose gaps in the quality contract" |
-| "validate requirements" | "Validate requirements against user needs" |
-| "find contradictions" | "Find contradictions in the phase 5 spec" |
-| "product validation" | "Product validation for the new delegation feature" |
-| "requirements gap analysis" | "Requirements gap analysis for the session journal" |
+| "analyze requirements" | "Analyze the requirements for the new feature" |
+| "diagnose gaps" | "Diagnose gaps in the spec" |
+| "validate requirements" | "Validate the requirements are complete" |
+| "find contradictions" | "Find contradictions in the acceptance criteria" |
+| "product validation" | "Validate the feature against user needs" |
 
-**Bundle:** hm-requirements-analysis (P1) → hm-product-validation (P2)
-**Dependency chain:** requirements-analysis detects gaps and contradictions, product-validation assesses against real user impact.
+**Bundle:** hm-l2-requirements-analysis → hm-l2-product-validation
 
-### Integration
-
-| Signal | Example |
-|--------|---------|
-| "integrate" | "Integrate the notification handler with delegation" |
-| "cross-phase verification" | "Cross-phase verification between SE-10 and SE-11" |
-| "connect systems" | "Connect the session journal to the continuity store" |
-| "E2E flow" | "Verify the end-to-end delegation flow" |
-| "integration check" | "Integration check for the control plane wiring" |
-| "cross-module" | "Cross-module verification for hooks and tools" |
-
-**Bundle:** hm-cross-cutting-change (P1) → hm-production-readiness (P2)
-**Dependency chain:** cross-cutting-change ensures safety across layers, production-readiness verifies deployment safety.
+**Dependency chain:** requirements-analysis (detect gaps) → product-validation (validate against users)
 
 ### Brainstorm
 
 | Signal | Example |
 |--------|---------|
-| "brainstorm" | "Brainstorm ideas for the GUI sidecar dashboard" |
-| "ideation" | "Ideation session for the memory system design" |
-| "figure out what to build" | "Figure out what to build for phase 18" |
-| "explore ideas" | "Explore ideas for the parallel agent scheduler" |
-| "clarify requirements" | "Clarify requirements before planning phase 6" |
-| "what should we build" | "What should we build for the next milestone?" |
+| "brainstorm" | "Let's brainstorm the notification system" |
+| "ideation" | "Run an ideation session for the dashboard" |
+| "figure out what to build" | "Help me figure out what to build for the admin panel" |
+| "explore ideas" | "Explore ideas for the onboarding flow" |
+| "clarify requirements" | "Clarify what the user really needs" |
+| "I have a vague idea" | "I have a vague idea about a feature" |
 
-**Bundle:** hm-brainstorm (P1 only)
-**Note:** Single-skill bundle. Brainstorming bridges vague intent to structured requirements.
+**Bundle:** hm-l2-brainstorm → hm-l2-user-intent-interactive-loop (if intent remains unclear)
+
+**Dependency chain:** brainstorm (ideation) → user-intent-interactive-loop (probe if ambiguous)
 
 ### Ecosystem
 
 | Signal | Example |
 |--------|---------|
-| "feature ecosystem" | "Analyze the feature ecosystem for the HiveMind harness" |
-| "cross-dependency" | "Cross-dependency check between skills and agents" |
-| "feature ordering" | "Feature ordering for phase delivery" |
-| "dependency graph" | "Build the dependency graph for the skill loading system" |
-| "interdependent features" | "Resolve interdependent features in the routing layer" |
-| "feature impact" | "Feature impact analysis for the delegation revamp" |
+| "feature ecosystem" | "Map the feature ecosystem for the notification system" |
+| "cross-dependency" | "Find cross-dependencies between features" |
+| "feature ordering" | "Determine feature ordering for the roadmap" |
+| "dependency graph" | "Build a dependency graph for the features" |
+| "interdependent features" | "Analyze interdependent features for delivery order" |
 
-**Bundle:** hm-feature-ecosystem (P1 only)
-**Note:** Single-skill bundle. Ecosystem analysis focuses on feature dependency graph validation.
+**Bundle:** hm-l2-feature-ecosystem (single-skill bundle)
 
-### Closure
+### Guardrail
 
 | Signal | Example |
 |--------|---------|
-| "complete" | "Mark the phase as complete and verify" |
-| "finish" | "Finish the implementation and run final checks" |
-| "wrap up" | "Wrap up the session and verify all tasks done" |
-| "verify completion" | "Verify completion of the delegated task" |
-| "final check" | "Final check before submitting the PR" |
-| "done" | "Is the task done? Run completion verification" |
+| "guardrail" | "Set up guardrails for the phase" |
+| "phase loop" | "Run the phase loop until completion" |
+| "loop until" | "Loop until the exit criteria are met" |
+| "iterate phase" | "Iterate through the phase with checkpoints" |
+| "exit criteria" | "Define exit criteria for the phase" |
+| "entry gate" | "Check the entry gate before starting the phase" |
+| "loop guard" | "Add loop guards to prevent infinite iteration" |
 
-**Bundle:** hm-completion-looping (P1) → hm-test-driven-execution (P2)
-**Dependency chain:** completion-looping verifies nothing is incomplete, TDD re-runs tests as final guardrail.
+**Bundle:** hm-l2-phase-loop → hm-l2-completion-looping
 
-## Domain-Overlap Resolution Table
+**Dependency chain:** phase-loop (manage iterations) → completion-looping (verify each iteration)
 
-When task signals match multiple domains, use this resolution table:
+### Research Chain
 
-| Primary Signal | Secondary Signal | Resolution |
-|---------------|-----------------|------------|
-| "analyze" + "requirements" | Analysis + Research | Analysis (key: "requirements" qualifies signal) |
-| "analyze" + "codebase" | Research + Analysis | Research (key: "codebase" qualifies signal) |
-| "investigate" + "failing" | Research + Debug | Debug (key: "failing" = primary action) |
-| "review" + "architecture" | Review + Architecture | Architecture (key: "architecture" = domain specific) |
-| "plan" + "integration" | Planning + Integration | Planning (key: "plan" precedes integration action) |
-| "implement" + "test" | Implementation + Quality | Implementation (key: "implement" first, quality is secondary) |
-| "fix" + "refactor" | Debug + Architecture | Debug (key: "fix" = immediate action, refactor is scope) |
-| "verify" + "completion" | Quality + Closure | Closure (key: "completion" = end-of-workflow signal) |
+| Signal | Example |
+|--------|---------|
+| "research chain" | "Run the full research chain for the new integration" |
+| "ingest stack" | "Ingest the tech stack docs first" |
+| "detect codebase" | "Detect patterns in the codebase" |
+| "synthesize findings" | "Synthesize findings into a report" |
+| "multi-stage research" | "Do multi-stage research on the authentication patterns" |
+| "compact findings" | "Compact the research findings into an artifact" |
 
-**Rule:** The noun/qualifier after the verb determines the domain. The verb+noun combination is the primary signal.
+**Bundle:** hm-l3-research-chain → hm-l3-synthesis
 
-## Bundle Size Limits
+**Dependency chain:** research-chain (orchestrate pipeline) → synthesis (compress and deliver artifact)
 
-| Bundle Type | Max Skills | Exceeding Action |
-|------------|-----------|-----------------|
-| Standard domain | 2 | N/A (all domains have ≤2 skills) |
-| Multi-domain (2 domains) | 3 | Split into subtasks if more needed |
-| Multi-domain (3+ domains) | — | SPLIT immediately — no three-domain bundles |
+## Multi-Domain Resolution
 
-**Why the 3-skill cap?** Agent context windows are finite. Loading more than 3 skills per task causes context bloat, where skill instructions compete for tokens with task data. Three skills provide deep coverage without overwhelming the context budget.
+When a task spans 2 domains:
+
+| Combination | Primary | Secondary Add | Total |
+|-------------|---------|---------------|-------|
+| Research + Debug | Debug (2) | hm-l3-detective (1) | 3 |
+| Research + Planning | Research (3) | hm-l2-spec-driven-authoring (1) | 3 (cap) |
+| Research + Architecture | Research (3) | None (cap hit) | 3 |
+| Planning + Quality | Planning (2) | hm-l2-test-driven-execution (1) | 3 |
+| Implementation + Quality | Implementation (2) | hm-l2-test-driven-execution (1) | 3 |
+| Implementation + Debug | Debug (2) | hm-l2-phase-execution (1) | 3 |
+| Quality + Review | Review (2) | hm-l2-test-driven-execution (1) | 3 |
+| Debug + Review | Debug (2) | hm-l2-production-readiness (1) | 3 |
+| Guardrail + Implementation | Implementation (2) | hm-l2-phase-loop (1) | 3 |
+
+**Rule:** Primary domain gets its full bundle. Secondary domain contributes 1 skill. Total ≤ 3.
+
+## Exclusion Rules
+
+| Task Type | Route To | NOT This Router |
+|-----------|---------|-----------------|
+| Meta-builder (create/edit skills, agents, commands) | hf-l2-skill-router | hm-l2-skill-router |
+| Simple file operations (read, write, edit) | No skill needed | hm-l2-skill-router |
+| Git operations (commit, branch, merge) | No skill needed | hm-l2-skill-router |
+| Conversational questions | No skill needed | hm-l2-skill-router |
+
+## Depth Qualification
+
+All skill names in this router use `{lineage}-{depth}-{name}` format:
+- `hm-l2-*` — Layer 2 product-dev skills
+- `hm-l3-*` — Layer 3 specialized skills (detective, deep research, synthesis, research chain, tech stack)
+- `gate-l3-*` — Layer 3 internal gate skills (evidence-truth)
