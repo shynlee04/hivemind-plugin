@@ -21,7 +21,7 @@ The skill-ecosystem workstream owns ALL SKILL.md files in `.opencode/skills/`. I
 ### In Scope
 - All 49 active skills in `.opencode/skills/`
 - 1 disabled skill (`donotusethis-hm-planning-with-files`) pending archival
-- 4 lineage groups: hm-* (28), hf-* (11), gate-* (3), stack-* (6), unprefixed (1)
+- 5 lineage groups: hm-* (28), hf-* (11), gate-* (3), stack-* (6), unprefixed (1)
 - Frontmatter schema compliance for all skills
 - Cross-reference integrity between skills and agents
 - RICH-8 quality scorecard validation

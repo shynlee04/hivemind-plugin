@@ -54,9 +54,9 @@ SE-1  ✅ (no deps)
 SE-2  ⚠️ PARTIAL (no deps)
 SE-3     → SE-2 (for planning-persistence fix)
 SE-3.5   → SE-2 (for planning-persistence fix)
-SE-3.6   → SE-2 (for planning-persistence fix)
+SE-3.6   → SE-3 (hm-product-validation hardening needs pre-gate skills complete)
 SE-4     → SE-2 (for research chain references)
-SE-5     → SE-2 (needs planning persistence)
+SE-5     → SE-3 + SE-4 (gate-orchestration needs both pre-gate skills and research pipeline)
 SE-5.5   → SE-5 (needs gate-orchestrator)
 SE-6     → SE-5 (needs lineage-router)
 SE-7     → SE-5 + SE-6
@@ -65,7 +65,7 @@ SE-9     → SE-7 + SE-8
 ```
 
 ### Parallelization Opportunities
-- SE-3, SE-3.5, SE-3.6, SE-4, SE-8 can run in parallel after SE-2 completes
+- SE-3, SE-3.5, SE-4, SE-8 can run in parallel after SE-2 completes; SE-3.6 runs after SE-3
 - SE-5.5 depends on SE-5; SE-6 depends on SE-5
 - SE-7 is the integration convergence point (needs SE-5 + SE-6)
 - SE-9 is the final sweep (needs SE-7 + SE-8)

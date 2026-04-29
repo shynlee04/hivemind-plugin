@@ -218,10 +218,12 @@ Checklist of verifiable outcomes.
 
 ## 7. GSD Replacement Plan (D-AD-03)
 
-### 7.1 Phase Sequence
+> **Note:** The stages below are sequential implementation steps within this workstream, not separate ROADMAP phases. These stages map to ROADMAP phases AS-4→AS-7, not independent phases. The AS-* numbering in the table header refers to ROADMAP phase IDs, not the stage numbers.
 
-| Phase | ID | Action | Description |
-|-------|----|--------|-------------|
+### 7.1 Stage Sequence
+
+| ROADMAP Phase | Stage ID | Action | Description |
+|---------------|----------|--------|-------------|
 | AS-1 | GSD-DELETE | Delete all gsd-* agents | Remove 34 files from `.opencode/agents/` |
 | AS-2 | HM-CREATE | Create hm-* replacements | Build ~30 hm-* agents across 11 categories |
 | AS-3 | HF-CREATE | Create hf-* from hivefiver-* | Refactor 6 hivefiver-* → ~12 hf-* agents |
