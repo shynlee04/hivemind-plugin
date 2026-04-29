@@ -61,17 +61,17 @@ SE-3     → SE-2 (for planning-persistence fix)
 SE-3.5   → SE-2 (for planning-persistence fix)
 SE-3.6   → SE-3 (hm-product-validation hardening needs pre-gate skills complete)
 SE-4     → SE-2 (for research chain references)
-SE-5     → SE-3 + SE-4 (gate-orchestration needs both pre-gate skills and research pipeline)
-SE-5.5   → SE-5 (needs gate-orchestrator)
+SE-5     → SE-3 + SE-4 (gate-orchestration needs both pre-gate skills and research pipeline) (→ Blocks AS-3)
+SE-5.5   → SE-5 (needs gate-orchestrator) (→ Blocks AS-7)
 SE-6     → SE-5 (needs lineage-router)
 SE-7     → SE-5 + SE-6
 SE-8     → SE-2
 SE-9     → SE-7 + SE-8
-SE-10    → SE-9 (routing needs all skills stable)
-SE-11    → SE-10 (naming syndicate needs routers)
-SE-12    → SE-9 (tool matrix needs all skills hardened)
-SE-13    → SE-12 (engine contracts need tool matrix)
-SE-14    → SE-13 + SE-11 (integration contracts need engine contracts + stable naming)
+SE-10    → SE-9 (routing needs all skills stable) (→ Blocks AS-3, AS-7)
+SE-11    → SE-10 (naming syndicate needs routers) (→ Blocks AS-11)
+SE-12    → SE-9 (tool matrix needs all skills hardened) (→ Blocks AS-9)
+SE-13    → SE-12 (engine contracts need tool matrix) (→ Blocks AS-10)
+SE-14    → SE-13 + SE-11 (integration contracts need engine contracts + stable naming) (→ Blocks AS-7, AS-8)
 ```
 
 ### Parallelization Opportunities
@@ -118,3 +118,4 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 5. **hf-meta-builder name mismatch** — directory is `hf-meta-builder` but frontmatter says `name: hr-meta-builder` (wrong `hr-` prefix instead of `hf-`)
 6. **Disabled hm-planning-with-files** still referenced by 9 active skills
 7. **25 orphan skills** not covered by any forward SE phase — triaged to SE-8
+8. **No terminal verification** of full ecosystem coherence exists yet — SE-9 will address this.

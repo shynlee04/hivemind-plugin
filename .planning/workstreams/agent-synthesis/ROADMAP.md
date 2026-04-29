@@ -52,7 +52,7 @@ AS-0 (Inventory Audit)
            │    │    └── AS-5 (hm-* batch 2: domain+documentation+lifecycle+audit+intelligence)
            │    └── AS-6 (hf-* meta builders)
            │
-           ├── AS-4, AS-5, AS-6 ──→ AS-8 (Body Enrichment)
+            ├── AS-4, AS-5, AS-6 ──→ AS-8 (Body Enrichment) ─── blocked by SE-14 (skill-agent integration contracts)
            │    ├── AS-8 ──→ AS-9 (Tool Integration) ─── blocked by SE-12 (tool capability matrix)
            │    ├── AS-8 ──→ AS-10 (Workflow Awareness) ─── blocked by SE-13 (engine contracts)
            │    ├── AS-8 ──→ AS-11 (Naming Syndicate) ─── blocked by SE-11 (naming syndicate)

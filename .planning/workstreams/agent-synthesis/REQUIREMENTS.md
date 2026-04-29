@@ -9,7 +9,7 @@ phase_count: 12
 
 ## 1. Purpose
 
-This workstream owns ALL agent definitions in `.opencode/agents/`. It replaces the current 34 GSD agents (`gsd-*`) with a custom 2-lineage system (`hm-*` and `hf-*`) that maps directly to the project's skill taxonomy, enforces a 3-level delegation depth, and standardizes agent body format with XML-tagged structured sections.
+This workstream owns ALL agent definitions in `.opencode/agents/`. It replaces the current 33 GSD agents (`gsd-*`) with a custom 2-lineage system (`hm-*` and `hf-*`) that maps directly to the project's skill taxonomy, enforces a 3-level delegation depth, and standardizes agent body format with XML-tagged structured sections.
 
 The end state: zero `gsd-*` agents, ~30 `hm-*` agents across 11 categories, and ~12 `hf-*` agents across 7 categories — all with YAML frontmatter, XML body, lineage-scoped skill bindings, and depth-aware temperature/permission profiles.
 
@@ -19,7 +19,7 @@ The end state: zero `gsd-*` agents, ~30 `hm-*` agents across 11 categories, and 
 
 ### In Scope
 
-- 59 agent files total (34 gsd-* deletion + ~30 hm-* creation + ~12 hf-* creation + retained core agents)
+- 59 agent files total (33 gsd-* deletion + ~30 hm-* creation + ~12 hf-* creation + retained core agents)
 - Full GSD replacement (D-AD-03): all `gsd-*` agents deleted and replaced
 - L0/L1/L2 depth hierarchy creation (D-AD-02)
 - YAML frontmatter standardization across all agents
@@ -45,7 +45,7 @@ The end state: zero `gsd-*` agents, ~30 `hm-*` agents across 11 categories, and 
 |----|----------|--------|-----------|
 | D-AD-01 | Cross-lineage skill binding | hm-agents → hm-skills STRICT; hf-agents → hf-skills + hm-skills FLEXIBLE | hf-* agents sometimes need hm-detective, hm-deep-research for codebase investigation before building meta-concepts |
 | D-AD-02 | Delegation depth model | 3-level: Orchestrator (L0) → Coordinator (L1) → Specialist (L2) | Matches OpenCode's subagent dispatch architecture; prevents unbounded delegation chains |
-| D-AD-03 | GSD agent replacement strategy | Full replacement — all 34 gsd-* agents deleted | gsd-* agents are external framework agents not tailored to this project's taxonomy; clean break avoids confusion |
+| D-AD-03 | GSD agent replacement strategy | Full replacement — all 33 gsd-* agents deleted | gsd-* agents are external framework agents not tailored to this project's taxonomy; clean break avoids confusion |
 | D-AD-04 | Agent body format | XML-tagged structured body: `<task>`, `<scope>`, `<context>`, `<expected_output>`, `<verification>` | Machine-parseable, self-documenting, enables automated quality checks |
 
 ---
@@ -224,7 +224,7 @@ Checklist of verifiable outcomes.
 
 | ROADMAP Phase | Stage ID | Action | Description |
 |---------------|----------|--------|-------------|
-| AS-1 | GSD-DELETE | Delete all gsd-* agents | Remove 34 files from `.opencode/agents/` |
+| AS-1 | GSD-DELETE | Delete all gsd-* agents | Remove 33 files from `.opencode/agents/` |
 | AS-2 | HM-CREATE | Create hm-* replacements | Build ~30 hm-* agents across 11 categories |
 | AS-3 | HF-CREATE | Create hf-* from hivefiver-* | Refactor 6 hivefiver-* → ~12 hf-* agents |
 | AS-4 | CAPABILITY | Wire capability matrix | Generate and validate agent↔skill mapping |

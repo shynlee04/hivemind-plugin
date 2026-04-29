@@ -19,26 +19,26 @@
 
 ## Phase Status Table
 
-| Phase | Name | Status | Dependencies |
-|-------|------|--------|--------------|
-| SE-1 | Skill Reclassification & Cleanup | ✅ COMPLETE | — |
-| SE-2 | Planning Pipeline Backbone | ⚠️ PARTIALLY COMPLETE | SE-1 |
-| SE-3 | Pre-Gate Skills Hardening | 📋 PLANNED | SE-2 |
-| SE-3.5 | Feature Ecosystem & Production Skills | 📋 PLANNED | SE-2 |
-| SE-3.6 | Product Validation Skill Hardening | 📋 PLANNED | SE-3 |
-| SE-4 | Research Pipeline Enhancement | 📋 PLANNED | SE-2 |
-| SE-5 | Gate Orchestration & Lineage Routing | 🔲 NOT STARTED | SE-3 + SE-4 |
-| SE-5.5 | Internal Gate Skills Hardening | 🔲 NOT STARTED | SE-5 |
-| SE-6 | Meta-Builder Skills Enhancement | 🔲 NOT STARTED | SE-5 |
-| SE-7 | Integration Verification | 🔲 NOT STARTED (blocked) | SE-5 + SE-6 |
-| SE-8 | Orphan Skill Hardening | 🔲 NOT STARTED | SE-2 |
-| SE-9 | Final Integrity Verification | 🔲 NOT STARTED (blocked) | SE-7 + SE-8 |
-| SE-10 | Skill Routing & Agent Dispatch Bindings | 🔲 NOT STARTED | SE-9 |
-| SE-11 | Naming Syndicate Formalization | 🔲 NOT STARTED | SE-10 |
-| SE-12 | Tool Capability Matrix (Skill Side) | 🔲 NOT STARTED | SE-9 |
-| SE-13 | Hivemind Engine Contracts | 🔲 NOT STARTED | SE-12 |
-| SE-14 | Skill-Agent Integration Contracts | 🔲 NOT STARTED | SE-13 + SE-11 |
-| SE-H1→SE-H14 | Historical Phases | ✅ COMPLETE | — |
+| Phase | Name | Status | Depends On | Blocks |
+|-------|------|--------|------------|--------|
+| SE-1 | Skill Reclassification & Cleanup | ✅ COMPLETE | — | — |
+| SE-2 | Planning Pipeline Backbone | ⚠️ PARTIALLY COMPLETE | SE-1 | — |
+| SE-3 | Pre-Gate Skills Hardening | 📋 PLANNED | SE-2 | — |
+| SE-3.5 | Feature Ecosystem & Production Skills | 📋 PLANNED | SE-2 | — |
+| SE-3.6 | Product Validation Skill Hardening | 📋 PLANNED | SE-3 | — |
+| SE-4 | Research Pipeline Enhancement | 📋 PLANNED | SE-2 | — |
+| SE-5 | Gate Orchestration & Lineage Routing | 🔲 NOT STARTED | SE-3 + SE-4 | Blocks AS-3 |
+| SE-5.5 | Internal Gate Skills Hardening | 🔲 NOT STARTED | SE-5 | Blocks AS-7 |
+| SE-6 | Meta-Builder Skills Enhancement | 🔲 NOT STARTED | SE-5 | — |
+| SE-7 | Integration Verification | 🔲 NOT STARTED (blocked) | SE-5 + SE-6 | — |
+| SE-8 | Orphan Skill Hardening | 🔲 NOT STARTED | SE-2 | — |
+| SE-9 | Final Integrity Verification | 🔲 NOT STARTED (blocked) | SE-7 + SE-8 | — |
+| SE-10 | Skill Routing & Agent Dispatch Bindings | 🔲 NOT STARTED | SE-9 | Blocks AS-3, AS-7 |
+| SE-11 | Naming Syndicate Formalization | 🔲 NOT STARTED | SE-10 | Blocks AS-11 |
+| SE-12 | Tool Capability Matrix (Skill Side) | 🔲 NOT STARTED | SE-9 | Blocks AS-9 |
+| SE-13 | Hivemind Engine Contracts | 🔲 NOT STARTED | SE-12 | Blocks AS-10 |
+| SE-14 | Skill-Agent Integration Contracts | 🔲 NOT STARTED | SE-13 + SE-11 | Blocks AS-7, AS-8 |
+| SE-H1→SE-H14 | Historical Phases | ✅ COMPLETE | — | — |
 
 **Total forward phases: 17** (SE-1 through SE-14, including SE-2, SE-3, SE-3.5, SE-3.6, SE-4, SE-5, SE-5.5, SE-6, SE-7, SE-8, SE-9, SE-10, SE-11, SE-12, SE-13, SE-14)
 
