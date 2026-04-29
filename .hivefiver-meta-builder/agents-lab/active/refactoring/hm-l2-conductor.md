@@ -5,17 +5,13 @@ mode: primary
 temperature: 0.3
 steps: 80
 permission:
-  edit:
-    '*': deny
-    '*.md': allow
-  write:
-    '*': deny
+  edit: ask
+  write: ask
   bash:
-    '*': deny
-    git status*: allow
-    git diff*: allow
-    git log*: allow
-    ls*: allow
+    '*': ask
+    git *: allow
+    node *: allow
+    npx *: allow
   task:
     '*': deny
   delegate-task: allow

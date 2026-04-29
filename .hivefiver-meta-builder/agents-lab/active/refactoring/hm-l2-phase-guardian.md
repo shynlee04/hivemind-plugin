@@ -9,13 +9,13 @@ instruction:
 steps: 60
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    '*': deny
-    git status*: allow
-    git diff*: allow
-    git log*: allow
+    '*': ask
+    git *: allow
+    node *: allow
+    npx *: allow
   task:
     '*': deny
   delegate-task: deny

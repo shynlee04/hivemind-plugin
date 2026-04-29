@@ -13,15 +13,13 @@ permission:
     '*.md': allow
     '*.ts': allow
     '*.json': allow
-  edit:
-    '*': deny
-    '**/specs/**': allow
-    '**/.opencode/**': allow
-  write:
-    '*': deny
-    '**/specs/**': allow
-    '**/.opencode/**': allow
-  bash: deny
+  edit: ask
+  write: ask
+  bash:
+    '*': ask
+    git *: allow
+    node *: allow
+    npx *: allow
   task:
     '*': deny
   skill:

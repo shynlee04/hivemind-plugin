@@ -13,15 +13,13 @@ instruction:
   - AGENTS.md
 permission:
   read: allow
-  edit:
-    '*': deny
-    .hivemind/state/**: allow
-  write:
-    '*': deny
-    .hivemind/state/**: allow
+  edit: ask
+  write: ask
   bash:
-    '*': deny
+    '*': ask
     git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
   task:

@@ -10,8 +10,8 @@ instructions:
   - .opencode/rules/skill-activation.md
 steps: 40
 permission:
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash: allow
   task:
     '*': deny

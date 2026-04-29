@@ -12,14 +12,10 @@ instruction:
   - AGENTS.md
 permission:
   read: allow
-  edit:
-    '*': deny
-    .opencode/skills/**: allow
-  write:
-    '*': deny
-    .opencode/skills/**: allow
+  edit: ask
+  write: ask
   bash:
-    '*': deny
+    '*': ask
     git *: allow
     node *: allow
     npx *: allow

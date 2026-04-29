@@ -21,10 +21,10 @@ color: '#3B82F6'
 steps: 100
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    '*': deny
+    '*': ask
     git *: allow
     node *: allow
     npx *: allow

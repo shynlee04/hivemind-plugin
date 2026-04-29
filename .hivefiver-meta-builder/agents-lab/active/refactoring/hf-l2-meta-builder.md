@@ -15,20 +15,13 @@ instruction:
   - AGENTS.md
 permission:
   read: allow
-  edit:
-    '*': deny
-    .opencode/**: allow
-    .hivefiver-meta-builder/**: allow
-  write:
-    '*': deny
-    .opencode/**: allow
-    .hivefiver-meta-builder/**: allow
+  edit: ask
+  write: ask
   bash:
-    '*': deny
+    '*': ask
     git *: allow
     node *: allow
-    ls *: allow
-    find *: allow
+    npx *: allow
   glob: allow
   grep: allow
   task:

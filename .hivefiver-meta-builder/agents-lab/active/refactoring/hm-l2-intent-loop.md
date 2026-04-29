@@ -15,13 +15,13 @@ permission:
     '*.ts': allow
     '*.yaml': allow
     '*.yml': allow
-  edit:
-    '*': deny
-  write:
-    '*': deny
-    .opencode/**/*.md: allow
+  edit: ask
+  write: ask
   bash:
-    '*': deny
+    '*': ask
+    git *: allow
+    node *: allow
+    npx *: allow
   task:
     '*': deny
   skill:

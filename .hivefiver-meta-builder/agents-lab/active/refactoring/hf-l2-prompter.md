@@ -20,14 +20,10 @@ permission:
   edit: allow
   write: allow
   bash:
-    '*': deny
+    '*': ask
     git *: allow
     node *: allow
     npx *: allow
-    mkdir *: allow
-    cat >> *: allow
-    export *: allow
-    set *: allow
   glob: allow
   grep: allow
   webfetch: allow

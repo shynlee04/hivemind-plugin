@@ -7,10 +7,8 @@ instructions:
   - .opencode/rules/anti-patterns.md
   - .opencode/rules/skill-activation.md
 permission:
-  edit:
-    '*': deny
-  write:
-    '*': deny
+  edit: ask
+  write: ask
   grep: allow
   glob: allow
   task:

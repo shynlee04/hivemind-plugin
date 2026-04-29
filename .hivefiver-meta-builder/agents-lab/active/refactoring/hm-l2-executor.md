@@ -17,10 +17,9 @@ permission:
   edit: allow
   write: allow
   bash:
-    '*': deny
+    '*': ask
     git *: allow
     node *: allow
-    npm *: allow
     npx *: allow
   glob: allow
   grep: allow

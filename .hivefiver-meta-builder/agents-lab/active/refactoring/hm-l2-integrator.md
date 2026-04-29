@@ -14,12 +14,11 @@ instruction:
 permission:
   read: allow
   edit: allow
-  write: deny
+  write: ask
   bash:
-    '*': deny
+    '*': ask
     git *: allow
     node *: allow
-    npm *: allow
     npx *: allow
   glob: allow
   grep: allow
