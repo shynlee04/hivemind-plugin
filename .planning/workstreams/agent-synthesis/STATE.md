@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 workstream: agent-synthesis
 status: ACTIVE
 phase_count: 12
-current_phase: AS-8
-last_updated: "2026-04-30T01:30:00Z"
+current_phase: AS-7
+last_updated: "2026-04-30T03:00:00Z"
 progress:
   total_phases: 12
-  completed_phases: 8
+  completed_phases: 9
   authorized_phases: 0
   plans_written: 8
-  plans_executed: 8
+  plans_executed: 9
 ---
 
 # STATE: Agent Synthesis Workstream
@@ -25,17 +25,18 @@ progress:
 - **AS-8:** COMPLETE (2026-04-30) — Tool Permissions Matrix verified: all 40 agents pass lineage boundaries, all skill refs resolve, zero violations
 - **hm-* lineage now has 30 agents:** 2 L0/L1 orchestrators + 28 L2 specialists
 - **hf-* lineage now has 10 agents:** 2 L0/L1 orchestrators + 8 L2 specialists
-- **Next Action:** AS-7 — Wiring & Verification (quality gate triad)
+- **AS-7:** COMPLETE (2026-04-30) — Body Enrichment: workflow_awareness + execution_flow across all 40 agents, YAML frontmatter standardization, hf-prompter XML body rebuild. All 40 agents pass 10/10 required + 6/6 optional XML tags.
+- **Next Action:** AS-9 — Wiring & Verification (quality gate triad)
 
 ## Progress Table
 
 | Metric | Count |
 |--------|-------|
 | Total phases | 12 |
-| Completed | 8 (AS-0, AS-1, AS-2, AS-3, AS-4, AS-5, AS-6 gap-fill, AS-8) |
+| Completed | 9 (AS-0, AS-1, AS-2, AS-3, AS-4, AS-5, AS-6 gap-fill, AS-7, AS-8) |
 | Authorized | 0 |
-| Plans written | 7 (AS-0 PLAN.md, AS-1 PLAN.md, AGENT-INVENTORY.md, AS-2 PLAN.md, AS-3 CONTEXT, AS-4 CONTEXT, AS-5 CONTEXT) |
-| Plans executed | 7 (AS-0, AS-1, AS-2, AS-3, AS-4, AS-5, AS-6 gap-fill) |
+| Plans written | 8 (AS-0 PLAN.md, AS-1 PLAN.md, AGENT-INVENTORY.md, AS-2 PLAN.md, AS-3 CONTEXT, AS-4 CONTEXT, AS-5 CONTEXT, AS-7 CONTEXT) |
+| Plans executed | 9 (AS-0, AS-1, AS-2, AS-3, AS-4, AS-5, AS-6 gap-fill, AS-7, AS-8) |
 
 ## Agent Inventory (2026-04-30)
 
@@ -139,4 +140,5 @@ SE-14 (quality baselines) ──feeds──→ AS-8 (body enrichment targets)
 - **AS-4 Complete** (2026-04-30): hm-* Specialist Batch 1 executed. 5 L2 hm-* agent files created: hm-validator.md (230L, temp 0.05, Quality), hm-ecologist.md (234L, temp 0.1, Ecosystem), hm-technician.md (236L, temp 0.1, Technology), hm-auditor.md (230L, temp 0.05, Quality), hm-guardian.md (238L, temp 0.05, Execution). All follow exact hm-researcher.md format: 10+6 XML tags, hm STRICT binding, deny-all permission model, structured output contracts with table formats, anti-pattern catalogs, self-correction sections. AS-4-SUMMARY.md created. Agent inventory now 80 (59 base + 3 hf AS-6 + 2 hm L0/L1 AS-3 + 10 hm L2 AS-4/AS-5).
 - **AS-5 Complete** (2026-04-30): hm-* Specialist Batch 2 executed simultaneously with AS-4. 5 L2 hm-* agent files created: hm-mentor.md (228L, temp 0.15, Discovery), hm-operator.md (241L, temp 0.1, Execution), hm-connector.md (241L, temp 0.1, Integration), hm-assessor.md (236L, temp 0.05, Quality), hm-finisher.md (245L, temp 0.05, Execution). All pass quality baseline: 10+6 XML tags, hm STRICT binding, deny-all permissions, temperature-depth matching, no hf-* skills. AS-5-SUMMARY.md created. hm-* lineage now has 12 agents: 2 orchestrators (L0/L1) + 10 specialists (L2). KI-09 (CRITICAL: zero hm-* agents) RESOLVED. Agent inventory now 84 total.
 - **AS-8 Complete** (2026-04-30): Tool Integration & Permissions Audit executed. Full permissions matrix audited across all 40 hm-*/hf-* agents. TOOL-PERMISSIONS-MATRIX.md created (330+ lines, 7 sections). Key findings: (1) ZERO lineage boundary violations — no hm-* agent references hf-* skills, all L2 agents correctly prohibit delegation. (2) All 50+ skill references resolve to actual SKILL.md files. (3) All 4 L0/L1 orchestrators have delegate-task:allow. (4) Universal deny-all + explicit allow permission model confirmed across all 40 agents. (5) Depth-respecting delegation chain verified: L0→L1→L2, no upward or lateral delegation. (6) session-patch universally denied — all state mutation through src/ tools. ZERO fixes needed — clean audit. AS-8-SUMMARY.md created.
-- Next session should begin AS-6: hf-* Meta Builder Agent Authoring — L2 hf-* specialist agents for the meta-builder lineage.
+- **AS-7 Complete** (2026-04-30): Body Enrichment & Standardization executed across all 40 hm-*/hf-* agents. Key deliverables: (1) hf-prompter.md completely rebuilt from old free-text format to full XML-tagged body with all 10+6 tags. (2) workflow_awareness added to all 40 agents describing task routing and peer agent awareness. (3) execution_flow added to 20 hm-* L2 agents missing step-by-step execution flows. (4) YAML frontmatter field ordering standardized to: name → description → mode → temperature → depth → lineage → domain → skills → instruction → permission. (5) Final audit: 40/40 PASS — all agents have 10/10 required + 6/6 optional XML tags. AS-7-SUMMARY.md created. Commits: 5886d36 (hf-prompter rebuild), 3126243 (workflow_awareness + execution_flow), c0340f1 (frontmatter standardization).
+- Next session should begin AS-9: Wiring & Verification — quality gate triad across all 40 agents.
