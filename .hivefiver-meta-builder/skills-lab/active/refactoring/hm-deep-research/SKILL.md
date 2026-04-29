@@ -1,6 +1,6 @@
 ---
 name: hm-deep-research
-description: Conduct version-matched deep research with MCP tools and citation tracking. Use when investigating libraries, verifying API signatures, or gathering multi-source evidence. NOT for quick lookups or single-source checks.
+description: Conduct version-matched deep research with MCP tools and citation tracking. Use when investigating libraries, verifying API signatures, or gathering multi-source evidence. Stage 2 of the hm-research-chain pipeline. Consumes codebase maps from hm-detective and cached assets from hm-tech-stack-ingest. Feeds findings into hm-synthesis for artifact compression. NOT for quick lookups or single-source checks.
 metadata:
   layer: "2"
   role: "research"
@@ -30,10 +30,48 @@ Conduct version-matched deep research with MCP tools and citation tracking. Use 
 For reading modes during investigation: load skill "hm-detective"
 Reading modes: SKIM for orientation, SCAN for targeted extraction, DEEP for interface analysis
 
+For cached tech stack assets (offline API signatures, repo references): load skill "hm-tech-stack-ingest"
+Cross-architecture research routing: When hm-tech-stack-ingest has cached a library, use the cached
+API signatures instead of Context7 or web searches. This validates against REAL code, not assumptions.
+
 For artifact export and compression: load skill "hm-synthesis"
 Export tier: Standard (findings + decisions) for most research
 Compression: Snapshot for full analysis, Focused for targeted investigation
+
+For chain orchestration: load skill "hm-research-chain"
+hm-deep-research is Stage 2 of the canonical research chain.
 </execution_context>
+
+## Cross-Architecture Research Routing
+
+When `hm-tech-stack-ingest` has cached a library's full source, API signatures, or documentation, route research requests through cached assets BEFORE external MCP tools.
+
+### Routing Decision Tree
+
+```
+Is the target library cached in references/tech-stacks/<name>/?
+├── YES → Use cached assets first
+│   ├── Need API signature? → grep references/tech-stacks/<name>/api/
+│   ├── Need full source? → read references/tech-stacks/<name>/raw/
+│   ├── Need usage examples? → read references/tech-stacks/<name>/examples/
+│   └── Cached version differs from installed? → Flag discrepancy, use installed version
+└── NO → Use MCP tools (Context7, DeepWiki, Repomix, Tavily)
+    └── After research, consider ingesting via hm-tech-stack-ingest for future use
+```
+
+### Validation Priority
+
+When both cached assets and web documentation are available:
+
+| Source | Priority | When to Trust |
+|--------|----------|---------------|
+| **Cached source code** (repomix raw/) | HIGHEST | For API signatures, type definitions, and implementation details |
+| **Cached API docs** (context7 api/) | HIGH | For official API behavior and examples |
+| **Cached structured docs** (deepwiki docs/) | MEDIUM | For architecture overview and module relationships |
+| **Web search** (Tavily, Brave) | LOW | Only for current information, news, or community patterns |
+| **Live Context7** | FALLBACK | When nothing is cached |
+
+**Rule:** If cached source code exists for the exact version in use, validate every claimed API signature against the cached source. Do not trust web documentation without verification against cached code.
 
 ---
 
@@ -404,3 +442,42 @@ Load references ONLY when the SKILL.md is insufficient for your task.
 | Only need tool parameters | All references | Tool Quick Reference above is sufficient |
 | Single-option evaluation | case-comparison.md, competitive patterns | No comparison needed |
 | Context > 50% consumed | ALL references | Synthesize what you have, document gaps |
+
+## Cross-References
+
+### Research Chain Position
+
+```
+hm-tech-stack-ingest → hm-detective → hm-deep-research → hm-synthesis
+         (upstream)    (upstream)     (this skill)     (downstream)
+```
+
+hm-deep-research is **Stage 2 (Research)** of the canonical `hm-research-chain` pipeline.
+
+### Upstream Skills (Feeds Into This Skill)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-tech-stack-ingest` | Cached API signatures, repo references, and version-matched source code. Use cached assets for signature-level validation before external searches. See [Cross-Architecture Research Routing](#cross-architecture-research-routing). |
+| `hm-detective` | Codebase map and `.tech-registry.json`. hm-detective tells hm-deep-research WHAT technology stack is in use so research is version-matched. |
+
+### Downstream Skills (This Skill Feeds Into)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-synthesis` | hm-deep-research produces structured findings with citations and evidence levels. hm-synthesis compresses these into actionable artifacts. |
+
+### Related / Sibling Skills
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-research-chain` | Orchestrator. hm-deep-research is Stage 2 of the chain. hm-research-chain decides when to trigger hm-deep-research after Stage 1 detection. |
+
+### Boundary Clarification
+
+| Nearby Skill | What hm-deep-research Does | What the Other Skill Does |
+|-------------|--------------------------|--------------------------|
+| `hm-tech-stack-ingest` | Uses cached API signatures for research validation; researches what isn't cached using MCP tools | Downloads and caches libraries; does NOT perform research or compare approaches |
+| `hm-detective` | Researches external libraries, APIs, and web sources using version-matched queries | Investigates local codebase structure with SCAN/READ/DEEP modes |
+| `hm-synthesis` | Produces structured research findings with citations, evidence levels, and source evaluation | Compresses and restructures those findings into plans, ADRs, and exportable artifacts |
+| `hm-research-chain` | Executes Stage 2 evidence gathering when triggered by the chain | Orchestrates the full pipeline, routes between stages, and handles continuation metadata |

@@ -179,7 +179,6 @@ If two plans in the same wave touch the same file, they cannot run in parallel â
 | `references/wave-protocol.md` | Grouping plans into waves |
 | `references/checkpoint-recovery.md` | Recovering from mid-phase interruption |
 | `references/execution-state-template.md` | Claim/artifact/done/failure state schema |
-| `evals/evals.json` | Trigger and pressure scenarios for wave recovery |
 
 ## Cross-References
 

@@ -12,10 +12,12 @@ Synthesized compliance patterns from DO-178C traceability standards, EARS requir
 |------------------|------------------------|
 | Software Requirements Data | SPEC.md |
 | Design Description | PLAN.md + architecture docs |
-| Source Code | Implementation files in `src/` |
-| Test Cases | Test files in `tests/` |
-| Test Results | Test runner output (vitest) |
-| Traceability Data | RTM in `.planning/` or compliance report |
+| Source Code | Implementation files in code root |
+| Test Cases | Test files in test root |
+| Test Results | Test runner output |
+| Traceability Data | RTM in planning directory or compliance report |
+
+> **Project-to-Project Adaptation (RICH-6):** The "GSD Pipeline Equivalent" column uses generic artifact names (SPEC.md, PLAN.md, code root, test root). These are NOT hardcoded paths — they are logical artifact roles. The gate auto-detects code and test roots from the calling workflow's provided paths. Adapt the mapping table to your project's artifact structure: if your code lives in `src/`, `lib/`, `app/`, or a monorepo package, supply that path as the `CODE_ROOT` argument. If your tests live in `tests/`, `spec/`, `__tests__/`, or co-located `*.test.ts` files, supply that as the `TEST_ROOT`. The skill does not assume `src/` or `tests/` — the calling workflow or user provides those paths.
 
 ### Traceability Rules
 

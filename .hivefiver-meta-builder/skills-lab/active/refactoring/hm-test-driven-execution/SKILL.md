@@ -204,7 +204,6 @@ Coverage is not a substitute for RED/GREEN evidence. A high percentage with inva
 | `references/coverage-verification.md` | Honest coverage command states and missing-tooling handling. |
 | `templates/test-case-template.md` | Runner-agnostic test case scaffold with public-interface and evidence fields. |
 | `workflows/tdd-session-workflow.md` | Action/state workflow for start/red/green/refactor/coverage/status. |
-| `metrics/rich-eval-rubric.json` | RICH/D1-D8 scoring hooks and runtime-truthful evidence labels. |
 | `scripts/validate-rich-package.sh` | Static package validator for required source-backed resources. |
 
 ## Cross-Platform Adapters

@@ -1,6 +1,6 @@
 ---
 name: hm-detective
-description: Investigate codebases with SCAN, READ, and DEEP reading modes. Use when navigating large codebases, finding definitions, or recovering session context. NOT for writing code or running tests.
+description: Investigate codebases with SCAN, READ, and DEEP reading modes. Use when navigating large codebases, finding definitions, or recovering session context. Stage 1 of the hm-research-chain pipeline. Feeds findings into hm-deep-research and hm-synthesis. Consumes cached assets from hm-tech-stack-ingest. NOT for writing code or running tests.
 metadata:
   layer: "2"
   role: "investigation"
@@ -235,4 +235,43 @@ Load references ONLY when the SKILL.md procedures are insufficient for your task
 | Only need token estimates | reading-modes.md, swarm-recovery.md | Load only token-budget.md |
 | Already know the tech stack | tech-registry.md | Read .tech-registry.json directly |
 | Context > 50% consumed | ALL references | Use cheapest mode available, document gaps |
+
+## Cross-References
+
+### Research Chain Position
+
+```
+hm-tech-stack-ingest → hm-detective → hm-deep-research → hm-synthesis
+         (upstream)       (this skill)    (downstream)    (downstream)
+```
+
+hm-detective is **Stage 1 (Detect)** of the canonical `hm-research-chain` pipeline.
+
+### Upstream Skills (Feeds Into This Skill)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-tech-stack-ingest` | Cached codebases and API signatures for tech registry population. Read `.tech-registry.json` from ingested assets before scanning. |
+
+### Downstream Skills (This Skill Feeds Into)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-deep-research` | Evidence gathering. hm-detective produces the tech registry and codebase map that hm-deep-research uses for scope-aware searches. |
+| `hm-synthesis` | Compression and artifact export. hm-detective's findings (tech registry, file maps, dependency graphs) become inputs for hm-synthesis pattern classification. |
+
+### Related / Sibling Skills
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-research-chain` | Orchestrator. hm-detective is Stage 1 of the chain. hm-research-chain decides when to trigger hm-detective and how to route its output. |
+
+### Boundary Clarification
+
+| Nearby Skill | What hm-detective Does | What the Other Skill Does |
+|-------------|----------------------|--------------------------|
+| `hm-tech-stack-ingest` | Reads the `.tech-registry.json` and scans the codebase with SCAN/DEEP modes | Downloads and caches third-party repos as persistent bundled assets |
+| `hm-deep-research` | Investigates the local codebase structure, tech stack, and module dependencies | Investigates external libraries, API signatures, and web sources with version-matched queries |
+| `hm-synthesis` | Produces structured codebase findings (tech registry, file maps, dependency graphs) | Compresses findings into actionable artifacts with tiered reduction |
+| `hm-research-chain` | Executes Stage 1 detection when triggered by the chain | Orchestrates the full detect → research → synthesize pipeline |
 | Single-file edit | surgical-edits.md | Follow the 5-step protocol from SKILL.md |

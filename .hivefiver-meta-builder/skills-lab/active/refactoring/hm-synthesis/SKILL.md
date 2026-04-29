@@ -1,6 +1,6 @@
 ---
 name: hm-synthesis
-description: Compress research findings into actionable artifacts with tiered reduction. Use when packing codebases, extracting interfaces, or producing validated reports. NOT for raw data collection or unfiltered dumps.
+description: Compress research findings into actionable artifacts with tiered reduction. Use when packing codebases, extracting interfaces, or producing validated reports. Stage 3 of the hm-research-chain pipeline. Consumes findings from hm-detective and evidence from hm-deep-research. Uses cached API signatures from hm-tech-stack-ingest for validation. NOT for raw data collection or unfiltered dumps.
 metadata:
   layer: "2"
   role: "compression"
@@ -27,6 +27,15 @@ Compress research findings into actionable artifacts with tiered reduction. Use 
 <execution_context>
 For reading modes during analysis: load skill "hm-detective"
 Reading modes: SKIM for orientation, SCAN for targeted extraction, DEEP for interface analysis
+
+For cached tech stack assets (offline API signatures for validation): load skill "hm-tech-stack-ingest"
+Use cached API signatures to validate against REAL code before generating artifacts or quality gates.
+
+For research findings to synthesize: load skill "hm-deep-research"
+hm-synthesis consumes structured research outputs with citations and evidence levels.
+
+For chain orchestration: load skill "hm-research-chain"
+hm-synthesis is Stage 3 of the canonical research chain.
 </execution_context>
 
 ---
@@ -109,7 +118,7 @@ Output: raw import/require/event list with file:line pairs.
 |----------|---------|---------|
 | **internal** | Same package, `./` or `../` imports | `import { foo } from "./helpers"` |
 | **external** | node_modules, npm packages | `import { z } from "zod"` |
-| **peer** | Required but not bundled | `@opencode-ai/plugin` |
+| **peer** | Required but not bundled | e.g., `react` for a React plugin, `express` for middleware |
 | **dev** | Build/test only | `vitest`, `typescript` |
 
 ### DETECT — Find Problems
@@ -382,3 +391,43 @@ Load references ONLY when the SKILL.md procedures are insufficient for your task
 - **[Corpus Gate](references/corpus-gate.md)** — Assembly procedures, quality scoring, anti-patterns
 - **[Validated Playbooks](references/validated-playbooks.md)** — End-to-end synthesis workflows with validation gates
 - **[Artifact Export](references/artifact-export.md)** — Export formats, naming conventions, promotion gates
+
+## Cross-References
+
+### Research Chain Position
+
+```
+hm-tech-stack-ingest → hm-detective → hm-deep-research → hm-synthesis
+         (upstream)    (upstream)     (upstream)     (this skill)
+```
+
+hm-synthesis is **Stage 3 (Synthesize)** of the canonical `hm-research-chain` pipeline.
+
+### Upstream Skills (Feeds Into This Skill)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-tech-stack-ingest` | Cached API signatures, type definitions, and repo references for offline validation. Use cached assets to verify generated artifacts against REAL code. |
+| `hm-detective` | Codebase map, `.tech-registry.json`, and dependency graph. hm-detective provides the structural understanding needed for pattern classification and interface extraction. |
+| `hm-deep-research` | Structured research findings with citations, evidence levels, contradiction matrices, and source evaluations. hm-synthesis compresses these into artifacts. |
+
+### Downstream Skills (This Skill Feeds Into)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-research-chain` | hm-synthesis produces the final artifact that hm-research-chain exports and persists with continuation metadata. |
+
+### Related / Sibling Skills
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-research-chain` | Orchestrator. hm-synthesis is Stage 3 of the chain. hm-research-chain triggers hm-synthesis after Stage 2 research completes and routes its output to artifact export. |
+
+### Boundary Clarification
+
+| Nearby Skill | What hm-synthesis Does | What the Other Skill Does |
+|-------------|----------------------|--------------------------|
+| `hm-tech-stack-ingest` | Uses cached API signatures to validate generated artifacts; does NOT download repositories | Downloads, caches, and organizes third-party repositories as bundled assets |
+| `hm-detective` | Compresses codebase structure into pattern classifications and interface extractions | Investigates the live codebase with SCAN/READ/DEEP modes |
+| `hm-deep-research` | Synthesizes, compresses, and restructures research findings into actionable artifacts | Generates structured research findings with MCP tools and multi-source evidence |
+| `hm-research-chain` | Executes Stage 3 artifact compression when triggered by the chain | Orchestrates the full ingest → detect → research → synthesize pipeline |

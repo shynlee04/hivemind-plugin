@@ -47,7 +47,7 @@ Catalog of 7 anti-patterns that undermine evidence truth. Detect these during ST
 
 **Severity:** CRITICAL (blocks gate)
 
-**Description:** Tests named "integration" that mock SDK boundaries. If `session-api.ts`, `continuity.ts`, or `delegation-manager.ts` are mocked, the test is a unit test (L4), not an integration test (L3).
+**Description:** Tests named "integration" that mock SDK boundaries. If core API modules (session API, continuity/store, delegation/orchestration) are mocked, the test is a unit test (L4), not an integration test (L3). In the harness project, these are `session-api.ts`, `continuity.ts`, and `delegation-manager.ts` — adapt to your project's equivalent boundary modules.
 
 **Detection:**
 ```bash
@@ -55,7 +55,7 @@ grep -rn "vi.mock\|jest.mock\|sinon.stub" tests/ --include="*.test.ts"
 grep -l "integration" tests/ | xargs grep -l "vi.mock\|jest.mock"
 ```
 - Test file contains "integration" in name but mocks external boundaries
-- Import paths mock core SDK wrappers
+- Import paths mock core SDK wrappers or external API boundaries
 - Test creates synthetic state instead of exercising real I/O
 
 **Remediation:** Create true integration tests that hit real SDK boundaries. Keep mocked tests as L4 unit tests.

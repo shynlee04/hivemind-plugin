@@ -158,7 +158,6 @@ Default state path is `.debug/<bug-id>.md` in the end-user project. If a project
 |------|-------------|
 | `references/debug-state-machine.md` | Structured protocol for each debug phase |
 | `references/evidence-framework.md` | How to collect, rank, and test evidence |
-| `evals/evals.json` | Trigger and pressure scenarios for root-cause gate compliance |
 
 ## Self-Correction
 

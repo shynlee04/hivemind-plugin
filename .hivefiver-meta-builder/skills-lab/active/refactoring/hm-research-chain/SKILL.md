@@ -1,12 +1,14 @@
 ---
 name: hm-research-chain
 description: >
-  Orchestrate the canonical research chain: detect → research → synthesize → artifact.
+  Orchestrate the canonical research chain: ingest → detect → research → synthesize → artifact.
   Use when starting a research task, chaining investigation skills, producing a final artifact
   from multiple sources, when the user needs comprehensive analysis, or when research needs
   to be structured and repeatable. Even when the user says "look into this" or "find out about."
   Triggers: "research", "investigate", "analysis", "deep dive", "comprehensive research",
   "research chain", "multi-source", "synthesize findings".
+  Sibling skills: use with "hm-detective" for codebase detection, "hm-deep-research" for evidence
+  gathering, "hm-synthesis" for compression, "hm-tech-stack-ingest" for dependency caching.
   NOT for single-source lookups or quick fact-checking.
 metadata:
   layer: "1"
@@ -133,8 +135,25 @@ next_action: verify | implement | ask | block
 
 ## Cross-References
 
+### Downstream Skills (This Skill Orchestrates)
+
 | Related Skill | Boundary |
 |---------------|----------|
-| `hm-detective` | Stage 1 — detection and scanning. This skill orchestrates the full chain. |
+| `hm-detective` | Stage 1 — detection and scanning. This skill triggers hm-detective as the first chain stage. |
 | `hm-deep-research` | Stage 2 — evidence gathering. This skill ensures it feeds into synthesis. |
 | `hm-synthesis` | Stage 3 — compression and artifact export. This skill triggers it at the right time. |
+
+### Upstream Skills (Feeds Into This Skill)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `hm-tech-stack-ingest` | Foundation — cached API signatures and repo references. Ingest before researching to validate against real code, not assumptions. |
+
+### Boundary Clarification
+
+| Nearby Skill | What hm-research-chain Does | What the Other Skill Does |
+|-------------|---------------------------|--------------------------|
+| `hm-tech-stack-ingest` | Orchestrates the full research pipeline end-to-end | Ingests and caches individual tech stacks as bundled assets |
+| `hm-detective` | Calls hm-detective for Stage 1 codebase scanning | Performs the actual SCAN/READ/DEEP investigation of the codebase |
+| `hm-deep-research` | Calls hm-deep-research for Stage 2 evidence gathering | Conducts version-matched research with MCP tools and citations |
+| `hm-synthesis` | Calls hm-synthesis for Stage 3 artifact compression | Compresses findings into actionable artifacts with tiered reduction |

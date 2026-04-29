@@ -46,7 +46,6 @@ NEVER run a command that waits for user input. The shell has no TTY. Interactive
 | `references/env-variables.md` | Need environment variable configurations |
 | `references/cognitive-patterns.md` | Need cognitive optimization patterns (BAD vs GOOD framing) |
 | `references/prompt-handling.md` | Need workaround patterns for stubborn prompts |
-| `evals/evals.json` | Trigger and pressure scenarios for shell safety compliance |
 | `references/source-evidence.md` | RICH source replacement and bundled-resource scorecard |
 
 ## Cognitive & Behavioral Standards

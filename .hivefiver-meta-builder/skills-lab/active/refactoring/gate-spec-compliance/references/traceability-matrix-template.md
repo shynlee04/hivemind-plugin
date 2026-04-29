@@ -20,15 +20,15 @@ GSD-specific Requirements Traceability Matrix (RTM) template. Maps SPEC.md requi
 | System Requirements | PROJECT.md | UAT |
 | Phase Requirements | SPEC.md | Integration Tests |
 | Design | PLAN.md | Unit Tests |
-| Implementation | Code in `src/` | Unit Tests |
-| Verification | Tests in `tests/` | Test Runner |
+| Implementation | Code in code root | Unit Tests |
+| Verification | Tests in test root | Test Runner |
 
 ## Traceability Matrix
 
 | REQ-ID | Description | Source Section | Plan Task | Code Files | Test Cases | Verification Method | Status | Defects |
 |--------|-------------|----------------|-----------|------------|------------|-------------------|--------|---------|
-| REQ-[domain]-01 | [One-line description] | SPEC.md §[n] | PLAN task [n] | `src/lib/[file].ts` | `tests/lib/[file].test.ts` | [Automated/Manual] | [PASS/FAIL/GAP/BLOCKED] | [None or defect ID] |
-| REQ-[domain]-02 | [One-line description] | SPEC.md §[n] | PLAN task [n] | `src/lib/[file].ts` | `tests/lib/[file].test.ts` | [Automated/Manual] | [PASS/FAIL/GAP/BLOCKED] | [None or defect ID] |
+| REQ-[domain]-01 | [One-line description] | SPEC.md §[n] | PLAN task [n] | `<CODE_ROOT>/[module].ts` | `<TEST_ROOT>/[module].test.ts` | [Automated/Manual] | [PASS/FAIL/GAP/BLOCKED] | [None or defect ID] |
+| REQ-[domain]-02 | [One-line description] | SPEC.md §[n] | PLAN task [n] | `<CODE_ROOT>/[module].ts` | `<TEST_ROOT>/[module].test.ts` | [Automated/Manual] | [PASS/FAIL/GAP/BLOCKED] | [None or defect ID] |
 
 ## Gap Summary
 
@@ -79,12 +79,26 @@ GSD-specific Requirements Traceability Matrix (RTM) template. Maps SPEC.md requi
 4. Timestamp every regeneration
 5. Archive previous version with date suffix before overwriting
 
-## Hivemind Artifact Path Conventions
+## Artifact Path Conventions (Adapter Note)
+
+> **RICH-6 Independence:** These path patterns are DETECTION GUIDANCE, not hardcoded assumptions. In end-user OpenCode projects, adapt the detection patterns to match the project's actual structure. The calling workflow provides `CODE_ROOT` and `TEST_ROOT` as arguments.
+
+### Detection Patterns by Project Type
+
+| Project Type | Code Root (common) | Test Root (common) | Detection Method |
+|-------------|-------------------|--------------------|------------------|
+| TypeScript/Node (monorepo) | `src/`, `packages/*/src/` | `test/`, `__tests__/`, co-located `*.test.ts` | `find CODE_ROOT -name '*.ts' -not -name '*.d.ts'` |
+| TypeScript/Node (single) | `src/`, `lib/` | `tests/`, `test/`, `spec/` | `find CODE_ROOT -name '*.ts' -not -name '*.d.ts'` |
+| Hivemind harness | `src/lib/[module].ts`, `src/tools/[tool].ts` | `tests/lib/[module].test.ts`, `tests/tools/[tool].test.ts` | GSD-specific conventions |
+| Python | `src/`, project-name/ | `tests/`, `test/` | `find CODE_ROOT -name '*.py' -not -path '*/__pycache__/*'` |
+| Go | `cmd/`, `internal/`, `pkg/` | `test/`, co-located `*_test.go` | `find CODE_ROOT -name '*.go' -not -name '*_test.go'` |
+
+### Template Artifact Paths
 
 | Artifact | Typical Path |
 |----------|-------------|
 | SPEC.md | `.planning/phases/[phase]/SPEC.md` |
 | PLAN.md | `.planning/phases/[phase]/PLAN.md` |
-| Implementation | `src/lib/[module].ts`, `src/tools/[tool].ts` |
-| Tests | `tests/lib/[module].test.ts`, `tests/tools/[tool].test.ts` |
+| Implementation | `<CODE_ROOT>/[module].[ext]` |
+| Tests | `<TEST_ROOT>/[module].test.[ext]` |
 | Compliance Report | `.planning/phases/[phase]/compliance-report.md` |

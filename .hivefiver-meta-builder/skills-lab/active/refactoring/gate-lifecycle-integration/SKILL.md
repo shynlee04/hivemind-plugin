@@ -2,184 +2,185 @@
 name: gate-lifecycle-integration
 description: >
   Internal quality gate that evaluates whether Hivemind harness implementations
-  correctly participate in the runtime lifecycle — covering CQRS boundaries,
-  actor hierarchy, event-driven wiring, classification fit (src/ vs .opencode/
-  vs .hivemind/), and OpenCode SDK surface compliance. Activates during code
-  review, phase audit, milestone verification, integration check, and deployment
-  readiness workflows. Use when performing a lifecycle gate check, auditing
-  harness module integration, verifying CQRS boundary compliance, checking
-  delegation hierarchy constraints, evaluating tool/hook registration correctness,
-  running a harness quality gate, or validating plugin composition integrity.
+  correctly participate in the runtime lifecycle — covering 9-surface mutation
+  authority, CQRS boundaries, actor hierarchy, event-driven wiring, classification
+  fit (src/ vs .opencode/ vs .hivemind/), and OpenCode SDK surface compliance.
+  Synthesized from .planning/codebase/ARCHITECTURE.md (9-surface authority table)
+  and ingested @opencode-ai/plugin SDK v1.14.28 docs (tool(), hook() signatures).
+  Use when performing a lifecycle gate check, auditing harness module integration,
+  verifying CQRS boundary compliance, checking delegation hierarchy constraints,
+  evaluating tool/hook registration correctness, running a harness quality gate,
+  validating plugin composition integrity, or running phase audit on src/ modules.
+  Activates during code review of src/ files, phase audit, milestone verification,
+  integration check, and deployment readiness workflows.
+metadata:
+  layer: "2"
+  role: "domain-execution"
+  pattern: P2
+  version: "2.0.0"
+  classification: internal-quality-gate
+  synthesis-source: ARCHITECTURE.md + @opencode-ai/plugin SDK docs
+  triad-position: entry
+  triad-siblings: [gate-spec-compliance, gate-evidence-truth]
+  triad-flow: "lifecycle → spec compliance → evidence truth"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
 ---
 
 # Gate: Lifecycle Integration
 
-Internal quality gate. Not for end-user shipping. Activates during every
-gatekeeping workflow related to Hivemind harness or OpenCode integration work.
+Internal quality gate for Hivemind harness architecture compliance. Not for end-user
+shipping. Activates during every gatekeeping workflow related to harness or OpenCode
+integration work.
 
 ## Activation Detection
 
-Load this skill when any of these conditions match the current workflow:
-
-- Code review of files in `src/`
+Load this skill when:
+- Code review of files in `src/` (any subdirectory)
 - Phase audit or milestone verification touching harness modules
 - Integration check after tool/hook/delegation changes
-- Deployment readiness assessment for the npm package
+- Deployment readiness for `opencode-harness` npm package
 - Any workflow referencing `gate-lifecycle-integration`
 
 ## Do NOT Load
 
-Skip this skill when:
+Skip when working on `.opencode/` soft meta-concept authoring, end-user feature
+development, non-Hivemind code reviews, documentation, or artifacts in
+`src/shared/`/`src/schema-kernel/` (use lighter classification check instead).
 
-- Working on `.opencode/` soft meta-concept authoring (skills, agents, commands) — not a lifecycle concern
-- Performing end-user feature development unrelated to harness internals
-- Running non-Hivemind project code reviews
-- Writing documentation, README files, or changelogs
-- The artifact is a `SHARED` or `SCHEMA` module (use lighter classification check instead)
-
-## Contextual Perspective Activation
-
-Identify the current context, then activate the matching lens pair.
-Load `references/perspective-rubrics.md` for full scoring criteria.
-
-| Context | Primary Lens | Secondary Lens | Emphasis |
-|---------|-------------|----------------|---------|
-| Code review | Dev | Architect | Interface correctness, code quality |
-| Phase audit | Architect | PM | Architecture integrity, scope retention |
-| Milestone verification | PM | Architect | Deliverable completeness |
-| Integration check | Architect | Dev | Cross-module wiring, SDK compliance |
-| Deployment readiness | All three | — | Full evaluation across all dimensions |
-
-Announce which lens pair is active before beginning evaluation.
-
-## Evaluation Decision Tree
-
-Follow this tree for each artifact under review. Start at the classification
-node, then execute the matching checklist from `references/evaluation-checklist.md`.
-
-```
-START → Classify the artifact:
-  ├─ TOOL (implements tool() in plugin)?
-  │   → Check: tool registration, Zod schema, response envelope,
-  │     SDK mutations, state persistence, LOC < 200
-  ├─ HOOK (implements hook handler)?
-  │   → Check: hook factory registration, signature correctness,
-  │     error boundary, CQRS compliance, sessionID extraction
-  ├─ LIBRARY (src/lib/ module)?
-  │   → Check: dependency graph compliance, LOC < 500, no `any`,
-  │     [Harness] error prefix, test coverage exists
-  ├─ PLUGIN.TS (composition root)?
-  │   → Check: LOC < 200, all tools registered, no inline business
-  │     logic, PTY lazy-loaded
-  └─ DELEGATION participant?
-      → Check: DelegationManager usage, valid category, depth limit,
-        queue key, dual-signal, recovery guarantee
-```
-
-For each branch, consult `references/evaluation-checklist.md` for the
-per-dimension audit criteria.
-
-## Anti-Pattern Detection
-
-Scan for the following anti-patterns during evaluation. Full catalog with
-detection methods and evidence requirements lives in
-`references/anti-patterns.md`.
-
-| ID | Severity | Summary |
-|----|----------|---------|
-| AP-01 | BLOCK | WRITE FROM READ-SIDE — hook calling `patchSessionContinuity()` outside exceptions |
-| AP-02 | BLOCK | DIRECT SDK CALL FROM HOOK — hook calling `client.session.create/prompt/abort` |
-| AP-03 | BLOCK | MISSING DISPOSAL — observer never cleaned up on session end |
-| AP-04 | BLOCK | SYNC BLOCK IN ASYNC HOOK — synchronous I/O in hook handlers |
-| AP-05 | BLOCK | INVALID LIFECYCLE TRANSITION — transitioning from terminal state |
-| AP-06 | BLOCK | UNBOUNDED DELEGATION DEPTH — exceeding `MAX_DELEGATION_DEPTH` (3) |
-| AP-07 | WARN | OBSERVER WITHOUT ERROR BOUNDARY |
-| AP-08 | WARN | STALE CONTINUITY CACHE |
-| AP-09 | WARN | HARDCODED TIMEOUTS (use adaptive polling constants) |
-| AP-10 | WARN | CATEGORY MISMATCH (not in `VALID_DELEGATION_CATEGORIES`) |
-| AP-11 | WARN | ORPHANED DELEGATION (no parent cleanup) |
-
-Any BLOCK-level finding stops the gate. Document findings using
-`templates/gate-report.md`.
-
-## CQRS Boundary Rules
-
-WRITE-SIDE (Tools):
-- Implements `tool()` in plugin return object
-- Has Zod schema in `schema-kernel/`
-- Calls SDK mutations via `session-api.ts` wrappers
-- May call `patchSessionContinuity()` for state writes
-- Returns structured tool response from `shared/tool-response.ts`
-- NEVER reads event stream directly
-
-READ-SIDE (Hooks):
-- Implements hook handler functions in plugin return object
-- Observes events from OpenCode event stream
-- May read continuity state (read-only access)
-- NEVER calls `patchSessionContinuity()` (except documented exceptions)
-- NEVER calls `delegationManager.dispatch()`
-- Principle: events flow from write to read, never the reverse
-
-## Classification Fit Verification
+## Two-Halves Classification (Q6)
 
 Every artifact must land in exactly one of three roots:
 
-| Root | Contents | State? |
-|------|----------|--------|
-| `src/` (hard harness) | Tools, hooks, plugin, shared, lib | No persistent state |
-| `.opencode/` (soft meta) | Skills, agents, commands, rules, permissions | No internal state |
-| `.hivemind/` (deep module) | Journals, lineage, runtime state, memory | Canonical state |
+| Root | Contents | State Authority |
+|------|----------|-----------------|
+| `src/` (Hard Harness) | Tools, hooks, plugin, shared, lib | Writes to `.hivemind/` via managers only |
+| `.opencode/` (Soft Meta-Concepts) | Skills, agents, commands, rules | No persistent state — OpenCode primitives only |
+| `.hivemind/` (Deep Module State) | Journals, continuity, delegation records | Canonical state root (Q6) |
 
-Cross-contamination between roots is a BLOCK finding. If lifecycle integration
-fails classification fit, STOP — redesign needed before proceeding.
+Cross-contamination between roots is a **BLOCK** finding. Tools never write to
+`.opencode/`. Hooks never write to `.hivemind/` directly — they route through
+`DelegationManager` or `continuity.ts`.
+
+## 9-Surface Mutation Authority
+
+The architecture defines 9 surfaces across write-side (4), read-side (3), and
+assembly (1). Each artifact must conform to its surface's authority boundaries.
+
+> **Full table with constraints**: `references/nine-surface-authority.md`
+>
+> Source: `.planning/codebase/ARCHITECTURE.md` § "9-Surface Mutation Authority"
+
+Quick summary — write-side: `continuity.ts`, `delegation-persistence.ts`,
+`session-journal.ts`, `DelegationManager`. Read-side: hooks, tools, sidecar.
+Assembly: `plugin.ts`.
+
+## OpenCode SDK Surface Compliance
+
+Validate against the real `@opencode-ai/plugin` v1.14.28 API surface. Three areas:
+
+1. **tool() factory**: `description`, `args` (Zod), `execute` → string. Registered in plugin.ts.
+2. **Hook handlers**: Exactly 4 hooks (`tool.execute.before/after`, `experimental.session.compacting`, `shell.env`).
+3. **Plugin composition**: Async function, type-only imports, no inline business logic, lazy PTY.
+
+> **Full checklists with real signatures**: `references/sdk-compliance.md`
+>
+> Additional context: `stack-opencode` skill for broader SDK reference.
+
+## CQRS Boundary Enforcement
+
+Write-side (tools) mutate state via managers. Read-side (hooks) observe events.
+Events flow write→read, never reverse. 7 BLOCK-level anti-patterns detect violations
+(e.g., `AP-WRITE-FROM-READ`, `AP-CROSS-ROOT-WRITE`, `AP-BYPASS-MANAGER`).
+
+> **Full write/read checklists + anti-pattern table**: `references/cqrs-boundaries.md`
+>
+> Expanded anti-pattern catalog: `references/anti-patterns.md`
 
 ## Delegation Hierarchy Constraints
 
-Validate against these constants from `src/lib/types.ts`:
+Validate against runtime constants from `src/lib/types.ts`:
 
-- `MAX_DELEGATION_DEPTH`: 3 (overridable via RuntimePolicy)
-- `MAX_DESCENDANTS_PER_ROOT`: 10
-- `VALID_DELEGATION_CATEGORIES`: research, implementation, review, visual-engineering, deep, quick
-- Dual-signal completion: `session.idle` + stability timer (`STABLE_POLLS_REQUIRED`: 3)
-- Grace period: `TASK_CLEANUP_DELAY_MS`: 10 minutes
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `MAX_DELEGATION_DEPTH` | 3 | Max nested delegation depth |
+| `MAX_DESCENDANTS_PER_ROOT` | 10 | Max child delegations per root session |
+| `STABLE_POLLS_REQUIRED` | 3 | Consecutive unchanged polls for completion |
+| `TASK_CLEANUP_DELAY_MS` | 600000 | Grace period before cleanup (10 min) |
+
+Check: uses `DelegationManager.dispatch()`, valid category, depth ≤ 3, WaiterModel
+dispatch, dual-signal completion, recovery guarantee via `recoverPending()`.
+
+## Decision Tree
+
+```
+START → Classify the artifact by file location:
+  ├─ src/tools/*.ts → TOOL: tool() registration, Zod, response envelope,
+  │     SDK mutation via session-api.ts, state via continuity.ts, LOC < 200
+  ├─ src/hooks/*.ts → HOOK: factory pattern, real SDK signature, CQRS readonly
+  ├─ src/lib/*.ts → LIBRARY: dependency ≤ 2 levels, LOC < 500, no `any`, tests
+  ├─ src/plugin.ts → COMPOSITION: LOC < 200, all registered, no inline logic
+  ├─ src/shared/*.ts, src/schema-kernel/*.ts → LEAF: cross-cutting utility
+  └─ DELEGATION participant? → DelegationManager, category, depth, dual-signal
+```
+
+For each branch, execute the detailed checklist in `references/evaluation-checklist.md`.
 
 ## Cross-Skill Routing
 
-After evaluation completes:
+- **PASSES** → Route to `gate-spec-compliance` (spec-level verification)
+- **FAILS (classification)** → STOP. Redesign required — root misplacement needs file move.
+- **FAILS (other)** → Document in gate report, fix, re-run before routing to `gate-spec-compliance`.
 
-- **LIFECYCLE INTEGRATION PASSES** → Route to `gate-spec-compliance` for
-  specification-level verification. Lifecycle correctness is a prerequisite
-  for spec compliance.
-- **LIFECYCLE INTEGRATION FAILS** (classification) → STOP. Redesign required.
-  Classification violations cannot be fixed incrementally.
-- **LIFECYCLE INTEGRATION FAILS** (other) → Document in gate report, fix,
-  re-run this gate before routing to `gate-spec-compliance`.
+### Triad Flow
+
+```
+gate-lifecycle-integration  →  gate-spec-compliance  →  gate-evidence-truth
+  (entry — this skill)          (spec verification)       (terminal — evidence)
+```
+
+## Remediation Routing (on FAIL)
+
+| Finding Type | Route To | Action |
+|-------------|----------|--------|
+| Classification violation | `hm-coordinating-loop` | Move file to correct root |
+| Lifecycle wiring issue | `hm-phase-execution` | Fix registration wiring |
+| Structural/architectural | `hm-refactor` | Split module, break cycle |
+| CQRS boundary violation | `hm-phase-execution` | Fix CQRS wiring |
+| Delegation hierarchy | `hm-coordinating-loop` | Redesign dispatch patterns |
+| Unknown/unclear failure | `hm-debug` | Root-cause investigation |
+| Completion verification | `hm-completion-looping` | Verification loop |
+
+> Full routing table: `references/remediation-paths.md`
 
 ## Evaluation Output
 
 1. Fill `templates/gate-report.md` with findings per dimension
 2. Record PASS/FAIL per anti-pattern check
-3. Record the active perspective lens and scores
-4. If PASS: note the routing instruction to `gate-spec-compliance`
-5. If FAIL: list required remediations with file:line references
-
-## Adopted Patterns
-
-This skill synthesizes patterns from third-party research. See
-`references/adopted-patterns.md` for the full catalog:
-
-- Gateguard fact-forcing: scripts report facts, agents judge
-- ISO 25010 grounding: quality characteristics mapped to dimensions
-- CQRS verification: write/read boundary enforcement
+3. Record which 9-surface authority boundary was checked
+4. If PASS: note routing to `gate-spec-compliance`
+5. If FAIL: list remediations with file:line references and routing target
 
 ## Bundled Resources
 
 | Resource | Purpose |
 |----------|---------|
-| `references/evaluation-checklist.md` | Per-dimension audit criteria per artifact type |
+| `references/evaluation-checklist.md` | Per-artifact-type audit criteria |
 | `references/perspective-rubrics.md` | PM/Architect/Dev scoring rubrics |
-| `references/anti-patterns.md` | Full AP-01 through AP-14 catalog |
-| `references/adopted-patterns.md` | Synthesized third-party research patterns |
-| `evals/evals.json` | Test scenarios for skill validation |
+| `references/anti-patterns.md` | Full anti-pattern catalog |
+| `references/adopted-patterns.md` | Synthesized third-party patterns |
+| `references/remediation-paths.md` | Per-finding routing to hm-* skills |
+| `references/nine-surface-authority.md` | Full 9-surface mutation authority table |
+| `references/sdk-compliance.md` | OpenCode SDK compliance checklists |
+| `references/cqrs-boundaries.md` | CQRS boundary rules + BLOCK anti-patterns |
+| `references/gap-documentation.md` | Full gap catalog |
+| `references/triad-flow.md` | Inter-gate handoff contracts |
+| `metrics/rich-gate-scorecard.md` | RICH-8 scorecard |
+| `evals/evals.json` | Test scenarios |
 | `templates/gate-report.md` | Standardized report template |
-| `scripts/run-gate-eval.sh` | Deterministic 5-dimension evaluation runner |
+| `scripts/run-gate-eval.sh` | Deterministic evaluation runner |

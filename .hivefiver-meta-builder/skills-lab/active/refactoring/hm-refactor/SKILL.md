@@ -140,7 +140,6 @@ This skill works in any Git-backed end-user project. If no git repository exists
 | `references/refactor-taxonomy.md` | Choosing between surgical and structural |
 | `references/safety-checklist.md` | Pre-refactor safety verification |
 | `references/refactor-runbook.md` | Step worksheet, dependency map, rollback table |
-| `evals/evals.json` | Trigger and pressure scenarios for no-behavior-change compliance |
 
 ## Self-Correction
 

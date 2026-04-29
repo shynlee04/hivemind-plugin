@@ -247,9 +247,16 @@ echo ""
 if [ "$BLOCK_COUNT" -gt 0 ]; then
   echo "VERDICT: FAIL — $BLOCK_COUNT blocking issue(s) must be resolved"
   echo "Routing: STOP — fix blocking issues before re-running gate"
+  echo "Remediation targets (see references/remediation-paths.md):"
+  echo "  Classification violation → hm-coordinating-loop"
+  echo "  Lifecycle wiring → hm-phase-execution"
+  echo "  Structural/architectural → hm-refactor"
+  echo "  Unknown/unclear → hm-debug"
+  echo "  Completion verification → hm-completion-looping"
   exit 1
 else
   echo "VERDICT: PASS (automated checks) — agent must apply perspective rubrics"
-  echo "Routing: Proceed to gate-spec-compliance after agent review"
+  echo "Triad flow: lifecycle → spec-compliance → evidence-truth"
+  echo "Next gate: gate-spec-compliance (after agent review)"
   exit 0
 fi

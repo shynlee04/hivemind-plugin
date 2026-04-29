@@ -6,7 +6,7 @@ description: >
   refuses gate passage when evidence is missing, mocked where integration is claimed, or
   insufficient for the gate type. Use during code review gates, phase audits, milestone
   verification, integration checks, and deployment readiness. Activates after gate-spec-compliance
-  clears spec alignment — this is the terminal gate in the triad (spec → lifecycle → evidence).
+  clears spec alignment — this is the terminal gate in the triad (lifecycle → spec → evidence).
   Triggers: "evidence check", "gate evidence", "verify runtime proof", "evidence truth",
   "is there proof this works", "evidence hierarchy", "gate truth", "runtime evidence",
   "integration evidence", "mock-only detection", "completion honesty", "gate passed",
@@ -106,99 +106,68 @@ Follow this checklist in order:
 - [ ] STEP 8: VERDICT — Render PASS or FAIL with remediation plan
 ```
 
-### STEP 1: GATHER
-
-Identify the gate type. Collect all artifacts that claim to prove the implementation works: test results, continuity records, live session logs, design docs, conversation summaries. Include negative evidence (failing tests, missing records).
-
-### STEP 2: CLASSIFY
-
-Map each artifact to its evidence level. Be conservative: if a test mocks an SDK boundary, classify as L4 regardless of the test name. If a continuity record references a real session with actual dispatch, classify as L2. If a developer ran the feature in OpenCode and captured output, classify as L1.
-
-Run `scripts/run-evidence-check.sh <module-path>` to automate mock pattern detection and continuity record scanning. If the script is unavailable, manually grep for mock patterns (`vi.mock(`, `jest.mock(`, `sinon.stub(`) and classify evidence using the hierarchy table above.
-
-### STEP 3: CHECK MINIMUM
-
-Compare highest evidence level against gate-type minimum from the table above. If insufficient, verdict is FAIL with the specific gap documented.
-
-### STEP 4: DETECT MOCKS
-
-Scan test files for patterns indicating mocked SDK boundaries:
-
-- `vi.mock(`, `jest.mock(`, `sinon.stub(` — SDK boundary mocks
-- Test names containing "integration" but mocking external calls
-- Import paths that mock `src/lib/session-api.ts`, `src/lib/continuity.ts`, or `src/lib/delegation-manager.ts`
-
-Load `references/harness-verification-trees.md` for module-specific mock detection rules.
-
-### STEP 5: CHECK COMPLETION HONESTY
-
-Verify every "done", "complete", "working", or "verified" claim has at least one L3+ artifact backing it. Claims without evidence are dishonest by definition.
-
-### STEP 6: REGRESSION CHECK
-
-Using the dependency graph (`.hivemind/state/` or `src/` imports), identify modules that transitively depend on the changed module. Verify that regression tests exist for at least the direct-dependency boundary.
-
-### STEP 7: ANTI-PATTERN SCAN
-
-Match gathered evidence against the 7 anti-patterns in `references/anti-patterns.md`. Flag any match as a deduction in the evidence report.
-
-### STEP 8: VERDICT
-
-Produce an evidence truth report using `templates/evidence-report.md`. If any dimension fails, verdict is FAIL. Include remediation plan specifying what evidence is needed and how to produce it.
+See `references/evaluation-workflow-detail.md` for detailed step procedures, mock detection commands, and classification guidance.
 
 ## Cross-Skill Routing
 
+### Triad Flow (lifecycle → spec → evidence)
+
 ```
-gate-spec-compliance (PASSED)
-    ↓
-gate-lifecycle-integration (PASSED)
-    ↓
-gate-evidence-truth ← YOU ARE HERE
+gate-lifecycle-integration (ENTRY — checks lifecycle correctness)
+    ↓ PASS
+gate-spec-compliance (MIDDLE — checks spec alignment)
+    ↓ PASS
+gate-evidence-truth ← YOU ARE HERE (TERMINAL)
     ↓
     ├─ PASS → ALL 3 GATES CLEAR → proceed to merge/release
-    └─ FAIL → STOP → produce remediation plan → return to implementor
+    └─ FAIL → STOP → produce remediation plan → route to appropriate fix skill
 ```
 
-| Related Skill | Boundary |
-|---------------|----------|
-| `gate-spec-compliance` | Checks spec alignment before this gate runs |
-| `gate-lifecycle-integration` | Checks lifecycle state machine coverage before this gate runs |
-| `hm-completion-looping` | Uses this gate's verdict to determine loop-back |
-| `hm-coordinating-loop` | Orchestrates re-dispatch when evidence gate fails |
+Triad backward references, evidence collection handoff from `hm-production-readiness`, and full remediation routing are in `references/cross-skill-routing-detail.md`.
+
+### Related Skills
+
+| Related Skill | Role | Interaction |
+|---------------|------|-------------|
+| `gate-lifecycle-integration` | Entry gate | Must pass before spec compliance runs |
+| `gate-spec-compliance` | Middle gate | Routes to this gate on PASS |
+| `hm-production-readiness` | Evidence collector | Feeds structured L1-L5 evidence into this gate |
+| `hm-cross-cutting-change` | Mock honesty | Remediation target for mock-only failures |
+| `hm-debug` | Root-cause investigation | Remediation for insufficient evidence level |
+| `hm-completion-looping` | Loop-back control | Uses this gate's verdict for loop-back decisions |
+| `hm-coordinating-loop` | Orchestration re-dispatch | Re-dispatches when evidence or regression gaps found |
 
 ## Adopted Patterns
 
-This skill synthesizes three proven methodologies:
-
-1. **Anthropic Gather→Act→Verify** — evidence collection, classification, gate decision
-2. **Google Testing Pyramid (70-20-10)** — unit:integration:e2e ratio targets
-3. **GRADE Evidence Framework** — hierarchical evidence quality classification
-
-See `references/adopted-patterns.md` for full synthesis and rationale.
+Synthesizes three proven methodologies: **Anthropic Gather→Act→Verify**, **Google Testing Pyramid (70-20-10)**, **GRADE Evidence Framework**. See `references/adopted-patterns.md` for full synthesis.
 
 ## Self-Correction
 
 ### When No Evidence Exists
 
-If no L3+ evidence exists for the gate type, do not downgrade the gate minimum. Report FAIL with explicit instructions: "Produce [L2/L1] evidence by [running integration test / capturing live session / verifying in OpenCode instance]."
+Do not downgrade the gate minimum. Report FAIL with explicit instructions: "Produce [L2/L1] evidence by [running integration test / capturing live session / verifying in OpenCode instance]."
 
 ### When Evidence Is Ambiguous
 
-If an artifact could be classified at two levels, classify at the lower level. A test that mocks some but not all SDK boundaries is L4, not L3. A continuity record that may or may not be from a live session is L5, not L2.
+Classify at the lower level. A test that mocks some but not all SDK boundaries is L4, not L3. A continuity record that may or may not be from a live session is L5, not L2.
 
 ### When the User Overrides
 
-If a user explicitly waives a failed evidence gate, document the waiver in the evidence report with: which gate failed, what evidence was missing, and the user's rationale. The override must be explicit — never silently waive.
+Document the waiver in the evidence report with: which gate failed, what evidence was missing, and the user's rationale. The override must be explicit — never silently waive.
 
 ## Reference Files
 
 | File | Content |
 |------|---------|
 | `references/evaluation-checklist.md` | Per-dimension audit criteria |
+| `references/evaluation-workflow-detail.md` | Detailed STEPS 1-8 procedures and detection commands |
+| `references/cross-skill-routing-detail.md` | Triad backward refs, evidence handoff, remediation routing |
 | `references/perspective-rubrics.md` | PM/Architect/Dev rubrics with contextual activation |
 | `references/anti-patterns.md` | Full anti-pattern catalog with severity and detection |
 | `references/adopted-patterns.md` | Synthesized patterns from Anthropic, Google, GRADE |
 | `references/harness-verification-trees.md` | Module-specific verification trees |
 | `templates/evidence-report.md` | Standardized report template |
 | `scripts/run-evidence-check.sh` | Deterministic evidence classification checker |
+| `references/project-adapter-guide.md` | Project-to-harness path mapping adapter |
+| `metrics/skill-judge-scorecard.md` | RICH-8 D1-D8 quality scorecard |
 | `evals/evals.json` | Test scenarios for this skill |

@@ -95,4 +95,18 @@
 
 <!-- If FAIL: -->
 **Action Required:** STOP — fix blocking issues before re-running this gate.
+**Remediation Routing:** Route to the appropriate hm-* skill (see `references/remediation-paths.md`):
+- Classification violation → `hm-coordinating-loop`
+- Lifecycle wiring → `hm-phase-execution`
+- Structural/architectural → `hm-refactor`
+- Unknown/unclear → `hm-debug`
+- Completion verification → `hm-completion-looping`
 **Re-run Command:** Apply remediations, then re-evaluate with this skill.
+
+## Triad Status
+
+| Gate | Status | Notes |
+|------|--------|-------|
+| gate-lifecycle-integration | <!-- CURRENT --> | Entry gate — this report |
+| gate-spec-compliance | <!-- PENDING / CLEARED --> | Downstream after lifecycle passes |
+| gate-evidence-truth | <!-- PENDING / CLEARED --> | Terminal gate — after spec clears |

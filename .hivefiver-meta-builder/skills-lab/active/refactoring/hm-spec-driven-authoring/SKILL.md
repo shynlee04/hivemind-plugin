@@ -178,7 +178,6 @@ When asked to verify an existing implementation against a spec:
 | `references/acceptance-test-patterns.md` | BDD-style positive/negative/boundary/integration acceptance cases. |
 | `templates/requirement-traceability-matrix.md` | Copyable portable evidence table for arbitrary projects. |
 | `workflows/spec-lock-workflow.md` | End-to-end gate sequence with stop states. |
-| `metrics/rich-eval-rubric.json` | RICH/D1-D8 scoring hooks and scenario labels. |
 | `scripts/validate-rich-package.sh` | Static package validator for required source-backed resources. |
 
 ## Cross-Platform Adapters

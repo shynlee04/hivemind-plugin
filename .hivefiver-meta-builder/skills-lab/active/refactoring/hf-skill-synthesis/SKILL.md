@@ -18,7 +18,7 @@ Synthesize new skills from GitHub repositories, existing codebases, or design pa
 NO SKILL WITHOUT EVALS
 ```
 
-Every skill produced by this pipeline must have `evals/evals.json` and `evals/trigger-queries.json` with at least 3 test cases and 20 trigger queries. A scaffold without evals is incomplete. A skill without executed evals is untested.
+Every skill produced by this pipeline must include evaluation test cases (≥3) and trigger queries (≥20). A scaffold without evaluation coverage is incomplete. A skill without executed validation is untested.
 
 # skill-synthesis
 ## On Load
@@ -72,7 +72,7 @@ For each SKILL.md found, classify along these axes:
 | **Pattern** | P1 (<200L), P2 (200-400L), P3 (400L+) | Line count + reference count |
 | **Routing** | Thin router, Context router, Not-a-router | Decision tree present? Ref count 0-2? |
 | **Efficiency** | Token-efficient, Context-heavy, Script-bundled, Pure-instructions | Token/line ratio, scripts/ presence |
-| **Testing** | Has evals, Has triggers, Has scripts, Has matrix, Complete | evals/ presence, trigger-queries.json |
+| **Testing** | Has evals (≥3 cases), Has triggers (≥20 queries), Has scripts, Has matrix, Complete | Evaluation presence, trigger coverage |
 | **Quality** | Excellent (4.5+), Good (4.0+), Acceptable (3.5+), Needs Work (<3.5) | 5-dimension weighted score |
 
 **Output:** Classification report per skill, ranked by quality score
