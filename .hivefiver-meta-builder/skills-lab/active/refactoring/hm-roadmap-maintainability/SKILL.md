@@ -108,7 +108,7 @@ Create a task for each item and complete them in order. Do not skip phases.
 
 Before evaluating, gather all planning artifacts:
 
-1. **Glob for roadmap files:** `glob **/*roadmap*`, `glob **/*milestone*`, `glob **/*release*`, `glob **/.planning/roadmap/*`
+1. **Glob for roadmap files:** `glob **/*roadmap*`, `glob **/*milestone*`, `glob **/*release*`, `glob <project-root>/.planning/roadmap/**`
 2. **Read the project context:** `AGENTS.md`, `README.md`, `package.json`, architecture docs
 3. **Load dependency context:** If `hm-feature-ecosystem` has produced a dependency graph, read it
 4. **Identify gap:** Determine what artifact type is available:
@@ -473,13 +473,31 @@ This skill is framework-agnostic. Adapt as follows:
 
 | Framework | Adaptation |
 |-----------|------------|
-| **GSD** | Write roadmap to `.planning/roadmap/`. Align milestones with GSD phases. |
+| **GSD** | Write roadmap to `<project-root>/.planning/roadmap/`. Align milestones with GSD phases. |
 | **BMAD** | Align with BMAD's roadmap artifacts. Debt tracking → BMAD's backlog. |
-| **OpenCode native** | Write report to `.planning/roadmap/YYYY-MM-DD-maintainability-roadmap.md`. Use `session-patch` for iterative refinement. |
+| **OpenCode native** | Write report to `<project-root>/.planning/roadmap/YYYY-MM-DD-maintainability-roadmap.md`. Use `session-patch` for iterative refinement. |
 | **Scrum** | Map milestones to program increments or release trains. Features → Epics → Stories. |
 | **None / generic** | Use milestone terminology. No framework assumptions. |
 
 ---
+
+## Self-Correction
+
+### When maintainability scores are inconsistent with tool output
+
+If manual scores differ significantly from tool-reported metrics (e.g., scoring complexity 8 but linting shows >100 warnings), re-score that dimension. The tool output is ground truth — adjust subjective scores to match. If tools are unavailable, explicitly mark that dimension as "estimated" and note the missing tool.
+
+### When the debt register is empty
+
+If zero technical debt items are found for a non-trivial codebase (MI < 8.0), the debt assessment is likely incomplete. Audit the codebase for: TODO/FIXME comments, known workarounds, skipped testing, stale dependencies, and architectural drift. Every `console.log` kept for debugging is a debt item.
+
+### When roadmap artifacts are stale
+
+If the roadmap or backlog was last updated more than 2 milestones ago, do NOT treat it as authoritative. Mark the roadmap maturity as "stale" and present a gap report: what the artifact claims vs what the current codebase suggests. Ask for confirmation before using stale data for dependency ordering.
+
+### When capacity estimates are wildly optimistic
+
+If every feature is classified as S (1-3 days) with no L or XL items, the estimate is likely an optimism-bias artifact. Force at least one L or XL per milestone by asking: "Which feature in this milestone has the most unknowns or the most cross-cutting impact?" Reclassify that feature and recalculate.
 
 ## Validation Before Handoff
 

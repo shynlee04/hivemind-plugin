@@ -309,7 +309,7 @@ Use `references/interface-contracts.md` for contract design guidance. For each c
 
 Present all contracts to relevant teams/agents. Once confirmed:
 
-- Write contracts to `.planning/contracts/<provider>-<consumer>-v1.md`
+- Write contracts to `<project-root>/.planning/contracts/<provider>-<consumer>-v1.md`
 - Reference them in each feature's requirements brief
 - Any future change that breaks a contract must go through change protocol
 
@@ -396,10 +396,10 @@ This skill is framework-agnostic. When loaded in a project that uses a specific 
 
 | Framework | Adaptation |
 |-----------|------------|
-| **GSD** (Get Shit Done) | Write dependency graph and contracts to `.planning/` directory. Map waves to GSD phases. |
+| **GSD** (Get Shit Done) | Write dependency graph and contracts to `<project-root>/.planning/` directory. Map waves to GSD phases. |
 | **BMAD** | Align feature nodes with BMAD's architecture decisions. Use BMAD's cross-cutting concern taxonomy for dependency types. |
-| **OpenCode native** | Write contracts to `.planning/contracts/`. Use `session-patch` to link contracts to requirement files. |
-| **None / generic** | Write all artifacts to `.planning/ecosystem/YYYY-MM-DD-<ecosystem-name>`. Use plain markdown for everything. |
+| **OpenCode native** | Write contracts to `<project-root>/.planning/contracts/`. Use `session-patch` to link contracts to requirement files. |
+| **None / generic** | Write all artifacts to `<project-root>/.planning/ecosystem/YYYY-MM-DD-<ecosystem-name>`. Use plain markdown for everything. |
 
 ## Validation Before Handoff
 
@@ -415,6 +415,24 @@ Before routing to the next skill, verify:
 - [ ] All cross-team interface contracts are written and referenced
 - [ ] User confirmed the ecosystem design in Phase 6
 - [ ] Routing recommendation is clear and actionable
+
+## Self-Correction
+
+### When a cycle won't break easily
+
+If circular dependencies persist after attempting all three resolution options (merge, extract, break weakest edge), do NOT force a solution. Escalate with a decision packet listing the cycle, the attempted resolutions, and the trade-offs. Let the user pick the least-worst break.
+
+### When features lack requirements
+
+If a feature node has no requirements source (no brief, no spec, no conversation context), do NOT invent its purpose or dependencies. Mark it `blocked: missing-requirements` and exclude it from the dependency graph until clarification arrives.
+
+### When the ecosystem is too large
+
+If the feature count exceeds 15, the graph becomes unreadable and wave planning loses precision. Group features into sub-domains (e.g., "Billing", "Onboarding"), design intra-domain graphs, then an inter-domain graph. Report sub-domain results before the full ecosystem.
+
+### When the user rejects the wave plan
+
+If the proposed delivery order is rejected, do NOT override the user's preference. Document the override reason, re-run impact propagation against the new ordering, and flag any features that will be built before their dependencies as `risk: dependency-not-satisfied`. Present the risk-adjusted plan for confirmation.
 
 ## Quick Reference
 

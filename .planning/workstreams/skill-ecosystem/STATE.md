@@ -8,9 +8,9 @@ phase_count: 17
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-8 COMPLETE — SE-3.5, SE-3.6, SE-4 ready to begin
-**Current Phase:** SE-8 (Orphan Skill Hardening) — COMPLETE
-**Last Activity:** 2026-04-29 (SE-8 complete — 31 orphan skills hardened: 25 hm-*/hf-* + 6 stack-*; 24/25 workflow skills ≥6/8 RICH-8; 1 at 5/8 documented)
+**Status:** SE-4 COMPLETE — SE-3.6, SE-5 ready to begin
+**Current Phase:** SE-4 (Research Pipeline Hardening) — COMPLETE
+**Last Activity:** 2026-04-29 (SE-4 complete — 5 research chain skills hardened: hm-tech-stack-ingest, hm-detective, hm-deep-research, hm-synthesis, hm-research-chain; all ≥8/8 RICH-8; bidirectional cross-references fixed; Stage 0 ingest added to chain)
 
 ## Progress
 | Phase | Status | Plans | Summary |
@@ -18,9 +18,9 @@ phase_count: 17
 | SE-1 | ✅ COMPLETE | 1/1 | 10 renames, 1 removal, cross-ref fixes, agent permissions, AGENTS.md update, code review fixes |
 | SE-2 | ✅ COMPLETE | 4/4 | Planning pipeline backbone: hm-planning-persistence SKILL.md, 20+ reference fixes across 12 skills, D-04 soft boundary, disabled skill archived |
 | SE-3 | ✅ COMPLETE | 1/1 | 4 pre-gate skills hardened to RICH-8 ≥6/8: evals (3 scenarios each), self-correction (4 modes), metrics scorecards (D1-D8: A-grade), framework-agnostic paths |
-| SE-3.5 | PLANNED | 0 | Harden existing Feature ecosystem skills (on disk): hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability |
+| SE-3.5 | ✅ COMPLETE | 1/1 | Harden existing Feature ecosystem skills: hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability — all ≥6/8 RICH-8 |
 | SE-3.6 | PLANNED | 0 | Harden existing hm-product-validation (20KB on disk): RICH audit, trigger tuning, quality gate alignment |
-| SE-4 | PLANNED (needs refresh) | 0 | Harden existing hm-tech-stack-ingest + research chain bidirectional fixes |
+| SE-4 | ✅ COMPLETE | 1/1 | 5 research chain skills hardened to RICH-8 ≥8/8: hm-tech-stack-ingest (new metrics/evals + self-correction), hm-detective (self-correction + 8/8), hm-deep-research (self-correction + 8/8), hm-synthesis (self-correction + 8/8), hm-research-chain (Stage 0 added, self-correction + 8/8). Bidirectional cross-references fixed across all 5 skills. |
 | SE-5 | PLANNED | 0 | Gate orchestration + lineage routing (hm-gate-orchestrator + hm-lineage-router creation) |
 | SE-5.5 | PLANNED | 0 | Internal gate skills hardening (gate-* — THIS PROJECT ONLY) |
 | SE-6 | PLANNED | 0 | Meta-builder: hf-config-workflow + hf-agent-synthesizer |
@@ -33,8 +33,8 @@ phase_count: 17
 | SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 4/17
-**Phases Authorized:** 4/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-8 ✅)
+**Phases Complete:** 6/17
+**Phases Authorized:** 6/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-4 ✅, SE-8 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -104,10 +104,10 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-8 COMPLETE — All 31 orphan skills hardened to RICH-8
-**Resume:** Move to SE-3.5 (Feature skill hardening: hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability) or SE-4 (Research pipeline: hm-tech-stack-ingest + research chain) or SE-3.6 (hm-product-validation)
-**Git Commits:** d4edf8f9 (stack-*), 30e8bbde (main SE-8 hardening), a4717f63 (straggler files)
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-8-orphan-skill-hardening/SE-8-SUMMARY.md`
+**Stopped At:** SE-3.5 COMPLETE — 3 feature skills hardened to RICH-8 (hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability)
+**Resume:** Move to SE-3.6 (hm-product-validation hardening) or SE-4 (Research pipeline: hm-tech-stack-ingest + research chain)
+**Git Commits:** Pending (SE-3.5 execution in progress)
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-3.5-feature-skill-hardening/SE-3.5-SUMMARY.md`
 
 ## Known Issues (2026-04-29 Audit)
 
