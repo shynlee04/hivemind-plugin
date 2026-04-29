@@ -12,21 +12,21 @@ Phase 52 resumed successfully at E52-01. The original 60000ms delegation timeout
 | --- | --- | --- |
 | 52-01 | DONE_WITH_CONCERNS | Scaffolds created; Node/npm/OpenCode/build passed; read-only primitive validation passed. |
 | 52-02 | PASS after retry | Fresh `delegate-task` retry returned completed terminal result and persisted L2 record. Historical timeout preserved. |
-| 52-03 | PENDING | Ready to execute after E52-01 retry pass. |
-| 52-04 | PENDING except primitive preflight from Plan 01 | Same-run journal/boundary workflow not yet executed. |
-| 52-05 | PENDING | Safe recovery still requires non-destructive operator-approved method. |
-| 52-06 | PENDING | Guidance workflow awaits downstream execution. |
+| 52-03 | DONE_WITH_CONCERNS | PTY lifecycle executed, but visible stdout payload was not surfaced by `output`. |
+| 52-04 | DONE_WITH_CONCERNS | Journal export ran but returned zero lineage; primitive boundary remained validator-only evidence. |
+| 52-05 | BLOCKED | Safe recovery still requires a specific non-destructive operator-approved method. |
+| 52-06 | BLOCKED | Linear dependency stops at Plan 05 blocker. |
 
 ## Evidence Matrix Verdicts
 
 | Row | Verdict | Highest evidence | Reason |
 | --- | --- | --- | --- |
 | E52-01 | PASS | L1 live dispatch/poll + L2 persisted completed record | Retry completed successfully with longer safety ceiling. |
-| E52-02 | PENDING | Awaiting Plan 03 live PTY evidence | Retry cleared blocker. |
-| E52-03 | PENDING | Awaiting Plan 04 live export evidence | Retry cleared blocker. |
-| E52-04 | PARTIAL | L1 validator tool output | Read-only primitive checks passed, but full same-run Plan 04 boundary workflow was not reached. |
-| E52-05 | BLOCKED | L5 plan context only | Safe recovery was not attempted without a successful non-terminal workflow and operator-approved interruption. |
-| E52-06 | BLOCKED | L5 plan context only | Guidance workflow not executed. |
+| E52-02 | PARTIAL | L1 PTY run/list/terminate + L2 completed PTY delegation record | PTY lifecycle worked, but visible stdout payload was not surfaced by `output`. |
+| E52-03 | PARTIAL | L1 live export invocation | Export returned zero sessions/delegations, so same-run lineage correlation was not proven. |
+| E52-04 | PARTIAL | L1 validator tool output | Read-only primitive checks passed, but validator output is not actual recovery proof. |
+| E52-05 | BLOCKED | L5 safety constraint only | Safe interruption was not allowed autonomously. |
+| E52-06 | BLOCKED | L5 dependency state | Guidance workflow was not executed after Plan 05 blocker. |
 
 ## Explicit Non-Claims
 
@@ -48,4 +48,4 @@ That blocker was cleared by retry delegation `35b952b5-ef5d-4685-9f41-93d8ca0d93
 
 ## Phase 53 Handoff
 
-Phase 53 still must not proceed to release closure until the remaining pending/blocked Phase 52 rows obtain required L1/L2 evidence.
+Phase 53 still must not proceed to release closure until the remaining blocked/partial Phase 52 rows obtain required L1/L2 evidence or explicit operator-approved recovery handling.
