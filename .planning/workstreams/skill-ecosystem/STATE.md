@@ -8,9 +8,9 @@ phase_count: 17
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-4 COMPLETE — SE-3.6, SE-5 ready to begin
-**Current Phase:** SE-4 (Research Pipeline Hardening) — COMPLETE
-**Last Activity:** 2026-04-29 (SE-4 complete — 5 research chain skills hardened: hm-tech-stack-ingest, hm-detective, hm-deep-research, hm-synthesis, hm-research-chain; all ≥8/8 RICH-8; bidirectional cross-references fixed; Stage 0 ingest added to chain)
+**Status:** SE-3.6 COMPLETE — SE-5 ready to begin
+**Current Phase:** SE-3.6 (Product Validation Hardening) — COMPLETE
+**Last Activity:** 2026-04-29 (SE-3.6 complete — hm-product-validation hardened to 8/8 RICH-8 with self-correction, evals, metrics scorecard)
 
 ## Progress
 | Phase | Status | Plans | Summary |
@@ -19,7 +19,7 @@ phase_count: 17
 | SE-2 | ✅ COMPLETE | 4/4 | Planning pipeline backbone: hm-planning-persistence SKILL.md, 20+ reference fixes across 12 skills, D-04 soft boundary, disabled skill archived |
 | SE-3 | ✅ COMPLETE | 1/1 | 4 pre-gate skills hardened to RICH-8 ≥6/8: evals (3 scenarios each), self-correction (4 modes), metrics scorecards (D1-D8: A-grade), framework-agnostic paths |
 | SE-3.5 | ✅ COMPLETE | 1/1 | Harden existing Feature ecosystem skills: hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability — all ≥6/8 RICH-8 |
-| SE-3.6 | PLANNED | 0 | Harden existing hm-product-validation (20KB on disk): RICH audit, trigger tuning, quality gate alignment |
+| SE-3.6 | ✅ COMPLETE | 1/1 | Harden hm-product-validation: Self-Correction (4 modes), metrics scorecard, evals (3 scenarios), 8/8 RICH-8, no hardcoded paths |
 | SE-4 | ✅ COMPLETE | 1/1 | 5 research chain skills hardened to RICH-8 ≥8/8: hm-tech-stack-ingest (new metrics/evals + self-correction), hm-detective (self-correction + 8/8), hm-deep-research (self-correction + 8/8), hm-synthesis (self-correction + 8/8), hm-research-chain (Stage 0 added, self-correction + 8/8). Bidirectional cross-references fixed across all 5 skills. |
 | SE-5 | PLANNED | 0 | Gate orchestration + lineage routing (hm-gate-orchestrator + hm-lineage-router creation) |
 | SE-5.5 | PLANNED | 0 | Internal gate skills hardening (gate-* — THIS PROJECT ONLY) |
@@ -33,8 +33,8 @@ phase_count: 17
 | SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 6/17
-**Phases Authorized:** 6/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-4 ✅, SE-8 ✅)
+**Phases Complete:** 7/17
+**Phases Authorized:** 7/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-8 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -104,10 +104,10 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-4 COMPLETE — All 5 research chain skills hardened to RICH-8 8/8
-**Resume:** Move to SE-3.6 (hm-product-validation hardening) or SE-5 (Gate orchestration + lineage routing)
-**Git Commits:** 4283c78c (hm-tech-stack-ingest), 1f8b22cf (hm-detective/deep-research/synthesis), 33f65ab7 (hm-research-chain)
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-4-research-pipeline/SE-4-SUMMARY.md`
+**Stopped At:** SE-3.6 COMPLETE — hm-product-validation hardened to 8/8 RICH-8
+**Resume:** Move to SE-5 (Gate orchestration + lineage routing) or SE-5.5 (Internal gate skills)
+**Git Commits:** 4283c78c (SE-4 hm-tech-stack-ingest), 1f8b22cf (SE-4 detective/deep-research/synthesis), 33f65ab7 (SE-4 research-chain)
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-3.6-product-validation-hardening/SE-3.6-SUMMARY.md`
 
 ## Known Issues (2026-04-29 Audit)
 

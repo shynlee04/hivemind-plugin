@@ -1,0 +1,23 @@
+{
+  "skill_name": "hm-product-validation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our team wants to build a real-time collaboration dashboard with 12 widgets showing live metrics. We have 3 developers available for 2 months. Should we build this?",
+      "expected_output": "Applies anti-solution-check first (Phase 1): extracts problem from the solution description. Identifies which user segment needs this and how many. Scores with RICE (Phase 2) only after problem is validated. Does NOT jump to effort estimation or implementation planning before confirming the user problem exists.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have 5 features prioritized by the product team. I need to validate which ones actually deliver user value before we commit engineering resources. The features are: (1) Dark mode, (2) Bulk export, (3) SSO integration, (4) Mobile responsive, (5) Advanced search filters.",
+      "expected_output": "Applies RICE scoring to all 5 features with explicit Reach, Impact, Confidence, and Effort scores. Produces a value-effort matrix with quadrant classification (Ship Now, Invest, Low-hanging, Kill). Ranks by RICE score. Defines falsifiable success metrics for features above threshold. Does NOT skip scoring ground rules — demands evidence for Confidence ≥ 0.8.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "We just shipped a new onboarding flow. Product says it's 'working great' based on positive feedback from 3 users. We have 50,000 monthly active users. Is this feature validated?",
+      "expected_output": "Detects metric-vs-value confusion: 3 positive responses from 50K users is not validation (0.006% sample). Identifies that qualitative anecdotes are being treated as quantitative validation. Recommends: (1) Define falsifiable success metric with proper sample size, (2) Set minimum detectable effect, (3) Measure counter-metrics (churn, time-to-first-action). Does NOT accept anecdotal evidence as product validation.",
+      "files": []
+    }
+  ]
+}

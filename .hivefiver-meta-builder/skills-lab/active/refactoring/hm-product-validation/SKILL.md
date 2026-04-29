@@ -331,6 +331,24 @@ Before routing to the next skill or proceeding to implementation:
 | **Effort-as-afterthought** — RICE computed but effort estimated in seconds without engineering input | Effort score used without team validation | Flag: "Effort estimate needs engineering validation. Current score assumes [X weeks]. Confirm with team." |
 | **Stakeholder-bypass** — making product-impact decisions without translating to business language | Technical decision documented with implementation-only justification | Produce stakeholder decision brief (Phase 4.2). Technical trade-offs have product consequences. Communicate them. |
 
+## Self-Correction
+
+### When anti-solution-check fails (building the wrong feature well)
+**Detection:** RICE score is high, all metrics defined, stakeholder brief produced — but the problem statement was never validated. Phase 1 was skipped or rubber-stamped. No user segment identified with real evidence.
+**Recovery:** Halt scoring and metric work. Return to Phase 1.1. Ask: "Who actually reported this problem? When did they report it? What were they trying to do?" If no evidence exists, recommend user research before proceeding. Do not score features for problems nobody has confirmed.
+
+### When RICE scores are miscalibrated
+**Detection:** All features score within 10% of each other. Confidence is uniformly 0.8 without cited data. Effort estimates are round numbers (2, 4, 8 weeks) without breakdown. Impact scores cluster at 1.5–2.0 with no justification differentiation.
+**Recovery:** Apply the scoring ground rules explicitly. For each dimension: (1) Force Rank features instead of absolute scoring — relative ordering exposes inflation. (2) Demand evidence for any Confidence ≥ 0.8: cite analytics, user research, or team data. (3) Break effort estimates into sub-tasks — "4 weeks" becomes "API design (3d) + implementation (5d) + testing (4d) + review (2d)." If estimates still cluster, the scoring is not discriminating — redesign the evaluation criteria.
+
+### When stakeholder needs were assumed without validation
+**Detection:** Decision brief describes "users" or "stakeholders" without naming specific segments. Product framing uses generic language ("improves the experience") instead of segment-specific impact. No stakeholder was consulted before the brief was produced.
+**Recovery:** Before producing any Phase 4 output, ask: "Have we confirmed these assumptions with [specific stakeholder role]?" If no, flag the decision brief as **DRAFT — requires stakeholder validation**. Do not route to implementation. Add a mandatory checkpoint: the brief must be confirmed by at least one stakeholder representative before any code is written.
+
+### When metrics measure what's easy, not what matters
+**Detection:** Success metrics are all instrumentation-convenient (page views, click rates, API latency) while the actual user problem is qualitative (trust, comprehension, workflow friction). Counter-metrics are absent. The minimum detectable effect is set to match existing variance rather than user-meaningful improvement.
+**Recovery:** For each metric, ask: "If this metric moved by the target amount, would a user notice and care?" If the answer is "not sure" or "not really," replace the metric. Prioritize outcome metrics (task completion, error recovery, time-to-value) over output metrics (page views, button clicks). Always pair with a counter-metric that detects harm. If no meaningful metric exists, the feature may not be worth building — flag for reconsideration.
+
 ## Files
 
 | Resource | Purpose |
