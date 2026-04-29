@@ -15,9 +15,11 @@ permission:
   # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    scope: ".opencode/skills/"
+    "*": deny
+    ".opencode/skills/**": allow
   write:
-    scope: ".opencode/skills/"
+    "*": deny
+    ".opencode/skills/**": allow
   bash:
     "*": deny
     "git *": allow

@@ -14,9 +14,11 @@ permission:
   # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    scope: "src/tools/"
+    "*": deny
+    "src/tools/**": allow
   write:
-    scope: "src/tools/"
+    "*": deny
+    "src/tools/**": allow
   bash:
     "*": deny
     "git *": allow

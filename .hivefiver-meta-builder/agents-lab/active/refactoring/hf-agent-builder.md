@@ -15,9 +15,11 @@ permission:
   # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    scope: ".opencode/agents/"
+    "*": deny
+    ".opencode/agents/**": allow
   write:
-    scope: ".opencode/agents/"
+    "*": deny
+    ".opencode/agents/**": allow
   bash:
     "*": deny
     "git *": allow

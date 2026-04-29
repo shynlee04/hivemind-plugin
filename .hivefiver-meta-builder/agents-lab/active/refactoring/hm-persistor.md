@@ -15,9 +15,11 @@ permission:
   # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    scope: ".hivemind/state/"
+    "*": deny
+    ".hivemind/state/**": allow
   write:
-    scope: ".hivemind/state/"
+    "*": deny
+    ".hivemind/state/**": allow
   bash:
     "*": deny
     "git *": allow
