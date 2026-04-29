@@ -109,7 +109,7 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 ## Session Continuity
 **Stopped At:** SE-11 COMPLETE — Naming Syndicate Formalization
 **Resume:** Move to SE-10 (Skill routing & agent dispatch bindings) or SE-12 (Tool capability matrix)
-**Git Commits:** pending atomic commit for SE-11
+**Git Commits:** cc27fde7 (SE-11 main), f9adcae9 (self-check)
 **Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-11-naming-syndicate-formalization/SE-11-SUMMARY.md`
 
 ## Known Issues (2026-04-30 — post SE-9 audit)
