@@ -242,4 +242,29 @@ If regression is detected:
 1. Document which tests regressed with before/after evidence
 2. Return REOPENED with full regression details
 3. Flag as high-priority for L1
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive completion task from hm-coordinator: completed work, success criteria, evidence requirements.
+  </step>
+  <step name="load_guardrail_skills" priority="normal">
+  Load hm-completion-looping for non-completion detection and auto-loop-back.
+  </step>
+  <step name="verify_completion" priority="normal">
+  Check: do acceptance criteria pass? Is test suite green? Is evidence fresh (not cached)?
+  </step>
+  <step name="detect_non_completion" priority="normal">
+  Scan for premature success claims: missing tests, mocked data, incomplete edge cases.
+  </step>
+  <step name="loop_if_needed" priority="normal">
+  If non-completion detected: return to hm-coordinator with specific gaps for remediation. Max 3 loops.
+  </step>
+  <step name="certify_completion" priority="last">
+  When all gates pass: certify completion with evidence summary. Return to hm-coordinator.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives completion verification tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions and quality gate triad. Collaborates through hm-coordinator with hm-validator (spec verification), hm-executor (implementation fixes), and hm-guardian (phase loop management). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

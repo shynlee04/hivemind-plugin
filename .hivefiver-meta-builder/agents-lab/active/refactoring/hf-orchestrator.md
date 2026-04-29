@@ -322,4 +322,8 @@ On interruption:
 1. Write current delegation state to session continuity
 2. Include: active delegations, pending gates, completed meta-concepts, cross-lineage notes
 3. Next session will recover from this checkpoint
+<workflow_awareness>
+Front-facing L0 meta-builder orchestrator for hf-* lineage. Routes meta-concept creation requests (agents, skills, commands, tools, prompts) to hf-coordinator (L1). Aware of hm-orchestrator (cross-lineage L0 partner for product development). Manages quality gates at session level. Has FLEXIBLE cross-lineage access to hm-* skills for codebase investigation. Tracks session continuity through .hivemind/state/*. Never implements directly.
+</workflow_awareness>
+
 </session_continuity>

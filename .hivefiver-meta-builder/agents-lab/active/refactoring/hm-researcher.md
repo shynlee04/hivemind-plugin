@@ -231,4 +231,29 @@ If task scope exceeds received packet:
 1. Complete investigation within scope boundaries
 2. Flag scope exceedance in recommendations
 3. Return to L1 for scope expansion decision
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive research task packet from hm-coordinator: question, scope, evidence requirements.
+  </step>
+  <step name="scan_codebase" priority="normal">
+  Load hm-detective for codebase scanning. SCAN mode: glob/grep for orientation. READ mode: targeted extraction.
+  </step>
+  <step name="research_external" priority="normal">
+  Load hm-deep-research for version-matched external documentation with citation tracking.
+  </step>
+  <step name="synthesize" priority="normal">
+  Load hm-synthesis for tiered compression: raw → extracted → validated → compressed.
+  </step>
+  <step name="compile_report" priority="normal">
+  Structure findings with file:line evidence, citations, knowledge gaps, and recommendations.
+  </step>
+  <step name="return_results" priority="last">
+  Return structured report to hm-coordinator. Flag as PARTIAL if blocked.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives research tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions and workflow gates. Collaborates through hm-coordinator with hm-scout (rapid codebase scanning), hm-synthesizer (findings compression), and hm-technician (tech stack validation). Cross-lineage: findings may be consumed by hf-* agents through hf-orchestrator. All output goes through hm-coordinator for consolidation.
+</workflow_awareness>
+
 </self_correction>

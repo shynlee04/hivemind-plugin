@@ -236,4 +236,8 @@ During execution:
 On completion:
 1. Return strategy artifact to L1
 2. No checkpoint writing — L1 owns session continuity
+<workflow_awareness>
+Receives roadmap/strategy tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-planner (implementation planning), hm-architect (architecture evaluation), and hm-ecologist (feature ecosystem analysis). Consumes output from hm-brainstormer and hm-analyst. All output goes through hm-coordinator.
+</workflow_awareness>
+
 </session_continuity>

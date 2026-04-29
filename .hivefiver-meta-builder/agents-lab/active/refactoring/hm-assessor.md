@@ -233,4 +233,26 @@ If mitigation is infeasible:
 1. Mark as accepted risk with justification
 2. Document what would make mitigation feasible
 3. Recommend monitoring rather than ignoring
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive assessment task from hm-coordinator: scope, risk categories, output format.
+  </step>
+  <step name="identify_risks" priority="normal">
+  Load hm-production-readiness. Identify production risks across deployment, security, performance, and reliability.
+  </step>
+  <step name="quantify_risks" priority="normal">
+  Quantify each risk: probability, impact, mitigation cost. Produce risk matrix.
+  </step>
+  <step name="recommend_mitigations" priority="normal">
+  For each high-severity risk, provide concrete mitigation strategy with implementation guidance.
+  </step>
+  <step name="return_report" priority="last">
+  Return quantified risk report to hm-coordinator.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives risk assessment tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-auditor (production readiness audit), hm-reviewer (code quality review), and hm-validator (verification). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

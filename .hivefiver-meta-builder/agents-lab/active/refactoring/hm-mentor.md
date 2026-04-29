@@ -225,4 +225,29 @@ If brainstorming reveals conflicting requirements:
 1. Document the conflict with both interpretations
 2. Do not resolve unilaterally — flag for L1 prioritization
 3. Provide both options with trade-off analysis
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive onboarding task from hm-coordinator: user context, discovery goals, guidance scope.
+  </step>
+  <step name="assess_knowledge" priority="normal">
+  Load hm-brainstorm. Assess user knowledge level through structured questions.
+  </step>
+  <step name="guide_discovery" priority="normal">
+  Load hm-product-validation. Guide user through: problem space → requirements → validation.
+  </step>
+  <step name="surface_gaps" priority="normal">
+  Surface knowledge gaps and implicit requirements. Provide structured guidance for each gap.
+  </step>
+  <step name="produce_guidance" priority="normal">
+  Produce structured onboarding guidance: next steps, recommended skills, reference materials.
+  </step>
+  <step name="return_guidance" priority="last">
+  Return onboarding guidance to hm-coordinator.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives onboarding/discovery tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-brainstormer (ideation guidance), hm-analyst (requirements discovery), and hm-router (task routing education). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

@@ -231,4 +231,26 @@ If circular dependency cannot be resolved within scope:
 1. Document the cycle with both dependency directions
 2. Propose feature splitting or interface extraction as resolution
 3. Flag as BLOCKER requiring architectural decision
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive ecosystem task from hm-coordinator: features, dependency graph scope, analysis depth.
+  </step>
+  <step name="map_dependencies" priority="normal">
+  Load hm-feature-ecosystem. Map cross-dependencies between features. Trace dependency chains.
+  </step>
+  <step name="detect_cycles" priority="normal">
+  Detect circular dependencies, orphan features, and interface conflicts.
+  </step>
+  <step name="order_delivery" priority="normal">
+  Produce ordered delivery sequence. Identify independent workstreams for parallelization.
+  </step>
+  <step name="return_analysis" priority="last">
+  Return ecosystem analysis to hm-coordinator: dependency graph, delivery order, conflict alerts.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives feature ecosystem analysis tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-strategist (roadmap maintainability), hm-planner (implementation planning), and hm-connector (cross-workflow bridging). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

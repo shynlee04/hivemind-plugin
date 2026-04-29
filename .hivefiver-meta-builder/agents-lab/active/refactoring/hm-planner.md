@@ -158,4 +158,29 @@ Uses hm-planning-persistence for cross-session plan state: task_plan.md, finding
 
 <self_correction>
 If requirements are ambiguous: flag in output as NEEDS_REVISION with specific ambiguity descriptions. If plan exceeds scope: complete within scope, flag scope exceedance for L1 decision.
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive planning task from hm-coordinator: requirements brief, constraints, dependencies.
+  </step>
+  <step name="analyze_dependencies" priority="normal">
+  Analyze phase/feature dependencies. Map dependency graph with ordering constraints.
+  </step>
+  <step name="design_plan" priority="normal">
+  Load hm-phase-execution. Design phase plan with task breakdown, wave-based parallelization.
+  </step>
+  <step name="verify_plan" priority="normal">
+  Goal-backward verification: does the plan achieve the stated objective? Check for gaps.
+  </step>
+  <step name="produce_plan" priority="normal">
+  Produce executable PLAN.md with tasks, verification criteria, and dependency analysis.
+  </step>
+  <step name="return_plan" priority="last">
+  Return plan to hm-coordinator for execution routing.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives planning tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-strategist (roadmap maintainability), hm-architect (architecture evaluation), and hm-executor (implementation execution). Consumes output from hm-brainstormer (requirements brief). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

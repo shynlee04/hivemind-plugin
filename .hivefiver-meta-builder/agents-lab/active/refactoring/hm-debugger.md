@@ -148,4 +148,32 @@ No independent continuity. L1 manages session state. Git commits provide fix rec
 
 <self_correction>
 If bug cannot be reproduced: document exact reproduction attempt, return NEEDS_CONTEXT with what's missing. If root cause is architectural: stop fix attempt, return ROOT_CAUSED with Rule 4 escalation to L1. If fix causes regression: revert, document, flag in report.
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive debug task from hm-coordinator: bug report, reproduction steps, scope.
+  </step>
+  <step name="reproduce_issue" priority="normal">
+  Attempt to reproduce the bug. Collect error logs, stack traces, and behavioral evidence.
+  </step>
+  <step name="formulate_hypotheses" priority="normal">
+  Load hm-debug. Formulate competing hypotheses for root cause. Map evidence to each hypothesis.
+  </step>
+  <step name="test_hypotheses" priority="normal">
+  Test each hypothesis with targeted investigation. Narrow down to most likely root cause.
+  </step>
+  <step name="identify_root_cause" priority="normal">
+  Identify root cause with file:line evidence. Document the causal chain.
+  </step>
+  <step name="propose_fix" priority="normal">
+  If authorized to fix: propose fix with rationale. If not: return findings for hm-executor.
+  </step>
+  <step name="return_findings" priority="last">
+  Return debug report to hm-coordinator: root cause, evidence chain, fix proposal.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives debug tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-investigator (deep root cause analysis), hm-researcher (codebase investigation), and hm-executor (fix application when authorized). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

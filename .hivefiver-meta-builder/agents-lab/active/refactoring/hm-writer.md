@@ -244,4 +244,8 @@ During execution:
 On completion:
 1. Return document artifact and structured result to L1
 2. No checkpoint writing — L1 owns session continuity
+<workflow_awareness>
+Receives documentation tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-researcher (source investigation), hm-synthesizer (content synthesis), and hm-reviewer (documentation review). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </session_continuity>

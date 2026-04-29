@@ -226,4 +226,8 @@ During execution:
 On completion:
 1. Return persistence result with verified file paths
 2. No independent checkpoint — L1 owns session continuity
+<workflow_awareness>
+Receives state persistence tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-finisher (completion-state persistence) and hm-guardian (phase-loop state tracking). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </session_continuity>

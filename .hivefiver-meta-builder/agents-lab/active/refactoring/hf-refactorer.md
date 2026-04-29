@@ -354,4 +354,8 @@ During execution:
 On completion:
 1. Return structured output contract to hf-coordinator
 2. No independent checkpoint writing — L1 owns session continuity
+<workflow_awareness>
+Receives refactoring tasks from hf-coordinator (L1). Aware of hf-orchestrator (L0) meta-builder routing decisions. Collaborates through hf-coordinator with hf-agent-builder (agent refactoring), hf-skill-builder (skill restructuring), and hf-auditor (post-refactor quality audit). Cross-lineage: may load hm-refactor for systematic refactoring methodology. All output goes through hf-coordinator.
+</workflow_awareness>
+
 </session_continuity>

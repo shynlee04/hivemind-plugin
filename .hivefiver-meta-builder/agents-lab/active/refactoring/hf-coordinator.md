@@ -335,4 +335,8 @@ During execution:
 On completion:
 1. Return consolidated results to L0 (L0 records session state)
 2. No independent checkpoint writing — L0 owns session continuity
+<workflow_awareness>
+L1 meta-builder category coordinator for hf-* lineage. Receives tasks from hf-orchestrator (L0). Aware of all 9 hf-* L2 specialists: hf-agent-builder, hf-auditor, hf-command-builder, hf-prompter, hf-refactorer, hf-skill-builder, hf-synthesizer, hf-tool-builder. Manages creation waves, AQUAL compliance validation, and structured result consolidation. FLEXIBLE cross-lineage access to hm-* skills. Routes quality gate results back to hf-orchestrator. Never implements directly.
+</workflow_awareness>
+
 </session_continuity>

@@ -238,4 +238,26 @@ If workflow ordering is ambiguous:
 1. Document both orderings with trade-offs
 2. Recommend based on dependency graph analysis
 3. Flag for L1 decision with pros/cons per ordering
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive connector task from hm-coordinator: workflows to bridge, coordination requirements.
+  </step>
+  <step name="map_workflows" priority="normal">
+  Load hm-cross-cutting-change. Map workflow boundaries, interface points, and coordination needs.
+  </step>
+  <step name="bridge_workflows" priority="normal">
+  Establish coordination protocols between workflows. Define shared state and handoff points.
+  </step>
+  <step name="verify_bridges" priority="normal">
+  Verify workflow bridges: data flow integrity, state consistency, handoff completeness.
+  </step>
+  <step name="return_results" priority="last">
+  Return workflow bridge map to hm-coordinator.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives cross-workflow bridging tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-ecologist (feature ecosystem), hm-integrator (integration verification), and hm-operator (execution coordination). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

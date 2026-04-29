@@ -235,4 +235,26 @@ If max iterations reached:
 1. Return MAX_ITERATIONS_EXCEEDED status
 2. Include complete iteration history for L1 review
 3. List which exit criteria remain unmet
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive guardrail task from hm-coordinator: phase boundaries, entry/exit criteria, iteration limits.
+  </step>
+  <step name="check_entry_criteria" priority="normal">
+  Load hm-phase-loop. Verify entry criteria are met before phase execution begins.
+  </step>
+  <step name="monitor_execution" priority="normal">
+  Monitor phase execution. Enforce iteration limits. Detect regression early.
+  </step>
+  <step name="check_exit_criteria" priority="normal">
+  Verify exit criteria. If not met: loop back with specific remediation. Max 3 iterations.
+  </step>
+  <step name="authorize_progression" priority="last">
+  When exit criteria met: authorize phase progression. Return guardrail report to hm-coordinator.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives phase guardrail tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-finisher (completion verification), hm-operator (execution monitoring), and hm-executor (implementation). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

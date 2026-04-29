@@ -138,4 +138,26 @@ No independent continuity. L1 manages session state.
 
 <self_correction>
 If requirements document is too large: prioritize analysis on security-critical and user-facing requirements first. If contradictions are ambiguous: document both interpretations, flag for L1 clarification.
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive analysis task from hm-coordinator: specification, requirements document, analysis scope.
+  </step>
+  <step name="diagnose_requirements" priority="normal">
+  Load hm-requirements-analysis. Scan for gaps, contradictions, missing constraints, and unvalidated assumptions.
+  </step>
+  <step name="apply_ears" priority="normal">
+  Apply EARS (Easy Approach to Requirements Syntax) methodology. Score each requirement for falsifiability.
+  </step>
+  <step name="produce_gap_report" priority="normal">
+  Produce gap report: requirements gaps (4 types), contradictions, missing constraints, unvalidated assumptions.
+  </step>
+  <step name="return_report" priority="last">
+  Return gap report to hm-coordinator for routing to hm-spec-driven-authoring.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives requirements analysis tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-brainstormer (requirements surfacing), hm-reviewer (specification review), and hm-validator (requirements verification). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

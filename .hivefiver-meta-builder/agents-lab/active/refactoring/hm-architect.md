@@ -138,4 +138,29 @@ No independent continuity. L1 manages session state.
 
 <self_correction>
 If analysis scope too large: prioritize highest-coupling modules, flag remaining for follow-up. If metrics inconclusive: document uncertainty, provide confidence levels for each score.
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive architecture task from hm-coordinator: evaluation scope, modules, criteria.
+  </step>
+  <step name="analyze_structure" priority="normal">
+  Load hm-detective for codebase structure analysis. Map module boundaries and dependencies.
+  </step>
+  <step name="score_maintainability" priority="normal">
+  Load hm-roadmap-maintainability. Score refactoring opportunities and structural improvement options.
+  </step>
+  <step name="evaluate_architecture" priority="normal">
+  Evaluate against architecture-patterns: Clean Architecture, Hexagonal Architecture, DDD principles.
+  </step>
+  <step name="produce_report" priority="normal">
+  Produce structured report: improvement opportunities, maintainability scores, dependency analysis.
+  </step>
+  <step name="return_report" priority="last">
+  Return architecture evaluation to hm-coordinator.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives architecture evaluation tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-planner (implementation planning), hm-strategist (roadmap maintainability), and hm-reviewer (code quality review). May receive cross-cutting change analysis tasks. All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

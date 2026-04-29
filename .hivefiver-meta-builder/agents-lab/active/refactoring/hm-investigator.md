@@ -244,4 +244,8 @@ During execution:
 On completion:
 1. Return investigation result to L1
 2. No checkpoint writing — L1 owns session continuity
+<workflow_awareness>
+Receives deep investigation tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-debugger (bug triage), hm-researcher (evidence gathering), and hm-scout (rapid codebase scanning). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </session_continuity>

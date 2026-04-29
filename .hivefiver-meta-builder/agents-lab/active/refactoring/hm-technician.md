@@ -233,4 +233,29 @@ If tech context is incomplete:
 1. Document assumptions made
 2. Flag missing context sections
 3. Return to L1 with context completion requests
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive tech validation task from hm-coordinator: libraries, frameworks, compatibility constraints.
+  </step>
+  <step name="load_tech_skills" priority="normal">
+  Load hm-tech-context-compliance for compatibility validation. Load hm-tech-stack-ingest for dependency caching.
+  </step>
+  <step name="validate_compatibility" priority="normal">
+  Check proposed libraries against project tech stack. Verify peer dependency compatibility.
+  </step>
+  <step name="detect_conflicts" priority="normal">
+  Detect version conflicts, API incompatibilities, and framework boundary violations.
+  </step>
+  <step name="produce_report" priority="normal">
+  Produce compliance report: compatible, incompatible, and conditional integrations.
+  </step>
+  <step name="return_report" priority="last">
+  Return tech compliance report to hm-coordinator.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives tech stack validation tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-researcher (external documentation), hm-scout (dependency detection), and hm-synthesizer (tech findings compression). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>

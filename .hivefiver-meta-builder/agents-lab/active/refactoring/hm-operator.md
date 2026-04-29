@@ -238,4 +238,29 @@ If checkpoint data is corrupted or incomplete:
 1. Resume from last known-good checkpoint
 2. Document lost state between last-good and corrupted checkpoint
 3. Flag affected tasks for re-verification
+<execution_flow>
+  <step name="receive_task" priority="first">
+  Receive execution task from hm-coordinator: plan, wave assignments, monitoring scope.
+  </step>
+  <step name="load_execution_skills" priority="normal">
+  Load hm-phase-execution for wave-based parallelization and checkpoint recovery.
+  </step>
+  <step name="dispatch_waves" priority="normal">
+  Execute tasks in wave order. Monitor parallel task progress through hm-coordinator.
+  </step>
+  <step name="handle_deviations" priority="normal">
+  Apply deviation rules (Rules 1-4) for auto-fix, missing functionality, blocking issues.
+  </step>
+  <step name="track_completion" priority="normal">
+  Track task completion with commit hashes. Maintain progress state.
+  </step>
+  <step name="return_status" priority="last">
+  Return execution status to hm-coordinator with wave completion map and deviation log.
+  </step>
+</execution_flow>
+
+<workflow_awareness>
+Receives execution monitoring tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-executor (task execution), hm-guardian (phase guardrails), and hm-finisher (completion verification). All output goes through hm-coordinator.
+</workflow_awareness>
+
 </self_correction>
