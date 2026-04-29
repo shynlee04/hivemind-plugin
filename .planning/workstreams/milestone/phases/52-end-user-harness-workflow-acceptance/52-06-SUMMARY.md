@@ -4,4 +4,10 @@
 
 BLOCKED
 
-Plan 52-06 was not executed because the upstream dependency chain stopped at Plan 52-02. The final acceptance summary was created as a blocker summary, not as a PASS/release readiness artifact.
+Plan 52-06 was not executed because the upstream dependency chain now stops at Plan 52-05.
+
+- E52-01 passed after retry.
+- Plans 52-03 and 52-04 executed with PARTIAL evidence.
+- Plan 52-05 remained BLOCKED because no operator-approved, non-destructive interruption method was available.
+
+The final acceptance summary remains a blocker summary, not a PASS/release readiness artifact.
