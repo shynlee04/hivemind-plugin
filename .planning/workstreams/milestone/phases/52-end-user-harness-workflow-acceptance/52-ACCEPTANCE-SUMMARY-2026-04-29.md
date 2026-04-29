@@ -2,9 +2,9 @@
 
 ## Verdict
 
-IN_PROGRESS AFTER E52-01 RETRY PASS
+BLOCKED / DONE_WITH_CONCERNS
 
-Phase 52 resumed successfully at E52-01. The original 60000ms delegation timeout remains preserved as historical evidence, but a fresh retry with `safetyCeilingMs: 300000` completed and produced matching L1 and L2 evidence. Downstream waves may now continue from Plan 03.
+Phase 52 resumed successfully at E52-01 and continued through Plans 03-04 with partial evidence, but Plan 05 remained blocked because no operator-approved, non-destructive interruption method was available. Phase 52 therefore closes as blocked with honest partial runtime evidence, not as release-ready acceptance.
 
 ## Executed Plans
 
