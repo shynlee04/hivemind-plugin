@@ -1,6 +1,6 @@
 ---
-name: hf-meta-builder
-description: "Meta-concept workflow specialist for the hf-* lineage. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts (skills, agents, commands). Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation."
+name: hf-l2-meta-builder
+description: 'Meta-concept workflow specialist for the hf-* lineage. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts (skills, agents, commands). Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation.'
 mode: subagent
 temperature: 0.15
 depth: L2
@@ -14,51 +14,40 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".opencode/**": allow
-    ".hivefiver-meta-builder/**": allow
+    '*': deny
+    .opencode/**: allow
+    .hivefiver-meta-builder/**: allow
   write:
-    "*": deny
-    ".opencode/**": allow
-    ".hivefiver-meta-builder/**": allow
+    '*': deny
+    .opencode/**: allow
+    .hivefiver-meta-builder/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "ls *": allow
-    "find *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    ls *: allow
+    find *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-meta-builder": allow
-    "hf-l2-skill-synthesis": allow
-    "hf-l2-use-authoring-skills": allow
-    "hf-l2-agents-and-subagents-dev": allow
-    "hf-l2-command-dev": allow
-    "hf-l2-custom-tools-dev": allow
-    "hm-l2-coordinating-loop": allow
-    "hm-user-intent-interactive-loop": allow
-    "hm-l2-planning-persistence": allow
-    "hm-l3-synthesis": allow
-    "stack-l3-opencode": allow
-    "repomix-explorer": allow
-    "repomix-exploration-guide": allow
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-meta-builder

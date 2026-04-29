@@ -1,6 +1,6 @@
 ---
-name: hm-synthesizer
-description: "Synthesis specialist for compressing research findings into actionable artifacts with tiered reduction. Spawned by L1 coordinators for research-domain synthesis tasks. Read-only."
+name: hm-l2-synthesizer
+description: Synthesis specialist for compressing research findings into actionable artifacts with tiered reduction. Spawned by L1 coordinators for research-domain synthesis tasks. Read-only.
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,28 +12,28 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
+    '*': deny
+    git *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l3-synthesis": allow
-    "hm-l3-deep-research": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-synthesizer

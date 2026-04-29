@@ -1,6 +1,6 @@
 ---
-name: hm-planner
-description: "Planning specialist for creating executable phase plans with task breakdown, dependency analysis, and verification criteria. Spawned by L1 coordinators for planning-domain tasks. Never implements."
+name: hm-l2-planner
+description: 'Planning specialist for creating executable phase plans with task breakdown, dependency analysis, and verification criteria. Spawned by L1 coordinators for planning-domain tasks. Never implements.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,32 +12,31 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hm-l2-architect": allow   # Can call architect for structural decisions
-    "hm-l2-strategist": allow  # Can call strategist for roadmap decisions
+    '*': deny
+    hm-l2-architect: allow
+    hm-l2-strategist: allow
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-spec-driven-authoring": allow
-    "hm-l2-planning-persistence": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-planner

@@ -1,35 +1,34 @@
 ---
 name: hm-l2-conductor
-description: "Delegation routing specialist. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
-mode: "primary"
+description: 'Delegation routing specialist. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly.'
+mode: primary
 temperature: 0.3
 steps: 80
 permission:
   edit:
-    "*": deny
-    "*.md": allow
+    '*': deny
+    '*.md': allow
   write:
-    "*": deny
+    '*': deny
   bash:
-    "*": deny
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "ls*": allow
-  task: deny
+    '*': deny
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+    ls*: allow
+  task:
+    '*': deny
   delegate-task: allow
   skill:
-    "*": deny
-    "hm-l2-coordinating-loop": allow
-    "hf-use-authoring-skills": allow
-    "hm-planning-with-files": allow
-    "gate-l3-evidence-truth": allow
-    "gate-l3-lifecycle-integration": allow
-    "gate-l3-spec-compliance": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
   read:
-    "*": deny
-    "*.md": allow
-    "*.json": allow
+    '*': deny
+    '*.md': allow
+    '*.json': allow
   glob: allow
   grep: allow
   webfetch: ask

@@ -1,6 +1,6 @@
 ---
-name: hm-optimizer
-description: "Performance optimization specialist for the hm-* lineage. Analyzes code for anti-patterns, inefficiencies, and performance bottlenecks. Applies refactoring and cross-cutting changes. Spawned by L1 coordinators. Cannot delegate."
+name: hm-l2-optimizer
+description: 'Performance optimization specialist for the hm-* lineage. Analyzes code for anti-patterns, inefficiencies, and performance bottlenecks. Applies refactoring and cross-cutting changes. Spawned by L1 coordinators. Cannot delegate.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,30 +12,30 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    "src/**": allow
+    '*': deny
+    src/**: allow
   write: deny
   bash:
-    "*": deny
-    "git *": allow
+    '*': deny
+    git *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-refactor": allow
-    "hm-l2-cross-cutting-change": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-optimizer

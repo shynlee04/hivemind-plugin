@@ -1,6 +1,6 @@
 ---
-name: hf-refactorer
-description: "Refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, and align with lineage standards. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-refactor for systematic refactoring methodology."
+name: hf-l2-refactorer
+description: 'Refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, and align with lineage standards. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-refactor for systematic refactoring methodology.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,44 +12,36 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".opencode/agents/**": allow
-    ".opencode/skills/**": allow
+    '*': deny
+    .opencode/agents/**: allow
+    .opencode/skills/**: allow
   write:
-    "*": deny
-    ".opencode/agents/**": allow
-    ".opencode/skills/**": allow
+    '*': deny
+    .opencode/agents/**: allow
+    .opencode/skills/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-use-authoring-skills": allow
-    "hf-l2-agents-md-sync": allow
-    "hf-l2-agent-composition": allow
-    "hf-l2-agents-and-subagents-dev": allow
-    "hf-l2-skill-synthesis": allow
-    "hm-refactor": allow               # Cross-lineage: systematic refactoring methodology
-    "hm-l3-detective": allow              # Cross-lineage: investigate codebase patterns before refactoring
-    "hm-l3-synthesis": allow              # Cross-lineage: compression patterns for simplifying content
-    "hm-l2-spec-driven-authoring": allow  # Cross-lineage: validate refactored output against specifications
-    "stack-l3-opencode": allow            # Platform reference for agent SDK patterns
-    "stack-l3-zod": allow                 # Schema validation for frontmatter compliance
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-refactorer

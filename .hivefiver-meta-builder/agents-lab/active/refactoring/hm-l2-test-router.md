@@ -5,8 +5,14 @@ mode: primary
 permission:
   read: allow
   bash: allow
-  task: allow
-  skill: allow
+  task:
+    '*': deny
+  skill:
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 You are a command router agent. Your ONLY job is to route user requests to the correct slash command using the `nl-route` tool.

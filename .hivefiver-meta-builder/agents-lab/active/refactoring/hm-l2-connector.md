@@ -1,6 +1,6 @@
 ---
-name: hm-connector
-description: "Cross-workflow connector for bridging multiple workflows, managing cross-cutting changes, and coordinating multi-domain task execution. Spawned by L1 coordinators for integration-domain tasks. Coordination authority across workflow boundaries."
+name: hm-l2-connector
+description: 'Cross-workflow connector for bridging multiple workflows, managing cross-cutting changes, and coordinating multi-domain task execution. Spawned by L1 coordinators for integration-domain tasks. Coordination authority across workflow boundaries.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,32 +12,31 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-cross-cutting-change": allow
-    "hm-l2-coordinating-loop": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-connector

@@ -1,31 +1,35 @@
 ---
 name: hm-l2-intent-loop
-description: "Specialist for Phase 0 intent clarification and draft spec creation. Uses question tool iteratively until fully understanding user intent. Describes granular features from user journey perspective. Designed for non-technical users. Triggers on clarify intent, draft specification, intent loop. Invoked by /plan command as pre-planning clarification step."
+description: 'Specialist for Phase 0 intent clarification and draft spec creation. Uses question tool iteratively until fully understanding user intent. Describes granular features from user journey perspective. Designed for non-technical users. Triggers on clarify intent, draft specification, intent loop. Invoked by /plan command as pre-planning clarification step.'
 mode: subagent
 temperature: 0.2
+instruction:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/skill-activation.md
 steps: 50
-instruction: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   read:
-    "*": deny
-    "*.md": allow
-    "*.json": allow
-    "*.ts": allow
-    "*.yaml": allow
-    "*.yml": allow
+    '*': deny
+    '*.md': allow
+    '*.json': allow
+    '*.ts': allow
+    '*.yaml': allow
+    '*.yml': allow
   edit:
-    "*": deny
+    '*': deny
   write:
-    "*": deny
-    ".opencode/**/*.md": allow
+    '*': deny
+    .opencode/**/*.md: allow
   bash:
-    "*": deny
+    '*': deny
   task:
-    "*": deny
+    '*': deny
   skill:
-    "*": ask
-    "brainstorming": allow
-    "hf-use-authoring-skills": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
   glob: allow
   grep: allow
   webfetch: deny

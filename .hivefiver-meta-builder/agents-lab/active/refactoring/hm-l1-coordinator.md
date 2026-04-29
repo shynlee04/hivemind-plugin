@@ -1,6 +1,6 @@
 ---
-name: hm-coordinator
-description: "Delegation coordinator for wave-based L2 specialist execution. Dispatches parallel tasks, manages checkpoint gates, collects structured results, and runs inline quality validation. Spawned by L0 hm-orchestrator. Never implements directly."
+name: hm-l1-coordinator
+description: 'Delegation coordinator for wave-based L2 specialist execution. Dispatches parallel tasks, manages checkpoint gates, collects structured results, and runs inline quality validation. Spawned by L0 hm-orchestrator. Never implements directly.'
 mode: subagent
 temperature: 0.15
 depth: L1
@@ -17,42 +17,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hm-*": allow      # Dispatch to hm-* L2 specialists
-    "hf-*": deny       # hm STRICT: no hf delegation
-    "L0-*": deny       # Never delegate upward
-    "L1-*": deny       # Never delegate laterally
+    '*': deny
+    hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-coordinating-loop": allow
-    "hm-l3-subagent-delegation-patterns": allow
-    "hm-l2-completion-looping": allow
-    "hm-l2-phase-execution": allow
-    "hm-l2-phase-loop": allow
-    "gate-l3-lifecycle-integration": allow
-    "gate-l3-spec-compliance": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-coordinator

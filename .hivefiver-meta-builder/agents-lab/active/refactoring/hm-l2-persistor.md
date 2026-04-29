@@ -1,6 +1,6 @@
 ---
-name: hm-persistor
-description: "State persistence specialist. Manages task_plan.md, findings.md, and progress.md state files using hm-planning-persistence and hm-completion-looping. Spawned by L1 coordinators. Cannot delegate."
+name: hm-l2-persistor
+description: 'State persistence specialist. Manages task_plan.md, findings.md, and progress.md state files using hm-planning-persistence and hm-completion-looping. Spawned by L1 coordinators. Cannot delegate.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,32 +12,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".hivemind/state/**": allow
+    '*': deny
+    .hivemind/state/**: allow
   write:
-    "*": deny
-    ".hivemind/state/**": allow
+    '*': deny
+    .hivemind/state/**: allow
   bash:
-    "*": deny
-    "git *": allow
+    '*': deny
+    git *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-planning-persistence": allow
-    "hm-l2-completion-looping": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-persistor

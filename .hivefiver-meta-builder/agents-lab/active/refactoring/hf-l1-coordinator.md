@@ -1,6 +1,6 @@
 ---
-name: hf-coordinator
-description: "Meta-builder category coordinator for hf-* lineage. Dispatches L2 meta-concept specialists (agent builders, skill authors, tool builders), manages creation waves, validates AQUAL compliance, and returns consolidated results. Spawned by L0 hf-orchestrator. FLEXIBLE cross-lineage access."
+name: hf-l1-coordinator
+description: 'Meta-builder category coordinator for hf-* lineage. Dispatches L2 meta-concept specialists (agent builders, skill authors, tool builders), manages creation waves, validates AQUAL compliance, and returns consolidated results. Spawned by L0 hf-orchestrator. FLEXIBLE cross-lineage access.'
 mode: subagent
 temperature: 0.15
 depth: L1
@@ -17,48 +17,34 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hf-agent-builder": allow
-    "hf-skill-author": allow
-    "hf-command-builder": allow
-    "hf-tool-builder": allow
-    "hm-*": allow          # hf FLEXIBLE: may dispatch hm-* for codebase investigation
-    "L0-*": deny           # Never delegate upward
-    "L1-*": deny           # Never delegate laterally
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-agents-and-subagents-dev": allow
-    "hf-l2-agent-composition": allow
-    "hf-l2-delegation-gates": allow
-    "hf-l2-skill-synthesis": allow
-    "hm-l2-coordinating-loop": allow
-    "hm-l2-completion-looping": allow
-    "hm-l3-detective": allow     # Cross-lineage: codebase investigation
-    "hm-l3-deep-research": allow # Cross-lineage: library analysis
-    "gate-l3-lifecycle-integration": allow
-    "gate-l3-spec-compliance": allow
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-coordinator

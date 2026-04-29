@@ -1,6 +1,6 @@
 ---
-name: hf-skill-builder
-description: "Creates and audits SKILL.md packages with progressive disclosure, trigger phrases, and agentskills.io compliance. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation."
+name: hf-l2-skill-builder
+description: 'Creates and audits SKILL.md packages with progressive disclosure, trigger phrases, and agentskills.io compliance. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,39 +12,34 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".opencode/skills/**": allow
+    '*': deny
+    .opencode/skills/**: allow
   write:
-    "*": deny
-    ".opencode/skills/**": allow
+    '*': deny
+    .opencode/skills/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-use-authoring-skills": allow
-    "hf-l2-skill-synthesis": allow
-    "hf-l2-agents-and-subagents-dev": allow
-    "hm-l3-detective": allow            # Cross-lineage: investigate existing skill patterns
-    "hm-l3-deep-research": allow        # Cross-lineage: research library docs for skill context
-    "hm-l3-synthesis": allow            # Cross-lineage: compression patterns for skill references
-    "hm-l2-spec-driven-authoring": allow # Cross-lineage: validate skill requirements
-    "stack-l3-opencode": allow          # Platform reference for skill API
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-skill-builder

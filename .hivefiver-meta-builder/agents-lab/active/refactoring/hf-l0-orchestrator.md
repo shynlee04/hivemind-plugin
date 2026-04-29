@@ -1,6 +1,6 @@
 ---
-name: hf-orchestrator
-description: "Front-facing meta-builder orchestrator for hf-* lineage. Routes meta-concept creation requests (agents, skills, commands, tools) to L1 coordinators. Enforces quality gates and has FLEXIBLE cross-lineage access to hm-* skills. Never implements directly."
+name: hf-l0-orchestrator
+description: 'Front-facing meta-builder orchestrator for hf-* lineage. Routes meta-concept creation requests (agents, skills, commands, tools) to L1 coordinators. Enforces quality gates and has FLEXIBLE cross-lineage access to hm-* skills. Never implements directly.'
 mode: primary
 temperature: 0.25
 depth: L0
@@ -17,42 +17,40 @@ skills:
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md
-permission:
-  # ── Native OpenCode ───────────────────────
-color: "#8B5CF6"
+color: '#8B5CF6'
 steps: 100
+permission:
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hf-*": allow       # Dispatch to hf-* L1 coordinators
-    "hm-*": allow       # May dispatch to hm-* L1 for cross-cutting work
-    "L2-*": deny        # Never delegate directly to L2
+    '*': deny
+    hf-l1-coordinator: allow
+    hm-l1-coordinator: allow
+    hf-l2-*: allow
+    hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-*": allow       # All meta-builder skills
-    "hm-*": allow       # hf FLEXIBLE: cross-lineage access
-    "gate-*": allow     # Quality gate triad
-    "stack-*": allow    # Tech stack references
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-orchestrator

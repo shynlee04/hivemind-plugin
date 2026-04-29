@@ -1,6 +1,6 @@
 ---
-name: hf-agent-builder
-description: "Creates, audits, and repairs OpenCode agent definitions with YAML frontmatter, granular permissions, and XML-tagged execution flows. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for validation."
+name: hf-l2-agent-builder
+description: 'Creates, audits, and repairs OpenCode agent definitions with YAML frontmatter, granular permissions, and XML-tagged execution flows. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for validation.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,39 +12,34 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".opencode/agents/**": allow
+    '*': deny
+    .opencode/agents/**: allow
   write:
-    "*": deny
-    ".opencode/agents/**": allow
+    '*': deny
+    .opencode/agents/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-agents-and-subagents-dev": allow
-    "hf-l2-agent-composition": allow
-    "hf-l2-use-authoring-skills": allow
-    "hm-l3-detective": allow         # Cross-lineage: investigate existing agent patterns
-    "hm-l3-deep-research": allow     # Cross-lineage: research library APIs for agent context
-    "hm-l2-spec-driven-authoring": allow  # Cross-lineage: spec validation for agent requirements
-    "stack-l3-opencode": allow       # Platform reference for agent SDK patterns
-    "stack-l3-zod": allow            # Schema validation reference
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-agent-builder

@@ -1,25 +1,30 @@
 ---
 name: hm-l2-phase-guardian
-description: "Specialist for phase guardrails and loop termination. Use when managing intra-phase iterations, validating completion criteria, enforcing authorization gates, or determining phase exit. Triggers on: 'guardrail loops', 'phase exit decision', 'validate completion', 'max iterations reached', 'checkpoint authorization'. Invoked by hm-phase-loop skill as loop enforcement executor."
+description: 'Specialist for phase guardrails and loop termination. Use when managing intra-phase iterations, validating completion criteria, enforcing authorization gates, or determining phase exit. Triggers on: ''guardrail loops'', ''phase exit decision'', ''validate completion'', ''max iterations reached'', ''checkpoint authorization''. Invoked by hm-phase-loop skill as loop enforcement executor.'
 mode: subagent
 temperature: 0.25
+instruction:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/execution-loop.md
 steps: 60
-instruction: [".opencode/rules/anti-patterns.md", ".opencode/rules/execution-loop.md"]
 permission:
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-  task: deny
+    '*': deny
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+  task:
+    '*': deny
   delegate-task: deny
   skill:
-    "*": deny
-    "hf-delegation-gates": allow
-    "hf-use-authoring-skills": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
   glob: allow
   grep: allow
   webfetch: deny

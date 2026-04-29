@@ -1,6 +1,6 @@
 ---
-name: hm-debugger
-description: "Debug specialist for systematic bug investigation with hypothesis testing, evidence gathering, and root cause analysis. Spawned by L1 coordinators for debug-domain tasks. May apply fixes when authorized."
+name: hm-l2-debugger
+description: 'Debug specialist for systematic bug investigation with hypothesis testing, evidence gathering, and root cause analysis. Spawned by L1 coordinators for debug-domain tasks. May apply fixes when authorized.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,33 +12,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: allow
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npm *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npm *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hm-l2-investigator": allow  # Can call investigator for deeper analysis
+    '*': deny
+    hm-l2-investigator: allow
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-debug": allow
-    "hm-l2-completion-looping": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-debugger

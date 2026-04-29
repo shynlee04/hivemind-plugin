@@ -1,6 +1,6 @@
 ---
-name: hf-tool-builder
-description: "Creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for stack validation."
+name: hf-l2-tool-builder
+description: 'Creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for stack validation.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -11,40 +11,35 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    "src/tools/**": allow
+    '*': deny
+    src/tools/**: allow
   write:
-    "*": deny
-    "src/tools/**": allow
+    '*': deny
+    src/tools/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-custom-tools-dev": allow
-    "hf-l2-use-authoring-skills": allow
-    "hm-l3-detective": allow                # Cross-lineage: investigate existing tool patterns
-    "hm-l3-deep-research": allow            # Cross-lineage: research plugin SDK for tool API
-    "hm-l3-tech-context-compliance": allow  # Cross-lineage: validate tech stack compatibility
-    "stack-l3-opencode": allow              # Platform reference for plugin SDK
-    "stack-l3-zod": allow                   # Zod schema reference
-    "stack-l3-vitest": allow                # Test framework reference
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-tool-builder

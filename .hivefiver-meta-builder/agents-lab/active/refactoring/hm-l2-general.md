@@ -1,6 +1,6 @@
 ---
 name: hm-l2-general
-description: "General-purpose fallback subagent for simple tasks that don't require a specialist. Use for straightforward file operations, quick lookups, and trivial tasks. NOT for complex analysis, architecture decisions, or multi-step workflows."
+description: 'General-purpose fallback subagent for simple tasks that don''t require a specialist. Use for straightforward file operations, quick lookups, and trivial tasks. NOT for complex analysis, architecture decisions, or multi-step workflows.'
 mode: subagent
 temperature: 0.2
 permission:
@@ -11,7 +11,11 @@ permission:
   glob: allow
   grep: allow
   skill:
-    "*": deny
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # General-Purpose Fallback Subagent

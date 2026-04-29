@@ -1,6 +1,6 @@
 ---
-name: hm-executor
-description: "Execution specialist for running implementation plans with wave-based parallelization, checkpoint recovery, and deviation handling. Spawned by L1 coordinators for implementation-domain tasks. Writes code."
+name: hm-l2-executor
+description: 'Execution specialist for running implementation plans with wave-based parallelization, checkpoint recovery, and deviation handling. Spawned by L1 coordinators for implementation-domain tasks. Writes code.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -13,34 +13,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: allow
   write: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npm *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npm *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hm-l2-reviewer": allow  # Can call reviewer after implementation
+    '*': deny
+    hm-l2-reviewer: allow
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-phase-execution": allow
-    "hm-l2-cross-cutting-change": allow
-    "hm-l2-test-driven-execution": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-executor

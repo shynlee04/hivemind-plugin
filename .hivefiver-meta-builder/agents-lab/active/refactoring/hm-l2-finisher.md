@@ -1,6 +1,6 @@
 ---
-name: hm-finisher
-description: "Completion specialist for ensuring tasks are truly done through completion-looping guardrails and test-driven verification. Spawned by L1 coordinators for closure-domain tasks. Verifies completion claims with fresh evidence."
+name: hm-l2-finisher
+description: Completion specialist for ensuring tasks are truly done through completion-looping guardrails and test-driven verification. Spawned by L1 coordinators for closure-domain tasks. Verifies completion claims with fresh evidence.
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,33 +12,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-completion-looping": allow
-    "hm-l2-test-driven-execution": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-finisher

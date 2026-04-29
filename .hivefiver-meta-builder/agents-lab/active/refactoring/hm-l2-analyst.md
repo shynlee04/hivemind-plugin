@@ -1,6 +1,6 @@
 ---
-name: hm-analyst
-description: "Requirements analysis specialist for diagnosing gaps, contradictions, missing constraints, and unvalidated assumptions in specifications. Spawned by L1 coordinators for quality-domain analysis tasks. Read-only."
+name: hm-l2-analyst
+description: 'Requirements analysis specialist for diagnosing gaps, contradictions, missing constraints, and unvalidated assumptions in specifications. Spawned by L1 coordinators for quality-domain analysis tasks. Read-only.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,29 +12,29 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-requirements-analysis": allow
-    "hm-l2-product-validation": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-analyst

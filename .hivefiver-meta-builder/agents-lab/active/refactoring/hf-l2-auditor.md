@@ -1,6 +1,6 @@
 ---
-name: hf-auditor
-description: "Audits OpenCode primitives (agents, skills, commands, tools) for quality compliance, drift detection, anti-pattern discovery, and structural integrity. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-gate-orchestrator for quality gate orchestration."
+name: hf-l2-auditor
+description: 'Audits OpenCode primitives (agents, skills, commands, tools) for quality compliance, drift detection, anti-pattern discovery, and structural integrity. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-gate-orchestrator for quality gate orchestration.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,43 +12,34 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".opencode/**": allow
+    '*': deny
+    .opencode/**: allow
   write:
-    "*": deny
-    ".opencode/**": allow
+    '*': deny
+    .opencode/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-use-authoring-skills": allow
-    "hf-l2-agents-md-sync": allow
-    "hf-l2-agent-composition": allow
-    "hf-l2-agents-and-subagents-dev": allow
-    "hf-l2-command-dev": allow
-    "hf-l2-command-parser": allow
-    "hf-l2-custom-tools-dev": allow
-    "hm-orchestrator": allow     # Cross-lineage: quality gate orchestration for audit verdicts
-    "hm-l3-detective": allow             # Cross-lineage: investigate codebase patterns during audit
-    "hm-l2-spec-driven-authoring": allow # Cross-lineage: validate primitives against specifications
-    "stack-l3-opencode": allow           # Platform reference for primitive structure validation
-    "stack-l3-zod": allow                # Schema validation for frontmatter compliance
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-auditor

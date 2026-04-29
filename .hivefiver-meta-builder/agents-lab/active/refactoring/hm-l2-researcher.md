@@ -1,6 +1,6 @@
 ---
-name: hm-researcher
-description: "Deep research specialist for multi-source investigation, evidence gathering, and structured reporting. Spawned by L1 coordinators for research-domain tasks. Read-only — never mutates files or delegates."
+name: hm-l2-researcher
+description: 'Deep research specialist for multi-source investigation, evidence gathering, and structured reporting. Spawned by L1 coordinators for research-domain tasks. Read-only — never mutates files or delegates.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -15,38 +15,33 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hm-l2-synthesizer": allow  # Can call synthesizer for compression
+    '*': deny
+    hm-l2-synthesizer: allow
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l3-detective": allow
-    "hm-l3-deep-research": allow
-    "hm-l3-research-chain": allow
-    "hm-l3-tech-stack-ingest": allow
-    "hm-l3-synthesis": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-researcher

@@ -1,6 +1,6 @@
 ---
-name: hm-assessor
-description: "Risk assessment specialist for evaluating production risk, requirements quality, and deployment safety. Spawned by L1 coordinators for risk-domain tasks. Produces quantified risk reports with mitigation strategies."
+name: hm-l2-assessor
+description: 'Risk assessment specialist for evaluating production risk, requirements quality, and deployment safety. Spawned by L1 coordinators for risk-domain tasks. Produces quantified risk reports with mitigation strategies.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,29 +12,29 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-production-readiness": allow
-    "hm-l2-requirements-analysis": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-assessor

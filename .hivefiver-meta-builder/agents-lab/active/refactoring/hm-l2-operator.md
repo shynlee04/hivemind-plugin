@@ -1,6 +1,6 @@
 ---
-name: hm-operator
-description: "Phase execution operator for managing plan execution, monitoring task completion, and coordinating wave-based parallelization. Spawned by L1 coordinators for execution-domain tasks. Execution monitoring authority."
+name: hm-l2-operator
+description: 'Phase execution operator for managing plan execution, monitoring task completion, and coordinating wave-based parallelization. Spawned by L1 coordinators for execution-domain tasks. Execution monitoring authority.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,33 +12,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-phase-execution": allow
-    "hm-l2-phase-loop": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-operator

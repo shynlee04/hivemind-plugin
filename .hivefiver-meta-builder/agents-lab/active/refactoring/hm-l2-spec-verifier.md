@@ -1,30 +1,35 @@
 ---
 name: hm-l2-spec-verifier
-description: "Phase 1 specialist for spec verification loop. Triggers on 'verify spec', 'spec verification loop', 'check requirements'. Handles Check-Revise-Escalate cycle for spec compliance. Invoked by /ultrawork command as post-implementation verification step."
+description: 'Phase 1 specialist for spec verification loop. Triggers on ''verify spec'', ''spec verification loop'', ''check requirements''. Handles Check-Revise-Escalate cycle for spec compliance. Invoked by /ultrawork command as post-implementation verification step.'
 mode: subagent
 temperature: 0.1
+instruction:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/skill-activation.md
 steps: 60
-instruction: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   read:
-    "*": allow
-    "*.md": allow
-    "*.ts": allow
-    "*.json": allow
+    '*': allow
+    '*.md': allow
+    '*.ts': allow
+    '*.json': allow
   edit:
-    "*": deny
-    "**/specs/**": allow
-    "**/.opencode/**": allow
+    '*': deny
+    '**/specs/**': allow
+    '**/.opencode/**': allow
   write:
-    "*": deny
-    "**/specs/**": allow
-    "**/.opencode/**": allow
+    '*': deny
+    '**/specs/**': allow
+    '**/.opencode/**': allow
   bash: deny
-  task: deny
+  task:
+    '*': deny
   skill:
-    "*": deny
-    "hf-use-authoring-skills": allow
-    "hm-planning-with-files": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
   glob: allow
   grep: allow
   webfetch: deny

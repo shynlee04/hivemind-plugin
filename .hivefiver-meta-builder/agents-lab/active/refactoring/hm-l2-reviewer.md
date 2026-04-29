@@ -1,6 +1,6 @@
 ---
-name: hm-reviewer
-description: "Code review specialist for security, performance, bug, and quality analysis against specifications. Spawned by L1 coordinators for quality-domain review tasks. Read-only."
+name: hm-l2-reviewer
+description: 'Code review specialist for security, performance, bug, and quality analysis against specifications. Spawned by L1 coordinators for quality-domain review tasks. Read-only.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -11,31 +11,31 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hm-l2-validator": allow  # Can call validator for verification
+    '*': deny
+    hm-l2-validator: allow
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-test-driven-execution": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-reviewer

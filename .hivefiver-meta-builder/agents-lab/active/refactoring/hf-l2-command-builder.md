@@ -1,6 +1,6 @@
 ---
-name: hf-command-builder
-description: "Creates and audits OpenCode command definitions with YAML frontmatter, $ARGUMENTS parsing, and non-interactive shell safety. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for safety checks."
+name: hf-l2-command-builder
+description: 'Creates and audits OpenCode command definitions with YAML frontmatter, $ARGUMENTS parsing, and non-interactive shell safety. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for safety checks.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,37 +12,34 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".opencode/commands/**": allow
+    '*': deny
+    .opencode/commands/**: allow
   write:
-    "*": deny
-    ".opencode/commands/**": allow
+    '*': deny
+    .opencode/commands/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-command-dev": allow
-    "hf-l2-command-parser": allow
-    "hf-l2-use-authoring-skills": allow
-    "hm-l3-detective": allow                   # Cross-lineage: investigate existing command patterns
-    "hm-l3-opencode-non-interactive-shell": allow  # Cross-lineage: shell safety validation
-    "stack-l3-opencode": allow                 # Platform reference for command API
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-command-builder

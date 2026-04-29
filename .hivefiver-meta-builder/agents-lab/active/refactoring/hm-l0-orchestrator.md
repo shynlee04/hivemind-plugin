@@ -1,6 +1,6 @@
 ---
-name: hm-orchestrator
-description: "Front-facing session orchestrator for hm-* product development lineage. Routes user intent to L1 coordinators, enforces quality gate triad, and validates workflow completion. Never implements directly."
+name: hm-l0-orchestrator
+description: 'Front-facing session orchestrator for hm-* product development lineage. Routes user intent to L1 coordinators, enforces quality gate triad, and validates workflow completion. Never implements directly.'
 mode: primary
 temperature: 0.25
 depth: L0
@@ -17,42 +17,37 @@ skills:
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md
-permission:
-  # ── Native OpenCode ───────────────────────
-color: "#3B82F6"
+color: '#3B82F6'
 steps: 100
+permission:
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
-    "hm-*": allow
-    "hf-*": deny       # hm STRICT: no hf delegation
-    "L2-*": deny       # Never delegate directly to L2
+    '*': deny
+    hm-l1-coordinator: allow
+    hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-*": allow      # All product-dev skills
-    "gate-*": allow    # Quality gate triad
-    "stack-*": allow   # Tech stack references
-    "hf-*": deny       # hm STRICT: no meta-builder skills
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-orchestrator

@@ -1,6 +1,6 @@
 ---
-name: hm-technician
-description: "Technology stack specialist for validating library compatibility, ingesting tech stack docs, and verifying dependency compliance against project standards. Spawned by L1 coordinators for tech-domain tasks. Read-only analysis."
+name: hm-l2-technician
+description: 'Technology stack specialist for validating library compatibility, ingesting tech stack docs, and verifying dependency compliance against project standards. Spawned by L1 coordinators for tech-domain tasks. Read-only analysis.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,33 +12,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l3-tech-context-compliance": allow
-    "hm-l3-tech-stack-ingest": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-technician

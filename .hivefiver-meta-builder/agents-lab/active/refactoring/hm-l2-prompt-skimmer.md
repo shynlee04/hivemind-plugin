@@ -1,18 +1,27 @@
 ---
 name: hm-l2-prompt-skimmer
-description: "Phase 0 skim agent for prompt enhancement. Use when you need a fast scan before deeper analysis."
+description: Phase 0 skim agent for prompt enhancement. Use when you need a fast scan before deeper analysis.
 mode: subagent
 temperature: 0.1
-instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
+instructions:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/skill-activation.md
 permission:
   edit:
-    "*": deny
+    '*': deny
   write:
-    "*": deny
+    '*': deny
   bash: allow
   glob: allow
   grep: allow
-  task: deny
+  task:
+    '*': deny
+  skill:
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # Prompt Skimmer

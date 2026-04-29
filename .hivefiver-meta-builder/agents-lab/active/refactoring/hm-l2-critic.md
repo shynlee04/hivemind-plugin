@@ -1,19 +1,26 @@
 ---
 name: hm-l2-critic
-description: "Quality verification agent. Ruthless code review, correctness validation, and compliance checking. Read-only with bash for test execution."
+description: 'Quality verification agent. Ruthless code review, correctness validation, and compliance checking. Read-only with bash for test execution.'
 mode: subagent
 model: opencode-go/kimi-k2.6
 temperature: 0.05
-instructions: [".opencode/rules/anti-patterns.md", "opencode/rules/execution-loop.md", ".opencode/rules/skill-activation.md"]
+instructions:
+  - .opencode/rules/anti-patterns.md
+  - opencode/rules/execution-loop.md
+  - .opencode/rules/skill-activation.md
 steps: 40
 permission:
   edit: deny
   write: deny
   bash: allow
   task:
-    "*": deny
-    "hm-l2-reviewer": allow
-  skill: allow
+    '*': deny
+  skill:
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
   read: allow
   glob: allow
   grep: allow

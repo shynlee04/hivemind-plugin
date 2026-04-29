@@ -1,6 +1,6 @@
 ---
-name: hm-brainstormer
-description: "Ideation specialist for exploring user intent, requirements gathering, and structured ideation before specification. Spawned by L1 coordinators for planning-domain brainstorming tasks. Read-only."
+name: hm-l2-brainstormer
+description: 'Ideation specialist for exploring user intent, requirements gathering, and structured ideation before specification. Spawned by L1 coordinators for planning-domain brainstorming tasks. Read-only.'
 mode: subagent
 temperature: 0.15
 depth: L2
@@ -11,27 +11,28 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
+    '*': deny
+    git *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-brainstorm": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-brainstormer

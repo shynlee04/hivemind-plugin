@@ -7,7 +7,14 @@ permission:
   edit: allow
   write: allow
   bash: allow
-  task: allow
+  task:
+    '*': deny
+  skill:
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 skill: allow
 ---
 

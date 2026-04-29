@@ -1,6 +1,6 @@
 ---
-name: hm-mentor
-description: "Onboarding specialist for guiding new users through brainstorming, requirements discovery, and product validation. Spawned by L1 coordinators for discovery-domain tasks. Interactive analysis with structured guidance."
+name: hm-l2-mentor
+description: 'Onboarding specialist for guiding new users through brainstorming, requirements discovery, and product validation. Spawned by L1 coordinators for discovery-domain tasks. Interactive analysis with structured guidance.'
 mode: subagent
 temperature: 0.15
 depth: L2
@@ -12,29 +12,29 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-brainstorm": allow
-    "hm-l2-requirements-analysis": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-mentor

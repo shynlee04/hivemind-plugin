@@ -1,6 +1,6 @@
 ---
-name: hm-strategist
-description: "Roadmap and feature ordering specialist. Designs long-term plans with maintainability scoring, dependency graphs, and feature ecosystem analysis. Spawned by L1 coordinators. Cannot delegate."
+name: hm-l2-strategist
+description: 'Roadmap and feature ordering specialist. Designs long-term plans with maintainability scoring, dependency graphs, and feature ecosystem analysis. Spawned by L1 coordinators. Cannot delegate.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -12,28 +12,28 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
+    '*': deny
+    git *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-roadmap-maintainability": allow
-    "hm-l2-feature-ecosystem": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-strategist

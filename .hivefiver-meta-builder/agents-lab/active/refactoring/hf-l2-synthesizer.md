@@ -1,6 +1,6 @@
 ---
-name: hf-synthesizer
-description: "Synthesizes OpenCode skills from GitHub repositories, codebase patterns, and documentation by extracting reusable patterns and generating conformant SKILL.md packages. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-synthesis for compression and artifact validation."
+name: hf-l2-synthesizer
+description: 'Synthesizes OpenCode skills from GitHub repositories, codebase patterns, and documentation by extracting reusable patterns and generating conformant SKILL.md packages. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-synthesis for compression and artifact validation.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -11,46 +11,36 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit:
-    "*": deny
-    ".opencode/skills/**": allow
+    '*': deny
+    .opencode/skills/**: allow
   write:
-    "*": deny
-    ".opencode/skills/**": allow
+    '*': deny
+    .opencode/skills/**: allow
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hf-l2-skill-synthesis": allow
-    "hf-l2-use-authoring-skills": allow
-    "hf-l2-agent-composition": allow
-    "hm-l3-synthesis": allow               # Cross-lineage: compression and artifact validation
-    "hm-l3-detective": allow              # Cross-lineage: investigate codebase patterns before synthesis
-    "hm-l3-deep-research": allow          # Cross-lineage: research library documentation for skill context
-    "hm-l3-tech-stack-ingest": allow      # Cross-lineage: download and cache reference repositories
-    "hm-l3-tech-context-compliance": allow # Cross-lineage: validate tech stack compatibility
-    "stack-l3-opencode": allow            # Platform reference for skill API patterns
-    "stack-l3-zod": allow                 # Schema validation
-    "stack-l3-nextjs": allow              # Next.js patterns for skill context
-    "stack-l3-vitest": allow              # Test framework patterns for skill context
+    '*': deny
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hf-synthesizer

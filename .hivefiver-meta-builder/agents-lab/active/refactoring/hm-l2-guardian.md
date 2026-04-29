@@ -1,6 +1,6 @@
 ---
-name: hm-guardian
-description: "Phase loop specialist for managing iterative phase execution, enforcing entry/exit criteria, and preventing regressions through completion-looping guardrails. Spawned by L1 coordinators for phase-management tasks. Execution authority within phase boundaries."
+name: hm-l2-guardian
+description: 'Phase loop specialist for managing iterative phase execution, enforcing entry/exit criteria, and preventing regressions through completion-looping guardrails. Spawned by L1 coordinators for phase-management tasks. Execution authority within phase boundaries.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,33 +12,32 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    '*': deny
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── MCP / Web ─────────────────────────────
   webfetch: allow
   websearch: allow
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-phase-loop": allow
-    "hm-l2-completion-looping": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-guardian

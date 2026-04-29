@@ -1,17 +1,26 @@
 ---
 name: hm-l2-prompt-repackager
-description: "Final assembly lane for prompt enhancement. Returns the enhanced prompt payload with YAML frontmatter and XML-tagged sections."
+description: Final assembly lane for prompt enhancement. Returns the enhanced prompt payload with YAML frontmatter and XML-tagged sections.
 mode: subagent
 temperature: 0.2
-instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
+instructions:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/skill-activation.md
 permission:
   edit:
-    "*": deny
+    '*': deny
   write:
-    "*": deny
+    '*': deny
   glob: allow
   grep: allow
-  task: deny
+  task:
+    '*': deny
+  skill:
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # Prompt Repackager

@@ -1,6 +1,6 @@
 ---
-name: hm-investigator
-description: "Deep investigation specialist for root cause analysis. Combines hm-debug methodology with hm-detective evidence gathering for systematic bug tracing. Spawned by L1 coordinators. Cannot delegate."
+name: hm-l2-investigator
+description: Deep investigation specialist for root cause analysis. Combines hm-debug methodology with hm-detective evidence gathering for systematic bug tracing. Spawned by L1 coordinators. Cannot delegate.
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -12,29 +12,29 @@ skills:
 instruction:
   - AGENTS.md
 permission:
-  # ── Native OpenCode ───────────────────────
   read: allow
   edit: deny
   write: deny
   bash:
-    "*": deny
-    "git *": allow
-    "node *": allow
+    '*': deny
+    git *: allow
+    node *: allow
   glob: allow
   grep: allow
-  # ── Hivemind Custom ───────────────────────
-  task: deny
+  task:
+    '*': deny
   delegate-task: deny
   delegation-status: deny
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny
   session-patch: deny
-  # ── Skills ────────────────────────────────
   skill:
-    "*": deny
-    "hm-l2-debug": allow
-    "hm-l3-detective": allow
+    '*': deny
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 ---
 
 # hm-investigator
