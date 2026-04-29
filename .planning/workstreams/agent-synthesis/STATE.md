@@ -3,34 +3,34 @@ gsd_state_version: 1.0
 workstream: agent-synthesis
 status: ACTIVE
 phase_count: 12
-current_phase: AS-2
-last_updated: "2026-04-29T14:00:00Z"
+current_phase: AS-3
+last_updated: "2026-04-29T18:00:00Z"
 progress:
   total_phases: 12
-  completed_phases: 2
+  completed_phases: 3
   authorized_phases: 0
-  plans_written: 3
-  plans_executed: 2
+  plans_written: 4
+  plans_executed: 3
 ---
 
 # STATE: Agent Synthesis Workstream
 
 ## Current Position
 
-- **Phase:** AS-2 — Lineage Classification Schema Design
-- **Status:** IN-PROGRESS
-- **Previous Phase:** AS-1 — COMPLETED (2026-04-29)
-- **Next Action:** Design formal lineage classification schema with depth levels, domain routing, and frontmatter validation rules
+- **Phase:** AS-3 — hm-* Agent Body Authoring (blocked by SE-5)
+- **Status:** IN-PROGRESS (BLOCKED)
+- **Previous Phase:** AS-2 — COMPLETED (2026-04-29)
+- **Next Action:** Begin hm-* agent body authoring once skill-ecosystem SE-5 (gate orchestration lineage) completes
 
 ## Progress Table
 
 | Metric | Count |
 |--------|-------|
 | Total phases | 12 |
-| Completed | 2 (AS-0, AS-1) |
+| Completed | 3 (AS-0, AS-1, AS-2) |
 | Authorized | 0 |
-| Plans written | 3 (AS-0 PLAN.md, AS-1 PLAN.md, AGENT-INVENTORY.md) |
-| Plans executed | 2 (AS-0, AS-1) |
+| Plans written | 4 (AS-0 PLAN.md, AS-1 PLAN.md, AGENT-INVENTORY.md, AS-2 PLAN.md) |
+| Plans executed | 3 (AS-0, AS-1, AS-2) |
 
 ## Agent Inventory (2026-04-29)
 
@@ -117,4 +117,5 @@ SE-14 (quality baselines) ──feeds──→ AS-8 (body enrichment targets)
 - **Cycle 2, Wave 3** (2026-04-29): ROADMAP rewritten with concrete phases, dependency chains, known issues. STATE updated with actual inventory (58 on-disk + 1 ghost = 59).
 - **AS-0 Complete** (2026-04-29): Full inventory audit executed. AGENT-INVENTORY.md created with 59-agent classification matrix, 11 defects, quality scoring, body format catalog. Key findings: 4 of 9 original defects resolved (KI-02, KI-05, KI-06, KI-07), 1 revised (KI-01: file doesn't exist, not name mismatch), 2 new defects discovered (KI-10: 13 agents missing name field, KI-11: hf-meta-builder skill-only/no agent file). 11 recommendations for downstream phases.
 - **AS-1 Complete** (2026-04-29): Agent Architecture Synthesis executed. AGENT-ARCHITECTURE-SYNTHESIS.md created (692 lines, 8 sections + appendices). Key outputs: (1) Pattern comparison of GSD XML, Hivefiver MD, OMO, and Enriched Hybrid formats with evidence from 10 representative agents. (2) Best-of-both synthesis with ADOPT/ADAPT/REJECT/DEFER verdicts for 13 pattern elements. (3) Unified body template: 10 required + 6 optional XML tags (D-AD-04 confirmed). (4) Permission model standard: deny-all base with explicit allow per tool category. (5) Quality baseline with 10-point measurement. (6) Anti-pattern catalog: 7 documented patterns. (7) Migration map: 59-agent mapping (33 gsd→hm, 6 hivefiver→hf, 18 core→hm, 1 ghost, 1 unchanged). (8) Temperature ranges by depth: L0 (0.2-0.3), L1 (0.1-0.2), L2 (0.0-0.15).
-- Next session should begin AS-2 execution: lineage classification schema design.
+- **AS-2 Complete** (2026-04-29): Lineage Classification Schema designed and delivered. LINEAGE-CLASSIFICATION-SCHEMA.md created (1266 lines, 7 sections + 2 appendices). Key outputs: (1) YAML frontmatter schema with 6 required + 7 optional fields, Zod extension pseudocode, and 6 full YAML examples (one per lineage × depth combination). (2) 2-lineage taxonomy formalized: hm-* with 11 domains (STRICT skill binding), hf-* with 7 domains (FLEXIBLE skill binding). (3) Depth level definitions with delegation rules, temperature ranges, permission scope by depth. (4) Permission model templates: deny-all + explicit allow for all 6 depth × lineage combinations. (5) Domain routing rules: task-to-domain mapping for all 11 hm + 7 hf domains with cross-domain routing logic. (6) Frontmatter validation rules with AQUAL compliance checklist, machine-verifiable constraints, and validation pseudocode. (7) Complete 59-agent migration map with target names, domain assignments, depth assignments, and migration actions. Gatekeep verdict: ALL GATES PASS (output, quality, scope).
+- Next session should begin AS-3: hm-* Agent Body Authoring — blocked by skill-ecosystem SE-5 (gate orchestration lineage).
