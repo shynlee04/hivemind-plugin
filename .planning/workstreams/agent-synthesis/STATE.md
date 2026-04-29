@@ -3,34 +3,34 @@ gsd_state_version: 1.0
 workstream: agent-synthesis
 status: ACTIVE
 phase_count: 12
-current_phase: AS-1
-last_updated: "2026-04-29T12:00:00Z"
+current_phase: AS-2
+last_updated: "2026-04-29T14:00:00Z"
 progress:
   total_phases: 12
-  completed_phases: 1
+  completed_phases: 2
   authorized_phases: 0
-  plans_written: 2
-  plans_executed: 1
+  plans_written: 3
+  plans_executed: 2
 ---
 
 # STATE: Agent Synthesis Workstream
 
 ## Current Position
 
-- **Phase:** AS-1 — Agent Architecture Synthesis
+- **Phase:** AS-2 — Lineage Classification Schema Design
 - **Status:** IN-PROGRESS
-- **Previous Phase:** AS-0 — COMPLETED (2026-04-29)
-- **Next Action:** Compare GSD XML vs hivefiver markdown vs OMO patterns, synthesize body format standard
+- **Previous Phase:** AS-1 — COMPLETED (2026-04-29)
+- **Next Action:** Design formal lineage classification schema with depth levels, domain routing, and frontmatter validation rules
 
 ## Progress Table
 
 | Metric | Count |
 |--------|-------|
 | Total phases | 12 |
-| Completed | 1 (AS-0) |
+| Completed | 2 (AS-0, AS-1) |
 | Authorized | 0 |
-| Plans written | 2 (AS-0 PLAN.md, AGENT-INVENTORY.md) |
-| Plans executed | 1 (AS-0) |
+| Plans written | 3 (AS-0 PLAN.md, AS-1 PLAN.md, AGENT-INVENTORY.md) |
+| Plans executed | 2 (AS-0, AS-1) |
 
 ## Agent Inventory (2026-04-29)
 
@@ -116,4 +116,5 @@ SE-14 (quality baselines) ──feeds──→ AS-8 (body enrichment targets)
 - **Cycle 1** (2026-04-27): Initial ROADMAP with thin-frame phases AS-0 through AS-7
 - **Cycle 2, Wave 3** (2026-04-29): ROADMAP rewritten with concrete phases, dependency chains, known issues. STATE updated with actual inventory (58 on-disk + 1 ghost = 59).
 - **AS-0 Complete** (2026-04-29): Full inventory audit executed. AGENT-INVENTORY.md created with 59-agent classification matrix, 11 defects, quality scoring, body format catalog. Key findings: 4 of 9 original defects resolved (KI-02, KI-05, KI-06, KI-07), 1 revised (KI-01: file doesn't exist, not name mismatch), 2 new defects discovered (KI-10: 13 agents missing name field, KI-11: hf-meta-builder skill-only/no agent file). 11 recommendations for downstream phases.
-- Next session should begin AS-1 execution: agent architecture synthesis (GSD XML vs hivefiver MD vs OMO patterns comparison).
+- **AS-1 Complete** (2026-04-29): Agent Architecture Synthesis executed. AGENT-ARCHITECTURE-SYNTHESIS.md created (692 lines, 8 sections + appendices). Key outputs: (1) Pattern comparison of GSD XML, Hivefiver MD, OMO, and Enriched Hybrid formats with evidence from 10 representative agents. (2) Best-of-both synthesis with ADOPT/ADAPT/REJECT/DEFER verdicts for 13 pattern elements. (3) Unified body template: 10 required + 6 optional XML tags (D-AD-04 confirmed). (4) Permission model standard: deny-all base with explicit allow per tool category. (5) Quality baseline with 10-point measurement. (6) Anti-pattern catalog: 7 documented patterns. (7) Migration map: 59-agent mapping (33 gsd→hm, 6 hivefiver→hf, 18 core→hm, 1 ghost, 1 unchanged). (8) Temperature ranges by depth: L0 (0.2-0.3), L1 (0.1-0.2), L2 (0.0-0.15).
+- Next session should begin AS-2 execution: lineage classification schema design.
