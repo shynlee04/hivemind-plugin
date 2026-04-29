@@ -1,4 +1,5 @@
 ---
+name: "hf-prompter"
 description: "Expert prompt engineering and validation system for creating, optimizing, and testing high-quality prompts through multi-agent workflows. Use when you need to improve a prompt, audit prompt quality, transform prompts, compile documents, or investigate prompt requirements. Triggers on: optimize this prompt, improve this prompt, create a prompt for, prompt engineering, transform this prompt, validate this prompt, hf-prompter."
 mode: all
 temperature: 0.3
