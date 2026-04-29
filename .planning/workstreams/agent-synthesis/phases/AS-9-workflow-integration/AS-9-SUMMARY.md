@@ -92,3 +92,12 @@ None — plan executed exactly as written.
 ## Known Stubs
 
 The 15 core→hm classified agents (build, conductor, context-mapper, context-purifier, critic, general, intent-loop, meta-synthesis, phase-guardian, prompt-analyzer, prompt-repackager, prompt-skimmer, risk-assessor, spec-verifier, test-router) have minimal body content and received their first workflow_awareness sections in this phase. Full XML body enrichment for these agents is deferred to a future phase.
+
+## Self-Check: PASSED
+
+- [x] AS-9-SUMMARY.md exists
+- [x] COMMAND-AGENT-BINDINGS.md exists and tracked in git
+- [x] STATE.md updated (current_phase: AS-9, completed_phases: 10)
+- [x] All 56 agent files have workflow_awareness with Parent Agent info
+- [x] AS-9 commit: d41daef5 (57 files, 410 insertions)
+- [x] No deletions detected in commit
