@@ -289,4 +289,4 @@ The loop terminates when ANY of the following occur:
 - `scripts/coordination-check.sh` — Validates gate passage
 - `scripts/loop-status.sh` — Reports current loop phase
 - `dispatching-parallel-agents` skill — Underlying dispatch pattern
-- `planning-with-files` skill — task_plan.md, findings.md, progress.md integration
+- `hm-planning-persistence` skill — task_plan.md, findings.md, progress.md integration in `.hivemind/state/planning/<session-id>/`

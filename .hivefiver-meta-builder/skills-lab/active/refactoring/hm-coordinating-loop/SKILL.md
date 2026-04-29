@@ -12,27 +12,24 @@ allowed-tools: Bash Read Write Edit Glob Grep todowrite skill
 
 Coordinate multi-agent dispatch with validation gates and handoff protocols. Use when delegating to subagents, managing parallel tasks, routing specialist work, or sequencing agent waves. Produces validated multi-agent dispatch with error recovery and progress tracking.
 
-## HIERARCHY ENFORCEMENT — Run This FIRST
+## Planning Context — Check Available
 
-This skill is LAYER 3 in the loading chain (coordination). Before any action:
+This skill coordinates multi-agent workflows. Before beginning:
 
-1. **Verify hierarchy chain:**
-   ```bash
-   bash scripts/verify-hierarchy.sh coordinating-loop
-   ```
-   This checks that `planning-with-files` is loaded and `task_plan.md` exists with a Goal section.
+1. **Check for planning state:**
+   - If `hm-planning-persistence` is loaded: Read `.hivemind/state/planning/<session-id>/task_plan.md` for task inventory.
+   - If `hm-planning-persistence` is not loaded: Build task inventory in-memory. Write to `.coordination/<session>/task_plan.md` for durability.
+   - **DO NOT BLOCK** — proceed with whatever planning context is available.
 
 2. **Register this skill as loaded:**
    ```bash
    bash scripts/register-skill.sh coordinating-loop
    ```
+   (Non-blocking — continues on failure)
 
-3. **Prerequisites:**
-   - `planning-with-files` must be loaded (LAYER 2)
-   - `task_plan.md` must exist with Goal section defined
-   - Background skills should already be loaded by upstream skills
-
-**If hierarchy check fails → STOP. This skill requires planning context that is not available.**
+3. **State availability:**
+   - Preferred: `hm-planning-persistence` provides structured task_plan.md, findings.md, progress.md in `.hivemind/state/planning/<session-id>/`
+   - Fallback: In-memory task tracking with `.coordination/<session>/` directory
 
 <files_to_read>
 .opencode/skills/hm-coordinating-loop/references/01-handoff-protocols.md
@@ -53,7 +50,7 @@ Central coordination hub for multi-agent workflows. Manages hand-offs, execution
 
 1. **Count the tasks.** If only one task, do NOT load this skill. Execute directly.
 2. **Check for `.coordination/` directory.** If missing, run `scripts/init-session.sh <session-name>`.
-3. **Load prerequisite skills:** `planning-with-files` then `dispatching-parallel-agents`.
+3. **Check for available planning state:** `hm-planning-persistence` (preferred, `.hivemind/state/planning/<session-id>/`) or in-memory fallback.
 4. **Limit tool calls to 3 before first decision.** No deep exploration.
 5. **Write task inventory to disk:** `.coordination/<session>/task_plan.md`.
 6. **Run pre-dispatch validation:** `bash scripts/coordination-check.sh <session> --pre-dispatch`. **Must exit 0 before any child is dispatched.**
@@ -407,7 +404,7 @@ If two agents need to write to the same output file, serialize their execution i
 |-------|-------------|
 | `dispatching-parallel-agents` | Builds ON TOP of it for parallel dispatch patterns |
 | `user-intent-interactive-loop` | Captures user intent before coordination begins |
-| `planning-with-files` | Maintains task_plan.md, findings.md, progress.md |
+| `hm-planning-persistence` | Maintains task_plan.md, findings.md, progress.md in `.hivemind/state/planning/` |
 | `phase-loop` | Provides iteration semantics for coordinated revision loops |
 
 ## Cross-References (Boundary Clarification)
@@ -417,7 +414,7 @@ If two agents need to write to the same output file, serialize their execution i
 | `agents-and-subagents-dev` | agents-and-subagents-dev owns agent definitions and delegation protocol. This skill owns dispatch mechanics and coordination between multiple agents. |
 | `hm-subagent-delegation-patterns` | hm-subagent-delegation-patterns owns GSD-specific execution patterns (checkpoint resume, session ID tracking). This skill owns general multi-agent orchestration. |
 | `user-intent-interactive-loop` | user-intent-interactive-loop owns intent clarification before work begins. This skill owns execution coordination after intent is clear. |
-| `planning-with-files` | planning-with-files owns task-level persistent memory. This skill reads/writes those files as part of coordination but doesn't own them. |
+| `hm-planning-persistence` | hm-planning-persistence owns task-level persistent memory in `.hivemind/state/planning/<session-id>/`. This skill reads/writes those files as part of coordination but doesn't own them. |
 
 ---
 

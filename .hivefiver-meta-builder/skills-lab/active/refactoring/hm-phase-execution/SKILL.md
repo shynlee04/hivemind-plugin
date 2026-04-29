@@ -186,6 +186,6 @@ If two plans in the same wave touch the same file, they cannot run in parallel â
 | Related Skill | Boundary |
 |---------------|----------|
 | `hm-coordinating-loop` | Owns general multi-agent dispatch. This skill applies wave-based dispatch to phases. |
-| `hm-planning-with-files` | Owns task_plan.md tracking. This skill reads and updates phase plans. |
+| `hm-planning-persistence` | Owns task_plan.md tracking in `.hivemind/state/planning/<session-id>/`. This skill reads and updates phase plans. |
 | `hm-phase-loop` | Owns iterative loop semantics. This skill handles loop-back within phase execution. |
 | `hm-subagent-delegation-patterns` | Owns delegation mechanics. This skill uses those mechanics for plan dispatch. |

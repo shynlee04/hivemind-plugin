@@ -360,5 +360,5 @@ Agent: "CSV export via CLI. Any specific fields, or all available metrics?"
 | Context preservation across probing turns | `02-context-preservation.md` |
 | Brainstorming when user wants exploration, not answers | `03-brainstorming-patterns.md` |
 | Managing long probing sessions | `04-long-session-management.md` |
-| Planning after probing is complete | `planning-with-files` skill |
+| Planning after probing is complete | `hm-planning-persistence` skill |
 | Deciding what to delegate after understanding | `dispatching-parallel-agents` skill |

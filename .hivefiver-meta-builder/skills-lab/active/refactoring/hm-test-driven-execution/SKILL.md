@@ -40,14 +40,14 @@ Before writing tests:
 2. Confirm implementation has not already been written for the slice. If it has, either delete/revert the implementation for a true RED cycle or label the work as test-after and do not claim TDD.
 3. Identify the project test runner and coverage options.
 4. If requirements are ambiguous, stop and hand off to `hm-spec-driven-authoring`.
-5. If work spans sessions, persist RED/GREEN/REFACTOR status through `hm-planning-with-files` or a local progress table.
+5. If work spans sessions, persist RED/GREEN/REFACTOR status through `hm-planning-persistence` (.hivemind/state/planning/<session-id>/progress.md) or a local progress table.
 
 ## Boundary Rules
 
 | Nearby workflow | Boundary |
 |---|---|
 | `hm-spec-driven-authoring` | Owns requirement and acceptance-test derivation. This skill consumes locked requirements. |
-| `hm-planning-with-files` | Owns durable task/progress files. This skill records test phase state into that mechanism when needed. |
+| `hm-planning-persistence` | Owns durable task/progress files in `.hivemind/state/planning/<session-id>/`. This skill records test phase state into that mechanism when needed. |
 | Manual-only QA | Manual exploration may inform a bug, but it is not RED/GREEN/REFACTOR execution. |
 | Test-after work | Useful, but not TDD. Do not claim RED evidence if tests were written after implementation. |
 | Generic code review | Review can assess quality after tests pass; it does not replace fresh test output. |
@@ -179,7 +179,7 @@ Coverage is not a substitute for RED/GREEN evidence. A high percentage with inva
 | Mode | Defence |
 |---|---|
 | NON-1 audit | Every pass/coverage claim includes command and observed output. |
-| NON-2 context | Boundaries with `hm-spec-driven-authoring`, `hm-planning-with-files`, manual QA, and test-after work are explicit. |
+| NON-2 context | Boundaries with `hm-spec-driven-authoring`, `hm-planning-persistence`, manual QA, and test-after work are explicit. |
 | NON-3 cycles | RED → GREEN → REFACTOR gates include loop-back and stop states. |
 | NON-4 hierarchy | Requirement authors lock contracts; this skill executes tests; reviewers verify after fresh evidence. |
 | NON-5 ecosystem eval | Eval bundle includes trigger, negative, boundary, invalid RED, coverage-absent, and `stacked_scenario` cases. |

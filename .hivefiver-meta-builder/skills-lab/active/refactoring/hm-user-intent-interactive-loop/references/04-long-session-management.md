@@ -408,5 +408,5 @@ Agent: "Saving full checkpoint to progress.md and .checkpoints/.
 | Context preservation across interruptions | `02-context-preservation.md` |
 | Brainstorming when sessions span ideation | `03-brainstorming-patterns.md` |
 | Git-backed memory for session state | `gcc` skill |
-| File-based planning for multi-session work | `planning-with-files` skill |
+| File-based planning for multi-session work | `hm-planning-persistence` skill |
 | Parallel delegation patterns | `dispatching-parallel-agents` skill |

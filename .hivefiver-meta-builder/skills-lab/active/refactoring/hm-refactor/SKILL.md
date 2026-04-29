@@ -148,4 +148,4 @@ This skill works in any Git-backed end-user project. If no git repository exists
 |---------------|----------|
 | `hm-test-driven-execution` | Owns test execution. This skill requires tests as safety gate. |
 | `hm-debug` | Investigates failures. This skill may trigger debug if refactor breaks tests. |
-| `hm-planning-with-files` | Owns task planning. This skill adds refactor steps to task_plan.md. |
+| `hm-planning-persistence` | Owns task planning in `.hivemind/state/planning/<session-id>/`. This skill adds refactor steps to task_plan.md. |

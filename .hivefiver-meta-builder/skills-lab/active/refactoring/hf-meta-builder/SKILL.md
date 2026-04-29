@@ -69,7 +69,7 @@ Meta-concepts are the building blocks of an OpenCode project. Skills teach exper
    | Codebase analysis, repo exploration | `repomix-exploration-guide` |
    | Shell safety, non-interactive execution | `opencode-non-interactive-shell` |
    | Ambiguous intent, unclear scope | `user-intent-interactive-loop` |
-   | Multi-step planning needed | `planning-with-files` |
+   | Multi-step planning needed | `hm-planning-persistence` |
    | Nothing specific yet | None — wait for routing decision |
 
 2. **Read planning files if they exist:** `task_plan.md`, `findings.md`, `progress.md`.

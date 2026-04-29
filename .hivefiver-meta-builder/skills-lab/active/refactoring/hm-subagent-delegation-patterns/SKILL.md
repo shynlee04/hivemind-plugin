@@ -188,4 +188,4 @@ echo "$TASK_ID" > .planning/phases/${PHASE}/.last-delegation-id
 |---------------|----------|
 | `hf-agents-and-subagents-dev` | Owns agent definitions and permission profiles. This skill owns the dispatch patterns and resume protocols. |
 | `hm-coordinating-loop` | Owns general multi-agent dispatch and orchestration. This skill owns the subagent-specific execution mechanics. |
-| `hm-planning-with-files` | Owns task_plan.md/findings.md/progress.md. This skill consumes those files for state-aware dispatch. |
+| `hm-planning-persistence` | Owns task_plan.md/findings.md/progress.md in `.hivemind/state/planning/<session-id>/`. This skill consumes those files for state-aware dispatch. |

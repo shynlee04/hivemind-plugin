@@ -154,7 +154,7 @@ Front-agent skill for iterative user engagement. The Agent stays in control, pro
 | Codebase exploration | `repomix-exploration-guide` | **First** — before any action |
 | Shell strategy | `opencode-non-interactive-shell` | **First** — before any action |
 | Parallel dispatch | `dispatching-parallel-agents` | After PROBE passes Gate 4 |
-| File-based planning | `planning-with-files` | After PROBE passes Gate 4 |
+| File-based planning | `hm-planning-persistence` (.hivemind/state/planning/) | After PROBE passes Gate 4 |
 | Deep investigation | `deep-research` or `deep-investigation` | After PROBE passes Gate 4 |
 | Git-backed memory | `gcc` | After PROBE passes Gate 4 |
 | Skill creation | `skill-creator`, `writing-skills` | After PROBE passes Gate 4 |
@@ -228,7 +228,7 @@ Success: <criteria>
 
 ### Phase 3: PLAN — Structure the Work
 
-Break into discrete, verifiable tasks. Use `planning-with-files` for multi-session work.
+Break into discrete, verifiable tasks. Use `hm-planning-persistence` (.hivemind/state/planning/<session-id>/) for multi-session work.
 
 | Task Granularity | When |
 |------------------|------|
@@ -394,7 +394,7 @@ See `references/05-worked-examples.md` for complete end-to-end examples:
 
 | Skill | Relationship |
 |-------|-------------|
-| `planning-with-files` | Use for multi-session planning. This skill decides WHEN to use it. |
+| `hm-planning-persistence` | Use for multi-session planning (.hivemind/state/planning/). This skill decides WHEN to use it. |
 | `dispatching-parallel-agents` | Use for parallel task execution. This skill decides WHAT to parallelize. |
 | `deep-research` / `deep-investigation` | Use for deep topic exploration. This skill decides WHEN depth is needed. |
 | `gcc` | Use for git-backed memory. This skill decides WHAT to persist. |

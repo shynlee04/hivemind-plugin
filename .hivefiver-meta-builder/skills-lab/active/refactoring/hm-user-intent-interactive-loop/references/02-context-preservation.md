@@ -306,4 +306,4 @@ Agent: "The conversation is getting long. Before we continue, let me save
 | Brainstorming sessions (persisting ideation output) | `03-brainstorming-patterns.md` |
 | Long session management (compaction, fatigue) | `04-long-session-management.md` |
 | Git-backed memory persistence | `gcc` skill |
-| File-based planning structure | `planning-with-files` skill |
+| File-based planning structure | `hm-planning-persistence` skill |

@@ -391,4 +391,4 @@ Agent: "Noted. I'll write the description with hybrid triggers."
 | Persisting brainstorm output | `02-context-preservation.md` |
 | Managing long brainstorming sessions | `04-long-session-management.md` |
 | Delegating brainstorm subtasks | `dispatching-parallel-agents` skill |
-| Planning after brainstorming | `planning-with-files` skill |
+| Planning after brainstorming | `hm-planning-persistence` skill |

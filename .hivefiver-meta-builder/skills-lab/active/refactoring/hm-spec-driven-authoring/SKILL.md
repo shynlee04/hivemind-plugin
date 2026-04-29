@@ -47,7 +47,7 @@ Before authoring:
 | Nearby workflow | Boundary |
 |---|---|
 | `hm-test-driven-execution` | Consumes locked requirements and executes RED/GREEN/REFACTOR. This skill derives the requirements and expected tests only. |
-| `hm-planning-with-files` | Persists multi-session plan/progress state. This skill may produce requirements tables for that state but does not own task scheduling. |
+| `hm-planning-persistence` | Persists multi-session plan/progress state in `.hivemind/state/planning/<session-id>/`. This skill may produce requirements tables for that state but does not own task scheduling. |
 | Generic planning | Plans may sequence work. This skill locks what must be true and how to verify it. |
 | Exploratory coding/prototyping | Not enough source truth. Return blocked or ask for a spec before deriving REQ-* items. |
 
@@ -153,7 +153,7 @@ When asked to verify an existing implementation against a spec:
 | Mode | Defence |
 |---|---|
 | NON-1 audit | Cite source section, path, or quote for every REQ-* item. |
-| NON-2 context | State stacks-with and clashes-with relationships for `hm-test-driven-execution`, `hm-planning-with-files`, generic planning, and exploratory coding. |
+| NON-2 context | State stacks-with and clashes-with relationships for `hm-test-driven-execution`, `hm-planning-persistence`, generic planning, and exploratory coding. |
 | NON-3 cycles | Entry gate → ambiguity gate → extraction → acceptance derivation → blocked/locked handoff. Loop back only on specific ambiguity. |
 | NON-4 hierarchy | Front-facing agents gather source intent; this skill authors contracts; TDD execution belongs to a separate skill. |
 | NON-5 ecosystem eval | Eval bundle includes positive, negative, boundary, and `stacked_scenario` coverage with sibling skills. |

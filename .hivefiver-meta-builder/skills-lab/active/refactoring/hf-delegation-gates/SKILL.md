@@ -126,7 +126,7 @@ Action: Refine task scope or define new specialist profile
 
 **Criteria:**
 - Target file paths identified
-- Task scope written in a scope document (conventionally `task_plan.md` if the planning-with-files skill is loaded, or any documented scope file)
+- Task scope written in a scope document (conventionally `.hivemind/state/planning/<session-id>/task_plan.md` if `hm-planning-persistence` is loaded, or any documented scope file)
 
 **If Gate 4 fails:**
 ```

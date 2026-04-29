@@ -149,3 +149,10 @@ If the user says the phase is done but verification still shows issues, present 
 ### When an Edge Case Is Encountered
 
 If a phase has zero plans listed, it was likely created but never planned — suggest running the planning workflow before attempting execution loops. If the checker/validator script exits with an unexpected error code (not 0 or 1), treat it as a BLOCKER and investigate the script before continuing the loop. If issue count oscillates (decreasing then increasing), this indicates the revision is introducing regressions — stop the loop, compare the current output against the previous iteration's output, and re-dispatch with a more focused fix scope.
+
+## Cross-References
+
+| Skill | Relationship |
+|-------|-------------|
+| `hm-planning-persistence` | Owns persistent planning state in `.hivemind/state/planning/<session-id>/`. This skill reads phase plans from there when available. |
+| `hm-phase-execution` | Owns wave-based execution mechanics. This skill adds iterative loop management on top. |

@@ -92,7 +92,7 @@ You are running deep research on: $ARGUMENTS
 ## Your Job
 
 1. **Load skills:**
-   - Load `planning-with-files` — create investigation triplet
+   - Load `hm-planning-persistence` — create investigation triplet in `.hivemind/state/planning/<session-id>/`
    - Load `user-intent-interactive-loop` — probe if topic is ambiguous (max 3 questions)
    - Load `coordinating-loop` — for multi-subagent dispatch
 

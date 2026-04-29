@@ -146,4 +146,4 @@ If a task has no automated verification at all (no test command, no file existen
 |---------------|----------|
 | `hm-coordinating-loop` | Owns general multi-agent dispatch. This skill adds completion guardrails to that dispatch. |
 | `hm-phase-loop` | Owns iterative phase semantics. This skill owns the verification logic within iterations. |
-| `hm-planning-with-files` | Owns task_plan.md tracking. This skill updates verification status in the plan. |
+| `hm-planning-persistence` | Owns task_plan.md tracking in `.hivemind/state/planning/<session-id>/`. This skill updates verification status in the plan. |

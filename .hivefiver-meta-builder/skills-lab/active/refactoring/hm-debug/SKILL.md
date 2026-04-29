@@ -166,4 +166,4 @@ Default state path is `.debug/<bug-id>.md` in the end-user project. If a project
 |---------------|----------|
 | `hm-detective` | Investigates codebase structure. This skill investigates runtime behavior. |
 | `hm-synthesis` | Synthesizes research findings. This skill synthesizes debug evidence. |
-| `hm-planning-with-files` | Tracks task plans. This skill tracks debug session state. |
+| `hm-planning-persistence` | Tracks task plans in `.hivemind/state/planning/<session-id>/`. This skill tracks debug session state. |
