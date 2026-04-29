@@ -160,6 +160,7 @@ On successful remediation, re-run full triad: `gate-lifecycle-integration` → t
 | `references/traceability-matrix-template.md` | GSD-specific RTM template with V-Model mapping |
 | `templates/compliance-report.md` | Standardized spec compliance report |
 | `metrics/rich-gate-scorecard.md` | RICH-8 skill-judge scorecard |
+| `evals/evals.json` | Test scenarios for this skill |
 | `scripts/run-compliance-check.sh` | Deterministic compliance checker script |
 
 ## Exit Criteria
@@ -178,6 +179,10 @@ Do not claim PASS if any requirement lacks traceability, any acceptance criterio
 - **Only warnings found:** CODE-WITHOUT-SPEC (MEDIUM) — document in compliance report but do not block PASS. Flag for architectural review.
 - **Vague acceptance criteria:** Reject and flag as `blocked`. Do not invent precision — route to `hm-spec-driven-authoring` for re-derivation. A vague AC is worse than missing AC (creates false confidence).
 - **Tests pass but behavior differs from spec:** Compare runtime output against SPEC success criteria. Test pass != spec compliance. Trust spec over test when they conflict; flag test for correction.
+
+## Gate Orchestrator Integration
+
+This gate participates in the triad orchestrated by `hm-gate-orchestrator`. The orchestrator manages triad sequencing, state persistence, and cross-gate handoff. When invoked within an orchestrator workflow, this skill is the MIDDLE gate. It receives a lifecycle-passed context from the orchestrator and returns a structured compliance verdict. See `hm-gate-orchestrator` for full triad lifecycle management.
 
 ## Integration Wiring
 

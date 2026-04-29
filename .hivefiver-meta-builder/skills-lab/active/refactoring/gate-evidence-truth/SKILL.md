@@ -136,6 +136,7 @@ Triad backward references, evidence collection handoff from `hm-production-readi
 | `hm-debug` | Root-cause investigation | Remediation for insufficient evidence level |
 | `hm-completion-looping` | Loop-back control | Uses this gate's verdict for loop-back decisions |
 | `hm-coordinating-loop` | Orchestration re-dispatch | Re-dispatches when evidence or regression gaps found |
+| `hm-gate-orchestrator` | Triad lifecycle manager | Orchestrates triad sequencing, state persistence, cross-gate handoff |
 
 ## Adopted Patterns
 
@@ -143,17 +144,25 @@ Synthesizes three proven methodologies: **Anthropic Gather→Act→Verify**, **G
 
 ## Self-Correction
 
-### When No Evidence Exists
+### Mode 1: When No Evidence Exists
 
 Do not downgrade the gate minimum. Report FAIL with explicit instructions: "Produce [L2/L1] evidence by [running integration test / capturing live session / verifying in OpenCode instance]."
 
-### When Evidence Is Ambiguous
+### Mode 2: When Evidence Is Ambiguous
 
 Classify at the lower level. A test that mocks some but not all SDK boundaries is L4, not L3. A continuity record that may or may not be from a live session is L5, not L2.
 
-### When the User Overrides
+### Mode 3: When the User Overrides
 
 Document the waiver in the evidence report with: which gate failed, what evidence was missing, and the user's rationale. The override must be explicit — never silently waive.
+
+### Mode 4: When Evidence Contradicts Itself
+
+If two artifacts provide conflicting evidence for the same claim (e.g., a passing test but a failing continuity record), treat the contradiction as a regression signal. Classify both artifacts at their individual levels, mark the claim as UNVERIFIED, and require reconciliation before rendering PASS. Never average or weight conflicting evidence — resolve the contradiction or FAIL.
+
+## Gate Orchestrator Integration
+
+This gate participates in the triad orchestrated by `hm-gate-orchestrator`. The orchestrator manages triad sequencing, state persistence, and cross-gate handoff. When invoked within an orchestrator workflow, this skill receives a pre-built evidence bundle and returns a structured verdict. See `hm-gate-orchestrator` for full triad lifecycle management.
 
 ## Reference Files
 
@@ -169,5 +178,5 @@ Document the waiver in the evidence report with: which gate failed, what evidenc
 | `templates/evidence-report.md` | Standardized report template |
 | `scripts/run-evidence-check.sh` | Deterministic evidence classification checker |
 | `references/project-adapter-guide.md` | Project-to-harness path mapping adapter |
-| `metrics/skill-judge-scorecard.md` | RICH-8 D1-D8 quality scorecard |
+| `metrics/rich-gate-scorecard.md` | RICH-8 quality scorecard |
 | `evals/evals.json` | Test scenarios for this skill |

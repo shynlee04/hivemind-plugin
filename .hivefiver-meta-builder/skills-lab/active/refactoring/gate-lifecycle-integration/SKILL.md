@@ -131,6 +131,28 @@ START → Classify the artifact by file location:
 
 For each branch, execute the detailed checklist in `references/evaluation-checklist.md`.
 
+## Self-Correction
+
+### Mode 1: When Classification Is Ambiguous
+
+If a file straddles two classification roots (e.g., a test helper in `src/shared/` that also reads `.hivemind/` state), classify by primary purpose. Helpers that are pure utility = LEAF (src/shared/). Helpers that read persistent state = suspect — check if they route through a manager. Never classify as LEAF to bypass the lifecycle gate.
+
+### Mode 2: When CQRS Boundary Is Fuzzy
+
+Some tools produce side effects that look like state reads (e.g., delegation-status.ts reads delegation records). This is correct CQRS: the tool reads through a query API, not by subscribing to events. Distinguish: direct event subscription in a tool = BLOCK; query API call in a tool = PASS.
+
+### Mode 3: When Plugin.ts Exceeds LOC Limit
+
+If plugin.ts exceeds 200 LOC but the excess is purely registration boilerplate (many tools/hooks), document the finding as WARNING rather than BLOCK. If the excess includes inline business logic, BLOCK. Registration-only LOC inflation is acceptable; logic inflation is not.
+
+### Mode 4: When Delegation Depth Is At Limit
+
+A delegation chain at exactly MAX_DELEGATION_DEPTH (3) is PASS — the limit is inclusive. However, if depth=3 and the chain also uses queue keys without buildDelegationQueueKey(), flag as WARNING. At-limit depth with correct queue key construction = PASS. At-limit depth with manual key construction = WARNING (fragile).
+
+## Gate Orchestrator Integration
+
+This gate participates in the triad orchestrated by `hm-gate-orchestrator`. The orchestrator manages triad sequencing, state persistence, and cross-gate handoff. When invoked within an orchestrator workflow, this skill is the ENTRY gate. It receives a gate context from the orchestrator and returns a structured lifecycle verdict. See `hm-gate-orchestrator` for full triad lifecycle management.
+
 ## Cross-Skill Routing
 
 - **PASSES** → Route to `gate-spec-compliance` (spec-level verification)
@@ -155,6 +177,7 @@ gate-lifecycle-integration  →  gate-spec-compliance  →  gate-evidence-truth
 | Delegation hierarchy | `hm-coordinating-loop` | Redesign dispatch patterns |
 | Unknown/unclear failure | `hm-debug` | Root-cause investigation |
 | Completion verification | `hm-completion-looping` | Verification loop |
+| Triad orchestration | `hm-gate-orchestrator` | Full triad lifecycle, state persistence, re-run |
 
 > Full routing table: `references/remediation-paths.md`
 
