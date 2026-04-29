@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 workstream: agent-synthesis
 status: BOOTSTRAPPING
-phase_count: 8
+phase_count: 12
 current_phase: AS-0
 last_updated: "2026-04-29T00:00:00Z"
 progress:
-  total_phases: 8
+  total_phases: 12
   completed_phases: 0
   authorized_phases: 0
   plans_written: 0
@@ -24,7 +24,7 @@ progress:
 
 | Metric | Count |
 |--------|-------|
-| Total phases | 8 |
+| Total phases | 12 |
 | Completed | 0 |
 | Authorized | 0 |
 | Plans written | 0 |
@@ -79,6 +79,10 @@ progress:
 ### Blocked By
 - **skill-ecosystem SE-5** (gate-orchestrator + lineage-router): Required before AS-3 can create L0/L1 agents with correct routing
 - **skill-ecosystem SE-5.5** (gate hardening): Required before AS-7 can run quality gate triad
+- **skill-ecosystem SE-11** (naming syndicate): Required before AS-11 can apply naming conventions
+- **skill-ecosystem SE-12** (tool capability matrix): Required before AS-9 can define agent tool permissions
+- **skill-ecosystem SE-13** (Hivemind engine contracts): Required before AS-10 can define workflow awareness
+- **skill-ecosystem SE-14** (quality baseline contracts): Required before AS-8 can establish quality baselines
 
 ### Feeds Into
 - **skill-ecosystem SE-6** (hf-agent-synthesizer skill): Consumes agent-synthesis output — agent-synthesis does NOT depend on SE-6
@@ -87,7 +91,19 @@ progress:
 ```
 AS-0 → AS-1 → AS-2 → AS-3 → AS-4 → AS-5
                           ↘ AS-6 ↗
-                          AS-7 (requires AS-4 + AS-5 + AS-6)
+                          AS-4, AS-5, AS-6 → AS-8 (Body Enrichment)
+                               ├── AS-8 → AS-9 (Tool Integration)
+                               ├── AS-8 → AS-10 (Workflow Awareness)
+                               ├── AS-8 → AS-11 (Naming Syndicate)
+                               └── AS-9, AS-10, AS-11 → AS-7 (Wiring & Verification)
+```
+
+### Cross-Workstream Dependencies (Agent Synthesis → Skill Ecosystem)
+```
+SE-11 (naming syndicate) ──feeds──→ AS-11 (rename all agents)
+SE-12 (tool capability)   ──feeds──→ AS-9 (tool permissions per agent)
+SE-13 (engine contracts)  ──feeds──→ AS-10 (workflow awareness)
+SE-14 (quality baselines) ──feeds──→ AS-8 (body enrichment targets)
 ```
 
 ## Session Continuity Notes

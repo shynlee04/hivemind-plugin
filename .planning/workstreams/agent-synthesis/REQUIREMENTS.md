@@ -2,7 +2,7 @@
 workstream: agent-synthesis
 created: 2026-04-29
 status: ACTIVE
-phase_count: 8
+phase_count: 12
 ---
 
 # Agent Synthesis Workstream — Requirements
@@ -239,6 +239,21 @@ Checklist of verifiable outcomes.
 - **No removal without replacement:** Every gsd-* capability must have an hm-* equivalent before the gsd-* agent is deleted.
 - **Rollback plan:** If AS-6 fails, revert to gsd-* agents via git revert of the AS-1 commit.
 - **AGENTS.md update:** Only after AS-6 passes — prevents documentation-code drift.
+
+### 7.3 W6 Phase Delivery Requirements (AS-8 through AS-11)
+
+| ROADMAP Phase | ID | Action | Description |
+|---------------|-----|--------|-------------|
+| AS-8 | ENRICH-BODY | Enrich all agent bodies beyond OMO + GSD | Add 5 new XML sections (behavioral_contract, anti_patterns, delegation_boundary, skill_loading, session_continuity) to all 48+ agents. Quality baseline: ≥200 LOC per body, equal or superior to gsd-planner (1248 lines) |
+| AS-9 | TOOL-MATRIX | Wire tool capabilities per agent | Create TOOL-CAPABILITY-MATRIX.md. Every agent declares explicit native tools, Hivemind custom tools, and MCP tools. No blanket `"*"` permissions |
+| AS-10 | WORKFLOW-AWARE | Make agents workflow-aware | Create WORKFLOW-AWARENESS.md. Add `<workflow_awareness>` XML section. Agents understand .planning/ structure, dependency chains, wave execution, 3-gate verification |
+| AS-11 | NAMING-SYNDICATE | Rename all agents to hm-*/hf-* pattern | Create NAMING-SYNDICATE.md. Rename 59 agents to consistent pattern. Delete gsd-* agents. Update all cross-references in AGENTS.md, 49 skills, 13 commands |
+
+### 7.4 W6 Transition Safety
+- **Coexistence:** AS-8 through AS-11 enrich and rename existing agents; gsd-* agents remain until AS-11 completion
+- **Naming atomicity:** All 59 agents renamed in a single commit (AS-11) — no half-renamed state
+- **Cross-reference verification:** Machine-verifiable regex validates all agent names post-AS-11
+- **Rollback plan:** If AS-11 naming fails pre-check, revert to pre-AS-11 commit
 
 ---
 

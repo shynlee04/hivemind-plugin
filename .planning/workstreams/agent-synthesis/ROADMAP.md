@@ -35,7 +35,11 @@ Design and implement a synthesized agent definition system for the Hivemind harn
 | AS-4 | L2 hm-* Specialist Agent Authoring (batch 1: 17) | W4 | NOT STARTED | AS-3 |
 | AS-5 | L2 hm-* Specialist Agent Authoring (batch 2: 17) | W4 | NOT STARTED | AS-4 |
 | AS-6 | L2 hf-* Meta Builder Agent Authoring | W4 | NOT STARTED | AS-3 |
-| AS-7 | Capability Matrix Wiring & Integration Verification | W5 | NOT STARTED | AS-4, AS-5, AS-6, skill-ecosystem SE-5.5 |
+| AS-7 | Capability Matrix Wiring & Integration Verification | W5 | NOT STARTED | AS-4, AS-5, AS-6, AS-9, AS-10, AS-11, skill-ecosystem SE-5.5 |
+| AS-8 | Agent Body Enrichment (Superior to OMO + GSD) | W6 | NOT STARTED | AS-4, AS-5, AS-6 |
+| AS-9 | Agent Tool Integration | W6 | NOT STARTED | AS-8, skill-ecosystem SE-12 |
+| AS-10 | Agent Workflow Awareness | W6 | NOT STARTED | AS-8, skill-ecosystem SE-13 |
+| AS-11 | Agent Naming Syndicate | W6 | NOT STARTED | AS-8, skill-ecosystem SE-11 |
 
 ## Dependency Flow
 
@@ -48,11 +52,24 @@ AS-0 (Inventory Audit)
            │    │    └── AS-5 (hm-* batch 2: domain+documentation+lifecycle+audit+intelligence)
            │    └── AS-6 (hf-* meta builders)
            │
-           └── AS-7 (Capability Matrix & Verification) ─── blocked by SE-5.5 (gate hardening)
-                └── requires: AS-4, AS-5, AS-6 complete
+           ├── AS-4, AS-5, AS-6 ──→ AS-8 (Body Enrichment)
+           │    ├── AS-8 ──→ AS-9 (Tool Integration) ─── blocked by SE-12 (tool capability matrix)
+           │    ├── AS-8 ──→ AS-10 (Workflow Awareness) ─── blocked by SE-13 (engine contracts)
+           │    ├── AS-8 ──→ AS-11 (Naming Syndicate) ─── blocked by SE-11 (naming syndicate)
+           │    │    ├── AS-9 ──→ AS-7 (wiring — tool half)
+           │    │    ├── AS-10 ──→ AS-7 (wiring — workflow half)
+           │    │    └── AS-11 ──→ AS-7 (wiring — final names)
+           │    └── AS-7 (Capability Matrix & Verification) ─── blocked by SE-5.5 (gate hardening)
+           │         └── requires: AS-8, AS-9, AS-10, AS-11 complete
+           │
+           └── Cross-workstream dependencies:
+                ├── SE-11 (naming syndicate) feeds AS-11
+                ├── SE-12 (tool capability matrix) feeds AS-9
+                ├── SE-13 (Hivemind engine contracts) feeds AS-10
+                └── SE-14 (quality baseline contracts) feeds AS-8
 ```
 
-**Parallelization:** AS-4, AS-5, and AS-6 can partially overlap once AS-3 completes. AS-4 and AS-6 can run in parallel. AS-5 must follow AS-4 (batch dependency).
+**Parallelization:** AS-4, AS-5, and AS-6 can partially overlap once AS-3 completes. AS-4 and AS-6 can run in parallel. AS-5 must follow AS-4 (batch dependency). W6 phases AS-8, AS-9, AS-10, and AS-11 all depend on AS-8 completing first, then run in parallel (AS-9, AS-10, AS-11).
 
 ---
 
@@ -268,3 +285,161 @@ Wire all agent-to-skill mappings, agent-to-tool mappings, and depth delegation r
 - [ ] AGENT-CAPABILITY-MATRIX.md published
 - [ ] gsd-* agents deleted (D-AD-03) — ONLY after all verifications pass
 - [ ] Ghost agent `explore` resolved (created or reference removed from AGENTS.md)
+
+---
+
+### AS-8: Agent Body Enrichment (Superior to OMO + GSD)
+
+**Wave:** W6 (depends on AS-4, AS-5, AS-6 — all agents created first)
+**Status:** NOT STARTED
+
+Elevate ALL hm-* and hf-* agent bodies beyond existing quality. Each agent body must include enriched XML sections beyond the standard 5-tag template.
+
+**Deliverables:**
+
+Enhanced XML sections per agent (10 total):
+1. `<role>` — One-sentence purpose + boundary declaration
+2. `<depth>` — Delegation authority and constraints
+3. `<lineage>` — Skill binding scope and restrictions
+4. `<task>` — Primary and secondary task definitions
+5. `<scope>` — Explicit in/out boundaries
+6. `<context>` — Prerequisites before starting
+7. `<expected_output>` — Structured output contract
+8. `<verification>` — Verifiable success criteria
+9. `<behavioral_contract>` — What the agent WILL and WON'T do, with edge case handling
+10. `<anti_patterns>` — Self-correction triggers and forbidden behaviors
+11. `<delegation_boundary>` — L0→L1→L2 dispatch rules, known specialist mapping
+12. `<skill_loading>` — Which skills to load for which task categories
+13. `<session_continuity>` — How to persist/resume state across sessions
+
+Quality baseline targets:
+- Enriched bodies for all 41+ hm-* agents and all 7+ hf-* agents
+- Quality equal or superior to `gsd-planner` (1248 lines, 22 steps) and `gsd-debugger` (1445 lines, 9 steps)
+- Each agent body ≥ 200 LOC (body content only, excluding frontmatter)
+- Behavioral contracts are machine-verifiable (deterministic rules)
+- Anti-pattern detection is testable against known failure modes
+- Delegation boundaries are explicit and unambiguous
+
+**Acceptance Criteria:**
+- [ ] All 48+ agents have all 10 XML sections present (AQUAL-02 extended to 10)
+- [ ] Each behavioral contract has ≥ 5 explicit will/won't clauses
+- [ ] Each anti-patterns section has ≥ 3 self-correction triggers
+- [ ] Delegation boundaries match depth level (L2 declares zero delegation)
+- [ ] Skill loading rules reference existing skill names
+- [ ] Session continuity section references `.hivemind/state/` paths
+- [ ] No agent body < 200 LOC (excluding frontmatter)
+
+---
+
+### AS-9: Agent Tool Integration
+
+**Wave:** W6 (depends on AS-8, blocked by skill-ecosystem SE-12)
+**Status:** NOT STARTED
+
+Define formal tool capability per agent. Create `TOOL-CAPABILITY-MATRIX.md` and tool declarations in all agent `.md` files.
+
+**Deliverables:**
+
+`TOOL-CAPABILITY-MATRIX.md` with columns:
+- Agent name, lineage, depth
+- OpenCode native tools (read, write, edit, bash, glob, grep, task, skill, todowrite)
+- Hivemind custom tools (delegate-task, delegation-status, run-background-command, prompt-skim, prompt-analyze, session-patch, session-journal-export, configure-primitive, validate-restart)
+- MCP/external tools (tavily-*, brave-*, deepwiki-*, github-*, repomix-*)
+- Permission model: `allow` array or `deny-all` + `allow-specific`
+
+Tool permission rules:
+1. No agent has blanket `"*"` allow — all permissions are explicit
+2. Hivemind custom tools declared ONLY where the agent's role requires them
+3. MCP tools declared ONLY where the task requires web/external access
+4. L2 specialists have `write: []` (read-only) unless explicitly authorized
+5. L0 orchestrators have `delegate-task` only (no other custom tools)
+6. L1 coordinators have `delegate-task` + `delegation-status`
+
+**Acceptance Criteria:**
+- [ ] `TOOL-CAPABILITY-MATRIX.md` published with all 48+ agents
+- [ ] Every agent `.md` file has explicit `tools:` array in YAML frontmatter
+- [ ] No agent uses `tools: ["*"]` — all permissions are granular
+- [ ] Hivemind custom tools declared where role-appropriate
+- [ ] MCP tools match agent's domain (researcher=yes, code-reviewer=no)
+- [ ] Tool permissions validated against AQUAL-05 granularity requirement
+
+---
+
+### AS-10: Agent Workflow Awareness
+
+**Wave:** W6 (depends on AS-8, blocked by skill-ecosystem SE-13)
+**Status:** NOT STARTED
+
+Make ALL agents aware of the project's workflow infrastructure. Create `WORKFLOW-AWARENESS.md` reference and add `<workflow_awareness>` section to all agent bodies.
+
+**Deliverables:**
+
+`WORKFLOW-AWARENESS.md` covering:
+1. `.planning/` structure: ROADMAP.md, STATE.md, workstreams, phases, dependency chains
+2. Wave-based execution protocol (hm-phase-execution)
+3. Checkpoint recovery flow (hm-phase-loop)
+4. Completion loop semantics (hm-completion-looping)
+5. 3-gate verification protocol (output, quality, scope)
+6. Session continuity (.hivemind/state/ paths)
+
+`<workflow_awareness>` XML section per agent:
+- Which workflow artifacts the agent reads
+- How the agent finds its dependencies
+- How the agent self-verifies through the 3 gates
+- How the agent reports completion
+
+Permission model updates:
+- All agents get `.planning/` read access (to read ROADMAP, STATE, deps)
+- Coordinators (L1) get `.planning/` write access (to update STATE.md)
+- Orchestrators (L0) get `.hivemind/` read access
+
+**Acceptance Criteria:**
+- [ ] `WORKFLOW-AWARENESS.md` published with all 6 awareness domains
+- [ ] All 48+ agents have `<workflow_awareness>` XML section
+- [ ] Agents can navigate project structure by reading ROADMAP/STATE
+- [ ] Dependency chains are discoverable by agents
+- [ ] 3-gate verification semantics are understood by all agents
+- [ ] Permission models include `.planning/` read access for all agents
+- [ ] L1 agents have `.planning/` write permission for STATE.md updates
+
+---
+
+### AS-11: Agent Naming Syndicate
+
+**Wave:** W6 (depends on AS-8, blocked by skill-ecosystem SE-11)
+**Status:** NOT STARTED
+
+Rename ALL 59 agents to consistent `hm-<domain>-<role>` or `hf-<domain>-<role>` format. Delete obsolete GSD agents (transition safety: only after replacements verified). Update ALL cross-references.
+
+**Deliverables:**
+
+`NAMING-SYNDICATE.md` with:
+- Old→new name mapping table for all 59 agents
+- Naming convention spec: `hm-<domain>-<role>` and `hf-<domain>-<role>`
+- Validation regex: `^(hm|hf)-[a-z]+-[a-z]+(-[a-z]+)?$`
+- Deletion schedule: which gsd-* agents deleted and when
+
+Naming patterns:
+| Category | Pattern | Examples |
+|----------|---------|----------|
+| hm-* coordinator | `hm-*-coordinator` | `hm-phase-coordinator`, `hm-workstream-coordinator` |
+| hm-* orchestrator | `hm-orchestrator` | `hm-orchestrator` (L0, single) |
+| hm-* specialist | `hm-<domain>-<role>` | `hm-research-detective`, `hm-qa-critic`, `hm-phase-executor` |
+| hf-* agents | `hf-<domain>-<role>` | `hf-meta-orchestrator`, `hf-agent-builder`, `hf-skill-author` |
+| Internal agents | keep current names | `build`, `conductor`, `test-router` (internal-only) |
+
+Cross-reference updates:
+- AGENTS.md agent inventory section
+- All 49+ skill SKILL.md files (agent references)
+- All 13 command `.md` files (agent references)
+- ROADMAP.md and STATE.md (agent name references)
+- Per-agent `<delegation_boundary>` sections (L1 knows L2 names)
+
+**Acceptance Criteria:**
+- [ ] `NAMING-SYNDICATE.md` published with full old→new map
+- [ ] All 41+ hm-* agents follow `hm-<domain>-<role>` pattern
+- [ ] All 7+ hf-* agents follow `hf-<domain>-<role>` pattern
+- [ ] No gsd-* agents remain (D-AD-03 satisfied)
+- [ ] All cross-references in skills, commands, AGENTS.md resolve correctly
+- [ ] Naming convention is machine-verifiable via regex
+- [ ] `hf-meta-builder` name mismatch resolved (fixes KI-01)
