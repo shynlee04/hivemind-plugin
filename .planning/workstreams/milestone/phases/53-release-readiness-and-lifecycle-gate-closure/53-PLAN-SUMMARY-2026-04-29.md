@@ -15,6 +15,7 @@
 | RESEARCH | Start from Phase 52 BLOCKED/PARTIAL, not PASS | Plans 01, 03, 05 |
 | RESEARCH | Include recovery approval checkpoint | Plan 04 |
 | RESEARCH | Keep Phase 54 sidecar/product runway distinct | Plan 06 |
+| RESEARCH | Resolve/checkpoint open questions before execution | Research section `Open Questions (RESOLVED / CHECKPOINTED)` + Plans 04-05 |
 | CONTEXT | Release evidence, lifecycle truth, recovery truth, gate closure only | Plans 01-06 |
 | CONTEXT non-goals | No sidecar UI/product-detox/features/generic cleanup | Plans 02, 04, 06 enforce boundaries |
 
@@ -39,7 +40,13 @@ No deferred idea is planned as implementation work. Phase 54 remains gated by Ph
 | `53-03-PLAN-2026-04-29.md` | Evidence truth audit and false-claim rejection | PH53-01, PH53-02, PH53-03 | `53-EVIDENCE-TRUTH-AUDIT-2026-04-29.md` |
 | `53-04-PLAN-2026-04-29.md` | Recovery/runtime gap closure decision with human recovery gate | PH53-01, PH53-03 | `53-RUNTIME-GAP-DECISION-2026-04-29.md` |
 | `53-05-PLAN-2026-04-29.md` | Release readiness verdict | PH53-01, PH53-02, PH53-03 | `53-RELEASE-READINESS-VERDICT-2026-04-29.md` |
-| `53-06-PLAN-2026-04-29.md` | State/roadmap handoff to Phase 54 only if allowed | PH53-03, PH54-01 | `53-STATE-ROADMAP-HANDOFF-2026-04-29.md`, `STATE.md`, `ROADMAP.md` |
+| `53-06-PLAN-2026-04-29.md` | State/roadmap handoff to Phase 54 only if allowed | PH53-03 | `53-STATE-ROADMAP-HANDOFF-2026-04-29.md`, `STATE.md`, `ROADMAP.md` |
+
+## Plan-Check Remediation Notes
+
+- Research open questions are now marked `RESOLVED / CHECKPOINTED`; recovery approval is a Plan 04 blocker, PTY stdout criticality defaults to blocker unless waived, and journal zero-lineage routes to rerun/diagnostic before SHIP.
+- Plan 53-05 now requires semantic verdict verification: false SHIP fails when recovery is unapproved/unproven, journal lineage is unresolved, critical blockers are unwaived, or the evidence bundle is L4/L5-only.
+- Plan 53-06 no longer lists `PH54-01`; Phase 54 is a conditional downstream gate reference only, not Phase 53 requirement credit.
 
 ## Known Blockers Preserved
 
