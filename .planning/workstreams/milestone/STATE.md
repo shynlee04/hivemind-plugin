@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: phase-52-end-user-harness-workflow-acceptance
-status: phase-52-ready
-stopped_at: Phase 51 complete; Phase 52 narrowed to end-user E2E acceptance, with follow-up Phases 53 and 54 added for release closure and sidecar/product-detox runway
-last_updated: "2026-04-29T00:00:00Z"
+current_plan: phase-53-release-gap-closure-required
+status: phase-53-no-ship
+stopped_at: Phase 53 release-readiness audit complete as NO-SHIP; Phase 54 blocked until recovery and journal lineage blockers close or owner separates runway from release closure
+last_updated: "2026-04-29T23:59:00Z"
 progress:
   total_phases: 54
   completed_phases: "Conservative: completed through Phase 51 plus completed inserts/rescopes; see phase table below"
@@ -41,12 +41,12 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 ## Current Position
 
-Phase: 51 complete; Phase 52 ready to execute under narrowed end-user acceptance scope
-Plan: Phase 52 plans not yet drafted; routing decision now separates Phase 52 acceptance from Phase 53 release closure and Phase 54 sidecar/product-detox runway
+Phase: 53 complete as NO-SHIP release-readiness audit; Phase 52 remains BLOCKED/PARTIAL input
+Plan: Create a dedicated release gap-closure slice for recovery proof and journal/export lineage before reopening release readiness or Phase 54 runway execution
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
 **Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1-48.5 are closed with documented runtime caveats; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing; Phase 51 is complete with stack/research grounding mapped to harness workflows. Phase 52 now stays narrow: prove end-user E2E acceptance only.
-**Next:** Execute Phase 52, then Phase 53 release-readiness/lifecycle gate closure, then Phase 54 sidecar/product-detox integration runway.
+**Next:** Plan the smallest release gap-closure work for E52-03 journal lineage and E52-05 recovery proof. Phase 54 remains blocked unless an explicit owner decision separates non-release runway planning from release closure.
 **Progress:** Roadmap extended truthfully; avoid exact percentage claims until Phase 52-54 plans exist.
 
 ```
@@ -106,9 +106,9 @@ Phase 48.5: LOC Cleanup ............. COMPLETE (event-tracker writer split; vali
 Phase 49: UAT Tool Contracts ........ COMPLETE WITH PARTIAL RUNTIME EVIDENCE (focused/full gates pass)
 Phase 50: Primitive Restart Ready .... COMPLETE (validate-restart passes; depends on 49)
 Phase 51: Stack Research Grounding ... COMPLETE → MOVED to skill-ecosystem (SE-H14)
-Phase 52: End-User Workflow Accept ... PENDING (narrow end-user E2E harness workflow acceptance only; depends on 51)
-Phase 53: Release Readiness Closure .. PENDING (release/lifecycle gate closure after 52)
-Phase 54: Sidecar/Product Runway ..... PENDING (sidecar + product-detox integration runway after 53)
+Phase 52: End-User Workflow Accept ... BLOCKED/PARTIAL (E52-01 pass; E52-02/03/04 partial; E52-05/06 blocked)
+Phase 53: Release Readiness Closure .. NO-SHIP COMPLETE (release blockers preserved; verdict artifact exists)
+Phase 54: Sidecar/Product Runway ..... BLOCKED (depends on release gap closure or explicit owner separation decision)
 ```
 
 ## Phase Completion Details
@@ -160,9 +160,9 @@ Phase 54: Sidecar/Product Runway ..... PENDING (sidecar + product-detox integrat
 | Phase 49 | COMPLETE WITH PARTIAL RUNTIME EVIDENCE | Command tool contract, prompt heuristics, and journal export filters implemented and verified by focused/full automated gates |
 | Phase 50 | COMPLETE | Restart validation passes for project-local primitives; depends on Phase 49 |
 | Phase 51 | COMPLETE | Stack/research/synthesis skill grounding mapped to harness workflows; depends on Phase 50 |
-| Phase 52 | PENDING | Narrow end-user E2E harness workflow acceptance only; depends on Phase 51 |
-| Phase 53 | PENDING | Release readiness and lifecycle gate closure follow-up; depends on Phase 52 |
-| Phase 54 | PENDING | Sidecar and product-detox integration runway follow-up; depends on Phase 53 |
+| Phase 52 | BLOCKED/PARTIAL | E52-01 pass; E52-02/E52-03/E52-04 partial; E52-05/E52-06 blocked |
+| Phase 53 | NO-SHIP COMPLETE | Release readiness audit executed; recovery and journal lineage remain blockers |
+| Phase 54 | BLOCKED | Do not execute runway until release gap closure or explicit owner separation decision |
 
 ### Phases Requiring Repair (Audit 2026-04-23 — RESOLVED by Phase 24 and Phase 26)
 

@@ -55,9 +55,9 @@
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
 - [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
 - [x] **Phase 51: Stack Research Grounding** — ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14
-- [ ] **Phase 52: End-User Harness Workflow Acceptance** — NARROWED: end-user E2E acceptance only, without release-gate or sidecar-runway overload
-- [ ] **Phase 53: Release Readiness & Lifecycle Gate Closure** — 6 plans created; blocked-input release readiness audit that does not assume Phase 52 PASS
-- [ ] **Phase 54: Sidecar & Product-Detox Integration Runway** — Follow-up runway for read-only sidecar/productization work after acceptance and release closure
+- [ ] **Phase 52: End-User Harness Workflow Acceptance** — BLOCKED/PARTIAL: E52-01 pass; E52-02/03/04 partial; E52-05/06 blocked
+- [x] **Phase 53: Release Readiness & Lifecycle Gate Closure** — COMPLETE AS NO-SHIP gate audit; release blocker chain preserved
+- [ ] **Phase 54: Sidecar & Product-Detox Integration Runway** — BLOCKED by Phase 53 NO-SHIP until release gap closure or explicit owner separation decision
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
@@ -89,15 +89,15 @@ Plans:
 **Goal:** Convert Phase 52 BLOCKED/PARTIAL acceptance evidence and Phase 48 degraded runtime proof into an auditable release readiness verdict without conflating release closure with Phase 54 sidecar/product runway.
 **Requirements:** PH53-01, PH53-02, PH53-03
 **Depends on:** Phase 52 acceptance artifacts as blocked input; Phase 53 must not assume Phase 52 PASS.
-**Plans:** 6 plans
+**Plans:** 6 plans — executed as release-readiness audit; final verdict `NO-SHIP` in `53-RELEASE-READINESS-VERDICT-2026-04-29.md`
 
 Plans:
-- [ ] 53-01-PLAN-2026-04-29.md — Release blocker ledger from Phase 48/52 evidence; establish NO-SHIP baseline (Wave 1)
-- [ ] 53-02-PLAN-2026-04-29.md — Lifecycle/CQRS/gate compliance audit across release-critical harness surfaces (Wave 2)
-- [ ] 53-03-PLAN-2026-04-29.md — Evidence truth audit with L1-L5 classification and false-claim rejection (Wave 2)
-- [ ] 53-04-PLAN-2026-04-29.md — Recovery/runtime gap closure decision with blocking operator approval checkpoint (Wave 3)
-- [ ] 53-05-PLAN-2026-04-29.md — Release readiness verdict: SHIP / CONDITIONAL WITH WAIVERS / NO-SHIP / REPLAN (Wave 4)
-- [ ] 53-06-PLAN-2026-04-29.md — State/roadmap handoff to Phase 54 only if release verdict permits (Wave 5)
+- [x] 53-01-PLAN-2026-04-29.md — Release blocker ledger from Phase 48/52 evidence; establish NO-SHIP baseline (Wave 1)
+- [x] 53-02-PLAN-2026-04-29.md — Lifecycle/CQRS/gate compliance audit across release-critical harness surfaces (Wave 2)
+- [x] 53-03-PLAN-2026-04-29.md — Evidence truth audit with L1-L5 classification and false-claim rejection (Wave 2)
+- [x] 53-04-PLAN-2026-04-29.md — Recovery/runtime gap closure decision; operator approval unavailable, recorded NO_SHIP_BLOCKER (Wave 3)
+- [x] 53-05-PLAN-2026-04-29.md — Release readiness verdict: NO-SHIP (Wave 4)
+- [x] 53-06-PLAN-2026-04-29.md — State/roadmap handoff blocks Phase 54 on NO-SHIP (Wave 5)
 
 ## Phase 2: V3 Runtime Architecture
 
