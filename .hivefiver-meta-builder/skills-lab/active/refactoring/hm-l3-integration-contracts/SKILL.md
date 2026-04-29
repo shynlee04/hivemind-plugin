@@ -1,5 +1,7 @@
 ---
 name: hm-l3-integration-contracts
+lineage: hm
+depth: L3
 description: >
   Formal bidirectional contract authority between skills and agents. Every skill declares which
   agent types should load it; every agent domain declares which skills it loads per task category.

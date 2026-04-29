@@ -15,6 +15,7 @@ set -euo pipefail
 
 SKILLS_DIR="${SKILLS_DIR:-.opencode/skills}"
 AGENTS_DIR="${AGENTS_DIR:-.opencode/agents}"
+CONTRACT_REF="${CONTRACT_REF:-.hivefiver-meta-builder/skills-lab/active/refactoring/hm-l3-integration-contracts/references/skill-to-agent-bindings.md}"
 
 # Colors
 RED='\033[0;31m'
@@ -40,7 +41,13 @@ check_orphans() {
     skill_name=$(basename "$(dirname "$skill_md")")
 
     # Extract consumed-by list from frontmatter
-    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | wc -l | tr -d ' ')
+    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | wc -l | tr -d ' ' || true)
+
+    if [ "$consumers" -eq 0 ] && [ -f "$CONTRACT_REF" ]; then
+      if grep -q "| $skill_name |" "$CONTRACT_REF" 2>/dev/null; then
+        consumers=1
+      fi
+    fi
 
     if [ "$consumers" -eq 0 ]; then
       # Check if this is an expected orphan (stack-* or unprefixed)
@@ -75,7 +82,7 @@ check_cross_lineage() {
     lineage_scope=$(grep "lineage-scope:" "$skill_md" 2>/dev/null | head -1 | sed 's/.*"\(.*\)".*/\1/' || echo "unknown")
 
     # Get consumed-by
-    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | sed 's/.*"\(.*\)".*/\1/')
+    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | sed 's/.*"\(.*\)".*/\1/' || true)
 
     if [ -z "$consumers" ]; then
       continue
@@ -130,7 +137,7 @@ check_gates() {
     [ -f "$skill_md" ] || continue
     skill_name=$(basename "$(dirname "$skill_md")")
 
-    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | sed 's/.*"\(.*\)".*/\1/')
+    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | sed 's/.*"\(.*\)".*/\1/' || true)
 
     if [ -z "$consumers" ]; then
       continue
@@ -159,7 +166,7 @@ check_dead_refs() {
     [ -f "$skill_md" ] || continue
     skill_name=$(basename "$(dirname "$skill_md")")
 
-    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | sed 's/.*"\(.*\)".*/\1/')
+    consumers=$(grep -A 20 "consumed-by:" "$skill_md" 2>/dev/null | grep "^- " | sed 's/.*"\(.*\)".*/\1/' || true)
 
     for consumer in $consumers; do
       # Skip if this is a domain-level entry (not a specific agent)

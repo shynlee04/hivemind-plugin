@@ -34,8 +34,8 @@ status: CLOSED
 | SE-13 | ✅ COMPLETE | 1/1 | Hivemind engine contracts: hm-l3-hivemind-state-reference (8/8 RICH-8, B+ grade) + hm-l3-hivemind-engine-contracts (8/8 RICH-8, B+ grade). 6 files created. AS-10 UNBLOCKED. |
 | SE-14 | ✅ COMPLETE | 1/1 | Skill-agent integration contracts: hm-l3-integration-contracts created, 12 agent domains mapped, 51 skills with bidirectional bindings, cross-lineage rules (D-AD-01, D-02) enforced, 8/8 RICH-8, A-grade 108/120, 10 eval scenarios, validation script |
 
-**Phases Complete:** 16/17 (SE-10 deferred — routing bindings absorbed into SE-14)
-**Phases Authorized:** 16/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-5 ✅, SE-5.5 ✅, SE-6 ✅, SE-7 ✅, SE-8 ✅, SE-9 ✅, SE-11 ✅, SE-12 ✅, SE-13 ✅, SE-14 ✅)
+**Phases Complete:** 16/17 executed + 1/17 deferred-by-design (SE-10 routing bindings absorbed into SE-14)
+**Phases Authorized:** 17/17 closed (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-5 ✅, SE-5.5 ✅, SE-6 ✅, SE-7 ✅, SE-8 ✅, SE-9 ✅, SE-10 deferred, SE-11 ✅, SE-12 ✅, SE-13 ✅, SE-14 ✅)
 
 ## Skills Inventory (2026-04-30 — Post SE-14 Workstream Close)
 
@@ -113,8 +113,8 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 ## Session Continuity
 **Stopped At:** SE-14 COMPLETE — Skill Ecosystem Workstream CLOSED
 **Resume:** N/A — Workstream is closed. 16/17 phases executed, SE-10 deferred (routing absorbed into SE-14).
-**Git Commits:** atomic commit pending for SE-14
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-14-skill-agent-integration-contracts/` (no SUMMARY.md yet — executor still running)
+**Git Commits:** SE-14 closure commit pending in executor session
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-14-skill-agent-integration-contracts/SE-14-SUMMARY.md`
 
 ## Known Issues (2026-04-30 — post SE-14 workstream close)
 

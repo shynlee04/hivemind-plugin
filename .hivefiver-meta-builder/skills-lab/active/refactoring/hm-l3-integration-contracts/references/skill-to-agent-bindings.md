@@ -15,8 +15,14 @@ Which agents consume each skill, across all 5 lineages. This is the canonical re
 | hm-l3-synthesis | hm-l2-synthesizer, hf-l2-synthesizer | hm+hf | FLEXIBLE (hf justified) |
 | hm-l3-omo-reference | hm-l2-researcher, hm-l2-architect | hm-* | STRICT |
 | hm-l3-opencode-platform-reference | hm-l2-researcher, hf-l2-agent-builder, hf-l2-tool-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-opencode-non-interactive-shell | hm-l2-operator, hf-l2-command-builder | hm+hf | FLEXIBLE (hf justified) |
 | hm-l3-opencode-project-audit | hm-l2-auditor, hf-l2-auditor | hm+hf | FLEXIBLE (hf justified) |
 | hm-l3-subagent-delegation-patterns | hm-l1-coordinator, hm-l2-operator, hm-l2-guardian | hm-* | STRICT |
+| hm-l3-tech-context-compliance | hm-l2-technician, hm-l2-integrator | hm-* | STRICT |
+| hm-l3-tool-capability-matrix | hm-l2-technician, hf-l2-agent-builder, hf-l2-tool-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-hivemind-state-reference | hm-l1-coordinator, hm-l2-persistor, hm-l2-operator | hm-* | STRICT |
+| hm-l3-hivemind-engine-contracts | hm-l2-integrator, hm-l2-architect, hf-l2-tool-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-integration-contracts | hm-l2-auditor, hm-l2-validator, hf-l2-auditor, hf-l2-meta-builder | hm+hf | FLEXIBLE (hf justified) |
 
 ## Planning Skills (L2 depth)
 
@@ -60,6 +66,7 @@ Which agents consume each skill, across all 5 lineages. This is the canonical re
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
 | hm-l2-skill-router | hm-l2-router | hm-* | STRICT |
+| hf-l2-skill-router | hf-l1-coordinator, hf-l2-meta-builder | hf-* | STRICT |
 | hm-l2-lineage-router | hm-l2-router | hm-* | STRICT |
 
 ## Internal Gate Skills (L3 depth) — THIS PROJECT ONLY
