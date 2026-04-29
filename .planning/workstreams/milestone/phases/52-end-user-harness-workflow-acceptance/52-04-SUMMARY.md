@@ -2,6 +2,16 @@
 
 ## Status
 
-BLOCKED / PARTIAL PREFLIGHT ONLY
+DONE_WITH_CONCERNS
 
-Plan 52-04 was not executed as a same-run journal/boundary workflow because Plan 52-02 blocked the linear dependency chain. Read-only primitive preflight and `validate-restart` from Plan 52-01 succeeded, but those are validator evidence only and not actual recovery proof.
+Plan 52-04 executed after the E52-01 retry pass.
+
+- `session-journal-export` JSON and Markdown both ran against parent session `ses_226e89cd1ffetJwNcJdzeGN1jY`.
+- Both exports returned zero sessions / zero delegations / no execution lineage.
+- `configure-primitive` list/read/inspect succeeded in read-only mode.
+- `validate-restart` succeeded as validator evidence only.
+
+Verdicts:
+
+- E52-03 = PARTIAL because same-run lineage correlation was not surfaced.
+- E52-04 = PARTIAL because validator output is not actual restart/recovery proof.
