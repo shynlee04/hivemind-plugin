@@ -16,17 +16,21 @@ allowed-tools:
   - Grep
 cross-references:
   feeds:
-    - "hm-synthesis"
-    - "hm-deep-research"
-    - "hm-tech-context-compliance"
     - "hm-detective"
-  consumed-by:
-    - "hm-synthesis"
     - "hm-deep-research"
+    - "hm-synthesis"
+    - "hm-research-chain"
+    - "hm-tech-context-compliance"
+  consumed-by:
+    - "hm-detective"
+    - "hm-deep-research"
+    - "hm-synthesis"
+    - "hm-research-chain"
   input-from:
     - "hm-tech-context-compliance"
   boundary:
     - "hm-synthesis"
+    - "hm-detective"
 task-group: "how-to-implement"
 hierarchy: "subagent-level"
 ---
@@ -406,19 +410,31 @@ What is your situation?
 
 ## Cross-References
 
+### Research Chain Position
+
+```
+hm-tech-stack-ingest → hm-detective → hm-deep-research → hm-synthesis
+    (Stage 0 — this skill)  (Stage 1)  (Stage 2)        (Stage 3)
+                 ↑ orchestrated by hm-research-chain
+```
+
+hm-tech-stack-ingest is **Stage 0 (Ingest)** of the canonical `hm-research-chain` pipeline. It provides the cached assets that hm-detective, hm-deep-research, and hm-synthesis use to validate against REAL code — not assumptions. hm-research-chain orchestrates when ingestion happens in the pipeline.
+
 ### Skills This Skill Feeds Into
 
 | Skill | What It Provides |
 |-------|-----------------|
+| `hm-detective` | Cached codebases for `.tech-registry.json` population and deep codebase investigation |
+| `hm-deep-research` | Offline repository references and cached API signatures for signature-level validation |
 | `hm-synthesis` | Cached API signatures and code for skill generation and quality gate synthesis |
-| `hm-deep-research` | Offline repository references for signature-level validation |
-| `hm-detective` | Cached codebases for deep codebase investigation |
+| `hm-research-chain` | Foundation assets — ensures the research chain validates against real code, not assumptions |
 
 ### Skills This Skill Consumes From
 
 | Skill | What It Receives |
 |-------|-----------------|
 | `hm-tech-context-compliance` | Detected tech stack with versions — tells this skill WHAT to ingest |
+| `hm-research-chain` | Orchestration signal — hm-research-chain decides when Stage 0 ingestion runs |
 
 ### Boundary Rules
 
@@ -427,7 +443,8 @@ What is your situation?
 | `hm-synthesis` | hm-tech-stack-ingest handles INGESTION (downloading and organizing). hm-synthesis handles GENERATION (creating skills and gates from ingested material). |
 | `hm-deep-research` | hm-tech-stack-ingest provides the CACHED ASSETS. hm-deep-research uses those assets for research and validation. |
 | `hm-tech-context-compliance` | hm-tech-context-compliance DETECTS the stack. hm-tech-stack-ingest INGESTS it. |
-| `hm-detective` | hm-detective can search ingested stacks for codebase patterns and definitions. |
+| `hm-detective` | hm-detective searches ingested stacks for codebase patterns and definitions. hm-tech-stack-ingest provides the cached codebases. |
+| `hm-research-chain` | hm-tech-stack-ingest is Stage 0 (Ingest). hm-research-chain orchestrates the full pipeline and triggers ingestion before detection. |
 
 ## Edge Cases
 
@@ -476,6 +493,54 @@ If any phase fails:
 - **Phase 5 fails** (can't find ingested files): Re-run ingest; the download may have been incomplete.
 
 **Maximum 3 iterations** per ingestion pipeline run. After 3 rounds without resolution, hand off with a report of what succeeded and what's blocked.
+
+## Self-Correction
+
+When the ingestion pipeline produces unexpected results, use this decision tree before escalating:
+
+### Mode 1: Incomplete Ingest (Phase 3 returned partial data)
+
+```
+Is the repo public and accessible?
+├── YES → Try the next MCP tool in the fallback chain (context7 if repomix failed, deepwiki if context7 failed)
+├── NO → Use web-based tools (tavily, exa) to extract docs → flag in unresolved.json
+└── ALL tools exhausted → Mark as NEEDS_CONTEXT, skip this package
+```
+
+### Mode 2: Version Mismatch (cached version ≠ installed version)
+
+```
+Is the installed version newer?
+├── YES → Re-ingest (archive old, download new)
+├── NO → Flag as NEEDS_INVESTIGATION (downgrade may be intentional)
+└── Cached version missing → Run full ingestion pipeline
+```
+
+### Mode 3: Structure Drift (directory missing TOC, api/, or metadata.json)
+
+```
+1. Check what was downloaded: ls references/tech-stacks/<name>/raw/
+2. If raw/ is empty → re-run Phase 3 (INGEST)
+3. If raw/ has content but no structure → re-run Phase 4 (ORGANIZE) from scratch
+4. If api/ is empty after organize → the source didn't expose API signatures → use context7 or deepwiki
+```
+
+### Mode 4: Quality Gate Validation Failure (grep returns 0 results for a claimed API)
+
+```
+1. Verify the API name is spelled correctly
+2. Check if the API is deprecated in this version → check changelog.md
+3. Check if the API exists in a different module/export → grep across the entire api/ directory
+4. If still not found → re-ingest with a different MCP tool
+5. If re-ingest also fails → the API may not exist → flag for hm-deep-research investigation
+```
+
+### Maximum Correction Attempts
+
+3 per ingestion run. After 3 correction cycles without resolution:
+- Document what succeeded and what's blocked
+- Append unresolved packages to `references/tech-stacks/unresolved.json`
+- Hand off with a report: `Phase: <X>, Blocked: <Y>, Resolved: <Z>`
 
 ## Success Criteria
 
