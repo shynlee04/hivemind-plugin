@@ -1,8 +1,8 @@
 # Workstream: Skill Ecosystem Gap Closure
 
 **Created:** 2026-04-27
-**Updated:** 2026-04-28
-**Status:** IN PROGRESS (1/9 phases complete)
+**Updated:** 2026-04-29 (audit findings integrated: SE-8, SE-9 added)
+**Status:** IN PROGRESS (1/12 forward phases + 14 historical COMPLETE; 8 of 21 target skills already exist on disk)
 **Workstream:** skill-ecosystem (independent from milestone/main phases)
 **Context:** `.planning/research/SKILL-ECOSYSTEM-GAP-ANALYSIS-2026-04-27.md`
 
@@ -17,6 +17,26 @@
 | D-05 | Internal (gate-*) vs shipped (hm-*) must be clearly differentiated | All phases |
 | D-06 | Complex cross-cutting concerns broken into downstream phases | SE-3 through SE-7 |
 
+## Phase Status Table
+
+| Phase | Name | Status | Dependencies |
+|-------|------|--------|--------------|
+| SE-1 | Skill Reclassification & Cleanup | ✅ COMPLETE | — |
+| SE-2 | Planning Pipeline Backbone | ⚠️ PARTIALLY COMPLETE | SE-1 |
+| SE-3 | Pre-Gate Skills Hardening | 📋 PLANNED | SE-2 |
+| SE-3.5 | Feature Ecosystem & Production Skills | 📋 PLANNED | SE-2 |
+| SE-3.6 | Product Validation Skill Hardening | 📋 PLANNED | SE-3 |
+| SE-4 | Research Pipeline Enhancement | 📋 PLANNED | SE-2 |
+| SE-5 | Gate Orchestration & Lineage Routing | 🔲 NOT STARTED | SE-3 + SE-4 |
+| SE-5.5 | Internal Gate Skills Hardening | 🔲 NOT STARTED | SE-5 |
+| SE-6 | Meta-Builder Skills Enhancement | 🔲 NOT STARTED | SE-5 |
+| SE-7 | Integration Verification | 🔲 NOT STARTED (blocked) | SE-5 + SE-6 |
+| SE-8 | Orphan Skill Hardening | 🔲 NOT STARTED | SE-2 |
+| SE-9 | Final Integrity Verification | 🔲 NOT STARTED (blocked) | SE-7 + SE-8 |
+| SE-H1→SE-H14 | Historical Phases | ✅ COMPLETE | — |
+
+**Total forward phases: 12** (SE-1 through SE-9, including SE-2, SE-3, SE-3.5, SE-3.6, SE-4, SE-5, SE-5.5, SE-6, SE-7, SE-8, SE-9)
+
 ## Thin-Frame Phases
 
 Each phase defines SCOPE only. Actual design decisions, research, and implementation plans are produced within each phase's discuss → research → plan → execute cycle.
@@ -30,7 +50,7 @@ Each phase defines SCOPE only. Actual design decisions, research, and implementa
 
 ---
 
-### Phase SE-2: Planning Pipeline Backbone
+### Phase SE-2: Planning Pipeline Backbone ⚠️ PARTIALLY COMPLETE
 
 **Goal:** Replace disabled `hm-planning-with-files` with `hm-planning-persistence` using `.hivemind/state/planning/` as canonical path. Fix 11 broken references across all dependent skills. Remove hard dependency from hm-coordinating-loop. Archive disabled skill.
 
@@ -38,13 +58,14 @@ Each phase defines SCOPE only. Actual design decisions, research, and implementa
 
 **To-Be:** `hm-planning-persistence` → `.hivemind/state/planning/<session-id>/`. All 11 references updated. Coordinator uses soft boundary (graceful fallback to in-memory state).
 
-**Scope (what, not how):**
-- Create `hm-planning-persistence` SKILL.md (RICH-1 through RICH-8, language-agnostic, framework-independent)
-- Write to `.hivemind/state/planning/` — task_plan.md, findings.md, progress.md
-- Fallback: `.session/` if `.hivemind/` not available (non-Hivemind projects)
-- Update 11 skills: hm-coordinating-loop, hm-user-intent-interactive-loop, hm-spec-driven-authoring, hm-test-driven-execution, hm-completion-looping, hm-subagent-delegation-patterns, hm-phase-execution, hm-phase-loop, hm-debug, hm-refactor, hm-meta-builder
-- Remove hard dependency from hm-coordinating-loop (replace verify-hierarchy.sh with graceful fallback)
-- Archive `donotusethis-hm-planning-with-files` → `.opencode/retired/`
+**Status:** PARTIALLY COMPLETE — `hm-planning-persistence` SKILL.md exists on disk. 4 plan files were NOT executed. 11 broken references to `donotusethis-hm-planning-with-files` remain unverified. Remaining work: execute SE-2-02 through SE-2-04 plans (reference fixes, archive, integration verification).
+**Plans:** 4 plans (1 of 4 executed)
+
+Plans:
+- [x] SE-2-01-PLAN.md — Research + Create hm-planning-persistence (Wave 1) ✅ SKILL.md on disk
+- [ ] SE-2-02-PLAN.md — Fix CRITICAL hm-coordinating-loop + 5 references (Wave 2)
+- [ ] SE-2-03-PLAN.md — Fix 5 remaining references + hm-meta-builder (Wave 2)
+- [ ] SE-2-04-PLAN.md — Archive disabled skill + Integration verification (Wave 3)
 
 **Depends on:** SE-1 (renames done, references clean)
 
@@ -52,13 +73,13 @@ Each phase defines SCOPE only. Actual design decisions, research, and implementa
 
 ### Phase SE-3: Pre-Gate Skills — Brainstorming, Requirements, Cross-Cutting
 
-**Goal:** Create skills that fill the workflow gap BEFORE quality gates engage. Currently no hm-* skills cover ideation, requirements surfacing, or cross-pane change governance.
+**Goal:** Harden already-created skills that fill the workflow gap BEFORE quality gates engage. These 4 skills exist on disk (15-20KB each) and need RICH audit, trigger tuning, and quality gate alignment.
 
 **Scope (what, not how):**
-- Create `hm-brainstorm` — ideation → requirements surfacing → handoff to spec-driven-authoring
-- Create `hm-requirements-analysis` — formal requirements diagnosis, constraint discovery
-- Create `hm-cross-cutting-change` — cross-pane modification governance, red-first verification, lifecycle impact checking
-- Create `hm-tech-context-compliance` — tech stack validation against project constraints
+- Harden existing `hm-brainstorm` — RICH audit, trigger tuning, ideation → requirements → spec-driven-authoring handoff verification
+- Harden existing `hm-requirements-analysis` — RICH audit, gap detection verification, constraint discovery routing
+- Harden existing `hm-cross-cutting-change` — RICH audit, cross-pane modification governance, red-first verification, lifecycle impact checking
+- Harden existing `hm-tech-context-compliance` — RICH audit, tech stack validation against project constraints
 - All skills must pass RICH-1 through RICH-8
 - All skills must route output to hm-gate-orchestrator → triad gates
 
@@ -68,24 +89,39 @@ Each phase defines SCOPE only. Actual design decisions, research, and implementa
 
 ### Phase SE-3.5: Feature Ecosystem & Production Skills
 
-**Goal:** Create skills for features designed as an interdependent ecosystem, production deployment readiness, and product roadmap maintainability.
+**Goal:** Harden already-created skills for features designed as an interdependent ecosystem, production deployment readiness, and product roadmap maintainability.
 
 **Scope (what, not how):**
-- Create `hm-feature-ecosystem` — cross-dependency design, impact analysis, dependency graph validation, ordered feature delivery
-- Create `hm-production-readiness` — deployment verification, changelog/migration validation, evidence collection for gate-evidence-truth
-- Create `hm-roadmap-maintainability` — product roadmap, feature ordering by dependency, maintainability scoring, extensibility checks
+- Harden existing `hm-feature-ecosystem` — RICH audit, cross-dependency design, impact analysis, dependency graph validation, ordered feature delivery
+- Harden existing `hm-production-readiness` — RICH audit, deployment verification, changelog/migration validation, evidence collection for gate-evidence-truth
+- Harden existing `hm-roadmap-maintainability` — RICH audit, product roadmap, feature ordering by dependency, maintainability scoring, extensibility checks
 - All 3 must pass RICH-1 through RICH-8
 
 **Depends on:** SE-2 (can run parallel with SE-3)
 
 ---
 
-### Phase SE-4: Research Pipeline Enhancement
+### Phase SE-3.6: Product Validation Skill Hardening
 
-**Goal:** Create tech stack ingestion skill and fix the research chain's broken bidirectional references.
+**Goal:** Harden the already-created `hm-product-validation` skill (20KB on disk) — RICH audit, trigger tuning, and quality gate alignment.
 
 **Scope (what, not how):**
-- Create `hm-tech-stack-ingest` — download repos via repomix/deepwiki as bundled assets, progressive disclosure, version tracking, TOC/metadata
+- RICH-1 through RICH-8 audit of hm-product-validation
+- Verify product-lens methodology integration with hm-brainstorm and hm-requirements-analysis
+- Align with hm-production-readiness for deployment-readiness handoff
+- Ensure description mentions RICE score, product validation, anti-solution-check triggers
+- Route output to hm-gate-orchestrator → triad gates
+
+**Depends on:** SE-3 (pre-gate skills hardened, which hm-product-validation routes to)
+
+---
+
+### Phase SE-4: Research Pipeline Enhancement
+
+**Goal:** Harden existing tech stack ingestion skill and fix the research chain's broken bidirectional references.
+
+**Scope (what, not how):**
+- Harden existing `hm-tech-stack-ingest` — RICH audit, download repos via repomix/deepwiki as bundled assets, progressive disclosure, version tracking, TOC/metadata
 - Fix hm-research-chain ↔ hm-detective bidirectional reference
 - Fix hm-research-chain ↔ hm-deep-research bidirectional reference
 - Fix hm-research-chain ↔ hm-synthesis bidirectional reference
@@ -104,6 +140,8 @@ Each phase defines SCOPE only. Actual design decisions, research, and implementa
 - Create `hm-lineage-router` — classifies task intent (product dev vs meta builder), routes to correct lineage
 - Wire both into hm-meta-builder routing
 - Ensure all shipped hm-* and hf-* skills declare lineage in YAML frontmatter
+
+**⚠️ Dead References:** `hm-gate-orchestrator` is referenced by 3 existing skills (`hm-production-readiness`, `hm-requirements-analysis`, `hm-roadmap-maintainability`) but does NOT exist yet. These references are dead until SE-5 delivers. SE-5 must either create the orchestrator or update these 3 skills to remove/bypass the dependency.
 
 **Depends on:** SE-3 + SE-4 (pre-gate and research skills exist to route through gates)
 
@@ -149,3 +187,121 @@ Each phase defines SCOPE only. Actual design decisions, research, and implementa
 - Produce final ecosystem coherence report
 
 **Depends on:** SE-6 (all skills created)
+
+---
+
+### Phase SE-8: Orphan Skill Hardening
+
+**Goal:** Harden the 25 skills not covered by any forward SE phase (SE-1 through SE-7). These skills exist on disk but have never been through a dedicated RICH audit or cross-reference integrity pass.
+
+**Scope — hm-* operational skills (15):**
+- `hm-completion-looping` — completion detection, regression guardrails
+- `hm-coordinating-loop` — multi-agent dispatch with validation gates
+- `hm-debug` — systematic debugging with persistent state
+- `hm-omo-reference` — oh-my-openagent architecture reference
+- `hm-opencode-non-interactive-shell` — shell safety for headless agents
+- `hm-opencode-platform-reference` — OpenCode platform docs
+- `hm-opencode-project-audit` — project ecosystem audit
+- `hm-phase-execution` — wave-based phase execution with checkpoint recovery
+- `hm-phase-loop` — iterative phase loop management
+- `hm-planning-persistence` — cross-session state persistence (verify SE-2 fixes)
+- `hm-refactor` — surgical vs structural refactoring decision framework
+- `hm-spec-driven-authoring` — spec-locking and requirement extraction
+- `hm-subagent-delegation-patterns` — subagent dispatch and checkpoint protocols
+- `hm-test-driven-execution` — TDD RED/GREEN/REFACTOR cycles
+- `hm-user-intent-interactive-loop` — interactive intent probing
+
+**Scope — hf-* meta-builder skills (10):**
+- `hf-agent-composition` — agent XML markup and composition
+- `hf-agents-and-subagents-dev` — agent architecture and dispatch
+- `hf-agents-md-sync` — AGENTS.md drift detection and repair
+- `hf-command-dev` — command structure and shell safety
+- `hf-command-parser` — propositional command argument parsing
+- `hf-context-absorb` — multi-wave context absorption protocol
+- `hf-custom-tools-dev` — plugin SDK and custom tool architecture
+- `hf-delegation-gates` — pre-delegation authorization gates
+- `hf-skill-synthesis` — skill pattern classification and scaffolding
+- `hf-use-authoring-skills` — skill authoring quality and TDD
+
+**Scope — stack-* reference skills (6):**
+- `stack-bun-pty` — bun-pty pseudo-terminal integration
+- `stack-json-render` — @json-render/react generative UI
+- `stack-nextjs` — Next.js 16.x App Router patterns
+- `stack-opencode` — OpenCode SDK and plugin internals
+- `stack-vitest` — Vitest testing framework reference
+- `stack-zod` — Zod v4 schema validation
+
+**Scope — unprefixed skills (1):**
+- `opencode-config-workflow` — will be replaced by SE-6 (`hf-config-workflow`)
+
+**Total: 25 skills** (15 hm-* + 10 hf-* + 6 stack-* + 1 unprefixed; note: opencode-config-workflow counted once in unprefixed)
+
+**Scope (what, not how):**
+- RICH-1 through RICH-8 audit for all 25 skills
+- Cross-reference integrity verification
+- Trigger description tuning
+- Dead reference cleanup (especially `donotusethis-hm-planning-with-files` remnants)
+- Verify `opencode-config-workflow` is superseded by SE-6 deliverable
+
+**Depends on:** SE-2 (planning-persistence reference fixes must be complete before this phase can verify them)
+**Wave:** Same wave as SE-3 / SE-3.5 (parallel hardening track)
+
+---
+
+### Phase SE-9: Final Integrity Verification
+
+**Goal:** Prove the entire skill ecosystem is coherent, complete, and production-ready. This is the terminal verification phase.
+
+**Scope (what, not how):**
+- Full RICH gate audit on ALL 49 active skills (target: 100% PASS)
+- Cross-reference integrity verification across all skills (target: 0 broken references)
+- End-to-end workflow test: brainstorm → requirements → spec → TDD → artifacts → gate orchestration → triad → production readiness
+- Lineage routing test: product task → hm-* chain, meta task → hf-* chain, stack reference → correct SDK docs
+- Verify all 3 `hm-gate-orchestrator` references in `hm-production-readiness`, `hm-requirements-analysis`, `hm-roadmap-maintainability` resolve correctly
+- Verify `donotusethis-hm-planning-with-files` is fully archived with zero remaining references
+- Verify `hf-meta-builder` frontmatter name is `hf-meta-builder` (not `hr-meta-builder`)
+- Produce final ecosystem coherence report
+
+**Depends on:** SE-7 (integration verification complete) + SE-8 (orphan skills hardened)
+
+---
+
+## Historical Phases (Completed Before Workstream Creation)
+
+These phases were executed under the milestone workstream between 2026-04-22 and 2026-04-25. They are now part of the skill-ecosystem scope. **All are COMPLETE.** Their artifacts remain in `.planning/workstreams/milestone/phases/` for audit trail.
+
+| Phase | Name | What It Delivered | Date |
+|-------|------|-------------------|------|
+| SE-H1 (was 17) | Critical Skill Fixes | C1-C5 resolved (dead refs, phantom files, duplicates) | 2026-04-22 |
+| SE-H2 (was 18) | Context & Research — Playbook Phase CR | CR-01 through CR-08 evidence documents | 2026-04-23 |
+| SE-H3 (was 19) | Rename Sprint — Playbook Phase 1 | 21 skills renamed, 368 files changed | 2026-04-23 |
+| SE-H4 (was 20) | Structural Changes — Playbook Phase 2 | 1 merge, 1 split, 7 new skills created | 2026-04-23 |
+| SE-H5 (was 21) | Description Rewrite — Playbook Phase 3 | 7 descriptions rewritten per V.7 template | 2026-04-24 |
+| SE-H6 (was 22) | Script Hardening + 6-NON — Playbook Phase 4 | 6-NON defence tables added (later removed by SE-H8) | 2026-04-24 |
+| SE-H7 (was 23) | Body Quality + Eval — Playbook Phase 5 | Trigger queries for 6 new skills | 2026-04-24 |
+| SE-H8 (was 24) | Fix 22 Failed hm-* Skills | Onboarding headings, self-correction blocks, 6-NON removed | 2026-04-24 |
+| SE-H9 (was 26) | Quality Synthesis | HMQUAL D1-D8 contract, G-B SPECs, archive report | 2026-04-25 |
+| SE-H10 (was 27) | G-B Quality Assurance Demonstration | hm-spec-driven-authoring + hm-test-driven-execution D1-D8 + RICH | 2026-04-25 |
+| SE-H11 (was 28) | G-C Research Lineage | 4 research/synthesis skills RICH-validated | 2026-04-25 |
+| SE-H12 (was 29) | G-D Execution Lineage | 15 execution/debug/refactor skills validated | 2026-04-25 |
+| SE-H13 (was 30) | G-A Guardrail Lineage | 5 guardrail/completion/loop skills hardened | 2026-04-25 |
+| SE-H14 (was 51) | Stack Skill Grounding | Grounding map for stack/research/synthesis skills | 2026-04-28 |
+
+### Mapping to Current SE Phases
+
+- **SE-1** (Reclassification & Cleanup) absorbs SE-H1 through SE-H8 (all skill quality fixes and renames are done)
+- **SE-4** (Research Pipeline Enhancement) overlaps SE-H14 (stack grounding)
+- SE-2 through SE-9 represent forward-looking work (SE-2 partially complete; SE-3 through SE-9 not started)
+
+---
+
+## Known Issues (2026-04-29 Audit)
+
+1. **AGENTS.md is 18 skills behind** — claims 33 skills, reality is 49 active + 1 disabled
+2. **hm-gate-orchestrator does not exist** — referenced by 3 skills (hm-production-readiness, hm-requirements-analysis, hm-roadmap-maintainability) but no SKILL.md. Tracked in SE-5.
+3. **hm-lineage-router does not exist** — needed for SE-5
+4. **SE-2 partially executed** — hm-planning-persistence SKILL.md created but 11 reference fixes may not be complete. Tracked in SE-2 remaining plans.
+5. **hf-meta-builder name mismatch** — frontmatter says `name: hr-meta-builder` (wrong prefix). Tracked in SE-9.
+6. **Disabled hm-planning-with-files** still referenced by 9 active skills. Tracked in SE-2 remaining plans + SE-8 orphan audit.
+7. **25 orphan skills** have never been through a dedicated RICH audit. Tracked in SE-8.
+8. **No terminal verification** of full ecosystem coherence exists yet. Tracked in SE-9.
