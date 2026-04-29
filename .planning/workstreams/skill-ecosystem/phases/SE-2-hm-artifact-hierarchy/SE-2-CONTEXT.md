@@ -3,7 +3,7 @@
 **Workstream:** skill-ecosystem
 **Phase:** SE-2
 **Created:** 2026-04-28
-**Status:** AUTHORIZED — ready for planning
+**Status:** ✅ COMPLETE (2026-04-29)
 **Depends on:** SE-1 (renames complete, references clean)
 
 ## Authorized Decisions (from discuss-phase)
@@ -99,7 +99,7 @@ All references → `hm-planning-persistence` with path: `.hivemind/state/plannin
 
 ### Planning Pipeline Architecture
 - `.hivemind/state/session-continuity.json` — Existing state persistence (extends for planning/)
-- `.opencode/skills/donotusethis-hm-planning-with-files/SKILL-DISABLED.md` — Disabled skill being replaced
+- `.opencode/retired/donotusethis-hm-planning-with-files/` — Archived disabled skill being replaced (moved from .opencode/skills/ by SE-2)
 
 ## Constraints
 - Language-agnostic, framework-independent

@@ -1,7 +1,7 @@
 ---
 phase: SE-8
 workstream: skill-ecosystem
-status: PLANNED
+status: COMPLETE
 depends_on:
   - SE-2
 blocks:
@@ -17,7 +17,7 @@ Harden the 25 skills not covered by any forward SE phase (SE-1 through SE-7). Th
 ## Starting State
 - 25 active skills exist on disk without dedicated RICH audit coverage
 - SE-2 planning-persistence reference fixes may or may not be complete (verify during this phase)
-- `donotusethis-hm-planning-with-files` may still be referenced by active skills
+- `donotusethis-hm-planning-with-files` archived to `.opencode/retired/` in SE-2; all active references cleaned in SE-2 + SE-8
 - `opencode-config-workflow` exists but will be superseded by SE-6 deliverable (`hf-config-workflow`)
 
 ## Deliverables

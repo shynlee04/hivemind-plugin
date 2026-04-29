@@ -1,7 +1,7 @@
 ---
 phase: SE-3.6
 workstream: skill-ecosystem
-status: PLANNED
+status: COMPLETE
 depends_on:
   - SE-3
 blocks:
@@ -18,7 +18,7 @@ Harden the already-created `hm-product-validation` skill (20KB on disk) through 
 ## Starting State
 - `hm-product-validation` SKILL.md exists on disk (~20KB)
 - Pre-gate skills (hm-brainstorm, hm-requirements-analysis, hm-cross-cutting-change, hm-tech-context-compliance) are hardened in SE-3
-- hm-gate-orchestrator does NOT yet exist (SE-5 delivers it)
+- hm-gate-orchestrator NOW EXISTS (created in SE-5, 2026-04-29) — product-validation references to gate triad use forward-compatible patterns
 - Skill has never been through a dedicated RICH audit
 
 ## Deliverables

@@ -17,10 +17,10 @@ progress:
 
 ## Current Position
 
-- **Phase:** AS-3 — hm-* Agent Body Authoring (blocked by SE-5)
-- **Status:** IN-PROGRESS (BLOCKED)
+- **Phase:** AS-3 — hm-* Agent Body Authoring (UNBLOCKED by SE-5 completion)
+- **Status:** IN-PROGRESS (UNBLOCKED — SE-5 gate orchestration complete)
 - **Previous Phase:** AS-2 — COMPLETED (2026-04-29)
-- **Next Action:** Begin hm-* agent body authoring once skill-ecosystem SE-5 (gate orchestration lineage) completes
+- **Next Action:** Begin hm-* agent body authoring — SE-5 blocker resolved (hm-gate-orchestrator + hm-lineage-router created)
 
 ## Progress Table
 

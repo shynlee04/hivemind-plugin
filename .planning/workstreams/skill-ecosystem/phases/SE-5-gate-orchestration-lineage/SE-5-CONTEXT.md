@@ -3,7 +3,7 @@
 **Workstream:** skill-ecosystem
 **Phase:** SE-5
 **Depends on:** SE-3 + SE-4 (pre-gate and research skills must exist)
-**Status:** DRAFT — awaiting discuss-phase authorization
+**Status:** ✅ COMPLETE (2026-04-29)
 
 ## Authorized Decision
 Create unified entry point for quality gate triad and lineage classification routing. Gates are currently invoked independently with no routing between hm-* and hf-* lineages.

@@ -3,7 +3,7 @@
 **Workstream:** skill-ecosystem
 **Phase:** SE-3
 **Depends on:** SE-2 (artifact hierarchy for planning artifacts)
-**Status:** DRAFT — awaiting discuss-phase authorization
+**Status:** ✅ COMPLETE (2026-04-29)
 
 ## Authorized Decision
 Create 4 new hm-* skills to fill the workflow gap BEFORE quality gates engage. Currently no hm-* skills cover ideation, requirements surfacing, or cross-pane change governance.
