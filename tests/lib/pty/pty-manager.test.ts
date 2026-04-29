@@ -16,6 +16,7 @@ type MockPty = {
 let currentPty: MockPty | undefined
 let dataListener: DataListener | undefined
 let exitListener: ExitListener | undefined
+let outputOnPidRead: string | undefined
 
 vi.mock("bun-pty", () => ({
   spawn: vi.fn((_command: string, _args: string[], _options: Record<string, unknown>) => {
@@ -23,7 +24,14 @@ vi.mock("bun-pty", () => ({
     exitListener = undefined
 
     currentPty = {
-      pid: 4242,
+      get pid() {
+        const output = outputOnPidRead
+        outputOnPidRead = undefined
+        if (output && dataListener) {
+          dataListener(output)
+        }
+        return 4242
+      },
       write: vi.fn(),
       kill: vi.fn(),
       onData: vi.fn((listener: DataListener) => {
@@ -65,6 +73,7 @@ describe("PtyManager", () => {
     dataListener = undefined
     exitListener = undefined
     currentPty = undefined
+    outputOnPidRead = undefined
   })
 
   it("registers a PTY session record with mode, cwd, and pid", async () => {
@@ -102,6 +111,20 @@ describe("PtyManager", () => {
       content: "bcdef",
       nextOffset: 6,
       truncated: true,
+    })
+  })
+
+  it("captures PTY output emitted before session metadata is returned", async () => {
+    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    outputOnPidRead = "early-output\r\n"
+
+    const manager = new PtyManager()
+    const session = manager.spawn(request)
+
+    expect(manager.read(session.id, 0)).toEqual({
+      content: "early-output\r\n",
+      nextOffset: 14,
+      truncated: false,
     })
   })
 
