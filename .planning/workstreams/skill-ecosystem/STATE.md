@@ -8,9 +8,9 @@ phase_count: 17
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-3 COMPLETE — SE-3.5, SE-3.6, SE-4 ready to begin
-**Current Phase:** SE-3 (Pre-Gate Skills Hardening) — COMPLETE
-**Last Activity:** 2026-04-29 (SE-3 complete — 4 skills hardened to RICH-8 ≥6/8: evals, self-correction, metrics scorecards, path fixes)
+**Status:** SE-8 COMPLETE — SE-3.5, SE-3.6, SE-4 ready to begin
+**Current Phase:** SE-8 (Orphan Skill Hardening) — COMPLETE
+**Last Activity:** 2026-04-29 (SE-8 complete — 31 orphan skills hardened: 25 hm-*/hf-* + 6 stack-*; 24/25 workflow skills ≥6/8 RICH-8; 1 at 5/8 documented)
 
 ## Progress
 | Phase | Status | Plans | Summary |
@@ -25,7 +25,7 @@ phase_count: 17
 | SE-5.5 | PLANNED | 0 | Internal gate skills hardening (gate-* — THIS PROJECT ONLY) |
 | SE-6 | PLANNED | 0 | Meta-builder: hf-config-workflow + hf-agent-synthesizer |
 | SE-7 | PLANNED | 0 | Integration verification: RICH audit, cross-ref integrity, E2E workflow test |
-| SE-8 | PLANNED | 0 | Orphan skill triage: 25 skills not covered by any forward SE phase |
+| SE-8 | ✅ COMPLETE | 1/1 | 31 orphan skills hardened: 25 hm-*/hf-* skills to RICH-8 ≥6/8 (24 at ≥6, 1 at 5/8 documented), 6 stack-* reference skills with applicable scoring. 54 files created/modified. |
 | SE-9 | PLANNED | 0 | Final ecosystem sweep: AGENTS.md sync, cross-ref integrity, disabled skill cleanup |
 | SE-10 | PLANNED | 0 | Skill routing & agent dispatch bindings: hm-skill-router + hf-skill-router creation |
 | SE-11 | PLANNED | 0 | Naming syndicate formalization: NAMING-SYNDICATE.md + validation script |
@@ -33,8 +33,8 @@ phase_count: 17
 | SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 3/17
-**Phases Authorized:** 3/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅)
+**Phases Complete:** 4/17
+**Phases Authorized:** 4/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-8 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -104,10 +104,10 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-3 COMPLETE — All 4 pre-gate skills hardened to RICH-8 ≥6/8
-**Resume:** Move to SE-3.5 (Feature skill hardening: hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability) or SE-4 (Research pipeline: hm-tech-stack-ingest + research chain)
-**Git Commits:** 6dc9fe9e (SE-3 hardening — 13 files)
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-3-pre-gate-skills/SE-3-SUMMARY.md`
+**Stopped At:** SE-8 COMPLETE — All 31 orphan skills hardened to RICH-8
+**Resume:** Move to SE-3.5 (Feature skill hardening: hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability) or SE-4 (Research pipeline: hm-tech-stack-ingest + research chain) or SE-3.6 (hm-product-validation)
+**Git Commits:** d4edf8f9 (stack-*), 30e8bbde (main SE-8 hardening), a4717f63 (straggler files)
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-8-orphan-skill-hardening/SE-8-SUMMARY.md`
 
 ## Known Issues (2026-04-29 Audit)
 
@@ -117,5 +117,6 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 4. ~~SE-2 partially executed~~ — RESOLVED 2026-04-29: All 4 plans executed, 20+ reference fixes applied, disabled skill archived
 5. **hf-meta-builder name mismatch** — directory is `hf-meta-builder` but frontmatter says `name: hr-meta-builder` (wrong `hr-` prefix instead of `hf-`)
 6. ~~Disabled hm-planning-with-files still referenced by 9 active skills~~ — RESOLVED 2026-04-29: All 12 skills fixed, disabled skill archived to .opencode/retired/
-7. **25 orphan skills** not covered by any forward SE phase — triaged to SE-8
+7. ~~25 orphan skills not covered by any forward SE phase~~ — RESOLVED 2026-04-29: All 31 skills hardened in SE-8 (15 hm-* + 10 hf-* + 6 stack-*), 24/25 workflow skills ≥6/8 RICH-8
 8. **No terminal verification** of full ecosystem coherence exists yet — SE-9 will address this.
+9. **hf-command-dev at 5/8 RICH-8** — thin 81 LOC skill, honest score documented. Future hardening may be needed.
