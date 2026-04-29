@@ -104,10 +104,10 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-3.5 COMPLETE — 3 feature skills hardened to RICH-8 (hm-feature-ecosystem, hm-production-readiness, hm-roadmap-maintainability)
-**Resume:** Move to SE-3.6 (hm-product-validation hardening) or SE-4 (Research pipeline: hm-tech-stack-ingest + research chain)
-**Git Commits:** Pending (SE-3.5 execution in progress)
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-3.5-feature-skill-hardening/SE-3.5-SUMMARY.md`
+**Stopped At:** SE-4 COMPLETE — All 5 research chain skills hardened to RICH-8 8/8
+**Resume:** Move to SE-3.6 (hm-product-validation hardening) or SE-5 (Gate orchestration + lineage routing)
+**Git Commits:** 4283c78c (hm-tech-stack-ingest), 1f8b22cf (hm-detective/deep-research/synthesis), 33f65ab7 (hm-research-chain)
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-4-research-pipeline/SE-4-SUMMARY.md`
 
 ## Known Issues (2026-04-29 Audit)
 
