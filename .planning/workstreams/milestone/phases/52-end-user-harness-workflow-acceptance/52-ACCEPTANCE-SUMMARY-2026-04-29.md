@@ -2,28 +2,28 @@
 
 ## Verdict
 
-BLOCKED / DONE_WITH_CONCERNS
+IN_PROGRESS AFTER E52-01 RETRY PASS
 
-Phase 52 execution reached live delegation proof but did not obtain provider-backed child completion. Because plans depend linearly and Phase 52 requires L1/L2 runtime proof for PASS, execution stopped after Plan 52-02 rather than reducing the evidence standard.
+Phase 52 resumed successfully at E52-01. The original 60000ms delegation timeout remains preserved as historical evidence, but a fresh retry with `safetyCeilingMs: 300000` completed and produced matching L1 and L2 evidence. Downstream waves may now continue from Plan 03.
 
 ## Executed Plans
 
 | Plan | Status | Evidence |
 | --- | --- | --- |
 | 52-01 | DONE_WITH_CONCERNS | Scaffolds created; Node/npm/OpenCode/build passed; read-only primitive validation passed. |
-| 52-02 | PARTIAL / BLOCKED | `delegate-task` returned delegationId and persisted L2 record, but child timed out after 60000ms. |
-| 52-03 | BLOCKED | Not executed because Plan 02 did not obtain successful child completion. |
-| 52-04 | BLOCKED except primitive preflight from Plan 01 | Full same-run journal/boundary workflow not executed. |
-| 52-05 | BLOCKED | Safe recovery interruption not attempted; no successful non-terminal workflow and no autonomous operator approval. |
-| 52-06 | BLOCKED | Guidance scenario not executed because downstream dependency chain stopped. |
+| 52-02 | PASS after retry | Fresh `delegate-task` retry returned completed terminal result and persisted L2 record. Historical timeout preserved. |
+| 52-03 | PENDING | Ready to execute after E52-01 retry pass. |
+| 52-04 | PENDING except primitive preflight from Plan 01 | Same-run journal/boundary workflow not yet executed. |
+| 52-05 | PENDING | Safe recovery still requires non-destructive operator-approved method. |
+| 52-06 | PENDING | Guidance workflow awaits downstream execution. |
 
 ## Evidence Matrix Verdicts
 
 | Row | Verdict | Highest evidence | Reason |
 | --- | --- | --- | --- |
-| E52-01 | PARTIAL / BLOCKED | L1 live dispatch/poll + L2 persisted timeout record | Dispatch worked, completion did not. |
-| E52-02 | BLOCKED | L5 plan context only | PTY lifecycle not attempted due upstream blocker. |
-| E52-03 | BLOCKED | L5 plan context only | Same-run export not attempted due upstream blocker. |
+| E52-01 | PASS | L1 live dispatch/poll + L2 persisted completed record | Retry completed successfully with longer safety ceiling. |
+| E52-02 | PENDING | Awaiting Plan 03 live PTY evidence | Retry cleared blocker. |
+| E52-03 | PENDING | Awaiting Plan 04 live export evidence | Retry cleared blocker. |
 | E52-04 | PARTIAL | L1 validator tool output | Read-only primitive checks passed, but full same-run Plan 04 boundary workflow was not reached. |
 | E52-05 | BLOCKED | L5 plan context only | Safe recovery was not attempted without a successful non-terminal workflow and operator-approved interruption. |
 | E52-06 | BLOCKED | L5 plan context only | Guidance workflow not executed. |
@@ -34,18 +34,18 @@ Phase 52 execution reached live delegation proof but did not obtain provider-bac
 - This is not production-ready.
 - `validate-restart` is not actual recovery proof.
 - Build/test/docs are not accepted as Phase 52 PASS evidence.
-- E52-01 is not PASS because child completion was not obtained.
+- E52-01 now passes only because live retry completion + persisted record exist.
 
-## Runtime Blocker
+## Runtime History
 
-`delegate-task` returned:
+Original blocker was:
 
 ```text
 [Harness] Delegation safety ceiling reached after 60000ms
 ```
 
-Same delegation polled via `delegation-status` returned `status: timeout`.
+That blocker was cleared by retry delegation `35b952b5-ef5d-4685-9f41-93d8ca0d936b`, which completed successfully.
 
 ## Phase 53 Handoff
 
-Phase 53 should not proceed as release closure until Phase 52 is re-run or resumed with successful L1/L2 evidence for the blocked rows, starting with E52-01 child completion.
+Phase 53 still must not proceed to release closure until the remaining pending/blocked Phase 52 rows obtain required L1/L2 evidence.
