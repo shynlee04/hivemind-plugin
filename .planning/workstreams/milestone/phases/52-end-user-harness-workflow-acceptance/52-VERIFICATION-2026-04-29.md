@@ -1,9 +1,9 @@
 ---
 phase: 52-end-user-harness-workflow-acceptance
 verified: 2026-04-29T13:12:10Z
-status: gaps_found
-verdict: BLOCKED
-score: 1/3 roadmap success criteria verified
+status: partial_conditional_runway
+verdict: PARTIAL / CONDITIONAL-RUNWAY
+score: 2/3 roadmap success criteria verified for runway; 1 SHIP prerequisite remains
 overrides_applied: 0
 re_verification:
   previous_status: pending-pre-planning
@@ -12,8 +12,8 @@ re_verification:
     - "E52-01 delegation lifecycle recovered after retry: delegate-task/delegation-status completed with matching L2 delegation record."
   gaps_remaining:
     - "PH52-01 remains partial because journal/lineage export returned zero sessions/delegations for the same acceptance run."
-    - "PH52-02 remains blocked because no operator-approved non-destructive interruption/recovery method was available."
-    - "Plan 52-06 guidance usability remained blocked by the recovery gate dependency."
+    - "PH52-02 has L2/L3 deterministic persisted SDK recovery proof; L1 live interruption proof remains a SHIP prerequisite."
+    - "Plan 52-06 guidance usability is deferred to Phase 54 non-release runway."
   regressions: []
 gaps:
   - truth: "User can complete at least one real orchestrator-led workflow that reaches delegation, terminal status polling, and lineage/journal evidence as one end-to-end run."
@@ -27,17 +27,17 @@ gaps:
     missing:
       - "A same-run journal/lineage export with non-empty session/delegation correlation for the acceptance parent session."
   - truth: "User can interrupt and recover that workflow from persisted .hivemind/ state without false completion or lost task state."
-    status: failed
-    reason: "No live interruption/recovery was attempted because the autonomous run had no operator-approved non-destructive interruption method."
+    status: partial
+    reason: "No live interruption/recovery was attempted, but deterministic non-destructive persisted SDK recovery is proven by RED/GREEN `recoverPending()` test with isolated durable delegation state and no create/prompt/abort calls."
     artifacts:
       - path: ".planning/workstreams/milestone/phases/52-end-user-harness-workflow-acceptance/52-05-RECOVERY-TRANSCRIPT-2026-04-29.md"
-        issue: "Protocol exists, but pre/post recovery evidence is not captured."
+        issue: "Protocol now includes L2/L3 persisted recovery proof; L1 live interruption is not claimed."
       - path: ".planning/workstreams/milestone/phases/52-end-user-harness-workflow-acceptance/52-EVIDENCE-MATRIX-2026-04-29.md"
-        issue: "E52-05 is BLOCKED."
+        issue: "E52-05 is PARTIAL / L2-L3 PROOF."
     missing:
-      - "Operator-approved safe interruption method."
-      - "Pre-interruption delegation/session/status evidence."
-      - "Post-resume delegation-status and session-journal-export evidence."
+      - "Operator-approved safe live interruption method for SHIP."
+      - "L1 pre-interruption delegation/session/status evidence for SHIP."
+      - "L1 post-resume delegation-status and session-journal-export evidence for SHIP."
   - truth: "At least one Phase 51 stack/research guidance scenario is exercised as a user workflow."
     status: failed
     reason: "Plan 52-06 did not execute after Plan 52-05 blocked; the expected guidance transcript file does not exist."
@@ -58,24 +58,24 @@ human_verification:
 
 **Phase Goal:** Real end users can complete a narrow, observable harness workflow end-to-end through the production orchestrator/subagent/tool/journal surfaces, with acceptance evidence captured as a user-facing lifecycle transcript.
 **Verified:** 2026-04-29T13:12:10Z
-**Status:** BLOCKED / `gaps_found`
+**Status:** PARTIAL / CONDITIONAL-RUNWAY
 **Re-verification:** Yes — after executor retry and final blocked evidence reconciliation.
 
 ## Goal Achievement
 
-Phase 52 **did not achieve a PASS**. It achieved one important slice (live delegation completed after retry with matching persisted delegation record), but the phase goal is end-to-end acceptance. That goal requires composed delegation/status/journal evidence plus recovery proof. The final evidence matrix contains `E52-05 = BLOCKED` and `E52-06 = BLOCKED`, so a PASS would inflate partial runtime evidence.
+Phase 52 **did not achieve unconditional SHIP/PASS**, but it now has enough evidence for conditional non-release runway. It achieved live delegation completion, PTY output, journal lineage rerun, and L2/L3 deterministic persisted SDK recovery proof. The final evidence matrix contains `E52-05 = PARTIAL / L2-L3 PROOF` and `E52-06 = FUTURE / NON-RELEASE`, so a SHIP claim would still inflate partial runtime evidence.
 
-Phase 52 **can be closed as BLOCKED/PARTIAL** with the current truthful artifacts. Execution only needs to resume if the project wants Phase 52 itself to become PASS; otherwise Phase 53 may start only as a blocked-input dependency that explicitly carries these gaps forward and does not claim release closure.
+Phase 52 **can be closed as PARTIAL / CONDITIONAL-RUNWAY** with the current truthful artifacts. Execution only needs to resume if the project wants Phase 52 itself to become SHIP-ready; otherwise Phase 53/54 may proceed only with not-ship wording that carries L1 recovery proof forward.
 
 ### Observable Truths
 
 | # | Truth | Status | Evidence |
 |---|---|---|---|
 | 1 | User can complete at least one real orchestrator-led workflow that reaches delegation, terminal status polling, and lineage/journal evidence as one end-to-end run. | ⚠️ PARTIAL | `52-02-DELEGATION-TRANSCRIPT-2026-04-29.md` shows retry `delegationId=35b952b5-ef5d-4685-9f41-93d8ca0d936b` completed; `.hivemind/state/delegations.json` confirms status `completed` with parent/child IDs. But `52-04-JOURNAL-BOUNDARY-TRANSCRIPT-2026-04-29.md` shows session-journal-export returned zero sessions/delegations. |
-| 2 | User can interrupt and recover that workflow from persisted `.hivemind/` state without false completion or lost task state. | ✗ FAILED / BLOCKED | `52-05-RECOVERY-TRANSCRIPT-2026-04-29.md` says no interruption attempted and no post-resume evidence captured because no operator-approved non-destructive interruption method was available. |
-| 3 | Acceptance evidence distinguishes pass, partial, failed, and externally blocked behavior without claiming release readiness by implication. | ✓ VERIFIED | `52-EVIDENCE-MATRIX-2026-04-29.md` classifies E52-01 PASS, E52-02/E52-03/E52-04 PARTIAL, E52-05/E52-06 BLOCKED. `52-ACCEPTANCE-SUMMARY-2026-04-29.md` explicitly says not release ready / not production-ready. |
+| 2 | User can interrupt and recover that workflow from persisted `.hivemind/` state without false completion or lost task state. | ⚠️ PARTIAL / L2-L3 PROOF | `52-05-RECOVERY-TRANSCRIPT-2026-04-29.md` records deterministic persisted SDK recovery through `recoverPending()` with stale recovery marker cleanup and no create/prompt/abort calls. L1 live interruption is still absent. |
+| 3 | Acceptance evidence distinguishes pass, partial, failed, and externally blocked behavior without claiming release readiness by implication. | ✓ VERIFIED | `52-EVIDENCE-MATRIX-2026-04-29.md` classifies E52-01/E52-02/E52-03 PASS, E52-04 PARTIAL, E52-05 PARTIAL / L2-L3 PROOF, and E52-06 FUTURE / NON-RELEASE. `52-ACCEPTANCE-SUMMARY-2026-04-29.md` explicitly says not release ready / not production-ready. |
 
-**Score:** 1/3 roadmap success criteria verified.
+**Score:** 2/3 roadmap success criteria verified for runway; SHIP still requires L1 recovery proof.
 
 ## Required Artifacts
 
@@ -97,7 +97,7 @@ Phase 52 **can be closed as BLOCKED/PARTIAL** with the current truthful artifact
 | Delegation transcript | Runtime transcript / evidence matrix | `parentSessionId`, `childSessionId`, `delegationId` | ✓ WIRED | Same retry IDs appear in transcript, matrix, runtime transcript, and `.hivemind/state/delegations.json`. |
 | PTY transcript | Runtime transcript / evidence matrix | `ptySessionId` | ⚠️ PARTIAL | Same PTY ID is recorded, but output payload is empty, so lifecycle visibility is incomplete. |
 | Journal transcript | Runtime transcript / evidence matrix | `sessionId`, export output | ⚠️ PARTIAL | Same parent session ID used, but export returned zero lineage. |
-| Recovery transcript | Evidence matrix | E52-05 recovery row | ✗ BLOCKED | Matrix cites recovery transcript as blocked; no pre/post resume link exists. |
+| Recovery transcript | Evidence matrix | E52-05 recovery row | ⚠️ PARTIAL / L2-L3 PROOF | Matrix cites deterministic persisted SDK recovery proof; no L1 live interruption proof exists. |
 | Guidance transcript | Acceptance summary | E52-06 guidance usability verdict | ✗ NOT WIRED | Guidance artifact is missing because Plan 52-06 did not execute. |
 
 ## Data-Flow Trace (Level 4)

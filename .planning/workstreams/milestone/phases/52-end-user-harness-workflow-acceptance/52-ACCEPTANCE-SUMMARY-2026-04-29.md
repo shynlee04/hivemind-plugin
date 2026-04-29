@@ -4,7 +4,7 @@
 
 BLOCKED / DONE_WITH_CONCERNS
 
-Phase 52 resumed successfully at E52-01 and later debug reruns closed E52-02 PTY output and E52-03 journal lineage evidence. Plan 05 remains blocked because no operator-approved, non-destructive interruption method was available. Phase 52 therefore remains blocked on recovery proof, not release-ready acceptance.
+Phase 52 resumed successfully at E52-01 and later debug reruns closed E52-02 PTY output and E52-03 journal lineage evidence. Plan 05 is now unblocked at **L2/L3** by deterministic non-destructive persisted SDK recovery proof; it still does **not** have L1 live interruption evidence. Phase 52 therefore moves from blocked recovery to partial acceptance / conditional runway evidence, not unconditional release-ready acceptance.
 
 ## Executed Plans
 
@@ -14,8 +14,8 @@ Phase 52 resumed successfully at E52-01 and later debug reruns closed E52-02 PTY
 | 52-02 | PASS after retry | Fresh `delegate-task` retry returned completed terminal result and persisted L2 record. Historical timeout preserved. |
 | 52-03 | PASS after debug rerun | PTY lifecycle and visible stdout payload were proven after early-output race fix. |
 | 52-04 | PASS/PARTIAL | Journal lineage rerun passed; primitive boundary remains validator-only evidence. |
-| 52-05 | BLOCKED | Safe recovery still requires a specific non-destructive operator-approved method. |
-| 52-06 | BLOCKED | Linear dependency stops at Plan 05 blocker. |
+| 52-05 | PARTIAL / L2-L3 PROOF | RED/GREEN deterministic `recoverPending()` proof verifies persisted SDK recovery without create/prompt/abort; no L1 live interruption claimed. |
+| 52-06 | FUTURE / NON-RELEASE | Guidance usability is deferred to Phase 54 runway and must not imply release readiness. |
 
 ## Evidence Matrix Verdicts
 
@@ -25,15 +25,16 @@ Phase 52 resumed successfully at E52-01 and later debug reruns closed E52-02 PTY
 | E52-02 | PASS | L1 PTY output + L2 completed PTY delegation record | Post-fix rerun surfaced `persist-check\r\n` and persisted it. |
 | E52-03 | PASS | L1 live export + L2 persisted delegation records | Rerun returned three lineage records for the Phase 52 parent session. |
 | E52-04 | PARTIAL | L1 validator tool output | Read-only primitive checks passed, but validator output is not actual recovery proof. |
-| E52-05 | BLOCKED | L5 safety constraint only | Safe interruption was not allowed autonomously. |
-| E52-06 | BLOCKED | L5 dependency state | Guidance workflow was not executed after Plan 05 blocker. |
+| E52-05 | PARTIAL | L2/L3 persisted recovery proof | Safe live interruption was not allowed, but deterministic persisted SDK recovery is proven without destructive calls. |
+| E52-06 | FUTURE | L5 dependency state | Guidance workflow moves to non-release runway planning. |
 
 ## Explicit Non-Claims
 
 - This is not release ready.
 - This is not production-ready.
 - `validate-restart` is not actual recovery proof.
-- Build/test/docs are not accepted as Phase 52 PASS evidence.
+- Build/test/docs are not accepted as unconditional Phase 52 PASS evidence.
+- E52-05 recovery proof is L2/L3 only; it is not L1 live interruption proof.
 - E52-01 now passes only because live retry completion + persisted record exist.
 
 ## Runtime History
@@ -48,4 +49,4 @@ That blocker was cleared by retry delegation `35b952b5-ef5d-4685-9f41-93d8ca0d93
 
 ## Phase 53 Handoff
 
-Phase 53 still must not proceed to release closure until the remaining blocked/partial Phase 52 rows obtain required L1/L2 evidence or explicit operator-approved recovery handling.
+Phase 53 may amend NO-SHIP to conditional non-release runway if it explicitly accepts L2/L3 recovery proof as sufficient for runway planning. It still must not claim SHIP/release readiness without L1 recovery evidence or waiver metadata.

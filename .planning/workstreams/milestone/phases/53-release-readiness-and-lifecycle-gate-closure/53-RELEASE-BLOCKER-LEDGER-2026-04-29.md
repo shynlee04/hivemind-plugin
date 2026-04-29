@@ -26,8 +26,8 @@
 | E52-02 PTY lifecycle | PARTIAL | Blocks unconditional SHIP if visible stdout is release-critical. | L1 `run-background-command output` surfaces expected stdout plus L2 PTY status record. | Possible only if release owner names stdout non-critical and records risk/rollback. |
 | E52-03 journal/export lineage | PARTIAL | Blocks SHIP because same-run lineage exported zero sessions/delegations. | L1 `session-journal-export` with non-empty same-run sessions/delegations plus matching L2 records. | Not waiver-eligible for unconditional SHIP. |
 | E52-04 primitive/root boundary | PARTIAL | Supporting validator evidence; cannot close recovery. | Keep as L1 read-only validator evidence, not recovery proof. | Not needed; do not overclaim. |
-| E52-05 safe recovery interruption | BLOCKED | Release-critical NO-SHIP blocker. | Operator-approved non-destructive interruption with pre/post L1 status/export and L2 state continuity. | Only explicit non-critical waiver can support CONDITIONAL WITH WAIVERS, never SHIP. |
-| E52-06 guidance usability | BLOCKED | Not release-critical for runtime release if scoped to Phase 54/skill runway; still must be recorded. | Dedicated future usability/guidance run if release owner marks it critical. | Eligible for future-plan routing. |
+| E52-05 safe recovery interruption | PARTIAL / L2-L3 PROOF | Blocks SHIP only; no longer blocks non-release runway. | L1 still requires operator-approved non-destructive interruption with pre/post status/export; L2/L3 persisted SDK recovery proof exists for runway. | No waiver needed for runway; waiver or L1 proof required for SHIP. |
+| E52-06 guidance usability | FUTURE / NON-RELEASE | Not release-critical for runtime release if scoped to Phase 54/skill runway; still must be recorded. | Dedicated future usability/guidance run if release owner marks it critical. | Eligible for future-plan routing. |
 
 ## Phase 48 Degraded Runtime Rows
 
@@ -38,7 +38,7 @@
 
 ## Current Baseline Verdict
 
-**NO-SHIP until blockers close or waivers are recorded.** The release baseline is not release-ready because E52-03 and E52-05 lack required L1/L2 evidence, and E52-02 remains partial.
+**CONDITIONAL-RUNWAY / NOT-SHIP.** The release baseline is not SHIP-ready because E52-05 lacks L1 live interruption evidence, but Phase 54 non-release runway can proceed because E52-05 now has L2/L3 persisted recovery proof and E52-02/E52-03 were closed by rerun.
 
 ## Closure Decision Rules
 
@@ -56,5 +56,5 @@
 |---|---|
 | repeated empty journal export | Stop release loop; create diagnostic or runtime fix plan before SHIP. |
 | repeated empty PTY output | Classify as NO-SHIP or conditional waiver; do not rerun blindly. |
-| unapproved recovery | Keep `RECOVERY_DECISION = NO_SHIP_BLOCKER`. |
+| unapproved L1 recovery | Keep `RECOVERY_DECISION = CONDITIONAL_RUNWAY_L2_L3` and block SHIP only. |
 | green tests with runtime blockers | Preserve NO-SHIP; do not substitute L3/L4 for L1/L2. |

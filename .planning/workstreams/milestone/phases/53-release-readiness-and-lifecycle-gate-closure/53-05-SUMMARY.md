@@ -2,7 +2,7 @@
 
 ## One-line Outcome
 
-Issued an evidence-backed **NO-SHIP** release readiness verdict because recovery and journal lineage L1/L2 blockers remain open and no waivers exist.
+Amended the release readiness verdict to **CONDITIONAL-RUNWAY / NOT-SHIP** because recovery now has L2/L3 persisted proof, while L1 live interruption remains required for SHIP.
 
 ## Tasks Completed
 
@@ -17,8 +17,8 @@ Issued an evidence-backed **NO-SHIP** release readiness verdict because recovery
 
 ## Decisions
 
-- Final Phase 53 release verdict is **NO-SHIP**.
-- Phase 52 remains BLOCKED/PARTIAL.
+- Final Phase 53 release verdict is **CONDITIONAL-RUNWAY / NOT-SHIP**.
+- Phase 52 is PARTIAL / conditional runway; E52-05 is L2/L3-proven but not L1-proven.
 - Fresh build/test/package gates are necessary for any future ship claim but not sufficient without L1/L2 runtime proof.
 
 ## Verification

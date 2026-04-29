@@ -2,15 +2,15 @@
 
 ## Verdict
 
-Verdict: NO-SHIP
+Verdict: CONDITIONAL-RUNWAY / NOT-SHIP
 
-Phase 53 release-readiness remains **NO-SHIP** after the debug rerun because recovery proof is still missing. PTY output and journal lineage blockers were closed by later L1/L2 reruns, but no waiver metadata or operator-approved recovery proof exists.
+Phase 53 release-readiness is amended from **NO-SHIP** to **CONDITIONAL-RUNWAY / NOT-SHIP** after the recovery debug proof. PTY output and journal lineage blockers were closed by later L1/L2 reruns. Recovery now has deterministic non-destructive L2/L3 proof for persisted SDK recovery, but still lacks L1 live interruption evidence; therefore this verdict unblocks non-release Phase 54 runway planning only and does not authorize SHIP.
 
 ## Evidence Bundle
 
 | Artifact | Role in verdict |
 |---|---|
-| `53-RELEASE-BLOCKER-LEDGER-2026-04-29.md` | Establishes NO-SHIP baseline and blocker routing. |
+| `53-RELEASE-BLOCKER-LEDGER-2026-04-29.md` | Establishes conditional-runway/not-ship baseline and blocker routing. |
 | `53-LIFECYCLE-CQRS-GATE-AUDIT-2026-04-29.md` | Classifies six release-critical surfaces as partial/supporting where runtime evidence is incomplete. |
 | `53-EVIDENCE-TRUTH-AUDIT-2026-04-29.md` | Classifies L1-L5 evidence and rejects false release claims. |
 | `53-RUNTIME-GAP-DECISION-2026-04-29.md` | Records recovery as the remaining no-ship blocker; PTY/journal decisions are closed by rerun. |
@@ -21,8 +21,8 @@ Phase 53 release-readiness remains **NO-SHIP** after the debug rerun because rec
 | Level | Present? | Notes |
 |---|---|---|
 | L1 | Yes | Delegation retry, PTY run/list/terminate, journal export invocation. |
-| L2 | Partial | Delegation/PTY records exist, but journal lineage and recovery continuity are missing. |
-| L3/L4 | Required before future ship claim | Focused test/package commands are listed below. |
+| L2 | Present for delegation/PTY/journal; synthetic-isolated for recovery | Recovery proof uses isolated persisted `delegations.json` rather than destructive live state mutation. |
+| L3/L4 | Present for recovery support | RED/GREEN focused recovery test plus package gates are required supporting evidence. |
 | L5 | Yes | Planning/gate artifacts support classification only. |
 
 L4/L5-only: false. The bundle has some L1/L2 evidence, but not enough to satisfy release-critical minimums.
@@ -33,29 +33,29 @@ L4/L5-only: false. The bundle has some L1/L2 evidence, but not enough to satisfy
 |---|---|---|
 | delegation_l1_l2 | PASS for baseline only | E52-01 retry completed with matching L2 delegation record. |
 | journal_lineage_l1_l2 | PASS after rerun | Export returned three lineage records for the Phase 52 parent session. |
-| recovery_l1_l2_or_explicit_non_applicability | FAIL | Recovery has no operator-approved interruption or waiver. |
+| recovery_l1_l2_or_explicit_non_applicability | PARTIAL / CONDITIONAL | L2/L3 persisted SDK recovery proof exists; L1 live interruption proof is still absent, so SHIP remains blocked. |
 | cqrs_root_boundary | PARTIAL | Validator/read-only evidence exists, but recovery/root continuity is not proven. |
 | regression_package_gates | REQUIRED BEFORE SHIP | Not rerun because this phase made docs-only gate artifacts and source did not change. |
 
 ## Blocker State
 
-RECOVERY_DECISION: NO_SHIP_BLOCKER
+RECOVERY_DECISION: CONDITIONAL_RUNWAY_L2_L3
 
 JOURNAL_LINEAGE_DECISION: CLOSED_BY_RERUN
 
 PTY_OUTPUT_DECISION: CLOSED_BY_RERUN
 
-CRITICAL_UNWAIVED_BLOCKERS: 1
+CRITICAL_UNWAIVED_BLOCKERS: 0 for non-release runway / 1 for SHIP
 
 ## Open Release Blockers
 
 | Blocker | Evidence | Required closure |
 |---|---|---|
-| Recovery proof missing | E52-05, runtime gap decision | Operator-approved non-destructive recovery run with pre/post L1/L2 evidence. |
+| L1 recovery interruption proof missing | E52-05, runtime gap decision | Required before SHIP; not required to begin Phase 54 non-release runway planning. |
 
 ## Waivers
 
-No waivers are active. The verdict is not CONDITIONAL WITH WAIVERS.
+No waivers are active. The verdict is **CONDITIONAL-RUNWAY**, not CONDITIONAL WITH WAIVERS and not SHIP.
 
 ## Waiver Metadata
 
@@ -65,18 +65,18 @@ No waivers are active. The verdict is not CONDITIONAL WITH WAIVERS.
 
 ## Regression/Package Gate Status
 
-No full repository test run was executed because source code was not modified. Future ship claims must run the supporting gates below after the final source/runtime changes and after L1/L2 blockers close.
+Source code was modified for recovery metadata reconciliation. Supporting gates were rerun and are recorded in the debug session; future SHIP claims must still run the full gate list after obtaining L1 recovery proof.
 
 ## Rollback/Stop Triggers
 
-- Stop any SHIP claim if `RECOVERY_DECISION` remains unapproved/unproven.
+- Stop any SHIP claim if `RECOVERY_DECISION` remains below L1 live interruption proof.
 - Stop any SHIP claim if `JOURNAL_LINEAGE_DECISION` remains empty/unresolved.
 - Stop any CONDITIONAL WITH WAIVERS claim without waiver owner, scope, risk, and rollback trigger.
 - Stop any release claim that treats L5 planning summaries as runtime proof.
 
 ## Required Next Action
 
-Create the smallest dedicated runtime gap-closure plan for recovery proof and journal/export lineage before reopening release readiness. Phase 54 runway planning may proceed only if explicitly framed as non-release, non-source implementation planning; it must not imply release readiness.
+Proceed to Phase 54 only as **non-release runway planning**. Keep a separate release gap-closure item for L1 recovery interruption proof before any SHIP claim.
 
 ## Required Fresh Verification Before Any Ship Claim
 
@@ -95,4 +95,4 @@ These commands are necessary supporting gates but **not sufficient** to override
 
 ## Semantic Verification Contract
 
-Any future checker must fail SHIP when `RECOVERY_DECISION` is unapproved/unproven, `JOURNAL_LINEAGE_DECISION` is empty/unresolved, `CRITICAL_UNWAIVED_BLOCKERS` is non-zero, or Evidence Bundle Levels says L4/L5-only.
+Any future checker must fail SHIP when `RECOVERY_DECISION` is below L1 live interruption proof, `JOURNAL_LINEAGE_DECISION` is empty/unresolved, SHIP-scoped `CRITICAL_UNWAIVED_BLOCKERS` is non-zero, or Evidence Bundle Levels says L4/L5-only. Conditional runway may proceed on L2/L3 recovery proof only when explicitly labeled not-ship.

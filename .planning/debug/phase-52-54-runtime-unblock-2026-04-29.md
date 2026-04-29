@@ -12,10 +12,10 @@ tdd_mode: true
 
 ## Current Focus
 
-- hypothesis: PTY blocker is fixed; journal lineage was an evidence timing/state-refresh gap, because rerun against current persisted delegations returned non-empty lineage for the same Phase 52 parent session.
-- test: Run final verification gates, update Phase 52/53 artifacts honestly, and leave recovery/guidance as blockers until operator-approved recovery proof exists.
-- expecting: Typecheck/build/focused tests pass; Phase 53 remains NO-SHIP with exactly recovery as critical unwaived blocker.
-- next_action: Return DEBUG COMPLETE with DONE_WITH_CONCERNS because PTY/journal blockers are closed, but recovery proof still blocks release readiness.
+- hypothesis: E52-05 is unblocked at L2/L3 by deterministic non-destructive persisted SDK recovery proof; true L1 live interruption remains unproduced.
+- test: Run focused changed-module tests, typecheck/build/full suite, then update Phase 52/53/54 artifacts to classify recovery proof honestly as L2/L3 conditional evidence rather than L1 live interruption.
+- expecting: Focused recovery test and related delegation tests pass; artifacts move E52-05 from BLOCKED to PARTIAL/PASS-at-L2L3 while Phase 53 changes from NO-SHIP to CONDITIONAL runway only if it allows L2/L3 recovery proof.
+- next_action: Run focused vitest for `tests/lib/delegation-manager.test.ts` and related persistence/status modules after the minimal source fix.
 
 ## Symptoms / Blockers
 
@@ -89,12 +89,36 @@ Phase 52 should produce truthful L1/L2 acceptance evidence for PTY output, journ
   checked: Full test suite after source/artifact changes.
   found: `npm test` passed: 69 files, 1112 tests. Vitest emitted pre-existing hoist warnings for `vi.unmock("node:fs")` in continuity/delegation-persistence tests.
   implication: Full suite supports the PTY fix; warnings do not appear introduced by this workstream.
+- timestamp: 2026-04-29T21:20:01Z
+  type: red
+  checked: `npx vitest run tests/lib/delegation-manager.test.ts -t "reconciles persisted SDK recovery non-destructively"` after adding deterministic persisted-recovery proof test.
+  found: RED failed because `manager.getStatus("delegation-recovery-proof")` retained `[Harness] Delegation unverified after restart; recovery will retry through safety ceiling.` even though `session.status` observed the child session as `busy`; no destructive calls (`create`, `prompt`, `promptAsync`, `abort`) were made in the test setup.
+  implication: Recovery can be proven non-destructively, but stale recovery error cleanup is missing after successful SDK runtime reconciliation; fix should clear stale recovery-only errors once status map proves the child session still exists.
+- timestamp: 2026-04-29T21:20:42Z
+  type: green
+  checked: `npx vitest run tests/lib/delegation-manager.test.ts -t "reconciles persisted SDK recovery non-destructively"` after minimal `src/lib/sdk-delegation.ts` fix.
+  found: GREEN passed: 1 test passed, 110 skipped. The fix clears only the recovery-unverified marker after the SDK status map proves the child exists and persists the cleaned record; test verifies no `session.create`, `session.prompt`, `session.promptAsync`, or `session.abort` calls.
+  implication: E52-05 now has deterministic non-destructive L2/L3 recovery proof for persisted SDK delegation reconciliation, but not L1 live interruption evidence.
+- timestamp: 2026-04-29T21:21:15Z
+  checked: Focused delegation recovery/status/persistence tests and typecheck.
+  found: `npx vitest run tests/lib/delegation-manager.test.ts tests/lib/delegation-persistence.test.ts tests/tools/delegation-status.test.ts` passed: 3 files, 141 tests. `npm run typecheck` exited successfully.
+  implication: Changed recovery path and adjacent delegation status/persistence behavior are covered by focused gates; broader build/full test still pending.
+- timestamp: 2026-04-29T21:23:47Z
+  checked: Build and full test suite after recovery source/test/artifact changes.
+  found: `npm run build` exited successfully. `npm test` passed: 69 files, 1113 tests. Vitest emitted pre-existing hoist warnings for `vi.unmock("node:fs")` in continuity/delegation-persistence tests.
+  implication: Source recovery fix is build-clean and full-suite green; warnings are pre-existing and not introduced by this change.
+- timestamp: 2026-04-29T21:24:30Z
+  checked: Artifact token checks for updated Phase 52/53/54 verdict files.
+  found: Grep checks found E52-05 as `PARTIAL / L2-L3`, Phase 53 as `CONDITIONAL-RUNWAY / NOT-SHIP` with `RECOVERY_DECISION: CONDITIONAL_RUNWAY_L2_L3`, and Phase 54 as `UNBLOCKED FOR NON-RELEASE RUNWAY`.
+  implication: Verdict artifacts are aligned around no SHIP claim, conditional runway unblocking, and L1 recovery proof remaining as a SHIP prerequisite.
 
 ## Investigation Log
 
 - 2026-04-29: Session initialized. Awaiting debugger investigation.
 - 2026-04-29: Confirmed PTY immediate-output race with live contrasting probes and RED/GREEN unit coverage. Journal lineage export remains unresolved.
 - 2026-04-29: Journal lineage export rerun returned non-empty lineage for Phase 52 parent session; updated Phase 52/53 artifacts to keep NO-SHIP focused on recovery proof.
+- 2026-04-29: Added RED recovery proof test for persisted SDK pending delegation reconciliation; confirmed stale recovery error remains after successful busy-session recovery.
+- 2026-04-29: Applied minimal recovery metadata fix and confirmed GREEN for the deterministic non-destructive persisted SDK recovery proof test.
 
 ## Specialist Review
 
@@ -103,6 +127,6 @@ Phase 52 should produce truthful L1/L2 acceptance evidence for PTY output, journ
 
 ## Resolution
 
-- root_cause: PTY immediate-output startup race confirmed; journal lineage closed by rerun/state refresh; recovery remains blocked by missing operator-approved interruption method.
-- fix: PTY listener ordering fixed in `src/lib/pty/pty-manager.ts`; no code fix required for journal export.
-- verification: RED/GREEN focused PTY tests, session-journal rerun evidence, typecheck, focused vitest, build, and full npm test passed.
+- root_cause: PTY immediate-output startup race confirmed; journal lineage closed by rerun/state refresh; recovery proof blocker reduced to missing safe proof path plus stale recovery-only error retention after successful SDK status reconciliation.
+- fix: PTY listener ordering fixed in `src/lib/pty/pty-manager.ts`; SDK recovery now clears stale recovery-unverified errors after a child session is observed in runtime status; no code fix required for journal export.
+- verification: RED/GREEN focused PTY tests; RED/GREEN persisted SDK recovery proof test; session-journal rerun evidence; focused delegation tests, typecheck, build, and full npm test passed for latest recovery fix.

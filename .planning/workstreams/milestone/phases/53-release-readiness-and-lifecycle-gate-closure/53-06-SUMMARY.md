@@ -2,7 +2,7 @@
 
 ## One-line Outcome
 
-Updated milestone state and roadmap to reflect the Phase 53 **NO-SHIP** verdict and block Phase 54 from optimistic runway execution.
+Updated the handoff to reflect the Phase 53 **CONDITIONAL-RUNWAY / NOT-SHIP** verdict and unblock Phase 54 only for non-release runway execution.
 
 ## Tasks Completed
 
@@ -19,7 +19,7 @@ Updated milestone state and roadmap to reflect the Phase 53 **NO-SHIP** verdict 
 
 ## Decisions
 
-- Phase 54 is blocked until release gap closure or an explicit owner decision separates runway planning from release closure.
+- Phase 54 is unblocked for non-release runway planning only; SHIP still requires L1 recovery proof or waiver metadata.
 - Phase 53 does not claim any Phase 54 requirement credit.
 
 ## Verification
@@ -29,4 +29,4 @@ Updated milestone state and roadmap to reflect the Phase 53 **NO-SHIP** verdict 
 
 ## Deviations
 
-None. The handoff follows the NO-SHIP verdict.
+None. The handoff follows the conditional-runway/not-ship verdict.
