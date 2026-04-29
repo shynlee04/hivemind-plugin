@@ -12,17 +12,16 @@ permission:
   skill:
     "*": deny
     "hm-opencode-non-interactive-shell": allow
-    "hm-meta-builder": allow
+    "hf-meta-builder": allow
     "hm-deep-research": allow
     "hm-detective": allow
     "hm-synthesis": allow
     "hf-use-authoring-skills": allow
     "hf-command-parser": allow
-    "hm-planning-with-files": allow
+    "hm-planning-persistence": allow
   glob: allow
   grep: allow
   webfetch: allow
-  todoread: allow
   todowrite: allow
 ---
 
