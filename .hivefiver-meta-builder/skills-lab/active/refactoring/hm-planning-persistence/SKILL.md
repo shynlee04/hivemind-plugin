@@ -38,7 +38,7 @@ pipeline:
     - "hm-test-driven-execution"
     - "hm-completion-looping"
     - "hm-subagent-delegation-patterns"
-    - "hm-meta-builder"
+     - "hf-meta-builder"
     - "hm-research-chain"
     - "hf-delegation-gates"
 ---
@@ -261,7 +261,7 @@ The fallback ensures this skill is useful in any skills-compatible environment, 
 | `hm-debug` | hm-debug tracks debug session state. This skill stores debug findings and state transitions. |
 | `hm-refactor` | hm-refactor adds refactor steps. This skill stores refactor plans in task_plan.md. |
 | `hm-research-chain` | hm-research-chain produces research artifacts. This skill stores findings in findings.md. |
-| `hm-meta-builder` | hm-meta-builder routes skill creation requests. This skill stores creation plans and audit results. |
+| `hf-meta-builder` | hf-meta-builder routes skill creation requests. This skill stores creation plans and audit results. |
 | `hf-delegation-gates` | hf-delegation-gates enforces authorization gates. This skill reads gate state from task_plan.md. |
 
 ### NOT Coupled
@@ -270,9 +270,9 @@ The fallback ensures this skill is useful in any skills-compatible environment, 
 |-------|---------------|
 | `hm-planning-with-files` | This skill replaces it. The disabled skill is archived at `.opencode/retired/`. |
 | `hm-brainstorm` | SE-3 skill. Will consume hm-planning-persistence for brainstorm artifact storage. |
-| `hm-plan-generator` | SE-3 skill. Will write generated plans through this persistence layer. |
-| `hm-code-review` | SE-5 skill. Will write review findings to findings.md. |
-| `hm-uat-verify` | SE-5 skill. Will read task status from task_plan.md. |
+| `hm-plan-generator` | [future deliverable — SE-10+] Plan generation skill. Will write generated plans through this persistence layer. |
+| `gsd-code-review` | Code review handled by GSD agent (gsd-code-review), not an hm-* skill. Review findings written to findings.md. |
+| `hm-gate-orchestrator` | SE-5 skill. Gate validation reads task status from task_plan.md for gate evidence. |
 
 ## Kit Bundle Contents
 
