@@ -3,53 +3,62 @@ gsd_state_version: 1.0
 workstream: agent-synthesis
 status: ACTIVE
 phase_count: 12
-current_phase: AS-5
-last_updated: "2026-04-30T00:40:00Z"
+current_phase: AS-8
+last_updated: "2026-04-30T01:30:00Z"
 progress:
   total_phases: 12
-  completed_phases: 7
+  completed_phases: 8
   authorized_phases: 0
-  plans_written: 7
-  plans_executed: 7
+  plans_written: 8
+  plans_executed: 8
 ---
 
 # STATE: Agent Synthesis Workstream
 
 ## Current Position
 
-- **Phase:** AS-5 — hm-* Specialist Batch 2
-- **Status:** COMPLETE (2026-04-30) — All 10 L2 hm-* specialists created (AS-4: 5 agents, AS-5: 5 agents)
+- **Phase:** AS-8 — Tool Integration & Permissions Audit
+- **Status:** COMPLETE (2026-04-30) — Full permissions matrix audit across all 40 hm-*/hf-* agents. ZERO violations found.
 - **AS-4:** COMPLETE (2026-04-30) — hm-validator, hm-ecologist, hm-technician, hm-auditor, hm-guardian
 - **AS-5:** COMPLETE (2026-04-30) — hm-mentor, hm-operator, hm-connector, hm-assessor, hm-finisher
 - **Broken Session Gap Fill AS-6:** COMPLETE (2026-04-30) — 3 hf-* L2 agents (hf-auditor, hf-refactorer, hf-synthesizer)
-- **hm-* lineage now has 14 agents:** 2 L0/L1 orchestrators + 10 L2 specialists + 2 hf-* L0/L1
-- **Next Action:** AS-6 — hf-* Meta Builder Agent Authoring (L2 hf-* specialist agents)
+- **AS-8:** COMPLETE (2026-04-30) — Tool Permissions Matrix verified: all 40 agents pass lineage boundaries, all skill refs resolve, zero violations
+- **hm-* lineage now has 30 agents:** 2 L0/L1 orchestrators + 28 L2 specialists
+- **hf-* lineage now has 10 agents:** 2 L0/L1 orchestrators + 8 L2 specialists
+- **Next Action:** AS-7 — Wiring & Verification (quality gate triad)
 
 ## Progress Table
 
 | Metric | Count |
 |--------|-------|
 | Total phases | 12 |
-| Completed | 7 (AS-0, AS-1, AS-2, AS-3, AS-4, AS-5, AS-6 gap-fill) |
+| Completed | 8 (AS-0, AS-1, AS-2, AS-3, AS-4, AS-5, AS-6 gap-fill, AS-8) |
 | Authorized | 0 |
 | Plans written | 7 (AS-0 PLAN.md, AS-1 PLAN.md, AGENT-INVENTORY.md, AS-2 PLAN.md, AS-3 CONTEXT, AS-4 CONTEXT, AS-5 CONTEXT) |
 | Plans executed | 7 (AS-0, AS-1, AS-2, AS-3, AS-4, AS-5, AS-6 gap-fill) |
 
 ## Agent Inventory (2026-04-30)
 
-**Total: 84 agents** (58 on disk + 1 ghost + 3 hf-* AS-6 + 12 hm-* AS-3 + 10 hm-* L2 AS-4/AS-5)
+**Total: 95+ agents** (including GSD and core agents)
 
 | Category | Count | Prefix | Files | Shipped? |
 |----------|-------|--------|-------|----------|
 | GSD specialist | 33 | `gsd-*` | `gsd-advisor-researcher.md` through `gsd-verifier.md` | No (internal only) |
 | Hivefiver meta | 6 | `hivefiver-*` | `hivefiver.md`, `hivefiver-agent-builder.md`, `hivefiver-command-builder.md`, `hivefiver-orchestrator.md`, `hivefiver-skill-author.md`, `hivefiver-tool-builder.md` | Candidate for hf-* |
-| Hivemind (hm-*) | 12 | `hm-*` | `hm-orchestrator.md` (L0), `hm-coordinator.md` (L1), `hm-validator.md`, `hm-ecologist.md`, `hm-technician.md`, `hm-auditor.md`, `hm-guardian.md`, `hm-mentor.md`, `hm-operator.md`, `hm-connector.md`, `hm-assessor.md`, `hm-finisher.md` (all L2) | Yes ★ |
-| Hivemind (hf-*) | 4 | `hf-*` | `hf-orchestrator.md` (L0), `hf-coordinator.md` (L1), `hf-auditor.md`, `hf-refactorer.md`, `hf-synthesizer.md` + `hf-prompter.md` | Yes ★ |
-| Hivefiver meta (hf-*) | 4 | `hf-*` | `hf-agent-builder.md`, `hf-command-builder.md`, `hf-skill-builder.md`, `hf-tool-builder.md` | Yes ★ |
-| Core (unprefixed) | 18 | various | `build.md`, `conductor.md`, `context-mapper.md`, `context-purifier.md`, `coordinator.md`, `critic.md`, `general.md`, `intent-loop.md`, `meta-synthesis-agent.md`, `orchestrator.md`, `phase-guardian.md`, `prompt-analyzer.md`, `prompt-repackager.md`, `prompt-skimmer.md`, `researcher.md`, `risk-assessor.md`, `spec-verifier.md`, `test-router.md` | Candidate for hm-* |
+| Hivemind (hm-*) | 30 | `hm-*` | `hm-orchestrator.md` (L0), `hm-coordinator.md` (L1), plus 28 L2 specialists spanning 11 domains | Yes ★ |
+| Hivemind (hf-*) | 10 | `hf-*` | `hf-orchestrator.md` (L0), `hf-coordinator.md` (L1), plus 8 L2 specialists spanning 7 domains | Yes ★ |
+| Core (unprefixed) | 18 | various | `build.md`, `conductor.md`, etc. | Candidate for hm-* |
 | Ghost (missing) | 1 | — | `explore` (referenced in AGENTS.md, not on disk) | TBD |
 
-★ = New agents created in AS-3, AS-4, AS-5, and AS-6 gap-fill (2026-04-30)
+★ = hm-* and hf-* agents created across AS-3, AS-4, AS-5, AS-6, and AS-8 (2026-04-30)
+
+### AS-8 Audit: hm-*/hf-* Agents (40 total)
+
+| Lineage | L0 | L1 | L2 | Total |
+|---------|----|----|-----|-------|
+| hm-* (STRICT) | 1 | 1 | 28 | 30 |
+| hf-* (FLEXIBLE) | 1 | 1 | 8 | 10 |
+| **Total** | **2** | **2** | **36** | **40** |
 
 ### Quality Distribution (Updated AS-0 Audit 2026-04-29)
 
@@ -129,4 +138,5 @@ SE-14 (quality baselines) ──feeds──→ AS-8 (body enrichment targets)
 - **AS-6 Gap Fill Complete** (2026-04-30): 3 missing hf-* L2 meta builder agents created to fill gaps in the hf-* specialist roster: hf-auditor.md (364L, temp 0.05, Primitive Auditing), hf-refactorer.md (353L, temp 0.1, Primitive Refactoring), hf-synthesizer.md (390L, temp 0.1, Skill Synthesis). All follow exact hf-agent-builder.md format: 10+6 XML tags, AQUAL-01 through AQUAL-08 PASS, FLEXIBLE lineage with documented cross-lineage access, deny-all permission model, full execution flows with anti-pattern catalogs. AS-6-SUMMARY.md created at `.planning/workstreams/agent-synthesis/phases/AS-6-hf-meta-builders/`. Agent inventory: 59→62 (58 disk + 1 ghost + 3 new).
 - **AS-4 Complete** (2026-04-30): hm-* Specialist Batch 1 executed. 5 L2 hm-* agent files created: hm-validator.md (230L, temp 0.05, Quality), hm-ecologist.md (234L, temp 0.1, Ecosystem), hm-technician.md (236L, temp 0.1, Technology), hm-auditor.md (230L, temp 0.05, Quality), hm-guardian.md (238L, temp 0.05, Execution). All follow exact hm-researcher.md format: 10+6 XML tags, hm STRICT binding, deny-all permission model, structured output contracts with table formats, anti-pattern catalogs, self-correction sections. AS-4-SUMMARY.md created. Agent inventory now 80 (59 base + 3 hf AS-6 + 2 hm L0/L1 AS-3 + 10 hm L2 AS-4/AS-5).
 - **AS-5 Complete** (2026-04-30): hm-* Specialist Batch 2 executed simultaneously with AS-4. 5 L2 hm-* agent files created: hm-mentor.md (228L, temp 0.15, Discovery), hm-operator.md (241L, temp 0.1, Execution), hm-connector.md (241L, temp 0.1, Integration), hm-assessor.md (236L, temp 0.05, Quality), hm-finisher.md (245L, temp 0.05, Execution). All pass quality baseline: 10+6 XML tags, hm STRICT binding, deny-all permissions, temperature-depth matching, no hf-* skills. AS-5-SUMMARY.md created. hm-* lineage now has 12 agents: 2 orchestrators (L0/L1) + 10 specialists (L2). KI-09 (CRITICAL: zero hm-* agents) RESOLVED. Agent inventory now 84 total.
+- **AS-8 Complete** (2026-04-30): Tool Integration & Permissions Audit executed. Full permissions matrix audited across all 40 hm-*/hf-* agents. TOOL-PERMISSIONS-MATRIX.md created (330+ lines, 7 sections). Key findings: (1) ZERO lineage boundary violations — no hm-* agent references hf-* skills, all L2 agents correctly prohibit delegation. (2) All 50+ skill references resolve to actual SKILL.md files. (3) All 4 L0/L1 orchestrators have delegate-task:allow. (4) Universal deny-all + explicit allow permission model confirmed across all 40 agents. (5) Depth-respecting delegation chain verified: L0→L1→L2, no upward or lateral delegation. (6) session-patch universally denied — all state mutation through src/ tools. ZERO fixes needed — clean audit. AS-8-SUMMARY.md created.
 - Next session should begin AS-6: hf-* Meta Builder Agent Authoring — L2 hf-* specialist agents for the meta-builder lineage.
