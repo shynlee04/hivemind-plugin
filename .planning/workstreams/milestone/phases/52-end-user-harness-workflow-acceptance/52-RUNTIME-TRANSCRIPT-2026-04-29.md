@@ -7,7 +7,7 @@
 | parentSessionId | `ses_226e89cd1ffetJwNcJdzeGN1jY` | L2 | Observed in `.hivemind/state/delegations.json` for Phase 52 delegation. |
 | childSessionId | `ses_226da7e7effe3oqGwKn7qRrtk7` | L2 | Retry child session completed; prior timeout child `ses_226e69284ffea3sA6TxOBXd03L` preserved in delegation transcript. |
 | delegationId | `35b952b5-ef5d-4685-9f41-93d8ca0d936b` | L1/L2 | Retry `delegate-task` completed successfully; prior timeout preserved historically. |
-| ptySessionId | Pending Plan 03 | L5 | Requires live `run-background-command`. |
+| ptySessionId | `pty-65e85e2a-9e82-4415-b78f-4908625b7ad9` | L1/L2 | Live PTY session ran/listed/terminated; output payload remained empty. |
 | journalExportId/path | Pending Plan 04 | L5 | Requires live `session-journal-export`. |
 | pipelineKeyLabel | Phase52Acceptance | L5 | Intended label for export correlation. |
 
@@ -24,7 +24,7 @@ Command outputs are captured in `52-ROOT-BOUNDARY-SNAPSHOT-2026-04-29.md`.
 | configure-primitive read-only preflight | PASS as validator evidence | list/read/inspect/dryRun succeeded; see root-boundary snapshot. |
 | validate-restart | PASS as validator evidence | discovery passed; not recovery proof. |
 | provider-backed child session | PASS | Retry delegation `35b952b5-ef5d-4685-9f41-93d8ca0d936b` completed successfully with persisted record. |
-| PTY availability | NOT ATTEMPTED | Blocked by incomplete Plan 02 dependency. |
+| PTY availability | PARTIAL | PTY session ran/listed/terminated and persisted, but `output` returned empty content instead of visible `phase52-ok`. |
 
 ## Runtime Events
 
@@ -35,6 +35,10 @@ Command outputs are captured in `52-ROOT-BOUNDARY-SNAPSHOT-2026-04-29.md`.
 | Tool output | Retry `delegate-task` returned delegationId `35b952b5-ef5d-4685-9f41-93d8ca0d936b`. | L1 live runtime output |
 | Tool output | `delegation-status` for retry delegationId returned status `completed`. | L1 live runtime output |
 | File read | `.hivemind/state/delegations.json` contained matching parentSessionId `ses_226e89cd1ffetJwNcJdzeGN1jY` and childSessionId `ses_226da7e7effe3oqGwKn7qRrtk7` with `completed` status. | L2 continuity record |
+| Tool output | `run-background-command` started PTY `pty-65e85e2a-9e82-4415-b78f-4908625b7ad9` and `list` showed the active session. | L1 live runtime output |
+| Tool output | `run-background-command output` returned empty content twice for the same PTY session. | L1 limiting evidence |
+| Tool output | `run-background-command terminate` returned `status: completed` for PTY delegation `6b6b508c-b83b-47e4-a54c-df8c08294284`. | L1 live runtime output |
+| File read | `.hivemind/state/delegations.json` persisted PTY delegation `6b6b508c-b83b-47e4-a54c-df8c08294284` with `status: completed` and empty `result`. | L2 continuity record |
 
 ## Operator Notes
 

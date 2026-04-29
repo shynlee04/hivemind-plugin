@@ -2,6 +2,13 @@
 
 ## Status
 
-BLOCKED
+DONE_WITH_CONCERNS
 
-Plan 52-03 was not executed. It depends on Plan 52-02, and Plan 52-02 did not obtain successful provider-backed child completion. No PTY session was started, so no cleanup was required.
+Plan 52-03 executed after the E52-01 retry pass.
+
+- PTY session started successfully with `ptySessionId=pty-65e85e2a-9e82-4415-b78f-4908625b7ad9`.
+- `list` showed the active PTY session.
+- `terminate` completed successfully and the persisted PTY delegation record reached `status: completed`.
+- `output` returned empty content twice, so the expected visible `phase52-ok` payload was not proven.
+
+Verdict: E52-02 is PARTIAL, not PASS.
