@@ -14,6 +14,8 @@ import {
   type Delegation,
 } from "./types.js"
 
+const RECOVERY_UNVERIFIED_ERROR = "[Harness] Delegation unverified after restart; recovery will retry through safety ceiling."
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -91,6 +93,9 @@ export class SdkDelegationHandler {
         throw new Error("missing")
       }
 
+      this.clearStaleRecoveryError(delegation)
+      this.callbacks.persistAllDelegations()
+
       if (status.type === "idle") {
         this.callbacks.onSessionIdle(delegation.childSessionId)
         return
@@ -98,9 +103,20 @@ export class SdkDelegationHandler {
 
       this.callbacks.scheduleSafetyCeiling(delegation)
     } catch {
-      delegation.error = "[Harness] Delegation unverified after restart; recovery will retry through safety ceiling."
+      delegation.error = RECOVERY_UNVERIFIED_ERROR
       this.callbacks.persistAllDelegations()
       this.callbacks.scheduleSafetyCeiling(delegation)
+    }
+  }
+
+  /**
+   * Clears only the recovery retry marker after the SDK proves the child session still exists.
+   *
+   * @param delegation - Persisted delegation being reconciled during startup recovery.
+   */
+  private clearStaleRecoveryError(delegation: Delegation): void {
+    if (delegation.error === RECOVERY_UNVERIFIED_ERROR) {
+      delegation.error = undefined
     }
   }
 

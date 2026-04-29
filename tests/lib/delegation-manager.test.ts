@@ -1682,6 +1682,51 @@ describe("DelegationManager", () => {
       expect(getInternals(manager).delegationsBySession.get("child-running")).toBe("delegation-running")
     })
 
+    it("reconciles persisted SDK recovery non-destructively and clears stale recovery errors", async () => {
+      const now = Date.now()
+      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
+        {
+          id: "delegation-recovery-proof",
+          parentSessionId: "parent-recovery-proof",
+          childSessionId: "child-recovery-proof",
+          agent: "builder",
+          status: "running",
+          createdAt: now,
+          safetyCeilingMs: 60_000,
+          lastMessageCount: 2,
+          stablePollCount: 1,
+          lastMessageCountChangeAt: now,
+          executionMode: "sdk",
+          recoveryGuarantee: "resumable",
+          surface: "agent-delegation",
+          workingDirectory: "/tmp/recovery-proof",
+          queueKey: "agent:builder",
+          error: "[Harness] Delegation unverified after restart; recovery will retry through safety ceiling.",
+        },
+      ], null, 2))
+      const client = createMockClient()
+      client.session.status.mockResolvedValue({ data: { "child-recovery-proof": { type: "busy" } } })
+      const manager = new DelegationManager(client as never)
+
+      await manager.recoverPending()
+
+      expect(client.session.status).toHaveBeenCalledOnce()
+      expect(client.session.create).not.toHaveBeenCalled()
+      expect(client.session.prompt).not.toHaveBeenCalled()
+      expect(client.session.promptAsync).not.toHaveBeenCalled()
+      expect(client.session.abort).not.toHaveBeenCalled()
+      expect(manager.getStatus("delegation-recovery-proof")).toEqual(expect.objectContaining({
+        status: "running",
+        executionMode: "sdk",
+        recoveryGuarantee: "resumable",
+        error: undefined,
+      }))
+      expect(getInternals(manager).delegationsBySession.get("child-recovery-proof")).toBe("delegation-recovery-proof")
+
+      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
+      expect(persisted.find((entry) => entry.id === "delegation-recovery-proof")?.error).toBeUndefined()
+    })
+
     it("finalizes delegations whose sessions went idle while down via dual-signal", async () => {
       vi.useFakeTimers()
       const now = Date.now()
