@@ -117,3 +117,7 @@ After every completed task, append a dated entry to the relevant wisdom file. Be
 **Peers:** All hm-l2-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 </workflow_awareness>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-conductor
+</naming>

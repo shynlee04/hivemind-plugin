@@ -364,3 +364,7 @@ On interruption:
 </workflow_awareness>
 
 </session_continuity>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l0-orchestrator
+</naming>

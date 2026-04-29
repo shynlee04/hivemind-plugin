@@ -205,3 +205,7 @@ If task fails verification: debug inline (max 3 attempts). If still failing afte
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-executor
+</naming>

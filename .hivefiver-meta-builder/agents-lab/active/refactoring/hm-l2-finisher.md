@@ -271,3 +271,7 @@ If regression is detected:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-finisher
+</naming>

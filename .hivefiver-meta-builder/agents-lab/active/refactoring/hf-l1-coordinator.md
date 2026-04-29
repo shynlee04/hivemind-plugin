@@ -382,3 +382,7 @@ L1 meta-builder category coordinator for hf-* lineage. Receives structured task 
 </workflow_awareness>
 
 </session_continuity>
+
+<naming>
+Compliant with hf-naming-syndicate: hf-l1-coordinator
+</naming>

@@ -355,3 +355,7 @@ On completion:
 </workflow_awareness>
 
 </session_continuity>
+
+<naming>
+Compliant with hf-naming-syndicate: hf-l2-refactorer
+</naming>

@@ -167,3 +167,7 @@ If compression would lose critical evidence: use higher retention tier (Tier 1 o
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-synthesizer
+</naming>

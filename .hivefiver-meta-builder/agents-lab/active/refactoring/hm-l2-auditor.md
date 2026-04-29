@@ -253,3 +253,7 @@ If scores are borderline (near threshold):
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-auditor
+</naming>

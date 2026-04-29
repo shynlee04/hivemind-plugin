@@ -267,3 +267,7 @@ If checkpoint data is corrupted or incomplete:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-operator
+</naming>

@@ -245,3 +245,7 @@ On completion:
 </workflow_awareness>
 
 </session_continuity>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-strategist
+</naming>

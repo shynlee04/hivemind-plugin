@@ -259,3 +259,7 @@ If circular dependency cannot be resolved within scope:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-ecologist
+</naming>

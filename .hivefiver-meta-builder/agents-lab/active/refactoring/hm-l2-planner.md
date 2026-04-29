@@ -190,3 +190,7 @@ If requirements are ambiguous: flag in output as NEEDS_REVISION with specific am
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-planner
+</naming>

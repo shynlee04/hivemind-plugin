@@ -264,3 +264,7 @@ If workflow ordering is ambiguous:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-connector
+</naming>

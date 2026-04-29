@@ -261,3 +261,7 @@ If max iterations reached:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-guardian
+</naming>

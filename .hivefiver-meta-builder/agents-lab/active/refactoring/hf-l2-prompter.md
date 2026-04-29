@@ -337,3 +337,7 @@ If a source or reference is unavailable:
 2. Continue with available sources
 3. Never fabricate techniques or citations to fill gaps
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hf-l2-prompter
+</naming>

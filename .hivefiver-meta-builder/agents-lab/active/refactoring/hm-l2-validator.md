@@ -256,3 +256,7 @@ If implementation differs significantly from spec:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-validator
+</naming>

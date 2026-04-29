@@ -79,3 +79,7 @@ unstated_assumptions:
 **Peers:** All hm-l2-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 </workflow_awareness>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-context-mapper
+</naming>

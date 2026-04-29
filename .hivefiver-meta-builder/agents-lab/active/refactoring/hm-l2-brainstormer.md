@@ -168,3 +168,7 @@ If user intent is too vague: document assumptions explicitly, flag as OPEN_QUEST
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-brainstormer
+</naming>

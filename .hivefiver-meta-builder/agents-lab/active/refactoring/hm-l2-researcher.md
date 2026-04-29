@@ -258,3 +258,7 @@ If task scope exceeds received packet:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-researcher
+</naming>

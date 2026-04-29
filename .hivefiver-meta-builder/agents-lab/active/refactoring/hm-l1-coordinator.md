@@ -352,3 +352,7 @@ L1 delegation coordinator for wave-based L2 specialist execution within hm-* pro
 </workflow_awareness>
 
 </session_continuity>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l1-coordinator
+</naming>

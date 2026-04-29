@@ -260,3 +260,7 @@ If mitigation is infeasible:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-assessor
+</naming>

@@ -182,3 +182,7 @@ If bug cannot be reproduced: document exact reproduction attempt, return NEEDS_C
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-debugger
+</naming>

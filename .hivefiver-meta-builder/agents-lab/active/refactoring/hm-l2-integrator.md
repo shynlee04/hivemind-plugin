@@ -167,3 +167,7 @@ If integration check reveals breaking change: document breakage with evidence, p
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-integrator
+</naming>

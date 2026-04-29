@@ -168,3 +168,7 @@ If analysis scope too large: prioritize highest-coupling modules, flag remaining
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-architect
+</naming>

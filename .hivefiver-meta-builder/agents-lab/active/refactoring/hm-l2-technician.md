@@ -262,3 +262,7 @@ If tech context is incomplete:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-technician
+</naming>

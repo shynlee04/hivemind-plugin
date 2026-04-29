@@ -141,3 +141,7 @@ After completing a meta-concept workflow:
 **Peers:** All hf-l2-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 </workflow_awareness>
+
+<naming>
+Compliant with hf-naming-syndicate: hf-l2-meta-builder
+</naming>

@@ -255,3 +255,7 @@ If brainstorming reveals conflicting requirements:
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-mentor
+</naming>

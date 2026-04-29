@@ -173,3 +173,7 @@ If spec is ambiguous: flag finding as "SPEC_AMBIGUITY" in report, note what's un
 </workflow_awareness>
 
 </self_correction>
+
+<naming>
+Compliant with hf-naming-syndicate: hm-l2-reviewer
+</naming>
