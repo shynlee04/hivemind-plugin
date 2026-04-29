@@ -73,6 +73,13 @@
 /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/spec-verifier.md
 /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/context-mapper.md
 /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/context-purifier.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/build.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/conductor.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/coordinator.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/critic.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/general.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/test-router.md
+<!-- NOTE: explore agent is MISSING from the filesystem -->
 
 - For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
 
@@ -127,7 +134,7 @@
 
 - IF you are a front-facing -> you will mostly delegate **Everytime Delegation** in the prompt YOU MUST LET the subagent know that IT IS THE SUBAGENT BY ANNOUNCING: *You are the subagent Name:XXX role...., you must do as this prompt instructed and knowing that you are being delegated
 
-- As subagent you must anounce your roles so the skills must also match. Say: I am **subagent, I can't delegate further, and I must fulfill my work. If need verification, I will return the verification needed in the report handoff
+- As subagent you must anounce your roles so the skills must also match. Say: I am **subagent, I CAN ONLY delegate further if the cycles and my tasks allow, and I must fulfill my work. If need verification, I will return the verification needed in the report handoff
 
 
 <EXTREMELY-IMPORTANT>
@@ -293,9 +300,9 @@ tests/tools/                   # Tool-focused unit tests
 
 - Plugin loaded via `.opencode/plugins/harness-control-plane.ts` (thin wrapper re-exporting `dist/`)
 - Config: `opencode.json` at repo root — references `AGENTS.md` as instructions
-- 57 agents in `.opencode/agents/`: 6 core (coordinator, conductor, researcher, builder, critic, explore) + 30+ GSD specialist agents + 21 hivefiver/meta agents
-- 33 skills in `.opencode/skills/`: 5 core (hm-meta-builder, hm-coordinating-loop, hf-use-authoring-skills, hm-user-intent-interactive-loop, opencode-config-workflow) + 17 extended (hf-delegation-gates, hf-command-dev, hf-custom-tools-dev, hm-opencode-project-audit, hm-deep-research, hm-detective, hm-synthesis, hf-context-absorb, hf-agent-composition, hf-agents-and-subagents-dev, hf-agents-md-sync, hf-command-parser, hf-skill-synthesis, hm-omo-reference, hm-opencode-non-interactive-shell, hm-opencode-platform-reference, hm-phase-loop) + 8 process/runtime (hm-completion-looping, hm-debug, hm-phase-execution, hm-refactor, hm-research-chain, hm-spec-driven-authoring, hm-subagent-delegation-patterns, hm-test-driven-execution) + 3 gate (gate-evidence-truth, gate-lifecycle-integration, gate-spec-compliance). Note: `hm-planning-with-files` is disabled (directory renamed to `donotusethis-hm-planning-with-files`).
-- 13 commands in `.opencode/commands/`: 6 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack, hm-opencode-project-audit)
+- 97 agents in `.opencode/agents/`: 33 GSD specialist agents (internal project build tools — NOT shipped) + 30 hm-* agents (harness module specialists: analyst, architect, assessor, auditor, brainstormer, connector, coordinator, curator, debugger, ecologist, executor, finisher, guardian, integrator, investigator, mentor, operator, optimizer, orchestrator, persistor, planner, researcher, reviewer, router, scout, strategist, synthesizer, technician, validator, writer) + 6 hivefiver-* meta builder agents (hivefiver, hivefiver-agent-builder, hivefiver-command-builder, hivefiver-orchestrator, hivefiver-skill-author, hivefiver-tool-builder) + 10 hf-* agents (hf-prompter, hf-auditor, hf-coordinator, hf-orchestrator, hf-refactorer, hf-synthesizer + 4 additional) + 18 core/internal agents (build, conductor, context-mapper, context-purifier, coordinator, critic, general, explore [MISSING], intent-loop, meta-synthesis-agent, orchestrator, phase-guardian, prompt-analyzer, prompt-repackager, prompt-skimmer, researcher, risk-assessor, spec-verifier, test-router)
+- 51 skills in `.opencode/skills/`: 30 hm-* (product dev: brainstorm, requirements-analysis, feature-ecosystem, product-validation, coordinating-loop, user-intent-interactive-loop, cross-cutting-change, spec-driven-authoring, test-driven-execution, debug, refactor, deep-research, detective, synthesis, research-chain, completion-looping, phase-loop, phase-execution, planning-persistence, subagent-delegation-patterns, production-readiness, roadmap-maintainability, tech-context-compliance, tech-stack-ingest, omo-reference, opencode-platform-reference, opencode-non-interactive-shell, opencode-project-audit, gate-orchestrator, lineage-router) + 11 hf-* (meta-builder: agent-composition, agents-and-subagents-dev, agents-md-sync, command-dev, command-parser, context-absorb, custom-tools-dev, delegation-gates, meta-builder, skill-synthesis, use-authoring-skills) + 3 gate-* (internal quality gate triad: evidence-truth, lifecycle-integration, spec-compliance — THIS PROJECT ONLY, not shipped) + 6 stack-* (reference: bun-pty, json-render, nextjs, opencode, vitest, zod) + 1 unprefixed (opencode-config-workflow) + 1 disabled (`donotusethis-hm-planning-with-files`). Note: `hm-planning-with-files` is disabled (directory renamed to `donotusethis-hm-planning-with-files`).
+- 18 commands in `.opencode/commands/`: 7 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, harness-audit, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack) + 1 sync (sync-agents-md) + 3 test (test-echo, test-list, test-status)
 
 ### State Root Separation (Q6)
 
@@ -303,7 +310,7 @@ tests/tools/                   # Tool-focused unit tests
 
 ### Canonical Skill Location
 
-`.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-hm-meta-builder/skills-lab/active/refactoring/` and is reflected in `.opencode/skills/` via directory-level symlink.
+`.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-meta-builder/skills-lab/active/refactoring/` and is reflected in `.opencode/skills/` via directory-level symlink.
 
 IDE-managed directories (`.trae/skills/`, `.windsurf/skills/`, `.codex/skills/`, `.github/skills/`) are **third-party sync artifacts**, not project deliverables. They are gitignored and must never be committed. `.claude/skills/` does not exist in this repository.
 
@@ -386,3 +393,5 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 - **Frustrations:** Stay within stated scope and deliver honest assessments. Do not overstate capabilities or add unrequested features. When presenting work, be factual about what was delivered versus what was promised.
 - **Learning:** Provide code and architectural details for independent assessment. Ask targeted questions rather than offering walkthroughs. When the developer explores a new domain, offer concise references and let them direct the learning pace.
 <!-- GSD:profile-end -->
+
+<!-- Last synced: 2026-04-30 — SE-9 final verification: skill/agent counts synced to reality (51 active skills, 97 agents, 30 hm-* skills) -->

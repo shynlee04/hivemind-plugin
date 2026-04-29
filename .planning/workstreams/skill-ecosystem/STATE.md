@@ -1,16 +1,16 @@
 ---
 workstream: skill-ecosystem
 created: 2026-04-27
-updated: 2026-04-29
+updated: 2026-04-30
 phase_count: 17
 ---
 
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-7 COMPLETE — Reference Integrity Audit
-**Current Phase:** SE-5.5 (Gate Skills Hardening) — COMPLETE
-**Last Activity:** 2026-04-30 (SE-5.5 complete — 3 gate-* skills hardened to 8/8 RICH-8: gate-evidence-truth, gate-lifecycle-integration, gate-spec-compliance)
+**Status:** SE-9 COMPLETE — Final Ecosystem Verification
+**Current Phase:** SE-9 (Final Ecosystem Verification) — COMPLETE
+**Last Activity:** 2026-04-30 (SE-9 complete — AGENTS.md synced, cross-ref integrity confirmed, 0 dead refs, 0 regressions)
 
 ## Progress
 | Phase | Status | Plans | Summary |
@@ -26,15 +26,15 @@ phase_count: 17
 | SE-6 | ✅ COMPLETE | 1/1 | Context validation sweep: 29 CONTEXT.md files verified, 13 stale statuses fixed, 3 stale claims corrected, hf-meta-builder naming RESOLVED confirmed, AS-3 unblock noted in agent-synthesis STATE.md |
 | SE-7 | ✅ COMPLETE | 1/1 | Reference integrity audit: 51 SKILL.md scanned, 70 unique refs verified, 4 dead refs fixed (hm-meta-builder×2, hm-code-review, hm-uat-verify), 0 context poisoning, 0 dead refs remaining |
 | SE-8 | ✅ COMPLETE | 1/1 | 31 orphan skills hardened: 25 hm-*/hf-* skills to RICH-8 ≥6/8 (24 at ≥6, 1 at 5/8 documented), 6 stack-* reference skills with applicable scoring. 54 files created/modified. |
-| SE-9 | PLANNED | 0 | Final ecosystem sweep: AGENTS.md sync, cross-ref integrity, disabled skill cleanup |
+| SE-9 | ✅ COMPLETE | 1/1 | AGENTS.md synced (97 agents, 51 skills, 18 commands), cross-ref integrity confirmed (0 dead refs), disabled skill verified archived, 0 regressions (no context poisoning, SE-2/SE-4 refs intact), symlink path corrected |
 | SE-10 | PLANNED | 0 | Skill routing & agent dispatch bindings: hm-skill-router + hf-skill-router creation |
 | SE-11 | PLANNED | 0 | Naming syndicate formalization: NAMING-SYNDICATE.md + validation script |
 | SE-12 | PLANNED | 0 | Tool capability matrix (skill side): TOOL-CAPABILITY-MATRIX.md + 49 skill declarations |
 | SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 10/17
-**Phases Authorized:** 11/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-5 ✅, SE-5.5 ✅, SE-6 ✅, SE-7 ✅, SE-8 ✅)
+**Phases Complete:** 11/17
+**Phases Authorized:** 12/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-5 ✅, SE-5.5 ✅, SE-6 ✅, SE-7 ✅, SE-8 ✅, SE-9 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -66,7 +66,7 @@ SE-5.5   → SE-5 (needs gate-orchestrator) (→ Blocks AS-7)
 SE-6     → SE-5 (needs lineage-router)
 SE-7     → SE-5 + SE-6
 SE-8     → SE-2
-SE-9     → SE-7 + SE-8
+SE-9     → SE-7 + SE-8 ✅
 SE-10    → SE-9 (routing needs all skills stable) (→ Blocks AS-3, AS-7)
 SE-11    → SE-10 (naming syndicate needs routers) (→ Blocks AS-11)
 SE-12    → SE-9 (tool matrix needs all skills hardened) (→ Blocks AS-9)
@@ -92,7 +92,7 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
                        SE-3.6 ──┤
                             SE-4 ─┤
                             SE-8 ─┤
-                                  ├──→ SE-5 ✅ ──→ SE-5.5 ──→ SE-6 ──→ SE-7 ──→ SE-9 ──┬──→ SE-10 ──→ SE-11 ──┐
+                                  ├──→ SE-5 ✅ ──→ SE-5.5 ──→ SE-6 ──→ SE-7 ──→ SE-9 ✅ ──┬──→ SE-10 ──→ SE-11 ──┐
                                                                                         │                          │
                                                                                         └──→ SE-12 ──→ SE-13 ──┴──→ SE-14
 ```
@@ -104,19 +104,20 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-7 COMPLETE — Reference Integrity Audit (51 SKILL.md scanned, 4 dead refs fixed, 0 remaining)
-**Resume:** Move to SE-5.5 (Internal gate skills hardening), SE-9 (Final ecosystem sweep), or SE-10 (Skill routing)
-**Git Commits:** pending atomic commit for SE-7
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-7-reference-integrity/SE-7-SUMMARY.md`
+**Stopped At:** SE-9 COMPLETE — Final Ecosystem Verification
+**Resume:** Move to SE-10 (Skill routing & agent dispatch bindings), SE-12 (Tool capability matrix)
+**Git Commits:** pending atomic commit for SE-9
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-9-final-integrity-verification/SE-9-SUMMARY.md`
 
-## Known Issues (2026-04-29 Audit)
+## Known Issues (2026-04-30 — post SE-9 audit)
 
-1. **AGENTS.md skill count stale** — claims 33 skills, reality is 51 active + 1 disabled (18 skills behind)
+1. ~~**AGENTS.md skill count stale**~~ — RESOLVED 2026-04-30 (SE-9): Updated to 51 active skills, 97 agents, 18 commands, 30 hm-* skills. Symlink path corrected (.hivefiver-hm-meta-builder → .hivefiver-meta-builder).
 2. ~~hm-gate-orchestrator does not exist~~ — RESOLVED 2026-04-29: Created in SE-5 with 8/8 RICH-8. Dead refs in hm-production-readiness, hm-requirements-analysis, hm-roadmap-maintainability resolved.
 3. ~~hm-lineage-router does not exist~~ — RESOLVED 2026-04-29: Created in SE-5 with 8/8 RICH-8. 6 category bundles with max-5-skill enforcement.
 4. ~~SE-2 partially executed~~ — RESOLVED 2026-04-29: All 4 plans executed, 20+ reference fixes applied, disabled skill archived
 5. ~~**hf-meta-builder name mismatch**~~ — RESOLVED 2026-04-29: frontmatter now correctly says `name: hf-meta-builder` (was `hr-meta-builder`)
 6. ~~Disabled hm-planning-with-files still referenced by 9 active skills~~ — RESOLVED 2026-04-29: All 12 skills fixed, disabled skill archived to .opencode/retired/
 7. ~~25 orphan skills not covered by any forward SE phase~~ — RESOLVED 2026-04-29: All 31 skills hardened in SE-8 (15 hm-* + 10 hf-* + 6 stack-*), 24/25 workflow skills ≥6/8 RICH-8
-8. **No terminal verification** of full ecosystem coherence exists yet — SE-9 will address this.
+8. ~~**No terminal verification** of full ecosystem coherence~~ — RESOLVED 2026-04-30 (SE-9): AGENTS.md synced, cross-ref integrity confirmed (0 dead skill refs), no context poisoning, SE-2/SE-4 refs intact, disabled skill verified archived.
 9. **hf-command-dev at 5/8 RICH-8** — thin 81 LOC skill, honest score documented. Future hardening may be needed.
+10. **5 agent files reference hm-planning-with-files in permission allowlists** (conductor, coordinator, hivefiver, hivefiver-orchestrator, spec-verifier) — low-severity stale references, no runtime impact.
