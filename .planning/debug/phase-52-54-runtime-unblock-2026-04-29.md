@@ -1,9 +1,9 @@
 ---
 slug: phase-52-54-runtime-unblock
-status: active
+status: investigating
 trigger: Phase 52/53/54 runtime unblock — PTY output gap, journal/lineage gap, recovery proof gap, guidance workflow blocked, Phase 53 NO-SHIP, Phase 54 BLOCKED handoff
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-29T00:20:00Z
 goal: find_and_fix
 tdd_mode: true
 ---
@@ -12,8 +12,10 @@ tdd_mode: true
 
 ## Current Focus
 
-- hypothesis: Runtime acceptance blockers span PTY output retrieval, journal/lineage export, recovery proof workflow, and guidance workflow evidence; root causes are not yet determined.
-- next_action: Spawn gsd-debugger with this debug file as required reading, enforce RED-first tests, then apply scoped fixes and evidence updates.
+- hypothesis: Two high-probability candidates emerged: (1) PTY output may be lost because termination deletes the session before final output can be read/persisted; (2) journal export returns zero because sessionId filtering only checks continuity/delegations for exact parent/child IDs and ignores current-context or persisted delegation lineage when continuity has no parent record.
+- test: Use live `run-background-command` against a trivial shell command to see whether current runtime reproduces Phase 52's empty PTY output before adding tests.
+- expecting: If Phase 52 blocker is still present, output polling for `printf 'debug-pty-ok\n'; sleep 2` will return empty content despite an active listed PTY session.
+- next_action: Run `run-background-command` live, poll output, list, then terminate if needed; record exact tool-level output.
 
 ## Symptoms / Blockers
 
@@ -53,6 +55,14 @@ Phase 52 should produce truthful L1/L2 acceptance evidence for PTY output, journ
 - timestamp: 2026-04-29T00:00:00Z
   type: session-seed
   summary: Debug file created from delegated session seed because requested debug file was absent.
+- timestamp: 2026-04-29T00:10:00Z
+  checked: Target source/tests and Phase 52/53/54 blocker artifacts.
+  found: `run-background-command` output directly proxies `ptyManager.read`; `PtyManager.terminate` disposes subscriptions and deletes the session before final read; Phase 52 transcript shows output polls and persisted PTY result were empty. `session-journal-export` filters continuity and persisted delegations by exact `sessionId`; Phase 52 transcript says the live export supplied parent session returned zero sessions/delegations.
+  implication: PTY gap may be output lifecycle/retention, while journal gap may be overly strict export filtering or missing continuity fallback. Need RED tests before source mutation.
+- timestamp: 2026-04-29T00:20:00Z
+  checked: Focused baseline tests before source mutation.
+  found: `npx vitest run tests/lib/pty/pty-manager.test.ts tests/tools/run-background-command.test.ts tests/tools/session-journal-export.test.ts` passed: 3 files, 23 tests.
+  implication: Existing tests do not reproduce the Phase 52 blockers; RED tests are required before any implementation changes.
 
 ## Investigation Log
 
