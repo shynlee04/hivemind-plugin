@@ -49,8 +49,13 @@ export class PtyManager {
 
   spawn(request: PtySpawnRequest): PtySessionRecord {
     const sessionId = `pty-${crypto.randomUUID()}`
-    const process = spawn(request.command, request.args, this.buildOptions(request))
     const buffer = createPtyBuffer(this.maxBufferChars)
+
+    const process = spawn(request.command, request.args, this.buildOptions(request))
+
+    const dataSubscription = process.onData((chunk: string) => {
+      buffer.append(chunk)
+    })
 
     const record: PtySessionRecord = {
       id: sessionId,
@@ -65,10 +70,6 @@ export class PtyManager {
       startedAt: Date.now(),
       pid: process.pid,
     }
-
-    const dataSubscription = process.onData((chunk: string) => {
-      buffer.append(chunk)
-    })
 
     const exitSubscription = process.onExit((event: IExitEvent) => {
       const activeSession = this.sessions.get(sessionId)
