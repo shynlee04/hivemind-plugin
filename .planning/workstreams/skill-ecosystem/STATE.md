@@ -2,7 +2,7 @@
 workstream: skill-ecosystem
 created: 2026-04-27
 updated: 2026-04-29
-phase_count: 12
+phase_count: 17
 ---
 
 # Workstream State: Skill Ecosystem Gap Closure
@@ -27,9 +27,14 @@ phase_count: 12
 | SE-7 | PLANNED | 0 | Integration verification: RICH audit, cross-ref integrity, E2E workflow test |
 | SE-8 | PLANNED | 0 | Orphan skill triage: 25 skills not covered by any forward SE phase |
 | SE-9 | PLANNED | 0 | Final ecosystem sweep: AGENTS.md sync, cross-ref integrity, disabled skill cleanup |
+| SE-10 | PLANNED | 0 | Skill routing & agent dispatch bindings: hm-skill-router + hf-skill-router creation |
+| SE-11 | PLANNED | 0 | Naming syndicate formalization: NAMING-SYNDICATE.md + validation script |
+| SE-12 | PLANNED | 0 | Tool capability matrix (skill side): TOOL-CAPABILITY-MATRIX.md + 49 skill declarations |
+| SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
+| SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 1/12
-**Phases Authorized:** 2/12 (SE-1 ✅, SE-2 ⚠️ PARTIAL)
+**Phases Complete:** 1/17
+**Phases Authorized:** 2/17 (SE-1 ✅, SE-2 ⚠️ PARTIAL)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -62,6 +67,11 @@ SE-6     → SE-5 (needs lineage-router)
 SE-7     → SE-5 + SE-6
 SE-8     → SE-2
 SE-9     → SE-7 + SE-8
+SE-10    → SE-9 (routing needs all skills stable)
+SE-11    → SE-10 (naming syndicate needs routers)
+SE-12    → SE-9 (tool matrix needs all skills hardened)
+SE-13    → SE-12 (engine contracts need tool matrix)
+SE-14    → SE-13 + SE-11 (integration contracts need engine contracts + stable naming)
 ```
 
 ### Parallelization Opportunities
@@ -69,15 +79,22 @@ SE-9     → SE-7 + SE-8
 - SE-5.5 depends on SE-5; SE-6 depends on SE-5
 - SE-7 is the integration convergence point (needs SE-5 + SE-6)
 - SE-9 is the final sweep (needs SE-7 + SE-8)
+- SE-10 depends on SE-9 (all skills must be stable before routing is built)
+- SE-11 depends on SE-10 (naming syndicate needs stable routers)
+- SE-12 can run in parallel with SE-10 (both depend on SE-9)
+- SE-13 depends on SE-12 (engine contracts need tool matrix awareness)
+- SE-14 depends on SE-13 + SE-11 (convergence of engine contracts + naming syndicate)
 
 ### Visual Flow
 ```
 SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
-                      SE-3.5 ──┤
-                      SE-3.6 ──┤
-                           SE-4 ─┤
-                           SE-8 ─┤
-                                 ├──→ SE-5 ──→ SE-5.5 ──→ SE-6 ──→ SE-7 ──→ SE-9
+                       SE-3.5 ──┤
+                       SE-3.6 ──┤
+                            SE-4 ─┤
+                            SE-8 ─┤
+                                  ├──→ SE-5 ──→ SE-5.5 ──→ SE-6 ──→ SE-7 ──→ SE-9 ──┬──→ SE-10 ──→ SE-11 ──┐
+                                                                                        │                          │
+                                                                                        └──→ SE-12 ──→ SE-13 ──┴──→ SE-14
 ```
 
 ## Architecture Decisions (Locked)

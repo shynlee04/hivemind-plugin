@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-27
 **Updated:** 2026-04-29 (audit findings integrated: SE-8, SE-9 added)
-**Status:** IN PROGRESS (1/12 forward phases + 14 historical COMPLETE; 8 of 21 target skills already exist on disk)
+**Status:** IN PROGRESS (1/17 forward phases + 14 historical COMPLETE; 8 of 21 target skills already exist on disk)
 **Workstream:** skill-ecosystem (independent from milestone/main phases)
 **Context:** `.planning/research/SKILL-ECOSYSTEM-GAP-ANALYSIS-2026-04-27.md`
 
@@ -33,9 +33,14 @@
 | SE-7 | Integration Verification | 🔲 NOT STARTED (blocked) | SE-5 + SE-6 |
 | SE-8 | Orphan Skill Hardening | 🔲 NOT STARTED | SE-2 |
 | SE-9 | Final Integrity Verification | 🔲 NOT STARTED (blocked) | SE-7 + SE-8 |
+| SE-10 | Skill Routing & Agent Dispatch Bindings | 🔲 NOT STARTED | SE-9 |
+| SE-11 | Naming Syndicate Formalization | 🔲 NOT STARTED | SE-10 |
+| SE-12 | Tool Capability Matrix (Skill Side) | 🔲 NOT STARTED | SE-9 |
+| SE-13 | Hivemind Engine Contracts | 🔲 NOT STARTED | SE-12 |
+| SE-14 | Skill-Agent Integration Contracts | 🔲 NOT STARTED | SE-13 + SE-11 |
 | SE-H1→SE-H14 | Historical Phases | ✅ COMPLETE | — |
 
-**Total forward phases: 12** (SE-1 through SE-9, including SE-2, SE-3, SE-3.5, SE-3.6, SE-4, SE-5, SE-5.5, SE-6, SE-7, SE-8, SE-9)
+**Total forward phases: 17** (SE-1 through SE-14, including SE-2, SE-3, SE-3.5, SE-3.6, SE-4, SE-5, SE-5.5, SE-6, SE-7, SE-8, SE-9, SE-10, SE-11, SE-12, SE-13, SE-14)
 
 ## Thin-Frame Phases
 
@@ -263,6 +268,119 @@ Plans:
 - Produce final ecosystem coherence report
 
 **Depends on:** SE-7 (integration verification complete) + SE-8 (orphan skills hardened)
+
+---
+
+### Phase SE-10: Skill Routing & Agent Dispatch Bindings
+
+**Goal:** Create router skills that map task intent to agent dispatch. Bridge the hm/hf lineage gap so agents can discover cross-lineage skills without manual wiring.
+
+**Context:** Agents currently don't know which skills to load for a given task — there is no routing mechanism. hf-agents lack hm-skill awareness for cross-lineage work. All 49 skills have trigger conditions, but nothing aggregates and classifies them for agent consumption.
+
+**Scope (what, not how):**
+- Create `hm-skill-router` — maps task classification → skill loading list for product-dev tasks
+- Create `hf-skill-router` — maps meta-concept intent → skill + hm-fallback for meta-builder tasks
+- Update AGENTS.md skill router section with dispatcher binding rules
+- Ensure all 49 skills have clear trigger conditions that routers can parse
+- Verify cross-lineage bridge: hf-agent → hf-skill-router → hm-skill (fallback path works)
+- Router skills must pass RICH-8 scorecard
+
+**Deliverables:** `hm-skill-router`, `hf-skill-router`, updated AGENTS.md skill-router section
+
+**Depends on:** SE-9 (final integrity verification — all skills must be stable before routing is built)
+**Blocks:** AS-3 (agents need routing for skill discovery), AS-7 (capability matrix wiring needs routing)
+
+---
+
+### Phase SE-11: Naming Syndicate Formalization
+
+**Goal:** Formalize a naming taxonomy across ALL skills following `[lineage]-[domain]-[function]` pattern. Enforce consistency so every skill name is predictable and parsable.
+
+**Context:** Skills have inconsistent naming — some `hm-*`, some `hf-*`, some unprefixed (`opencode-config-workflow`). There is no documented naming convention. `hf-meta-builder` frontmatter was fixed (was `hr-meta-builder`), but other inconsistencies may remain.
+
+**Scope (what, not how):**
+- Document naming rules in `NAMING-SYNDICATE.md` — define `[lineage]-[domain]-[function]` pattern
+- Fix all naming inconsistencies across 49 skills (ensure frontmatter `name:` matches directory name)
+- Ensure `opencode-config-workflow` is renamed to `hf-config-workflow` (SE-6 deliverable prerequisites verified)
+- Create syndicate validation script at `.planning/workstreams/skill-ecosystem/scripts/validate-naming.sh`
+- Verify no unprefixed skills remain after SE-6 execution
+- NAMING-SYNDICATE.md must document: prefix rules, domain category taxonomy, function naming patterns, conflict resolution rules
+
+**Deliverables:** `NAMING-SYNDICATE.md`, validated naming for all 49 skills, `scripts/validate-naming.sh`
+
+**Depends on:** SE-10 (routers need stable, predictable naming to parse skill names)
+**Blocks:** AS-11 (agent naming syndicate depends on skill naming syndicate)
+
+---
+
+### Phase SE-12: Tool Capability Matrix (Skill Side)
+
+**Goal:** Create a formal tool capability matrix mapping every skill to the tools it requires. Every agent can determine its tool permissions from the skills it loads.
+
+**Context:** No formal mapping exists of which tools map to which skills/agents. Tools are categorized into: OpenCode native tools, Hivemind custom tools, and MCP/external tools. Without a matrix, agents either over-provision or under-provision tool access.
+
+**Scope (what, not how):**
+- Create `TOOL-CAPABILITY-MATRIX.md` documenting all tool categories:
+  - **OpenCode native:** read, write, edit, bash, glob, grep, task, skill, todowrite
+  - **Hivemind custom:** delegate-task, delegation-status, run-background-command, prompt-skim, prompt-analyze, session-patch, session-journal-export, configure-primitive, validate-restart
+  - **MCP/external:** tavily-*, brave-*, deepwiki-*, github-*, repomix-*
+- Each of the 49 skills must declare its tool requirements in SKILL.md frontmatter or a dedicated tool-requirements section
+- Matrix must be verifiable: running a scan script confirms every tool referenced in a skill is declared
+
+**Deliverables:** `TOOL-CAPABILITY-MATRIX.md`, tool requirement declarations in all 49 SKILL.md files
+
+**Depends on:** SE-9 (all skills hardened — their tool usage patterns are known and stable)
+**Blocks:** AS-9 (agent tool integration needs the matrix to configure tool permission sets)
+
+---
+
+### Phase SE-13: Hivemind Engine Contracts
+
+**Goal:** Create skills that document how to interact with Hivemind custom engines and state. Agents loading these skills can navigate `.hivemind/` state, understand delegation protocols, and use custom engines correctly.
+
+**Context:** Skills currently know nothing about `.hivemind/` state, task queues, delegation styles, or custom engines. Agents operating in the Hivemind runtime need to understand:
+- `.hivemind/state/` persistence (continuity, delegations, session-continuity)
+- `.hivemind/event-tracker/` session journals
+- `.hivemind/state/planning/` task persistence
+- Task management: queue-key validation, concurrency
+- Delegation styles: WaiterModel, background agents, auto-loop/ralph-loop
+- Custom engines: completion-detector, lifecycle-manager, runtime-policy
+
+**Scope (what, not how):**
+- Create `hm-hivemind-state-reference` — product-dev lineage engine contract
+- Create `hf-hivemind-state-reference` — cross-lineage variant for meta-builder agents
+- Document `.hivemind/` directory structure and all engine APIs
+- Include delegation protocol reference (WaiterModel, dual-signal completion)
+- Include task queue reference (concurrency, queue-key validation)
+- Both skills must pass RICH-8 scorecard
+
+**Deliverables:** `hm-hivemind-state-reference`, `hf-hivemind-state-reference`
+
+**Depends on:** SE-12 (tool matrix needed to know which tools agents use for engine interaction)
+**Blocks:** AS-10 (agent workflow awareness needs engine contract knowledge)
+
+---
+
+### Phase SE-14: Skill-Agent Integration Contracts
+
+**Goal:** Create formal bidirectional contracts between skills and agents. Every skill declares which agent types should load it; every agent declares which skills it loads per task category. No orphan skills, no unnecessary loads.
+
+**Context:** There is no bidirectional binding between skills and agents. Skills don't declare their intended agent audience. Agents' skill-loading behavior is undocumented. This phase closes the loop between SE-10 (routing), SE-11 (naming), and SE-13 (engine contracts) by formalizing the binding rules.
+
+**Scope (what, not how):**
+- Create `INTEGRATION-CONTRACTS.md` documenting binding rules:
+  - Skill→Agent: each SKILL.md declares target agent lineage (hm/hf/both) and agent level (L0/L1/L2)
+  - Agent→Skill: each agent .md file declares skill loading list per task category
+  - Cross-lineage bridging rules: when hm-agents may load hf-skills (and vice versa)
+  - Orphan detection: skills with zero agent bindings → flagged
+- Update all 49 SKILL.md files with agent-binding declarations
+- Update all hm-* and hf-* agent .md files with skill-loading declarations
+- Verify: no orphan skills, no agent loads a skill it doesn't need
+
+**Deliverables:** `INTEGRATION-CONTRACTS.md`, contract declarations in all SKILL.md and agent .md files
+
+**Depends on:** SE-13 (Hivemind contracts must be bound), SE-11 (naming must be stable for contracts)
+**Blocks:** AS-7 (capability matrix wiring — bidirectional contracts enable verifiable bindings)
 
 ---
 

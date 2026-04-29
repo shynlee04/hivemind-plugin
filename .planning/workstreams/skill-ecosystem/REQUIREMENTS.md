@@ -2,7 +2,7 @@
 workstream: skill-ecosystem
 created: 2026-04-29
 status: ACTIVE
-phase_count: 12
+phase_count: 17
 ---
 
 # Skill Ecosystem Workstream — Requirements
@@ -73,6 +73,11 @@ All skills MUST comply with the project-level quality contract:
 | SE-7 | Integration verification | All 49 skills pass RICH-8, cross-refs clean, E2E workflow test passes |
 | SE-8 | Orphan skill hardening (25 skills) | All 25 orphan skills pass RICH-8, no skills without phase coverage |
 | SE-9 | Final integrity verification | Full RICH audit, cross-ref integrity, gate-orchestrator references verified |
+| SE-10 | Skill routing & agent dispatch | hm-skill-router + hf-skill-router created; AGENTS.md router section updated; both pass RICH-8; cross-lineage bridge verified |
+| SE-11 | Naming syndicate formalization | NAMING-SYNDICATE.md documented; all 49 skills validated for `[lineage]-[domain]-[function]`; validation script passes; zero unprefixed skills |
+| SE-12 | Tool capability matrix (skill side) | TOOL-CAPABILITY-MATRIX.md with all 3 tool categories; all 49 skills declare tool requirements; scan script confirms no undeclared tool references |
+| SE-13 | Hivemind engine contracts | hm-hivemind-state-reference + hf-hivemind-state-reference created; `.hivemind/` directory structure documented; delegation protocols and custom engines documented; both pass RICH-8 |
+| SE-14 | Skill-agent integration contracts | INTEGRATION-CONTRACTS.md documented; all 49 skills have agent-binding declarations; all hm-/hf- agents have skill-loading declarations; zero orphan skills; zero unnecessary loads |
 
 ## Dependencies on Other Workstreams
 
