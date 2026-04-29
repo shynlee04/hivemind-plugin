@@ -8,9 +8,9 @@ phase_count: 17
 # Workstream State: Skill Ecosystem Gap Closure
 
 ## Current Position
-**Status:** SE-11 COMPLETE — Naming Syndicate Formalization
-**Current Phase:** SE-11 (Naming Syndicate Formalization) — COMPLETE
-**Last Activity:** 2026-04-30 (SE-10 complete — hm-l2-skill-router v2.0.0 + hf-l2-skill-router v1.0.0; SE-11 complete — hf-l2-naming-syndicate)
+**Status:** SE-13 COMPLETE — Hivemind Engine Contracts
+**Current Phase:** SE-13 (Hivemind Engine Contracts) — COMPLETE
+**Last Activity:** 2026-04-30 (SE-13 complete — hm-l3-hivemind-state-reference + hm-l3-hivemind-engine-contracts created, both 8/8 RICH-8, B+ grade)
 
 ## Progress
 | Phase | Status | Plans | Summary |
@@ -29,12 +29,12 @@ phase_count: 17
 | SE-9 | ✅ COMPLETE | 1/1 | AGENTS.md synced (97 agents, 51 skills, 18 commands), cross-ref integrity confirmed (0 dead refs), disabled skill verified archived, 0 regressions (no context poisoning, SE-2/SE-4 refs intact), symlink path corrected |
 | SE-10 | PLANNED | 0 | Skill routing & agent dispatch bindings: hm-skill-router + hf-skill-router creation |
 | SE-11 | ✅ COMPLETE | 1/1 | Naming syndicate skill: hf-l2-naming-syndicate created, formal naming rules for all 5 lineages documented, glob pattern reference, 16 eval scenarios, RICH-8 8/8, D1-D8 108/120 (A) |
-| SE-12 | PLANNED | 0 | Tool capability matrix (skill side): TOOL-CAPABILITY-MATRIX.md + 49 skill declarations |
-| SE-13 | PLANNED | 0 | Hivemind engine contracts: hm-hivemind-state-reference + hf-hivemind-state-reference |
+| SE-12 | ✅ COMPLETE | 1/1 | Tool capability matrix: hm-l3-tool-capability-matrix created (8/8 RICH-8, A-grade), 40+ tools documented across 3 categories, 5 lineage rules, 4 depth-tier templates |
+| SE-13 | ✅ COMPLETE | 1/1 | Hivemind engine contracts: hm-l3-hivemind-state-reference (8/8 RICH-8, B+ grade) + hm-l3-hivemind-engine-contracts (8/8 RICH-8, B+ grade). 6 files created. AS-10 UNBLOCKED. |
 | SE-14 | PLANNED | 0 | Skill-agent integration contracts: INTEGRATION-CONTRACTS.md + bidirectional bindings |
 
-**Phases Complete:** 13/17
-**Phases Authorized:** 13/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-5 ✅, SE-5.5 ✅, SE-6 ✅, SE-7 ✅, SE-8 ✅, SE-9 ✅, SE-11 ✅)
+**Phases Complete:** 15/17
+**Phases Authorized:** 15/17 (SE-1 ✅, SE-2 ✅, SE-3 ✅, SE-3.5 ✅, SE-3.6 ✅, SE-4 ✅, SE-5 ✅, SE-5.5 ✅, SE-6 ✅, SE-7 ✅, SE-8 ✅, SE-9 ✅, SE-11 ✅, SE-12 ✅, SE-13 ✅)
 
 ## Skills Inventory (2026-04-29 Verified)
 
@@ -107,10 +107,10 @@ SE-1 ✅ ──→ SE-2 ⚠️ ──→ SE-3 ──┐
 - **D-04:** Coordinating-loop uses soft boundary (no hard prerequisite check)
 
 ## Session Continuity
-**Stopped At:** SE-11 COMPLETE — Naming Syndicate Formalization (SE-10 retroactively completed)
-**Resume:** Move to SE-12 (Tool capability matrix) or SE-13 (Hivemind engine contracts)
-**Git Commits:** pending atomic commit for SE-10
-**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-11-naming-syndicate-formalization/SE-11-SUMMARY.md`
+**Stopped At:** SE-12 COMPLETE — Tool Capability Matrix
+**Resume:** Move to SE-13 (Hivemind engine contracts)
+**Git Commits:** pending atomic commit for SE-12
+**Handoff:** `.planning/workstreams/skill-ecosystem/phases/SE-12-tool-capability-matrix/SE-12-SUMMARY.md`
 
 ## Known Issues (2026-04-30 — post SE-9 audit)
 
