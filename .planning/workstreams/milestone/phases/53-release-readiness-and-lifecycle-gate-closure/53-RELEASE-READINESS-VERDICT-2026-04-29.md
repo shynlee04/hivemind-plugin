@@ -4,7 +4,7 @@
 
 Verdict: NO-SHIP
 
-Phase 53 closes the release-readiness audit truthfully: Phase 52 remains BLOCKED/PARTIAL, and release-critical L1/L2 blockers remain open. No waiver metadata exists.
+Phase 53 release-readiness remains **NO-SHIP** after the debug rerun because recovery proof is still missing. PTY output and journal lineage blockers were closed by later L1/L2 reruns, but no waiver metadata or operator-approved recovery proof exists.
 
 ## Evidence Bundle
 
@@ -13,8 +13,8 @@ Phase 53 closes the release-readiness audit truthfully: Phase 52 remains BLOCKED
 | `53-RELEASE-BLOCKER-LEDGER-2026-04-29.md` | Establishes NO-SHIP baseline and blocker routing. |
 | `53-LIFECYCLE-CQRS-GATE-AUDIT-2026-04-29.md` | Classifies six release-critical surfaces as partial/supporting where runtime evidence is incomplete. |
 | `53-EVIDENCE-TRUTH-AUDIT-2026-04-29.md` | Classifies L1-L5 evidence and rejects false release claims. |
-| `53-RUNTIME-GAP-DECISION-2026-04-29.md` | Records recovery as no-ship blocker and journal lineage as unresolved empty export. |
-| `52-EVIDENCE-MATRIX-2026-04-29.md` | Provides Phase 52 source statuses: E52-01 PASS, E52-02/E52-03/E52-04 PARTIAL, E52-05/E52-06 BLOCKED. |
+| `53-RUNTIME-GAP-DECISION-2026-04-29.md` | Records recovery as the remaining no-ship blocker; PTY/journal decisions are closed by rerun. |
+| `52-EVIDENCE-MATRIX-2026-04-29.md` | Provides updated Phase 52 source statuses: E52-01/E52-02/E52-03 PASS, E52-04 PARTIAL, E52-05/E52-06 BLOCKED. |
 
 ## Evidence Bundle Levels
 
@@ -32,7 +32,7 @@ L4/L5-only: false. The bundle has some L1/L2 evidence, but not enough to satisfy
 | Minimum | Status | Reason |
 |---|---|---|
 | delegation_l1_l2 | PASS for baseline only | E52-01 retry completed with matching L2 delegation record. |
-| journal_lineage_l1_l2 | FAIL | Export returned zero sessions/delegations. |
+| journal_lineage_l1_l2 | PASS after rerun | Export returned three lineage records for the Phase 52 parent session. |
 | recovery_l1_l2_or_explicit_non_applicability | FAIL | Recovery has no operator-approved interruption or waiver. |
 | cqrs_root_boundary | PARTIAL | Validator/read-only evidence exists, but recovery/root continuity is not proven. |
 | regression_package_gates | REQUIRED BEFORE SHIP | Not rerun because this phase made docs-only gate artifacts and source did not change. |
@@ -41,19 +41,17 @@ L4/L5-only: false. The bundle has some L1/L2 evidence, but not enough to satisfy
 
 RECOVERY_DECISION: NO_SHIP_BLOCKER
 
-JOURNAL_LINEAGE_DECISION: UNRESOLVED_EMPTY_EXPORT
+JOURNAL_LINEAGE_DECISION: CLOSED_BY_RERUN
 
-PTY_OUTPUT_DECISION: RERUN_NOW_OR_WAIVE_NON_CRITICAL
+PTY_OUTPUT_DECISION: CLOSED_BY_RERUN
 
-CRITICAL_UNWAIVED_BLOCKERS: 2
+CRITICAL_UNWAIVED_BLOCKERS: 1
 
 ## Open Release Blockers
 
 | Blocker | Evidence | Required closure |
 |---|---|---|
 | Recovery proof missing | E52-05, runtime gap decision | Operator-approved non-destructive recovery run with pre/post L1/L2 evidence. |
-| Same-run journal lineage missing | E52-03, evidence truth audit | Non-empty `session-journal-export` correlated to same parent/delegation run. |
-| PTY visible stdout partial | E52-02 | Rerun output proof or named non-critical waiver. |
 
 ## Waivers
 

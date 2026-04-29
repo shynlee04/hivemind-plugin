@@ -4,7 +4,7 @@
 
 BLOCKED / DONE_WITH_CONCERNS
 
-Phase 52 resumed successfully at E52-01 and continued through Plans 03-04 with partial evidence, but Plan 05 remained blocked because no operator-approved, non-destructive interruption method was available. Phase 52 therefore closes as blocked with honest partial runtime evidence, not as release-ready acceptance.
+Phase 52 resumed successfully at E52-01 and later debug reruns closed E52-02 PTY output and E52-03 journal lineage evidence. Plan 05 remains blocked because no operator-approved, non-destructive interruption method was available. Phase 52 therefore remains blocked on recovery proof, not release-ready acceptance.
 
 ## Executed Plans
 
@@ -12,8 +12,8 @@ Phase 52 resumed successfully at E52-01 and continued through Plans 03-04 with p
 | --- | --- | --- |
 | 52-01 | DONE_WITH_CONCERNS | Scaffolds created; Node/npm/OpenCode/build passed; read-only primitive validation passed. |
 | 52-02 | PASS after retry | Fresh `delegate-task` retry returned completed terminal result and persisted L2 record. Historical timeout preserved. |
-| 52-03 | DONE_WITH_CONCERNS | PTY lifecycle executed, but visible stdout payload was not surfaced by `output`. |
-| 52-04 | DONE_WITH_CONCERNS | Journal export ran but returned zero lineage; primitive boundary remained validator-only evidence. |
+| 52-03 | PASS after debug rerun | PTY lifecycle and visible stdout payload were proven after early-output race fix. |
+| 52-04 | PASS/PARTIAL | Journal lineage rerun passed; primitive boundary remains validator-only evidence. |
 | 52-05 | BLOCKED | Safe recovery still requires a specific non-destructive operator-approved method. |
 | 52-06 | BLOCKED | Linear dependency stops at Plan 05 blocker. |
 
@@ -22,8 +22,8 @@ Phase 52 resumed successfully at E52-01 and continued through Plans 03-04 with p
 | Row | Verdict | Highest evidence | Reason |
 | --- | --- | --- | --- |
 | E52-01 | PASS | L1 live dispatch/poll + L2 persisted completed record | Retry completed successfully with longer safety ceiling. |
-| E52-02 | PARTIAL | L1 PTY run/list/terminate + L2 completed PTY delegation record | PTY lifecycle worked, but visible stdout payload was not surfaced by `output`. |
-| E52-03 | PARTIAL | L1 live export invocation | Export returned zero sessions/delegations, so same-run lineage correlation was not proven. |
+| E52-02 | PASS | L1 PTY output + L2 completed PTY delegation record | Post-fix rerun surfaced `persist-check\r\n` and persisted it. |
+| E52-03 | PASS | L1 live export + L2 persisted delegation records | Rerun returned three lineage records for the Phase 52 parent session. |
 | E52-04 | PARTIAL | L1 validator tool output | Read-only primitive checks passed, but validator output is not actual recovery proof. |
 | E52-05 | BLOCKED | L5 safety constraint only | Safe interruption was not allowed autonomously. |
 | E52-06 | BLOCKED | L5 dependency state | Guidance workflow was not executed after Plan 05 blocker. |

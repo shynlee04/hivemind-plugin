@@ -3,7 +3,7 @@ slug: phase-52-54-runtime-unblock
 status: investigating
 trigger: Phase 52/53/54 runtime unblock — PTY output gap, journal/lineage gap, recovery proof gap, guidance workflow blocked, Phase 53 NO-SHIP, Phase 54 BLOCKED handoff
 created: 2026-04-29
-updated: 2026-04-29T00:35:00Z
+updated: 2026-04-29T00:50:00Z
 goal: find_and_fix
 tdd_mode: true
 ---
@@ -12,10 +12,10 @@ tdd_mode: true
 
 ## Current Focus
 
-- hypothesis: PTY empty output is caused by a startup race where very early child output can arrive before `PtyManager.spawn()` subscribes to `process.onData`; delayed output works, immediate output can be lost.
-- test: Verify RED test for early PTY output loss, move data subscription before metadata access, then verify GREEN focused tests and supporting gates.
-- expecting: Unit regression should fail before source change and pass after subscribing to output before reading PTY metadata such as `pid`.
-- next_action: Run typecheck/build/focused tests, then continue journal lineage investigation because live export still returns zero records for the current runtime session.
+- hypothesis: PTY blocker is fixed; journal lineage was an evidence timing/state-refresh gap, because rerun against current persisted delegations returned non-empty lineage for the same Phase 52 parent session.
+- test: Run final verification gates, update Phase 52/53 artifacts honestly, and leave recovery/guidance as blockers until operator-approved recovery proof exists.
+- expecting: Typecheck/build/focused tests pass; Phase 53 remains NO-SHIP with exactly recovery as critical unwaived blocker.
+- next_action: Run npm test if feasible, then return DEBUG COMPLETE or CHECKPOINT with recovery blocker.
 
 ## Symptoms / Blockers
 
@@ -77,19 +77,28 @@ Phase 52 should produce truthful L1/L2 acceptance evidence for PTY output, journ
   checked: Live `session-journal-export` probe for current parent session `ses_226714ad6ffepwIkRr1lYKgA0o` with `pipelineKeyLabel: phase-52-54-debug`.
   found: Tool returned success but `journalSummary.sessions: 0`, `journalSummary.delegations: 0`, and empty `lineage`.
   implication: Journal/lineage blocker remains open after PTY fix and needs separate RED-first investigation.
+- timestamp: 2026-04-29T00:45:00Z
+  checked: Persisted delegation file and live journal export after state refresh.
+  found: `.hivemind/state/delegations.json` contains Phase 52 records for parent `ses_226e89cd1ffetJwNcJdzeGN1jY` and debug records for current parent `ses_226714ad6ffepwIkRr1lYKgA0o`. Live `session-journal-export` for Phase 52 parent returned 3 lineage records (`b0ded5d5...`, `35b952b5...`, `6b6b508c...`). Current parent export returned 3 debug lineage records (`5ec6fddd...`, `80af23df...`, `b3b0833f...`).
+  implication: E52-03 journal lineage can be closed by rerun evidence; no source mutation needed for this blocker.
+- timestamp: 2026-04-29T00:50:00Z
+  checked: Supporting verification gates after PTY source fix.
+  found: `npm run typecheck` passed. `npx vitest run tests/lib/pty/pty-manager.test.ts tests/tools/run-background-command.test.ts tests/tools/session-journal-export.test.ts` passed 3 files / 24 tests. `npm run build` passed.
+  implication: Supporting L3/L4 gates pass for changed modules; full `npm test` still pending.
 
 ## Investigation Log
 
 - 2026-04-29: Session initialized. Awaiting debugger investigation.
 - 2026-04-29: Confirmed PTY immediate-output race with live contrasting probes and RED/GREEN unit coverage. Journal lineage export remains unresolved.
+- 2026-04-29: Journal lineage export rerun returned non-empty lineage for Phase 52 parent session; updated Phase 52/53 artifacts to keep NO-SHIP focused on recovery proof.
 
 ## Specialist Review
 
 - PTY E52-02 root cause found: `PtyManager.spawn()` attached `onData` after constructing session metadata, so output emitted during immediate startup/metadata access could be missed. Delayed output proved the PTY buffer/read path itself works.
-- Journal E52-03 root cause not yet confirmed: live export still returns zero records for the current runtime session.
+- Journal E52-03 root cause: original zero export was stale/early evidence before persisted delegations were visible to export; rerun after state refresh returned non-empty lineage. No implementation defect confirmed.
 
 ## Resolution
 
-- root_cause: PTY immediate-output startup race confirmed; journal/recovery blockers still under investigation.
-- fix: PTY listener ordering fixed in `src/lib/pty/pty-manager.ts`.
-- verification: RED/GREEN focused PTY tests passed; broader gates pending.
+- root_cause: PTY immediate-output startup race confirmed; journal lineage closed by rerun/state refresh; recovery remains blocked by missing operator-approved interruption method.
+- fix: PTY listener ordering fixed in `src/lib/pty/pty-manager.ts`; no code fix required for journal export.
+- verification: RED/GREEN focused PTY tests, session-journal rerun evidence, typecheck, focused vitest, and build passed; full npm test pending.

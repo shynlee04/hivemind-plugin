@@ -134,8 +134,34 @@ Second poll after 1s:
 
 ## Classification
 
-E52-02 = PARTIAL.
+E52-02 = PASS after debug rerun.
 
-- Proven live: `run`, `list`, and `terminate`, plus persisted PTY completion record.
-- Missing for PASS: expected visible stdout payload (`phase52-ok`) was not surfaced in `output`; both output polls returned empty content.
+- Original run proved live `run`, `list`, and `terminate`, plus persisted PTY completion record.
+- Original blocker: expected visible stdout payload (`phase52-ok`) was not surfaced in `output`; both output polls returned empty content.
+- Debug rerun isolated the root cause as early PTY output emitted before data listener attachment and fixed it in `e8104bbd` after RED test `207dbd9a`.
+- Post-fix live probe `pty-4f25f19d-3587-444d-95a2-6e1f604e9f24` surfaced `persist-check\r\n` via `output` and persisted the same value in `.hivemind/state/delegations.json` for delegation `b3b0833f-3f41-4abd-b867-1b1fa9bc06ea`.
 - `accessible-view-terminal` remains a contextual note only; no grounded repo/runtime artifact was used from it.
+
+## Debug Rerun Evidence — 2026-04-29
+
+### Immediate-output reproducer before fix
+
+`run-background-command` for `printf 'debug-pty-ok\n'; sleep 2` returned `content: ""` and completed with `summaryPreview: ""` for delegation `5ec6fddd-a809-498b-abef-ab83d99b0bc0`.
+
+### Delayed-output contrast
+
+`run-background-command` for `sleep 1; printf 'delayed-pty-ok\n'; sleep 2` returned `content: "delayed-pty-ok\r\n"` and persisted `result: "delayed-pty-ok\r\n"` for delegation `80af23df-dd9b-4601-b632-aee90151c1eb`.
+
+### Post-fix acceptance probe
+
+```json
+{
+  "kind": "success",
+  "message": "Output for pty-4f25f19d-3587-444d-95a2-6e1f604e9f24",
+  "data": {
+    "content": "persist-check\r\n",
+    "nextOffset": 15,
+    "truncated": false
+  }
+}
+```
