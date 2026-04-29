@@ -250,7 +250,11 @@ If task scope exceeds received packet:
 </execution_flow>
 
 <workflow_awareness>
-Receives research tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions and workflow gates. Collaborates through hm-coordinator with hm-scout (rapid codebase scanning), hm-synthesizer (findings compression), and hm-technician (tech stack validation). Cross-lineage: findings may be consumed by hf-* agents through hf-orchestrator. All output goes through hm-coordinator for consolidation.
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </self_correction>

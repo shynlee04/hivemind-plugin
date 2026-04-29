@@ -244,3 +244,10 @@ Return complete construction:
 - [ ] Transfer knowledge: how to apply to future meta-concepts
 
 </success_criteria>
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

@@ -68,3 +68,10 @@ recommended_lanes:
 - NEVER spawn subagents (task: deny).
 - NEVER modify session state or session files.
 - NEVER provide implementation advice — report findings only.
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

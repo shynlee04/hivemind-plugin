@@ -66,3 +66,10 @@ risks:
 - NEVER execute any commands or operations.
 - NEVER suggest forceful or destructive operations as defaults.
 - NEVER ask clarifying questions — return findings only.
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

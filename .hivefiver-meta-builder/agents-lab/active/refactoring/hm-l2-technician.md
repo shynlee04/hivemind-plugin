@@ -254,7 +254,11 @@ If tech context is incomplete:
 </execution_flow>
 
 <workflow_awareness>
-Receives tech stack validation tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-researcher (external documentation), hm-scout (dependency detection), and hm-synthesizer (tech findings compression). All output goes through hm-coordinator.
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </self_correction>

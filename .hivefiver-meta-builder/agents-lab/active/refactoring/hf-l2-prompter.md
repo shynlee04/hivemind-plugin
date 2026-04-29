@@ -298,20 +298,11 @@ On completion:
 </session_continuity>
 
 <workflow_awareness>
-**Receives tasks from:**
-- hf-coordinator — prompt engineering and validation requests
-- hf-orchestrator (via hf-coordinator) — meta-concept prompt optimization
+**Parent Agent:** hf-l1-coordinator
+**Receives from:** hf-l1-coordinator
+**Peers:** All hf-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
 
-**Aware of:**
-- hf-command-builder — may optimize prompts embedded in command definitions
-- hf-skill-author — may optimize trigger phrases and skill descriptions
-- hf-agent-builder — may optimize agent body content and behavioral contracts
-- hm-orchestrator/hm-* lineage — builds prompts for product development workflows
-
-**Cross-lineage awareness:**
-- May build prompts for hm-* agents (FLEXIBLE lineage access)
-- Uses hm-deep-research, hm-detective, hm-synthesis for prompt grounding
-- All output goes through hf-* quality gates before delivery
 </workflow_awareness>
 
 <anti_patterns>

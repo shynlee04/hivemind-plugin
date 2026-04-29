@@ -110,3 +110,10 @@ After every completed task, append a dated entry to the relevant wisdom file. Be
 - ALWAYS break hybrid tasks into phases: research first, then implement, then review.
 - ALWAYS read relevant wisdom files before starting a new task.
 - ALWAYS record what you learned after completing a task.
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

@@ -51,3 +51,10 @@ Task result or confirmation of completion. Concise response matching the request
 <verification>
 Confirm the requested action completed. Re-read modified files to verify changes. Report any issues encountered during execution.
 </verification>
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

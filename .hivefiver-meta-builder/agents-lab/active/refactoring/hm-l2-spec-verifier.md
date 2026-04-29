@@ -158,3 +158,10 @@ Return structured output:
 - **REVISE**: Issues found → loop back to spec author with findings
 - **STALL**: Issue count not decreasing → escalate to orchestrator
 - **ESCALATE**: 3 iterations exhausted → human intervention required
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

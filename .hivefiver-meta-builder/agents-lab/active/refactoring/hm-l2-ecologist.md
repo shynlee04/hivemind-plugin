@@ -251,7 +251,11 @@ If circular dependency cannot be resolved within scope:
 </execution_flow>
 
 <workflow_awareness>
-Receives feature ecosystem analysis tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-strategist (roadmap maintainability), hm-planner (implementation planning), and hm-connector (cross-workflow bridging). All output goes through hm-coordinator.
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </self_correction>

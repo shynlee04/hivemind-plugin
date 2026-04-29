@@ -182,7 +182,11 @@ If requirements are ambiguous: flag in output as NEEDS_REVISION with specific am
 </execution_flow>
 
 <workflow_awareness>
-Receives planning tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-strategist (roadmap maintainability), hm-architect (architecture evaluation), and hm-executor (implementation execution). Consumes output from hm-brainstormer (requirements brief). All output goes through hm-coordinator.
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </self_correction>

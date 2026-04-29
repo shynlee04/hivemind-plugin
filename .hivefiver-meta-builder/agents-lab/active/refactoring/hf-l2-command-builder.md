@@ -276,7 +276,11 @@ On completion:
 1. Return structured output contract to hf-coordinator
 2. No independent checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-Receives command creation/audit tasks from hf-coordinator (L1). Aware of hf-orchestrator (L0) meta-builder routing decisions. Collaborates through hf-coordinator with hf-auditor (command quality verification), hf-prompter (command prompt optimization), and hf-skill-builder (skill-to-command wiring). Cross-lineage: may load hm-* skills for non-interactive shell safety validation. All output goes through hf-coordinator.
+**Parent Agent:** hf-l1-coordinator
+**Receives from:** hf-l1-coordinator
+**Peers:** All hf-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </session_continuity>

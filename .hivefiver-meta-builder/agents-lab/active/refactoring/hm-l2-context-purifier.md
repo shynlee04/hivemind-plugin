@@ -71,3 +71,10 @@ removed_content:
 - NEVER ask clarifying questions — return findings only.
 - NEVER change the core intent — compression preserves meaning, never alters it.
 - NEVER remove constraints — all non-negotiable requirements must appear in preserved_constraints.
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

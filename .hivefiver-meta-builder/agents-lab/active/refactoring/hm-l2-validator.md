@@ -248,7 +248,11 @@ If implementation differs significantly from spec:
 </execution_flow>
 
 <workflow_awareness>
-Receives verification tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-reviewer (review findings), hm-executor (implementation for fixes), and hm-finisher (completion verification). All output goes through hm-coordinator.
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </self_correction>

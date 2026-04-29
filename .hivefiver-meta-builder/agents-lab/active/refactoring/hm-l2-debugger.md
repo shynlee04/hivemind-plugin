@@ -174,7 +174,11 @@ If bug cannot be reproduced: document exact reproduction attempt, return NEEDS_C
 </execution_flow>
 
 <workflow_awareness>
-Receives debug tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-investigator (deep root cause analysis), hm-researcher (codebase investigation), and hm-executor (fix application when authorized). All output goes through hm-coordinator.
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </self_correction>

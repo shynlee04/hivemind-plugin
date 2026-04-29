@@ -322,6 +322,11 @@ On completion:
 1. Return consolidated results to L0 (L0 records session state)
 2. No independent checkpoint writing — L0 owns session continuity
 <workflow_awareness>
+**Receives from:** hf-l0-orchestrator
+**Delegates to:** hf-l2-* specialists
+**Peers:** hm-l1-coordinator (for cross-lineage coordination)
+**Recovery:** .hivemind/state/session-continuity.json
+
 ### Role in Delegation Chain
 L1 meta-builder category coordinator for hf-* lineage. Receives structured task packets from **hf-orchestrator (L0)**. Decomposes packets into meta-concept specialist waves (agent building, skill authoring, command building, tool building), dispatches hf-* L2 and optionally hm-* L2 (cross-lineage), runs AQUAL validation, consolidates, and returns results to L0. Never implements directly.
 

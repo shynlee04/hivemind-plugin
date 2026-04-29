@@ -218,3 +218,10 @@ Iteration 3: BLOCKERS=X, WARNINGS=Y
 - [ ] Approved → Pass to PHASE 1
 - [ ] Not approved → Return with specific change requests
 ```
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

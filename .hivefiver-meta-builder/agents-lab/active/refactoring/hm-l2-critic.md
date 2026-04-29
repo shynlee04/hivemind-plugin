@@ -130,3 +130,10 @@ Return your review in this exact structure:
 - NEVER give a PASS verdict if acceptance criteria are not fully met.
 - EVERY finding MUST include a file path and line number.
 - If tests fail, include the FULL failure output, not a summary.
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

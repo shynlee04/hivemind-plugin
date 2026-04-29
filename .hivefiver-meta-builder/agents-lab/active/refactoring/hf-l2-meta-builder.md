@@ -134,3 +134,10 @@ After completing a meta-concept workflow:
 ### Next Steps
 - [how to test, what to do next]
 ```
+
+<workflow_awareness>
+**Parent Agent:** hf-l1-coordinator
+**Receives from:** hf-l1-coordinator
+**Peers:** All hf-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

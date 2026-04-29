@@ -57,3 +57,10 @@ skill: allow
 .opencode/agents/gsd-ui-researcher.md
 .opencode/agents/gsd-user-profiler.md
 .opencode/agents/gsd-verifier.md
+
+<workflow_awareness>
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+</workflow_awareness>

@@ -242,7 +242,11 @@ On completion:
 1. Return scan results to L1
 2. No checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-Receives rapid detection tasks from hm-coordinator (L1). Aware of hm-orchestrator (L0) routing decisions. Collaborates through hm-coordinator with hm-researcher (deep investigation), hm-technician (tech stack ingestion), and hm-synthesizer (findings compression). All output goes through hm-coordinator for consolidation.
+**Parent Agent:** hm-l1-coordinator
+**Receives from:** hm-l1-coordinator
+**Peers:** All hm-l2-* specialists within same domain
+**Recovery:** .hivemind/state/session-continuity.json
+
 </workflow_awareness>
 
 </session_continuity>

@@ -321,6 +321,11 @@ On interruption:
 2. Include: active delegations, pending gates, completed meta-concepts, cross-lineage notes
 3. Next session will recover from this checkpoint
 <workflow_awareness>
+**Receives from:** User (direct), all OpenCode commands
+**Delegates to:** hf-l1-coordinator, hf-l2-* (direct), hm-l0-orchestrator (cross-lineage)
+**Cross-lineage:** Route codebase investigation requests to hm-l0-orchestrator
+**Recovery:** .hivemind/state/session-continuity.json, .hivemind/state/delegations.json
+
 ### Command Routing Table (L0 → hf-orchestrator)
 
 | Command | Description | Dispatch Target |
