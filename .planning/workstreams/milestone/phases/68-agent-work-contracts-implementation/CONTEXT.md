@@ -6,6 +6,7 @@ created: 2026-04-30
 depends_on:
   - 67-runtime-pressure-control-plane-implementation
   - 58-agent-work-contracts
+  - 70-prompt-packet-compiler
 blocks: []
 gsd_agents:
   - gsd-executor
@@ -32,7 +33,7 @@ Implement agent work contracts with Zod schemas, intent classification, chain ex
 | AWC-01 | AgentWorkContract Zod schema — typed contract between orchestrator and executor | planning-contract 58 |
 | AWC-02 | IntentClassifier with keyword matching — classify user intent for contract routing | planning-contract 58 |
 | AWC-03 | ChainExecutor with event-driven handlers — execute contract chains with events | planning-contract 58 |
-| AWC-04 | CompactionPreservationPacket — preserve critical context across compaction | planning-contract 58 |
+| AWC-04 | CompactionPreservationPacket — consumes Phase 70's PPC-03 compaction-safe format for delegation handoff preservation | planning-contract 58 |
 
 ## Scope
 

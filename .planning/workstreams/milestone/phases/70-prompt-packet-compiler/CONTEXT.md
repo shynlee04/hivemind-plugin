@@ -5,7 +5,8 @@ status: pending
 created: 2026-04-30
 depends_on:
   - 60-session-entry-intake
-blocks: []
+blocks:
+  - 68-agent-work-contracts-implementation
 gsd_agents:
   - gsd-executor
   - gsd-verifier
@@ -27,7 +28,7 @@ Implement the prompt packet compiler that produces hivemind-kernel-packets for m
 |----|-------------|--------|
 | PPC-01 | hivemind-kernel-packet for main sessions: 33 normalized fields | product-detox prompt-packet |
 | PPC-02 | hivemind-delegation-packet for sub-sessions: adds parent_session_id, delegation_inheritance, todo_authority, return_contract | product-detox prompt-packet |
-| PPC-03 | Compaction-safe context preservation — survive context window compaction | product-detox prompt-packet |
+| PPC-03 | Compaction-safe context preservation format — OWNS the structural definition. Phase 68 (AWC-04) consumes this format. | product-detox prompt-packet |
 
 ## Scope
 
