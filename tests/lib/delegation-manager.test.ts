@@ -2935,24 +2935,59 @@ describe("DelegationManager", () => {
       expect(acquireSpy).toHaveBeenCalledWith("agent:builder:category:implementation", 1, 250)
     })
 
-    it("uses synchronous prompt by default when plugin runtime policy distrusts async children", async () => {
+    // -------------------------------------------------------------------
+    // Phase 46.1 R-ALWAYS-ASYNC-01..03 (audit 2026-04-30, Finding 3 — VALIDATED):
+    // run_in_background was silently downgraded to sync when
+    // builtinAsyncBackgroundChildSessions=false. The audit's remediation is
+    // to remove the gate so every SDK delegation dispatch uses
+    // sendPromptAsync regardless of the legacy flag. The previous
+    // "uses synchronous prompt by default" / "only when explicitly allowed"
+    // tests encoded the wrong contract and have been replaced with the
+    // always-async contract below.
+    // -------------------------------------------------------------------
+
+    it("R-ALWAYS-ASYNC-01: uses async prompt with DEFAULT_RUNTIME_POLICY (no longer downgraded to sync)", async () => {
       const client = createMockClient()
-      client.session.prompt.mockResolvedValue({ data: { info: { role: "assistant" }, parts: [{ type: "text", text: "accepted" }] } })
       const manager = createManager(client, { runtimePolicy: DEFAULT_RUNTIME_POLICY })
 
       const result = await manager.dispatch({
-        parentSessionId: "ses_parent_policy_sync",
+        parentSessionId: "ses_parent_default_async",
         agent: "builder",
         prompt: "do work",
-        title: "policy sync",
+        title: "default async",
       })
 
       expect(result.status).toBe("running")
-      expect(client.session.prompt).toHaveBeenCalledWith(expect.objectContaining({ path: { id: "child-ses-123" } }))
-      expect(client.session.promptAsync).not.toHaveBeenCalled()
+      expect(client.session.promptAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ path: { id: "child-ses-123" } }),
+      )
+      expect(client.session.prompt).not.toHaveBeenCalled()
     })
 
-    it("uses async prompt only when trusted runtime policy explicitly allows it", async () => {
+    it("R-ALWAYS-ASYNC-02: ignores builtinAsyncBackgroundChildSessions=false (legacy gate removed)", async () => {
+      const client = createMockClient()
+      const manager = createManager(client, {
+        runtimePolicy: {
+          ...DEFAULT_RUNTIME_POLICY,
+          trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
+        },
+      })
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses_parent_legacy_false",
+        agent: "builder",
+        prompt: "do work",
+        title: "legacy false",
+      })
+
+      expect(result.status).toBe("running")
+      expect(client.session.promptAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ path: { id: "child-ses-123" } }),
+      )
+      expect(client.session.prompt).not.toHaveBeenCalled()
+    })
+
+    it("R-ALWAYS-ASYNC-03: uses async prompt when builtinAsyncBackgroundChildSessions=true (explicit opt-in is now a no-op)", async () => {
       const client = createMockClient()
       const manager = createManager(client, {
         runtimePolicy: {
@@ -2962,14 +2997,17 @@ describe("DelegationManager", () => {
       })
 
       const result = await manager.dispatch({
-        parentSessionId: "ses_parent_policy_async",
+        parentSessionId: "ses_parent_explicit_true",
         agent: "builder",
         prompt: "do work",
-        title: "policy async",
+        title: "explicit true",
       })
 
       expect(result.status).toBe("running")
-      expect(client.session.promptAsync).toHaveBeenCalledWith(expect.objectContaining({ path: { id: "child-ses-123" } }))
+      expect(client.session.promptAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ path: { id: "child-ses-123" } }),
+      )
+      expect(client.session.prompt).not.toHaveBeenCalled()
     })
   })
 })
