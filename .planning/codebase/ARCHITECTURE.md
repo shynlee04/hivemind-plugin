@@ -1,251 +1,319 @@
+<!-- refreshed: 2026-04-28 -->
 # Architecture
 
-**Analysis Date:** 2026-04-25
+**Analysis Date:** 2026-04-28
+
+## System Overview
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        Hard Harness (npm package)                         │
+│                             `src/`                                        │
+├──────────────────┬──────────────────────┬────────────────────────────────┤
+│   Tools (Write)  │   Hooks (Read)       │   Kernel (Shared)              │
+│  `src/tools/`    │  `src/hooks/`        │  `src/lib/`                    │
+│  CQRS: mutation  │  CQRS: observation   │  types, state, concurrency,    │
+│  authority only  │  only (no durable    │  continuity, lifecycle,        │
+│                  │   writes allowed)    │  delegation, session-api       │
+├──────────────────┼──────────────────────┼────────────────────────────────┤
+│            Plugin Composition Root (`src/plugin.ts`)                      │
+│            Wires deps → instantiates hooks → registers 9 tools           │
+└────────┬─────────┴──────────────────────┴───────────┬────────────────────┘
+         │                                              │
+         ▼                                              ▼
+┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
+│   Soft Meta-Concepts (configurable)  │  │   Deep Module State (internal)        │
+│   `.opencode/`                       │  │   `.hivemind/`                        │
+│                                      │  │                                       │
+│   • 57 agents                        │  │   • Session continuity JSON            │
+│   • 50 skills                        │  │   • Delegation records                │
+│   • 20 commands                      │  │   • Execution lineage                 │
+│   • Permission rules                 │  │   • Event tracker artifacts           │
+│   • Plugin loader                    │  │   • Session journals                  │
+└──────────────────────────────────────┘  └──────────────────────────────────────┘
+```
+
+## Two Halves (never confuse them)
+
+| Half | What | Where |
+|------|------|-------|
+| **Hard Harness** (npm package) | Tools (write-side), Hooks (read-side), Plugin (assembly), Shared (leaf) | `src/` |
+| **Soft Meta-Concepts** (user-configurable) | Skills, Agents, Commands, Rules, Permissions | `.opencode/` |
+| **Internal State** (deep module persistence) | Session journals, execution lineage, runtime state | `.hivemind/` |
+
+## Component Responsibilities
+
+| Component | Responsibility | File |
+|-----------|----------------|------|
+| `HarnessControlPlane` | Composition root — instantiates deps, wires hooks, registers tools | `src/plugin.ts` |
+| `DelegationManager` | Core delegation orchestrator — WaiterModel dispatch, concurrency, status polling, recovery | `src/lib/delegation-manager.ts` |
+| `HarnessLifecycleManager` | Session lifecycle state machine — transition guards, activity tracking, event routing | `src/lib/lifecycle-manager.ts` |
+| `CompletionDetector` | Two-signal completion detection (session.idle + stability timer) | `src/lib/completion-detector.ts` |
+| `TaskStateManager` | In-memory Maps for sessionStats, rootBudgets, sessionToRoot, delegationMeta | `src/lib/state.ts` |
+| `DelegationConcurrencyQueue` | Keyed semaphore (FIFO per model+agent+category) | `src/lib/concurrency.ts` |
+| `DelegationBroadcast` | New delegation event notifications via parent session prompt | `src/lib/delegation-broadcast.ts` |
+| Continuity Store | Durable JSON persistence with deep-clone, normalization, quarantine | `src/lib/continuity.ts` |
+| Session API | Typed OpenCode SDK wrappers (create, get, abort, messages, prompt, walkParentChain) | `src/lib/session-api.ts` |
+| Runtime Policy | Policy loading, validation, per-session overrides (concurrency, budget, category gates) | `src/lib/runtime-policy.ts` |
+| Session Journal | Append-only event timeline — independent of continuity.ts (Q3 decision) | `src/lib/session-journal.ts` |
+| Execution Lineage | Derived projection combining continuity + delegations + journal entries | `src/lib/execution-lineage.ts` |
+| Event Tracker | Hook-driven audit trail — parses events, writes artifacts to `.hivemind/event-tracker/` | `src/lib/event-tracker/` |
+| Schema Kernel | Zod schemas for agent/command/skill frontmatter, permissions, MCP servers, prompt-enhance pipeline | `src/schema-kernel/` |
+| Spawner | Agent primitive policy, concurrency key resolution, parent directory, session creation, request building | `src/lib/spawner/` |
+| PTY Manager | bun-pty pseudo-terminal integration for background command execution | `src/lib/pty/` |
+| Config Workflow | Turn-based workflow state persistence for configure-primitive | `src/lib/config-workflow/` |
+| Security | Path-scope validation (`assertPathWithinRoot`) and boundary-field redaction | `src/lib/security/` |
 
 ## Pattern Overview
 
-**Overall:** Plugin-based Control Plane with Event-Driven Session Orchestration
-
-HiveMind V3 is an OpenCode plugin that acts as a **runtime composition engine** — it wires tools, hooks, and shared libraries into the OpenCode host to provide delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. There is zero business logic in the plugin layer itself; all logic lives in individual factories and library modules.
+**Overall:** CQRS Plugin Architecture with WaiterModel Delegation
 
 **Key Characteristics:**
-- Composition root pattern — `plugin.ts` instantiates all managers, wires hooks, registers tools
-- Factory-based hooks — three hook factories produce discrete hook sets (core, session, tool-guard)
-- Callback-inversion in handlers — `SdkDelegationHandler` and `CommandDelegationHandler` receive callbacks from `DelegationManager` rather than owning registration/persistence
-- Dual-layer state — durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`), hydrated on startup
-- WaiterModel delegation — tools return immediately with a delegation ID; completion is detected via dual-signal (session.idle event + stability polling)
-- Safety ceiling (not deadline) — delegations run until dual-signal confirms completion; `safetyCeilingMs` is a MAX runtime abort, not a target
-- State root separation — `.hivemind/` at project root for all internal deep module state; `.opencode/` reserved for OpenCode primitives only (Q6)
-
-## State Root Architecture (Q6)
-
-All Hivemind internal deep module state writes to `.hivemind/` at project root. `.opencode/` is reserved exclusively for OpenCode primitives (agents, commands, skills, rules).
-
-**Migration path:** `.opencode/state/opencode-harness/` → `.hivemind/state/` (one-way, no dual-write)
-
-**Write Surface Table:**
-
-| Module | Canonical Write Location | Type |
-|--------|--------------------------|------|
-| Session Journal | `.hivemind/journal/` | Internal deep module |
-| Continuity store | `.hivemind/state/session-continuity.json` | Internal deep module |
-| Delegation records | `.hivemind/state/delegations.json` | Internal deep module |
-| Future graph projections | `.hivemind/graph/` | Internal deep module |
-| Future vector memory | `.hivemind/vector/` | Internal deep module |
-| Skills | `.opencode/skills/` | OpenCode primitive |
-| Agents | `.opencode/agents/` | OpenCode primitive |
-| Commands | `.opencode/commands/` | OpenCode primitive |
-| Rules | `.opencode/rules/` | OpenCode primitive |
-
-**Compatibility bridge:** Existing `.opencode/state/opencode-harness/` remains readable during transition.
-
-## 9-Surface Mutation Authority
-
-From Phase 16.4 architecture baseline, only the following surfaces may mutate canonical state:
-
-| Surface | Authority | Constraint |
-|---------|-----------|------------|
-| `continuity.ts` | Full CRUD | Durable JSON persistence, deep-clone-on-read |
-| `delegation-persistence.ts` | Delegation record I/O | Normalizes older records, writes to `.hivemind/state/` |
-| `session-journal.ts` (future) | Append-only | Event timeline per session, no updates or deletes |
-| `sidecar` (future) | Read-only | Reads `.hivemind/` and `.planning/` artifacts; CANNOT write |
-| `DelegationManager` | Orchestration | Dispatches through canonical stores, does not bypass |
-| `TaskStateManager` | In-memory state | Maps only, no direct file writes |
-| `plugin.ts` | Composition root | Wires but does not implement business logic |
-| Tool factories | Delegated | Return structured responses, state changes via managers |
-| Hook factories | Observational | Report facts, suppress, or inject metadata; no direct state mutation |
-
-Tools and hooks write ONLY through `DelegationManager` and `continuity`.
+- **CQRS separation**: Tools are the only write-side mutation surface; hooks are read-side observers — enforced by `hook-cqrs-boundary.ts` (`assertHookWriteBoundary`)
+- **WaiterModel delegation**: `delegate-task` tool returns immediately with delegation ID; polling via `delegation-status` tool; dual-signal completion detection (session.idle + stability timer)
+- **Dual-layer state**: Durable JSON file (`continuity.ts`) for persistence across restarts + in-memory Maps (`state.ts`) for hot runtime access, hydrated on startup
+- **Keyed semaphore concurrency**: `DelegationConcurrencyQueue` with per-key (provider:model, agent:category) FIFO lanes, high/normal priority queuing
+- **Trusted runtime policy**: Configurable concurrency limits, tool budgets, category gates loaded from `.hivemind/runtime-policy.json` (workspace-level) with per-session overrides via delegation metadata
+- **Hybrid delegation**: SDK child-session dispatch (resumable) + PTY command-process dispatch (best-effort) + headless process dispatch (non-resumable) — unified under `DelegationManager`
+- **Zero business logic in plugin layer**: `plugin.ts` is a thin composition root (~142 LOC); all logic lives in individual hook factories and tool implementations
+- **`[Harness]` error prefix**: All thrown errors use this prefix for flow control identification
 
 ## Layers
 
-**Layer 1 — Harness Core:**
-- `DelegationCategory` (6 current categories) — Model routing with behavioral prompt appends
-- Category prompt appends per delegation type
-- Specialist routing with safe fallback
-
-**Layer 2 — Runtime Intelligence (Q1):**
-- Deep codemap/codescan — Detects project type, language, framework, complexity
-- File watcher — Triggers dependency graph update on package.json changes
-- MCP tools + stack skills — Synthesize tech stack at runtime (Tavily, Context7, GitHub MCP)
-- Dependency graph — Tracks and updates when versions change or new registries added
-
-**Plugin Layer (Composition Root):**
-- Purpose: Assembly and wiring — no business logic
-- Location: `src/plugin.ts`
-- Contains: Plugin entry point, manager instantiation, hook factory calls, tool registration
-- Depends on: All hook factories, all tool factories, `DelegationManager`, `HarnessLifecycleManager`
-- Used by: OpenCode runtime (loads as plugin)
-
-**Hook Layer (Event Handlers):**
-- Purpose: React to OpenCode lifecycle events, transform messages, enforce tool budgets
-- Location: `src/hooks/`
-- Contains: Three factory modules — `create-core-hooks.ts` (event routing, message transform, shell env), `create-session-hooks.ts` (auto-loop, compaction context), `create-tool-guard-hooks.ts` (circuit breaker, tool budget, metadata injection)
-- Depends on: `HarnessLifecycleManager`, `TaskStateManager`, continuity store, SDK client
-- Used by: OpenCode hook system (event, messages.transform, tool.execute.before/after, etc.)
-
-**Tool Layer (User-Facing APIs):**
-- Purpose: Expose harness capabilities to agents via callable tools
+### Tools Layer (Write-Side / CQRS Command)
+- Purpose: Expose mutation operations to agents via OpenCode tool system — delegation dispatch, status polling, background commands, prompt enhancement, configuration, validation, journal export
 - Location: `src/tools/`
-- Contains: `delegate-task.ts` (dispatch work to specialist agents), `delegation-status.ts` (poll delegation state), `run-background-command.ts` (PTY/headless command execution), `prompt-skim/`, `prompt-analyze/`, `session-patch/` (prompt-enhance pipeline tools)
-- Depends on: `DelegationManager`, `PtyManager`, directory context
-- Used by: Agents during sessions via tool invocation
+- Contains: 9 tool implementations, each wrapping a Zod schema and `execute()` function
+- Depends on: `src/lib/` (types, delegation-manager, continuity), `@opencode-ai/plugin/tool`, `src/shared/`
+- Used by: OpenCode runtime — agents invoke tools via plugin tool registry
 
-**Manager Layer (Orchestration):**
-- Purpose: Core business logic for delegation, lifecycle, concurrency, completion detection
+**Tools registered:**
+| Tool | Purpose | File |
+|------|---------|------|
+| `delegate-task` | Dispatch work to specialist agents via SDK child-session (WaiterModel) | `src/tools/delegate-task.ts` |
+| `delegation-status` | Poll delegation status by ID or list all (optionally filtered by status) | `src/tools/delegation-status.ts` |
+| `run-background-command` | Run CLI commands in shared PTY sessions with queue-governed dispatch | `src/tools/run-background-command.ts` |
+| `prompt-skim` | Fast scan of prompt content (words/lines/tokens, URLs, file paths, complexity score) | `src/tools/prompt-skim/` |
+| `prompt-analyze` | Deep analysis for contradictions, vagueness, missing scope, clarity signals | `src/tools/prompt-analyze/` |
+| `session-patch` | Patch specific sections in session files with backup | `src/tools/session-patch/` |
+| `session-journal-export` | Export session journal and execution lineage as JSON or Markdown | `src/tools/session-journal-export.ts` |
+| `configure-primitive` | Configure, read, list, or inspect OpenCode primitives (agent, command, skill) | `src/tools/configure-primitive.ts` |
+| `validate-restart` | Validate compiled primitives are discoverable after restart | `src/tools/validate-restart.ts` |
+
+### Hooks Layer (Read-Side / CQRS Query)
+- Purpose: Observe and react to OpenCode lifecycle events — event routing, auto-loop, session compaction, tool guarding, shell env injection
+- Location: `src/hooks/`
+- Contains: 7 hook factory modules organized by concern
+- Depends on: `src/lib/` (session-api, lifecycle-manager, continuity, types)
+- Used by: `plugin.ts` composition root — spread-merged into plugin return object
+
+**Hook factories:**
+| Factory | Produces | File |
+|---------|----------|------|
+| `createCoreHooks` | `event`, `messages.transform`, `system.transform`, `experimental.chat.system.transform`, `shell.env` | `src/hooks/create-core-hooks.ts` |
+| `createSessionHooks` | `event` (auto-loop), `experimental.session.compacting` | `src/hooks/create-session-hooks.ts` |
+| `createToolGuardHooks` | `tool.execute.before` (guard), `tool.execute.after` (audit) | `src/hooks/create-tool-guard-hooks.ts` |
+| Plugin Event Observers | `event` observers for delegation lifecycle and session journey tracking | `src/hooks/plugin-event-observers.ts` |
+| `createToolExecuteAfterHook` | `tool.execute.after` composer that chains tool-guard after-hook with output summarization | `src/hooks/tool-after-composer.ts` |
+| CQRS Boundary | `classifyHookEffect()`, `assertHookWriteBoundary()` — classifies hooks as observation/response-shaping/guard-decision | `src/hooks/hook-cqrs-boundary.ts` |
+
+### Library Layer (Deep Modules / Shared Kernel)
+- Purpose: All business logic — types, state, concurrency, persistence, lifecycle, delegation, SDK wrappers, completion detection, runtime policy, session journal, execution lineage, event tracking, spawner, PTY, security
 - Location: `src/lib/`
-- Contains:
-  - `delegation-manager.ts` — Delegation orchestration (dispatch, recovery, safety ceiling, session idle/deleted handling). Delegates SDK and command handling to `SdkDelegationHandler` and `CommandDelegationHandler`.
-  - `lifecycle-manager.ts` — Session lifecycle state machine (currently minimal stub, delegates to `DelegationManager` for `launchDelegatedSession`)
-  - `concurrency.ts` — Keyed semaphore with FIFO queue per model+agent+category key, priority lanes (high/normal)
-  - `completion-detector.ts` — Two-signal completion detection (idle event + stability timer)
-  - `state.ts` — `TaskStateManager` class: in-memory Maps for session stats, root budgets, session-to-root mapping, delegation metadata, subagent registry
-  - `continuity.ts` — Durable JSON persistence with deep-clone-on-read, normalization, CRUD operations
-  - `runtime-policy.ts` — Runtime policy loading, validation, per-session override resolution
-  - `session-api.ts` — Typed OpenCode SDK wrappers (create, get, abort, messages, prompt, promptAsync)
-  - `sdk-delegation.ts` — SDK delegation handler: stability polling, result extraction, recovery
-  - `command-delegation.ts` — Command delegation handler: PTY dispatch, headless fallback, exit polling
-  - `runtime.ts` — Event-to-status mapping (transport signal inference)
-  - `helpers.ts` — Pure utilities: type guards, nested value extraction, SDK error unwrapping, stable stringify, prompt building
-  - `types.ts` — Shared type definitions and constants (leaf node — no imports)
+- Contains: 34 modules organized into flat files and 6 subdirectories (spawner, pty, event-tracker, security, config-workflow)
+- Depends on: `zod`, `@opencode-ai/sdk`, `bun-pty`, `gray-matter`, `yaml`, Node.js built-ins (fs, crypto, path, child_process)
+- Used by: `plugin.ts` composition root, all tools, all hooks
 
-**Spawner Subsystem:**
-- Purpose: Child session creation with permission profiles and working directory resolution
-- Location: `src/lib/spawner/`
-- Contains: `session-creator.ts` (SDK session creation with write-capable permissions), `spawner-types.ts` (spawn request/result contracts), `parent-directory.ts` (working directory resolution), `concurrency-key.ts` (delegation queue key builder)
+**Dependency graph (simplified):**
+```
+types.ts (leaf — no imports)
+├── task-status.ts → types.ts
+├── state.ts → types.ts
+├── helpers.ts → types.ts
+├── concurrency.ts (self-contained)
+├── completion-detector.ts (self-contained)
+├── continuity.ts → types.ts + security/
+├── delegation-persistence.ts → types.ts + continuity.ts
+├── session-api.ts → helpers.ts
+├── runtime.ts → helpers.ts + types.ts
+├── notification-handler.ts → helpers.ts
+├── category-gates.ts → types.ts
+├── category-gate-audit.ts → types.ts
+├── runtime-policy.ts → types.ts + category-gates.ts
+├── workspace-runtime-policy.ts → (fs-based config loading)
+├── session-journal.ts → security/
+├── execution-lineage.ts → types.ts + session-journal.ts
+├── event-tracker/ → types.ts + writers
+├── spawner/ → session-api.ts + concurrency.ts + helpers.ts
+├── pty/ → (bun-pty optional)
+├── command-delegation.ts → pty/ + helpers.ts
+├── sdk-delegation.ts → session-api.ts + helpers.ts
+├── app-api.ts → session-api.ts + helpers.ts
+├── lifecycle-manager.ts → concurrency + continuity + helpers + session-api + state + types + completion-detector + notification-handler
+└── delegation-manager.ts → concurrency + delegation-persistence + notification-handler + command-delegation + sdk-delegation + category-gates + category-gate-audit + session-api + runtime-policy + spawner/ + app-api + types
+```
 
-**PTY Subsystem:**
-- Purpose: PTY session management for interactive command execution
-- Location: `src/lib/pty/`
-- Contains: `pty-manager.ts` (PTY lifecycle: spawn, write, read, terminate via `bun-pty`), `pty-buffer.ts` (ring buffer for PTY output), `pty-types.ts` (PTY type contracts)
+**Max chain depth:** 2 levels. `types.ts` changes ripple to most modules.
 
-**Shared Layer:**
-- Purpose: Cross-cutting tool utilities
+### Shared Layer (Cross-Cutting Tool Utilities)
+- Purpose: Standard tool response envelope and rendering for consistent tool output
 - Location: `src/shared/`
-- Contains: `tool-response.ts` (standard response envelope with success/error/pending kinds), `tool-helpers.ts` (JSON serialization helper)
+- Files: `tool-response.ts` (success/error/pending envelope with type guards), `tool-helpers.ts` (JSON rendering)
+- Depends on: Nothing (leaf modules)
+- Used by: All tool implementations
 
-**Schema Kernel:**
-- Purpose: Zod schemas for prompt-enhance pipeline contracts
+### Schema Kernel Layer
+- Purpose: Zod validation schemas for OpenCode meta-concept validation — agent/command/skill frontmatter, permissions, MCP server configs, prompt-enhance pipeline, config precedence
 - Location: `src/schema-kernel/`
-- Contains: `prompt-enhance.schema.ts` (schemas for skim, analyze, patch), `index.ts` (barrel re-exports)
+- Files: 9 `.schema.ts` files + `index.ts` barrel
+- Depends on: `zod` (zod v4)
+- Used by: `configure-primitive` tool, `validate-restart` tool, config-workflow
+
+### Soft Meta-Concepts Layer
+- Purpose: User-configurable OpenCode primitives — agents, skills, commands, rules — compose the runtime behavior from outside the npm package
+- Location: `.opencode/`
+- Contains: 57 agents, 50 skills, 20 commands, permission rules, plugin loader
+- Relationship: Loaded at OpenCode startup; harness tools reference these primitives at runtime
+
+### Deep Module State Layer (Q6)
+- Purpose: Internal runtime state persistence — session continuity, delegation records, execution lineage, event tracker artifacts, session journals, state planning
+- Location: `.hivemind/`
+- Contains: `state/` (session-continuity.json, delegations.json, config-workflows.json), `event-tracker/`, `journal/`, `lineage/`, `research/`, `archive/`, `cycle2/`, `daily-notes/`
+- Relationship: Written by `continuity.ts`, `delegation-persistence.ts`, `event-tracker/`, `session-journal.ts`; read at hydration time
+
+### Entry Points
+| Entry Point | Location | Triggers | Responsibilities |
+|-------------|----------|----------|------------------|
+| Plugin Composition | `src/plugin.ts` | OpenCode plugin loading | Instantiate deps, wire hooks, register 9 tools, load runtime policy, recover pending delegations |
+| Public API | `src/index.ts` | `import "opencode-harness"` | Re-export `HarnessControlPlane` + entire lib surface |
+| Plugin subpath | `dist/plugin.js` (via `./plugin` export) | `opencode.json` `"plugin": ["./dist/plugin.js"]` | Thin re-export of `HarnessControlPlane` |
 
 ## Data Flow
 
-**Delegation Dispatch (SDK Mode):**
+### Primary Request Path: Delegation (WaiterModel)
 
-1. Agent calls `delegate-task` tool with `agent` + `prompt`
-2. `createDelegateTaskTool` validates input via Zod schema, calls `DelegationManager.dispatch()`
-3. `DelegationManager` validates agent against runtime registry, builds queue key, acquires semaphore slot
-4. `spawnDelegatedSession()` creates child session via SDK with write-capable permissions
-5. `DelegationManager` registers delegation (in-memory Map + persisted JSON), sends prompt to child via `client.session.prompt()`
-6. Tool returns immediately with `{ delegationId, status: "dispatched" }`
-7. `DelegationManager` transitions status to `"running"` after prompt succeeds
-8. On `session.idle` event, `handleSessionIdle()` triggers stability polling via `SdkDelegationHandler`
-9. Stability polls check message count; after `STABILITY_THRESHOLD` (3) consecutive unchanged polls, delegation is finalized
-10. Result extracted via `extractAllAssistantText()`, status set to `"completed"`, cleanup performed
+1. **Agent invokes `delegate-task` tool** — passes agent name, prompt, title, safetyCeilingMs (`src/tools/delegate-task.ts:42-56`)
+2. **Schema validation** — `DelegateTaskInputSchema.parse()` via Zod (`src/tools/delegate-task.ts:43`)
+3. **Runtime detection** — checks `context.sessionID` / `OPENCODE_SESSION_ID` for OpenCode context (`src/tools/delegate-task.ts:46-53`)
+4. **DelegationManager.dispatch()** — validates agent, resolves category gate, checks depth limit, acquires concurrency slot, builds spawn request (`src/lib/delegation-manager.ts`)
+5. **Spawner resolves agent policy** — loads agent `.md` frontmatter, resolves permissions, tools, temperature from primitives (`src/lib/spawner/spawn-request-builder.ts`, `src/lib/spawner/agent-primitive-policy.ts`)
+6. **Session creation** — SDK `client.session.create()` with parentID, agent, model, tools, permissions (`src/lib/spawner/session-creator.ts`, `src/lib/session-api.ts:39`)
+7. **Prompt dispatch** — SDK `sendPrompt()` sends task prompt to child session (`src/lib/session-api.ts:141`)
+8. **Concurrency release** — release queue slot, persist delegation record (`src/lib/delegation-manager.ts`)
+9. **Status polling** — agent periodically calls `delegation-status` tool to check completion (`src/tools/delegation-status.ts`)
+10. **Completion detection** — `CompletionDetector` watches for `session.idle` events + stability timer (`src/lib/completion-detector.ts`)
+11. **Result capture** — messages retrieved via `getSessionMessages()`, result returned as JSON tool response (`src/lib/sdk-delegation.ts`, `src/tools/delegation-status.ts`)
 
-**Command Dispatch (PTY Mode):**
+### Secondary Flow: Background Command Execution (PTY)
 
-1. Agent calls `run-background-command` tool with `command` + `args`
-2. `DelegationManager.dispatchCommand()` builds queue key, acquires semaphore
-3. `CommandDelegationHandler.dispatchCommand()` attempts PTY spawn via `PtyManager`
-4. If PTY unavailable, falls back to headless `child_process.spawn()`
-5. PTY exit polling at 250ms intervals checks `exitCode`
-6. On exit, delegation finalized with output + exit code
+1. Agent invokes `run-background-command` tool with `action: "run"` (`src/tools/run-background-command.ts`)
+2. Tool routes to `DelegationManager` → `CommandDelegationHandler` (`src/lib/command-delegation.ts`)
+3. PTY session spawned via `PtyManager` (lazy-loaded bun-pty with graceful fallback) (`src/lib/pty/pty-runtime.ts`, `src/lib/pty/pty-manager.ts`)
+4. Output polled via `action: "output"`, input sent via `action: "input"`, terminated via `action: "terminate"`
+5. Queue-governed dispatch with key-based concurrency
 
-**Event Routing:**
+### Tertiary Flow: Prompt Enhancement Pipeline
 
-1. OpenCode fires events (session.created, session.idle, session.deleted, etc.)
-2. `createCoreHooks` event handler extracts `eventType` + `sessionID`
-3. `HarnessLifecycleManager.handleEvent()` feeds `CompletionDetector`
-4. Event observers (`delegationEventObserver`, `sessionEventObserver`) handle delegation-specific logic
-5. `createSessionHooks` event handler drives auto-loop on `session.idle` for delegation packets
+1. Agent invokes `prompt-skim` → fast scan (words, lines, tokens, URLs, file paths, complexity) (`src/tools/prompt-skim/`)
+2. Agent invokes `prompt-analyze` → deep analysis (contradictions, vagueness, clarity) (`src/tools/prompt-analyze/`)
+3. Agent invokes `session-patch` → apply fixes to session files (`src/tools/session-patch/`)
+4. All use shared `ToolResponse<T>` envelope (`success`/`error`/`pending`) from `src/shared/tool-response.ts`
 
-**Tool Guard Enforcement:**
+### Event Observation Flow (Hook Side)
 
-1. `tool.execute.before` hook intercepts every tool call
-2. Increments per-session tool call counter in `TaskStateManager`
-3. Checks against `maxToolCallsPerSession` (default 400) — throws if exceeded
-4. Builds tool signature (tool name + stable-stringified args), tracks repeated calls
-5. Checks against `repeatedSignatureThreshold` (default 16) — circuit breaker trips if exceeded
-6. `tool.execute.after` hook injects `_harness` metadata into tool output (stats, warnings, delegation info, continuity snapshot)
+1. OpenCode emits session lifecycle events (start, idle, error, deleted, compacting, message)
+2. `createCoreHooks` → `event` handler routes to `lifecycleManager.handleEvent()` (`src/hooks/create-core-hooks.ts:52-60`)
+3. `createSessionHooks` → `event` handler drives auto-loop behavior on `session.idle` (`src/hooks/create-session-hooks.ts`)
+4. `createToolGuardHooks` → `tool.execute.before` guards tool calls against budget/tool restrictions; `tool.execute.after` records audit events (`src/hooks/create-tool-guard-hooks.ts`)
+5. Plugin event observers → delegation lifecycle tracking (`delegation-session-idle`, `delegation-session-deleted`) and session journey tracking (`src/hooks/plugin-event-observers.ts`)
+6. Event tracker → parses hook events, writes artifacts to `.hivemind/event-tracker/` (`src/lib/event-tracker/hook-event.ts`, `src/lib/event-tracker/artifact-writer.ts`)
 
 **State Management:**
-- **In-memory:** `TaskStateManager` singleton (`state.ts`) holds session stats, root budgets, delegation metadata, subagent registry — all as `Map<string, ...>`
-- **Durable:** `continuity.ts` persists to `.opencode/state/opencode-harness/session-continuity.json` — deep-clone-on-read prevents mutation aliasing
-- **Hydration:** On plugin startup, `lifecycleManager.hydrateFromContinuity()` loads all session records into in-memory Maps
-- **Recovery:** `DelegationManager.recoverPending()` restores running/dispatched delegations from persisted JSON, re-attaches to live sessions
+- Durable state: `continuity.ts` writes `session-continuity.json` to `.hivemind/state/` (canonical per Q6); deep-clone-on-read, normalize-on-write, quarantine-on-corruption
+- In-memory state: `state.ts` `TaskStateManager` with 4 Maps (rootBudgets, sessionToRoot, sessionStats, sessionDelegationMeta + subagentSessions)
+- Delegation state: `delegation-persistence.ts` writes `delegations.json` to `.hivemind/state/`
+- Hydration: `lifecycleManager.hydrateFromContinuity()` at startup
 
 ## Key Abstractions
 
-**Delegation:**
-- Purpose: Represents a unit of work dispatched to a specialist agent or command
-- Examples: `src/lib/types.ts` (Delegation interface), `src/lib/delegation-manager.ts` (dispatch/registration)
-- Pattern: WaiterModel — dispatch returns immediately, completion detected asynchronously via dual-signal
+**RuntimePolicy:**
+- Purpose: Configurable concurrency limits, tool budgets, category gates — loaded from workspace-level JSON or defaults
+- Examples: `src/lib/runtime-policy.ts` (loading, validation, per-session overrides), `src/lib/workspace-runtime-policy.ts` (filesystem resolution)
+- Pattern: Layered defaults with per-key overrides; supplements OpenCode-native enforcement (never duplicates)
 
-**Continuity Record:**
-- Purpose: Persistent metadata for each session — status, delegation info, lifecycle state, pending notifications, result capture
-- Examples: `src/lib/types.ts` (SessionContinuityRecord, SessionContinuityMetadata), `src/lib/continuity.ts` (CRUD operations)
-- Pattern: Single JSON file with versioned schema, deep-clone-on-read, atomic writes
+**Delegation (WaiterModel):**
+- Purpose: Unified abstraction for all delegation modes (SDK child-session, PTY command, headless process)
+- Examples: `src/lib/delegation-manager.ts` (orchestrator), `src/lib/sdk-delegation.ts` (SDK polling), `src/lib/command-delegation.ts` (PTY/process)
+- Pattern: dispatch → return ID immediately → poll for status via delegation-status tool
 
-**Runtime Policy:**
-- Purpose: Configurable limits for concurrency, tool budgets, circuit breaker thresholds
-- Examples: `src/lib/types.ts` (RuntimePolicy, ConcurrencyPolicy, BudgetPolicy), `src/lib/runtime-policy.ts` (loading, validation, per-session overrides)
-- Pattern: Defaults hardcoded, workspace-level overrides loaded at startup, per-session overrides from trusted delegation metadata only
+**HookDependencies:**
+- Purpose: Shared dependency bundle injected into all hook factories
+- Examples: `src/hooks/types.ts` — `lifecycleManager`, `client`, `stateManager`, `eventObservers`
+- Pattern: Constructor injection via factory functions; hooks receive only what they need
 
-**Concurrency Queue:**
-- Purpose: Keyed semaphore preventing resource exhaustion per model/agent/category combination
-- Examples: `src/lib/concurrency.ts` (DelegationConcurrencyQueue class), `src/lib/spawner/concurrency-key.ts` (key builder)
-- Pattern: FIFO queue per lane with priority (high/normal), configurable limit (default 3), optional acquire timeout
+**ToolResponse<T>:**
+- Purpose: Standardized tool output envelope with kind (success/error/pending), message, optional data/metadata
+- Examples: `src/shared/tool-response.ts`
+- Pattern: All tools return `renderToolResult(success(...))` or `renderToolResult(error(...))`
 
-**Completion Detection:**
-- Purpose: Determine when a delegated session has finished working
-- Examples: `src/lib/completion-detector.ts` (CompletionDetector class), `src/lib/sdk-delegation.ts` (stability polling)
-- Pattern: Two-signal — `session.idle` event triggers stability polling; 3 consecutive polls with unchanged message count confirms completion
+## Architectural Constraints
 
-## Entry Points
+- **Threading:** Single-threaded Node.js event loop. Concurrency managed via `DelegationConcurrencyQueue` (keyed semaphore, not threads). Background processes via `child_process.spawn` or `bun-pty` PTY sessions.
+- **Global state:** `storeCache` singleton at `continuity.ts:26` prevents isolated unit testing. `taskState` singleton at `state.ts` — multiple Maps accessible from anywhere.
+- **Circular imports:** No known circular dependencies. Dependency graph max depth is 2 levels (`types.ts` → `lifecycle-manager.ts` → `delegation-manager.ts`).
+- **Module size cap:** Target 500 LOC per module. `delegation-manager.ts` at 656 LOC currently exceeds this. `continuity.ts` at 455 LOC is near threshold.
+- **CQRS enforcement:** `hook-cqrs-boundary.ts` `assertHookWriteBoundary()` rejects durable writes from hooks. Only tools (write-side) may mutate state.
+- **No `any` types:** Policy enforced for new code. Known tech debt: `client: any` in some SDK type positions.
+- **State root separation (Q6):** `.hivemind/` is canonical state root; `.opencode/` is only for OpenCode primitives. One-way migration from legacy `.opencode/state/opencode-harness/`.
 
-**Plugin Entry Point:**
-- Location: `src/plugin.ts` → `HarnessControlPlane`
-- Triggers: OpenCode loads plugin at startup
-- Responsibilities: Instantiate managers, create hooks, register tools, recover pending delegations, hydrate continuity state
+## Anti-Patterns
 
-**Public API:**
-- Location: `src/index.ts`
-- Triggers: Consumer imports `opencode-harness` or `opencode-harness/plugin`
-- Responsibilities: Re-export `HarnessControlPlane` as default + all library modules for external use
+### State Accumulation in Singleton Maps
 
-**Tool Entry Points:**
-- `delegate-task` — `src/tools/delegate-task.ts` — Dispatch work to specialist agent
-- `delegation-status` — `src/tools/delegation-status.ts` — Poll delegation state
-- `run-background-command` — `src/tools/run-background-command.ts` — Execute command in PTY/headless
-- `prompt-skim` — `src/tools/prompt-skim/index.ts` — Quick prompt assessment
-- `prompt-analyze` — `src/tools/prompt-analyze/index.ts` — Deep prompt analysis
-- `session-patch` — `src/tools/session-patch/index.ts` — Patch session file sections
+**What happens:** `TaskStateManager` stores session stats, root budgets, and delegation meta in Maps that accumulate indefinitely — no automatic eviction for completed/terminal sessions.
+**Why it's wrong:** Memory leak potential in long-running sessions with many delegations. Completed session data remains in memory.
+**Do this instead:** Prune terminal sessions after configurable TTL; leverage `TASK_CLEANUP_DELAY_MS` already defined in `types.ts`.
+
+### Module-Level Singleton Cache
+
+**What happens:** `continuity.ts:26` `let storeCache: ContinuityStoreFile | undefined` — file-level mutable state prevents isolated unit testing of continuity functions.
+**Why it's wrong:** Tests can't mock or reset the cache without modules reloading; parallel tests may observe each other's cache.
+**Do this instead:** Encapsulate cache inside a class instance; inject via constructor or factory.
+
+### DelegationManager Size
+
+**What happens:** `delegation-manager.ts` at 656 LOC mixes orchestration, concurrency management, status transitions, recovery, persistence, PTY coordination, category gate resolution, and agent validation.
+**Why it's wrong:** Breaks module size cap of 500 LOC; single change risk surface; hard to test individual concerns.
+**Do this instead:** Extract PTY-specific delegation into separate handler (partially done with `command-delegation.ts` and `sdk-delegation.ts`). Extract agent validation into the spawner (partially done). Extract recovery into dedicated module.
 
 ## Error Handling
 
-**Strategy:** `[Harness]`-prefixed errors for flow control, not bugs. All thrown errors include this prefix for easy filtering.
+**Strategy:** All thrown errors use `[Harness]` prefix for flow control identification. Errors propagate through Promise chains and are caught at the outermost tool `execute()` layer, where they're wrapped in `ToolResponse` error envelopes.
 
 **Patterns:**
-- SDK errors unwrapped via `unwrapData()` in `helpers.ts` — extracts human-readable message from varying SDK error shapes
-- Tool calls wrapped in try/catch — errors returned as `{ kind: "error", message: ... }` envelope
-- Safety ceiling aborts are best-effort — `client.session.abort()` caught with no-op on failure
-- Continuity writes are atomic — write to temp file then rename (prevents corruption on crash)
-- Module-level singletons (`storeCache` in `continuity.ts`, `taskState` in `state.ts`) — process-wide shared state
+- **Validate-early:** `assertValidSessionID()` in `session-api.ts` throws before any SDK call
+- **Graceful degradation:** `bun-pty` lazy-loaded with fallback; `createPtyManagerIfSupported()` returns undefined if unavailable
+- **Best-effort audit:** Event tracker writes use try/catch — never block canonical OpenCode event handling
+- **Quarantine on corruption:** `continuity.ts` `quarantineCorruptFile()` renames corrupt JSON files for audit visibility
+- **Idempotent operations:** `SpawnReservation.release()` and `.rollback()` are idempotent (settled flag)
+- **Timeout with fallback:** `sendPrompt()` has 30s fallback polling if SDK returns empty response
 
 ## Cross-Cutting Concerns
 
-**Logging:** No dedicated logging framework — warnings stored in `SessionStats.warnings[]` array (capped at 25 per session), surfaced via `_harness` metadata in tool outputs
+**Logging:** No structured logging framework. Errors thrown with `[Harness]` prefix. Event tracker writes markdown artifacts to `.hivemind/event-tracker/`. Session journal provides append-only event timeline.
 
-**Validation:** Zod schemas for tool inputs (`DelegateTaskInputSchema`), runtime policy validation at load time, session ID format validation (`ses` prefix check)
+**Validation:** Zod v4 schemas in `schema-kernel/` for agent/command/skill frontmatter, permissions, MCP servers. `validateWithFallback()` performs strict-first then lenient validation, stripping unknown keys with warnings.
 
-**Authentication:** Delegated to OpenCode host — harness operates within authenticated session context
+**Authentication:** Not applicable — this is a plugin within OpenCode's process. No external auth beyond OpenCode's own session management.
 
-**Concurrency Control:** Keyed semaphore with per-lane limits, safety ceiling timers, circuit breaker on repeated tool signatures
+**Persistence:** Three persistence surfaces:
+1. `continuity.ts` — session continuity as JSON (`session-continuity.json`)
+2. `delegation-persistence.ts` — delegation records as JSON (`delegations.json`)
+3. `config-workflow/` — turn-based workflow state as JSON (`config-workflows.json`)
+All canonical paths write to `.hivemind/state/` per Q6.
 
-**Persistence:** Durable JSON files in `.hivemind/state/` for all canonical state — `session-continuity.json`, `delegations.json`. Migration from `.opencode/state/opencode-harness/` in progress (Q6).
+**Migration (Q6):** Legacy state at `.opencode/state/opencode-harness/` supported via compatibility bridge during one-way migration. No dual-write.
 
 ---
 
-*Architecture analysis: 2026-04-25*
+*Architecture analysis: 2026-04-28*

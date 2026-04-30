@@ -1,7 +1,7 @@
 # Requirements: Harness V3 Runtime Composition Engine
 
 **Defined:** 2026-04-06
-**Last Updated:** 2026-04-28 — Phases 49-54 milestone routing updated; Phase 52 narrowed and follow-up Phases 53-54 added
+**Last Updated:** 2026-04-30 — Phases 55-59 product-detox concept migration runway requirements added as research-locked / pre-planning
 **Core Value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references. V3 extends the harness into a runtime composition engine with background agents, delegation chains, concurrency control, and schema-driven injection.
 
 ---
@@ -340,7 +340,12 @@ Requirements validated by completed phases. Kept for traceability.
 | PH51-01 through PH51-03 | Phase 51 | Complete |
 | PH52-01 through PH52-03 | Phase 52 | Pending |
 | PH53-01 through PH53-03 | Phase 53 | Pending |
-| PH54-01 through PH54-03 | Phase 54 | Pending |
+| PH54-01 through PH54-03 | Phase 54 | Complete for non-release runway |
+| DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Complete for planning |
+| TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Complete for planning |
+| PRESSURE-01 through PRESSURE-05 | Phase 57 | Complete for planning |
+| WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Complete for planning |
+| SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Complete for planning |
 
 ---
 
@@ -517,15 +522,85 @@ Truthful status: **Pending** — added as a follow-up so release gating does not
 
 ## Phase 54: Sidecar & Product-Detox Integration Runway
 
-Truthful status: **Pending** — added as a follow-up runway phase rather than overloading Phase 52 acceptance.
+Truthful status: **Complete for non-release runway** — Phase 54 created the sidecar/product-detox runway without changing Phase 52/53 release blockers.
 
-- [ ] **PH54-01**: Define the sidecar integration runway against the locked Q2/Q6 boundaries: read-only sidecar behavior, `.hivemind/` runtime state ownership, and `.opencode/` primitives-only separation.
-- [ ] **PH54-02**: Convert the current maintainability/product-detox concerns most likely to burden sidecar or product expansion into explicit follow-up requirements instead of implicit debt.
-- [ ] **PH54-03**: Produce an ordered runway for sidecar/product integration work so future planning can proceed without reopening Phase 52 or Phase 53 scope.
+- [x] **PH54-01**: Define the sidecar integration runway against the locked Q2/Q6 boundaries: read-only sidecar behavior, `.hivemind/` runtime state ownership, and `.opencode/` primitives-only separation.
+- [x] **PH54-02**: Convert the current maintainability/product-detox concerns most likely to burden sidecar or product expansion into explicit follow-up requirements instead of implicit debt.
+- [x] **PH54-03**: Produce an ordered runway for sidecar/product integration work so future planning can proceed without reopening Phase 52 or Phase 53 scope.
 
 ---
 
-## Master Traceability (Phases 35-54)
+## Phase 55: Doc Intelligence Engine
+
+Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+
+| Requirement | Priority | Status | Description |
+|-------------|----------|--------|-------------|
+| DOC-INTEL-01 | P1 | Complete for planning | Migrate remark-based markdown AST parsing for outline, frontmatter, and heading hierarchy extraction. |
+| DOC-INTEL-02 | P1 | Complete for planning | Define token-aware chunking for large documents with bounded chunk metadata and stable ordering. |
+| DOC-INTEL-03 | P1 | Complete for planning | Define doc surface router behavior for file, directory, chunk, and search operations. |
+| DOC-INTEL-04 | P1 | Complete for planning | Define `hivemind_doc` tool contract with `skim`, `skim_directory`, `read`, `chunk`, and `search` actions. |
+| DOC-INTEL-05 | P1 | Complete for planning | Verify dependency and integration plan for `remark`, `unist-util-visit`, `fast-glob`, and `ignore`. |
+
+---
+
+## Phase 56: Trajectory & Session v3
+
+Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+
+| Requirement | Priority | Status | Description |
+|-------------|----------|--------|-------------|
+| TRAJECTORY-01 | P1 | Complete for planning | Define trajectory ledger model for truth-anchored events, checkpoints, and recovery logs. |
+| TRAJECTORY-02 | P1 | Complete for planning | Define session v3 schema with semantic IDs, lineage, purpose class, generated TOC, key findings, and resumable flags. |
+| TRAJECTORY-03 | P1 | Complete for planning | Define trajectory store operations for creating, traversing, attaching, checkpointing, eventing, and closing records. |
+| TRAJECTORY-04 | P1 | Complete for planning | Define parent-child session hierarchy tree writer behavior without replacing existing journal or continuity layers. |
+| TRAJECTORY-05 | P1 | Complete for planning | Define `hivemind_trajectory` tool contract with `inspect`, `traverse`, `attach`, `checkpoint`, `event`, and `close` actions. |
+| TRAJECTORY-06 | P1 | Complete for planning | Map trajectory/session v3 to Phase 52 journal lineage and recovery proof gaps without claiming closure. |
+
+---
+
+## Phase 57: Runtime Pressure & Control Plane
+
+Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+
+| Requirement | Priority | Status | Description |
+|-------------|----------|--------|-------------|
+| PRESSURE-01 | P1 | Complete for planning | Define 10-tier runtime pressure model grouped from steady through advisory and gated to blocking. |
+| PRESSURE-02 | P1 | Complete for planning | Define control-plane `detect()` gate decision contract for allow, advise, require approval, defer, or block outcomes. |
+| PRESSURE-03 | P1 | Complete for planning | Define tool catalog authority matrix mapping tools to read/write authority, state surface, and pressure behavior. |
+| PRESSURE-04 | P1 | Complete for planning | Define pressure event schema with status, reason, severity, recommended action, and blocking rationale. |
+| PRESSURE-05 | P1 | Complete for planning | Map Phase 57 as prerequisite for Phase 39 auto-loop pressure gates and Phase 58 work contract gating. |
+
+---
+
+## Phase 58: Agent Work Contracts
+
+Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+
+| Requirement | Priority | Status | Description |
+|-------------|----------|--------|-------------|
+| WORK-CONTRACT-01 | P1 | Complete for planning | Define agent work scope contract with task boundary, allowed surfaces, dependencies, and non-goals. |
+| WORK-CONTRACT-02 | P1 | Complete for planning | Define evidence contract with required proof, acceptable evidence levels, and blocked-state reporting. |
+| WORK-CONTRACT-03 | P1 | Complete for planning | Define compaction preservation for briefing, summary, anchor extraction, and reinjection. |
+| WORK-CONTRACT-04 | P1 | Complete for planning | Define `hivemind_agent_work_create` and `hivemind_agent_work_export` tool contracts. |
+
+---
+
+## Phase 59: SDK Supervisor & Command Engine
+
+Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+
+| Requirement | Priority | Status | Description |
+|-------------|----------|--------|-------------|
+| SUPERVISOR-01 | P1 | Complete for planning | Define SDK supervisor health, heartbeat, and diagnostics contracts around OpenCode SDK interactions. |
+| SUPERVISOR-02 | P1 | Complete for planning | Define command bundle discovery and slash-command routing behavior. |
+| SUPERVISOR-03 | P1 | Complete for planning | Define command contracts for metadata, arguments, expected context, output shape, and failure states. |
+| SUPERVISOR-04 | P1 | Complete for planning | Define context renderer responsibilities and bounded context payload rules for command execution. |
+| SUPERVISOR-05 | P1 | Complete for planning | Define messages transform boundaries without reintroducing broad system-transform risks. |
+
+---
+
+## Master Traceability (Phases 35-59)
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
@@ -551,7 +626,12 @@ Truthful status: **Pending** — added as a follow-up runway phase rather than o
 | PH51-01 through PH51-03 | Phase 51 | Complete |
 | PH52-01 through PH52-03 | Phase 52 | Pending |
 | PH53-01 through PH53-03 | Phase 53 | Pending |
-| PH54-01 through PH54-03 | Phase 54 | Pending |
+| PH54-01 through PH54-03 | Phase 54 | Complete for non-release runway |
+| DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Complete for planning |
+| TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Complete for planning |
+| PRESSURE-01 through PRESSURE-05 | Phase 57 | Complete for planning |
+| WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Complete for planning |
+| SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Complete for planning |
 
 ---
 
@@ -567,5 +647,6 @@ Truthful status: **Pending** — added as a follow-up runway phase rather than o
 - DOC-REFRESH: 10 requirements — 10 complete
 - Phase 35-42: 36 new requirements — 5 complete, 31 pending/deferred
 - Phase 43-48 lifecycle remediation: 17 new requirements — 15 complete, 2 degraded
-- Phase 49-54 milestone routing: 18 new requirements — 9 complete (Phases 49-51), 9 pending (Phases 52-54)
-- **Grand total: 147 requirements — 72 complete, 16 superseded, 59 pending/deferred/degraded**
+- Phase 49-54 milestone routing: 18 new requirements — 12 complete (Phases 49-51 and Phase 54 runway), 6 pending/partial (Phases 52-53 release blockers)
+- Phase 55-59 product-detox migration runway: 25 new requirements — 25 complete for planning contracts
+- **Grand total: 172 requirements — 100 complete, 16 superseded, 56 pending/deferred/degraded/research-locked**

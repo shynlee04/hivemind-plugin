@@ -26,5 +26,5 @@ project history. Output skill goes to `./.opencode/skills/spike-findings-[projec
 
 <process>
 Execute the spike-wrap-up workflow from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/spike-wrap-up.md end-to-end.
-Preserve all curation gates (per-spike review, grouping approval, AGENTS.md routing line).
+Preserve all workflow gates (auto-include, feature-area grouping, skill synthesis, AGENTS.md routing line, intelligent next-step routing).
 </process>

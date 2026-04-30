@@ -1,196 +1,237 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-04-25
+**Analysis Date:** 2026-04-28
 
 ## Tech Debt
 
-### `notification-handler.ts` — Dead Code Retained
-- **Issue:** Entire module (`src/lib/notification-handler.ts`, 179 LOC) is `@deprecated` and NOT imported by any active delegation path. Retained for "potential future re-integration" but has been dead since WaiterModel replaced push notifications with stability polling.
-- **Files:** `src/lib/notification-handler.ts`
-- **Impact:** Increases bundle size, confuses new contributors, creates maintenance burden for code that never runs. The `@deprecated` comment says "remove by Phase 20" — a deadline that has likely passed.
-- **Fix approach:** Delete the file entirely. If push notifications are needed later, they can be reimplemented from scratch or restored from git history.
+**DelegationManager — Size exceeds target:**
+- Issue: `src/lib/delegation-manager.ts` at 656 LOC exceeds the project's 500 LOC per-module cap. Contains WaiterModel dispatch, dual-signal completion, safety ceiling management, grace-period cleanup, PTY integration, and notification scheduling — at least 3 distinct concerns.
+- Files: `src/lib/delegation-manager.ts`
+- Impact: Complex debugging, harder to test in isolation, increased risk of merge conflicts. The class manages 5 Map instances (`delegations`, `delegationsBySession`, `safetyTimers`, `gracePeriodTimers`, `activePolling`) simultaneously.
+- Fix approach: Extract safety-ceiling timer management into `src/lib/delegation-safety.ts` (~120 LOC). Extract grace-period cleanup into `src/lib/delegation-cleanup.ts` (~100 LOC). This would bring delegation-manager below 450 LOC.
 
-### `lifecycle-manager.ts` — Stub Implementation
-- **Issue:** `src/lib/lifecycle-manager.ts` (152 LOC) is a minimal stub. The comment says "Stripped to compile after 09-13 module deletion. Plan 14-02 will replace this." Key methods like `isValidTransition`, `noteObservedActivity`, and `launchDelegatedSession` are either no-ops or thin facades.
-- **Files:** `src/lib/lifecycle-manager.ts`
-- **Impact:** Lifecycle validation is effectively disabled. `isValidTransition` always returns `true`, meaning no transition guards are enforced. `noteObservedActivity` is a no-op, so activity tracking never happens.
-- **Fix approach:** Complete Plan 14-02 implementation or remove the stub and inline what's needed.
+**Types module — Exceeds 500 LOC:**
+- Issue: `src/lib/types.ts` at 514 LOC is above the 500 LOC cap. Contains delegation types, lifecycle types, continuity types, runtime policy types, and config workflow re-exports all in one file.
+- Files: `src/lib/types.ts`
+- Impact: Import overhead — every module that imports a single type pulls in the entire file's parse cost. The config-workflow re-exports (lines 506-514) add indirection.
+- Fix approach: Extract delegation types into `src/lib/types/delegation.ts`, lifecycle types into `src/lib/types/lifecycle.ts`, and keep `types.ts` as a barrel re-export file only.
 
-### `continuity.ts` Module-Level Singleton
-- **Issue:** `src/lib/continuity.ts:19` declares `let storeCache: ContinuityStoreFile | undefined` — a module-level singleton that prevents isolated unit testing. Any test that loads this module shares the same cache.
-- **Files:** `src/lib/continuity.ts`
-- **Impact:** Tests cannot verify isolated store behavior. Tests must clear or reset the singleton between cases, creating hidden coupling.
-- **Fix approach:** Inject the cache as a constructor parameter or use a factory function that returns a fresh store instance.
+**Duplicated utility function:**
+- Issue: `asString` is implemented in both `src/lib/helpers.ts` and `src/lib/continuity.ts`. AGENTS.md explicitly calls this out as a known code smell.
+- Files: `src/lib/helpers.ts`, `src/lib/continuity.ts`
+- Impact: Two implementations can diverge over time. Bug fixes to one won't propagate to the other.
+- Fix approach: Consolidate into `helpers.ts` only; have `continuity.ts` import from `helpers.ts`.
 
-### `asString` Duplicated in Two Modules
-- **Issue:** `asString` function exists in both `src/lib/helpers.ts:87` and is duplicated in `src/lib/continuity.ts`.
-- **Files:** `src/lib/helpers.ts`, `src/lib/continuity.ts`
-- **Impact:** Risk of divergence if one copy is updated and the other is not.
-- **Fix approach:** Export from `helpers.ts` only, import in `continuity.ts`.
+**Module-level singleton in continuity store:**
+- Issue: `src/lib/continuity.ts:23` — `let storeCache: ContinuityStoreFile | undefined` is a module-level singleton that persists across test runs.
+- Files: `src/lib/continuity.ts`
+- Impact: Prevents truly isolated unit testing — test files must unmock `node:fs` and manually reset state. Tests currently use `vi.unmock("node:fs")` in nested positions which vitest warns "will become an error in a future version."
+- Fix approach: Refactor to a `ContinuityStore` class with injectable filesystem adapter, or at minimum expose a `resetStoreCache()` function for tests. The test files `tests/lib/continuity.test.ts` and `tests/lib/delegation-persistence.test.ts` also need their `vi.unmock()` calls moved to module top-level before vitest enforces this.
 
-### `types.ts` Bloated at 405 LOC
-- **Issue:** `src/lib/types.ts` is the largest file in the codebase (405 LOC). It mixes type definitions, constants, and exported values. As the leaf node imported by most modules, any change cascades widely.
-- **Files:** `src/lib/types.ts`
-- **Impact:** High blast radius for changes. File is hard to navigate. Violates the 500 LOC target (close to ceiling).
-- **Fix approach:** Split into `types/` directory: `task-types.ts`, `session-types.ts`, `policy-types.ts`, `constants.ts`.
+**Documentation drift — notification-handler status:**
+- Issue: `src/lib/AGENTS.md` describes `notification-handler.ts` as "DEPRECATED: Dead code. WaiterModel polling replaces push notifications. Retained for potential re-integration." However, the actual code was re-activated in Phase 16.2 and is actively used by `delegation-manager.ts` via `notifyDelegationTerminal()`. The source file comments say "Re-activated in Phase 16.2."
+- Files: `src/lib/notification-handler.ts`, `src/lib/AGENTS.md`
+- Impact: Developers may avoid modifying or deleting code they believe is dead. Confusion about whether new features should use this module.
+- Fix approach: Update `src/lib/AGENTS.md` to reflect the current status: "Notification delivery for parent sessions (re-activated Phase 16.2). Provides fire-and-forget terminal-state notifications with durable pending-notification queuing."
 
-### `delegation-manager.ts` at 309 LOC — Largest Functional Module
-- **Issue:** `src/lib/delegation-manager.ts` (309 LOC) handles WaiterModel dispatch, stability polling, persistence, command delegation, SDK delegation, PTY integration, and spawner coordination. It imports from 12 different modules.
-- **Files:** `src/lib/delegation-manager.ts`
-- **Impact:** High coupling. Changes to any delegation aspect risk affecting others. Hard to unit test in isolation.
-- **Fix approach:** Extract PTY-specific logic and spawner coordination into separate modules. DelegationManager should orchestrate, not implement.
+**Deprecated constants still exported:**
+- Issue: `STABILITY_THRESHOLD` and `STABILITY_POLL_INTERVAL_MS` in `src/lib/types.ts:495-498` are marked `@deprecated` but still exported. No importers found in current `src/`.
+- Files: `src/lib/types.ts`
+- Impact: API surface pollution. External consumers may depend on deprecated constants.
+- Fix approach: Remove or add a deprecation warning log on first access. Search for any `.opencode/` or `.hivemind/` consumers before removal.
 
-### `state.ts` Uses `[key: string]: unknown` Index Signature
-- **Issue:** `src/lib/state.ts:46` defines `SessionStatus` with `[key: string]: unknown` index signature, which defeats TypeScript's type safety.
-- **Files:** `src/lib/state.ts`
-- **Impact:** Any property can be added to `SessionStatus` without compiler detection. Runtime errors from typos go undetected.
-- **Fix approach:** Define explicit properties or use a `Record<string, unknown>` wrapper type.
+**`as any` type cast in runtime-validator:**
+- Issue: `src/lib/runtime-validator.ts:200` uses `(primitives.config as any).permission` to bypass TypeScript type checking. This is a known tech debt pattern referenced in `src/lib/AGENTS.md`.
+- Files: `src/lib/runtime-validator.ts`
+- Impact: Type safety is lost at this boundary. If the config shape changes, this cast silently returns `undefined` instead of producing a compile error.
+- Fix approach: Define a proper `ConfigPrimitive` type that includes an optional `permission` field. Use the `PrimitiveMap` generic to constrain the config entry shape.
+
+**Permission schema still a placeholder:**
+- Issue: `src/schema-kernel/agent-frontmatter.schema.ts:121` — the `permission` field is typed as `z.record(z.string(), z.unknown())` with the comment "Tool permission rules (placeholder until permission.schema.ts exists)." The `permission.schema.ts` file does exist.
+- Files: `src/schema-kernel/agent-frontmatter.schema.ts`, `src/schema-kernel/permission.schema.ts`
+- Impact: Permission validation is lenient (`z.unknown()`), not enforcing the actual permission schema shape. Malformed permission configs pass validation silently.
+- Fix approach: Replace `z.record(z.string(), z.unknown())` with the permission schema from `permission.schema.ts`.
+
+**Total codebase size significantly exceeds target architecture:**
+- Issue: The project is at ~13,237 LOC vs. the target architecture proposal of ~4,000-5,000 LOC.
+- Files: Entire `src/` directory
+- Impact: Higher cognitive load for contributors, longer build times, harder to maintain module boundaries.
+- Fix approach: This is expected growth from 31+ phases of development. Not an immediate concern but should inform future refactoring prioritization.
 
 ## Known Bugs
 
-### `sdk-delegation.ts` — Generic Error on Recovery
-- **Issue:** `src/lib/sdk-delegation.ts:63` throws `new Error("missing")` — a bare error with no `[Harness]` prefix and no context about what is missing. This breaks the convention that all harness errors use `[Harness]` prefix.
-- **Files:** `src/lib/sdk-delegation.ts`
-- **Trigger:** Child session status check during recovery returns no type field.
-- **Workaround:** None — error is caught immediately and delegation is marked as error.
-- **Fix approach:** Change to `throw new Error("[Harness] Child session status type missing on recovery")`.
+**Vitest vi.unmock hoisting warnings — will become errors:**
+- Symptoms: Two test files emit warnings: "A vi.unmock('node:fs') call is not at the top level of the module. This will become an error in a future version."
+- Files: `tests/lib/continuity.test.ts`, `tests/lib/delegation-persistence.test.ts`
+- Trigger: Running `npm test` with vitest 4.1.5
+- Workaround: None currently needed (warnings only), but future vitest versions will break these tests.
+
+**SDK agent validation degradation on malformed responses:**
+- Issue: In `src/lib/delegation-manager.ts:573-593`, when the OpenCode server's `/agent` endpoint returns agents with missing required string fields, the code catches the Zod validation error and gracefully degrades to unvalidated agent acceptance with a `console.warn`. While intentional (see R-AGENT-01 comment), this silently accepts malformed agent data.
+- Files: `src/lib/delegation-manager.ts`
+- Trigger: SDK Zod validation error "expected string, received undefined" from the OpenCode server.
+- Workaround: The existing degradation is the workaround. A proper fix requires the upstream OpenCode SDK to handle partial agent data.
 
 ## Security Considerations
 
-### Continuity File Path from Environment Variables
-- **Issue:** `src/lib/continuity.ts:27-34` reads `OPENCODE_HARNESS_CONTINUITY_FILE` and `OPENCODE_HARNESS_STATE_DIR` from environment variables without validation. A malicious value could redirect writes to arbitrary paths.
-- **Files:** `src/lib/continuity.ts`
-- **Current mitigation:** `resolve()` normalizes the path but does not restrict to a base directory.
-- **Recommendations:** Add path validation to ensure the resolved path stays within an allowed directory tree (e.g., `.opencode/state/`).
+**Fire-and-forget prompt delivery:**
+- Risk: `src/lib/session-api.ts` provides `sendPromptAsync()` which fires prompts without awaiting delivery confirmation. Errors are silently swallowed.
+- Files: `src/lib/session-api.ts`
+- Current mitigation: Notification failures are caught in `notification-handler.ts` and queued as pending notifications for replay on parent session lifecycle events.
+- Recommendations: Add structured logging for `sendPromptAsync` failures. Consider a delivery audit trail.
 
-### Permission Rules Hardcoded in Spawner
-- **Issue:** `src/lib/spawner/session-creator.ts:20-29` hardcodes `WRITE_CAPABLE_PERMISSION_RULES` including `delegate-task: deny` and `task: deny`. These are not configurable and cannot be overridden by workspace policy.
-- **Files:** `src/lib/spawner/session-creator.ts`
-- **Current mitigation:** Deny is the safe default for delegation recursion.
-- **Recommendations:** Make permission profiles configurable via runtime policy if agents need to delegate further.
+**Synchronous filesystem I/O in critical paths:**
+- Risk: `src/lib/continuity.ts` uses `writeFileSync`, `readFileSync`, and `renameSync` for persistence. A slow or failing disk can block the Node.js event loop, potentially causing delegation timeouts.
+- Files: `src/lib/continuity.ts`, `src/lib/delegation-persistence.ts`, `src/lib/config-workflow/workflow-persistence.ts`
+- Current mitigation: Atomic writes (write to temp file, then rename) prevent corruption from partial writes.
+- Recommendations: Consider async filesystem APIs for non-critical persistence paths. The current sync approach is acceptable for the continuity store size (~10-100 records) but would be problematic if the store grows to thousands of records.
 
-### `unwrapData` Exposes SDK Errors Directly
-- **Issue:** `src/lib/helpers.ts:75-85` `unwrapData` throws with the raw SDK error message. If the SDK error contains sensitive data (tokens, internal paths), it propagates to the user.
-- **Files:** `src/lib/helpers.ts`
-- **Current mitigation:** `[Harness]` prefix is added.
-- **Recommendations:** Sanitize error messages before re-throwing. Strip known sensitive patterns.
+**Path traversal protection — scope limited to known boundaries:**
+- Risk: `src/lib/security/path-scope.ts` provides robust path containment but is only applied in `continuity.ts` and `delegation-persistence.ts`. The `configure-primitive` tool writes to disk using paths from `configure-primitive-paths.ts` without the same containment assertions.
+- Files: `src/lib/security/path-scope.ts`, `src/tools/configure-primitive.ts`, `src/tools/configure-primitive-paths.ts`
+- Current mitigation: Path resolution uses `process.env.OPENCODE_CONFIG_DIR` or a user-home-relative default, hardcoded to `~/.config/opencode`.
+- Recommendations: Apply `assertPathWithinRoot()` to all filesystem write operations in `configure-primitive.ts` and `config-compiler.ts`.
+
+**Secrets handling in environment variables:**
+- Risk: Multiple modules read `process.env` directly without redaction (`OPENCODE_SESSION_ID`, `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_CONFIG_DIR`, `OPENCODE_HARNESS_CONCURRENCY_LIMIT`). Continuity store JSON is written to disk containing session data — potential for sensitive prompt content leakage.
+- Files: `src/lib/continuity.ts`, `src/lib/session-api.ts`, `src/tools/delegate-task.ts`, `src/lib/lifecycle-manager.ts`, `src/lib/config-compiler.ts`
+- Current mitigation: `src/lib/security/redaction.ts` provides `redactBoundaryFields()` used in the continuity store. `.env` files are in `.gitignore`. `.hivemind/state/` directory is not gitignored by default — depends on developer discipline.
+- Recommendations: Add `.hivemind/state/` to `.gitignore`. Consider encrypting or hashing `OPENCODE_SESSION_ID` in logs. Audit continuity store for any stored prompt content that should be redacted.
 
 ## Performance Bottlenecks
 
-### Stability Polling with Fixed Intervals
-- **Issue:** `src/lib/sdk-delegation.ts:46-53` uses a fixed `STABILITY_POLL_INTERVAL_MS` for all SDK delegations. There is no adaptive backoff — every delegation polls at the same rate regardless of activity.
-- **Files:** `src/lib/sdk-delegation.ts`, `src/lib/types.ts` (constant definition)
-- **Cause:** Simple timer-based design, no event-driven alternative.
-- **Improvement path:** Use exponential backoff for idle sessions, or switch to event-driven completion detection via `CompletionDetector`.
+**Synchronous JSON persistence blocks event loop:**
+- Problem: `continuity.ts` calls `JSON.stringify()` on the entire session store and writes synchronously to disk on every persistence operation. With 50+ delegation records (the prune threshold), this can be ~100KB+ of JSON.
+- Files: `src/lib/continuity.ts:300-330` (`persistStore()`)
+- Cause: Synchronous `writeFileSync` + `renameSync` pattern
+- Improvement path: Batch writes (debounce multiple rapid updates). Consider incremental append-only journal (`session-journal.ts` exists but is separate from the continuity store).
 
-### `continuity.ts` Synchronous File I/O
-- **Issue:** `src/lib/continuity.ts` uses `readFileSync` and `writeFileSync` for all persistence operations. On large continuity stores, this blocks the event loop.
-- **Files:** `src/lib/continuity.ts`
-- **Cause:** Synchronous fs operations chosen for simplicity.
-- **Improvement path:** Switch to async `readFile`/`writeFile` with a write queue to prevent concurrent writes.
+**Delegation timer proliferation under high concurrency:**
+- Problem: Each delegation spawns a safety ceiling timer and a grace period timer. With `MAX_DELEGATIONS_BEFORE_PRUNE = 50`, up to 100 active timers can co-exist. Timer cleanup is manual and depends on `clearAllTimers()` being called correctly.
+- Files: `src/lib/delegation-manager.ts:102` (`safetyTimers`, `gracePeriodTimers` Maps)
+- Cause: Node.js `setTimeout` creates a system timer resource. Large numbers of concurrent timers increase event loop overhead.
+- Improvement path: Replace per-delegation timers with a single polling loop that checks all delegations on a fixed interval (e.g., every 5 seconds). This reduces O(n) timers to O(1).
 
-### PTY Buffer Truncation Without Warning
-- **Issue:** `src/lib/pty/pty-buffer.ts` truncates content when the buffer cap is exceeded. No warning is emitted, so output may be silently lost.
-- **Files:** `src/lib/pty/pty-buffer.ts`
-- **Improvement path:** Emit a warning or provide a configurable behavior (truncate vs. grow vs. error).
+**No bundling or tree-shaking:**
+- Problem: The package exports a flat `dist/` directory. All modules are compiled but there's no bundle step. Consumers import the entire module tree.
+- Files: `package.json` exports, `tsconfig.json`
+- Cause: ES module output with no bundler configured
+- Improvement path: This is acceptable for a plugin consumed by OpenCode directly. Only address if bundle size becomes a concern.
 
 ## Fragile Areas
 
-### `delegation-manager.ts` — Callback-Based Handler Architecture
-- **Issue:** `CommandDelegationHandler` and `SdkDelegationHandler` are constructed with callback objects (`src/lib/command-delegation.ts:16-22`, `src/lib/sdk-delegation.ts:15-21`). The callback shape is not typed as an interface, so mismatches between DelegationManager and handlers are only caught at runtime.
-- **Files:** `src/lib/command-delegation.ts`, `src/lib/sdk-delegation.ts`, `src/lib/delegation-manager.ts`
-- **Why fragile:** Adding a new callback requires changes in three places (handler type, handler constructor, DelegationManager instantiation). No compiler enforcement.
-- **Safe modification:** Define a `CommandDelegationCallbacks` interface and `SdkDelegationCallbacks` interface in `types.ts`.
-- **Test coverage:** Partially covered by `tests/lib/delegation-manager.test.ts` but callback contract is not explicitly tested.
+**DelegationManager — Central orchestration with complex state:**
+- Files: `src/lib/delegation-manager.ts` (656 LOC), `src/lib/command-delegation.ts` (401 LOC), `src/lib/sdk-delegation.ts` (209 LOC)
+- Why fragile: Tight coupling between dispatch, safety ceilings, status transitions, PTY/headless fallback, and notification. Changes to the Delegation interface in `types.ts` cascade through 5+ files. The dual-dispatch architecture (SDK vs command/PTY) has parallel timer management that must stay synchronized.
+- Safe modification: Always update `types.ts` first, then delegation-manager, then SDK/command handlers. Verify transitions in `VALID_DELEGATION_TRANSITIONS` before adding new statuses. Run `tests/lib/delegation-manager.test.ts` (the most comprehensive test file) after any change.
+- Test coverage: Well-tested (67 test files, 1105 tests passing). The delegation-manager test file covers dispatch, recovery, and terminal transitions.
 
-### `plugin.ts` — Dynamic PTY Import
-- **Issue:** `src/plugin.ts:33` uses `await import("./lib/pty/pty-manager.js")` for lazy loading. If the import succeeds but `isSupported()` returns false, `ptyManager` is null and `run-background-command` tool is not registered.
-- **Files:** `src/plugin.ts`
-- **Why fragile:** Silent degradation — users may not realize PTY support is unavailable until they try to use the tool.
-- **Test coverage:** `tests/plugins/plugin-lifecycle.test.ts` verifies conditional registration but not the failure path.
+**Continuity store — Singleton with sync I/O:**
+- Files: `src/lib/continuity.ts` (455 LOC)
+- Why fragile: Module-level singleton (`storeCache`), synchronous filesystem operations, dual-state architecture (in-memory Maps + durable JSON). Schema versioning (`CONTINUITY_VERSION = 1`) means any format change is a breaking change.
+- Safe modification: Never change the on-disk JSON schema without bumping `CONTINUITY_VERSION` and providing a migration path. Always test with `tests/lib/continuity.test.ts` and verify state-root migration compatibility (`tests/lib/state-root-migration.test.ts`).
+- Test coverage: Good. Tests cover normalization, CRUD, deep-clone, and migration paths.
 
-### `messages-transform.ts` — No Tests
-- **Issue:** `src/hooks/messages-transform.ts` (92 LOC) has no corresponding test file. The `transformMessages` function is critical for prompt-enhance sessions but is completely untested.
-- **Files:** `src/hooks/messages-transform.ts`
-- **Risk:** Changes to trigger detection or context packet injection could break silently.
-- **Priority:** High — this is user-facing functionality.
+**Cross-primitive validator — Complex validation logic:**
+- Files: `src/lib/cross-primitive-validator.ts` (373 LOC), `src/lib/config-compiler.ts` (380 LOC), `src/lib/runtime-validator.ts` (305 LOC)
+- Why fragile: Permission deadlock detection, inheritance chain validation, category collision detection — these are complex logical checks that are easy to get wrong. The validator produces warnings/warnings/blocks but the downstream behavior when validation fails is not always clear.
+- Safe modification: Always add test cases for the specific validation scenario before changing validator logic. The test files `tests/lib/cross-primitive-validator.test.ts` and `tests/lib/config-compiler.test.ts` provide good coverage.
+- Test coverage: Good for cross-primitive-validator and config-compiler. Runtime-validator has tests.
 
-### `hooks/` Directory — No Test Coverage
-- **Issue:** `tests/hooks/` directory exists but is empty. None of the hook factories (`create-core-hooks.ts`, `create-session-hooks.ts`, `create-tool-guard-hooks.ts`) have unit tests.
-- **Files:** `src/hooks/create-core-hooks.ts` (136 LOC), `src/hooks/create-session-hooks.ts` (269 LOC), `src/hooks/create-tool-guard-hooks.ts` (153 LOC)
-- **Risk:** Tool guard enforcement (circuit breaker, budget limits) and auto-loop behavior are untested. These are critical safety features.
-- **Priority:** High — safety-critical code without tests.
+**Schema kernel — 6 untested schema files:**
+- Files: `src/schema-kernel/agent-frontmatter.schema.ts`, `src/schema-kernel/command-frontmatter.schema.ts`, `src/schema-kernel/config-precedence.schema.ts`, `src/schema-kernel/mcp-server.schema.ts`, `src/schema-kernel/permission.schema.ts`, `src/schema-kernel/skill-metadata.schema.ts`, `src/schema-kernel/tool-definition.schema.ts`
+- Why fragile: Schemas define the validation contract for all `.opencode/` primitives. Schema changes without tests can silently break or relax validation for agents, commands, and skills.
+- Safe modification: Always add test cases in `tests/schema-kernel/` before modifying any schema. Currently only `opencode-config.schemas.test.ts` and `prompt-enhance.schema.test.ts` exist in the schema test directory.
+- Test coverage: **Minimal.** 6 of 8 schema files in `src/schema-kernel/` have zero dedicated tests.
 
 ## Scaling Limits
 
-### `MAX_DESCENDANTS_PER_ROOT = 10`
-- **Issue:** `src/lib/types.ts:22` caps descendant sessions at 10 per root. This is a hardcoded constant with no runtime policy override.
-- **Files:** `src/lib/types.ts`
-- **Current capacity:** 10 concurrent child sessions per root.
-- **Limit:** Tasks requiring >10 parallel delegations will fail.
-- **Scaling path:** Move to runtime policy configuration.
+**Maximum delegation descendants per root session:**
+- Current capacity: `MAX_DESCENDANTS_PER_ROOT = 10` (defined in `src/lib/types.ts:28`)
+- Limit: Root sessions cannot spawn more than 10 child delegations. Exceeding this triggers warning in `state.ts`.
+- Scaling path: Increase constant or make it configurable via `RuntimePolicy`. Consider per-agent limits instead of global.
 
-### `warningCap = 25` Per Session
-- **Issue:** `src/lib/state.ts:39` caps warnings at 25 per session. After 25 warnings, additional warnings are silently dropped.
-- **Files:** `src/lib/state.ts`
-- **Limit:** Important warnings beyond #25 are lost.
-- **Scaling path:** Use a circular buffer or log dropped warnings to continuity store.
+**Maximum in-memory delegations before pruning:**
+- Current capacity: `MAX_DELEGATIONS_BEFORE_PRUNE = 50` (defined in `src/lib/types.ts:474`)
+- Limit: After 50 delegation records accumulate in memory, terminal delegations older than `DEFAULT_PRUNE_MAX_AGE_MS` (30 minutes) are pruned. Active delegations are unaffected.
+- Scaling path: This is already generous for most use cases. If needed, make configurable via environment variable.
+
+**Single-file continuity store:**
+- Current capacity: All sessions stored in one JSON file (`.hivemind/state/continuity.json`). No sharding or partitioning.
+- Limit: With thousands of session records, parse/serialize time grows linearly. Sync I/O blocks event loop.
+- Scaling path: Shard by session ID prefix, or switch to SQLite for the continuity store. The `session-journal.ts` already provides an append-only alternative that could be extended.
+
+**Concurrency queue — single-process only:**
+- Current capacity: `DelegationConcurrencyQueue` in `src/lib/concurrency.ts` is in-process. No distributed coordination.
+- Limit: Multiple OpenCode instances on the same project would not coordinate concurrency.
+- Scaling path: Acceptable for single-user OpenCode usage. If multi-user collaboration is needed, consider a Redis-backed semaphore or file-lock-based coordination.
 
 ## Dependencies at Risk
 
-### `@opencode-ai/sdk` — Untyped Client Usage
-- **Issue:** The AGENTS.md notes "`client: any` is known tech debt from SDK." While new code avoids `any`, the SDK client itself may have untyped surfaces that propagate `unknown` or `any` through the codebase.
-- **Risk:** SDK API changes between versions could cause runtime errors not caught by the type checker.
-- **Migration plan:** Pin SDK version strictly. Add integration tests that verify SDK call shapes.
+**bun-pty — Platform-dependent, lazy-loaded:**
+- Risk: `bun-pty@^0.4.8` is an optional, lazy-loaded dependency (`src/lib/pty/pty-runtime.ts:15` does a dynamic `import()`). It is only available in Bun runtimes and falls back gracefully. However, the PTY-backed command delegation path (`src/lib/command-delegation.ts`) has substantial code (401 LOC) that is largely unused on Node.js.
+- Impact: Maintenance burden for PTY-specific code that most users can't use. Testing PTY features requires Bun.
+- Migration plan: Keep lazy-loaded for now. Consider extracting all PTY code behind a `PtyProvider` interface to make the dependency truly optional at the package level.
+
+**@opencode-ai/sdk — Tightly version-coupled peer dependency:**
+- Risk: `@opencode-ai/sdk@^1.14.28` is both a direct dependency and a peer dependency. The `<0.2.0` version means breaking changes are expected. The SDK is labeled `[REQUIRES OpenCode RUNTIME]` in tools, meaning it only works inside the OpenCode environment.
+- Impact: Any breaking change in the SDK will require coordinated updates to type wrappers, session API calls, and tool registrations.
+- Migration plan: Monitor SDK changelog. Pin to exact version in production deployments. The typed wrappers in `session-api.ts` provide some isolation but the SDK's internal types leak through the `client` parameter.
+
+**gray-matter — Frontmatter parsing:**
+- Risk: `gray-matter@^4.0.3` is a stable but unmaintained-looking package (last major update was years ago). Used for parsing YAML frontmatter in agent/command/skill `.md` files.
+- Impact: No known security issues, but no active maintenance either. If a YAML parsing vulnerability emerges, there's no clear upgrade path.
+- Migration plan: Monitor for forks or alternatives. The project could replace gray-matter with direct `yaml` package usage plus a simple frontmatter delimiter parser (~30 LOC).
+
+## Missing Critical Features
+
+**No E2E integration tests for delegation lifecycle:**
+- Problem: Only 1 integration test exists (`tests/integration/prompt-enhance-pipeline.test.ts`). There are no integration tests that exercise the full delegation flow: dispatch → polling → completion detection → result extraction → notification → cleanup.
+- Blocks: Cannot confidently verify that delegation works end-to-end without manual testing against a live OpenCode instance.
+- Priority: High. This is the core feature of the harness.
+
+**Untested schema validation for 6 of 7 OpenCode primitive types:**
+- Problem: `src/schema-kernel/` has 8 schema files but only 2 test files. Agent frontmatter, command frontmatter, config precedence, MCP server, permission, skill metadata, and tool definition schemas all lack dedicated tests.
+- Blocks: Schema changes cannot be verified without manual testing. Invalid schemas could silently accept malformed `.opencode/` files.
+- Priority: Medium. Schemas are validated indirectly through the config-compiler and runtime-validator tests, but edge cases (empty descriptions, invalid regexes, missing required fields) may not be covered.
+
+**RICH gate quality gap:**
+- Problem: Per Q5 validation decision (locked 2026-04-25), 0 of 25 `hm-*` skills pass the RICH gate. This is acknowledged as honest status, not a threshold-lowering justification.
+- Blocks: Skills lack formal quality verification against the RICH criteria (Reference-able, Isolated, Clear, Honest).
+- Priority: Low for harness code, high for the meta-concept quality program. This is a meta-concern tracked at the project level, not a code-level issue in `src/`.
 
 ## Test Coverage Gaps
 
-### Hook Factories — No Tests
-- **What's not tested:** `createCoreHooks`, `createSessionHooks`, `createToolGuardHooks` — all hook factories.
-- **Files:** `src/hooks/create-core-hooks.ts`, `src/hooks/create-session-hooks.ts`, `src/hooks/create-tool-guard-hooks.ts`
-- **Risk:** Tool budget enforcement, circuit breaker logic, auto-loop behavior, and message transformation are untested. A regression in any of these would go undetected.
-- **Priority:** High
+**Untested area — Schema kernel (6 files):**
+- What's not tested: Agent frontmatter validation, command frontmatter validation, config precedence rules, MCP server config shapes, permission rule formats, skill metadata validation, tool definition shapes.
+- Files: `src/schema-kernel/agent-frontmatter.schema.ts`, `src/schema-kernel/command-frontmatter.schema.ts`, `src/schema-kernel/config-precedence.schema.ts`, `src/schema-kernel/mcp-server.schema.ts`, `src/schema-kernel/permission.schema.ts`, `src/schema-kernel/skill-metadata.schema.ts`, `src/schema-kernel/tool-definition.schema.ts`
+- Risk: Schema regression during refactoring or Zod version upgrades could silently break validation for all `.opencode/` primitives.
+- Priority: Medium
 
-### `messages-transform.ts` — No Tests
-- **What's not tested:** Prompt-enhance trigger detection, context packet building, message injection.
-- **Files:** `src/hooks/messages-transform.ts`
-- **Risk:** Broken prompt-enhance functionality.
-- **Priority:** High
+**Untested area — Shared utilities:**
+- What's not tested: `tool-helpers.ts` (tool helper conventions) and `tool-response.ts` (standard tool response envelope).
+- Files: `src/shared/tool-helpers.ts`, `src/shared/tool-response.ts`
+- Risk: Changes to the standard tool response format could affect multiple tools without detection.
+- Priority: Low (these are thin wrappers)
 
-### `notification-handler.ts` — Tests for Dead Code
-- **What's not tested:** The file `tests/lib/notification-handler.test.ts` exists but tests deprecated code that is never called.
-- **Files:** `tests/lib/notification-handler.test.ts`, `src/lib/notification-handler.ts`
-- **Risk:** Wasted CI time, false sense of coverage.
-- **Priority:** Low — delete both files together.
+**Untested area — Event tracker document store:**
+- What's not tested: `document-store.ts` which handles JSON document I/O for event tracker artifacts.
+- Files: `src/lib/event-tracker/document-store.ts` (295 LOC)
+- Risk: File corruption in event tracker artifacts could go undetected.
+- Priority: Low (event tracker is non-critical infrastructure)
 
-### `runtime-policy.ts` — Partial Coverage
-- **What's not tested:** `loadRuntimePolicy` with complex nested workspace policies, `getRuntimePolicyForSession` with partial overrides.
-- **Files:** `src/lib/runtime-policy.ts`
-- **Risk:** Policy validation bugs could allow invalid limits or reject valid configurations.
-- **Priority:** Medium
+**Untested area — Configure primitive paths:**
+- What's not tested: Path resolution logic for the `configure-primitive` tool.
+- Files: `src/tools/configure-primitive-paths.ts`
+- Risk: Path resolution bugs could cause writes to wrong directories.
+- Priority: Medium
 
-### `continuity.ts` — Module Singleton Not Tested
-- **What's not tested:** Store cache isolation, concurrent read/write behavior, deep-clone-on-read correctness.
-- **Files:** `src/lib/continuity.ts`
-- **Risk:** Cache pollution between tests, mutation aliasing bugs.
-- **Priority:** Medium
-
-## Validation Decision Concerns
-
-### C8: 0 of 25 hm-* Skills Pass RICH Gate (Q5)
-- **Issue:** Every `hm-*` skill must pass RICH Pattern 1/2/3 third-party synthesis. Current honest status: 0 of 25 skills pass. This is NOT a threshold to lower — it is a quality process that requires individual crafting.
-- **Files:** `.opencode/skills/hm-*/SKILL.md`, `.planning/RICH-SKILL-QUALITY-GATE.md`
-- **Impact:** Skills may lack real third-party evidence, bundled assets, and comparative analysis. Quality claims are unsubstantiated.
-- **Fix approach:** Phase 27-30 research artifacts feed synthesis. Use `skill-development`, `skill-creator`, and `skill-judge` for crafting. Each skill requires dedicated synthesis — no batch lowering.
-- **Status:** Honest status documented. Resolution is ongoing work, not a bug fix.
-
-### C9: `.hivemind/` Migration Requires Compatibility Bridge (Q6)
-- **Issue:** All internal deep module state must migrate from `.opencode/state/opencode-harness/` to `.hivemind/` at project root. During transition, existing data must remain readable.
-- **Files:** `src/lib/continuity.ts`, `src/lib/delegation-persistence.ts`, future `src/lib/session-journal.ts`
-- **Impact:** Writers may continue targeting old path, creating dual-write or data loss. Other plugins may overwrite `.opencode/` state.
-- **Fix approach:** One-way migration `.opencode/state/` → `.hivemind/`. Compatibility bridge reads existing `.opencode/state/opencode-harness/` during transition. New writers target `.hivemind/` exclusively.
-- **Status:** Architecture documented in PROJECT.md and ARCHITECTURE.md. Implementation pending Phase 25+.
+**Untested area — Config workflow types and spawner types:**
+- What's not tested: Type-only modules that define interfaces.
+- Files: `src/lib/config-workflow/workflow-types.ts`, `src/lib/spawner/spawner-types.ts`
+- Risk: Minimal — these are type definitions only. No runtime behavior to test.
+- Priority: Low
 
 ---
 
-*Concerns audit: 2026-04-25*
+*Concerns audit: 2026-04-28*

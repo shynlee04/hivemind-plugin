@@ -1,125 +1,151 @@
 ---
-phase: 16.3-recent-changes
-reviewed: 2026-04-24T12:00:00Z
+reviewed: 2026-04-26T20:23:55Z
 depth: standard
-files_reviewed: 8
+files_reviewed: 9
 files_reviewed_list:
-  - src/lib/command-delegation.ts
   - src/lib/delegation-manager.ts
-  - src/lib/delegation-persistence.ts
-  - src/lib/pty/pty-manager.ts
-  - src/lib/pty/pty-types.ts
+  - src/lib/continuity.ts
+  - src/lib/concurrency.ts
+  - src/lib/completion-detector.ts
+  - src/lib/helpers.ts
   - src/lib/types.ts
-  - src/tools/delegation-status.ts
-  - src/tools/run-background-command.ts
+  - src/lib/notification-handler.ts
+  - src/lib/task-status.ts
+  - src/lib/delegation-persistence.ts
 findings:
   critical: 0
-  warning: 3
-  info: 4
-  total: 7
+  warning: 4
+  info: 5
+  total: 9
 status: issues_found
 ---
 
-# Code Review Report — Phase 16.3 Recent Changes
+# Code Review Report
 
-**Reviewed:** 2026-04-24T12:00:00Z
+**Reviewed:** 2026-04-26T20:23:55Z
 **Depth:** standard
-**Files Reviewed:** 8 (source) + 4 (test — skimming only)
+**Files Reviewed:** 9
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the 8 source files changed in the last 10 commits covering delegation lifecycle hardening, PTY cancellation, terminal detail surfacing, notification replay, and recovery contracts. The codebase is well-structured with strong typing and clear separation of concerns. No critical bugs or security vulnerabilities were found.
+Reviewed 9 core library modules (`src/lib/`) totaling ~2,380 LOC. The codebase demonstrates strong architecture: clean separation of concerns, proper atomic file writes, deep-clone-on-read patterns, and correct error handling with `[Harness]` prefix convention. No critical security vulnerabilities or crash-inducing bugs were found.
 
-Three warnings identified: an unchecked type assertion in persistence normalization that could cause stuck delegations from corrupted JSON, a misleading exitCode default for signal-killed headless processes, and a fragile `setTimeout(0)` pattern in the dispatch status transition path.
-
-Test coverage is extensive (395 test cases across 4 files, 3352 LOC) with proper use of `vi.advanceTimersByTimeAsync` for timer-dependent logic.
+Four warnings were identified: a duplicate `mkdirSync` call in persistence code, loose equality in a type guard, a duplicated `Set` allocation on every prune call, and duplicated utility functions across modules. Five informational items cover style improvements, near-limit module sizes, and import consolidation.
 
 ## Warnings
 
-### WR-01: Unchecked type assertion accepts invalid delegation status
+### WR-01: Redundant `mkdirSync` call in `persistDelegations`
 
-**File:** `src/lib/delegation-persistence.ts:89`
-**Issue:** `record.status as Delegation["status"]` is an unchecked assertion. If the persisted JSON file contains a corrupted status value (e.g., `"bogus"`), it passes through normalization as-is. Downstream, `DelegationManager.transitionToTerminal()` guards against `"running" | "dispatched"` — any unknown status would never match, causing the delegation to become permanently stuck with no path to a terminal state. The `normalizePersistedDelegation` function validates primitive types but not enum values.
+**File:** `src/lib/delegation-persistence.ts:58-65`
+**Issue:** `persistDelegations()` calls `mkdirSync(dirname(filePath), { recursive: true })` on line 58, then again on line 65. The second call is identical and completely redundant — the directory already exists by that point. While harmless in practice, it introduces unnecessary filesystem I/O on every delegation persistence write.
 **Fix:**
 ```typescript
-const VALID_STATUSES: ReadonlySet<string> = new Set(["dispatched", "running", "completed", "error", "timeout"])
-
-// In normalizePersistedDelegation, replace line 89:
-status: VALID_STATUSES.has(record.status) ? record.status as Delegation["status"] : "error",
-// Also set delegation.error when defaulting to "error":
-...(VALID_STATUSES.has(record.status) ? {} : { error: `[Harness] Unknown status '${record.status}' normalized to 'error'` }),
+// Line 58: Keep this one
+mkdirSync(dirname(filePath), { recursive: true })
+// Line 65: Remove this duplicate
+// mkdirSync(dirname(filePath), { recursive: true })
 ```
 
-### WR-02: Misleading exitCode=0 stored for signal-killed headless processes
+### WR-02: Loose equality `==` in `feedMessageCount` type guard
 
-**File:** `src/lib/command-delegation.ts:200`
-**Issue:** When a headless child process is killed by signal, Node.js provides `exitCode=null` and `signal="SIGTERM"`. The code defaults `exitCode ?? 0`, storing `exitCode: 0` in the delegation result. While `finalizeCommandDelegation` correctly checks `outcome.signal` before `outcome.exitCode` (so the delegation status is correct), the stored delegation metadata claims exit code 0 for a process that never exited normally. Status consumers (e.g., the `delegation-status` tool) could be misled.
+**File:** `src/lib/completion-detector.ts:88`
+**Issue:** Uses `count == null` (loose equality) to check for null/undefined. Project code style (TypeScript strict mode) and general best practice favors `===`. The comment references "Bug F3: graceful no-op" suggesting this was a defensive patch, but the parameter is typed as `number` — the guard should use `===` consistently with project conventions.
 **Fix:**
 ```typescript
-// Line 200 — preserve null to signal "killed, not exited":
-exitCode: exitCode ?? null,
-signal: signal ?? undefined,
+// Before:
+if (count == null || !Number.isFinite(count) || count < 0) return
 
-// In finalizeCommandDelegation, update the outcome type to allow null:
-outcome: { output?: string; exitCode?: number | null; error?: string; signal?: string }
-
-// Line 311 — already handles null via ?? 0:
-} else if ((outcome.exitCode ?? 0) === 0) {
+// After:
+if (!Number.isFinite(count) || count < 0) return
+// Note: Since `count` is typed as `number`, `!Number.isFinite()` already
+// catches NaN and Infinity. If null/undefined callers exist, they should
+// be fixed at the call site rather than silently swallowed here.
 ```
 
-### WR-03: Fragile setTimeout(0) for dispatched→running transition
+### WR-03: `Set<DelegationStatus>` recreated on every `pruneCompletedDelegations` call
 
-**File:** `src/lib/delegation-manager.ts:146-161`
-**Issue:** After sending a prompt to the child session, the status transition from `"dispatched"` to `"running"` is deferred via `setTimeout(() => { ... }, 0)`. This has three issues:
-1. The transition bypasses `transitionToTerminal()` — no `[Harness]` logging (violates R-OBS-01), no notification scheduling.
-2. If the process crashes between dispatch and the macrotask callback, the delegation is stuck in `"dispatched"` until the safety ceiling fires.
-3. The `setTimeout(0)` is a code smell — it's used to defer past the Promise resolution but the rationale is not documented.
+**File:** `src/lib/delegation-manager.ts:311`
+**Issue:** `new Set(["completed", "error", "timeout"])` is instantiated on every call to `pruneCompletedDelegations()`. This method may be called frequently during high-throughput delegation workloads. The Set is immutable and should be a module-level constant.
 **Fix:**
 ```typescript
-// Add a dedicated micro-method with logging:
-private markAsRunning(delegationId: string): void {
-  const current = this.delegations.get(delegationId)
-  if (current && current.status === "dispatched") {
-    const previous = current.status
-    current.status = "running"
-    this.persistAllDelegations()
-    console.error(`[Harness] Delegation ${delegationId} transitioned: ${previous} → running`)
-  }
+// Move to module-level constant (near VALID_DELEGATION_TRANSITIONS):
+const TERMINAL_DELEGATION_STATUSES: ReadonlySet<DelegationStatus> = new Set(["completed", "error", "timeout"])
+
+// Then in pruneCompletedDelegations:
+pruneCompletedDelegations(maxAgeMs: number = DEFAULT_PRUNE_MAX_AGE_MS): number {
+  const now = Date.now()
+  const toPrune: string[] = []
+  for (const [id, delegation] of this.delegations) {
+    if (!TERMINAL_DELEGATION_STATUSES.has(delegation.status)) continue
+    // ...
+```
+
+### WR-04: Duplicated `deriveDelegationSurface` and `deriveRecoveryGuarantee` functions
+
+**File:** `src/lib/delegation-manager.ts:30-42` and `src/lib/delegation-persistence.ts:20-34`
+**Issue:** Both files contain identical implementations of `deriveDelegationSurface()` and `deriveRecoveryGuarantee()`. This violates DRY and creates a maintenance risk — if the logic changes, both copies must be updated in lockstep.
+**Fix:**
+Extract to a shared location (e.g., `helpers.ts` or a new `delegation-helpers.ts`), then import from both files:
+```typescript
+// In helpers.ts or a new delegation-helpers.ts:
+export function deriveDelegationSurface(executionMode: Delegation["executionMode"]): DelegationSurface {
+  return executionMode === "sdk" ? "agent-delegation" : "command-process"
 }
 
-// Then use queueMicrotask for deterministic ordering:
-}).then(() => { queueMicrotask(() => this.markAsRunning(delegation.id)) })
-  .catch(() => { queueMicrotask(() => this.transitionToTerminal(delegation.id, "error", "Failed to send prompt")) })
+export function deriveRecoveryGuarantee(executionMode: Delegation["executionMode"]): DelegationRecoveryGuarantee {
+  if (executionMode === "sdk") return "resumable"
+  if (executionMode === "pty") return "best-effort"
+  return "non-resumable-after-restart"
+}
 ```
 
 ## Info
 
-### IN-01: Inconsistent indentation in delegation-status tool
+### IN-01: Duplicate type imports in `notification-handler.ts`
 
-**File:** `src/tools/delegation-status.ts:34-68`
-**Issue:** The `if (args.delegationId)` block body uses mixed indentation levels (8, 10, and 12 spaces). Lines 37-67 are indented 2 spaces less than they should be, and the success object properties on lines 50-65 use an inconsistent 12-space indent vs the 10-space on line 49. This doesn't affect runtime behavior but makes the code harder to maintain.
-**Fix:** Re-indent lines 37-68 to use consistent 10-space indentation within the `if (args.delegationId)` block.
+**File:** `src/lib/notification-handler.ts:11-12`
+**Issue:** Types from `./types.js` are imported across two separate `import type` lines:
+```typescript
+import type { Delegation } from "./types.js"
+import type { SessionContinuityRecord, TaskNotification } from "./types.js"
+```
+**Fix:** Consolidate to a single import:
+```typescript
+import type { Delegation, SessionContinuityRecord, TaskNotification } from "./types.js"
+```
 
-### IN-02: `as never` type assertion bypasses type checking
+### IN-02: Module-level `storeCache` singleton prevents isolated testing
 
-**File:** `src/lib/delegation-manager.ts:121`
-**Issue:** `client: this.client as never` casts the OpenCode client to `never`, bypassing all type checking when passing to `spawnDelegatedSession`. If the spawn function's signature changes, this won't be caught at compile time. This is acknowledged tech debt (AGENTS.md mentions `client: any` as known debt).
-**Fix:** Create a minimal interface for what `spawnDelegatedSession` needs and cast to that interface instead.
+**File:** `src/lib/continuity.ts:21`
+**Issue:** The `let storeCache: ContinuityStoreFile | undefined` singleton at module scope makes it impossible to run isolated unit tests without leaking state between test cases. This is acknowledged in `src/lib/AGENTS.md` as a known code smell.
+**Fix:** Consider adding a `_resetCache()` export for test use, or refactoring to accept a cache instance parameter.
 
-### IN-03: Silent catch on session abort
+### IN-03: `types.ts` approaching 500 LOC module size limit
 
-**File:** `src/lib/delegation-manager.ts:332`
-**Issue:** `try { await this.client.session.abort(...) } catch { /* no-op */ }` silently swallows abort errors. While the abort is best-effort after safety ceiling timeout, logging at debug level would help diagnose why sessions sometimes survive past their ceiling.
-**Fix:** Add `console.debug(`[Harness] Session abort after safety ceiling failed: ${describeError(error)}`)` in the catch block.
+**File:** `src/lib/types.ts:493`
+**Issue:** At 493 lines, `types.ts` is 7 lines from the project's 500 LOC module size limit. It already re-exports config-workflow types (lines 485-493). Any new type additions will exceed the limit.
+**Fix:** Consider moving the config-workflow re-exports to a separate barrel file, or splitting delegation-specific types into `delegation-types.ts`.
 
-### IN-04: Deprecated constants still exported
+### IN-04: `continuity.ts` at 450 LOC — approaching module size limit
 
-**File:** `src/lib/types.ts:472-475`
-**Issue:** `STABILITY_THRESHOLD` and `STABILITY_POLL_INTERVAL_MS` are marked `@deprecated` but still exported. They delegate to the new constants, so there's no correctness issue, but they add to the public API surface unnecessarily.
-**Fix:** Consider adding a `@deprecated` JSDoc with removal target version, or plan removal in the next major version.
+**File:** `src/lib/continuity.ts:450`
+**Issue:** At 450 lines, this module has 50 lines of headroom before hitting the 500 LOC limit. The inline clone functions and normalizer logic are the bulk. Documented as a monitoring item in `src/lib/AGENTS.md`.
+**Fix:** If growth is anticipated, extract clone helpers to a separate `continuity-clone.ts` module.
+
+### IN-05: `normalizeContinuityRecord` uses unchecked `as` type assertions
+
+**File:** `src/lib/continuity.ts:175-176`
+**Issue:** `meta.status as SessionContinuityMetadata["status"]` uses a type assertion without runtime validation. If persisted data contains an invalid status string (e.g., `"unknown_state"`), it would propagate through without being caught. The normalizer does handle the fallback case via `?? "pending"` but doesn't validate the string is a valid `TaskStatus`.
+**Fix:** Add explicit status validation:
+```typescript
+const VALID_TASK_STATUSES = new Set(["pending", "queued", "running", "completed", "failed", "error", "cancelled", "interrupt"])
+// ...
+status: VALID_TASK_STATUSES.has(meta.status) ? (meta.status as SessionContinuityMetadata["status"]) : "pending",
+```
 
 ---
 
-_Reviewed: 2026-04-24T12:00:00Z_
-_Reviewer: gsd-code-reviewer (standard depth)_
+_Reviewed: 2026-04-26T20:23:55Z_
+_Reviewer: gsd-code-reviewer (subagent)_
+_Depth: standard_

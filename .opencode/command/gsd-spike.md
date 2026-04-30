@@ -1,6 +1,6 @@
 ---
-description: Rapidly spike an idea with throwaway experiments to validate feasibility before planning
-argument-hint: "<idea to validate> [--quick]"
+description: Spike an idea through experiential exploration, or propose what to spike next (frontier mode)
+argument-hint: "[idea to validate] [--quick] [--text] or [frontier]"
 tools:
   read: true
   write: true
@@ -9,11 +9,20 @@ tools:
   grep: true
   glob: true
   question: true
+  websearch: true
+  webfetch: true
+  mcp__context7__resolve-library-id: true
+  mcp__context7__query-docs: true
 ---
 <objective>
-Rapid feasibility validation through focused, throwaway experiments. Each spike answers one
-specific question with observable evidence. Spikes live in `.planning/spikes/` and integrate
-with GSD commit patterns, state tracking, and handoff workflows.
+Spike an idea through experiential exploration — build focused experiments to feel the pieces
+of a future app, validate feasibility, and produce verified knowledge for the real build.
+Spikes live in `.planning/spikes/` and integrate with GSD commit patterns, state tracking,
+and handoff workflows.
+
+Two modes:
+- **Idea mode** (default) — describe an idea to spike
+- **Frontier mode** (no argument or "frontier") — analyzes existing spike landscape and proposes integration and frontier spikes
 
 Does not require `/gsd-new-project` — auto-creates `.planning/spikes/` if needed.
 </objective>
@@ -32,9 +41,10 @@ Idea: $ARGUMENTS
 
 **Available flags:**
 - `--quick` — Skip decomposition/alignment, jump straight to building. Use when you already know what to spike.
+- `--text` — Use plain-text numbered lists instead of question (for non-the agent runtimes).
 </context>
 
 <process>
 Execute the spike workflow from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/spike.md end-to-end.
-Preserve all workflow gates (decomposition, risk ordering, verification, MANIFEST updates, commit patterns).
+Preserve all workflow gates (prior spike check, decomposition, research, risk ordering, observability assessment, verification, MANIFEST updates, commit patterns).
 </process>

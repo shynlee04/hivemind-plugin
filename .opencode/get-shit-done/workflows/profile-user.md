@@ -9,7 +9,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 Key references:
 - @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ui-brand.md (display patterns)
-- @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/agents/gsd-user-profiler.md (profiler agent definition)
+- @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-user-profiler.md (profiler agent definition)
 - @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/user-profiling.md (profiling reference doc)
 </required_reading>
 
@@ -271,7 +271,7 @@ Write updated analysis JSON back to `$ANALYSIS_PATH`.
 Display: "◆ Writing profile..."
 
 ```bash
-gsd-sdk query write-profile --input "$ANALYSIS_PATH" --json 2>/dev/null
+gsd-sdk query write-profile --input "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Profile written to /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/USER-PROFILE.md"
@@ -350,7 +350,7 @@ Generate selected artifacts sequentially (file I/O is fast, no benefit from para
 **For /gsd-dev-preferences (if selected):**
 
 ```bash
-gsd-sdk query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json 2>/dev/null
+gsd-sdk query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Generated /gsd-dev-preferences at /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/commands/gsd/dev-preferences.md"
@@ -358,7 +358,7 @@ Display: "✓ Generated /gsd-dev-preferences at /Users/apple/hivemind-plugin/.wo
 **For AGENTS.md profile section (if selected):**
 
 ```bash
-gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --json 2>/dev/null
+gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Added profile section to AGENTS.md"
@@ -366,7 +366,7 @@ Display: "✓ Added profile section to AGENTS.md"
 **For Global AGENTS.md (if selected):**
 
 ```bash
-gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json 2>/dev/null
+gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
 ```
 
 Display: "✓ Added profile section to /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/AGENTS.md"

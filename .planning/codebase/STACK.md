@@ -1,148 +1,90 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-25
+**Analysis Date:** 2026-04-28
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.0+ — All source code in `src/`, tests in `tests/`
+- TypeScript 5.x - All source code (`src/`), tests (`tests/`), and configuration files
+- Target: ES2022, Module: NodeNext
 
 **Secondary:**
-- JavaScript (ESM via `"type": "module"` in `package.json`)
+- Markdown (YAML frontmatter) - Agent/Command/Skill definitions in `.opencode/`
+- YAML - Workflow definitions, runtime policies
+- JSON - Configuration files (`opencode.json`, `package.json`, `mcp.json`)
 
 ## Runtime
 
 **Environment:**
-- Node.js >= 20.0.0 (ES2022 target)
-- Bun (optional) — PTY support via `bun-pty`, detected at runtime with graceful fallback
+- Node.js >= 20.0.0 (enforced by peer dependency on `@opencode-ai/plugin`)
+- Bun (optional — only required for PTY features via `bun-pty`)
 
 **Package Manager:**
-- npm
-- Lockfile: `package-lock.json` present
+- npm (v10+)
+- Lockfile: `package-lock.json` present — committed to repo
 
 ## Frameworks
 
 **Core:**
-- OpenCode Plugin SDK (`@opencode-ai/plugin` ^1.14.19) — Plugin composition framework
-- OpenCode SDK (`@opencode-ai/sdk` ^1.14.19) — Typed API client for session orchestration
+- OpenCode Plugin SDK (`@opencode-ai/plugin` ^1.14.28) — Plugin lifecycle, tool registration, hook system. The harness is an OpenCode plugin that registers tools and hooks via the plugin composition root at `src/plugin.ts`.
+- OpenCode SDK (`@opencode-ai/sdk` ^1.14.28) — Runtime API for session management (create, prompt, abort, messages, status). Type-only imports for typed wrappers in `src/lib/session-api.ts` and `src/lib/sdk-delegation.ts`.
 
 **Testing:**
-- Vitest ^1.0.0 — Unit test runner with globals, coverage via `--coverage`
+- Vitest ^4.1.5 — Test runner with globals enabled. Config at `vitest.config.ts`.
+- @vitest/coverage-v8 ^4.1.5 — Coverage provider (v8 engine). Thresholds: 70% statements, 60% branches, 70% functions, 70% lines.
 
 **Build/Dev:**
-- TypeScript compiler (tsc) — ES2022 → NodeNext, declarations + source maps
-- `@types/node` ^20.0.0 — Node.js type definitions
-- `@types/bun` ^1.3.8 — Bun type definitions (optional PTY)
+- TypeScript Compiler (`tsc`) — Build: `tsc` (emits to `dist/`), Typecheck: `tsc --noEmit`. Config at `tsconfig.json`.
+- No bundler — TypeScript compiles directly to CommonJS/ESM-compatible output via `NodeNext` module resolution.
 
 ## Key Dependencies
 
-**Critical:**
-- `zod` ^4.3.6 — Schema validation for prompt-enhance pipeline (`src/schema-kernel/`)
-- `bun-pty` ^0.4.8 — PTY session management for background command execution (optional, lazy-loaded with graceful Node fallback)
+**Critical (runtime):**
+- `zod` ^4.3.6 — Schema validation for all tool inputs, frontmatter parsing, and configuration. Extensively used in `src/tools/` (delegate-task, delegation-status, configure-primitive, validate-restart) and `src/schema-kernel/` (9 schema files for agent/command/skill/permission/MCP server/tool definitions).
+- `yaml` ^2.8.3 — YAML parsing and stringification for primitive compilation/decompilation (`src/lib/config-compiler.ts`, `src/tools/configure-primitive.ts`).
+- `gray-matter` ^4.0.3 — Frontmatter parsing for agent/command/skill `.md` files. Used in `src/lib/primitive-loader.ts` and `src/lib/config-compiler.ts`.
 
-**Infrastructure:**
-- `@opencode-ai/plugin` ^1.14.19 (peer) — Plugin interface, hooks, tool registration
-- `@opencode-ai/sdk` ^1.14.19 — Session CRUD, messaging, event streaming
+**Optional (runtime):**
+- `bun-pty` ^0.4.8 — PTY-based background command execution. Lazy-loaded via `src/lib/pty/pty-runtime.ts`. Falls back gracefully to `null` if Bun runtime is unavailable. Powers the `run-background-command` tool (`src/tools/run-background-command.ts`). Not required for core harness operation.
+
+**Dev-only:**
+- `@types/node` ^20.0.0 — Node.js type definitions
+- `@types/bun` ^1.3.8 — Bun type definitions (for PTY module types)
 
 ## Configuration
 
 **Environment:**
-- No required env vars for build/test
-- Runtime state path: `.hivemind/state/` (Q6 — migrated from `.opencode/state/opencode-harness/`)
-- Legacy path (transition): `.opencode/state/opencode-harness/`
-- Override via `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`
-- `.env` / `.env.example` present — MCP API keys for external services (search, GitHub, Notion, etc.)
+- Runtime state path overrides (optional):
+  - `OPENCODE_HARNESS_STATE_DIR` — Override default `.hivemind/state/` directory
+  - `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
+  - `OPENCODE_SESSION_ID` — Injected by OpenCode runtime; used by `delegate-task` tool
+  - `NODE_ENV` — Controls behavior: `"test"` skips session ID validation
+- `.env` file present — contains MCP API keys (never committed; `.env.example` is the template)
+- No environment variables required for build or test
 
 **Build:**
-- `tsconfig.json` — ES2022 target, NodeNext module resolution, strict mode
-- `vitest.config.ts` — Test config with coverage on `src/**/*.ts`, excludes index files
-- `opencode.json` — Plugin registration (`./dist/plugin.js`), permission model, compaction settings
+- `tsconfig.json` — Strict mode, ES2022 target, NodeNext module resolution, declaration files + sourcemaps, `verbatimModuleSyntax: true`
+- `vitest.config.ts` — Globals mode, coverage thresholds, includes `tests/**/*.test.ts` and `eval/**/*.test.ts`
 
-**TypeScript Compiler Options:**
-- `strict: true`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`
-- `verbatimModuleSyntax: true` — Requires `import type` for type-only imports
-- `skipLibCheck: true`
-- Output: `dist/` with declarations (`.d.ts`) and source maps (`.js.map`)
-
-## Layer 2 Runtime Taxonomy Tools (Q1)
-
-**MCP Tools:**
-- Tavily — Web search, content extraction, crawling, deep research (`search_depth`: basic/advanced)
-  - Config: `mcp.json` → `tavily` (HTTP MCP server)
-  - Auth: `TAVILY_API_KEY` env var
-- Context7 — Library documentation lookup (resolve-library-id → query-docs)
-  - Config: `mcp.json` → `context7` (HTTP MCP server)
-- Brave Search — Web search, local search, video search, image search, news search
-  - Config: `mcp.json` → `brave-search` (npx command)
-  - Auth: `BRAVE_API_KEY` env var
-- GitHub MCP — Code search, issue management, PR operations, repository management
-  - Config: `mcp.json` → `github` (npx command)
-  - Auth: `GITHUB_PAT` env var
-
-**Project Detection:**
-- Deep codemap/codescan — Detects project type, language, framework, complexity at runtime
-- File watcher — Triggers dependency graph update on package.json changes
-- Dependency graph — Tracks versions, registries, and framework relationships
-
-## Sidecar Dependencies (Q2)
-
-**Dashboard Framework:**
-- Next.js 15 — Sidecar application framework
-- React 19 — UI component framework
-- `@json-render/react` (Vercel Labs) — Dynamic dashboard rendering from JSON specs without code changes
-
-**Communication:**
-- OpenCode SDK server API — REST API at `http://localhost:PORT` for config, settings, sessions
-- Sidecar reads artifacts from `.hivemind/` and `.planning/`, renders dashboard tabs
-- READ-ONLY constraint — sidecar CANNOT write to canonical state (enforcement test required)
-
-## Module Architecture
-
-**Package Entrypoints:**
-- `opencode-harness` → `./dist/index.js` (library API)
-- `opencode-harness/plugin` → `./dist/plugin.js` (OpenCode plugin)
-
-**Internal Module Structure:**
-| Layer | Location | Purpose |
-|-------|----------|---------|
-| Plugin (composition root) | `src/plugin.ts` | Wires hooks + tools, instantiates managers |
-| Hooks | `src/hooks/` | Event observers, session lifecycle, tool guards |
-| Tools | `src/tools/` | `delegate-task`, `delegation-status`, `run-background-command`, `prompt-skim`, `prompt-analyze`, `session-patch` |
-| Core Library | `src/lib/` | Delegation, concurrency, continuity, completion detection, runtime policy |
-| Spawner | `src/lib/spawner/` | Session creation, PTY setup, concurrency key resolution |
-| PTY | `src/lib/pty/` | PTY manager, buffer, types (lazy-loaded, Bun-only) |
-| Shared | `src/shared/` | Tool response envelope, tool helpers |
-| Schema Kernel | `src/schema-kernel/` | Zod schemas for prompt-enhance pipeline |
-
-**Dependency Rules:**
-- `types.ts` is leaf — depends on nothing, imported by most modules
-- `helpers.ts`, `concurrency.ts`, `completion-detector.ts` — leaf or near-leaf
-- `lifecycle-manager.ts` depends on most modules (deepest chain: 2 levels)
-- No circular dependencies
-- Max module size: 500 LOC
+**Package Metadata:**
+- `package.json` — npm package `opencode-harness@0.1.0`, ESM (`"type": "module"`), dual entrypoints: `.` and `./plugin`
+- `opencode.json` — OpenCode configuration: plugin list, permissions, compaction settings
 
 ## Platform Requirements
 
 **Development:**
 - Node.js >= 20.0.0
-- npm
-- TypeScript 5.0+
-- Bun (optional, for PTY support)
+- npm >= 10
+- Git (for version control)
+- Bun (optional — only for PTY commands; harness functions without it)
 
 **Production:**
-- Deployed as npm package (`opencode-harness`)
-- Loaded as OpenCode plugin via `opencode.json` → `./dist/plugin.js`
-- Requires OpenCode runtime >= 1.14.19
-- State persisted to `.opencode/state/opencode-harness/session-continuity.json`
-
-## CI/CD
-
-**GitHub Actions:**
-- `.github/workflows/opencode.yml` — OpenCode integration on PR/issue comments (`/oc`, `/opencode`)
-- Uses `anomalyco/opencode/github@latest` with `zai-coding-plan/glm-5.1` model
-- Runs on `ubuntu-latest`
-- Additional Qwen workflows: `qwen-triage.yml`, `qwen-invoke.yml`, `qwen-scheduled-triage.yml`, `qwen-review.yml`, `qwen-dispatch.yml`
+- OpenCode runtime >= 1.14.28 (specified in `engines.opencode`)
+- `@opencode-ai/plugin` >= 1.1.0 as peer dependency
+- Local filesystem for state persistence (`.hivemind/state/`)
+- No database required
+- No external services required for core operation
 
 ---
 
-*Technology stack analysis: 2026-04-25*
+*Stack analysis: 2026-04-28*

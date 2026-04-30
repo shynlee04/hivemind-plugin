@@ -388,14 +388,15 @@ installer does not know about and will delete during the wipe.
 **Do not use bash path-stripping (`${filepath#$RUNTIME_DIR/}`) or `node -e require()`
 inline** — those patterns fail when `$RUNTIME_DIR` is unset and the stripped
 relative path may not match manifest key format, which causes CUSTOM_COUNT=0
-even when custom files exist (bug #1997). Use `gsd-tools detect-custom-files`
-instead, which resolves paths reliably with Node.js `path.relative()`.
+even when custom files exist (bug #1997). Use `gsd-sdk query detect-custom-files`
+when `gsd-sdk` is on `PATH`, or the bundled `gsd-tools.cjs detect-custom-files`
+otherwise — both resolve paths reliably with Node.js `path.relative()`.
 
 First, resolve the config directory (`RUNTIME_DIR`) from the install scope
 detected in `get_installed_version`:
 
 ```bash
-# RUNTIME_DIR is the resolved config directory (e.g. ~/.config/opencode, ~/.config/opencode)
+# RUNTIME_DIR is the resolved config directory (e.g. ~/.config/opencode, ~/.gemini)
 # It should already be set from get_installed_version as GLOBAL_DIR or LOCAL_DIR.
 # Use the appropriate variable based on INSTALL_SCOPE.
 if [ "$INSTALL_SCOPE" = "LOCAL" ]; then
@@ -410,17 +411,20 @@ fi
 If `RUNTIME_DIR` is empty or does not exist, skip this step (no config dir to
 inspect).
 
-Otherwise, resolve the path to `gsd-tools.cjs` and run:
+Otherwise run `detect-custom-files` (prefer SDK when available):
 
 ```bash
 GSD_TOOLS="$RUNTIME_DIR/get-shit-done/bin/gsd-tools.cjs"
-if [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
+CUSTOM_JSON=''
+if [ -n "$RUNTIME_DIR" ] && command -v gsd-sdk >/dev/null 2>&1; then
+  CUSTOM_JSON=$(gsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
+elif [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
   CUSTOM_JSON=$(node "$GSD_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
-  CUSTOM_COUNT=$(echo "$CUSTOM_JSON" | node -e "process.stdin.resume();let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{console.log(JSON.parse(d).custom_count);}catch{console.log(0);}})" 2>/dev/null || echo "0")
-else
-  CUSTOM_COUNT=0
+fi
+if [ -z "$CUSTOM_JSON" ]; then
   CUSTOM_JSON='{"custom_files":[],"custom_count":0}'
 fi
+CUSTOM_COUNT=$(echo "$CUSTOM_JSON" | node -e "process.stdin.resume();let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{console.log(JSON.parse(d).custom_count);}catch{console.log(0);}})" 2>/dev/null || echo "0")
 ```
 
 **If `CUSTOM_COUNT` > 0:**

@@ -1,0 +1,179 @@
+{
+  "skill": "gate-spec-compliance",
+  "version": "1.0.0",
+  "scenarios": [
+    {
+      "id": "eval-01-full-pass",
+      "name": "Full compliance pass — all requirements traced and verified",
+      "context": {
+        "gate_context": "phase-audit",
+        "spec_path": ".planning/phases/15/SPEC.md",
+        "plan_path": ".planning/phases/15/PLAN.md",
+        "code_root": "src/lib/",
+        "test_root": "tests/lib/"
+      },
+      "preconditions": [
+        "SPEC.md contains 5 requirements with REQ-ID format",
+        "PLAN.md has tasks referencing each REQ-ID",
+        "Every requirement has a matching code artifact",
+        "Every requirement has a passing test case",
+        "No orphan code files"
+      ],
+      "steps": [
+        "Load evaluation-checklist.md and perspective-rubrics.md",
+        "Identify gate context as phase-audit → activate Architect (primary) + PM (secondary)",
+        "Execute decision tree: all 7 nodes pass",
+        "Run gap detection: forward sweep finds zero gaps, backward sweep finds zero orphans",
+        "Validate acceptance criteria: all ACs have GIVEN/WHEN/THEN/MEASURE/PASS/FAIL",
+        "Produce compliance report from templates/compliance-report.md"
+      ],
+      "assertions": [
+        "Verdict is PASS",
+        "Gap summary shows 0 for all gap types",
+        "All 5 requirements have traceability entries",
+        "Report contains Architect lens findings as primary",
+        "Report contains PM lens findings as secondary cross-check",
+        "No anti-patterns detected",
+        "Route recommendation is gate-evidence-truth"
+      ]
+    },
+    {
+      "id": "eval-02-spec-without-code",
+      "name": "SPEC requirement has no implementation — gap detected",
+      "context": {
+        "gate_context": "phase-audit",
+        "spec_path": ".planning/phases/20/SPEC.md",
+        "plan_path": ".planning/phases/20/PLAN.md",
+        "code_root": "src/lib/",
+        "test_root": "tests/lib/"
+      },
+      "preconditions": [
+        "SPEC.md contains 4 requirements",
+        "3 requirements have code artifacts",
+        "1 requirement (REQ-cont-03) has no code file",
+        "All 3 implemented requirements have passing tests"
+      ],
+      "steps": [
+        "Execute decision tree",
+        "At node [3]: REQ-cont-03 has no code artifact → SPEC-WITHOUT-CODE gap",
+        "Classify as HIGH severity",
+        "Produce gap report"
+      ],
+      "assertions": [
+        "Verdict is FAIL",
+        "Gap type SPEC-WITHOUT-CODE is detected",
+        "Gap severity is HIGH",
+        "REQ-cont-03 is listed in gap matrix",
+        "Report recommends STOP with gap resolution plan",
+        "Route recommendation is NOT gate-evidence-truth"
+      ]
+    },
+    {
+      "id": "eval-03-coverage-theater",
+      "name": "Anti-pattern detection — coverage theater with shallow tests",
+      "context": {
+        "gate_context": "code-review",
+        "spec_path": ".planning/phases/25/SPEC.md",
+        "plan_path": ".planning/phases/25/PLAN.md",
+        "code_root": "src/tools/",
+        "test_root": "tests/tools/"
+      },
+      "preconditions": [
+        "SPEC.md contains 3 requirements",
+        "All 3 requirements have code artifacts",
+        "All 3 requirements have test files",
+        "Tests pass but assertions are shallow (only toBeDefined, toBeTruthy)",
+        "No negative path tests exist"
+      ],
+      "steps": [
+        "Execute decision tree: all nodes technically pass",
+        "Run anti-pattern scan: detect AP-01 Coverage Theater",
+        "Count assertions per test file: average < 2",
+        "Flag as quality concern even though tests pass"
+      ],
+      "assertions": [
+        "Anti-pattern AP-01 is detected",
+        "Assertion analysis flags shallow tests",
+        "Report includes anti-pattern findings section",
+        "Recommendation includes test deepening before PASS",
+        "Verdict is FAIL due to anti-pattern severity"
+      ]
+    },
+    {
+      "id": "eval-04-deployment-readiness",
+      "name": "Deployment readiness — all three lenses applied sequentially",
+      "context": {
+        "gate_context": "deployment-readiness",
+        "spec_path": ".planning/phases/30/SPEC.md",
+        "plan_path": ".planning/phases/30/PLAN.md",
+        "code_root": "src/",
+        "test_root": "tests/"
+      },
+      "preconditions": [
+        "SPEC.md contains 10 requirements across all domains",
+        "All requirements have code, tests, and traceability",
+        "All tests pass",
+        "No HIGH severity gaps",
+        "Minor CODE-WITHOUT-SPEC warnings exist"
+      ],
+      "steps": [
+        "Identify deployment-readiness context → activate all three lenses",
+        "Apply PM lens: deliverable completeness check",
+        "Apply Architect lens: traceability and interface verification",
+        "Apply Dev lens: behavioral compliance and code quality",
+        "Produce comprehensive compliance report with all three sections"
+      ],
+      "assertions": [
+        "All three lens sections present in report",
+        "PM section evaluates deliverable completeness",
+        "Architect section evaluates traceability integrity",
+        "Dev section evaluates behavioral compliance",
+        "CODE-WITHOUT-SPEC warnings documented as MEDIUM",
+        "Verdict is PASS if no HIGH/CRITICAL issues",
+        "Route recommendation is gate-evidence-truth"
+      ]
+    },
+    {
+      "id": "eval-05-vague-ac-rejection",
+      "name": "Vague acceptance criteria are rejected — not invented",
+      "context": {
+        "gate_context": "integration-check",
+        "spec_path": ".planning/phases/22/SPEC.md",
+        "plan_path": ".planning/phases/22/PLAN.md",
+        "code_root": "src/lib/",
+        "test_root": "tests/lib/"
+      },
+      "preconditions": [
+        "SPEC.md contains 3 requirements",
+        "Requirement REQ-sess-02 has AC with 'system should work correctly'",
+        "AC lacks GIVEN/WHEN/THEN structure",
+        "No MEASURE or PASS/FAIL criteria defined",
+        "Code and tests exist for all requirements"
+      ],
+      "steps": [
+        "Execute decision tree: nodes pass at artifact level",
+        "Validate acceptance criteria against EARS templates",
+        "REQ-sess-02 AC fails EARS validation",
+        "Reject AC as blocked — do not invent precision"
+      ],
+      "assertions": [
+        "REQ-sess-02 AC is flagged as blocked",
+        "Skill does NOT invent measurable criteria",
+        "Report recommends routing to hm-spec-driven-authoring for AC re-derivation",
+        "Verdict is BLOCKED, not PASS",
+        "Vague AC is treated as worse than missing AC"
+      ]
+    }
+  ],
+  "metadata": {
+    "min_coverage": 5,
+    "assertion_count": 31,
+    "domains_covered": [
+      "traceability",
+      "gap-detection",
+      "anti-pattern-detection",
+      "contextual-perspective-activation",
+      "acceptance-criteria-validation"
+    ]
+  }
+}

@@ -27,23 +27,24 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@opencode-ai/sdk": "^1.14.20",
+    "@opencode-ai/sdk": "^1.14.28",
     "bun-pty": "^0.4.8",
     "gray-matter": "^4.0.3",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": "^1.14.20"
+    "@opencode-ai/plugin": "^1.14.28"
   },
   "devDependencies": {
+    "@opencode-ai/plugin": "^1.14.28",
     "@types/bun": "^1.3.8",
     "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/coverage-v8": "^4.1.5",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^4.1.5"
   },
   "engines": {
-    "opencode": ">=1.14.20"
+    "opencode": ">=1.14.28"
   }
 }

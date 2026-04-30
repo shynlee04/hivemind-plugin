@@ -1,0 +1,281 @@
+{
+  "_schema": "harness/event-tracker/v1",
+  "sessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+  "semanticSessionId": "ses_224e",
+  "artifactStem": "ses_224e",
+  "mainSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+  "startedAt": 1777496974623,
+  "updatedAt": 1777498442720,
+  "status": "idle",
+  "counters": {
+    "eventCount": 13,
+    "sessionStartCount": 1,
+    "sessionEndCount": 0
+  },
+  "actors": [],
+  "subSessions": [],
+  "delegations": [],
+  "toolsUsed": [],
+  "lastMessageOutput": "",
+  "exportMeta": null,
+  "toc": [
+    {
+      "index": 1,
+      "timestamp": 1777496974623,
+      "actor": "system",
+      "type": "session_start",
+      "summary": "Session started (session.created)"
+    },
+    {
+      "index": 2,
+      "timestamp": 1777496974624,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 3,
+      "timestamp": 1777496974625,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 4,
+      "timestamp": 1777496974857,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 5,
+      "timestamp": 1777496980575,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 6,
+      "timestamp": 1777496985549,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 7,
+      "timestamp": 1777496992205,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 8,
+      "timestamp": 1777496997622,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 9,
+      "timestamp": 1777497001869,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 10,
+      "timestamp": 1777498442113,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 11,
+      "timestamp": 1777498442114,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 12,
+      "timestamp": 1777498442619,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 13,
+      "timestamp": 1777498442720,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    }
+  ],
+  "events": [
+    {
+      "id": "ses_224e::session_start::1777496974623",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_start",
+      "actor": "system",
+      "title": "Session started",
+      "summary": "Session started (session.created)",
+      "timestamp": 1777496974623,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777496974624",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777496974624,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777496974625",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777496974625,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777496974857",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777496974857,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777496980575",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777496980575,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777496985549",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777496985549,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777496992205",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777496992205,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777496997622",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777496997622,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_updated::1777497001869",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "rootSessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777497001869,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_idle::1777498442113",
+      "sessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777498442113,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_idle::1777498442114",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "artifactStem": "ses_224e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777498442114,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_idle::1777498442619",
+      "sessionId": "ses_224ed1022ffeayLiQpoNysBK5u",
+      "artifactStem": "ses_224e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777498442619,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_224e::session_idle::1777498442720",
+      "sessionId": "ses_224ec9aebffeRp45iH1zbgzh81",
+      "artifactStem": "ses_224e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777498442720,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    }
+  ]
+}

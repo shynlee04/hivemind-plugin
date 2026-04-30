@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
-current_plan: phase-53-release-gap-closure-required
-status: phase-53-no-ship
-stopped_at: Phase 53 release-readiness audit complete as NO-SHIP; Phase 54 blocked until recovery and journal lineage blockers close or owner separates runway from release closure
-last_updated: "2026-04-29T23:59:00Z"
+current_plan: release-gap-closure-or-implementation-planning-selection
+status: phases-55-59-complete-planning-contracts
+stopped_at: Phases 55-59 complete as non-release planning contracts; implementation and Phase 52 release blockers remain future work
+last_updated: "2026-04-30T00:00:00Z"
 progress:
-  total_phases: 54
+  total_phases: 59
   completed_phases: "Conservative: completed through Phase 51 plus completed inserts/rescopes; see phase table below"
-  total_plans: "76 defined/completed through Phase 51; Phase 52-54 plans still pending"
-  completed_plans: 76
+  total_plans: "81 defined/completed through Phase 59 planning contracts; Phase 52 runtime blockers remain partial"
+  completed_plans: 81
   percent: "Not recalculated after Phase 52 split; use phase status tables instead of a false-precision percentage"
 ---
 
@@ -21,7 +21,7 @@ progress:
 See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Approved A + C routing narrows Phase 52 to end-user harness workflow acceptance only. Release-readiness/lifecycle gate closure now belongs to Phase 53, and sidecar/product-detox integration runway now belongs to Phase 54. This keeps user acceptance, release evidence, and future productization as separate truths.
+**Current focus:** Approved A + C routing narrows Phase 52 to end-user harness workflow acceptance only. Release-readiness/lifecycle gate closure belongs to Phase 53, sidecar/product-detox integration runway belongs to Phase 54, and Phases 55-59 are complete as non-release planning contracts for product-detox concept migration. This keeps user acceptance, release evidence, future productization, and concept migration as separate truths.
 
 **2026-04-25 RICH closure status:** A no-commit cross-phase closure wave for Phases 27-30 produced `30-CROSS-PHASE-RICH-CLOSURE-REVIEW-VALIDATION-2026-04-25.md`; final blocker closure produced `30-FINAL-RICH-CLOSURE-2026-04-25.md`. Latest status: Phases 27-30 PASS for HMQUAL/RICH closure scope; no remaining hard blockers in the targeted packages.
 
@@ -29,25 +29,25 @@ See: `.planning/PROJECT.md`
 
 Previous STATE.md overstated completion. The authoritative reset remains `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`.
 
-## Build Status (latest cited milestone evidence: 2026-04-28)
+## Build Status (latest cited milestone evidence: 2026-04-30)
 
 | Gate | Status | Details |
 |------|--------|---------|
-| `npm run typecheck` | ✅ PASS | Phase 50 verification: `tsc --noEmit` completed successfully |
-| `npm test` | ✅ PASS | Phase 50 verification: 69 files, 1111 tests passed |
-| `npm run build` | ✅ PASS | Phase 50 verification: clean + `tsc` completed successfully |
+| `npm run typecheck` | ✅ PASS | Phase 55-59 verification: `tsc --noEmit` completed successfully |
+| `npm test` | ✅ PASS | Phase 55-59 verification: 69 files, 1113 tests passed |
+| `npm run build` | ✅ PASS | Phase 55-59 verification: clean + `tsc` completed successfully |
 
 **Phase 35 build gate restored; remaining Phase 35 dead-code/TD items are deferred.**
 
 ## Current Position
 
-Phase: 53 complete as NO-SHIP release-readiness audit; Phase 52 remains BLOCKED/PARTIAL input
-Plan: Create a dedicated release gap-closure slice for recovery proof and journal/export lineage before reopening release readiness or Phase 54 runway execution
+Phase: 55-59 complete as non-release planning contracts; Phase 52 remains BLOCKED/PARTIAL input; Phase 53 remains NOT-SHIP
+Plan: Select either release gap-closure for E52-03/E52-05 or a new implementation phase for the locked planning contracts; keep SHIP claims blocked until live evidence exists
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
-**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1-48.5 are closed with documented runtime caveats; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing; Phase 51 is complete with stack/research grounding mapped to harness workflows. Phase 52 now stays narrow: prove end-user E2E acceptance only.
-**Next:** Plan the smallest release gap-closure work for E52-03 journal lineage and E52-05 recovery proof. Phase 54 remains blocked unless an explicit owner decision separates non-release runway planning from release closure.
-**Progress:** Roadmap extended truthfully; avoid exact percentage claims until Phase 52-54 plans exist.
+**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1-48.5 are closed with documented runtime caveats; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing; Phase 51 is complete with stack/research grounding mapped to harness workflows. Phase 52 stays narrow: prove end-user E2E acceptance only. Phases 55-59 are complete as planning contracts, not implementation claims.
+**Next:** Choose between release gap-closure for E52-03/E52-05 or implementation planning for the Phase 55-59 contracts.
+**Progress:** Roadmap extended truthfully; avoid exact percentage claims until Phase 52-59 plans exist.
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -108,7 +108,12 @@ Phase 50: Primitive Restart Ready .... COMPLETE (validate-restart passes; depend
 Phase 51: Stack Research Grounding ... COMPLETE → MOVED to skill-ecosystem (SE-H14)
 Phase 52: End-User Workflow Accept ... BLOCKED/PARTIAL (E52-01 pass; E52-02/03/04 partial; E52-05/06 blocked)
 Phase 53: Release Readiness Closure .. NO-SHIP COMPLETE (release blockers preserved; verdict artifact exists)
-Phase 54: Sidecar/Product Runway ..... BLOCKED (depends on release gap closure or explicit owner separation decision)
+Phase 54: Sidecar/Product Runway ..... COMPLETE AS NON-RELEASE RUNWAY (does not change NOT-SHIP)
+Phase 55: Doc Intelligence Engine .... COMPLETE FOR PLANNING CONTRACT (no implementation claim)
+Phase 56: Trajectory & Session v3 .... COMPLETE FOR PLANNING CONTRACT (no Phase 52 closure claim)
+Phase 57: Runtime Pressure + Control . COMPLETE FOR PLANNING CONTRACT (no runtime enforcement claim)
+Phase 58: Agent Work Contracts ....... COMPLETE FOR PLANNING CONTRACT (no tool implementation claim)
+Phase 59: SDK Supervisor + Commands .. COMPLETE FOR PLANNING CONTRACT (no SDK runtime claim)
 ```
 
 ## Phase Completion Details
@@ -162,7 +167,17 @@ Phase 54: Sidecar/Product Runway ..... BLOCKED (depends on release gap closure o
 | Phase 51 | COMPLETE | Stack/research/synthesis skill grounding mapped to harness workflows; depends on Phase 50 |
 | Phase 52 | BLOCKED/PARTIAL | E52-01 pass; E52-02/E52-03/E52-04 partial; E52-05/E52-06 blocked |
 | Phase 53 | NO-SHIP COMPLETE | Release readiness audit executed; recovery and journal lineage remain blockers |
-| Phase 54 | BLOCKED | Do not execute runway until release gap closure or explicit owner separation decision |
+| Phase 54 | COMPLETE AS NON-RELEASE RUNWAY | Runway artifact exists; does not close release blockers |
+
+### Research-Locked / Pre-Planning Phases
+
+| Phase | Status | Purpose |
+|-------|--------|---------|
+| Phase 55 | COMPLETE FOR PLANNING CONTRACT | Doc intelligence engine migration contract: markdown AST parsing, outline/frontmatter/heading hierarchy, token-aware chunking, doc surface routing, `hivemind_doc` actions |
+| Phase 56 | COMPLETE FOR PLANNING CONTRACT | Trajectory ledger and session v3 migration contract: truth anchoring, checkpoints, recovery logs, semantic IDs, lineage, TOC/findings/resumable flags |
+| Phase 57 | COMPLETE FOR PLANNING CONTRACT | Runtime pressure and control-plane contract: 10-tier pressure model, `detect()` gate decisions, tool catalog authority matrix |
+| Phase 58 | COMPLETE FOR PLANNING CONTRACT | Agent work contract: work scope, evidence contracts, compaction preservation, work create/export tools |
+| Phase 59 | COMPLETE FOR PLANNING CONTRACT | SDK supervisor and command engine contract: health/heartbeat/diagnostics, command bundle discovery/routing/contracts, context renderer, messages transform |
 
 ### Phases Requiring Repair (Audit 2026-04-23 — RESOLVED by Phase 24 and Phase 26)
 
@@ -338,7 +353,12 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 - [x] Plan Phase 51: Stack Research & Synthesis Skill Runtime Grounding
 - [ ] Plan Phase 52: End-User Harness Workflow Acceptance
 - [ ] Plan Phase 53: Release Readiness & Lifecycle Gate Closure
-- [ ] Plan Phase 54: Sidecar & Product-Detox Integration Runway
+- [x] Plan Phase 54: Sidecar & Product-Detox Integration Runway — complete as non-release runway
+- [x] Plan Phase 55: Doc Intelligence Engine — complete as planning contract
+- [x] Plan Phase 56: Trajectory & Session v3 — complete as planning contract
+- [x] Plan Phase 57: Runtime Pressure & Control Plane — complete as planning contract
+- [x] Plan Phase 58: Agent Work Contracts — complete as planning contract
+- [x] Plan Phase 59: SDK Supervisor & Command Engine — complete as planning contract
 - [x] Phases 17-30, 51 (skill quality work) — MOVED to skill-ecosystem workstream 2026-04-29
 
 ### Roadmap Evolution
@@ -382,6 +402,11 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 - Phase 52 added after Phase 51: End-User Harness Workflow Acceptance — now intentionally narrowed to end-user E2E acceptance only
 - Phase 53 added after Phase 52: Release Readiness & Lifecycle Gate Closure — closes release/runtime gate truth after Phase 52 acceptance evidence exists
 - Phase 54 added after Phase 53: Sidecar & Product-Detox Integration Runway — keeps sidecar/productization planning out of the narrower acceptance/release phases
+- Phase 55 added after Phase 54: Doc Intelligence Engine — research-locked/pre-planning product-detox doc intelligence migration context
+- Phase 56 added after Phase 55: Trajectory & Session v3 — research-locked/pre-planning product-detox trajectory/session migration context
+- Phase 57 added after Phase 56: Runtime Pressure & Control Plane — research-locked/pre-planning product-detox pressure/control-plane migration context
+- Phase 58 added after Phase 57: Agent Work Contracts — research-locked/pre-planning product-detox work contract migration context
+- Phase 59 added after Phase 57: SDK Supervisor & Command Engine — research-locked/pre-planning product-detox SDK supervisor and command engine migration context
 - 2026-04-22: Learnings extracted from Phases 14 (40 items), 15 (28 items), 16 (49 items) — total 117 structured learnings across decisions/lessons/patterns/surprises
 
 ### Blockers
@@ -423,7 +448,7 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19+
 
-**Stopped At:** Phase 51 complete; Phase 52 narrowed; Phases 53-54 added as explicit follow-up routing; Phases 17-30, 51 moved to skill-ecosystem workstream (2026-04-29)
+**Stopped At:** Phase 51 complete; Phase 52 narrowed; Phases 53-54 added as explicit follow-up routing; Phases 55-59 completed as non-release planning contracts; Phases 17-30, 51 moved to skill-ecosystem workstream (2026-04-30)
 
 **Key files:** `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`, `.planning/phases/26-synthesize-all-hm-star-skills-debts-gaps-conflicts-across-ph/26-EXECUTION-ROADMAP.md`, `src/plugin.ts`
 
@@ -435,7 +460,8 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 *Lifecycle remediation execution: 2026-04-27 — Phases 43-47 complete; Phase 48 degraded with runtime proof gaps documented*
 *Downstream UAT acceptance expansion: 2026-04-28 — Phases 49-52 added under milestone workstream from ses_22ee end-user harness tool evidence*
 *Approved A + C routing update: 2026-04-28 — Phase 52 narrowed to end-user E2E acceptance; Phase 53 added for release-readiness/lifecycle closure; Phase 54 added for sidecar/product-detox runway*
+*Product-detox concept migration runway: 2026-04-30 — Phases 55-59 completed as planning contracts for doc intelligence, trajectory/session v3, pressure/control-plane, agent work contracts, and SDK/command engine migration; implementation evidence remains future work*
 
-**Planned Phase:** Phase 52 — End-User Harness Workflow Acceptance (narrow end-user E2E scope)
+**Planned Phase:** Select next: release gap closure for Phase 52 E52-03/E52-05, or implementation planning for Phase 55-59 contracts
 
 *Workstream reorganization: 2026-04-29 — 14 skill-only phases (17-30, 51) moved from milestone to skill-ecosystem workstream as historical phases SE-H1 through SE-H14. Milestone ROADMAP now tracks code phases only. Phase 16 corrected to COMPLETE (Gap 4 closed by Phase 34).*

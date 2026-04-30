@@ -41,6 +41,8 @@ if [ -n "{MANIFEST_PATH}" ]; then
 fi
 ```
 
+**Containment (required):** After resolving `SCAN_PATH` and `MANIFEST_PATH` relative to the repo root, canonicalize each with `realpath` (or platform equivalent) and assert the result is under `realpath("$REPO_ROOT")`. Reject absolute paths outside the repo (e.g. `/tmp`, `C:\Windows`) even when they do not contain `..`.
+
 If `PATH_NOT_FOUND` or `MANIFEST_NOT_FOUND`: display error and exit.
 
 </step>

@@ -172,7 +172,8 @@ async function scanAgents(root: string, result: LoadResult): Promise<void> {
   for (const file of files) {
     if (!file.endsWith(".md")) continue
     const filePath = path.join(agentsDir, file)
-    const stat = await fs.stat(filePath)
+    const stat = await statIfPresent(filePath)
+    if (!stat) continue
     if (!stat.isFile()) continue
 
     const loadResult = await loadPrimitive(filePath, "agent")
@@ -193,7 +194,8 @@ async function scanCommands(root: string, result: LoadResult): Promise<void> {
   for (const file of files) {
     if (!file.endsWith(".md")) continue
     const filePath = path.join(commandsDir, file)
-    const stat = await fs.stat(filePath)
+    const stat = await statIfPresent(filePath)
+    if (!stat) continue
     if (!stat.isFile()) continue
 
     const loadResult = await loadPrimitive(filePath, "command")
@@ -204,6 +206,19 @@ async function scanCommands(root: string, result: LoadResult): Promise<void> {
       result.warnings.push(`Invalid command frontmatter in ${filePath}: ${loadResult.error}`)
     }
   }
+}
+
+async function statIfPresent(filePath: string): Promise<Awaited<ReturnType<typeof fs.stat>> | null> {
+  try {
+    return await fs.stat(filePath)
+  } catch (caughtError) {
+    if (isNodeError(caughtError) && caughtError.code === "ENOENT") return null
+    throw caughtError
+  }
+}
+
+function isNodeError(errorValue: unknown): errorValue is NodeJS.ErrnoException {
+  return errorValue instanceof Error && "code" in errorValue
 }
 
 async function scanSkills(root: string, result: LoadResult): Promise<void> {

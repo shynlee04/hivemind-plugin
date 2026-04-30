@@ -3,10 +3,10 @@
 **Session ID:** ses_234c9c22bffe8wNbSmv4zXhOvu
 **Artifact Stem:** ses_234c
 **Main Session ID:** ses_234c9c22bffe8wNbSmv4zXhOvu
-**Updated:** 1777234170200
+**Updated:** 1777289987255
 **Status:** idle
 **eventCount:** 100
-**sessionStartCount:** 5
+**sessionStartCount:** 4
 **sessionEndCount:** 0
 **Actors:** 
 **Sub Sessions:** 0
@@ -20,111 +20,111 @@
 
 | # | Timestamp | Actor | Type | Summary |
 |---|-----------|-------|------|---------|
-| 1 | 1777233462258 | system | session_updated | Session updated (session.updated) |
-| 2 | 1777233533358 | system | session_updated | Session updated (session.updated) |
-| 3 | 1777233533360 | system | session_updated | Session updated (session.updated) |
-| 4 | 1777233534248 | system | session_updated | Session updated (session.updated) |
-| 5 | 1777233546007 | system | session_updated | Session updated (session.updated) |
-| 6 | 1777233563224 | system | session_updated | Session updated (session.updated) |
-| 7 | 1777233573379 | system | session_updated | Session updated (session.updated) |
-| 8 | 1777233585968 | system | session_start | Session started (session.created) |
-| 9 | 1777233585970 | system | session_updated | Session updated (session.updated) |
-| 10 | 1777233585971 | system | session_updated | Session updated (session.updated) |
-| 11 | 1777233586151 | system | session_updated | Session updated (session.updated) |
-| 12 | 1777233592600 | system | session_start | Session started (session.created) |
-| 13 | 1777233592602 | system | session_updated | Session updated (session.updated) |
-| 14 | 1777233592603 | system | session_updated | Session updated (session.updated) |
-| 15 | 1777233592781 | system | session_updated | Session updated (session.updated) |
-| 16 | 1777233599397 | system | session_start | Session started (session.created) |
-| 17 | 1777233599398 | system | session_updated | Session updated (session.updated) |
-| 18 | 1777233599399 | system | session_updated | Session updated (session.updated) |
-| 19 | 1777233599790 | system | session_updated | Session updated (session.updated) |
-| 20 | 1777233599914 | system | session_updated | Session updated (session.updated) |
-| 21 | 1777233602731 | system | session_updated | Session updated (session.updated) |
-| 22 | 1777233605359 | system | session_start | Session started (session.created) |
-| 23 | 1777233605361 | system | session_updated | Session updated (session.updated) |
-| 24 | 1777233605362 | system | session_updated | Session updated (session.updated) |
-| 25 | 1777233605543 | system | session_updated | Session updated (session.updated) |
-| 26 | 1777233607775 | system | session_updated | Session updated (session.updated) |
-| 27 | 1777233610145 | system | session_updated | Session updated (session.updated) |
-| 28 | 1777233610841 | system | session_updated | Session updated (session.updated) |
-| 29 | 1777233616017 | system | session_updated | Session updated (session.updated) |
-| 30 | 1777233619151 | system | session_updated | Session updated (session.updated) |
-| 31 | 1777233627065 | system | session_updated | Session updated (session.updated) |
-| 32 | 1777233628968 | system | session_updated | Session updated (session.updated) |
-| 33 | 1777233637062 | system | session_updated | Session updated (session.updated) |
-| 34 | 1777233646938 | system | session_updated | Session updated (session.updated) |
-| 35 | 1777233649641 | system | session_updated | Session updated (session.updated) |
-| 36 | 1777233651884 | system | session_updated | Session updated (session.updated) |
-| 37 | 1777233656534 | system | session_updated | Session updated (session.updated) |
-| 38 | 1777233658190 | system | session_updated | Session updated (session.updated) |
-| 39 | 1777233673299 | system | session_updated | Session updated (session.updated) |
-| 40 | 1777233674594 | system | session_updated | Session updated (session.updated) |
-| 41 | 1777233681209 | system | session_updated | Session updated (session.updated) |
-| 42 | 1777233690508 | system | session_updated | Session updated (session.updated) |
-| 43 | 1777233692016 | system | session_updated | Session updated (session.updated) |
-| 44 | 1777233693934 | system | session_updated | Session updated (session.updated) |
-| 45 | 1777233698982 | system | session_updated | Session updated (session.updated) |
-| 46 | 1777233707770 | system | session_updated | Session updated (session.updated) |
-| 47 | 1777233710423 | system | session_updated | Session updated (session.updated) |
-| 48 | 1777233714692 | system | session_updated | Session updated (session.updated) |
-| 49 | 1777233718518 | system | session_updated | Session updated (session.updated) |
-| 50 | 1777233720811 | system | session_updated | Session updated (session.updated) |
-| 51 | 1777233727617 | system | session_updated | Session updated (session.updated) |
-| 52 | 1777233733526 | system | session_updated | Session updated (session.updated) |
-| 53 | 1777233734538 | system | session_updated | Session updated (session.updated) |
-| 54 | 1777233739455 | system | session_updated | Session updated (session.updated) |
-| 55 | 1777233741943 | system | session_updated | Session updated (session.updated) |
-| 56 | 1777233746262 | system | session_updated | Session updated (session.updated) |
-| 57 | 1777233747164 | system | session_idle | Session idle (session.idle) |
-| 58 | 1777233748296 | system | session_updated | Session updated (session.updated) |
-| 59 | 1777233749342 | system | session_updated | Session updated (session.updated) |
-| 60 | 1777233751991 | system | session_updated | Session updated (session.updated) |
-| 61 | 1777233754022 | system | session_updated | Session updated (session.updated) |
-| 62 | 1777233755791 | system | session_updated | Session updated (session.updated) |
-| 63 | 1777233766506 | system | session_updated | Session updated (session.updated) |
-| 64 | 1777233776526 | system | session_idle | Session idle (session.idle) |
-| 65 | 1777233777080 | system | session_updated | Session updated (session.updated) |
-| 66 | 1777233778589 | system | session_updated | Session updated (session.updated) |
-| 67 | 1777233783711 | system | session_updated | Session updated (session.updated) |
-| 68 | 1777233797234 | system | session_idle | Session idle (session.idle) |
-| 69 | 1777233797648 | system | session_updated | Session updated (session.updated) |
-| 70 | 1777233824159 | system | session_updated | Session updated (session.updated) |
-| 71 | 1777233847400 | system | session_idle | Session idle (session.idle) |
-| 72 | 1777233848168 | system | session_updated | Session updated (session.updated) |
-| 73 | 1777233848974 | system | session_updated | Session updated (session.updated) |
-| 74 | 1777233860251 | system | session_updated | Session updated (session.updated) |
-| 75 | 1777233872173 | system | session_updated | Session updated (session.updated) |
-| 76 | 1777233878559 | system | session_updated | Session updated (session.updated) |
-| 77 | 1777233908402 | system | session_updated | Session updated (session.updated) |
-| 78 | 1777233927926 | system | session_updated | Session updated (session.updated) |
-| 79 | 1777233940164 | system | session_updated | Session updated (session.updated) |
-| 80 | 1777233946953 | system | session_updated | Session updated (session.updated) |
-| 81 | 1777233953511 | system | session_updated | Session updated (session.updated) |
-| 82 | 1777233959089 | system | session_updated | Session updated (session.updated) |
-| 83 | 1777233964748 | system | session_updated | Session updated (session.updated) |
-| 84 | 1777233970743 | system | session_updated | Session updated (session.updated) |
-| 85 | 1777233983784 | system | session_start | Session started (session.created) |
-| 86 | 1777233983788 | system | session_updated | Session updated (session.updated) |
-| 87 | 1777233983790 | system | session_updated | Session updated (session.updated) |
-| 88 | 1777233984217 | system | session_updated | Session updated (session.updated) |
-| 89 | 1777233995861 | system | session_updated | Session updated (session.updated) |
-| 90 | 1777234003961 | system | session_updated | Session updated (session.updated) |
-| 91 | 1777234010837 | system | session_updated | Session updated (session.updated) |
-| 92 | 1777234017691 | system | session_updated | Session updated (session.updated) |
-| 93 | 1777234024601 | system | session_updated | Session updated (session.updated) |
-| 94 | 1777234028717 | system | session_updated | Session updated (session.updated) |
-| 95 | 1777234037707 | system | session_updated | Session updated (session.updated) |
-| 96 | 1777234044399 | system | session_updated | Session updated (session.updated) |
-| 97 | 1777234169976 | system | session_idle | Session idle (session.idle) |
-| 98 | 1777234169978 | system | session_idle | Session idle (session.idle) |
-| 99 | 1777234170197 | system | session_idle | Session idle (session.idle) |
-| 100 | 1777234170200 | system | session_idle | Session idle (session.idle) |
+| 1 | 1777288808845 | system | session_updated | Session updated (session.updated) |
+| 2 | 1777288850421 | system | session_updated | Session updated (session.updated) |
+| 3 | 1777288860101 | system | session_updated | Session updated (session.updated) |
+| 4 | 1777288868005 | system | session_updated | Session updated (session.updated) |
+| 5 | 1777288875421 | system | session_updated | Session updated (session.updated) |
+| 6 | 1777288886804 | system | session_updated | Session updated (session.updated) |
+| 7 | 1777288893214 | system | session_updated | Session updated (session.updated) |
+| 8 | 1777288922540 | system | session_updated | Session updated (session.updated) |
+| 9 | 1777288938968 | system | session_updated | Session updated (session.updated) |
+| 10 | 1777288968723 | system | session_updated | Session updated (session.updated) |
+| 11 | 1777288980246 | system | session_updated | Session updated (session.updated) |
+| 12 | 1777288996896 | system | session_updated | Session updated (session.updated) |
+| 13 | 1777289008348 | system | session_updated | Session updated (session.updated) |
+| 14 | 1777289015734 | system | session_updated | Session updated (session.updated) |
+| 15 | 1777289059297 | system | session_updated | Session updated (session.updated) |
+| 16 | 1777289069234 | system | session_updated | Session updated (session.updated) |
+| 17 | 1777289076565 | system | session_updated | Session updated (session.updated) |
+| 18 | 1777289083007 | system | session_updated | Session updated (session.updated) |
+| 19 | 1777289129855 | system | session_updated | Session updated (session.updated) |
+| 20 | 1777289138720 | system | session_updated | Session updated (session.updated) |
+| 21 | 1777289147656 | system | session_updated | Session updated (session.updated) |
+| 22 | 1777289161128 | system | session_updated | Session updated (session.updated) |
+| 23 | 1777289168301 | system | session_updated | Session updated (session.updated) |
+| 24 | 1777289181738 | system | session_updated | Session updated (session.updated) |
+| 25 | 1777289236052 | system | session_updated | Session updated (session.updated) |
+| 26 | 1777289251014 | system | session_updated | Session updated (session.updated) |
+| 27 | 1777289258251 | system | session_updated | Session updated (session.updated) |
+| 28 | 1777289265174 | system | session_updated | Session updated (session.updated) |
+| 29 | 1777289271870 | system | session_updated | Session updated (session.updated) |
+| 30 | 1777289278903 | system | session_updated | Session updated (session.updated) |
+| 31 | 1777289294422 | system | session_updated | Session updated (session.updated) |
+| 32 | 1777289300341 | system | session_updated | Session updated (session.updated) |
+| 33 | 1777289305739 | system | session_updated | Session updated (session.updated) |
+| 34 | 1777289320048 | system | session_updated | Session updated (session.updated) |
+| 35 | 1777289325800 | system | session_updated | Session updated (session.updated) |
+| 36 | 1777289337811 | system | session_updated | Session updated (session.updated) |
+| 37 | 1777289348993 | system | session_updated | Session updated (session.updated) |
+| 38 | 1777289362848 | system | session_updated | Session updated (session.updated) |
+| 39 | 1777289369728 | system | session_updated | Session updated (session.updated) |
+| 40 | 1777289376695 | system | session_updated | Session updated (session.updated) |
+| 41 | 1777289383228 | system | session_updated | Session updated (session.updated) |
+| 42 | 1777289392018 | system | session_updated | Session updated (session.updated) |
+| 43 | 1777289400053 | system | session_updated | Session updated (session.updated) |
+| 44 | 1777289419960 | system | session_updated | Session updated (session.updated) |
+| 45 | 1777289432997 | system | session_updated | Session updated (session.updated) |
+| 46 | 1777289454699 | system | session_updated | Session updated (session.updated) |
+| 47 | 1777289461868 | system | session_updated | Session updated (session.updated) |
+| 48 | 1777289468148 | system | session_updated | Session updated (session.updated) |
+| 49 | 1777289474623 | system | session_updated | Session updated (session.updated) |
+| 50 | 1777289483493 | system | session_updated | Session updated (session.updated) |
+| 51 | 1777289492927 | system | session_updated | Session updated (session.updated) |
+| 52 | 1777289517075 | system | session_updated | Session updated (session.updated) |
+| 53 | 1777289524908 | system | session_updated | Session updated (session.updated) |
+| 54 | 1777289533984 | system | session_updated | Session updated (session.updated) |
+| 55 | 1777289542041 | system | session_updated | Session updated (session.updated) |
+| 56 | 1777289621886 | system | session_updated | Session updated (session.updated) |
+| 57 | 1777289632120 | system | session_updated | Session updated (session.updated) |
+| 58 | 1777289647775 | system | session_updated | Session updated (session.updated) |
+| 59 | 1777289674300 | system | session_updated | Session updated (session.updated) |
+| 60 | 1777289695351 | system | session_updated | Session updated (session.updated) |
+| 61 | 1777289705453 | system | session_updated | Session updated (session.updated) |
+| 62 | 1777289714171 | system | session_updated | Session updated (session.updated) |
+| 63 | 1777289720237 | system | session_updated | Session updated (session.updated) |
+| 64 | 1777289735434 | system | session_updated | Session updated (session.updated) |
+| 65 | 1777289744266 | system | session_updated | Session updated (session.updated) |
+| 66 | 1777289752956 | system | session_updated | Session updated (session.updated) |
+| 67 | 1777289765547 | system | session_idle | Session idle (session.idle) |
+| 68 | 1777289769712 | system | session_updated | Session updated (session.updated) |
+| 69 | 1777289774708 | system | session_updated | Session updated (session.updated) |
+| 70 | 1777289783444 | system | session_updated | Session updated (session.updated) |
+| 71 | 1777289792557 | system | session_updated | Session updated (session.updated) |
+| 72 | 1777289799666 | system | session_start | Session started (session.created) |
+| 73 | 1777289799674 | system | session_updated | Session updated (session.updated) |
+| 74 | 1777289799678 | system | session_updated | Session updated (session.updated) |
+| 75 | 1777289799763 | system | session_start | Session started (session.created) |
+| 76 | 1777289799769 | system | session_updated | Session updated (session.updated) |
+| 77 | 1777289799775 | system | session_updated | Session updated (session.updated) |
+| 78 | 1777289799845 | system | session_start | Session started (session.created) |
+| 79 | 1777289799852 | system | session_updated | Session updated (session.updated) |
+| 80 | 1777289799858 | system | session_updated | Session updated (session.updated) |
+| 81 | 1777289799983 | system | session_start | Session started (session.created) |
+| 82 | 1777289799997 | system | session_updated | Session updated (session.updated) |
+| 83 | 1777289800005 | system | session_updated | Session updated (session.updated) |
+| 84 | 1777289801110 | system | session_updated | Session updated (session.updated) |
+| 85 | 1777289802646 | system | session_updated | Session updated (session.updated) |
+| 86 | 1777289804241 | system | session_updated | Session updated (session.updated) |
+| 87 | 1777289805909 | system | session_updated | Session updated (session.updated) |
+| 88 | 1777289833974 | system | session_idle | Session idle (session.idle) |
+| 89 | 1777289834715 | system | session_idle | Session idle (session.idle) |
+| 90 | 1777289835436 | system | session_idle | Session idle (session.idle) |
+| 91 | 1777289836165 | system | session_idle | Session idle (session.idle) |
+| 92 | 1777289836876 | system | session_idle | Session idle (session.idle) |
+| 93 | 1777289837594 | system | session_idle | Session idle (session.idle) |
+| 94 | 1777289945114 | system | session_updated | Session updated (session.updated) |
+| 95 | 1777289983020 | system | session_updated | Session updated (session.updated) |
+| 96 | 1777289985157 | system | session_updated | Session updated (session.updated) |
+| 97 | 1777289985162 | system | session_updated | Session updated (session.updated) |
+| 98 | 1777289986986 | system | session_idle | Session idle (session.idle) |
+| 99 | 1777289987006 | system | session_updated | Session updated (session.updated) |
+| 100 | 1777289987255 | system | session_idle | Session idle (session.idle) |
 
 ---
 ## Session updated
 
-- Timestamp: 1777233462258
+- Timestamp: 1777288808845
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -133,7 +133,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233533358
+- Timestamp: 1777288850421
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -142,7 +142,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233533360
+- Timestamp: 1777288860101
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -151,7 +151,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233534248
+- Timestamp: 1777288868005
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -160,7 +160,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233546007
+- Timestamp: 1777288875421
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -169,7 +169,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233563224
+- Timestamp: 1777288886804
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -178,7 +178,583 @@
 
 ## Session updated
 
-- Timestamp: 1777233573379
+- Timestamp: 1777288893214
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777288922540
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777288938968
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777288968723
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777288980246
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777288996896
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289008348
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289015734
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289059297
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289069234
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289076565
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289083007
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289129855
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289138720
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289147656
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289161128
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289168301
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289181738
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289236052
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289251014
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289258251
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289265174
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289271870
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289278903
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289294422
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289300341
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289305739
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289320048
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289325800
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289337811
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289348993
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289362848
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289369728
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289376695
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289383228
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289392018
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289400053
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289419960
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289432997
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289454699
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289461868
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289468148
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289474623
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289483493
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289492927
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289517075
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289524908
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289533984
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289542041
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289621886
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289632120
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289647775
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289674300
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289695351
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289705453
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289714171
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289720237
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289735434
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289744266
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289752956
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session idle
+
+- Timestamp: 1777289765547
+- Actor: system
+- Type: session_idle
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session idle (session.idle)
+
+## Session updated
+
+- Timestamp: 1777289769712
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289774708
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289783444
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289792557
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -187,7 +763,7 @@
 
 ## Session started
 
-- Timestamp: 1777233585968
+- Timestamp: 1777289799666
 - Actor: system
 - Type: session_start
 - Source: plugin.event
@@ -196,7 +772,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233585970
+- Timestamp: 1777289799674
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -205,16 +781,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233585971
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233586151
+- Timestamp: 1777289799678
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -223,7 +790,7 @@
 
 ## Session started
 
-- Timestamp: 1777233592600
+- Timestamp: 1777289799763
 - Actor: system
 - Type: session_start
 - Source: plugin.event
@@ -232,7 +799,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233592602
+- Timestamp: 1777289799769
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -241,16 +808,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233592603
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233592781
+- Timestamp: 1777289799775
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -259,7 +817,7 @@
 
 ## Session started
 
-- Timestamp: 1777233599397
+- Timestamp: 1777289799845
 - Actor: system
 - Type: session_start
 - Source: plugin.event
@@ -268,7 +826,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233599398
+- Timestamp: 1777289799852
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -277,34 +835,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233599399
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233599790
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233599914
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233602731
+- Timestamp: 1777289799858
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -313,7 +844,7 @@
 
 ## Session started
 
-- Timestamp: 1777233605359
+- Timestamp: 1777289799983
 - Actor: system
 - Type: session_start
 - Source: plugin.event
@@ -322,7 +853,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233605361
+- Timestamp: 1777289799997
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -331,7 +862,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233605362
+- Timestamp: 1777289800005
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -340,7 +871,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233605543
+- Timestamp: 1777289801110
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -349,7 +880,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233607775
+- Timestamp: 1777289802646
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -358,7 +889,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233610145
+- Timestamp: 1777289804241
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -367,259 +898,7 @@
 
 ## Session updated
 
-- Timestamp: 1777233610841
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233616017
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233619151
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233627065
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233628968
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233637062
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233646938
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233649641
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233651884
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233656534
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233658190
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233673299
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233674594
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233681209
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233690508
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233692016
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233693934
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233698982
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233707770
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233710423
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233714692
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233718518
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233720811
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233727617
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233733526
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233734538
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233739455
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233741943
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233746262
+- Timestamp: 1777289805909
 - Actor: system
 - Type: session_updated
 - Source: plugin.event
@@ -628,367 +907,7 @@
 
 ## Session idle
 
-- Timestamp: 1777233747164
-- Actor: system
-- Type: session_idle
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session idle (session.idle)
-
-## Session updated
-
-- Timestamp: 1777233748296
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233749342
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233751991
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233754022
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233755791
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233766506
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session idle
-
-- Timestamp: 1777233776526
-- Actor: system
-- Type: session_idle
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session idle (session.idle)
-
-## Session updated
-
-- Timestamp: 1777233777080
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233778589
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233783711
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session idle
-
-- Timestamp: 1777233797234
-- Actor: system
-- Type: session_idle
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session idle (session.idle)
-
-## Session updated
-
-- Timestamp: 1777233797648
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233824159
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session idle
-
-- Timestamp: 1777233847400
-- Actor: system
-- Type: session_idle
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session idle (session.idle)
-
-## Session updated
-
-- Timestamp: 1777233848168
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233848974
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233860251
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233872173
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233878559
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233908402
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233927926
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233940164
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233946953
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233953511
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233959089
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233964748
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233970743
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session started
-
-- Timestamp: 1777233983784
-- Actor: system
-- Type: session_start
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session started (session.created)
-
-## Session updated
-
-- Timestamp: 1777233983788
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233983790
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233984217
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777233995861
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777234003961
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777234010837
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777234017691
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777234024601
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777234028717
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777234037707
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session updated
-
-- Timestamp: 1777234044399
-- Actor: system
-- Type: session_updated
-- Source: plugin.event
-- State role: audit trail
-- Summary: Session updated (session.updated)
-
-## Session idle
-
-- Timestamp: 1777234169976
+- Timestamp: 1777289833974
 - Actor: system
 - Type: session_idle
 - Source: plugin.event
@@ -997,7 +916,7 @@
 
 ## Session idle
 
-- Timestamp: 1777234169978
+- Timestamp: 1777289834715
 - Actor: system
 - Type: session_idle
 - Source: plugin.event
@@ -1006,7 +925,7 @@
 
 ## Session idle
 
-- Timestamp: 1777234170197
+- Timestamp: 1777289835436
 - Actor: system
 - Type: session_idle
 - Source: plugin.event
@@ -1015,7 +934,88 @@
 
 ## Session idle
 
-- Timestamp: 1777234170200
+- Timestamp: 1777289836165
+- Actor: system
+- Type: session_idle
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session idle (session.idle)
+
+## Session idle
+
+- Timestamp: 1777289836876
+- Actor: system
+- Type: session_idle
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session idle (session.idle)
+
+## Session idle
+
+- Timestamp: 1777289837594
+- Actor: system
+- Type: session_idle
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session idle (session.idle)
+
+## Session updated
+
+- Timestamp: 1777289945114
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289983020
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289985157
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session updated
+
+- Timestamp: 1777289985162
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session idle
+
+- Timestamp: 1777289986986
+- Actor: system
+- Type: session_idle
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session idle (session.idle)
+
+## Session updated
+
+- Timestamp: 1777289987006
+- Actor: system
+- Type: session_updated
+- Source: plugin.event
+- State role: audit trail
+- Summary: Session updated (session.updated)
+
+## Session idle
+
+- Timestamp: 1777289987255
 - Actor: system
 - Type: session_idle
 - Source: plugin.event

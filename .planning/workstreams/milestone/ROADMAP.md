@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-29 (Skill phases 17-30, 51 moved to skill-ecosystem workstream; Phase 16 corrected to COMPLETE; Phases 37-40 status fixed)
+**Updated:** 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -57,7 +57,12 @@
 - [x] **Phase 51: Stack Research Grounding** — ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14
 - [ ] **Phase 52: End-User Harness Workflow Acceptance** — BLOCKED/PARTIAL: E52-01 pass; E52-02/03/04 partial; E52-05/06 blocked
 - [x] **Phase 53: Release Readiness & Lifecycle Gate Closure** — COMPLETE AS NO-SHIP gate audit; release blocker chain preserved
-- [ ] **Phase 54: Sidecar & Product-Detox Integration Runway** — BLOCKED by Phase 53 NO-SHIP until release gap closure or explicit owner separation decision
+- [x] **Phase 54: Sidecar & Product-Detox Integration Runway** — COMPLETE AS NON-RELEASE RUNWAY; does not change Phase 53 NO-SHIP or Phase 52 runtime gaps
+- [x] **Phase 55: Doc Intelligence Engine** — COMPLETE FOR PLANNING CONTRACT: doc parser/chunker/router/tool requirements locked; no implementation claim
+- [x] **Phase 56: Trajectory & Session v3** — COMPLETE FOR PLANNING CONTRACT: trajectory/session v3 requirements locked; no Phase 52 closure claim
+- [x] **Phase 57: Runtime Pressure & Control Plane** — COMPLETE FOR PLANNING CONTRACT: pressure/control-plane requirements locked; no runtime enforcement claim
+- [x] **Phase 58: Agent Work Contracts** — COMPLETE FOR PLANNING CONTRACT: work/evidence/compaction contract requirements locked; no tool implementation claim
+- [x] **Phase 59: SDK Supervisor & Command Engine** — COMPLETE FOR PLANNING CONTRACT: supervisor/command-engine requirements locked; no SDK runtime claim
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
@@ -98,6 +103,61 @@ Plans:
 - [x] 53-04-PLAN-2026-04-29.md — Recovery/runtime gap closure decision; operator approval unavailable, recorded NO_SHIP_BLOCKER (Wave 3)
 - [x] 53-05-PLAN-2026-04-29.md — Release readiness verdict: NO-SHIP (Wave 4)
 - [x] 53-06-PLAN-2026-04-29.md — State/roadmap handoff blocks Phase 54 on NO-SHIP (Wave 5)
+
+## Phase 55: Doc Intelligence Engine
+
+**Goal:** Migrate product-detox doc intelligence concepts into a bounded harness planning phase: remark markdown AST parsing, outline/frontmatter/heading hierarchy extraction, token-aware chunking, doc surface routing, and `hivemind_doc` actions.
+**Requirements:** DOC-INTEL-01 through DOC-INTEL-05
+**Depends on:** Phase 54 sidecar/product-detox integration runway
+**Supports:** future Phase 52 workflow evidence reference planning and Phase 56 trajectory evidence references; does not reopen or close Phase 52 by itself
+**Plans:** 1 plan — executed as planning contract; final artifact `55-CONTRACT-2026-04-30.md`
+
+Plans:
+- [x] 55-01-PLAN-2026-04-30.md — define doc intelligence planning contract
+
+## Phase 56: Trajectory & Session v3
+
+**Goal:** Migrate product-detox trajectory ledger and session v3 schema concepts: truth-anchored events, checkpoints, recovery logs, semantic IDs, lineage, purpose class, TOC, key findings, resumable flags, and `hivemind_trajectory` actions.
+**Requirements:** TRAJECTORY-01 through TRAJECTORY-06
+**Depends on:** Phase 55 doc intelligence engine
+**Feeds:** any reopened Phase 52 journal lineage/recovery proof acceptance or gap-closure work and downstream trajectory-backed evidence planning; does not claim Phase 52 closure
+**Plans:** 1 plan — executed as planning contract; final artifact `56-CONTRACT-2026-04-30.md`
+
+Plans:
+- [x] 56-01-PLAN-2026-04-30.md — define trajectory/session v3 planning contract
+
+## Phase 57: Runtime Pressure & Control Plane
+
+**Goal:** Migrate product-detox runtime pressure and control-plane concepts: 10-tier steady → advisory → gated → blocking pressure model, control-plane `detect()` gate decisions, and tool catalog authority matrix.
+**Requirements:** PRESSURE-01 through PRESSURE-05
+**Depends on:** Phase 56 trajectory/session v3
+**Blocks:** Phase 39 auto-loop engine and Phase 58 agent work contracts
+**Plans:** 1 plan — executed as planning contract; final artifact `57-CONTRACT-2026-04-30.md`
+
+Plans:
+- [x] 57-01-PLAN-2026-04-30.md — define runtime pressure/control-plane planning contract
+
+## Phase 58: Agent Work Contracts
+
+**Goal:** Migrate product-detox agent work contract concepts: work scope contracts, evidence contracts, compaction preservation briefing/summary/anchor extraction and reinjection, and `hivemind_agent_work_create` / `hivemind_agent_work_export` tool contracts.
+**Requirements:** WORK-CONTRACT-01 through WORK-CONTRACT-04
+**Depends on:** Phase 57 runtime pressure/control-plane
+**Blocks:** Agent Synthesis AS-8
+**Plans:** 1 plan — executed as planning contract; final artifact `58-CONTRACT-2026-04-30.md`
+
+Plans:
+- [x] 58-01-PLAN-2026-04-30.md — define agent work contract planning contract
+
+## Phase 59: SDK Supervisor & Command Engine
+
+**Goal:** Migrate product-detox SDK supervisor and slash-command engine concepts: health/heartbeat/diagnostics, command bundle discovery/routing/contracts, context renderer, and messages transform.
+**Requirements:** SUPERVISOR-01 through SUPERVISOR-05
+**Depends on:** Phase 57 runtime pressure/control-plane
+**Blocks:** Agent Synthesis AS-9
+**Plans:** 1 plan — executed as planning contract; final artifact `59-CONTRACT-2026-04-30.md`
+
+Plans:
+- [x] 59-01-PLAN-2026-04-30.md — define SDK supervisor/command engine planning contract
 
 ## Phase 2: V3 Runtime Architecture
 
@@ -520,6 +580,13 @@ See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section
 | 50. OpenCode Primitive Restart Readiness | 1 plan | Complete — validate-restart passes for 58 agents, 18 commands, 49 skills |
 | 51. Stack Research Grounding | 1 plan | ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14 |
 | 52. End-User Harness Workflow Acceptance | 0 plans | Pending — production E2E user workflows |
+| 53. Release Readiness & Lifecycle Gate Closure | 6 plans | ✅ NO-SHIP COMPLETE — release blockers preserved |
+| 54. Sidecar & Product-Detox Integration Runway | 1 plan | COMPLETE AS NON-RELEASE RUNWAY — release blockers preserved |
+| 55. Doc Intelligence Engine | 1 plan | COMPLETE FOR PLANNING CONTRACT — no implementation claim |
+| 56. Trajectory & Session v3 | 1 plan | COMPLETE FOR PLANNING CONTRACT — no Phase 52 closure claim |
+| 57. Runtime Pressure & Control Plane | 1 plan | COMPLETE FOR PLANNING CONTRACT — no runtime enforcement claim |
+| 58. Agent Work Contracts | 1 plan | COMPLETE FOR PLANNING CONTRACT — no tool implementation claim |
+| 59. SDK Supervisor & Command Engine | 1 plan | COMPLETE FOR PLANNING CONTRACT — no SDK runtime claim |
 | 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
 
 ## Dependencies
@@ -567,9 +634,16 @@ Phase 1 (7 done, 3 pending — planned)
                                                                                                                                                               └─→ Phase 48.1-48.5: Production-hardening remediation sequence
                                                                                                                                                                    └─→ Phase 49: UAT Tool Contract & PTY Command Reliability
                                                                                                                                                                         └─→ Phase 50: OpenCode Primitive Restart Readiness
-                                                                                                                                                                             └─→ Phase 51: Stack Research & Synthesis Skill Runtime Grounding
-                                                                                                                                                                                  └─→ Phase 52: End-User Harness Workflow Acceptance
-                                                                                                                               └─→ Phase 39: Auto-Loop / Ralph-Loop Engine (P2)
+                                                                                                                                                                              └─→ Phase 51: Stack Research & Synthesis Skill Runtime Grounding
+                                                                                                                                                                                   └─→ Phase 52: End-User Harness Workflow Acceptance
+                                                                                                                                                                                        └─→ Phase 53: Release Readiness & Lifecycle Gate Closure (NO-SHIP audit complete)
+                                                                                                                                                                                             └─→ Phase 54: Sidecar & Product-Detox Integration Runway (complete as non-release runway)
+                                                                                                                                                                                                  └─→ Phase 55: Doc Intelligence Engine (research-locked)
+                                                                                                                                                                                                       └─→ Phase 56: Trajectory & Session v3 (research-locked)
+                                                                                                                                                                                                            └─→ Phase 57: Runtime Pressure & Control Plane (research-locked)
+                                                                                                                                                                                                                 ├─→ Phase 58: Agent Work Contracts (research-locked)
+                                                                                                                                                                                                                 └─→ Phase 59: SDK Supervisor & Command Engine (research-locked)
+                                                                                                                              └─→ Phase 39: Auto-Loop / Ralph-Loop Engine (P2)
                                                                                                                               └─→ Phase 40: CLI Substrate Foundation (P2)
                                                                                                                                    └─→ Phase 41: Session Journal Time-Machine (P2)
                                                                                                                                         └─→ Phase 42: Sidecar Foundation (P3)
@@ -1103,7 +1177,7 @@ See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section
 **Goal:** Real end users can complete a narrow, observable harness workflow end-to-end through the production orchestrator/subagent/tool/journal surfaces, with acceptance evidence captured as a user-facing lifecycle transcript.
 **Source:** `session-ses_22ee.md`; `52-RUNTIME-EVIDENCE-HANDOFF-2026-04-28.md`
 **Depends on:** Phase 51
-**Plans:** TBD
+**Plans:** 1 plan — executed as non-release runway planning; final artifact `54-RUNWAY-2026-04-30.md`
 **Priority:** P1 end-user acceptance
 
 ### Scope
@@ -1159,4 +1233,4 @@ Plans:
 3. Future planners can pick up a concrete sidecar/product-detox sequence without reopening Phase 52 scope.
 
 Plans:
-- [ ] TBD — derive ordered runway slices from Q2/Q6 constraints and current maintainability concerns
+- [x] 54-01-PLAN-2026-04-30.md — derive ordered non-release runway from Q2/Q6 constraints and current maintainability concerns

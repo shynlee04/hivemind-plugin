@@ -1,182 +1,183 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-25
+**Analysis Date:** 2026-04-28
 
 ## APIs & External Services
 
-**OpenCode Platform:**
-- OpenCode SDK (`@opencode-ai/sdk`) — Core session orchestration API
-  - Session CRUD: `client.session.create()`, `client.session.get()`, `client.session.abort()`
-  - Messaging: `client.session.messages()`, `client.session.prompt()`, `client.session.promptAsync()`
-  - Status polling: `client.session.status()`
-  - Auth: Built into SDK client instance passed to plugin
-- OpenCode SDK Server API (Q2) — REST API at `http://localhost:PORT` for sidecar communication
-  - Config, settings, sessions accessible via HTTP endpoints
-  - Sidecar uses this API for live session and configuration interaction
+**Runtime Platform:**
+- OpenCode Runtime — Core platform the harness plugs into
+  - SDK/Client: `@opencode-ai/sdk` ^1.14.28 (type-only), `@opencode-ai/plugin` ^1.14.28
+  - Integration: `src/plugin.ts` — Composition root registering 9 tools and multiple hooks via the plugin API
+  - Session API: `src/lib/session-api.ts` — Typed wrappers for session.create, session.prompt, session.promptAsync, session.abort, session.messages, session.status
+  - Auth: Session IDs (format: `ses_*`) injected by platform; no custom auth
 
-**Sidecar Architecture (Q2):**
-- Next.js 15 + React 19 dashboard application
-- `@json-render/react` — Dynamic UI generation from JSON specs without code changes
-- Reads artifacts from `.hivemind/` and `.planning/` directories
-- Renders dashboard tabs based on artifact JSON schemas
-- READ-ONLY constraint — sidecar CANNOT write to canonical state (enforcement test required)
-- Architecture: OpenCode Local HTTP Server ↔ Sidecar (Next.js) via REST
+**MCP Servers (configured in `mcp.json`):**
 
-```
-OpenCode Local HTTP Server (https://opencode.ai/docs/server)
-       ↕ REST API
-Sidecar (Next.js 15 + @json-render/react)
-  ├── Reads: artifacts from .hivemind/ and .planning/
-  ├── Renders: JSON-spec-driven dashboard tabs
-  ├── Interacts: OpenCode SDK API for config, settings, sessions
-  └── Constraint: READ-ONLY for canonical state
-```
-
-**Search & Web Services (via MCP):**
-- Tavily — Web search and content extraction
-  - Config: `mcp.json` → `tavily` (HTTP MCP server)
-  - Auth: API key embedded in MCP URL
-- Brave Search — Web and local search
-  - Config: `mcp.json` → `brave-search` (npx command)
-  - Auth: `BRAVE_API_KEY` env var
-- Exa — Semantic web search
-  - Config: `mcp.json` → `exa` (npx mcp-remote)
-  - Auth: `EXA_API_KEY` env var
-- Z.AI (web-search-prime, web-reader, zread) — Chinese AI platform web services
-  - Config: `mcp.json` → `web-search-prime`, `web-reader`, `zread` (HTTP MCP servers)
+*Web Search & Reading:*
+- Tavily — LLM-optimized web search
+  - Config: `mcp.json` → `tavily` (HTTP URL with API key)
+  - Auth: `TAVILY_API_KEY` env var
+- Z.AI Web Search — Web search via Z.AI API
+  - Config: `mcp.json` → `web-search-prime` (HTTP URL with API key)
   - Auth: `ZAI_API_KEY` env var
+- Z.AI Web Reader — Web page content extraction
+  - Config: `mcp.json` → `web-reader` (HTTP URL with API key)
+  - Auth: `ZAI_API_KEY` env var
+- Z.AI zread — Additional web reading
+  - Config: `mcp.json` → `zread` (HTTP URL with API key)
+  - Auth: `ZAI_API_KEY` env var
+- Brave Search — Privacy-focused web search
+  - Config: `mcp.json` → `brave-search` (npx CLI with API key)
+  - Auth: `BRAVE_API_KEY` env var
+- Exa — Web search and content extraction
+  - Config: `mcp.json` → `exa` (npx mcp-remote proxy)
+  - Auth: `EXA_API_KEY` env var
 
-**Code & Repository Services:**
-- GitHub — Repository management, PRs, issues
-  - Config: `mcp.json` → `github` (npx command)
-  - Auth: `GITHUB_PAT` env var
-- Repomix — Codebase packaging for AI analysis
-  - Config: `mcp.json` → `repomix` (npx command)
+*Documentation & Research:*
+- Context7 — Up-to-date library documentation search
+  - Config: `mcp.json` → `context7` (HTTP URL, no auth)
 - DeepWiki — GitHub repository documentation
-  - Config: `mcp.json` → `deepwiki` (HTTP MCP server)
-- Context7 — Library documentation lookup
-  - Config: `mcp.json` → `context7` (HTTP MCP server)
-- GitMCP — GitHub documentation and code search
-  - Config: `mcp.json` → `gitmcp` (HTTP MCP server)
+  - Config: `mcp.json` → `deepwiki` (HTTP URL, no auth)
+- GitMCP — GitHub documentation fetching
+  - Config: `mcp.json` → `gitmcp` (HTTP URL, no auth)
 
-**Productivity:**
-- Notion — Workspace and document management
-  - Config: `mcp.json` → `notion` (HTTP MCP server)
+*Development Tools:*
+- GitHub MCP — Repository operations (issues, PRs, code search)
+  - Config: `mcp.json` → `github` (npx CLI)
+  - Auth: `GITHUB_PERSONAL_ACCESS_TOKEN` → `$GITHUB_PAT`
+- Netlify MCP — Deployment operations
+  - Config: `mcp.json` → `netlify` (npx CLI)
+  - Auth: `NETLIFY_PERSONAL_ACCESS_TOKEN` → `$NETLIFY_PAT`
+- Repomix — Codebase packing/analysis
+  - Config: `mcp.json` → `repomix` (npx CLI, no auth)
+- Playwright — Browser automation
+  - Config: `mcp.json` → `mcp-playwright` (npx CLI, no auth)
+
+*Productivity:*
+- Notion — Documentation and knowledge management
+  - Config: `mcp.json` → `notion` (HTTP URL with API key)
   - Auth: `NOTION_API_TOKEN` env var
-- Stitch — Google UI design generation
-  - Config: `mcp.json` → `stitch` (HTTP MCP server)
-  - Auth: Built into Google MCP endpoint
-
-**Deployment:**
-- Netlify — Hosting and deployment
-  - Config: `mcp.json` → `netlify` (npx command)
-  - Auth: `NETLIFY_PAT` env var
-
-**Development Tools:**
-- Playwright — Browser automation and E2E testing
-  - Config: `mcp.json` → `mcp-playwright` (npx command)
-- Fetcher — Web page fetching
-  - Config: `mcp.json` → `fetcher` (npx command)
-- Fetch — Python MCP fetch server
-  - Config: `mcp.json` → `fetch` (uvx command)
+- Stitch (Google) — UI design generation
+  - Config: `mcp.json` → `stitch` (HTTP URL, no auth)
 - Desktop Commander — Desktop automation via Smithery
-  - Config: `mcp.json` → `desktop-commander` (npx @smithery/cli)
+  - Config: `mcp.json` → `desktop-commander` (npx CLI)
   - Auth: `SMITHERY_CLI_KEY` env var
-- Sequential Thinking — Structured reasoning tool
-  - Config: `mcp.json` → `sequential-thinking` (npx command)
-- Memory — MCP memory server for persistent context
-  - Config: `mcp.json` → `memory` (npx command)
+
+*AI/Reasoning:*
+- Sequential Thinking — Structured problem-solving
+  - Config: `mcp.json` → `sequential-thinking` (npx CLI, no auth)
+- Memory — Knowledge graph memory persistence
+  - Config: `mcp.json` → `memory` (npx CLI, no auth)
+
+*General:*
+- Fetcher — Generic URL fetching
+  - Config: `mcp.json` → `fetcher` (npx CLI, no auth)
+- Fetch — URL content extraction (uvx-based)
+  - Config: `mcp.json` → `fetch` (uvx CLI, no auth)
 
 ## Data Storage
 
 **Databases:**
-- None — No external database connections
+- No external database — all persistence is file-based JSON
+  - Continuity store: `.hivemind/state/session-continuity.json` (managed by `src/lib/continuity.ts`)
+  - Delegation records: `.hivemind/state/delegations.json` (managed by `src/lib/delegation-persistence.ts`)
+  - Config workflows: `.hivemind/state/config-workflows.json`
+  - Session journal: `.hivemind/journal/*.jsonl` (append-only event timeline)
+  - Execution lineage: `.hivemind/lineage/`
+  - Event tracker: `.hivemind/event-tracker/*.json`, `.hivemind/event-tracker/*.md`
 
 **File Storage:**
-- Local filesystem — Canonical state at `.hivemind/state/session-continuity.json` (Q6 migration)
-  - Format: JSON file with versioned schema (`CONTINUITY_VERSION = 1`)
-  - Deep-clone-on-read to prevent mutation aliasing
-  - Module-level `storeCache` singleton for in-memory caching
-  - Legacy path (transition): `.opencode/state/opencode-harness/session-continuity.json`
-- Session Journal (future) — Append-only event timeline at `.hivemind/journal/`
-- Delegation records — `.hivemind/state/delegations.json`
+- Local filesystem only — State directory at `.hivemind/state/` (canonical per Q6 architectural decision)
+- Legacy path: `.opencode/state/opencode-harness/` (compatibility bridge during migration)
 
 **Caching:**
-- In-memory Maps (`src/lib/state.ts`) — `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta`
-- Dual-layer state: durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`), hydrated on startup
+- None external — In-memory Maps used for runtime caching:
+  - `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta` in `src/lib/state.ts`
+  - `storeCache` singleton in `src/lib/continuity.ts` (single module-level cache of continuity store)
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- None built into harness — authentication delegated to OpenCode platform
-- MCP servers handle their own auth via env vars and HTTP headers
+- OpenCode platform handles all authentication — harness receives session context (sessionID) injected by the framework
+- No custom auth layer — identity is tracked via OpenCode session IDs (`ses_*` prefix)
+- Parent-child session hierarchy managed via `parentID` field in session records
+
+**Implementation:**
+- `src/lib/session-api.ts` — `assertValidSessionID()` validates session ID format
+- `src/tools/delegate-task.ts` — Detects OpenCode runtime availability via `context.sessionID` and `process.env.OPENCODE_SESSION_ID`
+- `src/lib/types.ts` — `TaskStatus` state machine (pending → queued → running → completed/failed/cancelled/error/interrupt)
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- None — Errors thrown with `[Harness]` prefix for identification
+- No external service — all error information logged to local files
+- Event tracker at `src/lib/event-tracker/` writes events to .hivemind/event-tracker/*.json and *.md
+- Session journal at `src/lib/session-journal.ts` writes append-only JSONL
+- Execution lineage at `src/lib/execution-lineage.ts` tracks parent-child session chains
+- `[Harness]` prefix on all thrown errors for grep-ability
 
 **Logs:**
-- Console output via OpenCode session messaging
-- Session continuity metadata tracks: status, description, delegation info, pending notifications, result capture, compaction checkpoints
+- Console-based — harness uses structured error messages with `[Harness]` prefix
+- Best-effort audit projection: event tracker writes never block canonical OpenCode event handling
+- `.hivemind/state/progress.md` and `.hivemind/state/task_plan.md` for session-level planning persistence
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- npm registry — Package published as `opencode-harness`
-- Entrypoints: `opencode-harness` (library), `opencode-harness/plugin` (plugin)
+- npm package (`opencode-harness@0.1.0`) — publishable via `npm publish`
+- Loaded by OpenCode projects as a plugin via `opencode.json` → `"./dist/plugin.js"`
+- Also loadable via `@opencode-ai/plugin` peer dependency resolution
 
 **CI Pipeline:**
-- GitHub Actions — `.github/workflows/opencode.yml`
-- Triggers: issue_comment, pull_request_review_comment containing `/oc` or `/opencode`
-- Model: `zai-coding-plan/glm-5.1`
-- Additional workflows: Qwen triage, invoke, scheduled triage, review, dispatch
+- GitHub Actions — `.github/workflows/opencode.yml`:
+  - Triggers on issue/PR comments containing `/oc` or `/opencode`
+  - Runs OpenCode via `anomalyco/opencode/github@latest` action on `ubuntu-latest`
+  - Uses `zai-coding-plan/glm-5.1` model
+  - Authenticated via `ZAI_API_KEY` secret
+- Additional Qwen workflows in `.github/workflows/qwen-*.yml` for triage, review, invocation, dispatch, and scheduled triage
+
+**Build Pipeline:**
+- `npm run clean` — Removes `dist/` directory
+- `npm run build` — Clean + `tsc` compile (`src/` → `dist/`)
+- `npm run typecheck` — `tsc --noEmit` validation
+- `npm run test` — Vitest run (all test suites)
+- `npm run test:coverage` — Vitest with v8 coverage report
+- `npm run prepack` — Auto-runs build before `npm pack`/`npm publish`
 
 ## Environment Configuration
 
-**Required env vars (for MCP servers, not harness itself):**
+**Required env vars (for MCP server operation):**
 - `TAVILY_API_KEY` — Tavily web search
-- `ZAI_API_KEY` — Z.AI web services
-- `BRAVE_API_KEY` — Brave search
-- `GITHUB_PAT` — GitHub API access
-- `EXA_API_KEY` — Exa semantic search
-- `NOTION_API_TOKEN` — Notion API
-- `SMITHERY_CLI_KEY` — Smithery CLI tools
+- `ZAI_API_KEY` — Z.AI web search/reader services
+- `BRAVE_API_KEY` — Brave Search
+- `GITHUB_PAT` — GitHub API operations
+- `EXA_API_KEY` — Exa web search
+- `NOTION_API_TOKEN` — Notion API access
+- `SMITHERY_CLI_KEY` — Desktop Commander
 - `NETLIFY_PAT` — Netlify deployment
 
-**Harness runtime env vars:**
-- `OPENCODE_HARNESS_STATE_DIR` — Override state directory path
-- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
+**Optional env vars (harness runtime):**
+- `OPENCODE_HARNESS_STATE_DIR` — Override state directory
+- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file
+- `OPENCODE_SESSION_ID` — Injected by OpenCode platform (not user-set)
 
 **Secrets location:**
-- `.env` file (local development, gitignored)
-- GitHub Secrets (CI/CD pipelines)
+- `.env` file at project root (gitignored)
+- `.env.example` serves as template with placeholder values
+- GitHub Actions secrets: `ZAI_API_KEY` (used by OpenCode workflow)
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- OpenCode session events: `session.idle`, `session.deleted`, `session.error`
-  - Handled by `DelegationManager.handleSessionIdle()` and `handleSessionDeleted()`
-  - Event observers registered in `plugin.ts` via `createCoreHooks()`
+- No incoming webhooks — harness uses polling-based completion detection (WaiterModel)
+- `src/lib/completion-detector.ts` — Two-signal completion: session.idle + stability timer
+- `src/lib/sdk-delegation.ts` — `SdkDelegationHandler` class with stability polling
 
 **Outgoing:**
-- None — Harness operates within OpenCode session lifecycle, no external webhook dispatch
-
-## MCP Server Architecture
-
-**Connection Types:**
-- HTTP MCP servers (remote): Notion, Stitch, GitMCP, Context7, DeepWiki, Tavily, Z.AI services
-- npx MCP servers (local): GitHub, Exa, Fetcher, Playwright, Memory, Netlify, Brave Search, Repomix, Sequential Thinking, Desktop Commander
-- uvx MCP servers: Fetch (Python-based)
-
-**Timeout Configuration:**
-- Notion: 15s
-- GitMCP: 35s
-- Fetcher: 30s
-- Tavily: 35s
-- DeepWiki: 15s
-- Z.AI services: default (no explicit timeout)
+- No outgoing webhooks — all inter-session communication via OpenCode SDK API calls
+- `src/lib/session-api.ts` — `sendPrompt()` and `sendPromptAsync()` for parent-child session communication
+- `src/lib/delegation-manager.ts` — `DelegationManager` orchestrates dispatches and monitors completions via SDK polling
 
 ---
 
-*Integration audit: 2026-04-25*
+*Integration audit: 2026-04-28*

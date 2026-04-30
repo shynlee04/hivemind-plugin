@@ -1,0 +1,715 @@
+{
+  "_schema": "harness/event-tracker/v1",
+  "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+  "semanticSessionId": "ses_226e",
+  "artifactStem": "ses_226e",
+  "mainSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+  "startedAt": 1777463815553,
+  "updatedAt": 1777471999555,
+  "status": "idle",
+  "counters": {
+    "eventCount": 32,
+    "sessionStartCount": 2,
+    "sessionEndCount": 0
+  },
+  "actors": [],
+  "subSessions": [],
+  "delegations": [],
+  "toolsUsed": [
+    {
+      "toolName": "session-journal-export",
+      "status": "completed",
+      "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467340739\\n },\\n \\\"lineage\\\": []\\n …",
+      "timestamp": 1777467340740
+    },
+    {
+      "toolName": "session-journal-export",
+      "status": "completed",
+      "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467340785\\…",
+      "timestamp": 1777467340786
+    },
+    {
+      "toolName": "session-journal-export",
+      "status": "completed",
+      "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467352264\\n },\\n \\\"lineage\\\": []\\n …",
+      "timestamp": 1777467352265
+    },
+    {
+      "toolName": "session-journal-export",
+      "status": "completed",
+      "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467352272\\…",
+      "timestamp": 1777467352272
+    },
+    {
+      "toolName": "session-journal-export",
+      "status": "completed",
+      "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 3,\\n \\\"generatedAt\\\": 1777471999554\\n },\\n \\\"lineage\\\": [\\n {…",
+      "timestamp": 1777471999555
+    }
+  ],
+  "lastMessageOutput": "",
+  "exportMeta": null,
+  "toc": [
+    {
+      "index": 1,
+      "timestamp": 1777463815553,
+      "actor": "system",
+      "type": "session_start",
+      "summary": "Session started (session.created)"
+    },
+    {
+      "index": 2,
+      "timestamp": 1777463815555,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 3,
+      "timestamp": 1777463815598,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 4,
+      "timestamp": 1777463815600,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 5,
+      "timestamp": 1777463816490,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 6,
+      "timestamp": 1777463834128,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 7,
+      "timestamp": 1777463846206,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 8,
+      "timestamp": 1777463855816,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 9,
+      "timestamp": 1777463865420,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 10,
+      "timestamp": 1777463875636,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 11,
+      "timestamp": 1777463876353,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 12,
+      "timestamp": 1777464043353,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 13,
+      "timestamp": 1777464346426,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 14,
+      "timestamp": 1777464607109,
+      "actor": "system",
+      "type": "session_start",
+      "summary": "Session started (session.created)"
+    },
+    {
+      "index": 15,
+      "timestamp": 1777464607111,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 16,
+      "timestamp": 1777464607143,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 17,
+      "timestamp": 1777464607144,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 18,
+      "timestamp": 1777464607704,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 19,
+      "timestamp": 1777464623792,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 20,
+      "timestamp": 1777464631933,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 21,
+      "timestamp": 1777464641515,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 22,
+      "timestamp": 1777464648744,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 23,
+      "timestamp": 1777464655988,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 24,
+      "timestamp": 1777464662547,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 25,
+      "timestamp": 1777464690367,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 26,
+      "timestamp": 1777464691166,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 27,
+      "timestamp": 1777467340740,
+      "actor": "tool",
+      "type": "session_event",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467340739\\n },\\n \\\"lineage\\\": []\\n …"
+    },
+    {
+      "index": 28,
+      "timestamp": 1777467340786,
+      "actor": "tool",
+      "type": "session_event",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467340785\\…"
+    },
+    {
+      "index": 29,
+      "timestamp": 1777467352265,
+      "actor": "tool",
+      "type": "session_event",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467352264\\n },\\n \\\"lineage\\\": []\\n …"
+    },
+    {
+      "index": 30,
+      "timestamp": 1777467352272,
+      "actor": "tool",
+      "type": "session_event",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467352272\\…"
+    },
+    {
+      "index": 31,
+      "timestamp": 1777467627607,
+      "actor": "system",
+      "type": "session_idle",
+      "summary": "Session idle (session.idle)"
+    },
+    {
+      "index": 32,
+      "timestamp": 1777471999555,
+      "actor": "tool",
+      "type": "session_event",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 3,\\n \\\"generatedAt\\\": 1777471999554\\n },\\n \\\"lineage\\\": [\\n {…"
+    }
+  ],
+  "events": [
+    {
+      "id": "ses_226e::session_start::1777463815553",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_start",
+      "actor": "system",
+      "title": "Session started",
+      "summary": "Session started (session.created)",
+      "timestamp": 1777463815553,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463815555",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463815555,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463815598",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463815598,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463815600",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463815600,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463816490",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463816490,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463834128",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463834128,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463846206",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463846206,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463855816",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463855816,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777463865420",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777463865420,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_idle::1777463875636",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "artifactStem": "ses_226e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777463875636,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_idle::1777463876353",
+      "sessionId": "ses_226e69284ffea3sA6TxOBXd03L",
+      "artifactStem": "ses_226e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777463876353,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_idle::1777464043353",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777464043353,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_idle::1777464346426",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777464346426,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_start::1777464607109",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_start",
+      "actor": "system",
+      "title": "Session started",
+      "summary": "Session started (session.created)",
+      "timestamp": 1777464607109,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464607111",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464607111,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464607143",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464607143,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464607144",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464607144,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464607704",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464607704,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464623792",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464623792,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464631933",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464631933,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464641515",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464641515,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464648744",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464648744,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464655988",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464655988,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464662547",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464662547,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226d::session_idle::1777464690367",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "artifactStem": "ses_226d",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777464690367,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_updated::1777464691166",
+      "sessionId": "ses_226da7e7effe3oqGwKn7qRrtk7",
+      "rootSessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1777464691166,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_event::1777467340740",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_event",
+      "actor": "tool",
+      "title": "Tool session-journal-export",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467340739\\n },\\n \\\"lineage\\\": []\\n …",
+      "timestamp": 1777467340740,
+      "source": "plugin.tool.execute.after",
+      "stateRole": "audit trail",
+      "toolUsage": {
+        "toolName": "session-journal-export",
+        "status": "completed",
+        "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467340739\\n },\\n \\\"lineage\\\": []\\n …",
+        "timestamp": 1777467340740
+      }
+    },
+    {
+      "id": "ses_226e::session_event::1777467340786",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1Y",
+      "artifactStem": "ses_226e",
+      "type": "session_event",
+      "actor": "tool",
+      "title": "Tool session-journal-export",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467340785\\…",
+      "timestamp": 1777467340786,
+      "source": "plugin.tool.execute.after",
+      "stateRole": "audit trail",
+      "toolUsage": {
+        "toolName": "session-journal-export",
+        "status": "completed",
+        "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467340785\\…",
+        "timestamp": 1777467340786
+      }
+    },
+    {
+      "id": "ses_226e::session_event::1777467352265",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_event",
+      "actor": "tool",
+      "title": "Tool session-journal-export",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467352264\\n },\\n \\\"lineage\\\": []\\n …",
+      "timestamp": 1777467352265,
+      "source": "plugin.tool.execute.after",
+      "stateRole": "audit trail",
+      "toolUsage": {
+        "toolName": "session-journal-export",
+        "status": "completed",
+        "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 0,\\n \\\"generatedAt\\\": 1777467352264\\n },\\n \\\"lineage\\\": []\\n …",
+        "timestamp": 1777467352265
+      }
+    },
+    {
+      "id": "ses_226e::session_event::1777467352272",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_event",
+      "actor": "tool",
+      "title": "Tool session-journal-export",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467352272\\…",
+      "timestamp": 1777467352272,
+      "source": "plugin.tool.execute.after",
+      "stateRole": "audit trail",
+      "toolUsage": {
+        "toolName": "session-journal-export",
+        "status": "completed",
+        "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal Markdown export generated\\\",\\n \\\"data\\\": {\\n \\\"markdown\\\": \\\"# Session Journal Summary\\\\n\\\\n- Sessions: 0\\\\n- Delegations: 0\\\\n- Generated at: 1777467352272\\…",
+        "timestamp": 1777467352272
+      }
+    },
+    {
+      "id": "ses_226e::session_idle::1777467627607",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_idle",
+      "actor": "system",
+      "title": "Session idle",
+      "summary": "Session idle (session.idle)",
+      "timestamp": 1777467627607,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_226e::session_event::1777471999555",
+      "sessionId": "ses_226e89cd1ffetJwNcJdzeGN1jY",
+      "artifactStem": "ses_226e",
+      "type": "session_event",
+      "actor": "tool",
+      "title": "Tool session-journal-export",
+      "summary": "Tool session-journal-export completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 3,\\n \\\"generatedAt\\\": 1777471999554\\n },\\n \\\"lineage\\\": [\\n {…",
+      "timestamp": 1777471999555,
+      "source": "plugin.tool.execute.after",
+      "stateRole": "audit trail",
+      "toolUsage": {
+        "toolName": "session-journal-export",
+        "status": "completed",
+        "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Session journal export generated\\\",\\n \\\"data\\\": {\\n \\\"journalSummary\\\": {\\n \\\"sessions\\\": 0,\\n \\\"delegations\\\": 3,\\n \\\"generatedAt\\\": 1777471999554\\n },\\n \\\"lineage\\\": [\\n {…",
+        "timestamp": 1777471999555
+      }
+    }
+  ]
+}

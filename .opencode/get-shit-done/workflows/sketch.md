@@ -2,6 +2,10 @@
 Explore design directions through throwaway HTML mockups before committing to implementation.
 Each sketch produces 2-3 variants for comparison. Saves artifacts to `.planning/sketches/`.
 Companion to `/gsd-sketch-wrap-up`.
+
+Supports two modes:
+- **Idea mode** (default) — user describes a design idea to sketch
+- **Frontier mode** — no argument or "frontier" / "what should I sketch?" — analyzes existing sketch landscape and proposes consistency and frontier sketches
 </purpose>
 
 <required_reading>
@@ -25,9 +29,60 @@ Read all files referenced by the invoking prompt's execution_context before star
 Parse `$ARGUMENTS` for:
 - `--quick` flag → set `QUICK_MODE=true`
 - `--text` flag → set `TEXT_MODE=true`
+- `frontier` or empty → set `FRONTIER_MODE=true`
 - Remaining text → the design idea to sketch
 
-**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `question` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-the agent runtimes (OpenAI Codex, Gemini CLI, etc.) where `question` is not available.
+**Text mode:** If TEXT_MODE is enabled, replace question calls with plain-text numbered lists.
+</step>
+
+<step name="route">
+## Routing
+
+- **FRONTIER_MODE is true** → Jump to `frontier_mode`
+- **Otherwise** → Continue to `setup_directory`
+</step>
+
+<step name="frontier_mode">
+## Frontier Mode — Propose What to Sketch Next
+
+### Load the Sketch Landscape
+
+If no `.planning/sketches/` directory exists, tell the user there's nothing to analyze and offer to start fresh with an idea instead.
+
+Otherwise, load in this order:
+
+**a. MANIFEST.md** — the design direction, reference points, and sketch table with winners.
+
+**b. Findings skills** — glob `./.opencode/skills/sketch-findings-*/SKILL.md` and read any that exist, plus their `references/*.md`. These contain curated design decisions from prior wrap-ups.
+
+**c. All sketch READMEs** — read `.planning/sketches/*/README.md` for design questions, winners, and tags.
+
+### Analyze for Consistency Sketches
+
+Review winning variants across all sketches. Look for:
+
+- **Visual consistency gaps:** Two sketches made independent design choices that haven't been tested together.
+- **State combinations:** Individual states validated but not seen in sequence.
+- **Responsive gaps:** Validated at one viewport but the real app needs multiple.
+- **Theme coherence:** Individual components look good but haven't been composed into a full-page view.
+
+If consistency risks exist, present them as concrete proposed sketches with names and design questions. If no meaningful gaps, say so and skip.
+
+### Analyze for Frontier Sketches
+
+Think laterally about the design direction from MANIFEST.md and what's been explored:
+
+- **Unsketched screens:** UI surfaces assumed but unexplored.
+- **Interaction patterns:** Static layouts validated but transitions, loading, drag-and-drop need feeling.
+- **Edge case UI:** 0 items, 1000 items, errors, slow connections.
+- **Alternative directions:** Fresh takes on "fine but not great" sketches.
+- **Polish passes:** Typography, spacing, micro-interactions, empty states.
+
+Present frontier sketches as concrete proposals numbered from the highest existing sketch number.
+
+### Get Alignment and Execute
+
+Present all consistency and frontier candidates, then ask which to run. When the user picks sketches, update `.planning/sketches/MANIFEST.md` and proceed directly to building them starting at `build_sketches`.
 </step>
 
 <step name="setup_directory">
@@ -49,25 +104,43 @@ COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 </step>
 
 <step name="mood_intake">
-**If `QUICK_MODE` is true:** Skip mood intake. Use whatever the user provided in `$ARGUMENTS` as the design direction. Jump to `decompose`.
+**If `QUICK_MODE` is true:** Skip mood intake. Use whatever the user provided in `$ARGUMENTS` as the design direction. Jump to `load_spike_context`.
 
 **Otherwise:**
 
-**Text mode:** If TEXT_MODE is enabled (set in the banner step), replace question calls with plain-text numbered lists — emit the options and ask the user to type the number of their choice.
-
-Before sketching anything, explore the design intent through conversation. Ask one question at a time — using question in normal mode, or a plain-text numbered list if TEXT_MODE is active — with a paragraph of context and reasoning for each.
+Before sketching anything, explore the design intent through conversation. Ask one question at a time — using question in normal mode, or a plain-text numbered list if TEXT_MODE is active.
 
 **Questions to cover (adapt to what the user has already shared):**
 
-1. **Feel:** "What should this feel like? Give me adjectives, emotions, or a vibe." (e.g., "clean and clinical", "warm and playful", "dense and powerful")
-2. **References:** "What apps, sites, or products have a similar feel to what you're imagining?" (gives concrete visual anchors)
-3. **Core action:** "What's the single most important thing a user does here?" (focuses the sketch on what matters)
+1. **Feel:** "What should this feel like? Give me adjectives, emotions, or a vibe."
+2. **References:** "What apps, sites, or products have a similar feel to what you're imagining?"
+3. **Core action:** "What's the single most important thing a user does here?"
 
-You may need more or fewer questions depending on how much the user shares upfront. After each answer, briefly reflect what you heard and how it shapes your thinking.
+After each answer, briefly reflect what you heard and how it shapes your thinking.
 
 When you have enough signal, ask: **"I think I have a good sense of the direction. Ready for me to sketch, or want to keep discussing?"**
 
 Only proceed when the user says go.
+</step>
+
+<step name="load_spike_context">
+## Load Spike Context
+
+If spikes exist for this project, read them to ground the sketches in reality. Mockups are still pure HTML, but they should reflect what's actually been proven — real data shapes, real component names, real interaction patterns.
+
+**a.** Glob for `./.opencode/skills/spike-findings-*/SKILL.md` and read any that exist, plus their `references/*.md`. These contain validated patterns and requirements.
+
+**b.** Read `.planning/spikes/MANIFEST.md` if it exists — check the Requirements section for non-negotiable design constraints (e.g., "must support streaming", "must render markdown"). These requirements should be visible in the mockup even though the mockup doesn't implement them for real.
+
+**c.** Read `.planning/spikes/CONVENTIONS.md` if it exists — the established stack informs what's buildable and what interaction patterns are idiomatic.
+
+**How spike context improves sketches:**
+- Use real field names and data shapes from spike findings instead of generic placeholders
+- Show realistic UI states that match what the spikes proved (e.g., if streaming was validated, show a streaming message state)
+- Reference real component names and patterns from the target stack
+- Include interaction states that reflect what the spikes discovered (loading, error, reconnection states)
+
+**If no spikes exist**, skip this step.
 </step>
 
 <step name="decompose">
@@ -90,6 +163,28 @@ Bad sketches:
 - "Pick a color palette" — apply it to UI instead
 
 Present the table and get alignment before building.
+</step>
+
+<step name="research_stack">
+## Research the Target Stack
+
+Before sketching, ground the design in what's actually buildable. Sketches are HTML, but they should reflect real constraints of the target implementation.
+
+**a. Identify the target stack.** Check for package.json, Cargo.toml, etc. If the user mentioned a framework (React, SwiftUI, Flutter, etc.), note it.
+
+**b. Check component/pattern availability.** Use context7 (resolve-library-id → query-docs) or web search to answer:
+- What layout primitives does the target framework provide?
+- Are there existing component libraries in use? What components are available?
+- What interaction patterns are idiomatic?
+
+**c. Note constraints that affect design:**
+- Platform conventions (iOS nav patterns, desktop menu bars, terminal grid constraints)
+- Framework limitations (what's easy vs requires custom work)
+- Existing design tokens or theme systems already in the project
+
+**d. Let research inform variants.** At least one variant should follow the path of least resistance for the target stack.
+
+**Skip when unnecessary.** Greenfield project with no stack, or user says "just explore visually." The point is grounding, not gatekeeping.
 </step>
 
 <step name="create_manifest">
@@ -124,26 +219,24 @@ Build each sketch in order.
 
 ### For Each Sketch:
 
-**a.** Find next available number by checking existing `.planning/sketches/NNN-*/` directories.
-Format: three-digit zero-padded + hyphenated descriptive name.
+**a.** Find next available number. Format: three-digit zero-padded + hyphenated descriptive name.
 
 **b.** Create the sketch directory: `.planning/sketches/NNN-descriptive-name/`
 
 **c.** Build `index.html` with 2-3 variants:
 
-**First round — dramatic differences:** Build 2-3 meaningfully different approaches to the design question. Different layouts, different visual structures, different interaction models.
-
-**Subsequent rounds — refinements:** Once the user has picked a direction or cherry-picked elements, build subtler variations within that direction.
+**First round — dramatic differences:** 2-3 meaningfully different approaches.
+**Subsequent rounds — refinements:** Subtler variations within the chosen direction.
 
 Each variant is a page/tab in the same HTML file. Include:
 - Tab navigation to switch between variants (see `sketch-variant-patterns.md`)
 - Clear labels: "Variant A: Sidebar Layout", "Variant B: Top Nav", etc.
 - The sketch toolbar (see `sketch-tooling.md`)
 - All interactive elements functional (see `sketch-interactivity.md`)
-- Real-ish content, not lorem ipsum
+- Real-ish content, not lorem ipsum (use real field names from spike context if available)
 - Link to `../themes/default.css` for shared theme variables
 
-**All sketches are plain HTML with inline CSS and JS.** No build step, no npm, no framework. Opens instantly in a browser.
+**All sketches are plain HTML with inline CSS and JS.** No build step, no npm, no framework.
 
 **d.** Write `README.md`:
 
@@ -190,16 +283,16 @@ Compare: {what to look for between variants}
 ──────────────────────────────────────────────────────────────
 
 **f.** Handle feedback:
-- **Pick a direction:** "I like variant B" → mark winner in README, move to next sketch
-- **Cherry-pick elements:** "Rounded edges from A, color treatment from C" → build a synthesis as a new variant, show again
-- **Want more exploration:** "None of these feel right, try X instead" → build new variants
+- **Pick a direction:** mark winner, move to next sketch
+- **Cherry-pick elements:** build synthesis as new variant, show again
+- **Want more exploration:** build new variants
 
-Iterate until the user is satisfied with a direction for this sketch.
+Iterate until satisfied.
 
 **g.** Finalize:
-1. Mark the winning variant in the README frontmatter (`winner: "B"`)
-2. Add ★ indicator to the winning tab in the HTML
-3. Update `.planning/sketches/MANIFEST.md` with the sketch row
+1. Mark winning variant in README frontmatter (`winner: "B"`)
+2. Add ★ indicator to winning tab in HTML
+3. Update `.planning/sketches/MANIFEST.md`
 
 **h.** Commit (if `COMMIT_DOCS` is true):
 ```bash
@@ -215,7 +308,7 @@ gsd-sdk query commit "docs(sketch-NNN): [winning direction] — [key visual insi
 </step>
 
 <step name="report">
-After all sketches complete, present the summary:
+After all sketches complete:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -243,8 +336,8 @@ After all sketches complete, present the summary:
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
+- `/gsd-sketch` — sketch more (or run with no argument for frontier mode)
 - `/gsd-plan-phase` — start building the real UI
-- `/gsd-explore` — continue exploring the concept
 - `/gsd-spike` — spike technical feasibility of a design pattern
 
 ───────────────────────────────────────────────────────────────
@@ -255,7 +348,9 @@ After all sketches complete, present the summary:
 <success_criteria>
 - [ ] `.planning/sketches/` created (auto-creates if needed, no project init required)
 - [ ] Design direction explored conversationally before any code (unless --quick)
-- [ ] Each sketch has 2-3 variants for comparison
+- [ ] Spike context loaded — real data shapes, requirements, and conventions inform mockups
+- [ ] Target stack researched — component availability, constraints, idioms (unless greenfield/skipped)
+- [ ] Each sketch has 2-3 variants for comparison (at least one follows path of least resistance)
 - [ ] User can open and interact with sketches in a browser
 - [ ] Winning variant selected and marked for each sketch
 - [ ] All variants preserved (winner marked, not others deleted)

@@ -1,8 +1,8 @@
 <purpose>
-Curate spike experiment findings and package them into a persistent project skill for future
-build conversations. Reads from `.planning/spikes/`, writes skill to `./.opencode/skills/spike-findings-[project]/`
-(project-local) and summary to `.planning/spikes/WRAP-UP-SUMMARY.md`.
-Companion to `/gsd-spike`.
+Package spike experiment findings into a persistent project skill — an implementation blueprint
+for future build conversations. Reads from `.planning/spikes/`, writes skill to
+`./.opencode/skills/spike-findings-[project]/` (project-local) and summary to
+`.planning/spikes/WRAP-UP-SUMMARY.md`. Companion to `/gsd-spike`.
 </purpose>
 
 <required_reading>
@@ -22,7 +22,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="gather">
 ## Gather Spike Inventory
 
-1. Read `.planning/spikes/MANIFEST.md` for the overall idea context
+1. Read `.planning/spikes/MANIFEST.md` for the overall idea context and requirements
 2. Glob `.planning/spikes/*/README.md` and parse YAML frontmatter from each
 3. Check if `./.opencode/skills/spike-findings-*/SKILL.md` exists for this project
    - If yes: read its `processed_spikes` list from the metadata section and filter those out
@@ -41,53 +41,28 @@ COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 ```
 </step>
 
-<step name="curate">
-## Curate Spikes One-at-a-Time
+<step name="auto_include">
+## Auto-Include All Spikes
 
-Present each unprocessed spike in ascending order. For each spike, show:
+Include all unprocessed spikes automatically. Present a brief inventory showing what's being processed:
 
-- **Spike number and name**
-- **Validates:** the Given/When/Then from frontmatter
-- **Verdict:** VALIDATED / INVALIDATED / PARTIAL
-- **Tags:** from frontmatter
-- **Key findings:** summarize the Results section from the README
-- **Grey areas:** anything uncertain or partially proven
+```
+Processing N spikes:
+  001 — name (VALIDATED)
+  002 — name (PARTIAL)
+  003 — name (INVALIDATED)
+```
 
-Then ask the user:
-
-╔══════════════════════════════════════════════════════════════╗
-║  CHECKPOINT: Decision Required                               ║
-╚══════════════════════════════════════════════════════════════╝
-
-Spike {NNN}: {name} — {verdict}
-
-{key findings summary}
-
-──────────────────────────────────────────────────────────────
-→ Include / Exclude / Partial / Help me UAT this
-──────────────────────────────────────────────────────────────
-
-**If "Help me UAT this":**
-1. Read the spike's README "How to Run" and "What to Expect" sections
-2. Present step-by-step instructions
-3. Ask: "Does this match what you expected?"
-4. After UAT, return to the include/exclude/partial decision
-
-**If "Partial":**
-Ask what specifically to include or exclude. Record their notes alongside the spike.
+Every spike carries forward:
+- **VALIDATED** spikes provide proven patterns
+- **PARTIAL** spikes provide constrained patterns
+- **INVALIDATED** spikes provide landmines and dead ends
 </step>
 
 <step name="group">
 ## Auto-Group by Feature Area
 
-After all spikes are curated:
-
-1. Read all included spikes' tags, names, `related` fields, and content
-2. Propose feature-area groupings, e.g.:
-   - "**WebSocket Streaming** — spikes 001, 004, 007"
-   - "**Foo API Integration** — spikes 002, 003"
-   - "**PDF Parsing** — spike 005"
-3. Present the grouping for approval — user may merge, split, rename, or rearrange
+Group spikes by feature area based on tags, names, `related` fields, and content. Proceed directly into synthesis.
 
 Each group becomes one reference file in the generated skill.
 </step>
@@ -118,21 +93,29 @@ For each included spike:
 <step name="synthesize">
 ## Synthesize Reference Files
 
-For each feature-area group, write a reference file at `references/[feature-area-name].md`:
+For each feature-area group, write a reference file at `references/[feature-area-name].md` as an **implementation blueprint** — it should read like a recipe, not a research paper. A future build session should be able to follow this and build the feature correctly without re-spiking anything.
 
 ```markdown
 # [Feature Area Name]
 
-## Validated Patterns
-[For each validated finding: describe the approach that works, include key code snippets extracted from the spike source, explain why it works]
+## Requirements
 
-## Landmines
-[Things that look right but aren't. Gotchas. Anti-patterns discovered during spiking.]
+[Non-negotiable design decisions from MANIFEST.md Requirements section that apply to this feature area. These MUST be honored in the real build. E.g., "Must use streaming JSON output", "Must support reconnection".]
+
+## How to Build It
+
+[Step-by-step: what to install, how to configure, what code pattern to use. Include key code snippets extracted from the spike source. This is the proven approach — not theory, but tested and working code.]
+
+## What to Avoid
+
+[Things that look right but aren't. Gotchas. Anti-patterns discovered during spiking. Dead ends that were tried and failed.]
 
 ## Constraints
+
 [Hard facts: rate limits, library limitations, version requirements, incompatibilities]
 
 ## Origin
+
 Synthesized from spikes: NNN, NNN, NNN
 Source files available in: sources/NNN-spike-name/, sources/NNN-spike-name/
 ```
@@ -146,7 +129,7 @@ Create (or update) the generated skill's SKILL.md:
 ```markdown
 ---
 name: spike-findings-[project-dir-name]
-description: Validated patterns, constraints, and implementation knowledge from spike experiments. Auto-loaded during implementation work on [project-dir-name].
+description: Implementation blueprint from spike experiments. Requirements, proven patterns, and verified knowledge for building [project-dir-name]. Auto-loaded during implementation work.
 ---
 
 <context>
@@ -156,6 +139,15 @@ description: Validated patterns, constraints, and implementation knowledge from 
 
 Spike sessions wrapped: [date(s)]
 </context>
+
+<requirements>
+## Requirements
+
+[Copied directly from MANIFEST.md Requirements section. These are non-negotiable design decisions that emerged from the user's choices during spiking. Every feature area reference must honor these.]
+
+- [requirement 1]
+- [requirement 2]
+</requirements>
 
 <findings_index>
 ## Feature Areas
@@ -193,13 +185,9 @@ Write `.planning/spikes/WRAP-UP-SUMMARY.md` for project history:
 **Feature areas:** [list]
 **Skill output:** `./.opencode/skills/spike-findings-[project]/`
 
-## Included Spikes
-| # | Name | Verdict | Feature Area |
-|---|------|---------|--------------|
-
-## Excluded Spikes
-| # | Name | Reason |
-|---|------|--------|
+## Processed Spikes
+| # | Name | Type | Verdict | Feature Area |
+|---|------|------|---------|--------------|
 
 ## Key Findings
 [consolidated findings summary]
@@ -218,11 +206,47 @@ Add an auto-load routing line to the project's AGENTS.md (create the file if it 
 If this routing line already exists (append mode), leave it as-is.
 </step>
 
+<step name="generate_conventions">
+## Generate or Update CONVENTIONS.md
+
+Analyze all processed spikes for recurring patterns and write `.planning/spikes/CONVENTIONS.md`. This file tells future spike sessions *how we spike* — the stack, structure, and patterns that have been established.
+
+1. Read all spike source code and READMEs looking for:
+   - **Stack choices** — What language/framework/runtime appears across multiple spikes?
+   - **Structure patterns** — Common file layouts, port numbers, naming schemes
+   - **Recurring approaches** — How auth is handled, how styling is done, how data is served
+   - **Tools & libraries** — Packages that showed up repeatedly with versions that worked
+
+2. Write or update `.planning/spikes/CONVENTIONS.md`:
+
+```markdown
+# Spike Conventions
+
+Patterns and stack choices established across spike sessions. New spikes follow these unless the question requires otherwise.
+
+## Stack
+[What we use for frontend, backend, scripts, and why — derived from what repeated across spikes]
+
+## Structure
+[Common file layouts, port assignments, naming patterns]
+
+## Patterns
+[Recurring approaches: how we handle auth, how we style, how we serve, etc.]
+
+## Tools & Libraries
+[Preferred packages with versions that worked, and any to avoid]
+```
+
+3. Only include patterns that appeared in 2+ spikes or were explicitly chosen by the user.
+
+4. If `CONVENTIONS.md` already exists (append mode), update sections with new patterns. Remove entries contradicted by newer spikes.
+</step>
+
 <step name="commit">
 Commit all artifacts (if `COMMIT_DOCS` is true):
 
 ```bash
-gsd-sdk query commit "docs(spike-wrap-up): package [N] spike findings into project skill" .planning/spikes/WRAP-UP-SUMMARY.md
+gsd-sdk query commit "docs(spike-wrap-up): package [N] spike findings into project skill" .planning/spikes/WRAP-UP-SUMMARY.md .planning/spikes/CONVENTIONS.md
 ```
 </step>
 
@@ -232,29 +256,37 @@ gsd-sdk query commit "docs(spike-wrap-up): package [N] spike findings into proje
  GSD ► SPIKE WRAP-UP COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Curated:** {N} spikes ({included} included, {excluded} excluded)
+**Processed:** {N} spikes
 **Feature areas:** {list}
 **Skill:** `./.opencode/skills/spike-findings-[project]/`
+**Conventions:** `.planning/spikes/CONVENTIONS.md`
 **Summary:** `.planning/spikes/WRAP-UP-SUMMARY.md`
 **AGENTS.md:** routing line added
 
 The spike-findings skill will auto-load in future build conversations.
 ```
+</step>
+
+<step name="whats_next">
+## What's Next
+
+After the summary, present next-step options:
 
 ───────────────────────────────────────────────────────────────
 
 ## ▶ Next Up
 
-**Start building** — plan the real implementation
+**Explore frontier spikes** — see what else is worth spiking based on what we've learned
 
-`/gsd-plan-phase`
+`/gsd-spike` (run with no argument — its frontier mode analyzes the spike landscape and proposes integration and frontier spikes)
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/gsd-add-phase` — add a phase based on spike findings
-- `/gsd-spike` — spike additional ideas
+- `/gsd-plan-phase` — start planning the real implementation
+- `/gsd-spike [idea]` — spike a specific new idea
 - `/gsd-explore` — continue exploring
+- Other
 
 ───────────────────────────────────────────────────────────────
 </step>
@@ -262,12 +294,13 @@ The spike-findings skill will auto-load in future build conversations.
 </process>
 
 <success_criteria>
-- [ ] Every unprocessed spike presented for individual curation
-- [ ] Feature-area grouping proposed and approved
-- [ ] Spike-findings skill exists at `./.opencode/skills/` with SKILL.md, references/, sources/
-- [ ] Core source files from included spikes copied into sources/
-- [ ] Reference files contain validated patterns, code snippets, landmines, constraints
+- [ ] All unprocessed spikes auto-included and processed
+- [ ] Spikes grouped by feature area
+- [ ] Spike-findings skill exists at `./.opencode/skills/` with SKILL.md (including requirements), references/, sources/
+- [ ] Reference files are implementation blueprints with Requirements, How to Build It, What to Avoid, Constraints
+- [ ] `.planning/spikes/CONVENTIONS.md` created or updated with recurring stack/structure/pattern choices
 - [ ] `.planning/spikes/WRAP-UP-SUMMARY.md` written for project history
 - [ ] Project AGENTS.md has auto-load routing line
-- [ ] Summary presented with next-step routing
+- [ ] Summary presented
+- [ ] Next-step options presented (including frontier spike exploration via `/gsd-spike`)
 </success_criteria>

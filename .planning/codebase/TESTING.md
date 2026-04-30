@@ -1,452 +1,395 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-04-25
+**Analysis Date:** 2026-04-28
 
 ## Test Framework
 
 **Runner:**
-- Vitest v1.0.0
-- Config: `vitest.config.ts`
+- Vitest 4.1.5
+- Config: `vitest.config.ts` at project root
 
 **Assertion Library:**
-- Vitest built-in (`expect` from vitest)
-- Uses `describe`, `it`, `expect`, `vi`, `beforeEach`, `afterEach` from vitest globals
+- Vitest's built-in `expect` (globals enabled — no imports needed for `describe`, `it`, `expect`)
 
 **Run Commands:**
 ```bash
-npm test              # Run all tests (vitest run)
-npm run test:watch    # Watch mode (vitest)
-npm run test:coverage # Coverage report (vitest run --coverage)
-npx vitest run tests/lib/helpers.test.ts    # Run single test file
-npx vitest run -t "dispatch"                # Run tests matching pattern
+npm test                    # Run all tests (vitest run)
+npm run test:watch          # Watch mode (vitest)
+npm run test:coverage       # Coverage report (vitest run --coverage)
+npx vitest run path/to/file # Run single test file
+npx vitest run -t "pattern" # Run tests matching pattern
 ```
-
-**Coverage Configuration:**
-- Includes: `src/**/*.ts`
-- Excludes: `src/index.ts`, `src/**/index.ts` (barrel files)
-- Reporters: `text`, `lcov`
-- No minimum coverage threshold enforced
 
 ## Test File Organization
 
 **Location:**
-- Tests mirror source directory structure under `tests/`:
-  - `src/lib/*.ts` → `tests/lib/*.test.ts`
-  - `src/tools/*.ts` → `tests/tools/*.test.ts`
-  - `src/lib/spawner/*.ts` → `tests/lib/spawner/*.test.ts`
-  - `src/lib/pty/*.ts` → `tests/lib/pty/*.test.ts`
-  - `src/plugins/*.ts` → `tests/plugins/*.test.ts`
-  - `src/schema-kernel/*.ts` → `tests/schema-kernel/*.test.ts`
-  - Integration tests: `tests/integration/*.test.ts`
+- Tests live in `tests/` directory at project root, mirroring `src/` structure
+- `tests/lib/` → mirrors `src/lib/`
+- `tests/tools/` → mirrors `src/tools/`
+- `tests/hooks/` → mirrors `src/hooks/`
+- `tests/schema-kernel/` → mirrors `src/schema-kernel/`
+- `tests/integration/` → cross-module integration tests
+- `eval/` → separate directory for quality metrics (coherence, correctness, stability)
+- Integration tests and eval tests are both included in vitest `include` glob: `['tests/**/*.test.ts', 'eval/**/*.test.ts']`
 
 **Naming:**
-- `{module-name}.test.ts` — kebab-case with `.test.ts` suffix
-- Test helper files: `tests/lib/helpers/in-memory-client.ts` (no `.test.` suffix)
+- Test files named `{source-module}.test.ts` — exact mirror of source filename
+- Example: `src/lib/concurrency.ts` → `tests/lib/concurrency.test.ts`
+- Special variants append descriptors: `completion-detector-crash.test.ts` for crash-specific scenarios
 
 **Structure:**
 ```
 tests/
-├── lib/                    # Unit tests for src/lib/
-│   ├── helpers/            # Test helpers
-│   │   └── in-memory-client.ts
-│   ├── spawner/            # Spawner sub-module tests
-│   └── pty/                # PTY sub-module tests
-├── tools/                  # Unit tests for src/tools/
-├── plugins/                # Plugin-level tests
-├── schema-kernel/          # Zod schema tests
-└── integration/            # Cross-module integration tests
+├── lib/
+│   ├── helpers.test.ts            # Mirrors src/lib/helpers.ts
+│   ├── concurrency.test.ts        # Mirrors src/lib/concurrency.ts
+│   ├── continuity.test.ts         # Mirrors src/lib/continuity.ts
+│   ├── state.test.ts              # Mirrors src/lib/state.ts
+│   ├── task-status.test.ts        # Mirrors src/lib/task-status.ts
+│   ├── completion-detector.test.ts
+│   ├── completion-detector-crash.test.ts  # Specialized gap-documentation variant
+│   ├── helpers/
+│   │   └── in-memory-client.ts    # Test helper utilities
+│   ├── config-workflow/           # Sub-module tests
+│   │   ├── workflow-e2e.test.ts
+│   │   ├── workflow-guards.test.ts
+│   │   ├── workflow-persistence.test.ts
+│   │   ├── workflow-regression.test.ts
+│   │   └── workflow-state.test.ts
+│   ├── event-tracker/             # Sub-module tests
+│   ├── pty/                       # Sub-module tests
+│   ├── security/                  # Sub-module tests
+│   └── spawner/                   # Sub-module tests
+├── tools/
+│   ├── delegate-task.test.ts
+│   ├── delegation-status.test.ts
+│   ├── configure-primitive.test.ts
+│   ├── prompt-skim.test.ts
+│   ├── prompt-analyze.test.ts
+│   ├── session-patch.test.ts
+│   ├── run-background-command.test.ts
+│   ├── session-journal-export.test.ts
+│   └── validate-restart.test.ts
+├── hooks/
+│   ├── create-core-hooks.test.ts
+│   ├── create-session-hooks.test.ts
+│   ├── create-tool-guard-hooks.test.ts
+│   ├── hook-cqrs-boundary.test.ts
+│   ├── plugin-event-observers.test.ts
+│   └── tool-after-composer.test.ts
+├── schema-kernel/
+│   ├── opencode-config.schemas.test.ts
+│   └── prompt-enhance.schema.test.ts
+├── plugins/
+│   └── plugin-lifecycle.test.ts
+└── integration/
+    └── prompt-enhance-pipeline.test.ts
+eval/
+├── coherence.test.ts
+├── correctness.test.ts
+└── stability.test.ts
 ```
 
 ## Test Structure
 
 **Suite Organization:**
 ```typescript
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { DelegationManager } from "../../src/lib/delegation-manager.js"
+import { describe, it, expect } from "vitest"
+// Some tests also import vi for mocking/fake timers
 
-describe("DelegationManager", () => {
-  let stateDir: string
-  let previousStateDir: string | undefined
+describe("SubjectUnderTest", () => {
+  let instance: SubjectType
 
   beforeEach(() => {
-    vi.useRealTimers()
-    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
-    stateDir = mkdtempSync(join(tmpdir(), "delegation-manager-"))
-    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+    instance = new SubjectType()
   })
 
-  afterEach(() => {
-    vi.useRealTimers()
-    vi.restoreAllMocks()
-    if (previousStateDir === undefined) {
-      delete process.env.OPENCODE_HARNESS_STATE_DIR
-    } else {
-      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
-    }
-    rmSync(stateDir, { recursive: true, force: true })
-  })
-
-  describe("dispatch", () => {
-    it("creates child session with correct title and parentID", async () => {
-      // ...
-    })
-  })
-
-  describe("dual-signal completion", () => {
-    it("completes delegation after STABILITY_THRESHOLD stable polls", async () => {
-      // ...
+  describe("feature area", () => {
+    it("describes expected behavior in plain English", () => {
+      // Arrange
+      const input = ...
+      // Act
+      const result = instance.method(input)
+      // Assert
+      expect(result).toBe(expected)
     })
   })
 })
 ```
 
 **Patterns:**
-- Nested `describe` blocks for logical groupings (e.g., `dispatch`, `dual-signal completion`, `persistence`, `recovery`)
-- `beforeEach`/`afterEach` for setup and cleanup
-- Environment variable save/restore pattern for `OPENCODE_HARNESS_STATE_DIR`
-- Temp directories via `mkdtempSync(join(tmpdir(), "prefix-"))` with cleanup in `afterEach`
+- **Setup:** `beforeEach` for fresh instances, mock environment variables, temp directories
+- **Teardown:** `afterEach` for `vi.restoreAllMocks()`, `vi.resetModules()`, env var cleanup, temp directory removal with `rmSync(dir, { recursive: true, force: true })`
+- **Assertion:** `expect(value).toBe(...)` for primitives, `expect(value).toEqual(...)` for objects/arrays, `expect(value).toMatchObject(...)` for partial matching, `expect(value).toThrow(/pattern/)` for errors, `await expect(promise).resolves.toEqual(...)` for async resolution
+
+**Real example from `tests/lib/task-status.test.ts`:**
+```typescript
+describe("canTransition", () => {
+  it("should allow pending -> queued", async () => {
+    const { canTransition } = await import("../../src/lib/task-status.js")
+    expect(canTransition("pending", "queued")).toBe(true)
+  })
+
+  it("should reject completed -> pending", async () => {
+    const { canTransition } = await import("../../src/lib/task-status.js")
+    expect(canTransition("completed", "pending")).toBe(false)
+  })
+})
+```
+
+**Two import patterns observed:**
+1. **Static imports** (most common): `import { DelegateTaskInputSchema } from "../../src/tools/delegate-task.js"`
+2. **Dynamic imports** (used when module has side effects, e.g., module-level singleton or env-dependent): `const { canTransition } = await import("../../src/lib/task-status.js")` — often paired with `vi.resetModules()` in `beforeEach` for isolation
 
 ## Mocking
 
-**Framework:** Vitest `vi` module
+**Framework:** Vitest's built-in `vi` mocking utilities
 
 **Patterns:**
+
+**1. Function mocks with `vi.fn()`:**
 ```typescript
-// Mock client with vi.fn()
-type MockClient = {
-  session: {
-    create: ReturnType<typeof vi.fn>
-    prompt: ReturnType<typeof vi.fn>
-    status: ReturnType<typeof vi.fn>
-    messages: ReturnType<typeof vi.fn>
-    abort: ReturnType<typeof vi.fn>
-  }
-  app: {
-    agents: ReturnType<typeof vi.fn>
-  }
-}
-
-function createMockClient(): MockClient {
+// From tests/hooks/create-core-hooks.test.ts
+function createFakeLifecycleManager() {
   return {
-    session: {
-      create: vi.fn().mockResolvedValue({ data: { id: "child-ses-123" } }),
-      prompt: vi.fn().mockResolvedValue(undefined),
-      status: vi.fn().mockResolvedValue({ data: {} }),
-      messages: vi.fn().mockResolvedValue({
-        data: [
-          { role: "user", parts: [{ type: "text", text: "task" }] },
-          { role: "assistant", parts: [{ type: "text", text: "Task completed" }] },
-        ],
-      }),
-      abort: vi.fn().mockResolvedValue(undefined),
-    },
-    app: {
-      agents: vi.fn().mockResolvedValue({
-        data: [
-          { name: "researcher" },
-          { name: "builder" },
-          { name: "critic" },
-        ],
-      }),
-    },
+    handleEvent: vi.fn(),
+    replayPendingNotificationsForEvent: vi.fn(),
   }
 }
 
-// Spy on module functions
-const acquireSpy = vi.spyOn(manager.semaphore, "acquire")
-vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
+it("routes events correctly", async () => {
+  const lm = createFakeLifecycleManager()
+  const hooks = createCoreHooks({ lifecycleManager: lm as never } as never)
+  await hooks.event({ event: { type: "session.created", sessionID: "ses_test" } })
+  expect(lm.handleEvent).toHaveBeenCalledWith({
+    event: expect.objectContaining({ type: "session.created" }),
+    eventType: "session.created",
+    sessionID: "ses_test",
+  })
+})
+```
 
-// Spy on prototype methods
-vi.spyOn(DelegationManager.prototype, "handleSessionIdle")
+**2. Module mocking with `vi.mock()`:**
+```typescript
+// From tests/lib/pty/pty-manager.test.ts
+vi.mock("bun-pty", () => ({
+  spawn: vi.fn((_command, _args, _options) => {
+    // Return mock PTY with controllable listeners
+    currentPty = {
+      pid: 4242,
+      write: vi.fn(),
+      kill: vi.fn(),
+      onData: vi.fn((listener) => { dataListener = listener; return { dispose: vi.fn() } }),
+      onExit: vi.fn((listener) => { exitListener = listener; return { dispose: vi.fn() } }),
+    }
+    return currentPty
+  }),
+}))
+```
 
-// Namespace import for module-level spying
-import * as sessionApi from "../../src/lib/session-api.js"
-import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
+**3. Partial module mocking with `vi.doMock()`:**
+```typescript
+// From tests/lib/continuity.test.ts
+vi.doMock("node:fs", async () => {
+  const actual = await vi.importActual<typeof import("node:fs")>("node:fs")
+  return {
+    ...actual,
+    writeFileSync: vi.fn<typeof actual.writeFileSync>((...args) => {
+      // Intercept writes for assertion
+      actual.writeFileSync(...args)
+    }),
+  }
+})
+```
+
+**4. Fake timers with `vi.useFakeTimers()`:**
+```typescript
+// From tests/lib/completion-detector-crash.test.ts
+describe("crash detection", () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    detector = new CompletionDetector(200)
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("stability timer resolves when messages stop", async () => {
+    const resultPromise = detector.watch("stale-session", 5000)
+    detector.feedMessageCount("stale-session", 3)
+    vi.advanceTimersByTime(250)
+    const result = await resultPromise
+    expect(result.signal).toBe("idle")
+  })
+})
+```
+
+**5. Spying on prototype methods:**
+```typescript
+// From tests/tools/delegate-task.test.ts
+const idleSpy = vi.spyOn(DelegationManager.prototype, "handleSessionIdle")
 ```
 
 **What to Mock:**
-- OpenCode SDK client (`session.*`, `app.*`) — never hit real API
-- File system via temp directories (real fs, isolated paths)
-- Environment variables (save/restore pattern)
-- Module functions via `vi.spyOn` for cross-module dependencies
-- Time via `vi.useFakeTimers()` / `vi.advanceTimersByTimeAsync()`
+- External platform modules (`bun-pty`, `@opencode-ai/plugin`, `@opencode-ai/sdk`)
+- File system operations in persistence tests (use `vi.doMock("node:fs", ...)`)
+- `process.env` with `beforeEach`/`afterEach` cleanup
+- SDK client methods (`session.messages`, `session.status`, `session.prompt`)
 
 **What NOT to Mock:**
-- Pure utility functions (tested directly)
-- Type guards and transition logic (tested as-is)
-- Zod schemas (tested with real data)
+- Pure library functions (`helpers.ts` tests use zero mocking)
+- Schema validation (tested with real Zod schemas and `safeParse`)
+- Tool execute functions in integration tests (use real tool instances with mock context)
+- `TaskStateManager` — instantiated directly, no mocking
 
 ## Fixtures and Factories
 
 **Test Data:**
+- Small inline factories for creating test records:
 ```typescript
-// Factory function for Delegation objects
-function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
+// From tests/lib/continuity.test.ts
+function makeRecord(sessionID: string): SessionContinuityRecord {
   return {
-    id: "del-001",
-    parentSessionId: "parent-session",
-    childSessionId: "child-session",
-    agent: "builder",
-    status: "running",
-    createdAt: Date.now(),
-    safetyCeilingMs: 180_000,
-    lastMessageCount: 0,
-    stablePollCount: 0,
-    executionMode: "headless",
-    workingDirectory: process.cwd(),
-    queueKey: "agent:builder",
-    ...overrides,
+    sessionID,
+    promptParams: {},
+    metadata: {
+      status: "running",
+      description: `record ${sessionID}`,
+      delegation: null,
+      constraints: [],
+      pendingNotifications: [],
+      updatedAt: Date.now(),
+    },
   }
 }
+```
 
-// Stub manager with vi.fn() methods
-type ManagerStub = {
-  getStatus: ReturnType<typeof vi.fn>
-  getAllDelegations: ReturnType<typeof vi.fn>
-}
-
-function createManagerStub(delegations: Delegation[] = []): ManagerStub {
-  const byId = new Map(delegations.map(d => [d.id, d]))
+- Helper functions for creating mock client/callback objects:
+```typescript
+// From tests/lib/sdk-delegation.test.ts
+function createMockClient(): MockClient {
   return {
-    getStatus: vi.fn((id: string) => byId.get(id)),
-    getAllDelegations: vi.fn(() => delegations),
+    session: {
+      messages: vi.fn().mockResolvedValue({ data: [...] }),
+      status: vi.fn().mockResolvedValue({ data: {} }),
+      prompt: vi.fn().mockResolvedValue(undefined),
+    },
   }
-}
-
-// In-memory client for integration tests
-function createInMemoryClient(): InMemoryClient {
-  // Full fake client with _sessions Map, _setStatus, _addMessage helpers
 }
 ```
 
 **Location:**
-- `tests/lib/helpers/in-memory-client.ts` — reusable fake OpenCode client
-- Inline factories in test files (`createMockClient`, `makeDelegation`, `createManagerStub`)
+- Inline in test files (no separate fixtures directory)
+- Shared test helpers in `tests/lib/helpers/in-memory-client.ts`
 
 ## Coverage
 
-**Requirements:** None enforced — no minimum threshold in config
+**Requirements:**
+- Thresholds enforced in `vitest.config.ts`:
+  - Statements: 70%
+  - Branches: 60%
+  - Functions: 70%
+  - Lines: 70%
+- Coverage provider: v8
+- Coverage includes: `src/**/*.ts`
+- Excluded: `src/index.ts` (pure re-export barrel), `src/**/index.ts`
 
 **View Coverage:**
 ```bash
-npm run test:coverage
+npm run test:coverage        # Text + lcov report
 ```
-
-**Coverage excludes:** `src/index.ts`, `src/**/index.ts` (barrel files)
 
 ## Test Types
 
 **Unit Tests:**
-- Primary test type — all `tests/lib/` and `tests/tools/` files
-- Test individual modules, classes, and functions in isolation
-- Mock external dependencies (SDK, file system, timers)
-- Examples: `tests/lib/helpers.test.ts` (505 lines), `tests/lib/concurrency.test.ts` (432 lines), `tests/lib/delegation-manager.test.ts` (1400+ lines)
+- Scope: Individual functions, classes, constants
+- Location: `tests/lib/`, `tests/tools/`, `tests/hooks/`
+- Approach: White-box testing of boundary conditions, error paths, state transitions
+- Heavy use of fake timers for time-dependent logic (`CompletionDetector`, `DelegationConcurrencyQueue`)
+- Heavy use of dynamic imports + `vi.resetModules()` for modules with side effects
 
 **Integration Tests:**
-- Located in `tests/integration/`
-- Test cross-module interactions and schema contracts
-- Example: `tests/integration/prompt-enhance-pipeline.test.ts` — validates schema consistency across tools, hook behavior, full pipeline execution
-- Use real tool factories with mocked context
+- Scope: Cross-module pipelines, tool-to-schema validation, plugin lifecycle
+- Location: `tests/integration/`, `tests/plugins/`
+- Approach: Real tool instances tested with mock context objects, real schema validation
+- Example: `prompt-enhance-pipeline.test.ts` tests the full skim→analyze→patch pipeline with Zod schema validation
 
 **E2E Tests:**
-- Not used — no Playwright or browser-based testing
+- Framework: Not used (no Playwright/Cypress/Selenium)
+- Workflow simulation tests in `tests/lib/config-workflow/workflow-e2e.test.ts` test the full 8-turn configuration state machine with real module imports and temp file I/O
 
-## Quality Gate Testing (Q5)
-
-**RICH Gate Requirements:**
-- RICH = Pattern 1 (third-party synthesis) + Pattern 2 (horizontal integration) + Pattern 3 (vertical routing)
-- Every `hm-*` skill must pass all 3 patterns — no threshold lowering
-- Current honest status: 0 of 25 skills pass RICH
-- Phase 27-30 research artifacts are the input for synthesis
-
-**Required Tests:**
-- Test: Skill selects top 3 relevant third-party skills via `skills.sh` or GitHub search
-- Test: Bundled assets, references, samples are reviewed and transformed
-- Test: Pattern 1/2/3 alternatives compared with adopt/adapt/reject/defer decisions
-- Test: Horizontal integration, routing integration, independence audit documented
-- Test: D1-D8 plus RICH `skill-judge` scoring exists with evidence
-
-**Verification Command:**
-```bash
-test -f .planning/RICH-SKILL-QUALITY-GATE.md && grep -n "RICH-1\|RICH-8\|third-party" .planning/RICH-SKILL-QUALITY-GATE.md
-```
-
-## Time-Machine Testing (Q3)
-
-**Session Journal Testing:**
-- Test: `continuity.ts` passes all existing tests unchanged
-- Test: Journal records events without affecting continuity
-- Test: Journal query returns correct events for session + time range
-- Test: Time-machine reconstructs past state from event replay
-- Test: Journal survives crash (append-only files are crash-safe)
-
-**Required Test Patterns:**
-```typescript
-describe("session-journal", () => {
-  it("records event without mutating continuity", async () => {
-    // journal.append(event) → continuity.store unchanged
-  })
-  it("queries by session + time range", async () => {
-    // journal.query({ sessionId, from, to }) → correct events
-  })
-  it("reconstructs past state from replay", async () => {
-    // replay(events) → reconstructed state matches snapshot
-  })
-})
-```
-
-## Migration Testing (Q6)
-
-**`.hivemind/` State Root Migration:**
-- Test: Compatibility bridge reads existing `.opencode/state/opencode-harness/` during transition
-- Test: New writers target `.hivemind/` exclusively
-- Test: Sidecar CANNOT write to canonical state (enforcement test)
-- Test: One-way migration does not dual-write
-
-**Required Test Patterns:**
-```typescript
-describe("hivemind-migration", () => {
-  it("reads legacy .opencode/state/ during transition", async () => {
-    // bridge.read() → returns legacy data unchanged
-  })
-  it("writes exclusively to .hivemind/", async () => {
-    // writer.write(data) → file exists in .hivemind/, not .opencode/state/
-  })
-  it("sidecar write attempt is rejected", async () => {
-    // sidecar.write() → throws or returns 403
-  })
-})
-```
+**Eval Tests:**
+- Special category in `eval/` directory — quality metrics, not pass/fail
+- `coherence.test.ts` — measures ecosystem coherence (agent description overlap, permission conflicts)
+- `correctness.test.ts` — round-trip fidelity of compile/decompile operations
+- `stability.test.ts` — stress tests (100+ primitives, concurrent compilations, large inputs)
 
 ## Common Patterns
 
 **Async Testing:**
 ```typescript
-// Promise-based async with await
-it("resolves with idle when session.idle is fed", async () => {
-  const resultPromise = detector.watch("ses_1", 5000)
-  detector.feed("session.idle", "ses_1")
-  await expect(resultPromise).resolves.toEqual({
-    signal: "idle",
-    sessionID: "ses_1",
-  })
-})
+// Promise resolution
+await expect(resultPromise).resolves.toEqual({ signal: "idle", sessionID: "ses_1" })
 
-// Fake timers for time-dependent behavior
-vi.useFakeTimers()
-await vi.advanceTimersByTimeAsync(STABILITY_POLL_INTERVAL_MS * STABILITY_THRESHOLD)
-vi.useRealTimers()  // in afterEach
+// Rejection testing
+await expect(queue.acquire("key", 1, 50)).rejects.toThrow(/\[Harness\].*timed out/)
 
-// Microtask flushing
-async function flushMicrotasks(): Promise<void> {
-  await Promise.resolve()
-}
-
-// Concurrent dispatch testing
-const [one, two] = await Promise.all([
-  manager.dispatch({ parentSessionId: "ses-p1", agent: "builder", prompt: "one" }),
-  manager.dispatch({ parentSessionId: "ses-p2", agent: "builder", prompt: "two" }),
-])
+// Sequential execution order
+const order: number[] = []
+const p2 = queue.acquire("key", 1).then((rel) => { order.push(2); rel() })
+order.push(1)
+r1()
+await p2
+expect(order).toEqual([1, 2])
 ```
 
 **Error Testing:**
 ```typescript
-// Thrown errors with message matching
-await expect(manager.dispatch({
-  parentSessionId: "ses-parent-1",
-  agent: "not-real",
-  prompt: "do work",
-})).rejects.toThrow('[Harness] Invalid agent: "not-real"')
+// Thrown errors have [Harness] prefix
+expect(() => unwrapData({ error: "Something went wrong" })).toThrow("[Harness] Something went wrong")
+expect(() => mgr.reserveDescendant("root-limit", 3)).toThrow(/^\[Harness\]/)
 
-// Regex matching for [Harness] prefix
-expect(() => reserveSubagentSpawn("parent-over", "root-limit", mgr)).toThrow(/^\[Harness\]/)
-
-// Timeout rejection
-await expect(queue.acquire("timeout-key", 1, 50)).rejects.toThrow(/\[Harness\].*timed out/)
-
-// Graceful handling (no throw)
-await expect(manager.recoverPending()).resolves.toBeUndefined()
+// Tool errors return envelope, don't throw
+const result = JSON.parse(await tool.execute({ ... }, ctx))
+expect(result.kind).toBe("error")
 ```
 
-**State Isolation:**
+**Temporary directory isolation:**
 ```typescript
-// Fresh instance per test
-let mgr: TaskStateManager
-beforeEach(() => { mgr = new TaskStateManager() })
-
-// Environment variable save/restore
-let previousStateDir: string | undefined
+// From tests/lib/continuity.test.ts
+let stateDir: string
 beforeEach(() => {
-  previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
-  stateDir = mkdtempSync(join(tmpdir(), "prefix-"))
+  stateDir = mkdtempSync(join(tmpdir(), "continuity-test-"))
   process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
 })
 afterEach(() => {
-  vi.restoreAllMocks()
+  rmSync(stateDir, { recursive: true, force: true })
+})
+```
+
+**Environment variable manipulation with cleanup:**
+```typescript
+let previousStateDir: string | undefined
+beforeEach(() => {
+  previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+})
+afterEach(() => {
   if (previousStateDir === undefined) {
     delete process.env.OPENCODE_HARNESS_STATE_DIR
   } else {
     process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
   }
-  rmSync(stateDir, { recursive: true, force: true })
 })
 ```
 
-**Internal Access for Testing:**
+**Module isolation for singleton-dependent tests:**
 ```typescript
-// Type casting to access private members
-function getInternals(manager: DelegationManager): ManagerInternals {
-  return manager as unknown as ManagerInternals
-}
-
-// Constructor casting for mock injection
-function createManager(client: MockClient, options?: ManagerOptions): DelegationManager {
-  const DelegationManagerCtor = DelegationManager as unknown as new (
-    client: MockClient,
-    options?: ManagerOptions,
-  ) => DelegationManager
-  return new DelegationManagerCtor(client, options)
-}
-
-// @internal getter on class
-get stabilityTimers(): Map<string, NodeJS.Timeout> {
-  return this.sdkHandler.getTimerMap()
-}
+beforeEach(() => {
+  vi.resetModules()    // Clears module cache so each test gets fresh imports
+  vi.unmock("node:fs") // Reset any previous mocks
+})
 ```
-
-**Dynamic imports for isolated module testing:**
-```typescript
-// Used in task-status.test.ts to avoid shared state
-const { VALID_TRANSITIONS } = await import("../../src/lib/task-status.js")
-```
-
-## Test File Inventory
-
-| Test File | Lines | What It Tests |
-|-----------|-------|---------------|
-| `tests/lib/delegation-manager.test.ts` | 1400+ | DelegationManager: dispatch, completion, lifecycle, persistence, recovery |
-| `tests/lib/helpers.test.ts` | 505 | Pure utilities: isObject, getNestedValue, unwrapData, stableStringify, buildPromptText |
-| `tests/lib/concurrency.test.ts` | 432 | DelegationConcurrencyQueue, buildDelegationQueueKey, SpawnReservation |
-| `tests/lib/completion-detector.test.ts` | 326 | CompletionDetector: feed/watch, cache, timeout, cancel, stability |
-| `tests/lib/completion-detector-crash.test.ts` | — | Crash resilience scenarios |
-| `tests/tools/delegate-task.test.ts` | 339 | delegate-task tool: plugin registration, routing, error handling |
-| `tests/tools/delegation-status.test.ts` | 313 | delegation-status tool: lookup, filtering, listing |
-| `tests/tools/run-background-command.test.ts` | — | Background command tool |
-| `tests/tools/session-patch.test.ts` | — | Session patch tool |
-| `tests/tools/prompt-skim.test.ts` | — | Prompt skim tool |
-| `tests/tools/prompt-analyze.test.ts` | — | Prompt analyze tool |
-| `tests/lib/state.test.ts` | 207 | TaskStateManager: stats, budgets, delegation meta, subagent registry |
-| `tests/lib/task-status.test.ts` | 199 | Task status transitions and guards |
-| `tests/lib/notification-handler.test.ts` | — | Notification handler |
-| `tests/lib/runtime-policy.test.ts` | — | Runtime policy loading |
-| `tests/lib/helpers/in-memory-client.ts` | 58 | Test helper: fake OpenCode client |
-| `tests/integration/prompt-enhance-pipeline.test.ts` | 250 | E2E: schema contracts, hook behavior, tool registration |
-| `tests/plugins/plugin-lifecycle.test.ts` | — | Plugin lifecycle |
-| `tests/plugins/prompt-enhance-compaction.test.ts` | — | Prompt enhance compaction |
-| `tests/schema-kernel/prompt-enhance.schema.test.ts` | — | Zod schema validation |
-| `tests/lib/spawner/*.test.ts` | — | Spawner sub-module tests |
-| `tests/lib/pty/*.test.ts` | — | PTY sub-module tests |
 
 ---
 
-*Testing analysis: 2026-04-25*
+*Testing analysis: 2026-04-28*
