@@ -228,6 +228,44 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 7. **Next runtime step still needs selection** — downstream planning must decide how to resume live runtime verification/re-planning from the corrected Phase 12 baseline
 8. ~~**Build broken**~~ — RESOLVED 2026-04-27: `npm run typecheck`, `npm test`, and `npm run build` pass.
 9. **Phase 48 degraded proof** — dynamic tool execution and successful real child delegation completion remain unproven in the available OpenCode fixture.
+10. **2026-04-30 Audit Findings (delegation-async-pty-lifecycle-audit)** — see below
+
+## 2026-04-30 Audit Findings (delegation-async-pty-lifecycle-audit)
+
+**Source:** `.planning/audits/delegation-async-pty-lifecycle-audit-2026-04-30.md` (main repo)
+**Routing:** `AUDIT-REMEDIATION-ROUTING-2026-04-30.md` + phase-specific amendments created
+
+### Critical Overrides
+
+| # | Phase | Previous Status | Amended Status | Finding |
+|---|-------|----------------|----------------|---------|
+| 1 | **16.2** | REMEDIATED | **NOT REMEDIATED** | `bun-pty` crashes Node.js at module resolution; lazy load does not prevent crash; PTY recovery always fails after restart |
+| 2 | **36** | PENDING | **BLOCKED** | Worktree uses adaptive polling (4 thresholds) instead of dual-signal `CompletionDetector`; `lifecycle-manager.ts` creates but never uses `CompletionDetector` |
+| 3 | **46** | COMPLETE | **PARTIAL** | `run_in_background: true` is gated by `builtinAsyncBackgroundChildSessions` policy flag — silently downgrades to sync |
+| 4 | **48.4** | COMPLETE w/ gaps | **NOT COMPLETE** | Worktree has **zero tests** for delegation modules; 0 tests for `delegation-manager`, `sdk-delegation`, `command-delegation` |
+| 5 | **38** | PENDING | **BLOCKED** | No runtime state files exist on disk: `session-continuity.json` missing, `delegations.json` missing, `.hivemind/state/brain.json` empty |
+| 6 | **32** | COMPLETE (7/7) | **INCOMPLETE** | Phantom phase references persist; Phase 2 claimed "9/9 plans complete" but only RESEARCH.md exists |
+| 7 | **16.4** | COMPLETE | **INCOMPLETE** | Two divergent codebases (main repo 247 tests vs worktree 0 tests) not reconciled |
+| 8 | **2** | 9/9, 18/18 | **0/8, 1 doc** | Only `RESEARCH.md` exists in main repo `.planning/phases/02-v3-runtime-architecture/` |
+
+### Amendment Documents Created
+
+- `phases/16-background-delegation-revamp-pty-integration-rebuild-backgro/16.2-AUDIT-AMENDMENT-2026-04-30.md`
+- `phases/36-lifecycle-state-machine-enforcement/36-AUDIT-AMENDMENT-2026-04-30.md`
+- `phases/46-delegation-dispatch-completion-recovery-truth/46-AUDIT-AMENDMENT-2026-04-30.md`
+- `phases/48.4-production-evidence-coverage-recovery/48.4-AUDIT-AMENDMENT-2026-04-30.md`
+- `phases/38-q6-state-root-migration/38-AUDIT-AMENDMENT-2026-04-30.md`
+- `phases/32-traceability-reconciliation/32-AUDIT-AMENDMENT-2026-04-30.md`
+- `AUDIT-REMEDIATION-TRACKING-2026-04-30.md` (consolidated tracking)
+
+### Execution Priority
+
+1. **Phase 16.2** — Remove/replace `bun-pty` (blocks all Node.js execution)
+2. **Phase 38** — Fix state file creation (blocks recovery testing)
+3. **Phase 36** — Port `CompletionDetector` from main repo (blocks all completion logic)
+4. **Phase 46** — Remove async policy gate (blocks true background execution)
+5. **Phase 48.4** — Add 50+ delegation tests (verify fixes don't regress)
+6. **Phase 32** — Delete phantom phases (planning hygiene)
 
 ## Performance Metrics
 
