@@ -239,7 +239,7 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 
 | # | Phase | Previous Status | Amended Status | Finding |
 |---|-------|----------------|----------------|---------|
-| 1 | **16.2** | REMEDIATED | **NOT REMEDIATED** | `bun-pty` crashes Node.js at module resolution; lazy load does not prevent crash; PTY recovery always fails after restart |
+| 1 | **16.2** | REMEDIATED | **NOT REMEDIATED** | `bun-pty` import fails on Node.js but is caught gracefully by `createPtyManagerIfSupported()` try-catch; headless fallback works; PTY-dependent tool actions (`output`, `input`, `list`, `terminate`) always fail on Node.js |
 | 2 | **36** | PENDING | **BLOCKED** | `CompletionDetector` exists (127 LOC) but is not wired to SDK delegation finalization; `sdk-delegation.ts` has parallel adaptive polling (`performStabilityPoll()`) |
 | 3 | **46** | COMPLETE | **PARTIAL** | `run_in_background: true` is gated by `builtinAsyncBackgroundChildSessions` policy flag — silently downgrades to sync |
 | 4 | **48.4** | COMPLETE w/ gaps | **NOT COMPLETE** | Worktree has **zero tests** for delegation modules; 0 tests for `delegation-manager`, `sdk-delegation`, `command-delegation` |
@@ -260,10 +260,10 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 
 ### Execution Priority
 
-1. **Phase 16.2** — Remove/replace `bun-pty` (blocks all Node.js execution)
-2. **Phase 36** — Unify completion detection: remove `performStabilityPoll()` from `sdk-delegation.ts`, wire `CompletionDetector` callback to finalization (parallel mechanisms cause race conditions)
-3. **Phase 46** — Remove async policy gate (blocks true background execution)
-4. **Phase 48.4** — Add 50+ delegation tests (verify fixes don't regress)
+1. **Phase 36** — Unify completion detection: remove `performStabilityPoll()` from `sdk-delegation.ts`, wire `CompletionDetector` callback to finalization (parallel mechanisms cause race conditions)
+2. **Phase 46** — Remove async policy gate (blocks true background execution)
+3. **Phase 48.4** — Add 50+ delegation tests (verify fixes don't regress)
+4. **Phase 16.2** — Remove/replace `bun-pty` (PTY-dependent tool actions fail on Node.js; headless fallback works)
 5. **Phase 38** — Add recovery/atomic-write tests (state persistence already works; `mkdirSync` present in both modules)
 6. **Phase 32** — Delete phantom phases (planning hygiene)
 

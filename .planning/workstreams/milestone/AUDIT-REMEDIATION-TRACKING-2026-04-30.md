@@ -10,7 +10,7 @@
 
 | Phase | Amendment File | Finding | Priority |
 |-------|---------------|---------|----------|
-| 16.2 | `16.2-AUDIT-AMENDMENT-2026-04-30.md` | PTY 100% non-functional on Node.js | P0 CRITICAL |
+| 16.2 | `16.2-AUDIT-AMENDMENT-2026-04-30.md` | PTY non-functional on Node.js (lazy-load catches gracefully; headless fallback works; PTY-dependent tool actions fail) | P1 HIGH |
 | 36 | `36-AUDIT-AMENDMENT-2026-04-30.md` | Parallel completion detection: `CompletionDetector` + adaptive polling in `sdk-delegation.ts` conflict | P0 CRITICAL |
 | 46 | `46-AUDIT-AMENDMENT-2026-04-30.md` | "Always-background" is conditional; policy gate blocks async | P0 CRITICAL |
 | 48.4 | `48.4-AUDIT-AMENDMENT-2026-04-30.md` | Zero tests in worktree; critical paths untested | P0 CRITICAL |
