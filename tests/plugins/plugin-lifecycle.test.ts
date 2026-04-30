@@ -68,6 +68,8 @@ describe("plugin lifecycle wiring", () => {
     expect(plugin.tool["delegate-task"]).toBeDefined()
     expect(plugin.tool["delegation-status"]).toBeDefined()
     expect(plugin.tool["hivemind-pressure"]).toBeDefined()
+    expect(plugin.tool["hivemind-sdk-supervisor"]).toBeDefined()
+    expect(plugin.tool["hivemind-command-engine"]).toBeDefined()
     expect(plugin.tool["hivemind-agent-work-create"]).toBeDefined()
     expect(plugin.tool["hivemind-agent-work-export"]).toBeDefined()
   })

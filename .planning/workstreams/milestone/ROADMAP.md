@@ -64,7 +64,7 @@
 - [x] **Phase 56: Trajectory & Session v3** — IMPLEMENTATION COMPLETE: trajectory ledger, session v3 metadata, and `hivemind-trajectory` tool implemented; no Phase 52 closure claim
 - [x] **Phase 57: Runtime Pressure & Control Plane** — IMPLEMENTATION COMPLETE: pure pressure/control-plane substrate, `hivemind-pressure` tool, and tests; no Phase 39 auto-loop enforcement claim
 - [x] **Phase 58: Agent Work Contracts** — IMPLEMENTATION COMPLETE: dedicated work contract store, create/export tools, schema exports, pressure gating, and tests
-- [x] **Phase 59: SDK Supervisor & Command Engine** — COMPLETE FOR PLANNING CONTRACT: supervisor/command-engine requirements locked; no SDK runtime claim
+- [x] **Phase 59: SDK Supervisor & Command Engine** — IMPLEMENTATION COMPLETE: SDK supervisor and preview-only command engine implemented and verified; no command execution claim
 - [ ] **Phase 60: Session Entry Intake** — P0 CRITICAL
 - [ ] **Phase 61: Control Plane + Primitive Registry** — P0 CRITICAL — complete_conditional_runway
 - [x] **Phase 62: Doc Intelligence Engine Implementation** → MERGED into Phase 55
@@ -168,10 +168,10 @@ Plans:
 **Requirements:** SUPERVISOR-01 through SUPERVISOR-05
 **Depends on:** Phase 57 runtime pressure/control-plane
 **Blocks:** Agent Synthesis AS-9
-**Plans:** 1 plan — executed as planning contract; final artifact `59-CONTRACT-2026-04-30.md`
+**Plans:** 1 plan — implemented and verified; final artifacts `59-SUMMARY-2026-04-30.md` and `59-VERIFICATION-2026-04-30.md`
 
 Plans:
-- [x] 59-01-PLAN-2026-04-30.md — define SDK supervisor/command engine planning contract
+- [x] 59-01-PLAN-2026-04-30.md — implement SDK supervisor and preview-only command engine substrate
 
 ## Phase 2: V3 Runtime Architecture
 

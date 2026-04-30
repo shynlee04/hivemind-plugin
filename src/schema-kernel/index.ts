@@ -99,6 +99,21 @@ export {
 
 export type { RuntimePressureToolInput } from "./runtime-pressure.schema.js"
 
+export {
+  SdkSupervisorActionSchema,
+  SdkSupervisorToolInputSchema,
+} from "./sdk-supervisor.schema.js"
+
+export type { SdkSupervisorToolInput } from "./sdk-supervisor.schema.js"
+
+export {
+  CommandEngineActionSchema,
+  CommandEngineMessageSchema,
+  CommandEngineToolInputSchema,
+} from "./command-engine.schema.js"
+
+export type { CommandEngineToolInput } from "./command-engine.schema.js"
+
 // ---------------------------------------------------------------------------
 // Agent frontmatter schemas
 // ---------------------------------------------------------------------------

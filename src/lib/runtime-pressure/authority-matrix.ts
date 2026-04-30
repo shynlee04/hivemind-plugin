@@ -14,6 +14,8 @@ export const TOOL_AUTHORITY_MATRIX: readonly ToolAuthority[] = [
   { name: "hivemind-doc", authority: "read", mutatesState: false, canExecute: false, reason: "read-only document intelligence" },
   { name: "hivemind-trajectory", authority: "state", mutatesState: true, canExecute: false, reason: "writes trajectory ledger checkpoints, events, and evidence refs" },
   { name: "hivemind-pressure", authority: "state", mutatesState: true, canExecute: false, reason: "may attach pressure evidence to the trajectory ledger only" },
+  { name: "hivemind-sdk-supervisor", authority: "read", mutatesState: false, canExecute: false, reason: "reports SDK wrapper health, heartbeat, diagnostics, and readiness without executing SDK operations" },
+  { name: "hivemind-command-engine", authority: "read", mutatesState: false, canExecute: false, reason: "discovers command bundles and previews routes without command execution or process launch" },
   { name: "hivemind-agent-work-create", authority: "state", mutatesState: true, canExecute: false, reason: "writes dedicated agent work contract records after pressure gating" },
   { name: "hivemind-agent-work-export", authority: "read", mutatesState: false, canExecute: false, reason: "exports bounded work contract handoff payloads without persistence" },
   { name: "configure-primitive", authority: "write", mutatesState: true, canExecute: false, reason: "creates or updates OpenCode primitive files" },

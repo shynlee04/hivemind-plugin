@@ -1,7 +1,7 @@
 # Requirements: Harness V3 Runtime Composition Engine
 
 **Defined:** 2026-04-06
-**Last Updated:** 2026-04-30 — Phases 55-59 product-detox concept migration runway requirements added as research-locked / pre-planning
+**Last Updated:** 2026-04-30 — Phase 59 SDK supervisor and command engine implementation evidence added
 **Core Value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references. V3 extends the harness into a runtime composition engine with background agents, delegation chains, concurrency control, and schema-driven injection.
 
 ---
@@ -592,11 +592,11 @@ Truthful status: **Complete for planning contract** — implementation and runti
 
 | Requirement | Priority | Status | Description |
 |-------------|----------|--------|-------------|
-| SUPERVISOR-01 | P1 | Complete for planning | Define SDK supervisor health, heartbeat, and diagnostics contracts around OpenCode SDK interactions. |
-| SUPERVISOR-02 | P1 | Complete for planning | Define command bundle discovery and slash-command routing behavior. |
-| SUPERVISOR-03 | P1 | Complete for planning | Define command contracts for metadata, arguments, expected context, output shape, and failure states. |
-| SUPERVISOR-04 | P1 | Complete for planning | Define context renderer responsibilities and bounded context payload rules for command execution. |
-| SUPERVISOR-05 | P1 | Complete for planning | Define messages transform boundaries without reintroducing broad system-transform risks. |
+| SUPERVISOR-01 | P1 | Implementation complete | Implement SDK supervisor health, heartbeat, bounded diagnostics, and pressure-aware readiness around OpenCode SDK wrapper seams. |
+| SUPERVISOR-02 | P1 | Implementation complete | Implement command bundle discovery and preview-only slash-command routing behavior. |
+| SUPERVISOR-03 | P1 | Implementation complete | Implement command contract analysis for metadata, arguments, expected context, output shape, and failure states. |
+| SUPERVISOR-04 | P1 | Implementation complete | Implement bounded context renderer for command route previews. |
+| SUPERVISOR-05 | P1 | Implementation complete | Implement narrow command message transform boundaries without broad system-transform behavior. |
 
 ---
 
@@ -631,7 +631,7 @@ Truthful status: **Complete for planning contract** — implementation and runti
 | TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Implementation complete |
 | PRESSURE-01 through PRESSURE-05 | Phase 57 | Implementation complete |
 | WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Implementation complete |
-| SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Complete for planning |
+| SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Implementation complete |
 
 ---
 
@@ -648,5 +648,5 @@ Truthful status: **Complete for planning contract** — implementation and runti
 - Phase 35-42: 36 new requirements — 5 complete, 31 pending/deferred
 - Phase 43-48 lifecycle remediation: 17 new requirements — 15 complete, 2 degraded
 - Phase 49-54 milestone routing: 18 new requirements — 12 complete (Phases 49-51 and Phase 54 runway), 6 pending/partial (Phases 52-53 release blockers)
-- Phase 55-59 product-detox migration runway: 25 new requirements — 25 complete for planning contracts
+- Phase 55-59 product-detox migration runway: 25 new requirements — 25 implementation complete for Phases 55-59 substrate scope
 - **Grand total: 172 requirements — 100 complete, 16 superseded, 56 pending/deferred/degraded/research-locked**
