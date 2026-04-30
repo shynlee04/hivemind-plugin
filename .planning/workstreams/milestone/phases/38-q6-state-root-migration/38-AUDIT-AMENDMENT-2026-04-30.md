@@ -3,133 +3,91 @@ phase: 38
 amendment_source: delegation-async-pty-lifecycle-audit-2026-04-30.md
 severity: high_override
 author: hm-l1-coordinator
+correction_note: |
+  CORRECTED 2026-04-30: Original amendment incorrectly claimed "no runtime state files exist."
+  Direct inspection of `.hivemind/state/` shows `session-continuity.json` (83,401 bytes) and
+  `delegations.json` (3,185 bytes) both exist with real data. The main repo audit findings were
+  incorrectly extrapolated to the worktree.
 ---
 
-# Phase 38: AUDIT AMENDMENT — No Runtime State Files Exist on Disk
+# Phase 38: AUDIT AMENDMENT — State Persistence EXISTS but is Untested
 
-**Audit Date:** 2026-04-30
+**Audit Date:** 2026-04-30 (corrected)
 **Previous Status:** PENDING (depends on Phase 35)
-**Amended Status:** **BLOCKED — STATE PERSISTENCE NEVER INITIALIZED**
+**Amended Status:** **PARTIAL — STATE PERSISTENCE EXISTS BUT UNTESTED**
 
 ---
 
-## Audit Override
+## Corrected Audit Findings
 
-The 2026-04-30 comprehensive audit reveals that **no runtime state files exist on disk**:
+Direct inspection of the worktree reveals that **runtime state files DO exist**:
 
-- `find` for `session-continuity.json` — 0 results
-- `find` for `delegations.json` — 0 results
-- `.hivemind/state/brain.json` — all fields `null`, `[]`, or `false`
-- `.hivemind/delegation/` — empty directory
-- `.hivemind/state/` — exists but contains only empty `brain.json`
+- `.hivemind/state/session-continuity.json` — **83,401 bytes** — exists with real session continuity data
+- `.hivemind/state/delegations.json` — **3,185 bytes** — exists with real delegation records (error, timeout statuses)
+- `src/lib/continuity.ts:304` — calls `mkdirSync(dirname(continuityFile), { recursive: true })` before atomic write
+- `src/lib/delegation-persistence.ts:59` — calls `mkdirSync(dirname(filePath), { recursive: true })` before atomic write
+- `.hivemind/state/brain.json` — **does not exist** (main repo audit incorrectly claimed it was empty)
 
-**The continuity store code exists but has never been exercised with real persisted state.** Recovery is theoretical — the code paths exist but have never run with actual files on disk.
-
-This means:
-- Session recovery on restart is **untested in practice**
-- Delegation persistence is **write-only-if-file-exists** (which it doesn't)
-- The `.hivemind/` state root migration (Q6) is incomplete — files aren't being created
+**The main repo audit report was NOT applicable to the worktree.** The worktree's state persistence is functional and has been exercised with real data.
 
 ---
 
-## Amended Requirements
+## Remaining Issues (Lower Priority)
 
-### HIVEMIND-ROOT-04: Fix continuity file path creation
+### HIVEMIND-ROOT-07-REVISED: Add recovery test simulating process restart
 
-**New Requirement:** Ensure `mkdirSync(dirname(continuityFile), { recursive: true })` runs before first write.
+**Requirement:** Add a test that simulates process restart and verifies state restoration from disk.
 
-**Details:**
-- `continuity.ts:90-96` (main repo) and worktree equivalent must create parent directories
-- Default path: `.hivemind/state/opencode-harness/session-continuity.json` (per Q6)
-- If `OPENCODE_HARNESS_CONTINUITY_FILE` env var is set, create its parent directories too
-
-**Acceptance Criterion:** After first harness startup (or first `delegate-task`), the continuity file exists on disk with valid JSON content.
-
-**Priority:** P0 CRITICAL
-
-**Affected Files:** `src/lib/continuity.ts:90-96`
-
----
-
-### HIVEMIND-ROOT-05: Add startup file existence check
-
-**New Requirement:** If continuity file is missing on startup, create it with empty valid JSON.
-
-**Details:**
-- On plugin load or first store access, check if file exists
-- If missing, create with `{ sessions: [], stats: {}, rootBudgets: {}, version: 1 }`
-- Do not throw `ENOENT` errors
+**Rationale:** While state files exist and are written correctly, there are **zero tests** for recovery (`tests/` has 0 items in all subdirectories). The recovery code paths in `continuity.ts` (load from disk, normalize records, quarantine corrupt files) and `delegation-persistence.ts` (normalize persisted delegations) are exercised in production but have no automated test coverage.
 
 **Acceptance Criterion:**
-- Clean `.hivemind/` directory → first `delegate-task` creates all state files
-- No `ENOENT` errors on fresh install
-
-**Priority:** P0 CRITICAL
-
-**Affected Files:** `src/lib/continuity.ts`
-
----
-
-### HIVEMIND-ROOT-06: Verify `delegations.json` file creation
-
-**New Requirement:** The `getDelegationsFilePath()` in `delegation-persistence.ts:53` must create its parent directory before writing.
-
-**Details:**
-- Path should be `.hivemind/state/delegations.json` (per Q6)
-- `writeFileSync` must be preceded by `mkdirSync(dirname(path), { recursive: true })`
-- File must be created on first delegation, not fail silently
-
-**Acceptance Criterion:** `.hivemind/state/delegations.json` exists after first `delegate-task` call.
-
-**Priority:** P0 CRITICAL
-
-**Affected Files:** `src/lib/delegation-persistence.ts:37-55`
-
----
-
-### HIVEMIND-ROOT-07: Add recovery test simulating process restart
-
-**New Requirement:** Add a test that simulates process restart and verifies state restoration.
-
-**Details:**
 - Test creates a delegation, persists state
 - Test destroys in-memory state (simulating process restart)
-- Test reloads state from disk
+- Test reloads state from disk via `loadStoreFromDisk()` / `recoverPending()`
 - Test verifies delegation is recoverable with correct status
 
-**Acceptance Criterion:** `tests/lib/continuity.test.ts` or similar contains a restart-recovery test.
+**Priority:** P1 HIGH (was incorrectly P0)
 
-**Priority:** P1 HIGH
-
-**Affected Files:** `tests/lib/continuity.test.ts` (new file)
+**Affected Files:** `tests/lib/continuity.test.ts` (new file), `tests/lib/delegation-persistence.test.ts` (new file)
 
 ---
 
-### HIVEMIND-ROOT-08: Populate `brain.json` or delete it
+### HIVEMIND-ROOT-09: Verify atomic write durability
 
-**New Requirement:** `.hivemind/state/brain.json` is empty and misleading. Either populate it or remove it.
+**Requirement:** Ensure `renameSync` atomic writes are tested for crash safety.
 
-**Details:**
-- If `brain.json` is a legacy artifact from an earlier architecture, delete it
-- If it serves a purpose, document that purpose and populate it
-- Empty files confuse debugging and suggest broken state
+**Rationale:** Both `continuity.ts:312` and `delegation-persistence.ts:70` use temp-file + `renameSync` pattern for atomic writes. This is correct but untested.
 
-**Acceptance Criterion:** `.hivemind/state/brain.json` either contains real data or does not exist.
+**Acceptance Criterion:**
+- Test writes large store, kills process mid-write, verifies no corrupt file on restart
+- Test verifies quarantine path is created for corrupt JSON
 
 **Priority:** P2 MEDIUM
 
-**Affected Files:** `.hivemind/state/brain.json`
+**Affected Files:** `tests/lib/continuity.test.ts`
 
 ---
 
-## Verification Criteria (Added)
+## What Was WRONG in Original Audit Routing
 
-- [ ] `.hivemind/state/session-continuity.json` exists after first harness startup
-- [ ] `.hivemind/state/delegations.json` exists after first delegation
-- [ ] No `ENOENT` errors on fresh install
+| Original Claim | Reality |
+|---------------|---------|
+| "No runtime state files exist on disk" | `session-continuity.json` (83KB) and `delegations.json` (3KB) exist with real data |
+| "continuity.ts must create parent directory" | Already does: `mkdirSync(dirname(continuityFile), { recursive: true })` at line 304 |
+| "delegation-persistence.ts must create parent directory" | Already does: `mkdirSync(dirname(filePath), { recursive: true })` at line 59 |
+| "recovery is theoretical without files on disk" | Files exist; recovery is untested but not theoretical |
+| "brain.json is empty" | File does not exist in worktree |
+
+---
+
+## Verification Criteria (Corrected)
+
+- [x] `.hivemind/state/session-continuity.json` exists with real data (83KB)
+- [x] `.hivemind/state/delegations.json` exists with real data (3KB)
+- [x] `continuity.ts` calls `mkdirSync` before write
+- [x] `delegation-persistence.ts` calls `mkdirSync` before write
 - [ ] Recovery test simulates restart and verifies state restoration
-- [ ] `.hivemind/state/brain.json` is either populated or deleted
-- [ ] All state paths use `.hivemind/` (not `.opencode/state/`) per Q6
+- [ ] Atomic write durability tested
 
 ---
 
@@ -137,12 +95,10 @@ This means:
 
 | Phase | Impact |
 |-------|--------|
-| Phase 25 (Session Journal) | Must verify continuity writes to correct path |
-| Phase 66 (Recovery Engine) | Needs files to exist before recovery can work |
-| Phase 48.1 (Runtime Correctness) | File existence is prerequisite for correctness tests |
-| Phase 53 (Release Readiness) | State persistence is a release blocker |
+| Phase 48.4 (Tests) | Add tests for state persistence and recovery |
+| Phase 66 (Recovery Engine) | Recovery code works; needs test coverage only |
 
 ---
 
-_Amended: 2026-04-30_
-_Priority: P0 CRITICAL — recovery is theoretical without files on disk_
+_Corrected: 2026-04-30_
+_Priority: P1 HIGH — state persistence works but is untested_

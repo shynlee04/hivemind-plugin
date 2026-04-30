@@ -3,71 +3,101 @@ phase: 36
 amendment_source: delegation-async-pty-lifecycle-audit-2026-04-30.md
 severity: critical_override
 author: hm-l1-coordinator
+correction_note: |
+  CORRECTED 2026-04-30: Original amendment incorrectly claimed CompletionDetector was "abandoned"
+  and "never used" in lifecycle-manager.ts. Direct inspection shows CompletionDetector EXISTS
+  in the worktree at src/lib/completion-detector.ts (127 LOC), is instantiated at
+  lifecycle-manager.ts:73, fed events at lifecycle-manager.ts:124, and exposed via getter at
+  lifecycle-manager.ts:203. The real issue is parallel adaptive polling in sdk-delegation.ts
+  that duplicates/replaces CompletionDetector logic for SDK delegations.
 ---
 
-# Phase 36: AUDIT AMENDMENT — Dual-Signal Completion Detection is False
+# Phase 36: AUDIT AMENDMENT — Parallel Completion Detection Mechanisms Conflict
 
-**Audit Date:** 2026-04-30
+**Audit Date:** 2026-04-30 (corrected)
 **Previous Status:** PENDING (depends on Phase 35)
-**Amended Status:** **BLOCKED — CRITICAL GAP IN COMPLETION DETECTION**
+**Amended Status:** **BLOCKED — DUAL COMPLETION DETECTION CAUSES CONFLICT**
 
 ---
 
-## Audit Override
+## Corrected Audit Findings
 
-The 2026-04-30 comprehensive audit reveals that **the "dual-signal completion" claim in the worktree is false**:
+Direct inspection of the worktree reveals that **CompletionDetector EXISTS and IS used**:
 
-- **Main repo** (`completion-detector.ts:1-124`): True two-signal design — terminal events (`session.idle`, `session.error`, `session.deleted`) AND message-count stability timer (`feedMessageCount()` + `stabilityTimeoutMs`). **Tested with 24 tests.**
-- **Worktree** (`sdk-delegation.ts:146-201`): Multi-threshold adaptive polling loop — `MIN_IDLE_TIME_MS` (5s), `MIN_STABILITY_TIME_MS` (10s), `STABLE_POLLS_REQUIRED` (3 polls), `DEFAULT_STALE_TIMEOUT_MS` (45min). Calls itself "dual-signal" in comments but implements a **four-threshold polling loop**. **Zero tests.**
-- **Worktree `lifecycle-manager.ts:73`**: Creates a `CompletionDetector` instance but **never uses it**. The lifecycle manager is a facade that delegates everything to `DelegationManager.dispatch()`.
+- **`src/lib/completion-detector.ts`** — 127 LOC, present in worktree, NOT from main repo
+- **`lifecycle-manager.ts:73`** — `private readonly completionDetector = new CompletionDetector()`
+- **`lifecycle-manager.ts:124`** — `this.completionDetector.feed("session.idle", sessionID)` — events ARE fed
+- **`lifecycle-manager.ts:166`** — `this.completionDetector.cancel(sessionID)` — cancellation IS wired
+- **`lifecycle-manager.ts:203-205`** — `getCompletionDetector(): CompletionDetector` — instance IS exposed
 
-**The worktree abandoned the simpler, tested `CompletionDetector` from the main repo and replaced it with an untested, more complex polling system.**
+**However**, `src/lib/sdk-delegation.ts:146-201` has its OWN `performStabilityPoll()` with:
+- `MIN_IDLE_TIME_MS` (5s)
+- `MIN_STABILITY_TIME_MS` (10s)  
+- `STABLE_POLLS_REQUIRED` (3 polls)
+- `DEFAULT_STALE_TIMEOUT_MS` (45min)
+
+**This creates TWO parallel completion detection mechanisms:**
+
+| Mechanism | Location | Trigger | Coverage |
+|-----------|----------|---------|----------|
+| `CompletionDetector` | `lifecycle-manager.ts` | Event-driven (`session.idle`, etc.) | All sessions |
+| `performStabilityPoll()` | `sdk-delegation.ts` | Adaptive polling loop | SDK delegations only |
+
+**The problem:** For SDK delegations, `sdk-delegation.ts` does NOT use `CompletionDetector`. It uses its own polling-based stability detection that duplicates (and conflicts with) `CompletionDetector`'s design. `CompletionDetector` is fed events for all sessions but only command delegations (and non-SDK paths) benefit from it.
 
 ---
 
 ## Amended Requirements
 
-### PH36-04: Replace worktree adaptive polling with main repo CompletionDetector
+### PH36-04-REVISED: Unify completion detection — remove adaptive polling from sdk-delegation.ts
 
-**New Requirement:** Port the main repo's `CompletionDetector` (event-driven, two-signal) to replace the worktree's `SdkDelegationHandler` adaptive polling.
+**New Requirement:** Replace `sdk-delegation.ts` adaptive polling with `CompletionDetector` integration.
 
 **Details:**
+- Delete `performStabilityPoll()` in `sdk-delegation.ts:146-201`
 - Delete `calculateAdaptiveInterval()` in `sdk-delegation.ts`
-- Delete `MIN_IDLE_TIME_MS`, `MIN_STABILITY_TIME_MS`, `STABLE_POLLS_REQUIRED` constants
-- Wire `session.idle`, `session.error`, `session.deleted` events to `CompletionDetector.feed()`
-- Wire message count changes to `CompletionDetector.feedMessageCount()`
-- Use stability timer (not poll count) as the second signal
+- Delete `MIN_IDLE_TIME_MS`, `MIN_STABILITY_TIME_MS`, `STABLE_POLLS_REQUIRED` constants from `sdk-delegation.ts`
+- Wire SDK delegations to use `CompletionDetector` via `lifecycle-manager.ts`:
+  - `session.idle` event → `completionDetector.feed()` → triggers `finalizeSdkDelegation()`
+  - Message count stability → `completionDetector.feedMessageCount()` → triggers stability check
+  - `DEFAULT_STALE_TIMEOUT_MS` → move to `CompletionDetector` constructor parameter
 
 **Acceptance Criterion:**
-- Completion is declared when BOTH signals fire: (1) terminal event received OR session disappears, AND (2) message count stable for `stabilityTimeoutMs`
-- No adaptive polling intervals
-- No `STABLE_POLLS_REQUIRED` counter
-- Behavior matches main repo `completion-detector.ts` tests (port tests too)
+- Single `CompletionDetector` instance handles ALL delegation completion detection
+- SDK delegations finalize via `CompletionDetector` completion callback, not adaptive polling
+- No `STABLE_POLLS_REQUIRED` counter or adaptive interval calculation in `sdk-delegation.ts`
+- `CompletionDetector` tests cover SDK delegation paths
 
 **Priority:** P0 CRITICAL
 
-**Affected Files:** `src/lib/sdk-delegation.ts`, `src/lib/lifecycle-manager.ts`, `src/lib/completion-detector.ts` (port from main repo)
+**Affected Files:** `src/lib/sdk-delegation.ts`, `src/lib/lifecycle-manager.ts`, `src/lib/completion-detector.ts`
 
 ---
 
-### PH36-05: Wire orphaned CompletionDetector in lifecycle-manager.ts
+### PH36-05-REVISED: Wire CompletionDetector completion callback to delegation finalization
 
-**New Requirement:** The `CompletionDetector` instance created at `lifecycle-manager.ts:73` must be fed events.
+**New Requirement:** The `CompletionDetector` instance in `lifecycle-manager.ts` must trigger delegation finalization.
+
+**Current State:** `CompletionDetector` is fed events and cancels sessions, but there is NO completion callback that calls `delegationManager.finalize()` or similar.
 
 **Details:**
-- Event observer must route `session.idle`, `session.error`, `session.deleted` to `completionDetector.feed(eventType)`
-- Message count observer must route `feedMessageCount(currentCount)` on each poll
-- `CompletionDetector` completion callback must trigger delegation finalization
+- Add `onComplete` callback to `CompletionDetector` constructor or via setter
+- Callback receives `{ signal, sessionID, error? }` 
+- Lifecycle manager routes to `delegationManager.onTerminal(delegationId, signal, error)`
+- SDK delegation handler receives terminal signal instead of polling
 
-**Acceptance Criterion:** `lifecycle-manager.ts` uses its own `CompletionDetector` instance instead of delegating all completion logic to `DelegationManager`.
+**Acceptance Criterion:**
+- `CompletionDetector` completion callback is wired to actual delegation finalization
+- `session.idle` → `CompletionDetector.feed()` → callback fires → `finalizeSdkDelegation()` runs
+- No orphaned `CompletionDetector` instance (it IS used but not wired to finalization)
 
 **Priority:** P0 CRITICAL
 
-**Affected Files:** `src/lib/lifecycle-manager.ts`
+**Affected Files:** `src/lib/lifecycle-manager.ts`, `src/lib/completion-detector.ts`
 
 ---
 
-### PH36-06: Normalize status models
+### PH36-06: Normalize status models (UNCHANGED — still valid)
 
 **New Requirement:** The worktree has 4 overlapping status enums. Consolidate to one.
 
@@ -91,45 +121,38 @@ The 2026-04-30 comprehensive audit reveals that **the "dual-signal completion" c
 
 ---
 
-## Amended Context
+## What Was WRONG in Original Audit Routing
 
-**Previous CONTEXT.md:**
-```
-- `src/lib/lifecycle-manager.ts` (~152 LOC stub)
-- `src/lib/delegation-manager.ts` (~656 LOC — needs split)
-```
-
-**Amended:**
-```
-- `src/lib/lifecycle-manager.ts` (~152 LOC stub) — MUST use its CompletionDetector instance
-- `src/lib/delegation-manager.ts` (~656 LOC — needs split) — MUST extract background-observer.ts
-- `src/lib/completion-detector.ts` (port from main repo — 124 LOC, tested)
-- `src/lib/sdk-delegation.ts` (~161 LOC) — MUST delete adaptive polling, use CompletionDetector
-```
+| Original Claim | Reality |
+|---------------|---------|
+| "CompletionDetector abandoned" | EXISTS at `src/lib/completion-detector.ts` (127 LOC) |
+| "lifecycle-manager.ts never uses it" | Instantiated at :73, fed events at :124, exposed at :203 |
+| "Worktree replaced it with untested polling" | Both exist in parallel; CompletionDetector handles events for all sessions, but sdk-delegation.ts has its own polling for SDK delegations only |
+| "Must port from main repo" | Already present in worktree; needs to be wired to sdk-delegation.ts |
 
 ---
 
 ## Module Split Plan (Respecting 500 LOC Limit)
 
-The main repo's `lifecycle-manager.ts` is 706 LOC (exceeds limit). The worktree's is 213 LOC (facade). The merged target should be:
+The worktree's `lifecycle-manager.ts` is 213 LOC (facade). The target should be:
 
-1. **`src/lib/lifecycle-manager.ts`** (~200 LOC) — Orchestrator only. Delegates to sub-modules.
-2. **`src/lib/background-observer.ts`** (~150 LOC NEW) — Event routing + `CompletionDetector` wiring
-3. **`src/lib/recovery-manager.ts`** (~150 LOC NEW) — Session recovery logic extracted from lifecycle-manager
-4. **`src/lib/notification-scheduler.ts`** (~100 LOC NEW) — Parent notification scheduling
-5. **`src/lib/completion-detector.ts`** (~124 LOC) — Port from main repo as-is
+1. **`src/lib/lifecycle-manager.ts`** (~250 LOC) — Orchestrator. Wires `CompletionDetector` to all delegation types.
+2. **`src/lib/sdk-delegation.ts`** (~120 LOC) — Delete `performStabilityPoll()`, use `CompletionDetector` callback only.
+3. **`src/lib/completion-detector.ts`** (~127 LOC) — Add `onComplete` callback mechanism.
 
 ---
 
-## Verification Criteria (Added)
+## Verification Criteria (Corrected)
 
-- [ ] `CompletionDetector` from main repo is present in worktree `src/lib/`
-- [ ] `sdk-delegation.ts` does NOT contain `calculateAdaptiveInterval()` or `MIN_IDLE_TIME_MS`
-- [ ] `lifecycle-manager.ts:73` CompletionDetector instance is wired to events
+- [x] `CompletionDetector` exists in worktree `src/lib/` (127 LOC)
+- [x] `lifecycle-manager.ts:73` instantiates `CompletionDetector`
+- [x] `lifecycle-manager.ts:124` feeds events to `CompletionDetector`
+- [ ] `sdk-delegation.ts` does NOT contain `performStabilityPoll()` or `calculateAdaptiveInterval()`
+- [ ] `CompletionDetector` has `onComplete` callback wired to delegation finalization
+- [ ] Single completion detection path for all delegation types
 - [ ] All modules under 500 LOC
 - [ ] Single canonical status enum (`DelegationStatus`) used in delegation flow
-- [ ] 24+ tests ported from main repo `completion-detector.test.ts`
-- [ ] New integration tests verify event-driven completion (not polling)
+- [ ] Tests verify event-driven completion (not polling) for SDK delegations
 
 ---
 
@@ -137,12 +160,12 @@ The main repo's `lifecycle-manager.ts` is 706 LOC (exceeds limit). The worktree'
 
 | Phase | Impact |
 |-------|--------|
-| Phase 16.3 (Delegation Hardening) | Must use normalized status model |
-| Phase 46 (Delegation Truth) | Completion truth depends on this fix |
-| Phase 48.1 (Runtime Correctness) | Must verify two-signal, not adaptive polling |
-| Phase 37 (Result Harvesting) | Harvesting fires on CompletionDetector completion |
+| Phase 16.3 (Delegation Hardening) | Must use unified completion detection |
+| Phase 46 (Delegation Truth) | Completion truth depends on single mechanism |
+| Phase 48.1 (Runtime Correctness) | Must verify CompletionDetector callback fires for SDK delegations |
+| Phase 37 (Result Harvesting) | Harvesting fires on CompletionDetector `onComplete` |
 
 ---
 
-_Amended: 2026-04-30_
-_Priority: P0 CRITICAL — completion detection is core to all delegation behavior_
+_Corrected: 2026-04-30_
+_Priority: P0 CRITICAL — parallel completion detection causes race conditions and confusion_
