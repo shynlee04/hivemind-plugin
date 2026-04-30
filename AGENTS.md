@@ -166,7 +166,7 @@ HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm packa
 
 ### Runtime features this project delivers
 
-Background agents, auto-loop/ralph-loop, WaiterModel delegation with dual-signal completion, task queuing with queue-key validation, category system, session recovery, PTY integration (lazy-loaded bun-pty with graceful fallback). See `docs/draft/architecture-proposal-hivemind-v3.md` for feature-to-code mapping.
+Background agents, auto-loop/ralph-loop, WaiterModel delegation with dual-signal completion, task queuing with queue-key validation, category system, session recovery, PTY integration (Bun-only via the `bun-pty` **optional dependency** — runtime gracefully falls back to headless `node:child_process` on Node and any other host where `bun-pty` is absent or fails to load; recovery of a PTY delegation across a harness restart deliberately surfaces `terminalKind: "non-resumable-after-restart"` because OS PTY processes do not survive parent restart — see Phase 16.2.1). See `docs/draft/architecture-proposal-hivemind-v3.md` for feature-to-code mapping.
 
 ---
 

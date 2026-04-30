@@ -2676,7 +2676,10 @@ describe("DelegationManager", () => {
       const delegation = manager.getStatus("del-dead-pty")
       expect(delegation).toBeDefined()
       expect(delegation?.status).toBe("error")
-      expect(delegation?.error).toBe("[Harness] PTY session not found on recovery")
+      // Phase 16.2.1 R-PTY-03-AMENDED — recovery is now honest about
+      // non-resumability instead of emitting "session not found".
+      expect(delegation?.error).toContain("non-resumable-after-restart")
+      expect(delegation?.terminalKind).toBe("non-resumable-after-restart")
       expect(delegation?.completedAt).toBeDefined()
     })
 

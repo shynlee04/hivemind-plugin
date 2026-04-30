@@ -28,10 +28,12 @@
   },
   "dependencies": {
     "@opencode-ai/sdk": "^1.14.28",
-    "bun-pty": "^0.4.8",
     "gray-matter": "^4.0.3",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
+  },
+  "optionalDependencies": {
+    "bun-pty": "^0.4.8"
   },
   "peerDependencies": {
     "@opencode-ai/plugin": "^1.14.28"
@@ -45,6 +47,7 @@
     "vitest": "^4.1.5"
   },
   "engines": {
+    "node": ">=20.0.0",
     "opencode": ">=1.14.28"
   }
 }
