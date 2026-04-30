@@ -37,6 +37,10 @@ export function createEmptyDocument(
     semanticSessionId: artifactStem,
     artifactStem,
     mainSessionId: targetSessionId,
+    lineage: [],
+    purposeClass: "unspecified",
+    keyFindings: [],
+    resumable: true,
     startedAt: null,
     updatedAt: event.timestamp,
     status: "active",
@@ -227,6 +231,10 @@ function normalizeDocument(document: SessionJourneyDocument): SessionJourneyDocu
   return {
     ...document,
     mainSessionId: document.mainSessionId ?? document.sessionId,
+    lineage: normalizeStringArray(document.lineage),
+    purposeClass: typeof document.purposeClass === "string" && document.purposeClass.trim().length > 0 ? document.purposeClass : "unspecified",
+    keyFindings: normalizeStringArray(document.keyFindings),
+    resumable: typeof document.resumable === "boolean" ? document.resumable : true,
     actors: Array.isArray(document.actors) ? document.actors : [],
     subSessions: Array.isArray(document.subSessions) ? document.subSessions : [],
     delegations: Array.isArray(document.delegations) ? document.delegations : [],
@@ -234,6 +242,10 @@ function normalizeDocument(document: SessionJourneyDocument): SessionJourneyDocu
     lastMessageOutput: typeof document.lastMessageOutput === "string" ? document.lastMessageOutput : "",
     exportMeta: document.exportMeta ?? null,
   }
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []
 }
 
 function statusFromEvents(events: SessionJourneyEvent[]): SessionJourneyDocument["status"] {

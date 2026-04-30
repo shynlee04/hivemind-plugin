@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 current_plan: release-gap-closure-or-implementation-planning-selection
-status: phases-55-59-complete-planning-contracts
-stopped_at: Phases 55-59 complete as non-release planning contracts; implementation and Phase 52 release blockers remain future work
+status: phase-55-implementation-complete-phases-56-59-planning-contracts
+stopped_at: Phase 55 implementation complete; Phases 56-59 remain planning contracts; Phase 52 release blockers remain future work
 last_updated: "2026-04-30T00:00:00Z"
 progress:
   total_phases: 59
@@ -33,20 +33,20 @@ Previous STATE.md overstated completion. The authoritative reset remains `.plann
 
 | Gate | Status | Details |
 |------|--------|---------|
-| `npm run typecheck` | ✅ PASS | Phase 55-59 verification: `tsc --noEmit` completed successfully |
-| `npm test` | ✅ PASS | Phase 55-59 verification: 69 files, 1113 tests passed |
-| `npm run build` | ✅ PASS | Phase 55-59 verification: clean + `tsc` completed successfully |
+| `npm run typecheck` | ✅ PASS | Phase 55 implementation verification: `tsc --noEmit` completed successfully |
+| `npm test` | ✅ PASS | Phase 55 implementation verification: 73 files, 1120 tests passed |
+| `npm run build` | ✅ PASS | Phase 55 implementation verification: clean + `tsc` completed successfully |
 
 **Phase 35 build gate restored; remaining Phase 35 dead-code/TD items are deferred.**
 
 ## Current Position
 
-Phase: 55-59 complete as non-release planning contracts; Phase 52 remains BLOCKED/PARTIAL input; Phase 53 remains NOT-SHIP
+Phase: 55 implementation complete; 56-59 complete as non-release planning contracts; Phase 52 remains BLOCKED/PARTIAL input; Phase 53 remains NOT-SHIP
 Plan: Select either release gap-closure for E52-03/E52-05 or a new implementation phase for the locked planning contracts; keep SHIP claims blocked until live evidence exists
 Phases 32/33/34 (traceability/16.4-closure/gap-4) — COMPLETE
 Phase 3/4/5/9.3 — SUPERSEDED
-**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1-48.5 are closed with documented runtime caveats; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing; Phase 51 is complete with stack/research grounding mapped to harness workflows. Phase 52 stays narrow: prove end-user E2E acceptance only. Phases 55-59 are complete as planning contracts, not implementation claims.
-**Next:** Choose between release gap-closure for E52-03/E52-05 or implementation planning for the Phase 55-59 contracts.
+**Current plan:** Phase 35 build gate verified; Phases 43-47 remediation implemented and verified; Phases 48.1-48.5 are closed with documented runtime caveats; Phase 49 is complete with partial runtime evidence; Phase 50 is complete with restart validation passing; Phase 51 is complete with stack/research grounding mapped to harness workflows. Phase 52 stays narrow: prove end-user E2E acceptance only. Phase 55 is implemented; Phases 56-59 remain complete as planning contracts, not implementation claims.
+**Next:** Choose between release gap-closure for E52-03/E52-05 or implementation planning for Phase 56-59 contracts.
 **Progress:** Roadmap extended truthfully; avoid exact percentage claims until Phase 52-59 plans exist.
 
 ```
@@ -109,8 +109,8 @@ Phase 51: Stack Research Grounding ... COMPLETE → MOVED to skill-ecosystem (SE
 Phase 52: End-User Workflow Accept ... BLOCKED/PARTIAL (E52-01 pass; E52-02/03/04 partial; E52-05/06 blocked)
 Phase 53: Release Readiness Closure .. NO-SHIP COMPLETE (release blockers preserved; verdict artifact exists)
 Phase 54: Sidecar/Product Runway ..... COMPLETE AS NON-RELEASE RUNWAY (does not change NOT-SHIP)
-Phase 55: Doc Intelligence Engine .... COMPLETE FOR PLANNING CONTRACT (no implementation claim)
-Phase 56: Trajectory & Session v3 .... COMPLETE FOR PLANNING CONTRACT (no Phase 52 closure claim)
+Phase 55: Doc Intelligence Engine .... IMPLEMENTATION COMPLETE (read-only parser/chunker/router/tool verified)
+Phase 56: Trajectory & Session v3 .... IMPLEMENTATION COMPLETE (ledger/session v3/tool verified; no Phase 52 closure claim)
 Phase 57: Runtime Pressure + Control . COMPLETE FOR PLANNING CONTRACT (no runtime enforcement claim)
 Phase 58: Agent Work Contracts ....... COMPLETE FOR PLANNING CONTRACT (no tool implementation claim)
 Phase 59: SDK Supervisor + Commands .. COMPLETE FOR PLANNING CONTRACT (no SDK runtime claim)
@@ -173,8 +173,8 @@ Phase 59: SDK Supervisor + Commands .. COMPLETE FOR PLANNING CONTRACT (no SDK ru
 
 | Phase | Status | Purpose |
 |-------|--------|---------|
-| Phase 55 | COMPLETE FOR PLANNING CONTRACT | Doc intelligence engine migration contract: markdown AST parsing, outline/frontmatter/heading hierarchy, token-aware chunking, doc surface routing, `hivemind_doc` actions |
-| Phase 56 | COMPLETE FOR PLANNING CONTRACT | Trajectory ledger and session v3 migration contract: truth anchoring, checkpoints, recovery logs, semantic IDs, lineage, TOC/findings/resumable flags |
+| Phase 55 | IMPLEMENTATION COMPLETE | Read-only doc intelligence engine: gray-matter frontmatter, heading outline parser, deterministic chunking, root-scoped doc router, `hivemind-doc` tool actions |
+| Phase 56 | IMPLEMENTATION COMPLETE | Trajectory ledger, store operations, session v3 defaults/rendering, Zod schema, and `hivemind-trajectory` tool verified by focused/full automated gates |
 | Phase 57 | COMPLETE FOR PLANNING CONTRACT | Runtime pressure and control-plane contract: 10-tier pressure model, `detect()` gate decisions, tool catalog authority matrix |
 | Phase 58 | COMPLETE FOR PLANNING CONTRACT | Agent work contract: work scope, evidence contracts, compaction preservation, work create/export tools |
 | Phase 59 | COMPLETE FOR PLANNING CONTRACT | SDK supervisor and command engine contract: health/heartbeat/diagnostics, command bundle discovery/routing/contracts, context renderer, messages transform |
@@ -355,7 +355,7 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 - [ ] Plan Phase 53: Release Readiness & Lifecycle Gate Closure
 - [x] Plan Phase 54: Sidecar & Product-Detox Integration Runway — complete as non-release runway
 - [x] Plan Phase 55: Doc Intelligence Engine — complete as planning contract
-- [x] Plan Phase 56: Trajectory & Session v3 — complete as planning contract
+- [x] Plan Phase 56: Trajectory & Session v3 — implementation complete (focused/full tests, typecheck, build pass)
 - [x] Plan Phase 57: Runtime Pressure & Control Plane — complete as planning contract
 - [x] Plan Phase 58: Agent Work Contracts — complete as planning contract
 - [x] Plan Phase 59: SDK Supervisor & Command Engine — complete as planning contract

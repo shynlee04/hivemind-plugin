@@ -57,6 +57,10 @@ export type SessionJourneyDocument = {
   semanticSessionId: string
   artifactStem: string
   mainSessionId: string | null
+  lineage: string[]
+  purposeClass: string
+  keyFindings: string[]
+  resumable: boolean
   startedAt: number | null
   updatedAt: number
   status: "active" | "idle" | "completed"

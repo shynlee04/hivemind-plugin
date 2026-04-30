@@ -74,6 +74,21 @@ export type {
   PipelineState,
 } from "./prompt-enhance.schema.js"
 
+export {
+  DocIntelligenceActionSchema,
+  DocIntelligenceInputSchema,
+} from "./doc-intelligence.schema.js"
+
+export type { DocIntelligenceSchemaInput } from "./doc-intelligence.schema.js"
+
+export {
+  TrajectoryActionSchema,
+  TrajectoryToolInputSchema,
+  parseTrajectoryToolInput,
+} from "./trajectory.schema.js"
+
+export type { TrajectoryToolInput } from "./trajectory.schema.js"
+
 // ---------------------------------------------------------------------------
 // Agent frontmatter schemas
 // ---------------------------------------------------------------------------

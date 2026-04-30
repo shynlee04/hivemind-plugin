@@ -341,8 +341,8 @@ Requirements validated by completed phases. Kept for traceability.
 | PH52-01 through PH52-03 | Phase 52 | Pending |
 | PH53-01 through PH53-03 | Phase 53 | Pending |
 | PH54-01 through PH54-03 | Phase 54 | Complete for non-release runway |
-| DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Complete for planning |
-| TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Complete for planning |
+| DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Implementation complete |
+| TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Implementation complete |
 | PRESSURE-01 through PRESSURE-05 | Phase 57 | Complete for planning |
 | WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Complete for planning |
 | SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Complete for planning |
@@ -532,30 +532,30 @@ Truthful status: **Complete for non-release runway** — Phase 54 created the si
 
 ## Phase 55: Doc Intelligence Engine
 
-Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+Truthful status: **Implementation complete** — bounded read-only doc intelligence is implemented and verified; persistent indexes, richer AST traversal, and future product integrations remain separate future work.
 
 | Requirement | Priority | Status | Description |
 |-------------|----------|--------|-------------|
-| DOC-INTEL-01 | P1 | Complete for planning | Migrate remark-based markdown AST parsing for outline, frontmatter, and heading hierarchy extraction. |
-| DOC-INTEL-02 | P1 | Complete for planning | Define token-aware chunking for large documents with bounded chunk metadata and stable ordering. |
-| DOC-INTEL-03 | P1 | Complete for planning | Define doc surface router behavior for file, directory, chunk, and search operations. |
-| DOC-INTEL-04 | P1 | Complete for planning | Define `hivemind_doc` tool contract with `skim`, `skim_directory`, `read`, `chunk`, and `search` actions. |
-| DOC-INTEL-05 | P1 | Complete for planning | Verify dependency and integration plan for `remark`, `unist-util-visit`, `fast-glob`, and `ignore`. |
+| DOC-INTEL-01 | P1 | Implementation complete | Implement Markdown parsing for frontmatter, outline, and heading hierarchy extraction using existing `gray-matter` plus a minimal heading parser. |
+| DOC-INTEL-02 | P1 | Implementation complete | Implement heading-aware chunking for large documents with bounded chunk metadata, stable ordering, and estimated token counts. |
+| DOC-INTEL-03 | P1 | Implementation complete | Implement doc surface router behavior for file, directory, read, chunk, and search operations with project-root path scoping. |
+| DOC-INTEL-04 | P1 | Implementation complete | Implement `hivemind-doc` tool contract with `skim`, `skim_directory`, `read`, `chunk`, and `search` actions. |
+| DOC-INTEL-05 | P1 | Implementation complete | Verify dependency posture: no new dependencies added; existing `gray-matter` used, dependency churn avoided. |
 
 ---
 
 ## Phase 56: Trajectory & Session v3
 
-Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+Truthful status: **Implementation complete** — trajectory/session v3 implementation verified; Phase 52 runtime closure remains future work.
 
 | Requirement | Priority | Status | Description |
 |-------------|----------|--------|-------------|
-| TRAJECTORY-01 | P1 | Complete for planning | Define trajectory ledger model for truth-anchored events, checkpoints, and recovery logs. |
-| TRAJECTORY-02 | P1 | Complete for planning | Define session v3 schema with semantic IDs, lineage, purpose class, generated TOC, key findings, and resumable flags. |
-| TRAJECTORY-03 | P1 | Complete for planning | Define trajectory store operations for creating, traversing, attaching, checkpointing, eventing, and closing records. |
-| TRAJECTORY-04 | P1 | Complete for planning | Define parent-child session hierarchy tree writer behavior without replacing existing journal or continuity layers. |
-| TRAJECTORY-05 | P1 | Complete for planning | Define `hivemind_trajectory` tool contract with `inspect`, `traverse`, `attach`, `checkpoint`, `event`, and `close` actions. |
-| TRAJECTORY-06 | P1 | Complete for planning | Map trajectory/session v3 to Phase 52 journal lineage and recovery proof gaps without claiming closure. |
+| TRAJECTORY-01 | P1 | Implementation complete | Implement trajectory ledger model for truth-anchored events, checkpoints, and recovery logs. |
+| TRAJECTORY-02 | P1 | Implementation complete | Implement session v3 schema with semantic IDs, lineage, purpose class, generated TOC, key findings, and resumable flags. |
+| TRAJECTORY-03 | P1 | Implementation complete | Implement trajectory store operations for creating, traversing, attaching, checkpointing, eventing, and closing records. |
+| TRAJECTORY-04 | P1 | Implementation complete | Implement parent-child trajectory traversal without replacing existing journal or continuity layers. |
+| TRAJECTORY-05 | P1 | Implementation complete | Implement `hivemind-trajectory` tool contract with `inspect`, `traverse`, `attach`, `checkpoint`, `event`, and `close` actions. |
+| TRAJECTORY-06 | P1 | Implementation complete | Preserve Phase 52 gap boundary: trajectory references can support future evidence without claiming closure. |
 
 ---
 
@@ -627,8 +627,8 @@ Truthful status: **Complete for planning contract** — implementation and runti
 | PH52-01 through PH52-03 | Phase 52 | Pending |
 | PH53-01 through PH53-03 | Phase 53 | Pending |
 | PH54-01 through PH54-03 | Phase 54 | Complete for non-release runway |
-| DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Complete for planning |
-| TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Complete for planning |
+| DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Implementation complete |
+| TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Implementation complete |
 | PRESSURE-01 through PRESSURE-05 | Phase 57 | Complete for planning |
 | WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Complete for planning |
 | SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Complete for planning |

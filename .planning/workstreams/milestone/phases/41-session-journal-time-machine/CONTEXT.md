@@ -1,0 +1,58 @@
+---
+phase: 41-session-journal-time-machine
+priority: P2
+status: pending
+created: 2026-04-30
+depends_on: [25-session-journal-execution-lineage-bridge]
+blocks: []
+gsd_agents: [gsd-executor, gsd-researcher]
+requirements: [JOURNAL-02, JOURNAL-03]
+---
+
+# Phase 41: Session Journal Time Machine
+
+## Goal
+
+Implement query API for the session journal (by-session, by-event-type, by-time-range) and time-machine capabilities (event replay, past-state reconstruction).
+
+## Requirements
+
+| ID | Requirement | Source |
+|----|-------------|--------|
+| JOURNAL-02 | Query API: by-session, by-event-type, by-time-range | Q3 decision |
+| JOURNAL-03 | Time-machine: event replay and past-state reconstruction | Q3 decision |
+
+## Scope
+
+- `src/lib/session-journal.ts` — extend journal with query support
+- New `src/lib/journal-query.ts` — query API module
+- New `src/lib/journal-replay.ts` — time-machine replay module
+- Tests for all
+
+## GSD Routing
+
+| Requirement | GSD Agent | Skill |
+|-------------|-----------|-------|
+| JOURNAL-02 | gsd-executor | hm-test-driven-execution |
+| JOURNAL-03 | gsd-researcher | hm-test-driven-execution |
+
+## Key Files
+
+- `src/lib/session-journal.ts` — append-only event timeline
+- New `src/lib/journal-query.ts` — query API
+- New `src/lib/journal-replay.ts` — event replay and state reconstruction
+
+## Tech Compliance
+
+- TypeScript strict mode, ES2022, NodeNext
+- Max 500 LOC per module
+- No circular dependencies
+- `[Harness]` prefix on all thrown errors
+- Append-only journal (no mutation of past entries)
+
+## Constraints
+
+- RED-first TDD for all changes
+- Atomic scoped commits
+- Full test suite must pass after each change
+- Journal is append-only — never mutate past events

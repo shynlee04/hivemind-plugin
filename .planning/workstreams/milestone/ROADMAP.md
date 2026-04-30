@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway)
+**Updated:** 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway; Phases 60-71 added as product-detox implementation phases; Phase 36/41 status corrected)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -55,14 +55,26 @@
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
 - [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
 - [x] **Phase 51: Stack Research Grounding** — ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14
-- [ ] **Phase 52: End-User Harness Workflow Acceptance** — BLOCKED/PARTIAL: E52-01 pass; E52-02/03/04 partial; E52-05/06 blocked
+- [x] **Phase 52: End-User Harness Workflow Acceptance** — COMPLETE / CONDITIONAL-RUNWAY / NOT-SHIP: E52-01/E52-02/E52-03 PASS; E52-04 PARTIAL; E52-05 PARTIAL/L2-L3; E52-06 FUTURE/NON-RELEASE; L1 recovery proof remains SHIP prerequisite
 - [x] **Phase 53: Release Readiness & Lifecycle Gate Closure** — COMPLETE AS NO-SHIP gate audit; release blocker chain preserved
 - [x] **Phase 54: Sidecar & Product-Detox Integration Runway** — COMPLETE AS NON-RELEASE RUNWAY; does not change Phase 53 NO-SHIP or Phase 52 runtime gaps
-- [x] **Phase 55: Doc Intelligence Engine** — COMPLETE FOR PLANNING CONTRACT: doc parser/chunker/router/tool requirements locked; no implementation claim
-- [x] **Phase 56: Trajectory & Session v3** — COMPLETE FOR PLANNING CONTRACT: trajectory/session v3 requirements locked; no Phase 52 closure claim
+- [x] **Phase 55: Doc Intelligence Engine** — IMPLEMENTATION COMPLETE: read-only doc parser/chunker/router/tool implemented and verified; no persistent indexes or caches
+- [x] **Phase 56: Trajectory & Session v3** — IMPLEMENTATION COMPLETE: trajectory ledger, session v3 metadata, and `hivemind-trajectory` tool implemented; no Phase 52 closure claim
 - [x] **Phase 57: Runtime Pressure & Control Plane** — COMPLETE FOR PLANNING CONTRACT: pressure/control-plane requirements locked; no runtime enforcement claim
 - [x] **Phase 58: Agent Work Contracts** — COMPLETE FOR PLANNING CONTRACT: work/evidence/compaction contract requirements locked; no tool implementation claim
 - [x] **Phase 59: SDK Supervisor & Command Engine** — COMPLETE FOR PLANNING CONTRACT: supervisor/command-engine requirements locked; no SDK runtime claim
+- [ ] **Phase 60: Session Entry Intake** — P0 CRITICAL
+- [ ] **Phase 61: Control Plane + Primitive Registry** — P0 CRITICAL — complete_conditional_runway
+- [x] **Phase 62: Doc Intelligence Engine Implementation** → MERGED into Phase 55
+- [x] **Phase 63: Hivemind Doc Tool Implementation** → MERGED into Phase 55
+- [ ] **Phase 64: Enhanced Event Tracker Implementation** — P1
+- [x] **Phase 65: Trajectory Session v3 Implementation** → MERGED into Phase 56
+- [ ] **Phase 66: Recovery Engine Implementation** — P1
+- [ ] **Phase 67: Runtime Pressure + Control Plane Implementation** — P1
+- [ ] **Phase 68: Agent Work Contracts Implementation** — P1
+- [ ] **Phase 69: SDK Supervisor + Command Engine Implementation** — P2
+- [ ] **Phase 70: Prompt Packet Compiler** — P2
+- [ ] **Phase 71: Runtime Detection Engine** — P1
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
@@ -106,25 +118,25 @@ Plans:
 
 ## Phase 55: Doc Intelligence Engine
 
-**Goal:** Migrate product-detox doc intelligence concepts into a bounded harness planning phase: remark markdown AST parsing, outline/frontmatter/heading hierarchy extraction, token-aware chunking, doc surface routing, and `hivemind_doc` actions.
+**Goal:** Implement product-detox doc intelligence as a bounded read-only harness module: gray-matter frontmatter parsing, minimal Markdown heading hierarchy extraction, heading-aware chunking, doc surface routing, and `hivemind-doc` actions.
 **Requirements:** DOC-INTEL-01 through DOC-INTEL-05
 **Depends on:** Phase 54 sidecar/product-detox integration runway
 **Supports:** future Phase 52 workflow evidence reference planning and Phase 56 trajectory evidence references; does not reopen or close Phase 52 by itself
-**Plans:** 1 plan — executed as planning contract; final artifact `55-CONTRACT-2026-04-30.md`
+**Plans:** 1 plan — implemented and verified; final artifacts `55-SUMMARY-2026-04-30.md` and `55-VERIFICATION-2026-04-30.md`
 
 Plans:
-- [x] 55-01-PLAN-2026-04-30.md — define doc intelligence planning contract
+- [x] 55-01-PLAN-2026-04-30.md — implement read-only doc intelligence parser/chunker/router/tool
 
 ## Phase 56: Trajectory & Session v3
 
-**Goal:** Migrate product-detox trajectory ledger and session v3 schema concepts: truth-anchored events, checkpoints, recovery logs, semantic IDs, lineage, purpose class, TOC, key findings, resumable flags, and `hivemind_trajectory` actions.
+**Goal:** Migrate product-detox trajectory ledger and session v3 schema concepts: truth-anchored events, checkpoints, recovery logs, semantic IDs, lineage, purpose class, TOC, key findings, resumable flags, and `hivemind-trajectory` actions.
 **Requirements:** TRAJECTORY-01 through TRAJECTORY-06
 **Depends on:** Phase 55 doc intelligence engine
 **Feeds:** any reopened Phase 52 journal lineage/recovery proof acceptance or gap-closure work and downstream trajectory-backed evidence planning; does not claim Phase 52 closure
-**Plans:** 1 plan — executed as planning contract; final artifact `56-CONTRACT-2026-04-30.md`
+**Plans:** 1 plan — implemented and verified; final artifacts `56-SUMMARY-2026-04-30.md` and `56-VERIFICATION-2026-04-30.md`
 
 Plans:
-- [x] 56-01-PLAN-2026-04-30.md — define trajectory/session v3 planning contract
+- [x] 56-01-PLAN-2026-04-30.md — implement trajectory ledger/session v3 metadata/tool actions
 
 ## Phase 57: Runtime Pressure & Control Plane
 
@@ -579,7 +591,7 @@ See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section
 | 49. UAT Tool Contract & PTY Command Reliability | 0 plans | Pending — ses_22ee tool contract defects and PTY command usability |
 | 50. OpenCode Primitive Restart Readiness | 1 plan | Complete — validate-restart passes for 58 agents, 18 commands, 49 skills |
 | 51. Stack Research Grounding | 1 plan | ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14 |
-| 52. End-User Harness Workflow Acceptance | 0 plans | Pending — production E2E user workflows |
+| 52. End-User Harness Workflow Acceptance | 6 plans | ✅ COMPLETE / CONDITIONAL-RUNWAY / NOT-SHIP — E52-01/02/03 PASS, E52-05 L2/L3 proof, L1 recovery SHIP prerequisite |
 | 53. Release Readiness & Lifecycle Gate Closure | 6 plans | ✅ NO-SHIP COMPLETE — release blockers preserved |
 | 54. Sidecar & Product-Detox Integration Runway | 1 plan | COMPLETE AS NON-RELEASE RUNWAY — release blockers preserved |
 | 55. Doc Intelligence Engine | 1 plan | COMPLETE FOR PLANNING CONTRACT — no implementation claim |
@@ -639,7 +651,7 @@ Phase 1 (7 done, 3 pending — planned)
                                                                                                                                                                                         └─→ Phase 53: Release Readiness & Lifecycle Gate Closure (NO-SHIP audit complete)
                                                                                                                                                                                              └─→ Phase 54: Sidecar & Product-Detox Integration Runway (complete as non-release runway)
                                                                                                                                                                                                   └─→ Phase 55: Doc Intelligence Engine (research-locked)
-                                                                                                                                                                                                       └─→ Phase 56: Trajectory & Session v3 (research-locked)
+                                                                                                                                                                                                        └─→ Phase 56: Trajectory & Session v3 (implementation-complete)
                                                                                                                                                                                                             └─→ Phase 57: Runtime Pressure & Control Plane (research-locked)
                                                                                                                                                                                                                  ├─→ Phase 58: Agent Work Contracts (research-locked)
                                                                                                                                                                                                                  └─→ Phase 59: SDK Supervisor & Command Engine (research-locked)
@@ -744,7 +756,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Replace stub implementations in lifecycle-manager.ts with real state machine enforcement and activity tracking. Split delegation-manager.ts under 500 LOC.
 **Depends on:** Phase 35
 **Plans:** 3/3 plans complete
-**Status:** COMPLETE — see `.planning/phases/43-hook-composition-observability-integrity/43-SUMMARY-2026-04-27.md`.
+**Status:** PARTIAL — PH36-01 transition guards implemented, PH36-02 activity tracking pending, PH36-03 PTY split done
 
 ### Scope
 - Define `SessionLifecyclePhase` transition table in `types.ts`
@@ -817,7 +829,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Build query API for journal — by session, by event type, by time range; event replay for past-state reconstruction.
 **Depends on:** Phase 25 (already complete)
 **Plans:** 0 plans
-**Status:** DEGRADED — live health/session/tool ID checks pass; REM-RUNTIME-04/05 gaps documented in `.planning/phases/48-real-opencode-runtime-integration-verification/48-VERIFICATION-2026-04-27.md`.
+**Status:** PARTIAL — live health/session/tool ID checks pass; journal query/replay not yet implemented
 **Priority:** P2 (post-v2.0-core)
 
 ### Scope
@@ -1234,3 +1246,88 @@ Plans:
 
 Plans:
 - [x] 54-01-PLAN-2026-04-30.md — derive ordered non-release runway from Q2/Q6 constraints and current maintainability concerns
+
+---
+
+## Product-Detox Implementation Phases (60-71)
+
+These phases implement features extracted from the product-detox codebase analysis. Phases 55-59 were planning contracts; these are the implementation phases.
+
+### Phase 60: Session Entry Intake (P0 CRITICAL)
+- **Depends on:** Phase 57 (planning), Phase 71 (runtime detection)
+- **Blocks:** Phase 61, Phase 70
+- **Status:** Pending
+- **Scope:** 8 purpose classes, multi-language detection, intake gate resolution, profile resolution
+- **Source:** product-detox `src/features/session-entry/`
+- **Key files:** `src/lib/session-entry/`, `src/lib/purpose-classifier.ts`
+
+### Phase 61: Control Plane + Primitive Registry (P0 CRITICAL)
+- **Depends on:** Phase 60
+- **Blocks:** Phase 67
+- **Status:** complete_conditional_runway
+- **Scope:** Gatekeeper running BEFORE user messages, primitive detection, blocking decisions
+- **Key files:** `src/lib/control-plane/`, `src/lib/primitive-registry.ts`
+
+### Phase 62: Doc Intelligence Engine (MERGED INTO PHASE 55)
+- **Status:** REDUNDANT — Phase 55 already implemented `src/lib/doc-intelligence/`
+
+### Phase 63: Hivemind Doc Tool (MERGED INTO PHASE 55)
+- **Status:** REDUNDANT — Phase 55 already implemented `src/tools/hivemind-doc.ts`
+
+### Phase 64: Enhanced Event Tracker Implementation (P1)
+- **Depends on:** Phase 56 (trajectory/session v3 already implemented)
+- **Blocks:** (none)
+- **Status:** Pending
+- **Scope:** 10 new event types, classification pipeline, delegation evidence tracking, dual persistence
+- **Note:** Phase 56 already delivered v3 metadata and rendering. This phase adds ONLY genuinely new capabilities.
+- **Key files:** `src/lib/session-journal.ts`, `src/lib/event-tracker/`
+
+### Phase 65: Trajectory Session v3 (MERGED INTO PHASE 56)
+- **Status:** REDUNDANT — Phase 56 already implemented `src/lib/trajectory/`
+
+### Phase 66: Recovery Engine Implementation (P1)
+- **Depends on:** Phase 56, Phase 38
+- **Blocks:** (none)
+- **Status:** Pending
+- **Scope:** 9 failure classes, recovery state assessment, checkpoint, repair
+- **Source:** product-detox `src/recovery/`
+- **Key files:** `src/lib/recovery/`, `src/lib/recovery-engine.ts`
+
+### Phase 67: Runtime Pressure + Control Plane Implementation (P1)
+- **Depends on:** Phase 61, Phase 57 (planning contract)
+- **Blocks:** Phase 39, Phase 68
+- **Status:** Pending
+- **Scope:** 10-tier pressure model, control-plane detect() gates, tool catalog authority
+- **Planning Contract:** Phase 57-CONTRACT-2026-04-30.md
+- **Key files:** `src/lib/pressure/`, `src/lib/runtime-policy.ts`
+
+### Phase 68: Agent Work Contracts Implementation (P1)
+- **Depends on:** Phase 67, Phase 58 (planning contract)
+- **Blocks:** (none)
+- **Status:** Pending
+- **Scope:** Work contract Zod schema, intent classifier, chain executor, compaction preservation
+- **Planning Contract:** Phase 58-CONTRACT-2026-04-30.md
+- **Key files:** `src/lib/work-contract/`, `src/schema-kernel/`
+
+### Phase 69: SDK Supervisor + Command Engine Implementation (P2)
+- **Depends on:** Phase 67, Phase 59 (planning contract)
+- **Blocks:** (none)
+- **Status:** Pending
+- **Scope:** Health/heartbeat/diagnostics, command bundle discovery/routing, context renderer
+- **Planning Contract:** Phase 59-CONTRACT-2026-04-30.md
+- **Key files:** `src/lib/supervisor/`
+
+### Phase 70: Prompt Packet Compiler (P2)
+- **Depends on:** Phase 60
+- **Blocks:** (none)
+- **Status:** Pending
+- **Scope:** hivemind-kernel-packet (33 fields), hivemind-delegation-packet, compaction-safe context
+- **Key files:** `src/lib/prompt-packet/`
+
+### Phase 71: Runtime Detection Engine (P1)
+- **Depends on:** Phase 38
+- **Blocks:** Phase 60
+- **Status:** Pending
+- **Scope:** Deep codemap/codescan, file watcher for package.json, MCP tools + stack skills synthesis
+- **Source:** Q1 validation decision
+- **Key files:** `src/lib/runtime-detection/`, `src/lib/framework-detector.ts`

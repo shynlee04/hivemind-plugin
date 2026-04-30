@@ -1,0 +1,49 @@
+import { z } from "zod"
+
+/**
+ * Zod schema for supported `hivemind-trajectory` actions.
+ */
+export const TrajectoryActionSchema = z.enum(["inspect", "traverse", "attach", "checkpoint", "event", "close"])
+
+/**
+ * Zod schema for trajectory tool input.
+ */
+export const TrajectoryToolInputSchema = z.object({
+  action: TrajectoryActionSchema,
+  trajectoryId: z.string().min(1).optional(),
+  rootSessionId: z.string().min(1).optional(),
+  sessionId: z.string().min(1).optional(),
+  parentTrajectoryId: z.string().min(1).optional(),
+  checkpointId: z.string().min(1).optional(),
+  eventId: z.string().min(1).optional(),
+  eventType: z.string().min(1).optional(),
+  summary: z.string().min(1).optional(),
+  evidenceRef: z.string().min(1).optional(),
+  evidenceRefs: z.array(z.string().min(1)).optional(),
+})
+
+/**
+ * Inferred `hivemind-trajectory` tool input.
+ */
+export type TrajectoryToolInput = z.infer<typeof TrajectoryToolInputSchema>
+
+/**
+ * Parse and validate action-specific trajectory tool input.
+ *
+ * @param rawInput - Untrusted raw tool arguments.
+ * @returns Validated trajectory tool input.
+ * @throws {z.ZodError | Error} When common or action-specific fields are invalid.
+ */
+export function parseTrajectoryToolInput(rawInput: unknown): TrajectoryToolInput {
+  const parsed = TrajectoryToolInputSchema.parse(rawInput)
+  if (["attach", "checkpoint", "event", "close"].includes(parsed.action) && !parsed.trajectoryId) {
+    throw new Error("trajectoryId is required")
+  }
+  if (parsed.action === "checkpoint" && !parsed.summary) {
+    throw new Error("summary is required for checkpoint")
+  }
+  if (parsed.action === "event" && (!parsed.eventType || !parsed.summary)) {
+    throw new Error("eventType and summary are required for event")
+  }
+  return parsed
+}

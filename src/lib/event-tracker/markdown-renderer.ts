@@ -53,6 +53,12 @@ export function renderJourneyEventMarkdown(event: SessionJourneyEvent): string {
  * ```
  */
 export function renderDocumentMarkdown(document: SessionJourneyDocument): string {
+  const lineage = normalizeStringArray(document.lineage)
+  const keyFindings = normalizeStringArray(document.keyFindings)
+  const purposeClass = typeof document.purposeClass === "string" && document.purposeClass.trim().length > 0
+    ? document.purposeClass
+    : "unspecified"
+  const resumable = typeof document.resumable === "boolean" ? document.resumable : true
   const rows = document.toc.map((entry) => (
     `| ${entry.index} | ${entry.timestamp} | ${escapeCell(entry.actor)} | ${entry.type} | ${escapeCell(entry.summary)} |`
   ))
@@ -62,6 +68,10 @@ export function renderDocumentMarkdown(document: SessionJourneyDocument): string
     `**Session ID:** ${sanitizeMarkdownScalar(document.sessionId)}`,
     `**Artifact Stem:** ${sanitizeMarkdownScalar(document.artifactStem)}`,
     `**Main Session ID:** ${sanitizeMarkdownScalar(document.mainSessionId ?? "")}`,
+    `**Lineage:** ${lineage.length > 0 ? sanitizeMarkdownScalar(lineage.join(" → ")) : "None"}`,
+    `**Purpose Class:** ${sanitizeMarkdownScalar(purposeClass)}`,
+    `**Key Findings:** ${keyFindings.length > 0 ? sanitizeMarkdownScalar(keyFindings.join("; ")) : "None"}`,
+    `**Resumable:** ${resumable}`,
     `**Updated:** ${document.updatedAt}`,
     `**Status:** ${document.status}`,
     `**eventCount:** ${document.counters.eventCount}`,
@@ -88,4 +98,8 @@ export function renderDocumentMarkdown(document: SessionJourneyDocument): string
 
 function escapeCell(value: string): string {
   return sanitizeMarkdownScalar(value).replace(/\|/g, "\\|")
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []
 }

@@ -26,6 +26,8 @@ import { createRunBackgroundCommandTool } from "./tools/run-background-command.j
 import { createConfigurePrimitiveTool } from "./tools/configure-primitive.js"
 import { createValidateRestartTool } from "./tools/validate-restart.js"
 import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
+import { createHivemindDocTool } from "./tools/hivemind-doc.js"
+import { createHivemindTrajectoryTool } from "./tools/hivemind-trajectory.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./lib/workspace-runtime-policy.js"
 import {
@@ -97,6 +99,8 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "prompt-analyze": createPromptAnalyzeTool(projectDirectory),
       "session-patch": createSessionPatchTool(projectDirectory),
       "session-journal-export": createSessionJournalExportTool(),
+      "hivemind-doc": createHivemindDocTool(projectDirectory),
+      "hivemind-trajectory": createHivemindTrajectoryTool(projectDirectory),
       "configure-primitive": createConfigurePrimitiveTool(),
       "validate-restart": createValidateRestartTool(),
     },
