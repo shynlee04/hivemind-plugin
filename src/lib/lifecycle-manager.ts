@@ -87,6 +87,23 @@ export class HarnessLifecycleManager {
     return this.concurrencyLimit
   }
 
+  /**
+   * Returns the lifecycle-owned `CompletionDetector` instance.
+   *
+   * Phase 36.1 wiring: the SDK delegation polling path consumes cached
+   * terminal signals (`session.error` / `session.deleted`) and feeds
+   * message counts back into this detector so message-stability is
+   * mirrored across both state machines. Exposing the instance — rather
+   * than a façade — keeps test ergonomics simple: tests can construct
+   * a real detector, feed it directly, and assert on resulting state
+   * transitions in the SDK handler.
+   *
+   * @returns The lifecycle-owned `CompletionDetector`.
+   */
+  getCompletionDetector(): CompletionDetector {
+    return this.completionDetector
+  }
+
   hydrateFromContinuity(): void {
     for (const record of listSessionContinuity()) {
       if (record.metadata.delegation) {
@@ -115,13 +132,31 @@ export class HarnessLifecycleManager {
 
   handleEvent(args: { event: unknown; eventType: string; sessionID: string }): void {
     const { eventType, sessionID } = args
-    // Minimal event routing: feed completion detector for idle detection
-    const statusSignal = typeof (args.event as Record<string, unknown>)?.properties === "object"
-      ? (((args.event as { properties?: { status?: { type?: string } } }).properties?.status?.type) ?? "")
-      : ""
+    const properties = (args.event as { properties?: { status?: { type?: string }; error?: unknown } } | undefined)?.properties
+    const statusSignal = typeof properties?.status?.type === "string" ? properties.status.type : ""
 
     if (statusSignal === "idle" || eventType === "session.idle") {
       this.completionDetector.feed("session.idle", sessionID)
+    }
+
+    // Phase 36.1 R-COMPLETION-DETECTOR-04: feed every terminal session event
+    // into the detector, not just `session.idle`. Until this wiring landed,
+    // the detector cached only idle signals while error/deleted events were
+    // observed by `delegation-event-observer.ts` and dispatched directly to
+    // the delegation manager — meaning the detector's "did this session
+    // terminate?" answer was incomplete. Now any consumer (including the
+    // SDK polling loop) can drain the cached result and react truthfully.
+    if (statusSignal === "error" || eventType === "session.error") {
+      const errorMessage = typeof properties?.error === "string"
+        ? properties.error
+        : properties?.error instanceof Error
+          ? properties.error.message
+          : undefined
+      this.completionDetector.feed("session.error", sessionID, errorMessage)
+    }
+
+    if (eventType === "session.deleted") {
+      this.completionDetector.feed("session.deleted", sessionID)
     }
   }
 
@@ -198,10 +233,6 @@ export class HarnessLifecycleManager {
     })
 
     return result.delegationId
-  }
-
-  getCompletionDetector(): CompletionDetector {
-    return this.completionDetector
   }
 }
 

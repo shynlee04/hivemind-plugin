@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { CompletionDetector } from "../../src/lib/completion-detector.js"
 import * as sessionApi from "../../src/lib/session-api.js"
 import { SdkDelegationHandler } from "../../src/lib/sdk-delegation.js"
 import {
@@ -33,6 +34,7 @@ type MockCallbacks = {
   scheduleSafetyCeiling: ReturnType<typeof vi.fn>
   onSessionIdle: ReturnType<typeof vi.fn>
   onTerminal: ReturnType<typeof vi.fn>
+  getCompletionDetector?: ReturnType<typeof vi.fn>
 }
 
 // ---------------------------------------------------------------------------
@@ -421,6 +423,109 @@ describe("SdkDelegationHandler", () => {
   // -------------------------------------------------------------------------
   // Timer management
   // -------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // R-COMPLETION-DETECTOR-01..03 (Phase 36.1): re-wire CompletionDetector
+  // into the SDK polling path so terminal events feed terminal state and
+  // message-count stability is double-tracked through the dual-signal
+  // detector instead of being trapped in adaptive polling alone.
+  // -------------------------------------------------------------------------
+
+  describe("R-COMPLETION-DETECTOR-01: cached error signal short-circuits stability polling", () => {
+    it("transitions running SDK delegation to error when CompletionDetector has cached session.error", async () => {
+      const client = createMockClient()
+      const store = new Map<string, Delegation>()
+      const delegation = createRunningDelegation()
+      store.set(delegation.id, delegation)
+      const detector = new CompletionDetector()
+      detector.feed("session.error", delegation.childSessionId, "boom")
+
+      const callbacks = createMockCallbacks(store)
+      callbacks.getCompletionDetector = vi.fn(() => detector)
+      const handler = createHandler(client, callbacks)
+
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
+
+      handler.scheduleStabilityPoll(delegation.id)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        delegation.id,
+        "error",
+        expect.stringContaining("boom"),
+      )
+    })
+
+    it("transitions running SDK delegation to error when CompletionDetector has cached session.deleted", async () => {
+      const client = createMockClient()
+      const store = new Map<string, Delegation>()
+      const delegation = createRunningDelegation()
+      store.set(delegation.id, delegation)
+      const detector = new CompletionDetector()
+      detector.feed("session.deleted", delegation.childSessionId)
+
+      const callbacks = createMockCallbacks(store)
+      callbacks.getCompletionDetector = vi.fn(() => detector)
+      const handler = createHandler(client, callbacks)
+
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
+
+      handler.scheduleStabilityPoll(delegation.id)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        delegation.id,
+        "error",
+        expect.stringContaining("deleted"),
+      )
+    })
+  })
+
+  describe("R-COMPLETION-DETECTOR-02: feeds message count into the detector", () => {
+    it("calls CompletionDetector.feedMessageCount each poll cycle so stability is mirrored to the dual-signal detector", async () => {
+      const client = createMockClient()
+      const store = new Map<string, Delegation>()
+      const delegation = createRunningDelegation()
+      store.set(delegation.id, delegation)
+      const detector = new CompletionDetector()
+      const feedSpy = vi.spyOn(detector, "feedMessageCount")
+
+      const callbacks = createMockCallbacks(store)
+      callbacks.getCompletionDetector = vi.fn(() => detector)
+      const handler = createHandler(client, callbacks)
+
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(7)
+
+      handler.scheduleStabilityPoll(delegation.id)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+
+      expect(feedSpy).toHaveBeenCalledWith(delegation.childSessionId, 7)
+    })
+  })
+
+  describe("R-COMPLETION-DETECTOR-03: backwards-compatible when no detector is provided", () => {
+    it("does not throw and falls back to legacy polling when getCompletionDetector callback is absent", async () => {
+      const client = createMockClient()
+      const store = new Map<string, Delegation>()
+      const delegation = createRunningDelegation()
+      store.set(delegation.id, delegation)
+
+      const callbacks = createMockCallbacks(store)
+      // no getCompletionDetector — exercises the optional-callback path
+      const handler = createHandler(client, callbacks)
+
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
+
+      expect(() => handler.scheduleStabilityPoll(delegation.id)).not.toThrow()
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+
+      expect(callbacks.onTerminal).not.toHaveBeenCalledWith(
+        delegation.id,
+        "error",
+        expect.stringContaining("boom"),
+      )
+    })
+  })
 
   describe("timer management", () => {
     it("isPolling returns true when a timer is active", () => {

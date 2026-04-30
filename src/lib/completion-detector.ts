@@ -71,6 +71,37 @@ export class CompletionDetector {
     })
   }
 
+  /**
+   * Non-destructively peeks at a cached terminal signal without consuming it.
+   *
+   * Used by the SDK polling loop (Phase 36.1 re-wiring) so a poll cycle can
+   * look ahead without losing the cached result if it decides not to act.
+   *
+   * @param sessionID - Child session ID being polled.
+   * @returns The cached `CompletionResult`, or `undefined` if none is cached.
+   */
+  peekCachedResult(sessionID: string): CompletionResult | undefined {
+    return this.cachedResults.get(sessionID)
+  }
+
+  /**
+   * Consumes (reads + clears) a cached terminal signal for the given session.
+   *
+   * Used by the SDK polling loop (Phase 36.1 re-wiring) when a cached signal
+   * has been acted on and should not fire a second time. Idempotent: returns
+   * `undefined` if there is no cached result, or if a previous call already
+   * consumed it.
+   *
+   * @param sessionID - Child session ID being polled.
+   * @returns The previously cached `CompletionResult`, or `undefined`.
+   */
+  consumeCachedResult(sessionID: string): CompletionResult | undefined {
+    const cached = this.cachedResults.get(sessionID)
+    if (!cached) return undefined
+    this.cachedResults.delete(sessionID)
+    return cached
+  }
+
   cancel(sessionID: string): void {
     this.clearStabilityTimer(sessionID)
 

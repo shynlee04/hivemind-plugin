@@ -1,5 +1,11 @@
 name: '🔀 Qwen Code Dispatch'
 
+# NOTE (Phase 16.2.1, 2026-04-30): the `pull_request: types: ['opened']`
+# trigger was removed in this workflow because the only command it ever
+# resolved to was `review`, which depended on the now-deleted
+# qwen-review.yml. Leaving the trigger in place caused every PR to fall
+# through to the fallthrough job and post two unwanted bot comments
+# ("I've received your request" + "unable to process your request").
 on:
   pull_request_review_comment:
     types:
@@ -7,9 +13,6 @@ on:
   pull_request_review:
     types:
       - 'submitted'
-  pull_request:
-    types:
-      - 'opened'
   issues:
     types:
       - 'opened'
@@ -43,14 +46,14 @@ jobs:
           env | grep '^DEBUG_'
 
   dispatch:
-    # For PRs: only if not from a fork
     # For issues: only on open/reopen
-    # For comments: only if user types @gemini-cli and is OWNER/MEMBER/COLLABORATOR
+    # For comments/reviews: only if user types @qwen-code and is OWNER/MEMBER/COLLABORATOR
+    # NOTE (Phase 16.2.1, 2026-04-30): the `pull_request` clause was removed
+    # alongside the corresponding `on: pull_request` trigger above, since the
+    # only sub-workflow that consumed PR-open events (qwen-review.yml) has
+    # been deleted.
     if: |-
       (
-        github.event_name == 'pull_request' &&
-        github.event.pull_request.head.repo.fork == false
-      ) || (
         github.event_name == 'issues' &&
         contains(fromJSON('["opened", "reopened"]'), github.event.action)
       ) || (
@@ -93,16 +96,23 @@ jobs:
             const request = process.env.REQUEST;
             core.setOutput('request', request);
 
-            if (eventType === 'pull_request.opened') {
-              core.setOutput('command', 'review');
-            } else if (['issues.opened', 'issues.reopened'].includes(eventType)) {
+            // The 'review' command was retired in Phase 16.2.1 (2026-04-30)
+            // because the qwen-review.yml workflow it called depended on a
+            // missing OPENAI_API_KEY secret and produced a spurious failing
+            // CI check on every PR. PR-open events now fall through silently
+            // and @qwen-code /review comments are routed to fallthrough so
+            // the user gets a clear acknowledgement instead of a broken job.
+            if (['issues.opened', 'issues.reopened'].includes(eventType)) {
               core.setOutput('command', 'triage');
-            } else if (request.startsWith("@qwen-code /review")) {
-              core.setOutput('command', 'review');
-              const additionalContext = request.replace(/^@qwen-code \/review/, '').trim();
-              core.setOutput('additional_context', additionalContext);
             } else if (request.startsWith("@qwen-code /triage")) {
               core.setOutput('command', 'triage');
+            } else if (request.startsWith("@qwen-code /review")) {
+              // Explicit retirement route: matches the comment above. Without
+              // this branch, '/review' fell into the generic '@qwen-code'
+              // matcher and silently triggered a full Qwen invoke run with
+              // additional_context='/review' — the opposite of what the
+              // retirement was supposed to do.
+              core.setOutput('command', 'fallthrough');
             } else if (request.startsWith("@qwen-code")) {
               const additionalContext = request.replace(/^@qwen-code/, '').trim();
               core.setOutput('command', 'invoke');
@@ -123,19 +133,13 @@ jobs:
             --body "${MESSAGE}" \
             --repo "${REPOSITORY}"
 
-  review:
-    needs: 'dispatch'
-    if: |-
-      ${{ needs.dispatch.outputs.command == 'review' }}
-    uses: './.github/workflows/qwen-review.yml'
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
-    with:
-      additional_context: '${{ needs.dispatch.outputs.additional_context }}'
-    secrets: 'inherit'
+  # NOTE: The `review` sub-workflow that lived here was removed in
+  # Phase 16.2.1 (2026-04-30). It called `.github/workflows/qwen-review.yml`,
+  # which depended on an `OPENAI_API_KEY` secret that is not configured for
+  # this repository. Every PR therefore produced a `review / review` CI
+  # check that failed with `jq: error ... Cannot iterate over null`. The
+  # workflow file and this dispatch entry have been deleted to stop the
+  # spurious failing check from blocking real review.
 
   triage:
     needs: 'dispatch'
@@ -168,7 +172,6 @@ jobs:
   fallthrough:
     needs:
       - 'dispatch'
-      - 'review'
       - 'triage'
       - 'invoke'
     if: |-

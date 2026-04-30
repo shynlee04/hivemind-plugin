@@ -122,11 +122,28 @@ export class CommandDelegationHandler {
     )
   }
 
-  /** Recover a PTY delegation that was running before restart. */
+  /**
+   * Recover a PTY delegation that was running before restart.
+   *
+   * PTY OS processes cannot survive a harness restart — the underlying
+   * `bun-pty` process tree dies with the parent. When recovery cannot
+   * find the prior session (because the runtime has no PTY manager, or
+   * the manager has no record of this `ptySessionId`), surface a truthful
+   * `terminalKind: "non-resumable-after-restart"` rather than the
+   * historical "session not found" string. Observers can then distinguish
+   * "we crashed" from "this kind of process is just not resumable".
+   *
+   * @see Phase 16.2.1 — R-PTY-03-AMENDED
+   */
   recoverPtyDelegation(delegation: Delegation): void {
     const session = this.resolvePtyManager()?.getSession(delegation.ptySessionId ?? "")
     if (!session) {
-      this.callbacks.onTerminal(delegation.id, "error", "[Harness] PTY session not found on recovery")
+      this.callbacks.onTerminal(
+        delegation.id,
+        "error",
+        "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+        { terminalKind: "non-resumable-after-restart" },
+      )
       return
     }
 

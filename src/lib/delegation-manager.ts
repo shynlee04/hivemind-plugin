@@ -1,8 +1,9 @@
+import { CommandDelegationHandler } from "./command-delegation.js"
 import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
+import type { CompletionDetector } from "./completion-detector.js"
 import { persistDelegations, readPersistedDelegations } from "./delegation-persistence.js"
 import { notifyDelegationTerminal } from "./notification-handler.js"
 import type { PtyManager } from "./pty/pty-manager.js"
-import { CommandDelegationHandler } from "./command-delegation.js"
 import { SdkDelegationHandler } from "./sdk-delegation.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
 import { recordCategoryGateDeny } from "./category-gate-audit.js"
@@ -104,6 +105,7 @@ export class DelegationManager {
   private readonly commandHandler: CommandDelegationHandler
   private readonly sdkHandler: SdkDelegationHandler
   private readonly runtimePolicy: RuntimePolicy
+  private completionDetector: CompletionDetector | undefined
 
   constructor(
     private readonly client: OpenCodeClient,
@@ -126,7 +128,28 @@ export class DelegationManager {
       scheduleSafetyCeiling: (d) => dm.scheduleSafetyCeiling(d),
       onSessionIdle: (sid) => dm.handleSessionIdle(sid),
       onTerminal: (id, state, err) => dm.transitionToTerminal(id, state, err),
+      // Phase 36.1 R-COMPLETION-DETECTOR-05: lazy accessor avoids the
+      // circular construction order in plugin.ts (lifecycle manager is
+      // built *after* DelegationManager and *takes* DelegationManager as
+      // an arg). The plugin sets the detector via setCompletionDetector()
+      // once the lifecycle manager exists.
+      getCompletionDetector: () => dm.completionDetector,
     })
+  }
+
+  /**
+   * Wires the lifecycle-owned `CompletionDetector` after construction.
+   *
+   * Phase 36.1: invoked from the plugin composition root once the
+   * lifecycle manager has been instantiated, completing the dual-signal
+   * completion path. Idempotent — later calls overwrite the previous
+   * reference, which is safe because the detector is treated as a
+   * lifelong singleton owned by the lifecycle manager.
+   *
+   * @param detector - The lifecycle-owned detector instance.
+   */
+  setCompletionDetector(detector: CompletionDetector): void {
+    this.completionDetector = detector
   }
 
   private resolveNestingDepth(parentSessionId: string): number {

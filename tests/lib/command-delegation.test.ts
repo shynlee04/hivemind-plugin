@@ -535,4 +535,86 @@ describe("CommandDelegationHandler", () => {
       expect(callbacks.onTerminal).not.toHaveBeenCalled()
     })
   })
+
+  // -------------------------------------------------------------------------
+  // R-PTY-RECOVERY: PTY recovery is honest about non-resumability
+  //
+  // Audit 2026-04-30 (delegation-async-pty-lifecycle-audit) §F1: the previous
+  // path emitted `terminalKind: "error"` with message
+  // "PTY session not found on recovery", which is misleading — PTY OS
+  // processes cannot survive a harness restart at all. The amended
+  // requirement R-PTY-03-AMENDED in Phase 16.2.1 says recovery must
+  // surface `terminalKind: "non-resumable-after-restart"` so observers
+  // can distinguish "we crashed" from "this kind of process is just not
+  // resumable, full stop".
+  // -------------------------------------------------------------------------
+
+  describe("R-PTY-RECOVERY: truthful non-resumable terminal state on missing PTY session", () => {
+    it("emits terminalKind=non-resumable-after-restart when the PTY session is absent on recovery", () => {
+      const pty = createMockPtyManager()
+      pty.getSession.mockReturnValue(undefined)
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(pty, callbacks)
+
+      const delegation: Delegation = {
+        id: "deleg-recover-1",
+        parentSessionId: "ses-parent-recover",
+        childSessionId: "pty:pty-session-gone",
+        agent: "command-runner",
+        status: "running",
+        createdAt: Date.now(),
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        nestingDepth: 1,
+        executionMode: "pty",
+        workingDirectory: "/tmp",
+        ptySessionId: "pty-session-gone",
+        queueKey: "category:command",
+      }
+
+      handler.recoverPtyDelegation(delegation)
+
+      expect(callbacks.onTerminal).toHaveBeenCalledTimes(1)
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        "deleg-recover-1",
+        "error",
+        expect.stringContaining("non-resumable-after-restart"),
+        expect.objectContaining({
+          terminalKind: "non-resumable-after-restart",
+        }),
+      )
+    })
+
+    it("emits terminalKind=non-resumable-after-restart when no ptyManager is configured", () => {
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(null, callbacks)
+
+      const delegation: Delegation = {
+        id: "deleg-recover-2",
+        parentSessionId: "ses-parent-recover-no-pty",
+        childSessionId: "pty:pty-session-vanished",
+        agent: "command-runner",
+        status: "running",
+        createdAt: Date.now(),
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        nestingDepth: 1,
+        executionMode: "pty",
+        workingDirectory: "/tmp",
+        ptySessionId: "pty-session-vanished",
+        queueKey: "category:command",
+      }
+
+      handler.recoverPtyDelegation(delegation)
+
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        "deleg-recover-2",
+        "error",
+        expect.stringContaining("non-resumable-after-restart"),
+        expect.objectContaining({
+          terminalKind: "non-resumable-after-restart",
+        }),
+      )
+    })
+  })
 })
