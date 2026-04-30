@@ -1,17 +1,47 @@
 # Audit Remediation Routing: delegation-async-pty-lifecycle-audit-2026-04-30
 
-**Audit Source:** `.planning/audits/delegation-async-pty-lifecycle-audit-2026-04-30.md` (main repo)
+**Audit Source:** `.planning/audits/delegation-async-pty-lifecycle-audit-2026-04-30.md` (referenced in original routing; physical file not present in this branch)
 **Routing Date:** 2026-04-30
 **Auditor:** hm-l1-coordinator
+**Last Revised:** 2026-04-30 (post-validation by Devin)
 **Target:** GSD workstream phases amendment + gap filling + remediation
+**Validation Document:** `AUDIT-VALIDATION-2026-04-30.md`
+**Tracking Document:** `AUDIT-REMEDIATION-TRACKING-2026-04-30.md` (reflects post-validation execution order)
 
 ---
+
+## ⚠ POST-VALIDATION OVERRIDE — read this banner first
+
+A line-by-line validation against `feature/harness-implementation` HEAD (2026-04-30) found **5 of 8 audit findings to be incorrect**. The original "Critical Finding → Phase Routing Matrix" below is preserved verbatim for historical context, but the **authoritative routing matrix is the table immediately following this banner**, and the **authoritative status overrides** live in `AUDIT-REMEDIATION-TRACKING-2026-04-30.md §3`.
+
+### Authoritative Post-Validation Routing Matrix
+
+| # | Audit Finding | Validation Verdict | Severity (post-validation) | Primary Phase (new/amended) | Action |
+|---|--------------|--------------------|----------------------------|----------------------------|--------|
+| 1 | `bun-pty` crashes at module resolution | **VALIDATED w/ caveat** (try/catch swallows error at runtime; install + dead actions remain real) | P0 | **16.2.1** (new) — amends 16.2 | Move `bun-pty` to `optionalDependencies` or remove entirely; drop `output`/`input`/`terminate` actions |
+| 2 | Adaptive polling instead of dual-signal | **VALIDATED** | P0 | **36.1** (new) — amends 36 | Make `CompletionDetector` the single completion authority; delete `STABLE_POLLS_REQUIRED`, `MIN_*_MS`, `calculateAdaptiveInterval` |
+| 3 | Async gated by policy flag | **VALIDATED** | P1 (default `true` mitigates) | **46.1** (new) — amends 46 | Remove the `builtinAsyncBackgroundChildSessions` dispatch gate; throw on missing async runtime |
+| 4 | Zero tests in worktree | **REFUTED** (84 test files, 1,414 specs, 6,417 LOC delegation tests) | P2 (re-scoped) | **48.4.1** (new, replaces 48.4 amendment) | Verify Node 20 green-bar; publish per-module coverage ≥80% |
+| 5 | No state files on disk | **REFUTED** (`session-continuity.json` + `delegations.json` exist with real data) | P3 (narrowed) | **38.1** (new, narrows 38) | Resolve `brain.json` (populate or delete); add fresh-install regression test |
+| 6 | Phantom phase references | **CONTEXTUAL** (phases live under `workstreams/milestone/phases/`, audit examined legacy root) | P2 (re-scoped) | **32.1** (new, re-scopes 32) | Document workstream-rooted phase layout; update health check |
+| 7 | Two divergent codebases | **VALIDATED but inverted** (harness branch IS the canonical product; master is legacy) | P2 | **16.4.1** (new) — amends 16.4 | Record branch-strategy ADR; enact canonical branch |
+| 8 | Native `task` disabled | **VALIDATED** | P3 | Folded into **46.1** (REM-HIGH-06) | Document failure mode in AGENTS.md or wire opt-in fallback |
+
+See `AUDIT-VALIDATION-2026-04-30.md` for per-finding evidence (file:line references and disk state).
+
+---
+
+## Original (Pre-Validation) Routing — kept for historical context
+
+> The matrix and per-phase sections below are the **original** audit routing as authored 2026-04-30. They are NOT the authoritative remediation plan. Use the post-validation matrix above.
 
 ## Executive Summary
 
 The comprehensive audit reveals **8 critical findings** requiring cross-phase remediation. This document routes each finding to the responsible phase, amends phase requirements where the audit exposes false claims or missing work, and creates new gap-closure work items.
 
 **Audit verdict:** Main repo is clean but basic (247 tests). Worktree is ambitious, broken, and untested. Two divergent codebases exist. Planning metadata contains phantom references and inflated completion claims.
+
+> **Validation note (2026-04-30):** Three of these summary claims are inaccurate. Worktree has 1,414 specs, not zero. The two-codebase framing is intentional (canonical v3 vs legacy v2.x). "Phantom phases" are a path-resolution mismatch, not missing artifacts. See `AUDIT-VALIDATION-2026-04-30.md`.
 
 ---
 

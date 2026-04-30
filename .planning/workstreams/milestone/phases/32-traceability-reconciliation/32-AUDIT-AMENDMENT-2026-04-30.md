@@ -13,6 +13,22 @@ author: hm-l1-coordinator
 
 ---
 
+## ⚠ POST-VALIDATION OVERRIDE (2026-04-30)
+
+This amendment's framing — *"phantom phase references that don't exist in `.planning/phases/`"* — is **CONTEXTUAL**, not a true gap. Validation pass documented in `../../AUDIT-VALIDATION-2026-04-30.md`:
+
+- The branch HAS `.planning/workstreams/milestone/phases/` with **70 phase directories** including 02, 09, 14, 16.x, 32, 36, 38, 46, 48.x, 52, 53 — i.e. all the "phantom" ones.
+- The audit was searching `.planning/phases/` (legacy root). The project deliberately partitions planning by workstream — `workstreams/{milestone, skill-ecosystem, agent-synthesis}/phases/` — per the SE-ROADMAP D-01 decision that anchors `.hivemind/` as canonical state root.
+- Phase 02 has 27 .md files including 9/9 PLANs, 9/9 SUMMARIes, plus VERIFICATION/VALIDATION/REVIEW/UAT/CONTEXT — the "0/8 complete, 1 doc" claim is false.
+
+**Effective status:** RETURNED to **COMPLETE — pending path-layout doc**.
+
+**Replacement work item:** Phase **32.1** (`../../phases/32.1-workstream-path-layout-doc/`) closes the documentation gap so future audits don't make the same mistake. **No phase deletions are required.**
+
+The original amendment text is retained below for historical/audit-trail purposes only.
+
+---
+
 ## Audit Override
 
 The 2026-04-30 comprehensive audit reveals that **phantom phase references persist in planning metadata**:

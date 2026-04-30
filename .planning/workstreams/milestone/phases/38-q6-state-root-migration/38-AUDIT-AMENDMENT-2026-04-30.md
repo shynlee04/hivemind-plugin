@@ -13,6 +13,22 @@ author: hm-l1-coordinator
 
 ---
 
+## ⚠ POST-VALIDATION OVERRIDE (2026-04-30)
+
+This amendment's central claim — *"no runtime state files exist on disk"* — is **REFUTED** by the validation pass documented in `../../AUDIT-VALIDATION-2026-04-30.md`. Evidence on disk at the head of `feature/harness-implementation`:
+
+- `.hivemind/state/session-continuity.json` — **EXISTS**, valid JSON, contains real recovered session data (`ses-parent-session` with `pendingNotifications`, `recoveryGuarantee`, `terminalState`, `delegationId`).
+- `.hivemind/state/delegations.json` — **EXISTS**, valid JSON array with real delegation records including `gracePeriodExpiresAt`, `executionMode: "sdk"`, `queueKey`, `nestingDepth`, and the worktree path itself (`/Users/apple/hivemind-plugin/.worktrees/harness-experiment`) recorded as `workingDirectory`.
+- `.hivemind/state/` also contains `progress.md`, `task_plan.md`, `config-workflows.json`, `.patches/`, planning subfolders.
+
+**Effective status:** DOWNGRADED from BLOCKED → **PARTIAL**.
+
+**Replacement work item:** Phase **38.1** (`../../phases/38.1-state-persistence-final-sweep/`) closes the narrow residual gap — `brain.json` populate-vs-delete (HIVEMIND-ROOT-08) plus a fresh-install regression test. HIVEMIND-ROOT-04, -05, -06, -07 from the amendment below describe behaviors that are already implemented; verify but do NOT re-implement.
+
+The original amendment text is retained below for historical/audit-trail purposes only.
+
+---
+
 ## Audit Override
 
 The 2026-04-30 comprehensive audit reveals that **no runtime state files exist on disk**:
