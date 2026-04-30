@@ -61,6 +61,16 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   })
   lifecycleManager.hydrateFromContinuity()
 
+  // Phase 36.1 R-COMPLETION-DETECTOR-05: complete the dual-signal completion
+  // wiring. The lifecycle manager *owns* the CompletionDetector (it receives
+  // session.idle/error/deleted events from handleEvent), and the SDK
+  // delegation polling loop *consumes* cached terminal signals + feeds
+  // message counts back in. This setter call closes the dependency loop
+  // without forcing the constructor order to change (DelegationManager must
+  // exist before the lifecycle manager because the latter takes the former
+  // as an arg).
+  delegationManager.setCompletionDetector(lifecycleManager.getCompletionDetector())
+
   const deps = { client, lifecycleManager, stateManager: taskState }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks

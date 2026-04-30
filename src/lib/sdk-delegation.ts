@@ -1,5 +1,6 @@
 import type { OpencodeClient as OpenCodeClient } from "@opencode-ai/sdk"
 
+import type { CompletionDetector } from "./completion-detector.js"
 import { extractAllAssistantText } from "./helpers.js"
 import { getSessionMessageCount, getSessionMessages, getSessionStatusMap } from "./session-api.js"
 import {
@@ -27,6 +28,16 @@ type SdkDelegationCallbacks = {
   scheduleSafetyCeiling: (delegation: Delegation) => void
   onSessionIdle: (sessionId: string) => void
   onTerminal: (delegationId: string, newState: "completed" | "error" | "timeout", error?: string) => void
+  /**
+   * Optional accessor for the lifecycle-manager-owned `CompletionDetector`.
+   * When provided, the SDK polling loop (Phase 36.1 re-wiring) feeds message
+   * counts into the detector and consumes any cached terminal signals from
+   * `session.error` / `session.deleted` events that arrived through the
+   * lifecycle event handler. When absent, the handler falls back to legacy
+   * adaptive polling alone — keeping unit tests and callers that don't wire
+   * a detector backwards-compatible.
+   */
+  getCompletionDetector?: () => CompletionDetector | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -149,12 +160,39 @@ export class SdkDelegationHandler {
       return
     }
 
+    // Phase 36.1 R-COMPLETION-DETECTOR-01: short-circuit on cached terminal
+    // signals (session.error / session.deleted) that arrived through the
+    // lifecycle event handler. The detector caches non-idle terminal signals
+    // until something consumes them; by reading it before issuing the next
+    // adaptive poll, we collapse the dual-signal contract into a single
+    // execution path instead of two parallel state machines.
+    const detector = this.callbacks.getCompletionDetector?.()
+    if (detector) {
+      const cached = detector.consumeCachedResult(delegation.childSessionId)
+      if (cached && cached.signal !== "idle") {
+        const reason = cached.error
+          ? `[Harness] Session ${cached.signal} during delegation: ${cached.error}`
+          : `[Harness] Session ${cached.signal} during delegation`
+        this.callbacks.onTerminal(delegationId, "error", reason)
+        return
+      }
+    }
+
     const currentMessageCount = await getSessionMessageCount(this.client, delegation.childSessionId)
     if (currentMessageCount === null) {
       if (!this.stabilityTimers.has(delegationId)) {
         this.scheduleStabilityPoll(delegationId)
       }
       return
+    }
+
+    // Phase 36.1 R-COMPLETION-DETECTOR-02: feed every successful poll into
+    // the dual-signal detector so its message-stability timer mirrors the
+    // adaptive polling loop. This makes the detector the single source of
+    // truth for "is this session idle?" — either signal can finalize, and
+    // the detector's `watch()` API is now backed by real input data.
+    if (detector) {
+      detector.feedMessageCount(delegation.childSessionId, currentMessageCount)
     }
 
     const now = Date.now()
