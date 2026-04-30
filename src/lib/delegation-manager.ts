@@ -7,7 +7,7 @@ import { SdkDelegationHandler } from "./sdk-delegation.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
 import { recordCategoryGateDeny } from "./category-gate-audit.js"
 import { getAppAgents } from "./app-api.js"
-import { abortSession, sendPrompt, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
+import { abortSession, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "./runtime-policy.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
@@ -205,11 +205,18 @@ export class DelegationManager {
           agent: agent.name,
           tools: buildDelegationPromptTools(child.allowedTools),
         }
-        if (this.runtimePolicy.trustedRuntime.builtinAsyncBackgroundChildSessions) {
-          await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
-        } else {
-          await sendPrompt(this.client, delegation.childSessionId, promptBody)
-        }
+        // Phase 46.1 R-ALWAYS-ASYNC-01..03 (audit 2026-04-30, Finding 3
+        // VALIDATED): always dispatch the child via sendPromptAsync. The
+        // previous code branched on
+        //   this.runtimePolicy.trustedRuntime.builtinAsyncBackgroundChildSessions
+        // and silently downgraded to the synchronous sendPrompt path when
+        // the flag was false — including the *default* policy case. That
+        // turned every "background" delegation into a foreground call that
+        // blocked the parent until the child responded, which is the
+        // opposite of what `run_in_background: true` is supposed to mean.
+        // The legacy flag is kept on RuntimePolicy for backwards-compat
+        // with on-disk policy YAML, but is no longer consulted here.
+        await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
         this.transitionDelegationStatus(delegation.id, "running")
       } catch {
         this.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")

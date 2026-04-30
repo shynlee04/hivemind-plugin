@@ -190,8 +190,11 @@ export type BudgetPolicy = {
 
 export type TrustedRuntimePolicy = {
   /**
-   * Whether the host runtime is explicitly trusted to keep builtin async child
-   * sessions alive beyond the immediate parent call lifecycle.
+   * @deprecated Phase 46.1 (audit 2026-04-30, Finding 3): the harness now
+   * always uses async dispatch for SDK-mode delegations. This flag is kept
+   * on the policy schema only for backwards-compat with on-disk YAML and is
+   * no longer consulted by the dispatch path. Removing it from a policy
+   * file is safe; setting it to `false` no longer downgrades to sync.
    */
   builtinAsyncBackgroundChildSessions: boolean
 }
