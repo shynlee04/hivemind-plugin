@@ -1,5 +1,11 @@
 name: '🔀 Qwen Code Dispatch'
 
+# NOTE (Phase 16.2.1, 2026-04-30): the `pull_request: types: ['opened']`
+# trigger was removed in this workflow because the only command it ever
+# resolved to was `review`, which depended on the now-deleted
+# qwen-review.yml. Leaving the trigger in place caused every PR to fall
+# through to the fallthrough job and post two unwanted bot comments
+# ("I've received your request" + "unable to process your request").
 on:
   pull_request_review_comment:
     types:
@@ -7,9 +13,6 @@ on:
   pull_request_review:
     types:
       - 'submitted'
-  pull_request:
-    types:
-      - 'opened'
   issues:
     types:
       - 'opened'
@@ -43,14 +46,14 @@ jobs:
           env | grep '^DEBUG_'
 
   dispatch:
-    # For PRs: only if not from a fork
     # For issues: only on open/reopen
-    # For comments: only if user types @gemini-cli and is OWNER/MEMBER/COLLABORATOR
+    # For comments/reviews: only if user types @qwen-code and is OWNER/MEMBER/COLLABORATOR
+    # NOTE (Phase 16.2.1, 2026-04-30): the `pull_request` clause was removed
+    # alongside the corresponding `on: pull_request` trigger above, since the
+    # only sub-workflow that consumed PR-open events (qwen-review.yml) has
+    # been deleted.
     if: |-
       (
-        github.event_name == 'pull_request' &&
-        github.event.pull_request.head.repo.fork == false
-      ) || (
         github.event_name == 'issues' &&
         contains(fromJSON('["opened", "reopened"]'), github.event.action)
       ) || (
