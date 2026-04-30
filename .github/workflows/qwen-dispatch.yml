@@ -106,6 +106,13 @@ jobs:
               core.setOutput('command', 'triage');
             } else if (request.startsWith("@qwen-code /triage")) {
               core.setOutput('command', 'triage');
+            } else if (request.startsWith("@qwen-code /review")) {
+              // Explicit retirement route: matches the comment above. Without
+              // this branch, '/review' fell into the generic '@qwen-code'
+              // matcher and silently triggered a full Qwen invoke run with
+              // additional_context='/review' — the opposite of what the
+              // retirement was supposed to do.
+              core.setOutput('command', 'fallthrough');
             } else if (request.startsWith("@qwen-code")) {
               const additionalContext = request.replace(/^@qwen-code/, '').trim();
               core.setOutput('command', 'invoke');
