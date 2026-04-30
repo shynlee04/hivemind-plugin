@@ -1,7 +1,8 @@
 # Phase 15: Security & Quality Remediation - Context
 
 **Gathered:** 2026-04-17
-**Status:** Ready for planning
+**Status:** archived
+**Archived reason:** Workstream boundary violation — META-only phase, reclassified to SE-H0
 
 <domain>
 ## Phase Boundary

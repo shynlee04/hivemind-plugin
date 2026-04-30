@@ -28,6 +28,8 @@ import { createValidateRestartTool } from "./tools/validate-restart.js"
 import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
 import { createHivemindDocTool } from "./tools/hivemind-doc.js"
 import { createHivemindTrajectoryTool } from "./tools/hivemind-trajectory.js"
+import { createHivemindPressureTool } from "./tools/hivemind-pressure.js"
+import { createHivemindAgentWorkCreateTool, createHivemindAgentWorkExportTool } from "./tools/hivemind-agent-work.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./lib/workspace-runtime-policy.js"
 import {
@@ -101,6 +103,9 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "session-journal-export": createSessionJournalExportTool(),
       "hivemind-doc": createHivemindDocTool(projectDirectory),
       "hivemind-trajectory": createHivemindTrajectoryTool(projectDirectory),
+      "hivemind-pressure": createHivemindPressureTool(projectDirectory),
+      "hivemind-agent-work-create": createHivemindAgentWorkCreateTool(projectDirectory),
+      "hivemind-agent-work-export": createHivemindAgentWorkExportTool(projectDirectory),
       "configure-primitive": createConfigurePrimitiveTool(),
       "validate-restart": createValidateRestartTool(),
     },

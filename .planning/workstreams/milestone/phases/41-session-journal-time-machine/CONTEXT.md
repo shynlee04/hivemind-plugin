@@ -6,7 +6,7 @@ created: 2026-04-30
 depends_on: [25-session-journal-execution-lineage-bridge]
 blocks: []
 gsd_agents: [gsd-executor, gsd-researcher]
-requirements: [JOURNAL-02, JOURNAL-03]
+requirements: [JOURNAL-01, JOURNAL-02, JOURNAL-03]
 ---
 
 # Phase 41: Session Journal Time Machine
@@ -19,11 +19,13 @@ Implement query API for the session journal (by-session, by-event-type, by-time-
 
 | ID | Requirement | Source |
 |----|-------------|--------|
+| JOURNAL-01 | Session Journal is append-only event timeline, independent of continuity.ts | Q3 architecture decision |
 | JOURNAL-02 | Query API: by-session, by-event-type, by-time-range | Q3 decision |
 | JOURNAL-03 | Time-machine: event replay and past-state reconstruction | Q3 decision |
 
 ## Scope
 
+- Verify append-only semantics and independence from continuity.ts (JOURNAL-01)
 - `src/lib/session-journal.ts` — extend journal with query support
 - New `src/lib/journal-query.ts` — query API module
 - New `src/lib/journal-replay.ts` — time-machine replay module

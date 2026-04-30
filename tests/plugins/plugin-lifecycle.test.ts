@@ -67,6 +67,9 @@ describe("plugin lifecycle wiring", () => {
 
     expect(plugin.tool["delegate-task"]).toBeDefined()
     expect(plugin.tool["delegation-status"]).toBeDefined()
+    expect(plugin.tool["hivemind-pressure"]).toBeDefined()
+    expect(plugin.tool["hivemind-agent-work-create"]).toBeDefined()
+    expect(plugin.tool["hivemind-agent-work-export"]).toBeDefined()
   })
 
   it("automatically writes event-tracker artifacts for canonical OpenCode lifecycle events", async () => {

@@ -89,6 +89,16 @@ export {
 
 export type { TrajectoryToolInput } from "./trajectory.schema.js"
 
+export {
+  RuntimePressureActionSchema,
+  RuntimePressureToolInputSchema,
+  PressureBandSchema,
+  PressureDecisionOutcomeSchema,
+  parseRuntimePressureToolInput,
+} from "./runtime-pressure.schema.js"
+
+export type { RuntimePressureToolInput } from "./runtime-pressure.schema.js"
+
 // ---------------------------------------------------------------------------
 // Agent frontmatter schemas
 // ---------------------------------------------------------------------------
@@ -261,3 +271,35 @@ export type {
   OpenCodeConfig,
   OpenCodeConfigLenient,
 } from "./config-precedence.schema.js"
+
+// ---------------------------------------------------------------------------
+// Agent work contract schemas
+// ---------------------------------------------------------------------------
+
+export {
+  AgentWorkEvidenceLevelSchema,
+  AgentWorkStatusSchema,
+  AgentWorkOwnerSchema,
+  AgentWorkScopeSchema,
+  AgentWorkEvidenceSchema,
+  AgentWorkCompactionSchema,
+  AgentWorkContractSchema,
+  AgentWorkContractStoreSchema,
+  AgentWorkCreateToolInputSchema,
+  AgentWorkExportToolInputSchema,
+  parseAgentWorkCreateToolInput,
+  parseAgentWorkExportToolInput,
+} from "./agent-work-contract.schema.js"
+
+export type {
+  AgentWorkEvidenceLevel,
+  AgentWorkStatus,
+  AgentWorkOwner,
+  AgentWorkScope,
+  AgentWorkEvidence,
+  AgentWorkCompaction,
+  AgentWorkContract,
+  AgentWorkContractStore,
+  AgentWorkCreateToolInput,
+  AgentWorkExportToolInput,
+} from "./agent-work-contract.schema.js"

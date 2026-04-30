@@ -1,7 +1,8 @@
 # Phase 18: Context & Research — Skills Refactor Playbook Phase CR - Context
 
 **Gathered:** 2026-04-23
-**Status:** Ready for execution
+**Status:** archived
+**Archived reason:** Reclassified to skill-ecosystem workstream (SE-H2)
 
 ## Phase Boundary
 

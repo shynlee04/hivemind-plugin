@@ -1,7 +1,8 @@
 # Phase 27: G-B Quality Assurance Demonstration - Context
 
 **Gathered:** 2026-04-25
-**Status:** Ready for research and planning
+**Status:** archived
+**Archived reason:** Reclassified to skill-ecosystem workstream (SE-H10)
 **Source:** Phase 26 execution roadmap and G-B SPEC artifacts
 
 <domain>

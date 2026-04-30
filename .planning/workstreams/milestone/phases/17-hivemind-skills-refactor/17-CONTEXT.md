@@ -1,7 +1,8 @@
 # Phase 17: Hivemind Skills Refactor — Critical Fixes - Context
 
 **Gathered:** 2026-04-23
-**Status:** Ready for planning
+**Status:** archived
+**Archived reason:** Reclassified to skill-ecosystem workstream (SE-H1)
 
 <domain>
 ## Phase Boundary

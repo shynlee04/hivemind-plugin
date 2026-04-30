@@ -1,7 +1,8 @@
 # Phase 26: Synthesize hm-* Skill Debts into Unified Quality Requirements - Context
 
 **Gathered:** 2026-04-25
-**Status:** Ready for planning
+**Status:** archived
+**Archived reason:** Reclassified to skill-ecosystem workstream (SE-H9)
 
 <domain>
 ## Phase Boundary

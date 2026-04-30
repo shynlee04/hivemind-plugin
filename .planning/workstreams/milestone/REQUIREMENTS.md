@@ -343,8 +343,8 @@ Requirements validated by completed phases. Kept for traceability.
 | PH54-01 through PH54-03 | Phase 54 | Complete for non-release runway |
 | DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Implementation complete |
 | TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Implementation complete |
-| PRESSURE-01 through PRESSURE-05 | Phase 57 | Complete for planning |
-| WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Complete for planning |
+| PRESSURE-01 through PRESSURE-05 | Phase 57 | Implementation complete |
+| WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Implementation complete |
 | SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Complete for planning |
 
 ---
@@ -561,15 +561,15 @@ Truthful status: **Implementation complete** — trajectory/session v3 implement
 
 ## Phase 57: Runtime Pressure & Control Plane
 
-Truthful status: **Complete for planning contract** — implementation and runtime evidence remain future work.
+Truthful status: **Implementation complete** — durable store, schemas, create/export tools, pressure gating, and automated evidence exist; this is not a release claim.
 
 | Requirement | Priority | Status | Description |
 |-------------|----------|--------|-------------|
-| PRESSURE-01 | P1 | Complete for planning | Define 10-tier runtime pressure model grouped from steady through advisory and gated to blocking. |
-| PRESSURE-02 | P1 | Complete for planning | Define control-plane `detect()` gate decision contract for allow, advise, require approval, defer, or block outcomes. |
-| PRESSURE-03 | P1 | Complete for planning | Define tool catalog authority matrix mapping tools to read/write authority, state surface, and pressure behavior. |
-| PRESSURE-04 | P1 | Complete for planning | Define pressure event schema with status, reason, severity, recommended action, and blocking rationale. |
-| PRESSURE-05 | P1 | Complete for planning | Map Phase 57 as prerequisite for Phase 39 auto-loop pressure gates and Phase 58 work contract gating. |
+| PRESSURE-01 | P1 | Implementation complete | Implement 10-tier runtime pressure model grouped from steady through advisory and gated to blocking. |
+| PRESSURE-02 | P1 | Implementation complete | Implement control-plane `detect()` gate decision contract for allow, advise, require approval, defer, or block outcomes. |
+| PRESSURE-03 | P1 | Implementation complete | Implement tool catalog authority matrix mapping tools to read/write/state/execute authority and pressure behavior. |
+| PRESSURE-04 | P1 | Implementation complete | Implement pressure tool schema and trajectory-only pressure event attachment behavior. |
+| PRESSURE-05 | P1 | Implementation complete | Preserve Phase 57 as prerequisite substrate for Phase 39 auto-loop pressure gates and Phase 58 work contract gating. |
 
 ---
 
@@ -579,10 +579,10 @@ Truthful status: **Complete for planning contract** — implementation and runti
 
 | Requirement | Priority | Status | Description |
 |-------------|----------|--------|-------------|
-| WORK-CONTRACT-01 | P1 | Complete for planning | Define agent work scope contract with task boundary, allowed surfaces, dependencies, and non-goals. |
-| WORK-CONTRACT-02 | P1 | Complete for planning | Define evidence contract with required proof, acceptable evidence levels, and blocked-state reporting. |
-| WORK-CONTRACT-03 | P1 | Complete for planning | Define compaction preservation for briefing, summary, anchor extraction, and reinjection. |
-| WORK-CONTRACT-04 | P1 | Complete for planning | Define `hivemind_agent_work_create` and `hivemind_agent_work_export` tool contracts. |
+| WORK-CONTRACT-01 | P1 | Implementation complete | Implement agent work scope contract with task boundary, allowed surfaces, dependencies, and non-goals. |
+| WORK-CONTRACT-02 | P1 | Implementation complete | Implement evidence contract with required proof, acceptable evidence levels, verification commands, and blocked-state reporting. |
+| WORK-CONTRACT-03 | P1 | Implementation complete | Implement bounded compaction preservation for briefing, summary, anchor extraction, source references, and reinjection. |
+| WORK-CONTRACT-04 | P1 | Implementation complete | Implement `hivemind-agent-work-create` and `hivemind-agent-work-export` tools with pressure gating and read-only export behavior. |
 
 ---
 
@@ -629,8 +629,8 @@ Truthful status: **Complete for planning contract** — implementation and runti
 | PH54-01 through PH54-03 | Phase 54 | Complete for non-release runway |
 | DOC-INTEL-01 through DOC-INTEL-05 | Phase 55 | Implementation complete |
 | TRAJECTORY-01 through TRAJECTORY-06 | Phase 56 | Implementation complete |
-| PRESSURE-01 through PRESSURE-05 | Phase 57 | Complete for planning |
-| WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Complete for planning |
+| PRESSURE-01 through PRESSURE-05 | Phase 57 | Implementation complete |
+| WORK-CONTRACT-01 through WORK-CONTRACT-04 | Phase 58 | Implementation complete |
 | SUPERVISOR-01 through SUPERVISOR-05 | Phase 59 | Complete for planning |
 
 ---

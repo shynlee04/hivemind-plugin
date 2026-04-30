@@ -3,6 +3,8 @@
 **Deliverable:** CR-01
 **Date:** 2026-04-23
 **Phase:** 18 (Playbook Phase CR)
+**Status:** archived
+**Archived reason:** Reclassified to skill-ecosystem workstream (SE-H2)
 **Depends on:** Phase 17 (COMPLETE)
 **Blocks:** Phase 19 (Rename Sprint), Phase 20 (Structural Changes), Phase 21-23
 **Mode:** Research/Audit only — zero skill edits, zero src/ changes

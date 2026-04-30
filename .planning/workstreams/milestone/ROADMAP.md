@@ -6,6 +6,8 @@
 
 ## Phases Overview
 
+> **Phase 15 ARCHIVED** (2026-04-30): Reclassified to skill-ecosystem as SE-H0. META-only phase — no harness code.
+
 - [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
 - [x] **Phase 2: V3 Runtime Architecture** — 9/9 plans complete, 18/18 verified
 - [x] **Phase 3: Schema Definition** — SUPERSEDED by Phase 16.5 (complete Zod schema-kernel, 772 tests)
@@ -21,13 +23,13 @@
 - [x] **Phase 12: Correct background session start semantics + planning reconciliation** — 2/2 plans complete, authoritative truth reset established
 - [ ] **Phase 13: Async Result Harvesting** — RESCOPED: extract child session results, populate delegation.result
 - [x] **Phase 14: delegate-task truth-reset** — 3/3 plans complete, 16/16 verification truths
-- [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed
+- [x] **Phase 15: Security & Quality Remediation** — 3/3 plans complete, 26 audit issues fixed [ARCHIVED 2026-04-30 — reclassified to SE-H0, META-only boundary violation]
 - [x] **Phase 16: Background Delegation Revamp + PTY Integration** — ✅ COMPLETE (6/6 plans; Gap 4 closed by Phase 34)
 - [~] **Phase 16.2: PTY Wiring + OMO Safety Patterns** — 1/1 plan, REMEDIATED (CR-01, CR-03 resolved)
 - [x] **Phase 16.3: Delegation Subsystem Hardening** — 4/4 plans complete, post-UAT architecture incidents captured; delegation-manifest expansion paused pending 16.4
 - [~] **Phase 16.4: Harness Architecture Baseline & Migration Control Plane** — ✅ COMPLETE — architecture baseline established, 4 plans executed (summaries pending — deferred to backlog 999.1)
 - [x] **Phase 16.5: Agents Builder Configuration Foundation** — INSERTED; Zod schemas for OpenCode primitives, config compiler, cross-primitive validator, workflow skill, auto-detection routing; VERIFIED (8/8 plans, 772 tests, 3 gap-closure waves, 1 pre-existing delegation-manager test failure)
-- [x] **Phase 17-30, 51: Skill Quality Work** — ✅ COMPLETE — MOVED to skill-ecosystem workstream as historical phases SE-H1 through SE-H14 (2026-04-29)
+- [x] **Phase 17-30, 51: Skill Quality Work** — ✅ COMPLETE — MOVED to skill-ecosystem workstream as historical phases SE-H1 through SE-H14 (2026-04-29) [ARCHIVED 2026-04-30]
 - [x] **Phase 25: Session Journal + Execution Lineage Bridge** — 4/4 plans complete; journal/lineage bridge plus automatic event-tracker writer and manual export lineage merge verified under `.hivemind/event-tracker/`
 - [x] **Phase 32: Traceability Reconciliation** — Close audit gaps GAP-TRACE-01/02/03, create 14 missing VERIFICATION.md, reconcile REQUIREMENTS.md with ROADMAP.md evidence
 - [x] **Phase 31: Planning Documentation Refresh** — 3/3 plans complete — all 10 refreshed documents verified by health check
@@ -54,14 +56,14 @@
 - [x] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — COMPLETE: 3/3 plans, validation PASS WITH RUNTIME GAP RECOMMENDATION
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
 - [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
-- [x] **Phase 51: Stack Research Grounding** — ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14
+- [x] **Phase 51: Stack Research Grounding** — ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14 [ARCHIVED 2026-04-30]
 - [x] **Phase 52: End-User Harness Workflow Acceptance** — COMPLETE / CONDITIONAL-RUNWAY / NOT-SHIP: E52-01/E52-02/E52-03 PASS; E52-04 PARTIAL; E52-05 PARTIAL/L2-L3; E52-06 FUTURE/NON-RELEASE; L1 recovery proof remains SHIP prerequisite
 - [x] **Phase 53: Release Readiness & Lifecycle Gate Closure** — COMPLETE AS NO-SHIP gate audit; release blocker chain preserved
 - [x] **Phase 54: Sidecar & Product-Detox Integration Runway** — COMPLETE AS NON-RELEASE RUNWAY; does not change Phase 53 NO-SHIP or Phase 52 runtime gaps
 - [x] **Phase 55: Doc Intelligence Engine** — IMPLEMENTATION COMPLETE: read-only doc parser/chunker/router/tool implemented and verified; no persistent indexes or caches
 - [x] **Phase 56: Trajectory & Session v3** — IMPLEMENTATION COMPLETE: trajectory ledger, session v3 metadata, and `hivemind-trajectory` tool implemented; no Phase 52 closure claim
-- [x] **Phase 57: Runtime Pressure & Control Plane** — COMPLETE FOR PLANNING CONTRACT: pressure/control-plane requirements locked; no runtime enforcement claim
-- [x] **Phase 58: Agent Work Contracts** — COMPLETE FOR PLANNING CONTRACT: work/evidence/compaction contract requirements locked; no tool implementation claim
+- [x] **Phase 57: Runtime Pressure & Control Plane** — IMPLEMENTATION COMPLETE: pure pressure/control-plane substrate, `hivemind-pressure` tool, and tests; no Phase 39 auto-loop enforcement claim
+- [x] **Phase 58: Agent Work Contracts** — IMPLEMENTATION COMPLETE: dedicated work contract store, create/export tools, schema exports, pressure gating, and tests
 - [x] **Phase 59: SDK Supervisor & Command Engine** — COMPLETE FOR PLANNING CONTRACT: supervisor/command-engine requirements locked; no SDK runtime claim
 - [ ] **Phase 60: Session Entry Intake** — P0 CRITICAL
 - [ ] **Phase 61: Control Plane + Primitive Registry** — P0 CRITICAL — complete_conditional_runway
@@ -155,10 +157,10 @@ Plans:
 **Requirements:** WORK-CONTRACT-01 through WORK-CONTRACT-04
 **Depends on:** Phase 57 runtime pressure/control-plane
 **Blocks:** Agent Synthesis AS-8
-**Plans:** 1 plan — executed as planning contract; final artifact `58-CONTRACT-2026-04-30.md`
+**Plans:** 1 plan — implemented and verified; final artifacts `58-SUMMARY-2026-04-30.md` and `58-VERIFICATION-2026-04-30.md`
 
 Plans:
-- [x] 58-01-PLAN-2026-04-30.md — define agent work contract planning contract
+- [x] 58-01-PLAN-2026-04-30.md — implement agent work contract store, schemas, create/export tools, pressure gating, and verification
 
 ## Phase 59: SDK Supervisor & Command Engine
 
@@ -351,7 +353,7 @@ Plans:
 - [x] 14-02-PLAN.md — Tools + Wiring: Rewrite delegate-task tool, create delegation-status tool, wire in plugin.ts, update AGENTS.md (Wave 2, TDD)
 - [x] 14-03-PLAN.md — Test Hardening: Audit and expand all delegation tests for runtime-truthful coverage per D-08 (Wave 3, TDD)
 
-### Phase 15: Security & Quality Remediation — fix all 26 audit issues from comprehensive codebase audit
+### Phase 15: Security & Quality Remediation — fix all 26 audit issues from comprehensive codebase audit [ARCHIVED 2026-04-30 — reclassified to SE-H0, META-only boundary violation]
 
 **Goal:** Fix all 26 audit findings from the comprehensive 6-phase codebase audit. Deliver a spotless, production-ready .opencode/ configuration with zero security vulnerabilities, zero portability failures, zero dangling references, and all files conforming to OpenCode platform standards. This phase modifies ONLY soft meta-concepts (skills, agents, commands) — no src/ code changes.
 **Requirements**: C-1, C-2, C-3, W-1, W-2, W-3, W-4, W-5, W-6, W-7, W-8, W-9, W-10, W-11, W-12
@@ -453,13 +455,13 @@ Plans:
 Plans:
 - [x] 16.2-01-PLAN.md — PTY Execution Wiring + OMO Safety Patterns: unified terminal lifecycle, grace-period cleanup, parent notifications, adaptive polling, nesting depth limits, observability (6 waves)
 
-### Phase 17: Hivemind Skills Refactor — Critical Fixes — MOVED to skill-ecosystem workstream (SE-H1)
+### Phase 17: Hivemind Skills Refactor — Critical Fixes — MOVED to skill-ecosystem workstream (SE-H1) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phase 18: Context & Research — MOVED to skill-ecosystem workstream (SE-H2)
+### Phase 18: Context & Research — MOVED to skill-ecosystem workstream (SE-H2) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phase 19: Rename Sprint — MOVED to skill-ecosystem workstream (SE-H3)
+### Phase 19: Rename Sprint — MOVED to skill-ecosystem workstream (SE-H3) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ### Phase 25: Session Journal + Execution Lineage Bridge
@@ -501,27 +503,27 @@ Plans:
 - [ ] 31-02-PLAN.md — Codebase documents refresh: ARCHITECTURE + STRUCTURE + STACK + CONCERNS + INTEGRATIONS + TESTING (Wave 1)
 - [ ] 31-03-PLAN.md — Milestone archive creation + cross-document health verification (Wave 2, depends on 31-01 and 31-02)
 
-### Phase 26: Quality Synthesis — MOVED to skill-ecosystem workstream (SE-H10)
+### Phase 26: Quality Synthesis — MOVED to skill-ecosystem workstream (SE-H10) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phase 27: G-B Quality Assurance Demonstration — MOVED to skill-ecosystem workstream (SE-H11)
+### Phase 27: G-B Quality Assurance Demonstration — MOVED to skill-ecosystem workstream (SE-H11) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phase 28: G-C Research Lineage — MOVED to skill-ecosystem workstream (SE-H12)
+### Phase 28: G-C Research Lineage — MOVED to skill-ecosystem workstream (SE-H12) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phase 29: G-D Execution Lineage — MOVED to skill-ecosystem workstream (SE-H13)
+### Phase 29: G-D Execution Lineage — MOVED to skill-ecosystem workstream (SE-H13) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phase 30: G-A Guardrail Lineage — MOVED to skill-ecosystem workstream (SE-H13b)
+### Phase 30: G-A Guardrail Lineage — MOVED to skill-ecosystem workstream (SE-H13b) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
-### Phases 27-30: HMQUAL / RICH Skill Quality Execution Closure — MOVED to skill-ecosystem workstream
+### Phases 27-30: HMQUAL / RICH Skill Quality Execution Closure — MOVED to skill-ecosystem workstream [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ---
 
-### Phase 20: Structural Changes — MOVED to skill-ecosystem workstream (SE-H4)
+### Phase 20: Structural Changes — MOVED to skill-ecosystem workstream (SE-H4) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ### Phase 9.3: Module Restructuring + Config — SUPERSEDED BY PHASE 14
@@ -540,7 +542,7 @@ See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section
 - Implement `noteObservedActivity()` for session activity tracking
 - Extract PTY-specific delegation logic from `delegation-manager.ts` to reduce under 500 LOC
 
-### Phase 24: Fix 22 Failed hm-* Skills — MOVED to skill-ecosystem workstream (SE-H8)
+### Phase 24: Fix 22 Failed hm-* Skills — MOVED to skill-ecosystem workstream (SE-H8) [ARCHIVED 2026-04-30]
 See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section.
 
 ## Progress Table
@@ -562,13 +564,13 @@ See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section
 | 12. Correct start semantics + reconciliation | 2/2 plans | ✅ COMPLETE — false-start corridor fixed, planning truth reconciled |
 | 13. Async Result Harvesting (rescoped) | 0 plans | RESCOPED — extract child session results, populate delegation.result |
 | 14. delegate-task truth-reset | 3/3 plans | ✅ COMPLETE — WaiterModel + dual-signal + hybrid persistence |
-| 15. Security & Quality Remediation | 3/3 plans | ✅ COMPLETE — 26 audit issues fixed |
+| 15. Security & Quality Remediation | 3/3 plans | ✅ COMPLETE — 26 audit issues fixed [ARCHIVED 2026-04-30 — SE-H0] |
 | 16. Background Delegation Revamp | 6/6 plans | ✅ COMPLETE (Gap 4 closed by Phase 34) |
 | 16.3 Delegation Subsystem Hardening | 3/3 plans | ✅ COMPLETE — recovery, notification, and terminal truth hardened |
 | 16.4 Harness Architecture Baseline | 4/4 plans | ✅ COMPLETE — architecture baseline established (summaries deferred to backlog 999.1) |
 | 16.5. Agents Builder Configuration Foundation | 8/8 plans (5 original + 3 gap closure) | ✅ COMPLETE — 772 tests pass, BLOCKER-1 and BLOCKER-3 closed |
 | 16.2 PTY Wiring + OMO Safety | 1/1 plans | REMEDIATED — CR-01 and CR-03 resolved, WR-02 and WR-03 addressed |
-| 17-30, 51. Skill Quality Work | All COMPLETE | MOVED to skill-ecosystem workstream (SE-H1 through SE-H14) |
+| 17-30, 51. Skill Quality Work | All COMPLETE | MOVED to skill-ecosystem workstream (SE-H1 through SE-H14) [ARCHIVED 2026-04-30] |
 | 25. Session Journal + Execution Lineage Bridge | 4/4 plans | ✅ COMPLETE — Q3/Q6 reconciled, 2026-04-26 |
 | 31. Planning Documentation Refresh | 3/3 plans | ✅ COMPLETE — all 10 refreshed documents verified by health check |
 | 32. Traceability Reconciliation | 0/2 plans | Pending — audit gap closure |
@@ -590,13 +592,13 @@ See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section
 | 48. Real OpenCode Runtime Integration Verification | 0 plans | Integration — live OpenCode proof for remediation wave |
 | 49. UAT Tool Contract & PTY Command Reliability | 0 plans | Pending — ses_22ee tool contract defects and PTY command usability |
 | 50. OpenCode Primitive Restart Readiness | 1 plan | Complete — validate-restart passes for 58 agents, 18 commands, 49 skills |
-| 51. Stack Research Grounding | 1 plan | ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14 |
+| 51. Stack Research Grounding | 1 plan | ✅ COMPLETE — MOVED to skill-ecosystem as SE-H14 [ARCHIVED 2026-04-30] |
 | 52. End-User Harness Workflow Acceptance | 6 plans | ✅ COMPLETE / CONDITIONAL-RUNWAY / NOT-SHIP — E52-01/02/03 PASS, E52-05 L2/L3 proof, L1 recovery SHIP prerequisite |
 | 53. Release Readiness & Lifecycle Gate Closure | 6 plans | ✅ NO-SHIP COMPLETE — release blockers preserved |
 | 54. Sidecar & Product-Detox Integration Runway | 1 plan | COMPLETE AS NON-RELEASE RUNWAY — release blockers preserved |
 | 55. Doc Intelligence Engine | 1 plan | COMPLETE FOR PLANNING CONTRACT — no implementation claim |
 | 56. Trajectory & Session v3 | 1 plan | COMPLETE FOR PLANNING CONTRACT — no Phase 52 closure claim |
-| 57. Runtime Pressure & Control Plane | 1 plan | COMPLETE FOR PLANNING CONTRACT — no runtime enforcement claim |
+| 57. Runtime Pressure & Control Plane | 1 plan | IMPLEMENTATION COMPLETE — pure pressure/control-plane substrate; no auto-loop enforcement claim |
 | 58. Agent Work Contracts | 1 plan | COMPLETE FOR PLANNING CONTRACT — no tool implementation claim |
 | 59. SDK Supervisor & Command Engine | 1 plan | COMPLETE FOR PLANNING CONTRACT — no SDK runtime claim |
 | 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
