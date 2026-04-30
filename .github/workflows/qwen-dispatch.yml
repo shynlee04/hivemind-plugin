@@ -93,14 +93,14 @@ jobs:
             const request = process.env.REQUEST;
             core.setOutput('request', request);
 
-            if (eventType === 'pull_request.opened') {
-              core.setOutput('command', 'review');
-            } else if (['issues.opened', 'issues.reopened'].includes(eventType)) {
+            // The 'review' command was retired in Phase 16.2.1 (2026-04-30)
+            // because the qwen-review.yml workflow it called depended on a
+            // missing OPENAI_API_KEY secret and produced a spurious failing
+            // CI check on every PR. PR-open events now fall through silently
+            // and @qwen-code /review comments are routed to fallthrough so
+            // the user gets a clear acknowledgement instead of a broken job.
+            if (['issues.opened', 'issues.reopened'].includes(eventType)) {
               core.setOutput('command', 'triage');
-            } else if (request.startsWith("@qwen-code /review")) {
-              core.setOutput('command', 'review');
-              const additionalContext = request.replace(/^@qwen-code \/review/, '').trim();
-              core.setOutput('additional_context', additionalContext);
             } else if (request.startsWith("@qwen-code /triage")) {
               core.setOutput('command', 'triage');
             } else if (request.startsWith("@qwen-code")) {
@@ -123,19 +123,13 @@ jobs:
             --body "${MESSAGE}" \
             --repo "${REPOSITORY}"
 
-  review:
-    needs: 'dispatch'
-    if: |-
-      ${{ needs.dispatch.outputs.command == 'review' }}
-    uses: './.github/workflows/qwen-review.yml'
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
-    with:
-      additional_context: '${{ needs.dispatch.outputs.additional_context }}'
-    secrets: 'inherit'
+  # NOTE: The `review` sub-workflow that lived here was removed in
+  # Phase 16.2.1 (2026-04-30). It called `.github/workflows/qwen-review.yml`,
+  # which depended on an `OPENAI_API_KEY` secret that is not configured for
+  # this repository. Every PR therefore produced a `review / review` CI
+  # check that failed with `jq: error ... Cannot iterate over null`. The
+  # workflow file and this dispatch entry have been deleted to stop the
+  # spurious failing check from blocking real review.
 
   triage:
     needs: 'dispatch'
@@ -168,7 +162,6 @@ jobs:
   fallthrough:
     needs:
       - 'dispatch'
-      - 'review'
       - 'triage'
       - 'invoke'
     if: |-
