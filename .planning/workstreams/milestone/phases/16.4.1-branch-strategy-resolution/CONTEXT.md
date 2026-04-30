@@ -20,7 +20,7 @@ Make `feature/harness-implementation` (the v3 runtime engine) the canonical defa
 
 ## Validation Source
 
-Generated from `AUDIT-VALIDATION-AND-REMEDIATION-PLAN-2026-04-30.md` Finding 7 (VALIDATED but inverted). Evidence on disk:
+Generated from `AUDIT-VALIDATION-2026-04-30.md` Finding 7 (VALIDATED but inverted). Evidence on disk:
 
 - `master`: 56 test files, older v2.x harness baseline (`hivemind-plugin`)
 - `feature/harness-implementation`: 84 test files, 1,414 specs, full v3 runtime composition engine (`opencode-harness@0.1.0`)

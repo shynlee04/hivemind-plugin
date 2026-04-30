@@ -21,7 +21,7 @@ Document the project's deliberate workstream-rooted phase layout (`.planning/wor
 
 ## Validation Source
 
-Generated from `AUDIT-VALIDATION-AND-REMEDIATION-PLAN-2026-04-30.md` Finding 6 (CONTEXTUAL). Evidence on disk:
+Generated from `AUDIT-VALIDATION-2026-04-30.md` Finding 6 (CONTEXTUAL). Evidence on disk:
 
 - The branch HAS `.planning/workstreams/milestone/phases/` with 70 phase directories (02, 09, 14, 16.x, 32, 36, 38, 46, 48.x, 52, 53, etc. — all the "phantom" ones).
 - The audit was run as if `.planning/phases/` were the canonical root; it is not. The skill-ecosystem workstream's D-01 decision locks `.hivemind/` as canonical state root and partitions planning by workstream.

@@ -21,7 +21,7 @@ Close the small residual gap from the audit's Finding 5: decide what to do with 
 
 ## Validation Source
 
-Generated from `AUDIT-VALIDATION-AND-REMEDIATION-PLAN-2026-04-30.md` Finding 5 (REFUTED). Evidence on disk:
+Generated from `AUDIT-VALIDATION-2026-04-30.md` Finding 5 (REFUTED). Evidence on disk:
 
 - `.hivemind/state/session-continuity.json` — EXISTS, valid JSON, contains real recovered session data
 - `.hivemind/state/delegations.json` — EXISTS, valid JSON array with real delegation records (including `gracePeriodExpiresAt`, `executionMode`, `queueKey`)

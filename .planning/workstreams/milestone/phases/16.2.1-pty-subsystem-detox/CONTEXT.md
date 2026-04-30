@@ -20,7 +20,7 @@ Make the harness installable and runnable on Node 20 without `bun-pty` resolving
 
 ## Validation Source
 
-This phase is generated from the `AUDIT-VALIDATION-AND-REMEDIATION-PLAN-2026-04-30.md` validation pass. Original audit Finding 1 was confirmed structurally (`pty-manager.ts:1` does import `bun-pty` at module level; `bun-pty` lives in `dependencies`, not `optionalDependencies`), with one caveat: the dynamic-import try/catch in `pty-runtime.ts:14–20` does swallow the resolution error at runtime, so the harness does not actually crash on Node — but `npm install` postinstall failures and three dead tool actions remain real.
+This phase is generated from the `AUDIT-VALIDATION-2026-04-30.md` validation pass. Original audit Finding 1 was confirmed structurally (`pty-manager.ts:1` does import `bun-pty` at module level; `bun-pty` lives in `dependencies`, not `optionalDependencies`), with one caveat: the dynamic-import try/catch in `pty-runtime.ts:14–20` does swallow the resolution error at runtime, so the harness does not actually crash on Node — but `npm install` postinstall failures and three dead tool actions remain real.
 
 ## Requirements
 

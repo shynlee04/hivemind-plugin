@@ -20,7 +20,7 @@ Make `run_in_background: true` always mean async dispatch. Remove the `builtinAs
 
 ## Validation Source
 
-Generated from `AUDIT-VALIDATION-AND-REMEDIATION-PLAN-2026-04-30.md` Finding 3 (VALIDATED). Evidence on disk:
+Generated from `AUDIT-VALIDATION-2026-04-30.md` Finding 3 (VALIDATED). Evidence on disk:
 
 - `src/lib/delegation-manager.ts:61` defaults the policy flag to `true` (so most installs are unaffected).
 - `src/lib/delegation-manager.ts:208–211` explicitly conditions the dispatch on the flag — if a workspace policy resolves it to `false`, `sendPrompt` is used instead of `sendPromptAsync` with no warning.

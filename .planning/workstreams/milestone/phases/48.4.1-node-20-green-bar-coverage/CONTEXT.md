@@ -21,7 +21,7 @@ Verify the existing 1,414-spec test corpus passes on Node 20 (the actual deploym
 
 ## Validation Source
 
-Generated from `AUDIT-VALIDATION-AND-REMEDIATION-PLAN-2026-04-30.md` Finding 4 (REFUTED). Evidence on disk:
+Generated from `AUDIT-VALIDATION-2026-04-30.md` Finding 4 (REFUTED). Evidence on disk:
 
 - 84 test files under `tests/` (vs 56 on master)
 - 1,414 specs (`grep -rE "^\s*(it|test|describe)\(" tests --include="*.test.ts" | wc -l`)

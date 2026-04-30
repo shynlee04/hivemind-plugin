@@ -20,7 +20,7 @@ Make `CompletionDetector` the **only** completion authority for SDK delegations.
 
 ## Validation Source
 
-Generated from `AUDIT-VALIDATION-AND-REMEDIATION-PLAN-2026-04-30.md` Finding 2 (VALIDATED). Evidence on disk:
+Generated from `AUDIT-VALIDATION-2026-04-30.md` Finding 2 (VALIDATED). Evidence on disk:
 
 - `src/lib/sdk-delegation.ts:6–8, 55, 180–202` uses 4 thresholds (`MIN_IDLE_TIME_MS`, `MIN_STABILITY_TIME_MS`, `STABLE_POLLS_REQUIRED`, `DEFAULT_STALE_TIMEOUT_MS`) and `calculateAdaptiveInterval()` to drive finalization.
 - `src/lib/lifecycle-manager.ts:73, 124, 166` instantiates `CompletionDetector` and calls `feed("session.idle", …)` and `cancel(…)`, but the SDK delegation finalization decision is made by the polling logic in `SdkDelegationHandler.performStabilityPoll`, not by the detector.
