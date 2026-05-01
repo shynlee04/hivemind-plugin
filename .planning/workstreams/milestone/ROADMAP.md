@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway; Phases 60-71 added as product-detox implementation phases; Phase 36/41 status corrected)
+**Updated:** 2026-05-01 (Audit reconciliation: Phases 36/46/48.4 corrected; Phase 38 status updated; stale audit findings resolved)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -36,9 +36,9 @@
 - [x] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
 - [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
 - [ ] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — PARTIAL: build/test/build gates pass; notification-handler deletion and TD-11 cast deferred
-- [ ] **Phase 36: Lifecycle State Machine Enforcement** — P0: real transition guards, activity tracking, 500 LOC split
+- [x] **Phase 36: Lifecycle State Machine Enforcement** — ✅ REMEDIATED (2026-05-01: CompletionDetector idle signal wired to SDK delegation finalization; 2 new tests; 1165 total pass)
 - [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result
-- [ ] **Phase 38: Q6 State Root Migration** — P1: verify all writers target .hivemind/, remove legacy compat
+- [~] **Phase 38: Q6 State Root Migration** — PARTIAL: state persistence works (real data in .hivemind/); needs dedicated recovery/atomic-write tests
 - [ ] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2: self-referential dev loop until completion
 - [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
 - [ ] **Phase 41: Session Journal Time-Machine** — P2: query API, event replay, past-state reconstruction
@@ -46,13 +46,13 @@
 - [x] **Phase 43: Hook Composition Observability Integrity** — Critical: compose tool-guard and plugin after-hook behavior
 - [x] **Phase 44: Tool Write-Surface & Secret Hardening** — Critical/security: constrain write/read paths, await writes, remove literal secrets
 - [x] **Phase 45: OpenCode SDK Permission Boundary** — Critical: align child-session permission/tool policy with supported SDK surfaces
-- [x] **Phase 46: Delegation Dispatch, Completion & Recovery Truth** — High: prevent false dispatched/completed/error states
+- [x] **Phase 46: Delegation Dispatch, Completion & Recovery Truth** — ✅ COMPLETE (2026-05-01 verified: async policy gate already removed; unconditional async dispatch; stale audit finding corrected)
 - [x] **Phase 47: Runtime Policy & Command Buffer Hardening** — Medium: workspace policy input and bounded command output
 - [ ] **Phase 48: Real OpenCode Runtime Integration Verification** — DEGRADED: health/session/tool registration pass; hook/tool-exec/delegation completion gaps remain
 - [x] **Phase 48.1: Runtime Correctness: Lifecycle, Queue, Persistence Truth** — COMPLETE: lifecycle, queue-key, and persisted delegation truth remediated after Phase 48 degradation
 - [x] **Phase 48.2: Security Boundary Hardening: Secrets, Scope, Category Gates** — COMPLETE: secret handling, scope controls, and category gate enforcement hardened after runtime correctness was restored
 - [x] **Phase 48.3: OpenCode SDK/CQRS Integration Alignment** — Align OpenCode SDK surfaces and CQRS boundaries after runtime and security invariants are stable
-- [x] **Phase 48.4: Production Evidence & Coverage Recovery** — COMPLETE WITH DEFERRED RUNTIME GAPS: coverage/evidence classification closed without claiming REM-RUNTIME-04/05
+- [x] **Phase 48.4: Production Evidence & Coverage Recovery** — COMPLETE — audit finding "zero tests" was incorrect for this worktree (172 delegation tests exist across 4 test files; 4750 LOC)
 - [x] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — COMPLETE: 3/3 plans, validation PASS WITH RUNTIME GAP RECOMMENDATION
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
 - [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery

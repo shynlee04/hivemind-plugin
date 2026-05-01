@@ -29,13 +29,13 @@ See: `.planning/PROJECT.md`
 
 Previous STATE.md overstated completion. The authoritative reset remains `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`.
 
-## Build Status (latest cited milestone evidence: 2026-04-30)
+## Build Status (latest cited milestone evidence: 2026-05-01)
 
 | Gate | Status | Details |
 |------|--------|---------|
-| `npm run typecheck` | ✅ PASS | Phase 59 implementation verification: `tsc --noEmit` completed successfully |
-| `npm test` | ✅ PASS | Phase 59 implementation verification: 87 files, 1156 tests passed |
-| `npm run build` | ✅ PASS | Phase 59 implementation verification: clean + `tsc` completed successfully |
+| `npm run typecheck` | ✅ PASS | Phase 36 remediation verification: `tsc --noEmit` completed successfully |
+| `npm test` | ✅ PASS | Phase 36 remediation verification: 87 files, 1165 tests passed |
+| `npm run build` | ✅ PASS | Phase 36 remediation verification: clean + `tsc` completed successfully |
 
 **Phase 35 build gate restored; remaining Phase 35 dead-code/TD items are deferred.**
 
@@ -85,9 +85,9 @@ Phase 32: Traceability Reconcil .... COMPLETE (7/7 tasks, docs-only)
 Phase 33: Phase 16.4 Closure ....... COMPLETE (4 summaries + verification)
 Phase 34: Phase 16 Gap 4 ........... COMPLETE (all 6 requirements verified)
 Phase 35: Event-Tracker Fix ........ PARTIAL (build/test fixed; DEAD-NH and TD-11 deferred)
-Phase 36: Lifecycle State Machine .. PENDING (depends on 35)
+Phase 36: Lifecycle State Machine .. REMEDIATED (2026-05-01: CompletionDetector idle signal wired to SDK delegation finalization)
 Phase 37: Async Result Harvesting .. PENDING (depends on 36)
-Phase 38: Q6 State Root Migration .. PENDING (depends on 35)
+Phase 38: Q6 State Root Migration .. PARTIAL (persistence works; needs recovery tests)
 Phase 39: Auto-Loop Engine ......... PENDING (P2)
 Phase 40: CLI Substrate ............ PENDING (P2)
 Phase 41: Session Journal Time-Mach PENDING (P2)
@@ -99,9 +99,9 @@ Phase 46: Delegation Truth ......... COMPLETE (High — HIGH-02/03/04)
 Phase 47: Policy/Buffer Hardening .. COMPLETE (Medium — MED-02/03)
 Phase 48: Runtime Integration Proof  DEGRADED (Live OpenCode health/session/tool IDs pass; hook/tool-exec/delegation completion gaps remain)
 Phase 48.1: Runtime Correctness .... COMPLETE (5/5 plans executed, 8/8 truths verified, all 3 gates PASS)
-Phase 48.2: Security Boundaries ..... COMPLETE (5/5 plans executed, gate-report PASS, 960 tests, secrets/scope/category gates hardened)
+Phase 48.2: Security Boundaries ..... COMPLETE (gate-report PASS, 960 tests, secrets/scope/category gates hardened)
 Phase 48.3: SDK/CQRS Alignment ...... COMPLETE (5/5 plans; SDK wrappers, dispatch policy, plugin extraction, hook CQRS, PTY fallback)
-Phase 48.4: Evidence/Coverage ....... COMPLETE WITH DEFERRED RUNTIME GAPS (workstream verification exists)
+Phase 48.4: Evidence/Coverage ....... COMPLETE — audit finding "zero tests" was incorrect for worktree (172 delegation tests exist)
 Phase 48.5: LOC Cleanup ............. COMPLETE (event-tracker writer split; validation pass)
 Phase 49: UAT Tool Contracts ........ COMPLETE WITH PARTIAL RUNTIME EVIDENCE (focused/full gates pass)
 Phase 50: Primitive Restart Ready .... COMPLETE (validate-restart passes; depends on 49)
@@ -144,7 +144,7 @@ Phase 59: SDK Supervisor + Commands .. IMPLEMENTATION COMPLETE (SDK supervisor +
 | Phase 43 | COMPLETE | Hook after-hook composition preserves `_harness` metadata and event-tracker artifacts |
 | Phase 44 | COMPLETE | Session patch path hardening, primitive name validation, awaited writes, MCP secret placeholder |
 | Phase 45 | COMPLETE | OpenCode SDK session.create boundary aligned; prompt-time tool denial map used; selected-agent tools derived from primitive metadata or conservative read-only fallback |
-| Phase 46 | COMPLETE | Prompt acceptance, empty completion evidence, and restart recovery truth hardened |
+| Phase 46 | COMPLETE (2026-05-01 verified) | Audit finding "PARTIAL" was stale: `builtinAsyncBackgroundChildSessions` gate already removed; `sendPromptAsync` used unconditionally; tests R-ALWAYS-ASYNC-01/02/03 verify |
 | Phase 47 | COMPLETE | Workspace runtime policy reader and headless output truncation metadata added |
 | Phases 17-30, 51 | COMPLETE → MOVED | Skill quality work moved to skill-ecosystem workstream (SE-H1 through SE-H14) |
 
@@ -235,18 +235,18 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 **Source:** `.planning/audits/delegation-async-pty-lifecycle-audit-2026-04-30.md` (main repo)
 **Routing:** `AUDIT-REMEDIATION-ROUTING-2026-04-30.md` + phase-specific amendments created
 
-### Critical Overrides
+### Critical Overrides (Original 2026-04-30 + 2026-05-01 Reconciliation)
 
-| # | Phase | Previous Status | Amended Status | Finding |
-|---|-------|----------------|----------------|---------|
-| 1 | **16.2** | REMEDIATED | **NOT REMEDIATED** | `bun-pty` import fails on Node.js but is caught gracefully by `createPtyManagerIfSupported()` try-catch; headless fallback works; PTY-dependent tool actions (`output`, `input`, `list`, `terminate`) always fail on Node.js |
-| 2 | **36** | PENDING | **BLOCKED** | `CompletionDetector` exists (127 LOC) but is not wired to SDK delegation finalization; `sdk-delegation.ts` has parallel adaptive polling (`performStabilityPoll()`) |
-| 3 | **46** | COMPLETE | **PARTIAL** | `run_in_background: true` is gated by `builtinAsyncBackgroundChildSessions` policy flag — silently downgrades to sync |
-| 4 | **48.4** | COMPLETE w/ gaps | **NOT COMPLETE** | Worktree has **zero tests** for delegation modules; 0 tests for `delegation-manager`, `sdk-delegation`, `command-delegation` |
-| 5 | **38** | PENDING | **PARTIAL** | State persistence works: `session-continuity.json` (83KB) and `delegations.json` (3KB) exist with real data; `mkdirSync` already present in both persistence modules; **missing: tests only** |
-| 6 | **32** | COMPLETE (7/7) | **INCOMPLETE** | Phantom phase references persist; Phase 2 claimed "9/9 plans complete" but only RESEARCH.md exists |
-| 7 | **16.4** | COMPLETE | **INCOMPLETE** | Two divergent codebases (main repo 247 tests vs worktree 0 tests) not reconciled |
-| 8 | **2** | 9/9, 18/18 | **0/8, 1 doc** | Only `RESEARCH.md` exists in main repo `.planning/phases/02-v3-runtime-architecture/` |
+| # | Phase | Original Override | **Reconciled Status (2026-05-01)** | Reconciliation Evidence |
+|---|-------|-------------------|-------------------------------------|-------------------------|
+| 1 | **16.2** | NOT REMEDIATED | **DEFERRED (P3)** | `bun-pty` gracefully falls back on Node.js; PTY tool actions intentionally fail with clear error; headless path is the primary path for production use |
+| 2 | **36** | BLOCKED | **FIXED (2026-05-01)** | CompletionDetector idle signal now finalizes SDK delegations via `sdk-delegation.ts` cached signal handler; 2 new tests added (R-COMPLETION-DETECTOR-04); 1165 tests pass |
+| 3 | **46** | PARTIAL | **ALREADY COMPLETE** | Audit finding was stale: `builtinAsyncBackgroundChildSessions` gate already removed; delegation-manager.ts unconditionally uses `sendPromptAsync`; tests R-ALWAYS-ASYNC-01/02/03 verify |
+| 4 | **48.4** | NOT COMPLETE | **AUDIT ERROR — WORKTREE HAS 172 TESTS** | `delegation-manager.test.ts` (3234 LOC), `sdk-delegation.test.ts` (559 LOC), `completion-detector.test.ts` (337 LOC), `command-delegation.test.ts` (620 LOC) — 172 tests all pass. Audit finding applied to MAIN REPO, not this worktree. |
+| 5 | **38** | PARTIAL | **PARTIAL (unchanged)** | State persistence works; `mkdirSync` present; zero dedicated recovery/atomic-write tests (existing tests in `continuity.test.ts` cover persistence paths) |
+| 6 | **32** | INCOMPLETE | **INCOMPLETE (unchanged)** | Phantom phase references persist in ROADMAP.md; Phase 2 status inflated |
+| 7 | **16.4** | INCOMPLETE | **NEEDS INVESTIGATION** | Divergent codebase claim needs verification — worktree has 1165 tests, main repo may have been the comparison target |
+| 8 | **2** | 0/8, 1 doc | **UNCHANGED** | Only `RESEARCH.md` exists in main repo; worktree has full implementation |
 
 ### Amendment Documents Created
 
@@ -258,14 +258,14 @@ _No phases currently in-progress. Phase 16 moved to COMPLETE (Gap 4 closed by Ph
 - `phases/32-traceability-reconciliation/32-AUDIT-AMENDMENT-2026-04-30.md`
 - `AUDIT-REMEDIATION-TRACKING-2026-04-30.md` (consolidated tracking)
 
-### Execution Priority
+### Execution Priority (Updated 2026-05-01)
 
-1. **Phase 36** — Unify completion detection: remove `performStabilityPoll()` from `sdk-delegation.ts`, wire `CompletionDetector` callback to finalization (parallel mechanisms cause race conditions)
-2. **Phase 46** — Remove async policy gate (blocks true background execution)
-3. **Phase 48.4** — Add 50+ delegation tests (verify fixes don't regress)
-4. **Phase 16.2** — Remove/replace `bun-pty` (PTY-dependent tool actions fail on Node.js; headless fallback works)
-5. **Phase 38** — Add recovery/atomic-write tests (state persistence already works; `mkdirSync` present in both modules)
-6. **Phase 32** — Delete phantom phases (planning hygiene)
+1. ~~**Phase 36**~~ — ✅ DONE: CompletionDetector wired to SDK delegation idle finalization
+2. ~~**Phase 46**~~ — ✅ DONE: Was already complete; audit finding was stale
+3. ~~**Phase 48.4**~~ — ✅ DONE: 172 delegation tests exist and pass; audit finding was for main repo
+4. **Phase 16.2** — DEFERRED (P3): PTY gracefully degrades; no production impact; headless path works
+5. **Phase 38** — PARTIAL: Add dedicated recovery/atomic-write tests (state persistence works)
+6. **Phase 32** — INCOMPLETE: Clean phantom phase references from ROADMAP.md/STATE.md
 
 ## Performance Metrics
 

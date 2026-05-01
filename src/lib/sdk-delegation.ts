@@ -160,20 +160,38 @@ export class SdkDelegationHandler {
       return
     }
 
-    // Phase 36.1 R-COMPLETION-DETECTOR-01: short-circuit on cached terminal
-    // signals (session.error / session.deleted) that arrived through the
-    // lifecycle event handler. The detector caches non-idle terminal signals
-    // until something consumes them; by reading it before issuing the next
-    // adaptive poll, we collapse the dual-signal contract into a single
-    // execution path instead of two parallel state machines.
+    // Phase 36.1 R-COMPLETION-DETECTOR-01+04: short-circuit on ALL cached
+    // terminal signals (session.error, session.deleted, AND idle) from the
+    // lifecycle-owned CompletionDetector. When the detector is wired, it is
+    // the single source of truth for completion — the adaptive polling loop
+    // feeds message counts into it (R-COMPLETION-DETECTOR-02) and the
+    // detector's internal stability timer resolves "idle" after
+    // stabilityTimeoutMs of unchanged counts. This collapses the dual-signal
+    // contract into ONE completion path instead of two parallel state machines.
+    // When the detector is absent (unit tests, legacy callers), the existing
+    // stablePollCount-based finalization serves as the fallback.
     const detector = this.callbacks.getCompletionDetector?.()
     if (detector) {
       const cached = detector.consumeCachedResult(delegation.childSessionId)
-      if (cached && cached.signal !== "idle") {
-        const reason = cached.error
-          ? `[Harness] Session ${cached.signal} during delegation: ${cached.error}`
-          : `[Harness] Session ${cached.signal} during delegation`
-        this.callbacks.onTerminal(delegationId, "error", reason)
+      if (cached) {
+        if (cached.signal !== "idle") {
+          const reason = cached.error
+            ? `[Harness] Session ${cached.signal} during delegation: ${cached.error}`
+            : `[Harness] Session ${cached.signal} during delegation`
+          this.callbacks.onTerminal(delegationId, "error", reason)
+          return
+        }
+        // R-COMPLETION-DETECTOR-04: idle signal from detector → finalize.
+        // Apply the same MIN_IDLE_TIME_MS fast-completion deferral as the
+        // legacy path to prevent premature finalization on spurious idle.
+        const timeSinceCreated = Date.now() - delegation.createdAt
+        if (timeSinceCreated < MIN_IDLE_TIME_MS) {
+          if (!this.stabilityTimers.has(delegationId)) {
+            this.scheduleStabilityPoll(delegationId)
+          }
+          return
+        }
+        await this.finalizeSdkDelegation(delegationId)
         return
       }
     }

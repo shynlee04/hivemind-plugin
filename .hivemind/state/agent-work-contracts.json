@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "updatedAt": 1777559637988,
+  "contracts": {
+    "uat-test-001": {
+      "id": "uat-test-001",
+      "status": "created",
+      "owner": {
+        "agent": "hm-l2-general",
+        "sessionId": "ses_22133bea0ffeUOYxPSaGuKvFVo"
+      },
+      "scope": {
+        "taskBoundary": "count files in project directory (non-recursive) and return only the number",
+        "allowedSurfaces": [],
+        "dependencies": [],
+        "nonGoals": []
+      },
+      "evidence": {
+        "requiredProof": [],
+        "minimumEvidenceLevel": "L2_AUTOMATED_TEST",
+        "verificationCommands": [],
+        "blockedStateRules": []
+      },
+      "compaction": {
+        "briefing": "Test work contract creation - count files in project",
+        "summary": "",
+        "anchors": [],
+        "reinjectionPayload": "",
+        "sourceRefs": []
+      },
+      "createdAt": 1777559637987,
+      "updatedAt": 1777559637987
+    }
+  }
+}

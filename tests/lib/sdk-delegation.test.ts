@@ -503,6 +503,60 @@ describe("SdkDelegationHandler", () => {
     })
   })
 
+  describe("R-COMPLETION-DETECTOR-04: idle signal from detector finalizes delegation", () => {
+    it("transitions to completed when CompletionDetector has cached idle signal", async () => {
+      const client = createMockClient()
+      const store = new Map<string, Delegation>()
+      const delegation = createRunningDelegation()
+      store.set(delegation.id, delegation)
+      const detector = new CompletionDetector()
+
+      detector.feedMessageCount(delegation.childSessionId, 5)
+      vi.advanceTimersByTime(detector["stabilityTimeoutMs"] + 1)
+
+      const callbacks = createMockCallbacks(store)
+      callbacks.getCompletionDetector = vi.fn(() => detector)
+      const handler = createHandler(client, callbacks)
+
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(5)
+
+      handler.scheduleStabilityPoll(delegation.id)
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        delegation.id,
+        "completed",
+      )
+    })
+
+    it("does not finalize on idle signal before MIN_IDLE_TIME_MS", async () => {
+      const client = createMockClient()
+      const store = new Map<string, Delegation>()
+      const now = Date.now()
+      const delegation = createRunningDelegation({
+        createdAt: now,
+        lastMessageCountChangeAt: now,
+      })
+      store.set(delegation.id, delegation)
+      const detector = new CompletionDetector()
+
+      detector.feedMessageCount(delegation.childSessionId, 5)
+
+      const callbacks = createMockCallbacks(store)
+      callbacks.getCompletionDetector = vi.fn(() => detector)
+      const handler = createHandler(client, callbacks)
+
+      vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(5)
+
+      handler.scheduleStabilityPoll(delegation.id)
+
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+
+      expect(callbacks.onTerminal).not.toHaveBeenCalled()
+      expect(delegation.status).toBe("running")
+    })
+  })
+
   describe("R-COMPLETION-DETECTOR-03: backwards-compatible when no detector is provided", () => {
     it("does not throw and falls back to legacy polling when getCompletionDetector callback is absent", async () => {
       const client = createMockClient()
