@@ -36,10 +36,10 @@
 - [x] **Phase 31: Planning Documentation Refresh** — 3/3 plans complete — all 10 refreshed documents verified by health check
 - [x] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
 - [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
-- [ ] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — PARTIAL: build/test/build gates pass; notification-handler deletion and TD-11 cast deferred
-- [ ] **Phase 36: Lifecycle State Machine Enforcement** — P0: real transition guards, activity tracking, 500 LOC split
-- [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result
-- [ ] **Phase 38: Q6 State Root Migration** — P1: verify all writers target .hivemind/, remove legacy compat
+- [~] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — COMPLETE WITH DEFERRED DECISION (2026-05-01): TD-11-FINAL verified resolved (no `as any` in `runtime-validator.ts`); DEAD-NH (delete `notification-handler.ts`) **formally deferred** — the file still has live importers in `delegation-manager.ts:5` and `lifecycle-manager.ts:9`, so deletion is a non-trivial decision and was correctly deferred per the original Phase 35 SUMMARY. Track DEAD-NH against any future delegation/lifecycle redesign rather than as a Phase 35 follow-up.
+- [~] **Phase 36: Lifecycle State Machine Enforcement** — P0 PARTIAL (2026-05-01): PH36-01 transition guards DONE (`lifecycle-manager.ts isValidTransition()`); PH36-02 `noteObservedActivity()` DONE (`lifecycle-manager.ts:119`, wired into `create-tool-guard-hooks.ts`, tested in `lifecycle-manager.test.ts:146-199`); **PH36-03 delegation-manager < 500 LOC split is OUTSTANDING** — file is currently 686 LOC.
+- [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result. **Depends on Phase 36 PH36-03 split.**
+- [x] **Phase 38: Q6 State Root Migration** — P1 COMPLETE (2026-05-01): all internal state writers confirmed targeting `.hivemind/state/*` (verified across `continuity.ts`, `delegation-persistence.ts`, `trajectory/ledger.ts`, `agent-work-contracts/store.ts`, `workspace-runtime-policy.ts`); compat bridge for legacy `.opencode/state/opencode-harness/` reads remains per HIVEMIND-ROOT-02; one-way migration enforced (no back-writes).
 - [ ] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2: self-referential dev loop until completion
 - [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
 - [ ] **Phase 41: Session Journal Time-Machine** — P2: query API, event replay, past-state reconstruction
