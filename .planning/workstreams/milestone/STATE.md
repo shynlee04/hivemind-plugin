@@ -86,10 +86,10 @@ Phase 31: Documentation Refresh .... COMPLETE (3/3 plans)
 Phase 32: Traceability Reconcil .... COMPLETE (7/7 tasks, docs-only)
 Phase 33: Phase 16.4 Closure ....... COMPLETE (4 summaries + verification)
 Phase 34: Phase 16 Gap 4 ........... COMPLETE (all 6 requirements verified)
-Phase 35: Event-Tracker Fix ........ PARTIAL (build/test fixed; DEAD-NH and TD-11 deferred)
-Phase 36: Lifecycle State Machine .. PENDING (depends on 35)
-Phase 37: Async Result Harvesting .. PENDING (depends on 36)
-Phase 38: Q6 State Root Migration .. PENDING (depends on 35)
+Phase 35: Event-Tracker Fix ........ COMPLETE WITH DEFERRED DECISION (TD-11-FINAL verified resolved 2026-05-01; DEAD-NH formally deferred — notification-handler.ts retains live importers)
+Phase 36: Lifecycle State Machine .. PARTIAL (PH36-01 transition guards DONE; PH36-02 noteObservedActivity DONE; PH36-03 delegation-manager 500 LOC split OUTSTANDING — file is 686 LOC)
+Phase 37: Async Result Harvesting .. PENDING (depends on 36 PH36-03)
+Phase 38: Q6 State Root Migration .. COMPLETE (all writers verified targeting .hivemind/state/* on 2026-05-01)
 Phase 39: Auto-Loop Engine ......... PENDING (P2)
 Phase 40: CLI Substrate ............ PENDING (P2)
 Phase 41: Session Journal Time-Mach PENDING (P2)
@@ -148,6 +148,7 @@ Phase 59: SDK Supervisor + Commands .. IMPLEMENTATION COMPLETE (SDK supervisor +
 | Phase 45 | COMPLETE | OpenCode SDK session.create boundary aligned; prompt-time tool denial map used; selected-agent tools derived from primitive metadata or conservative read-only fallback |
 | Phase 46 | COMPLETE | Prompt acceptance, empty completion evidence, and restart recovery truth hardened |
 | Phase 47 | COMPLETE | Workspace runtime policy reader and headless output truncation metadata added |
+| Phase 38 | COMPLETE | Q6 state-root migration verified 2026-05-01 — all writers target `.hivemind/state/*` (`continuity.ts`, `delegation-persistence.ts`, `trajectory/ledger.ts`, `agent-work-contracts/store.ts`, `workspace-runtime-policy.ts`, `tools/hivemind-trajectory.ts`, `security/path-scope.ts`); legacy compat bridge preserved per HIVEMIND-ROOT-02; one-way migration enforced (no back-writes) |
 | Phases 17-30, 51 | COMPLETE → MOVED | Skill quality work moved to skill-ecosystem workstream (SE-H1 through SE-H14) |
 
 ### Phases With Caveats
@@ -157,7 +158,8 @@ Phase 59: SDK Supervisor + Commands .. IMPLEMENTATION COMPLETE (SDK supervisor +
 | Phase 9 | COMPLETE WITH CAVEATS | Code exists but UAT quarantined as "substantially false" — mock-verified only, never runtime-verified |
 | Phase 9.1 | COMPLETE WITH CAVEATS | Bug fixes + test rewrites done (668 tests pass), but mock-heavy — never spawn real child sessions |
 | Phase 12 | COMPLETE | False-start corridor fixed and 09-family planning truth reconciled |
-| Phase 35 | PARTIAL | Build/test/build gates pass; `notification-handler.ts` retained per local AGENTS.md and `runtime-validator.ts` cast remains |
+| Phase 35 | COMPLETE WITH DEFERRED DECISION | TD-11-FINAL verified resolved 2026-05-01 (no `as any` in `runtime-validator.ts`); DEAD-NH formally deferred — `notification-handler.ts` retains live importers in `delegation-manager.ts:5` and `lifecycle-manager.ts:9`, so deletion is a delegation/lifecycle architecture decision, not a Phase 35 mop-up |
+| Phase 36 | PARTIAL | PH36-01 transition guards DONE; PH36-02 `noteObservedActivity` DONE (wired in `create-tool-guard-hooks.ts`, tested at `lifecycle-manager.test.ts:146-199`); **PH36-03 delegation-manager.ts 500 LOC split is OUTSTANDING** — file is 686 LOC |
 | Phase 48 | DEGRADED | Live OpenCode health/session/tool IDs pass; REM-RUNTIME-04/05 require dynamic tool execution and non-empty provider completion proof |
 | Phase 48.1 | COMPLETE | 8/8 truths verified, build/typecheck/test green |
 | Phase 48.2 | COMPLETE | gate-report PASS, 960 tests, 2 non-blocking warnings |
