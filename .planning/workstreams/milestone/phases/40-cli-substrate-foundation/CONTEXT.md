@@ -1,8 +1,10 @@
 ---
 phase: 40-cli-substrate-foundation
 priority: P2
-status: pending
+status: complete
 created: 2026-04-30
+completed: 2026-05-01
+completion_note: "PH40-01 satisfied by bin/hivemind-tools.cjs (CommonJS shim) + src/cli/index.ts (runCli entrypoint with stdout/stderr piping). PH40-02 satisfied by src/cli/router.ts (parseArgs, createRouter — name + alias dispatch, sysexits exit codes) + src/cli/discovery.ts (CommandSource flattening + duplicate detection). PH40-03 satisfied by src/cli/renderer.ts (renderError [Harness] policy, renderJson, renderTable with column alignment, renderHelp). Built-in `help` command included as canonical exemplar. Wired through package.json bin field. 18 new tests, framework-free, well under 500 LOC ceiling."
 depends_on: []
 blocks: []
 gsd_agents: [gsd-executor, gsd-framework-selector]

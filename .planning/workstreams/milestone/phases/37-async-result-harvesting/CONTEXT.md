@@ -1,8 +1,10 @@
 ---
 phase: 37-async-result-harvesting
 priority: P1
-status: pending
+status: complete
+completion_note: "PH37-01 + PH37-02 verified implemented 2026-05-01: SDK path harvests via sdk-delegation.ts:248-249 (extractAllAssistantText), command path via command-delegation.ts:281, delegation-status tool returns redacted result at delegation-status.ts:31. Phase 36 PH36-03 dependency closed by PR #72."
 created: 2026-04-30
+completed: 2026-05-01
 depends_on: [36-lifecycle-state-machine-enforcement]
 blocks: []
 gsd_agents: [gsd-executor, gsd-code-reviewer]

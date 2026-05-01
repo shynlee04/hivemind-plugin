@@ -1,7 +1,8 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
+**Workstream:** `milestone` — every phase listed below is owned by `.planning/workstreams/milestone/phases/`. See `.planning/PROJECT.md § Phase Path Resolution` for the workstream-rooted layout (added 2026-05-01 by Phase 32.1).
 **Created:** 2026-04-06
-**Updated:** 2026-05-01 (Audit reconciliation: Phases 36/46/48.4 corrected; Phase 38 status updated; stale audit findings resolved)
+**Updated:** 2026-05-01 (Phase 32.1: workstream-owner header annotation for G6); 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway; Phases 60-71 added as product-detox implementation phases; Phase 36/41 status corrected)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -35,24 +36,24 @@
 - [x] **Phase 31: Planning Documentation Refresh** — 3/3 plans complete — all 10 refreshed documents verified by health check
 - [x] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
 - [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
-- [ ] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — PARTIAL: build/test/build gates pass; notification-handler deletion and TD-11 cast deferred
-- [x] **Phase 36: Lifecycle State Machine Enforcement** — ✅ REMEDIATED (2026-05-01: CompletionDetector idle signal wired to SDK delegation finalization; 2 new tests; 1165 total pass)
-- [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result
-- [~] **Phase 38: Q6 State Root Migration** — PARTIAL: state persistence works (real data in .hivemind/); needs dedicated recovery/atomic-write tests
-- [ ] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2: self-referential dev loop until completion
-- [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
-- [ ] **Phase 41: Session Journal Time-Machine** — P2: query API, event replay, past-state reconstruction
-- [ ] **Phase 42: Sidecar Foundation** — P3: Next.js 15 dashboard reading .hivemind/ and .planning/
+- [~] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — COMPLETE WITH DEFERRED DECISION (2026-05-01): TD-11-FINAL verified resolved (no `as any` in `runtime-validator.ts`); DEAD-NH (delete `notification-handler.ts`) **formally deferred** — the file still has live importers in `delegation-manager.ts:5` and `lifecycle-manager.ts:9`, so deletion is a non-trivial decision and was correctly deferred per the original Phase 35 SUMMARY. Track DEAD-NH against any future delegation/lifecycle redesign rather than as a Phase 35 follow-up.
+- [x] **Phase 36: Lifecycle State Machine Enforcement** — P0 COMPLETE (2026-05-01): PH36-01 transition guards DONE (`lifecycle-manager.ts isValidTransition()`); PH36-02 `noteObservedActivity()` DONE (`lifecycle-manager.ts:119`, wired into `create-tool-guard-hooks.ts`, tested in `lifecycle-manager.test.ts:146-199`); PH36-03 `delegation-manager.ts` 500 LOC split DONE (686 LOC → 468 LOC, new `src/lib/delegation-state-machine.ts` at 426 LOC owns the in-memory store + timer machinery, public `DelegationManager` API unchanged, all 1164 tests green).
+- [x] **Phase 37: Async Result Harvesting** — P1 COMPLETE (2026-05-01): PH37-01 + PH37-02 verified implemented. SDK path harvests child results via `sdk-delegation.ts:248-249` (`extractAllAssistantText` + dual-signal gate); command path via `command-delegation.ts:281`; `delegation-status` tool returns redacted `result` at `delegation-status.ts:31`. Phase 36 PH36-03 dependency closed by PR #72. Docs-only reconciliation — implementation was already complete; only the roadmap was stale.
+- [x] **Phase 38: Q6 State Root Migration** — P1 COMPLETE (2026-05-01): all internal state writers confirmed targeting `.hivemind/state/*` (verified across `continuity.ts`, `delegation-persistence.ts`, `trajectory/ledger.ts`, `agent-work-contracts/store.ts`, `workspace-runtime-policy.ts`); compat bridge for legacy `.opencode/state/opencode-harness/` reads remains per HIVEMIND-ROOT-02; one-way migration enforced (no back-writes).
+- [x] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2 COMPLETE (2026-05-01): pure orchestration primitives shipped — `src/lib/auto-loop.ts` `runAutoLoop<T>()` and `src/lib/ralph-loop.ts` `runRalphLoop<T>()` + `escalationMessage()`; PH39-01 self-referential loop + PH39-02 validate-fix-redispatch + PH39-03 max-correction-cycles cap with structured exhaustion; 18 phase tests; live delegation-manager wiring deferred to follow-up phase.
+- [x] **Phase 40: CLI Substrate Foundation** — P2 COMPLETE (2026-05-01) — `bin/hivemind-tools.cjs` CommonJS shim wired via `package.json#bin`; framework-free router (`src/cli/router.ts`) with sysexits exit codes; `src/cli/discovery.ts` registration boundary; `src/cli/renderer.ts` (`renderError` startsWith policy + `renderJson`/`renderTable`/`renderHelp`); built-in `help` command exemplar. 18 new tests + Devin-Review fix for renderError startsWith bypass. Domain commands intentionally deferred — this is substrate only.
+- [x] **Phase 41: Session Journal Time-Machine** — P2: COMPLETE (2026-05-01) — `src/lib/journal-query.ts` (JOURNAL-02 — by-session / by-event-type / by-time-range / composed `queryJournal`), `src/lib/journal-replay.ts` (JOURNAL-03 — `replayChronological` / `reconstructStateAt` / `reduceJournalEntries`); JOURNAL-01 (append-only, independent of continuity.ts) verified — no continuity import in `session-journal.ts`. 22 new tests; full suite green.
+- [~] **Phase 42: Sidecar Foundation** — P3 FOUNDATION COMPLETE (2026-05-01): SIDECAR-03 read-only enforcement library shipped at `src/sidecar/readonly-state.ts` with `isCanonicalStatePath` / `readCanonicalState` / `refuseCanonicalWrite` (logical containment against `.hivemind/state/`, `.hivemind/event-tracker/`, `.planning/`; `..` traversal and absolute-path escapes rejected; 12 unit tests). Next.js 15 + React 19 + `@json-render/react` scaffold at `sidecar/` (deps declared, not installed). **SIDECAR-01** dashboard tabs and **SIDECAR-02** OpenCode SDK bridge explicitly deferred to follow-up phases per user direction.
 - [x] **Phase 43: Hook Composition Observability Integrity** — Critical: compose tool-guard and plugin after-hook behavior
 - [x] **Phase 44: Tool Write-Surface & Secret Hardening** — Critical/security: constrain write/read paths, await writes, remove literal secrets
 - [x] **Phase 45: OpenCode SDK Permission Boundary** — Critical: align child-session permission/tool policy with supported SDK surfaces
-- [x] **Phase 46: Delegation Dispatch, Completion & Recovery Truth** — ✅ COMPLETE (2026-05-01 verified: async policy gate already removed; unconditional async dispatch; stale audit finding corrected)
+- [x] **Phase 46: Delegation Dispatch, Completion & Recovery Truth** — High: prevent false dispatched/completed/error states
 - [x] **Phase 47: Runtime Policy & Command Buffer Hardening** — Medium: workspace policy input and bounded command output
 - [ ] **Phase 48: Real OpenCode Runtime Integration Verification** — DEGRADED: health/session/tool registration pass; hook/tool-exec/delegation completion gaps remain
 - [x] **Phase 48.1: Runtime Correctness: Lifecycle, Queue, Persistence Truth** — COMPLETE: lifecycle, queue-key, and persisted delegation truth remediated after Phase 48 degradation
 - [x] **Phase 48.2: Security Boundary Hardening: Secrets, Scope, Category Gates** — COMPLETE: secret handling, scope controls, and category gate enforcement hardened after runtime correctness was restored
 - [x] **Phase 48.3: OpenCode SDK/CQRS Integration Alignment** — Align OpenCode SDK surfaces and CQRS boundaries after runtime and security invariants are stable
-- [x] **Phase 48.4: Production Evidence & Coverage Recovery** — COMPLETE — audit finding "zero tests" was incorrect for this worktree (172 delegation tests exist across 4 test files; 4750 LOC)
+- [x] **Phase 48.4: Production Evidence & Coverage Recovery** — COMPLETE WITH DEFERRED RUNTIME GAPS: coverage/evidence classification closed without claiming REM-RUNTIME-04/05
 - [x] **Phase 48.5: Architecture LOC Cleanup: Event Tracker Writer Split** — COMPLETE: 3/3 plans, validation PASS WITH RUNTIME GAP RECOMMENDATION
 - [x] **Phase 49: UAT Tool Contract & PTY Command Reliability** — COMPLETE WITH PARTIAL RUNTIME EVIDENCE: command contract, prompt heuristics, and journal export filters stabilized
 - [x] **Phase 50: OpenCode Primitive Restart Readiness** — COMPLETE: configured agents, commands, skills, and permissions restart-valid under project-local OpenCode discovery
@@ -72,7 +73,7 @@
 - [ ] **Phase 64: Enhanced Event Tracker Implementation** — P1
 - [x] **Phase 65: Trajectory Session v3 Implementation** → MERGED into Phase 56
 - [ ] **Phase 66: Recovery Engine Implementation** — P1
-- [ ] **Phase 67: Runtime Pressure + Control Plane Implementation** — P1
+- [x] **Phase 67: Runtime Pressure + Control Plane Implementation** — P1
 - [ ] **Phase 68: Agent Work Contracts Implementation** — P1
 - [ ] **Phase 69: SDK Supervisor + Command Engine Implementation** — P2
 - [ ] **Phase 70: Prompt Packet Compiler** — P2
@@ -758,7 +759,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Replace stub implementations in lifecycle-manager.ts with real state machine enforcement and activity tracking. Split delegation-manager.ts under 500 LOC.
 **Depends on:** Phase 35
 **Plans:** 3/3 plans complete
-**Status:** PARTIAL — PH36-01 transition guards implemented, PH36-02 activity tracking pending, PH36-03 PTY split done
+**Status:** COMPLETE (2026-05-01) — PH36-01 transition guards, PH36-02 `noteObservedActivity` activity tracking, and PH36-03 `delegation-manager.ts` 500 LOC split all DONE; new `delegation-state-machine.ts` module owns the in-memory store + timer machinery, `delegation-manager.ts` retains dispatch/concurrency/agent validation; both files under 500 LOC; full test suite (1164/1164) green
 
 ### Scope
 - Define `SessionLifecyclePhase` transition table in `types.ts`
@@ -773,7 +774,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Implement result extraction from child sessions when completion is detected.
 **Depends on:** Phase 36
 **Plans:** 5 plans
-**Status:** PENDING (depends on Phase 36)
+**Status:** COMPLETE (2026-05-01) — PH37-01 SDK harvest at `sdk-delegation.ts:248-249` via `extractAllAssistantText` after dual-signal gate; PH37-01 command harvest at `command-delegation.ts:281` (PTY/headless `outcome.output`); PH37-02 `delegation-status` tool returns redacted `result`/`error`/`fallbackReason` at `delegation-status.ts:31`. Test coverage in `tests/lib/sdk-delegation.test.ts:118+`, `tests/lib/command-delegation.test.ts:288-292`, `tests/lib/delegation-persistence.test.ts:111`. Docs-only reconciliation — implementation already in place from earlier delegation work; only the roadmap was stale.
 
 ### Scope
 - In `sdk-delegation.ts`: when stability detection confirms completion, harvest last assistant message
@@ -1298,10 +1299,10 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 67: Runtime Pressure + Control Plane Implementation (P1)
 - **Depends on:** Phase 61, Phase 57 (planning contract)
 - **Blocks:** Phase 39, Phase 68
-- **Status:** Pending
+- **Status:** Complete (2026-05-01)
 - **Scope:** 10-tier pressure model, control-plane detect() gates, tool catalog authority
 - **Planning Contract:** Phase 57-CONTRACT-2026-04-30.md
-- **Key files:** `src/lib/pressure/`, `src/lib/runtime-policy.ts`
+- **Key files:** `src/lib/runtime-pressure/` (path deviation from CONTEXT — see SUMMARY.md), `src/lib/runtime-policy.ts`
 
 ### Phase 68: Agent Work Contracts Implementation (P1)
 - **Depends on:** Phase 67, Phase 58 (planning contract)

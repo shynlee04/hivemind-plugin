@@ -1,9 +1,10 @@
 ---
 phase: 36-lifecycle-state-machine-enforcement
 priority: P0
-status: partial
-completion_note: "PH36-01 (transition guards) and PH36-03 (PTY split) implemented. PH36-02 (activity tracking) remains."
+status: complete
+completion_note: "PH36-01 transition guards DONE; PH36-02 noteObservedActivity DONE (lifecycle-manager.ts:119, wired into create-tool-guard-hooks.ts); PH36-03 delegation-manager.ts split DONE 2026-05-01 (686 LOC -> 468 LOC, new module delegation-state-machine.ts at 426 LOC)."
 created: 2026-04-30
+completed: 2026-05-01
 depends_on: [35-event-tracker-fix-dead-code-cleanup]
 blocks: [37-async-result-harvesting, 39-auto-loop-ralph-loop-engine, 11-clean-architecture-restructuring]
 gsd_agents: [gsd-executor, gsd-verifier, gsd-code-reviewer]

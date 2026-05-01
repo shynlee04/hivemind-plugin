@@ -121,7 +121,7 @@ export function createDelegationStatusTool(
 
         return renderToolResult(success(
           `${filtered.length} delegation(s)${args.status ? ` with status "${args.status}"` : ""}`,
-          filtered,
+          filtered.map(renderDelegation),
           { total: allDelegations.length },
         ))
       } catch (caughtError) {

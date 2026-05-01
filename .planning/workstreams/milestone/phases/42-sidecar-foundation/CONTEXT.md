@@ -1,7 +1,8 @@
 ---
 phase: 42-sidecar-foundation
 priority: P3
-status: pending
+status: foundation-complete
+foundation_completed: 2026-05-01
 created: 2026-04-30
 depends_on: [38-q6-state-root-migration, 41-session-journal-time-machine]
 blocks: []

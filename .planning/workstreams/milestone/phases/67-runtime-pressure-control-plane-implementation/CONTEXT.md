@@ -1,7 +1,8 @@
 ---
 phase: 67-runtime-pressure-control-plane-implementation
 priority: P1
-status: pending
+status: complete
+completed: 2026-05-01
 created: 2026-04-30
 depends_on:
   - 61-control-plane-primitive-registry

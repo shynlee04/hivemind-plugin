@@ -1,0 +1,27 @@
+{
+  "name": "@opencode-harness/sidecar",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Read-only sidecar dashboard for the OpenCode harness — Phase 42 foundation. UI deferred to SIDECAR-01/02 follow-up phases.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@json-render/react": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
