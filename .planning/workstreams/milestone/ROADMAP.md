@@ -43,7 +43,7 @@
 - [x] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2 COMPLETE (2026-05-01): pure orchestration primitives shipped — `src/lib/auto-loop.ts` `runAutoLoop<T>()` and `src/lib/ralph-loop.ts` `runRalphLoop<T>()` + `escalationMessage()`; PH39-01 self-referential loop + PH39-02 validate-fix-redispatch + PH39-03 max-correction-cycles cap with structured exhaustion; 18 phase tests; live delegation-manager wiring deferred to follow-up phase.
 - [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
 - [ ] **Phase 41: Session Journal Time-Machine** — P2: query API, event replay, past-state reconstruction
-- [ ] **Phase 42: Sidecar Foundation** — P3: Next.js 15 dashboard reading .hivemind/ and .planning/
+- [~] **Phase 42: Sidecar Foundation** — P3 FOUNDATION COMPLETE (2026-05-01): SIDECAR-03 read-only enforcement library shipped at `src/sidecar/readonly-state.ts` with `isCanonicalStatePath` / `readCanonicalState` / `refuseCanonicalWrite` (logical containment against `.hivemind/state/`, `.hivemind/event-tracker/`, `.planning/`; `..` traversal and absolute-path escapes rejected; 12 unit tests). Next.js 15 + React 19 + `@json-render/react` scaffold at `sidecar/` (deps declared, not installed). **SIDECAR-01** dashboard tabs and **SIDECAR-02** OpenCode SDK bridge explicitly deferred to follow-up phases per user direction.
 - [x] **Phase 43: Hook Composition Observability Integrity** — Critical: compose tool-guard and plugin after-hook behavior
 - [x] **Phase 44: Tool Write-Surface & Secret Hardening** — Critical/security: constrain write/read paths, await writes, remove literal secrets
 - [x] **Phase 45: OpenCode SDK Permission Boundary** — Critical: align child-session permission/tool policy with supported SDK surfaces

@@ -93,7 +93,7 @@ Phase 38: Q6 State Root Migration .. COMPLETE (all writers verified targeting .h
 Phase 39: Auto-Loop Engine ......... COMPLETE (PH39-01 runAutoLoop pure orchestration; PH39-02 runRalphLoop validate-fix-redispatch; PH39-03 maxCorrectionCycles=3 default + escalationMessage; 18 phase tests + full suite green 2026-05-01; live delegation-manager wiring deferred)
 Phase 40: CLI Substrate ............ PENDING (P2)
 Phase 41: Session Journal Time-Mach PENDING (P2)
-Phase 42: Sidecar Foundation ....... PENDING (P3)
+Phase 42: Sidecar Foundation ....... FOUNDATION COMPLETE (SIDECAR-03 read-only enforcement shipped at src/sidecar/readonly-state.ts; Next.js 15 + React 19 + @json-render/react scaffold at sidecar/ — deps declared, not installed; SIDECAR-01 dashboard tabs + SIDECAR-02 OpenCode SDK bridge deferred to follow-up phases per user direction; 12 SIDECAR-03 tests + full suite green 2026-05-01)
 Phase 67: Runtime Pressure CP ...... COMPLETE (PH67-01 band mapping fixed to contract; PH67-02 detect() carries severity/recommendedAction/blockingRationale; PH67-03 authority matrix carries stateSurface/pressureBehavior/evidenceAttachment; 23 pressure tests + full suite green 2026-05-01)
 Phase 43: Hook Composition Obs ..... COMPLETE (Critical — CR-01)
 Phase 44: Write-Surface Hardening .. COMPLETE (Critical/Security — CR-03, HIGH-05, MED-01)
