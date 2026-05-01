@@ -1,8 +1,10 @@
 ---
 phase: 41-session-journal-time-machine
 priority: P2
-status: pending
+status: complete
 created: 2026-04-30
+completed: 2026-05-01
+completion_note: "Implemented in single PR. JOURNAL-01 verified (no continuity.ts import in session-journal.ts; appendFileSync only). JOURNAL-02 implemented in src/lib/journal-query.ts (readJournalEntries, queryBySession, queryByEventType, queryByTimeRange, queryJournal). JOURNAL-03 implemented in src/lib/journal-replay.ts (replayChronological, reconstructStateAt, reduceJournalEntries). All TDD; 22 new tests passing."
 depends_on: [25-session-journal-execution-lineage-bridge]
 blocks: []
 gsd_agents: [gsd-executor, gsd-researcher]

@@ -92,7 +92,7 @@ Phase 37: Async Result Harvesting .. COMPLETE (PH37-01 SDK harvest sdk-delegatio
 Phase 38: Q6 State Root Migration .. COMPLETE (all writers verified targeting .hivemind/state/* on 2026-05-01)
 Phase 39: Auto-Loop Engine ......... COMPLETE (PH39-01 runAutoLoop pure orchestration; PH39-02 runRalphLoop validate-fix-redispatch; PH39-03 maxCorrectionCycles=3 default + escalationMessage; 18 phase tests + full suite green 2026-05-01; live delegation-manager wiring deferred)
 Phase 40: CLI Substrate ............ PENDING (P2)
-Phase 41: Session Journal Time-Mach PENDING (P2)
+Phase 41: Session Journal Time-Mach COMPLETE (P2 — `journal-query.ts` + `journal-replay.ts`; 22 new tests; full suite green 2026-05-01)
 Phase 42: Sidecar Foundation ....... FOUNDATION COMPLETE (SIDECAR-03 read-only enforcement shipped at src/sidecar/readonly-state.ts; Next.js 15 + React 19 + @json-render/react scaffold at sidecar/ — deps declared, not installed; SIDECAR-01 dashboard tabs + SIDECAR-02 OpenCode SDK bridge deferred to follow-up phases per user direction; 12 SIDECAR-03 tests + full suite green 2026-05-01)
 Phase 67: Runtime Pressure CP ...... COMPLETE (PH67-01 band mapping fixed to contract; PH67-02 detect() carries severity/recommendedAction/blockingRationale; PH67-03 authority matrix carries stateSurface/pressureBehavior/evidenceAttachment; 23 pressure tests + full suite green 2026-05-01)
 Phase 43: Hook Composition Obs ..... COMPLETE (Critical — CR-01)
@@ -151,6 +151,7 @@ Phase 59: SDK Supervisor + Commands .. IMPLEMENTATION COMPLETE (SDK supervisor +
 | Phase 47 | COMPLETE | Workspace runtime policy reader and headless output truncation metadata added |
 | Phase 37 | COMPLETE | Async result harvesting verified 2026-05-01 — SDK path harvests via `sdk-delegation.ts:248-249` (`extractAllAssistantText` after dual-signal gate); command path via `command-delegation.ts:281` (PTY/headless `outcome.output`); `delegation-status` tool returns redacted result at `delegation-status.ts:31`; tests in `sdk-delegation.test.ts:118+`, `command-delegation.test.ts:288-292`, `delegation-persistence.test.ts:111` |
 | Phase 38 | COMPLETE | Q6 state-root migration verified 2026-05-01 — all writers target `.hivemind/state/*` (`continuity.ts`, `delegation-persistence.ts`, `trajectory/ledger.ts`, `agent-work-contracts/store.ts`, `workspace-runtime-policy.ts`, `tools/hivemind-trajectory.ts`, `security/path-scope.ts`); legacy compat bridge preserved per HIVEMIND-ROOT-02; one-way migration enforced (no back-writes) |
+| Phase 41 | COMPLETE | Session Journal Time-Machine implemented 2026-05-01 — JOURNAL-01 verified (no `continuity.ts` import in `session-journal.ts`; `appendFileSync` only). JOURNAL-02 in `src/lib/journal-query.ts` (`readJournalEntries`, `queryBySession`, `queryByEventType`, `queryByTimeRange`, `queryJournal`). JOURNAL-03 in `src/lib/journal-replay.ts` (`replayChronological`, `reconstructStateAt`, `reduceJournalEntries`). 22 new tests (`tests/lib/journal-query.test.ts` 12, `tests/lib/journal-replay.test.ts` 10); full suite 1187/1187 passing |
 | Phases 17-30, 51 | COMPLETE → MOVED | Skill quality work moved to skill-ecosystem workstream (SE-H1 through SE-H14) |
 
 ### Phases With Caveats
