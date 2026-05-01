@@ -52,10 +52,11 @@ export function renderJson(value: unknown): string {
  * (catches programming bugs early).
  *
  * Columns are right-padded to the max width of any value in that column,
- * separated by two spaces. The header line is followed by a separator
- * line of `-` characters with the same total width as the header. When
- * `rows` is empty, a `(no rows)` marker is returned instead of an empty
- * string so callers don't print blank output.
+ * separated by two spaces. Output is the header row followed directly
+ * by data rows joined with `\n` (no separator line — kept minimal so
+ * downstream `grep` / `awk` pipelines stay simple). When `rows` is
+ * empty, a `(no rows)` marker is returned instead of an empty string
+ * so callers don't print blank output.
  */
 export function renderTable(
   header: readonly string[],
