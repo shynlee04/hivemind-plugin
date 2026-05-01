@@ -13,9 +13,10 @@
  *  - `needs_continuation`: re-dispatch with the supplied next prompt.
  *  - `failed`: the task failed at the task level; surface the error.
  *
- * Dispatcher rejection is treated as a session-spawn-level failure and
- * thrown as a `[Harness]`-prefixed Error so callers can distinguish
- * infrastructure failure from task-level failure.
+ * Both dispatcher and verifier rejections are treated as
+ * infrastructure-level failures and re-thrown as `[Harness]`-prefixed
+ * Errors so callers can distinguish them from task-level failures
+ * (which the verifier reports via the `failed` outcome).
  */
 
 /**
@@ -46,8 +47,11 @@ export type AutoLoopOptions<T> = {
   dispatcher: (prompt: string, attempt: number) => Promise<T>
   /**
    * Async verifier that classifies a dispatcher result. Receives the
-   * result and the 1-indexed attempt number. Should not throw — return
-   * a `failed` outcome instead.
+   * result and the 1-indexed attempt number. Should return a `failed`
+   * outcome for task-level failures rather than throwing; if it does
+   * throw, the loop wraps the rejection in a `[Harness]`-prefixed
+   * Error matching the dispatcher's behaviour (treated as
+   * infrastructure failure, not task-level failure).
    */
   verifier: (result: T, attempt: number) => Promise<AutoLoopVerification<T>>
 }
@@ -77,7 +81,7 @@ export type AutoLoopResult<T> = {
  * @param options - Loop configuration with injected dispatcher/verifier.
  * @returns Final {@link AutoLoopResult}.
  * @throws `[Harness]`-prefixed Error when `maxIterations` is non-positive
- *   or when the dispatcher itself rejects.
+ *   or when the dispatcher or verifier itself rejects.
  *
  * @example
  * ```ts
@@ -114,7 +118,13 @@ export async function runAutoLoop<T>(options: AutoLoopOptions<T>): Promise<AutoL
     }
     lastResult = result
 
-    const verification = await options.verifier(result, attempt)
+    let verification: AutoLoopVerification<T>
+    try {
+      verification = await options.verifier(result, attempt)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`[Harness] auto-loop verifier failed on attempt ${attempt}: ${message}`)
+    }
 
     if (verification.outcome === "completed") {
       return { status: "completed", iterations: attempt, finalResult: verification.result }

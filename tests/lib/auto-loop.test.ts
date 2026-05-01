@@ -118,6 +118,23 @@ describe("auto-loop — PH39-01 self-referential dev loop", () => {
     expect(verifier).not.toHaveBeenCalled()
   })
 
+  it("propagates verifier rejection as a [Harness]-prefixed throw (matches dispatcher pattern)", async () => {
+    const dispatcher = vi.fn().mockResolvedValue({ text: "result" })
+    const verifier = vi.fn(async () => {
+      throw new Error("verifier crashed")
+    })
+
+    await expect(
+      runAutoLoop({
+        initialPrompt: "start",
+        maxIterations: 3,
+        dispatcher,
+        verifier,
+      }),
+    ).rejects.toThrow(/^\[Harness\] auto-loop verifier failed on attempt 1: verifier crashed/)
+    expect(dispatcher).toHaveBeenCalledTimes(1)
+  })
+
   it("rejects non-positive maxIterations with a [Harness] error", async () => {
     await expect(
       runAutoLoop({
