@@ -4,6 +4,25 @@
 
 The root package is buildable and publishable as a standalone pack. Runtime code is authored in `src/`, emitted to `dist/`, and loaded by the root OpenCode shell through the thin wrapper at `.opencode/plugins/harness-control-plane.ts`.
 
+## Branches
+
+| Branch | Role |
+|---|---|
+| `main` | **Canonical v3 product** — runtime composition engine, the actual `opencode-harness@0.1.x` source. All open PRs target `main`. (Pre-rename name: `feature/harness-implementation`.) |
+| `legacy/v2.x` | **Frozen v2.x baseline** of the original `hivemind-plugin` — kept for forensic reference. Not maintained, not released. Pinned by tag `legacy/v2.x-baseline`. |
+
+The decision and full rename procedure are recorded in [`.planning/decisions/ADR-2026-04-30-branch-strategy.md`](./.planning/decisions/ADR-2026-04-30-branch-strategy.md) (Phase 16.4.1, audit-remediation gate G7).
+
+If you have an existing checkout of the pre-rename name, update with:
+
+```bash
+git fetch origin --prune
+git branch -m feature/harness-implementation main
+git branch -u origin/main main
+git remote set-head origin -a
+git branch -D master 2>/dev/null || true
+```
+
 ## What it contains
 
 - The harness control-plane plugin implementation

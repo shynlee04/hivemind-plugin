@@ -108,6 +108,10 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 | Phase 02 closure requires end-to-end runtime-policy override persistence | Manual in-memory test injection is insufficient; live producer + reload path must exist | Satisfied by Phase 08 |
 | Phase 09-family truth must be reconciled through forensic evidence before reuse | Mock-heavy tests and partial integration work can remain historically useful without being accepted as authoritative runtime proof | Enforced by Phase 12 |
 
+### Branch Strategy
+
+**Canonical branch:** `main` (post-rename from `feature/harness-implementation`). Legacy v2.x baseline preserved as `legacy/v2.x` branch + `legacy/v2.x-baseline` tag. Decision recorded and enacted per `.planning/decisions/ADR-2026-04-30-branch-strategy.md` (Phase 16.4.1, audit-remediation gate G7). Until the maintainer enacts the rename, the canonical branch in flight is `feature/harness-implementation` and the ADR's `status:` remains `proposed`.
+
 ### Validation Decisions (Q1-Q6) — Locked 2026-04-25
 
 Source: `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`
