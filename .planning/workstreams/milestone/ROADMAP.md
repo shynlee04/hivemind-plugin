@@ -73,7 +73,7 @@
 - [ ] **Phase 64: Enhanced Event Tracker Implementation** — P1
 - [x] **Phase 65: Trajectory Session v3 Implementation** → MERGED into Phase 56
 - [ ] **Phase 66: Recovery Engine Implementation** — P1
-- [ ] **Phase 67: Runtime Pressure + Control Plane Implementation** — P1
+- [x] **Phase 67: Runtime Pressure + Control Plane Implementation** — P1
 - [ ] **Phase 68: Agent Work Contracts Implementation** — P1
 - [ ] **Phase 69: SDK Supervisor + Command Engine Implementation** — P2
 - [ ] **Phase 70: Prompt Packet Compiler** — P2
@@ -1299,10 +1299,10 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 67: Runtime Pressure + Control Plane Implementation (P1)
 - **Depends on:** Phase 61, Phase 57 (planning contract)
 - **Blocks:** Phase 39, Phase 68
-- **Status:** Pending
+- **Status:** Complete (2026-05-01)
 - **Scope:** 10-tier pressure model, control-plane detect() gates, tool catalog authority
 - **Planning Contract:** Phase 57-CONTRACT-2026-04-30.md
-- **Key files:** `src/lib/pressure/`, `src/lib/runtime-policy.ts`
+- **Key files:** `src/lib/runtime-pressure/` (path deviation from CONTEXT — see SUMMARY.md), `src/lib/runtime-policy.ts`
 
 ### Phase 68: Agent Work Contracts Implementation (P1)
 - **Depends on:** Phase 67, Phase 58 (planning contract)

@@ -3,16 +3,26 @@ import type { PressureBand, PressureClassification, PressureClassificationInput,
 /**
  * Return the pressure band for a clamped 0-9 tier.
  *
+ * Band boundaries are fixed by the Phase 57 planning contract
+ * (`57-CONTRACT-2026-04-30.md` §"Pressure Bands") and **must not** be
+ * overridden by workspace policy:
+ *
+ * - `steady`   — tiers 0-1
+ * - `advisory` — tiers 2-4
+ * - `gated`    — tiers 5-7
+ * - `blocking` — tiers 8-9
+ *
  * @param tier - Runtime pressure tier from 0 through 9.
  * @returns The escalation band assigned to the tier.
  *
  * @example
  * ```typescript
+ * getPressureBand(2) // "advisory"
  * getPressureBand(6) // "gated"
  * ```
  */
 export function getPressureBand(tier: PressureTier): PressureBand {
-  if (tier <= 2) return "steady"
+  if (tier <= 1) return "steady"
   if (tier <= 4) return "advisory"
   if (tier <= 7) return "gated"
   return "blocking"
