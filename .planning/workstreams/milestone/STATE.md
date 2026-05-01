@@ -16,6 +16,8 @@ progress:
 
 # STATE: Harness Cleanup
 
+> **Workstream owner:** `milestone`. Every phase tracked in this file lives under `.planning/workstreams/milestone/phases/`. For the workstream-rooted phase layout and ID-resolution rules see `.planning/PROJECT.md § Phase Path Resolution` (added 2026-05-01 by Phase 32.1, audit-remediation gate G6).
+
 ## Project Reference
 
 See: `.planning/PROJECT.md`
