@@ -88,7 +88,7 @@ Phase 33: Phase 16.4 Closure ....... COMPLETE (4 summaries + verification)
 Phase 34: Phase 16 Gap 4 ........... COMPLETE (all 6 requirements verified)
 Phase 35: Event-Tracker Fix ........ COMPLETE WITH DEFERRED DECISION (TD-11-FINAL verified resolved 2026-05-01; DEAD-NH formally deferred — notification-handler.ts retains live importers)
 Phase 36: Lifecycle State Machine .. COMPLETE (PH36-01 transition guards DONE; PH36-02 noteObservedActivity DONE; PH36-03 delegation-manager 500 LOC split DONE 2026-05-01 — 686 LOC → 468 LOC, new delegation-state-machine.ts at 426 LOC, all 1164 tests green)
-Phase 37: Async Result Harvesting .. PENDING (depends on 36 PH36-03)
+Phase 37: Async Result Harvesting .. COMPLETE (PH37-01 SDK harvest sdk-delegation.ts:248-249; PH37-01 command harvest command-delegation.ts:281; PH37-02 delegation-status tool returns redacted result at delegation-status.ts:31; verified 2026-05-01)
 Phase 38: Q6 State Root Migration .. COMPLETE (all writers verified targeting .hivemind/state/* on 2026-05-01)
 Phase 39: Auto-Loop Engine ......... PENDING (P2)
 Phase 40: CLI Substrate ............ PENDING (P2)
@@ -148,6 +148,7 @@ Phase 59: SDK Supervisor + Commands .. IMPLEMENTATION COMPLETE (SDK supervisor +
 | Phase 45 | COMPLETE | OpenCode SDK session.create boundary aligned; prompt-time tool denial map used; selected-agent tools derived from primitive metadata or conservative read-only fallback |
 | Phase 46 | COMPLETE | Prompt acceptance, empty completion evidence, and restart recovery truth hardened |
 | Phase 47 | COMPLETE | Workspace runtime policy reader and headless output truncation metadata added |
+| Phase 37 | COMPLETE | Async result harvesting verified 2026-05-01 — SDK path harvests via `sdk-delegation.ts:248-249` (`extractAllAssistantText` after dual-signal gate); command path via `command-delegation.ts:281` (PTY/headless `outcome.output`); `delegation-status` tool returns redacted result at `delegation-status.ts:31`; tests in `sdk-delegation.test.ts:118+`, `command-delegation.test.ts:288-292`, `delegation-persistence.test.ts:111` |
 | Phase 38 | COMPLETE | Q6 state-root migration verified 2026-05-01 — all writers target `.hivemind/state/*` (`continuity.ts`, `delegation-persistence.ts`, `trajectory/ledger.ts`, `agent-work-contracts/store.ts`, `workspace-runtime-policy.ts`, `tools/hivemind-trajectory.ts`, `security/path-scope.ts`); legacy compat bridge preserved per HIVEMIND-ROOT-02; one-way migration enforced (no back-writes) |
 | Phases 17-30, 51 | COMPLETE → MOVED | Skill quality work moved to skill-ecosystem workstream (SE-H1 through SE-H14) |
 
