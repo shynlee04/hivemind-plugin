@@ -54,7 +54,10 @@ const CANONICAL_PREFIXES = [".hivemind/state", ".hivemind/event-tracker", ".plan
  */
 export function isCanonicalStatePath(absolutePath: string, opts: ReadOnlyStateOptions): boolean {
   const root = resolve(opts.projectRoot)
-  const target = isAbsolute(absolutePath) ? resolve(absolutePath) : resolve(absolutePath)
+  // resolve() already handles both absolute and relative inputs (relative
+  // paths are joined with process.cwd), so a single call covers both
+  // branches the original ternary tried to express.
+  const target = resolve(absolutePath)
   const rel = relative(root, target)
   if (rel.startsWith("..") || isAbsolute(rel)) {
     return false
