@@ -46,6 +46,17 @@ the harvested result, and both apply `redactTextSecrets` from
 `src/lib/security/redaction.ts` before returning it to the caller. The
 same redaction is applied to `error` and `fallbackReason`.
 
+> **Correction (2026-05-01, post-merge):** When this SUMMARY was written
+> the list-all branch was actually returning the raw `Delegation[]`
+> array straight to `success(...)` without going through
+> `renderDelegation()`, leaking unredacted `result`/`error`/`fallbackReason`
+> for every delegation the caller could see (Devin Review finding on
+> PR #73). The list-all path was fixed in a follow-up PR by mapping
+> `filtered.map(renderDelegation)` and a regression test was added at
+> `tests/tools/delegation-status.test.ts` ("redacts result/error/fallbackReason
+> for every delegation in the list-all branch"). The statement above is
+> accurate as of that follow-up PR.
+
 ## Test Coverage
 
 - `tests/lib/sdk-delegation.test.ts:118` — "finalizes SDK delegation by calling client.session.messages for result extraction"

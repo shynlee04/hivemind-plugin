@@ -340,7 +340,7 @@ describe("delegation-status tool", () => {
     const raw = await tool.execute({} as never, mockCtx)
     const result = parseResult(raw)
 
-    expect((result.data as Delegation[]).map((entry) => entry.id)).toEqual(["del-owned"])
+    expect((result.data as Array<{ delegationId?: string }>).map((entry) => entry.delegationId)).toEqual(["del-owned"])
   })
 
   it("handles empty delegation list", async () => {
@@ -354,6 +354,49 @@ describe("delegation-status tool", () => {
     expect(result.message).toContain("0 delegation")
     const data = result.data as Delegation[]
     expect(data).toHaveLength(0)
+  })
+
+  it("redacts result/error/fallbackReason for every delegation in the list-all branch", async () => {
+    // Regression for Devin Review finding on PR #73: the list-all branch previously
+    // returned raw Delegation[] without applying renderDelegation()'s redaction,
+    // leaking secrets in result / error / fallbackReason for any delegation the
+    // caller could see.
+    const delegations = [
+      makeDelegation({
+        id: "del-leak-1",
+        status: "completed",
+        result: "OPENAI_API_KEY=sk-leak-list-1",
+        error: "Authorization: Bearer leak.list.1",
+        fallbackReason: "PASSWORD=leakpw1",
+        completedAt: Date.now(),
+      }),
+      makeDelegation({
+        id: "del-leak-2",
+        status: "completed",
+        result: "GITHUB_TOKEN=ghp-leak-list-2",
+        completedAt: Date.now(),
+      }),
+    ]
+    const manager = createManagerStub(delegations)
+    const tool = createDelegationStatusTool(manager as never)
+
+    const raw = await tool.execute({} as never, mockCtx)
+    const result = parseResult(raw)
+    const data = result.data as Array<Record<string, unknown>>
+
+    expect(data).toHaveLength(2)
+    expect(data[0]?.result).toBe("OPENAI_API_KEY=[REDACTED:API_KEY]")
+    expect(data[0]?.error).toBe("Authorization: Bearer [REDACTED:TOKEN]")
+    expect(data[0]?.fallbackReason).toBe("PASSWORD=[REDACTED:PASSWORD]")
+    expect(data[1]?.result).toBe("GITHUB_TOKEN=[REDACTED:TOKEN]")
+    // Raw response must contain none of the secret literals.
+    expect(raw).not.toContain("sk-leak-list-1")
+    expect(raw).not.toContain("leak.list.1")
+    expect(raw).not.toContain("leakpw1")
+    expect(raw).not.toContain("ghp-leak-list-2")
+    // delegationId is the public field, id should not appear (renderDelegation rename)
+    expect(data[0]?.delegationId).toBe("del-leak-1")
+    expect(data[1]?.delegationId).toBe("del-leak-2")
   })
 
   it("filters by status when status parameter provided", async () => {
@@ -388,15 +431,15 @@ describe("delegation-status tool", () => {
 
     const allRaw = await tool.execute({} as never, mockCtx)
     const allResult = parseResult(allRaw)
-    expect((allResult.data as Delegation[]).map((d) => d.id)).toEqual(
+    expect((allResult.data as Array<{ delegationId?: string }>).map((d) => d.delegationId)).toEqual(
       expect.arrayContaining(["del-active", "del-persisted-terminal"]),
     )
 
     const filteredRaw = await tool.execute({ status: "completed" } as never, mockCtx)
     const filteredResult = parseResult(filteredRaw)
-    const filtered = filteredResult.data as Delegation[]
+    const filtered = filteredResult.data as Array<{ delegationId?: string }>
     expect(filtered).toHaveLength(1)
-    expect(filtered[0]?.id).toBe("del-persisted-terminal")
+    expect(filtered[0]?.delegationId).toBe("del-persisted-terminal")
   })
 
   it("returns empty list when filter matches no delegations", async () => {
