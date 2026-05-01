@@ -1,7 +1,8 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
+**Workstream:** `milestone` — every phase listed below is owned by `.planning/workstreams/milestone/phases/`. See `.planning/PROJECT.md § Phase Path Resolution` for the workstream-rooted layout (added 2026-05-01 by Phase 32.1).
 **Created:** 2026-04-06
-**Updated:** 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway; Phases 60-71 added as product-detox implementation phases; Phase 36/41 status corrected)
+**Updated:** 2026-05-01 (Phase 32.1: workstream-owner header annotation for G6); 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway; Phases 60-71 added as product-detox implementation phases; Phase 36/41 status corrected)
 **Granularity:** Fine
 
 ## Phases Overview

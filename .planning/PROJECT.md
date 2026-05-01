@@ -63,6 +63,46 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 - Zombie cleanup and runtime-domain restructure work — excluded from this reconciliation.
 - New feature expansion beyond the verified Phase 02 gap closure.
 
+## Phase Path Resolution
+
+> Added 2026-05-01 by Phase **32.1** (audit-remediation, Finding 6 contextual override). Closes verification gate **G6** from `.planning/workstreams/milestone/AUDIT-VALIDATION-2026-04-30.md §6`.
+
+This project deliberately uses a **workstream-rooted phase layout**, not a single flat `.planning/phases/` directory. Phase IDs are unique **within each workstream**, not globally. The 2026-04-30 delegation-async-pty-lifecycle audit's "phantom phase" framing came from resolving against the legacy flat root; the canonical roots are below.
+
+### Workstream Roots
+
+| Workstream | Root | Owner / Scope |
+|---|---|---|
+| **milestone** | `.planning/workstreams/milestone/phases/` | Hard-harness runtime composition engine — tools, hooks, plugin assembly, runtime correctness, release readiness. Most numbered phases (1–73) live here. |
+| **skill-ecosystem** | `.planning/workstreams/skill-ecosystem/phases/` | `hm-*` skills body of work — refactor, quality synthesis, RICH-gate enforcement, skill curation. Phases use `SE-*` IDs (e.g. `SE-2`, `SE-H14`). |
+| **agent-synthesis** | `.planning/workstreams/agent-synthesis/phases/` | Agent-builder corridor — `hf-l2-*` builder agents, agent-synthesis routing. |
+
+State root for runtime persistence is fixed by **D-01** in `.planning/workstreams/skill-ecosystem/ROADMAP.md`: `.hivemind/` is canonical for all internal deep-module state. `.opencode/` is reserved for OpenCode primitives only (agents, commands, skills). Planning artifacts live under `.planning/`.
+
+### Resolution Order
+
+When resolving an unqualified phase ID (e.g. `36`, `48.4.1`, `SE-2`), tooling MUST search the workstream roots in this order:
+
+1. `workstreams/milestone/phases/`
+2. `workstreams/skill-ecosystem/phases/`
+3. `workstreams/agent-synthesis/phases/`
+
+The first match wins. Numeric IDs are conventionally owned by **milestone**; the `SE-*` prefix is conventionally owned by **skill-ecosystem**. If the same phase number appears in two workstreams, that is a workstream-layout bug — health-check tooling MUST flag it as ambiguous rather than silently picking one.
+
+### How to Verify a Phase Reference
+
+```bash
+# 1. Look up by exact path (preferred when in doubt):
+ls .planning/workstreams/milestone/phases/ | grep '^36-'
+ls .planning/workstreams/skill-ecosystem/phases/ | grep -i '^se-2-'
+
+# 2. Or via the gsd-sdk wrapper (external tool):
+gsd-sdk query find-phase 36 --raw
+gsd-sdk query find-phase SE-2 --raw
+```
+
+If `gsd-sdk` resolves only against the legacy flat `.planning/phases/` root (or only against the first workstream), that is a tooling gap to fix in the external `gsd-sdk` repo — it does not invalidate the layout documented here. The audit-remediation phase that opened that follow-up is `32.1-workstream-path-layout-doc`.
+
 ## Context
 
 **Worktree**: `/Users/apple/hivemind-plugin/.worktrees/harness-experiment`
