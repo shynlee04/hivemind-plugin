@@ -30,7 +30,7 @@ const HARNESS_PREFIX = "[Harness]"
  * space separator.
  */
 export function renderError(message: string): string {
-  if (message.includes(HARNESS_PREFIX)) {
+  if (message.startsWith(HARNESS_PREFIX)) {
     return message
   }
   return `${HARNESS_PREFIX} ${message}`

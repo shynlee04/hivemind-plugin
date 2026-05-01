@@ -13,11 +13,20 @@ describe("cli/renderer — PH40-03 context renderer for terminal output", () => 
       expect(renderError("Something exploded")).toContain("Something exploded")
     })
 
-    it("does not double-prefix [Harness] when the message already includes it", () => {
+    it("does not double-prefix [Harness] when the message already starts with it", () => {
       const out = renderError("[Harness] Already prefixed")
       // Should appear exactly once.
       const matches = out.match(/\[Harness\]/g) ?? []
       expect(matches).toHaveLength(1)
+    })
+
+    it("prepends [Harness] when the prefix appears mid-string but not at the start", () => {
+      // Regression: previously used .includes(HARNESS_PREFIX), which let a
+      // handler return `{ error: "Something about [Harness] internals" }`
+      // and silently bypass the prefix-at-start contract documented in JSDoc.
+      const out = renderError("Something about [Harness] internals")
+      expect(out.startsWith("[Harness] ")).toBe(true)
+      expect(out).toContain("Something about [Harness] internals")
     })
   })
 
