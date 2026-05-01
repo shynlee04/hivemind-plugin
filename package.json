@@ -4,8 +4,12 @@
   "description": "Multi-agent checkpoint orchestration framework for OpenCode",
   "type": "module",
   "main": "./dist/index.js",
+  "bin": {
+    "hivemind-tools": "./bin/hivemind-tools.cjs"
+  },
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "exports": {
     ".": {
@@ -15,6 +19,10 @@
     "./plugin": {
       "import": "./dist/plugin.js",
       "types": "./dist/plugin.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli/index.js",
+      "types": "./dist/cli/index.d.ts"
     }
   },
   "scripts": {
