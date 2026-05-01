@@ -87,7 +87,7 @@ Phase 32: Traceability Reconcil .... COMPLETE (7/7 tasks, docs-only)
 Phase 33: Phase 16.4 Closure ....... COMPLETE (4 summaries + verification)
 Phase 34: Phase 16 Gap 4 ........... COMPLETE (all 6 requirements verified)
 Phase 35: Event-Tracker Fix ........ COMPLETE WITH DEFERRED DECISION (TD-11-FINAL verified resolved 2026-05-01; DEAD-NH formally deferred — notification-handler.ts retains live importers)
-Phase 36: Lifecycle State Machine .. PARTIAL (PH36-01 transition guards DONE; PH36-02 noteObservedActivity DONE; PH36-03 delegation-manager 500 LOC split OUTSTANDING — file is 686 LOC)
+Phase 36: Lifecycle State Machine .. COMPLETE (PH36-01 transition guards DONE; PH36-02 noteObservedActivity DONE; PH36-03 delegation-manager 500 LOC split DONE 2026-05-01 — 686 LOC → 468 LOC, new delegation-state-machine.ts at 426 LOC, all 1164 tests green)
 Phase 37: Async Result Harvesting .. PENDING (depends on 36 PH36-03)
 Phase 38: Q6 State Root Migration .. COMPLETE (all writers verified targeting .hivemind/state/* on 2026-05-01)
 Phase 39: Auto-Loop Engine ......... PENDING (P2)
@@ -159,7 +159,7 @@ Phase 59: SDK Supervisor + Commands .. IMPLEMENTATION COMPLETE (SDK supervisor +
 | Phase 9.1 | COMPLETE WITH CAVEATS | Bug fixes + test rewrites done (668 tests pass), but mock-heavy — never spawn real child sessions |
 | Phase 12 | COMPLETE | False-start corridor fixed and 09-family planning truth reconciled |
 | Phase 35 | COMPLETE WITH DEFERRED DECISION | TD-11-FINAL verified resolved 2026-05-01 (no `as any` in `runtime-validator.ts`); DEAD-NH formally deferred — `notification-handler.ts` retains live importers in `delegation-manager.ts:5` and `lifecycle-manager.ts:9`, so deletion is a delegation/lifecycle architecture decision, not a Phase 35 mop-up |
-| Phase 36 | PARTIAL | PH36-01 transition guards DONE; PH36-02 `noteObservedActivity` DONE (wired in `create-tool-guard-hooks.ts`, tested at `lifecycle-manager.test.ts:146-199`); **PH36-03 delegation-manager.ts 500 LOC split is OUTSTANDING** — file is 686 LOC |
+| Phase 36 | COMPLETE | PH36-01 transition guards DONE; PH36-02 `noteObservedActivity` DONE (wired in `create-tool-guard-hooks.ts`, tested at `lifecycle-manager.test.ts:146-199`); PH36-03 `delegation-manager.ts` 500 LOC split DONE 2026-05-01 — 686 LOC → 468 LOC, new `src/lib/delegation-state-machine.ts` at 426 LOC owns the in-memory store + timer machinery; full 1164/1164 test suite green |
 | Phase 48 | DEGRADED | Live OpenCode health/session/tool IDs pass; REM-RUNTIME-04/05 require dynamic tool execution and non-empty provider completion proof |
 | Phase 48.1 | COMPLETE | 8/8 truths verified, build/typecheck/test green |
 | Phase 48.2 | COMPLETE | gate-report PASS, 960 tests, 2 non-blocking warnings |

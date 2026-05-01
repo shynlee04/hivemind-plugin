@@ -1,14 +1,17 @@
 import { CommandDelegationHandler } from "./command-delegation.js"
 import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
 import type { CompletionDetector } from "./completion-detector.js"
-import { persistDelegations, readPersistedDelegations } from "./delegation-persistence.js"
-import { notifyDelegationTerminal } from "./notification-handler.js"
+import { readPersistedDelegations } from "./delegation-persistence.js"
+import {
+  buildDelegationResult,
+  DelegationStateMachine,
+} from "./delegation-state-machine.js"
 import type { PtyManager } from "./pty/pty-manager.js"
 import { SdkDelegationHandler } from "./sdk-delegation.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
 import { recordCategoryGateDeny } from "./category-gate-audit.js"
 import { getAppAgents } from "./app-api.js"
-import { abortSession, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
+import { sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "./runtime-policy.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
@@ -19,41 +22,12 @@ import {
   DEFAULT_SAFETY_CEILING_MS,
   type CommandDelegationParams,
   type Delegation,
-  type DelegationRecoveryGuarantee,
   type DelegationResult,
-  type DelegationSurface,
-  type DelegationStatus,
-  type DelegationTerminalKind,
   type RuntimePolicy,
-  MAX_DELEGATIONS_BEFORE_PRUNE,
-  DEFAULT_PRUNE_MAX_AGE_MS,
   MAX_DELEGATION_DEPTH,
-  TASK_CLEANUP_DELAY_MS,
 } from "./types.js"
 
-function deriveDelegationSurface(executionMode: Delegation["executionMode"]): DelegationSurface {
-  return executionMode === "sdk" ? "agent-delegation" : "command-process"
-}
-
-function deriveRecoveryGuarantee(executionMode: Delegation["executionMode"]): DelegationRecoveryGuarantee {
-  if (executionMode === "sdk") {
-    return "resumable"
-  }
-  if (executionMode === "pty") {
-    return "best-effort"
-  }
-  return "non-resumable-after-restart"
-}
-
 type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }
-
-const VALID_DELEGATION_TRANSITIONS: Record<DelegationStatus, DelegationStatus[]> = {
-  dispatched: ["running", "completed", "error", "timeout"],
-  running: ["completed", "error", "timeout"],
-  completed: [],
-  error: [],
-  timeout: [],
-}
 
 const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
   ...DEFAULT_RUNTIME_POLICY,
@@ -72,17 +46,6 @@ function resolveAcquireArgs(policy: RuntimePolicy, queueKey: string): { limit?: 
 }
 
 /**
- * Checks whether a delegation status transition is allowed by runtime truth rules.
- *
- * @param from - Current delegation status.
- * @param to - Requested next delegation status.
- * @returns True when the transition is permitted.
- */
-function canTransitionDelegationStatus(from: DelegationStatus, to: DelegationStatus): boolean {
-  return VALID_DELEGATION_TRANSITIONS[from].includes(to)
-}
-
-/**
  * Build the OpenCode prompt-time tool map for delegated sessions.
  *
  * @param allowedTools - Tool IDs inherited from the resolved spawn policy.
@@ -96,11 +59,17 @@ function buildDelegationPromptTools(allowedTools: readonly string[]): Record<str
   }
 }
 
+/**
+ * Public dispatch + concurrency entry point for SDK and command delegations.
+ *
+ * In-memory storage, terminal-state transitions, timer machinery, and pruning
+ * live in {@link DelegationStateMachine} (see `delegation-state-machine.ts`).
+ * `DelegationManager` composes one instance and forwards reads/writes through
+ * it, keeping this module focused on dispatch, concurrency, agent validation,
+ * and recovery wiring.
+ */
 export class DelegationManager {
-  private readonly delegations = new Map<string, Delegation>()
-  private readonly delegationsBySession = new Map<string, string>()
-  private readonly safetyTimers = new Map<string, NodeJS.Timeout>()
-  private readonly gracePeriodTimers = new Map<string, NodeJS.Timeout>()
+  private readonly state: DelegationStateMachine
   private readonly semaphore = new DelegationConcurrencyQueue()
   private readonly commandHandler: CommandDelegationHandler
   private readonly sdkHandler: SdkDelegationHandler
@@ -112,22 +81,29 @@ export class DelegationManager {
     options: { ptyManager?: PtyManager | null; runtimePolicy?: RuntimePolicy } = {},
   ) {
     this.runtimePolicy = options.runtimePolicy ?? DEFAULT_MANAGER_RUNTIME_POLICY
+    this.state = new DelegationStateMachine({
+      client,
+      clearExternalTimers: (id) => {
+        this.sdkHandler.clearTimers(id)
+        this.commandHandler.clearTimers(id)
+      },
+    })
     const dm = this
     this.commandHandler = new CommandDelegationHandler(options.ptyManager ?? null, {
-      getDelegation: (id) => dm.delegations.get(id),
-      registerDelegation: (d, s) => dm.registerDelegation(d, s),
-      persistAllDelegations: () => dm.persistAllDelegations(),
-      buildResult: (d) => dm.buildResult(d),
-      cleanupTracking: (id, sid) => dm.cleanupTracking(id, sid),
-      onTerminal: (id, state, err, terminalDetail) => dm.transitionToTerminal(id, state, err, terminalDetail),
+      getDelegation: (id) => dm.state.get(id),
+      registerDelegation: (d, s) => dm.state.registerDelegation(d, s),
+      persistAllDelegations: () => dm.state.persistAll(),
+      buildResult: (d) => buildDelegationResult(d),
+      cleanupTracking: (id, sid) => dm.state.cleanupTracking(id, sid),
+      onTerminal: (id, terminalState, err, terminalDetail) => dm.state.transitionToTerminal(id, terminalState, err, terminalDetail),
     })
     this.sdkHandler = new SdkDelegationHandler(client, {
-      getDelegation: (id) => dm.delegations.get(id),
-      persistAllDelegations: () => dm.persistAllDelegations(),
-      cleanupTracking: (id, sid) => dm.cleanupTracking(id, sid),
-      scheduleSafetyCeiling: (d) => dm.scheduleSafetyCeiling(d),
+      getDelegation: (id) => dm.state.get(id),
+      persistAllDelegations: () => dm.state.persistAll(),
+      cleanupTracking: (id, sid) => dm.state.cleanupTracking(id, sid),
+      scheduleSafetyCeiling: (d) => dm.state.scheduleSafetyCeiling(d),
       onSessionIdle: (sid) => dm.handleSessionIdle(sid),
-      onTerminal: (id, state, err) => dm.transitionToTerminal(id, state, err),
+      onTerminal: (id, terminalState, err) => dm.state.transitionToTerminal(id, terminalState, err),
       // Phase 36.1 R-COMPLETION-DETECTOR-05: lazy accessor avoids the
       // circular construction order in plugin.ts (lifecycle manager is
       // built *after* DelegationManager and *takes* DelegationManager as
@@ -153,9 +129,9 @@ export class DelegationManager {
   }
 
   private resolveNestingDepth(parentSessionId: string): number {
-    const parentDelegationId = this.delegationsBySession.get(parentSessionId)
+    const parentDelegationId = this.state.getDelegationIdForSession(parentSessionId)
     if (!parentDelegationId) return 1
-    const parentDelegation = this.delegations.get(parentDelegationId)
+    const parentDelegation = this.state.get(parentDelegationId)
     return (parentDelegation?.nestingDepth ?? 0) + 1
   }
 
@@ -220,8 +196,8 @@ export class DelegationManager {
         workingDirectory,
         queueKey: acquireQueueKey,
       }
-      this.registerDelegation(delegation, true)
-      this.persistAllDelegations()
+      this.state.registerDelegation(delegation, true)
+      this.state.persistAll()
       try {
         const promptBody = {
           parts: [{ type: "text", text: params.prompt }],
@@ -240,12 +216,12 @@ export class DelegationManager {
         // The legacy flag is kept on RuntimePolicy for backwards-compat
         // with on-disk policy YAML, but is no longer consulted here.
         await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
-        this.transitionDelegationStatus(delegation.id, "running")
+        this.state.transition(delegation.id, "running")
       } catch {
-        this.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
-        return this.buildResult(this.delegations.get(delegation.id) ?? delegation)
+        this.state.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
+        return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
       }
-      return this.buildResult(this.delegations.get(delegation.id) ?? delegation)
+      return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
     } finally {
       release()
     }
@@ -287,13 +263,13 @@ export class DelegationManager {
   }
 
   handleSessionIdle(sessionId: string): void {
-    const delegationId = this.delegationsBySession.get(sessionId)
+    const delegationId = this.state.getDelegationIdForSession(sessionId)
     if (!delegationId) return
-    const delegation = this.delegations.get(delegationId)
+    const delegation = this.state.get(delegationId)
     if (!delegation || delegation.executionMode !== "sdk") return
     if (delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout") return
     if (delegation.status === "dispatched") {
-      this.transitionDelegationStatus(delegationId, "running")
+      this.state.transition(delegationId, "running")
     }
     if (!this.sdkHandler.isPolling(delegationId)) {
       this.sdkHandler.scheduleStabilityPoll(delegationId)
@@ -301,23 +277,23 @@ export class DelegationManager {
   }
 
   handleSessionDeleted(sessionId: string): void {
-    const delegationId = this.delegationsBySession.get(sessionId)
+    const delegationId = this.state.getDelegationIdForSession(sessionId)
     if (!delegationId) return
-    const delegation = this.delegations.get(delegationId)
+    const delegation = this.state.get(delegationId)
     if (!delegation) {
-      this.cleanupTracking(delegationId, sessionId)
+      this.state.cleanupTracking(delegationId, sessionId)
       return
     }
-    this.transitionToTerminal(delegationId, "error", "Delegated session deleted before completion")
+    this.state.transitionToTerminal(delegationId, "error", "Delegated session deleted before completion")
   }
 
   async recoverPending(): Promise<void> {
     for (const persistedDelegation of readPersistedDelegations()) {
       const delegation = { ...persistedDelegation }
-      this.delegations.set(delegation.id, delegation)
+      this.state.hydrateFromPersistence(delegation)
       if (delegation.status !== "running" && delegation.status !== "dispatched") continue
       if (delegation.executionMode === "sdk") {
-        this.delegationsBySession.set(delegation.childSessionId, delegation.id)
+        this.state.trackSession(delegation.childSessionId, delegation.id)
         await this.sdkHandler.recoverSdkDelegation(delegation)
         continue
       }
@@ -325,7 +301,7 @@ export class DelegationManager {
         this.commandHandler.recoverPtyDelegation(delegation)
         continue
       }
-      this.transitionToTerminal(
+      this.state.transitionToTerminal(
         delegation.id,
         "error",
         "[Harness] Headless command delegation cannot be recovered after restart",
@@ -338,11 +314,11 @@ export class DelegationManager {
   }
 
   getStatus(delegationId: string): Delegation | undefined {
-    return this.delegations.get(delegationId)
+    return this.state.get(delegationId)
   }
 
   getAllDelegations(): Delegation[] {
-    return Array.from(this.delegations.values())
+    return this.state.getAll()
   }
 
   /**
@@ -360,7 +336,7 @@ export class DelegationManager {
       return true
     }
 
-    const recordedDelegationId = this.delegationsBySession.get(callerSessionId)
+    const recordedDelegationId = this.state.getDelegationIdForSession(callerSessionId)
     if (!recordedDelegationId) {
       return false
     }
@@ -368,7 +344,7 @@ export class DelegationManager {
       return true
     }
 
-    const recordedDelegation = this.delegations.get(recordedDelegationId)
+    const recordedDelegation = this.state.get(recordedDelegationId)
     if (!recordedDelegation) {
       return false
     }
@@ -384,7 +360,7 @@ export class DelegationManager {
    * @returns In-memory delegation records visible to that caller.
    */
   getVisibleDelegationsForSession(callerSessionId: string): Delegation[] {
-    return this.getAllDelegations().filter((delegation) => this.canSessionAccessDelegation(callerSessionId, delegation))
+    return this.state.getAll().filter((delegation) => this.canSessionAccessDelegation(callerSessionId, delegation))
   }
 
   /**
@@ -394,210 +370,24 @@ export class DelegationManager {
    * @returns The backing delegation when the PTY session is recorded.
    */
   getDelegationForPtySession(ptySessionId: string): Delegation | undefined {
-    for (const delegation of this.delegations.values()) {
-      if (delegation.ptySessionId === ptySessionId) {
-        return delegation
-      }
-    }
-    return undefined
+    return this.state.findByPtySession(ptySessionId)
   }
 
+  /**
+   * Mark a delegation as user-cancelled via its PTY session id and return its
+   * resulting {@link DelegationResult}, or `undefined` when the PTY session is
+   * not recognised.
+   */
   markCommandCancellationForPtySession(ptySessionId: string): DelegationResult | undefined {
-    for (const delegation of this.delegations.values()) {
-      if (delegation.ptySessionId !== ptySessionId) {
-        continue
-      }
-      if (delegation.status !== "running" && delegation.status !== "dispatched") {
-        return this.buildResult(delegation)
-      }
-
-      delegation.explicitCancellation = true
-      delegation.terminalKind = "cancelled"
-      this.persistAllDelegations()
-      return this.buildResult(delegation)
-    }
-
-    return undefined
-  }
-
-  private withContractDefaults(delegation: Delegation): Delegation {
-    return {
-      ...delegation,
-      surface: delegation.surface ?? deriveDelegationSurface(delegation.executionMode),
-      recoveryGuarantee: delegation.recoveryGuarantee ?? deriveRecoveryGuarantee(delegation.executionMode),
-      explicitCancellation: delegation.explicitCancellation ?? false,
-    }
-  }
-
-  private registerDelegation(delegation: Delegation, scheduleSafetyCeiling: boolean): void {
-    const hydratedDelegation = this.withContractDefaults(delegation)
-    this.delegations.set(hydratedDelegation.id, hydratedDelegation)
-    this.delegationsBySession.set(hydratedDelegation.childSessionId, hydratedDelegation.id)
-    if (scheduleSafetyCeiling) this.scheduleSafetyCeiling(hydratedDelegation)
-  }
-
-  private persistAllDelegations(): void {
-    if (this.delegations.size > MAX_DELEGATIONS_BEFORE_PRUNE) {
-      this.pruneCompletedDelegations()
-    }
-    persistDelegations(Array.from(this.delegations.values()))
+    return this.state.markCommandCancellationForPtySession(ptySessionId)
   }
 
   /**
-   * Remove terminal delegations (completed, error, timeout) whose completedAt
-   * timestamp is older than `maxAgeMs`. Prevents unbounded memory growth in
-   * the in-memory delegations Map. Syncs durable state after pruning.
-   *
-   * @param maxAgeMs - Maximum age in milliseconds for keeping terminal delegations.
-   *   Defaults to {@link DEFAULT_PRUNE_MAX_AGE_MS} (30 minutes).
-   * @returns Number of delegations pruned.
+   * Remove terminal delegations older than `maxAgeMs` from the in-memory store
+   * and re-persist. Forwarded to {@link DelegationStateMachine.pruneCompletedDelegations}.
    */
-  pruneCompletedDelegations(maxAgeMs: number = DEFAULT_PRUNE_MAX_AGE_MS): number {
-    const now = Date.now()
-    const terminalStatuses: ReadonlySet<DelegationStatus> = new Set(["completed", "error", "timeout"])
-    const toPrune: string[] = []
-
-    for (const [id, delegation] of this.delegations) {
-      if (!terminalStatuses.has(delegation.status)) continue
-      if (delegation.completedAt !== undefined && (now - delegation.completedAt) > maxAgeMs) {
-        toPrune.push(id)
-      }
-    }
-
-    for (const id of toPrune) {
-      const delegation = this.delegations.get(id)
-      if (delegation) {
-        this.cleanupTracking(id, delegation.childSessionId)
-      }
-      this.delegations.delete(id)
-    }
-
-    if (toPrune.length > 0) {
-      persistDelegations(Array.from(this.delegations.values()))
-    }
-
-    return toPrune.length
-  }
-
-  private scheduleSafetyCeiling(delegation: Delegation): void {
-    const ceiling = delegation.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS
-    const remaining = Math.max(1, ceiling - (Date.now() - delegation.createdAt))
-    const timer = setTimeout(() => { void this.handleSafetyCeiling(delegation.id) }, remaining)
-    this.safetyTimers.set(delegation.id, timer)
-  }
-
-  /**
-   * Applies a guarded delegation status transition without terminal side effects.
-   *
-   * @param delegationId - Delegation record identifier.
-   * @param nextStatus - Non-terminal status to apply.
-   * @returns True when the transition was applied.
-   */
-  private transitionDelegationStatus(delegationId: string, nextStatus: DelegationStatus): boolean {
-    const delegation = this.delegations.get(delegationId)
-    if (!delegation || delegation.status === nextStatus) {
-      return false
-    }
-
-    if (!canTransitionDelegationStatus(delegation.status, nextStatus)) {
-      return false
-    }
-
-    delegation.status = nextStatus
-    this.persistAllDelegations()
-    return true
-  }
-
-  private async handleSafetyCeiling(delegationId: string): Promise<void> {
-    const delegation = this.delegations.get(delegationId)
-    if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) return
-    this.transitionToTerminal(delegationId, "timeout", `[Harness] Delegation safety ceiling reached after ${delegation.safetyCeilingMs}ms`)
-    try { await abortSession(this.client, delegation.childSessionId) } catch { /* no-op */ }
-  }
-
-  /**
-   * Unified terminal state transition for all delegation completion paths.
-   * Handles status setting, persistence, cleanup, logging, and notification scheduling.
-   */
-  private transitionToTerminal(
-    delegationId: string,
-    newState: DelegationStatus,
-    error?: string,
-    terminalDetail?: {
-      terminalKind?: DelegationTerminalKind
-      terminationSignal?: string
-      explicitCancellation?: boolean
-    },
-  ): void {
-    const delegation = this.delegations.get(delegationId)
-    if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) {
-      return
-    }
-
-    const previousStatus = delegation.status
-    if (!canTransitionDelegationStatus(previousStatus, newState)) {
-      return
-    }
-
-    delegation.status = newState
-    delegation.completedAt = Date.now()
-    delegation.terminalKind = terminalDetail?.terminalKind ?? delegation.terminalKind
-    delegation.terminationSignal = terminalDetail?.terminationSignal ?? delegation.terminationSignal
-    delegation.explicitCancellation = terminalDetail?.explicitCancellation ?? delegation.explicitCancellation ?? false
-    if (error !== undefined) {
-      delegation.error = error
-    }
-    if (newState === "completed") {
-      delegation.error = undefined
-    }
-
-    this.clearAllTimers(delegationId)
-    this.persistAllDelegations()
-    this.cleanupTracking(delegationId, delegation.childSessionId)
-
-    // R-OBS-01: Log state transitions with [Harness] prefix
-    console.error(`[Harness] Delegation ${delegationId} transitioned: ${previousStatus} → ${newState}${error ? ` (error: ${error})` : ""}`)
-
-    // R-LC-01: Schedule grace period cleanup for terminal delegations
-    this.scheduleGracePeriodCleanup(delegationId)
-
-    // R-NOTIF-01: Notify parent session of terminal state (fire-and-forget).
-    // Delivery failure queues a durable pending notification that core hooks replay
-    // on parent session lifecycle events.
-    void notifyDelegationTerminal(this.client, delegation)
-  }
-
-  private scheduleGracePeriodCleanup(delegationId: string): void {
-    const delegation = this.delegations.get(delegationId)
-    if (!delegation) return
-
-    const existingTimer = this.gracePeriodTimers.get(delegationId)
-    if (existingTimer) {
-      clearTimeout(existingTimer)
-    }
-    delegation.gracePeriodExpiresAt = Date.now() + TASK_CLEANUP_DELAY_MS
-    this.persistAllDelegations()
-
-    const timer = setTimeout(() => {
-      this.gracePeriodTimers.delete(delegationId)
-      // R-LC-03: Remove from in-memory Map only — do NOT touch persistence file
-      this.delegations.delete(delegationId)
-    }, TASK_CLEANUP_DELAY_MS)
-    this.gracePeriodTimers.set(delegationId, timer)
-  }
-
-  private clearAllTimers(delegationId: string): void {
-    const t = this.safetyTimers.get(delegationId)
-    if (t) { clearTimeout(t); this.safetyTimers.delete(delegationId) }
-    const gt = this.gracePeriodTimers.get(delegationId)
-    if (gt) { clearTimeout(gt); this.gracePeriodTimers.delete(delegationId) }
-    this.sdkHandler.clearTimers(delegationId)
-    this.commandHandler.clearTimers(delegationId)
-  }
-
-  private cleanupTracking(delegationId: string, childSessionId: string): void {
-    this.clearAllTimers(delegationId)
-    this.delegationsBySession.delete(childSessionId)
+  pruneCompletedDelegations(maxAgeMs?: number): number {
+    return this.state.pruneCompletedDelegations(maxAgeMs)
   }
 
   private async validateAgent(agent: string, projectRoot: string): Promise<ValidatedAgent> {
@@ -638,27 +428,6 @@ export class DelegationManager {
     return enrichAgentFromPrimitives(validAgents.find((e) => e.name === agent) ?? { name: agent }, projectRoot)
   }
 
-  private buildResult(delegation: Delegation): DelegationResult {
-    const hydratedDelegation = this.withContractDefaults(delegation)
-    return {
-      status: hydratedDelegation.status,
-      result: hydratedDelegation.result,
-      resultTruncated: hydratedDelegation.resultTruncated,
-      error: hydratedDelegation.error,
-      delegationId: hydratedDelegation.id,
-      executionMode: hydratedDelegation.executionMode,
-      surface: hydratedDelegation.surface,
-      recoveryGuarantee: hydratedDelegation.recoveryGuarantee,
-      workingDirectory: hydratedDelegation.workingDirectory,
-      ptySessionId: hydratedDelegation.ptySessionId,
-      fallbackReason: hydratedDelegation.fallbackReason,
-      queueKey: hydratedDelegation.queueKey,
-      terminalKind: hydratedDelegation.terminalKind,
-      terminationSignal: hydratedDelegation.terminationSignal,
-      explicitCancellation: hydratedDelegation.explicitCancellation,
-    }
-  }
-
   private buildCanonicalQueueContext(agent: ValidatedAgent, params: DelegateParams): QueueContext {
     return {
       provider: params.provider ?? agent.provider,
@@ -681,6 +450,19 @@ export class DelegationManager {
   get stabilityTimers(): Map<string, NodeJS.Timeout> {
     return this.sdkHandler.getTimerMap()
   }
-}
 
-export type { Delegation, DelegationResult }
+  /** @internal Test compatibility — proxies to the underlying state machine's delegation map */
+  get delegations(): Map<string, Delegation> {
+    return this.state.delegations
+  }
+
+  /** @internal Test compatibility — proxies to the underlying state machine's session map */
+  get delegationsBySession(): Map<string, string> {
+    return this.state.delegationsBySession
+  }
+
+  /** @internal Test compatibility — proxies to the underlying state machine's safety timer map */
+  get safetyTimers(): Map<string, NodeJS.Timeout> {
+    return this.state.safetyTimers
+  }
+}

@@ -37,8 +37,8 @@
 - [x] **Phase 33: Phase 16.4 Closure + Backlog 999.1** — Create 4 retroactive SUMMARY.md, create 16.4-VERIFICATION.md, close validation approval, absorb backlog 999.1
 - [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
 - [~] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — COMPLETE WITH DEFERRED DECISION (2026-05-01): TD-11-FINAL verified resolved (no `as any` in `runtime-validator.ts`); DEAD-NH (delete `notification-handler.ts`) **formally deferred** — the file still has live importers in `delegation-manager.ts:5` and `lifecycle-manager.ts:9`, so deletion is a non-trivial decision and was correctly deferred per the original Phase 35 SUMMARY. Track DEAD-NH against any future delegation/lifecycle redesign rather than as a Phase 35 follow-up.
-- [~] **Phase 36: Lifecycle State Machine Enforcement** — P0 PARTIAL (2026-05-01): PH36-01 transition guards DONE (`lifecycle-manager.ts isValidTransition()`); PH36-02 `noteObservedActivity()` DONE (`lifecycle-manager.ts:119`, wired into `create-tool-guard-hooks.ts`, tested in `lifecycle-manager.test.ts:146-199`); **PH36-03 delegation-manager < 500 LOC split is OUTSTANDING** — file is currently 686 LOC.
-- [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result. **Depends on Phase 36 PH36-03 split.**
+- [x] **Phase 36: Lifecycle State Machine Enforcement** — P0 COMPLETE (2026-05-01): PH36-01 transition guards DONE (`lifecycle-manager.ts isValidTransition()`); PH36-02 `noteObservedActivity()` DONE (`lifecycle-manager.ts:119`, wired into `create-tool-guard-hooks.ts`, tested in `lifecycle-manager.test.ts:146-199`); PH36-03 `delegation-manager.ts` 500 LOC split DONE (686 LOC → 468 LOC, new `src/lib/delegation-state-machine.ts` at 426 LOC owns the in-memory store + timer machinery, public `DelegationManager` API unchanged, all 1164 tests green).
+- [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result. **Unblocked 2026-05-01 by Phase 36 PH36-03.**
 - [x] **Phase 38: Q6 State Root Migration** — P1 COMPLETE (2026-05-01): all internal state writers confirmed targeting `.hivemind/state/*` (verified across `continuity.ts`, `delegation-persistence.ts`, `trajectory/ledger.ts`, `agent-work-contracts/store.ts`, `workspace-runtime-policy.ts`); compat bridge for legacy `.opencode/state/opencode-harness/` reads remains per HIVEMIND-ROOT-02; one-way migration enforced (no back-writes).
 - [ ] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2: self-referential dev loop until completion
 - [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
@@ -759,7 +759,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Replace stub implementations in lifecycle-manager.ts with real state machine enforcement and activity tracking. Split delegation-manager.ts under 500 LOC.
 **Depends on:** Phase 35
 **Plans:** 3/3 plans complete
-**Status:** PARTIAL — PH36-01 transition guards implemented, PH36-02 activity tracking pending, PH36-03 PTY split done
+**Status:** COMPLETE (2026-05-01) — PH36-01 transition guards, PH36-02 `noteObservedActivity` activity tracking, and PH36-03 `delegation-manager.ts` 500 LOC split all DONE; new `delegation-state-machine.ts` module owns the in-memory store + timer machinery, `delegation-manager.ts` retains dispatch/concurrency/agent validation; both files under 500 LOC; full test suite (1164/1164) green
 
 ### Scope
 - Define `SessionLifecyclePhase` transition table in `types.ts`
