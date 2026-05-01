@@ -38,7 +38,7 @@
 - [x] **Phase 34: Phase 16 Gap 4 — Dual-Mode Execution Wiring** — Wire PTY execution to delegation, implement dispatchCommand(), create run-background-command tool, close remaining Plan 06 requirements
 - [~] **Phase 35: Event-Tracker Fix + Dead Code Cleanup** — COMPLETE WITH DEFERRED DECISION (2026-05-01): TD-11-FINAL verified resolved (no `as any` in `runtime-validator.ts`); DEAD-NH (delete `notification-handler.ts`) **formally deferred** — the file still has live importers in `delegation-manager.ts:5` and `lifecycle-manager.ts:9`, so deletion is a non-trivial decision and was correctly deferred per the original Phase 35 SUMMARY. Track DEAD-NH against any future delegation/lifecycle redesign rather than as a Phase 35 follow-up.
 - [x] **Phase 36: Lifecycle State Machine Enforcement** — P0 COMPLETE (2026-05-01): PH36-01 transition guards DONE (`lifecycle-manager.ts isValidTransition()`); PH36-02 `noteObservedActivity()` DONE (`lifecycle-manager.ts:119`, wired into `create-tool-guard-hooks.ts`, tested in `lifecycle-manager.test.ts:146-199`); PH36-03 `delegation-manager.ts` 500 LOC split DONE (686 LOC → 468 LOC, new `src/lib/delegation-state-machine.ts` at 426 LOC owns the in-memory store + timer machinery, public `DelegationManager` API unchanged, all 1164 tests green).
-- [ ] **Phase 37: Async Result Harvesting** — P1: extract child session results into delegation.result. **Unblocked 2026-05-01 by Phase 36 PH36-03.**
+- [x] **Phase 37: Async Result Harvesting** — P1 COMPLETE (2026-05-01): PH37-01 + PH37-02 verified implemented. SDK path harvests child results via `sdk-delegation.ts:248-249` (`extractAllAssistantText` + dual-signal gate); command path via `command-delegation.ts:281`; `delegation-status` tool returns redacted `result` at `delegation-status.ts:31`. Phase 36 PH36-03 dependency closed by PR #72. Docs-only reconciliation — implementation was already complete; only the roadmap was stale.
 - [x] **Phase 38: Q6 State Root Migration** — P1 COMPLETE (2026-05-01): all internal state writers confirmed targeting `.hivemind/state/*` (verified across `continuity.ts`, `delegation-persistence.ts`, `trajectory/ledger.ts`, `agent-work-contracts/store.ts`, `workspace-runtime-policy.ts`); compat bridge for legacy `.opencode/state/opencode-harness/` reads remains per HIVEMIND-ROOT-02; one-way migration enforced (no back-writes).
 - [ ] **Phase 39: Auto-Loop / Ralph-Loop Engine** — P2: self-referential dev loop until completion
 - [ ] **Phase 40: CLI Substrate Foundation** — P2: bin/hivemind-tools.cjs central router
@@ -774,7 +774,7 @@ Phase 1 (7 done, 3 pending — planned)
 **Goal:** Implement result extraction from child sessions when completion is detected.
 **Depends on:** Phase 36
 **Plans:** 5 plans
-**Status:** PENDING (depends on Phase 36)
+**Status:** COMPLETE (2026-05-01) — PH37-01 SDK harvest at `sdk-delegation.ts:248-249` via `extractAllAssistantText` after dual-signal gate; PH37-01 command harvest at `command-delegation.ts:281` (PTY/headless `outcome.output`); PH37-02 `delegation-status` tool returns redacted `result`/`error`/`fallbackReason` at `delegation-status.ts:31`. Test coverage in `tests/lib/sdk-delegation.test.ts:118+`, `tests/lib/command-delegation.test.ts:288-292`, `tests/lib/delegation-persistence.test.ts:111`. Docs-only reconciliation — implementation already in place from earlier delegation work; only the roadmap was stale.
 
 ### Scope
 - In `sdk-delegation.ts`: when stability detection confirms completion, harvest last assistant message
