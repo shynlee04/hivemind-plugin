@@ -376,5 +376,35 @@ function buildMarkdown(frontmatter: Record<string, unknown>, body: string): stri
 }
 
 function formatCompileError(zodError: import("zod").ZodError): string[] {
-  return zodError.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`)
+  return zodError.issues.map(issue => `${issue.path.join("")}: ${issue.message}`)
+}
+
+// ---------------------------------------------------------------------------
+// Command bundle discovery (Phase 69 SUP-02)
+// ---------------------------------------------------------------------------
+
+export type DiscoveredCommandBundle = {
+  name: string
+  description: string
+  sourcePath: string
+}
+
+export function listCommandBundles(results: MixedBatchResult): DiscoveredCommandBundle[] {
+  const bundles: DiscoveredCommandBundle[] = []
+  for (const item of results.results) {
+    if (item.type !== "command") continue
+    const result = item.result
+    if (!result.success) continue
+    const spec = result.content
+      .split("---\n")
+      .slice(1)
+      .join("---\n")
+    const desc = spec.split("\n")[0].slice(0, 120)
+    bundles.push({
+      name: item.name,
+      description: desc || item.name,
+      sourcePath: result.filePath,
+    })
+  }
+  return bundles
 }
