@@ -206,3 +206,93 @@ export type MergeSessionExportMarkdownArtifactsInput = {
   source?: string
   fs?: EventTrackerFileSystem
 }
+
+/**
+ * The 10 classified event types for the enhanced event tracker.
+ *
+ * These represent a higher-level taxonomy than {@link JourneyEventType},
+ * focused on semantic categorization rather than hook-derived session phases.
+ */
+export const CLASSIFIED_EVENT_TYPES = [
+  "user_message",
+  "assistant_output",
+  "tool_invocation",
+  "delegation_created",
+  "delegation_returned",
+  "compaction",
+  "session_start",
+  "session_end",
+  "injection",
+  "error",
+] as const
+
+/** Union of the 10 classified event type strings. */
+export type ClassifiedEventType = (typeof CLASSIFIED_EVENT_TYPES)[number]
+
+/**
+ * A classified event produced by the classification pipeline.
+ *
+ * Wraps the original raw event with a determined type and classification timestamp.
+ *
+ * @example
+ * ```ts
+ * const classified: ClassifiedEvent = {
+ *   type: "user_message",
+ *   original: { role: "user", content: "hello" },
+ *   classifiedAt: Date.now(),
+ * }
+ * ```
+ */
+export type ClassifiedEvent = {
+  /** The determined classified event type, or 'unknown' if no pattern matched. */
+  type: ClassifiedEventType | "unknown"
+  /** The original raw event data that was classified. */
+  original: unknown
+  /** Timestamp when the classification was performed. */
+  classifiedAt: number
+}
+
+/** Valid delegation evidence state values. */
+export const DELEGATION_EVIDENCE_STATES = ["partial", "blocked", "complete"] as const
+
+/** Union type for delegation evidence states. */
+export type DelegationEvidenceState = (typeof DELEGATION_EVIDENCE_STATES)[number]
+
+/**
+ * A delegation evidence record tracking the lifecycle state of a delegation.
+ *
+ * Records are immutable once created and stored in chronological order per delegation ID.
+ *
+ * @example
+ * ```ts
+ * const record: DelegationEvidenceRecord = {
+ *   id: "del_001::partial::1700000000000",
+ *   delegationId: "del_001",
+ *   state: "partial",
+ *   evidence: { toolCallsCompleted: 3, toolCallsTotal: 10 },
+ *   timestamp: Date.now(),
+ * }
+ * ```
+ */
+export type DelegationEvidenceRecord = {
+  /** Deterministic record identifier derived from delegationId, state, and timestamp. */
+  id: string
+  /** The delegation identifier this evidence record belongs to. */
+  delegationId: string
+  /** The current lifecycle state of the delegation. */
+  state: DelegationEvidenceState
+  /** Arbitrary evidence data associated with this state transition. */
+  evidence: Record<string, unknown>
+  /** Timestamp when this evidence record was created. */
+  timestamp: number
+}
+
+/**
+ * Filesystem adapter for dual persistence, extending the base tracker FS with append.
+ *
+ * Used by {@link createDualPersistence} to write both atomic JSON and append-only Markdown.
+ */
+export type DualPersistenceFileSystem = EventTrackerFileSystem & {
+  /** Append data to a file, creating it if it does not exist. */
+  appendFileSync(path: string, data: string, encoding: BufferEncoding): void
+}
