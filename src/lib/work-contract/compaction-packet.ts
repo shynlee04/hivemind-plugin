@@ -1,6 +1,15 @@
 import type { AgentWorkContractRuntime } from "./agent-work-contract.js"
 import type { CompactionPreservationPacket } from "../prompt-packet/compaction-preservation.js"
 
+/**
+ * Convert an agent work contract into a compaction preservation packet.
+ *
+ * Semantic mapping:
+ * - contract.scope.nonGoals → packet.non_goals (out-of-scope items, NOT constraints)
+ * - contract.status → packet.contract_status (contract lifecycle status)
+ * - constraints defaults to [] (contracts have no dedicated constraints field)
+ * - lifecycle_phase set to "contract" (contracts don't have session lifecycle phases)
+ */
 export function contractToCompactionPacket(
   contract: AgentWorkContractRuntime,
 ): CompactionPreservationPacket {
@@ -15,9 +24,11 @@ export function contractToCompactionPacket(
     purpose_category: null,
     agent_type: contract.owner.agent,
     model: null,
-    constraints: contract.scope.nonGoals,
+    constraints: [],
+    non_goals: contract.scope.nonGoals,
     session_status: contract.status,
-    lifecycle_phase: contract.status,
+    contract_status: contract.status,
+    lifecycle_phase: "contract",
     delegation_depth: 0,
     queue_key: null,
     run_mode: null,
@@ -27,13 +38,19 @@ export function contractToCompactionPacket(
   }
 }
 
+/**
+ * Restore an agent work contract from a compaction preservation packet.
+ *
+ * Note: non_goals maps back to scope.nonGoals. Constraints are not
+ * restored because contracts don't have a dedicated constraints field.
+ */
 export function restoreContractFromCompactionPacket(
   packet: CompactionPreservationPacket,
 ): AgentWorkContractRuntime {
   const now = Date.now()
   return {
     id: packet.session_id,
-    status: (packet.session_status as AgentWorkContractRuntime["status"]) ?? "created",
+    status: (packet.contract_status as AgentWorkContractRuntime["status"]) ?? "created",
     owner: {
       agent: packet.agent_type ?? "unknown",
       sessionId: packet.session_id,
@@ -43,7 +60,7 @@ export function restoreContractFromCompactionPacket(
       taskBoundary: packet.description,
       allowedSurfaces: [],
       dependencies: [],
-      nonGoals: packet.constraints,
+      nonGoals: packet.non_goals,
     },
     evidence: {
       requiredProof: [],

@@ -14,4 +14,5 @@ export {
   toCompactionPacket,
   fromCompactionPacket,
   type CompactionPreservationPacket,
+  type CompactionExtras,
 } from "./compaction-preservation.js"

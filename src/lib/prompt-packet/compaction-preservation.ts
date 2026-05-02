@@ -1,5 +1,10 @@
 import type { KernelPacket } from "./kernel-packet.js"
 
+/**
+ * Compaction preservation packet — the minimal subset of session context
+ * retained across compaction boundaries. Strips deep-module fields
+ * (codemap, tool calls, etc.) that are expensive to carry forward.
+ */
 export type CompactionPreservationPacket = {
   packet_version: string
   packet_type: "compaction"
@@ -12,7 +17,9 @@ export type CompactionPreservationPacket = {
   agent_type: string | null
   model: string | null
   constraints: string[]
+  non_goals: string[]
   session_status: string
+  contract_status: string | null
   lifecycle_phase: string
   delegation_depth: number
   queue_key: string | null
@@ -22,7 +29,25 @@ export type CompactionPreservationPacket = {
   preserved_at: string
 }
 
-export function toCompactionPacket(kernel: KernelPacket): CompactionPreservationPacket {
+/**
+ * Extra fields that belong to delegation context (not present on KernelPacket).
+ * Passed as an optional second argument to {@link toCompactionPacket}.
+ */
+export type CompactionExtras = {
+  /** Delegation-level todo authority. */
+  todo_authority?: "read" | "write" | "none" | null
+  /** Delegation-level return contract reference. */
+  return_contract?: string | null
+}
+
+/**
+ * Convert a kernel packet into a compaction preservation packet.
+ *
+ * @param kernel - The source kernel packet.
+ * @param extras - Optional delegation-level fields not present on KernelPacket.
+ * @returns A compaction preservation packet with stripped-down context.
+ */
+export function toCompactionPacket(kernel: KernelPacket, extras?: CompactionExtras): CompactionPreservationPacket {
   return {
     packet_version: kernel.packet_version,
     packet_type: "compaction",
@@ -35,17 +60,30 @@ export function toCompactionPacket(kernel: KernelPacket): CompactionPreservation
     agent_type: kernel.agent_type,
     model: kernel.model,
     constraints: kernel.constraints,
+    non_goals: [],
     session_status: kernel.session_status,
+    contract_status: null,
     lifecycle_phase: kernel.lifecycle_phase,
     delegation_depth: kernel.delegation_depth,
     queue_key: kernel.queue_key,
     run_mode: kernel.run_mode,
-    todo_authority: (kernel as Record<string, unknown>).todo_authority as "read" | "write" | "none" | null ?? null,
-    return_contract: (kernel as Record<string, unknown>).return_contract as string | null ?? null,
+    todo_authority: extras?.todo_authority ?? null,
+    return_contract: extras?.return_contract ?? null,
     preserved_at: new Date().toISOString(),
   }
 }
 
+/**
+ * Restore a kernel packet from a compaction preservation packet.
+ *
+ * Fields that exist only on CompactionPreservationPacket (non_goals,
+ * contract_status, todo_authority, return_contract) are intentionally
+ * not mapped back because KernelPacket does not define them.
+ *
+ * @param compact - The compaction preservation packet to restore from.
+ * @param base - The base kernel packet providing stripped fields.
+ * @returns A kernel packet with restored compaction fields.
+ */
 export function fromCompactionPacket(
   compact: CompactionPreservationPacket,
   base: KernelPacket,

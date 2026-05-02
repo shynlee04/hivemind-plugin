@@ -2,7 +2,7 @@
 
 **Workstream:** `milestone` — every phase listed below is owned by `.planning/workstreams/milestone/phases/`. See `.planning/PROJECT.md § Phase Path Resolution` for the workstream-rooted layout (added 2026-05-01 by Phase 32.1).
 **Created:** 2026-04-06
-**Updated:** 2026-05-01 (Phase 32.1: workstream-owner header annotation for G6); 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway; Phases 60-71 added as product-detox implementation phases; Phase 36/41 status corrected)
+**Updated:** 2026-05-03 (Phases 60-61, 64, 68-71 marked COMPLETE; Phase 66 marked PARTIAL — failure-classes only); 2026-05-01 (Phase 32.1: workstream-owner header annotation for G6); 2026-04-30 (Phases 55-59 added as research-locked / pre-planning product-detox concept migration runway; Phases 60-71 added as product-detox implementation phases; Phase 36/41 status corrected)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -66,18 +66,18 @@
 - [x] **Phase 57: Runtime Pressure & Control Plane** — IMPLEMENTATION COMPLETE: pure pressure/control-plane substrate, `hivemind-pressure` tool, and tests; no Phase 39 auto-loop enforcement claim
 - [x] **Phase 58: Agent Work Contracts** — IMPLEMENTATION COMPLETE: dedicated work contract store, create/export tools, schema exports, pressure gating, and tests
 - [x] **Phase 59: SDK Supervisor & Command Engine** — IMPLEMENTATION COMPLETE: SDK supervisor and preview-only command engine implemented and verified; no command execution claim
-- [ ] **Phase 60: Session Entry Intake** — P0 CRITICAL
-- [ ] **Phase 61: Control Plane + Primitive Registry** — P0 CRITICAL — complete_conditional_runway
+- [x] **Phase 60: Session Entry Intake** — P0 CRITICAL — ✅ COMPLETE (8 purpose classes, multi-language detection, intake gate resolution, profile resolution)
+- [x] **Phase 61: Control Plane + Primitive Registry** — P0 CRITICAL — ✅ COMPLETE (gatekeeper BEFORE user messages, primitive detection, blocking decisions)
 - [x] **Phase 62: Doc Intelligence Engine Implementation** → MERGED into Phase 55
 - [x] **Phase 63: Hivemind Doc Tool Implementation** → MERGED into Phase 55
-- [ ] **Phase 64: Enhanced Event Tracker Implementation** — P1
+- [x] **Phase 64: Enhanced Event Tracker Implementation** — P1 — ✅ COMPLETE (10 new event types, classification pipeline, delegation evidence tracking, dual persistence)
 - [x] **Phase 65: Trajectory Session v3 Implementation** → MERGED into Phase 56
-- [ ] **Phase 66: Recovery Engine Implementation** — P1
+- [~] **Phase 66: Recovery Engine Implementation** — P1 — ⚠️ PARTIAL (failure-classes only; full recovery-engine not implemented)
 - [x] **Phase 67: Runtime Pressure + Control Plane Implementation** — P1
-- [ ] **Phase 68: Agent Work Contracts Implementation** — P1
-- [ ] **Phase 69: SDK Supervisor + Command Engine Implementation** — P2
-- [ ] **Phase 70: Prompt Packet Compiler** — P2
-- [ ] **Phase 71: Runtime Detection Engine** — P1
+- [x] **Phase 68: Agent Work Contracts Implementation** — P1 — ✅ COMPLETE (work contract Zod schema, intent classifier, chain executor, compaction preservation)
+- [x] **Phase 69: SDK Supervisor + Command Engine Implementation** — P2 — ✅ COMPLETE (health/heartbeat/diagnostics, command bundle discovery/routing, context renderer)
+- [x] **Phase 70: Prompt Packet Compiler** — P2 — ✅ COMPLETE (hivemind-kernel-packet 33 fields, hivemind-delegation-packet, compaction-safe context)
+- [x] **Phase 71: Runtime Detection Engine** — P1 — ✅ COMPLETE (deep codemap/codescan, file watcher, MCP tools + stack skills synthesis)
 - [ ] **Phase 11: Lifecycle State Machine + 500 LOC Enforcement** — RESCOPED: state machine guards, activity tracking, delegation-manager split
 
 ## Phase 1: Baseline Cleanup
@@ -602,6 +602,14 @@ See `.planning/workstreams/skill-ecosystem/ROADMAP.md` Historical Phases section
 | 57. Runtime Pressure & Control Plane | 1 plan | IMPLEMENTATION COMPLETE — pure pressure/control-plane substrate; no auto-loop enforcement claim |
 | 58. Agent Work Contracts | 1 plan | COMPLETE FOR PLANNING CONTRACT — no tool implementation claim |
 | 59. SDK Supervisor & Command Engine | 1 plan | COMPLETE FOR PLANNING CONTRACT — no SDK runtime claim |
+| 60. Session Entry Intake | 1 plan | ✅ COMPLETE — 8 purpose classes, multi-language detection, intake gate resolution |
+| 61. Control Plane + Primitive Registry | 1 plan | ✅ COMPLETE — gatekeeper before user messages, primitive detection, blocking decisions |
+| 64. Enhanced Event Tracker Implementation | 1 plan | ✅ COMPLETE — 10 new event types, classification pipeline, dual persistence |
+| 66. Recovery Engine Implementation | 1 plan | ⚠️ PARTIAL — failure-classes only; full recovery-engine not implemented |
+| 68. Agent Work Contracts Implementation | 1 plan | ✅ COMPLETE — Zod schema, intent classifier, chain executor, compaction preservation |
+| 69. SDK Supervisor + Command Engine Implementation | 1 plan | ✅ COMPLETE — health/heartbeat/diagnostics, command bundle discovery/routing |
+| 70. Prompt Packet Compiler | 1 plan | ✅ COMPLETE — hivemind-kernel-packet 33 fields, delegation-packet, compaction-safe context |
+| 71. Runtime Detection Engine | 1 plan | ✅ COMPLETE — deep codemap/codescan, file watcher, MCP tools + stack skills synthesis |
 | 11. Lifecycle State Machine + 500 LOC (rescoped) | 0 plans | RESCOPED — state machine guards, delegation-manager split |
 
 ## Dependencies
@@ -1259,7 +1267,7 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 60: Session Entry Intake (P0 CRITICAL)
 - **Depends on:** Phase 57 (planning), Phase 71 (runtime detection)
 - **Blocks:** Phase 61, Phase 70
-- **Status:** Pending
+- **Status:** ✅ COMPLETE (2026-05-03)
 - **Scope:** 8 purpose classes, multi-language detection, intake gate resolution, profile resolution
 - **Source:** product-detox `src/features/session-entry/`
 - **Key files:** `src/lib/session-entry/`, `src/lib/purpose-classifier.ts`
@@ -1267,7 +1275,7 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 61: Control Plane + Primitive Registry (P0 CRITICAL)
 - **Depends on:** Phase 60
 - **Blocks:** Phase 67
-- **Status:** complete_conditional_runway
+- **Status:** ✅ COMPLETE (2026-05-03)
 - **Scope:** Gatekeeper running BEFORE user messages, primitive detection, blocking decisions
 - **Key files:** `src/lib/control-plane/`, `src/lib/primitive-registry.ts`
 
@@ -1280,7 +1288,7 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 64: Enhanced Event Tracker Implementation (P1)
 - **Depends on:** Phase 56 (trajectory/session v3 already implemented)
 - **Blocks:** (none)
-- **Status:** Pending
+- **Status:** ✅ COMPLETE (2026-05-03)
 - **Scope:** 10 new event types, classification pipeline, delegation evidence tracking, dual persistence
 - **Note:** Phase 56 already delivered v3 metadata and rendering. This phase adds ONLY genuinely new capabilities.
 - **Key files:** `src/lib/session-journal.ts`, `src/lib/event-tracker/`
@@ -1291,7 +1299,7 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 66: Recovery Engine Implementation (P1)
 - **Depends on:** Phase 56, Phase 38
 - **Blocks:** (none)
-- **Status:** Pending
+- **Status:** ⚠️ PARTIAL (2026-05-03) — failure-classes only; full recovery-engine not implemented
 - **Scope:** 9 failure classes, recovery state assessment, checkpoint, repair
 - **Source:** product-detox `src/recovery/`
 - **Key files:** `src/lib/recovery/`, `src/lib/recovery-engine.ts`
@@ -1307,7 +1315,7 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 68: Agent Work Contracts Implementation (P1)
 - **Depends on:** Phase 67, Phase 58 (planning contract)
 - **Blocks:** (none)
-- **Status:** Pending
+- **Status:** ✅ COMPLETE (2026-05-03)
 - **Scope:** Work contract Zod schema, intent classifier, chain executor, compaction preservation
 - **Planning Contract:** Phase 58-CONTRACT-2026-04-30.md
 - **Key files:** `src/lib/work-contract/`, `src/schema-kernel/`
@@ -1315,7 +1323,7 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 69: SDK Supervisor + Command Engine Implementation (P2)
 - **Depends on:** Phase 67, Phase 59 (planning contract)
 - **Blocks:** (none)
-- **Status:** Pending
+- **Status:** ✅ COMPLETE (2026-05-03)
 - **Scope:** Health/heartbeat/diagnostics, command bundle discovery/routing, context renderer
 - **Planning Contract:** Phase 59-CONTRACT-2026-04-30.md
 - **Key files:** `src/lib/supervisor/`
@@ -1323,14 +1331,14 @@ These phases implement features extracted from the product-detox codebase analys
 ### Phase 70: Prompt Packet Compiler (P2)
 - **Depends on:** Phase 60
 - **Blocks:** (none)
-- **Status:** Pending
+- **Status:** ✅ COMPLETE (2026-05-03)
 - **Scope:** hivemind-kernel-packet (33 fields), hivemind-delegation-packet, compaction-safe context
 - **Key files:** `src/lib/prompt-packet/`
 
 ### Phase 71: Runtime Detection Engine (P1)
 - **Depends on:** Phase 38
 - **Blocks:** Phase 60
-- **Status:** Pending
+- **Status:** ✅ COMPLETE (2026-05-03)
 - **Scope:** Deep codemap/codescan, file watcher for package.json, MCP tools + stack skills synthesis
 - **Source:** Q1 validation decision
 - **Key files:** `src/lib/runtime-detection/`, `src/lib/framework-detector.ts`

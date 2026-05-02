@@ -21,6 +21,35 @@ describe("compaction-packet (AWC-04)", () => {
     },
   }
 
+  it("maps nonGoals to non_goals, not to constraints (C3 fix)", () => {
+    const contract = createContract({
+      ownerAgent: "builder",
+      taskBoundary: "Implement schema",
+      minimumEvidenceLevel: "L4_IMPLEMENTATION_TRACE",
+      nonGoals: ["no CSS", "no migrations"],
+    })
+
+    const packet = contractToCompactionPacket(contract)
+    // C3 fix: nonGoals → non_goals (NOT constraints)
+    expect(packet.non_goals).toEqual(["no CSS", "no migrations"])
+    expect(packet.constraints).toEqual([])
+  })
+
+  it("maps contract status to contract_status, lifecycle_phase to 'contract' (C4 fix)", () => {
+    const contract = createContract({
+      ownerAgent: "builder",
+      taskBoundary: "Implement schema",
+      minimumEvidenceLevel: "L4_IMPLEMENTATION_TRACE",
+    })
+
+    const packet = contractToCompactionPacket(contract)
+    // C4 fix: contract.status → contract_status, lifecycle_phase = "contract"
+    expect(packet.contract_status).toBe("created")
+    expect(packet.lifecycle_phase).toBe("contract")
+    // session_status also gets the contract status
+    expect(packet.session_status).toBe("created")
+  })
+
   it("converts contract to compaction packet using Phase 70 PPC-03", () => {
     const contract = createContract({
       ownerAgent: "builder",
@@ -38,11 +67,12 @@ describe("compaction-packet (AWC-04)", () => {
     expect(packet.constraints).toEqual([])
   })
 
-  it("restores contract from compaction packet", () => {
+  it("restores contract from compaction packet with correct nonGoals", () => {
     const contract = createContract({
       ownerAgent: "researcher",
       taskBoundary: "Research patterns",
       minimumEvidenceLevel: "L5_DOCUMENTATION",
+      nonGoals: ["no performance benchmarks"],
     })
 
     const packet = contractToCompactionPacket(contract)
@@ -50,7 +80,21 @@ describe("compaction-packet (AWC-04)", () => {
     expect(restored.id).toBe(contract.id)
     expect(restored.owner.agent).toBe("researcher")
     expect(restored.scope.taskBoundary).toBe("Research patterns")
-    expect(restored.status).toBe(contract.status)
+    // nonGoals should round-trip through non_goals
+    expect(restored.scope.nonGoals).toEqual(["no performance benchmarks"])
+  })
+
+  it("restores contract status from contract_status field", () => {
+    const contract = createContract({
+      ownerAgent: "builder",
+      taskBoundary: "Do work",
+      minimumEvidenceLevel: "L5_DOCUMENTATION",
+    })
+
+    const packet = contractToCompactionPacket(contract)
+    const restored = restoreContractFromCompactionPacket(packet)
+    // Status restored from contract_status, not lifecycle_phase
+    expect(restored.status).toBe("created")
   })
 
   it("round-trips with Phase 70 compaction utilities", () => {
