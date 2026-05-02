@@ -1,5 +1,17 @@
 import { isObject, getNestedValue } from "../helpers.js"
 
+/**
+ * A supervisor-friendly view of a session message.
+ *
+ * Summarizes a raw message into a compact view with role, text preview,
+ * and tool call information for dashboard rendering.
+ *
+ * @property role - The message role (e.g. "user", "assistant", "unknown").
+ * @property text_preview - First 120 characters of text content.
+ * @property truncated - Whether the text preview was truncated.
+ * @property has_tool_call - Whether the message contains a tool call or result.
+ * @property tool_name - Name of the tool called, or null if no tool call.
+ */
 export type SupervisorMessageView = {
   role: string
   text_preview: string
@@ -8,6 +20,24 @@ export type SupervisorMessageView = {
   tool_name: string | null
 }
 
+/**
+ * Transform raw session messages into supervisor-friendly views.
+ *
+ * Extracts role, text preview (truncated to 120 chars), and tool call
+ * information from each message. Handles both the `info.role` and
+ * top-level `role` field formats.
+ *
+ * @param messages - Array of raw message objects (unknown shape).
+ * @returns An array of {@link SupervisorMessageView} summaries.
+ *
+ * @example
+ * ```typescript
+ * const views = transformMessagesForSupervisor(rawMessages)
+ * for (const view of views) {
+ *   console.log(view.role, view.text_preview)
+ * }
+ * ```
+ */
 export function transformMessagesForSupervisor(messages: unknown[]): SupervisorMessageView[] {
   return messages.map((msg) => {
     const role =

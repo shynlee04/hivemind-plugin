@@ -1,3 +1,14 @@
+/**
+ * Categories of user intent recognized by the classifier.
+ *
+ * - `"research"` — Information gathering and investigation tasks.
+ * - `"implementation"` — Code creation and feature development.
+ * - `"review"` — Code review and audit tasks.
+ * - `"debug"` — Bug fixing and troubleshooting.
+ * - `"documentation"` — Documentation writing tasks.
+ * - `"delegation"` — Task delegation and sub-agent spawning.
+ * - `"unknown"` — No matching intent detected.
+ */
 export type IntentCategory =
   | "research"
   | "implementation"
@@ -7,6 +18,7 @@ export type IntentCategory =
   | "delegation"
   | "unknown"
 
+/** @internal Keyword pattern registry for intent classification. */
 const INTENT_KEYWORDS: ReadonlyArray<{ category: IntentCategory; patterns: RegExp[] }> = [
   {
     category: "research",
@@ -79,6 +91,24 @@ const INTENT_KEYWORDS: ReadonlyArray<{ category: IntentCategory; patterns: RegEx
   },
 ]
 
+/**
+ * Classify a user's text input into an intent category.
+ *
+ * Scans the input for keyword patterns matching known intent categories.
+ * Returns the first matching category in priority order, or `"unknown"`
+ * if no patterns match.
+ *
+ * @param text - The user's input text to classify.
+ * @returns The detected {@link IntentCategory}.
+ *
+ * @example
+ * ```typescript
+ * classifyIntent("research the best ORM for TypeScript") // "research"
+ * classifyIntent("fix the login bug")                    // "debug"
+ * classifyIntent("implement user auth")                  // "implementation"
+ * classifyIntent("random text")                          // "unknown"
+ * ```
+ */
 export function classifyIntent(text: string): IntentCategory {
   const lower = text.toLowerCase()
   for (const entry of INTENT_KEYWORDS) {

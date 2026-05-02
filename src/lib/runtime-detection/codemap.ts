@@ -1,6 +1,15 @@
 import { readdir } from "node:fs/promises"
 import path from "node:path"
 
+/**
+ * A structural summary of a project's source tree.
+ *
+ * @property projectRoot - Absolute path to the project root.
+ * @property fileCount - Total number of source files found (capped at `maxFiles`).
+ * @property byExtension - File count keyed by lowercase extension (e.g. `.ts`, `.js`).
+ * @property maxDepth - Maximum directory nesting depth encountered.
+ * @property truncated - `true` if the scan stopped early due to the `maxFiles` limit.
+ */
 export type Codemap = {
   projectRoot: string
   fileCount: number
@@ -9,10 +18,40 @@ export type Codemap = {
   truncated: boolean
 }
 
+/**
+ * Create an empty codemap for a project root with zero files.
+ *
+ * @param projectRoot - Absolute path to the project root.
+ * @returns A codemap with zeroed counters and no extension data.
+ *
+ * @example
+ * ```typescript
+ * const empty = emptyCodemap("/tmp/my-project")
+ * console.log(empty.fileCount) // 0
+ * ```
+ */
 export function emptyCodemap(projectRoot: string): Codemap {
   return { projectRoot, fileCount: 0, byExtension: {}, maxDepth: 0, truncated: false }
 }
 
+/**
+ * Build a codemap by recursively scanning a project's source tree.
+ *
+ * Skips hidden directories (starting with `.`) and `node_modules`.
+ * Uses fully async filesystem operations to avoid blocking the event loop.
+ * Stops early if the file count exceeds `maxFiles` and sets `truncated: true`.
+ *
+ * @param projectRoot - Absolute path to the project root directory.
+ * @param options - Optional configuration.
+ * @param options.maxFiles - Maximum number of files to count before truncating (default 1000).
+ * @returns A {@link Codemap} summarizing the project structure.
+ *
+ * @example
+ * ```typescript
+ * const map = await buildCodemap("/path/to/project", { maxFiles: 500 })
+ * console.log(map.fileCount, map.byExtension)
+ * ```
+ */
 export async function buildCodemap(
   projectRoot: string,
   options: { maxFiles?: number } = {},
@@ -24,6 +63,12 @@ export async function buildCodemap(
   let maxDepth = 0
   let truncated = false
 
+  /**
+   * Recursively walk a directory, counting files and tracking extensions.
+   *
+   * @param dir - Directory to scan.
+   * @param depth - Current nesting depth (1-based from root).
+   */
   async function walk(dir: string, depth: number): Promise<void> {
     if (truncated) return
 
