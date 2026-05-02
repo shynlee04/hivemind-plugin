@@ -28,7 +28,7 @@ export function getHealthStatus(input: {
   const checks: HealthChecks = {
     configPresent: existsSync(input.configPath),
     pluginLoaded: input.pluginLoaded,
-    sessionStoreWritable: input.sessionCount >= 0,
+    sessionStoreWritable: Number.isFinite(input.sessionCount),
   }
 
   const warnings: string[] = []

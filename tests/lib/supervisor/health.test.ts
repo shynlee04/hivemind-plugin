@@ -15,7 +15,26 @@ describe("supervisor health", () => {
     expect(status.healthy).toBe(true)
     expect(status.checks.configPresent).toBe(true)
     expect(status.checks.pluginLoaded).toBe(true)
+    expect(status.checks.sessionStoreWritable).toBe(true)
     expect(status.warnings).toHaveLength(0)
+  })
+
+  it("flags non-finite sessionCount as not writable", () => {
+    const status = getHealthStatus({
+      configPath: ".opencode",
+      pluginLoaded: true,
+      sessionCount: NaN,
+    })
+    expect(status.checks.sessionStoreWritable).toBe(false)
+  })
+
+  it("flags Infinity sessionCount as not writable", () => {
+    const status = getHealthStatus({
+      configPath: ".opencode",
+      pluginLoaded: true,
+      sessionCount: Infinity,
+    })
+    expect(status.checks.sessionStoreWritable).toBe(false)
   })
 
   it("reports unhealthy when config is missing", () => {
