@@ -13,6 +13,7 @@ export {
   type ChainEvent,
   type ChainEventType,
   type ChainExecutionContext,
+  type ContractExecutorFn,
 } from "./chain-executor.js"
 
 export {
