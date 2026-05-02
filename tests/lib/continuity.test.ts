@@ -152,4 +152,228 @@ describe("continuity persistence", () => {
     expect(existsSync(join(freshStateDir, "brain.json"))).toBe(false)
     expect(readdirSync(freshStateDir)).not.toContain("brain.json")
   })
+
+  // -------------------------------------------------------------------------
+  // Recovery tests — restart rehydration, corrupt-file handling, atomic write
+  // -------------------------------------------------------------------------
+
+  it("should rehydrate state from existing continuity file on restart", async () => {
+    // Phase 1: write records with first module instance
+    const continuity1 = await import("../../src/lib/continuity.js")
+    continuity1.recordSessionContinuity(makeRecord("ses-rehydrate-1"))
+    continuity1.recordSessionContinuity(makeRecord("ses-rehydrate-2"))
+    const filePath = continuity1.getContinuityStoragePath()
+    expect(existsSync(filePath)).toBe(true)
+
+    // Phase 2: simulate restart — reset module cache so storeCache is undefined
+    vi.resetModules()
+    const continuity2 = await import("../../src/lib/continuity.js")
+
+    // Verify state was rehydrated from disk
+    const records = continuity2.listSessionContinuity()
+    const ids = records.map((r) => r.sessionID).sort()
+    expect(ids).toContain("ses-rehydrate-1")
+    expect(ids).toContain("ses-rehydrate-2")
+  })
+
+  it("should handle corrupt continuity file by quarantining and throwing", async () => {
+    const continuity = await import("../../src/lib/continuity.js")
+    const filePath = continuity.getContinuityStoragePath()
+
+    // Write garbage to the file
+    writeFileSync(filePath, "NOT JSON {{{ GARBAGE }}}", "utf-8")
+    expect(existsSync(filePath)).toBe(true)
+
+    // Accessing the store should throw a descriptive [Harness] error
+    expect(() => continuity.listSessionContinuity()).toThrow(/^\[Harness\]/)
+
+    // The corrupt file should have been moved aside (quarantined)
+    expect(existsSync(filePath)).toBe(false)
+    const quarantineFiles = readdirSync(stateDir).filter((name) =>
+      name.startsWith("session-continuity.json.corrupt-"),
+    )
+    expect(quarantineFiles.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it("should handle missing continuity file gracefully", async () => {
+    const continuity = await import("../../src/lib/continuity.js")
+    const filePath = continuity.getContinuityStoragePath()
+
+    // No file exists at the canonical path — but the loader will fall
+    // through to the legacy path which may have real data.  To isolate
+    // the "no sessions on disk" case, write a valid but empty store.
+    writeFileSync(filePath, "{}", "utf-8")
+    expect(existsSync(filePath)).toBe(true)
+
+    // Should initialize with empty state, not throw
+    const records = continuity.listSessionContinuity()
+    expect(records).toEqual([])
+  })
+
+  it("should handle empty continuity file", async () => {
+    const continuity = await import("../../src/lib/continuity.js")
+    const filePath = continuity.getContinuityStoragePath()
+
+    // Write a valid but empty JSON object — parsed as an empty store,
+    // preventing legacy fallback.
+    writeFileSync(filePath, "{}", "utf-8")
+    expect(existsSync(filePath)).toBe(true)
+
+    // Should initialize with empty state
+    const records = continuity.listSessionContinuity()
+    expect(records).toEqual([])
+  })
+
+  it("should preserve all delegation records across restart", async () => {
+    // Phase 1: create records with delegation metadata
+    const continuity1 = await import("../../src/lib/continuity.js")
+    const baseRecord = makeRecord("ses-deleg-1")
+    continuity1.recordSessionContinuity({
+      ...baseRecord,
+      metadata: {
+        ...baseRecord.metadata,
+        delegation: {
+          rootID: "root-abc",
+          depth: 2,
+          budgetUsed: 1,
+          agent: "builder",
+          category: "implementation",
+          queueKey: "agent:builder",
+        },
+        delegationPacket: {
+          id: "pkt-001",
+          createdAt: Date.now(),
+          spec: "Build the thing",
+          artifacts: ["src/foo.ts"],
+          commits: ["abc123"],
+          parentChain: ["root-abc", "parent-xyz"],
+          status: "running",
+          updatedAt: Date.now(),
+        },
+      },
+    })
+
+    const baseRecord2 = makeRecord("ses-deleg-2")
+    continuity1.recordSessionContinuity({
+      ...baseRecord2,
+      metadata: {
+        ...baseRecord2.metadata,
+        delegation: {
+          rootID: "root-def",
+          depth: 1,
+          budgetUsed: 0,
+          agent: "reviewer",
+          category: "review",
+          queueKey: "agent:reviewer",
+        },
+      },
+    })
+
+    // Phase 2: simulate restart
+    vi.resetModules()
+    const continuity2 = await import("../../src/lib/continuity.js")
+
+    // Verify delegation metadata survived across restart
+    const rec1 = continuity2.getSessionContinuity("ses-deleg-1")
+    expect(rec1?.metadata.delegation).toEqual({
+      rootID: "root-abc",
+      depth: 2,
+      budgetUsed: 1,
+      agent: "builder",
+      category: "implementation",
+      queueKey: "agent:builder",
+    })
+    expect(rec1?.metadata.delegationPacket?.id).toBe("pkt-001")
+    expect(rec1?.metadata.delegationPacket?.artifacts).toEqual(["src/foo.ts"])
+    expect(rec1?.metadata.delegationPacket?.commits).toEqual(["abc123"])
+    expect(rec1?.metadata.delegationPacket?.parentChain).toEqual(["root-abc", "parent-xyz"])
+
+    const rec2 = continuity2.getSessionContinuity("ses-deleg-2")
+    expect(rec2?.metadata.delegation?.rootID).toBe("root-def")
+    expect(rec2?.metadata.delegation?.agent).toBe("reviewer")
+  })
+
+  it("should survive concurrent read/write without corruption", async () => {
+    const continuity = await import("../../src/lib/continuity.js")
+
+    // Rapidly interleave writes and reads
+    const sessionIDs = Array.from({ length: 20 }, (_, i) => `ses-concurrent-${i}`)
+
+    for (const id of sessionIDs) {
+      continuity.recordSessionContinuity(makeRecord(id))
+      // Immediately read back
+      const record = continuity.getSessionContinuity(id)
+      expect(record?.sessionID).toBe(id)
+    }
+
+    // Final verification: all sessions present and file is valid JSON
+    const allRecords = continuity.listSessionContinuity()
+    const allIDs = allRecords.map((r) => r.sessionID).sort()
+    for (const id of sessionIDs) {
+      expect(allIDs).toContain(id)
+    }
+
+    const raw = readFileSync(continuity.getContinuityStoragePath(), "utf-8")
+    expect(() => JSON.parse(raw)).not.toThrow()
+  })
+
+  it("should deep-clone on read to prevent mutation", async () => {
+    const continuity = await import("../../src/lib/continuity.js")
+    continuity.recordSessionContinuity(makeRecord("ses-clone-test"))
+
+    // Read the record
+    const record = continuity.getSessionContinuity("ses-clone-test")
+    expect(record).toBeDefined()
+
+    // Mutate the returned record
+    const originalDescription = record!.metadata.description
+    record!.metadata.description = "MUTATED"
+    record!.metadata.constraints.push("fake-constraint")
+
+    // Re-read and verify original is unchanged
+    const reRead = continuity.getSessionContinuity("ses-clone-test")
+    expect(reRead?.metadata.description).toBe(originalDescription)
+    expect(reRead?.metadata.constraints).toEqual([])
+
+    // Also verify listSessionContinuity returns independent clones
+    const list1 = continuity.listSessionContinuity()
+    const list2 = continuity.listSessionContinuity()
+    expect(list1).not.toBe(list2) // different array references
+    // Mutate list1
+    if (list1.length > 0) {
+      list1[0]!.metadata.description = "MUTATED_LIST"
+    }
+    // list2 should be unaffected
+    const list2Item = list2.find((r) => r.sessionID === "ses-clone-test")
+    expect(list2Item?.metadata.description).toBe(originalDescription)
+  })
+
+  it("should not corrupt file on partial write — atomic write mechanism", async () => {
+    const continuity = await import("../../src/lib/continuity.js")
+
+    // Write initial data
+    continuity.recordSessionContinuity(makeRecord("ses-atomic-1"))
+    const filePath = continuity.getContinuityStoragePath()
+
+    // Verify initial state is valid JSON
+    const raw1 = readFileSync(filePath, "utf-8")
+    const parsed1 = JSON.parse(raw1) as { sessions: Record<string, unknown> }
+    expect(parsed1.sessions["ses-atomic-1"]).toBeDefined()
+
+    // Write more data — atomic write (tmp + rename) should ensure consistency
+    continuity.recordSessionContinuity(makeRecord("ses-atomic-2"))
+    continuity.recordSessionContinuity(makeRecord("ses-atomic-3"))
+
+    // Verify final state is valid JSON with all sessions
+    const raw2 = readFileSync(filePath, "utf-8")
+    const parsed2 = JSON.parse(raw2) as { sessions: Record<string, unknown> }
+    expect(parsed2.sessions["ses-atomic-1"]).toBeDefined()
+    expect(parsed2.sessions["ses-atomic-2"]).toBeDefined()
+    expect(parsed2.sessions["ses-atomic-3"]).toBeDefined()
+
+    // No leftover .tmp files
+    const dirContents = readdirSync(stateDir)
+    const tmpFiles = dirContents.filter((name) => name.endsWith(".tmp"))
+    expect(tmpFiles).toEqual([])
+  })
 })

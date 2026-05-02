@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1777559637988,
+  "updatedAt": 1777662302751,
   "contracts": {
     "uat-test-001": {
       "id": "uat-test-001",
@@ -30,6 +30,44 @@
       },
       "createdAt": 1777559637987,
       "updatedAt": 1777559637987
+    },
+    "awc_523722f5-cb57-462f-9ae0-b899b915b4a0": {
+      "id": "awc_523722f5-cb57-462f-9ae0-b899b915b4a0",
+      "status": "created",
+      "owner": {
+        "agent": "uat-tester"
+      },
+      "scope": {
+        "taskBoundary": "Validate hivemind-agent-work-create tool end-to-end",
+        "allowedSurfaces": [],
+        "dependencies": [],
+        "nonGoals": [
+          "Testing MCP tools"
+        ]
+      },
+      "evidence": {
+        "requiredProof": [],
+        "minimumEvidenceLevel": "L3_STATIC_REVIEW",
+        "verificationCommands": [
+          "npm test"
+        ],
+        "blockedStateRules": []
+      },
+      "compaction": {
+        "briefing": "UAT test work contract — validates agent-work-create tool functionality as part of systematic harness testing.",
+        "summary": "",
+        "anchors": [
+          "batch-1-discovery",
+          "batch-2-prompt",
+          "batch-3-delegation"
+        ],
+        "reinjectionPayload": "",
+        "sourceRefs": [
+          "AGENTS.md"
+        ]
+      },
+      "createdAt": 1777662302747,
+      "updatedAt": 1777662302750
     }
   }
 }

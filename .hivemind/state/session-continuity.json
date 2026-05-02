@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1777212369850,
+  "updatedAt": 1777727577848,
   "sessions": {
     "ses-parent-session": {
       "sessionID": "ses-parent-session",
@@ -1799,6 +1799,38 @@
           }
         ],
         "updatedAt": 1777212369849
+      }
+    },
+    "ses-parent-tool": {
+      "sessionID": "ses-parent-tool",
+      "promptParams": {},
+      "metadata": {
+        "status": "running",
+        "description": "Recovered parent session notification queue",
+        "delegation": null,
+        "constraints": [],
+        "pendingNotifications": [
+          {
+            "sessionID": "pty:pty-delete-on-terminate",
+            "description": "Delegation: command-runner",
+            "agent": "command-runner",
+            "status": "cancelled",
+            "error": "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+            "resultPreview": "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+            "briefSummary": "Delegated work finished with terminal state non-resumable-after-restart after 16ms. Summary preview: [Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+            "outputLink": "session://pty:pty-delete-on-terminate",
+            "duration": 16,
+            "metadata": {
+              "delegationId": "95b09717-97f6-4e28-a6bb-a1ea11220e4f",
+              "terminalState": "error",
+              "recoveryGuarantee": "best-effort",
+              "summaryPreview": "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts"
+            },
+            "createdAt": 1777727577848,
+            "delivered": false
+          }
+        ],
+        "updatedAt": 1777727577848
       }
     }
   },

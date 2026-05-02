@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "updatedAt": 1777662381798,
+  "trajectories": {
+    "traj-uat-001": {
+      "id": "traj-uat-001",
+      "rootSessionId": "ses_21b16b510ffezDmCFzDXOgrWiT",
+      "sessionId": null,
+      "parentTrajectoryId": null,
+      "status": "closed",
+      "evidenceRefs": [
+        "sdk-supervisor:healthy",
+        "delegation-test:completed",
+        "bg-command:output-captured"
+      ],
+      "checkpoints": [
+        {
+          "checkpointId": "checkpoint-8a555d6b-5eea-49b8-ae70-49c444f824eb",
+          "summary": "UAT Batches 1-3 complete. 16 tool invocations, 2 bugs in hivemind-doc found.",
+          "evidenceRefs": [
+            "sdk-supervisor:healthy",
+            "delegation-test:completed",
+            "bg-command:output-captured"
+          ],
+          "createdAt": 1777662372911
+        }
+      ],
+      "events": [
+        {
+          "eventId": "event-5427b254-11f6-404b-8c22-8775becf2e67",
+          "eventType": "uat.batch-complete",
+          "summary": "Batch 3 (delegation + background commands) completed. All delegation lifecycle stages verified: dispatch, poll, complete, terminate.",
+          "evidenceRefs": [],
+          "createdAt": 1777662374323
+        }
+      ],
+      "createdAt": 1777662366670,
+      "updatedAt": 1777662381798,
+      "closeSummary": "UAT trajectory complete. 16 tools tested across 4 batches. 2 bugs found in hivemind-doc directory handling."
+    }
+  }
+}

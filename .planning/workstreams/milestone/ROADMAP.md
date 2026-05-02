@@ -14,8 +14,8 @@
 - [x] **Phase 3: Schema Definition** — SUPERSEDED by Phase 16.5 (complete Zod schema-kernel, 772 tests)
 - [x] **Phase 4: Migration Gate** — SUPERSEDED by Phase 16.4 + Q6 decision (migration control plane, state root locked)
 - [x] **Phase 5: Integration Verification** — SUPERSEDED by Phases 14-16 (870+ tests, full verification, typecheck green)
-- [ ] **Phase 6: Runtime Domain Separation** — SUPERSEDED by Phase 11
-- [ ] **Phase 7: Runtime Domain Restructuring Planning** — SUPERSEDED by Phase 11
+- [x] **Phase 6: Runtime Domain Separation** — SUPERSEDED by Phase 11
+- [x] **Phase 7: Runtime Domain Restructuring Planning** — SUPERSEDED by Phase 11
 - [x] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
 - [~] **Phase 9: Sticky Delegation Corrective** — ⚠️ MOCK-VERIFIED ONLY, runtime verification pending (forensic reset 2026-04-14)
 - [~] **Phase 9.1: Critical Bug Fixes + Test Rewrites** — ⚠️ COMPLETE WITH CAVEATS — 668 tests pass but mock-heavy (forensic reset 2026-04-14)
