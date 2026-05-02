@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import {
-  discoverCommandBundles,
+  sortCommandBundles,
   routeCommand,
   validateCommandContract,
   type CommandBundle,
@@ -13,8 +13,8 @@ describe("command-bundle", () => {
     { name: "run", description: "Run task", handler: "runHandler", args: ["taskId"] },
   ]
 
-  it("discovers command bundles from a list", () => {
-    const found = discoverCommandBundles(bundles)
+  it("sorts command bundles by name", () => {
+    const found = sortCommandBundles(bundles)
     expect(found).toHaveLength(2)
     expect(found[0].name).toBe("help")
   })

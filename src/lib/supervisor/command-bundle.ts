@@ -16,7 +16,7 @@ export type CommandContractResult = {
   errors: string[]
 }
 
-export function discoverCommandBundles(bundles: CommandBundle[]): CommandBundle[] {
+export function sortCommandBundles(bundles: CommandBundle[]): CommandBundle[] {
   return bundles.slice().sort((a, b) => a.name.localeCompare(b.name))
 }
 

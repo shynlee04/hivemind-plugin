@@ -1,7 +1,7 @@
 export { getHealthStatus, getDiagnostics, type HealthStatus, type Diagnostics } from "./health.js"
 
 export {
-  discoverCommandBundles,
+  sortCommandBundles,
   routeCommand,
   validateCommandContract,
   type CommandBundle,
