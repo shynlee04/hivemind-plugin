@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest"
 import {
   resolveIntake,
   PURPOSE_TO_ROUTING_TARGET,
+  createRegistryValidator,
   type IntakeResult,
+  type RegistryValidator,
 } from "../../../src/lib/session-entry/intake-gate.js"
 
 describe("resolveIntake", () => {
@@ -15,10 +17,12 @@ describe("resolveIntake", () => {
       expect(result).toHaveProperty("language")
       expect(result).toHaveProperty("profile")
       expect(result).toHaveProperty("routingTarget")
+      expect(result).toHaveProperty("warnings")
       expect(result.purpose.purpose).toBeDefined()
       expect(result.language.script).toBeDefined()
       expect(result.profile.communicationStyle).toBeDefined()
       expect(typeof result.routingTarget).toBe("string")
+      expect(Array.isArray(result.warnings)).toBe(true)
     })
 
     it("routes implementation requests to gsd-executor", () => {
@@ -112,11 +116,79 @@ describe("resolveIntake", () => {
       expect(result.language).toBeDefined()
       expect(result.profile).toBeDefined()
       expect(result.routingTarget).toBeDefined()
+      expect(result.warnings).toEqual([])
     })
 
     it("handles whitespace-only input gracefully", () => {
       const result = resolveIntake("   ")
       expect(result.purpose).toBeDefined()
+      expect(result.routingTarget).toBeDefined()
+    })
+  })
+
+  // ── Registry validation ─────────────────────────────────────────────
+
+  describe("registry validation", () => {
+    it("returns empty warnings when no validator is provided", () => {
+      const result = resolveIntake("implement the feature")
+      expect(result.warnings).toEqual([])
+    })
+
+    it("returns empty warnings when target exists in registry", () => {
+      const primitives = new Map([
+        ["agent:gsd-executor", { name: "gsd-executor", type: "agent" }],
+      ])
+      const validator = createRegistryValidator(primitives)
+
+      const result = resolveIntake("implement the feature", undefined, validator)
+      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.warnings).toEqual([])
+    })
+
+    it("adds warning when target is not found in registry", () => {
+      const primitives = new Map<string, unknown>() // empty registry
+      const validator = createRegistryValidator(primitives)
+
+      const result = resolveIntake("implement the feature", undefined, validator)
+      expect(result.routingTarget).toBe("gsd-executor")
+      // Still routes, but with a warning
+      expect(result.warnings).toHaveLength(1)
+      expect(result.warnings[0]).toContain("gsd-executor")
+      expect(result.warnings[0]).toContain("not found in primitive registry")
+    })
+
+    it("adds warning with error details when validator encounters an error", () => {
+      const errorValidator: RegistryValidator = (_target: string) => ({
+        exists: false,
+        error: "filesystem unavailable",
+      })
+
+      const result = resolveIntake("implement the feature", undefined, errorValidator)
+      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.warnings).toHaveLength(1)
+      expect(result.warnings[0]).toContain("filesystem unavailable")
+    })
+
+    it("handles validator throwing an exception gracefully", () => {
+      const throwingValidator: RegistryValidator = () => {
+        throw new Error("registry crash")
+      }
+
+      const result = resolveIntake("implement the feature", undefined, throwingValidator)
+      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.warnings).toHaveLength(1)
+      expect(result.warnings[0]).toContain("Registry validation failed")
+      expect(result.warnings[0]).toContain("registry crash")
+    })
+
+    it("still routes correctly even when registry warns", () => {
+      const emptyValidator = createRegistryValidator(new Map())
+
+      const result = resolveIntake("write tests using tdd approach", undefined, emptyValidator)
+      expect(result.purpose.purpose).toBe("tdd")
+      expect(result.routingTarget).toBe("hm-l2-test-driven-execution")
+      expect(result.warnings.length).toBeGreaterThan(0)
+      // Routing still happens despite warnings
       expect(result.routingTarget).toBeDefined()
     })
   })
@@ -140,5 +212,33 @@ describe("PURPOSE_TO_ROUTING_TARGET", () => {
       expect(typeof PURPOSE_TO_ROUTING_TARGET[purpose]).toBe("string")
       expect(PURPOSE_TO_ROUTING_TARGET[purpose].length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe("createRegistryValidator", () => {
+  it("returns exists: true when agent primitive is present", () => {
+    const primitives = new Map([
+      ["agent:gsd-executor", { name: "gsd-executor" }],
+      ["agent:hm-l2-critic", { name: "hm-l2-critic" }],
+    ])
+    const validator = createRegistryValidator(primitives)
+
+    expect(validator("gsd-executor").exists).toBe(true)
+    expect(validator("hm-l2-critic").exists).toBe(true)
+  })
+
+  it("returns exists: false when agent primitive is absent", () => {
+    const primitives = new Map([
+      ["skill:other", { name: "other" }],
+    ])
+    const validator = createRegistryValidator(primitives)
+
+    expect(validator("gsd-executor").exists).toBe(false)
+  })
+
+  it("returns exists: false for empty registry", () => {
+    const validator = createRegistryValidator(new Map())
+
+    expect(validator("any-agent").exists).toBe(false)
   })
 })
