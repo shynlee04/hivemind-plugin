@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1777662381798,
+  "updatedAt": 1777818199912,
   "trajectories": {
     "traj-uat-001": {
       "id": "traj-uat-001",
@@ -11,7 +11,11 @@
       "evidenceRefs": [
         "sdk-supervisor:healthy",
         "delegation-test:completed",
-        "bg-command:output-captured"
+        "bg-command:output-captured",
+        "test-4.1:passed",
+        "test-4.2:passed",
+        "test-4.3:passed",
+        "test-4.4:in-progress"
       ],
       "checkpoints": [
         {
@@ -23,6 +27,15 @@
             "bg-command:output-captured"
           ],
           "createdAt": 1777662372911
+        },
+        {
+          "checkpointId": "checkpoint-7a776dc7-8142-4d8b-8d04-ccf2e205012e",
+          "summary": "UAT Batch 4 checkpoint — trajectory and command engine tested",
+          "evidenceRefs": [
+            "test-4.1:passed",
+            "test-4.2:passed"
+          ],
+          "createdAt": 1777818186872
         }
       ],
       "events": [
@@ -32,10 +45,17 @@
           "summary": "Batch 3 (delegation + background commands) completed. All delegation lifecycle stages verified: dispatch, poll, complete, terminate.",
           "evidenceRefs": [],
           "createdAt": 1777662374323
+        },
+        {
+          "eventId": "event-uat-batch4-complete",
+          "eventType": "uat.batch-complete",
+          "summary": "Batch 4 (trajectory + command engine) completed. All trajectory actions verified: inspect, traverse, checkpoint, attach, event.",
+          "evidenceRefs": [],
+          "createdAt": 1777818199912
         }
       ],
       "createdAt": 1777662366670,
-      "updatedAt": 1777662381798,
+      "updatedAt": 1777818199912,
       "closeSummary": "UAT trajectory complete. 16 tools tested across 4 batches. 2 bugs found in hivemind-doc directory handling."
     }
   }

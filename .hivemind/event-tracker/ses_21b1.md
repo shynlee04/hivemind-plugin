@@ -7,15 +7,15 @@
 **Purpose Class:** unspecified
 **Key Findings:** None
 **Resumable:** true
-**Updated:** 1777662410346
+**Updated:** 1777818179633
 **Status:** idle
-**eventCount:** 59
+**eventCount:** 60
 **sessionStartCount:** 4
 **sessionEndCount:** 0
 **Actors:** 
 **Sub Sessions:** 0
 **Delegations:** 0
-**Tools Used:** hivemind-trajectory
+**Tools Used:** hivemind-trajectory, hivemind-trajectory
 **Last Output:** 
 
 ---
@@ -83,6 +83,7 @@
 | 57 | 1777662389520 | system | session_updated | Session updated (session.updated) |
 | 58 | 1777662410248 | system | session_idle | Session idle (session.idle) |
 | 59 | 1777662410346 | system | session_updated | Session updated (session.updated) |
+| 60 | 1777818179633 | tool | session_event | Tool hivemind-trajectory completed: {"title":"","output":"{\n \"kind\": \"success\",\n \"message\": \"Trajectory traverse action completed\",\n \"data\": {\n \"trajectories\": [\n {\n \"id\": \"traj-uat-001\",\n \"rootSessionId\": \"ses_21b16b510ffezDmCFzDXOgrWiT\",\n \"sess… |
 
 ---
 ## Session started
@@ -615,4 +616,13 @@
 - Source: plugin.event
 - State role: audit trail
 - Summary: Session updated (session.updated)
+
+## Tool hivemind-trajectory
+
+- Timestamp: 1777818179633
+- Actor: tool
+- Type: session_event
+- Source: plugin.tool.execute.after
+- State role: audit trail
+- Summary: Tool hivemind-trajectory completed: {"title":"","output":"{\n \"kind\": \"success\",\n \"message\": \"Trajectory traverse action completed\",\n \"data\": {\n \"trajectories\": [\n {\n \"id\": \"traj-uat-001\",\n \"rootSessionId\": \"ses_21b16b510ffezDmCFzDXOgrWiT\",\n \"sess…
 

@@ -9,10 +9,10 @@
   "keyFindings": [],
   "resumable": true,
   "startedAt": 1777661925558,
-  "updatedAt": 1777662410346,
+  "updatedAt": 1777818179633,
   "status": "idle",
   "counters": {
-    "eventCount": 59,
+    "eventCount": 60,
     "sessionStartCount": 4,
     "sessionEndCount": 0
   },
@@ -25,6 +25,12 @@
       "status": "completed",
       "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Trajectory attach action completed\\\",\\n \\\"data\\\": {\\n \\\"ledger\\\": {\\n \\\"version\\\": 1,\\n \\\"updatedAt\\\": 1777662366670,\\n \\\"trajectories\\\": {\\n \\\"traj-uat-001\\\": {\\n \\\"id\\\": \\…",
       "timestamp": 1777662366672
+    },
+    {
+      "toolName": "hivemind-trajectory",
+      "status": "completed",
+      "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Trajectory traverse action completed\\\",\\n \\\"data\\\": {\\n \\\"trajectories\\\": [\\n {\\n \\\"id\\\": \\\"traj-uat-001\\\",\\n \\\"rootSessionId\\\": \\\"ses_21b16b510ffezDmCFzDXOgrWiT\\\",\\n \\\"sess…",
+      "timestamp": 1777818179633
     }
   ],
   "lastMessageOutput": "",
@@ -442,6 +448,13 @@
       "actor": "system",
       "type": "session_updated",
       "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 60,
+      "timestamp": 1777818179633,
+      "actor": "tool",
+      "type": "session_event",
+      "summary": "Tool hivemind-trajectory completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Trajectory traverse action completed\\\",\\n \\\"data\\\": {\\n \\\"trajectories\\\": [\\n {\\n \\\"id\\\": \\\"traj-uat-001\\\",\\n \\\"rootSessionId\\\": \\\"ses_21b16b510ffezDmCFzDXOgrWiT\\\",\\n \\\"sess…"
     }
   ],
   "events": [
@@ -1171,6 +1184,24 @@
       "timestamp": 1777662410346,
       "source": "plugin.event",
       "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_21b1::session_event::1777818179633",
+      "sessionId": "ses_21b16b510ffezDmCFzDXOgrWiT",
+      "artifactStem": "ses_21b1",
+      "type": "session_event",
+      "actor": "tool",
+      "title": "Tool hivemind-trajectory",
+      "summary": "Tool hivemind-trajectory completed: {\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Trajectory traverse action completed\\\",\\n \\\"data\\\": {\\n \\\"trajectories\\\": [\\n {\\n \\\"id\\\": \\\"traj-uat-001\\\",\\n \\\"rootSessionId\\\": \\\"ses_21b16b510ffezDmCFzDXOgrWiT\\\",\\n \\\"sess…",
+      "timestamp": 1777818179633,
+      "source": "plugin.tool.execute.after",
+      "stateRole": "audit trail",
+      "toolUsage": {
+        "toolName": "hivemind-trajectory",
+        "status": "completed",
+        "summary": "{\"title\":\"\",\"output\":\"{\\n \\\"kind\\\": \\\"success\\\",\\n \\\"message\\\": \\\"Trajectory traverse action completed\\\",\\n \\\"data\\\": {\\n \\\"trajectories\\\": [\\n {\\n \\\"id\\\": \\\"traj-uat-001\\\",\\n \\\"rootSessionId\\\": \\\"ses_21b16b510ffezDmCFzDXOgrWiT\\\",\\n \\\"sess…",
+        "timestamp": 1777818179633
+      }
     }
   ]
 }
