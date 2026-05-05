@@ -318,3 +318,28 @@ export type {
   AgentWorkCreateToolInput,
   AgentWorkExportToolInput,
 } from "./agent-work-contract.schema.js"
+
+// ---------------------------------------------------------------------------
+// Hivemind configs schemas
+// ---------------------------------------------------------------------------
+
+export {
+  HIVEMIND_CONFIGS_SCHEMA_VERSION,
+  SupportedLanguageSchema,
+  HivemindModeSchema,
+  UserExpertLevelSchema,
+  DelegationSystemsSchema,
+  HivemindConfigsSchema,
+  getDefaultConfigs,
+  getConfigsPath,
+  readConfigs,
+  writeConfigs,
+} from "./hivemind-configs.schema.js"
+
+export type {
+  SupportedLanguage,
+  HivemindMode,
+  UserExpertLevel,
+  DelegationSystems,
+  HivemindConfigs,
+} from "./hivemind-configs.schema.js"

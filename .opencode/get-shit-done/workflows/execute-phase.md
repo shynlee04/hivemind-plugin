@@ -26,9 +26,9 @@ via filesystem and git state.
 <required_reading>
 Read STATE.md before any operation to load project context.
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/agent-contracts.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/context-budget.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/gates.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/agent-contracts.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/context-budget.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gates.md
 </required_reading>
 
 <available_agent_types>
@@ -84,16 +84,21 @@ Read worktree config:
 USE_WORKTREES=$(gsd-sdk query config-get workflow.use_worktrees 2>/dev/null || echo "true")
 ```
 
-If the project uses git submodules, worktree isolation is skipped regardless of the `workflow.use_worktrees` config — the executor commit protocol cannot correctly handle submodule commits inside isolated worktrees. Sequential execution handles submodules transparently.
+If the project uses git submodules, worktree isolation is unsafe **only when a plan touches a submodule path** — the executor commit protocol cannot correctly handle submodule commits inside isolated worktrees. The previous behavior unconditionally disabled worktree isolation whenever `.gitmodules` existed, which penalised every plan in a submodule project even when the plan was nowhere near a submodule. Compute submodule paths once and intersect them per-plan with the plan's declared `files_modified` frontmatter.
 
 ```bash
+# Parse submodule paths from .gitmodules once (empty if no .gitmodules).
+# SUBMODULE_PATHS is a newline-separated list of repo-relative paths.
 if [ -f .gitmodules ]; then
-  echo "[worktree] Submodule project detected (.gitmodules exists) — falling back to sequential execution"
-  USE_WORKTREES=false
+  SUBMODULE_PATHS=$(git config --file .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | awk '{print $2}')
+else
+  SUBMODULE_PATHS=""
 fi
 ```
 
-When `USE_WORKTREES` is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees.
+`SUBMODULE_PATHS` is exported to the `execute_waves` step, where the per-plan decision actually happens (see "Per-plan worktree decision" sub-step inside `execute_waves`). The decision is per-plan because different plans in the same wave can touch different files — only plans whose paths intersect a submodule must drop worktree isolation; plans nowhere near a submodule keep parallel isolation.
+
+When `USE_WORKTREES` (project-level) is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees. The per-plan decision below has no effect when worktrees are project-disabled.
 
 Read context window size for adaptive prompt enrichment:
 
@@ -107,8 +112,8 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 - This enables cross-phase awareness and history-aware verification
 
 When `CONTEXT_WINDOW < 200000` (sub-200K models), subagent prompts are thinned to reduce static overhead:
-- Executor agents omit extended deviation rule examples and checkpoint examples from inline prompt — load on-demand via @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/executor-examples.md
-- Planner agents omit extended anti-pattern lists and specificity examples from inline prompt — load on-demand via @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/planner-antipatterns.md
+- Executor agents omit extended deviation rule examples and checkpoint examples from inline prompt — load on-demand via @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/executor-examples.md
+- Planner agents omit extended anti-pattern lists and specificity examples from inline prompt — load on-demand via @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/planner-antipatterns.md
 - Core rules and decision logic remain inline; only verbose examples and edge-case lists are extracted
 - This reduces executor static overhead by ~40% while preserving behavioral correctness
 
@@ -188,7 +193,7 @@ checkpoints between tasks. The user can review, modify, or redirect work at any 
 
    b. **If "Review first":** Read and display the full plan file. Ask again: Execute, Modify, Skip.
 
-   c. **If "Execute":** Read and follow `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/execute-plan.md` **inline**
+   c. **If "Execute":** Read and follow `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/execute-plan.md` **inline**
       (do NOT spawn a subagent). Execute tasks one at a time.
 
    d. **After each task:** Pause briefly. If the user intervenes (types anything), stop and address
@@ -212,9 +217,33 @@ Check `branching_strategy` from init:
 
 **"none":** Skip, continue on current branch.
 
-**"phase" or "milestone":** Use pre-computed `branch_name` from init:
+**"phase" or "milestone":** Use pre-computed `branch_name` from init.
+
+Fork the new phase branch off `origin/HEAD` (the project's default branch), not the current HEAD — otherwise consecutive phases compound and stay unpushed (#2916). If `$BRANCH_NAME` already exists locally, reuse it as-is.
+
 ```bash
-git checkout -b "$BRANCH_NAME" 2>/dev/null || git checkout "$BRANCH_NAME"
+DEFAULT_BRANCH=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
+DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
+
+if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
+  git switch "$BRANCH_NAME" || { echo "ERROR: Could not switch to existing branch '$BRANCH_NAME'." >&2; exit 1; }
+else
+  if ! git fetch --quiet origin "$DEFAULT_BRANCH"; then  # #2916
+    git show-ref --verify --quiet "refs/remotes/origin/$DEFAULT_BRANCH" \
+      || { echo "ERROR: fetch origin/$DEFAULT_BRANCH failed and no local copy exists. Refusing to create '$BRANCH_NAME' off current HEAD (#2916)." >&2; exit 1; }
+    echo "WARNING: fetch origin/$DEFAULT_BRANCH failed; using local copy as base." >&2
+  fi
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "WARNING: Uncommitted changes will be carried onto '$BRANCH_NAME' (branched off origin/$DEFAULT_BRANCH, not previous HEAD)."
+  else
+    git switch --quiet "$DEFAULT_BRANCH" 2>/dev/null && git merge --ff-only --quiet "origin/$DEFAULT_BRANCH" 2>/dev/null || true
+  fi
+  # Pinned base + fail-fast: on success HEAD is exactly at origin/$DEFAULT_BRANCH,
+  # so a post-creation merge-base or "ahead-of" guard would be unreachable. The
+  # explicit base argument here is the single source of correctness for #2916.
+  git checkout -b "$BRANCH_NAME" "origin/$DEFAULT_BRANCH" \
+    || { echo "ERROR: Could not create '$BRANCH_NAME' from origin/$DEFAULT_BRANCH (#2916)." >&2; exit 1; }
+fi
 ```
 
 All subsequent commits go to this branch. User handles merging.
@@ -418,6 +447,12 @@ increases monotonically across waves. `{status}` is `complete` (success),
    - Bad: "Executing terrain generation plan"
    - Good: "Procedural terrain generator using Perlin noise — creates height maps, biome zones, and collision meshes. Required before vehicle physics can interact with ground."
 
+2.5. **Per-plan worktree decision (run for each plan in this wave BEFORE its dispatch):**
+
+   Read and execute `get-shit-done/workflows/execute-phase/steps/per-plan-worktree-gate.md` for each plan. It extracts `PLAN_FILES` from the plan's JSON, intersects against `SUBMODULE_PATHS` (with normalization, bidirectional matching, and glob-prefix handling), and sets `USE_WORKTREES_FOR_PLAN` to `false` when the plan touches a submodule path. Append `plan_id` to a `WAVE_WORKTREE_PLANS` accumulator when `USE_WORKTREES_FOR_PLAN != false`.
+
+   The dispatch branches in step 3 below MUST gate on `USE_WORKTREES_FOR_PLAN` for the current plan, not on the project-level `USE_WORKTREES`.
+
 3. **Spawn executor agents:**
 
    **Emit a plan-start heartbeat (literal line, no tool call) immediately before
@@ -431,7 +466,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    For 200k models, this keeps orchestrator context lean (~10-15%).
    For 1M+ models (Opus 4.6, Sonnet 4.6), richer context can be passed directly.
 
-   **Worktree mode** (`USE_WORKTREES` is not `false`):
+   **Worktree mode** (`USE_WORKTREES_FOR_PLAN` is not `false` — evaluated per-plan in step 2.5):
 
    Before spawning, capture the current HEAD:
    ```bash
@@ -471,40 +506,37 @@ increases monotonically across waves. `{status}` is `complete` (success),
        </objective>
 
        <worktree_branch_check>
-       FIRST ACTION before any other work: verify this worktree's branch is based on the correct commit.
-
-       Run:
+       FIRST ACTION: HEAD assertion MUST run before any reset/checkout. Worktrees
+       spawned by Claude Code's `isolation="worktree"` use the `worktree-agent-<id>`
+       namespace. If HEAD is on a protected ref (main/master/develop/trunk/release/*)
+       or detached, HALT — do NOT self-recover by force-rewinding via `git update-ref`,
+       that destroys concurrent commits in multi-active scenarios (#2924). Only after
+       Step 1 passes is `git reset --hard` safe (#2015 — affects all platforms).
        ```bash
-       ACTUAL_BASE=$(git merge-base HEAD {EXPECTED_BASE})
-       ```
-
-       If `ACTUAL_BASE` != `{EXPECTED_BASE}` (i.e. the worktree branch was created from an older
-       base such as `main` instead of the feature branch HEAD), hard-reset to the correct base:
-       ```bash
-       # Safe: this runs before any agent work, so no uncommitted changes to lose
-       git reset --hard {EXPECTED_BASE}
-       # Verify correction succeeded
-       if [ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ]; then
-         echo "ERROR: Could not correct worktree base — aborting to prevent data loss"
+       HEAD_REF=$(git symbolic-ref --quiet HEAD || echo "DETACHED")
+       ACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+       if [ "$HEAD_REF" = "DETACHED" ] || echo "$ACTUAL_BRANCH" | grep -Eq '^(main|master|develop|trunk|release/.*)$'; then
+         echo "FATAL: worktree HEAD on '$ACTUAL_BRANCH' (expected worktree-agent-*); refusing to self-recover via 'git update-ref' (#2924)." >&2
          exit 1
        fi
+       if ! echo "$ACTUAL_BRANCH" | grep -Eq '^worktree-agent-[A-Za-z0-9._/-]+$'; then
+         echo "FATAL: worktree HEAD '$ACTUAL_BRANCH' is not in the worktree-agent-* namespace; refusing to commit (#2924)." >&2
+         exit 1
+       fi
+       ACTUAL_BASE=$(git merge-base HEAD {EXPECTED_BASE})
+       if [ "$ACTUAL_BASE" != "{EXPECTED_BASE}" ]; then
+         git reset --hard {EXPECTED_BASE}
+         [ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && { echo "ERROR: could not correct worktree base"; exit 1; }
+       fi
        ```
-
-       `reset --hard` is safe here because this is a fresh worktree with no user changes. It
-       resets both the HEAD pointer AND the working tree to the correct base commit (#2015).
-
-       If `ACTUAL_BASE` == `{EXPECTED_BASE}`: the branch base is correct, proceed immediately.
-
-       This check fixes a known issue where `EnterWorktree` creates branches from
-       `main` instead of the current feature branch HEAD (affects all platforms).
+       Per-commit HEAD assertion lives in `agents/gsd-executor.md` `<task_commit_protocol>` step 0.
        </worktree_branch_check>
 
        <parallel_execution>
        You are running as a PARALLEL executor agent in a git worktree.
-       Use --no-verify on all git commits to avoid pre-commit hook contention
-       with other agents. The orchestrator validates hooks once after all agents complete.
-       For `gsd-sdk query commit` (or legacy `gsd-tools.cjs` commit): add --no-verify flag when needed.
-       For direct git commits: use git commit --no-verify -m "..."
+       Run `git commit` normally — hooks run by default. Do NOT pass `--no-verify`
+       unless the orchestrator surfaces `workflow.worktree_skip_hooks=true` in this
+       prompt; silent bypass violates project AGENTS.md guidance (#2924).
 
        IMPORTANT: Do NOT modify STATE.md or ROADMAP.md. execute-plan.md
        auto-detects worktree mode (`.git` is a file, not a directory) and skips
@@ -516,14 +548,15 @@ increases monotonically across waves. `{status}` is `complete` (success),
        only (STATE.md and ROADMAP.md are excluded automatically). Do NOT skip or defer
        this commit — the orchestrator force-removes the worktree after you return, and
        any uncommitted SUMMARY.md will be permanently lost (#2070).
+       REQUIRED ORDER: Write SUMMARY.md → commit → only then any narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
        </parallel_execution>
 
        <execution_context>
-       @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/execute-plan.md
-       @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/summary.md
-       @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/checkpoints.md
-       @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/tdd.md
-       ${CONTEXT_WINDOW < 200000 ? '' : '@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/executor-examples.md'}
+       @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/execute-plan.md
+       @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/summary.md
+       @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/checkpoints.md
+       @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/tdd.md
+       ${CONTEXT_WINDOW < 200000 ? '' : '@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/executor-examples.md'}
        </execution_context>
 
        <files_to_read>
@@ -560,7 +593,9 @@ increases monotonically across waves. `{status}` is `complete` (success),
    )
    ```
 
-   **Sequential mode** (`USE_WORKTREES` is `false`):
+   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above to spawn executor agent(s), stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
+   **Sequential mode** (`USE_WORKTREES_FOR_PLAN` is `false` — either project-level `USE_WORKTREES=false`, or per-plan submodule intersection forced it false in step 2.5):
 
    Omit `isolation="worktree"` from the Task call. Replace the `<parallel_execution>` block with:
 
@@ -568,6 +603,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
        <sequential_execution>
        You are running as a SEQUENTIAL executor agent on the main working tree.
        Use normal git commits (with hooks). Do NOT use --no-verify.
+       REQUIRED ORDER: Write SUMMARY.md → commit → only then any narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
        </sequential_execution>
    ```
 
@@ -583,7 +619,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
        </success_criteria>
    ```
 
-   When worktrees are disabled, execute plans **one at a time within each wave** (sequential) regardless of the `PARALLELIZATION` setting — multiple agents writing to the same working tree concurrently would cause conflicts.
+   When worktrees are disabled for a plan (per-plan or project-level), that plan's executor runs on the main working tree. If **any** plan in the current wave dropped to sequential mode, execute the affected plan(s) **one at a time** to avoid concurrent writes to the main working tree — plans in the same wave that retained worktree isolation can still run in parallel alongside the sequential ones, but two non-worktree plans in the same wave must serialize. When the project-level `USE_WORKTREES=false`, all plans in the wave serialize regardless of the `PARALLELIZATION` setting.
 
 4. **Wait for all agents in wave to complete.**
 
@@ -619,13 +655,16 @@ increases monotonically across waves. `{status}` is `complete` (success),
    **This fallback applies automatically to all runtimes.** Claude Code's Task() normally
    returns synchronously, but the fallback ensures resilience if it doesn't.
 
-5. **Post-wave hook validation (parallel mode only):**
-
-   When agents committed with `--no-verify`, run pre-commit hooks once after the wave:
+5. **Post-wave hook validation (parallel mode only):** Hooks run on every executor commit by default (#2924); this post-wave run only fires when `workflow.worktree_skip_hooks=true` opted out of per-commit hooks:
    ```bash
-   # Run project's pre-commit hooks on the current state
-   git diff --cached --quiet || git stash  # stash any unstaged changes
-   git hook run pre-commit 2>&1 || echo "⚠ Pre-commit hooks failed — review before continuing"
+   SKIP_HOOKS=$(gsd-sdk query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
+   if [ "$SKIP_HOOKS" = "true" ]; then
+     # Stash uncommitted changes under a named ref so we always pop (bare `git stash` strands them on hook/script failure).
+     STASHED=false
+     if (! git diff --quiet || ! git diff --cached --quiet) && git stash push -u -m "gsd-post-wave-hook-$$" >/dev/null 2>&1; then STASHED=true; fi
+     git hook run pre-commit 2>&1 || echo "⚠ Pre-commit hooks failed — review before continuing"
+     [ "$STASHED" = "true" ] && (git stash pop >/dev/null 2>&1 || echo "⚠ Could not pop gsd-post-wave-hook stash — recover manually")
+   fi
    ```
    If hooks fail: report the failure and ask "Fix hook issues now?" or "Continue to next wave?"
 
@@ -634,10 +673,16 @@ increases monotonically across waves. `{status}` is `complete` (success),
    When executor agents ran in worktree isolation, their commits land on temporary branches in separate working trees. After the wave completes, merge these changes back and clean up:
 
    ```bash
-   # List worktrees created by this wave's agents
-   WORKTREES=$(git worktree list --porcelain | grep "^worktree " | grep -v "$(pwd)$" | sed 's/^worktree //')
-
-   for WT in $WORKTREES; do
+   # List worktrees created by this wave's agents.
+   # Inclusion-based filter (#2774): match ONLY agent-spawned worktrees under
+   # `.claude/worktrees/agent-` (the namespace Claude Code's `isolation="worktree"`
+   # uses). The previous exclusion filter (`grep -v "$(pwd)$"`) destroyed the parent
+   # workspace's `.git` whenever the workspace itself was a worktree (multi-workspace
+   # setups, and the cross-drive Windows case where `git worktree list` reports the
+   # registry path on a different drive than `$(pwd)`).
+   # Read line-by-line so worktree paths containing whitespace are preserved (#2774).
+   while IFS= read -r WT; do
+     [ -z "$WT" ] && continue
      # Get the branch name for this worktree
      WT_BRANCH=$(git -C "$WT" rev-parse --abbrev-ref HEAD 2>/dev/null)
      if [ -n "$WT_BRANCH" ] && [ "$WT_BRANCH" != "HEAD" ]; then
@@ -723,16 +768,20 @@ increases monotonically across waves. `{status}` is `complete` (success),
          fi
        fi
 
-       # Safety net: commit any uncommitted SUMMARY.md before force-removing the worktree.
-       # This guards against executors that skipped the git_commit_metadata step (#2070).
-       UNCOMMITTED_SUMMARY=$(git -C "$WT" ls-files --modified --others --exclude-standard -- "*SUMMARY.md" 2>/dev/null || true)
-       if [ -n "$UNCOMMITTED_SUMMARY" ]; then
-         echo "⚠ SUMMARY.md was not committed by executor — committing now to prevent data loss"
-         git -C "$WT" add -- "*SUMMARY.md" 2>/dev/null || true
-         git -C "$WT" commit --no-verify -m "docs(recovery): rescue uncommitted SUMMARY.md before worktree removal (#2070)" 2>/dev/null || true
-         # Re-merge the recovery commit
-         git merge "$WT_BRANCH" --no-edit -m "chore: merge rescued SUMMARY.md from executor worktree ($WT_BRANCH)" 2>/dev/null || true
-       fi
+       # Safety net: rescue uncommitted SUMMARY.md before worktree removal (#2070, #2838).
+       # Filesystem-level (find + cp) bypasses git's --exclude-standard filter, which silently
+       # drops .planning/SUMMARY.md when projects gitignore .planning/ — the rescue's prior
+       # `git ls-files --exclude-standard` form returned empty in that case and the SUMMARY
+       # was lost on `git worktree remove --force`.
+       while IFS= read -r SUMMARY; do
+         [ -z "$SUMMARY" ] && continue
+         REL_PATH="${SUMMARY#$WT/}"
+         if [ ! -f "$REL_PATH" ] || ! cmp -s "$SUMMARY" "$REL_PATH"; then
+           mkdir -p "$(dirname "$REL_PATH")"
+           cp "$SUMMARY" "$REL_PATH"
+           echo "⚠ Rescued $REL_PATH from worktree before removal"
+         fi
+       done < <(find "$WT/.planning" -name "*SUMMARY.md" 2>/dev/null)
 
        # Remove the worktree
        if ! git worktree remove "$WT" --force; then
@@ -752,69 +801,31 @@ increases monotonically across waves. `{status}` is `complete` (success),
        # Delete the temporary branch
        git branch -D "$WT_BRANCH" 2>/dev/null || true
      fi
-   done
+   done < <(git worktree list --porcelain | grep "^worktree " | grep "\.claude/worktrees/agent-" | sed 's/^worktree //')
    ```
 
-   **If `workflow.use_worktrees` is `false`:** Agents ran on the main working tree — skip this step entirely.
+   **If no plan in this wave used worktree isolation** (project-level `USE_WORKTREES=false` OR every plan in the wave had `USE_WORKTREES_FOR_PLAN=false` — i.e. `WAVE_WORKTREE_PLANS` from step 2.5 is empty): all agents ran on the main working tree — skip this step entirely.
 
-   **If no worktrees found:** Skip silently — agents may have been spawned without worktree isolation.
+   **If at least one plan used worktrees but others did not:** still run this cleanup — it iterates over actual `git worktree list` output and only merges back the worktrees that were created, leaving sequential plans' commits on the main tree untouched.
 
-5.6. **Post-merge test gate (parallel mode only):**
+   **If no worktrees found at runtime:** Skip silently — agents may have been spawned without worktree isolation, or the orchestrator already cleaned them up.
 
-   After merging all worktrees in a wave, run the project's test suite to catch
-   cross-plan integration issues that individual worktree self-checks cannot detect
-   (e.g., conflicting type definitions, removed exports, import changes).
+5.6. **Post-merge build & test gate:**
+
+   After merging all worktrees in a wave (parallel mode), or after the last plan completes
+   (serial mode), run a build and then the project's test suite to catch cross-plan
+   integration issues that individual worktree self-checks cannot detect (e.g., conflicting
+   type definitions, removed exports, import changes, link errors).
 
    This addresses the Generator self-evaluation blind spot identified in Anthropic's
    harness engineering research: agents reliably report Self-Check: PASSED even when
    merging their work creates failures.
 
-   ```bash
-   # Resolve test command: project config > Makefile > language sniff
-   TEST_CMD=$(gsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
-   if [ -z "$TEST_CMD" ]; then
-     if [ -f "Makefile" ] && grep -q "^test:" Makefile; then
-       TEST_CMD="make test"
-     elif [ -f "Justfile" ] || [ -f "justfile" ]; then
-       TEST_CMD="just test"
-     elif [ -f "package.json" ]; then
-       TEST_CMD="npm test"
-     elif [ -f "Cargo.toml" ]; then
-       TEST_CMD="cargo test"
-     elif [ -f "go.mod" ]; then
-       TEST_CMD="go test ./..."
-     elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
-       TEST_CMD="python -m pytest -x -q --tb=short 2>&1 || uv run python -m pytest -x -q --tb=short"
-     else
-       TEST_CMD="true"
-       echo "⚠ No test runner detected — skipping post-merge test gate"
-     fi
-   fi
-   # Detect test runner and run quick smoke test (timeout: 5 minutes)
-   TEST_EXIT=0
-   timeout 300 bash -c "$TEST_CMD" 2>&1
-   TEST_EXIT=$?
-   if [ "${TEST_EXIT}" -eq 0 ]; then
-     echo "✓ Post-merge test gate passed — no cross-plan conflicts"
-   elif [ "${TEST_EXIT}" -eq 124 ]; then
-     echo "⚠ Post-merge test gate timed out after 5 minutes"
-   else
-     echo "✗ Post-merge test gate failed (exit code ${TEST_EXIT})"
-     WAVE_FAILURE_COUNT=$((WAVE_FAILURE_COUNT + 1))
-   fi
-   ```
+   Read and execute `get-shit-done/workflows/execute-phase/steps/post-merge-gate.md`.
 
-   **If `TEST_EXIT` is 0 (pass):** `✓ Post-merge test gate: {N} tests passed — no cross-plan conflicts` → continue to orchestrator tracking update.
+5.7. **Post-wave shared artifact update (when at least one plan used worktrees, skip if tests failed):**
 
-   **If `TEST_EXIT` is 124 (timeout):** Log warning, treat as non-blocking, continue. Tests may need a longer budget or manual run.
-
-   **If `TEST_EXIT` is non-zero (test failure):** Increment `WAVE_FAILURE_COUNT` to track
-   cumulative failures across waves. Subsequent waves should report:
-   `⚠ Note: ${WAVE_FAILURE_COUNT} prior wave(s) had test failures`
-
-5.7. **Post-wave shared artifact update (worktree mode only, skip if tests failed):**
-
-   When executor agents ran with `isolation="worktree"`, they skipped STATE.md and ROADMAP.md updates to avoid last-merge-wins overwrites. The orchestrator is the single writer for these files. After worktrees are merged back, update shared artifacts once.
+   When **any** executor agent in this wave ran with `isolation="worktree"`, that agent skipped STATE.md and ROADMAP.md updates to avoid last-merge-wins overwrites. The orchestrator is the single writer for these files. After worktrees are merged back, update shared artifacts once for every completed plan in the wave (worktree-mode plans **and** sequential plans that ran on the main tree but deferred to the orchestrator for tracking writes).
 
    **Only update tracking when tests passed (TEST_EXIT=0).**
    If tests failed or timed out, skip the tracking update — plans should
@@ -831,7 +842,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
      # Only commit tracking files if they actually changed
      if ! git diff --quiet .planning/ROADMAP.md .planning/STATE.md 2>/dev/null; then
-       gsd-sdk query commit "docs(phase-${PHASE_NUMBER}): update tracking after wave ${N}" .planning/ROADMAP.md .planning/STATE.md
+       gsd-sdk query commit "docs(phase-${PHASE_NUMBER}): update tracking after wave ${N}" --files .planning/ROADMAP.md .planning/STATE.md
      fi
    elif [ "${TEST_EXIT}" -eq 124 ]; then
      echo "⚠ Skipping tracking update — test suite timed out. Plans remain in-progress. Run tests manually to confirm."
@@ -842,7 +853,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    Where `WAVE_PLAN_IDS` is the space-separated list of plan IDs that completed in this wave.
 
-   **If `workflow.use_worktrees` is `false`:** Sequential agents already updated STATE.md and ROADMAP.md themselves — skip this step.
+   **If no plan in this wave used worktrees** (project-level `USE_WORKTREES=false` OR `WAVE_WORKTREE_PLANS` is empty): sequential agents already updated STATE.md and ROADMAP.md themselves — skip this step.
 
 5.8. **Handle test gate failures (when `WAVE_FAILURE_COUNT > 0`):**
 
@@ -1114,7 +1125,7 @@ If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.co
 
 **Invoke review:**
 ```
-Skill(skill="gsd:code-review", args="${PHASE_NUMBER}")
+Skill(skill="gsd-code-review", args="${PHASE_NUMBER}")
 ```
 
 **Check results using deterministic path (not glob):**
@@ -1127,7 +1138,7 @@ REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | hea
 If REVIEW_STATUS is not "clean" and not "skipped" and not empty, display:
 ```
 Code review found issues. Consider running:
-/gsd-code-review-fix ${PHASE_NUMBER}
+/gsd-code-review ${PHASE_NUMBER} --fix
 ```
 
 **Error handling:** If the Skill invocation fails or throws, catch the error, display "Code review encountered an error (non-blocking): {error}" and proceed to next step. Review failures must never block execution.
@@ -1181,7 +1192,7 @@ mv .planning/debug/{slug}.md .planning/debug/resolved/
 
 **6. Commit updated artifacts:**
 ```bash
-gsd-sdk query commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
+gsd-sdk query commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
 ```
 </step>
 
@@ -1370,6 +1381,8 @@ ${VERIFIER_SKILLS}",
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 Read status:
 ```bash
 grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
@@ -1422,7 +1435,7 @@ blocked: 0
 
 Commit the file:
 ```bash
-gsd-sdk query commit "test({phase_num}): persist human verification items as UAT" "{phase_dir}/{phase_num}-HUMAN-UAT.md"
+gsd-sdk query commit "test({phase_num}): persist human verification items as UAT" --files "{phase_dir}/{phase_num}-HUMAN-UAT.md"
 ```
 
 **Step B: Present to user:**
@@ -1494,7 +1507,7 @@ These items are tracked and will appear in `/gsd-progress` and `/gsd-audit-uat`.
 ```
 
 ```bash
-gsd-sdk query commit "docs(phase-{X}): complete phase execution" .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md {phase_dir}/*-VERIFICATION.md
+gsd-sdk query commit "docs(phase-{X}): complete phase execution" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md {phase_dir}/*-VERIFICATION.md
 ```
 </step>
 
@@ -1544,7 +1557,7 @@ for TODO_FILE in "$PENDING_DIR"/*.md; do
 done
 
 if [ ${#CLOSED[@]} -gt 0 ]; then
-  gsd-sdk query commit "docs(phase-${PHASE_NUMBER}): auto-close ${#CLOSED[@]} todo(s) resolved by this phase" .planning/todos/completed/ .planning/STATE.md || true
+  gsd-sdk query commit "docs(phase-${PHASE_NUMBER}): auto-close ${#CLOSED[@]} todo(s) resolved by this phase" --files .planning/todos/completed/ .planning/STATE.md|| true
   echo "◆ Closed ${#CLOSED[@]} todo(s) resolved by Phase ${PHASE_NUMBER}:"
   for f in "${CLOSED[@]}"; do echo "  ✓ $f"; done
 fi
@@ -1569,7 +1582,7 @@ PROJECT.md falls behind silently over multiple phases.
 5. Commit the change:
 
 ```bash
-gsd-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completion" .planning/PROJECT.md
+gsd-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completion" --files .planning/PROJECT.md
 ```
 
 **Skip this step if** `.planning/PROJECT.md` does not exist.
@@ -1621,7 +1634,7 @@ STOP. Do not proceed to auto-advance or transition.
 
 Execute the transition workflow inline (do NOT use Task — orchestrator context is ~10-15%, transition needs phase completion data already in context):
 
-Read and follow `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next phase invocation.
+Read and follow `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next phase invocation.
 
 **If neither `--auto` nor `AUTO_MODE` is true:**
 

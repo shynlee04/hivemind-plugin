@@ -1,7 +1,7 @@
 <purpose>
 Explore design directions through throwaway HTML mockups before committing to implementation.
 Each sketch produces 2-3 variants for comparison. Saves artifacts to `.planning/sketches/`.
-Companion to `/gsd-sketch-wrap-up`.
+Companion to `/gsd-sketch --wrap-up`.
 
 Supports two modes:
 - **Idea mode** (default) — user describes a design idea to sketch
@@ -11,10 +11,10 @@ Supports two modes:
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-theme-system.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-variant-patterns.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-interactivity.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-tooling.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-theme-system.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-variant-patterns.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-interactivity.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-tooling.md
 </required_reading>
 
 <process>
@@ -296,7 +296,7 @@ Iterate until satisfied.
 
 **h.** Commit (if `COMMIT_DOCS` is true):
 ```bash
-gsd-sdk query commit "docs(sketch-NNN): [winning direction] — [key visual insight]" .planning/sketches/NNN-descriptive-name/ .planning/sketches/MANIFEST.md
+gsd-sdk query commit "docs(sketch-NNN): [winning direction] — [key visual insight]" --files .planning/sketches/NNN-descriptive-name/ .planning/sketches/MANIFEST.md
 ```
 
 **i.** Report:
@@ -331,7 +331,7 @@ After all sketches complete:
 
 **Package findings** — wrap design decisions into a reusable skill
 
-`/gsd-sketch-wrap-up`
+`/gsd-sketch --wrap-up`
 
 ───────────────────────────────────────────────────────────────
 

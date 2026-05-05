@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.38.5
+// gsd-hook-version: 1.40.0
 // Background worker spawned by gsd-check-update.js (SessionStart hook).
 // Checks for GSD updates and stale hooks, writes result to cache file.
 // Receives paths via environment variables set by the parent hook.
@@ -56,6 +56,7 @@ const MANAGED_HOOKS = [
   'gsd-read-injection-scanner.js',
   'gsd-session-state.sh',
   'gsd-statusline.js',
+  'gsd-update-banner.js',
   'gsd-validate-commit.sh',
   'gsd-workflow-guard.js',
 ];

@@ -36,7 +36,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /gsd-status to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /gsd-progress to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -207,6 +207,8 @@ Read REVIEW.md findings, apply fixes, commit each atomically, write REVIEW-FIX.m
 ")
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 **Agent failure handling:**
 
 If Task() fails:
@@ -221,7 +223,7 @@ Check if FIX_REPORT_PATH exists:
 Either way:
 ```
 Some fix commits may already exist in git history — check git log for fix(${PADDED_PHASE}) commits.
-You can retry with /gsd-code-review-fix ${PHASE_ARG}.
+You can retry with /gsd-code-review ${PHASE_ARG} --fix.
 ```
 
 Exit workflow (skip auto loop).
@@ -281,6 +283,7 @@ ${FILES_CONFIG}
 Re-review the phase at ${REVIEW_DEPTH} depth. Write findings to ${REVIEW_PATH}.
 Do NOT commit the output — the orchestrator handles that.
 ")
+    # ORCHESTRATOR RULE — CODEX RUNTIME: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result before proceeding.
     
     # Check new REVIEW.md status
     NEW_STATUS=$(REVIEW_PATH="${REVIEW_PATH}" node -e "
@@ -319,6 +322,7 @@ iteration: ${ITERATION}
 
 Read REVIEW.md findings, apply fixes, commit each atomically, write REVIEW-FIX.md (overwrite previous). Do NOT commit REVIEW-FIX.md.
 ")
+    # ORCHESTRATOR RULE — CODEX RUNTIME: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result before proceeding.
     
     # Check if fixer succeeded
     if [ ! -f "${FIX_REPORT_PATH}" ]; then
@@ -394,7 +398,7 @@ if [ ! -f "${FIX_REPORT_PATH}" ]; then
   echo "The fixer agent may have failed before completing."
   echo "Check git log for any fix(${PADDED_PHASE}) commits."
   echo ""
-  echo "Retry: /gsd-code-review-fix ${PHASE_ARG}"
+  echo "Retry: /gsd-code-review ${PHASE_ARG} --fix"
   echo ""
   echo "═══════════════════════════════════════════════════════════════"
   exit 1

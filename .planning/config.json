@@ -26,5 +26,8 @@
   },
   "hooks": {
     "context_warnings": true
+  },
+  "graphify": {
+    "enabled": true
   }
 }

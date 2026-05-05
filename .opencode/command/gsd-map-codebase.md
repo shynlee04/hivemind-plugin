@@ -1,6 +1,6 @@
 ---
 description: Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents
-argument-hint: "[optional: specific area to map, e.g., 'api' or 'auth']"
+argument-hint: "[--fast [--focus tech|arch|quality|concerns]] [--query <term>|status|diff|refresh] [area]"
 tools:
   read: true
   bash: true
@@ -19,11 +19,22 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/map-codebase.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/map-codebase.md
 </execution_context>
 
+<flags>
+- **--fast**: Lightweight scan mode — spawns one mapper agent instead of four. Accepts an optional `--focus` value: `tech`, `arch`, `quality`, `concerns`, or `tech+arch` (default). Faster and lower-context than the full map.
+- **--query**: Codebase intelligence query mode. Sub-commands: `query <term>`, `status`, `diff`, `refresh`. Requires intel to be enabled in config (`intel.enabled: true`). Runs inline for query/status/diff; spawns an agent for refresh.
+- **(no flag)**: Full parallel map — spawns 4 mapper agents to produce all 7 codebase documents.
+</flags>
+
 <context>
-Focus area: $ARGUMENTS (optional - if provided, tells agents to focus on specific subsystem)
+Arguments: $ARGUMENTS
+
+Parse the first token of $ARGUMENTS:
+- If it is `--fast`: strip the flag, run the scan workflow (passing remaining args including optional --focus).
+- If it is `--query`: strip the flag, run the intel workflow (passing remaining args as the subcommand).
+- Otherwise: pass all of $ARGUMENTS as focus area to the map-codebase workflow.
 
 **Load project state if exists:**
 Check for .planning/STATE.md - loads context if project already initialized

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.38.5
+// gsd-hook-version: 1.40.0
 // GSD Read Injection Scanner — PostToolUse hook (#2201)
 // Scans file content returned by the Read tool for prompt injection patterns.
 // Catches poisoned content at ingestion before it enters conversation context.

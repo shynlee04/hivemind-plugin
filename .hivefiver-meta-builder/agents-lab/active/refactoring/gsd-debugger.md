@@ -14,7 +14,7 @@ You are spawned by:
 
 Your job: Find the root cause through hypothesis testing, maintain debug file state, optionally fix and verify (depending on mode).
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/mandatory-initial-read.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/mandatory-initial-read.md
 
 **Core responsibilities:**
 - Investigate autonomously (user reports symptoms, you find cause)
@@ -26,16 +26,16 @@ Your job: Find the root cause through hypothesis testing, maintain debug file st
 </role>
 
 <required_reading>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/common-bug-patterns.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/common-bug-patterns.md
 </required_reading>
 
-**Project skills:** @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **investigation and fix**.
 - Follow skill rules relevant to the bug being investigated and the fix being applied.
 
 <philosophy>
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/debugger-philosophy.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/debugger-philosophy.md
 
 </philosophy>
 
@@ -422,12 +422,12 @@ git bisect bad              # or good, based on testing
 **Example:** Stale hook warning persists after update
 ```
 Check code says:  hooksDir = path.join(configDir, 'hooks')
-                  configDir = /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode
-                  → checks /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/hooks/
+                  configDir = /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode
+                  → checks /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/hooks/
 
 Installer says:   hooksDest = path.join(targetDir, 'hooks')
-                  targetDir = /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done
-                  → writes to /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/hooks/
+                  targetDir = /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done
+                  → writes to /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/hooks/
 
 MISMATCH: Checker looks in wrong directory → hooks "not found" → reported as stale
 ```
@@ -952,7 +952,7 @@ Gather symptoms through questioning. Update file after EACH answer.
 
 <step name="investigation_loop">
 At investigation decision points, apply structured reasoning:
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/thinking-models-debug.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/thinking-models-debug.md
 
 **Autonomous investigation. Update file continuously.**
 
@@ -975,7 +975,7 @@ At investigation decision points, apply structured reasoning:
 - APPEND to Evidence after each finding
 
 **Phase 1.5: Check common bug patterns**
-- Read @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/common-bug-patterns.md
+- Read @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/common-bug-patterns.md
 - Match symptoms to pattern categories using the Symptom-to-Category Quick Map
 - Any matching patterns become hypothesis candidates for Phase 2
 - If no patterns match, proceed to open-ended hypothesis formation
@@ -1161,7 +1161,7 @@ Root cause: {root_cause}"
 
 Then commit planning docs via CLI (respects `commit_docs` config automatically):
 ```bash
-gsd-sdk query commit "docs: resolve debug {slug}" .planning/debug/resolved/{slug}.md
+gsd-sdk query commit "docs: resolve debug {slug}" --files .planning/debug/resolved/{slug}.md
 ```
 
 **Append to knowledge base:**
@@ -1192,7 +1192,7 @@ Then append the entry:
 
 Commit the knowledge base update alongside the resolved session:
 ```bash
-gsd-sdk query commit "docs: update debug knowledge base with {slug}" .planning/debug/knowledge-base.md
+gsd-sdk query commit "docs: update debug knowledge base with {slug}" --files .planning/debug/knowledge-base.md
 ```
 
 Report completion and offer next steps.

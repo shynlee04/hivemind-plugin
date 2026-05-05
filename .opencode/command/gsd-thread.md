@@ -82,7 +82,7 @@ When SUBCMD=close and SLUG is set (already sanitized):
 
 3. Commit:
    ```bash
-   gsd-sdk query commit "docs: resolve thread — {SLUG}" ".planning/threads/{SLUG}.md"
+   gsd-sdk query commit "docs: resolve thread — {SLUG}" --files ".planning/threads/{SLUG}.md"
    ```
 
 4. Print:
@@ -190,7 +190,7 @@ updated: {today ISO date}
 
 5. Commit:
    ```bash
-   gsd-sdk query commit "docs: create thread — ${ARGUMENTS}" ".planning/threads/${SLUG}.md"
+   gsd-sdk query commit "docs: create thread — ${ARGUMENTS}" --files ".planning/threads/${SLUG}.md"
    ```
 
 6. Report:

@@ -1,6 +1,6 @@
 ---
 type: prompt
-description: Post-mortem investigation for failed GSD workflows — analyzes git history, artifacts, and state to diagnose what went wrong
+description: Post-mortem investigation for failed GSD workflows — diagnoses what went wrong.
 argument-hint: "[problem description]"
 tools:
   read: true
@@ -18,7 +18,7 @@ Output: Forensic report saved to `.planning/forensics/`, presented inline, with 
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/forensics.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/forensics.md
 </execution_context>
 
 <context>
@@ -35,7 +35,7 @@ Output: Forensic report saved to `.planning/forensics/`, presented inline, with 
 </context>
 
 <process>
-Read and execute the forensics workflow from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/forensics.md end-to-end.
+Read and execute the forensics workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/forensics.md end-to-end.
 </process>
 
 <success_criteria>

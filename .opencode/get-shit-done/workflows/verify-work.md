@@ -21,7 +21,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 </philosophy>
 
 <template>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/UAT.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/UAT.md
 </template>
 
 <process>
@@ -391,7 +391,7 @@ Clear Current Test section:
 
 Commit the UAT file:
 ```bash
-gsd-sdk query commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" ".planning/phases/XX-name/{phase_num}-UAT.md"
+gsd-sdk query commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 
 Present summary:
@@ -444,7 +444,7 @@ If `SECURITY_CFG` is `false` OR (`SECURITY_FILE` exists AND `threats_open` is `0
 
 Execute the transition workflow inline (do NOT use Task — the orchestrator context already holds the UAT results and phase data needed for accurate transition):
 
-Read and follow `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/transition.md`.
+Read and follow `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/transition.md`.
 
 After transition completes, present next-step options to the user:
 
@@ -499,7 +499,7 @@ Spawning parallel debug agents to investigate each issue.
 ```
 
 - Load diagnose-issues workflow
-- Follow @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/diagnose-issues.md
+- Follow @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/diagnose-issues.md
 - Spawn parallel debug agents for each issue
 - Collect root causes
 - Update UAT.md with root causes
@@ -551,6 +551,8 @@ Plans must be executable prompts.
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 On return:
 - **PLANNING COMPLETE:** Proceed to `verify_gap_plans`
 - **PLANNING INCONCLUSIVE:** Report and offer manual intervention
@@ -600,6 +602,8 @@ Return one of:
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 On return:
 - **VERIFICATION PASSED:** Proceed to `present_ready`
 - **ISSUES FOUND:** Proceed to `revision_loop`
@@ -643,6 +647,8 @@ Do NOT replan from scratch unless issues are fundamental.
   description="Revise Phase {phase} plans"
 )
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 After planner returns → spawn checker again (verify_gap_plans logic)
 Increment iteration_count

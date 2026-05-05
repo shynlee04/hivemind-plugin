@@ -5,7 +5,7 @@ UI-SPEC.md locks spacing, typography, color, copywriting, and design system deci
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -123,7 +123,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-researcher.md for instructions.
+Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-ui-researcher.md for instructions.
 
 <objective>
 Create UI design contract for Phase {phase_number}: {phase_name}
@@ -143,7 +143,7 @@ ${AGENT_SKILLS_UI}
 
 <output>
 Write to: {phase_dir}/{padded_phase}-UI-SPEC.md
-Template: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/UI-SPEC.md
+Template: /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/UI-SPEC.md
 </output>
 
 <config>
@@ -163,6 +163,8 @@ Task(
   description="UI Design Contract Phase {N}"
 )
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 ## 6. Handle Researcher Return
 
@@ -186,7 +188,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-checker.md for instructions.
+Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-ui-checker.md for instructions.
 
 <objective>
 Validate UI design contract for Phase {phase_number}: {phase_name}
@@ -214,6 +216,8 @@ Task(
   description="Verify UI-SPEC Phase {N}"
 )
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 ## 8. Handle Checker Return
 
@@ -294,7 +298,7 @@ Dimensions: 6/6 passed
 ## 11. Commit (if configured)
 
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): UI design contract" "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
+gsd-sdk query commit "docs(${padded_phase}): UI design contract" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
 ```
 
 ## 12. Update State

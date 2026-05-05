@@ -3,7 +3,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -94,7 +94,7 @@ Call question with gap table and options:
 
 ```
 Task(
-  prompt="Read /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-nyquist-auditor.md for instructions.\n\n" +
+  prompt="Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-nyquist-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, VALIDATION.md}</files_to_read>" +
     "<gaps>{gap list}</gaps>" +
     "<test_infrastructure>{framework, config, commands}</test_infrastructure>" +
@@ -106,6 +106,8 @@ Task(
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 Handle return:
 - `## GAPS FILLED` → record tests + map updates, Step 6
 - `## PARTIAL` → record resolved, move escalated to manual-only, Step 6
@@ -114,7 +116,7 @@ Handle return:
 ## 6. Generate/Update VALIDATION.md
 
 **State B (create):**
-1. Read template from `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/VALIDATION.md`
+1. Read template from `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/VALIDATION.md`
 2. Fill: frontmatter, Test Infrastructure, Per-Task Map, Manual-Only, Sign-Off
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md`
 

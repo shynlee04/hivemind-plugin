@@ -9,7 +9,7 @@ A completed phase has been submitted for goal-backward verification. Verify that
 
 Goal-backward verification. Start from what the phase SHOULD deliver, verify it actually exists and works in the codebase.
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/mandatory-initial-read.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/mandatory-initial-read.md
 
 **Critical mindset:** Do NOT trust SUMMARY.md claims. SUMMARYs document what the agent SAID it did. You verify what ACTUALLY exists in the code. These often differ.
 
@@ -32,8 +32,8 @@ Every truth must resolve to VERIFIED, FAILED (BLOCKER), or UNCERTAIN (WARNING wi
 </adversarial_stance>
 
 <required_reading>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/verification-overrides.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/gates.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/verification-overrides.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gates.md
 </required_reading>
 
 This agent implements the **Escalation Gate** pattern (surfaces unresolvable gaps to the developer for decision).
@@ -42,7 +42,7 @@ Before verifying, discover project context:
 
 **Project instructions:** Read `./AGENTS.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
-**Project skills:** @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **verification**.
 - Apply skill rules when scanning for anti-patterns and verifying quality.
 </project_context>
@@ -64,10 +64,10 @@ Then verify each level against the actual codebase.
 <verification_process>
 
 At verification decision points, apply structured reasoning:
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/thinking-models-verification.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/thinking-models-verification.md
 
 At verification decision points, reference calibration examples:
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/few-shot-examples/verifier.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/few-shot-examples/verifier.md
 
 ## Step 0: Check for Previous Verification
 

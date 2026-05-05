@@ -121,7 +121,7 @@ If `.planning/STATE.md` exists:
 Commit the todo and any updated state:
 
 ```bash
-gsd-sdk query commit "docs: capture todo - [title]" .planning/todos/pending/[filename] .planning/STATE.md
+gsd-sdk query commit "docs: capture todo - [title]" --files .planning/todos/pending/[filename] .planning/STATE.md
 ```
 
 Tool respects `commit_docs` config and gitignore automatically.
@@ -143,7 +143,7 @@ Would you like to:
 
 1. Continue with current work
 2. Add another todo
-3. View all todos (/gsd-check-todos)
+3. View all todos (/gsd-capture --list)
 ```
 </step>
 

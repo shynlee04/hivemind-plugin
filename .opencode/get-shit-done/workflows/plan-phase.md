@@ -5,11 +5,11 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/revision-loop.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/gate-prompts.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/agent-contracts.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/gates.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/revision-loop.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gate-prompts.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/agent-contracts.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gates.md
 </required_reading>
 
 <available_agent_types>
@@ -40,7 +40,7 @@ CONTEXT_WINDOW=$(gsd-sdk query config-get context_window 2>/dev/null || echo "20
 TDD_MODE=$(gsd-sdk query config-get workflow.tdd_mode 2>/dev/null || echo "false")
 ```
 
-When `TDD_MODE` is `true`, the planner agent is instructed to apply `type: tdd` to eligible tasks using heuristics from `references/tdd.md`. The planner's `<required_reading>` is extended to include `@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/tdd.md` so gate enforcement rules are available during planning.
+When `TDD_MODE` is `true`, the planner agent is instructed to apply `type: tdd` to eligible tasks using heuristics from `references/tdd.md`. The planner's `<required_reading>` is extended to include `@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/tdd.md` so gate enforcement rules are available during planning.
 
 When `CONTEXT_WINDOW >= 500000`, the planner prompt includes the 3 most recent prior phase CONTEXT.md and SUMMARY.md files PLUS any phases explicitly listed in the current phase's `Depends on:` field in ROADMAP.md. Explicit dependencies always load regardless of recency (e.g., Phase 7 declaring `Depends on: Phase 2` always sees Phase 2's context). Bounded recency keeps the planner's context budget focused on recent work.
 
@@ -54,7 +54,26 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 ## 2. Parse and Normalize Arguments
 
-Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--gaps`, `--skip-verify`, `--skip-ui`, `--prd <filepath>`, `--reviews`, `--text`, `--bounce`, `--skip-bounce`, `--chunked`).
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--research-phase <N>`, `--gaps`, `--skip-verify`, `--skip-ui`, `--prd <filepath>`, `--reviews`, `--text`, `--bounce`, `--skip-bounce`, `--chunked`).
+
+**`--research-phase <N>` — research-only mode (#3042 + #3044).** When this flag is present, parse `<N>` as the phase number (overrides any positional phase argument), set `RESEARCH_ONLY=true`, and treat the rest of this workflow as a research-dispatch only — the planner spawn (step 8), plan-checker, verification, gaps, bounce, and post-planning-gaps blocks all skip on `RESEARCH_ONLY`. Use this for cross-phase research, doc review before committing to a planning approach, and correction-without-replanning loops. Replaces the deleted `/gsd-research-phase` command.
+
+In research-only mode, two modifiers control behavior when `RESEARCH.md` already exists:
+
+- **`--research`** — force-refresh re-research without prompting. Re-spawns the researcher unconditionally and overwrites the existing RESEARCH.md. (This is the existing `--research` flag's standard "force re-research" semantics, reused here.)
+- **`--view`** — view-only: print existing `RESEARCH.md` to stdout, do **not** spawn the researcher. Sets `VIEW_ONLY=true`. Cheapest mode for the correction-without-replanning loop. If `RESEARCH.md` does not exist, error with a hint to drop `--view`.
+
+```bash
+RESEARCH_ONLY=false
+VIEW_ONLY=false
+if [[ "$ARGUMENTS" =~ --research-phase[[:space:]]+([0-9]+(\.[0-9]+)?) ]]; then
+  RESEARCH_ONLY=true
+  PHASE="${BASH_REMATCH[1]}"
+fi
+if $RESEARCH_ONLY && [[ "$ARGUMENTS" =~ (^|[[:space:]])--view([[:space:]]|$) ]]; then
+  VIEW_ONLY=true
+fi
+```
 
 Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from init JSON is `true`. When `TEXT_MODE` is active, replace every `question` call with a plain-text numbered list and ask the user to type their choice number. This is required for Claude Code remote sessions (`/rc` mode) where TUI menus don't work through the the agent App.
 
@@ -201,7 +220,7 @@ Use full relative paths. Group by topic area.]
 
 5. Commit:
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): generate context from PRD" "${phase_dir}/${padded_phase}-CONTEXT.md"
+gsd-sdk query commit "docs(${padded_phase}): generate context from PRD" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
 
 6. Set `context_content` to the generated CONTEXT.md content and continue to step 5 (Handle Research).
@@ -302,6 +321,27 @@ Pass `ai_spec_path` and `framework_line` to planner in step 7 so it can referenc
 
 **Skip if:** `--gaps` flag or `--skip-research` flag or `--reviews` flag.
 
+### 5.0. Research-Only Modifiers (`--view`, `--research`, prompt)
+
+**Skip if:** `RESEARCH_ONLY` is `false`.
+
+Three branches in research-only mode (`--research-phase <N>`):
+
+1. **`--view`** (or user picks "View" in the prompt below): print `RESEARCH.md` to stdout, no spawn, exit. If `RESEARCH.md` is missing, error with: `--view requires an existing RESEARCH.md; drop --view to spawn the researcher.`
+2. **`--research`** (force-refresh): re-spawn researcher unconditionally — fall through to "Spawn gsd-phase-researcher" below.
+3. **Neither flag AND `has_research=true`:** emit `RESEARCH.md already exists for Phase ${PHASE}.` and prompt the user with three choices: `1. Update — re-spawn researcher and refresh RESEARCH.md`, `2. View — print existing RESEARCH.md and exit (no spawn)`, `3. Skip — exit without spawning or printing`. Map "Update" → fall through to spawn, "View" → set `VIEW_ONLY=true` and emit RESEARCH.md as in (1), "Skip" → exit cleanly. Mirrors the deleted `/gsd-research-phase` standalone's existing-artifact menu (#3042 parity).
+
+```bash
+if [[ "$VIEW_ONLY" == "true" ]]; then
+  [[ -f "$research_path" ]] || { echo "Error: --view requires an existing RESEARCH.md (Phase ${PHASE}). Drop --view to spawn the researcher."; exit 1; }
+  cat "$research_path"; exit 0
+fi
+```
+
+### 5.1. Standard Research Decision
+
+**Skip if** `RESEARCH_ONLY=true` (the research-only mode in 5.0 already determined the path: spawn or exit). Without this guard, an LLM following the workflow could fall through into "use existing, skip to step 6" → planner spawn, violating the research-only contract. **CR #3045 finding: this gate makes the early-exit unreachable from any non-research-only branch.**
+
 **If `has_research` is true (from init) AND no `--research` flag:** Use existing, skip to step 6.
 
 **If RESEARCH.md missing OR `--research` flag:**
@@ -391,10 +431,30 @@ Task(
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 ### Handle Researcher Return
 
 - **`## RESEARCH COMPLETE`:** Display confirmation, continue to step 6
 - **`## RESEARCH BLOCKED`:** Display blocker, offer: 1) Provide context, 2) Skip research, 3) Abort
+
+### Research-Only Early Exit (`--research-phase`)
+
+**Skip if:** `RESEARCH_ONLY` is `false` (the default).
+
+**If `RESEARCH_ONLY=true`:** the user invoked `/gsd-plan-phase --research-phase <N>` for research-only mode. Do **not** continue to Section 5.5+ (validation strategy, planner, plan-checker, verification, gaps, bounce, post-planning-gaps). Print the research-complete summary and exit cleanly:
+
+```text
+✓ Research-only mode complete (#3042)
+
+  Phase:       ${PHASE}
+  RESEARCH.md: ${research_path}
+
+Re-run /gsd-plan-phase ${PHASE} to plan the phase using this research,
+or /gsd-plan-phase ${PHASE} --research to refresh research and plan.
+```
+
+This exits the workflow. The planner / plan-checker / verifier blocks below are skipped.
 
 ## 5.5. Create Validation Strategy
 
@@ -414,7 +474,7 @@ grep -l "## Validation Architecture" "${PHASE_DIR}"/*-RESEARCH.md 2>/dev/null ||
 ```
 
 **If found:**
-1. Read template: `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/VALIDATION.md`
+1. Read template: `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/VALIDATION.md`
 2. Write to `${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md` (use Write tool)
 3. Fill frontmatter: `{N}` → phase number, `{phase-slug}` → slug, `{date}` → current date
 4. Verify:
@@ -685,6 +745,8 @@ Task(
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 **Handle return:**
 - **`## PATTERN MAPPING COMPLETE`:** Update `PATTERNS_PATH` to the created file path, continue to step 8.
 - **Any error or empty return:** Log warning, continue to step 8 without patterns (non-blocking).
@@ -744,7 +806,7 @@ ${AGENT_SKILLS_PLANNER}
 
 ${TDD_MODE === 'true' ? `
 <tdd_mode_active>
-**TDD Mode is ENABLED.** Apply TDD heuristics from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/tdd.md to all eligible tasks:
+**TDD Mode is ENABLED.** Apply TDD heuristics from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/tdd.md to all eligible tasks:
 - Business logic with defined I/O → type: tdd
 - API endpoints with request/response contracts → type: tdd
 - Data transformations, validation, algorithms → type: tdd
@@ -815,6 +877,8 @@ Task(
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 **If `CHUNKED_MODE` is `true`:** Skip the Task() call above — proceed to step 8.5 instead.
 
 ## 8.5. Chunked Planning Mode
@@ -869,6 +933,8 @@ Task(
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 Handle return:
 - **`## OUTLINE COMPLETE`:** Read `PLAN-OUTLINE.md`, extract plan list. Continue to 8.5.2.
 - **Any other return or empty:** Display error. Offer: 1) Retry outline, 2) Stop.
@@ -911,11 +977,13 @@ For each plan entry extracted from `PLAN-OUTLINE.md`:
    )
    ```
 
+   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 4. **Verify disk:** Check `${PHASE_DIR}/{plan_id}-PLAN.md` exists. If missing: offer 1) Retry, 2) Stop.
 
 5. **Commit per-plan:**
    ```bash
-   gsd-sdk query commit "docs(${PADDED_PHASE}): plan ${plan_id} (chunked)" "${PHASE_DIR}/${plan_id}-PLAN.md"
+   gsd-sdk query commit "docs(${PADDED_PHASE}): plan ${plan_id} (chunked)" --files "${PHASE_DIR}/${plan_id}-PLAN.md"
    ```
 
 After all N plans are written and committed, treat this as `## PLANNING COMPLETE` and continue
@@ -986,7 +1054,7 @@ rest become a follow-up phase
 
 Use question with these 3 options.
 
-**If "Split":** Use `/gsd-insert-phase` to create the sub-phases, then replan each.
+**If "Split":** Use `/gsd-phase --insert` to create the sub-phases, then replan each.
 **If "Proceed":** Return to planner with instruction to attempt all items at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use question (multiSelect) to let user pick which items are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected items.
 
@@ -1015,7 +1083,7 @@ Options:
 Use question for each gap (or batch if multiple gaps).
 
 **If "Add plan":** Return to planner (step 8) with instruction to add plans covering the missing items, preserving existing plans.
-**If "Split":** Use `/gsd-insert-phase` for overflow items, then replan.
+**If "Split":** Use `/gsd-phase --insert` for overflow items, then replan.
 **If "Defer":** Record in CONTEXT.md `## Deferred Ideas` with developer's confirmation. Proceed to step 10.
 
 ## 10. Spawn gsd-plan-checker Agent
@@ -1066,6 +1134,8 @@ Task(
   description="Verify Phase {phase} plans"
 )
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 ## 11. Handle Checker Return
 
@@ -1180,6 +1250,8 @@ Task(
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 After planner returns -> spawn checker again (step 10), increment iteration_count.
 
 **If iteration_count >= 3:**
@@ -1249,7 +1321,7 @@ After the script returns, check that the bounced file still has valid YAML front
 
 6. **Commit surviving bounced plans:** If at least one plan survived both the frontmatter validation and the checker re-run, commit the changes:
 ```bash
-gsd-sdk query commit "refactor(${padded_phase}): bounce plans through external refinement" "${PHASE_DIR}/*-PLAN.md"
+gsd-sdk query commit "refactor(${padded_phase}): bounce plans through external refinement" --files "${PHASE_DIR}/*-PLAN.md"
 ```
 
 Display summary:
@@ -1424,11 +1496,11 @@ one place before execution begins.
 ```bash
 POST_PLANNING_GAPS=$(gsd-sdk query config-get workflow.post_planning_gaps --default true 2>/dev/null || echo true)
 if [ "$POST_PLANNING_GAPS" = "true" ]; then
-  gsd-tools gap-analysis --phase-dir "${PHASE_DIR}"
+  node "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/bin/gsd-tools.cjs" gap-analysis --phase-dir "${PHASE_DIR}"
 fi
 ```
 
-(`gsd-tools gap-analysis` reads `.planning/REQUIREMENTS.md`, `${PHASE_DIR}/CONTEXT.md`,
+(`gsd-tools.cjs gap-analysis` reads `.planning/REQUIREMENTS.md`, `${PHASE_DIR}/CONTEXT.md`,
 and `${PHASE_DIR}/*-PLAN.md`, then prints a markdown table with one row per
 REQ-ID and D-ID. Word-boundary matching prevents `REQ-1` from being mistaken for
 `REQ-10`.)

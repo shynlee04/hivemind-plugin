@@ -1,5 +1,5 @@
 ---
-description: Triage and review all open GitHub issues and PRs against project templates and contribution guidelines
+description: Triage and review open GitHub issues and PRs against project templates and contribution guidelines.
 argument-hint: "[--issues] [--prs] [--label] [--close-incomplete] [--repo owner/repo]"
 tools:
   read: true
@@ -19,7 +19,7 @@ and optionally applies labels or closes non-compliant submissions.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/inbox.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/inbox.md
 </execution_context>
 
 <context>
@@ -32,6 +32,6 @@ and optionally applies labels or closes non-compliant submissions.
 </context>
 
 <process>
-Execute the inbox workflow from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/inbox.md end-to-end.
+Execute the inbox workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/inbox.md end-to-end.
 Parse flags from arguments and pass to workflow.
 </process>

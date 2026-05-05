@@ -16,7 +16,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { planningPaths, planningDir, escapeRegex, output, error } = require('./core.cjs');
+const { escapeRegex, output, error } = require('./core.cjs');
+const { planningPaths, planningDir } = require('./planning-workspace.cjs');
 const { parseDecisions } = require('./decisions.cjs');
 
 /**
@@ -30,7 +31,10 @@ function parseRequirements(reqMd) {
   const out = [];
   const seen = new Set();
 
-  const checkboxRe = /^\s*-\s*\[[x ]\]\s*\*\*(REQ-[A-Za-z0-9_-]+)\*\*\s*(.*)$/gm;
+  // Prefix-agnostic ID format: REQ-01, TST-01, BACK-07, INSP-04, etc.
+  const ID_PATTERN = '[A-Z][A-Z0-9]*-[A-Za-z0-9_-]+';
+
+  const checkboxRe = new RegExp(`^\\s*-\\s*\\[[x ]\\]\\s*\\*\\*(${ID_PATTERN})\\*\\*\\s*(.*)$`, 'gm');
   let cm = checkboxRe.exec(reqMd);
   while (cm !== null) {
     const id = cm[1];
@@ -41,15 +45,25 @@ function parseRequirements(reqMd) {
     cm = checkboxRe.exec(reqMd);
   }
 
-  const tableRe = /\|\s*(REQ-[A-Za-z0-9_-]+)\s*\|/g;
-  let tm = tableRe.exec(reqMd);
-  while (tm !== null) {
+  const tableFirstCellRe = new RegExp(`^\\s*\\|\\s*(${ID_PATTERN})\\s*\\|`);
+  const separatorRowRe = /^\s*\|[\s:|-]+\|\s*$/;
+  const lines = reqMd.split(/\r?\n/);
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line.includes('|')) continue;
+
+    // Skip markdown table separator rows and header rows immediately preceding them.
+    if (separatorRowRe.test(line)) continue;
+    if (i + 1 < lines.length && separatorRowRe.test(lines[i + 1])) continue;
+
+    const tm = tableFirstCellRe.exec(line);
+    if (!tm) continue;
     const id = tm[1];
     if (!seen.has(id)) {
       seen.add(id);
       out.push({ id, text: '' });
     }
-    tm = tableRe.exec(reqMd);
   }
 
   return out;

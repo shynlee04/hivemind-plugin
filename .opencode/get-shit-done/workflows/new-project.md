@@ -236,7 +236,7 @@ gsd-sdk query config-new-project '{"mode":"yolo","granularity":"[selected]","par
 
 ```bash
 mkdir -p .planning
-gsd-sdk query commit "chore: add project config" .planning/config.json
+gsd-sdk query commit "chore: add project config" --files .planning/config.json
 ```
 
 **Persist auto-advance chain flag to config (survives context compaction):**
@@ -269,8 +269,8 @@ If any of these exist, surface them before questioning:
 ⚡ Prior exploration detected:
 {if SPIKE_SKILL}  ✓ Spike findings skill: {path} — validated patterns from experiments
 {if SKETCH_SKILL}  ✓ Sketch findings skill: {path} — validated design decisions
-{if HAS_SPIKES && !SPIKE_SKILL}  ◆ Raw spikes in .planning/spikes/ — consider `/gsd-spike-wrap-up` to package findings
-{if HAS_SKETCHES && !SKETCH_SKILL}  ◆ Raw sketches in .planning/sketches/ — consider `/gsd-sketch-wrap-up` to package findings
+{if HAS_SPIKES && !SPIKE_SKILL}  ◆ Raw spikes in .planning/spikes/ — consider `/gsd-spike --wrap-up` to package findings
+{if HAS_SKETCHES && !SKETCH_SKILL}  ◆ Raw sketches in .planning/sketches/ — consider `/gsd-sketch --wrap-up` to package findings
 
 These findings will be incorporated into project context and available to planning agents.
 ```
@@ -447,7 +447,7 @@ Do not compress. Capture everything gathered.
 
 ```bash
 mkdir -p .planning
-gsd-sdk query commit "docs: initialize project" .planning/PROJECT.md
+gsd-sdk query commit "docs: initialize project" --files .planning/PROJECT.md
 ```
 
 ## 5. Workflow Preferences
@@ -666,7 +666,7 @@ gsd-sdk query config-new-project '{"mode":"[yolo|interactive]","granularity":"[s
 **Commit config.json:**
 
 ```bash
-gsd-sdk query commit "chore: add project config" .planning/config.json
+gsd-sdk query commit "chore: add project config" --files .planning/config.json
 ```
 
 ## 5.1. Sub-Repo Detection
@@ -791,7 +791,7 @@ Your STACK.md feeds into roadmap creation. Be prescriptive:
 
 <output>
 Write to: .planning/research/STACK.md
-Use template: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/research-project/STACK.md
+Use template: /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/research-project/STACK.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Stack research")
 
@@ -831,7 +831,7 @@ Your FEATURES.md feeds into requirements definition. Categorize clearly:
 
 <output>
 Write to: .planning/research/FEATURES.md
-Use template: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/research-project/FEATURES.md
+Use template: /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/research-project/FEATURES.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Features research")
 
@@ -871,7 +871,7 @@ Your ARCHITECTURE.md informs phase structure in roadmap. Include:
 
 <output>
 Write to: .planning/research/ARCHITECTURE.md
-Use template: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/research-project/ARCHITECTURE.md
+Use template: /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/research-project/ARCHITECTURE.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Architecture research")
 
@@ -911,10 +911,12 @@ Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
 
 <output>
 Write to: .planning/research/PITFALLS.md
-Use template: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/research-project/PITFALLS.md
+Use template: /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/research-project/PITFALLS.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Pitfalls research")
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all 4 researcher Task() calls above, do NOT read research files or synthesize content independently while the subagents are active. Wait for all 4 researchers to complete before spawning the synthesizer. This prevents duplicate work and wasted context.
 
 After all 4 agents complete, spawn synthesizer to create SUMMARY.md:
 
@@ -935,11 +937,13 @@ ${AGENT_SKILLS_SYNTHESIZER}
 
 <output>
 Write to: .planning/research/SUMMARY.md
-Use template: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/research-project/SUMMARY.md
+Use template: /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/research-project/SUMMARY.md
 Commit after writing.
 </output>
 ", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 Display research complete banner and key findings:
 
@@ -1110,7 +1114,7 @@ If "adjust": Return to scoping.
 **Commit requirements:**
 
 ```bash
-gsd-sdk query commit "docs: define v1 requirements" .planning/REQUIREMENTS.md
+gsd-sdk query commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 8. Create Roadmap
@@ -1155,6 +1159,8 @@ Write files first, then return. This ensures artifacts persist even if context i
 </instructions>
 ", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Create roadmap")
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 **Handle roadmapper return:**
 
@@ -1242,6 +1248,8 @@ Use question:
   ", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Revise roadmap")
   ```
 
+  > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 - Present revised roadmap
 - Loop until user approves
 
@@ -1258,7 +1266,7 @@ This ensures new projects get the default GSD workflow-enforcement guidance and 
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-gsd-sdk query commit "docs: create roadmap ([N] phases)" .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md "$INSTRUCTION_FILE"
+gsd-sdk query commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md "$INSTRUCTION_FILE"
 ```
 
 ## 9. Done

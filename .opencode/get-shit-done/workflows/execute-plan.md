@@ -6,7 +6,7 @@ Execute a phase prompt (PLAN.md) and create the outcome summary (SUMMARY.md).
 Read STATE.md before any operation to load project context.
 Read config.json for planning behavior settings.
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/git-integration.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/git-integration.md
 </required_reading>
 
 <available_agent_types>
@@ -81,7 +81,7 @@ Otherwise: Apply checkpoint-based routing below.
 | Verify-only | B (segmented) | Segments between checkpoints. After none/human-verify → SUBAGENT. After decision/human-action → MAIN |
 | Decision | C (main) | Execute entirely in main context |
 
-**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Task(subagent_type="gsd-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, hard-reset the branch with `git reset --hard {EXPECTED_BASE}` before starting work (safe — runs before any agent work), then verify with `[ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && exit 1`. This corrects a known issue where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD (affects all platforms).
+**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Task(subagent_type="gsd-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to: (1) FIRST assert `git symbolic-ref HEAD` resolves to a per-agent branch (NOT a protected ref like `main`/`master`/`develop`/`trunk`/`release/*`) and HALT with a blocker if not — never self-recover via `git update-ref refs/heads/<protected>` (#2924); (2) only after that assertion passes, run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, hard-reset the branch with `git reset --hard {EXPECTED_BASE}` before starting work, then verify with `[ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && exit 1`. The HEAD assertion (Step 1) MUST run before any reset/checkout. This corrects a known issue where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD (affects all platforms — #2015) and prevents the destructive HEAD-on-master self-recovery path (#2924).
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 
@@ -116,12 +116,18 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
 2. Per segment:
    - Subagent route: spawn gsd-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
    - Main route: execute tasks using standard flow (step name="execute")
-3. After ALL segments: aggregate files/deviations/decisions → create SUMMARY.md → commit → self-check:
+3. **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
+   emit narrative output between the Write tool call and the commit tool call.
+   Truncation at this boundary is a known failure mode (see #2070 rescue logic in
+   execute-phase.md step 5.5).
+
+   After ALL segments: aggregate files/deviations/decisions → create SUMMARY.md → self-check:
    - Verify key-files.created exist on disk with `[ -f ]`
    - Check `git log --oneline --all --grep="{phase}-{plan}"` returns ≥1 commit
    - Re-run ALL `<acceptance_criteria>` from every task — if any fail, fix before finalizing SUMMARY
    - Re-run the plan-level `<verification>` commands — log results in SUMMARY
    - Append `## Self-Check: PASSED` or `## Self-Check: FAILED` to SUMMARY
+   Then commit (no narrative between Write and commit).
 
    **Known Claude Code bug (classifyHandoffIfNeeded):** If any segment agent reports "failed" with `classifyHandoffIfNeeded is not defined`, this is a Claude Code runtime bug — not a real failure. Run spot-checks; if they pass, treat as successful.
 
@@ -230,7 +236,7 @@ For `type: tdd` plans — RED-GREEN-REFACTOR:
 
 Errors: RED doesn't fail → investigate test/existing feature. GREEN doesn't pass → debug, iterate. REFACTOR breaks → undo.
 
-See `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/tdd.md` for structure.
+See `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/tdd.md` for structure.
 </tdd_plan_execution>
 
 <precommit_failure_handling>
@@ -239,7 +245,12 @@ See `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-sh
 Your commits may trigger pre-commit hooks. Auto-fix hooks handle themselves transparently — files get fixed and re-staged automatically.
 
 **If running as a parallel executor agent (spawned by execute-phase):**
-Use `--no-verify` on all commits. Pre-commit hooks cause build lock contention when multiple agents commit simultaneously (e.g., cargo lock fights in Rust projects). The orchestrator validates once after all agents complete.
+Run commits normally — let pre-commit hooks run. Do NOT use `--no-verify` by default
+(#2924). Hooks should run so issues surface at the introducing commit, and silent
+bypass violates project AGENTS.md guidance. If a project explicitly opts out via
+`workflow.worktree_skip_hooks=true`, the orchestrator will surface that flag in the
+prompt; absent that signal, hooks run normally. If a hook fails, follow the
+sequential-mode handling below.
 
 **If running as the sole executor (sequential mode):**
 If a commit is BLOCKED by a hook:
@@ -274,7 +285,7 @@ Display: `CHECKPOINT: [Type]` box → Progress {X}/{Y} → Task name → type-sp
 
 After response: verify if specified. Pass → continue. Fail → inform, wait. WAIT for user — do NOT hallucinate completion.
 
-See /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/checkpoints.md for details.
+See /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/checkpoints.md for details.
 </step>
 
 <step name="checkpoint_return_for_orchestrator">
@@ -327,11 +338,16 @@ fi
 grep -A 50 "^user_setup:" .planning/phases/XX-name/{phase}-{plan}-PLAN.md | head -50
 ```
 
-If user_setup exists: create `{phase}-USER-SETUP.md` using template `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/user-setup.md`. Per service: env vars table, account setup checklist, dashboard config, local dev notes, verification commands. Status "Incomplete". Set `USER_SETUP_CREATED=true`. If empty/missing: skip.
+If user_setup exists: create `{phase}-USER-SETUP.md` using template `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/user-setup.md`. Per service: env vars table, account setup checklist, dashboard config, local dev notes, verification commands. Status "Incomplete". Set `USER_SETUP_CREATED=true`. If empty/missing: skip.
 </step>
 
 <step name="create_summary">
-Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/summary.md`.
+**Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
+emit narrative output between the Write tool call and the commit tool call.
+Truncation at this boundary is a known failure mode (see #2070 rescue logic in
+execute-phase.md step 5.5).
+
+Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/summary.md`.
 
 **Frontmatter:** phase, plan, subsystem, tags | requires/provides/affects | tech-stack.added/patterns | key-files.created/modified | key-decisions | requirements-completed (**MUST** copy `requirements` array from PLAN.md frontmatter verbatim) | duration ($DURATION), completed ($PLAN_END_TIME date).
 
@@ -432,6 +448,11 @@ Extract requirement IDs from the plan's frontmatter (e.g., `requirements: [AUTH-
 </step>
 
 <step name="git_commit_metadata">
+**Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
+emit narrative output between the Write tool call and the commit tool call.
+Truncation at this boundary is a known failure mode (see #2070 rescue logic in
+execute-phase.md step 5.5).
+
 Task code already committed per-task. Commit plan metadata:
 
 ```bash
@@ -440,9 +461,9 @@ IS_WORKTREE=$([ -f .git ] && echo "true" || echo "false")
 
 # In parallel mode: exclude STATE.md and ROADMAP.md (orchestrator commits these)
 if [ "$IS_WORKTREE" = "true" ]; then
-  gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/REQUIREMENTS.md
+  gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/REQUIREMENTS.md
 else
-  gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
+  gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
 fi
 ```
 </step>
@@ -458,7 +479,7 @@ git diff --name-only ${FIRST_TASK}^..HEAD 2>/dev/null || true
 Update only structural changes: new src/ dir → STRUCTURE.md | deps → STACK.md | file pattern → CONVENTIONS.md | API client → INTEGRATIONS.md | config → STACK.md | renamed → update paths. Skip code-only/bugfix/content changes.
 
 ```bash
-gsd-sdk query commit "" .planning/codebase/*.md --amend
+gsd-sdk query commit "" --files .planning/codebase/*.md --amend
 ```
 </step>
 

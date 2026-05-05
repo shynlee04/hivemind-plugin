@@ -35,7 +35,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /gsd-status to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /gsd-progress to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -366,6 +366,8 @@ Do NOT commit the output — the orchestrator handles that.
 ")
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 **Agent failure handling:**
 
 If the Task() call fails (agent error, timeout, or exception):
@@ -469,7 +471,7 @@ If total findings > 0:
 Full report: ${REVIEW_PATH}
 
 Next steps:
-  /gsd-code-review-fix ${PHASE_NUMBER}  — Auto-fix issues
+  /gsd-code-review ${PHASE_NUMBER} --fix  — Auto-fix issues
   cat ${REVIEW_PATH}                     — View full report
 ```
 

@@ -5,7 +5,14 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, planningPaths, planningDir, planningRoot, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
+const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
+const { planningPaths, planningDir, planningRoot } = require('./planning-workspace.cjs');
+const { maskIfSecret } = require('./secrets.cjs');
+
+// Accept all bold/colon variants of the Requirements header (#2769):
+// **Requirements:** / **Requirements**: / **Requirements** : render the
+// same in markdown but differ textually.
+const REQUIREMENTS_HEADER_RE = /^\*\*Requirements:?\*\*[^\S\n]*:?[^\S\n]*([^\n]*)$/m;
 
 function getLatestCompletedMilestone(cwd) {
   const milestonesPath = path.join(planningRoot(cwd), 'MILESTONES.md');
@@ -102,7 +109,7 @@ function cmdInitExecutePhase(cwd, phase, raw, options = {}) {
       has_reviews: false,
     };
   }
-  const reqMatch = roadmapPhase?.section?.match(/^\*\*Requirements\*\*:[^\S\n]*([^\n]*)$/m);
+  const reqMatch = roadmapPhase?.section?.match(REQUIREMENTS_HEADER_RE);
   const reqExtracted = reqMatch
     ? reqMatch[1].replace(/[\[\]]/g, '').split(',').map(s => s.trim()).filter(Boolean).join(', ')
     : null;
@@ -235,7 +242,7 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
       has_reviews: false,
     };
   }
-  const reqMatch = roadmapPhase?.section?.match(/^\*\*Requirements\*\*:[^\S\n]*([^\n]*)$/m);
+  const reqMatch = roadmapPhase?.section?.match(REQUIREMENTS_HEADER_RE);
   const reqExtracted = reqMatch
     ? reqMatch[1].replace(/[\[\]]/g, '').split(',').map(s => s.trim()).filter(Boolean).join(', ')
     : null;
@@ -557,6 +564,25 @@ function cmdInitQuick(cwd, description, raw) {
   output(withProjectRoot(cwd, result), raw);
 }
 
+/**
+ * Init handler for ingest-docs workflow (#2801).
+ *
+ * Returns the minimal set of fields that ingest-docs.md needs to detect
+ * whether a project/planning dir exists and choose new vs merge mode.
+ * Mirrors the initIngestDocs SDK handler in sdk/src/query/init.ts.
+ */
+function cmdInitIngestDocs(cwd, raw) {
+  const config = loadConfig(cwd);
+  const result = {
+    project_exists: pathExistsInternal(cwd, '.planning/PROJECT.md'),
+    planning_exists: fs.existsSync(planningRoot(cwd)),
+    has_git: fs.existsSync(path.join(cwd, '.git')),
+    project_path: '.planning/PROJECT.md',
+    commit_docs: config.commit_docs,
+  };
+  output(withProjectRoot(cwd, result), raw);
+}
+
 function cmdInitResume(cwd, raw) {
   const config = loadConfig(cwd);
 
@@ -700,9 +726,13 @@ function cmdInitPhaseOp(cwd, phase, raw) {
   const result = {
     // Config
     commit_docs: config.commit_docs,
-    brave_search: config.brave_search,
-    firecrawl: config.firecrawl,
-    exa_search: config.exa_search,
+    // #2997: secret config keys may be either booleans (availability flags) or
+    // string API keys (when user did `gsd-tools config-set brave_search XXX`).
+    // Pass booleans through; mask string values so the init bundle never echoes
+    // plaintext credentials. SDK init.ts mirrors this masking.
+    brave_search: typeof config.brave_search === 'string' ? maskIfSecret('brave_search', config.brave_search) : config.brave_search,
+    firecrawl: typeof config.firecrawl === 'string' ? maskIfSecret('firecrawl', config.firecrawl) : config.firecrawl,
+    exa_search: typeof config.exa_search === 'string' ? maskIfSecret('exa_search', config.exa_search) : config.exa_search,
 
     // Phase info
     phase_found: !!phaseInfo,
@@ -1923,6 +1953,7 @@ module.exports = {
   cmdInitNewProject,
   cmdInitNewMilestone,
   cmdInitQuick,
+  cmdInitIngestDocs,
   cmdInitResume,
   cmdInitVerifyWork,
   cmdInitPhaseOp,

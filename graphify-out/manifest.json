@@ -1,0 +1,1698 @@
+{
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/vitest.config.ts": {
+    "mtime": 1777970849.7493474,
+    "hash": "d54fec546e72c9d2c5b41b4eeffc5e87"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/configure-primitive.test.ts": {
+    "mtime": 1777970849.7431889,
+    "hash": "8a1732ec4ce4dd5bbb6babb2ddb89cfb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/delegation-status.test.ts": {
+    "mtime": 1777970849.7438679,
+    "hash": "9bfe557b8e20cf164c9094adb4bf51b9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/session-journal-export.test.ts": {
+    "mtime": 1777970849.7465649,
+    "hash": "30f7c2a15d6392c55c74c37567ebf7b9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/hivemind-command-engine.test.ts": {
+    "mtime": 1777970849.7443306,
+    "hash": "cdba8af6cd80d83b1987b9dcc3554bd2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/hivemind-agent-work.test.ts": {
+    "mtime": 1777970849.7440953,
+    "hash": "7d863d7c3c76af9e751fcbe652d6edfd"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/hivemind-doc.test.ts": {
+    "mtime": 1777970849.744554,
+    "hash": "5a0115601dce4b5e2d9fa78015672122"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/run-background-command.test.ts": {
+    "mtime": 1777970849.746165,
+    "hash": "0b32d4c6cb6b555eb43e8a71ec22b4ac"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/prompt-analyze.test.ts": {
+    "mtime": 1777970849.7455838,
+    "hash": "3d6ebb7df70c821e1724e8b62ab58ccd"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/hivemind-trajectory.test.ts": {
+    "mtime": 1777970849.7452,
+    "hash": "3b14de1dc1792a15e0a6b98eee27b083"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/validate-restart.test.ts": {
+    "mtime": 1777970849.7472324,
+    "hash": "382097e343af7d44362baae2a1634599"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/session-patch.test.ts": {
+    "mtime": 1777970849.747005,
+    "hash": "621db1489e8b95571d4ad290931a922e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/hivemind-sdk-supervisor.test.ts": {
+    "mtime": 1777970849.744976,
+    "hash": "795414637edcd1b5e776d61569d8c706"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/prompt-skim.test.ts": {
+    "mtime": 1777970849.7459087,
+    "hash": "6e979d80bdbf0bf2b9d8f9f1fa34c261"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/delegate-task.test.ts": {
+    "mtime": 1777970849.743543,
+    "hash": "1d7c2f84ff4b38e6d4efad927f658be7"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/tools/hivemind-pressure.test.ts": {
+    "mtime": 1777970849.7447865,
+    "hash": "a9c296e8f4432a6cb533514785227a5c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/plugins/plugin-lifecycle.test.ts": {
+    "mtime": 1777970849.741743,
+    "hash": "993454b90427446785f17c830c553b0e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/integration/prompt-enhance-pipeline.test.ts": {
+    "mtime": 1777970849.71971,
+    "hash": "fbc9ef3928c6983933fc839d619ee869"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/cli/router.test.ts": {
+    "mtime": 1777970849.7179732,
+    "hash": "fdeece9b6f8e06f55f5efd87e805b2fe"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/cli/renderer.test.ts": {
+    "mtime": 1777970849.7177496,
+    "hash": "29c6bdf90c424701509336df8c8dc424"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/cli/discovery.test.ts": {
+    "mtime": 1777970849.7175345,
+    "hash": "d0cd613be69c61514b4d8f6c1995bbd5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/cli/runCli.test.ts": {
+    "mtime": 1777970849.7181058,
+    "hash": "cf2784a8b0a30136f7201c40ec94a0f6"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/hooks/plugin-event-observers.test.ts": {
+    "mtime": 1777970849.719038,
+    "hash": "7d84a5fe035de7e15f93ae014455c6e9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/hooks/create-core-hooks.test.ts": {
+    "mtime": 1777970849.7183828,
+    "hash": "5b32ba5518c79835c95f6e62c94b75a6"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/hooks/hook-cqrs-boundary.test.ts": {
+    "mtime": 1777970849.7189243,
+    "hash": "cfc727114ab5c7144cc3d32d4799c1b3"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/hooks/tool-after-composer.test.ts": {
+    "mtime": 1777970849.7191594,
+    "hash": "a52eb931f16a83ceb160f9347a73a0df"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/hooks/create-tool-guard-hooks.test.ts": {
+    "mtime": 1777970849.718809,
+    "hash": "48cf51a031543f9eca4660a85b7b2260"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/hooks/create-session-hooks.test.ts": {
+    "mtime": 1777970849.7186007,
+    "hash": "3fd6d174178e7bdebd52dbd889d70e57"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/schema-kernel/opencode-config.schemas.test.ts": {
+    "mtime": 1777970849.742122,
+    "hash": "651a691ff5bc08a773fdaa6d1a7e71be"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/schema-kernel/prompt-enhance.schema.test.ts": {
+    "mtime": 1777970849.7424514,
+    "hash": "c21f8054a984c1f6d2a2f62bca003c5d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/continuity.test.ts": {
+    "mtime": 1777970849.72346,
+    "hash": "fc2300116432e8968c1eb54a038fbb50"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/completion-detector-crash.test.ts": {
+    "mtime": 1777970849.7216606,
+    "hash": "f410193bceaa817e2d0e74fc19c81337"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/task-status.test.ts": {
+    "mtime": 1777970849.739435,
+    "hash": "99bbb46bd0e04eb2e9c2b52f4b10eedf"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-validator.test.ts": {
+    "mtime": 1777970849.7348912,
+    "hash": "2da7dceb6b4018130d12f4ffadc0197d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/state-root-migration.test.ts": {
+    "mtime": 1777970849.7380967,
+    "hash": "f1eb1143e372bb443dcaf03e73a2ccc2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/framework-detector.test.ts": {
+    "mtime": 1777970849.7276495,
+    "hash": "7b696bbeecf5e4c864037d8bc6745267"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/sdk-delegation.test.ts": {
+    "mtime": 1777970849.7352674,
+    "hash": "8832391e5ce819308b1d0310bbf4e922"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/concurrency.test.ts": {
+    "mtime": 1777970849.7220972,
+    "hash": "ca125fc2e19aacfa1c9643f9144afd0c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/lifecycle-manager.test.ts": {
+    "mtime": 1777970849.7288523,
+    "hash": "4472be8ed6460db2a3679d337b1aad7f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/journal-replay.test.ts": {
+    "mtime": 1777970849.7287085,
+    "hash": "a913528658e3d9b31783027719cf2a2d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/session-journal.test.ts": {
+    "mtime": 1777970849.7371058,
+    "hash": "a3d0887018e0e3da777a6a24466f3959"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/category-gate-audit.test.ts": {
+    "mtime": 1777970849.7207,
+    "hash": "9267d8786a96e766d3955ed4bf2b4530"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/phase39-conformance.test.ts": {
+    "mtime": 1777970849.7294185,
+    "hash": "97aedaa04a424361a45bd855b0d359bc"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/config-compiler.test.ts": {
+    "mtime": 1777970849.7222383,
+    "hash": "d2c8aa9151bafd226ee1b9e6b0aa7fbb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/plugin-tool-output-summary.test.ts": {
+    "mtime": 1777970849.7295616,
+    "hash": "9d362e0cdecbdd57491baabd89cd92b2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/primitive-loader.test.ts": {
+    "mtime": 1777970849.7297251,
+    "hash": "b51f8a1ff811e8681dc32dda716215ed"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/cross-primitive-validator.test.ts": {
+    "mtime": 1777970849.7239046,
+    "hash": "325c48f7e1d4dfe373085fffb2f52688"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/ralph-loop.test.ts": {
+    "mtime": 1777970849.7314222,
+    "hash": "e561fdcf094e6089699c365439fad1f1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/delegation-persistence.test.ts": {
+    "mtime": 1777970849.7244864,
+    "hash": "c06e7c53fc981bcf277c6c7620a88fe2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/delegation-state-machine.test.ts": {
+    "mtime": 1777970849.7246537,
+    "hash": "cdc5cb1925a09a6cc14c2a7916edf9b3"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/category-gates.test.ts": {
+    "mtime": 1777970849.7208116,
+    "hash": "9ef166116f57d8b8bfa9169956bdba36"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/execution-lineage.test.ts": {
+    "mtime": 1777970849.7274394,
+    "hash": "6139547215ecd194c64bc244f98c1bba"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/workspace-runtime-policy.test.ts": {
+    "mtime": 1777970849.7412605,
+    "hash": "3698a39cb65bf5e50b72992898eecc00"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/primitive-registry.test.ts": {
+    "mtime": 1777970849.729958,
+    "hash": "d6b9c22004cb96bffb8a53925618e106"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/delegation-manager.test.ts": {
+    "mtime": 1777970849.7242131,
+    "hash": "39a9a5867c7306061eb96001928b45a0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/app-api.test.ts": {
+    "mtime": 1777970849.7203634,
+    "hash": "80c21ba6b4d3f01db1ceb685641d785a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/auto-loop.test.ts": {
+    "mtime": 1777970849.7205777,
+    "hash": "e9f7640c907b8f404b1f066ea13f8577"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/state.test.ts": {
+    "mtime": 1777970849.7383177,
+    "hash": "10eb7e952388687355c8696a4a17dd29"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/completion-detector.test.ts": {
+    "mtime": 1777970849.721842,
+    "hash": "03ddeb62fefb4b37656ef867a93be164"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/helpers.test.ts": {
+    "mtime": 1777970849.7279298,
+    "hash": "6bf41b2edcab57a59f7ce5201b98a087"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/session-api.test.ts": {
+    "mtime": 1777970849.7359602,
+    "hash": "2c8e17df819e917fe38d0b15c075103f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/journal-query.test.ts": {
+    "mtime": 1777970849.7284844,
+    "hash": "a95880e63e76c0b6c621ff0076b78f68"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-policy.test.ts": {
+    "mtime": 1777970849.733402,
+    "hash": "e2763520ac892a2f9be7e549e2fcb18a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/notification-handler.test.ts": {
+    "mtime": 1777991001.6418443,
+    "hash": "2893da424d1a7bfe81c961635e82a16a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/command-delegation.test.ts": {
+    "mtime": 1777970849.7209842,
+    "hash": "5dca87af41a4fafa45710fc51e781e6e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime.test.ts": {
+    "mtime": 1777970849.7351072,
+    "hash": "7c586ca78af8eb8dd76e3c0de41d80a5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/sdk-supervisor/sdk-supervisor.test.ts": {
+    "mtime": 1777970849.735472,
+    "hash": "f42212990e9eeea214c616e5f8bf427e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/session-artifact-parser.test.ts": {
+    "mtime": 1777970849.7267852,
+    "hash": "295abf9d6e4ea9c99460a99238a8a624"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/classifier.test.ts": {
+    "mtime": 1777970849.7258537,
+    "hash": "3415f7b7005304a1bf49d31c7f444bc5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/delegation-evidence.test.ts": {
+    "mtime": 1777970849.7259722,
+    "hash": "2d6d47a82da23f5ef223bc51f9a0fe54"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/event-types.test.ts": {
+    "mtime": 1777970849.7266185,
+    "hash": "2807e37f24f6f5a12b52b02546d9db58"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/writer.test.ts": {
+    "mtime": 1777970849.7272213,
+    "hash": "23b9d586b217b83037e5372ce50c2dc7"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/artifact-writer.test.ts": {
+    "mtime": 1777970849.7256365,
+    "hash": "63984ccf76c1bdba63e7c1acc2e8c8db"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/dual-persistence.test.ts": {
+    "mtime": 1777970849.7263534,
+    "hash": "db7693ed4acb3b427fa9817e0efd2ed8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/session-journey-events.test.ts": {
+    "mtime": 1777970849.7269387,
+    "hash": "ce7ef4931d3d9e485c4b744dce7b4abe"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/document-store.test.ts": {
+    "mtime": 1777970849.7261188,
+    "hash": "5625c377651dfb4ca0963d0d38a9160a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/event-tracker/session-v3-schema.test.ts": {
+    "mtime": 1777970849.7270749,
+    "hash": "747869ed4060fd5ce8c1483c1421ddf5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/session-entry/intake-gate.test.ts": {
+    "mtime": 1777970849.7361956,
+    "hash": "c6dadbaa0fd41cc8c4bc7ec90f402ee1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/session-entry/language-resolution.test.ts": {
+    "mtime": 1777970849.7364376,
+    "hash": "a3c1ca62ab7f14cec8587f18e1d55537"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/session-entry/profile-resolver.test.ts": {
+    "mtime": 1777970849.736722,
+    "hash": "3cb386bf2bcf7eef22736efa6da17052"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/session-entry/purpose-classifier.test.ts": {
+    "mtime": 1777970849.736877,
+    "hash": "c477cfdd0af46748084aaede9de42b97"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/pty/pty-buffer.test.ts": {
+    "mtime": 1777970849.730803,
+    "hash": "cdef2b9359e68b281cb5f7d6020cc72d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/pty/pty-manager.test.ts": {
+    "mtime": 1777970849.731083,
+    "hash": "afb5a7e054d2ff9c7729ec5e70562feb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/pty/pty-runtime.test.ts": {
+    "mtime": 1777970849.731203,
+    "hash": "c32b97efe9285c5562c9c17c40cc7837"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/security/path-scope.test.ts": {
+    "mtime": 1777970849.7356563,
+    "hash": "80168aca9674d071bc5ac5476a231641"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/security/redaction.test.ts": {
+    "mtime": 1777970849.7357798,
+    "hash": "97af40e85315c3e59cbb49a73767d262"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/recovery/create-checkpoint.test.ts": {
+    "mtime": 1777970849.7320666,
+    "hash": "a65d88289a098de0b0bfcaf7698a1eaf"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/recovery/assess-state.test.ts": {
+    "mtime": 1777970849.7318397,
+    "hash": "94be274e56f26aa1fc577fb7ccbcc333"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/recovery/repair-state.test.ts": {
+    "mtime": 1777970849.7326035,
+    "hash": "d89a7caabbaff049436de366ae9e3f3c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/recovery/failure-classes.test.ts": {
+    "mtime": 1777970849.7323775,
+    "hash": "6dcccfd311db647281d9a2f485f26ce7"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/config-workflow/workflow-regression.test.ts": {
+    "mtime": 1777970849.7230718,
+    "hash": "b416dc4997657af21d1563698297d7ac"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/config-workflow/workflow-persistence.test.ts": {
+    "mtime": 1777970849.7229342,
+    "hash": "0eeecff7771c87c454891500a5c2fd28"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/config-workflow/workflow-guards.test.ts": {
+    "mtime": 1777970849.7227273,
+    "hash": "070d6528d76c5d477d24c204a0bb5862"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/config-workflow/workflow-e2e.test.ts": {
+    "mtime": 1777970849.7225137,
+    "hash": "e8512a76aa30ba3b224172e56a61deab"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/config-workflow/workflow-state.test.ts": {
+    "mtime": 1777970849.7232304,
+    "hash": "2867c9bef0cf3e862be0a04d3e50aa0f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/spawner/concurrency-key.test.ts": {
+    "mtime": 1777970849.7374167,
+    "hash": "d2cf3746d8ac8572f60e9c985970cc88"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/spawner/spawn-request-builder.test.ts": {
+    "mtime": 1777970849.7377722,
+    "hash": "016300c26e15e32ff16f7b15ac427a29"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/spawner/agent-primitive-policy.test.ts": {
+    "mtime": 1777970849.7372906,
+    "hash": "1e86f3cfc77d7ce9c20d6bee82658328"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/spawner/parent-directory.test.ts": {
+    "mtime": 1777970849.737531,
+    "hash": "c11c138055bec058ad7252732af8bddb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/spawner/session-creator.test.ts": {
+    "mtime": 1777970849.7376494,
+    "hash": "a58800a5eb85d6d9801e9062c6463443"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-pressure/phase67-conformance.test.ts": {
+    "mtime": 1777970849.734691,
+    "hash": "5f0bd607849a3d81a75b30720653c438"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-pressure/model.test.ts": {
+    "mtime": 1777970849.7341619,
+    "hash": "7fdf252c4753fe318568fd13a73c63e9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-pressure/authority-matrix.test.ts": {
+    "mtime": 1777970849.7337735,
+    "hash": "83fc1e529f8b8044b0df4da96988b6ff"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-pressure/control-plane.test.ts": {
+    "mtime": 1777970849.7339585,
+    "hash": "f403d98154edad096ec502e9c0612635"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-pressure/phase59-authority-matrix.test.ts": {
+    "mtime": 1777970849.7344,
+    "hash": "2ae38e784ae3e794edf1b9922bb9f025"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/doc-intelligence/parser.test.ts": {
+    "mtime": 1777970849.7251623,
+    "hash": "a2fdaf4b156573cf209bb256439d4768"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/doc-intelligence/router.test.ts": {
+    "mtime": 1777970849.7253327,
+    "hash": "8ba128e97acebfcfd7c1a52c47b39ec1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/doc-intelligence/chunker.test.ts": {
+    "mtime": 1777970849.7249296,
+    "hash": "fb4a77f58d68fdd513e2ba1c58135122"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/trajectory/ledger.test.ts": {
+    "mtime": 1777970849.7399993,
+    "hash": "06e2312f9201aa0ee560feff605b13cf"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/command-engine/command-engine.test.ts": {
+    "mtime": 1777970849.7211971,
+    "hash": "b5a934bc0acfef1455a86a94a4dc4698"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/agent-work-contracts/store.test.ts": {
+    "mtime": 1777970849.7202482,
+    "hash": "cb3031baf53c6b00d0ba208f688c1d62"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/prompt-packet/compaction-preservation.test.ts": {
+    "mtime": 1777970849.7302482,
+    "hash": "4957a2a969ab5a4c08e17ac8b4c283f2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/prompt-packet/index.test.ts": {
+    "mtime": 1777970849.7304943,
+    "hash": "fed57914ece04cb22515a9df748f2375"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/prompt-packet/kernel-packet.test.ts": {
+    "mtime": 1777970849.7306106,
+    "hash": "63f4ce1e66e857bdf8aafb5faa3c5f28"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/prompt-packet/delegation-packet.test.ts": {
+    "mtime": 1777970849.7303772,
+    "hash": "97d8a795aa3a5593c2ea755c278566c0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/helpers/in-memory-client.ts": {
+    "mtime": 1777970849.7281969,
+    "hash": "25242575df38b76028ae73d6f735cb21"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/control-plane/gatekeeper.test.ts": {
+    "mtime": 1777970849.7237513,
+    "hash": "b49ded34b8c1209dfd390d6afbcdb292"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/lib/runtime-detection/stack-synthesizer.test.ts": {
+    "mtime": 1777970849.7331688,
+    "hash": "e4ae145e755a632ca0d8846fe556fcc4"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tests/sidecar/readonly-state.test.ts": {
+    "mtime": 1777970849.7428417,
+    "hash": "67263ade08a8d2b5264835b90f7d2f32"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/sidecar/next.config.ts": {
+    "mtime": 1777970849.673651,
+    "hash": "3192c5b1ffe1e472c4e2bbddfba2ea69"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/sidecar/src/app/layout.tsx": {
+    "mtime": 1777970849.673986,
+    "hash": "28d40ee93756ddb63a375c69cd0aa8a0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/sidecar/src/app/page.tsx": {
+    "mtime": 1777970849.6740959,
+    "hash": "84f262bfce6b6ee48c399e5490566909"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/eval/stability.test.ts": {
+    "mtime": 1777970849.6644065,
+    "hash": "e1c3c514c5232265f84de6a362e13e82"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/eval/correctness.test.ts": {
+    "mtime": 1777970849.6642916,
+    "hash": "cc1249057b3928c0bac3ee40631180b0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/eval/coherence.test.ts": {
+    "mtime": 1777970849.6640825,
+    "hash": "6de6b089cc59571c6bc98e736a1c50cc"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/plugin.ts": {
+    "mtime": 1777991950.877459,
+    "hash": "86de213214d8442f402d5929981d2635"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/index.ts": {
+    "mtime": 1777970849.6783862,
+    "hash": "df8fa4c50df9a74e5508bcd1e59c3cad"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/delegation-status.ts": {
+    "mtime": 1777970849.7132714,
+    "hash": "b2f8fbe9504ef29618cdb9b55cec79ac"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/hivemind-sdk-supervisor.ts": {
+    "mtime": 1777970849.7139652,
+    "hash": "4339caf475712b38423d2eb9d9c0db29"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/session-journal-export.ts": {
+    "mtime": 1777970849.7158217,
+    "hash": "8576306083d5d89e64027a7e83dfe752"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/run-background-command.ts": {
+    "mtime": 1777970849.7155716,
+    "hash": "fa74affad82e59a52d264706c0dca333"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/delegate-task.ts": {
+    "mtime": 1777970849.7130628,
+    "hash": "2a77e92b07615ec4120bc88239b9fccc"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/hivemind-trajectory.ts": {
+    "mtime": 1777970849.714167,
+    "hash": "1cd10bacd60964954be58c8dcc4e4cb5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/hivemind-doc.ts": {
+    "mtime": 1777970849.7137318,
+    "hash": "ead40598a6ca6516c858d56db9cabd5f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/configure-primitive-paths.ts": {
+    "mtime": 1777970849.712723,
+    "hash": "6cc955a367f131516d14211b5c928c72"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/configure-primitive.ts": {
+    "mtime": 1777970849.712903,
+    "hash": "ce0469d8a530c112a8d20a90825be72f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/validate-restart.ts": {
+    "mtime": 1777970849.7165768,
+    "hash": "31665510f9baae494871be24bcb07a0d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/hivemind-command-engine.ts": {
+    "mtime": 1777970849.7136185,
+    "hash": "4299c7b3446246153f2829b1ed39f6e7"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/hivemind-agent-work.ts": {
+    "mtime": 1777970849.7134938,
+    "hash": "30782deae3af5e7ceb839012be9f1203"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/hivemind-pressure.ts": {
+    "mtime": 1777970849.7138512,
+    "hash": "73c327d3e25ef39f1c5798fe56f8ce5d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/prompt-skim/types.ts": {
+    "mtime": 1777970849.71518,
+    "hash": "8110e122a14180fef6a119c3605d1de5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/prompt-skim/tools.ts": {
+    "mtime": 1777970849.7150676,
+    "hash": "1059f425baae6915fd0d5ec05a164b13"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/prompt-skim/index.ts": {
+    "mtime": 1777970849.7148461,
+    "hash": "1fe4754c4b64de9e196e054fb190fa2c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/prompt-analyze/types.ts": {
+    "mtime": 1777970849.7146716,
+    "hash": "48fbf6926aa531df8829f5e274e5ebf2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/prompt-analyze/tools.ts": {
+    "mtime": 1777970849.7145607,
+    "hash": "c24ffeca6007e5e15175846c1fa854c5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/prompt-analyze/index.ts": {
+    "mtime": 1777970849.71434,
+    "hash": "72980610039f48ee16de2ed95ee57199"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/session-patch/types.ts": {
+    "mtime": 1777970849.7163591,
+    "hash": "a0f006e948dab30e9a7a055252cbc51d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/session-patch/tools.ts": {
+    "mtime": 1777970849.71624,
+    "hash": "a07a47b03c30d0cb4723c1ba05051e1e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/tools/session-patch/index.ts": {
+    "mtime": 1777970849.7160046,
+    "hash": "d6d5165f4686ea524c84fde64bbeeda8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/shared/tool-response.ts": {
+    "mtime": 1777970849.7122383,
+    "hash": "d6fbb50b1448864df7477a3f93ea2539"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/shared/tool-helpers.ts": {
+    "mtime": 1777970849.7121222,
+    "hash": "8e0c0ed13a6970327e257cf7343492fa"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/cli/router.ts": {
+    "mtime": 1777970849.6766179,
+    "hash": "8e158daa47d306fc56fcab0dcf46c684"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/cli/renderer.ts": {
+    "mtime": 1777970849.6761394,
+    "hash": "f59f6022955f1362e821d4ef190f479d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/cli/discovery.ts": {
+    "mtime": 1777970849.6756637,
+    "hash": "bf9b526c7e306dcc6647deaaf4223c9c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/cli/index.ts": {
+    "mtime": 1777970849.6757753,
+    "hash": "d7b18cfc9e08a0247eebb80e7318abe2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/cli/commands/help.ts": {
+    "mtime": 1777970849.6755385,
+    "hash": "a8914e99d56d88b46ee6a92c338f691f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/create-session-hooks.ts": {
+    "mtime": 1777992166.5277226,
+    "hash": "ccddca23ebe9671c0a8625a48d27a43c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/create-core-hooks.ts": {
+    "mtime": 1777991884.9188051,
+    "hash": "34f31cdcd9105379ea1444dc8b75a02a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/hook-cqrs-boundary.ts": {
+    "mtime": 1777970849.677536,
+    "hash": "4448f0827ccb2541a8ceb5135852ef15"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/create-tool-guard-hooks.ts": {
+    "mtime": 1777970849.6774237,
+    "hash": "bf06d4f24afbe1f3d9a5a330bc1090f5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/messages-transform.ts": {
+    "mtime": 1777970849.6777272,
+    "hash": "86530f2e6c4dfed84f97b2d7c3854f74"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/tool-after-composer.ts": {
+    "mtime": 1777970849.6780803,
+    "hash": "a658679e4cf0826f655f66b28cc56d2d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/types.ts": {
+    "mtime": 1777991869.9861038,
+    "hash": "d12f3cb7fcbb728e196d0f52618c8c11"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/hooks/plugin-event-observers.ts": {
+    "mtime": 1777991682.1357353,
+    "hash": "ed02ee60ec5beeb2cd2ebc3956ed4259"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/config-precedence.schema.ts": {
+    "mtime": 1777970849.7098882,
+    "hash": "d5689322eaacb3751776f5000a8003e4"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/doc-intelligence.schema.ts": {
+    "mtime": 1777970849.710001,
+    "hash": "32d09824f0f2f64f925d5fc02a0609b9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/command-frontmatter.schema.ts": {
+    "mtime": 1777970849.709771,
+    "hash": "daae0547f7adbcad4ed8e9b9963ceff2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/tool-definition.schema.ts": {
+    "mtime": 1777970849.7115977,
+    "hash": "682740fae5d208363182aa4d42d1a6c2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/agent-work-contract.schema.ts": {
+    "mtime": 1777970849.70941,
+    "hash": "737afbe0b02d122770184459eef0c25f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/prompt-enhance.schema.ts": {
+    "mtime": 1777970849.7110386,
+    "hash": "6ef28bcde8d09be078325d7f14fb4d7b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/skill-metadata.schema.ts": {
+    "mtime": 1777970849.7114787,
+    "hash": "983ffe45f72c5a593d4233d7cc1d932b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/mcp-server.schema.ts": {
+    "mtime": 1777970849.7104597,
+    "hash": "e7a2a1ec84c0d24abf92eb56309f6a6e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/runtime-pressure.schema.ts": {
+    "mtime": 1777970849.7112415,
+    "hash": "8b017e8deedd3b82a8ab085756d74ee1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/index.ts": {
+    "mtime": 1777970849.710248,
+    "hash": "5ba50a20b7de2c7dd2df8548844e639b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/agent-frontmatter.schema.ts": {
+    "mtime": 1777970849.7091672,
+    "hash": "c725827749a1c772a9fb02b7d654e093"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/command-engine.schema.ts": {
+    "mtime": 1777970849.709611,
+    "hash": "a076102b980b68c3dcac4fa3d4be0171"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/sdk-supervisor.schema.ts": {
+    "mtime": 1777970849.711356,
+    "hash": "08d9d207f36a9104f8747eec2f986b5d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/permission.schema.ts": {
+    "mtime": 1777970849.7107177,
+    "hash": "2b3b992ef59b0cc545475a44a4a73cdf"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/schema-kernel/trajectory.schema.ts": {
+    "mtime": 1777970849.7117548,
+    "hash": "2a9d1ca3dd4787d88cbc564a14e86361"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/execution-lineage.ts": {
+    "mtime": 1777970849.6903887,
+    "hash": "a1e376d2bac11ecf123e17e993ee2482"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-state-machine.ts": {
+    "mtime": 1777970849.6847904,
+    "hash": "6811bd7127f3b6f9b90704c3949ec5b0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/config-compiler.ts": {
+    "mtime": 1777970849.681898,
+    "hash": "62a7078b64d7f9a3ccf50db24d71dc23"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/state.ts": {
+    "mtime": 1777970849.7033608,
+    "hash": "178809ed412c85b6b0f851975e978c5a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts": {
+    "mtime": 1777970849.6841168,
+    "hash": "12f4f038490769f9d9af8fc0c2b71cf0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/helpers.ts": {
+    "mtime": 1777970849.6909099,
+    "hash": "86a6231f83990f8d9a92c422af25f340"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gates.ts": {
+    "mtime": 1777970849.6804311,
+    "hash": "8b68b55c1f93b50e18905ed926a7c2ad"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/continuity.ts": {
+    "mtime": 1777970849.683049,
+    "hash": "a59079b4827035c22c062ccea8a1f09e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/session-api.ts": {
+    "mtime": 1777970849.700599,
+    "hash": "2304ea3acbdea60eab1e18c2dfd28065"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/plugin-tool-output-summary.ts": {
+    "mtime": 1777970849.6919239,
+    "hash": "bf16996b50505a9981200ec033861b15"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/task-status.ts": {
+    "mtime": 1777970849.7042956,
+    "hash": "634bbfdd9adc3f2b2037710f88c6b688"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/sdk-delegation.ts": {
+    "mtime": 1777970849.6994567,
+    "hash": "29fd5edd81ceb3a77f0e8155df103c2c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/session-journal.ts": {
+    "mtime": 1777970849.7019796,
+    "hash": "c2fa4edef93f02f62ff08466e62ea5c8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/framework-detector.ts": {
+    "mtime": 1777970849.6906393,
+    "hash": "c8e419ec599b96655b421d261f2f3572"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/command-delegation.ts": {
+    "mtime": 1777970849.6806862,
+    "hash": "8a125f37225e152f54c3862f126daeb1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts": {
+    "mtime": 1777970849.6802504,
+    "hash": "f7b35d4adeee879b0a2553a50eac9392"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/primitive-scanners.ts": {
+    "mtime": 1777970849.6928003,
+    "hash": "03f2bfed500adc3667b2010291375748"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/completion-detector.ts": {
+    "mtime": 1777970849.6814766,
+    "hash": "600b530310f4652cea88fae1a9a68f70"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-policy.ts": {
+    "mtime": 1777970849.6976507,
+    "hash": "a86d0f51146a9fb9917dcd902eef630a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime.ts": {
+    "mtime": 1777970849.699263,
+    "hash": "5aa331c8e293cb5e28c96a410231d61c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/types.ts": {
+    "mtime": 1777970849.7069387,
+    "hash": "afa45da6ddfc626324fcda3c0753c764"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/notification-handler.ts": {
+    "mtime": 1777990888.9444644,
+    "hash": "45ee794a70aac4cdd188433f795ec1ee"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-persistence.ts": {
+    "mtime": 1777970849.6845036,
+    "hash": "cf118083d9b3fd746dff65dd2f3911b5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/lifecycle-manager.ts": {
+    "mtime": 1777970849.6915982,
+    "hash": "486d3ec4fe87f93b2ecfe55787ed90b8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/app-api.ts": {
+    "mtime": 1777970849.679864,
+    "hash": "e2729bda03f680d3771a4a0d7a8b52ba"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/ralph-loop.ts": {
+    "mtime": 1777970849.694627,
+    "hash": "a7be5af3baf5d7af00969cebc27d9534"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/concurrency.ts": {
+    "mtime": 1777970849.6816268,
+    "hash": "112bb71d327b722cbb6d3499074f6a14"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-types.ts": {
+    "mtime": 1777970849.685001,
+    "hash": "9567e7a1848147aa7a03e307d1e2fb27"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/primitive-loader.ts": {
+    "mtime": 1777970849.6923723,
+    "hash": "5c67b2d56aacbf27b99f61d5dd30d9fb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/cross-primitive-validator.ts": {
+    "mtime": 1777970849.683727,
+    "hash": "01843b41c26e1e0bfbdee67359673897"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-validator.ts": {
+    "mtime": 1777970849.6991053,
+    "hash": "13aa58b36d4b549db0c535d70634f7e8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/primitive-registry.ts": {
+    "mtime": 1777970849.6925602,
+    "hash": "41663a7ae88c14d4558aa821e47672b7"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/journal-replay.ts": {
+    "mtime": 1777970849.6914167,
+    "hash": "2f24ee0a471642e2c217510b601b1b40"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/auto-loop.ts": {
+    "mtime": 1777970849.6800818,
+    "hash": "16a7e26da21e534826bcd9285c7c2097"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/journal-query.ts": {
+    "mtime": 1777970849.691155,
+    "hash": "8f4068a4a8d2fdc2b5b75c7678c59521"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/workspace-runtime-policy.ts": {
+    "mtime": 1777970849.708246,
+    "hash": "b80faf74f4c343d337524190a4a7f54f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/sdk-supervisor/types.ts": {
+    "mtime": 1777970849.7000017,
+    "hash": "6b950db62e6bc942bbbd55210b6a1073"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/sdk-supervisor/index.ts": {
+    "mtime": 1777970849.6998625,
+    "hash": "384110347e97a1c848362c87a4c7d3db"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/dual-persistence.ts": {
+    "mtime": 1777970849.6887572,
+    "hash": "cb0c8726549528f93d74fae8c0fefa7f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/writer.ts": {
+    "mtime": 1777970849.690229,
+    "hash": "efbc9c572eca6d899e01b0cdd3747c79"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/hook-event.ts": {
+    "mtime": 1777970849.6889982,
+    "hash": "7124278fbab0c3cfbb5fe8b280c6381b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/artifact-writer.ts": {
+    "mtime": 1777970849.687832,
+    "hash": "411d195fa5f118e4f8abdff8b9c2b134"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/parser.ts": {
+    "mtime": 1777970849.6897597,
+    "hash": "25ed2fc1749ab0b11b15843858169ea0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/types.ts": {
+    "mtime": 1777970849.690066,
+    "hash": "77f8498e5583b8909fc0a5261a4e1851"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/delegation-evidence.ts": {
+    "mtime": 1777970849.6882515,
+    "hash": "24729576ca3f27da30010f8c20d5d5e0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/index.ts": {
+    "mtime": 1777970849.689133,
+    "hash": "27ff16471b414b38af15ea73b91bae86"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/classifier.ts": {
+    "mtime": 1777970849.6880097,
+    "hash": "17921c3a42f3aaefc4e146648d11c551"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/document-store.ts": {
+    "mtime": 1777970849.6885123,
+    "hash": "33409c3e72aa6e189246771e05c844c9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/event-tracker/markdown-renderer.ts": {
+    "mtime": 1777970849.689374,
+    "hash": "8d23d645dabe8f18083af56358d33bbe"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/session-entry/profile-resolver.ts": {
+    "mtime": 1777970849.7015748,
+    "hash": "794b0282e039c81423dca6e82400d310"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/session-entry/intake-gate.ts": {
+    "mtime": 1777970849.7010775,
+    "hash": "08f5865e618688bd0ac67556ece08d7b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/session-entry/purpose-classifier.ts": {
+    "mtime": 1777970849.7018278,
+    "hash": "ec31d3ff42cbc75d28d924dab91f9ef4"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/session-entry/language-resolution.ts": {
+    "mtime": 1777970849.7013333,
+    "hash": "25ed3c5ccbabf1f666c3ad8746d11e24"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/session-entry/index.ts": {
+    "mtime": 1777970849.7008162,
+    "hash": "0ad8b408e4c3ad190d615a0dd4a0f598"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/pty/pty-runtime.ts": {
+    "mtime": 1777970849.6942508,
+    "hash": "cd8cc81830638f65f9677ed0b683f012"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/pty/pty-buffer.ts": {
+    "mtime": 1777970849.6939502,
+    "hash": "6930e9d33461cf4261bb551c3ad078fb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/pty/pty-types.ts": {
+    "mtime": 1777970849.694385,
+    "hash": "b7bf307a74adce1dc6bfd77369b2a9db"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/pty/bun-pty.d.ts": {
+    "mtime": 1777970849.6938217,
+    "hash": "8ec25be3e35108525897149af6a8af2a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/pty/pty-manager.ts": {
+    "mtime": 1777970849.6941195,
+    "hash": "4ad511a5bd45b174284da7f348417885"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/security/path-scope.ts": {
+    "mtime": 1777970849.700226,
+    "hash": "c659305b800e09c4743928631259d332"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/security/redaction.ts": {
+    "mtime": 1777970849.7003899,
+    "hash": "1c4f7c4b0b8cdee24944b6b43239d7a9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/recovery/failure-classes.ts": {
+    "mtime": 1777970849.6955533,
+    "hash": "635174d6fcb19f9eb1a23e90a0e13f2d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/recovery/create-checkpoint.ts": {
+    "mtime": 1777990363.911571,
+    "hash": "163071ceed4505eac764543a3f5a71e3"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/recovery/repair-state.ts": {
+    "mtime": 1777970849.696259,
+    "hash": "1cb3e74995272db04dd620c0266aeb0e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/recovery/assess-state.ts": {
+    "mtime": 1777970849.695067,
+    "hash": "9355583dcf0ba3c87f73b421f50354b6"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/recovery/index.ts": {
+    "mtime": 1777970849.6957643,
+    "hash": "d2bcacc76dde153ad0275e20242526e6"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/config-workflow/workflow-persistence.ts": {
+    "mtime": 1777970849.6824782,
+    "hash": "fd2c146c442ce5908cd7682bf02c73b8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/config-workflow/workflow-types.ts": {
+    "mtime": 1777970849.6828432,
+    "hash": "61096cefe017cd3ef804f965186f33da"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/config-workflow/workflow-guards.ts": {
+    "mtime": 1777970849.6822612,
+    "hash": "ba6df609acdd23b1149cca31f4d1955e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/config-workflow/workflow-state.ts": {
+    "mtime": 1777970849.6826851,
+    "hash": "3ca70eb169665c14ef1e8b5fb13dc365"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/config-workflow/index.ts": {
+    "mtime": 1777970849.6821465,
+    "hash": "87cc29871f7538bfdc9c2c4afff7e5ce"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/spawner/parent-directory.ts": {
+    "mtime": 1777970849.7025545,
+    "hash": "04a8cbe6f15d63e4bb07c16d6f001680"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/spawner/spawn-request-builder.ts": {
+    "mtime": 1777970849.702934,
+    "hash": "7f0c6dc77152ada4c65ec2989e0f0985"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/spawner/agent-primitive-policy.ts": {
+    "mtime": 1777970849.702289,
+    "hash": "8b3f612033df59794867a3846c74102f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/spawner/session-creator.ts": {
+    "mtime": 1777970849.7026896,
+    "hash": "76cd7cc79d0298d9a70a7ce1bb12a81d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/spawner/spawner-types.ts": {
+    "mtime": 1777970849.703108,
+    "hash": "084ba68f453eca4c5dfe958dbd3703b0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/spawner/concurrency-key.ts": {
+    "mtime": 1777970849.7024238,
+    "hash": "2d5a6620e352b9738209b28f71168dfb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-pressure/control-plane.ts": {
+    "mtime": 1777970849.6983745,
+    "hash": "395a8f87a3947298c4d8ca8c5d82b604"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-pressure/authority-matrix.ts": {
+    "mtime": 1777970849.698111,
+    "hash": "ec1720936c50b6d4d09f6f43abb6bb6b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-pressure/model.ts": {
+    "mtime": 1777970849.698666,
+    "hash": "f8d565716b0ce58081755472777233e0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-pressure/types.ts": {
+    "mtime": 1777970849.6989157,
+    "hash": "41abffc6b621c12051d93728c7836584"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-pressure/index.ts": {
+    "mtime": 1777970849.6985178,
+    "hash": "e7fb48ac21687e1ef119320780e4306f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/doc-intelligence/router.ts": {
+    "mtime": 1777970849.6856303,
+    "hash": "5b83b12d7194c8ed49b9a30c3f65e71f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/doc-intelligence/parser.ts": {
+    "mtime": 1777970849.6854174,
+    "hash": "5d6b176439751d2ce8391c5c7368b0f4"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/doc-intelligence/types.ts": {
+    "mtime": 1777970849.6857588,
+    "hash": "aef29aaf880e3057c41ca189fa8da427"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/doc-intelligence/chunker.ts": {
+    "mtime": 1777970849.685186,
+    "hash": "8d4213f91b6ca779b40e4d2f94403606"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/doc-intelligence/index.ts": {
+    "mtime": 1777970849.6853027,
+    "hash": "ed48ce01847b0926b261a3e6e246e86b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/trajectory/store-operations.ts": {
+    "mtime": 1777970849.7065508,
+    "hash": "b5539d859ff1457816aa233c8e2a345e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/trajectory/types.ts": {
+    "mtime": 1777970849.7067087,
+    "hash": "1f85098a7f823cd3d12f40664ebe2770"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/trajectory/ledger.ts": {
+    "mtime": 1777970849.7046907,
+    "hash": "566a41f0ae50227b4840115017dd3dab"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/trajectory/index.ts": {
+    "mtime": 1777970849.704555,
+    "hash": "6200c7fb75a2790b0fd81bb816320259"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/command-engine/types.ts": {
+    "mtime": 1777970849.6812515,
+    "hash": "ce88fd49124ccafcc6bb23efa9b96b81"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/command-engine/index.ts": {
+    "mtime": 1777970849.6810462,
+    "hash": "07008784e0c355b57234dce32a72b130"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/agent-work-contracts/operations.ts": {
+    "mtime": 1777970849.6794324,
+    "hash": "36054b894a3687e86e12fb04a3a5d4e8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/agent-work-contracts/types.ts": {
+    "mtime": 1777970849.679756,
+    "hash": "aa29ddb374ddd7e0b83267b87bbbb831"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/agent-work-contracts/index.ts": {
+    "mtime": 1777970849.6792262,
+    "hash": "4512e9255d5efd8ea190c4d045050c7c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/agent-work-contracts/store.ts": {
+    "mtime": 1777970849.6796377,
+    "hash": "a4950f810e5b177a920214a2c3cf981f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/prompt-packet/delegation-packet.ts": {
+    "mtime": 1777970849.69316,
+    "hash": "8055ba859a0155b3811f253c4bb9358d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/prompt-packet/kernel-packet.ts": {
+    "mtime": 1777970849.6935253,
+    "hash": "4b8feff982e02ba449b024a353728cde"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/prompt-packet/index.ts": {
+    "mtime": 1777970849.6932838,
+    "hash": "bd44c8ca3b68d5610774b075d5e3c692"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/prompt-packet/compaction-preservation.ts": {
+    "mtime": 1777970849.6930227,
+    "hash": "9e06ed10191bd433aca1022ec760bdc0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/control-plane/gate-decision.ts": {
+    "mtime": 1777970849.6832583,
+    "hash": "3e3e64d60645ffcedc69ac3c1e9b10c0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/control-plane/gatekeeper.ts": {
+    "mtime": 1777970849.6834736,
+    "hash": "10e17f8f706467862fcd3c6f3604af3a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/control-plane/index.ts": {
+    "mtime": 1777970849.6835852,
+    "hash": "cf89bb5afaa88c8d25d16ca48b03094c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-detection/index.ts": {
+    "mtime": 1777987917.3325763,
+    "hash": "61923bd096a501944366b6c6df572f61"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/runtime-detection/stack-synthesizer.ts": {
+    "mtime": 1777990304.492964,
+    "hash": "ef5815d5460f871a44244912ab4ff758"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/sidecar/readonly-state.ts": {
+    "mtime": 1777970849.712548,
+    "hash": "8b41871746a366de26e98f3e07ed2d5f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/improve-tools-coherence-evidence-failure.md": {
+    "mtime": 1777970849.6658618,
+    "hash": "e8de1ef0c68caf728de6f5d9c3fb4d7e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/INVESTIGATOR-B-AUDIT.md": {
+    "mtime": 1777970849.6301048,
+    "hash": "3a57447b225048b7c5723a1f529e1ec0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/OVERVIEW-Unmodified.md": {
+    "mtime": 1777970849.630576,
+    "hash": "7da9746fdfe8380c7cb8d9879437ec86"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/plugin-diagnostic.md": {
+    "mtime": 1777970849.6684728,
+    "hash": "99d892768376a7a1c725420f4904effe"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/debug-report-session-persistence.md": {
+    "mtime": 1777970849.6379812,
+    "hash": "313904aeb817c13dc575a9b60d700a69"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/CHANGELOG.md": {
+    "mtime": 1777973436.8981783,
+    "hash": "c4a918c0cf0109132b16ff68befc3a45"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-phase9-flaw.md": {
+    "mtime": 1777970849.670636,
+    "hash": "1957724d11744838c0312b8fc9a70d75"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/attmp-fix-trial-2-fail.md": {
+    "mtime": 1777970849.6350718,
+    "hash": "d564eeb89e2a553a4f41006bca8b1650"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tools_hooks_session.md": {
+    "mtime": 1777970849.7485058,
+    "hash": "395f6a5b88ef86031d4b12a3456f776c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/qwen-code-export-2026-04-09T12-46-17-043Z.md": {
+    "mtime": 1777970849.6702397,
+    "hash": "efba845b34068b55b2ee07fe594ba42a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_22fd.md": {
+    "mtime": 1777970849.6724944,
+    "hash": "f7855218f9edb48369226550034c2173"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/audit-report-2026-04-17.md": {
+    "mtime": 1777970849.6358318,
+    "hash": "b189fb0cff9f72beacb87b1584c58b84"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/progress.md": {
+    "mtime": 1777970849.6686008,
+    "hash": "a0d415f32c66c3e0e93a928d72cc6714"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/3-skill-hm-research-ses_28cf.md": {
+    "mtime": 1777970849.6294875,
+    "hash": "6ca608f958e1028c4cf40dba195b32ba"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/attempt-fix-1.md": {
+    "mtime": 1777970849.6346064,
+    "hash": "44554fc02fe715c1a9d4972ad8e6baba"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/task_plan.md": {
+    "mtime": 1777970849.7170072,
+    "hash": "169c4df36374664538dae71cc6f83e62"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/trialrun-after-fix-1.md": {
+    "mtime": 1777970849.748957,
+    "hash": "3446ece676ca7d4d8ae6e281b40c9006"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/qwen-code-export-2026-04-08T22-26-42-222Z.md": {
+    "mtime": 1777970849.6699476,
+    "hash": "511036c2b1376d5667176efc3656771d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/qwen-code-export-2026-04-08T19-00-12-235Z.md": {
+    "mtime": 1777970849.6694958,
+    "hash": "6c2098fa1f94cc3dc1da9e4d5d300cd8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_22ee.md": {
+    "mtime": 1777970849.6716948,
+    "hash": "a70f56aa37bf048694a41f93510491bb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_20bf.md": {
+    "mtime": 1777972970.0579803,
+    "hash": "b9709dc8d6ed44f49f18ecd3ed8ee352"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_2096.md": {
+    "mtime": 1777972970.0524745,
+    "hash": "e82e2ad5536cd3a3bbe5f32f67bb3903"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/README.md": {
+    "mtime": 1777972146.709271,
+    "hash": "5110bbc9bcd3f5af3dc49e20ca79e6bb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_207a.md": {
+    "mtime": 1777989968.4668412,
+    "hash": "2efb4a8a786b9b76fbba27f6484c02af"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_23a0.md": {
+    "mtime": 1777970849.673215,
+    "hash": "618b1a41da4bd59d7c42962622ff2f4f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/CONTRIBUTING.md": {
+    "mtime": 1777972146.7086735,
+    "hash": "b8a8e62bbda3fc189fbcd4a04b209c23"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_2176.md": {
+    "mtime": 1777970849.6712422,
+    "hash": "49d2dfef9141ac5471214bfcc35c1a9d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/findings.md": {
+    "mtime": 1777970849.6654928,
+    "hash": "027bf43bef682936551963819b291722"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/AGENTS.md": {
+    "mtime": 1777976510.5977416,
+    "hash": "2e5784a5fb95cbae130b2d2a9a3406e3"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/REVIEW.md": {
+    "mtime": 1777970849.631042,
+    "hash": "fe8e42206627fdabc5b2cbe87286bbeb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/tools_hooks_export_flaw.md": {
+    "mtime": 1777970849.7478614,
+    "hash": "395f6a5b88ef86031d4b12a3456f776c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/fail-silently-timout-session.md": {
+    "mtime": 1777970849.6652727,
+    "hash": "f8fbcd38c755773689b52654535f202f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/session-ses_2069.md": {
+    "mtime": 1778008188.5707319,
+    "hash": "d8fbdad54d233eaed297b72dc886047c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/disablekilo/rules/commit-governance.md": {
+    "mtime": 1777970849.6386738,
+    "hash": "6fe03793ae974d3fbc8a58f7e023c6ba"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/disablekilo/rules/skill-activation.md": {
+    "mtime": 1777970849.6390746,
+    "hash": "90286f942d8e63e01a090315da3854bb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/disablekilo/rules/execution-loop.md": {
+    "mtime": 1777970849.6389556,
+    "hash": "9a0727def0c0763df155e0743635f539"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/disablekilo/rules/anti-patterns.md": {
+    "mtime": 1777970849.6385522,
+    "hash": "b396cce4aed916bdb94bf56d648bf338"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/disablekilo/rules/coordinator-rules.md": {
+    "mtime": 1777970849.6388342,
+    "hash": "39961fa26d1841d0a8fa377f1fe6b173"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/plans/prompt-enhance-executable/plan.md": {
+    "mtime": 1777970849.6683245,
+    "hash": "0bba2c86c9a7bb52cd548717dd4299da"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/plans/phase-7-integration/implementation.md": {
+    "mtime": 1777970849.668082,
+    "hash": "4628b92eaf986943bee08eed51156206"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/checkpoints/session-checkpoint-2026-04-09.md": {
+    "mtime": 1777970849.6368456,
+    "hash": "f66cd53792dd1f0d5fb4ca3897375c58"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/planning/edge-case-analysis-2026-04-09.md": {
+    "mtime": 1777970849.6666842,
+    "hash": "526b9c64eeb69c793a76a676a2c27987"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/user-stories-2026-04-02.md": {
+    "mtime": 1777970849.6637855,
+    "hash": "47c9bb8b44327b2f9c7874d50ae7de65"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/phase-58-agent-work-contracts-CONTEXT-2026-04-30.md": {
+    "mtime": 1777970849.6524405,
+    "hash": "1392884343f243fa4ccf74834f4e7ae3"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/feature-gap-audit-2026-04-02.md": {
+    "mtime": 1777970849.6495373,
+    "hash": "09a8b731f7e84cce2efb7e684289d7c7"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit-report-2026-04-02.md": {
+    "mtime": 1777970849.6407096,
+    "hash": "ade0f9879866b3eb182c8b519afa63c7"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/harness-definitive-audit-2026-04-02.md": {
+    "mtime": 1777970849.6497838,
+    "hash": "7c22607db18319c1eed372c7a1bcc10a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/implementation-plan-2026-04-02.md": {
+    "mtime": 1777970849.650817,
+    "hash": "a6feba171e93b1a90ddccd625d052d79"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/recovery-plan-2026-04-02.md": {
+    "mtime": 1777970849.6548958,
+    "hash": "2df285f6e5468d1064642958aa982d83"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/harness-vs-omo-comparison.md": {
+    "mtime": 1777970849.6505246,
+    "hash": "286c02479788eeaa10508fada37a7121"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/CONTEXT-2026-04-30.md": {
+    "mtime": 1777970849.6404634,
+    "hash": "6c650102ea39af138058a155ebe8476e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/requirements-2026-04-02.md": {
+    "mtime": 1777970849.6552439,
+    "hash": "227e6d80e618b4f9f0043b2c1d8b5014"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/harness-rebuild-spec-2026-04-02.md": {
+    "mtime": 1777970849.6499937,
+    "hash": "5bd7152f60edc2a69c37fa822accdd34"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/comparison-ohmo-harness-2026-04-02.md": {
+    "mtime": 1777970849.644605,
+    "hash": "8abf731d16ddc364060b97cb45e31dd2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/research-and-audit.md": {
+    "mtime": 1777970849.656056,
+    "hash": "5d12a857217b2a5dd6ba2a49065978b5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/skills-lab/meta-builder-consolidation-plan-2026-04-04.md": {
+    "mtime": 1777970849.6563008,
+    "hash": "5c702eb7d0dc1712caafbcf12aaa3b13"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/skills-lab/samples-language-use/prompting-to-parse-between-session-reviewing.md": {
+    "mtime": 1777970849.656953,
+    "hash": "a771091cb3dd620629ded24ad3643ba1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/skills-lab/samples-language-use/skill-show-how-to-implement-gate.md": {
+    "mtime": 1777970849.6573074,
+    "hash": "b349bbcc136f3f50c45f04d0917bdfc9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/skills-lab/samples-language-use/prompting-to-parse-between-session-executing.md": {
+    "mtime": 1777970849.656743,
+    "hash": "b856c2076801a91854adf094a907de9c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/skills-lab/samples-language-use/skill-show-how-to-manageing-tasking.md": {
+    "mtime": 1777970849.657485,
+    "hash": "543afab876dc18817918377a19e16530"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/skills-lab/samples-language-use/skill-show-hot-to-implement-execute.md": {
+    "mtime": 1777970849.6571295,
+    "hash": "1133bffcbc4018f44b8d880a0763abeb"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/research/skills-lab/samples-language-use/skill-show-how-to-technique-cognitive-load.md": {
+    "mtime": 1777970849.6576715,
+    "hash": "3702ebeb47ff6b26dba1aa8c9504aab2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/prompt-2026-04-21.md": {
+    "mtime": 1777970849.6493266,
+    "hash": "79c69e31115a0da5e51e8d18c5bd8cd6"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/HIVEMIND-PHILOSOPHY-2026-04-10.md": {
+    "mtime": 1777970849.647676,
+    "hash": "f4dd3be6526ba4b5c99f03859b95b713"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/HIVEMIND-PHILOSOPHY-VI-2026-04-10.md": {
+    "mtime": 1777970849.6479175,
+    "hash": "32f5200427cc6b0bcd7ee81e03e22272"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/CURRENT-SITUATIONS-2026-04-10.md": {
+    "mtime": 1777970849.6468267,
+    "hash": "05f2691812e2a3df0df2b3ba43454560"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/HIVEMIND-AGENTS-2026-04-10.md": {
+    "mtime": 1777970849.6470642,
+    "hash": "9bb8f5747dec7f8659843d5a1e7e228f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/HIVEMIND-ARCHITECTURE-2026-04-10.md": {
+    "mtime": 1777970849.6473014,
+    "hash": "4db06341be56ff20564ef61bcf720375"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/hivemind-current-state.md": {
+    "mtime": 1777970849.6486154,
+    "hash": "5e63043bf317a8c90a130168776db04e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/migration-strategy-2026-04-03.md": {
+    "mtime": 1777970849.6490512,
+    "hash": "df162a88270cb52888f072992c480748"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/draft/architecture-proposal-hivemind-v3.md": {
+    "mtime": 1777970849.6482215,
+    "hash": "cea1ba611f847331071b4148b1a37ca4"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/design/delegation-manifest-notification-mediation-2026-04-24.md": {
+    "mtime": 1777970849.6450274,
+    "hash": "3bdc65e3ca9011a9d38655c3f9ed3a10"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/configuration/settings.md": {
+    "mtime": 1777972146.7099898,
+    "hash": "586748e4fcce85d8f8a4b7e6e4923465"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/designs/2026-04-02-session-api-rewrite.md": {
+    "mtime": 1777970849.645935,
+    "hash": "05b211a4270bb17f3540053b22eecac0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/designs/2026-04-02-harness-rebuild-design.md": {
+    "mtime": 1777970849.6454382,
+    "hash": "ed505af3541cb87709a3ebb47fdebff0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/designs/2026-04-02-phase11-tdd-plan.md": {
+    "mtime": 1777970849.6457505,
+    "hash": "ef383d7c2a617471c4f60ac73ce6e837"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/designs/2026-04-04-meta-builder-mindsnetwork-rewrite.md": {
+    "mtime": 1777970849.6463523,
+    "hash": "fe8f6813bb6973c6b5a7c006232ba3c4"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/papers/live-steering-protocols.md": {
+    "mtime": 1777970849.6521418,
+    "hash": "fb1b9d524d4bf6955679f3f5d4ef7a8e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/plans/migration-plan-detox-to-harness-2026-04-24.md": {
+    "mtime": 1777970849.6527267,
+    "hash": "f8fe45dddc73921ab38388a14cbc7b5f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/plans/refactor/migration-strategy-reference.md": {
+    "mtime": 1777970849.6530905,
+    "hash": "31131dc72b149addae8150d112336f2d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/02_PRD/PRD-01_meta-builder-ecosystem/PRD-01_meta-builder-ecosystem.md": {
+    "mtime": 1777970849.6400385,
+    "hash": "f7d0e1182d99b77660cf746b107cd0a2"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/requirements/2026-04-07-spec-validation-report.md": {
+    "mtime": 1777970849.6557283,
+    "hash": "9b37d2e2ae83be166709ed049cdc6677"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/harness-techniques/harness-prompting.md": {
+    "mtime": 1777970849.6502793,
+    "hash": "c27636978fc27c37e9fe73020861e5e8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/project/codebase-audit/audit-review-2026-04-02.md": {
+    "mtime": 1777970849.6534204,
+    "hash": "00e8486b453adb8b3ac0762b42f0b67d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/project/codebase-audit/honest-audit-2026-04-02.md": {
+    "mtime": 1777970849.6538036,
+    "hash": "bd7835e0ba6737991716e6be88dfcb2e"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/project/codebase-audit/audit-scripts-in-skills-2026-04-04.md": {
+    "mtime": 1777970849.6536398,
+    "hash": "8bda2a7bdda1e51bf3d430168fbc38b4"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/architecture/overview.md": {
+    "mtime": 1777972146.7096016,
+    "hash": "b450edfaf478224054db850e87894d44"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/command-workflow-audit.md": {
+    "mtime": 1777970849.6425138,
+    "hash": "95129c881d00a7f6e178788718a3501d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/planning-with-files-audit-2026-04-04.md": {
+    "mtime": 1777970849.6434684,
+    "hash": "4cbedff9df68f50bbd6484af3ab7fc9a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/agent-audit-v2.md": {
+    "mtime": 1777970849.6410723,
+    "hash": "b841fc55e00438886add15f72a2d5152"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/audit-report-2026-04-07.md": {
+    "mtime": 1777970849.6421504,
+    "hash": "73ff9e450c1f5215164591d3a5acd870"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/skill-audit-batch1.md": {
+    "mtime": 1777970849.6436412,
+    "hash": "fa272e345ea3aa176b6c756be28a373a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/audit-report-2026-04-06.md": {
+    "mtime": 1777970849.641963,
+    "hash": "53cf3045bf534fb3c893c29c6909862a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/harness-comprehensive-audit-2026-04-27.md": {
+    "mtime": 1777970849.6432211,
+    "hash": "72ed34c93bfe7d90ec1be11a70b774b1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/functional-code-audit-2026-04-06.md": {
+    "mtime": 1777970849.642902,
+    "hash": "93a081abb15597a30659ee1ee525b23b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/skill-audit-batch4.md": {
+    "mtime": 1777970849.6442707,
+    "hash": "39e7fa55185fe628f41eb77980b2df84"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/dependency-graph.md": {
+    "mtime": 1777970849.6426525,
+    "hash": "91066a481abb0e94cc4c5fa6c6f55d3f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/audit-report-2026-04-05.md": {
+    "mtime": 1777970849.641711,
+    "hash": "647523d58e45eb1824a7522c4471b76c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/skill-audit-batch3.md": {
+    "mtime": 1777970849.644046,
+    "hash": "efe09be8e615c6e637db812bb486d513"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/command-workflow-audit-v2.md": {
+    "mtime": 1777970849.6423488,
+    "hash": "9762dc24fd507a7cc16bf89acfb291da"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/skill-audit.md": {
+    "mtime": 1777970849.6444175,
+    "hash": "b41d656658a1ae031fa7c3fd9fe05468"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/audit-gate-2026-04-05.md": {
+    "mtime": 1777970849.641525,
+    "hash": "898fc45464bb2376c76eb5117b44cfd0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/agent-audit.md": {
+    "mtime": 1777970849.6413147,
+    "hash": "a7c79dcce0dc4f6e703bd234a1968d68"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/audit/skill-audit-batch2.md": {
+    "mtime": 1777970849.6438496,
+    "hash": "0513adf3c1b7b2f7491e684950de290c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/meta-builder/distinguish-hivefiver-meta-builder.md": {
+    "mtime": 1777970849.6510549,
+    "hash": "f4256229e547dc1e65f1347057d32613"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/meta-builder/updating-for-hivefiver-onboarding.md": {
+    "mtime": 1777970849.6517248,
+    "hash": "a1f659fd12fcd566b94e1741c4bc8983"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/meta-builder/spec-briefing.md": {
+    "mtime": 1777970849.6515455,
+    "hash": "83ab4c326eddc9b259b054d6f71cd4e5"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/meta-builder/prompt-enhancer-deepwiki-instruction.md": {
+    "mtime": 1777970849.6512618,
+    "hash": "79553b5bcfe512cdf88020f0c8bd516c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/guides/testing.md": {
+    "mtime": 1777972146.71293,
+    "hash": "811733b0313cd93803f4ed262b39e36c"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/guides/getting-started.md": {
+    "mtime": 1777972146.7125945,
+    "hash": "ae55672eef7785b34986c4fd1f5c8504"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/guides/development.md": {
+    "mtime": 1777972146.7123322,
+    "hash": "87ce9b19b3ce2ffa820315aae46a6147"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/deployment/deployment.md": {
+    "mtime": 1777972146.7103086,
+    "hash": "aea2c4aaa676fd50b6c4dff92ceba8b0"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/plans/2026-04-15-real-opencode-sdk-runtime-adapter-master-plan.md": {
+    "mtime": 1777970849.6601467,
+    "hash": "c881dabd7c4acc6a82840a3408d47ff8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/plans/2026-04-15-delegate-task-single-path-recovery.md": {
+    "mtime": 1777970849.6598501,
+    "hash": "b7f8279db4d2946e4a1435514b98d425"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/plans/2026-04-10-background-failure-family-fixes.md": {
+    "mtime": 1777970849.6595602,
+    "hash": "70a070e933a910fd1afa2ffe1b7aeab8"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/plans/2026-04-07-hivemind-checkpoint-harness.md": {
+    "mtime": 1777970849.6592245,
+    "hash": "2d78d5007059544de8dedbb92937904b"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/plans/2026-04-06-harness-cleanup.md": {
+    "mtime": 1777970849.658779,
+    "hash": "06724bfaf44108205f2ffd8914b82243"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/plans/2026-04-05-skill-synthesis-plan.md": {
+    "mtime": 1777970849.6585758,
+    "hash": "10a8e2d5ab9b44fc3d88d6c62f8df89a"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/plans/2026-04-05-hivemind-5-skill-architecture.md": {
+    "mtime": 1777970849.6582766,
+    "hash": "0f53030b93ff2fee306725c39e199dd6"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-15-delegate-task-single-path-recovery-design.md": {
+    "mtime": 1777970849.6626506,
+    "hash": "97440dc29fe03712067c142f5cd95df1"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-08-user-facing-runtime-config-design.md": {
+    "mtime": 1777970849.6622262,
+    "hash": "7bcd83a53cd53edd6407b49e4d57810f"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-06-harness-clean-design.md": {
+    "mtime": 1777970849.6609795,
+    "hash": "73d5b278824a79f5b82aab6c6993a936"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-15-truth-reset-scope-lock.md": {
+    "mtime": 1777970849.663032,
+    "hash": "df44adcb378267c26929ab200aa4acf9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-06-prompt-enhancement-command-design.md": {
+    "mtime": 1777970849.6613672,
+    "hash": "b5137a09cf9c753e397dbe05e2be8e7d"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-07-meta-builder-chain-spec.md": {
+    "mtime": 1777970849.6618361,
+    "hash": "c9df6d54b1ff9dd5edf0e6721814be79"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-07-hivemind-checkpoint-harness-design.md": {
+    "mtime": 1777970849.6615932,
+    "hash": "16d0fa4ae32b384054bb1d3b16232514"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-05-skill-synthesis-design.md": {
+    "mtime": 1777970849.6607583,
+    "hash": "9b838a59fd5f767f6dea92e4eb44edbd"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-27-gate-quality-skill-triad-design.md": {
+    "mtime": 1777970849.6632473,
+    "hash": "99f2489beba38c40e5729dbbd762fada"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-08-runtime-config-schema-draft.md": {
+    "mtime": 1777970849.6619818,
+    "hash": "c0c9150774af839f0d5aaf8ea7f93abc"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-15-real-opencode-sdk-runtime-adapter-design.md": {
+    "mtime": 1777970849.662812,
+    "hash": "daecf55e637825c7893ffc9c6ca27304"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-08-v3-implementation-spec.md": {
+    "mtime": 1777970849.662397,
+    "hash": "73707990f5f04436edf8f2c2e34fd900"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-05-hivemind-5-skill-architecture.md": {
+    "mtime": 1777970849.6604989,
+    "hash": "2562ac5c845f986d76cce00437752578"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/superpowers/specs/2026-04-06-prompt-enhance-executable-design.md": {
+    "mtime": 1777970849.6611967,
+    "hash": "d1a04a4a698453bac06887e35ff22287"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/proposals/VALIDATION-DECISIONS-2026-04-25.md": {
+    "mtime": 1777970849.654582,
+    "hash": "2b7f2f7c2ea01237adeeac9d32dcdc95"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/proposals/2026-04-25-hivemind-v3-architecture-synthesis-proposal.md": {
+    "mtime": 1777970849.6541562,
+    "hash": "fc4e2684516c79335805258c7502e590"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/docs/transformed-prompting/skill-planning-skills-loading.md": {
+    "mtime": 1777970849.6635287,
+    "hash": "d95a8dbb8f60b85931588c18157d1004"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/sidecar/README.md": {
+    "mtime": 1777970849.673539,
+    "hash": "0cbad6857faa82113a160077804898b9"
+  },
+  "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/AGENTS.md": {
+    "mtime": 1777973308.4895556,
+    "hash": "a1ee779e050b47e10341add27f9a2c74"
+  }
+}

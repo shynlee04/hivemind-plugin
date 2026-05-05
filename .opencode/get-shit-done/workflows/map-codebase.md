@@ -246,6 +246,8 @@ ${AGENT_SKILLS_MAPPER}"
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all 4 Task() calls above with `run_in_background=true`, do NOT read any source files, analyze the codebase, or write any mapping documents independently while the subagents are active. Wait for all 4 agents to complete before proceeding to collect_confirmations. This prevents duplicate work and wasted context.
+
 Continue to collect_confirmations.
 </step>
 
@@ -376,7 +378,7 @@ Continue to commit_codebase_map.
 Commit the codebase map:
 
 ```bash
-gsd-sdk query commit "docs: map existing codebase" .planning/codebase/*.md
+gsd-sdk query commit "docs: map existing codebase" --files .planning/codebase/*.md
 ```
 
 Continue to offer_next.

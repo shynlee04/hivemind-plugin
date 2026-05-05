@@ -216,7 +216,7 @@ get-shit-done/
 
 **New Workflow:**
 - Implementation: `get-shit-done/workflows/{name}.md`
-- Usage: Reference from command with `@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/{name}.md`
+- Usage: Reference from command with `@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/{name}.md`
 
 **New Reference Document:**
 - Implementation: `get-shit-done/references/{name}.md`
@@ -229,12 +229,12 @@ get-shit-done/
 ## Special Directories
 
 **get-shit-done/**
-- Purpose: Resources installed to /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/
+- Purpose: Resources installed to /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/
 - Source: Copied by bin/install.js during installation
 - Committed: Yes (source of truth)
 
 **commands/**
-- Purpose: Slash commands installed to /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/commands/
+- Purpose: Slash commands installed to /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/commands/
 - Source: Copied by bin/install.js during installation
 - Committed: Yes (source of truth)
 

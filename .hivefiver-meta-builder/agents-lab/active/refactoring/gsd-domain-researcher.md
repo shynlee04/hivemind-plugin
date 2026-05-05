@@ -33,7 +33,7 @@ works via Bash and produces equivalent output.
 </documentation_lookup>
 
 <required_reading>
-Read `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ai-evals.md` — specifically the rubric design and domain expert sections.
+Read `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-evals.md` — specifically the rubric design and domain expert sections.
 </required_reading>
 
 <input>

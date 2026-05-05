@@ -2,10 +2,12 @@
   "$schema": "https://opencode.ai/config.json",
   "permission": {
     "read": {
-      "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/*": "allow"
+      "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/*": "allow",
+      "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/*": "allow"
     },
     "external_directory": {
-      "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/*": "allow"
+      "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/*": "allow",
+      "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/*": "allow"
     }
   }
 }

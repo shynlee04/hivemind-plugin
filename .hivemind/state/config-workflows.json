@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1778006968286,
+  "updatedAt": 1778012528154,
   "workflows": {
     "wf-moriss3t-ua6nft": {
       "id": "wf-moriss3t-ua6nft",
@@ -1601,6 +1601,70 @@
       "mode": "batch-modify",
       "startedAt": 1778006968284,
       "updatedAt": 1778006968284
+    },
+    "wf-mot2r314-3b7q9b": {
+      "id": "wf-mot2r314-3b7q9b",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1778012528153
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1778012528153
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1778012528153
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1778012528152,
+      "updatedAt": 1778012528153
     }
   }
 }

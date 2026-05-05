@@ -35,11 +35,24 @@ npm-debug.log*
 !.opencode/state/
 .harness/
 
-# Hivemind runtime state (per Q6 decision — canonical state root)
-!.hivemind/state/
-!.hivemind/event-tracker/*.json
-!.hivemind/event-tracker/*.md
-!.hivemind/journal/*.jsonl
+# Hivemind runtime state — gitignored (per Q6 + WS1-01-SPEC §7)
+.hivemind/state/
+.hivemind/event-tracker/
+.hivemind/journal/
+.hivemind/lineage/
+.hivemind/daily-notes/
+.hivemind/hm-brain/
+.hivemind/delegation-managements/
+.hivemind/task-managements/
+.hivemind/runtime/
+.hivemind/artifacts/
+.hivemind/sidecar/
+.hivemind/logs/
+.hivemind/poor-prompts/
+.hivemind/uat/
+
+# Hivemind committed — project config + structure (NOT gitignored)
+# configs.json, manifests/, hf-brain/, registries/, onboarding/, .gitkeep, README.md
 
 # Temporary files
 *.bak

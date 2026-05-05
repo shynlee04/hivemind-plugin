@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.38.5
+// gsd-hook-version: 1.40.0
 // GSD Workflow Guard — PreToolUse hook
 // Detects when Claude attempts file edits outside a GSD workflow context
 // (no active /gsd- skill or Task subagent) and injects an advisory warning.

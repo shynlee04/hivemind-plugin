@@ -278,7 +278,7 @@ Scan LEARNINGS.md files from recent phases for recurring patterns and surface pr
 **Invoke the graduation helper:**
 
 ```text
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/graduation.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/graduation.md
 ```
 
 This step is fully delegated to `graduation.md`. It handles guard checks (feature flag, window size, threshold), clustering, backlog filtering, HITL prompting, promotion writes, and STATE.md updates.
@@ -505,7 +505,7 @@ Exit skill and invoke skill("/gsd-discuss-phase [X+1] --auto ${GSD_WS}")
 
 **Also available:**
 - `/gsd-plan-phase [X+1] ${GSD_WS}` — skip discussion, plan directly
-- `/gsd-research-phase [X+1] ${GSD_WS}` — investigate unknowns
+- `/gsd-plan-phase --research-phase [X+1] ${GSD_WS}` — investigate unknowns
 
 ---
 ```
@@ -530,7 +530,7 @@ Exit skill and invoke skill("/gsd-discuss-phase [X+1] --auto ${GSD_WS}")
 
 **Also available:**
 - `/gsd-discuss-phase [X+1] ${GSD_WS}` — revisit context
-- `/gsd-research-phase [X+1] ${GSD_WS}` — investigate unknowns
+- `/gsd-plan-phase --research-phase [X+1] ${GSD_WS}` — investigate unknowns
 
 ---
 ```

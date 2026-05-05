@@ -52,7 +52,8 @@ If `PATH_NOT_FOUND` or `MANIFEST_NOT_FOUND`: display error and exit.
 Run the init query:
 
 ```bash
-INIT=$(gsd-sdk query init.ingest-docs)
+INIT=$(node "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/bin/gsd-tools.cjs" init ingest-docs)
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse `project_exists`, `planning_exists`, `has_git`, `project_path` from INIT.
@@ -195,6 +196,8 @@ Task({
 })
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read or synthesize any classified documents independently while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 The synthesizer writes:
 - `.planning/intel/decisions.md`, `.planning/intel/requirements.md`, `.planning/intel/constraints.md`, `.planning/intel/context.md`
 - `.planning/intel/SYNTHESIS.md`
@@ -261,6 +264,8 @@ Task({
 })
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more intel files, write planning artifacts, or create ROADMAP.md independently while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 </step>
 
 <step name="route_merge_mode">
@@ -285,7 +290,8 @@ Preview the merge diff to the user and gate via approve-revise-abort before writ
 Commit the ingest results:
 
 ```bash
-gsd-sdk query commit "docs: ingest {N} docs from {SCAN_PATH} (#2387)" \
+node "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/bin/gsd-tools.cjs" commit \
+  "docs: ingest {N} docs from {SCAN_PATH} (#2387)" --files \
   .planning/PROJECT.md \
   .planning/REQUIREMENTS.md \
   .planning/ROADMAP.md \

@@ -1,0 +1,11 @@
+{
+  "conversationLanguage": "en",
+  "documentsLanguage": "en",
+  "mode": "expert-advisor",
+  "userExpertLevel": "intermediate-high-level",
+  "delegationSystems": {
+    "native_task": true,
+    "delegate_task": true,
+    "background_delegation": false
+  }
+}

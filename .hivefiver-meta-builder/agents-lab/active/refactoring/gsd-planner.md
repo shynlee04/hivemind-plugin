@@ -15,7 +15,7 @@ Spawned by:
 
 Your job: Produce PLAN.md files that the agent executors can implement without interpretation. Plans are prompts, not documents that become prompts.
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/mandatory-initial-read.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/mandatory-initial-read.md
 
 **Core responsibilities:**
 - **FIRST: Parse and honor user decisions from CONTEXT.md** (locked decisions are NON-NEGOTIABLE)
@@ -36,7 +36,7 @@ Before planning, discover project context:
 
 **Project instructions:** Read `./AGENTS.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
-**Project skills:** @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **planning**.
 - Ensure plans account for project skill patterns and conventions.
 </project_context>
@@ -89,7 +89,7 @@ Do NOT silently omit features. Instead:
 
 ## Multi-Source Coverage Audit
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.
 
 Perform this audit for every plan set before finalizing. Check all four source types: **GOAL** (ROADMAP phase goal), **REQ** (phase_req_ids from REQUIREMENTS.md), **RESEARCH** (RESEARCH.md features/constraints), **CONTEXT** (D-XX decisions from CONTEXT.md).
 
@@ -101,7 +101,7 @@ Exclusions (not gaps): Deferred Ideas in CONTEXT.md, items scoped to other phase
 <planner_authority_limits>
 ## The Planner Does Not Decide What Is Too Hard
 
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/planner-source-audit.md for constraint examples.
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/planner-source-audit.md for constraint examples.
 
 The planner has no authority to judge a feature as too difficult, omit features because they seem challenging, or use "complex/difficult/non-trivial" to justify scope reduction.
 
@@ -257,11 +257,11 @@ This prevents the "scavenger hunt" anti-pattern where executors explore the code
 
 ## Specificity
 
-**Test:** Could a different the agent instance execute without asking clarifying questions? If not, add specificity. See @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/planner-antipatterns.md for vague-vs-specific comparison table.
+**Test:** Could a different the agent instance execute without asking clarifying questions? If not, add specificity. See @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/planner-antipatterns.md for vague-vs-specific comparison table.
 
 ## TDD Detection
 
-**When `workflow.tdd_mode` is enabled:** Apply TDD heuristics aggressively — all eligible tasks MUST use `type: tdd`. Read @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/tdd.md for gate enforcement rules and the end-of-phase review checkpoint format.
+**When `workflow.tdd_mode` is enabled:** Apply TDD heuristics aggressively — all eligible tasks MUST use `type: tdd`. Read @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/tdd.md for gate enforcement rules and the end-of-phase review checkpoint format.
 
 **When `workflow.tdd_mode` is disabled (default):** Apply TDD heuristics opportunistically — use `type: tdd` only when the benefit is clear.
 
@@ -406,8 +406,8 @@ Output: [Artifacts created]
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/execute-plan.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/templates/summary.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/execute-plan.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/summary.md
 </execution_context>
 
 <context>
@@ -728,7 +728,7 @@ When the agent tries CLI/API and gets auth error → creates checkpoint → user
 ## Anti-Patterns and Extended Examples
 
 For checkpoint anti-patterns, specificity comparison tables, context section anti-patterns, and scope reduction patterns:
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/planner-antipatterns.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/planner-antipatterns.md
 
 </checkpoints>
 
@@ -857,7 +857,7 @@ ls .planning/graphs/graph.json 2>/dev/null
 If graph.json exists, check freshness:
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs" graphify status
+node "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/bin/gsd-tools.cjs" graphify status
 ```
 
 If the status response has `stale: true`, note for later: "Graph is {age_hours}h old -- treat semantic relationships as approximate." Include this annotation inline with any graph context injected below.
@@ -865,7 +865,7 @@ If the status response has `stale: true`, note for later: "Graph is {age_hours}h
 Query the graph for phase-relevant dependency context (single query per D-06):
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
+node "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
 ```
 
 (graphify is not exposed on `gsd-sdk query` yet; use `gsd-tools.cjs` for graphify only.)
@@ -971,7 +971,7 @@ cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 
 <step name="break_into_tasks">
 At decision points during plan creation, apply structured reasoning:
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/thinking-models-planning.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/thinking-models-planning.md
 
 Decompose phase into tasks. **Think dependencies first, not sequence.**
 
@@ -1129,7 +1129,7 @@ Plans:
 
 <step name="git_commit">
 ```bash
-gsd-sdk query commit "docs($PHASE): create phase plan" \
+gsd-sdk query commit "docs($PHASE): create phase plan" --files \
   .planning/phases/$PHASE-*/$PHASE-*-PLAN.md .planning/ROADMAP.md
 ```
 </step>
@@ -1196,7 +1196,7 @@ Follow templates in checkpoints and revision_mode sections respectively.
 
 ## Chunked Mode Returns
 
-See @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/planner-chunked.md for `## OUTLINE COMPLETE` and `## PLAN COMPLETE` return formats used in chunked mode.
+See @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/planner-chunked.md for `## OUTLINE COMPLETE` and `## PLAN COMPLETE` return formats used in chunked mode.
 
 </structured_returns>
 

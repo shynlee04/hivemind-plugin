@@ -4,7 +4,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { escapeRegex, loadConfig, getMilestoneInfo, getMilestonePhaseFilter, normalizeMd, planningDir, planningPaths, output, error, atomicWriteFileSync } = require('./core.cjs');
+const { escapeRegex, loadConfig, getMilestoneInfo, getMilestonePhaseFilter, normalizeMd, output, error, atomicWriteFileSync } = require('./core.cjs');
+const { planningDir, planningPaths } = require('./planning-workspace.cjs');
 const { extractFrontmatter, reconstructFrontmatter } = require('./frontmatter.cjs');
 
 // Cache disk scan results from buildStateFrontmatter per cwd per process (#1967).
@@ -1683,6 +1684,92 @@ function cmdStatePrune(cwd, options, raw) {
   }, raw, totalPruned > 0 ? 'true' : 'false');
 }
 
+/**
+ * Mark the current phase as COMPLETE in STATE.md.
+ * Updates Status, Last Activity, and the Current Position section to reflect
+ * that the phase execution is finished and the project is ready for the next phase.
+ * Implements the `gsd state complete-phase` subcommand (issue #2735).
+ */
+function cmdStateCompletePhase(cwd, raw) {
+  const statePath = planningPaths(cwd).state;
+  if (!fs.existsSync(statePath)) {
+    output({ error: 'STATE.md not found' }, raw);
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const updated = [];
+  let resolvedPhase = '?';
+
+  readModifyWriteStateMd(statePath, (content) => {
+    // Read the current phase number for descriptive messages.
+    //
+    // The 'Phase' fallback can match the decorated body line under
+    // `## Current Position` (e.g. `Phase: 01 (Foo) — EXECUTING`), which would
+    // flow downstream into messy `Status: Phase 01 (Foo) — EXECUTING complete`
+    // output. Strip everything past the leading numeric/decimal token so the
+    // fallback path produces a clean phase identifier matching the canonical
+    // `Current Phase` field. CodeRabbit nitpick on PR #2761.
+    const rawPhase = stateExtractField(content, 'Current Phase') ||
+                     stateExtractField(content, 'Phase') ||
+                     '';
+    const phaseToken = rawPhase.match(/^\s*([\w.-]+)/);
+    const currentPhase = phaseToken ? phaseToken[1] : '?';
+    resolvedPhase = currentPhase;
+
+    // Update Status field
+    const statusValue = `Phase ${currentPhase} complete`;
+    let result = stateReplaceField(content, 'Status', statusValue);
+    if (result) { content = result; updated.push('Status'); }
+
+    // Update Last Activity date
+    result = stateReplaceField(content, 'Last Activity', today);
+    if (result) { content = result; updated.push('Last Activity'); }
+
+    // Update Last Activity Description
+    const activityDesc = `Phase ${currentPhase} marked complete`;
+    result = stateReplaceField(content, 'Last Activity Description', activityDesc);
+    if (result) { content = result; updated.push('Last Activity Description'); }
+
+    // Update ## Current Position section
+    const positionPattern = /(##\s*Current Position\s*\n)([\s\S]*?)(?=\n##|$)/i;
+    const positionMatch = content.match(positionPattern);
+    if (positionMatch) {
+      const header = positionMatch[1];
+      let posBody = positionMatch[2];
+
+      // Update Phase line to show COMPLETE
+      const newPhase = `Phase: ${currentPhase} — COMPLETE`;
+      if (/^Phase:/m.test(posBody)) {
+        posBody = posBody.replace(/^Phase:.*$/m, newPhase);
+      }
+
+      // Update Status line if present
+      const newStatus = `Status: Phase ${currentPhase} complete`;
+      if (/^Status:/m.test(posBody)) {
+        posBody = posBody.replace(/^Status:.*$/m, newStatus);
+      }
+
+      // Update Last activity line if present
+      const newActivity = `Last activity: ${today} -- Phase ${currentPhase} marked complete`;
+      if (/^Last activity:/im.test(posBody)) {
+        posBody = posBody.replace(/^Last activity:.*$/im, newActivity);
+      }
+
+      content = content.replace(positionPattern, `${header}${posBody}`);
+      updated.push('Current Position');
+    }
+
+    return content;
+  }, cwd);
+
+  output(
+    { updated, phase: resolvedPhase },
+    raw,
+    updated.length > 0 ? 'true' : 'false',
+  );
+}
+
 module.exports = {
   stateExtractField,
   stateReplaceField,
@@ -1705,6 +1792,7 @@ module.exports = {
   cmdStateJson,
   cmdStateBeginPhase,
   cmdStatePlannedPhase,
+  cmdStateCompletePhase,
   cmdStateValidate,
   cmdStateSync,
   cmdStatePrune,

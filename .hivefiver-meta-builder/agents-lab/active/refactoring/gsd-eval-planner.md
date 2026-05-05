@@ -10,7 +10,7 @@ Turn domain rubric ingredients into measurable, tooled evaluation criteria. Writ
 </role>
 
 <required_reading>
-Read `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ai-evals.md` before planning. This is your evaluation framework.
+Read `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-evals.md` before planning. This is your evaluation framework.
 </required_reading>
 
 <input>

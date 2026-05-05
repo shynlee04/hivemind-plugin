@@ -1,6 +1,6 @@
 ---
 description: Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)
-argument-hint: "[design idea to explore] [--quick] [--text] or [frontier]"
+argument-hint: "[design idea to explore] [--quick] [--text] [--wrap-up] or [frontier]"
 tools:
   read: true
   write: true
@@ -28,12 +28,13 @@ Does not require `/gsd-new-project` — auto-creates `.planning/sketches/` if ne
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/sketch.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-theme-system.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-interactivity.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-tooling.md
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/sketch-variant-patterns.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch-wrap-up.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-theme-system.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-interactivity.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-tooling.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>
@@ -45,9 +46,13 @@ Design idea: $ARGUMENTS
 
 **Available flags:**
 - `--quick` — Skip mood/direction intake, jump straight to decomposition and building. Use when the design direction is already clear.
+- `--wrap-up` — Package sketch design findings into a persistent project skill for future build conversations. Runs the sketch-wrap-up workflow.
 </context>
 
 <process>
-Execute the sketch workflow from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/workflows/sketch.md end-to-end.
+Parse the first token of $ARGUMENTS:
+- If it is `--wrap-up`: strip the flag, execute the sketch-wrap-up workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch-wrap-up.md end-to-end.
+- Otherwise: execute the sketch workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch.md end-to-end.
+
 Preserve all workflow gates (intake, decomposition, target stack research, variant evaluation, MANIFEST updates, commit patterns).
 </process>

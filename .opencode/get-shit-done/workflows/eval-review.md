@@ -5,7 +5,7 @@ Use after /gsd-execute-phase to verify that the evaluation strategy from AI-SPEC
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/references/ai-evals.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-evals.md
 </required_reading>
 
 <process>
@@ -78,7 +78,7 @@ Build file list for auditor:
 Build prompt:
 
 ```markdown
-Read /Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-eval-auditor.md for instructions.
+Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-eval-auditor.md for instructions.
 
 <objective>
 Conduct evaluation coverage audit of Phase {phase_number}: {phase_name}

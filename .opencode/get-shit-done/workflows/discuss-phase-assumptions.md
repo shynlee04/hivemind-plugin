@@ -236,7 +236,7 @@ keeps raw file contents out of the main context window, protecting token budget.
 **Resolve calibration tier (if USER-PROFILE.md exists):**
 
 ```bash
-PROFILE_PATH="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md"
 ```
 
 If file exists at PROFILE_PATH:
@@ -294,6 +294,8 @@ ${AGENT_SKILLS_ANALYZER}
 """)
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, analyze the codebase, or process assumptions while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 Parse the subagent's response. Extract:
 - `assumptions[]` — each with area, statement, evidence, consequence, confidence
 - `needs_research[]` — topics requiring external research (may be empty)
@@ -324,6 +326,8 @@ For each topic, return:
 Use Context7 (resolve-library-id then query-docs) for library-specific questions.
 Use WebSearch for ecosystem/best-practice questions.
 """)
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not independently research any of these topics while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work and wasted context. Only resume when the subagent result is available.
 ```
 
 Merge findings back into assumptions:
@@ -548,7 +552,7 @@ Write file.
 Commit phase context and discussion log:
 
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): capture phase context (assumptions mode)" "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
+gsd-sdk query commit "docs(${padded_phase}): capture phase context (assumptions mode)" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
 ```
 
 Confirm: "Committed: docs(${padded_phase}): capture phase context (assumptions mode)"
@@ -566,7 +570,7 @@ gsd-sdk query state.record-session \
 Commit STATE.md:
 
 ```bash
-gsd-sdk query commit "docs(state): record phase ${PHASE} context session" .planning/STATE.md
+gsd-sdk query commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
 ```
 </step>
 
