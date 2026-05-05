@@ -16,6 +16,8 @@ import {
   getEventSessionID,
   getSessionMessages,
 } from "../lib/session-api.js"
+import { toCompactionPacket, type CompactionExtras } from "../lib/prompt-packet/compaction-preservation.js"
+import type { KernelPacket } from "../lib/prompt-packet/kernel-packet.js"
 import type { HookDependencies } from "./types.js"
 
 type CompactingInput = { sessionID?: unknown }
@@ -279,6 +281,59 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
             ),
           ].join("\n"),
         )
+      }
+
+      // Preserve intake result across compaction
+      if (deps.getIntake) {
+        const intake = deps.getIntake(sessionID)
+        if (intake) {
+          const extras: CompactionExtras = {
+            todo_authority: null,
+            return_contract: null,
+          }
+
+          // Build a minimal kernel packet from intake + continuity
+          const kernelPacket: KernelPacket = {
+            packet_version: "1.0.0",
+            packet_type: "kernel",
+            session_id: sessionID,
+            parent_session_id: null,
+            root_session_id: continuity?.metadata.delegation?.rootID ?? null,
+            title: "unknown",
+            description: continuity?.metadata.description ?? "",
+            purpose_category: intake.purpose.purpose,
+            agent_type: continuity?.metadata.delegation?.agent ?? null,
+            model: continuity?.metadata.delegation?.model ?? null,
+            temperature: null,
+            tool_allow_list: [],
+            tool_deny_list: [],
+            constraints: continuity?.metadata.constraints ?? [],
+            scope: null,
+            project_root: null,
+            detected_language: intake.language.language,
+            detected_frameworks: [],
+            detected_project_type: "unknown",
+            codemap_file_count: 0,
+            todo_active: [],
+            todo_completed_count: 0,
+            todo_total_count: 0,
+            execution_lineage: [],
+            recent_tool_calls: [],
+            session_history_summary: "",
+            session_created_at: null,
+            session_updated_at: continuity?.metadata.updatedAt ?? null,
+            session_status: continuity?.metadata.status ?? "unknown",
+            lifecycle_phase: lifecycle?.phase ?? "unknown",
+            queue_key: continuity?.metadata.delegation?.queueKey ?? null,
+            run_mode: lifecycle?.runMode ?? null,
+            delegation_depth: continuity?.metadata.delegation?.depth ?? 0,
+          }
+
+          const compactionPacket = toCompactionPacket(kernelPacket, extras)
+          ;(output.context as string[]).push(
+            "Intake compaction preservation:\n" + JSON.stringify(compactionPacket, null, 2)
+          )
+        }
       }
     },
   }
