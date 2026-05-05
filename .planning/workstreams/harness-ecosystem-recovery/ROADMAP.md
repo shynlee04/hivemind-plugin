@@ -74,9 +74,9 @@ Wave 4 — Verification:
 
 **Goal:** Remove or wire orphan modules. Reduce dead code ratio from 13.7% to <5% of src/lib/.
 
-**Status:** Blocked
+**Status:** Ready
 
-**Depends on:** HER-1 (documentation must be accurate before code changes)
+**Depends on:** HER-1 ✅ (COMPLETE)
 
 **Requirements:** TBD
 
@@ -98,9 +98,9 @@ Wave 4 — Verification:
 
 **Goal:** Expand SDK integration: handle unhandled event types, implement hook write-safety, test L2→L3 delegation depth.
 
-**Status:** Blocked
+**Status:** Ready
 
-**Depends on:** HER-1 (coordinator fix)
+**Depends on:** HER-1 ✅ (COMPLETE)
 
 **Requirements:** TBD
 
@@ -110,9 +110,9 @@ Wave 4 — Verification:
 
 **Goal:** Reduce agent overlap (<50% keyword overlap across all pairs), specialize ambiguous agents.
 
-**Status:** Blocked
+**Status:** Ready
 
-**Depends on:** HER-1 (documentation)
+**Depends on:** HER-1 ✅ (COMPLETE)
 
 **Requirements:** TBD
 
