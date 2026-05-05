@@ -5,7 +5,7 @@
  * route SDK events to the lifecycle manager.
  *
  * Stripped in 14-01: injection-engine, governance-engine removed.
- * Stripped in 35: notification-handler, messages-transform removed (dead code).
+ * Stripped in 35: messages-transform removed (dead code). Notification-handler re-activated in Phase 16.2.
  */
 import { asString, getNestedValue, isObject } from "../lib/helpers.js"
 import { getEventSessionID } from "../lib/session-api.js"

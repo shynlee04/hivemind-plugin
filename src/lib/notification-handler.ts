@@ -9,7 +9,7 @@
 
 import { sendPrompt, type OpenCodeClient } from "./session-api.js"
 import type { Delegation } from "./types.js"
-import type { SessionContinuityRecord, TaskNotification } from "./types.js"
+import type { TaskNotification } from "./types.js"
 import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
 
 const MAX_PREVIEW_LENGTH = 500
@@ -89,58 +89,6 @@ export function formatToastMessage(task: TaskNotification): string {
           : "⊘"
   const duration = task.duration !== undefined ? ` [${formatDuration(task.duration)}]` : ""
   return `${icon} ${task.description} ${task.status} (${task.agent})${duration}`
-}
-
-export function buildTaskNotificationFromContinuity(
-  continuity: SessionContinuityRecord,
-  status: TaskNotification["status"],
-  error?: string,
-): TaskNotification {
-  const launchedAt = continuity.metadata.lifecycle?.launchedAt
-  const completedAt = continuity.metadata.lifecycle?.completedAt ?? Date.now()
-  const duration = launchedAt ? completedAt - launchedAt : undefined
-  const outputLink = `session://${continuity.sessionID}`
-  const agent = continuity.metadata.delegation?.agent ?? "unknown"
-  const category = continuity.metadata.category
-  const briefSummary =
-    status === "started"
-      ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} started work on "${continuity.metadata.description}". Session is running.`
-      : status === "failed"
-        ? `Task failed: ${error ?? "unknown error"}.`
-        : status === "cancelled"
-          ? "Task was cancelled."
-          : category === "research" || category === "deep"
-            ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed research on "${continuity.metadata.description}". Review the session for findings.`
-            : category === "review"
-              ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed review of "${continuity.metadata.description}". Check for identified issues.`
-              : `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed work on "${continuity.metadata.description}". Check session output for details.`
-
-  const capturedResult = continuity.metadata.resultCapture
-  const resultPreview = capturedResult?.resultText ?? undefined
-  const artifacts = capturedResult?.artifactPaths && capturedResult.artifactPaths.length > 0
-    ? capturedResult.artifactPaths
-    : undefined
-  const commits = capturedResult?.gitCommits && capturedResult.gitCommits.length > 0
-    ? capturedResult.gitCommits
-    : undefined
-
-  const effectiveSummary = status === "completed" && capturedResult?.resultText
-    ? capturedResult.resultText.slice(0, 200).trim() + (capturedResult.resultText.length > 200 ? "..." : "")
-    : briefSummary
-
-  return {
-    sessionID: continuity.sessionID,
-    description: continuity.metadata.description ?? "Delegated task",
-    agent: String(agent),
-    status,
-    error,
-    resultPreview,
-    briefSummary: effectiveSummary,
-    outputLink,
-    duration,
-    artifacts,
-    commits,
-  }
 }
 
 export type ToastFn = (message: string) => void
