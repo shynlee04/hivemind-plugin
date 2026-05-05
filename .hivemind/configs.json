@@ -1,11 +1,29 @@
 {
-  "conversationLanguage": "en",
-  "documentsLanguage": "en",
+  "conversation_language": "en",
+  "documents_and_artifacts_language": "en",
   "mode": "expert-advisor",
-  "userExpertLevel": "intermediate-high-level",
-  "delegationSystems": {
+  "user_expert_level": "intermediate-high-level",
+  "delegation_systems": {
     "native_task": true,
     "delegate_task": true,
     "background_delegation": false
+  },
+  "parallelization": true,
+  "atomic_commit": true,
+  "commit_docs": true,
+  "workflow": {
+    "research": true,
+    "cross_session_tasks_dependencies_validation": false,
+    "trajectory_control": false,
+    "advanced_continuity_validation": false,
+    "task_plus_enabled": false,
+    "plan_check": true,
+    "verifier": true,
+    "ui_phase": false,
+    "ui_safety_gate": false,
+    "ai_integration_phase": false,
+    "research_before_questions": true,
+    "discuss_mode": "sufficient-phase-discussion",
+    "use_worktrees": false
   }
 }

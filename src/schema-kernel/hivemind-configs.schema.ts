@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const HIVEMIND_CONFIGS_SCHEMA_VERSION = "1.0.0"
+export const HIVEMIND_CONFIGS_SCHEMA_VERSION = "2.0.0"
 
 // ---------------------------------------------------------------------------
 // 1. Supported languages — shared enum for conversation and document output
@@ -79,7 +79,83 @@ export const UserExpertLevelSchema = z.enum([
 export type UserExpertLevel = z.infer<typeof UserExpertLevelSchema>
 
 // ---------------------------------------------------------------------------
-// 4. Delegation systems — enabled delegation modes
+// 4. Discuss mode — GSD discuss-phase mode selection
+// ---------------------------------------------------------------------------
+
+/**
+ * Phase discussion intensity controlling how the discuss-phase skill operates.
+ *
+ * - `sufficient-phase-discussion`: Gather enough context, then move on.
+ * - `intensive-phase-discussion`: Deep exploration before planning.
+ * - `skip-phase-discussion`: Skip discussion, go straight to planning.
+ *
+ * @example
+ * ```typescript
+ * const result = DiscussModeSchema.safeParse("sufficient-phase-discussion")
+ * // result.success === true
+ * ```
+ */
+export const DiscussModeSchema = z.enum([
+  "sufficient-phase-discussion",
+  "intensive-phase-discussion",
+  "skip-phase-discussion",
+])
+
+export type DiscussMode = z.infer<typeof DiscussModeSchema>
+
+// ---------------------------------------------------------------------------
+// 5. Workflow config — runtime feature toggles
+// ---------------------------------------------------------------------------
+
+/**
+ * Workflow configuration controlling runtime feature toggles.
+ * Each toggle controls a separate runtime feature — implemented as OpenCode primitives,
+ * custom tools, engines, or event-hook injections.
+ *
+ * @example
+ * ```typescript
+ * const result = WorkflowConfigSchema.safeParse({
+ *   research: true,
+ *   plan_check: true,
+ *   discuss_mode: "sufficient-phase-discussion",
+ * })
+ * // result.success === true
+ * ```
+ */
+/**
+ * Internal workflow config object schema (without outer default).
+ * Used to generate a fully-resolved default value for the outer schema.
+ *
+ * @internal
+ */
+const WorkflowConfigInnerSchema = z.object({
+  research: z.boolean().default(true),
+  cross_session_tasks_dependencies_validation: z.boolean().default(false),
+  trajectory_control: z.boolean().default(false),
+  advanced_continuity_validation: z.boolean().default(false),
+  task_plus_enabled: z.boolean().default(false),
+  plan_check: z.boolean().default(true),
+  verifier: z.boolean().default(true),
+  ui_phase: z.boolean().default(false),
+  ui_safety_gate: z.boolean().default(false),
+  ai_integration_phase: z.boolean().default(false),
+  research_before_questions: z.boolean().default(true),
+  discuss_mode: DiscussModeSchema.default("sufficient-phase-discussion"),
+  use_worktrees: z.boolean().default(false),
+})
+
+/**
+ * Workflow config schema with a factory default that produces
+ * fully-resolved values (satisfies Zod v4 `.default()` type requirements).
+ */
+export const WorkflowConfigSchema = WorkflowConfigInnerSchema.default(
+  () => WorkflowConfigInnerSchema.parse({}),
+)
+
+export type WorkflowConfig = z.infer<typeof WorkflowConfigSchema>
+
+// ---------------------------------------------------------------------------
+// 6. Delegation systems — enabled delegation modes
 // ---------------------------------------------------------------------------
 
 /**
@@ -114,17 +190,55 @@ export const DelegationSystemsSchema = z
 export type DelegationSystems = z.infer<typeof DelegationSystemsSchema>
 
 // ---------------------------------------------------------------------------
-// 5. Hivemind configs — top-level .hivemind/configs.json schema
+// 7. Legacy key migration — camelCase → snake_case
 // ---------------------------------------------------------------------------
 
 /**
- * Schema for `.hivemind/configs.json` — the 5-field minimal runtime configuration.
+ * Maps legacy camelCase JSON keys to canonical snake_case keys.
+ * Applied during `readConfigs()` to support backward-compatible config files.
+ *
+ * @example
+ * ```typescript
+ * // Input: { "conversationLanguage": "en" }
+ * // After migration: { "conversation_language": "en" }
+ * ```
+ */
+export const LEGACY_KEY_MAP: Record<string, string> = {
+  conversationLanguage: "conversation_language",
+  documentsLanguage: "documents_and_artifacts_language",
+  userExpertLevel: "user_expert_level",
+  delegationSystems: "delegation_systems",
+} as const
+
+/**
+ * Applies legacy camelCase → snake_case key migration to a raw config object.
+ * Mutates the input object in-place for efficiency.
+ *
+ * @param raw - The raw parsed JSON object from configs.json.
+ * @returns The same object with legacy keys renamed to snake_case.
+ */
+export function migrateKeys(raw: Record<string, unknown>): Record<string, unknown> {
+  for (const [oldKey, newKey] of Object.entries(LEGACY_KEY_MAP)) {
+    if (oldKey in raw && !(newKey in raw)) {
+      raw[newKey] = raw[oldKey]
+      delete raw[oldKey]
+    }
+  }
+  return raw
+}
+
+// ---------------------------------------------------------------------------
+// 8. Hivemind configs — top-level .hivemind/configs.json schema
+// ---------------------------------------------------------------------------
+
+/**
+ * Schema for `.hivemind/configs.json` — the full skeleton v2 §9.1 runtime configuration.
  * Loaded at every front-facing session start and reloaded after each user prompt.
  *
  * Unknown fields are stripped (lenient parsing) to support forward-compatible
  * configs from future versions without rejecting the entire file.
  *
- * @see WS1-01-SPEC.md §3 for the full schema specification.
+ * @see SKELETON-INTEGRATED-SYSTEMATIC-APPROACH-v2 §9.1 for the full schema specification.
  *
  * @example
  * ```typescript
@@ -132,8 +246,9 @@ export type DelegationSystems = z.infer<typeof DelegationSystemsSchema>
  *
  * // Validate a config object
  * const result = HivemindConfigsSchema.safeParse({
- *   conversationLanguage: "en",
+ *   conversation_language: "en",
  *   mode: "expert-advisor",
+ *   workflow: { research: true, plan_check: true },
  * })
  *
  * // Read from disk
@@ -142,18 +257,22 @@ export type DelegationSystems = z.infer<typeof DelegationSystemsSchema>
  */
 export const HivemindConfigsSchema = z
   .object({
-    conversationLanguage: SupportedLanguageSchema.default("en"),
-    documentsLanguage: SupportedLanguageSchema.default("en"),
+    conversation_language: SupportedLanguageSchema.default("en"),
+    documents_and_artifacts_language: SupportedLanguageSchema.default("en"),
     mode: HivemindModeSchema.default("expert-advisor"),
-    userExpertLevel: UserExpertLevelSchema.default("intermediate-high-level"),
-    delegationSystems: DelegationSystemsSchema,
+    user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
+    delegation_systems: DelegationSystemsSchema,
+    parallelization: z.boolean().default(true),
+    atomic_commit: z.boolean().default(true),
+    commit_docs: z.boolean().default(true),
+    workflow: WorkflowConfigSchema,
   })
   .strip()
 
 export type HivemindConfigs = z.infer<typeof HivemindConfigsSchema>
 
 // ---------------------------------------------------------------------------
-// 6. Defaults helper
+// 9. Defaults helper
 // ---------------------------------------------------------------------------
 
 /**
@@ -174,7 +293,7 @@ export function getDefaultConfigs(): HivemindConfigs {
 }
 
 // ---------------------------------------------------------------------------
-// 7. Read/write helpers
+// 10. Read/write helpers
 // ---------------------------------------------------------------------------
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
@@ -213,7 +332,11 @@ export function readConfigs(projectRoot: string): HivemindConfigs {
 
   try {
     const raw = readFileSync(configPath, "utf8")
-    const parsed: unknown = JSON.parse(raw)
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+
+    // Apply legacy camelCase → snake_case key migration
+    migrateKeys(parsed)
+
     const result = HivemindConfigsSchema.safeParse(parsed)
 
     if (result.success) {
@@ -256,6 +379,7 @@ export function writeConfigs(projectRoot: string, config: HivemindConfigs): Hive
   const validated = HivemindConfigsSchema.parse(config)
   const configPath = getConfigsPath(projectRoot)
   mkdirSync(dirname(configPath), { recursive: true })
+  // Always write canonical snake_case JSON keys (schema already uses snake_case)
   writeFileSync(configPath, `${JSON.stringify(validated, null, 2)}\n`, "utf8")
   return validated
 }
