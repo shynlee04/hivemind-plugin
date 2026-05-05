@@ -404,7 +404,7 @@ Format of documentations, governance artifacts, state manifestations, auto-write
         3. commands → related feature `(f-04)` (below I have mentioned the new feature called `hm-auto-commands` that classify, conditionally wired, stack with the above two
         4. tools , the OpenCode innate tools - related features `(f-03a), (f-03b), (f-03c)` `(f-03d)` `(f-03e)` `(f-03f)` 
         5. mcp tools - take the installed and active users’ mcp servers + tools - related features `(f-03a), (f-03b), (f-03c)` `(f-03d)` `(f-03e)` `(f-03f)`
-        6. custom tools - take both `hivemind's` (this project) and the users’ projects’ custom tools stored under `.opencode/tools/` related features `(f-03a), (f-03b), (f-03c)` `(f-03d)` `(f-03e)` `(f-03f)`
+        6. custom tools - take both `hivemind's` (this project) and the users’ projects’ custom tools stored under `.opencode/tools/` related features `(f-03a), (f-03b), (f-03c)` `(f-03d)` `(f-03e)` `(f-03f)` 
 3. To make the number 2 works these gaps and new features must be designed (remember to classify into 4 paths, 2 linages ) - though impacted and related to both linages, the uses of each linage per feature are different - so please group and design tools, engines, hooks, etc with these mindsets - `hf` linage uses are to configure, stacking, chaining, wiring with the session-chat and granular step-by-step user-agent conversation to compilation ; meanwhile `hm` linage benefit and utilize these setups into the project’s workflows and developments
 
 ```markdown
@@ -647,6 +647,10 @@ The `f-09,10,11,n` - are also very lacking toward these 3 departments:
 - the utilizations of OpenCode sdk, server api `injections` (think about how the `(f-03x)` and `(f-04)` as primitives can be granularly controlled and injected) and `hooks` toward events subscriptions to steer, intercept, manipulate the workflows’ based on conditions and events https://opencode.ai/docs/plugins/#events  → for even advanced features developments please look at the https://opencode.ai/docs/sdk/ and https://opencode.ai/docs/server/
 - the specialist of tools to facilitate these 3 departments (each and every tools must be classified  and wired into hierarchy, agents classes and levels, workflows, task-driven, purpose-driven, are comprehensively designed to  categories - with valid
 
+### REFERENCE TO CUSTOM TOOLS CRITERIA
+
+- `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.planning/CUSTOM-TOOLS-CRITERIA-2026-05-05.md`
+
 ```markdown
 /Users/apple/hivemind-plugin/.worktrees/product-detox/.archive/legacy-src-20260314-140720/hooks
 /Users/apple/hivemind-plugin/.worktrees/product-detox/.archive/legacy-src-20260314-140720/hooks/session_coherence
@@ -818,3 +822,21 @@ The `f-09,10,11,n` - are also very lacking toward these 3 departments:
 ```
 
 ---
+
+<aside>
+💡
+
+## Repos of other frameworks/projects - as the harness and meta-framework running under OpenCode for learning and synthesis with improvements
+
+**IMPORTANT HEAD-UP!**: 
+
+- For any “other frameworks/projects synthesis” - such as gsd-* https://github.com/gsd-build/get-shit-done or OMO https://github.com/code-yeongyu/oh-my-openagent → DO NOT SIMPLY INGEST everything and throw-in without deeply synthesize towards the HIVEMIND philosophies, concepts and visions
+- And as above all those editions of primitives - config, naming, prefixes, suffixes, designs as for workflows and harness features must completely be transformed, adapt, and integrate coherently toward `the Hivemind`  under OpenCode (with specs compliance, harness lifecycles validation, ecosystem validation) - also, the gsd-* (or any keyword as prefixes or suffixes in skills, agents, commands, workflows, custom tools, etc are not expected to ship with the project and they are there just because I am using GSD framework to develop this - and if any “synthesis” that the units are expected to ship-with → they must follow the above rules and mindsets
+- other  repos of OpenCode projects and plugins utilizing OpenCode SDK, plugins , client-server API - can be found here with these note-worthy repos vs. harness features categories
+    1. Context-managements categories:
+        1. https://github.com/Opencode-DCP/opencode-dynamic-context-pruning
+    2. Harness features addressing  OpenCode innate shortcomings - the task, command and delegation feature class
+        1. https://github.com/shekohex/opencode-ptyhttps://github.com/shekohex/opencode-pty#features  → resolve non-interactive commands, background runnings and multiple sessions - with OMO synthesis of background tasks, background agent, polling system to address this repo’s known limitations https://github.com/shekohex/opencode-pty#permissions
+        2. related to the above is the background-agent repo https://github.com/kdcokenny/opencode-background-agents 
+    3. A  **HUGE LIST OF CURATED OPENCODE ECOSYSTEM PROJECTS and PLUGINS -**  https://github.com/awesome-opencode/awesome-opencode - check this directory very often as you need to synthesize for feature-development, learn patterns, ideating and knowledge ingestion - I have also made a local copy of this under this path `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.planning/research/OPENCODE-ECOSYSTEM-REPO-DIRECTORIES.md`
+</aside>
