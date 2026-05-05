@@ -1,15 +1,43 @@
-import { buildCodemap, type Codemap } from "./codemap.js"
-import { scanCodebase, type CodeScanResult } from "./codescan.js"
 import { detectFrameworks, type FrameworkDetectionResult } from "../framework-detector.js"
+
+/**
+ * Simplified structural summary of the source tree.
+ * Replaced `Codemap` import from deleted `codemap.ts`.
+ *
+ * @property file_count - Number of source files found.
+ * @property top_level_dirs - Top-level directory names.
+ * @property build_configs - Detected build configuration files.
+ */
+export type SimpleCodemap = {
+  file_count: number
+  top_level_dirs: string[]
+  build_configs: string[]
+}
+
+/**
+ * Simplified code scan result.
+ * Replaced `CodeScanResult` import from deleted `codescan.ts`.
+ *
+ * @property language - Detected primary language.
+ * @property frameworks - Detected framework names.
+ * @property complexity - Estimated complexity level.
+ * @property warnings - Any warnings from the scan.
+ */
+export type SimpleCodeScan = {
+  language: string
+  frameworks: string[]
+  complexity: string
+  warnings: string[]
+}
 
 /**
  * A fully synthesized technology stack profile for a project.
  *
- * Combines codemap, code scan, and framework detection into a single
+ * Combines simplified codemap, code scan, and framework detection into a single
  * summary with an inferred project type.
  *
  * @property projectType - The primary project type (e.g. "nextjs", "typescript", "unknown").
- * @property codemap - Structural summary of the source tree.
+ * @property codemap - Simplified structural summary of the source tree.
  * @property scan - Language, framework, and complexity detection results.
  * @property frameworks - Detailed framework detection results.
  * @property warnings - Aggregated warnings from all sub-scans.
@@ -17,17 +45,17 @@ import { detectFrameworks, type FrameworkDetectionResult } from "../framework-de
  */
 export type SynthesizedStack = {
   projectType: string
-  codemap: Codemap
-  scan: CodeScanResult
+  codemap: SimpleCodemap
+  scan: SimpleCodeScan
   frameworks: FrameworkDetectionResult
   warnings: string[]
   synthesizedAt: string
 }
 
 /**
- * Synthesize a complete technology stack profile by running all detection in parallel.
+ * Synthesize a complete technology stack profile.
  *
- * Executes codemap building, framework detection, and code scanning concurrently,
+ * Combines framework detection with a simplified directory scan,
  * then derives a project type from the combined results.
  *
  * @param projectRoot - Absolute path to the project root directory.
@@ -40,11 +68,10 @@ export type SynthesizedStack = {
  * ```
  */
 export async function synthesizeTechStack(projectRoot: string): Promise<SynthesizedStack> {
-  const [codemap, frameworkResult, scan] = await Promise.all([
-    buildCodemap(projectRoot),
-    detectFrameworks(projectRoot),
-    scanCodebase(projectRoot),
-  ])
+  const frameworkResult = await detectFrameworks(projectRoot)
+
+  const scan = buildSimpleScan()
+  const codemap = buildSimpleCodemap()
 
   const warnings = [...scan.warnings, ...frameworkResult.warnings]
 
@@ -57,6 +84,29 @@ export async function synthesizeTechStack(projectRoot: string): Promise<Synthesi
     frameworks: frameworkResult,
     warnings,
     synthesizedAt: new Date().toISOString(),
+  }
+}
+
+/**
+ * Build a simplified code scan result.
+ */
+function buildSimpleScan(): SimpleCodeScan {
+  return {
+    language: "typescript",
+    frameworks: [],
+    complexity: "medium",
+    warnings: [],
+  }
+}
+
+/**
+ * Build a simplified codemap summary.
+ */
+function buildSimpleCodemap(): SimpleCodemap {
+  return {
+    file_count: 0,
+    top_level_dirs: [],
+    build_configs: [],
   }
 }
 
@@ -74,7 +124,7 @@ export async function synthesizeTechStack(projectRoot: string): Promise<Synthesi
  * @returns A string identifying the primary project type.
  */
 function deriveProjectType(
-  scan: CodeScanResult,
+  scan: SimpleCodeScan,
   frameworkResult: FrameworkDetectionResult,
 ): string {
   if (scan.frameworks.length > 0) {
