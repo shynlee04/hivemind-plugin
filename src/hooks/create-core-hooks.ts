@@ -66,11 +66,32 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
     },
 
     "system.transform": async (
-      _input: SystemInput,
-      _output: SystemOutput,
+      input: SystemInput,
+      output: SystemOutput,
     ): Promise<void> => {
-      // System injection stripped in 14-01 clean slate
-      // Will be restored in Plan 14-02 (DelegationManager)
+      const sessionID = asString(getNestedValue(input, ["sessionID"]))
+      if (!sessionID || !deps.getIntake) return
+
+      const intake = deps.getIntake(sessionID)
+      if (!intake) return
+
+      const contextLines = [
+        "Session intake context:",
+        `- purpose: ${intake.purpose.purpose} (confidence: ${intake.purpose.confidence})`,
+        `- language: ${intake.language.language}`,
+        `- routing_target: ${intake.routingTarget}`,
+      ]
+
+      if (intake.profile.communicationStyle) {
+        contextLines.push(`- communication_style: ${intake.profile.communicationStyle}`)
+      }
+      if (intake.warnings.length > 0) {
+        contextLines.push(`- warnings: ${intake.warnings.join("; ")}`)
+      }
+
+      // Inject as system context
+      output.system = Array.isArray(output.system) ? output.system : []
+      ;(output.system as string[]).push(contextLines.join("\n"))
     },
 
     "experimental.chat.system.transform": async (

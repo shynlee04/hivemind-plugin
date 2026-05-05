@@ -73,12 +73,13 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // as an arg).
   delegationManager.setCompletionDetector(lifecycleManager.getCompletionDetector())
 
-  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage }
+  const sessionEntryObserverFactory = createSessionEntryEventObserver()
+
+  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()
   const sessionJourneyEventObserver = createSessionJourneyEventObserver(shouldTrackEventTrackerEvent)
-  const sessionEntryObserverFactory = createSessionEntryEventObserver()
   const consumeSessionEntryFact = async ({ event }: { event?: unknown }) => {
     try {
       await sessionEntryObserverFactory.observer({ event })
