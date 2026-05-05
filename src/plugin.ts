@@ -34,6 +34,8 @@ import { createHivemindSdkSupervisorTool } from "./tools/hivemind-sdk-supervisor
 import { createHivemindCommandEngineTool } from "./tools/hivemind-command-engine.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./lib/workspace-runtime-policy.js"
+import { runAutoLoop } from "./lib/auto-loop.js"
+import { runRalphLoop, escalationMessage } from "./lib/ralph-loop.js"
 import {
   createEventTrackerArtifactsFromHook,
   shouldTrackEventTrackerEvent,
@@ -71,7 +73,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // as an arg).
   delegationManager.setCompletionDetector(lifecycleManager.getCompletionDetector())
 
-  const deps = { client, lifecycleManager, stateManager: taskState }
+  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()
