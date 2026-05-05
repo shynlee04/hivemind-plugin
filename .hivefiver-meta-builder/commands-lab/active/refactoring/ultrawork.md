@@ -1,6 +1,6 @@
 ---
 description: "Activate full autonomous orchestration. Agent explores, plans, and executes until done."
-agent: conductor
+agent: hm-l2-conductor
 subtask: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: "Configure OpenCode primitives (agents, commands, skills) programmatically. Supports --from-file, --scope, --dry-run flags. Triggers: 'configure agent', 'batch configure', 'agent setup', 'configure command'."
-agent: hivefiver-orchestrator
+agent: hf-l0-orchestrator
 subtask: true
 ---
 

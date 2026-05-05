@@ -1,6 +1,6 @@
 ---
 description: "Sync AGENTS.md files with current codebase state. Detects drift between documentation and actual source code, produces a report, and applies fixes."
-agent: conductor
+agent: hm-l2-conductor
 subtask: false
 ---
 

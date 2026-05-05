@@ -1,6 +1,6 @@
 ---
 description: "Absorb dense context (links, text, files, stories, events, actors) into persistent session context through multi-wave swarm processing. Use when you have a packed prompt with URLs, file references, multi-layered narratives, or complex metadata that needs interpretation and persistent storage for ongoing planning."
-agent: hivefiver-orchestrator
+agent: hf-l0-orchestrator
 subtask: false
 ---
 

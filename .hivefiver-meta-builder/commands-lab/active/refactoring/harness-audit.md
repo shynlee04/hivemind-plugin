@@ -1,6 +1,6 @@
 ---
 description: "Comprehensive harness audit: boundary integrity, claim-vs-reality, governance, context poisoning, cross-platform compatibility. Triggers: 'audit harness', 'check boundaries', 'verify architecture', 'audit skills', 'cross-platform audit'."
-agent: hivefiver-orchestrator
+agent: hf-l0-orchestrator
 subtask: true
 ---
 

@@ -17,7 +17,7 @@
 │                  │   writes allowed)    │  delegation, session-api       │
 ├──────────────────┼──────────────────────┼────────────────────────────────┤
 │            Plugin Composition Root (`src/plugin.ts`)                      │
-│            Wires deps → instantiates hooks → registers 9 tools           │
+│            Wires deps → instantiates hooks → registers 16 tools          │
 └────────┬─────────┴──────────────────────┴───────────┬────────────────────┘
          │                                              │
          ▼                                              ▼
@@ -25,9 +25,9 @@
 │   Soft Meta-Concepts (configurable)  │  │   Deep Module State (internal)        │
 │   `.opencode/`                       │  │   `.hivemind/`                        │
 │                                      │  │                                       │
-│   • 57 agents                        │  │   • Session continuity JSON            │
-│   • 50 skills                        │  │   • Delegation records                │
-│   • 20 commands                      │  │   • Execution lineage                 │
+│   • 89 agents                        │  │   • Session continuity JSON            │
+│   • 58 skills                        │  │   • Delegation records                │
+│   • 18 commands                      │  │   • Execution lineage                 │
 │   • Permission rules                 │  │   • Event tracker artifacts           │
 │   • Plugin loader                    │  │   • Session journals                  │
 └──────────────────────────────────────┘  └──────────────────────────────────────┘
@@ -83,7 +83,7 @@
 ### Tools Layer (Write-Side / CQRS Command)
 - Purpose: Expose mutation operations to agents via OpenCode tool system — delegation dispatch, status polling, background commands, prompt enhancement, configuration, validation, journal export
 - Location: `src/tools/`
-- Contains: 9 tool implementations, each wrapping a Zod schema and `execute()` function
+- Contains: 16 tool implementations, each wrapping a Zod schema and `execute()` function
 - Depends on: `src/lib/` (types, delegation-manager, continuity), `@opencode-ai/plugin/tool`, `src/shared/`
 - Used by: OpenCode runtime — agents invoke tools via plugin tool registry
 
@@ -99,6 +99,13 @@
 | `session-journal-export` | Export session journal and execution lineage as JSON or Markdown | `src/tools/session-journal-export.ts` |
 | `configure-primitive` | Configure, read, list, or inspect OpenCode primitives (agent, command, skill) | `src/tools/configure-primitive.ts` |
 | `validate-restart` | Validate compiled primitives are discoverable after restart | `src/tools/validate-restart.ts` |
+| `hivemind-doc` | Search and retrieve Hivemind documentation artifacts | `src/tools/hivemind-doc.ts` |
+| `hivemind-trajectory` | Track and export execution trajectory for audit | `src/tools/hivemind-trajectory.ts` |
+| `hivemind-pressure` | Runtime pressure classification and authority matrix | `src/tools/hivemind-pressure.ts` |
+| `hivemind-sdk-supervisor` | SDK supervision and health monitoring | `src/tools/hivemind-sdk-supervisor.ts` |
+| `hivemind-command-engine` | Command execution engine with queue governance | `src/tools/hivemind-command-engine.ts` |
+| `hivemind-agent-work-create` | Create agent work contracts | `src/tools/hivemind-agent-work-create.ts` |
+| `hivemind-agent-work-export` | Export agent work contracts for audit | `src/tools/hivemind-agent-work-export.ts` |
 
 ### Hooks Layer (Read-Side / CQRS Query)
 - Purpose: Observe and react to OpenCode lifecycle events — event routing, auto-loop, session compaction, tool guarding, shell env injection
@@ -172,7 +179,7 @@ types.ts (leaf — no imports)
 ### Soft Meta-Concepts Layer
 - Purpose: User-configurable OpenCode primitives — agents, skills, commands, rules — compose the runtime behavior from outside the npm package
 - Location: `.opencode/`
-- Contains: 57 agents, 50 skills, 20 commands, permission rules, plugin loader
+- Contains: 89 agents, 58 skills, 18 commands, permission rules, plugin loader
 - Relationship: Loaded at OpenCode startup; harness tools reference these primitives at runtime
 
 ### Deep Module State Layer (Q6)
@@ -184,7 +191,7 @@ types.ts (leaf — no imports)
 ### Entry Points
 | Entry Point | Location | Triggers | Responsibilities |
 |-------------|----------|----------|------------------|
-| Plugin Composition | `src/plugin.ts` | OpenCode plugin loading | Instantiate deps, wire hooks, register 9 tools, load runtime policy, recover pending delegations |
+| Plugin Composition | `src/plugin.ts` | OpenCode plugin loading | Instantiate deps, wire hooks, register 16 tools, load runtime policy, recover pending delegations |
 | Public API | `src/index.ts` | `import "opencode-harness"` | Re-export `HarnessControlPlane` + entire lib surface |
 | Plugin subpath | `dist/plugin.js` (via `./plugin` export) | `opencode.json` `"plugin": ["./dist/plugin.js"]` | Thin re-export of `HarnessControlPlane` |
 

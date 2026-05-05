@@ -1,6 +1,6 @@
 ---
 description: "Audit existing skills, agents, commands, or tools for quality, overlaps, and dead references. Triggers: 'audit skills', 'check agents', 'doctor commands', 'what's wrong with...'"
-agent: hivefiver-orchestrator
+agent: hf-l0-orchestrator
 subtask: true
 ---
 

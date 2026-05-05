@@ -1,6 +1,6 @@
 ---
 description: "Stack multiple skills together for a specific workflow. Triggers: 'stack skills', 'combine skills', 'chain skills for...'"
-agent: hivefiver-orchestrator
+agent: hf-l0-orchestrator
 subtask: true
 ---
 

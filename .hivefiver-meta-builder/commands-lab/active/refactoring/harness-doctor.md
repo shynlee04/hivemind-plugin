@@ -1,6 +1,6 @@
 ---
 description: "Run harness diagnostics. Checks configuration, agents, plugin control path, and harness health."
-agent: conductor
+agent: hm-l2-conductor
 subtask: false
 ---
 

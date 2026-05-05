@@ -1,6 +1,6 @@
 ---
 description: "Create a new skill, agent, command, or tool. Routes to the right specialist. Triggers: 'create a skill', 'add an agent', 'build a command', 'make a tool'."
-agent: hivefiver-orchestrator
+agent: hf-l0-orchestrator
 subtask: true
 ---
 

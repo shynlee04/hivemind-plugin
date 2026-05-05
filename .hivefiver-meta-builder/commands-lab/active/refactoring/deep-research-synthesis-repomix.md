@@ -1,6 +1,6 @@
 ---
 description: "Reference document: Advanced Repomix + OpenCode orchestration cheat sheet. NOT an executable command — serves as knowledge base for deep research patterns."
-agent: researcher
+agent: hm-l2-researcher
 subtask: true
 type: reference
 ---
