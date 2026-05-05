@@ -7,6 +7,84 @@
     "superpowers@git+https://github.com/obra/superpowers.git",
     "./dist/plugin.js"
   ],
+  "provider": {
+    "osiris": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Osiris",
+      "options": {
+        "baseURL": "https://ai.osiris-code.com/v1",
+        "apiKey": "sk-osiris-355b1cb6923d6e86a4337e31c328982e"
+      },
+      "models": {
+        "claude-opus-4-6": {
+          "name": "Claude Opus 4.6",
+          "limit": {
+            "context": 1000000,
+            "output": 64000
+          }
+        },
+        "claude-sonnet-4-5": {
+          "name": "Claude Sonnet 4.5",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "gpt-5-4": {
+          "name": "Codex GPT-5.4",
+          "reasoningEffort": "high",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "gpt-5-5": {
+          "name": "Codex GPT-5.5",
+          "reasoningEffort": "high",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "deepseek-v4-pro": {
+          "name": "DeepSeek V4 Pro",
+          "limit": {
+            "context": 1000000,
+            "output": 64000
+          }
+        },
+        "gemini-3-1-pro": {
+          "name": "Gemini-3.1-Pro",
+          "limit": {
+            "context": 1000000,
+            "output": 64000
+          }
+        },
+        "glm-5.1": {
+          "name": "GLM 5.1",
+          "limit": {
+            "context": 203000,
+            "output": 64000
+          }
+        },
+        "glm-5v-turbo": {
+          "name": "GLM 5V Turbo",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "kimi-k2.6": {
+          "name": "Kimi K2.6",
+          "limit": {
+            "context": 256000,
+            "output": 64000
+          }
+        }
+      }
+    }
+  },
+  "model": "osiris/claude-opus-4-6",
   "permission": {
     "read": "allow",
     "edit": "allow",

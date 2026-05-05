@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "updatedAt": 1777918748678,
+  "trajectories": {
+    "traj_uat_team_b_batch4": {
+      "id": "traj_uat_team_b_batch4",
+      "rootSessionId": "ses_20bf160c2ffeK7CMIypDMSGK0h",
+      "sessionId": null,
+      "parentTrajectoryId": null,
+      "status": "closed",
+      "evidenceRefs": [],
+      "checkpoints": [
+        {
+          "checkpointId": "checkpoint-091064c8-dc93-4cf5-b216-8eb1a72109b9",
+          "summary": "Batch 4a complete: agent-work-create PASS, agent-work-export PASS",
+          "evidenceRefs": [],
+          "createdAt": 1777916648082
+        }
+      ],
+      "events": [
+        {
+          "eventId": "evt_batch4a_complete",
+          "eventType": "test.checkpoint",
+          "summary": "Batch 4a: work-contract create+export lifecycle validated",
+          "evidenceRefs": [],
+          "createdAt": 1777916648086
+        },
+        {
+          "eventId": "pressure_test_batch4",
+          "eventType": "runtime-pressure",
+          "summary": "Batch 4 pressure evidence: all CRUD tools operate at tier 0 steady — tier 0/steady/allow",
+          "evidenceRefs": [],
+          "createdAt": 1777916657823
+        }
+      ],
+      "createdAt": 1777916637530,
+      "updatedAt": 1777916657823,
+      "closeSummary": "Batch 4 trajectory complete — all CRUD tools validated"
+    },
+    "traj_uat_team_b_batch6": {
+      "id": "traj_uat_team_b_batch6",
+      "rootSessionId": "ses_20bf160c2ffeK7CMIypDMSGK0h",
+      "sessionId": null,
+      "parentTrajectoryId": null,
+      "status": "active",
+      "evidenceRefs": [],
+      "checkpoints": [
+        {
+          "checkpointId": "checkpoint-da44c60d-0446-4af2-8488-46b87e76b478",
+          "summary": "Batch 7 complete: SDK delegation (27.0s) + PTY concurrent (different queueKey) + trajectory + pressure + journal — all cross-primitive",
+          "evidenceRefs": [],
+          "createdAt": 1777917676323
+        },
+        {
+          "checkpointId": "checkpoint-09a1e719-0503-4226-947f-dcef182a5a80",
+          "summary": "Batch 8 complete: command-engine discover(11 commands)+analyze_contract+route_preview+transform_messages + doc chunk(67 chunks) + configure-primitive list(18 commands) — all cross-primitive at tier 0 steady. FINDING: doc search returns 0 matches for .md command files (not plain-text searchable)",
+          "evidenceRefs": [],
+          "createdAt": 1777917789045
+        },
+        {
+          "checkpointId": "checkpoint-36de151c-2ec3-4530-865d-c19e7fede083",
+          "summary": "Batch 9 complete: 9.1 research chain (search+chunk+read PASS), 9.2 delegation lifecycle (31.0s SDK PASS), 9.3 gate triad (all 3 gate skills loaded + cross-refs verified + 28 lifecycle chunks + spec-compliance 10.9KB read PASS), 9.4 config+validate (validate-restart: 14 broken refs CONFIRMED, 24 new agent description overlap warnings, 1 invalid frontmatter CONFIRMED)",
+          "evidenceRefs": [],
+          "createdAt": 1777918209788
+        },
+        {
+          "checkpointId": "checkpoint-ea185aae-41d0-4e67-9898-59cd5fe1fead",
+          "summary": "Batch 10 complete: 28/28 PASS — tool matrix (65 chunks, 6 anti-patterns, 5 lineages), integration contracts (54 chunks, 12 domains, RICH-8 108/120 A-grade), Q6 state separation (no cross-contamination), SDK supervisor (9/9 wrappers healthy). Zero findings.",
+          "evidenceRefs": [],
+          "createdAt": 1777918278288
+        },
+        {
+          "checkpointId": "checkpoint-21d0ff57-fdf3-4170-ab18-13836673740b",
+          "summary": "Batch 11 FINAL: Production-readiness audit complete. 92.8% overall pass rate (116/125). 6 gaps identified: no CHANGELOG, 14 broken command refs, L1→L2 chain blocked, missing taxonomy READMEs, no rollback plan, 1 invalid skill frontmatter. 5 new workstreams proposed. Build/typecheck/tests PASS (1677/1679).",
+          "evidenceRefs": [],
+          "createdAt": 1777918748678
+        }
+      ],
+      "events": [
+        {
+          "eventId": "evt_batch7_delegation_dispatched",
+          "eventType": "integration.delegation-sdk",
+          "summary": "Cross-primitive: SDK delegation dispatched (08aff8a9) alongside PTY + journal + governance chain",
+          "evidenceRefs": [],
+          "createdAt": 1777917642490
+        },
+        {
+          "eventId": "pressure_batch7_steady",
+          "eventType": "runtime-pressure",
+          "summary": "Cross-primitive batch 7: SDK delegation + trajectory + pressure at tier 0 steady — tier 0/steady/allow",
+          "evidenceRefs": [],
+          "createdAt": 1777917643982
+        },
+        {
+          "eventId": "evt_batch8_cross_primitive_start",
+          "eventType": "integration.command-doc-config",
+          "summary": "Batch 8 cross-primitive: command-engine discover → doc search → configure-primitive read chain starting",
+          "evidenceRefs": [],
+          "createdAt": 1777917748014
+        },
+        {
+          "eventId": "pressure_batch8_steady",
+          "eventType": "runtime-pressure",
+          "summary": "Batch 8 cross-primitive: command-engine discover+analyze+route+transform + doc chunk + configure list — all at tier 0 steady — tier 0/steady/allow",
+          "evidenceRefs": [],
+          "createdAt": 1777917780397
+        },
+        {
+          "eventId": "evt_batch9_research_chain",
+          "eventType": "workflow.research-chain-start",
+          "summary": "Batch 9.1: Research chain workflow — doc intelligence chain starting",
+          "evidenceRefs": [],
+          "createdAt": 1777918088088
+        },
+        {
+          "eventId": "event-5c3dafcd-99d7-4809-8a80-9d711c541e5b",
+          "eventType": "runtime-pressure",
+          "summary": "Batch 9.1 research chain: doc search (0 matches, confirmed), doc chunk (22 chunks PASS), doc read (truncated 9388 chars PASS) — workflow complete — tier 0/steady/allow",
+          "evidenceRefs": [],
+          "createdAt": 1777918121347
+        },
+        {
+          "eventId": "evt_batch9_gate_triad",
+          "eventType": "workflow.gate-triad",
+          "summary": "Batch 9.3: Gate triad workflow — all 3 gate skills loaded (lifecycle+spec+evidence), verifying skill file integrity and cross-references",
+          "evidenceRefs": [],
+          "createdAt": 1777918145501
+        }
+      ],
+      "createdAt": 1777917571803,
+      "updatedAt": 1777918748678
+    }
+  }
+}

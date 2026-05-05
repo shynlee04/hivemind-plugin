@@ -2,7 +2,8 @@
 name: hm-l0-orchestrator
 description: 'Front-facing session orchestrator for hm-* product development lineage. Routes user intent to L1 coordinators, enforces quality gate triad, and validates workflow completion. Never implements directly.'
 mode: primary
-temperature: 0.25
+temperature: 0.3
+reasoningEffort: high
 depth: L0
 lineage: hm
 domain: Phase Lifecycle
@@ -31,8 +32,9 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
-    hm-l1-coordinator: allow
+    '*': ask
+    hm-l3-*: allow
+    hm-l1-*: allow
     hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
@@ -43,7 +45,8 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': deny
+    '*': ask
+    hm-l1-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
