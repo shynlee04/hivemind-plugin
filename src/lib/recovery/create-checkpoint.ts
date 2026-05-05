@@ -3,7 +3,7 @@
  *
  * Captures a snapshot of canonical harness state under
  * `.hivemind/state/checkpoints/` so callers can later restore the session
- * via {@link ../recovery-engine.ts | recovery-engine.repair}.
+ * via the recovery subsystem modules.
  *
  * @module recovery/create-checkpoint
  */

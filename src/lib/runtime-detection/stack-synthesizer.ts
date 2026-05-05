@@ -1,15 +1,19 @@
+import { readdirSync } from "node:fs"
+import { extname } from "node:path"
 import { detectFrameworks, type FrameworkDetectionResult } from "../framework-detector.js"
 
 /**
  * Simplified structural summary of the source tree.
  * Replaced `Codemap` import from deleted `codemap.ts`.
  *
- * @property file_count - Number of source files found.
+ * @property fileCount - Number of source files found.
+ * @property byExtension - File count grouped by extension (e.g. { ".ts": 5 }).
  * @property top_level_dirs - Top-level directory names.
  * @property build_configs - Detected build configuration files.
  */
 export type SimpleCodemap = {
-  file_count: number
+  fileCount: number
+  byExtension: Record<string, number>
   top_level_dirs: string[]
   build_configs: string[]
 }
@@ -70,8 +74,8 @@ export type SynthesizedStack = {
 export async function synthesizeTechStack(projectRoot: string): Promise<SynthesizedStack> {
   const frameworkResult = await detectFrameworks(projectRoot)
 
-  const scan = buildSimpleScan()
-  const codemap = buildSimpleCodemap()
+  const codemap = buildSimpleCodemap(projectRoot)
+  const scan = buildSimpleScan(codemap)
 
   const warnings = [...scan.warnings, ...frameworkResult.warnings]
 
@@ -88,26 +92,76 @@ export async function synthesizeTechStack(projectRoot: string): Promise<Synthesi
 }
 
 /**
- * Build a simplified code scan result.
+ * Build a simplified code scan result from codemap data.
+ *
+ * @param codemap - The simplified codemap with file counts by extension.
+ * @returns A {@link SimpleCodeScan} with language derived from file extensions.
  */
-function buildSimpleScan(): SimpleCodeScan {
+function buildSimpleScan(codemap: SimpleCodemap): SimpleCodeScan {
+  const extensions = Object.keys(codemap.byExtension)
+  const language = extensions.length > 0 ? inferLanguage(extensions) : "unknown"
+  const warnings = ["codescan: module removed — using simplified detection"]
+
   return {
-    language: "typescript",
+    language,
     frameworks: [],
     complexity: "medium",
-    warnings: [],
+    warnings,
   }
 }
 
 /**
- * Build a simplified codemap summary.
+ * Build a simplified codemap summary by scanning the project root for source files.
+ *
+ * Counts files by extension and lists top-level directory names.
+ *
+ * @param projectRoot - Absolute path to the project root directory.
+ * @returns A {@link SimpleCodemap} with file counts and structure data.
  */
-function buildSimpleCodemap(): SimpleCodemap {
+function buildSimpleCodemap(projectRoot: string): SimpleCodemap {
+  const byExtension: Record<string, number> = {}
+  let fileCount = 0
+  const topLevelDirs: string[] = []
+
+  try {
+    const entries = readdirSync(projectRoot, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        topLevelDirs.push(entry.name)
+      } else if (entry.isFile()) {
+        const ext = extname(entry.name)
+        if (ext) {
+          byExtension[ext] = (byExtension[ext] || 0) + 1
+          fileCount++
+        }
+      }
+    }
+  } catch {
+    // Directory doesn't exist or can't be read — return empty codemap
+  }
+
   return {
-    file_count: 0,
-    top_level_dirs: [],
+    fileCount,
+    byExtension,
+    top_level_dirs: topLevelDirs,
     build_configs: [],
   }
+}
+
+/**
+ * Infer primary language from a set of file extensions.
+ *
+ * @param extensions - Array of file extensions found in the project.
+ * @returns The inferred language name or "unknown".
+ */
+function inferLanguage(extensions: string[]): string {
+  if (extensions.some((e) => [".ts", ".tsx"].includes(e))) return "typescript"
+  if (extensions.some((e) => [".js", ".jsx"].includes(e))) return "javascript"
+  if (extensions.some((e) => [".py"].includes(e))) return "python"
+  if (extensions.some((e) => [".rb"].includes(e))) return "ruby"
+  if (extensions.some((e) => [".go"].includes(e))) return "go"
+  if (extensions.some((e) => [".rs"].includes(e))) return "rust"
+  return "unknown"
 }
 
 /**
