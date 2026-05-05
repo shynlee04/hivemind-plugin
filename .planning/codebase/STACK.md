@@ -1,6 +1,8 @@
+<!-- generated-by: gsd-doc-writer -->
 # Technology Stack
 
 **Analysis Date:** 2026-04-28
+**Updated:** 2026-05-06
 
 ## Languages
 
@@ -87,4 +89,4 @@
 
 ---
 
-*Stack analysis: 2026-04-28*
+*Stack analysis: 2026-04-28 — updated 2026-05-06 (verified dependency versions)*

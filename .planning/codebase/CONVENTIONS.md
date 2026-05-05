@@ -1,6 +1,8 @@
+<!-- generated-by: gsd-doc-writer -->
 # Coding Conventions
 
 **Analysis Date:** 2026-04-28
+**Updated:** 2026-05-06
 
 ## Naming Patterns
 
@@ -187,7 +189,7 @@ export function buildDelegationQueueKey(args: {
 - Dual-layer state: `continuity.ts` (durable JSON) + `state.ts` (in-memory Maps)
 - `src/shared/` contains cross-cutting tool utilities with no business logic
 - `src/plugin.ts` is the composition root — thin, wires dependencies, no business logic
-- Module size cap: 500 LOC (currently monitored; `continuity.ts` at ~401 LOC, `delegation-manager.ts` at ~450 LOC)
+- Module size cap: 500 LOC (currently monitored; `continuity.ts` at ~455 LOC, `delegation-manager.ts` at ~468 LOC)
 
 ## Zod Schema Conventions
 
@@ -203,4 +205,4 @@ export function buildDelegationQueueKey(args: {
 
 ---
 
-*Convention analysis: 2026-04-28*
+*Convention analysis: 2026-04-28 — updated 2026-05-06 (module size verification)*

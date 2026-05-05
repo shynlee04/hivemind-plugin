@@ -1,0 +1,143 @@
+{
+  "_schema": "harness/event-tracker/v1",
+  "sessionId": "ses_206515974ffe66R77l2j6E0c8M",
+  "semanticSessionId": "ses_2065",
+  "artifactStem": "ses_2065",
+  "mainSessionId": "ses_206515974ffe66R77l2j6E0c8M",
+  "lineage": [],
+  "purposeClass": "unspecified",
+  "keyFindings": [],
+  "resumable": true,
+  "startedAt": 1778010465934,
+  "updatedAt": 1778010516583,
+  "status": "active",
+  "counters": {
+    "eventCount": 6,
+    "sessionStartCount": 1,
+    "sessionEndCount": 0
+  },
+  "actors": [],
+  "subSessions": [],
+  "delegations": [],
+  "toolsUsed": [],
+  "lastMessageOutput": "",
+  "exportMeta": null,
+  "toc": [
+    {
+      "index": 1,
+      "timestamp": 1778010465934,
+      "actor": "system",
+      "type": "session_start",
+      "summary": "Session started (session.created)"
+    },
+    {
+      "index": 2,
+      "timestamp": 1778010465943,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 3,
+      "timestamp": 1778010466013,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 4,
+      "timestamp": 1778010466658,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 5,
+      "timestamp": 1778010499744,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    },
+    {
+      "index": 6,
+      "timestamp": 1778010516583,
+      "actor": "system",
+      "type": "session_updated",
+      "summary": "Session updated (session.updated)"
+    }
+  ],
+  "events": [
+    {
+      "id": "ses_2065::session_start::1778010465934",
+      "sessionId": "ses_206515974ffe66R77l2j6E0c8M",
+      "artifactStem": "ses_2065",
+      "type": "session_start",
+      "actor": "system",
+      "title": "Session started",
+      "summary": "Session started (session.created)",
+      "timestamp": 1778010465934,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_2065::session_updated::1778010465943",
+      "sessionId": "ses_206515974ffe66R77l2j6E0c8M",
+      "artifactStem": "ses_2065",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1778010465943,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_2065::session_updated::1778010466013",
+      "sessionId": "ses_206515974ffe66R77l2j6E0c8M",
+      "artifactStem": "ses_2065",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1778010466013,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_2065::session_updated::1778010466658",
+      "sessionId": "ses_206515974ffe66R77l2j6E0c8M",
+      "artifactStem": "ses_2065",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1778010466658,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_2065::session_updated::1778010499744",
+      "sessionId": "ses_206515974ffe66R77l2j6E0c8M",
+      "artifactStem": "ses_2065",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1778010499744,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    },
+    {
+      "id": "ses_2065::session_updated::1778010516583",
+      "sessionId": "ses_206515974ffe66R77l2j6E0c8M",
+      "artifactStem": "ses_2065",
+      "type": "session_updated",
+      "actor": "system",
+      "title": "Session updated",
+      "summary": "Session updated (session.updated)",
+      "timestamp": 1778010516583,
+      "source": "plugin.event",
+      "stateRole": "audit trail"
+    }
+  ]
+}

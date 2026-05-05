@@ -1,7 +1,9 @@
-<!-- refreshed: 2026-04-28 -->
+<!-- generated-by: gsd-doc-writer -->
+<!-- refreshed: 2026-05-06 -->
 # Architecture
 
 **Analysis Date:** 2026-04-28
+**Updated:** 2026-05-06
 
 ## System Overview
 
@@ -26,7 +28,7 @@
 │   `.opencode/`                       │  │   `.hivemind/`                        │
 │                                      │  │                                       │
 │   • 89 agents                        │  │   • Session continuity JSON            │
-│   • 58 skills                        │  │   • Delegation records                │
+│   • 123 skills                       │  │   • Delegation records                │
 │   • 18 commands                      │  │   • Execution lineage                 │
 │   • Permission rules                 │  │   • Event tracker artifacts           │
 │   • Plugin loader                    │  │   • Session journals                  │
@@ -51,7 +53,7 @@
 | `CompletionDetector` | Two-signal completion detection (session.idle + stability timer) | `src/lib/completion-detector.ts` |
 | `TaskStateManager` | In-memory Maps for sessionStats, rootBudgets, sessionToRoot, delegationMeta | `src/lib/state.ts` |
 | `DelegationConcurrencyQueue` | Keyed semaphore (FIFO per model+agent+category) | `src/lib/concurrency.ts` |
-| `DelegationBroadcast` | New delegation event notifications via parent session prompt | `src/lib/delegation-broadcast.ts` |
+| `NotificationHandler` | Terminal-state delegation notifications — fire-and-forget with durable pending queue (re-activated Phase 16.2) | `src/lib/notification-handler.ts` |
 | Continuity Store | Durable JSON persistence with deep-clone, normalization, quarantine | `src/lib/continuity.ts` |
 | Session API | Typed OpenCode SDK wrappers (create, get, abort, messages, prompt, walkParentChain) | `src/lib/session-api.ts` |
 | Runtime Policy | Policy loading, validation, per-session overrides (concurrency, budget, category gates) | `src/lib/runtime-policy.ts` |
@@ -179,7 +181,7 @@ types.ts (leaf — no imports)
 ### Soft Meta-Concepts Layer
 - Purpose: User-configurable OpenCode primitives — agents, skills, commands, rules — compose the runtime behavior from outside the npm package
 - Location: `.opencode/`
-- Contains: 89 agents, 58 skills, 18 commands, permission rules, plugin loader
+- Contains: 89 agents, 123 skills, 18 commands, permission rules, plugin loader
 - Relationship: Loaded at OpenCode startup; harness tools reference these primitives at runtime
 
 ### Deep Module State Layer (Q6)
@@ -323,4 +325,4 @@ All canonical paths write to `.hivemind/state/` per Q6.
 
 ---
 
-*Architecture analysis: 2026-04-28*
+*Architecture analysis: 2026-04-28 — updated 2026-05-06 (HER-2 wiring + count corrections)*

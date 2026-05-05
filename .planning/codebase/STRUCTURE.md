@@ -1,6 +1,8 @@
+<!-- generated-by: gsd-doc-writer -->
 # Codebase Structure
 
 **Analysis Date:** 2026-04-28
+**Updated:** 2026-05-06
 
 ## Directory Layout
 
@@ -21,7 +23,7 @@
 │   │   ├── lifecycle-manager.ts  # Session lifecycle state machine
 │   │   ├── delegation-manager.ts # Core delegation orchestrator (~656 LOC)
 │   │   ├── delegation-persistence.ts # Delegation record I/O
-│   │   ├── notification-handler.ts  # Parent session notification (DEPRECATED)
+│   │   ├── notification-handler.ts  # Parent session notification (ACTIVE — re-activated Phase 16.2)
 │   │   ├── sdk-delegation.ts     # SDK child-session polling (~209 LOC)
 │   │   ├── command-delegation.ts # PTY/headless process delegation (~401 LOC)
 │   │   ├── runtime-policy.ts     # Trusted runtime policy loading
@@ -75,7 +77,7 @@
 │   │   ├── create-tool-guard-hooks.ts # tool.execute.before/after
 │   │   ├── plugin-event-observers.ts # Delegation + journey event observers
 │   │   └── tool-after-composer.ts # tool.execute.after hook composer
-│   ├── tools/                    # Tool implementations (9 tools)
+│   ├── tools/                    # Tool implementations (16 tools)
 │   │   ├── delegate-task.ts      # WaiterModel delegation dispatch
 │   │   ├── delegation-status.ts  # Poll delegation status/results
 │   │   ├── run-background-command.ts # PTY background command (~221 LOC)
@@ -125,9 +127,9 @@
 │   ├── plugins/                  # Plugin tests
 │   └── schema-kernel/            # Schema tests
 ├── .opencode/                    # Soft Meta-Concepts (user-configurable)
-│   ├── agents/                   # 57 agent definitions (.md with YAML frontmatter)
-│   ├── skills/                   # 50 skills (SKILL.md + references/)
-│   ├── commands/                 # 20 commands (.md with YAML frontmatter)
+│   ├── agents/                   # 89 agent definitions (.md with YAML frontmatter)
+│   ├── skills/                   # 123 skills (SKILL.md + references/)
+│   ├── commands/                 # 18 commands (.md with YAML frontmatter)
 │   ├── rules/                    # Universal rules (universal-rules.md)
 │   ├── plugins/                  # Plugin loaders (prompt-enhance.ts)
 │   ├── tools/                    # OpenCode-native tools (nl-route.ts)
@@ -196,7 +198,7 @@
 
 **src/ (Hard Harness):**
 - Purpose: The npm package `opencode-harness` — TypeScript source compiled to `dist/`. Provides the `HarnessControlPlane` plugin that wires tools (write-side) and hooks (read-side) into OpenCode.
-- Contains: Plugin composition root, 9 tools, 7 hook factories, 34 library modules, 9 Zod schemas, 2 shared utilities
+- Contains: Plugin composition root, 16 tools, 7 hook factories, library modules, 9 Zod schemas, 2 shared utilities
 - Key files: `plugin.ts` (composition root), `index.ts` (public API), `lib/types.ts` (shared types leaf)
 
 **tests/:**
@@ -206,7 +208,7 @@
 
 **.opencode/ (Soft Meta-Concepts):**
 - Purpose: User-configurable OpenCode primitives that compose runtime behavior. Agents define specialist roles with permissions and tools; skills define reusable workflows; commands define slash-command interactions.
-- Contains: 57 agent definitions, 50 skills, 20 commands, permission rules, plugin loader, native tools
+- Contains: 89 agent definitions, 123 skills, 18 commands, permission rules, plugin loader, native tools
 - Key files: `agents/gsd-codebase-mapper.md`, `skills/hm-detective/SKILL.md`, `commands/plan.md`
 
 **.hivemind/ (Deep Module State):**
@@ -363,4 +365,4 @@
 
 ---
 
-*Structure analysis: 2026-04-28*
+*Structure analysis: 2026-04-28 — updated 2026-05-06 (HER-2 count corrections)*

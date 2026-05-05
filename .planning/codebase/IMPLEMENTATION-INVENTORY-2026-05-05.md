@@ -1,9 +1,11 @@
+<!-- generated-by: gsd-doc-writer -->
 # Implementation Inventory — Hivemind Harness `src/` Layer
 
 **Analysis Date:** 2026-05-05  
-**Total Files Analyzed:** 170  
-**Total LOC (src/):** 23,360  
-**Total LOC (src/lib/):** 17,851  
+**Updated:** 2026-05-06  
+**Total Files Analyzed:** 175  
+**Total LOC (src/):** 22,036  
+**Total LOC (src/lib/):** 16,389  
 
 ---
 
@@ -11,14 +13,23 @@
 
 | Metric | Value |
 |--------|-------|
-| `src/lib/` files | 120 |
-| `src/tools/` files | 23 |
+| `src/lib/` files | 106 |
+| `src/tools/` files | 22 |
 | `src/hooks/` files | 8 |
 | `src/schema-kernel/` files | 15 |
 | `src/shared/` files | 2 |
 | `src/cli/` files | 5 |
 | Top-level (`src/*.ts`) | 2 |
-| **Total** | **175** |
+| **Total** | **160** |
+
+### Soft Meta-Concepts (`.opencode/`)
+
+| Metric | Value |
+|--------|-------|
+| Agents | 89 (45 hm-*, 33 gsd-*, 11 hf-*) |
+| Skills | 123 directories (65 gsd-*, 35 hm-*, 13 hf-*, 6 stack-*, 3 gate-*, 1 opencode-*) |
+| Commands | 18 |
+| Tests passing | 1,604 (2 failing in session-journal) |
 
 ### Top 5 Largest Modules (src/lib/)
 
@@ -80,7 +91,7 @@
 | `src/lib/lifecycle-manager.ts` | 243 | IMPLEMENTED | createHarnessLifecycleManager, handleEvent, getCompletionDetector | plugin.ts |
 | `src/lib/runtime.ts` | 95 | IMPLEMENTED | inferContinuityStatusFromEvent | hooks/create-core-hooks.ts |
 | `src/lib/runtime-policy.ts` | 267 | IMPLEMENTED | loadRuntimePolicy, DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey | plugin.ts, delegation-manager.ts, hooks |
-| `src/lib/notification-handler.ts` | 290 | IMPLEMENTED (DEPRECATED) | notifyDelegationTerminal, buildNotificationMessage | delegation-state-machine.ts, lifecycle-manager.ts |
+| `src/lib/notification-handler.ts` | 290 | IMPLEMENTED (ACTIVE — re-activated Phase 16.2) | notifyDelegationTerminal, buildNotificationMessage | delegation-state-machine.ts, lifecycle-manager.ts |
 | `src/lib/task-status.ts` | 22 | IMPLEMENTED | canTransition, isTerminal, VALID_TRANSITIONS | index.ts (public API) |
 | `src/lib/framework-detector.ts` | 190 | IMPLEMENTED | detectFrameworks | validate-restart.ts, stack-synthesizer.ts |
 | `src/lib/runtime-validator.ts` | 352 | IMPLEMENTED | validateRuntime | validate-restart.ts, cross-primitive-validator.ts |
@@ -97,9 +108,9 @@
 | `src/lib/execution-lineage.ts` | 122 | IMPLEMENTED | buildExecutionLineage | session-journal-export.ts |
 | `src/lib/plugin-tool-output-summary.ts` | 22 | IMPLEMENTED | summarizePluginToolOutput | plugin.ts |
 | `src/lib/app-api.ts` | 24 | IMPLEMENTED | getAppAgents | delegation-manager.ts |
-| `src/lib/auto-loop.ts` | 146 | IMPLEMENTED (UNUSED) | runAutoLoop, AutoLoopVerification | **Nobody** — dead code |
-| `src/lib/ralph-loop.ts` | 182 | IMPLEMENTED (UNUSED) | runRalphLoop, RalphValidation | **Nobody** — dead code |
-| `src/lib/recovery-engine.ts` | 72 | IMPLEMENTED (UNUSED) | createRecoveryEngine, RecoveryEngine | **Nobody** — facade only |
+| `src/lib/auto-loop.ts` | 146 | IMPLEMENTED | runAutoLoop, AutoLoopVerification | hooks (via plugin.ts deps injection) |
+| `src/lib/ralph-loop.ts` | 182 | IMPLEMENTED | runRalphLoop, RalphValidation | hooks (via plugin.ts deps injection) |
+| `src/lib/recovery-engine.ts` | — | REMOVED (HER-2) | — | — |
 | `src/lib/workspace-runtime-policy.ts` | 38 | IMPLEMENTED | resolveWorkspaceRuntimePolicy | plugin.ts |
 
 ### Subdirectory Modules (src/lib/*/)
@@ -220,7 +231,7 @@
 | `session-entry/language-resolution.ts` | 153 | IMPLEMENTED | detectLanguage, LanguageDetection | intake-gate.ts |
 | `session-entry/profile-resolver.ts` | 148 | IMPLEMENTED | resolveProfile, ProfileMatch | intake-gate.ts |
 | `session-entry/intake-gate.ts` | 148 | IMPLEMENTED | resolveIntake, PURPOSE_TO_ROUTING_TARGET | index.ts |
-| `session-entry/index.ts` | 23 | Barrel | Re-exports all | **Nobody** — not wired to plugin.ts |
+| `session-entry/index.ts` | 23 | Barrel | Re-exports all | hooks/plugin-event-observers.ts (wired via `resolveIntake`) |
 
 #### runtime-detection/ (5 files)
 
@@ -238,8 +249,8 @@
 |-------------|-----|--------|-------------|---------|
 | `prompt-packet/kernel-packet.ts` | 149 | IMPLEMENTED | buildKernelPacket | index.ts |
 | `prompt-packet/delegation-packet.ts` | 73 | IMPLEMENTED | buildDelegationPacket | index.ts |
-| `prompt-packet/compaction-preservation.ts` | 108 | IMPLEMENTED | buildCompactionPreservationPacket | work-contract/compaction-packet.ts |
-| `prompt-packet/index.ts` | 18 | Barrel | Re-exports all | **Nobody** — not wired to plugin.ts or tools |
+| `prompt-packet/compaction-preservation.ts` | 108 | IMPLEMENTED | buildCompactionPreservationPacket | hooks/create-session-hooks.ts (wired) |
+| `prompt-packet/index.ts` | 18 | Barrel | Re-exports all | hooks/create-session-hooks.ts (kernel-packet + compaction-preservation wired) |
 
 #### pty/ (5 files)
 
@@ -277,7 +288,7 @@
 | `supervisor/command-bundle.ts` | (see supervisor) | IMPLEMENTED | sortCommandBundles, routeCommand | index.ts |
 | `supervisor/context-renderer.ts` | 62 | IMPLEMENTED | renderSupervisorContext | index.ts |
 | `supervisor/messages-transform.ts` | 83 | IMPLEMENTED | transformMessagesForSupervisor | index.ts |
-| `supervisor/index.ts` | 17 | Barrel | Re-exports all | **Nobody** — not wired to plugin.ts or tools |
+| `supervisor/index.ts` | 17 | Barrel | Re-exports all | **REMOVED in HER-2** |
 
 ### Tools (src/tools/)
 
@@ -335,96 +346,96 @@ Three modules handle delegation dispatch:
 
 **Verdict:** This is INTENTIONAL architecture — DelegationManager composes the two handlers via Strategy pattern. No overlap; clean separation.
 
-### 2. Agent Work Contract Duplication
-
-Two SEPARATE module trees exist:
+### 2. Agent Work Contract — Single Module (HER-2 cleanup)
 
 | Module Tree | Files | Status | Used By |
 |-------------|-------|--------|---------|
 | `agent-work-contracts/` (plural) | 4 files, ~400 LOC | ACTIVE — used by hivemind-agent-work tool | plugin.ts via tool |
-| `work-contract/` (singular) | 5 files, ~613 LOC | UNUSED — no plugin.ts or tool consumer | Nobody external |
+| `work-contract/` (singular) | — | **REMOVED in HER-2** | — |
 
-**Verdict:** `work-contract/` appears to be an older or experimental version. `agent-work-contracts/` is the active one. The older module adds dead weight.
+**Verdict:** `work-contract/` removed during HER-2 dead code cleanup (~613 LOC). `agent-work-contracts/` is the sole active module.
 
-### 3. Recovery Facade vs. Subsystem
+### 3. Recovery Facade vs. Subsystem (HER-2 cleanup)
 
 | Module | Role | Status |
 |--------|------|--------|
-| `recovery/index.ts` | Barrel re-export | USED by recovery-engine.ts |
-| `recovery-engine.ts` | Facade bundling all 4 recovery ops | UNUSED — nobody imports it |
+| `recovery/index.ts` | Barrel re-export | USED by recovery subsystem |
+| `recovery-engine.ts` | Facade bundling all 4 recovery ops | **REMOVED in HER-2** |
 
-**Verdict:** recovery-engine.ts is a convenience facade that no consumer uses. The recovery subsystem modules themselves (assess-state, repair-state, etc.) are implemented but the facade is dead.
+**Verdict:** `recovery-engine.ts` removed during HER-2 dead code cleanup (~72 LOC). The recovery subsystem modules (assess-state, repair-state, etc.) remain implemented.
 
-### 4. Prompt Packet (UNUSED)
-
-| Module | LOC | Status |
-|--------|-----|--------|
-| `prompt-packet/kernel-packet.ts` | 149 | IMPLEMENTED, UNUSED |
-| `prompt-packet/delegation-packet.ts` | 73 | IMPLEMENTED, UNUSED |
-| `prompt-packet/compaction-preservation.ts` | 108 | USED by work-contract (which itself is unused) |
-
-**Verdict:** The entire prompt-packet subsystem has no runtime consumer. Only `compaction-preservation.ts` is imported by the also-unused `work-contract/compaction-packet.ts`.
-
-### 5. Session Entry (UNUSED)
+### 4. Prompt Packet (NOW WIRED — HER-2)
 
 | Module | LOC | Status |
 |--------|-----|--------|
-| `session-entry/purpose-classifier.ts` | 195 | IMPLEMENTED, UNUSED |
-| `session-entry/language-resolution.ts` | 153 | IMPLEMENTED, UNUSED |
-| `session-entry/profile-resolver.ts` | 148 | IMPLEMENTED, UNUSED |
-| `session-entry/intake-gate.ts` | 148 | IMPLEMENTED, UNUSED |
+| `prompt-packet/kernel-packet.ts` | 149 | IMPLEMENTED — imported by hooks/create-session-hooks.ts |
+| `prompt-packet/delegation-packet.ts` | 73 | IMPLEMENTED — available via barrel |
+| `prompt-packet/compaction-preservation.ts` | 108 | IMPLEMENTED — imported by hooks/create-session-hooks.ts |
 
-**Verdict:** Full session intake pipeline implemented but NOT wired to plugin.ts or any tool. Entire subsystem is dead code.
+**Verdict:** Prompt packet subsystem is now wired into the runtime via `create-session-hooks.ts`. Compaction preservation is active during session compaction events.
 
-### 6. Runtime Detection (UNUSED)
+### 5. Session Entry (NOW WIRED — HER-2)
+
+| Module | LOC | Status |
+|--------|-----|--------|
+| `session-entry/purpose-classifier.ts` | 195 | IMPLEMENTED — used by intake-gate.ts |
+| `session-entry/language-resolution.ts` | 153 | IMPLEMENTED — used by intake-gate.ts |
+| `session-entry/profile-resolver.ts` | 148 | IMPLEMENTED — used by intake-gate.ts |
+| `session-entry/intake-gate.ts` | 148 | IMPLEMENTED — imported by hooks/plugin-event-observers.ts |
+
+**Verdict:** Session intake pipeline is now wired into the runtime via `plugin-event-observers.ts`. The `resolveIntake()` function runs on session creation events. Total: 667 LOC active.
+
+### 6. Runtime Detection (STILL DEAD — 195 LOC)
 
 | Module | LOC | Status |
 |--------|-----|--------|
 | `runtime-detection/codemap.ts` | 109 | IMPLEMENTED, UNUSED |
 | `runtime-detection/codescan.ts` | 176 | IMPLEMENTED, UNUSED |
 | `runtime-detection/file-watcher.ts` | 122 | IMPLEMENTED, UNUSED |
-| `runtime-detection/stack-synthesizer.ts` | 90 | IMPLEMENTED, USED by framework-detector |
+| `runtime-detection/stack-synthesizer.ts` | 90 | IMPLEMENTED, UNUSED |
 
-**Verdict:** Only `stack-synthesizer.ts` is used (by framework-detector.ts). The rest of the subsystem is dead.
+**Verdict:** Entire runtime-detection subsystem remains dead code. No module outside `runtime-detection/` imports any of its files. 195 LOC total. Candidate for HER-3 removal.
 
-### 7. Supervisor (UNUSED)
-
-| Module | LOC | Status |
-|--------|-----|--------|
-| `supervisor/health.ts` | 125 | IMPLEMENTED, UNUSED |
-| `supervisor/command-bundle.ts` | — | IMPLEMENTED, UNUSED |
-| `supervisor/context-renderer.ts` | 62 | IMPLEMENTED, UNUSED |
-| `supervisor/messages-transform.ts` | 83 | IMPLEMENTED, UNUSED |
-
-**Verdict:** Entire supervisor subsystem is implemented but NOT wired to plugin.ts or any tool.
-
-### 8. Auto-Loop / Ralph-Loop (UNUSED)
+### 7. Supervisor (REMOVED — HER-2)
 
 | Module | LOC | Status |
 |--------|-----|--------|
-| `auto-loop.ts` | 146 | IMPLEMENTED, UNUSED |
-| `ralph-loop.ts` | 182 | IMPLEMENTED, UNUSED |
+| `supervisor/` (entire dir) | — | **REMOVED in HER-2** |
 
-**Verdict:** Both loop primitives are fully implemented pure functions with zero runtime consumers.
+**Verdict:** Entire supervisor subsystem removed during HER-2 dead code cleanup (~287 LOC).
+
+### 8. Auto-Loop / Ralph-Loop (NOW WIRED — HER-2)
+
+| Module | LOC | Status |
+|--------|-----|--------|
+| `auto-loop.ts` | 146 | IMPLEMENTED — imported by plugin.ts, injected into hook deps |
+| `ralph-loop.ts` | 182 | IMPLEMENTED — imported by plugin.ts, injected into hook deps |
+
+**Verdict:** Both loop primitives are now wired into the runtime. `runAutoLoop` and `runRalphLoop` are passed as dependencies to hook factories via `plugin.ts:78`.
 
 ---
 
 ## Dead Modules (not imported by plugin.ts, tools, or hooks)
 
+*Updated 2026-05-06 — reflects HER-2 dead code removal and wiring.*
+
 | Module | LOC | Reason Dead |
 |--------|-----|-------------|
-| `auto-loop.ts` | 146 | No consumers |
-| `ralph-loop.ts` | 182 | No consumers |
-| `recovery-engine.ts` | 72 | Facade only, no consumers |
-| `work-contract/` (entire dir) | ~613 | Replaced by agent-work-contracts/ |
-| `session-entry/` (entire dir) | ~667 | Not wired to plugin |
-| `runtime-detection/codemap.ts` | 109 | Not wired (only stack-synthesizer is used) |
+| `runtime-detection/codemap.ts` | 109 | Not wired |
 | `runtime-detection/codescan.ts` | 176 | Not wired |
 | `runtime-detection/file-watcher.ts` | 122 | Not wired |
-| `prompt-packet/kernel-packet.ts` | 149 | No consumers |
-| `prompt-packet/delegation-packet.ts` | 73 | No consumers |
+| `runtime-detection/stack-synthesizer.ts` | 90 | Not wired |
+| `runtime-detection/index.ts` | 4 | Barrel, no consumers |
+| **Total Dead LOC** | **~195** | **~1.2% of src/lib/** |
+
+### Removed in HER-2 (no longer in codebase)
+
+| Module | LOC Removed | Reason |
+|--------|-------------|--------|
+| `work-contract/` (entire dir) | ~613 | Superseded by agent-work-contracts/ |
 | `supervisor/` (entire dir) | ~287 | Not wired to plugin |
-| **Total Dead LOC** | **~2,596** | **~14.5% of src/lib/** |
+| `recovery-engine.ts` | ~72 | Facade only, no consumers |
+| **HER-2 Total Removed** | **~972 LOC source** | Plus ~955 LOC tests |
 
 ---
 
@@ -448,15 +459,22 @@ These modules have real logic, real tests, and are actively imported by plugin.t
 
 ### Implemented but NOT Wired (dead code with real logic)
 
-- `auto-loop.ts` — pure function, ready to use
-- `ralph-loop.ts` — pure function, ready to use
-- `session-entry/` — full intake pipeline, ready to wire
-- `work-contract/` — superseded by agent-work-contracts/
-- `supervisor/` — health + command + context modules, ready to wire
-- `runtime-detection/` — codemap + codescan + file-watcher, ready to wire
-- `prompt-packet/` — kernel + delegation packets, ready to wire
-- `recovery-engine.ts` — facade for recovery subsystem
+- `runtime-detection/` — codemap + codescan + file-watcher + stack-synthesizer, 195 LOC total — no consumers outside the directory
+
+### Wired in HER-2 (previously dead, now active)
+
+- `auto-loop.ts` — wired via plugin.ts → hook deps injection
+- `ralph-loop.ts` — wired via plugin.ts → hook deps injection
+- `session-entry/` — wired via hooks/plugin-event-observers.ts (`resolveIntake`)
+- `prompt-packet/compaction-preservation.ts` — wired via hooks/create-session-hooks.ts
+- `prompt-packet/kernel-packet.ts` — wired via hooks/create-session-hooks.ts
+
+### Removed in HER-2
+
+- `work-contract/` — superseded by agent-work-contracts/ (~613 LOC removed)
+- `supervisor/` — health + command + context modules (~287 LOC removed)
+- `recovery-engine.ts` — facade for recovery subsystem (~72 LOC removed)
 
 ---
 
-*Implementation inventory: 2026-05-05*
+*Implementation inventory: 2026-05-05 — updated 2026-05-06 (HER-2 dead code removal + wiring)*

@@ -1,6 +1,8 @@
+<!-- generated-by: gsd-doc-writer -->
 # Testing Patterns
 
 **Analysis Date:** 2026-04-28
+**Updated:** 2026-05-06
 
 ## Test Framework
 
@@ -392,4 +394,18 @@ beforeEach(() => {
 
 ---
 
-*Testing analysis: 2026-04-28*
+## Current Test Status (2026-05-06)
+
+| Metric | Value |
+|--------|-------|
+| Test files | 120 (119 passing, 1 failed) |
+| Individual tests | 1,606 (1,604 passing, 2 failing) |
+| Failing tests | 2 in `tests/lib/session-journal.test.ts` (category ownership assertions — `.hivemind/` README format mismatch) |
+| Failing file | `tests/lib/session-journal.test.ts` |
+| Coverage thresholds | Statements: 70%, Branches: 60%, Functions: 70%, Lines: 70% |
+| Test framework | Vitest 4.1.5 with v8 coverage provider |
+| Known warnings | `vi.unmock("node:fs")` not at top level in `continuity.test.ts` and `delegation-persistence.test.ts` (will become errors in future vitest) |
+
+---
+
+*Testing analysis: 2026-04-28 — updated 2026-05-06 (test counts, failing tests, coverage verification)*

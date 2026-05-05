@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1777916637525,
+  "updatedAt": 1778007177508,
   "contracts": {
     "awc_c7c692d5-4fa0-4c9e-bd51-395411de8c4e": {
       "id": "awc_c7c692d5-4fa0-4c9e-bd51-395411de8c4e",
@@ -116,6 +116,43 @@
       },
       "createdAt": 1777916637521,
       "updatedAt": 1777916637525
+    },
+    "awc_4d2158f6-e5db-4f81-af05-d372397b88ca": {
+      "id": "awc_4d2158f6-e5db-4f81-af05-d372397b88ca",
+      "status": "created",
+      "owner": {
+        "agent": "hm-l0-orchestrator",
+        "sessionId": "uat-batch-c"
+      },
+      "scope": {
+        "taskBoundary": "Test agent-work-create tool: basic create with correct evidence level",
+        "allowedSurfaces": [
+          "read-only",
+          "hivemind-state"
+        ],
+        "dependencies": [],
+        "nonGoals": [
+          "Do not modify any production code",
+          "Do not dispatch subagents"
+        ]
+      },
+      "evidence": {
+        "requiredProof": [],
+        "minimumEvidenceLevel": "L3_STATIC_REVIEW",
+        "verificationCommands": [],
+        "blockedStateRules": []
+      },
+      "compaction": {
+        "briefing": "This is a test contract to validate the hivemind-agent-work-create tool with correct evidence level enum",
+        "summary": "Test contract for UAT session - Batch D",
+        "anchors": [],
+        "reinjectionPayload": "",
+        "sourceRefs": [
+          "uat-her2-session-2026-05-06/UAT-TEST-SESSION-2026-05-06.md"
+        ]
+      },
+      "createdAt": 1778007177501,
+      "updatedAt": 1778007177507
     }
   }
 }

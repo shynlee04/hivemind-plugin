@@ -1,19 +1,21 @@
+<!-- generated-by: gsd-doc-writer -->
 # Codebase Concerns
 
 **Analysis Date:** 2026-04-28
+**Updated:** 2026-05-06
 
 ## Tech Debt
 
 **DelegationManager — Size exceeds target:**
-- Issue: `src/lib/delegation-manager.ts` at 656 LOC exceeds the project's 500 LOC per-module cap. Contains WaiterModel dispatch, dual-signal completion, safety ceiling management, grace-period cleanup, PTY integration, and notification scheduling — at least 3 distinct concerns.
+- Issue: `src/lib/delegation-manager.ts` at 468 LOC is near the project's 500 LOC per-module cap. Contains WaiterModel dispatch, dual-signal completion, safety ceiling management, grace-period cleanup, PTY integration, and notification scheduling — at least 3 distinct concerns.
 - Files: `src/lib/delegation-manager.ts`
 - Impact: Complex debugging, harder to test in isolation, increased risk of merge conflicts. The class manages 5 Map instances (`delegations`, `delegationsBySession`, `safetyTimers`, `gracePeriodTimers`, `activePolling`) simultaneously.
-- Fix approach: Extract safety-ceiling timer management into `src/lib/delegation-safety.ts` (~120 LOC). Extract grace-period cleanup into `src/lib/delegation-cleanup.ts` (~100 LOC). This would bring delegation-manager below 450 LOC.
+- Fix approach: Extract safety-ceiling timer management into `src/lib/delegation-safety.ts` (~120 LOC). Extract grace-period cleanup into `src/lib/delegation-cleanup.ts` (~100 LOC). This would bring delegation-manager below 350 LOC.
 
-**Types module — Exceeds 500 LOC:**
-- Issue: `src/lib/types.ts` at 514 LOC is above the 500 LOC cap. Contains delegation types, lifecycle types, continuity types, runtime policy types, and config workflow re-exports all in one file.
+**Types module — Near 500 LOC cap:**
+- Issue: `src/lib/types.ts` at 415 LOC is within the project's 500 LOC per-module cap but growing. Contains delegation types, lifecycle types, continuity types, runtime policy types, and config workflow re-exports all in one file.
 - Files: `src/lib/types.ts`
-- Impact: Import overhead — every module that imports a single type pulls in the entire file's parse cost. The config-workflow re-exports (lines 506-514) add indirection.
+- Impact: Import overhead — every module that imports a single type pulls in the entire file's parse cost. The config-workflow re-exports add indirection.
 - Fix approach: Extract delegation types into `src/lib/types/delegation.ts`, lifecycle types into `src/lib/types/lifecycle.ts`, and keep `types.ts` as a barrel re-export file only.
 
 **Duplicated utility function:**
@@ -28,11 +30,11 @@
 - Impact: Prevents truly isolated unit testing — test files must unmock `node:fs` and manually reset state. Tests currently use `vi.unmock("node:fs")` in nested positions which vitest warns "will become an error in a future version."
 - Fix approach: Refactor to a `ContinuityStore` class with injectable filesystem adapter, or at minimum expose a `resetStoreCache()` function for tests. The test files `tests/lib/continuity.test.ts` and `tests/lib/delegation-persistence.test.ts` also need their `vi.unmock()` calls moved to module top-level before vitest enforces this.
 
-**Documentation drift — notification-handler status:**
-- Issue: `src/lib/AGENTS.md` describes `notification-handler.ts` as "DEPRECATED: Dead code. WaiterModel polling replaces push notifications. Retained for potential re-integration." However, the actual code was re-activated in Phase 16.2 and is actively used by `delegation-manager.ts` via `notifyDelegationTerminal()`. The source file comments say "Re-activated in Phase 16.2."
+**Documentation drift — notification-handler status (RESOLVED):**
+- Issue: `src/lib/AGENTS.md` previously described `notification-handler.ts` as "DEPRECATED: Dead code." However, the actual code was re-activated in Phase 16.2 and is actively used by `delegation-state-machine.ts` via `notifyDelegationTerminal()` and by `lifecycle-manager.ts` via `replayPendingNotifications()`. The source file comments say "Re-activated in Phase 16.2."
 - Files: `src/lib/notification-handler.ts`, `src/lib/AGENTS.md`
-- Impact: Developers may avoid modifying or deleting code they believe is dead. Confusion about whether new features should use this module.
-- Fix approach: Update `src/lib/AGENTS.md` to reflect the current status: "Notification delivery for parent sessions (re-activated Phase 16.2). Provides fire-and-forget terminal-state notifications with durable pending-notification queuing."
+- Impact: RESOLVED — `src/lib/AGENTS.md` has been updated to reflect active status.
+- Fix approach: N/A — resolved.
 
 **Deprecated constants still exported:**
 - Issue: `STABILITY_THRESHOLD` and `STABILITY_POLL_INTERVAL_MS` in `src/lib/types.ts:495-498` are marked `@deprecated` but still exported. No importers found in current `src/`.
@@ -53,10 +55,10 @@
 - Fix approach: Replace `z.record(z.string(), z.unknown())` with the permission schema from `permission.schema.ts`.
 
 **Total codebase size significantly exceeds target architecture:**
-- Issue: The project is at ~13,237 LOC vs. the target architecture proposal of ~4,000-5,000 LOC.
+- Issue: The project is at ~22,036 LOC vs. the target architecture proposal of ~4,000-5,000 LOC. HER-2 removed ~1,927 LOC (source + tests) but the codebase remains substantially larger than the target.
 - Files: Entire `src/` directory
 - Impact: Higher cognitive load for contributors, longer build times, harder to maintain module boundaries.
-- Fix approach: This is expected growth from 31+ phases of development. Not an immediate concern but should inform future refactoring prioritization.
+- Fix approach: This is expected growth from 31+ phases of development. HER-2 dead code removal reduced the gap. Continue prioritizing dead code removal (runtime-detection/ at 195 LOC is next candidate).
 
 ## Known Bugs
 
@@ -121,10 +123,10 @@
 ## Fragile Areas
 
 **DelegationManager — Central orchestration with complex state:**
-- Files: `src/lib/delegation-manager.ts` (656 LOC), `src/lib/command-delegation.ts` (401 LOC), `src/lib/sdk-delegation.ts` (209 LOC)
+- Files: `src/lib/delegation-manager.ts` (468 LOC), `src/lib/command-delegation.ts` (418 LOC), `src/lib/sdk-delegation.ts` (281 LOC)
 - Why fragile: Tight coupling between dispatch, safety ceilings, status transitions, PTY/headless fallback, and notification. Changes to the Delegation interface in `types.ts` cascade through 5+ files. The dual-dispatch architecture (SDK vs command/PTY) has parallel timer management that must stay synchronized.
 - Safe modification: Always update `types.ts` first, then delegation-manager, then SDK/command handlers. Verify transitions in `VALID_DELEGATION_TRANSITIONS` before adding new statuses. Run `tests/lib/delegation-manager.test.ts` (the most comprehensive test file) after any change.
-- Test coverage: Well-tested (67 test files, 1105 tests passing). The delegation-manager test file covers dispatch, recovery, and terminal transitions.
+- Test coverage: Well-tested (1,604 tests passing). The delegation-manager test file covers dispatch, recovery, and terminal transitions.
 
 **Continuity store — Singleton with sync I/O:**
 - Files: `src/lib/continuity.ts` (455 LOC)
@@ -232,6 +234,45 @@
 - Risk: Minimal — these are type definitions only. No runtime behavior to test.
 - Priority: Low
 
+## Skeleton Gap Analysis (New — 2026-05-06)
+
+*These concerns were surfaced during skeleton gap analysis and are not yet tracked as work items.*
+
+**Event-tracker output is noise, not useful for retrieval (f-08):**
+- Issue: The event-tracker writes markdown and JSON artifacts to `.hivemind/event-tracker/` but the output is not structured for downstream retrieval or querying. Artifacts accumulate without indexing.
+- Impact: Event tracker data cannot be meaningfully consumed by other tools or agents.
+- Priority: Medium
+
+**No unified primitive registry (f-03c-f):**
+- Issue: There is no single registry that enumerates all primitives (agents, skills, commands) with their metadata, dependencies, and status. Each primitive type has its own loader but no unified discovery.
+- Impact: Cross-primitive validation and dependency analysis require ad-hoc scanning.
+- Priority: Medium
+
+**configs.json not designed (f-05.i):**
+- Issue: The `configs.json` file path referenced in some workflows has no formal schema or design specification.
+- Impact: Configuration state may become inconsistent across sessions.
+- Priority: Low
+
+**Path 4 (sidecar/onboarding) has zero coverage:**
+- Issue: The sidecar dashboard and onboarding flow (Path 4 in the architecture proposal) has no implementation, no tests, and no design artifacts.
+- Impact: New users have no guided onboarding experience.
+- Priority: Low (future feature)
+
+**13 features are UNOWNED — no workstream covers them:**
+- Issue: Skeleton gap analysis identified 13 features with no owning workstream or milestone.
+- Impact: These features may never be prioritized without explicit ownership assignment.
+- Priority: Medium — requires project-level triage
+
+**command-engine/ exists as stub only (f-04):**
+- Issue: `src/lib/command-engine/` is implemented (354 LOC) but its integration with the broader harness is minimal. Command bundles are discovered but not fully routed.
+- Impact: Command execution engine is underutilized.
+- Priority: Low
+
+**CLI substrate exists but no user-facing onboarding (f-05):**
+- Issue: `src/cli/` directory exists with 5 files but provides no user-facing CLI commands for harness setup or configuration.
+- Impact: Users must manually configure the harness via JSON files.
+- Priority: Low
+
 ---
 
-*Concerns audit: 2026-04-28*
+*Concerns audit: 2026-04-28 — updated 2026-05-06 (HER-2 LOC corrections + skeleton gap analysis)*

@@ -1,13 +1,15 @@
+<!-- generated-by: gsd-doc-writer -->
 # External Integrations
 
 **Analysis Date:** 2026-04-28
+**Updated:** 2026-05-06
 
 ## APIs & External Services
 
 **Runtime Platform:**
 - OpenCode Runtime — Core platform the harness plugs into
   - SDK/Client: `@opencode-ai/sdk` ^1.14.28 (type-only), `@opencode-ai/plugin` ^1.14.28
-  - Integration: `src/plugin.ts` — Composition root registering 9 tools and multiple hooks via the plugin API
+  - Integration: `src/plugin.ts` — Composition root registering 16 tools and multiple hooks via the plugin API
   - Session API: `src/lib/session-api.ts` — Typed wrappers for session.create, session.prompt, session.promptAsync, session.abort, session.messages, session.status
   - Auth: Session IDs (format: `ses_*`) injected by platform; no custom auth
 
@@ -180,4 +182,4 @@
 
 ---
 
-*Integration audit: 2026-04-28*
+*Integration audit: 2026-04-28 — updated 2026-05-06 (tool count correction)*

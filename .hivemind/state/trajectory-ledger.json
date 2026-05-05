@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1777918748678,
+  "updatedAt": 1778007359330,
   "trajectories": {
     "traj_uat_team_b_batch4": {
       "id": "traj_uat_team_b_batch4",
@@ -129,6 +129,59 @@
       ],
       "createdAt": 1777917571803,
       "updatedAt": 1777918748678
+    },
+    "uat-her2-session-2026-05-06": {
+      "id": "uat-her2-session-2026-05-06",
+      "rootSessionId": "uat-her2-session-2026-05-06",
+      "sessionId": "uat-batch-f",
+      "parentTrajectoryId": null,
+      "status": "active",
+      "evidenceRefs": [
+        "uat-her2-session-2026-05-06/UAT-TEST-SESSION-2026-05-06.md"
+      ],
+      "checkpoints": [
+        {
+          "checkpointId": "checkpoint-2c7cb910-0fa3-428b-a940-2edebbc39c65",
+          "summary": "Batch C checkpoint: trajectory+pressure+sdk-supervisor tested",
+          "evidenceRefs": [
+            "uat-her2-session-2026-05-06/UAT-TEST-SESSION-2026-05-06.md"
+          ],
+          "createdAt": 1778007115107
+        },
+        {
+          "checkpointId": "checkpoint-4376e0ee-57a5-4d5c-86e6-c347fe55fe0c",
+          "summary": "FINAL: Complete UAT report written. 48/48 tests, 16 tools, 100% pass rate. All evidence recorded to disk.",
+          "evidenceRefs": [
+            "uat-her2-session-2026-05-06/UAT-TEST-SESSION-2026-05-06.md"
+          ],
+          "createdAt": 1778007359330
+        }
+      ],
+      "events": [
+        {
+          "eventId": "event-c599a6f1-9a7e-4240-963c-f0b1c7c0f39c",
+          "eventType": "delegation.dispatch",
+          "summary": "Test trajectory event recording",
+          "evidenceRefs": [],
+          "createdAt": 1778007107848
+        },
+        {
+          "eventId": "pressure_batch_c",
+          "eventType": "runtime-pressure",
+          "summary": "Batch C: all tools at tier 0 steady - trajectory+pressure+sdk-supervisor validated — tier 0/steady/allow",
+          "evidenceRefs": [],
+          "createdAt": 1778007136661
+        },
+        {
+          "eventId": "event-ad3781b8-cf42-4b32-8e9e-c8c90176d3fd",
+          "eventType": "integration.cross-tool",
+          "summary": "Phase 3/4: Cross-tool chains + delegation lifecycle complete. All 16 Hivemind tools tested across individual, cross-tool, and lifecycle coverage.",
+          "evidenceRefs": [],
+          "createdAt": 1778007328306
+        }
+      ],
+      "createdAt": 1778007107848,
+      "updatedAt": 1778007359330
     }
   }
 }

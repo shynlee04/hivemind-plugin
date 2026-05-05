@@ -1,6 +1,6 @@
 # Project State
 
-**Last Updated:** 2026-05-05T14:45:45Z
+**Last Updated:** 2026-05-06
 
 ---
 
@@ -13,7 +13,7 @@
 | HER-0 | ✅ COMPLETE (2026-05-05) | — |
 | HER-1 | ✅ COMPLETE (2026-05-05) | HER-0 |
 | HER-2 | ✅ COMPLETE (2026-05-05) | HER-1 ✅ |
-| HER-3 | Blocked | HER-2 |
+| HER-3 | 🟢 Ready | HER-2 (→ HER-2 dependency satisfied: prompt-packet/ wired, compaction preservation active; ready to proceed) |
 | HER-4 | Ready | HER-1 ✅ |
 | HER-5 | Ready | HER-1 ✅ |
 
@@ -38,6 +38,26 @@
 ### skill-ecosystem — CLOSED (2026-04-30)
 
 16/17 phases executed (SE-10 deferred). 54 active skills. 48/51 skills ≥6/8 RICH-8.
+
+---
+
+## Proposed Workstreams
+
+| Workstream | Status | Priority | Dependencies | Purpose |
+|------------|--------|----------|-------------|---------|
+| **hivemind-state-architecture** | PLANNED | CRITICAL | HER-0 | Design `.hivemind/` canonical structure, `configs.json` (5-field minimal), schema specs |
+| **primitive-registry** | PLANNED | HIGH | hivemind-state-architecture | Unified registry for agents/skills/commands/tools/MCP/hooks with stacking, chaining, permissions |
+| **bootstrap-cli-onboarding** | PLANNED | HIGH | hivemind-state-architecture, primitive-registry | `npm install` model, `npx init`, greenfield/brownfield setup, doctor mode |
+
+## Deferred Workstreams
+
+| Workstream | Priority | Depends On | Purpose |
+|------------|----------|------------|---------|
+| auto-commands-workflow-router | MEDIUM | primitive-registry | Intent → workflow routing, auto-commands engine |
+| delegation-revamp | MEDIUM | primitive-registry | Multi-lane delegation, graph/swarm/CRUD/hierarchy |
+| trajectory-task-plus | MEDIUM | delegation-revamp, hivemind-state-architecture | Cross-session task lifecycle, trajectory ledger v3 |
+| context-compaction-engine | MEDIUM | trajectory-task-plus, hivemind-state-architecture | Event-tracker redesign, context purification, time-machine |
+| sidecar-user-config-ui | LOW | bootstrap-cli-onboarding, primitive-registry | Sidecar dashboard tabs, user config surface |
 
 ---
 
@@ -71,4 +91,6 @@
 |-----|-----------|--------|
 | AGENTS.md | 2026-05-05 | Synced |
 | ARCHITECTURE.md | 2026-05-05 | Synced |
+| ROADMAP.md (Master) | 2026-05-06 | Created |
 | ROADMAP.md (HER) | 2026-05-05 | Synced |
+| REQUIREMENTS.md | 2026-05-06 | Created |
