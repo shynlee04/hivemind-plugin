@@ -78,13 +78,14 @@ Wave 4 — Verification:
 
 **Depends on:** HER-1 ✅ (COMPLETE)
 
-**Requirements:** [HER-2-A, HER-2-B, HER-2-C, HER-2-D] — ALL COVERED
+**Requirements:** [HER-2-A, HER-2-B, HER-2-C, HER-2-D, HER-2-E, HER-2-F] — ALL COVERED
 
-**Plans:** 2 plans complete
+**Plans:** 3 plans complete
 
 Plans:
 - [x] HER-2-01-PLAN.md — Remove Dead Code: 4 module groups removed (~1,511 LOC source, ~955 LOC tests). All verification passes.
 - [x] HER-2-02-PLAN.md — Wire auto-loop + ralph-loop, fix notification-handler: 2 primitives wired, D-07/D-08 violations fixed, ~51 LOC dead code removed.
+- [x] HER-2-03-PLAN.md — Wire session-entry/ as hooks (event observer + system.transform) + prompt-packet/ compaction preservation: 3 integration points wired, intake caching + routing context injection + compaction durability.
 
 ---
 
@@ -145,3 +146,5 @@ Plans:
 | HER-2-B | Reduce dead code ratio from 13.7% toward <5% | HER-2 | ✅ Covered (both plans; 13.7% → ~6.5%) |
 | HER-2-C | Fix notification-handler boundary violations (D-06 through D-09) | HER-2 | ✅ Covered (Plan 02) |
 | HER-2-D | Wire auto-loop and ralph-loop as runtime DI primitives (D-01 through D-03) | HER-2 | ✅ Covered (Plan 02) |
+| HER-2-E | Wire session-entry/ as event observer on session.created + system.transform hook | HER-2 | ✅ Covered (Plan 03) |
+| HER-2-F | Wire prompt-packet/ compaction-preservation into compaction hook | HER-2 | ✅ Covered (Plan 03) |

@@ -1,6 +1,6 @@
 # Project State
 
-**Last Updated:** 2026-05-05
+**Last Updated:** 2026-05-05T14:45:45Z
 
 ---
 
@@ -61,7 +61,7 @@
 | Dev Tooling Skills | 65 gsd-* (GSD framework — not shipped) |
 | Tools | 16 |
 | Commands | 18 |
-| Dead code ratio | ~6.5% (was 13.7%, ~1,562 LOC removed across HER-2-01 and HER-2-02) |
+| Dead code ratio | ~6.5% (was 13.7%, ~1,562 LOC removed across HER-2-01/02; session-entry + prompt-packet wired in HER-2-03) |
 
 ---
 
