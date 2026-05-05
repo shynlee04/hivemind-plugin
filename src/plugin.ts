@@ -13,7 +13,7 @@ import { taskState } from "./lib/state.js"
 import { createCoreHooks } from "./hooks/create-core-hooks.js"
 import { createSessionHooks } from "./hooks/create-session-hooks.js"
 import { createToolGuardHooks } from "./hooks/create-tool-guard-hooks.js"
-import { createDelegationEventObserver, createSessionJourneyEventObserver } from "./hooks/plugin-event-observers.js"
+import { createDelegationEventObserver, createSessionEntryEventObserver, createSessionJourneyEventObserver } from "./hooks/plugin-event-observers.js"
 import { createToolExecuteAfterHook } from "./hooks/tool-after-composer.js"
 import { summarizePluginToolOutput } from "./lib/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./lib/pty/pty-runtime.js"
@@ -78,6 +78,14 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()
   const sessionJourneyEventObserver = createSessionJourneyEventObserver(shouldTrackEventTrackerEvent)
+  const sessionEntryObserverFactory = createSessionEntryEventObserver()
+  const consumeSessionEntryFact = async ({ event }: { event?: unknown }) => {
+    try {
+      await sessionEntryObserverFactory.observer({ event })
+    } catch {
+      // Best-effort intake classification: never block canonical event handling.
+    }
+  }
   const consumeDelegationFact = async ({ event }: { event?: unknown }) => {
     const fact = await delegationEventObserver({ event })
     if (fact.kind === "delegation-session-idle") {
@@ -103,7 +111,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   return {
     ...createCoreHooks({
       ...deps,
-      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeJourneyFact],
+      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeJourneyFact, consumeSessionEntryFact],
     }),
     ...sessionReadHooks,
     ...toolGuardHooks,
