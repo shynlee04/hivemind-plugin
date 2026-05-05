@@ -74,11 +74,16 @@ Wave 4 — Verification:
 
 **Goal:** Remove or wire orphan modules. Reduce dead code ratio from 13.7% to <5% of src/lib/.
 
-**Status:** Ready
+**Status:** 🔄 Plan 01 Complete
 
 **Depends on:** HER-1 ✅ (COMPLETE)
 
-**Requirements:** TBD
+**Requirements:** [HER-2-A, HER-2-B]
+
+**Plans:** 1 plan complete
+
+Plans:
+- [x] HER-2-01-PLAN.md — Remove Dead Code: 4 module groups removed (~1,511 LOC source, ~955 LOC tests). All verification passes.
 
 ---
 
@@ -116,43 +121,6 @@ Wave 4 — Verification:
 
 **Requirements:** TBD
 
-### Phase HER-1: Documentation & Configuration Recovery
-
-**Goal:** Bring all documentation into alignment with runtime reality. Zero code changes.
-
-**Status:** Not started
-
-**Depends on:** HER-0
-
-**Requirements:** [HER-1-A, HER-1-B, HER-1-C]
-
-**Canonical refs:**
-- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/HER-0-SUMMARY-2026-05-05.md` — HER-1 routing table (9 actions)
-- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/map/lane-b-governance-audit-2026-05-05.md` — Governance drift claims C-1 through C-4
-- `AGENTS.md` — Agent/skill counts to update
-- `.planning/codebase/ARCHITECTURE.md` — Tool/agent counts to update
-
----
-
-### Phase HER-2: Dead Code Cleanup
-
-**Goal:** Remove or wire orphan modules. Reduce 13.7% dead code ratio to <5%. No module with zero consumers remains.
-
-**Status:** Not started
-
-**Depends on:** HER-1
-
-**Requirements:** [HER-2-A, HER-2-B, HER-2-C, HER-2-D]
-
-**Canonical refs:**
-- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/HER-0-SUMMARY-2026-05-05.md` — HER-2 routing table (6 actions, LOC counts, strategies)
-- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/matrix/module-ownership-matrix-2026-05-05.md` — Module classification (116 modules, 28 orphans)
-- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/map/lane-e-legacy-pattern-validation-2026-05-05.md` — Legacy patterns (84 concepts, 7 DEAD subsystems)
-- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/matrix/ecosystem-map-2026-05-05.md` — Unified ecosystem map with dead code locations
-- `src/plugin.ts` — Plugin composition root (wiring target)
-
----
-
 ## Requirements
 
 | ID | Description | Phase | Status |
@@ -172,3 +140,5 @@ Wave 4 — Verification:
 | HER-1-F | hm-l2-planning-persistence SKILL.md frontmatter fixed | HER-1 | ✅ Covered (already valid) |
 | HER-1-G | CHANGELOG.md + .hivemind/ READMEs created | HER-1 | ✅ Covered |
 | HER-1-H | validate-restart returns 0 errors (exit gate) | HER-1 | ✅ Covered |
+| HER-2-A | Remove confirmed dead code modules with zero runtime consumers | HER-2 | ✅ Covered (Plan 01) |
+| HER-2-B | Reduce dead code ratio from 13.7% toward <5% | HER-2 | 🔄 In Progress (Plan 01: 13.7% → ~6.8%) |

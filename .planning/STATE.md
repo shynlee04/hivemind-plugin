@@ -12,7 +12,7 @@
 |-------|--------|-------------|
 | HER-0 | ✅ COMPLETE (2026-05-05) | — |
 | HER-1 | ✅ COMPLETE (2026-05-05) | HER-0 |
-| HER-2 | Ready | HER-1 ✅ |
+| HER-2 | 🔄 Plan 01 Complete | HER-1 ✅ |
 | HER-3 | Blocked | HER-2 |
 | HER-4 | Ready | HER-1 ✅ |
 | HER-5 | Ready | HER-1 ✅ |
@@ -61,7 +61,7 @@
 | Dev Tooling Skills | 65 gsd-* (GSD framework — not shipped) |
 | Tools | 16 |
 | Commands | 18 |
-| Dead code ratio | 13.7% |
+| Dead code ratio | ~6.8% (was 13.7%, ~1,511 LOC removed in HER-2-01) |
 
 ---
 
