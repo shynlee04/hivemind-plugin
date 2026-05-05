@@ -4,6 +4,9 @@ plan: 01
 type: tdd
 wave: 1
 depends_on: []
+status: superseded
+superseded_by: CA-01-01-PLAN.md
+superseded_date: 2026-05-06
 files_modified:
   - src/schema-kernel/hivemind-configs.schema.ts
   - tests/schema-kernel/hivemind-configs.schema.test.ts

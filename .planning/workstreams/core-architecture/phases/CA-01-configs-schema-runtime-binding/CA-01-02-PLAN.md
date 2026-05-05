@@ -55,7 +55,7 @@ Output: readConfigs() called in plugin.ts, config available in hooks, session.cr
 
 <execution_context>
 @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/execute-plan.md
-@/Users/apple/Documents/coding/get-shit-done/templates/summary.md
+@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.agent/get-shit-done/templates/summary.md
 </execution_context>
 
 <context>

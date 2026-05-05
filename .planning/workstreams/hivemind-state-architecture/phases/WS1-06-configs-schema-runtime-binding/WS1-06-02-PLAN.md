@@ -4,6 +4,9 @@ plan: 02
 type: execute
 wave: 2
 depends_on: ["WS1-06-01"]
+status: superseded
+superseded_by: CA-01-02-PLAN.md
+superseded_date: 2026-05-06
 files_modified:
   - src/plugin.ts
   - src/lib/config-subscriber.ts

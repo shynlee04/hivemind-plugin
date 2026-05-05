@@ -41,12 +41,18 @@ import {
   shouldTrackEventTrackerEvent,
 } from "./lib/event-tracker/index.js"
 
+import { getConfig } from "./lib/config-subscriber.js"
+import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
+
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const projectDirectory = directory ?? process.cwd()
   // Load workspace-level runtime policy once at startup.
   const runtimePolicy = loadRuntimePolicy(resolveWorkspaceRuntimePolicy(projectDirectory))
+  // Load Hivemind configs — lazy-cached for downstream consumers.
+  // Failure gracefully falls back to defaults (never crashes plugin init).
+  const hivemindConfig: HivemindConfigs = getConfig(projectDirectory)
   const ptyManager = await createPtyManagerIfSupported()
 
   const delegationManager = new DelegationManager(client, { ptyManager, runtimePolicy })
