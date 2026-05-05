@@ -74,16 +74,17 @@ Wave 4 — Verification:
 
 **Goal:** Remove or wire orphan modules. Reduce dead code ratio from 13.7% to <5% of src/lib/.
 
-**Status:** 🔄 Plan 01 Complete
+**Status:** ✅ COMPLETE (2026-05-05)
 
 **Depends on:** HER-1 ✅ (COMPLETE)
 
-**Requirements:** [HER-2-A, HER-2-B]
+**Requirements:** [HER-2-A, HER-2-B, HER-2-C, HER-2-D] — ALL COVERED
 
-**Plans:** 1 plan complete
+**Plans:** 2 plans complete
 
 Plans:
 - [x] HER-2-01-PLAN.md — Remove Dead Code: 4 module groups removed (~1,511 LOC source, ~955 LOC tests). All verification passes.
+- [x] HER-2-02-PLAN.md — Wire auto-loop + ralph-loop, fix notification-handler: 2 primitives wired, D-07/D-08 violations fixed, ~51 LOC dead code removed.
 
 ---
 
@@ -141,4 +142,6 @@ Plans:
 | HER-1-G | CHANGELOG.md + .hivemind/ READMEs created | HER-1 | ✅ Covered |
 | HER-1-H | validate-restart returns 0 errors (exit gate) | HER-1 | ✅ Covered |
 | HER-2-A | Remove confirmed dead code modules with zero runtime consumers | HER-2 | ✅ Covered (Plan 01) |
-| HER-2-B | Reduce dead code ratio from 13.7% toward <5% | HER-2 | 🔄 In Progress (Plan 01: 13.7% → ~6.8%) |
+| HER-2-B | Reduce dead code ratio from 13.7% toward <5% | HER-2 | ✅ Covered (both plans; 13.7% → ~6.5%) |
+| HER-2-C | Fix notification-handler boundary violations (D-06 through D-09) | HER-2 | ✅ Covered (Plan 02) |
+| HER-2-D | Wire auto-loop and ralph-loop as runtime DI primitives (D-01 through D-03) | HER-2 | ✅ Covered (Plan 02) |
