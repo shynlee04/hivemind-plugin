@@ -116,6 +116,41 @@ Wave 4 — Verification:
 
 **Requirements:** TBD
 
+### Phase HER-1: Documentation & Configuration Recovery
+
+**Goal:** Bring all documentation into alignment with runtime reality. Zero code changes.
+
+**Status:** Not started
+
+**Depends on:** HER-0
+
+**Requirements:** [HER-1-A, HER-1-B, HER-1-C]
+
+**Canonical refs:**
+- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/HER-0-SUMMARY-2026-05-05.md` — HER-1 routing table (9 actions)
+- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/map/lane-b-governance-audit-2026-05-05.md` — Governance drift claims C-1 through C-4
+- `AGENTS.md` — Agent/skill counts to update
+- `.planning/codebase/ARCHITECTURE.md` — Tool/agent counts to update
+
+---
+
+### Phase HER-2: Dead Code Cleanup
+
+**Goal:** Remove or wire orphan modules. Reduce 13.7% dead code ratio to <5%. No module with zero consumers remains.
+
+**Status:** Not started
+
+**Depends on:** HER-1
+
+**Requirements:** [HER-2-A, HER-2-B, HER-2-C, HER-2-D]
+
+**Canonical refs:**
+- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/HER-0-SUMMARY-2026-05-05.md` — HER-2 routing table (6 actions, LOC counts, strategies)
+- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/matrix/module-ownership-matrix-2026-05-05.md` — Module classification (116 modules, 28 orphans)
+- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/map/lane-e-legacy-pattern-validation-2026-05-05.md` — Legacy patterns (84 concepts, 7 DEAD subsystems)
+- `.planning/workstreams/harness-ecosystem-recovery/phases/HER-0-ecosystem-remap-audit/matrix/ecosystem-map-2026-05-05.md` — Unified ecosystem map with dead code locations
+- `src/plugin.ts` — Plugin composition root (wiring target)
+
 ---
 
 ## Requirements
