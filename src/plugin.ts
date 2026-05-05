@@ -81,7 +81,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
 
-  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake }
+  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()

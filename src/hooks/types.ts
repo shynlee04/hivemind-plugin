@@ -4,6 +4,7 @@ import type { TaskStateManager } from "../lib/state.js"
 import type { AutoLoopOptions, AutoLoopResult } from "../lib/auto-loop.js"
 import type { RalphLoopOptions, RalphLoopResult } from "../lib/ralph-loop.js"
 import type { IntakeResult } from "../lib/session-entry/intake-gate.js"
+import type { HivemindConfigs } from "../schema-kernel/hivemind-configs.schema.js"
 
 export interface AutoLoopConfig {
   maxIterations: number
@@ -32,4 +33,6 @@ export interface HookDependencies {
   runRalphLoop?: <T>(options: RalphLoopOptions<T>) => Promise<RalphLoopResult<T>>
   escalationMessage?: <T>(result: RalphLoopResult<T>) => string
   getIntake?: (sessionId: string) => IntakeResult | undefined
+  /** Hivemind runtime config — loaded once at plugin init, cached for session lifetime. */
+  hivemindConfig?: HivemindConfigs
 }
