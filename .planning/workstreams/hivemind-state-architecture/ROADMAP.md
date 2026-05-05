@@ -18,6 +18,15 @@ lineage: shared
 | WS1-03 | configs.json Schema + Default | ✅ COMPLETE | WS1-01 |
 | WS1-04 | .gitignore Policy Update | ✅ COMPLETE | WS1-02 |
 | WS1-05 | Governance Documents | ✅ COMPLETE | WS1-01 |
+| WS1-06 | Configs Schema + Runtime Binding | 🔵 PLANNING | WS1-01, WS1-03 |
+
+## WS1-06 Plans
+
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] WS1-06-01-PLAN.md — Expand Zod schema to full skeleton v2 §9.1 (TDD)
+- [ ] WS1-06-02-PLAN.md — Wire readConfigs() into plugin.ts + session.created hook
 
 ## Checkpoint
 
