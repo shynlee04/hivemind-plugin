@@ -273,13 +273,16 @@ Steps:
   <action>
 Wire prompt-packet/compaction-preservation.ts into the compaction hook to preserve intake results across context window compaction.
 
+Note: prompt-packet/ is included here because it is a direct dependency of the session-entry/ wiring — the intake result needs to survive compaction boundaries. While prompt-packet/ is technically orphan code, its compaction-preservation module is the bridge that makes session-entry/ wiring durable.
+
 **D-13:** Compaction hook preserves intake result across context window compaction
 
 Steps:
 
-1. **Add import to `src/hooks/create-session-hooks.ts`:**
+1. **Add imports to `src/hooks/create-session-hooks.ts`:**
    ```typescript
    import { toCompactionPacket, type CompactionExtras } from "../lib/prompt-packet/compaction-preservation.js"
+   import type { KernelPacket } from "../lib/prompt-packet/kernel-packet.js"
    ```
 
 2. **Add `getIntake` to the deps used by createSessionHooks:**
@@ -299,7 +302,8 @@ Steps:
        }
 
        // Build a minimal kernel packet from intake + continuity
-       const kernelPacket = {
+       // Import KernelPacket type for proper typing (no `any` per AGENTS.md)
+       const kernelPacket: KernelPacket = {
          packet_version: "1.0.0",
          session_id: sessionID,
          parent_session_id: continuity?.parentSessionID ?? null,
@@ -317,7 +321,7 @@ Steps:
          run_mode: lifecycle?.runMode ?? null,
        }
 
-       const compactionPacket = toCompactionPacket(kernelPacket as any, extras)
+       const compactionPacket = toCompactionPacket(kernelPacket, extras)
        ;(output.context as string[]).push(
          "Intake compaction preservation:\n" + JSON.stringify(compactionPacket, null, 2)
        )

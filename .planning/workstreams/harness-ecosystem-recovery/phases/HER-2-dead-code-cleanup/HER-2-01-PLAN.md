@@ -169,7 +169,7 @@ Steps:
   <read_first>
     - src/lib/runtime-detection/index.ts (verify current exports)
     - src/lib/runtime-detection/stack-synthesizer.ts (verify it's the only live module)
-    - src/lib/framework-detector.ts (verify it does NOT import stack-synthesizer — confirmed via grep)
+    - src/lib/framework-detector.ts (verify current imports — stack-synthesizer has no external consumers but is kept as a useful utility)
   </read_first>
   <action>
 Remove 3 dead files from `src/lib/runtime-detection/` and update the barrel:
