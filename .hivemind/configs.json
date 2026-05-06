@@ -1,5 +1,5 @@
 {
-  "conversation_language": "en",
+  "conversation_language": "vi",
   "documents_and_artifacts_language": "en",
   "mode": "expert-advisor",
   "user_expert_level": "intermediate-high-level",
@@ -14,7 +14,7 @@
   "workflow": {
     "research": true,
     "cross_session_tasks_dependencies_validation": false,
-    "trajectory_control": false,
+    "trajectory_control": true,
     "advanced_continuity_validation": false,
     "task_plus_enabled": false,
     "plan_check": true,

@@ -63,6 +63,11 @@ function deny(category: string | undefined, reason: string): CategoryGateDecisio
  * Logs advisory skill filter notice when mode restricts skill loading.
  * Non-blocking — does not prevent skill loading, only annotates.
  *
+ * **API surface for Phase WS-4** (auto-intent/workflow router): This function
+ * is intentionally NOT called from any hook or tool yet. The WS-4 phase will
+ * wire it into the skill-loading path to emit advisory notices when curated
+ * mode is active. Until then, it is tested and exposed as public API.
+ *
  * @param skillFilter - The active skill filter from behavioral profile
  * @param skillName - Name of the skill being loaded
  * @returns Advisory message if filter applies, undefined otherwise

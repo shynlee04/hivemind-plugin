@@ -377,3 +377,210 @@ describe("type shape contracts", () => {
     expect(overrides.delegationMode).toBe("waiter")
   })
 })
+
+// ---------------------------------------------------------------------------
+// Feature Evaluation: Language Pipeline (D-04, D-05, REQ-CA02-02)
+//
+// The harness serves multilingual projects. Each of the 10 SupportedLanguage
+// codes must flow through resolveBehavioralProfile() without error and appear
+// in the resolved language fields. These are real-life harness features —
+// not mere type exercise tests.
+// ---------------------------------------------------------------------------
+
+describe("language pipeline feature evaluation", () => {
+  beforeEach(() => {
+    clearAllBehavioralProfiles()
+    mockGetConfig.mockReset()
+    mockResolveProfile.mockReset()
+    mockResolveProfile.mockReturnValue(createMockProfileMatch())
+  })
+
+  afterEach(() => {
+    clearAllBehavioralProfiles()
+  })
+
+  const supportedLanguages = ["en", "vi", "zh", "fr", "ja", "ko", "de", "es", "th", "id"] as const
+
+  for (const lang of supportedLanguages) {
+    it(`resolves conversation_language: "${lang}" correctly`, () => {
+      mockGetConfig.mockReturnValue(
+        createMockConfig({ conversation_language: lang }),
+      )
+
+      const result = resolveBehavioralProfile(`sess-lang-${lang}`, "/project")
+      expect(result.language.conversation).toBe(lang)
+    })
+  }
+
+  for (const lang of supportedLanguages) {
+    it(`resolves documents_and_artifacts_language: "${lang}" correctly`, () => {
+      mockGetConfig.mockReturnValue(
+        createMockConfig({ documents_and_artifacts_language: lang }),
+      )
+
+      const result = resolveBehavioralProfile(`sess-doc-${lang}`, "/project")
+      expect(result.language.documents).toBe(lang)
+    })
+  }
+
+  it("resolves mixed language pair (vi/en) matching real user config", () => {
+    mockGetConfig.mockReturnValue(
+      createMockConfig({
+        conversation_language: "vi",
+        documents_and_artifacts_language: "en",
+      }),
+    )
+
+    const result = resolveBehavioralProfile("sess-reallife", "/project")
+
+    expect(result.language.conversation).toBe("vi")
+    expect(result.language.documents).toBe("en")
+    expect(result.mode).toBe("expert-advisor")
+    expect(result.userExpertLevel).toBe("intermediate-high-level")
+  })
+
+  it("resolves CJK language pair (ja/zh)", () => {
+    mockGetConfig.mockReturnValue(
+      createMockConfig({
+        conversation_language: "ja",
+        documents_and_artifacts_language: "zh",
+      }),
+    )
+
+    const result = resolveBehavioralProfile("sess-cjk", "/project")
+
+    expect(result.language.conversation).toBe("ja")
+    expect(result.language.documents).toBe("zh")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Feature Evaluation: Multi-Level Expertise Merge (D-06, REQ-CA02-03)
+//
+// The config-first merge must correctly map ALL five UserExpertLevel values
+// to expertise levels, and fall back to runtime when no mapping exists.
+// ---------------------------------------------------------------------------
+
+describe("multi-level expertise merge feature evaluation", () => {
+  beforeEach(() => {
+    clearAllBehavioralProfiles()
+    mockGetConfig.mockReset()
+    mockResolveProfile.mockReset()
+  })
+
+  afterEach(() => {
+    clearAllBehavioralProfiles()
+  })
+
+  it("clumsy-vibecoder maps to junior, overriding runtime senior", () => {
+    mockGetConfig.mockReturnValue(
+      createMockConfig({ user_expert_level: "clumsy-vibecoder" }),
+    )
+    mockResolveProfile.mockReturnValue(
+      createMockProfileMatch({ expertise: "senior" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-clumsy", "/project")
+    expect(result.merged.expertise).toBe("junior")
+  })
+
+  it("beginner-friendly maps to junior, overriding runtime mid", () => {
+    mockGetConfig.mockReturnValue(
+      createMockConfig({ user_expert_level: "beginner-friendly" }),
+    )
+    mockResolveProfile.mockReturnValue(
+      createMockProfileMatch({ expertise: "mid" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-beginner", "/project")
+    expect(result.merged.expertise).toBe("junior")
+  })
+
+  it("absolute-expert maps to senior, overriding runtime junior", () => {
+    mockGetConfig.mockReturnValue(
+      createMockConfig({ user_expert_level: "absolute-expert" }),
+    )
+    mockResolveProfile.mockReturnValue(
+      createMockProfileMatch({ expertise: "junior" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-absolute", "/project")
+    expect(result.merged.expertise).toBe("senior")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Feature Evaluation: Real-Life Config Scenario (CA-01→CA-02 Integration)
+//
+// This mirrors the ACTUAL .hivemind/configs.json: vi/en, expert-advisor,
+// intermediate-high-level, sufficient-phase-discussion. Validates the full
+// CA-01 schema → CA-02 profile resolution pipeline.
+// ---------------------------------------------------------------------------
+
+describe("real-life config scenario (CA-01→CA-02 integration)", () => {
+  beforeEach(() => {
+    clearAllBehavioralProfiles()
+    mockGetConfig.mockReset()
+    mockResolveProfile.mockReset()
+  })
+
+  afterEach(() => {
+    clearAllBehavioralProfiles()
+  })
+
+  it("produces correct resolved profile for actual configs.json values", () => {
+    mockGetConfig.mockReturnValue(
+      createMockConfig({
+        conversation_language: "vi",
+        documents_and_artifacts_language: "en",
+        mode: "expert-advisor",
+        user_expert_level: "intermediate-high-level",
+        workflow: {
+          research: true,
+          cross_session_tasks_dependencies_validation: false,
+          trajectory_control: true,
+          advanced_continuity_validation: false,
+          task_plus_enabled: false,
+          plan_check: true,
+          verifier: true,
+          ui_phase: false,
+          ui_safety_gate: false,
+          ai_integration_phase: false,
+          research_before_questions: true,
+          discuss_mode: "sufficient-phase-discussion" as const,
+          use_worktrees: false,
+        },
+      }),
+    )
+    mockResolveProfile.mockReturnValue(
+      createMockProfileMatch({
+        communicationStyle: "mixed",
+        decisionSpeed: "fast",
+        expertise: "mid",
+        matchConfidence: 0.5,
+      }),
+    )
+
+    const result = resolveBehavioralProfile("sess-real", "/project")
+
+    // Mode + behavioral profile
+    expect(result.mode).toBe("expert-advisor")
+    expect(result.behavioralProfile.guardrailLevel).toBe("moderate")
+    expect(result.behavioralProfile.delegationMode).toBe("waiter")
+    expect(result.behavioralProfile.toolAccessPattern).toBe("full")
+    expect(result.behavioralProfile.skillFilter).toBe("all")
+
+    // Language — the key feature
+    expect(result.language.conversation).toBe("vi")
+    expect(result.language.documents).toBe("en")
+
+    // Expert level + discuss mode
+    expect(result.userExpertLevel).toBe("intermediate-high-level")
+    expect(result.discussMode).toBe("sufficient-phase-discussion")
+
+    // Config-first merge: intermediate → mid
+    expect(result.merged.expertise).toBe("mid")
+    expect(result.merged.communicationStyle).toBe("mixed")
+    expect(result.merged.decisionSpeed).toBe("fast")
+  })
+})
