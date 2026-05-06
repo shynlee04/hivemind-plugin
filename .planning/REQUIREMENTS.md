@@ -1,127 +1,94 @@
----
-title: "Hivemind V3 — Requirements"
-created: "2026-05-06"
-updated: "2026-05-06"
-status: ACTIVE
-type: root-governance
-source: ".planning/MASTER-PROJECT-SKELETON.md"
----
+# HiveMind V3 — Requirements
 
-# Requirements — Hivemind V3
-
-**Created:** 2026-05-06  
-**Status:** Active  
-
-> This document aggregates requirements from HER workstream completions and the proposed new workstreams (hivemind-state-architecture, primitive-registry, bootstrap-cli-onboarding). Feature IDs cross-reference the skeleton feature registry (§5).
+**Created:** 2026-05-07  
+**Source:** Full audit reconciliation (SRC, Planning, Primitives) + Codebase Map + HIVEMIND-PHILOSOPHY-2026-04-10.md + PROJECT-ISSUES-2026-05-05.md
 
 ---
 
 ## Path 1 — Agent-Callable Deterministic Features
 
-**Purpose:** Features agents can explicitly call or skills can activate.
+Features agents can explicitly call or skills can activate.
 
-| ID | Description | Priority | Phase/Owner | Status |
-|----|-------------|----------|-------------|--------|
-| f-03a | Agent registry with permission enforcement | HIGH | primitive-registry (WS-3) | PARTIAL (agent files exist, no runtime enforcement) |
-| f-06 | Delegation with multi-lane support (native/SDK/PTY/graph/swarm) | HIGH | delegation-revamp (WS-5, DEFERRED) | PARTIAL (core WaiterModel works) |
-| f-06.lanes | Delegation lane routing per task characteristics | MEDIUM | delegation-revamp (WS-5, DEFERRED) | PARTIAL |
-| f-06.hierarchy | L0→L1→L2→L3 delegation depth enforcement | MEDIUM | delegation-revamp (WS-5, DEFERRED) | PARTIAL |
-| f-07 | Trajectory & task-plus lifecycle wiring | MEDIUM | trajectory-task-plus (WS-6, DEFERRED) | PARTIAL (modules exist, not wired) |
-| f-07.i | Cross-session task dependency validation | MEDIUM | trajectory-task-plus (WS-6, DEFERRED) | MISSING |
-| f-07.ii | Workflow-aware task-to-agent/skill/command wiring | MEDIUM | trajectory-task-plus (WS-6, DEFERRED) | MISSING |
-| f-07.iii | Task-to-artifact/delegation/roadmap relationships | MEDIUM | trajectory-task-plus (WS-6, DEFERRED) | MISSING |
-| f-11 | Role-specific tool access with E2E path validation | MEDIUM | HER-5 | PARTIAL (16 tools, no E2E path test) |
+| ID | Description | Priority | Status | Evidence |
+|----|-------------|----------|--------|----------|
+| f-01 | NL command routing (`nl-route` tool) | HIGH | DELIVERED | `src/tools/nl-route.ts`, test coverage |
+| f-02 | Delegation dispatch (`delegate-task` tool) | HIGH | DELIVERED | `src/tools/delegate-task.ts`, `delegation-manager.ts` (450 LOC) |
+| f-03a | Agent registry with permission enforcement | HIGH | PARTIAL | 89 agent files exist, no runtime enforcement |
+| f-03b | Skill registry with consumption tracking | HIGH | PARTIAL | 124 skills, integration-contracts skill maps bindings |
+| f-03c | Tool registry and wiring | HIGH | PARTIAL | 16 tools in plugin.ts, no unified registry |
+| f-03e | Custom tool registry and stacking | MEDIUM | PARTIAL | Tools exist, no stacking |
+| f-03f | Hook registry and feature wiring | MEDIUM | PARTIAL | 6 hook types wired, no registry |
+| f-06 | Multi-lane delegation (native/SDK/PTY) | HIGH | PARTIAL | Core WaiterModel works, lanes exist but not routed |
+| f-07 | Trajectory and task-plus lifecycle | MEDIUM | PARTIAL | Modules exist, not wired to lifecycle |
 
 ---
 
 ## Path 2 — Runtime Programmatic Features
 
-**Purpose:** Automatic operations via OpenCode hooks, events, injections, transforms, compaction.
+Automatic operations via OpenCode hooks, events, injections, transforms.
 
-| ID | Description | Priority | Phase/Owner | Status |
-|----|-------------|----------|-------------|--------|
-| f-08 | Event-tracker redesign — produce queryable context | CRITICAL | HER-3 (READY) | PARTIAL (writes but output is noise) |
-| f-08.i | Context purification & retrieval profiles | HIGH | context-compaction-engine (WS-7, DEFERRED) | MISSING |
-| f-08.ii | Time-machine replay from event journal | MEDIUM | HER-3 / WS-7 | PARTIAL (journal-query.ts exists) |
-| f-08.iii | Stale context detection & hallucination prevention | MEDIUM | context-compaction-engine (WS-7, DEFERRED) | MISSING |
-| f-09 | Long-haul session survival (compaction hooks) | MEDIUM | HER-2 (COMPLETE) / HER-3 | PARTIAL (compaction-preservation wired) |
-| f-10 | SDK/server API injection & hook steering | MEDIUM | HER-4 (READY) | PARTIAL |
-| f-04a.i | Intent analyzer (classification, reconstruction) | MEDIUM | auto-commands-workflow-router (WS-4, DEFERRED) | PARTIAL (purpose-classifier 8 classes) |
+| ID | Description | Priority | Status | Evidence |
+|----|-------------|----------|--------|----------|
+| f-08 | Event-tracker (queryable context from session events) | CRITICAL | PARTIAL | Event-tracker writes but output is noise; needs redesign (HER-3) |
+| f-09 | Long-haul session survival (compaction hooks) | MEDIUM | PARTIAL | Compaction-preservation wired (HER-2) |
+| f-10 | SDK/server API injection and hook steering | MEDIUM | PARTIAL | session-api.ts wraps SDK calls |
+| f-04a.i | Intent analyzer / purpose classifier | MEDIUM | PARTIAL | purpose-classifier 8 classes, no auto-routing |
+| GOV-01 | Governance block injection at system.transform | HIGH | DELIVERED | CA-03: governance-block.ts wired into create-core-hooks.ts |
+| TOG-01 | Toggle gate infrastructure (isToggleEnabled, getDiscussMode) | HIGH | DELIVERED | CA-03: toggle-gates.ts, 6 toggles wired |
+| BEH-01 | Behavioral profile resolution from config mode | HIGH | DELIVERED | CA-02: behavioral-profile/ module, mode → profile mapping |
 
 ---
 
 ## Path 3 — Governance / Registry / Permissions / Configuration
 
-**Purpose:** The control layer — what exists, what is allowed, what is wired, what can be stacked/chained.
+The control layer — what exists, what is allowed, what is wired.
 
-| ID | Description | Priority | Phase/Owner | Status |
-|----|-------------|----------|-------------|--------|
-| HIVEMIND-STATE-01 | `.hivemind/` canonical directory structure designed and locked | CRITICAL | hivemind-state-architecture (WS-1) | MISSING |
-| HIVEMIND-STATE-02 | `configs.json` 5-field minimal schema (language, mode, expertLevel, delegationSystems) | CRITICAL | hivemind-state-architecture (WS-1) | MISSING |
-| HIVEMIND-STATE-03 | File format and frontmatter conventions for all `.hivemind/` artifacts | HIGH | hivemind-state-architecture (WS-1) | MISSING |
-| REGISTRY-01 | Unified primitive registry with agents/skills/commands/tools/MCP/hooks entries | HIGH | primitive-registry (WS-3) | PARTIAL (individual scanners exist, no unified registry) |
-| REGISTRY-02 | Permission matrix with runtime enforcement (agent→tool→skill) | HIGH | primitive-registry (WS-3) | MISSING |
-| REGISTRY-03 | Stacking and chaining support for primitives | MEDIUM | primitive-registry (WS-3) | MISSING |
-| REGISTRY-04 | Cross-primitive validation on compile | MEDIUM | primitive-registry (WS-3) | PARTIAL (config-compiler.ts exists) |
-| f-03c | Tool registry & wiring | HIGH | primitive-registry (WS-3) | PARTIAL |
-| f-03d | MCP tool registry & permissions | MEDIUM | primitive-registry (WS-3) | MISSING |
-| f-03e | Custom tool registry & stacking | MEDIUM | primitive-registry (WS-3) | PARTIAL |
-| f-03f | Hook registry & feature wiring | MEDIUM | primitive-registry (WS-3) | PARTIAL |
-| f-04 | Auto-commands engine with $ARGUMENTS parsing | MEDIUM | auto-commands-workflow-router (WS-4, DEFERRED) | FOUNDATION (command-engine/ stub) |
-| f-04a | Workflow router | MEDIUM | auto-commands-workflow-router (WS-4, DEFERRED) | MISSING |
-| f-04a.ii | Command creation/wiring with $ARGUMENTS parsing | MEDIUM | auto-commands-workflow-router (WS-4, DEFERRED) | MISSING |
+| ID | Description | Priority | Status | Evidence |
+|----|-------------|----------|--------|----------|
+| HIVEMIND-STATE-01 | `.hivemind/` canonical directory structure | CRITICAL | PARTIAL | 19 subdirs designed, only 2 have CRUD modules |
+| HIVEMIND-STATE-02 | `configs.json` full schema operational | CRITICAL | DELIVERED | CA-01: Zod schema with 29 fields, readConfigs()/writeConfigs() |
+| HIVEMIND-STATE-03 | File format conventions for `.hivemind/` artifacts | HIGH | PARTIAL | Conventions documented, no enforcement |
+| REGISTRY-01 | Unified primitive registry (agents/skills/commands/tools) | HIGH | PARTIAL | Individual scanners exist, no unified registry |
+| REGISTRY-02 | Permission matrix with runtime enforcement | HIGH | MISSING | No runtime permission enforcement |
+| REGISTRY-04 | Cross-primitive validation on compile | MEDIUM | PARTIAL | config-compiler.ts exists |
+| f-04 | Auto-commands engine with $ARGUMENTS parsing | HIGH | MISSING | command-engine/ stub only; f-04 entirely missing |
+| f-04a | Workflow router with conditional dispatch | HIGH | MISSING | No workflow routing exists |
 
 ---
 
 ## Path 4 — Sidecar / Onboarding / Configuration
 
-**Purpose:** User-facing setup, configuration, and control surfaces.
+User-facing setup, configuration, and control surfaces.
 
-| ID | Description | Priority | Phase/Owner | Status |
-|----|-------------|----------|-------------|--------|
-| BOOTSTRAP-01 | npm package install model: `npm install opencode-harness` | CRITICAL | bootstrap-cli-onboarding (WS-2) | FOUNDATION (src/cli/ scaffold) |
-| BOOTSTRAP-02 | `npx opencode-harness init` interactive greenfield setup | CRITICAL | bootstrap-cli-onboarding (WS-2) | MISSING |
-| BOOTSTRAP-03 | Brownfield project integration (existing project adaptation) | HIGH | bootstrap-cli-onboarding (WS-2) | MISSING |
-| BOOTSTRAP-04 | Doctor/checkup mode for primitive health validation | HIGH | bootstrap-cli-onboarding (WS-2) | MISSING |
-| f-05.i | `.hivemind/configs.json` interactive configuration | HIGH | bootstrap-cli-onboarding (WS-2) | MISSING |
-| SIDECAR-01 | Sidecar dashboard reads artifact JSON from .hivemind/ and .planning/ | MEDIUM | sidecar-user-config-ui (WS-8, DEFERRED) | PARTIAL (readonly-state.ts exists) |
-| SIDECAR-02 | Sidecar calls OpenCode SDK server API | MEDIUM | sidecar-user-config-ui (WS-8, DEFERRED) | MISSING |
-| SIDECAR-03 | Sidecar CANNOT write to canonical state — enforcement test | MEDIUM | sidecar-user-config-ui (WS-8, DEFERRED) | MISSING |
+| ID | Description | Priority | Status | Evidence |
+|----|-------------|----------|--------|----------|
+| BOOTSTRAP-01 | npm package: `npm install opencode-harness` | CRITICAL | FOUNDATION | package.json configured, not yet published |
+| BOOTSTRAP-02 | `npx opencode-harness init` interactive setup | CRITICAL | MISSING | CLI substrate exists (Phase 40), no init command |
+| BOOTSTRAP-04 | Doctor/checkup mode for primitive health | HIGH | MISSING | validate-restart exists but no health check command |
+| SIDECAR-01 | Sidecar reads artifact JSON from `.hivemind/` and `.planning/` | MEDIUM | PARTIAL | readonly-state.ts exists |
+| CONF-01 | `conversation_language` field wiring | CRITICAL | MISSING | Field exists in schema, zero consumers — D-BIND-03 VIOLATION |
 
 ---
 
-## Reference: Existing Validated Requirements
+## Critical Gaps (MISSING)
 
-These requirements from the milestone workstream are validated and locked. They are not duplicated in the workstream-specific sections above.
-
-| ID | Description | Source | Status |
-|----|-------------|--------|--------|
-| Q1 (RUNTIME-DET-01..03) | Hybrid + Spec-Driven Automated Runtime Detection | Validation Decisions 2026-04-25 | Requirements derived, not implemented |
-| Q2 (SIDECAR-01..03) | Artifact-Focused Sidecar (read-only) | Validation Decisions 2026-04-25 | Requirements derived, not implemented |
-| Q3 (JOURNAL-01..03) | Session Journal + Time-Machine | Validation Decisions 2026-04-25 | Requirements derived, not implemented |
-| Q4 (MEMORY-01..02) | MVP 5/8 memory categories | Validation Decisions 2026-04-25 | Requirements derived, not implemented |
-| Q5 (RICH-01..02) | Full RICH gate — no threshold lowering | Validation Decisions 2026-04-25 | Requirements derived, not implemented |
-| Q6 (HIVEMIND-ROOT-01..03) | .hivemind/ as internal state root | Validation Decisions 2026-04-25 | Requirements derived, not implemented |
-| HMQUAL-01..08 | Quality contract for all hm-* skills | Phase 26 | Active, not implemented |
+| ID | Description | Blocked By |
+|----|-------------|------------|
+| f-04 | Auto-commands + workflow router + intent classification | Needs design from skeleton §5.2 |
+| BOOTSTRAP-02 | CLI init command for `.hivemind/` and `.opencode/` bootstrap | Blocked on f-04 (command engine needed) |
+| BOOTSTRAP-RECOVERY | Primitives bootstrap on deletion (postinstall or restore) | Blocked on BOOTSTRAP-02 |
+| CONF-01-LANG | `conversation_language` runtime wiring | Needs system.transform hook consumer |
+| LIFECYCLE-GATE | gate-l3-lifecycle-integration criteria docs | Needs synthesis from ARCHITECTURE.md |
 
 ---
 
-## Gap Coverage Map
+## Quality Contracts
 
-This shows which proposed workstreams cover which feature gaps.
+| Contract | Scope | Status |
+|----------|-------|--------|
+| HMQUAL-01 through HMQUAL-08 | All hm-* skills quality | Synthesized Phase 26; 48/51 skills ≥6/8 |
+| RICH-8 gate | All hm-* skills | 0 currently pass (Q5 honest), target: post-f-04 |
+| Gate triad | Lifecycle → Spec → Evidence | gate skills exist, lifecycle references empty |
 
-| Gap Area | Feature Refs | Covered By | Status |
-|----------|-------------|------------|--------|
-| State architecture | f-05.i, Q6 | hivemind-state-architecture | PLANNED |
-| Config schema | f-05.i | hivemind-state-architecture | PLANNED |
-| Primitive registry | f-03a..f | primitive-registry | PLANNED |
-| Bootstrap/CLI | f-05, f-05.ii, f-05.iii | bootstrap-cli-onboarding | PLANNED |
-| Doctor/checkup | BOOTSTRAP-04 | bootstrap-cli-onboarding | PLANNED |
-| Auto-commands | f-04, f-04a | auto-commands-workflow-router | DEFERRED |
-| Delegation revamp | f-06, f-06.* | delegation-revamp | DEFERRED |
-| Task/trajectory | f-07, f-07.* | trajectory-task-plus | DEFERRED |
-| Context engine | f-08, f-08.* | context-compaction-engine + HER-3 | PARTIAL (HER-3 READY) |
-| Sidecar/UI | SIDECAR-01..03 | sidecar-user-config-ui | DEFERRED |
-| Context budget | f-08 | HER-3 | READY |
-| SDK depth | f-10 | HER-4 | READY |
-| Agent rationalization | f-11 | HER-5 | READY |
+---
+*Last updated: 2026-05-07 after full audit reconciliation*

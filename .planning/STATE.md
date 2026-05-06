@@ -1,96 +1,83 @@
-# Project State
+# HiveMind V3 — State
 
-**Last Updated:** 2026-05-06
-
----
-
-## Workstreams
-
-### harness-ecosystem-recovery — ACTIVE
-
-| Phase | Status | Dependencies |
-|-------|--------|-------------|
-| HER-0 | ✅ COMPLETE (2026-05-05) | — |
-| HER-1 | ✅ COMPLETE (2026-05-05) | HER-0 |
-| HER-2 | ✅ COMPLETE (2026-05-05) | HER-1 ✅ |
-| HER-3 | 🟢 Ready | HER-2 (→ HER-2 dependency satisfied: prompt-packet/ wired, compaction preservation active; ready to proceed) |
-| HER-4 | Ready | HER-1 ✅ |
-| HER-5 | Ready | HER-1 ✅ |
-
-### milestone — SUSPENDED (Phase 71)
-
-1604 tests passing | 90.49% coverage | typecheck 0 errors | build pass
-
-| Phase | Status |
-|-------|--------|
-| Phase 71 (Runtime Detection Engine) | ✅ COMPLETE |
-| Phase 70 (Prompt Packet Compiler) | ✅ COMPLETE |
-| Phase 69 (SDK Supervisor + Cmd Eng) | ✅ COMPLETE |
-| Phase 68 (Agent Work Contracts) | ✅ COMPLETE |
-| Phase 66 (Recovery Engine) | ⚠️ PARTIAL (failure-classes only) |
-| Phase 52 (End-User Acceptance) | 🔴 BLOCKED/PARTIAL |
-| Phase 53 (Release Readiness) | 🔴 NO-SHIP |
-
-### agent-synthesis — CLOSED (2026-04-30)
-
-12/12 phases completed. 56 hm/hf agents created. 0 violations on final verification.
-
-### skill-ecosystem — CLOSED (2026-04-30)
-
-16/17 phases executed (SE-10 deferred). 54 active skills. 48/51 skills ≥6/8 RICH-8.
+**Last updated:** 2026-05-07  
+**Last trigger:** Full audit reconciliation + archive + codebase map + new GSD project init
 
 ---
 
-## Proposed Workstreams
+## Current Status
 
-| Workstream | Status | Priority | Dependencies | Purpose |
-|------------|--------|----------|-------------|---------|
-| **hivemind-state-architecture** | PLANNED | CRITICAL | HER-0 | Design `.hivemind/` canonical structure, `configs.json` (5-field minimal), schema specs |
-| **primitive-registry** | PLANNED | HIGH | hivemind-state-architecture | Unified registry for agents/skills/commands/tools/MCP/hooks with stacking, chaining, permissions |
-| **bootstrap-cli-onboarding** | PLANNED | HIGH | hivemind-state-architecture, primitive-registry | `npm install` model, `npx init`, greenfield/brownfield setup, doctor mode |
+**Active workstream:** Core Architecture (WS-CA)  
+**Current phase:** CA-04 (restructured from original "CRUD Ownership Modules")  
+**Blocked:** No — ready to implement CA-04.1 Bootstrap  
+**Health:** 🟢 Build passes, typecheck clean, 1765/1767 tests pass
 
-## Deferred Workstreams
+## Project Reference
 
-| Workstream | Priority | Depends On | Purpose |
-|------------|----------|------------|---------|
-| auto-commands-workflow-router | MEDIUM | primitive-registry | Intent → workflow routing, auto-commands engine |
-| delegation-revamp | MEDIUM | primitive-registry | Multi-lane delegation, graph/swarm/CRUD/hierarchy |
-| trajectory-task-plus | MEDIUM | delegation-revamp, hivemind-state-architecture | Cross-session task lifecycle, trajectory ledger v3 |
-| context-compaction-engine | MEDIUM | trajectory-task-plus, hivemind-state-architecture | Event-tracker redesign, context purification, time-machine |
-| sidecar-user-config-ui | LOW | bootstrap-cli-onboarding, primitive-registry | Sidecar dashboard tabs, user config surface |
+See: .planning/PROJECT.md (updated 2026-05-07)  
+**Core value:** Agents build on each other's work across sessions  
+**Current focus:** Fix bootstrap gap + `conversation_language` wiring
 
 ---
 
-## Build Gates
+## What's Delivered
 
-| Gate | Status |
-|------|--------|
-| `npm run typecheck` | ✅ 0 errors |
-| `npm test` | ✅ 1604 passed |
-| `npm run build` | ✅ Pass |
-| Coverage | ✅ 90.49% statements |
-
----
-
-## Key Metrics
-
-| Metric | Value |
-|--------|-------|
-| Agents | 89 (56 shipped hm/hf + 33 gsd-* dev tooling) |
-| Project Skills | 59 (35 hm-* + 13 hf-* + 3 gate-* + 6 stack-* + 1 opencode-* + 1 disabled) |
-| Dev Tooling Skills | 65 gsd-* (GSD framework — not shipped) |
-| Tools | 16 |
-| Commands | 18 |
-| Dead code ratio | ~6.5% (was 13.7%, ~1,562 LOC removed across HER-2-01/02; session-entry + prompt-packet wired in HER-2-03) |
+| Component | Status | Details |
+|-----------|--------|---------|
+| Build system | ✅ | tsc clean, typecheck passes, dist/ produces correctly |
+| Test suite | ✅ | 125 test files, 1767 tests, 2 failures (README heading assertions) |
+| 16 custom tools | ✅ | Registered in plugin.ts, Zod schemas, CQRS write-side |
+| 6 hook types | ✅ | Event observers, system/messages transforms, tool guards |
+| configs.json schema | ✅ | 29 fields, readConfigs()/writeConfigs(), lazy-cached subscriber |
+| Behavioral profiles | ✅ | 3 modes → profile mapping, wired into hooks/delegation/gates |
+| Toggle gates | ✅ | 6 toggles wired, 4 @future-consumer annotated, 4 deferred |
+| Delegation engine | ✅ | WaiterModel dispatch, dual-signal completion, PTY/SDK lanes |
+| Continuity persistence | ✅ | Deep-clone-on-read, session journal, Q6 state root migration |
+| 89 agents | ✅ | L0/L1/L2/L3 hierarchy, hm-* + hf-* lineages |
+| 124 skills | ✅ | 48/51 hm-* skills ≥6/8 RICH-8, gate-* + stack-* skills |
+| 19 commands | ✅ | start-work, plan, deep-init, ultrawork, harness-doctor, etc. |
 
 ---
 
-## Governance Health
+## What's Broken / Missing
 
-| Doc | Sync Date | Status |
-|-----|-----------|--------|
-| AGENTS.md | 2026-05-05 | Synced |
-| ARCHITECTURE.md | 2026-05-05 | Synced |
-| ROADMAP.md (Master) | 2026-05-06 | Created |
-| ROADMAP.md (HER) | 2026-05-05 | Synced |
-| REQUIREMENTS.md | 2026-05-06 | Created |
+| Issue | Severity | Action |
+|-------|----------|--------|
+| **No bootstrap/recovery** — delete `.opencode/` or `.hivemind/`, `npm run build` restores nothing | 🔴 CRITICAL | CA-04.1: postinstall script + CLI init |
+| **`conversation_language` has zero consumers** — config exists, nothing reads it | 🔴 CRITICAL | CA-04.2: wire into system.transform hook |
+| **`messages-transform.ts` dead code** — 67 LOC, zero imports, confirmed dead Phase 35 | 🟡 HIGH | Delete file |
+| **plugin.ts at 447 LOC** — 100 LOC target, needs split | 🟡 HIGH | Extract hook/tool registration modules |
+| **12 stale modules** — exist but no consumers | 🟡 HIGH | Document or wire (see SRC-MODULE-AUDIT) |
+| **f-04 auto-routing MISSING** — no intent classification, no workflow router | 🔴 CRITICAL | Wave 3: design from skeleton §5.2 |
+| **E2E tests MISSING** — 1767 unit tests, zero integration | 🟡 HIGH | Add at least delegation smoke test |
+| **Lifecycle gate criteria MISSING** — references/ empty | 🟡 HIGH | CA-04.4: synthesize from ARCHITECTURE.md |
+| **`.hivemind/` ownership gap** — 17/19 dirs no typed module | 🟡 MEDIUM | CA-04.3: after bootstrap |
+| **`asString` duplicated** — helpers.ts + continuity.ts | 🟢 LOW | Consolidate |
+| **storeCache singleton** — prevents isolated testing | 🟢 LOW | Refactor continuity.ts |
+
+---
+
+## Decisions Record
+
+| ID | Decision | Status |
+|----|----------|--------|
+| Q1-Q6 | Validation decisions 2026-04-25 | Locked |
+| D-CONF-01..05 | configs.json schema and loading | Locked |
+| D-BIND-01..03 | Schema-to-runtime binding | Locked (BIND-03 violated by conversation_language) |
+| D-CRUD-01..05 | CRUD lifecycle | Locked (CRUD-01 MISSING, CRUD-05 partial) |
+| D-LIFECYCLE-01..02 | Lifecycle integration requirements | Locked |
+| D-WS-01..03 | Workstream consolidation (5→3) | Locked |
+| CA-04 RESTRUCTURE | Split into 4 sub-phases with correct dependency order | NEW — 2026-05-07 |
+
+---
+
+## Next Actions
+
+1. **CA-04.1** — Create `bin/init-primitives.ts` + postinstall hook (1-2 hours)
+2. **CA-04.2** — Wire `conversation_language` into messages-transform/system-transform hooks (1 hour)
+3. **Cleanup** — Delete `messages-transform.ts`, document 12 stale modules
+4. **CA-04.3** — State ownership modules for `.hivemind/state/` and `.hivemind/delegation-managements/` (2-3 hours)
+5. **Wave 3** — Design f-04 auto-routing from skeleton §5.2
+
+---
+*State committed: 2026-05-07*
