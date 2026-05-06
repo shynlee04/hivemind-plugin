@@ -10,6 +10,7 @@
 import { asString, getNestedValue, isObject } from "../lib/helpers.js"
 import { getEventSessionID } from "../lib/session-api.js"
 import { classifyHookEffect } from "./hook-cqrs-boundary.js"
+import { buildGovernanceBlock } from "./governance-block.js"
 import type { HookDependencies } from "./types.js"
 
 // ---------------------------------------------------------------------------
@@ -74,6 +75,14 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
 
       // Ensure output.system is an array for all injection blocks
       output.system = Array.isArray(output.system) ? output.system : []
+
+      // CA-03: Governance block — always active, non-negotiable (D-07)
+      // Injected BEFORE intake and behavioral blocks so it frames all other context.
+      if (deps.hivemindConfig) {
+        const profile = deps.getBehavioralProfile?.(sessionID)
+        const governanceBlock = buildGovernanceBlock(deps.hivemindConfig, profile ?? undefined)
+        ;(output.system as string[]).push(governanceBlock)
+      }
 
       // Intake context injection
       if (deps.getIntake) {
