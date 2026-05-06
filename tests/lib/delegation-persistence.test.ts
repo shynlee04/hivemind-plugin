@@ -136,3 +136,88 @@ describe("delegation persistence", () => {
     expect(raw).not.toContain("hunter2")
   })
 })
+
+// ---------------------------------------------------------------------------
+// CA-03: commit_docs toggle
+// ---------------------------------------------------------------------------
+
+describe("commit_docs toggle", () => {
+  let stateDir: string
+  let previousStateDir: string | undefined
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.unmock("node:fs")
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    stateDir = mkdtempSync(join(tmpdir(), "delegation-commit-docs-"))
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterEach(() => {
+    vi.doUnmock("node:fs")
+    vi.resetModules()
+    if (previousStateDir === undefined) {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    } else {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    }
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
+  it("writes delegations.json to disk when commit_docs is true (default)", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ commit_docs: true, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const filePath = persistence.getDelegationsFilePath()
+
+    persistence.persistDelegations([makeDelegation("del-commit-true")])
+
+    // File should exist on disk
+    expect(existsSync(filePath)).toBe(true)
+    const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
+    expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: "del-commit-true" })]))
+  })
+
+  it("skips disk write when commit_docs is false", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ commit_docs: false, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const filePath = persistence.getDelegationsFilePath()
+
+    persistence.persistDelegations([makeDelegation("del-commit-false")])
+
+    // No file should be created on disk when commit_docs is false
+    expect(existsSync(filePath)).toBe(false)
+  })
+
+  it("writes to disk with default config (commit_docs defaults to true)", async () => {
+    const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const filePath = persistence.getDelegationsFilePath()
+
+    persistence.persistDelegations([makeDelegation("del-commit-defaults")])
+
+    // File should exist on disk (commit_docs defaults to true)
+    expect(existsSync(filePath)).toBe(true)
+  })
+})

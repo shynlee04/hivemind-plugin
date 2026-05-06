@@ -377,3 +377,89 @@ describe("continuity persistence", () => {
     expect(tmpFiles).toEqual([])
   })
 })
+
+// ---------------------------------------------------------------------------
+// CA-03: atomic_commit toggle
+// ---------------------------------------------------------------------------
+
+describe("atomic_commit toggle", () => {
+  let stateDir: string
+  let previousStateDir: string | undefined
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.unmock("node:fs")
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    stateDir = mkdtempSync(join(tmpdir(), "continuity-atomic-"))
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterEach(() => {
+    vi.doUnmock("node:fs")
+    vi.resetModules()
+    if (previousStateDir === undefined) {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    } else {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    }
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
+  it("writes to disk when atomic_commit is true (default)", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ atomic_commit: true, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const continuity = await import("../../src/lib/continuity.js")
+    const filePath = continuity.getContinuityStoragePath()
+
+    continuity.recordSessionContinuity(makeRecord("ses-atomic-true"))
+
+    // File should exist on disk
+    expect(existsSync(filePath)).toBe(true)
+    const raw = readFileSync(filePath, "utf-8")
+    const parsed = JSON.parse(raw) as { sessions: Record<string, unknown> }
+    expect(parsed.sessions["ses-atomic-true"]).toBeDefined()
+  })
+
+  it("skips disk write when atomic_commit is false", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ atomic_commit: false, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const continuity = await import("../../src/lib/continuity.js")
+    const filePath = continuity.getContinuityStoragePath()
+
+    continuity.recordSessionContinuity(makeRecord("ses-atomic-false"))
+
+    // No file should be created on disk when atomic_commit is false
+    expect(existsSync(filePath)).toBe(false)
+  })
+
+  it("writes to disk with default config (atomic_commit defaults to true)", async () => {
+    const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const continuity = await import("../../src/lib/continuity.js")
+    const filePath = continuity.getContinuityStoragePath()
+
+    continuity.recordSessionContinuity(makeRecord("ses-atomic-defaults"))
+
+    // File should exist on disk (atomic_commit defaults to true)
+    expect(existsSync(filePath)).toBe(true)
+  })
+})
