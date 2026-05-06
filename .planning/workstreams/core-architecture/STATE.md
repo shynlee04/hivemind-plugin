@@ -9,15 +9,22 @@ lineage: shared
 
 # WS-CA: Core Architecture — State
 
-## Current Phase: CA-01 (COMPLETE ✅)
+## Current Phase: CA-02 (CONTEXT-GATHERED ✅)
 
-### CA-01 Results
+### CA-02 Results
+- **CA-02-CONTEXT**: Behavioral profile system designed (commit `1f261894`)
+  - Mode→behavior mapping: static lookup table with 4-field behavioral profile
+  - Language config injection via system.transform hook
+  - Profile merge: config-first with runtime fallback into unified ResolvedBehavioralProfile
+  - Consumers: system.transform, task/coordination tools, category gates (skillFilter)
+  - Discuss mode: included as profile signal (dispatch deferred to WS-4)
+
+### CA-01 Results (Carried Forward)
 - **CA-01-01**: Schema expanded to skeleton v2 §9.1 (44 tests, commit `75339362`)
 - **CA-01-02**: Config subscriber + runtime binding (8 tests, commits `660537d5`, `89e11dfd`)
 - **Decisions completed**: D-CONF-01, D-CONF-04, D-CONF-05, D-BIND-01, D-BIND-02
-- **D-BIND-03 debt**: 3 config fields (`parallelization`, `atomic_commit`, `commit_docs`) have no current consumer — tracked for CA-03
 
-## Next Phase: CA-02 (Behavioral Profiles)
+## Next Phase: CA-03 (Workflow Toggle Runtime Binding)
 
 ## Source Decisions
 
