@@ -1,208 +1,269 @@
-<!-- generated-by: gsd-doc-writer -->
 # Coding Conventions
 
-**Analysis Date:** 2026-04-28
-**Updated:** 2026-05-06
+**Analysis Date:** 2026-05-07
+
+## TypeScript Configuration
+
+**Compiler settings (`tsconfig.json`):**
+- Target: `ES2022` with `NodeNext` module and module resolution
+- `strict: true` — all strict checks enabled
+- `noUnusedLocals: true` — unused local variables cause compilation errors
+- `noUnusedParameters: true` — unused function parameters cause compilation errors
+- `noImplicitReturns: true` — all code paths in functions must explicitly return
+- `noFallthroughCasesInSwitch: true` — switch case fallthrough is forbidden
+- `verbatimModuleSyntax: true` — requires `import type` for type-only imports, no automatic elision
+- `skipLibCheck: true` — skips type-checking of `.d.ts` files from dependencies
+
+**Module system:** ESM exclusively (`"type": "module"` in `package.json`). All imports use `.js` extensions (e.g., `from "./types.js"`).
+
+## Module Size Limits
+
+- **Hard cap:** 500 LOC per module. No file may exceed this limit.
+- **Target:** 300 LOC per module (stated in architecture proposal).
+- **Largest current modules:**
+  - `src/lib/delegation-manager.ts` — 500 LOC (at cap)
+  - `src/lib/continuity.ts` — 465 LOC (under cap, ~401 code)
+  - `src/lib/delegation-state-machine.ts` — 426 LOC
+- Modules approaching 500 LOC should be split into subdirectory packages with a barrel `index.ts`.
 
 ## Naming Patterns
 
 **Files:**
-- **kebab-case** for all source and test files: `completion-detector.ts`, `delegation-manager.test.ts`, `tool-response.ts`
-- **kebab-case** for directories: `src/lib/`, `tests/tools/`, `tests/lib/`, `src/schema-kernel/`
-- Factory/creator files prefixed with `create-`: `create-core-hooks.ts`, `create-session-hooks.ts`
-- Leaf modules use simple names: `helpers.ts`, `types.ts`, `state.ts`, `concurrency.ts`
-- Test files mirror source names exactly with `.test.ts` suffix: `concurrency.test.ts` for `concurrency.ts`
-- Barrel files always `index.ts`
+- kebab-case: `delegation-manager.ts`, `session-journal.ts`, `lifecycle-manager.ts`
+- Barrel index files: `index.ts` in subdirectory packages
+- Test files: mirror source structure with `.test.ts` suffix
+
+**TypeScript types:**
+- PascalCase type aliases exclusively: `TaskStatus`, `SessionContinuityRecord`, `PermissionRule`
+- No `interface` keyword — all types are `export type PascalCase =`
+- Union literal types for enums: `TaskStatus = "pending" | "queued" | "running" | ...`
+- Extended/intersected types: `PendingNotification = TaskNotification & { createdAt: number }`
+- Branded type aliases: `SpecialistAgent = string`
+- `Record<>` for maps: `Record<string, number>`
+- Function type signatures: `(from: TaskStatus, to: TaskStatus) => boolean`
 
 **Functions:**
-- **camelCase** for all functions: `buildDelegationQueueKey`, `unwrapData`, `canTransition`, `isTerminal`
-- Boolean-returning functions prefixed with `is`, `can`, `has`: `isObject`, `isTerminal`, `canTransition`, `isSuccess`
-- Factory/constructor functions prefixed with `create`: `createCoreHooks`, `createDelegateTaskTool`, `createConfigurePrimitiveTool`
-- Private methods use `private` keyword (no underscore prefix convention)
+- camelCase: `unwrapData`, `extractAssistantText`, `cloneContinuityRecord`
+- Common verb prefixes: `extract*`, `build*`, `make*`, `clone*`, `get*`, `is*` (type guards), `as*` (safe casts), `resolve*`, `ensure*`
+- Internal (non-exported) functions: use camelCase without `_` prefix
+- Pure utility functions are preferred — side effects must be explicit
 
-**Variables:**
-- **camelCase** for local variables and parameters: `sessionID`, `rootID`, `eventType`, `timeoutMs`
-- Constants in **UPPER_SNAKE_CASE**: `MAX_DESCENDANTS_PER_ROOT`, `VALID_DELEGATION_CATEGORIES`, `WATCH_TIMEOUT_MS`, `VALID_LIFECYCLE_TRANSITIONS`
-- Enum-like const arrays use `as const`: `VALID_DELEGATION_CATEGORIES = [...] as const`
+**Constants:**
+- UPPER_SNAKE_CASE: `MAX_DESCENDANTS_PER_ROOT`, `VALID_DELEGATION_CATEGORIES`, `CONTINUITY_VERSION`
+- Read-only arrays use `as const`: `VALID_DELEGATION_CATEGORIES = [...] as const`
+- Derived types from constants: `DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]`
 
-**Types:**
-- **PascalCase** for types and interfaces: `TaskStatus`, `CompletionResult`, `HookDependencies`, `DelegationMeta`
-- Type aliases preferred over interfaces for simple shapes; interfaces used for dependency bundles (`HookDependencies`, `AutoLoopConfig`)
-- Zod-inferred types use `z.infer<>`: `type DelegateTaskInput = z.infer<typeof DelegateTaskInputSchema>`
-- Tool context types annotated with `/** @internal */` JSDoc tag when they depend on OpenCode framework injection
-
-**Classes:**
-- **PascalCase**: `CompletionDetector`, `TaskStateManager`, `DelegationConcurrencyQueue`, `SdkDelegationHandler`
-- Singleton-style export: `export const taskState = new TaskStateManager()` with backward-compatible wrapper functions
+**Skill/Agent prefixes (meta-concepts):**
+- `hm-*` — product development (brainstorm, requirements, planning, implementation, testing)
+- `hf-*` — meta-builder (skill authoring, agent building, command creation)
+- `gate-*` — internal quality gates (lifecycle, spec, evidence)
+- `stack-*` — technology reference (vitest, zod, opencode, nextjs, bun-pty, json-render)
 
 ## Code Style
 
 **Formatting:**
-- No formatter configuration detected — no `.eslintrc*`, `.prettierrc*`, or `biome.json` present
-- Consistent 2-space indentation throughout
-- Section separators use `// ----` comment blocks with descriptive headings:
-  ```typescript
-  // ---------------------------------------------------------------------------
-  // TaskStateManager — encapsulates all in-process session/budget state.
-  // ---------------------------------------------------------------------------
-  ```
-- Multi-line interface/type members aligned consistently; arguments indented 2 spaces
+- Indentation: 2 spaces
+- Semicolons: not enforced (inferred from `tsconfig.json` — no explicit `semi` rule)
+- Quotes: single quotes preferred (used in most source files)
+- Trailing commas: not enforced at config level, but used sparingly
 
-**Linting:**
-- No explicit linter configured; TypeScript strict mode enforces most rules:
-  - `strict: true` — all strict checks enabled
-  - `noUnusedLocals: true` — unused variables are errors
-  - `noUnusedParameters: true` — unused parameters must be removed
-  - `noImplicitReturns: true` — all code paths must explicitly return
-  - `noFallthroughCasesInSwitch: true` — no accidental switch fallthrough
-  - `verbatimModuleSyntax: true` — `import type` required for type-only imports
+**TypeScript strictness:**
+- No `any` types on new code — the `client: any` in SDK wrappers is documented tech debt
+- `import type { ... }` for all type-only imports (enforced by `verbatimModuleSyntax: true`)
+- Explicit return types on exported functions when non-trivial
+- `as const` for literal arrays that should be read-only
+
+**Section dividers:**
+- `// ----...` separator comments with descriptive headers between logical sections
+- ASCII tables in JSDoc for dense metadata (e.g., lifecycle phase tables in `types.ts`)
 
 ## Import Organization
 
-**Order:**
-1. Node.js built-ins (`node:fs`, `node:os`, `node:path`)
-2. External packages (`@opencode-ai/plugin`, `@opencode-ai/sdk`, `zod`, `vitest`)
-3. Internal source modules (relative paths with `.js` extension per NodeNext module resolution in `tsconfig.json`)
-4. `import type` always separated from runtime imports
+**Order (observed convention):**
+1. Node.js built-in modules (`node:crypto`, `node:fs`, `node:path`)
+2. Third-party / npm packages
+3. Workspace-relative imports (`../../src/lib/types.js`)
+4. `import type` imports (can be mixed with runtime imports or separate)
 
-**Path Aliases:**
-- None used. All imports are relative: `../../src/lib/helpers.js`
+**Path conventions:**
+- Always use `.js` extension in imports (ESM resolution)
+- Relative paths from the importing file: `from "./types.js"`, `from "../../src/lib/helpers.js"`
+- Path aliases: not used. All imports are relative or bare specifiers.
+- Barrel re-exports: `src/index.ts` re-exports public API from multiple internal modules
 
-**Typical import block from a test file (`tests/lib/continuity.test.ts`):**
+**Leaf module rule:**
+- `src/lib/types.ts` is the leaf module — it imports nothing from other `src/lib/` modules (only `import type` from `delegation-types.ts`)
+- All other modules depend on `types.ts` directly or transitively
+- Circular dependencies: zero detected — verified by audit
+
+## JSDoc Requirements
+
+**When to document:**
+- All exported functions and classes must have JSDoc
+- Internal helper functions should have JSDoc if non-trivial (>5 lines or multiple branches)
+- Type definitions should have JSDoc when the semantics aren't obvious from the name
+
+**Format:**
 ```typescript
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { basename, join } from "node:path"
-
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-
-import type { SessionContinuityRecord } from "../../src/lib/types.js"
+/**
+ * Extract a human-readable error message from OpenCode SDK error objects.
+ *
+ * SDK error structures vary — this function checks all known shapes:
+ *   - String error: used as-is
+ *   - Named errors (UnknownError, MessageAbortedError): `error.data.message`
+ *   - BadRequestError: `error.errors[]` array with `.message` or `.reason`
+ *   - Fallback: includes error name if available
+ *
+ * @param error - The raw error value from an SDK response.
+ * @returns A string description suitable for throwing or logging.
+ */
+function extractSdkErrorMessage(error: unknown): string {
 ```
+
+**Key tags:**
+- `@param` — parameter descriptions (present in newer modules: 586 matches across `src/lib/`)
+- `@returns` — return value description
+- `@throws` — when the function explicitly throws
+- `@example` — usage examples (used sparingly)
+- `@see` / `{@link ...}` — cross-references to related functions
+- `@future-consumer` — marks code that is pre-built for a planned future phase (e.g., toggle gates, sidecar)
+
+**Style:**
+- Prose descriptions embedded in the JSDoc body
+- Complete sentences with punctuation
+- Multi-paragraph structure: summary line → detailed description → parameter list
 
 ## Error Handling
 
-**Patterns:**
-- All thrown errors prefixed with `[Harness]` — distinguishes harness errors from framework/OS errors
-  ```typescript
-  throw new Error(`[Harness] Root session ${rootID} exceeded descendant budget (${maxDescendantsPerRoot})`)
-  ```
-- Tool errors wrapped using the `error()` factory from `src/shared/tool-response.ts` — returns a `ToolResponse` envelope rather than throwing:
-  ```typescript
-  return renderToolResult(error(message))
-  ```
-- `unwrapData()` in `src/lib/helpers.ts` extracts data from SDK response shapes, throws on error
-- `extractSdkErrorMessage()` handles multiple SDK error shapes (named errors, validation arrays, direct messages)
-- `describeError()` for generic error-to-string conversion: `error instanceof Error ? error.message : String(error)`
-- Best-effort operations wrapped in try/catch with silent consumption (e.g., `plugin.ts` line 78-80, eventTracker artifacts projection)
+**Error prefix:**
+- ALL thrown errors in the core library MUST use the `[Harness]` prefix: `throw new Error("[Harness] <message>")`
+- This is used in 151 locations across `src/`
+- Exception (non-compliance): a few throw messages in schema files lack the prefix — these are known gaps
 
-**Error propagation:**
-- Tools return `renderToolResult(error(...))` rather than throwing — errors are serialized in tool response envelope
-- Delegation manager throws on dispatch failure; caller catches and wraps
-- Concurrency queue rejections use `[Harness]` prefix: `queue.acquire()` rejects with timed-out errors including key name
+**Sub-patterns:**
+- Base: `[Harness] <description>`
+- Recovery module: `[Harness] recovery REC-NN: <description>` (e.g., `"[Harness] recovery REC-03: sessionId must be a non-empty string"`)
+- Sidecar module: `[Harness] sidecar SIDECAR-NN: <description>` (e.g., `"[Harness] sidecar SIDECAR-03: read denied for non-canonical path"`)
+
+**Testing errors:**
+```typescript
+expect(() => unwrapData({ error: "Something went wrong" })).toThrow(
+  "[Harness] Something went wrong"
+)
+```
+Use exact `[Harness]` prefix string matching when testing error messages.
+
+**Patterns:**
+- Errors are for flow control, not bugs — the `[Harness]` prefix identifies harness-originated errors
+- `console.error('[Harness] ...')` for non-throwing error-level logging
+- State warnings: `addWarning()` in `state.ts` caps at 25 per session
+- Corrupt state files: quarantined to `<path>.corrupt-<timestamp>-<pid>-<uuid>` for auditability
 
 ## Logging
 
-**Framework:** No logging library — uses `console.log` sparingly (eval metrics only) and `process.env`-gated debug output
-
-**Patterns:**
-- `console.log` used only in eval tests for metric reporting: `console.log(`[Coherence] Primary agent overlaps: ${overlaps.length}`)`
-- No structured logging, no log levels, no log files in production code
-- Warnings accumulated in `TaskStateManager.addWarning()` — capped at 25 per session
-- Error details embedded in thrown Error messages, not separate log calls
-
-## Comments
-
-**When to Comment:**
-- File-level JSDoc description blocks on major modules and architecture-entry points
-- Section-separator comments before logical groupings within files
-- Inline comments explaining non-obvious decisions, gap documentation, and runtime requirements
-
-**JSDoc/TSDoc:**
-- JSDoc used on public API functions exported from `shared/`, `lib/`, and `tools/`:
-  ```typescript
-  /**
-   * Result shape from the prompt-skim tool. Captures quantitative metrics
-   * (word/token counts), structural markers (urls, paths), and qualitative
-   * assessments (complexity, flooding risk) for triage decisions.
-   */
-  export const PromptSkimResultSchema = z.object({...})
-  ```
-- `@param` tags used on parameterized functions:
-  ```typescript
-  /**
-   * Create a success response.
-   * @param message - Human-readable status message
-   * @param data - Optional payload data
-   */
-  export function success<T>(message: string, data?: T, metadata?: Record<string, unknown>): ToolResponse<T>
-  ```
-- `@internal` tags mark runtime-injected types not available outside OpenCode plugin context
-- `@returns` tags used for return value descriptions
-- JSDoc on factory functions describes what they create, not just what they return
-
-**Gap/Issue Documentation:**
-- Test files document known behavioral gaps with detailed comment blocks:
-  ```typescript
-  /**
-   * GAP G-2: False completion detection when agent crashes
-   * ...
-   * These tests DOCUMENT the behavioral gap and verify the stability-timer
-   * heuristic works correctly as a potential mitigation path.
-   */
-  ```
-
-## Function Design
-
-**Size:** Small, focused functions — most under 50 lines. The largest function is `buildPromptText` at ~50 lines. Classes like `TaskStateManager` and `CompletionDetector` each ~130-250 lines with many small methods.
-
-**Parameters:** Single object parameters for functions with 3+ arguments:
-```typescript
-export function buildDelegationQueueKey(args: {
-  provider?: string
-  model?: string
-  agent?: string
-  category?: string
-}): string
-```
-
-**Return Values:**
-- Never return `null` — use `undefined` for absent values (`Map.get()` pattern)
-- Boolean-returning guards for predicates
-- Tool results always wrapped in `ToolResponse` envelope with `kind: "success" | "error" | "pending"`
+**Framework:** `console` (no logging library used)
+- `console.error('[Harness] ...')` for error conditions
+- Warning accumulation via `addWarning()` in `state.ts` (25 per session cap)
+- No structured logging framework — bare `console` with `[Harness]` prefix
 
 ## Module Design
 
 **Exports:**
-- Named exports only (`export function`, `export class`, `export const`) — no default exports except `src/index.ts` which provides `HarnessControlPlane` as both named and default export
-- Barrel files (`index.ts`) re-export from submodules using `export * from` for library modules
-- Tool modules export both factory functions and input schemas: `export { createDelegateTaskTool, DelegateTaskInputSchema }`
+- Named exports only — no `export default` observed in core library
+- Barrel files: `index.ts` re-exports from sibling modules
+- Public API: `src/index.ts` (27 lines) defines the package's public surface
+- Plugin entry: `src/plugin.ts` (183 lines) is the composition root — imports and wires all runtime modules
 
-**Barrel Files:**
-- `src/index.ts` — public API surface for the `opencode-harness` npm package
-- `src/schema-kernel/index.ts` — re-exports all Zod schemas
-- `src/lib/event-tracker/index.ts` — re-exports event tracker submodules
-- Test directories use flat file structure, no barrel files needed
+**Dependency rules:**
+- Kill chain: max 2 levels deep (`plugin.ts` → `delegation-manager.ts` → `types.ts`)
+- No circular dependencies (verified by audit)
+- Leaf modules: `types.ts`, `helpers.ts`, `concurrency.ts` — near-zero imports
+- `continuity.ts` has a `storeCache` singleton at module level (documented code smell)
 
-**Module boundaries:**
-- `src/lib/types.ts` is the leaf node — depends on nothing, imported by most modules
-- Max dependency chain depth: 2 levels (enforced by architecture spec)
-- Dual-layer state: `continuity.ts` (durable JSON) + `state.ts` (in-memory Maps)
-- `src/shared/` contains cross-cutting tool utilities with no business logic
-- `src/plugin.ts` is the composition root — thin, wires dependencies, no business logic
-- Module size cap: 500 LOC (currently monitored; `continuity.ts` at ~455 LOC, `delegation-manager.ts` at ~468 LOC)
+**Module structure pattern for subdirectory packages:**
+```
+src/lib/<package>/
+├── index.ts           # Barrel re-exports
+├── types.ts           # Package-specific types
+├── <primary-module>.ts   # Main implementation
+└── ...
+tests/lib/<package>/
+├── <primary-module>.test.ts
+└── ...
+```
 
-## Zod Schema Conventions
+## Git Workflow
 
-- Schemas declared as `const` variables with explicit names and `.strict()` calls:
-  ```typescript
-  export const PromptSkimResultSchema = z.object({...}).strict()
-  ```
-- Types inferred with `z.infer<>`:
-  ```typescript
-  export type PromptSkimResult = z.infer<typeof PromptSkimResultSchema>
-  ```
-- All Zod schemas live in `src/schema-kernel/` directory
+**Commit format:**
+```
+type(scope): description — extended detail
+
+Uses conventional commits:
+- `feat(scope): ...` — new functionality
+- `fix(scope): ...` — bug fix
+- `docs(scope): ...` — documentation and planning
+- `test(scope): ...` — test additions or fixes
+```
+
+**Scope naming:** Phase-based scopes matching ROADMAP.md phase IDs (e.g., `CA-03`, `CA-03-01`, `CA-03-02`).
+
+**Atomic commits:**
+- Each commit represents one logical change
+- TDD commits: `test(CA-03-02): add failing tests for atomic_commit toggle` followed by `feat(CA-03-02): implement atomic_commit toggle gate`
+- No accumulation: commit after each meaningful change (subagent return, phase completion, gate pass)
+
+**Force push:**
+- NEVER force push to main/master
+- NEVER run `--no-verify` or `--no-gpg-sign` without explicit user request
+
+**Git structure is NOT managed by agents:** Agents may only manage commits for their own work — they do not constrain or override commits from other development activity.
+
+## File Organization
+
+**Canonical directories:**
+- `.opencode/` — ONLY for OpenCode primitives (agents, commands, skills, rules, permissions). NO runtime state.
+- `.hivemind/` — Internal deep module state (journals, lineage, runtime state, graph/vector memory). Canonical per Q6.
+- `.planning/` — GSD planning artifacts (codebase maps, audits, plans, specs)
+
+**No generated files in source:** `dist/` is gitignored, generated by `tsc`.
+
+## TODO / FIXME Conventions
+
+**Result of full codebase scan:** Zero occurrences of `TODO`, `FIXME`, `HACK`, or `XXX` in source files.
+
+Code smells and known issues are documented in `src/lib/AGENTS.md` CODE SMELLS section, not inline:
+1. `continuity.ts` (401 LOC) — under split threshold but monitored
+2. `delegation-manager.ts` (450 LOC) — largest functional module
+3. `asString` duplicated in `helpers.ts` and `continuity.ts` — consolidation pending
+4. `continuity.ts:26` module-level `storeCache` singleton — prevents isolated unit testing
+
+## Deep-Clone Conventions
+
+**Location:** `src/lib/continuity.ts` lines 87-152
+
+**Pattern:** 8 inline `clone*()` functions that perform recursive spread + array copy:
+```typescript
+function cloneDelegationMeta(meta: DelegationMeta | null): DelegationMeta | null {
+  if (!meta) return null
+  return { ...meta }
+}
+
+function cloneContinuityRecord(record: SessionContinuityRecord): SessionContinuityRecord {
+  return {
+    ...record,
+    metadata: {
+      ...record.metadata,
+      delegation: cloneDelegationMeta(record.metadata.delegation),
+      constraints: [...record.metadata.constraints],
+      pendingNotifications: clonePendingNotifications(record.metadata.pendingNotifications),
+      // ... more sub-cloners
+    },
+  }
+}
+```
+
+**Principle:** Deep-clone-on-read — all data read from the continuity store is cloned before return to prevent mutation aliasing. The composable `cloneContinuityRecord()` chains all sub-cloners.
 
 ---
 
-*Convention analysis: 2026-04-28 — updated 2026-05-06 (module size verification)*
+*Convention analysis: 2026-05-07*

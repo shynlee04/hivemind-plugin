@@ -1,92 +1,141 @@
-<!-- generated-by: gsd-doc-writer -->
 # Technology Stack
 
-**Analysis Date:** 2026-04-28
-**Updated:** 2026-05-06
+**Analysis Date:** 2026-05-07
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.x - All source code (`src/`), tests (`tests/`), and configuration files
-- Target: ES2022, Module: NodeNext
+- TypeScript ^5.0.0 — All source code in `src/`, tests in `tests/`
 
-**Secondary:**
-- Markdown (YAML frontmatter) - Agent/Command/Skill definitions in `.opencode/`
-- YAML - Workflow definitions, runtime policies
-- JSON - Configuration files (`opencode.json`, `package.json`, `mcp.json`)
+**Configuration/Meta:**
+- JSON (`opencode.json`, `mcp.json`, `package.json`, `tsconfig.json`)
+- YAML (runtime policies, skill/agent frontmatter in `.opencode/`)
+- Markdown (all skills, agents, commands documentation in `.opencode/`)
 
 ## Runtime
 
 **Environment:**
-- Node.js >= 20.0.0 (enforced by peer dependency on `@opencode-ai/plugin`)
-- Bun (optional — only required for PTY features via `bun-pty`)
+- Node.js >= 20.0.0 (enforced in `package.json` engines)
+- OpenCode >= 1.14.28 (enforced in `package.json` engines.opencode)
+- ESM module system (`"type": "module"` in `package.json`)
 
 **Package Manager:**
-- npm (v10+)
-- Lockfile: `package-lock.json` present — committed to repo
+- npm (detected from `package-lock.json` / npm scripts)
+- Lockfile: present (`package-lock.json`)
 
 ## Frameworks
 
 **Core:**
-- OpenCode Plugin SDK (`@opencode-ai/plugin` ^1.14.28) — Plugin lifecycle, tool registration, hook system. The harness is an OpenCode plugin that registers tools and hooks via the plugin composition root at `src/plugin.ts`.
-- OpenCode SDK (`@opencode-ai/sdk` ^1.14.28) — Runtime API for session management (create, prompt, abort, messages, status). Type-only imports for typed wrappers in `src/lib/session-api.ts` and `src/lib/sdk-delegation.ts`.
+- OpenCode Plugin SDK (`@opencode-ai/plugin` ^1.14.28) — Plugin lifecycle, tool/hook registration
+- OpenCode SDK (`@opencode-ai/sdk` ^1.14.28) — Session management, prompt dispatch
+
+**Schema Validation:**
+- Zod ^4.3.6 — All tool I/O schemas in `src/schema-kernel/` (16 schema files)
+- MCP SDK (`@modelcontextprotocol/sdk` ^1.29.0) — MCP client/server protocol
 
 **Testing:**
-- Vitest ^4.1.5 — Test runner with globals enabled. Config at `vitest.config.ts`.
-- @vitest/coverage-v8 ^4.1.5 — Coverage provider (v8 engine). Thresholds: 70% statements, 60% branches, 70% functions, 70% lines.
+- Vitest ^4.1.5 — Test runner with globals enabled
+- @vitest/coverage-v8 ^4.1.5 — V8-based coverage provider
+- Config: `vitest.config.ts` — includes `tests/**/*.test.ts`, `eval/**/*.test.ts`
+- Coverage thresholds: statements 85%, branches 72%, functions 85%, lines 85%
 
 **Build/Dev:**
-- TypeScript Compiler (`tsc`) — Build: `tsc` (emits to `dist/`), Typecheck: `tsc --noEmit`. Config at `tsconfig.json`.
-- No bundler — TypeScript compiles directly to CommonJS/ESM-compatible output via `NodeNext` module resolution.
+- TypeScript Compiler (`tsc`) — Build pipeline (`npm run build`)
+- Config: `tsconfig.json` — strict, ES2022 target, NodeNext module resolution
+- Prepack runs build automatically (`npm run prepack` → `npm run build`)
+
+**CLI:**
+- Commander ^14.0.3 — CLI framework for `hivemind-tools` binary
+- @clack/prompts ^1.3.0 — Interactive CLI prompts
+- Ink ^6.8.0 + React ^19.2.6 — Terminal UI components
 
 ## Key Dependencies
 
 **Critical (runtime):**
-- `zod` ^4.3.6 — Schema validation for all tool inputs, frontmatter parsing, and configuration. Extensively used in `src/tools/` (delegate-task, delegation-status, configure-primitive, validate-restart) and `src/schema-kernel/` (9 schema files for agent/command/skill/permission/MCP server/tool definitions).
-- `yaml` ^2.8.3 — YAML parsing and stringification for primitive compilation/decompilation (`src/lib/config-compiler.ts`, `src/tools/configure-primitive.ts`).
-- `gray-matter` ^4.0.3 — Frontmatter parsing for agent/command/skill `.md` files. Used in `src/lib/primitive-loader.ts` and `src/lib/config-compiler.ts`.
+- `@opencode-ai/sdk` ^1.14.28 — Session lifecycle, prompt API, message retrieval
+- `@opencode-ai/plugin` ^1.14.28 — Plugin type, hook signatures (peer dependency)
+- `zod` ^4.3.6 — Runtime schema validation for all 15+ plugin tools
+- `fast-glob` ^3.3.3 — File system glob operations
+- `yaml` ^2.8.3 — YAML parsing for runtime policies and config
+- `js-yaml` ^4.1.1 — Additional YAML support
+- `diff` ^9.0.0 — Text diffing (session-patch tool)
+- `commander` ^14.0.3 — CLI entry point structure
 
-**Optional (runtime):**
-- `bun-pty` ^0.4.8 — PTY-based background command execution. Lazy-loaded via `src/lib/pty/pty-runtime.ts`. Falls back gracefully to `null` if Bun runtime is unavailable. Powers the `run-background-command` tool (`src/tools/run-background-command.ts`). Not required for core harness operation.
+**Optional Runtime Dependencies:**
+- `bun-pty` ^0.4.8 — PTY integration (for `run-background-command` tool); gracefully falls back to headless `node:child_process` when unavailable
+- `node-pty` ^1.1.0 — Alternative PTY provider
+- `bun-types` ^1.3.13 — Bun type definitions
 
-**Dev-only:**
+**Infrastructure / State:**
+- `@modelcontextprotocol/sdk` ^1.29.0 — MCP client for external tool integration
+- `vscode-jsonrpc` ^8.2.1 — JSON-RPC protocol
+- `fast-xml-parser` ^5.7.3 — XML parsing
+- `jsonc-parser` ^3.3.1 — JSONC parsing (config files)
+- `gray-matter` ^4.0.3 — Frontmatter parsing
+
+**Code Analysis:**
+- `@ast-grep/cli` ^0.42.1 + `@ast-grep/napi` ^0.42.1 — AST-based code search
+- `tree-sitter-javascript` ^0.25.0 — JS/TS parsing
+- `web-tree-sitter` ^0.26.8 — Tree-sitter WASM bindings
+
+**UI/Generative:**
+- `@json-render/core` ^0.18.0 — Generative UI core
+- `@json-render/react` ^0.18.0 — React bindings
+- `@json-render/next` ^0.18.0 — Next.js integration
+- `@json-render/ink` ^0.18.0 — Ink CLI integration
+- `@json-render/react-pdf` ^0.18.0 — PDF rendering
+
+**Dev Dependencies:**
+- `typescript` ^5.0.0 — Compiler
+- `vitest` ^4.1.5 — Test runner
+- `@vitest/coverage-v8` ^4.1.5 — Coverage provider
 - `@types/node` ^20.0.0 — Node.js type definitions
-- `@types/bun` ^1.3.8 — Bun type definitions (for PTY module types)
+- `@types/bun` ^1.3.8 — Bun type definitions
+- `@opencode-ai/plugin` ^1.14.28 — Plugin SDK (also peer dependency, installed as dev dep for compilation)
 
 ## Configuration
 
 **Environment:**
-- Runtime state path overrides (optional):
-  - `OPENCODE_HARNESS_STATE_DIR` — Override default `.hivemind/state/` directory
-  - `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
-  - `OPENCODE_SESSION_ID` — Injected by OpenCode runtime; used by `delegate-task` tool
-  - `NODE_ENV` — Controls behavior: `"test"` skips session ID validation
-- `.env` file present — contains MCP API keys (never committed; `.env.example` is the template)
-- No environment variables required for build or test
+- `.env` file present — contains environment variables (API keys, tokens)
+- Required env vars for MCP servers (documented in `mcp.json` via `$VAR` syntax):
+  - `$NOTION_API_TOKEN`, `$ZAI_API_KEY`, `$SMITHERY_CLI_KEY`, `$EXA_API_KEY`, `$GITHUB_PAT`, `$NETLIFY_PAT`, `$TAVILY_API_KEY`, `$BRAVE_API_KEY`
+- Runtime state overrides: `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`
 
 **Build:**
-- `tsconfig.json` — Strict mode, ES2022 target, NodeNext module resolution, declaration files + sourcemaps, `verbatimModuleSyntax: true`
-- `vitest.config.ts` — Globals mode, coverage thresholds, includes `tests/**/*.test.ts` and `eval/**/*.test.ts`
+- `tsconfig.json` — TypeScript strict mode, ES2022, NodeNext, declarations + sourcemaps, verbatimModuleSyntax
+- `vitest.config.ts` — Globals mode, V8 coverage, threshold enforcement
+- Prepack hook: `npm run build` (builds before pack/publish)
 
-**Package Metadata:**
-- `package.json` — npm package `opencode-harness@0.1.0`, ESM (`"type": "module"`), dual entrypoints: `.` and `./plugin`
-- `opencode.json` — OpenCode configuration: plugin list, permissions, compaction settings
+**Project Config:**
+- `opencode.json` — OpenCode platform config: provider (Osiris), model (claude-opus-4-6), permissions, plugins
+- `mcp.json` — MCP server definitions (20 servers)
+
+## Package Structure
+
+**Package name:** `opencode-harness` v0.1.0
+
+**Entry points (via `exports`):**
+| Import path | Target | Purpose |
+|-------------|--------|---------|
+| `opencode-harness` | `./dist/index.js` | Public API re-exports |
+| `opencode-harness/plugin` | `./dist/plugin.js` | Plugin composition root |
+| `opencode-harness/cli` | `./dist/cli/index.js` | CLI tools |
+
+**Binary:** `hivemind-tools` → `./bin/hivemind-tools.cjs`
 
 ## Platform Requirements
 
 **Development:**
 - Node.js >= 20.0.0
-- npm >= 10
-- Git (for version control)
-- Bun (optional — only for PTY commands; harness functions without it)
+- npm (any modern version)
+- No build-time environment variables required
 
-**Production:**
-- OpenCode runtime >= 1.14.28 (specified in `engines.opencode`)
-- `@opencode-ai/plugin` >= 1.1.0 as peer dependency
-- Local filesystem for state persistence (`.hivemind/state/`)
-- No database required
-- No external services required for core operation
+**Production (OpenCode Runtime):**
+- OpenCode >= 1.14.28
+- Plugin loaded via `opencode.json` plugin array
+- File system write access for `.hivemind/` state directory
+- Network access for MCP servers (if configured)
 
 ---
 
-*Stack analysis: 2026-04-28 — updated 2026-05-06 (verified dependency versions)*
+*Stack analysis: 2026-05-07*

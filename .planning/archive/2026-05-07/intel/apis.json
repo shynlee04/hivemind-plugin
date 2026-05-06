@@ -1,0 +1,82 @@
+{
+  "_meta": { "updated_at": "2026-04-23T00:00:00Z", "version": 1 },
+  "entries": {
+    "tool:delegate-task": {
+      "method": "tool",
+      "path": "delegate-task",
+      "params": ["agent", "prompt", "title?", "safetyCeilingMs?"],
+      "file": "src/tools/delegate-task.ts",
+      "description": "Delegate a task to a specialist agent via DelegationManager (WaiterModel dispatch, dual-signal completion)"
+    },
+    "tool:delegation-status": {
+      "method": "tool",
+      "path": "delegation-status",
+      "params": ["delegationId?", "status?"],
+      "file": "src/tools/delegation-status.ts",
+      "description": "Poll delegation status or retrieve completed results by ID or status filter"
+    },
+    "tool:run-background-command": {
+      "method": "tool",
+      "path": "run-background-command",
+      "params": ["action", "command?", "args?", "cwd?", "env?", "sessionId?", "offset?", "input?"],
+      "file": "src/tools/run-background-command.ts",
+      "description": "Run CLI commands in shared background PTY sessions with queue-governed dispatch (requires bun-pty)"
+    },
+    "tool:prompt-skim": {
+      "method": "tool",
+      "path": "prompt-skim",
+      "params": ["content", "workspaceRoot"],
+      "file": "src/tools/prompt-skim/index.ts",
+      "description": "Fast scan of prompt content: count words/lines/tokens, extract URLs, verify file paths"
+    },
+    "tool:prompt-analyze": {
+      "method": "tool",
+      "path": "prompt-analyze",
+      "params": ["content"],
+      "file": "src/tools/prompt-analyze/index.ts",
+      "description": "Analyze prompt content for contradictions, vagueness, missing scope, and clarity signals"
+    },
+    "tool:session-patch": {
+      "method": "tool",
+      "path": "session-patch",
+      "params": ["sessionFilePath", "section", "newContent"],
+      "file": "src/tools/session-patch/index.ts",
+      "description": "Patch specific sections in session file with backup"
+    },
+    "hook:event": {
+      "method": "hook",
+      "path": "event",
+      "params": ["event"],
+      "file": "src/hooks/create-core-hooks.ts",
+      "description": "Routes SDK events to lifecycle manager, drives session compaction and delegation event observation"
+    },
+    "hook:messages.transform": {
+      "method": "hook",
+      "path": "messages.transform",
+      "params": ["messages"],
+      "file": "src/hooks/messages-transform.ts",
+      "description": "Scans message history for prompt-enhance triggers and injects context packets"
+    },
+    "hook:experimental.session.compacting": {
+      "method": "hook",
+      "path": "experimental.session.compacting",
+      "params": ["sessionID", "messages"],
+      "file": "src/hooks/create-session-hooks.ts",
+      "description": "Session compaction hook that preserves harness metadata across context compaction"
+    },
+    "hook:tool.execute.before": {
+      "method": "hook",
+      "path": "tool.execute.before",
+      "params": ["sessionID", "tool", "input"],
+      "file": "src/hooks/create-tool-guard-hooks.ts",
+      "description": "Circuit breaker check and tool budget tracking before tool execution"
+    },
+    "hook:tool.execute.after": {
+      "method": "hook",
+      "path": "tool.execute.after",
+      "params": ["sessionID", "tool", "output"],
+      "file": "src/hooks/create-tool-guard-hooks.ts",
+      "description": "Post-execution stats tracking and harness metadata injection into tool outputs"
+    }
+  }
+}

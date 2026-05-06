@@ -1,185 +1,245 @@
-<!-- generated-by: gsd-doc-writer -->
 # External Integrations
 
-**Analysis Date:** 2026-04-28
-**Updated:** 2026-05-06
+**Analysis Date:** 2026-05-07
 
 ## APIs & External Services
 
-**Runtime Platform:**
-- OpenCode Runtime — Core platform the harness plugs into
-  - SDK/Client: `@opencode-ai/sdk` ^1.14.28 (type-only), `@opencode-ai/plugin` ^1.14.28
-  - Integration: `src/plugin.ts` — Composition root registering 16 tools and multiple hooks via the plugin API
-  - Session API: `src/lib/session-api.ts` — Typed wrappers for session.create, session.prompt, session.promptAsync, session.abort, session.messages, session.status
-  - Auth: Session IDs (format: `ses_*`) injected by platform; no custom auth
+### OpenCode Platform Integration
 
-**MCP Servers (configured in `mcp.json`):**
+**Plugin SDK:**
+- Package: `@opencode-ai/plugin` ^1.14.28 (peer + dev dependency)
+- Entry: `src/plugin.ts` — `HarnessControlPlane: Plugin` async factory
+- Registration: `opencode.json` → `plugin: [..., "./dist/plugin.js"]`
+- The plugin factory receives `{ client, directory }` from OpenCode at startup
 
-*Web Search & Reading:*
-- Tavily — LLM-optimized web search
-  - Config: `mcp.json` → `tavily` (HTTP URL with API key)
-  - Auth: `TAVILY_API_KEY` env var
-- Z.AI Web Search — Web search via Z.AI API
-  - Config: `mcp.json` → `web-search-prime` (HTTP URL with API key)
-  - Auth: `ZAI_API_KEY` env var
-- Z.AI Web Reader — Web page content extraction
-  - Config: `mcp.json` → `web-reader` (HTTP URL with API key)
-  - Auth: `ZAI_API_KEY` env var
-- Z.AI zread — Additional web reading
-  - Config: `mcp.json` → `zread` (HTTP URL with API key)
-  - Auth: `ZAI_API_KEY` env var
-- Brave Search — Privacy-focused web search
-  - Config: `mcp.json` → `brave-search` (npx CLI with API key)
-  - Auth: `BRAVE_API_KEY` env var
-- Exa — Web search and content extraction
-  - Config: `mcp.json` → `exa` (npx mcp-remote proxy)
-  - Auth: `EXA_API_KEY` env var
+**OpenCode SDK:**
+- Package: `@opencode-ai/sdk` ^1.14.28
+- Client type: `OpenCodeClient = ReturnType<typeof createOpencodeClient>`
+- Wrapper: `src/lib/session-api.ts` (~285 LOC) — typed wrappers for:
+  - `client.session.create()` — Create child sessions
+  - `client.session.prompt()` — Send prompts (sync + async fallback)
+  - `client.session.messages()` — Retrieve messages
+  - `client.session.abort()` — Abort sessions
+  - Session ID validation (must start with `ses`)
 
-*Documentation & Research:*
-- Context7 — Up-to-date library documentation search
-  - Config: `mcp.json` → `context7` (HTTP URL, no auth)
-- DeepWiki — GitHub repository documentation
-  - Config: `mcp.json` → `deepwiki` (HTTP URL, no auth)
-- GitMCP — GitHub documentation fetching
-  - Config: `mcp.json` → `gitmcp` (HTTP URL, no auth)
+**Plugin Hook Surfaces (registered in `src/plugin.ts`):**
 
-*Development Tools:*
-- GitHub MCP — Repository operations (issues, PRs, code search)
-  - Config: `mcp.json` → `github` (npx CLI)
-  - Auth: `GITHUB_PERSONAL_ACCESS_TOKEN` → `$GITHUB_PAT`
-- Netlify MCP — Deployment operations
-  - Config: `mcp.json` → `netlify` (npx CLI)
-  - Auth: `NETLIFY_PERSONAL_ACCESS_TOKEN` → `$NETLIFY_PAT`
-- Repomix — Codebase packing/analysis
-  - Config: `mcp.json` → `repomix` (npx CLI, no auth)
-- Playwright — Browser automation
-  - Config: `mcp.json` → `mcp-playwright` (npx CLI, no auth)
+| Hook | Source Factory | Purpose |
+|------|---------------|---------|
+| `event` | `createCoreHooks()` | Routes all SDK events to `lifecycleManager.handleEvent()` + observers |
+| `system.transform` | `createCoreHooks()` | Injects governance block, intake context, behavioral profile |
+| `messages.transform` | `createCoreHooks()` | Classifies hook effect (CQRS boundary check) |
+| `shell.env` | `createCoreHooks()` | Injects `CI=true`, `GIT_TERMINAL_PROMPT=0`, `NO_COLOR=1` |
+| `tool.execute.after` | Inline in `plugin.ts` | Workflow state persistence, event tracker artifacts |
 
-*Productivity:*
-- Notion — Documentation and knowledge management
-  - Config: `mcp.json` → `notion` (HTTP URL with API key)
-  - Auth: `NOTION_API_TOKEN` env var
-- Stitch (Google) — UI design generation
-  - Config: `mcp.json` → `stitch` (HTTP URL, no auth)
-- Desktop Commander — Desktop automation via Smithery
-  - Config: `mcp.json` → `desktop-commander` (npx CLI)
-  - Auth: `SMITHERY_CLI_KEY` env var
+**Plugin Tools (15 registered):**
 
-*AI/Reasoning:*
-- Sequential Thinking — Structured problem-solving
-  - Config: `mcp.json` → `sequential-thinking` (npx CLI, no auth)
-- Memory — Knowledge graph memory persistence
-  - Config: `mcp.json` → `memory` (npx CLI, no auth)
+| Tool Name | Source | Purpose |
+|-----------|--------|---------|
+| `delegate-task` | `src/tools/delegate-task.ts` | Dispatch work to specialist agents (WaiterModel) |
+| `delegation-status` | `src/tools/delegation-status.ts` | Poll delegation state and retrieve results |
+| `run-background-command` | `src/tools/run-background-command.ts` | Background PTY command execution |
+| `prompt-skim` | `src/tools/prompt-skim/index.ts` | Fast scan of prompt content |
+| `prompt-analyze` | `src/tools/prompt-analyze/index.ts` | Analyze prompt for contradictions, vagueness |
+| `session-patch` | `src/tools/session-patch/index.ts` | Patch session files with backup |
+| `session-journal-export` | `src/tools/session-journal-export.ts` | Export session journal/lineage as JSON or Markdown |
+| `hivemind-doc` | `src/tools/hivemind-doc.ts` | Read-only document intelligence (skim, read, chunk, search) |
+| `hivemind-trajectory` | `src/tools/hivemind-trajectory.ts` | Inspect/update trajectory ledger |
+| `hivemind-pressure` | `src/tools/hivemind-pressure.ts` | Classify runtime pressure, inspect tool authority |
+| `hivemind-sdk-supervisor` | `src/tools/hivemind-sdk-supervisor.ts` | Inspect SDK wrapper health and readiness |
+| `hivemind-command-engine` | `src/tools/hivemind-command-engine.ts` | Discover command bundles, analyze contracts |
+| `hivemind-agent-work-create` | `src/tools/hivemind-agent-work.ts` | Create durable agent work contracts |
+| `hivemind-agent-work-export` | `src/tools/hivemind-agent-work.ts` | Export work contracts as JSON/Markdown payloads |
+| `configure-primitive` | `src/tools/configure-primitive.ts` | Configure OpenCode primitives (agents, commands, skills) |
+| `validate-restart` | `src/tools/validate-restart.ts` | Validate primitives are discoverable after restart |
 
-*General:*
-- Fetcher — Generic URL fetching
-  - Config: `mcp.json` → `fetcher` (npx CLI, no auth)
-- Fetch — URL content extraction (uvx-based)
-  - Config: `mcp.json` → `fetch` (uvx CLI, no auth)
+### MCP Server Integrations
+
+**Location:** `mcp.json` — 20 MCP servers configured
+
+**HTTP-based MCP Servers:**
+| Server | URL | Auth | Timeout |
+|--------|-----|------|---------|
+| `notion` | `https://mcp.notion.com/mcp` | Bearer `$NOTION_API_TOKEN` | 15s |
+| `stitch` | `https://stitch.googleapis.com/mcp` | None | Default |
+| `gitmcp` | `https://gitmcp.io` | None | 35s |
+| `web-search-prime` | `https://api.z.ai/api/mcp/web_search_prime/mcp` | Bearer `$ZAI_API_KEY` | Default |
+| `web-reader` | `https://api.z.ai/api/mcp/web_reader/mcp` | Bearer `$ZAI_API_KEY` | Default |
+| `zread` | `https://api.z.ai/api/mcp/zread/mcp` | Bearer `$ZAI_API_KEY` | Default |
+| `context7` | `https://mcp.context7.com/mcp` | None | Default |
+| `deepwiki` | `https://mcp.deepwiki.com/mcp` | None | 15s |
+| `tavily` | `https://mcp.tavily.com/mcp/?tavilyApiKey=$TAVILY_API_KEY` | Query param | 35s |
+
+**NPX-based MCP Servers:**
+| Server | Command | Auth |
+|--------|---------|------|
+| `fetcher` | `npx -y fetcher-mcp` | None |
+| `desktop-commander` | `npx -y @smithery/cli@latest` | `$SMITHERY_CLI_KEY` |
+| `exa` | `npx -y mcp-remote https://mcp.exa.ai/mcp` | Env: `$EXA_API_KEY` |
+| `github` | `npx -y @modelcontextprotocol/server-github` | Env: `$GITHUB_PAT` |
+| `mcp-playwright` | `npx -y @playwright/mcp@latest` | None |
+| `memory` | `npx -y @modelcontextprotocol/server-memory` | None |
+| `netlify` | `npx -y @netlify/mcp` | Env: `$NETLIFY_PAT` |
+| `repomix` | `npx -y repomix --mcp` | None |
+| `sequential-thinking` | `npx -y @modelcontextprotocol/server-sequential-thinking` | None |
+| `brave-search` | `npx -y @brave/brave-search-mcp-server` | Env: `$BRAVE_API_KEY` |
+
+**UVX-based:**
+| Server | Command | Auth |
+|--------|---------|------|
+| `fetch` | `uvx mcp-server-fetch` | None |
+
+### AI Provider
+
+**Provider:** Osiris (`@ai-sdk/openai-compatible`)
+- Base URL: `https://ai.osiris-code.com/v1`
+- Available models: Claude Opus 4.6, Claude Sonnet 4.5, GPT-5.4, GPT-5.5, DeepSeek V4 Pro, Gemini 3.1 Pro, GLM 5.1, GLM 5V Turbo, Kimi K2.6
+- Default model: `osiris/claude-opus-4-6` (1M context)
+- Config: `opencode.json` provider section
 
 ## Data Storage
 
 **Databases:**
-- No external database — all persistence is file-based JSON
-  - Continuity store: `.hivemind/state/session-continuity.json` (managed by `src/lib/continuity.ts`)
-  - Delegation records: `.hivemind/state/delegations.json` (managed by `src/lib/delegation-persistence.ts`)
-  - Config workflows: `.hivemind/state/config-workflows.json`
-  - Session journal: `.hivemind/journal/*.jsonl` (append-only event timeline)
-  - Execution lineage: `.hivemind/lineage/`
-  - Event tracker: `.hivemind/event-tracker/*.json`, `.hivemind/event-tracker/*.md`
+- No traditional database. All persistence is file-based JSON.
+
+**File-Based State Store:**
+- `.hivemind/state/` — Canonical state root (per Q6 architectural decision)
+  - `delegations.json` — Delegation records
+  - `config-workflows.json` — Config workflow state
+  - Continuity store (session persistence) via `src/lib/continuity.ts`
+  - Delegation persistence via `src/lib/delegation-persistence.ts`
+- Legacy path: `.opencode/state/opencode-harness/` (supported via compatibility bridge, one-way migration)
+- Format: Deep-clone-on-read JSON, module-level singleton cache in `continuity.ts`
 
 **File Storage:**
-- Local filesystem only — State directory at `.hivemind/state/` (canonical per Q6 architectural decision)
-- Legacy path: `.opencode/state/opencode-harness/` (compatibility bridge during migration)
+- `.hivemind/event-tracker/` — Session event tracker artifacts (JSON + Markdown)
+- `.hivemind/poor-prompts/` — Project issues/captures
+- Local filesystem only — no cloud storage integration
 
 **Caching:**
-- None external — In-memory Maps used for runtime caching:
-  - `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta` in `src/lib/state.ts`
-  - `storeCache` singleton in `src/lib/continuity.ts` (single module-level cache of continuity store)
+- In-memory Maps in `src/lib/state.ts`: `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta`
+- Config subscriber lazy-cache (`src/lib/config-subscriber.ts`)
+- No distributed cache
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- OpenCode platform handles all authentication — harness receives session context (sessionID) injected by the framework
-- No custom auth layer — identity is tracked via OpenCode session IDs (`ses_*` prefix)
-- Parent-child session hierarchy managed via `parentID` field in session records
+- Not applicable — harness is an OpenCode plugin, delegates auth to the host platform
+- Session IDs validated by prefix check (must start with `ses`)
+- MCP server auth via environment variables and API keys (Bearer tokens)
 
-**Implementation:**
-- `src/lib/session-api.ts` — `assertValidSessionID()` validates session ID format
-- `src/tools/delegate-task.ts` — Detects OpenCode runtime availability via `context.sessionID` and `process.env.OPENCODE_SESSION_ID`
-- `src/lib/types.ts` — `TaskStatus` state machine (pending → queued → running → completed/failed/cancelled/error/interrupt)
+**Permission Model:**
+- OpenCode permission config in `opencode.json`: `read: allow`, `edit: allow`, `bash: allow` (with restricted git patterns), `task: allow`, `skill: allow`
+- Category gate policies for delegation: `src/lib/category-gates.ts`, `src/lib/category-gate-audit.ts`
+- Runtime policy overrides per session/delegation in `src/lib/runtime-policy.ts`
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- No external service — all error information logged to local files
-- Event tracker at `src/lib/event-tracker/` writes events to .hivemind/event-tracker/*.json and *.md
-- Session journal at `src/lib/session-journal.ts` writes append-only JSONL
-- Execution lineage at `src/lib/execution-lineage.ts` tracks parent-child session chains
-- `[Harness]` prefix on all thrown errors for grep-ability
+- `[Harness]` prefix on all thrown errors
+- Session journal (append-only event timeline, Q3 architectural decision) — `src/lib/session-journal.ts`
+- Execution lineage tracking — `src/lib/execution-lineage.ts`
+- Trajectory ledger — `src/lib/trajectory/index.ts`
+- Event tracker — `src/lib/event-tracker/index.ts`
 
 **Logs:**
-- Console-based — harness uses structured error messages with `[Harness]` prefix
-- Best-effort audit projection: event tracker writes never block canonical OpenCode event handling
-- `.hivemind/state/progress.md` and `.hivemind/state/task_plan.md` for session-level planning persistence
+- Best-effort audit projection (failures silently ignored, never block canonical event handling)
+- Warning cap at 25 per session (`src/lib/state.ts`)
+- Runtime pressure classification — `src/lib/runtime-pressure/index.ts`
+- SDK supervisor health diagnostics — `src/lib/sdk-supervisor/index.ts`
+
+**Compaction:**
+- OpenCode auto-compaction enabled (`compaction.auto: true`, `compaction.prune: true`)
+- Reserved context: 10,000 tokens
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- npm package (`opencode-harness@0.1.0`) — publishable via `npm publish`
-- Loaded by OpenCode projects as a plugin via `opencode.json` → `"./dist/plugin.js"`
-- Also loadable via `@opencode-ai/plugin` peer dependency resolution
+- npm package: `opencode-harness` v0.1.0
+- Local plugin loaded from `./dist/plugin.js`
+- No CI/CD pipeline detected in current workspace
 
 **CI Pipeline:**
-- GitHub Actions — `.github/workflows/opencode.yml`:
-  - Triggers on issue/PR comments containing `/oc` or `/opencode`
-  - Runs OpenCode via `anomalyco/opencode/github@latest` action on `ubuntu-latest`
-  - Uses `zai-coding-plan/glm-5.1` model
-  - Authenticated via `ZAI_API_KEY` secret
-- Additional Qwen workflows in `.github/workflows/qwen-*.yml` for triage, review, invocation, dispatch, and scheduled triage
-
-**Build Pipeline:**
-- `npm run clean` — Removes `dist/` directory
-- `npm run build` — Clean + `tsc` compile (`src/` → `dist/`)
-- `npm run typecheck` — `tsc --noEmit` validation
-- `npm run test` — Vitest run (all test suites)
-- `npm run test:coverage` — Vitest with v8 coverage report
-- `npm run prepack` — Auto-runs build before `npm pack`/`npm publish`
+- Not configured in this repository (no GitHub Actions workflows detected)
 
 ## Environment Configuration
 
 **Required env vars (for MCP server operation):**
-- `TAVILY_API_KEY` — Tavily web search
-- `ZAI_API_KEY` — Z.AI web search/reader services
-- `BRAVE_API_KEY` — Brave Search
-- `GITHUB_PAT` — GitHub API operations
+- `NOTION_API_TOKEN` — Notion integration
+- `ZAI_API_KEY` — Web search, web reader, zread
+- `TAVILY_API_KEY` — Tavily search/research/extract
+- `BRAVE_API_KEY` — Brave search
+- `GITHUB_PAT` — GitHub API
 - `EXA_API_KEY` — Exa web search
-- `NOTION_API_TOKEN` — Notion API access
-- `SMITHERY_CLI_KEY` — Desktop Commander
 - `NETLIFY_PAT` — Netlify deployment
-
-**Optional env vars (harness runtime):**
-- `OPENCODE_HARNESS_STATE_DIR` — Override state directory
-- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file
-- `OPENCODE_SESSION_ID` — Injected by OpenCode platform (not user-set)
+- `SMITHERY_CLI_KEY` — Desktop commander
 
 **Secrets location:**
-- `.env` file at project root (gitignored)
-- `.env.example` serves as template with placeholder values
-- GitHub Actions secrets: `ZAI_API_KEY` (used by OpenCode workflow)
+- `.env` file present at project root — contains environment configuration
+- `mcp.json` references env vars using `$VAR` syntax
+
+**Runtime overrides (optional):**
+- `OPENCODE_HARNESS_STATE_DIR` — Override state directory path
+- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
+- `NODE_ENV` — When set to `test`, session ID validation relaxed (accepts `child-*`/`parent-*` prefixes)
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- No incoming webhooks — harness uses polling-based completion detection (WaiterModel)
-- `src/lib/completion-detector.ts` — Two-signal completion: session.idle + stability timer
-- `src/lib/sdk-delegation.ts` — `SdkDelegationHandler` class with stability polling
+- None — harness is a plugin, not a server
 
 **Outgoing:**
-- No outgoing webhooks — all inter-session communication via OpenCode SDK API calls
-- `src/lib/session-api.ts` — `sendPrompt()` and `sendPromptAsync()` for parent-child session communication
-- `src/lib/delegation-manager.ts` — `DelegationManager` orchestrates dispatches and monitors completions via SDK polling
+- MCP server calls via configured servers
+- OpenCode SDK session operations (create, prompt, messages, abort)
+- File system writes to `.hivemind/` state directory
+
+## Cross-Module Dependency Patterns
+
+**Core Dependency Graph (critical paths):**
+```
+types.ts (leaf, 415 LOC)
+├── task-status.ts → types.ts
+├── state.ts → types.ts
+├── helpers.ts → types.ts
+├── concurrency.ts (self-contained, ~98 LOC)
+├── continuity.ts → types.ts (~401 LOC, state persistence)
+├── delegation-persistence.ts → types.ts, continuity.ts (~78 LOC)
+├── session-api.ts → helpers.ts (~285 LOC, SDK wrappers)
+├── runtime.ts → helpers.ts + types.ts (~43 LOC)
+├── completion-detector.ts (self-contained, ~120 LOC)
+├── notification-handler.ts → helpers.ts
+└── lifecycle-manager.ts → concurrency + continuity + helpers + session-api + state + types (~152 LOC)
+
+delegation-manager.ts → concurrency + continuity + delegation-persistence + helpers + types + @opencode-ai/sdk (~500 LOC)
+```
+
+**Max chain depth:** 2 levels. `types.ts` changes ripple to most modules.
+
+**Non-negotiable constraints:**
+- No circular dependencies
+- Max module size: 500 LOC
+- `verbatimModuleSyntax: true` — use `import type` for type-only imports
+- Deep-clone-on-read in continuity store
+- `types.ts` is leaf — depends on nothing
+
+**Integration surface layers:**
+1. **Plugin composition root** (`src/plugin.ts`, 183 LOC) — Wires all factories, tools, hooks
+2. **Hook factories** (`src/hooks/`, 10 files) — Event observers, CQRS boundary checks, governance injection
+3. **Tool implementations** (`src/tools/`, 13 top-level + 3 subdirectories) — 16 registered tools
+4. **Core lib** (`src/lib/`, 25+ modules) — State, concurrency, delegation, lifecycle, continuity
+5. **Schema kernel** (`src/schema-kernel/`, 16 files) — Zod schemas for tool I/O and config validation
+6. **Shared utilities** (`src/shared/`, 2 files) — Tool response envelope, tool helpers
+
+**File system boundaries:**
+| Path | Classification | Role |
+|------|---------------|------|
+| `src/` | Hard harness (npm package) | TypeScript source — tools, hooks, plugin, lib |
+| `.opencode/` | Soft meta-concepts | Agents, skills, commands, rules, permissions — NO state |
+| `.hivemind/` | Internal state | Session journals, lineage, runtime state, events — canonical per Q6 |
+| `.planning/` | Planning artifacts | Codebase maps, phase plans, specs — project governance |
+| `dist/` | Build output | Compiled JS + declarations + sourcemaps (gitignored) |
+| `tests/` | Test suite | Vitest unit tests mirroring `src/` structure |
 
 ---
 
-*Integration audit: 2026-04-28 — updated 2026-05-06 (tool count correction)*
+*Integration audit: 2026-05-07*

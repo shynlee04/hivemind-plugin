@@ -1,0 +1,53 @@
+{
+  "_meta": { "updated_at": "2026-04-23T00:00:00Z", "version": 1 },
+  "entries": {
+    "@opencode-ai/sdk": {
+      "version": "^1.14.20",
+      "type": "production",
+      "invocation": "require",
+      "used_by": ["src/lib/delegation-manager.ts", "src/lib/sdk-delegation.ts", "src/lib/session-api.ts"]
+    },
+    "@opencode-ai/plugin": {
+      "version": "^1.14.20",
+      "type": "peer",
+      "invocation": "require",
+      "used_by": ["src/plugin.ts", "src/tools/delegate-task.ts", "src/tools/delegation-status.ts", "src/tools/run-background-command.ts"]
+    },
+    "zod": {
+      "version": "^4.3.6",
+      "type": "production",
+      "invocation": "require",
+      "used_by": ["src/tools/delegate-task.ts", "src/tools/delegation-status.ts", "src/tools/run-background-command.ts", "src/schema-kernel/prompt-enhance.schema.ts"]
+    },
+    "bun-pty": {
+      "version": "^0.4.8",
+      "type": "production",
+      "invocation": "require",
+      "used_by": ["src/lib/pty/pty-manager.ts"]
+    },
+    "typescript": {
+      "version": "^5.0.0",
+      "type": "development",
+      "invocation": "npm run build && npm run typecheck",
+      "used_by": ["build", "typecheck"]
+    },
+    "vitest": {
+      "version": "^1.0.0",
+      "type": "development",
+      "invocation": "npm test && npm run test:coverage",
+      "used_by": ["test", "test:watch", "test:coverage"]
+    },
+    "@types/node": {
+      "version": "^20.0.0",
+      "type": "development",
+      "invocation": "implicit",
+      "used_by": ["build"]
+    },
+    "@types/bun": {
+      "version": "^1.3.8",
+      "type": "development",
+      "invocation": "implicit",
+      "used_by": ["build"]
+    }
+  }
+}
