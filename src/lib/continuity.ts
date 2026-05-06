@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "./security/path-scope.js"
 import { redactBoundaryFields } from "./security/redaction.js"
+import { getCachedConfig } from "./config-subscriber.js"
 import type {
   CapturedResult,
   CompactionCheckpointData,
@@ -298,9 +299,18 @@ function loadStoreFromDisk(): ContinuityStoreFile {
 }
 
 function persistStore(): void {
-  const continuityFile = getContinuityFile()
+  // CA-03: atomic_commit toggle gate (D-15)
+  // When false, state changes stay in-memory (batched).
+  // NOTE: In-memory batching behavior is a lifecycle concern for CA-04.
+  // For CA-03, we gate the write but keep the store updated in memory.
+  const config = getCachedConfig()
   const store = ensureStoreLoaded()
   store.updatedAt = Date.now()
+  if (!config.atomic_commit) {
+    return  // Skip disk write — state remains in memory for later flush
+  }
+
+  const continuityFile = getContinuityFile()
   mkdirSync(dirname(continuityFile), { recursive: true })
   // Atomic write: write to temp file first, then rename to prevent
   // corrupt reads if the process crashes mid-write.

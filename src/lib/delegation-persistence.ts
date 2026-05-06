@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "./continuity.js"
+import { getCachedConfig } from "./config-subscriber.js"
 import { redactBoundaryFields } from "./security/redaction.js"
 import type { Delegation, DelegationStatus } from "./types.js"
 
@@ -55,6 +56,13 @@ export function getDelegationsFilePath(): string {
 }
 
 export function persistDelegations(delegations: Delegation[]): void {
+  // CA-03: commit_docs toggle gate (D-16)
+  // When false, document auto-commit is skipped.
+  const config = getCachedConfig()
+  if (!config.commit_docs) {
+    return  // Skip document persistence
+  }
+
   const filePath = getDelegationsFilePath()
   mkdirSync(dirname(filePath), { recursive: true })
   // Atomic write: write to temp file first, then rename to prevent
