@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { join } from "node:path"
+import { dirname, join, resolve } from "node:path"
+import { fileURLToPath } from "node:url"
 import { tmpdir } from "node:os"
 import {
   HIVEMIND_CONFIGS_SCHEMA_VERSION,
@@ -578,5 +579,20 @@ describe("writeConfigs", () => {
     expect(parsed.atomic_commit).toBe(false)
     expect(parsed.workflow.use_worktrees).toBe(true)
     expect(parsed.workflow.discuss_mode).toBe("sufficient-phase-discussion")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// CA-03: @future-consumer JSDoc annotations
+// ---------------------------------------------------------------------------
+
+describe("@future-consumer annotations", () => {
+  it("all 7 future toggles have @future-consumer JSDoc tags", () => {
+    const schemaSource = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), "../../src/schema-kernel/hivemind-configs.schema.ts"),
+      "utf-8",
+    )
+    const futureConsumerCount = (schemaSource.match(/@future-consumer/g) || []).length
+    expect(futureConsumerCount).toBeGreaterThanOrEqual(7)
   })
 })

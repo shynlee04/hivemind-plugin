@@ -130,14 +130,21 @@ export type DiscussMode = z.infer<typeof DiscussModeSchema>
  */
 const WorkflowConfigInnerSchema = z.object({
   research: z.boolean().default(true),
+  /** @future-consumer lifecycle-manager.ts — CA-04 */
   cross_session_tasks_dependencies_validation: z.boolean().default(false),
+  /** @future-consumer hivemind-trajectory tool — CA-04 */
   trajectory_control: z.boolean().default(false),
+  /** @future-consumer continuity.ts — CA-04 */
   advanced_continuity_validation: z.boolean().default(false),
+  /** @future-consumer task-status.ts — CA-04 */
   task_plus_enabled: z.boolean().default(false),
   plan_check: z.boolean().default(true),
   verifier: z.boolean().default(true),
+  /** @future-consumer sidecar UI (WS-2/WS-8) — Future */
   ui_phase: z.boolean().default(false),
+  /** @future-consumer sidecar UI (WS-2/WS-8) — Future */
   ui_safety_gate: z.boolean().default(false),
+  /** @future-consumer WS-4 workstream — Future */
   ai_integration_phase: z.boolean().default(false),
   research_before_questions: z.boolean().default(true),
   discuss_mode: DiscussModeSchema.default("sufficient-phase-discussion"),
