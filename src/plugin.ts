@@ -42,6 +42,7 @@ import {
 } from "./lib/event-tracker/index.js"
 
 import { getConfig } from "./lib/config-subscriber.js"
+import { resolveBehavioralProfile } from "./lib/behavioral-profile/resolve-behavioral-profile.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
@@ -81,7 +82,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
 
-  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig }
+  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig, getBehavioralProfile: (sessionId: string) => resolveBehavioralProfile(sessionId, projectDirectory) }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()

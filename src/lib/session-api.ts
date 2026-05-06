@@ -1,6 +1,8 @@
 import type { createOpencodeClient } from "@opencode-ai/sdk"
 
 import { asString, getNestedValue, unwrapData } from "./helpers.js"
+import type { ResolvedBehavioralProfile } from "./behavioral-profile/types.js"
+import { resolveBehavioralProfile } from "./behavioral-profile/resolve-behavioral-profile.js"
 
 export type OpenCodeClient = ReturnType<typeof createOpencodeClient>
 
@@ -262,4 +264,22 @@ export async function walkParentChain(client: OpenCodeClient, sessionID: string)
   }
 
   return chain
+}
+
+/**
+ * Retrieves the resolved behavioral profile for a session.
+ * Delegates to resolveBehavioralProfile with lazy caching.
+ *
+ * @param sessionId - The session ID to resolve profile for
+ * @param projectRoot - Absolute path to project root
+ * @param sessionContext - Optional session context for runtime profile detection
+ * @returns The resolved behavioral profile
+ * @see D-10 in CA-02-CONTEXT.md
+ */
+export function getSessionBehavioralProfile(
+  sessionId: string,
+  projectRoot: string,
+  sessionContext?: Record<string, unknown>,
+): ResolvedBehavioralProfile {
+  return resolveBehavioralProfile(sessionId, projectRoot, sessionContext)
 }

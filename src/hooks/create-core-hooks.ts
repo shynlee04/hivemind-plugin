@@ -70,28 +70,58 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       output: SystemOutput,
     ): Promise<void> => {
       const sessionID = asString(getNestedValue(input, ["sessionID"]))
-      if (!sessionID || !deps.getIntake) return
+      if (!sessionID) return
 
-      const intake = deps.getIntake(sessionID)
-      if (!intake) return
-
-      const contextLines = [
-        "Session intake context:",
-        `- purpose: ${intake.purpose.purpose} (confidence: ${intake.purpose.confidence})`,
-        `- language: ${intake.language.language}`,
-        `- routing_target: ${intake.routingTarget}`,
-      ]
-
-      if (intake.profile.communicationStyle) {
-        contextLines.push(`- communication_style: ${intake.profile.communicationStyle}`)
-      }
-      if (intake.warnings.length > 0) {
-        contextLines.push(`- warnings: ${intake.warnings.join("; ")}`)
-      }
-
-      // Inject as system context
+      // Ensure output.system is an array for all injection blocks
       output.system = Array.isArray(output.system) ? output.system : []
-      ;(output.system as string[]).push(contextLines.join("\n"))
+
+      // Intake context injection
+      if (deps.getIntake) {
+        const intake = deps.getIntake(sessionID)
+        if (intake) {
+          const contextLines = [
+            "Session intake context:",
+            `- purpose: ${intake.purpose.purpose} (confidence: ${intake.purpose.confidence})`,
+            `- language: ${intake.language.language}`,
+            `- routing_target: ${intake.routingTarget}`,
+          ]
+
+          if (intake.profile.communicationStyle) {
+            contextLines.push(`- communication_style: ${intake.profile.communicationStyle}`)
+          }
+          if (intake.warnings.length > 0) {
+            contextLines.push(`- warnings: ${intake.warnings.join("; ")}`)
+          }
+
+          ;(output.system as string[]).push(contextLines.join("\n"))
+        }
+      }
+
+      // Behavioral profile injection (CA-02: D-04, D-09, D-14)
+      if (deps.getBehavioralProfile) {
+        const profile = deps.getBehavioralProfile(sessionID)
+        if (profile) {
+          const bp = profile.behavioralProfile
+          const lang = profile.language
+          const rt = profile.merged
+
+          const behavioralLines = [
+            "Behavioral profile context:",
+            `- behavioral.guardrailLevel: ${bp.guardrailLevel}`,
+            `- behavioral.delegationMode: ${bp.delegationMode}`,
+            `- behavioral.toolAccessPattern: ${bp.toolAccessPattern}`,
+            `- behavioral.skillFilter: ${bp.skillFilter}`,
+            `- language.conversation: ${lang.conversation}`,
+            `- language.documents: ${lang.documents}`,
+            `- runtime.communicationStyle: ${rt.communicationStyle}`,
+            `- runtime.decisionSpeed: ${rt.decisionSpeed}`,
+            `- runtime.expertise: ${rt.expertise}`,
+            `- discuss.mode: ${profile.discussMode}`,
+          ]
+
+          ;(output.system as string[]).push(behavioralLines.join("\n"))
+        }
+      }
     },
 
     "experimental.chat.system.transform": async (

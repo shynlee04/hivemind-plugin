@@ -3013,6 +3013,26 @@ describe("DelegationManager", () => {
       expect(client.session.prompt).not.toHaveBeenCalled()
     })
   })
+
+  describe("behavioral profile guardrail overrides", () => {
+    it("applyBehavioralGuardrail returns 1 for strict guardrailLevel", () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+      expect(manager.applyBehavioralGuardrail("strict")).toBe(1)
+    })
+
+    it("applyBehavioralGuardrail returns undefined for moderate guardrailLevel", () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+      expect(manager.applyBehavioralGuardrail("moderate")).toBeUndefined()
+    })
+
+    it("applyBehavioralGuardrail returns undefined for minimal guardrailLevel", () => {
+      const client = createMockClient()
+      const manager = new DelegationManager(client as never)
+      expect(manager.applyBehavioralGuardrail("minimal")).toBeUndefined()
+    })
+  })
 })
 
 describe("behavioral tests", () => {

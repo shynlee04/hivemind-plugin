@@ -1,4 +1,5 @@
 import { VALID_DELEGATION_CATEGORIES, type CategoryGateDecision, type CategoryGatePolicy, type CategoryGateSurface } from "./types.js"
+import type { SkillFilter } from "./behavioral-profile/types.js"
 
 type CategoryGateInput = {
   category?: string
@@ -56,4 +57,23 @@ function allow(category: string | undefined): CategoryGateDecision {
 /** Build a denied category decision with audit metadata. */
 function deny(category: string | undefined, reason: string): CategoryGateDecision {
   return { allowed: false, reason, category, audit: { gate: "category", denyReason: reason } }
+}
+
+/**
+ * Logs advisory skill filter notice when mode restricts skill loading.
+ * Non-blocking — does not prevent skill loading, only annotates.
+ *
+ * @param skillFilter - The active skill filter from behavioral profile
+ * @param skillName - Name of the skill being loaded
+ * @returns Advisory message if filter applies, undefined otherwise
+ * @see D-11 in CA-02-CONTEXT.md
+ */
+export function checkSkillFilterAdvisory(
+  skillFilter: SkillFilter,
+  skillName: string,
+): string | undefined {
+  if (skillFilter === "curated" && skillName) {
+    return `[Harness] Advisory: skillFilter is "curated" — skill "${skillName}" may not be in curated set`
+  }
+  return undefined
 }

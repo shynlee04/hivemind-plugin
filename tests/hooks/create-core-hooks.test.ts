@@ -122,4 +122,126 @@ describe("createCoreHooks", () => {
       expect((output.env as Record<string, string>).NODE_ENV).toBe("production")
     })
   })
+
+  describe("behavioral profile injection", () => {
+    function createFakeBehavioralProfile() {
+      return {
+        behavioralProfile: {
+          guardrailLevel: "strict" as const,
+          delegationMode: "waiter" as const,
+          toolAccessPattern: "restricted" as const,
+          skillFilter: "curated" as const,
+        },
+        language: {
+          conversation: "en",
+          documents: "en",
+        },
+        merged: {
+          communicationStyle: "concise",
+          decisionSpeed: "cautious",
+          expertise: "senior",
+        },
+        discussMode: "reflective",
+        runtimeProfile: null,
+        configExpertise: "senior",
+      }
+    }
+
+    it("injects behavioral fields into system.transform when getBehavioralProfile is provided", async () => {
+      const profile = createFakeBehavioralProfile()
+      const hooks = createCoreHooks({
+        lifecycleManager: createFakeLifecycleManager() as never,
+        getIntake: () => ({
+          purpose: { purpose: "test", confidence: 0.9 },
+          language: { language: "en" },
+          routingTarget: "builder",
+          profile: {},
+          warnings: [],
+        }),
+        getBehavioralProfile: () => profile,
+      } as never)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_bp_test" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      expect(system.length).toBeGreaterThanOrEqual(2)
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toBeDefined()
+      expect(behavioralBlock).toContain("behavioral.guardrailLevel: strict")
+      expect(behavioralBlock).toContain("behavioral.delegationMode: waiter")
+      expect(behavioralBlock).toContain("behavioral.toolAccessPattern: restricted")
+      expect(behavioralBlock).toContain("behavioral.skillFilter: curated")
+      expect(behavioralBlock).toContain("language.conversation: en")
+      expect(behavioralBlock).toContain("language.documents: en")
+      expect(behavioralBlock).toContain("runtime.communicationStyle: concise")
+      expect(behavioralBlock).toContain("runtime.decisionSpeed: cautious")
+      expect(behavioralBlock).toContain("runtime.expertise: senior")
+      expect(behavioralBlock).toContain("discuss.mode: reflective")
+    })
+
+    it("system.transform works without getBehavioralProfile (backward compat)", async () => {
+      const hooks = createCoreHooks({
+        lifecycleManager: createFakeLifecycleManager() as never,
+        getIntake: () => ({
+          purpose: { purpose: "test", confidence: 0.9 },
+          language: { language: "en" },
+          routingTarget: "builder",
+          profile: {},
+          warnings: [],
+        }),
+      } as never)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_no_bp" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      // Should have intake but NOT behavioral
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(true)
+      expect(system.some((s) => s.includes("Behavioral profile context:"))).toBe(false)
+    })
+
+    it("behavioral injection comes AFTER intake injection", async () => {
+      const profile = createFakeBehavioralProfile()
+      const hooks = createCoreHooks({
+        lifecycleManager: createFakeLifecycleManager() as never,
+        getIntake: () => ({
+          purpose: { purpose: "test", confidence: 0.9 },
+          language: { language: "en" },
+          routingTarget: "builder",
+          profile: {},
+          warnings: [],
+        }),
+        getBehavioralProfile: () => profile,
+      } as never)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_order_test" }, output)
+
+      const system = output.system as string[]
+      const intakeIdx = system.findIndex((s) => s.includes("Session intake context:"))
+      const behavioralIdx = system.findIndex((s) => s.includes("Behavioral profile context:"))
+      expect(intakeIdx).toBeLessThan(behavioralIdx)
+    })
+
+    it("behavioral injection works independently when intake is unavailable", async () => {
+      const profile = createFakeBehavioralProfile()
+      const hooks = createCoreHooks({
+        lifecycleManager: createFakeLifecycleManager() as never,
+        getIntake: () => undefined,
+        getBehavioralProfile: () => profile,
+      } as never)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_bp_only" }, output)
+
+      // Intake returns undefined, so no intake context — but behavioral SHOULD still inject
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      expect(system.some((s) => s.includes("Behavioral profile context:"))).toBe(true)
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(false)
+    })
+  })
 })

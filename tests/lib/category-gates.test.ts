@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveCategoryGateDecision } from "../../src/lib/category-gates.js"
+import { resolveCategoryGateDecision, checkSkillFilterAdvisory } from "../../src/lib/category-gates.js"
 
 describe("category gate", () => {
   it("allows implementation category with write-capable tools", () => {
@@ -23,5 +23,25 @@ describe("category gate", () => {
   it("allows command category only for command-process dispatch", () => {
     expect(resolveCategoryGateDecision({ category: "command", surface: "command-process", toolProfileMode: "write-capable" }).allowed).toBe(true)
     expect(resolveCategoryGateDecision({ category: "command", surface: "agent-delegation", toolProfileMode: "read-only" }).allowed).toBe(false)
+  })
+})
+
+describe("checkSkillFilterAdvisory", () => {
+  it("returns advisory string when skillFilter is curated", () => {
+    const result = checkSkillFilterAdvisory("curated", "hm-brainstorm")
+    expect(result).toBeDefined()
+    expect(result).toContain("[Harness] Advisory")
+    expect(result).toContain("curated")
+    expect(result).toContain("hm-brainstorm")
+  })
+
+  it("returns undefined when skillFilter is all", () => {
+    const result = checkSkillFilterAdvisory("all", "hm-brainstorm")
+    expect(result).toBeUndefined()
+  })
+
+  it("advisory string includes the skill name", () => {
+    const result = checkSkillFilterAdvisory("curated", "gsd-debug")
+    expect(result).toContain("gsd-debug")
   })
 })

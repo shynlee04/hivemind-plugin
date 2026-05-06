@@ -26,6 +26,7 @@ import {
   type RuntimePolicy,
   MAX_DELEGATION_DEPTH,
 } from "./types.js"
+import type { BehavioralOverrides } from "./behavioral-profile/types.js"
 
 type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }
 
@@ -126,6 +127,23 @@ export class DelegationManager {
    */
   setCompletionDetector(detector: CompletionDetector): void {
     this.completionDetector = detector
+  }
+
+  /**
+   * Applies behavioral profile guardrail to concurrency.
+   * Only TIGHTENS — never loosens beyond workspace runtime policy.
+   *
+   * @param guardrailLevel - The behavioral guardrail level from the resolved profile
+   * @returns Adjusted concurrency limit (undefined = no adjustment)
+   * @see D-12 in CA-02-CONTEXT.md
+   */
+  applyBehavioralGuardrail(guardrailLevel: BehavioralOverrides["guardrailLevel"]): number | undefined {
+    if (guardrailLevel === "strict") {
+      // strict: cap concurrent delegations to 1
+      return 1
+    }
+    // moderate, minimal: no adjustment — respect runtime policy as-is
+    return undefined
   }
 
   private resolveNestingDepth(parentSessionId: string): number {

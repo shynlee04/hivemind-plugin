@@ -5,6 +5,7 @@ import type { AutoLoopOptions, AutoLoopResult } from "../lib/auto-loop.js"
 import type { RalphLoopOptions, RalphLoopResult } from "../lib/ralph-loop.js"
 import type { IntakeResult } from "../lib/session-entry/intake-gate.js"
 import type { HivemindConfigs } from "../schema-kernel/hivemind-configs.schema.js"
+import type { ResolvedBehavioralProfile } from "../lib/behavioral-profile/types.js"
 
 export interface AutoLoopConfig {
   maxIterations: number
@@ -35,4 +36,10 @@ export interface HookDependencies {
   getIntake?: (sessionId: string) => IntakeResult | undefined
   /** Hivemind runtime config — loaded once at plugin init, cached for session lifetime. */
   hivemindConfig?: HivemindConfigs
+  /**
+   * Resolves the behavioral profile for a session.
+   * Lazy — computes on first call, caches for session lifetime.
+   * @see D-09, D-10 in CA-02-CONTEXT.md
+   */
+  getBehavioralProfile?: (sessionId: string) => ResolvedBehavioralProfile
 }
