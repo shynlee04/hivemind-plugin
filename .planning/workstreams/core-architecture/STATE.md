@@ -9,9 +9,17 @@ lineage: shared
 
 # WS-CA: Core Architecture — State
 
-## Current Phase: CA-02 (CONTEXT-GATHERED ✅)
+## Current Phase: CA-02 (PLANNED ✅ — 2 plans, 2 waves)
 
-### CA-02 Results
+### CA-02 Planning
+- **Status:** Ready to execute
+- **Plans:** 2 (Wave 1: core module, Wave 2: integration)
+- **CA-02-01:** Core types + profiles lookup + resolution + unit tests (Wave 1)
+- **CA-02-02:** Hooks + plugin + delegation + category gates integration (Wave 2, depends on 01)
+- **Requirements mapped:** REQ-CA02-01 through REQ-CA02-09 (all 9 covered)
+- **Decisions covered:** D-01 through D-14 (all 14 addressed)
+
+### CA-02 Context (Carried Forward)
 - **CA-02-CONTEXT**: Behavioral profile system designed (commit `1f261894`)
   - Mode→behavior mapping: static lookup table with 4-field behavioral profile
   - Language config injection via system.transform hook

@@ -18,7 +18,7 @@ lineage: shared
 | Phase | Title | Status | Dependencies |
 |-------|-------|--------|-------------|
 | CA-01 | configs.json Schema Expansion + Runtime Binding | PLANNED | WS-1 (COMPLETE) |
-| CA-02 | Behavioral Profile System + Mode Dispatch | PLANNED | CA-01 |
+| CA-02 | Behavioral Profile System + Mode Dispatch | READY | CA-01 (COMPLETE) |
 | CA-03 | Workflow Toggle Runtime Binding | PLANNED | CA-01 |
 | CA-04 | CRUD Ownership Modules + Lifecycle Verification | PLANNED | CA-01, CA-02 |
 
