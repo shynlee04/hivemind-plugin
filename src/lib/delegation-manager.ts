@@ -13,6 +13,7 @@ import { recordCategoryGateDeny } from "./category-gate-audit.js"
 import { getAppAgents } from "./app-api.js"
 import { sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "./runtime-policy.js"
+import { getCachedConfig } from "./config-subscriber.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
@@ -133,6 +134,12 @@ export class DelegationManager {
    * Applies behavioral profile guardrail to concurrency.
    * Only TIGHTENS — never loosens beyond workspace runtime policy.
    *
+   * **API surface for Phase WS-4** (auto-intent/workflow router): This method
+   * is intentionally NOT called from `dispatch()` yet. The WS-4 phase will wire
+   * the resolved behavioral profile into the dispatch path, calling this method
+   * to adjust concurrency limits before `semaphore.acquire()`. Until then, the
+   * method is exposed so the integration surface exists and is tested.
+   *
    * @param guardrailLevel - The behavioral guardrail level from the resolved profile
    * @returns Adjusted concurrency limit (undefined = no adjustment)
    * @see D-12 in CA-02-CONTEXT.md
@@ -154,6 +161,11 @@ export class DelegationManager {
   }
 
   async dispatch(params: DelegateParams): Promise<DelegationResult> {
+    // CA-03: parallelization toggle gate (D-14)
+    // When false, delegations are sequential — concurrency limit clamped to 1.
+    const config = getCachedConfig()
+    const parallelizationEnabled = config.parallelization
+
     const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
     if (nestingDepth > MAX_DELEGATION_DEPTH) {
       throw new Error(
@@ -191,7 +203,9 @@ export class DelegationManager {
       throw new Error("[Harness] Canonical delegation queue-key drift detected.")
     }
     const concurrency = resolveAcquireArgs(this.runtimePolicy, acquireQueueKey)
-    const release = await this.semaphore.acquire(acquireQueueKey, concurrency.limit, concurrency.acquireTimeoutMs)
+    // CA-03 (D-14): When parallelization is false, force sequential dispatch
+    const effectiveLimit = parallelizationEnabled ? concurrency.limit : 1
+    const release = await this.semaphore.acquire(acquireQueueKey, effectiveLimit, concurrency.acquireTimeoutMs)
     try {
       const child = await spawnDelegatedSession({
         client: this.client as never,

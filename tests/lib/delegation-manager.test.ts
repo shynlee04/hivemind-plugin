@@ -20,6 +20,11 @@ import {
   type RuntimePolicy,
 } from "../../src/lib/types.js"
 
+// CA-03: export override tracker for parallelization toggle tests.
+// vitest's module graph allows spying on the config-subscriber export
+// and all consumers of that export will see the spy.
+import * as configSubscriber from "../../src/lib/config-subscriber.js"
+
 type MockClient = {
   session: {
     create: ReturnType<typeof vi.fn>
@@ -3039,33 +3044,18 @@ describe("DelegationManager", () => {
   // ---------------------------------------------------------------------------
 
   describe("parallelization toggle", () => {
-    let configModule: typeof import("../../src/lib/config-subscriber.js")
-    const mockGetCachedConfig = vi.fn()
-
-    beforeEach(async () => {
-      vi.doMock("../../src/lib/config-subscriber.js", () => ({
-        getConfig: vi.fn(),
-        getCachedConfig: mockGetCachedConfig,
-        invalidateConfigCache: vi.fn(),
-      }))
-      configModule = await import("../../src/lib/config-subscriber.js")
-    })
-
     afterEach(() => {
-      vi.doUnmock("../../src/lib/config-subscriber.js")
+      vi.restoreAllMocks()
     })
 
     it("dispatch proceeds normally when parallelization is true (default)", async () => {
       const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-      mockGetCachedConfig.mockReturnValue(HivemindConfigsSchema.parse({
-        parallelization: true,
-        workflow: { use_worktrees: false },
-      }))
+      vi.spyOn(configSubscriber, "getCachedConfig").mockReturnValue(
+        HivemindConfigsSchema.parse({ parallelization: true, workflow: { use_worktrees: false } }),
+      )
 
       const client = createMockClient()
-      // Must re-import DelegationManager with the mocked config-subscriber in place
-      const { DelegationManager: MockedDelegationManager } = await import("../../src/lib/delegation-manager.js")
-      const manager = new MockedDelegationManager(client as never)
+      const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-parallel-true",
@@ -3079,15 +3069,12 @@ describe("DelegationManager", () => {
 
     it("dispatches sequentially (semaphore limit=1) when parallelization is false", async () => {
       const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-      mockGetCachedConfig.mockReturnValue(HivemindConfigsSchema.parse({
-        parallelization: false,
-        workflow: { use_worktrees: false },
-      }))
+      vi.spyOn(configSubscriber, "getCachedConfig").mockReturnValue(
+        HivemindConfigsSchema.parse({ parallelization: false, workflow: { use_worktrees: false } }),
+      )
 
       const client = createMockClient()
-      const { DelegationManager: MockedDelegationManager } = await import("../../src/lib/delegation-manager.js")
-      const manager = new MockedDelegationManager(client as never)
-
+      const manager = new DelegationManager(client as never)
       const acquireSpy = vi.spyOn(
         (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
         "acquire",
@@ -3108,13 +3095,11 @@ describe("DelegationManager", () => {
     })
 
     it("parallelization defaults to true when no config is cached", async () => {
-      // Return defaults (getCachedConfig returns getDefaultConfigs() when cache is cold)
       const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-      mockGetCachedConfig.mockReturnValue(getDefaultConfigs())
+      vi.spyOn(configSubscriber, "getCachedConfig").mockReturnValue(getDefaultConfigs())
 
       const client = createMockClient()
-      const { DelegationManager: MockedDelegationManager } = await import("../../src/lib/delegation-manager.js")
-      const manager = new MockedDelegationManager(client as never)
+      const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-defaults",
@@ -3127,14 +3112,12 @@ describe("DelegationManager", () => {
 
     it("does not throw or crash when parallelization is false", async () => {
       const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-      mockGetCachedConfig.mockReturnValue(HivemindConfigsSchema.parse({
-        parallelization: false,
-        workflow: { use_worktrees: false },
-      }))
+      vi.spyOn(configSubscriber, "getCachedConfig").mockReturnValue(
+        HivemindConfigsSchema.parse({ parallelization: false, workflow: { use_worktrees: false } }),
+      )
 
       const client = createMockClient()
-      const { DelegationManager: MockedDelegationManager } = await import("../../src/lib/delegation-manager.js")
-      const manager = new MockedDelegationManager(client as never)
+      const manager = new DelegationManager(client as never)
 
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-no-crash",
