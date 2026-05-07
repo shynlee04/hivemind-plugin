@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 import { createDoctorCommand } from "../../../src/cli/commands/doctor.js"
+import { generateHivemindConfigsJsonSchema } from "../../../src/schema-kernel/generate-config-json-schema.js"
 
 function createHealthyProject(): string {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-doctor-"))
@@ -14,7 +15,11 @@ function createHealthyProject(): string {
   writeFileSync(join(projectRoot, ".hivemind", "delegation", ".gitkeep"), "", "utf8")
   writeFileSync(join(projectRoot, ".hivemind", "event-tracker", ".gitkeep"), "", "utf8")
   writeFileSync(join(projectRoot, ".hivemind", "configs.json"), '{"$schema":"./configs.schema.json"}\n', "utf8")
-  writeFileSync(join(projectRoot, ".hivemind", "configs.schema.json"), '{"type":"object"}\n', "utf8")
+  writeFileSync(
+    join(projectRoot, ".hivemind", "configs.schema.json"),
+    `${JSON.stringify(generateHivemindConfigsJsonSchema(), null, 2)}\n`,
+    "utf8",
+  )
   return projectRoot
 }
 
@@ -117,6 +122,20 @@ describe("doctor command", () => {
       expect(result.exitCode).toBe(1)
       expect(result.output).toContain("FAIL")
       expect(result.output).toContain("Invalid option")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("fails config check when configs.schema.json drifts from the canonical generated contract", async () => {
+    const projectRoot = createHealthyProject()
+    try {
+      writeFileSync(join(projectRoot, ".hivemind", "configs.schema.json"), '{"type":"object","properties":{}}\n', "utf8")
+      const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })
+      const result = await command.handler({ flags: { check: "config" }, positionals: [], argv: ["doctor", "--check=config"] })
+      expect(result.exitCode).toBe(1)
+      expect(result.output).toContain("FAIL")
+      expect(result.output).toContain("canonical generated runtime contract")
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }

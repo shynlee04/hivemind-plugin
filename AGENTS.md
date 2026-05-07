@@ -7,6 +7,11 @@
 
 - design patterns and must be obeyed strictly according to the architecture of the project.
 
+- atomic git commit for context preservation.
+
+- context git commit for both code implementation, docs, planning, researching, gatekeeping, verification artifacts - do not ask if commit needed
+
+
 - files creation and structure must be registered and keep track - we love our codetree systematically structured and we **DO Registered** folders and subfolders with `.gitkeep` 
 
 - folders must be created in a way that is easy to navigate and understand, following the best practice of this harness. Folders must be registered with gitkeep files to ensure they are tracked by git. 

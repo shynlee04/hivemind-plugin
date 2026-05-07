@@ -3,6 +3,7 @@ import { dirname, resolve, join } from "node:path"
 
 import { DOCTOR_CHECKS, GITKEEP_FILE, PRIMITIVE_TYPES, resolveHiveMindRoot, resolveMetaBuilderRoot, resolveOpenCodeRoot, TIER_1_DIRECTORIES } from "../../lib/bootstrap-structure.js"
 import { validateConfigsFile } from "../../schema-kernel/hivemind-configs.schema.js"
+import { generateHivemindConfigsJsonSchema } from "../../schema-kernel/generate-config-json-schema.js"
 import type { BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
 import { renderTable } from "../renderer.js"
 import type { CliCommand, CliCommandContext, CliRouterResult } from "../router.js"
@@ -172,12 +173,16 @@ function runConfigCheck(projectRoot: string): DoctorRow {
     return { check: "config", status: "FAIL", details: `Missing ${schemaPath}` }
   }
   try {
-    JSON.parse(readFileSync(schemaPath, "utf8"))
+    const parsedSchema = JSON.parse(readFileSync(schemaPath, "utf8")) as Record<string, unknown>
+    const expectedSchema = generateHivemindConfigsJsonSchema()
+    if (JSON.stringify(parsedSchema) !== JSON.stringify(expectedSchema)) {
+      return { check: "config", status: "FAIL", details: "configs.schema.json does not match the canonical generated runtime contract." }
+    }
     const configValidation = validateConfigsFile(projectRoot)
     if (!configValidation.success) {
       return { check: "config", status: "FAIL", details: configValidation.error }
     }
-    return { check: "config", status: "PASS", details: "configs.json is schema-valid and configs.schema.json is parseable." }
+    return { check: "config", status: "PASS", details: "configs.json is schema-valid and configs.schema.json matches the canonical generated runtime contract." }
   } catch (cause) {
     return { check: "config", status: "FAIL", details: cause instanceof Error ? cause.message : String(cause) }
   }

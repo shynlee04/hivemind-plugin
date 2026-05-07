@@ -4,9 +4,14 @@
   "title": "Hivemind Configs",
   "description": "IDE-facing JSON Schema for .hivemind/configs.json generated from the runtime config contract.",
   "type": "object",
-  "additionalProperties": true,
   "properties": {
+    "$schema": {
+      "type": "string",
+      "default": "./configs.schema.json",
+      "description": "Relative path to the shipped Hivemind config JSON Schema."
+    },
     "conversation_language": {
+      "default": "en",
       "type": "string",
       "enum": [
         "en",
@@ -19,10 +24,10 @@
         "es",
         "th",
         "id"
-      ],
-      "default": "en"
+      ]
     },
     "documents_and_artifacts_language": {
+      "default": "en",
       "type": "string",
       "enum": [
         "en",
@@ -35,19 +40,19 @@
         "es",
         "th",
         "id"
-      ],
-      "default": "en"
+      ]
     },
     "mode": {
+      "default": "expert-advisor",
       "type": "string",
       "enum": [
         "expert-advisor",
         "hivemind-powered",
         "free-style"
-      ],
-      "default": "expert-advisor"
+      ]
     },
     "user_expert_level": {
+      "default": "intermediate-high-level",
       "type": "string",
       "enum": [
         "clumsy-vibecoder",
@@ -55,26 +60,121 @@
         "intermediate-high-level",
         "architecture-driven",
         "absolute-expert"
-      ],
-      "default": "intermediate-high-level"
+      ]
     },
     "delegation_systems": {
+      "default": {
+        "native_task": true,
+        "delegate_task": true,
+        "background_delegation": false
+      },
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "native_task": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "type": "boolean"
         },
         "delegate_task": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "type": "boolean"
         },
         "background_delegation": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
+    },
+    "parallelization": {
+      "default": true,
+      "type": "boolean"
+    },
+    "atomic_commit": {
+      "default": true,
+      "type": "boolean"
+    },
+    "commit_docs": {
+      "default": true,
+      "type": "boolean"
+    },
+    "workflow": {
+      "default": {
+        "research": true,
+        "cross_session_tasks_dependencies_validation": false,
+        "trajectory_control": false,
+        "advanced_continuity_validation": false,
+        "task_plus_enabled": false,
+        "plan_check": true,
+        "verifier": true,
+        "ui_phase": false,
+        "ui_safety_gate": false,
+        "ai_integration_phase": false,
+        "research_before_questions": true,
+        "discuss_mode": "sufficient-phase-discussion",
+        "use_worktrees": false
+      },
+      "type": "object",
+      "properties": {
+        "research": {
+          "default": true,
+          "type": "boolean"
+        },
+        "cross_session_tasks_dependencies_validation": {
+          "default": false,
+          "type": "boolean"
+        },
+        "trajectory_control": {
+          "default": false,
+          "type": "boolean"
+        },
+        "advanced_continuity_validation": {
+          "default": false,
+          "type": "boolean"
+        },
+        "task_plus_enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "plan_check": {
+          "default": true,
+          "type": "boolean"
+        },
+        "verifier": {
+          "default": true,
+          "type": "boolean"
+        },
+        "ui_phase": {
+          "default": false,
+          "type": "boolean"
+        },
+        "ui_safety_gate": {
+          "default": false,
+          "type": "boolean"
+        },
+        "ai_integration_phase": {
+          "default": false,
+          "type": "boolean"
+        },
+        "research_before_questions": {
+          "default": true,
+          "type": "boolean"
+        },
+        "discuss_mode": {
+          "default": "sufficient-phase-discussion",
+          "type": "string",
+          "enum": [
+            "sufficient-phase-discussion",
+            "intensive-phase-discussion",
+            "skip-phase-discussion"
+          ]
+        },
+        "use_worktrees": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     }
-  }
+  },
+  "additionalProperties": false
 }

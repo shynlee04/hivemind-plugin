@@ -1,11 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
+import { z } from "zod"
 
 import {
   HIVEMIND_CONFIGS_SCHEMA_VERSION,
-  SupportedLanguageSchema,
-  HivemindModeSchema,
-  UserExpertLevelSchema,
+  HivemindConfigsSchema,
 } from "./hivemind-configs.schema.js"
 
 const CONFIG_JSON_SCHEMA_FILENAME = "configs.schema.json"
@@ -19,10 +18,66 @@ type JsonSchema = {
   type: "object"
   additionalProperties: boolean
   properties: Record<string, unknown>
+  required?: string[]
 }
 
-function getEnumValues(schema: { options: readonly string[] }): string[] {
-  return [...schema.options]
+type JsonSchemaNode = {
+  type?: string
+  properties?: Record<string, JsonSchemaNode>
+  items?: JsonSchemaNode
+  anyOf?: JsonSchemaNode[]
+  allOf?: JsonSchemaNode[]
+  oneOf?: JsonSchemaNode[]
+  required?: string[]
+  additionalProperties?: boolean | JsonSchemaNode
+  default?: unknown
+  enum?: unknown[]
+  description?: string
+  [key: string]: unknown
+}
+
+/**
+ * Convert a runtime-oriented JSON Schema tree into the persisted BOOT-02 file contract.
+ *
+ * The runtime Zod schema applies defaults eagerly, which causes `z.toJSONSchema()`
+ * to mark many properties as required. BOOT-02 persists partial config files and
+ * applies defaults at read time, so the shipped JSON Schema must expose the full
+ * property surface while allowing omitted fields and the `$schema` helper key.
+ *
+ * @param node - JSON Schema subtree generated from the full runtime contract.
+ * @returns A deep-cloned schema subtree adjusted for persisted config files.
+ */
+function normalizePersistedConfigSchema(node: JsonSchemaNode): JsonSchemaNode {
+  const normalized: JsonSchemaNode = { ...node }
+
+  if (normalized.properties !== undefined) {
+    normalized.properties = Object.fromEntries(
+      Object.entries(normalized.properties).map(([key, value]) => [key, normalizePersistedConfigSchema(value)]),
+    )
+  }
+
+  if (normalized.items !== undefined) {
+    normalized.items = normalizePersistedConfigSchema(normalized.items)
+  }
+
+  for (const compositeKey of ["anyOf", "allOf", "oneOf"] as const) {
+    const branch = normalized[compositeKey]
+    if (Array.isArray(branch)) {
+      normalized[compositeKey] = branch.map((entry) => normalizePersistedConfigSchema(entry))
+    }
+  }
+
+  if (
+    normalized.additionalProperties !== undefined
+    && typeof normalized.additionalProperties === "object"
+    && normalized.additionalProperties !== null
+    && !Array.isArray(normalized.additionalProperties)
+  ) {
+    normalized.additionalProperties = normalizePersistedConfigSchema(normalized.additionalProperties as JsonSchemaNode)
+  }
+
+  delete normalized.required
+  return normalized
 }
 
 /**
@@ -41,44 +96,25 @@ function getEnumValues(schema: { options: readonly string[] }): string[] {
  * ```
  */
 export function generateHivemindConfigsJsonSchema(): JsonSchema {
+  const generated = normalizePersistedConfigSchema(
+    z.toJSONSchema(HivemindConfigsSchema) as JsonSchemaNode,
+  )
+
+  generated.properties = {
+    $schema: {
+      type: "string",
+      default: "./configs.schema.json",
+      description: "Relative path to the shipped Hivemind config JSON Schema.",
+    },
+    ...(generated.properties ?? {}),
+  }
+
   return {
     $schema: JSON_SCHEMA_DRAFT,
     $id: `https://hivemind.dev/schema/configs/${HIVEMIND_CONFIGS_SCHEMA_VERSION}`,
     title: "Hivemind Configs",
     description: "IDE-facing JSON Schema for .hivemind/configs.json generated from the runtime config contract.",
-    type: "object",
-    additionalProperties: true,
-    properties: {
-      conversation_language: {
-        type: "string",
-        enum: getEnumValues(SupportedLanguageSchema),
-        default: "en",
-      },
-      documents_and_artifacts_language: {
-        type: "string",
-        enum: getEnumValues(SupportedLanguageSchema),
-        default: "en",
-      },
-      mode: {
-        type: "string",
-        enum: getEnumValues(HivemindModeSchema),
-        default: "expert-advisor",
-      },
-      user_expert_level: {
-        type: "string",
-        enum: getEnumValues(UserExpertLevelSchema),
-        default: "intermediate-high-level",
-      },
-      delegation_systems: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          native_task: { type: "boolean", default: true },
-          delegate_task: { type: "boolean", default: true },
-          background_delegation: { type: "boolean", default: false },
-        },
-      },
-    },
+    ...(generated as Omit<JsonSchema, "$schema" | "$id" | "title" | "description">),
   }
 }
 
