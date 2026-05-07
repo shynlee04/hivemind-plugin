@@ -3,6 +3,8 @@
 **Date:** 2026-05-07 | **Source:** Parallel subagent research + orchestrator synthesis
 **Evidence:** L5 — docs-only research. Runtime claims require L1-L3 proof.
 
+**Phase 0 supersession note:** Older examples using `hivemind-tools` or `opencode-harness` are legacy alias examples. Canonical package/bin naming is `hivemind` per `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md`.
+
 ## Overview
 
 Research was conducted across three domains to inform the Bootstrap/Init CLI design:
@@ -22,7 +24,7 @@ Research was conducted across three domains to inform the Bootstrap/Init CLI des
 - Pure renderers (help, table, JSON, error)
 - Only one command: `help`
 - Deliberately avoids commander/yargs/oclif for bin-surface security
-- CJS shim at `bin/hivemind-tools.cjs`
+- CJS shim at `bin/hivemind.cjs`; `bin/hivemind-tools.cjs` is legacy alias text only
 
 **What the user's package.json suggests:** `commander`, `@clack/prompts`, `ink`/`react`, `@json-render/*`
 

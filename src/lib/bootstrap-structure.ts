@@ -1,0 +1,124 @@
+/**
+ * @module bootstrap-structure
+ *
+ * Shared bootstrap constants and path helpers for Hivemind directory resolution.
+ *
+ * Pure constants + path helpers. No runtime side effects.
+ * Leaf module — no imports from other harness modules.
+ *
+ * @example
+ * ```ts
+ * import { HIVE_MIND_DIR, resolveHiveMindRoot } from "./bootstrap-structure.js"
+ * const root = resolveHiveMindRoot("/my/project")
+ * // root === "/my/project/.hivemind"
+ * ```
+ */
+
+// ---------------------------------------------------------------------------
+// Directory names
+// ---------------------------------------------------------------------------
+
+/**
+ * Top-level `.hivemind/` directory name.
+ * Canonical internal state root per Q6 decision.
+ */
+export const HIVE_MIND_DIR = ".hivemind" as const
+
+/**
+ * OpenCode primitives directory name.
+ * Houses agents, skills, commands — no internal runtime state per Q6.
+ */
+export const OPEN_CODE_DIR = ".opencode" as const
+
+/**
+ * Meta-builder workspace directory name.
+ * Contains skills-lab, symlink targets, and meta-concept tooling.
+ */
+export const META_BUILDER_DIR = ".hivefiver-meta-builder" as const
+
+/**
+ * Sentinel filename used to register empty directories with git.
+ */
+export const GITKEEP_FILE = ".gitkeep" as const
+
+// ---------------------------------------------------------------------------
+// Tier-1 subdirectories under `.hivemind/`
+// ---------------------------------------------------------------------------
+
+/**
+ * First-level subdirectories created inside `.hivemind/` during bootstrap.
+ *
+ * - `state` — durable JSON persistence (continuity, delegation records)
+ * - `delegation` — delegation-specific artifacts and metadata
+ * - `event-tracker` — session event journals and execution lineage
+ */
+export const TIER_1_DIRECTORIES = ["state", "delegation", "event-tracker"] as const
+
+// ---------------------------------------------------------------------------
+// OpenCode primitive types
+// ---------------------------------------------------------------------------
+
+/**
+ * Primitive types hosted under `.opencode/`.
+ * Each maps to a subdirectory containing YAML/MD definitions.
+ */
+export const PRIMITIVE_TYPES = ["agents", "skills", "commands"] as const
+
+// ---------------------------------------------------------------------------
+// Doctor checks (P0 for BOOT-02)
+// ---------------------------------------------------------------------------
+
+/**
+ * Diagnostic checks performed by the harness-doctor command.
+ * Scoped to P0 checks only for the initial BOOT-02 implementation.
+ *
+ * - `structure` — validates `.hivemind/` directory tree exists
+ * - `symlinks` — verifies `.hivefiver-meta-builder` symlink integrity
+ * - `config` — checks `opencode.json` references and schema presence
+ * - `sdk` — confirms `@opencode-ai/plugin` peer dependency is resolvable
+ */
+export const DOCTOR_CHECKS = ["structure", "symlinks", "config", "sdk"] as const
+
+// ---------------------------------------------------------------------------
+// Default config content
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal JSON written to `.hivemind/config.json` during first-time bootstrap.
+ * Points to the config schema for IDE validation.
+ */
+export const DEFAULT_CONFIG_JSON = '{\n  "$schema": "./configs.schema.json"\n}\n' as const
+
+// ---------------------------------------------------------------------------
+// Path resolution helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the `.hivemind/` root directory for a given project.
+ *
+ * @param projectRoot - Absolute path to the project root
+ * @returns Absolute path to the `.hivemind/` directory
+ */
+export function resolveHiveMindRoot(projectRoot: string): string {
+  return `${projectRoot}/${HIVE_MIND_DIR}`
+}
+
+/**
+ * Resolve the `.opencode/` primitives directory for a given project.
+ *
+ * @param projectRoot - Absolute path to the project root
+ * @returns Absolute path to the `.opencode/` directory
+ */
+export function resolveOpenCodeRoot(projectRoot: string): string {
+  return `${projectRoot}/${OPEN_CODE_DIR}`
+}
+
+/**
+ * Resolve the `.hivefiver-meta-builder/` workspace directory for a given project.
+ *
+ * @param projectRoot - Absolute path to the project root
+ * @returns Absolute path to the `.hivefiver-meta-builder/` directory
+ */
+export function resolveMetaBuilderRoot(projectRoot: string): string {
+  return `${projectRoot}/${META_BUILDER_DIR}`
+}

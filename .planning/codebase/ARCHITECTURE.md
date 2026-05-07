@@ -200,10 +200,10 @@ types.ts (leaf — imports from delegation-types.ts only)
 - Used by: `configure-primitive` tool, `validate-restart` tool, config-workflow, hivemind-* tools
 
 ### CLI Layer
-- Purpose: Standalone CLI interface for harness operations — command routing, discovery, rendering
+- Purpose: Standalone CLI interface for Hivemind harness operations — command routing, discovery, rendering
 - Location: `src/cli/`
 - Files: `index.ts`, `router.ts`, `discovery.ts`, `renderer.ts`, `commands/help.ts`
-- Entry: `opencode-harness/cli` export — provides `hivemind-tools` binary
+- Entry: `hivemind/cli` export — provides `hivemind` binary
 - Depends on: `commander` (v14.0.3)
 
 ### Soft Meta-Concepts Layer

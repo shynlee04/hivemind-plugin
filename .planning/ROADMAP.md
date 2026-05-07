@@ -1,8 +1,46 @@
-# HiveMind V3 — Roadmap
+<!-- generated-by: gsd-doc-writer -->
+# Hivemind — Roadmap
 
 **Created:** 2026-05-07  
 **Status:** Active  
-**Dependency order:** Core Architecture → Agent Workflows → User Experience (per D-WS-03)
+**Dependency order:** Phase 0 Governance Baseline → Bootstrap/Init CLI → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience
+
+---
+
+## Phase 0 — Governance Baseline (Blocking Entry Gate)
+
+Phase 0 is the current blocking gate before BOOT, MCM, and f-04 continuation. It is docs/governance only and produces L5 evidence. It does not authorize runtime code moves, `.opencode/` primitive edits, `.hivemind/` state edits, package changes, tests, or commits.
+
+| Phase | Title | Status | Depends On | Blocks |
+|-------|-------|--------|------------|--------|
+| P0-01 | Runtime Identity Taxonomy | 🔴 ACTIVE | Source evidence inspection | BOOT, MCM, f-04 |
+| P0-02 | Source Plane Architecture | 🔴 ACTIVE | P0-01 | BOOT, f-04, source refactors |
+| P0-03 | Config Contract | 🔴 ACTIVE | P0-01 | BOOT config, MCM config integration |
+| P0-04 | HiveFiver Meta-Authoring Architecture | 🔴 ACTIVE | P0-01 | MCM and HF command families |
+| P0-05 | Phase 0 Governance Gate | 🔴 ACTIVE | P0-01..P0-04 | All downstream continuation |
+| P0-06 | Phase 0 Route/State Update | 🔴 ACTIVE | P0-05 | BOOT/MCM/f-04 routing |
+
+### Phase 0 Canonical Naming
+
+| Concept | Canonical value |
+|---|---|
+| Product | Hivemind |
+| Package/bin | `hivemind` |
+| Project type | harness |
+| Platform | OpenCode |
+| Legacy aliases | `opencode-harness`, `hivemind-tools` only when explicitly labeled legacy |
+| Internal workflow tooling | GSD, not product identity |
+
+### Phase 0 Artifacts
+
+- `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md`
+- `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md`
+- `.planning/config/hivemind-config-contract-2026-05-07.md`
+- `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md`
+- `.planning/checklists/phase-0-governance-gate-2026-05-07.md`
+- `.planning/roadmap/phase-0-gsd-route-2026-05-07.md`
+
+Gate boundary: Phase 0 artifacts are L5 documentation/governance evidence. Runtime readiness remains FAIL/BLOCK until L1-L3 proof exists in later authorized phases.
 
 ---
 
@@ -13,7 +51,7 @@
 | CA-01 | configs.json Schema + Runtime Binding | ✅ DELIVERED | — |
 | CA-02 | Behavioral Profile System + Mode Dispatch | ✅ DELIVERED | CA-01 |
 | CA-03 | Workflow Toggle Runtime Binding | ✅ DELIVERED | CA-01 |
-| CA-04 | **Bootstrap + State Ownership** (restructured) | 🔴 PRIORITY | CA-01, CA-02, CA-03 |
+| CA-04 | **Bootstrap + State Ownership** (restructured) | 🔴 BLOCKED BY PHASE 0 | CA-01, CA-02, CA-03, Phase 0 gate |
 
 ### CA-04 Restructured Scope
 
@@ -21,8 +59,8 @@ Original "CRUD Ownership Modules + Lifecycle Verification" was premature — bui
 
 | Sub-phase | Title | Rationale |
 |-----------|-------|-----------|
-| CA-04.1 | **Bootstrap CLI + Primitives Recovery** | D-CRUD-01: `npx opencode-harness init` creates `.hivemind/` + `.opencode/` structure. Postinstall restores primitives. Fixes the "delete and lose everything" gap. |
-| CA-04.2 | **`conversation_language` Runtime Wiring** | D-BIND-03: Field has zero consumers. Wire into system.transform → messages.transform hooks. Fix the config → behavior gap. |
+| CA-04.1 | **Bootstrap CLI + Primitives Recovery** | D-CRUD-01: `npx hivemind init` creates `.hivemind/` + `.opencode/` structure. Postinstall restores primitives. Legacy alias: `npx opencode-harness init`. Fixes the "delete and lose everything" gap. |
+| CA-04.2 | **Config Consumer Runtime Wiring** | D-BIND-03: Config fields must have verified consumers. `conversation_language` is traced as wired in L5 config traceability; `delegation_systems` remains without a verified runtime consumer. Fix or explicitly defer the remaining config → behavior gaps. |
 | CA-04.3 | **State Directory Ownership Modules** | D-CRUD-05: Each `.hivemind/` subdirectory gets typed module. Tiered by mutation need (7 CRUD, 7 append, 6 read-only). Only AFTER bootstrap exists and tools write state. |
 | CA-04.4 | **Lifecycle Audit + Gate Criteria Synthesis** | Synthesize gate-l3-lifecycle-integration references/ from ARCHITECTURE.md. Audit all 34 src/lib modules. Fix only CA-04 CRUD-owner violations. |
 
@@ -43,8 +81,8 @@ Option 3 implementation phases (in dependency order):
 |---|-------|--------|
 | 1 | Sector AGENTS.md docs | ✅ DELIVERED (O3-04, 9 files committed) |
 | 2 | Config realm cleanup | ✅ DELIVERED (traceability doc, dead code removed) |
-| 3 | **Bootstrap/init CLI** | 🔴 ACTIVE — see BOOT workstream below |
-| 4 | Routing workflow foundation | ⬜ PENDING — f-04, blocked until bootstrap complete |
+| 3 | **Bootstrap/init CLI** | 🔴 BLOCKED — see BOOT workstream below; pending Phase 0 gate |
+| 4 | Routing workflow foundation | ⬜ PENDING — f-04, blocked until Phase 0 + bootstrap complete |
 | 5 | Session/task continuity management | ⬜ PENDING — blocked until typed owners + E2E proof |
 
 Gate boundary: docs-only artifacts are L5 evidence. Runtime readiness: FAIL/BLOCK until L1-L3 runtime proof exists.
@@ -53,17 +91,17 @@ Gate boundary: docs-only artifacts are L5 evidence. Runtime readiness: FAIL/BLOC
 
 ## Active Workstream: Bootstrap & Init CLI (WS-BOOT)
 
-The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It provides project initialization, state recovery, primitives restoration, health checking, and rich terminal feedback. The user's `package.json` interpretation adds `commander`, `@clack/prompts`, `ink`/`react`, `@json-render/*`, `gray-matter`, `js-yaml`/`yaml`, `jsonc-parser`, `tree-sitter`, `diff`, `@modelcontextprotocol/sdk`, and `node-pty`/`bun-pty` as the foundational toolbelt.
+The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It provides project initialization, state recovery, primitives restoration, health checking, and rich terminal feedback. BOOT continuation is blocked until the Phase 0 governance gate passes. The package/bin identity is `hivemind`; `opencode-harness` and `hivemind-tools` are legacy aliases only.
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| BOOT-01 | Dependency Audit + Architecture | 🔴 ACTIVE | — | L5 research docs |
-| BOOT-02 | CLI Framework + Entry Point | ⬜ PENDING | BOOT-01 | L3: `npx opencode-harness --help` works |
-| BOOT-03 | State Init (.hivemind/ creation) | ⬜ PENDING | BOOT-02 | L3: `npx opencode-harness init` creates structure |
-| BOOT-04 | Primitives Recovery (.opencode/) | ⬜ PENDING | BOOT-02 | L3: symlinks restored from `.hivefiver-meta-builder/` |
-| BOOT-05 | Config Bootstrap + Defaults | ⬜ PENDING | BOOT-02 | L3: configs.json initialized with defaults |
-| BOOT-06 | Validation + Health Check | ⬜ PENDING | BOOT-03, BOOT-04, BOOT-05 | L2: `npx opencode-harness doctor` PASS |
-| BOOT-07 | End-to-End Proof | ⬜ PENDING | BOOT-06 | L1: nuke `.hivemind/` + `init` → all gates pass |
+| BOOT-01 | Dependency Audit + Architecture | ✅ COMPLETE | — | L5 research docs |
+| BOOT-02 | CLI Framework + Entry Point | 🔴 BLOCKED BY PHASE 0 (T01 done) | BOOT-01, Phase 0 gate | L3: `npx hivemind --help` works |
+| BOOT-03 | State Init (.hivemind/ creation) | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: `npx hivemind init` creates structure |
+| BOOT-04 | Primitives Recovery (.opencode/) | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: symlinks restored from `.hivefiver-meta-builder/` |
+| BOOT-05 | Config Bootstrap + Defaults | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: configs.json initialized with defaults |
+| BOOT-06 | Validation + Health Check | ⬜ BLOCKED BY PHASE 0 | BOOT-03, BOOT-04, BOOT-05, Phase 0 gate | L2: `npx hivemind doctor` PASS |
+| BOOT-07 | End-to-End Proof | ⬜ BLOCKED BY PHASE 0 | BOOT-06, Phase 0 gate | L1: nuke `.hivemind/` + `init` → all gates pass |
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
@@ -80,11 +118,11 @@ Before writing code:
 - Integrate `@clack/prompts` for interactive flows
 - Rich terminal output via `ink`/`react` (optional, deferrable)
 - Export path: `./cli` in package.json → `src/cli/index.ts`
-- Bin entry: `hivemind-tools` → bootstrap subcommand
+- Bin entry: `hivemind`; `hivemind-tools` is a legacy alias only
 
 ### BOOT-03 Scope: State Initialization
 
-- `npx opencode-harness init` creates canonical `.hivemind/` directory tree
+- `npx hivemind init` creates canonical `.hivemind/` directory tree
 - 19 subdirectories with `.gitkeep` registration
 - Typed CRUD modules per `.hivemind/` subdirectory (7 CRUD, 7 append, 6 read-only)
 - Fixes D-CRUD-05 gap
@@ -103,7 +141,7 @@ Before writing code:
 
 ### BOOT-06 Scope: Validation
 
-- `npx opencode-harness doctor` — full health check
+- `npx hivemind doctor` — full health check
 - Checks: `.hivemind/` structure integrity, `.opencode/` symlinks, config validity, SDK availability, typecheck, test pass, module count
 - Human-readable report with PASS/FAIL/WARN verdicts
 
@@ -134,10 +172,59 @@ Before writing code:
 
 ---
 
+## Active Workstream: Meta-Concept Migration (WS-MCM)
+
+The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agents and skills from `.hivefiver-meta-builder/` (the developer workspace) into `.opencode/` (shipped project primitives), integrates them into config planes, doctor workflows, and end-user customization surfaces. MCM continuation is blocked until the Phase 0 governance gate passes. GSD-prefixed agents/skills are excluded — those are internal dev tooling only and never shipped as Hivemind product primitives.
+
+### Source inventory
+
+- **Agents lab:** `.hivefiver-meta-builder/agents-lab/active/refactoring/` — 78 agent definitions (33 gsd-*, 12 hf-*, 33 hm-*). Migrate 45 non-gsd agents.
+- **Skills lab:** `.hivefiver-meta-builder/skills-lab/active/refactoring/` — 96 skill packages (47 gsd-*, 13 hf-*, 30 hm-*, 3 gate-*, 6 stack-*, 1 unprefixed). Migrate 49 non-gsd skills.
+- **Total source:** 1177 files in `.hivefiver-meta-builder/` (includes `.hivemind/`, commands-lab, plans, references-lab, research, rules subdirectories).
+
+| Phase | Title | Status | Depends On | Evidence Required |
+|-------|-------|--------|------------|-------------------|
+| MCM-01 | Agent Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: hm-*/hf-* agents discoverable in `.opencode/agents/` |
+| MCM-02 | Skill Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: hm-*/hf-*/gate-*/stack-* skills discoverable in `.opencode/skills/` |
+| MCM-03 | Config Plane Integration | ⬜ BLOCKED BY PHASE 0 | MCM-01, MCM-02, BOOT-06, Phase 0 gate | L2: doctor reports agent/skill counts, config validation includes meta-concept checks |
+| MCM-04 | End-User Customization + Ecosystem Integration | ⬜ BLOCKED BY PHASE 0 | MCM-03, Phase 0 gate | L2: end-user projects can customize shipped primitives via config, OpenCode SDK/API integration verified |
+
+### MCM-01 Scope: Agent Migration
+
+- Copy 45 non-gsd agents from `.hivefiver-meta-builder/agents-lab/active/refactoring/` to `.opencode/agents/`
+- Exclude: all `gsd-*` prefixed agents (33 files) — these are dev tooling
+- Include: `hm-l0-orchestrator.md`, `hm-l1-coordinator.md`, `hm-l2-*.md` (33 hm-* agents), `hf-l0-orchestrator.md`, `hf-l1-coordinator.md`, `hf-l2-*.md` (12 hf-* agents)
+- Validate each agent has correct frontmatter, tools permissions, temperature settings
+- Verify all 45 agents are discoverable by OpenCode runtime
+
+### MCM-02 Scope: Skill Migration
+
+- Copy 49 non-gsd skills from `.hivefiver-meta-builder/skills-lab/active/refactoring/` to `.opencode/skills/`
+- Exclude: all `gsd-*` prefixed skills (47 packages)
+- Include: `hm-l2-*.md`, `hm-l3-*.md`, `hf-l2-*.md`, `gate-l3-*.md`, `stack-l3-*.md`, `opencode-config-workflow`
+- Validate each skill has correct SKILL.md structure, trigger phrases
+- Verify all 49 skills are discoverable by OpenCode runtime
+
+### MCM-03 Scope: Config + Doctor Integration
+
+- Add agent/skill count checks to doctor command (BOOT-06 extension)
+- Add meta-concept validation to config plane: verify shipped primitives are present and valid
+- Wire agent/skill registries into config assets plane
+- Doctor reports: agent count, skill count, missing/broken references
+
+### MCM-04 Scope: Customization + Ecosystem
+
+- End-user project meta concept customization via `.hivemind/` config
+- Documentation for extending/replacing shipped primitives
+- OpenCode SDK/API/plugin interface verification with shipped agents/skills
+- Hivemind engine integration contracts validated against shipped primitives
+
+---
+
 ## Planned Workstreams (Blocked on Core Architecture)
 
 ### Agent Workflows (WS-AW)
-- WS-4: Auto-commands + Workflow Router (f-04) — **HIGHEST GAP**
+- WS-4: Auto-commands + Workflow Router (f-04) — **HIGHEST GAP**, blocked by Phase 0 + BOOT + MCM
 - WS-5: Delegation Revamp (f-06 lanes/hierarchy)
 - WS-6: Trajectory + Task-Plus (f-07)
 
@@ -152,12 +239,15 @@ Before writing code:
 
 | Wave | What | Blocks |
 |------|------|--------|
-| **Wave 1 (NOW)** | BOOT-01 Research + BOOT-02 CLI Framework | Nothing — research first, then build |
-| **Wave 2** | BOOT-03 State Init + BOOT-04 Primitives + BOOT-05 Config | Depends on Wave 1 CLI framework |
-| **Wave 3** | BOOT-06 Validation + BOOT-07 E2E Proof | Depends on Waves 1-2 |
-| **Wave 4** | f-04 Auto-commands + Workflow Router | Depends on BOOT (tools need owners) |
-| **Wave 5** | HER-3/4/5 execution | Depends on Wave 4 routing |
-| **Wave 6+** | WS-AW + WS-UX workstreams | Depends on Waves 1-5 |
+| **Wave 0 (NOW)** | Phase 0 Governance Baseline | Blocks BOOT/MCM/f-04 until gate passes |
+| **Wave 1** | BOOT-01 Research + BOOT-02 CLI Framework | Depends on Phase 0 gate |
+| **Wave 2** | BOOT-03 State Init + BOOT-04 Primitives + BOOT-05 Config | Depends on Phase 0 + Wave 1 CLI framework |
+| **Wave 3** | BOOT-06 Validation + BOOT-07 E2E Proof | Depends on Phase 0 + Waves 1-2 |
+| **Wave 4** | MCM-01 Agent Migration + MCM-02 Skill Migration | Depends on Phase 0 + BOOT-04 (symlinks exist) |
+| **Wave 5** | MCM-03 Config Integration + MCM-04 Customization | Depends on Phase 0 + Wave 4 + BOOT-06 |
+| **Wave 6** | f-04 Auto-commands + Workflow Router | Depends on Phase 0 + BOOT + MCM (agents need existence) |
+| **Wave 7** | HER-3/4/5 execution | Depends on Wave 6 routing |
+| **Wave 8+** | WS-AW + WS-UX workstreams | Depends on Waves 1-7 |
 
 ---
 
@@ -171,8 +261,10 @@ Rules:
 - Each cycle must have an entry gate, plan gate, execution gate, review gate, and exit gate.
 - Broad autonomy is blocked until bootstrap recovery, config-to-behavior wiring, f-04 routing, hierarchy enforcement, and E2E proof are complete.
 - Cycle 1 — Lifecycle Alignment: ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
-- Current authorized cycle: **Cycle 2 — Bootstrap Recovery**.
+- Current blocking gate: **Phase 0 — Governance Baseline**.
+- BOOT continuation is pending Phase 0 gate.
+- MCM continuation is pending Phase 0 gate.
 - Next recommended cycle after user approval: **Cycle 3 — Routing Foundation**.
 
 ---
-*Last updated: 2026-05-07 after full audit + archive + codebase map*
+*Last updated: 2026-05-07 after Phase 0 governance baseline routing*

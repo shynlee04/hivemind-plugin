@@ -1,25 +1,30 @@
-# HiveMind V3 — State
+<!-- generated-by: gsd-doc-writer -->
+# Hivemind — State
 
 **Last updated:** 2026-05-07  
-**Last trigger:** Full audit reconciliation + archive + codebase map + new GSD project init + Option 3 docs-only sector governance foundation + iteration 2 acceptance matrix remediation
+**Last trigger:** Phase 0 governance baseline created and BOOT/MCM continuation routed behind Phase 0 gate
 
 ---
 
 ## Current Status
 
-**Active workstream:** Core Architecture (WS-CA)  
-**Current phase:** CA-04 (restructured from original "CRUD Ownership Modules")  
-**Blocked:** No — ready to implement CA-04.1 Bootstrap  
-**Health:** 🟢 Build passes, typecheck clean, 1765/1767 tests pass
+**Active workstreams:** Phase 0 Governance Baseline; Bootstrap CLI (WS-BOOT) and Meta-Concept Migration (WS-MCM) are queued behind it  
+**Current phase:** Phase 0 — Governance Baseline  
+**Blocked:** Yes — BOOT/MCM/f-04 continuation pending Phase 0 governance gate  
+**Health:** 🟡 L5 governance baseline in progress; runtime health claims unchanged from prior evidence and not re-proven by Phase 0
 **Control mode:** Managed autonomous loop — one authorized cycle at a time
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Fix bootstrap gap + `conversation_language` wiring. Previous focus (O3 docs foundation) delivered and committed.
+**Current focus:** Phase 0 governance baseline: identity, lineage, hierarchy, source planes, config contract, meta-authoring boundary, and route/state blocking.
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
+
+**Package naming:** `package.json` names package/bin as `hivemind`. `opencode-harness` and `hivemind-tools` are legacy aliases only unless explicitly labeled.
+
+**Canonical identity:** Product Hivemind; package/bin `hivemind`; project type harness; current platform OpenCode; GSD is internal workflow tooling, not product identity.
 
 ---
 
@@ -47,7 +52,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | Issue | Severity | Action |
 |-------|----------|--------|
 | **No bootstrap/recovery** — delete `.opencode/` or `.hivemind/`, `npm run build` restores nothing | 🔴 CRITICAL | CA-04.1: postinstall script + CLI init |
-| **`conversation_language` has zero consumers** — config exists, nothing reads it | 🔴 CRITICAL | CA-04.2: wire into system.transform hook |
+| **Config consumer gap remains** — `conversation_language` is traced as wired in config traceability, but `delegation_systems` has no runtime consumer | 🔴 CRITICAL | Phase 0 config contract + CA-04.2: wire or explicitly defer dead config fields |
 | **`messages-transform.ts` dead code** — 67 LOC, zero imports, confirmed dead Phase 35 | 🟡 HIGH | Delete file |
 | **plugin.ts at 447 LOC** — 100 LOC target, needs split | 🟡 HIGH | Extract hook/tool registration modules |
 | **12 stale modules** — exist but no consumers | 🟡 HIGH | Document or wire (see SRC-MODULE-AUDIT) |
@@ -66,23 +71,61 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 |----|----------|--------|
 | Q1-Q6 | Validation decisions 2026-04-25 | Locked |
 | D-CONF-01..05 | configs.json schema and loading | Locked |
-| D-BIND-01..03 | Schema-to-runtime binding | Locked (BIND-03 violated by conversation_language) |
+| D-BIND-01..03 | Schema-to-runtime binding | Locked (BIND-03 still requires consumer proof; `conversation_language` traced as wired, `delegation_systems` unresolved) |
 | D-CRUD-01..05 | CRUD lifecycle | Locked (CRUD-01 MISSING, CRUD-05 partial) |
 | D-LIFECYCLE-01..02 | Lifecycle integration requirements | Locked |
 | D-WS-01..03 | Workstream consolidation (5→3) | Locked |
 | CA-04 RESTRUCTURE | Split into 4 sub-phases with correct dependency order | NEW — 2026-05-07 |
 | O3-DOCS-FOUNDATION | Option 3 Sector Governance Foundation is docs-only L5 evidence layered onto CA-04, not a runtime implementation claim | NEW — 2026-05-07 |
+| WS-MCM | Meta-Concept Migration workstream added — 4 phases (MCM-01 through MCM-04) for agent/skill migration, config integration, and end-user customization | NEW — 2026-05-07 |
+| D-MCM-01 | gsd-* agents/skills are NEVER shipped — dev tooling boundary enforced | NEW — 2026-05-07 |
+| P0-GOV | Phase 0 Governance Baseline blocks BOOT/MCM/f-04 until identity, source-plane, config, meta-authoring, and route gates pass | NEW — 2026-05-07 |
+| P0-ID | Product is Hivemind; package/bin are `hivemind`; harness is project type; OpenCode is platform; `opencode-harness` and `hivemind-tools` are legacy aliases only | NEW — 2026-05-07 |
+
+---
+
+## Phase 0 Governance Baseline Progress
+
+| Artifact | Status | Evidence level |
+|---|---|---|
+| `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/config/hivemind-config-contract-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/checklists/phase-0-governance-gate-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/roadmap/phase-0-gsd-route-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/ROADMAP.md` update | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/STATE.md` update | 🔴 ACTIVE | L5 docs/governance |
+
+Runtime readiness remains blocked until later L1-L3 proof exists.
+
+---
+
+## BOOT-02 Progress (Blocked Pending Phase 0 Gate)
+
+| Task | Status | File | LOC |
+|------|--------|------|-----|
+| T01 | ✅ COMPLETE | `src/lib/bootstrap-structure.ts` | 124 |
+| T02 | ⬜ BLOCKED BY PHASE 0 | `src/tools/bootstrap-init.ts` | — |
+| T03 | ⬜ BLOCKED BY PHASE 0 | `src/tools/bootstrap-recover.ts` | — |
+| T04 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/init.ts` | — |
+| T05 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/doctor.ts` | — |
+| T06 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/recover.ts` | — |
+| T07 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/version.ts` | — |
+| T08 | ⬜ BLOCKED BY PHASE 0 | `src/cli/index.ts` (MODIFY) | — |
+| T09–T13 | ⬜ BLOCKED BY PHASE 0 | `tests/cli/commands/*.test.ts` | — |
 
 ---
 
 ## Next Actions
 
-1. **Cycle 1 — Lifecycle Alignment** — Complete managed loop + lifecycle control artifacts
-2. **Option 3 docs gate review** — Review OMO adaptation, sector AGENTS target, command/workflow/session map, and pre-phase checklist before any sector guidance implementation
-3. **Ask user authorization for Cycle 2** — Do not start implementation automatically
-4. **Cycle 2 — Bootstrap Recovery** — Create `bin/init-primitives.ts` + postinstall/init restoration path only after gates/authorization
-5. **Cycle 3 — Config-to-Behavior Wiring** — Wire `conversation_language` or reject it honestly
-6. **Cycle 4+** — State ownership, f-04 routing, hierarchy enforcement, E2E proof
+1. **Review Phase 0 governance artifacts** — identity, source planes, config, meta-authoring, checklist, route.
+2. **Apply Phase 0 gate** — inspect `.planning/checklists/phase-0-governance-gate-2026-05-07.md` and mark PASS/FAIL/BLOCK.
+3. **If Phase 0 PASS:** Resume BOOT-02 Wave 1 — T02 + T03 (CQRS write-side tools).
+4. **If Phase 0 PASS:** Continue BOOT-02 Waves 2-4 — command handlers, registration wiring, contract tests.
+5. **If Phase 0 PASS:** Continue BOOT-03 through BOOT-07 — state init, primitives recovery, config bootstrap, validation, E2E proof.
+6. **If Phase 0 PASS and BOOT prerequisites pass:** Resume MCM-01 + MCM-02 — agent + skill migration.
+7. **If Phase 0 PASS and MCM/BOOT prerequisites pass:** Resume f-04 routing foundation.
 
 ## Option 3 Foundation Artifacts
 
@@ -94,10 +137,21 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 Runtime readiness: FAIL/BLOCK until L1-L3 runtime proof exists
 
+## Phase 0 Governance Artifacts
+
+- `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md`
+- `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md`
+- `.planning/config/hivemind-config-contract-2026-05-07.md`
+- `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md`
+- `.planning/checklists/phase-0-governance-gate-2026-05-07.md`
+- `.planning/roadmap/phase-0-gsd-route-2026-05-07.md`
+
+All Phase 0 artifacts are L5 documentation/governance evidence only.
+
 ## Current Control Artifacts
 
 - `.planning/roadmap/managed-autonomous-loop-2026-05-07.md`
 - `.planning/lifecycle/lifecycle-overview-2026-05-07.md`
 
 ---
-*State committed: 2026-05-07*
+*State updated: 2026-05-07 for Phase 0 governance baseline*

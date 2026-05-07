@@ -70,14 +70,14 @@ hivemind-plugin-1/
 │   ├── shared/                   # Compiled shared
 │   ├── schema-kernel/            # Compiled schemas
 │   └── sidecar/                  # Compiled sidecar
-├── bin/                          # CLI binary entry (hivemind-tools.cjs)
+├── bin/                          # CLI binary entry (hivemind.cjs)
 ├── .planning/                    # GSD planning artifacts
 │   ├── codebase/                 # Codebase intelligence documents
 │   └── archive/                  # Archived plans and phase artifacts
 ├── docs/                         # Project documentation
 │   ├── draft/                    # Architecture proposals and drafts
 │   └── proposals/                # Locked validation decisions (Q1-Q6)
-├── package.json                  # npm package manifest (opencode-harness v0.1.0)
+├── package.json                  # npm package manifest (hivemind v0.1.0)
 ├── tsconfig.json                 # TypeScript config (strict, ES2022, NodeNext)
 ├── vitest.config.ts              # Vitest configuration
 └── AGENTS.md                     # Agent instruction file (project-level)
@@ -117,7 +117,7 @@ hivemind-plugin-1/
 - Key files: `agent-frontmatter.schema.ts`, `command-frontmatter.schema.ts`, `permission.schema.ts`, `config-precedence.schema.ts`
 
 **`src/cli/` — CLI Interface:**
-- Purpose: Standalone CLI for harness operations — `hivemind-tools` binary
+- Purpose: Standalone CLI for Hivemind harness operations — `hivemind` binary
 - Contains: 5 files — `index.ts`, `router.ts`, `discovery.ts`, `renderer.ts`, `commands/help.ts`
 - Key files: `index.ts` (entry point), `router.ts` (command routing)
 
@@ -149,8 +149,8 @@ hivemind-plugin-1/
 - Committed: No (in `.gitignore` — packaged via `npm pack`)
 
 **`bin/` — CLI Binary Entry:**
-- Purpose: `hivemind-tools` binary entry point for npm package consumers
-- Contains: `hivemind-tools.cjs`
+- Purpose: `hivemind` binary entry point for npm package consumers
+- Contains: `hivemind.cjs`
 
 ## Key File Locations
 
@@ -163,7 +163,7 @@ hivemind-plugin-1/
 - `.opencode/plugins/prompt-enhance.ts`: OpenCode plugin loader (thin re-export)
 
 **Configuration:**
-- `package.json`: npm package manifest — name `opencode-harness`, version `0.1.0`, type `module`
+- `package.json`: npm package manifest — name `hivemind`, version `0.1.0`, type `module`
 - `tsconfig.json`: TypeScript config — strict mode, ES2022 target, NodeNext module resolution
 - `vitest.config.ts`: Vitest configuration — globals enabled, coverage for `src/**/*.ts`
 - `.opencode/opencode.json`: OpenCode project config — references AGENTS.md

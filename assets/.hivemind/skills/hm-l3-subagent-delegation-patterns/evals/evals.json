@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eval-1",
+    "scenario": "Orchestrator needs to dispatch a subagent for code review and track its progress. User says 'send a subagent to review the auth module.'",
+    "expected_behavior": "Agent loads hm-subagent-delegation-patterns, constructs a handoff envelope with all 7 required metadata fields (source_agent, target_agent, handoff_reason, allowed_destinations, history_policy, expected_return, resume_pointer), dispatches the subagent, and persists the session ID.",
+    "pass_condition": "Handoff envelope includes all 7 metadata fields. Session ID is persisted to trackable location. Subagent receives scoped context (not full session history)."
+  },
+  {
+    "id": "eval-2",
+    "scenario": "A previously dispatched subagent session was interrupted. User says 'continue the code review from where it left off.'",
+    "expected_behavior": "Agent reads .planning/STATE.md for incomplete plans, retrieves the session ID from .last-delegation-id, and resumes the existing task using task_id rather than creating a new delegation.",
+    "pass_condition": "Agent uses task_id to resume the existing subagent session. Does NOT create a new task. Reads state files to determine what was completed vs incomplete."
+  },
+  {
+    "id": "eval-3",
+    "scenario": "A subagent returns DONE but without verification evidence. Orchestrator needs to validate the result. User says 'is the subagent done?'",
+    "expected_behavior": "Agent applies boundary guardrails: checks output shape, scope compliance, verification evidence, and unauthorized tool use. Rejects DONE without evidence per handoff edge guardrail 'Child → parent: Return includes evidence and status protocol'.",
+    "pass_condition": "Agent detects missing verification evidence, rejects the DONE status, and re-dispatches the subagent with corrected scope or verification requirements. Does not silently accept unverified output."
+  }
+]

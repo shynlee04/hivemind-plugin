@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hivemind.dev/schemas/planning-metadata.schema.json",
+  "title": "Planning Session Metadata",
+  "description": "Schema for hm-planning-persistence session metadata. Used to validate YAML frontmatter of task_plan.md, findings.md, and progress.md.",
+  "type": "object",
+  "definitions": {
+    "SessionId": {
+      "type": "string",
+      "description": "UUID v4 session identifier",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "examples": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+    },
+    "IsoTimestamp": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "examples": ["2026-04-28T14:30:00Z"]
+    },
+    "PhaseName": {
+      "type": "string",
+      "description": "Human-readable phase name",
+      "minLength": 1,
+      "maxLength": 128,
+      "examples": ["Research", "Implement authentication", "Code review"]
+    },
+    "PhaseStatus": {
+      "type": "string",
+      "enum": ["pending", "in_progress", "completed", "blocked", "cancelled"],
+      "description": "Current phase status"
+    },
+    "Decision": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique decision identifier" },
+        "description": { "type": "string", "description": "What was decided" },
+        "rationale": { "type": "string", "description": "Why this choice" },
+        "locked": { "type": "boolean", "description": "Whether this decision is locked (cannot be revisited without explicit unlock)" }
+      },
+      "required": ["id", "description", "rationale"]
+    },
+    "ErrorEntry": {
+      "type": "object",
+      "properties": {
+        "timestamp": { "$ref": "#/definitions/IsoTimestamp" },
+        "error": { "type": "string", "description": "Error description" },
+        "attempt": { "type": "integer", "minimum": 1, "description": "Which attempt this was" },
+        "approach": { "type": "string", "description": "What approach was tried" },
+        "resolved": { "type": "boolean", "description": "Whether the error is resolved" }
+      },
+      "required": ["timestamp", "error", "attempt", "approach", "resolved"]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "file_type": { "const": "task_plan" } } },
+      "then": {
+        "properties": {
+          "file_type": { "const": "task_plan" },
+          "goal": {
+            "type": "string",
+            "description": "One-sentence goal statement. The north star.",
+            "minLength": 1,
+            "examples": ["Add user authentication with JWT and refresh token rotation"]
+          },
+          "phases": {
+            "type": "array",
+            "description": "Ordered list of phases",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "$ref": "#/definitions/PhaseName" },
+                "status": { "$ref": "#/definitions/PhaseStatus" },
+                "tasks": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "dependencies": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["name", "status"]
+            }
+          },
+          "decisions": {
+            "type": "array",
+            "description": "Decisions made during planning",
+            "items": { "$ref": "#/definitions/Decision" }
+          },
+          "errors": {
+            "type": "array",
+            "description": "Errors encountered during execution",
+            "items": { "$ref": "#/definitions/ErrorEntry" }
+          },
+          "created": { "$ref": "#/definitions/IsoTimestamp" },
+          "updated": { "$ref": "#/definitions/IsoTimestamp" },
+          "session_id": { "$ref": "#/definitions/SessionId" },
+          "current_phase": {
+            "type": "integer",
+            "description": "Index of current phase (0-based into phases array)",
+            "minimum": 0
+          }
+        },
+        "required": ["file_type", "goal", "phases", "session_id", "created"]
+      }
+    },
+    {
+      "if": { "properties": { "file_type": { "const": "findings" } } },
+      "then": {
+        "properties": {
+          "file_type": { "const": "findings" },
+          "session": { "$ref": "#/definitions/SessionId" },
+          "categories": {
+            "type": "array",
+            "description": "Research categories covered",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "examples": [["API Design", "Database Schema", "Security"]]
+          },
+          "sources": {
+            "type": "array",
+            "description": "Sources cited in research",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string", "format": "uri" },
+                "title": { "type": "string" },
+                "accessed": { "$ref": "#/definitions/IsoTimestamp" }
+              },
+              "required": ["url", "title"]
+            }
+          },
+          "last_updated": { "$ref": "#/definitions/IsoTimestamp" }
+        },
+        "required": ["file_type", "session", "categories"]
+      }
+    },
+    {
+      "if": { "properties": { "file_type": { "const": "progress" } } },
+      "then": {
+        "properties": {
+          "file_type": { "const": "progress" },
+          "session": { "$ref": "#/definitions/SessionId" },
+          "phase": { "$ref": "#/definitions/PhaseName" },
+          "status": { "$ref": "#/definitions/PhaseStatus" },
+          "last_action": {
+            "type": "string",
+            "description": "Most recent action taken"
+          },
+          "errors": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/ErrorEntry" }
+          },
+          "handoff": {
+            "type": "string",
+            "description": "What the next agent/session needs to know"
+          },
+          "files_modified": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "last_updated": { "$ref": "#/definitions/IsoTimestamp" }
+        },
+        "required": ["file_type", "session", "phase", "status", "last_updated"]
+      }
+    }
+  ]
+}

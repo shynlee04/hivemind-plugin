@@ -1,7 +1,9 @@
-# HiveMind V3 — Requirements
+# Hivemind — Requirements
 
 **Created:** 2026-05-07  
 **Source:** Full audit reconciliation (SRC, Planning, Primitives) + Codebase Map + HIVEMIND-PHILOSOPHY-2026-04-10.md + PROJECT-ISSUES-2026-05-05.md
+
+**Phase 0 authority:** `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` supersedes older package/CLI naming. Product = Hivemind. Package/bin = `hivemind`. `opencode-harness` and `hivemind-tools` are legacy aliases only.
 
 ---
 
@@ -62,11 +64,11 @@ User-facing setup, configuration, and control surfaces.
 
 | ID | Description | Priority | Status | Evidence |
 |----|-------------|----------|--------|----------|
-| BOOTSTRAP-01 | npm package: `npm install opencode-harness` | CRITICAL | FOUNDATION | package.json configured, not yet published |
-| BOOTSTRAP-02 | `npx opencode-harness init` interactive setup | CRITICAL | MISSING | CLI substrate exists (Phase 40), no init command |
+| BOOTSTRAP-01 | npm package: `npm install hivemind` | CRITICAL | FOUNDATION | package.json configured, not yet published |
+| BOOTSTRAP-02 | `npx hivemind init` interactive setup | CRITICAL | MISSING | CLI substrate exists (Phase 40), no init command |
 | BOOTSTRAP-04 | Doctor/checkup mode for primitive health | HIGH | MISSING | validate-restart exists but no health check command |
 | SIDECAR-01 | Sidecar reads artifact JSON from `.hivemind/` and `.planning/` | MEDIUM | PARTIAL | readonly-state.ts exists |
-| CONF-01 | `conversation_language` field wiring | CRITICAL | MISSING | Field exists in schema, zero consumers — D-BIND-03 VIOLATION |
+| CONF-01 | Config consumer wiring | CRITICAL | PARTIAL | Phase 0 config contract maps active fields; unresolved fields must be wired or explicitly deferred |
 
 ---
 
@@ -77,7 +79,7 @@ User-facing setup, configuration, and control surfaces.
 | f-04 | Auto-commands + workflow router + intent classification | Needs design from skeleton §5.2 |
 | BOOTSTRAP-02 | CLI init command for `.hivemind/` and `.opencode/` bootstrap | Blocked on f-04 (command engine needed) |
 | BOOTSTRAP-RECOVERY | Primitives bootstrap on deletion (postinstall or restore) | Blocked on BOOTSTRAP-02 |
-| CONF-01-LANG | `conversation_language` runtime wiring | Needs system.transform hook consumer |
+| CONF-01-CONSUMERS | Config field runtime consumers | Needs Phase 0 config contract follow-through and runtime proof |
 | LIFECYCLE-GATE | gate-l3-lifecycle-integration criteria docs | Needs synthesis from ARCHITECTURE.md |
 
 ---
@@ -91,4 +93,4 @@ User-facing setup, configuration, and control surfaces.
 | Gate triad | Lifecycle → Spec → Evidence | gate skills exist, lifecycle references empty |
 
 ---
-*Last updated: 2026-05-07 after full audit reconciliation*
+*Last updated: 2026-05-07 after Phase 0 governance baseline*

@@ -45,7 +45,7 @@
 - Prepack runs build automatically (`npm run prepack` → `npm run build`)
 
 **CLI:**
-- Commander ^14.0.3 — CLI framework for `hivemind-tools` binary
+- Commander ^14.0.3 — CLI framework for `hivemind` binary
 - @clack/prompts ^1.3.0 — Interactive CLI prompts
 - Ink ^6.8.0 + React ^19.2.6 — Terminal UI components
 
@@ -112,16 +112,16 @@
 
 ## Package Structure
 
-**Package name:** `opencode-harness` v0.1.0
+**Package name:** `hivemind` v0.1.0
 
 **Entry points (via `exports`):**
 | Import path | Target | Purpose |
 |-------------|--------|---------|
-| `opencode-harness` | `./dist/index.js` | Public API re-exports |
-| `opencode-harness/plugin` | `./dist/plugin.js` | Plugin composition root |
-| `opencode-harness/cli` | `./dist/cli/index.js` | CLI tools |
+| `hivemind` | `./dist/index.js` | Public API re-exports |
+| `hivemind/plugin` | `./dist/plugin.js` | Plugin composition root |
+| `hivemind/cli` | `./dist/cli/index.js` | CLI tools |
 
-**Binary:** `hivemind-tools` → `./bin/hivemind-tools.cjs`
+**Binary:** `hivemind` → `./bin/hivemind.cjs`
 
 ## Platform Requirements
 

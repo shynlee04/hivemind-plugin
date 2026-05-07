@@ -1,0 +1,24 @@
+{
+  "skill": "stack-bun-pty",
+  "version": "2026-04-29",
+  "scenarios": [
+    {
+      "id": "eval-1",
+      "scenario": "Agent needs to spawn a PTY session for an interactive command",
+      "expected_behavior": "Skill provides spawn() API signature with IPtyForkOptions, lazy-loading pattern, and event subscription example",
+      "pass_condition": "Agent retrieves correct spawn() call signature and lazy-load import pattern from SKILL.md or references/api/pty-api.md"
+    },
+    {
+      "id": "eval-2",
+      "scenario": "Agent encounters memory leak from undisposed PTY event handlers",
+      "expected_behavior": "Skill's anti-pattern table identifies the dispose requirement and shows correct finally-block cleanup pattern",
+      "pass_condition": "Agent finds anti-pattern #2 (Forgetting to .dispose()) and applies correct pattern within 2 lookups"
+    },
+    {
+      "id": "eval-3",
+      "scenario": "Agent needs to decide between bun-pty and Bun.spawn() for a simple command execution",
+      "expected_behavior": "Skill's decision tree correctly routes: fire-and-forget → Bun.spawn(), interactive → PTY via spawn()",
+      "pass_condition": "Agent follows decision tree and selects correct tooling based on use case described in the prompt"
+    }
+  ]
+}

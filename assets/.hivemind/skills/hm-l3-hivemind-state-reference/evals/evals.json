@@ -1,0 +1,43 @@
+{
+  "skill": "hm-l3-hivemind-state-reference",
+  "version": "1.0.0",
+  "scenarios": [
+    {
+      "id": "EVAL-01",
+      "query": "How do I check the status of a delegated session?",
+      "expected_behavior": "Agent reads .hivemind/state/session-continuity.json to find the session record, checks metadata.status (TaskStatus), and cross-references .hivemind/state/delegations.json for the delegation-specific status (DelegationStatus). Agent reports both statuses and explains any divergence.",
+      "pass_criteria": [
+        "Identifies session-continuity.json as the session state source",
+        "Identifies delegations.json as the delegation state source",
+        "Correctly maps TaskStatus values (pending/queued/running/completed/failed/error/cancelled/interrupt)",
+        "Correctly maps DelegationStatus values (dispatched/running/completed/error/timeout)",
+        "Notes divergence if session-continuity and delegations disagree"
+      ],
+      "grading": "PASS if ≥4 criteria met; FAIL otherwise"
+    },
+    {
+      "id": "EVAL-02",
+      "query": "A parent session has undelivered child completion notifications. How do I find and replay them?",
+      "expected_behavior": "Agent reads the parent session's record from session-continuity.json, inspects metadata.pendingNotifications for undelivered entries (delivered: false). Documents the notification structure (sessionID, description, agent, status, delegationId). Notes that replay happens on session.created or session.updated events via replayPendingNotificationsForEvent().",
+      "pass_criteria": [
+        "Identifies pendingNotifications as the undelivered notification queue",
+        "Correctly documents notification structure fields",
+        "Notes replay triggers (session.created, session.updated events)",
+        "Distinguishes delivered vs undelivered notifications by the `delivered` boolean"
+      ],
+      "grading": "PASS if ≥3 criteria met; FAIL otherwise"
+    },
+    {
+      "id": "EVAL-03",
+      "query": "How do I find what happened during a specific session that ran last week?",
+      "expected_behavior": "Agent checks .hivemind/event-tracker/ for session journal files (ses_XXXX.json and ses_XXXX.md). Explains the file naming convention (last 4 hex chars of session ID). Reads the session's continuity record for lifecycle history (transitionHistory). Cross-references with journal/YYYY-MM-DD.jsonl for timeline context.",
+      "pass_criteria": [
+        "Checks event-tracker/ for session journal files",
+        "Explains file naming convention (last 4 hex chars)",
+        "Runs Bash to glob pattern match for session file",
+        "Reads lifecycle.transitionHistory from session-continuity for phase transitions"
+      ],
+      "grading": "PASS if ≥3 criteria met; FAIL otherwise"
+    }
+  ]
+}

@@ -3,6 +3,8 @@
 **Date:** 2026-05-07 | **Status:** AWAITING USER DECISIONS
 **Evidence:** L5 — docs-only. All decisions below require explicit authorization before BOOT-02 begins.
 
+**Phase 0 supersession note:** Older examples using `opencode-harness` are legacy alias examples. Canonical package/bin naming is `hivemind` per `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md`.
+
 ---
 
 ## Decision 1: CLI Framework — Router vs. Commander
@@ -21,7 +23,7 @@
 
 | # | Option | Description |
 |---|--------|-------------|
-| **2A** | **Default non-interactive** | `npx opencode-harness init` runs silently with defaults. `npx opencode-harness init --interactive` enables the wizard. |
+| **2A** | **Default non-interactive** | `npx hivemind init` runs silently with defaults. `npx hivemind init --interactive` enables the wizard. |
 | **2B** | **Always interactive** | Always launches `@clack/prompts` wizard. |
 | **2C** | **CI-aware** | Detect CI/TTY. Non-interactive in CI (exit with error if required fields missing). Interactive when TTY present. |
 

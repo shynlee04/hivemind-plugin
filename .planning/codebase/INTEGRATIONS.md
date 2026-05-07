@@ -155,7 +155,7 @@
 ## CI/CD & Deployment
 
 **Hosting:**
-- npm package: `opencode-harness` v0.1.0
+- npm package: `hivemind` v0.1.0
 - Local plugin loaded from `./dist/plugin.js`
 - No CI/CD pipeline detected in current workspace
 

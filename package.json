@@ -1,15 +1,16 @@
 {
-  "name": "opencode-harness",
+  "name": "hivemind",
   "version": "0.1.0",
   "description": "HiveMind — Runtime composition engine for multi-agent orchestration, session continuity, and compounding intelligence in OpenCode",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "hivemind-tools": "./bin/hivemind-tools.cjs"
+    "hivemind": "./bin/hivemind.cjs"
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "assets"
   ],
   "exports": {
     ".": {

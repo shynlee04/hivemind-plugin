@@ -4,6 +4,8 @@
 **Phases covered:** BOOT-02 through BOOT-07
 **Source material:** `.planning/research/bootstrap-cli-ecosystem-research-2026-05-07.md`, `.planning/research/bootstrap-cli-grey-areas-2026-05-07.md`, `.planning/ROADMAP.md`, `src/cli/router.ts`, `src/cli/discovery.ts`, `src/cli/renderer.ts`, `src/cli/index.ts`, `src/cli/commands/help.ts`
 
+**Phase 0 supersession note:** `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` supersedes older CLI naming in this spec. Interpret `hivemind-tools` as legacy alias text and implement the canonical package/bin command as `hivemind`. Interpret `opencode-harness` as a legacy package alias unless explicitly discussing migration compatibility.
+
 ---
 
 ## 1. Architecture Constraints
@@ -22,8 +24,8 @@ All BOOT-02 through BOOT-07 implementations SHALL adhere to the following archit
 | **`CliRouterResult`** | Handler returns `{ exitCode: number, error?: string, output?: string }`. | `src/cli/router.ts:38-42` |
 | **Exit codes** | `0` = success, `64` = usage error (`EX_USAGE`), `70` = software error (`EX_SOFTWARE`). | `src/cli/router.ts:18-21` |
 | **`[Harness]` prefix** | All error messages carry the `[Harness]` prefix. | `src/cli/renderer.ts:22-37`, `src/cli/router.ts:128-130` |
-| **CJS shim** | `bin/hivemind-tools.cjs` → dynamic `import(dist/cli/index.js)` → `runCli(process.argv.slice(2))`. | `bin/hivemind-tools.cjs:1-41` |
-| **Build requirement** | CLI is unavailable until `npm run build` compiles `src/` → `dist/`. Missing `dist/cli/index.js` → exit 70. | `bin/hivemind-tools.cjs:27-31` |
+| **CJS shim** | `bin/hivemind.cjs` → dynamic `import(dist/cli/index.js)` → `runCli(process.argv.slice(2))`. | `bin/hivemind.cjs` |
+| **Build requirement** | CLI is unavailable until `npm run build` compiles `src/` → `dist/`. Missing `dist/cli/index.js` → exit 70. | `bin/hivemind.cjs` |
 | **Registration** | Commands are registered via `discoverCommands()` from `CommandSource[]` → single flat list, validated, deduplicated. | `src/cli/discovery.ts:58-77` |
 | **Module cap** | No module shall exceed 500 LOC. | `AGENTS.md` project conventions |
 
@@ -565,7 +567,7 @@ All other configuration fields SHALL be resolved at runtime from the Zod schema 
 
 1. All `.hivemind/` content is deleted (`rm -rf .hivemind/`).
 2. All `.opencode/` symlinks are deleted (remove `agents/`, `skills/`, `commands/` symlinks).
-3. `hivemind-tools init --yes` is run.
+3. `hivemind init --yes` is run.
 4. The result SHALL pass all of: `doctor` (all checks PASS), `npm run typecheck` (PASS), `npm test` (1767/1767 PASS).
 
 **Acceptance Criteria:**
@@ -578,8 +580,8 @@ All other configuration fields SHALL be resolved at runtime from the Zod schema 
 ```bash
 rm -rf .hivemind/
 rm -rf .opencode/agents/ .opencode/skills/ .opencode/commands/
-npx opencode-harness init --yes
-npx opencode-harness doctor     # exit 0, ALL CHECKS PASS
+npx hivemind init --yes
+npx hivemind doctor             # exit 0, ALL CHECKS PASS
 npm run typecheck               # exit 0
 npm test                        # 1767/1767 PASS
 ```
@@ -590,7 +592,7 @@ npm test                        # 1767/1767 PASS
 
 > **Source:** Non-destructive principle, `.planning/research/bootstrap-cli-ecosystem-research-2026-05-07.md:119`
 
-**Condition:** WHEN `hivemind-tools init --yes` is run multiple times consecutively THE SYSTEM SHALL:
+**Condition:** WHEN `hivemind init --yes` is run multiple times consecutively THE SYSTEM SHALL:
 - First run: create directories, symlinks, and configs.json → exit 0.
 - Subsequent runs: report "exists" for each already-present entity → exit 0.
 - No file corruption, no doubled content, no overwritten user data.

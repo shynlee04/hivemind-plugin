@@ -1,0 +1,16 @@
+{
+  "skill": "hm-synthesis",
+  "rich_gate_patterns": ["contradiction_consensus", "methodology_limitations", "evidence_backed_recommendations"],
+  "cases": [
+    {
+      "prompt": "Synthesize these research notes into a recommendation; the sources disagree on the safest migration path.",
+      "expected_load": true,
+      "must_include": ["consensus level", "contradictions", "limitations", "recommendation rationale"]
+    },
+    {
+      "prompt": "Collect raw sources for a new topic.",
+      "expected_load": false,
+      "reason": "raw collection belongs to research, not synthesis"
+    }
+  ]
+}

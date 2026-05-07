@@ -1,14 +1,16 @@
-# HiveMind V3 — Runtime Composition Engine
+# Hivemind — Runtime Composition Engine
+
+**Phase 0 authority:** `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` locks canonical naming. Product = Hivemind. Package/bin = `hivemind`. `opencode-harness` and `hivemind-tools` are legacy aliases only.
 
 ## What This Is
 
-HiveMind is a **runtime composition engine** for OpenCode — an npm package (`opencode-harness`) providing tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. It makes agents genuinely intelligent through architecture: the **HIVE** (structure, hierarchy, delegation) and the **MIND** (memory, continuity, MEMS-BRAIN knowledge pieces). Not through bigger models — through compounding intelligence across sessions.
+Hivemind is a **runtime composition engine** for OpenCode — an npm package (`hivemind`) providing tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. It makes agents genuinely intelligent through architecture: the **HIVE** (structure, hierarchy, delegation) and the **MIND** (memory, continuity, MEMS-BRAIN knowledge pieces). Not through bigger models — through compounding intelligence across sessions.
 
 **Two halves:** Hard Harness (`src/` npm package) + Soft Meta-Concepts (`.opencode/` agents, skills, commands). State lives in `.hivemind/` (canonical per Q6).
 
 ## Core Value
 
-**Agents build on each other's work across sessions.** Without HiveMind, every session starts from zero. With it, decisions, patterns, and lessons compound. The human collaborates with agents across cognitive layers — the human provides intent and judgment, agents provide execution and pattern recognition.
+**Agents build on each other's work across sessions.** Without Hivemind, every session starts from zero. With it, decisions, patterns, and lessons compound. The human collaborates with agents across cognitive layers — the human provides intent and judgment, agents provide execution and pattern recognition.
 
 ## Requirements
 
@@ -29,7 +31,7 @@ HiveMind is a **runtime composition engine** for OpenCode — an npm package (`o
 ### Active
 
 - [ ] **Bootstrap/recovery**: `.opencode/` and `.hivemind/` must be restorable (postinstall script or CLI init)
-- [ ] **`conversation_language` wiring**: config field has zero consumers — D-BIND-03 violation
+- [ ] **Config consumer wiring**: Phase 0 config contract requires every active config field to have named consumers or explicit deferred/dead status
 - [ ] **Dead code removal**: `messages-transform.ts` (67 LOC, confirmed dead in Phase 35)
 - [ ] **Plugin.ts LOC reduction**: 447 LOC vs 100 LOC target — extract into dedicated hook/tool modules
 - [ ] **12 stale modules**: document or wire (toggle-gates.ts, runtime-detection/, etc.)
@@ -45,8 +47,8 @@ HiveMind is a **runtime composition engine** for OpenCode — an npm package (`o
 - Sidecar GUI dashboard — WS-8 (DEFERRED, blocked on Core + Workflows completion)
 - Graph-based delegation — GAP-22 (blocked on WS-5 delegation revamp)
 - MCP tool registry — GAP-06 (blocked on WS-3 primitive registry)
-- Full autonomy mode — HiveMind is collaborative by default; full autonomy available as option later
-- GSD framework, BMAD methodology — HiveMind hosts them, doesn't embed them
+- Full autonomy mode — Hivemind is collaborative by default; full autonomy available as option later
+- GSD framework, BMAD methodology — Hivemind hosts them, doesn't embed them
 - `.planning/` → `.hivemind/planning/` migration — D-2 OPEN, no schedule
 
 ## Context
@@ -59,7 +61,7 @@ HiveMind is a **runtime composition engine** for OpenCode — an npm package (`o
 
 **Known issues:** STATE.md claimed Phase 70-71 COMPLETE with no git evidence. 14 archived milestone phases still on disk. 2 empty workstreams (primitive-registry, bootstrap-cli-onboarding). `asString` duplicated in helpers.ts and continuity.ts. `storeCache` singleton prevents isolated testing in continuity.ts. `.hivemind/` git-track vs gitignore contradiction.
 
-**User philosophy:** HiveMind is for "wanders-of-curiosity" — people who explore, not just execute. It optimizes for compounded learning, not throughput. The 5 pillars: Hierarchical Superiority, Collaborative Domains, Strategically Measurable, Iteratively Granular, Growing MEMS-BRAIN. The user envisions graph-based, hierarchical, domain-classified agent collaboration where complexity is "behind-scenes" and the front-facing context stays high-level.
+**User philosophy:** Hivemind is for "wanders-of-curiosity" — people who explore, not just execute. It optimizes for compounded learning, not throughput. The 5 pillars: Hierarchical Superiority, Collaborative Domains, Strategically Measurable, Iteratively Granular, Growing MEMS-BRAIN. The user envisions graph-based, hierarchical, domain-classified agent collaboration where complexity is "behind-scenes" and the front-facing context stays high-level.
 
 ## Constraints
 
@@ -84,9 +86,10 @@ HiveMind is a **runtime composition engine** for OpenCode — an npm package (`o
 | Q5: Full RICH gate required | 0 of 25 skills pass today is honest status | — Pending |
 | Q6: `.hivemind/` internal state root | One-way migration, `.opencode/` ONLY for primitives | ✓ Locked |
 | D-CONF-05: configs.json loaded every session | Missing → defaults, invalid → warn, unknown → strip | ✓ Locked |
-| D-BIND-03: every config field must have consumer | `conversation_language` violates this | ⚠️ Revisit |
+| D-BIND-03: every active config field must have consumer | Phase 0 config contract maps field consumers/status; unresolved fields must be wired or explicitly deferred | ⚠️ Revisit |
+| P0-ID: Hivemind identity contract | Product Hivemind; package/bin `hivemind`; harness is project type; OpenCode is platform | ✓ Locked |
 | D-CRUD-05: each `.hivemind/` dir has typed owner | Only 2/19 dirs have owners | ⚠️ Revisit |
 | D-WS-01: 5→3 themed workstreams | Core Architecture → Agent Workflows → User Experience | ✓ Good |
 
 ---
-*Last updated: 2026-05-07 after full audit + codebase map + archive*
+*Last updated: 2026-05-07 after Phase 0 governance baseline*
