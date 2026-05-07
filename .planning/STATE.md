@@ -17,11 +17,9 @@
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Fix bootstrap gap + `conversation_language` wiring
+**Current focus:** Fix bootstrap gap + `conversation_language` wiring. Previous focus (O3 docs foundation) delivered and committed.
 
-**Docs-only foundation added:** Option 3 — Sector Governance Foundation. This route produced planning artifacts only and does not alter runtime readiness.
-
-**Docs-only remediation:** Iteration 2 completed acceptance matrix remediation for O3-01/O3-03, strengthened O3-02 traceability, and drafted an O3-04 planning blueprint without authorizing source-sector `AGENTS.md` or runtime edits.
+**Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
 ---
 
