@@ -1,9 +1,12 @@
 import { describe, it, expect } from "vitest"
 import { createConfigurePrimitiveTool } from "../../src/tools/configure-primitive.js"
 import { mixedBatchCompile } from "../../src/lib/config-compiler.js"
-import { existsSync, unlinkSync, rmdirSync, mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
+import { existsSync, readdirSync, unlinkSync, rmdirSync, mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
+
+const AGENTS_DIR = join(process.cwd(), ".opencode", "agents")
+const HAS_OPENCODE_DIR = existsSync(AGENTS_DIR) && readdirSync(AGENTS_DIR).some(f => f.endsWith(".md"))
 
 // ---------------------------------------------------------------------------
 // Mock context
@@ -274,7 +277,7 @@ describe("scope and overwrite", () => {
 describe("read action", () => {
   const tool = createConfigurePrimitiveTool()
 
-  it("reads an existing agent file", async () => {
+  it.skipIf(!HAS_OPENCODE_DIR)("reads an existing agent file", async () => {
     const result = parseResult(await tool.execute({
       action: "read",
       primitive: "agent",
@@ -331,7 +334,7 @@ mode: subagent
 describe("list action", () => {
   const tool = createConfigurePrimitiveTool()
 
-  it("lists all primitives when no type filter", async () => {
+  it.skipIf(!HAS_OPENCODE_DIR)("lists all primitives when no type filter", async () => {
     const result = parseResult(await tool.execute({
       action: "list",
       primitive: "agent",
@@ -360,7 +363,7 @@ describe("list action", () => {
 describe("inspect action", () => {
   const tool = createConfigurePrimitiveTool()
 
-  it("inspects an existing primitive with cross-reference status", async () => {
+  it.skipIf(!HAS_OPENCODE_DIR)("inspects an existing primitive with cross-reference status", async () => {
     const result = parseResult(await tool.execute({
       action: "inspect",
       primitive: "agent",
@@ -637,7 +640,7 @@ describe("backward compatibility (no workflow params)", () => {
     expect(result.data.spec.frontmatter.description).toBe("Backward compat decompile")
   })
 
-  it("should not require workflow params for list action", async () => {
+  it.skipIf(!HAS_OPENCODE_DIR)("should not require workflow params for list action", async () => {
     const result = parseResult(await tool.execute({
       action: "list",
       scope: "project",

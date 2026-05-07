@@ -74,6 +74,30 @@
     "typescript": "^5.0.0",
     "vitest": "^4.1.5"
   },
+  "license": "MIT",
+  "author": "OpenCode Harness Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shynlee04/hivemind-plugin.git"
+  },
+  "homepage": "https://github.com/shynlee04/hivemind-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/shynlee04/hivemind-plugin/issues"
+  },
+  "keywords": [
+    "opencode",
+    "harness",
+    "multi-agent",
+    "orchestration",
+    "delegation",
+    "session-continuity",
+    "concurrency",
+    "guardrails",
+    "plugin",
+    "ai-coding",
+    "agent-framework",
+    "typescript"
+  ],
   "engines": {
     "node": ">=20.0.0",
     "opencode": ">=1.14.28"

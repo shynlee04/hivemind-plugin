@@ -1,5 +1,8 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
+
+const SESSION_FIXTURE = join(process.cwd(), "session-ses_23a0.md")
+const HAS_SESSION_FIXTURE = existsSync(SESSION_FIXTURE)
 
 import { parseProductDetoxSessionMarkdown } from "../../../src/lib/event-tracker/index.js"
 
@@ -49,8 +52,8 @@ done
     expect(parsed.counters).toMatchObject({ userMessageCount: 1, assistantOutputCount: 1, toolCallCount: 1, delegationCount: 1 })
   })
 
-  it("parses required lineage metadata from the manually exported ses_23a0 session fixture", () => {
-    const fixture = readFileSync(join(process.cwd(), "session-ses_23a0.md"), "utf-8")
+  it.skipIf(!HAS_SESSION_FIXTURE)("parses required lineage metadata from the manually exported ses_23a0 session fixture", () => {
+    const fixture = readFileSync(SESSION_FIXTURE, "utf-8")
     const parsed = parseProductDetoxSessionMarkdown(fixture) as unknown as {
       header: { sessionId: string }
       actors: string[]

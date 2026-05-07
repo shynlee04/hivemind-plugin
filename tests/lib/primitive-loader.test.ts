@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest"
-import { promises as fs, mkdirSync, writeFileSync, rmSync } from "node:fs"
+import { existsSync, readdirSync, promises as fs, mkdirSync, writeFileSync, rmSync } from "node:fs"
 import path from "node:path"
 import { loadPrimitives, loadPrimitive } from "../../src/lib/primitive-loader.js"
+
+const AGENTS_DIR = path.join(process.cwd(), ".opencode", "agents")
+const HAS_OPENCODE_DIR = existsSync(AGENTS_DIR) && readdirSync(AGENTS_DIR).some(f => f.endsWith(".md"))
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -254,7 +257,7 @@ describe("loadPrimitive", () => {
 // ---------------------------------------------------------------------------
 
 describe("loadPrimitives integration", () => {
-  it("loads from real project .opencode/ directory", async () => {
+  it.skipIf(!HAS_OPENCODE_DIR)("loads from real project .opencode/ directory", async () => {
     const result = await loadPrimitives({ projectRoot: process.cwd() })
     // Real project has agents, commands, and skills
     expect(result.agents.size).toBeGreaterThan(0)
