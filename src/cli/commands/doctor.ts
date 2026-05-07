@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process"
 import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync } from "node:fs"
 import { dirname, resolve, join } from "node:path"
 
@@ -11,18 +12,23 @@ import type { CliCommand, CliCommandContext, CliRouterResult } from "../router.j
 type DoctorCheckName = (typeof DOCTOR_CHECKS)[number]
 type DoctorStatus = "PASS" | "FAIL" | "WARN"
 type DoctorRow = { check: DoctorCheckName; status: DoctorStatus; details: string }
+type HealthScript = "typecheck" | "test"
+type HealthCommandResult = { exitCode: number; output?: string }
 
 type DoctorCommandDeps = {
   resolveProjectRoot: (explicitRoot?: string) => string | null
   resolveSdk: () => string
+  runHealthCommand: (script: HealthScript, projectRoot: string) => HealthCommandResult
+  countSourceModules: (projectRoot: string) => number
 }
 
 /**
  * Create the BOOT-02 `doctor` CLI command.
  *
  * The command performs read-only validation of local `.hivemind` structure,
- * selected-scope primitive symlinks, config presence/parseability, and SDK
- * availability. It never writes, repairs, or mutates filesystem state.
+ * selected-scope primitive symlinks, config presence/parseability, SDK
+ * availability, typecheck/test health, and source module inventory. It never
+ * writes, repairs, or mutates filesystem state.
  *
  * @param deps - Optional injectable dependencies for tests.
  * @returns The `doctor` command implementation.
@@ -36,6 +42,8 @@ export function createDoctorCommand(deps: Partial<DoctorCommandDeps> = {}): CliC
   const resolvedDeps: DoctorCommandDeps = {
     resolveProjectRoot: deps.resolveProjectRoot ?? resolveProjectRoot,
     resolveSdk: deps.resolveSdk ?? (() => import.meta.resolve("@opencode-ai/plugin")),
+    runHealthCommand: deps.runHealthCommand ?? runHealthCommand,
+    countSourceModules: deps.countSourceModules ?? countSourceModules,
   }
 
   return {
@@ -103,6 +111,12 @@ function runDoctorCheck(
       return runConfigCheck(projectRoot)
     case "sdk":
       return runSdkCheck(deps)
+    case "typecheck":
+      return runCommandCheck("typecheck", projectRoot, deps)
+    case "tests":
+      return runCommandCheck("tests", projectRoot, deps)
+    case "modules":
+      return runModulesCheck(projectRoot, deps)
   }
 }
 
@@ -123,6 +137,7 @@ function runSymlinkCheck(projectRoot: string, scope: BootstrapScope): DoctorRow 
   const metaBuilderRoot = resolveMetaBuilderRoot(projectRoot)
   const missing: string[] = []
   const broken: string[] = []
+  const realFiles: string[] = []
 
   for (const kind of PRIMITIVE_TYPES) {
     const rootCandidates = {
@@ -141,7 +156,7 @@ function runSymlinkCheck(projectRoot: string, scope: BootstrapScope): DoctorRow 
       try {
         const stat = lstatSync(targetPath)
         if (!stat.isSymbolicLink()) {
-          broken.push(targetPath)
+          realFiles.push(targetPath)
           continue
         }
         const linkedPath = resolve(dirname(targetPath), readlinkSync(targetPath))
@@ -154,13 +169,18 @@ function runSymlinkCheck(projectRoot: string, scope: BootstrapScope): DoctorRow 
     }
   }
 
-  if (missing.length === 0 && broken.length === 0) {
+  if (missing.length === 0 && broken.length === 0 && realFiles.length === 0) {
     return { check: "symlinks", status: "PASS", details: `All expected ${scope} primitive symlinks resolve correctly.` }
+  }
+
+  if (missing.length === 0 && broken.length === 0) {
+    return { check: "symlinks", status: "WARN", details: `Real files preserved by recovery policy: ${realFiles.join(", ")}` }
   }
 
   const details = [
     missing.length > 0 ? `Missing: ${missing.join(", ")}` : null,
     broken.length > 0 ? `Broken: ${broken.join(", ")}` : null,
+    realFiles.length > 0 ? `Real files: ${realFiles.join(", ")}` : null,
   ].filter(Boolean).join(" | ")
 
   return { check: "symlinks", status: "FAIL", details }
@@ -197,6 +217,67 @@ function runSdkCheck(deps: DoctorCommandDeps): DoctorRow {
   }
 }
 
+function runCommandCheck(check: "typecheck" | "tests", projectRoot: string, deps: DoctorCommandDeps): DoctorRow {
+  const script: HealthScript = check === "tests" ? "test" : "typecheck"
+  const result = deps.runHealthCommand(script, projectRoot)
+  if (result.exitCode === 0) {
+    return { check, status: "PASS", details: `npm run ${script} passed.` }
+  }
+
+  return {
+    check,
+    status: "FAIL",
+    details: `npm run ${script} failed with exit code ${result.exitCode}.${summarizeCommandOutput(result.output)}`,
+  }
+}
+
+function runModulesCheck(projectRoot: string, deps: DoctorCommandDeps): DoctorRow {
+  const count = deps.countSourceModules(projectRoot)
+  return count > 0
+    ? { check: "modules", status: "PASS", details: `${count} TypeScript source modules found under src/.` }
+    : { check: "modules", status: "FAIL", details: "No TypeScript source modules found under src/." }
+}
+
+function runHealthCommand(script: HealthScript, projectRoot: string): HealthCommandResult {
+  const command = script === "test" ? ["test"] : ["run", "typecheck"]
+  const result = spawnSync("npm", command, {
+    cwd: projectRoot,
+    encoding: "utf8",
+    env: { ...process.env, CI: "true" },
+  })
+  return {
+    exitCode: result.status ?? 1,
+    output: `${result.stdout ?? ""}${result.stderr ?? ""}`,
+  }
+}
+
+function countSourceModules(projectRoot: string): number {
+  const srcRoot = join(projectRoot, "src")
+  if (!existsSync(srcRoot)) return 0
+  return countTypeScriptFiles(srcRoot)
+}
+
+function countTypeScriptFiles(directory: string): number {
+  let count = 0
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const entryPath = join(directory, entry.name)
+    if (entry.isDirectory()) {
+      count += countTypeScriptFiles(entryPath)
+      continue
+    }
+    if (entry.isFile() && entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts")) {
+      count += 1
+    }
+  }
+  return count
+}
+
+function summarizeCommandOutput(output: string | undefined): string {
+  if (!output?.trim()) return ""
+  const summary = output.replace(/\s+/g, " ").trim().slice(0, 300)
+  return ` Output: ${summary}`
+}
+
 function renderDoctorOutput(rows: DoctorRow[], projectRoot: string, scope: BootstrapScope): string {
   const verdict = rows.some((row) => row.status === "FAIL") ? "FAILURES DETECTED" : "ALL CHECKS PASS"
   const table = renderTable(
@@ -216,9 +297,9 @@ function renderDoctorOutput(rows: DoctorRow[], projectRoot: string, scope: Boots
 
 function renderDoctorHelp(): string {
   return [
-    "Usage: hivemind doctor [--root=<path>] [--scope=project|global] [--check=structure|symlinks|config|sdk]",
+    "Usage: hivemind doctor [--root=<path>] [--scope=project|global] [--check=structure|symlinks|config|sdk|typecheck|tests|modules]",
     "",
-    "BOOT-02 doctor is read-only. It validates local structure/config plus the selected primitive scope.",
+    "Doctor is read-only. It validates local structure/config, the selected primitive scope, SDK availability, typecheck, tests, and module inventory.",
   ].join("\n")
 }
 

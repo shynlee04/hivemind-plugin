@@ -1,10 +1,32 @@
-import { mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 import { describe, expect, it } from "vitest"
 
 import { bootstrapInit } from "../../src/tools/bootstrap-init.js"
+
+const CANONICAL_HIVEMIND_DIRECTORIES = [
+  "state",
+  "delegation",
+  "event-tracker",
+  "journal",
+  "lineage",
+  "daily-notes",
+  "hm-brain",
+  "hf-brain",
+  "delegation-managements",
+  "task-managements",
+  "runtime",
+  "artifacts",
+  "sidecar",
+  "logs",
+  "poor-prompts",
+  "uat",
+  "manifests",
+  "registries",
+  "onboarding",
+] as const
 
 function createTempProject(): string {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-init-"))
@@ -30,9 +52,9 @@ describe("bootstrapInit", () => {
 
       expect(result.effectiveScope).toBe("project")
       expect(readFileSync(join(projectRoot, ".hivemind", "configs.json"), "utf8")).toContain("$schema")
-      expect(join(projectRoot, ".hivemind", "state", ".gitkeep")).toBeTruthy()
-      expect(join(projectRoot, ".hivemind", "delegation", ".gitkeep")).toBeTruthy()
-      expect(join(projectRoot, ".hivemind", "event-tracker", ".gitkeep")).toBeTruthy()
+      for (const directory of CANONICAL_HIVEMIND_DIRECTORIES) {
+        expect(existsSync(join(projectRoot, ".hivemind", directory, ".gitkeep")), directory).toBe(true)
+      }
       expect(readlinkSync(join(projectRoot, ".opencode", "skills", "hm-skill"))).toContain(".hivefiver-meta-builder")
       expect(readlinkSync(join(projectRoot, ".opencode", "agents", "hm-agent.md"))).toContain(".hivefiver-meta-builder")
       expect(readlinkSync(join(projectRoot, ".opencode", "commands", "hm-command.md"))).toContain(".hivefiver-meta-builder")

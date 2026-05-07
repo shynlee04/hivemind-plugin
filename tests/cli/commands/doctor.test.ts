@@ -4,16 +4,15 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 import { createDoctorCommand } from "../../../src/cli/commands/doctor.js"
+import { TIER_1_DIRECTORIES } from "../../../src/lib/bootstrap-structure.js"
 import { generateHivemindConfigsJsonSchema } from "../../../src/schema-kernel/generate-config-json-schema.js"
 
 function createHealthyProject(): string {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-doctor-"))
-  mkdirSync(join(projectRoot, ".hivemind", "state"), { recursive: true })
-  mkdirSync(join(projectRoot, ".hivemind", "delegation"), { recursive: true })
-  mkdirSync(join(projectRoot, ".hivemind", "event-tracker"), { recursive: true })
-  writeFileSync(join(projectRoot, ".hivemind", "state", ".gitkeep"), "", "utf8")
-  writeFileSync(join(projectRoot, ".hivemind", "delegation", ".gitkeep"), "", "utf8")
-  writeFileSync(join(projectRoot, ".hivemind", "event-tracker", ".gitkeep"), "", "utf8")
+  for (const directory of TIER_1_DIRECTORIES) {
+    mkdirSync(join(projectRoot, ".hivemind", directory), { recursive: true })
+    writeFileSync(join(projectRoot, ".hivemind", directory, ".gitkeep"), "", "utf8")
+  }
   writeFileSync(join(projectRoot, ".hivemind", "configs.json"), '{"$schema":"./configs.schema.json"}\n', "utf8")
   writeFileSync(
     join(projectRoot, ".hivemind", "configs.schema.json"),
@@ -30,6 +29,8 @@ describe("doctor command", () => {
       const command = createDoctorCommand({
         resolveProjectRoot: () => projectRoot,
         resolveSdk: () => "/sdk/path",
+        runHealthCommand: () => ({ exitCode: 0 }),
+        countSourceModules: () => 42,
       })
 
       const result = await command.handler({ flags: {}, positionals: [], argv: ["doctor"] })
@@ -37,6 +38,30 @@ describe("doctor command", () => {
       expect(result.output).toContain("Hivemind Health Check")
       expect(result.output).toContain("PASS")
       expect(result.output).toContain("Verdict: ALL CHECKS PASS")
+      expect(result.output).toContain("typecheck")
+      expect(result.output).toContain("tests")
+      expect(result.output).toContain("modules")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("fails when typecheck or test health commands fail", async () => {
+    const projectRoot = createHealthyProject()
+    try {
+      const command = createDoctorCommand({
+        resolveProjectRoot: () => projectRoot,
+        resolveSdk: () => "/sdk/path",
+        runHealthCommand: (script) => ({ exitCode: script === "test" ? 1 : 0, output: `${script} output` }),
+        countSourceModules: () => 42,
+      })
+
+      const result = await command.handler({ flags: {}, positionals: [], argv: ["doctor"] })
+
+      expect(result.exitCode).toBe(1)
+      expect(result.output).toContain("tests")
+      expect(result.output).toContain("FAIL")
+      expect(result.output).toContain("test output")
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
@@ -66,6 +91,25 @@ describe("doctor command", () => {
       expect(result.exitCode).toBe(0)
       expect(result.output).toContain("Primitive scope: global")
       expect(result.output).toContain(projectRoot)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it("warns instead of failing when primitive targets are real files", async () => {
+    const projectRoot = createHealthyProject()
+    try {
+      mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring"), { recursive: true })
+      mkdirSync(join(projectRoot, ".opencode", "agents"), { recursive: true })
+      writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring", "hm-agent.md"), "---\nname: hm-agent\n---\n", "utf8")
+      writeFileSync(join(projectRoot, ".opencode", "agents", "hm-agent.md"), "real file", "utf8")
+      const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })
+
+      const result = await command.handler({ flags: { check: "symlinks" }, positionals: [], argv: ["doctor", "--check=symlinks"] })
+
+      expect(result.exitCode).toBe(0)
+      expect(result.output).toContain("WARN")
+      expect(result.output).toContain("Real files")
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }

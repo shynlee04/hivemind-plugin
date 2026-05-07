@@ -247,10 +247,7 @@ L0 (Orchestrator) → hf-l0-orchestrator (meta-builder routing)
 ### Deep Module State Layer (Q6)
 - Purpose: Internal runtime state persistence — session continuity, delegation records, execution lineage, event tracker artifacts, session journals, runtime policy configuration
 - Location: `.hivemind/`
-- Contains: 4 subdirectories
-  - `state/` — `session-continuity.json`, `delegations.json`, `config-workflows.json`
-  - `event-tracker/` — hook-driven audit artifacts
-  - `poor-prompts/` — archived poor prompt examples
+- Contains: 19 first-level bootstrap roots after BOOT-03: `state/`, `delegation/`, `event-tracker/`, `journal/`, `lineage/`, `daily-notes/`, `hm-brain/`, `hf-brain/`, `delegation-managements/`, `task-managements/`, `runtime/`, `artifacts/`, `sidecar/`, `logs/`, `poor-prompts/`, `uat/`, `manifests/`, `registries/`, and `onboarding/`.
 - Relationship: Written by `continuity.ts`, `delegation-persistence.ts`, event tracker, `session-journal.ts`; read at hydration time
 - **Q6 rule:** `.hivemind/` is canonical state root. `.opencode/` is ONLY for OpenCode primitives. One-way migration from legacy `.opencode/state/opencode-harness/`.
 

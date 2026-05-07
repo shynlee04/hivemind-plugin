@@ -48,11 +48,31 @@ export const GITKEEP_FILE = ".gitkeep" as const
 /**
  * First-level subdirectories created inside `.hivemind/` during bootstrap.
  *
- * - `state` — durable JSON persistence (continuity, delegation records)
- * - `delegation` — delegation-specific artifacts and metadata
- * - `event-tracker` — session event journals and execution lineage
+ * Includes the canonical runtime, committed config/reference, and legacy
+ * compatibility roots required by BOOT-03. Each directory receives a `.gitkeep`
+ * during bootstrap so empty surfaces are explicit and recoverable.
  */
-export const TIER_1_DIRECTORIES = ["state", "delegation", "event-tracker"] as const
+export const TIER_1_DIRECTORIES = [
+  "state",
+  "delegation",
+  "event-tracker",
+  "journal",
+  "lineage",
+  "daily-notes",
+  "hm-brain",
+  "hf-brain",
+  "delegation-managements",
+  "task-managements",
+  "runtime",
+  "artifacts",
+  "sidecar",
+  "logs",
+  "poor-prompts",
+  "uat",
+  "manifests",
+  "registries",
+  "onboarding",
+] as const
 
 // ---------------------------------------------------------------------------
 // OpenCode primitive types
@@ -74,10 +94,13 @@ export const PRIMITIVE_TYPES = ["agents", "skills", "commands"] as const
  *
  * - `structure` — validates `.hivemind/` directory tree exists
  * - `symlinks` — verifies `.hivefiver-meta-builder` symlink integrity
- * - `config` — checks `opencode.json` references and schema presence
+ * - `config` — checks config/schema presence and validation
  * - `sdk` — confirms `@opencode-ai/plugin` peer dependency is resolvable
+ * - `typecheck` — runs the package typecheck script
+ * - `tests` — runs the package test script
+ * - `modules` — reports TypeScript source module count
  */
-export const DOCTOR_CHECKS = ["structure", "symlinks", "config", "sdk"] as const
+export const DOCTOR_CHECKS = ["structure", "symlinks", "config", "sdk", "typecheck", "tests", "modules"] as const
 
 // ---------------------------------------------------------------------------
 // Default config content

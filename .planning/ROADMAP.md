@@ -91,19 +91,19 @@ Gate boundary: docs-only artifacts are L5 evidence. Runtime readiness: FAIL/BLOC
 
 ## Active Workstream: Bootstrap & Init CLI (WS-BOOT)
 
-The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It provides project initialization, state recovery, primitives restoration, health checking, and rich terminal feedback. Phase 0 governance gate PASSED. BOOT-02 implementation summaries now require BOOT-02R governance reconciliation before BOOT-03 automation resumes. The package/bin identity is `hivemind`; `opencode-harness` and `hivemind-tools` are legacy aliases only.
+The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It provides project initialization, state recovery, primitives restoration, health checking, and rich terminal feedback. Phase 0 governance gate PASSED. BOOT-02 implementation summaries were reconciled by BOOT-02R, so BOOT-03 automation may resume. The package/bin identity is `hivemind`; `opencode-harness` and `hivemind-tools` are legacy aliases only.
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
 | BOOT-01 | Dependency Audit + Architecture | ✅ COMPLETE | — | L5 research docs |
-| BOOT-02 | CLI Framework + Entry Point | 🟡 IMPLEMENTED IN WORKTREE — reconciliation active | BOOT-01 | L3: `npx hivemind --help` works; summary evidence reconciled by BOOT-02R |
-| BOOT-02R | Governance Reconciliation | 🔵 READY — docs/governance only | BOOT-02 summary evidence | L5: ROADMAP/STATE/REQUIREMENTS agree on BOOT status |
-| BOOT-03 | State Init (.hivemind/ creation) | ⬜ PENDING | BOOT-02R | L3: `npx hivemind init` creates structure |
-| BOOT-04 | Primitives Recovery (.opencode/) | ⬜ PENDING | BOOT-02 | L3: symlinks restored from `.hivefiver-meta-builder/` |
-| BOOT-05 | Config Bootstrap + Defaults | ⬜ PENDING | BOOT-02 | L3: configs.json initialized with defaults |
-| BOOT-06 | Validation + Health Check | ⬜ PENDING | BOOT-03, BOOT-04, BOOT-05 | L2: `npx hivemind doctor` PASS |
-| BOOT-07 | End-to-End Proof | ⬜ PENDING | BOOT-06 | L1: nuke `.hivemind/` + `init` → all gates pass |
-| BOOT-08 | Agent + Skill Integration | ⬜ PENDING | BOOT-07 | L5: constitution + routing contracts |
+| BOOT-02 | CLI Framework + Entry Point | ✅ COMPLETE — reconciled | BOOT-01 | L3 local verification summarized in `BOOT-02-SUMMARY.md` |
+| BOOT-02R | Governance Reconciliation | ✅ COMPLETE — docs/governance only | BOOT-02 summary evidence | L5: ROADMAP/STATE/REQUIREMENTS agree on BOOT status |
+| BOOT-03 | State Init (.hivemind/ creation) | ✅ COMPLETE | BOOT-02R | L3: `node bin/hivemind.cjs init --yes --root <temp>` creates structure |
+| BOOT-04 | Primitives Recovery (.opencode/) | ✅ COMPLETE | BOOT-02 | L3: symlinks restored from `.hivefiver-meta-builder/` |
+| BOOT-05 | Config Bootstrap + Defaults | ✅ COMPLETE | BOOT-02 | L3: configs.json initializes schema reference and runtime defaults resolve |
+| BOOT-06 | Validation + Health Check | ✅ COMPLETE | BOOT-03, BOOT-04, BOOT-05 | L2-L3: built `hivemind doctor` reports ALL CHECKS PASS |
+| BOOT-07 | End-to-End Proof | ✅ COMPLETE | BOOT-06 | L1-L3: clean temp project init/recover/doctor passed |
+| BOOT-08 | Agent + Skill Integration | 🔵 READY | BOOT-07 | L5: constitution + routing contracts |
 
 ### Shell / PTY Control-Plane Runway
 
@@ -112,7 +112,7 @@ The shell/PTY/background command lane is real and cross-cutting across `run-back
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
 | CP-PTY-00 | Shell / PTY Control-Plane Spike | 🔵 READY — docs/spec only; may run in parallel with BOOT-03..05 | BOOT-02R | L5: context, research, requirements, spec, route artifacts |
-| CP-PTY-01 | Background Shell Control-Plane MVP | ⛔ BLOCKED | CP-PTY-00, BOOT-07 unless explicitly authorized earlier | L2-L3: permission-gated command lifecycle tests; L1 preferred E2E proof |
+| CP-PTY-01 | Background Shell Control-Plane MVP | ⬜ PENDING AFTER CP-PTY-00 | CP-PTY-00, BOOT-07 | L2-L3: permission-gated command lifecycle tests; L1 preferred E2E proof |
 | SC-PTY-01 | Read-Only Terminal Projection | ⬜ DEFERRED | CP-PTY-01, Q2 sidecar decision confirmation | L2-L3: read-only projection proof |
 
 ### BOOT-01 Scope: Research & Architecture Decision
@@ -196,8 +196,8 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| MCM-01 | Agent Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-eligible agents and verifies discoverability in `.opencode/agents/` |
-| MCM-02 | Skill Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-/gate-/stack-eligible skills and verifies discoverability in `.opencode/skills/` |
+| MCM-01 | Agent Migration to .opencode/ | 🔵 READY AFTER BOOT-04 — pending BOOT cycle ordering | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-eligible agents and verifies discoverability in `.opencode/agents/` |
+| MCM-02 | Skill Migration to .opencode/ | 🔵 READY AFTER BOOT-04 — pending BOOT cycle ordering | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-/gate-/stack-eligible skills and verifies discoverability in `.opencode/skills/` |
 | MCM-03 | Config Plane Integration | ⬜ BLOCKED BY PHASE 0 | MCM-01, MCM-02, BOOT-06, Phase 0 gate | L2: doctor reports agent/skill counts, config validation includes meta-concept checks |
 | MCM-04 | End-User Customization + Ecosystem Integration | ⬜ BLOCKED BY PHASE 0 | MCM-03, Phase 0 gate | L2: end-user projects can customize shipped primitives via config, OpenCode SDK/API integration verified |
 
@@ -252,7 +252,7 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 | Wave | What | Blocks |
 |------|------|--------|
 | **Wave 0 (NOW)** | Phase 0 Governance Baseline | Blocks BOOT/MCM/f-04 until gate passes |
-| **Wave 1** | BOOT-01 Research + BOOT-02 CLI Framework + BOOT-02R Governance Reconciliation | Depends on Phase 0 gate |
+| **Wave 1** | BOOT-01 Research + BOOT-02 CLI Framework + BOOT-02R Governance Reconciliation ✅ COMPLETE | Depends on Phase 0 gate |
 | **Wave 2** | BOOT-03 State Init + BOOT-04 Primitives + BOOT-05 Config; CP-PTY-00 docs/spec spike may run in parallel | Depends on Phase 0 + Wave 1 CLI framework/reconciliation |
 | **Wave 3** | BOOT-06 Validation + BOOT-07 E2E Proof | Depends on Phase 0 + Waves 1-2 |
 | **Wave 3.5** | CP-PTY-01 Background Shell Control-Plane MVP if routing requires command lanes | Depends on CP-PTY-00 + BOOT-07 unless explicitly authorized earlier |
@@ -274,11 +274,11 @@ Rules:
 - Each cycle must have an entry gate, plan gate, execution gate, review gate, and exit gate.
 - Broad autonomy is blocked until bootstrap recovery, config-to-behavior wiring, f-04 routing, hierarchy enforcement, and E2E proof are complete.
 - Cycle 1 — Lifecycle Alignment: ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
-- Current authorized cycle: **Cycle 2 — Bootstrap Recovery + BOOT-02R reconciliation** (Phase 0 gate PASSED, BOOT-02 implementation summaries exist, status reconciliation active).
+- Current authorized cycle: **Cycle 2 — Bootstrap Recovery** (Phase 0 gate PASSED, BOOT-02 through BOOT-07 complete; BOOT-08 and CP-PTY-00 remain before downstream runtime expansion).
 - Parallel docs/spec lane: **CP-PTY-00 Shell / PTY Control-Plane Spike** (L5 only; no runtime mutation).
-- Current blocking gate: **BOOT-02R Governance Reconciliation** before BOOT-03 automation resumes.
+- Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01 or routing expansion.
 - MCM continuation pending BOOT-04 symlinks.
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
 ---
-*Last updated: 2026-05-08 after BOOT-02R + CP-PTY runway insertion*
+*Last updated: 2026-05-08 after BOOT-07 E2E proof completion*

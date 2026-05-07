@@ -1,15 +1,15 @@
 [
   {
-    "id": "7f90d6bc-7ed0-42f2-9ecd-7d0db40006d1",
+    "id": "bcae37f2-bc7f-4402-b55c-d2b405312519",
     "parentSessionId": "ses_concurrent",
     "childSessionId": "fake-ses-1",
     "agent": "researcher",
     "status": "error",
-    "createdAt": 1778107302518,
+    "createdAt": 1778190245184,
     "safetyCeilingMs": 1800000,
     "lastMessageCount": 0,
     "stablePollCount": 0,
-    "lastMessageCountChangeAt": 1778107302518,
+    "lastMessageCountChangeAt": 1778190245184,
     "nestingDepth": 1,
     "executionMode": "sdk",
     "workingDirectory": "/Users/apple/Documents/coding-projects/hivemind-plugin-1",
@@ -17,21 +17,21 @@
     "surface": "agent-delegation",
     "recoveryGuarantee": "resumable",
     "explicitCancellation": false,
-    "completedAt": 1778107302519,
+    "completedAt": 1778190245188,
     "error": "Failed to send prompt to child session",
-    "gracePeriodExpiresAt": 1778107902520
+    "gracePeriodExpiresAt": 1778190845191
   },
   {
-    "id": "86e656e6-6fcc-4772-8566-25148a60c6bb",
+    "id": "738c983a-9667-4238-8e79-0710b9d8a311",
     "parentSessionId": "ses_concurrent",
     "childSessionId": "fake-ses-2",
     "agent": "builder",
     "status": "error",
-    "createdAt": 1778107302520,
+    "createdAt": 1778190245196,
     "safetyCeilingMs": 1800000,
     "lastMessageCount": 0,
     "stablePollCount": 0,
-    "lastMessageCountChangeAt": 1778107302520,
+    "lastMessageCountChangeAt": 1778190245196,
     "nestingDepth": 1,
     "executionMode": "sdk",
     "workingDirectory": "/Users/apple/Documents/coding-projects/hivemind-plugin-1",
@@ -39,8 +39,8 @@
     "surface": "agent-delegation",
     "recoveryGuarantee": "resumable",
     "explicitCancellation": false,
-    "completedAt": 1778107302521,
+    "completedAt": 1778190245200,
     "error": "Failed to send prompt to child session",
-    "gracePeriodExpiresAt": 1778107902522
+    "gracePeriodExpiresAt": 1778190845205
   }
 ]

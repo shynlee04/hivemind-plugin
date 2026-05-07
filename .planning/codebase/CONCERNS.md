@@ -8,9 +8,9 @@
 
 ### CONCERN-C1: Primitives Bootstrap Gap — `.opencode/` + `.hivemind/` Not Git-Tracked
 
-- **Issue:** 89 agents, 123 active skill directories (plus `.gitkeep`), and 18 commands exist on disk but **zero** are tracked by git (`git ls-files .opencode/agents/` = 0). If deleted, they are permanently lost. No `postinstall` bootstrap, no `npm run build` restore, no fallback generation in `src/`.
-- **Files:** `.opencode/agents/`, `.opencode/skills/`, `.opencode/commands/`, `package.json` (no postinstall script)
-- **Evidence:** `git ls-files .opencode/agents/ | wc -l` = 0; `grep -rl "bootstrap\|init\|seed\|fallback" src/` = 0 matches. Audit: `.planning/audits/PRIMITIVES-AUDIT-2026-05-07.md` §B1-B4.
+- **Issue:** 89 agents, 123 active skill directories (plus `.gitkeep`), and 18 commands exist on disk but **zero** are tracked by git (`git ls-files .opencode/agents/` = 0). If deleted, they are permanently lost. BOOT-02 added init/recover CLI and tool surfaces, but BOOT-03 through BOOT-07 must still prove real recovery behavior end-to-end.
+- **Files:** `.opencode/agents/`, `.opencode/skills/`, `.opencode/commands/`, `src/tools/bootstrap-init.ts`, `src/tools/bootstrap-recover.ts`, `src/cli/commands/init.ts`, `src/cli/commands/recover.ts`
+- **Evidence:** BOOT-02 summary evidence exists in `.planning/phases/BOOT-02-cli-framework-entry-point/BOOT-02-SUMMARY.md`; remaining risk comes from missing BOOT-03..BOOT-07 runtime proof. Audit: `.planning/audits/PRIMITIVES-AUDIT-2026-05-07.md` §B1-B4.
 - **Impact:** `npm install hivemind` in a fresh repo ships only compiled `dist/` with **zero agents, skills, or commands** unless bootstrap/recovery is implemented. The harness core (tools, hooks, state) works but has no delegation routing, no quality gates, no slash commands. Effectively a broken install.
 - **Fix approach:**
   1. **Immediate:** classify candidate shipped primitives with MCM doctor, then git-track the approved `.opencode/agents/`, `.opencode/skills/`, and `.opencode/commands/` set.

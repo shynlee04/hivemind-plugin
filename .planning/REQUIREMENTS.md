@@ -48,7 +48,7 @@ The control layer — what exists, what is allowed, what is wired.
 
 | ID | Description | Priority | Status | Evidence |
 |----|-------------|----------|--------|----------|
-| HIVEMIND-STATE-01 | `.hivemind/` canonical directory structure | CRITICAL | PARTIAL | 19 subdirs designed, only 2 have CRUD modules |
+| HIVEMIND-STATE-01 | `.hivemind/` canonical directory structure | CRITICAL | BOOTSTRAPPED | BOOT-03 proves init creates 19 roots; typed CRUD ownership remains partial |
 | HIVEMIND-STATE-02 | `configs.json` full schema operational | CRITICAL | DELIVERED | CA-01: Zod schema with 29 fields, readConfigs()/writeConfigs() |
 | HIVEMIND-STATE-03 | File format conventions for `.hivemind/` artifacts | HIGH | PARTIAL | Conventions documented, no enforcement |
 | REGISTRY-01 | Unified primitive registry (agents/skills/commands/tools) | HIGH | PARTIAL | Individual scanners exist, no unified registry |
@@ -66,8 +66,8 @@ User-facing setup, configuration, and control surfaces.
 | ID | Description | Priority | Status | Evidence |
 |----|-------------|----------|--------|----------|
 | BOOTSTRAP-01 | npm package: `npm install hivemind` | CRITICAL | FOUNDATION | package.json configured, not yet published |
-| BOOTSTRAP-02 | `npx hivemind init` interactive setup | CRITICAL | MISSING | CLI substrate exists (Phase 40), no init command |
-| BOOTSTRAP-04 | Doctor/checkup mode for primitive health | HIGH | MISSING | validate-restart exists but no health check command |
+| BOOTSTRAP-02 | `npx hivemind init` interactive setup | CRITICAL | DELIVERED | BOOT-02 through BOOT-07 prove CLI/init, state creation, recovery, config defaults, doctor, and clean-state E2E proof |
+| BOOTSTRAP-04 | Doctor/checkup mode for primitive health | HIGH | DELIVERED | BOOT-06 proves doctor health-check PASS with structure, primitives, config, SDK, typecheck, tests, and modules |
 | SIDECAR-01 | Sidecar reads artifact JSON from `.hivemind/` and `.planning/` | MEDIUM | PARTIAL | readonly-state.ts exists |
 | SIDECAR-PTY-01 | Read-only terminal/progress projection | LOW-MEDIUM | DEFERRED | SC-PTY-01 skeleton; blocked on CP-PTY-01 and Q2 sidecar confirmation |
 | CONF-01 | Config consumer wiring | CRITICAL | PARTIAL | Phase 0 config contract maps active fields; unresolved fields must be wired or explicitly deferred |
@@ -79,8 +79,8 @@ User-facing setup, configuration, and control surfaces.
 | ID | Description | Blocked By |
 |----|-------------|------------|
 | f-04 | Auto-commands + workflow router + intent classification | Needs design from skeleton §5.2 |
-| BOOTSTRAP-02 | CLI init command for `.hivemind/` and `.opencode/` bootstrap | Blocked on f-04 (command engine needed) |
-| BOOTSTRAP-RECOVERY | Primitives bootstrap on deletion (postinstall or restore) | Blocked on BOOTSTRAP-02 |
+| BOOTSTRAP-02-RUNTIME-PROOF | CLI init command must prove `.hivemind/` and `.opencode/` bootstrap behavior end-to-end | RESOLVED by BOOT-07 |
+| BOOTSTRAP-RECOVERY | Primitives bootstrap on deletion (postinstall or restore) | RESOLVED for local CLI recovery by BOOT-04 and BOOT-07; package postinstall remains future packaging work if desired |
 | CONF-01-CONSUMERS | Config field runtime consumers | Needs Phase 0 config contract follow-through and runtime proof |
 | LIFECYCLE-GATE | gate-l3-lifecycle-integration criteria docs | Needs synthesis from ARCHITECTURE.md |
 | CPPTY-IMPLEMENTATION | Runtime shell/PTY control-plane MVP | Blocked on CP-PTY-00 + BOOT-07 unless explicitly authorized earlier |
@@ -102,4 +102,4 @@ User-facing setup, configuration, and control surfaces.
 - Phase spec: `.planning/phases/CP-PTY-00-shell-pty-control-plane-spike/SPEC-2026-05-08.md`
 - Route: `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md`
 
-*Last updated: 2026-05-08 after BOOT-02R + CP-PTY runway insertion*
+*Last updated: 2026-05-08 after BOOT-07 E2E proof completion*
