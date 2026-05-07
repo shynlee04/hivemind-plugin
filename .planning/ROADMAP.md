@@ -196,7 +196,7 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| MCM-01 | Agent Migration to .opencode/ | 🔵 READY AFTER BOOT-04 — pending BOOT cycle ordering | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-eligible agents and verifies discoverability in `.opencode/agents/` |
+| MCM-01 | Agent Migration to .opencode/ | ✅ COMPLETE | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-eligible agents and verifies discoverability in `.opencode/agents/` |
 | MCM-02 | Skill Migration to .opencode/ | 🔵 READY AFTER BOOT-04 — pending BOOT cycle ordering | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-/gate-/stack-eligible skills and verifies discoverability in `.opencode/skills/` |
 | MCM-03 | Config Plane Integration | ⬜ BLOCKED BY PHASE 0 | MCM-01, MCM-02, BOOT-06, Phase 0 gate | L2: doctor reports agent/skill counts, config validation includes meta-concept checks |
 | MCM-04 | End-User Customization + Ecosystem Integration | ⬜ BLOCKED BY PHASE 0 | MCM-03, Phase 0 gate | L2: end-user projects can customize shipped primitives via config, OpenCode SDK/API integration verified |
