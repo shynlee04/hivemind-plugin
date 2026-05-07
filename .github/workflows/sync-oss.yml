@@ -193,4 +193,6 @@ jobs:
 
       - name: Push oss-dev
         if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
-        run: git push origin oss-dev
+        run: |
+          git remote add public https://${{ secrets.PUBLIC_REPO_PAT }}@github.com/shynlee04/hivemind-plugin.git
+          git push public oss-dev:oss-dev
