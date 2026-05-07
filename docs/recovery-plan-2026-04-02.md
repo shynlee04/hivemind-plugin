@@ -5,7 +5,7 @@ Status: proposed
 Scope: recover the stalled spec/debug loop before new implementation work
 
 ## Goal
-Convert the current standalone `opencode-harness` repo from "pack-ready but spec-unsafe" into a repo with corrected forward-looking requirements, aligned user stories, and a staged path to close missing/broken feature gaps.
+Convert the current standalone `hivemind` repo from "pack-ready but spec-unsafe" into a repo with corrected forward-looking requirements, aligned user stories, and a staged path to close missing/broken feature gaps.
 
 ## Root Cause Summary
 - The previous loop failed because it optimized for validation output instead of artifact convergence.

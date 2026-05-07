@@ -19,7 +19,7 @@ import type {
 
 const CONTINUITY_VERSION = 1 as const
 const CANONICAL_STATE_DIR = resolve(process.cwd(), ".hivemind", "state")
-const LEGACY_STATE_DIR = resolve(process.cwd(), ".opencode", "state", "opencode-harness")
+const LEGACY_STATE_DIR = resolve(process.cwd(), ".opencode", "state", "hivemind")
 
 let storeCache: ContinuityStoreFile | undefined
 

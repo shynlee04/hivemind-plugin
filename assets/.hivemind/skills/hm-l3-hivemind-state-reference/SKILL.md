@@ -342,5 +342,5 @@ ConfigWorkflow = {
 ---
 
 **Canonical state root:** `.hivemind/` (Q6, locked 2026-04-25)
-**Legacy compatibility:** `.opencode/state/opencode-harness/` — migration bridge only, one-way to `.hivemind/`
+**Legacy compatibility:** `.opencode/state/hivemind/` — migration bridge only, one-way to `.hivemind/`
 **Cross-reference:** See `hm-l3-hivemind-engine-contracts` for tool registration, hook composition, and lifecycle phases that produce and consume this state.

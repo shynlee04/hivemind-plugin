@@ -67,7 +67,7 @@ src/recovery/        3 files — Recovery engine
 ### 1.2 Harness-Experiment (`/Users/apple/hivemind-plugin/.worktrees/harness-experiment/`)
 
 **Purpose**: Clean architecture prototype — the **target** for migration  
-**Package**: `opencode-harness@0.1.0` (standalone, not published)  
+**Package**: `hivemind@0.1.0` (standalone, not published)  
 **Architecture**: Clean delegation with session lifecycle management
 
 **Module breakdown** (src/):

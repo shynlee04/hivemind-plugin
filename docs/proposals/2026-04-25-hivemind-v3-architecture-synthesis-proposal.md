@@ -338,7 +338,7 @@ The soft-meta layer (`hm-coordinating-loop`, `hm-user-intent-interactive-loop`, 
 
 | Category | Purpose | Format | Location | Status |
 |----------|---------|--------|----------|--------|
-| **Configuration** | Runtime attachment, lifecycle state | JSON | `.opencode/state/opencode-harness/` | Active |
+| **Configuration** | Runtime attachment, lifecycle state | JSON | `.opencode/state/hivemind/` | Active |
 | **Session State** | Per-session stats, budgets, metadata | JSON (continuity) | `session-continuity.json` | Active |
 | **Delegation Records** | Dispatch/recovery/completion tracking | JSON | `delegations.json` | Active |
 | **Workflow State** | Config workflow turn tracking | JSON | `workflows.json` | Active |
@@ -646,7 +646,7 @@ Every concept must pass through these gates before migration:
 
 ### Additions Needed
 
-1. **REQ-SESSION-JOURNAL-01**: Session journal module — append-only event timeline per session, stored in `.opencode/state/opencode-harness/journal/`, queryable by session ID and event type. (First-big-win, Phase 16.4 D-21)
+1. **REQ-SESSION-JOURNAL-01**: Session journal module — append-only event timeline per session, stored in `.opencode/state/hivemind/journal/`, queryable by session ID and event type. (First-big-win, Phase 16.4 D-21)
 
 2. **REQ-LINEAGE-BRIDGE-01**: Execution lineage bridge — link sessions across context resets, store parent-child relationships in continuity, expose hierarchy query API. (First-big-win, Phase 16.4 D-22)
 
@@ -770,7 +770,7 @@ The following items require user confirmation before they can be locked as archi
 3. **Session journal ↔ continuity relationship** — Complement or eventual replacement
 4. **8-category memory taxonomy** — User confirmation of the categories defined in Phase 16.4
 5. **RICH gate MVP threshold** — Ship with D1-D8 only, or block until RICH evidence exists
-6. **`.hivemind/` state root timing** — When to begin migration from `.opencode/state/opencode-harness/`
+6. **`.hivemind/` state root timing** — When to begin migration from `.opencode/state/hivemind/`
 
 ---
 

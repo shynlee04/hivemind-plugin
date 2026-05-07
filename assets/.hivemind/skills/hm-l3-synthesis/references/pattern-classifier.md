@@ -149,7 +149,7 @@ For a full codebase classification:
 
 ```json
 {
-  "codebase": "opencode-harness",
+  "codebase": "hivemind",
   "generated": "2025-04-08T12:00:00Z",
   "summary": {
     "total_modules": 12,

@@ -1,6 +1,6 @@
 # Mocking Patterns — SDK, Delegation, Continuity
 
-> Specific mocking patterns for the opencode-harness test suite.
+> Specific mocking patterns for the hivemind test suite.
 
 ## Pattern 1: Mocking OpenCode SDK Calls
 

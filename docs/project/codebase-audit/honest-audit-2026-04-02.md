@@ -1,4 +1,4 @@
-# Honest Codebase Assessment: opencode-harness
+# Honest Codebase Assessment: hivemind
 
 **Date:** 2026-04-02
 

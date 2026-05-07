@@ -25,7 +25,7 @@ Current steering mechanisms exist as disconnected primitives with no standardize
 
 ### 1.2 Motivation
 
-The HiveMind V3 harness (`opencode-harness`) has identified this gap through extensive runtime operation. Five custom tools (`background`, `delegate-task`, `prompt-skim`, `prompt-analyze`, `session-patch`) and eight plugin hooks (`event`, `system.transform`, `messages.transform`, `shell.env`, `session.compacting`, `tool.execute.before`, `tool.execute.after`) provide the building blocks, but no protocol combines them into a coherent steering strategy.
+The HiveMind V3 harness (`hivemind`) has identified this gap through extensive runtime operation. Five custom tools (`background`, `delegate-task`, `prompt-skim`, `prompt-analyze`, `session-patch`) and eight plugin hooks (`event`, `system.transform`, `messages.transform`, `shell.env`, `session.compacting`, `tool.execute.before`, `tool.execute.after`) provide the building blocks, but no protocol combines them into a coherent steering strategy.
 
 ### 1.3 Current Limitations
 

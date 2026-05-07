@@ -147,7 +147,7 @@
 - [ ] Run build verification: `npm run build`
 - [ ] Perform targeted live validation in a fresh harness session:
   1. Dispatch a real async `delegate-task` with a valid agent and confirm the tool returns immediately with `mode: "async"`, `session_id`, route metadata, lifecycle snapshot, and `output_link`.
-  2. Inspect the continuity file (`.opencode/state/opencode-harness/session-continuity.json`, or the overridden path if `OPENCODE_HARNESS_CONTINUITY_FILE` is set) and verify the child record moves through `queued → running → completed` while preserving `lastObservedAt`, `lastToolActivityAt`, and `resultCapture`.
+  2. Inspect the continuity file (`.opencode/state/hivemind/session-continuity.json`, or the overridden path if `OPENCODE_HARNESS_CONTINUITY_FILE` is set) and verify the child record moves through `queued → running → completed` while preserving `lastObservedAt`, `lastToolActivityAt`, and `resultCapture`.
   3. Dispatch a second async `delegate-task` using an invalid agent name and confirm the child still launches, `effectiveAgent` is `general`, `fallbackUsed` is `true`, and the warning is persisted in continuity.
   4. Resume or reopen the parent session and confirm the parent can read the delegated result from continuity-backed notifications/recovery output without having to scrape live child messages first.
   5. Confirm the parent session still treats unresolved background delegate-task children as outstanding work and does not present the run as fully wrapped up while a child remains `queued` or `running`.

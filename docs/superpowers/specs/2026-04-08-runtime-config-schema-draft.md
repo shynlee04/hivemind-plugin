@@ -66,7 +66,7 @@ The config should describe user intent clearly enough that internal runtime code
     },
     "persistence": {
       "enabled": true,
-      "state_dir": ".opencode/state/opencode-harness",
+      "state_dir": ".opencode/state/hivemind",
       "continuity_file": "session-continuity.json"
     }
   },

@@ -12,7 +12,7 @@ Before you begin, ensure your development environment meets these requirements:
 | OpenCode | `>= 1.14.28` | `package.json` → `engines.opencode` (peer dependency) |
 | npm | `>= 10.0.0` (bundled with Node 20) | Standard Node.js distribution |
 
-The harness is a **TypeScript npm package** (`opencode-harness`). It compiles to ES2022 with NodeNext module resolution. No database, Docker, or system-level services are required.
+The harness is a **TypeScript npm package** (`hivemind`). It compiles to ES2022 with NodeNext module resolution. No database, Docker, or system-level services are required.
 
 > **Note:** This guide covers both scenarios: contributing to the harness source code, and consuming the published package in your own OpenCode project. The "Installation" and "First Run" sections address both.
 
@@ -23,8 +23,8 @@ The harness is a **TypeScript npm package** (`opencode-harness`). It compiles to
 Clone the repository and install all dependencies (production + development):
 
 ```bash
-git clone https://github.com/hivemind-plugin/opencode-harness.git
-cd opencode-harness
+git clone https://github.com/hivemind-plugin/hivemind.git
+cd hivemind
 npm install
 ```
 
@@ -33,16 +33,16 @@ npm install
 If you are consuming the published package, install it as a project dependency:
 
 ```bash
-npm install opencode-harness
+npm install hivemind
 ```
 
 The package provides three entrypoints:
 
 | Entrypoint | Import path | Purpose |
 |-----------|-------------|---------|
-| Core | `opencode-harness` | Public API — re-exports all `src/lib/` modules |
-| Plugin | `opencode-harness/plugin` | Composition root — the `HarnessControlPlane` export OpenCode loads |
-| CLI | `opencode-harness/cli` | `runCli(argv, io?)` for programmatic CLI dispatch |
+| Core | `hivemind` | Public API — re-exports all `src/lib/` modules |
+| Plugin | `hivemind/plugin` | Composition root — the `HarnessControlPlane` export OpenCode loads |
+| CLI | `hivemind/cli` | `runCli(argv, io?)` for programmatic CLI dispatch |
 
 ## First Run
 
@@ -73,7 +73,7 @@ Create or edit `opencode.json` in your project root. Add the plugin entry:
 }
 ```
 
-If you installed the published package, the plugin path is resolved via Node module resolution — OpenCode will find `opencode-harness/plugin` automatically.
+If you installed the published package, the plugin path is resolved via Node module resolution — OpenCode will find `hivemind/plugin` automatically.
 
 On the next OpenCode startup, the harness will:
 - Register 16 custom tools (`delegate-task`, `delegation-status`, `prompt-skim`, etc.)

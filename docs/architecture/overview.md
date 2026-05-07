@@ -4,7 +4,7 @@
 
 ## System Overview
 
-`opencode-harness` is a **runtime composition engine** for the OpenCode AI coding platform — delivered as an npm package. It is a TypeScript plugin that wires custom tools (write-side, CQRS command) and event hooks (read-side, CQRS query) into OpenCode's plugin system to provide delegated session orchestration, durable continuity persistence, concurrency control, dual-signal completion detection, and runtime guardrails.
+`hivemind` is a **runtime composition engine** for the OpenCode AI coding platform — delivered as an npm package. It is a TypeScript plugin that wires custom tools (write-side, CQRS command) and event hooks (read-side, CQRS query) into OpenCode's plugin system to provide delegated session orchestration, durable continuity persistence, concurrency control, dual-signal completion detection, and runtime guardrails.
 
 The system has two halves that must never be confused:
 
@@ -252,4 +252,4 @@ Six architectural decisions locked on 2026-04-25 as the foundation for current a
 | **Q5** | Full RICH gate required — 0 of 25 skills pass today is honest status; no threshold lowering |
 | **Q6** | `.hivemind/` is internal state root; `.opencode/` is ONLY for OpenCode primitives — one-way migration |
 
-<!-- VERIFY: The package is published as opencode-harness on npm — verify the latest published version at https://www.npmjs.com/package/opencode-harness -->
+<!-- VERIFY: The package is published as hivemind on npm — verify the latest published version at https://www.npmjs.com/package/hivemind -->

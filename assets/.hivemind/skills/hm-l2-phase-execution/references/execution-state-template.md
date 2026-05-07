@@ -1,6 +1,6 @@
 # Execution State Template
 
-Default root: `.opencode/state/opencode-harness/phase-execution/<phase>/`
+Default root: `.opencode/state/hivemind/phase-execution/<phase>/`
 
 Use this template for recoverable phase execution in arbitrary OpenCode projects. If the project defines a different state root, write an adapter note into the artifact.
 

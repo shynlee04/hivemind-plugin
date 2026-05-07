@@ -78,7 +78,7 @@
 
 | Feature | oh-my-openagent | harness-experiment | Gap | Importance |
 |---------|----------------|-------------------|-----|-----------|
-| Plan state persistence | Boulder state at `.sisyphus/boulder.json` — plan progress, wave state, approval gates | Continuity JSON at `.opencode/state/opencode-harness/session-continuity.json` | **Different** — boulder is plan-centric, continuity is session-centric | Important |
+| Plan state persistence | Boulder state at `.sisyphus/boulder.json` — plan progress, wave state, approval gates | Continuity JSON at `.opencode/state/hivemind/session-continuity.json` | **Different** — boulder is plan-centric, continuity is session-centric | Important |
 | Plan progress tracking | `getPlanProgress()` in boulder-state | Not present | **Missing** | Important |
 | Worktree sync | `boulder-state/worktree-sync.ts` — syncs state across worktrees | Not present | **Missing** | Nice-to-have |
 | Session state tracking | In-memory Maps + boulder.json + SQLite (session-last-agent.sqlite) | In-memory Maps (state.ts) + continuity.json | **Partial** — harness lacks SQLite, has simpler persistence | Important |
@@ -191,7 +191,7 @@ The 3 agents (researcher, builder, critic) cover basic read/write/review but lac
 - Worktree sync — cross-worktree state
 
 **harness-experiment** uses:
-- `.opencode/state/opencode-harness/session-continuity.json` — session records
+- `.opencode/state/hivemind/session-continuity.json` — session records
 - In-memory Maps — stats, budgets, delegation meta
 
 **Which is better?** Harness's approach is simpler and more focused on session continuity rather than plan state. However, it lacks:

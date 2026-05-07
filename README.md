@@ -84,9 +84,9 @@ export { HarnessControlPlane as default } from "hivemind/plugin"
 ### CLI Tools
 
 ```bash
-npx opencode-harness --help        # Show available commands
-npx opencode-harness init          # Initialize .hivemind/ state directory
-npx opencode-harness doctor        # Health check
+npx hivemind --help        # Show available commands
+npx hivemind init          # Initialize .hivemind/ state directory
+npx hivemind doctor        # Health check
 ```
 
 ---

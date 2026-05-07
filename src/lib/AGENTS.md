@@ -85,7 +85,7 @@ delegation-manager.ts → concurrency.ts + continuity.ts + delegation-persistenc
 
 ## NOTES
 
-- **Q6 State Root Migration** — All deep module persistence now writes to `.hivemind/state/` (canonical). Legacy `.opencode/state/opencode-harness/` is supported via compatibility bridge during transition. One-way migration, no dual-write.
+- **Q6 State Root Migration** — All deep module persistence now writes to `.hivemind/state/` (canonical). Legacy `.opencode/state/hivemind/` is supported via compatibility bridge during transition. One-way migration, no dual-write.
 - `routing.ts` was DELETED — agent `.md` files define temperature/model/permissions natively
 - `session-completion-tracker.ts` was DELETED — replaced by `CompletionDetector` with stability detection
 - `session-api.ts` no longer has multi-path fallback or completion detection — just typed SDK wrappers

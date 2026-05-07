@@ -57,5 +57,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Q5**: Full RICH gate — no threshold lowering
 - **Q6**: `.hivemind/` as internal state root, `.opencode/` for primitives only
 
-[Unreleased]: https://github.com/your-org/opencode-harness/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/your-org/opencode-harness/releases/tag/v0.1.0
+[Unreleased]: https://github.com/your-org/hivemind/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/your-org/hivemind/releases/tag/v0.1.0

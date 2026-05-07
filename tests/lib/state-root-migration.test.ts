@@ -66,7 +66,7 @@ describe("Q6 State Root Migration", () => {
     it("legacy path constant exists for read-only compatibility", () => {
       const legacyDir = getLegacyStateDir()
       expect(legacyDir).toContain(".opencode")
-      expect(legacyDir).toContain("opencode-harness")
+      expect(legacyDir).toContain("hivemind")
 
       // Canonical path must be different from legacy
       const canonicalDir = getCanonicalStateDir()
@@ -76,7 +76,7 @@ describe("Q6 State Root Migration", () => {
     it("source files only reference .opencode/state in backward-compat constants", () => {
       // grep for any .opencode state reference in src/ .ts files
       const result = execSync(
-        'grep -rn "\\.opencode.*state\\|opencode-harness" src/ --include="*.ts" || true',
+        'grep -rn "\\.opencode.*state" src/ --include="*.ts" || true',
         { encoding: "utf-8", cwd: PROJECT_ROOT },
       ).trim()
 
@@ -86,7 +86,7 @@ describe("Q6 State Root Migration", () => {
       // in continuity.ts (CANONICAL_STATE_DIR/LEGACY_STATE_DIR)
       const lines = result.split("\n")
       for (const line of lines) {
-        // Allow: const LEGACY_STATE_DIR = resolve(..., ".opencode", "state", "opencode-harness")
+        // Allow: const LEGACY_STATE_DIR = resolve(..., ".opencode", "state", "hivemind")
         // Allow: references to LEGACY_STATE_DIR constant
         const isLegacyConstantDef = line.includes("LEGACY_STATE_DIR") && line.includes("resolve")
         const isLegacyConstantRef = line.includes("LEGACY_STATE_DIR") || line.includes("resolveLegacyFilePath")

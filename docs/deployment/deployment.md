@@ -4,12 +4,12 @@
 
 ## Deployment Targets
 
-`opencode-harness` is an npm package — deployment means publishing to the npm registry and consuming it in an OpenCode project.
+`hivemind` is an npm package — deployment means publishing to the npm registry and consuming it in an OpenCode project.
 
 | Target | Mechanism | Config |
 |--------|-----------|--------|
 | **npm registry** | `npm publish` | `package.json` `files` field: `["dist", "bin"]` |
-| **OpenCode project** | `npm install opencode-harness` | Plugin entry in `.opencode/plugins/` |
+| **OpenCode project** | `npm install hivemind` | Plugin entry in `.opencode/plugins/` |
 | **Container / platform** | Not applicable | No `Dockerfile`, `docker-compose.yml`, `vercel.json`, `netlify.toml`, `fly.toml`, or `railway.json` present |
 
 The harness is a library and runtime plugin, not a standalone service. It runs **within** the OpenCode process — there is no server to deploy, no database to provision, and no infrastructure to manage.
@@ -29,9 +29,9 @@ Source files (`src/`), tests (`tests/`), and development configs are excluded fr
 
 | Import path | Exported file | Consumer |
 |-------------|---------------|----------|
-| `opencode-harness` | `dist/index.js` | Public API re-exports |
-| `opencode-harness/plugin` | `dist/plugin.js` | OpenCode plugin loader |
-| `opencode-harness/cli` | `dist/cli/index.js` | CLI dispatch |
+| `hivemind` | `dist/index.js` | Public API re-exports |
+| `hivemind/plugin` | `dist/plugin.js` | OpenCode plugin loader |
+| `hivemind/cli` | `dist/cli/index.js` | CLI dispatch |
 
 ## Build Pipeline
 
@@ -96,22 +96,22 @@ These workflows are community-engagement and QA automation, not build/deploy pip
 
 No environment variables are required to build or publish. The publishing process requires standard npm authentication:
 
-- An npm account with publish access to the `opencode-harness` package
+- An npm account with publish access to the `hivemind` package
 - `npm login` or a `NPM_TOKEN` configured in the publishing environment
 
 <!-- VERIFY: The npm publish token and npm registry URL are managed outside the repository. -->
 
 ### For Consumers (OpenCode Projects)
 
-After installing `opencode-harness`, the harness is loaded by OpenCode via a plugin file. See [README.md](../../README.md) and [Configuration](../configuration/settings.md) for full details.
+After installing `hivemind`, the harness is loaded by OpenCode via a plugin file. See [README.md](../../README.md) and [Configuration](../configuration/settings.md) for full details.
 
 Minimum setup:
 
-1. Install: `npm install opencode-harness`
+1. Install: `npm install hivemind`
 2. Build: `npm run build`
 3. Register in `.opencode/plugins/harness.ts`:
    ```ts
-   export { HarnessControlPlane as default } from "opencode-harness/plugin"
+   export { HarnessControlPlane as default } from "hivemind/plugin"
    ```
 
 All harness environment variables are **optional** — the system operates with sensible defaults. See [Configuration — Environment Variables](../configuration/settings.md#environment-variables) for the full list.
@@ -126,23 +126,23 @@ Since deployment means publishing to the npm registry, rolling back a release fo
 
 1. **Identify the previous stable version** from the npm registry:
    ```bash
-   npm view opencode-harness versions
+   npm view hivemind versions
    ```
 
 2. **Republish the previous version** if the current release must be fully reverted:
    ```bash
-   npm publish opencode-harness@<previous-version>
+   npm publish hivemind@<previous-version>
    ```
    Note: npm typically does not allow republishing the exact same version; this requires a version bump. For critical rollbacks, publish the previous code with an incremented patch version.
 
 3. **Deprecate the broken version** (optional but recommended):
    ```bash
-   npm deprecate opencode-harness@<broken-version> "Rolled back due to ..."
+   npm deprecate hivemind@<broken-version> "Rolled back due to ..."
    ```
 
 4. **For consumer projects**: Downgrade the installed version:
    ```bash
-   npm install opencode-harness@<previous-version>
+   npm install hivemind@<previous-version>
    ```
 
 No deployment platform rollback is needed — there are no servers, containers, or cloud infrastructure to revert.

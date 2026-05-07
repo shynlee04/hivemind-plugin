@@ -69,7 +69,7 @@ The architecture is **not a pure middleware pipeline** -- it is a **hierarchical
 | `HarnessControlPlane` (Plugin) | `plugin.ts:104` | Entry factory. Registers hooks, owns configuration constants, wires everything together. |
 | `HarnessLifecycleManager` | `lifecycle-manager.ts:114` | State machine for session lifecycle (created -> queued -> dispatching -> running -> completed/failed). Owns the concurrency queue. |
 | `DelegationConcurrencyQueue` | `concurrency.ts:36` | Semaphore per concurrency key (model/agent/category). Pending queue with FIFO release. |
-| `ContinuityStoreFile` | `continuity.ts` / `types.ts:151` | Durable JSON file store at `.opencode/state/opencode-harness/session-continuity.json`. Survives restarts. |
+| `ContinuityStoreFile` | `continuity.ts` / `types.ts:151` | Durable JSON file store at `.opencode/state/hivemind/session-continuity.json`. Survives restarts. |
 | `SessionStats` / `RootBudget` / `DelegationMeta` | `state.ts` (in-memory Maps) | Ephemeral runtime state: tool call counters, descendant budgets, delegation metadata. |
 | `EffectivePromptState` | `runtime.ts:8` | Merged view of agent/model/temperature/tools from continuity, route, delegation, or chat input. Resolution priority chain. |
 | `DelegationRouteResolution` | `routing.ts:69` / `types.ts:55` | Resolves a (category?, agent?, model?) triple into a concrete agent + model + temperature + guidance. |
@@ -167,7 +167,7 @@ The codebase uses a **dual-layer state architecture**:
 - `sessionDelegationMeta: Map<sessionID, DelegationMeta>` -- delegation metadata
 
 **Durable state (`continuity.ts`):**
-- Single JSON file at `.opencode/state/opencode-harness/session-continuity.json`
+- Single JSON file at `.opencode/state/hivemind/session-continuity.json`
 - Module-level `storeCache` variable -- lazy-loaded, cache-first
 - Deep clone on read (`cloneContinuityRecord`) to prevent mutation aliasing
 - Write-through on every mutation (`persistStore()` called in `recordSessionContinuity`, `patchSessionContinuity`, `deleteSessionContinuity`)

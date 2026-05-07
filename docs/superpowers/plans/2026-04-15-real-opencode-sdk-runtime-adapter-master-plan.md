@@ -209,7 +209,7 @@ This is the decisive truth gate. Without it, Cycles 1–2 are only plausible.
 
 **Main files/areas likely affected**
 - live harness runtime via `src/tools/delegate-task.ts`
-- continuity store under `.opencode/state/opencode-harness/`
+- continuity store under `.opencode/state/hivemind/`
 - observer/notification/recovery surfaces
 - validation docs or debug records capturing live evidence
 

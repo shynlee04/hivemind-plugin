@@ -166,9 +166,9 @@ const nextConfig: NextConfig = {
       '@': './src',
     },
   },
-  serverExternalPackages: ['opencode-harness'],
+  serverExternalPackages: ['hivemind'],
   experimental: {
-    serverComponentsExternalPackages: ['opencode-harness'],
+    serverComponentsExternalPackages: ['hivemind'],
   },
 }
 

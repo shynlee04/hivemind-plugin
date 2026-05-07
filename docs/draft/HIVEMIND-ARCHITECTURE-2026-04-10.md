@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The HiveMind harness is a **runtime composition engine** for OpenCode that enables multi-agent orchestration with session continuity, concurrency control, and durable state management. It is distributed as an npm package (`opencode-harness`) that installs into any OpenCode workspace and wires itself through a thin plugin interface.
+The HiveMind harness is a **runtime composition engine** for OpenCode that enables multi-agent orchestration with session continuity, concurrency control, and durable state management. It is distributed as an npm package (`hivemind`) that installs into any OpenCode workspace and wires itself through a thin plugin interface.
 
 The core architectural insight is that the harness operates in **two distinct halves** that must never be confused: the **Hard Harness** (the npm package — tools, hooks, plugin, and shared modules) and the **Soft Meta-Concepts** (user-configurable skills, agents, commands, and rules in `.opencode/`). The Hard Harness is stable and distributed; the Soft Meta-Concepts are customizable and live in the project workspace.
 
@@ -25,8 +25,8 @@ The fundamental architectural decision in HiveMind V3 is the strict separation b
 
 ### Hard Harness: The Engine
 
-**Location**: `src/` (compiled to `dist/` and distributed as `opencode-harness` npm package)
-**Location in OpenCode workspace**: `node_modules/opencode-harness/` after npm install
+**Location**: `src/` (compiled to `dist/` and distributed as `hivemind` npm package)
+**Location in OpenCode workspace**: `node_modules/hivemind/` after npm install
 **Peer dependency**: `@opencode-ai/plugin` >= 1.1.0
 
 The Hard Harness contains:
@@ -64,7 +64,7 @@ These are **project-local**. They live in your repository, are version-controlle
 ### Why This Separation Matters
 
 ```
-opencode-harness (npm package)        ← Stable, versioned, reusable
+hivemind (npm package)        ← Stable, versioned, reusable
     │
     ├── Tools (write-side) ──────────→ Mutate continuity store, create sessions
     └── Hooks (read-side) ──────────→ Observe events, inject session context
@@ -185,7 +185,7 @@ OpenCode runtime
 ```
 
 The plugin is configured via two optional environment variables:
-- `OPENCODE_HARNESS_STATE_DIR` — defaults to `.opencode/state/opencode-harness/`
+- `OPENCODE_HARNESS_STATE_DIR` — defaults to `.opencode/state/hivemind/`
 - `OPENCODE_HARNESS_CONTINUITY_FILE` — defaults to `session-continuity.json` within that directory
 
 ---
@@ -210,7 +210,7 @@ Warning caps are enforced at 25 per session (line 39 of `state.ts`). Root budget
 
 ### Durable JSON Layer (`src/lib/continuity.ts`)
 
-`continuity.ts` manages a single JSON file at `.opencode/state/opencode-harness/session-continuity.json`. The file schema (`ContinuityStoreFile`) holds:
+`continuity.ts` manages a single JSON file at `.opencode/state/hivemind/session-continuity.json`. The file schema (`ContinuityStoreFile`) holds:
 
 ```typescript
 type ContinuityStoreFile = {

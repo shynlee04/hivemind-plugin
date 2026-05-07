@@ -157,7 +157,7 @@
 
 ### Harness: Continuity JSON
 
-- **Continuity store** (`.opencode/state/opencode-harness/session-continuity.json`): Single JSON file with all session records
+- **Continuity store** (`.opencode/state/hivemind/session-continuity.json`): Single JSON file with all session records
 - **In-memory Maps** (`state.ts`): sessionStats, rootBudgets, sessionToRoot, sessionDelegationMeta
 - **Deep-clone-on-read**: Prevents mutation aliasing
 - **Module-level singleton** `storeCache`: Known tech debt
@@ -343,7 +343,7 @@ sendPrompt(this.options.client, childSessionID, body).catch((error: unknown) => 
 
 **OMO:** `src/features/boulder-state/worktree-sync.ts` — synchronizes boulder state across git worktrees.
 
-**Harness:** No worktree awareness. Continuity file is at `.opencode/state/opencode-harness/session-continuity.json` relative to CWD.
+**Harness:** No worktree awareness. Continuity file is at `.opencode/state/hivemind/session-continuity.json` relative to CWD.
 
 **Impact:** Running harness in a git worktree creates a separate continuity file with no connection to the main worktree.
 

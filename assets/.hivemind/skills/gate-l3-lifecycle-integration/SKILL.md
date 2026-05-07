@@ -44,7 +44,7 @@ Load this skill when:
 - Code review of files in `src/` (any subdirectory)
 - Phase audit or milestone verification touching harness modules
 - Integration check after tool/hook/delegation changes
-- Deployment readiness for `opencode-harness` npm package
+- Deployment readiness for `hivemind` npm package
 - Any workflow referencing `gate-lifecycle-integration`
 
 ## Do NOT Load

@@ -47,10 +47,10 @@ Adapted from Nanostack conductor's claim/dependency/artifact/stale-lock pattern,
 
 | State artifact | Purpose | Notes |
 |----------------|---------|-------|
-| `.opencode/state/opencode-harness/phase-execution/<phase>/claims/<plan>.json` | Records active executor, started time, wave, dependencies | Atomic creation preferred; never overwrite another active claim without stale evidence |
-| `.opencode/state/opencode-harness/phase-execution/<phase>/artifacts/<plan>.md` | Handoff summary, files changed, validations, blockers | Written before checkpoint or completion |
-| `.opencode/state/opencode-harness/phase-execution/<phase>/done/<plan>.json` | Completion marker with verification evidence | Created only after plan verification passes |
-| `.opencode/state/opencode-harness/phase-execution/<phase>/failures/<plan>.json` | Failure/blocker evidence | Blocks downstream waves until resolved |
+| `.opencode/state/hivemind/phase-execution/<phase>/claims/<plan>.json` | Records active executor, started time, wave, dependencies | Atomic creation preferred; never overwrite another active claim without stale evidence |
+| `.opencode/state/hivemind/phase-execution/<phase>/artifacts/<plan>.md` | Handoff summary, files changed, validations, blockers | Written before checkpoint or completion |
+| `.opencode/state/hivemind/phase-execution/<phase>/done/<plan>.json` | Completion marker with verification evidence | Created only after plan verification passes |
+| `.opencode/state/hivemind/phase-execution/<phase>/failures/<plan>.json` | Failure/blocker evidence | Blocks downstream waves until resolved |
 
 Do not import `.nanostack/` paths. If the end-user project has a different state root, use it and document the adapter path in the artifact.
 
@@ -137,13 +137,13 @@ Recovery order:
 
 | Source | Decision | Local adaptation |
 |--------|----------|------------------|
-| `garagon/nanostack` conductor | ADAPT | File-backed claims, dependency checks, artifacts, and stale-lock recovery mapped to `.opencode/state/opencode-harness/`. |
+| `garagon/nanostack` conductor | ADAPT | File-backed claims, dependency checks, artifacts, and stale-lock recovery mapped to `.opencode/state/hivemind/`. |
 | `github/awesome-copilot` create-implementation-plan | ADAPT | Deterministic plan identifiers and measurable validation criteria are reinforced in wave artifacts. |
 | GitHub agent skill resource model | ADAPT | State template and evals are bundled resources; SKILL.md remains the execution index. |
 
 ## Independence Notes
 
-This skill does not require GSD. For non-GSD projects, treat any directory of plan files as the phase graph and store execution state under `.opencode/state/opencode-harness/phase-execution/` unless the project provides a safer local state root.
+This skill does not require GSD. For non-GSD projects, treat any directory of plan files as the phase graph and store execution state under `.opencode/state/hivemind/phase-execution/` unless the project provides a safer local state root.
 
 ## Anti-Patterns
 

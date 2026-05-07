@@ -244,7 +244,7 @@ Sets `CI=true`, `GIT_TERMINAL_PROMPT=0`, `NO_COLOR=1`, `TERM=dumb` globally.
 
 ### 2.13 Continuity Store (continuity.ts, 639 LOC)
 
-JSON file persistence at `.opencode/state/opencode-harness/session-continuity.json` with ~300 lines of normalize functions, ~70 lines of deep-clone.
+JSON file persistence at `.opencode/state/hivemind/session-continuity.json` with ~300 lines of normalize functions, ~70 lines of deep-clone.
 
 **Already native?** OpenCode has its own session persistence.
 

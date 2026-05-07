@@ -34,7 +34,7 @@ Every tool allowance is a trust boundary. Know the matrix before opening the gat
 
 ## Overview
 
-This reference skill documents ALL tools available in the Hivemind ecosystem across three categories: native OpenCode built-in tools, Hivemind custom harness tools (from `opencode-harness` npm package), and MCP-provided external tools. It provides per-depth typical permission patterns derived from the actual 56 agent definitions in `.opencode/agents/`, and documents lineage-specific tool rules.
+This reference skill documents ALL tools available in the Hivemind ecosystem across three categories: native OpenCode built-in tools, Hivemind custom harness tools (from `hivemind` npm package), and MCP-provided external tools. It provides per-depth typical permission patterns derived from the actual 56 agent definitions in `.opencode/agents/`, and documents lineage-specific tool rules.
 
 **Purpose:** When configuring agent permissions, designing delegation boundaries, or auditing tool exposure, use this matrix to make consistent, lineage-compliant decisions.
 
@@ -80,9 +80,9 @@ These are built into every OpenCode runtime. Always available unless explicitly 
 - `doom_loop` — triggered when the same tool call repeats 3+ times with identical input. Default: `ask`.
 - `edit` covers ALL file modification tools: `edit`, `write`, `patch`, `multiedit`.
 
-### 1B. Hivemind Custom Tools (opencode-harness)
+### 1B. Hivemind Custom Tools (hivemind)
 
-These are registered by the `opencode-harness` npm package plugin. Available when the plugin is loaded in `opencode.json`.
+These are registered by the `hivemind` npm package plugin. Available when the plugin is loaded in `opencode.json`.
 
 | Tool | Source File | Category | Permissions | Description |
 |------|-----------|----------|------------|-------------|

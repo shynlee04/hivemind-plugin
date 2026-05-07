@@ -1,6 +1,6 @@
 # Testing Patterns — Harness Modules
 
-> Patterns for testing the opencode-harness (`src/lib/`, `src/tools/`).
+> Patterns for testing the hivemind (`src/lib/`, `src/tools/`).
 
 ## Project Test Structure
 

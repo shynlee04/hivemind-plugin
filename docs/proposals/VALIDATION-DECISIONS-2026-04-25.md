@@ -244,8 +244,8 @@ The RICH gate is NOT a threshold to lower. It is a quality process that is ongoi
 | Write Surface | Location | Rationale |
 |---------------|----------|-----------|
 | Session Journal | `.hivemind/journal/` | Internal deep module — must be in `.hivemind/` |
-| Continuity store | `.hivemind/state/session-continuity.json` | Migrate from `.opencode/state/opencode-harness/` |
-| Delegation records | `.hivemind/state/delegations.json` | Migrate from `.opencode/state/opencode-harness/` |
+| Continuity store | `.hivemind/state/session-continuity.json` | Migrate from `.opencode/state/hivemind/` |
+| Delegation records | `.hivemind/state/delegations.json` | Migrate from `.opencode/state/hivemind/` |
 | Future graph projections | `.hivemind/graph/` | Internal deep module |
 | Future vector memory | `.hivemind/vector/` | Internal deep module |
 | Skills (OpenCode primitives) | `.opencode/skills/` | Temporary until compiled at runtime |
@@ -254,7 +254,7 @@ The RICH gate is NOT a threshold to lower. It is a quality process that is ongoi
 
 ### Migration requirements:
 
-- **Compatibility bridge:** Existing `.opencode/state/opencode-harness/` must remain readable during transition
+- **Compatibility bridge:** Existing `.opencode/state/hivemind/` must remain readable during transition
 - **Sync direction:** `.opencode/state/` → `.hivemind/` (one-way migration, no dual-write)
 - **Category markers:** Each `.hivemind/` category declares canonical-vs-projection per D-15
 - **Writer gate:** New writers target `.hivemind/` exclusively. Migration gate for existing writers.

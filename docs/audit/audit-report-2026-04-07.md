@@ -22,7 +22,7 @@
 ### C1: Broken Package Export — `./plugin` maps to non-existent file
 - **Location:** `package.json` → `exports["./plugin"]` → `"./dist/harness/index.js"`
 - **Reality:** No `dist/harness/` directory exists. Compiled output is `dist/plugin.js`.
-- **Impact:** Any consumer importing `opencode-harness/plugin` will get a runtime MODULE_NOT_FOUND error.
+- **Impact:** Any consumer importing `hivemind/plugin` will get a runtime MODULE_NOT_FOUND error.
 - **Severity:** CRITICAL
 
 ### C2: CLI Binary points to empty directory

@@ -16,7 +16,7 @@ A multi-agent orchestration framework built on OpenCode primitives that provides
 4. **Soft-harness discovery** — Phase 0 negotiates requirements with the user before execution
 5. **Cross-dependency validation** — critic subagents review work against locked requirements
 
-The framework is distributed as a single npm package (`opencode-harness`) with internal module boundaries, a CLI, an OpenCode plugin, and a set of `.opencode/` assets (agents, commands, skills). Users install it, run `harness init`, and get a checkpoint-gated pipeline.
+The framework is distributed as a single npm package (`hivemind`) with internal module boundaries, a CLI, an OpenCode plugin, and a set of `.opencode/` assets (agents, commands, skills). Users install it, run `harness init`, and get a checkpoint-gated pipeline.
 
 ---
 
@@ -35,7 +35,7 @@ src/
 
 Plus an `assets/` directory containing `.opencode/` templates validated at build time and loaded at runtime.
 
-Single `package.json` publishes as `opencode-harness`. Internal module boundaries enforced via import rules (kernel imports nothing from plugin/cli).
+Single `package.json` publishes as `hivemind`. Internal module boundaries enforced via import rules (kernel imports nothing from plugin/cli).
 
 ### 2.2 Dependency Graph
 

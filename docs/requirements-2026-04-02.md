@@ -26,7 +26,7 @@ OpenCode Harness is a standalone control-plane package for OpenCode AI coding as
 | ARCH-003 | The system SHALL produce distributable artifacts under `dist/` via TypeScript compilation | P0 | Not Started |
 | ARCH-004 | The system SHALL expose two entry points: main (`.`) and plugin (`./plugin`) | P0 | Not Started |
 | ARCH-005 | The system SHALL require Node.js >= 20.0.0 | P0 | Not Started |
-| ARCH-006 | The system SHALL store runtime state outside of package source tree (default: `.opencode/state/opencode-harness/`) | P0 | Not Started |
+| ARCH-006 | The system SHALL store runtime state outside of package source tree (default: `.opencode/state/hivemind/`) | P0 | Not Started |
 | ARCH-007 | The system SHALL support harness-specific environment variable overrides for state paths (`OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`). These are harness-internal configuration variables, NOT platform-native environment variables | P1 | Not Started |
 
 ### 2.2 Module Architecture

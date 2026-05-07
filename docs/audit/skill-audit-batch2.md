@@ -33,7 +33,7 @@
 |-----------|------|-------------|-------|
 | `references/plugin-lifecycle.md` | Internal reference | ✅ Yes — exists at `custom-tools-dev/references/plugin-lifecycle.md` | Full lifecycle with TypeScript code examples |
 | `references/zod-patterns.md` | Internal reference | ✅ Yes — exists at `custom-tools-dev/references/zod-patterns.md` | Good/Bad examples, common patterns |
-| `@opencode-ai/plugin` | External dependency | ✅ Yes — npm package, referenced in plugin-lifecycle.md | Peer dependency of opencode-harness |
+| `@opencode-ai/plugin` | External dependency | ✅ Yes — npm package, referenced in plugin-lifecycle.md | Peer dependency of hivemind |
 | `zod` | External dependency | ✅ Yes — npm package | Standard Zod library |
 
 ### Hardcoded Paths

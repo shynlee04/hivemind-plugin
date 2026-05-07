@@ -136,7 +136,7 @@ We do NOT merge detox into harness. We **extract and clean** individual features
 - **Fix no-op stubs:** `addEvent()` and `addDiagnostic()` must write to the correct V3 file paths or be removed entirely. Decision: implement them properly in the consolidated-writer.
 - **Trim types.ts:** Extract `SessionV3`, `IndexEntry`, `SynthesisInput`, `SessionTreeNode` to separate files if >250 LOC each.
 - **Adapt to harness patterns:** Use `[Harness]` prefix on errors, deep-clone-on-read, Zod schemas for validation.
-- **Move path resolution:** Adapt `.hivemind/sessions/journey-events/` paths to harness's `.opencode/state/opencode-harness/` convention OR establish `.hivemind/` as the canonical cross-session state directory.
+- **Move path resolution:** Adapt `.hivemind/sessions/journey-events/` paths to harness's `.opencode/state/hivemind/` convention OR establish `.hivemind/` as the canonical cross-session state directory.
 
 **Dependencies:** Phase 1 complete.
 
@@ -311,7 +311,7 @@ We do NOT merge detox into harness. We **extract and clean** individual features
 
 ### Phase 7: On-Disk State & `.hivemind/` Directory (Week 4, Days 24-26)
 
-**Goal:** Establish `.hivemind/` as the canonical cross-session intelligence directory, separate from `.opencode/state/opencode-harness/` (runtime state).
+**Goal:** Establish `.hivemind/` as the canonical cross-session intelligence directory, separate from `.opencode/state/hivemind/` (runtime state).
 
 **Source:** Detox conventions + harness requirements.
 
@@ -325,10 +325,10 @@ We do NOT merge detox into harness. We **extract and clean** individual features
 
 **Refactoring Required:**
 - **Dual-state architecture:**
-  - `.opencode/state/opencode-harness/` — Runtime state (continuity.json, session-continuity.json) — managed by harness, ephemeral
+  - `.opencode/state/hivemind/` — Runtime state (continuity.json, session-continuity.json) — managed by harness, ephemeral
   - `.hivemind/` — Cross-session intelligence — durable, survives repo resets, gitignored
 - **Path resolution:** Update all path constants in `shared/paths.ts` to use `.hivemind/` for intelligence data.
-- **Migration of existing state:** If `.opencode/state/opencode-harness/` already has trajectory/workflow data, migrate it to `.hivemind/state/`.
+- **Migration of existing state:** If `.opencode/state/hivemind/` already has trajectory/workflow data, migrate it to `.hivemind/state/`.
 
 **Dependencies:** Phase 6 complete (all features that write to disk must be in place first).
 
@@ -444,7 +444,7 @@ We do NOT merge detox into harness. We **extract and clean** individual features
 
 | Directory | Purpose | Lifecycle | Managed By | Gitignored |
 |-----------|---------|-----------|------------|------------|
-| `.opencode/state/opencode-harness/` | Runtime state (continuity, session-continuity) | Ephemeral — safe to delete | `src/lib/continuity.ts` | Yes |
+| `.opencode/state/hivemind/` | Runtime state (continuity, session-continuity) | Ephemeral — safe to delete | `src/lib/continuity.ts` | Yes |
 | `.hivemind/sessions/journey-events/` | Per-session event JSON files | Durable — survives resets | `src/lib/journal/` | Yes |
 | `.hivemind/state/trajectory-ledger.json` | Active session bindings, workflow associations | Durable | `src/lib/trajectory/` | Yes |
 | `.hivemind/state/workflow-state.json` | Task states, workflow progress | Durable | `src/lib/workflow/` | Yes |
@@ -452,7 +452,7 @@ We do NOT merge detox into harness. We **extract and clean** individual features
 | `.hivemind/checkpoints/` | Recovery checkpoints | Durable | `src/lib/recovery/` | Yes |
 
 **Migration of Existing State:**
-- On first load of v3 plugin, detect if old state exists in `.opencode/state/opencode-harness/`
+- On first load of v3 plugin, detect if old state exists in `.opencode/state/hivemind/`
 - If trajectory/workflow data found, migrate to `.hivemind/state/`
 - Log migration event to journal
 - Keep `.opencode/state/` for continuity store only

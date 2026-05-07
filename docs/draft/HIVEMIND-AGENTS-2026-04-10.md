@@ -289,7 +289,7 @@ Results flow back up the chain:
 1. **Subagent** returns structured findings in a defined format (e.g., REVIEW.md, findings.md, VERIFICATION.md)
 2. **Specialist** synthesizes subagent outputs, produces a delegation artifact, updates `DelegationPacket.status`
 3. **Orchestrator** verifies the artifact against the original intent, records checkpoint in continuity, reports to human
-4. **Continuity system** persists delegation state to `.opencode/state/opencode-harness/session-continuity.json`
+4. **Continuity system** persists delegation state to `.opencode/state/hivemind/session-continuity.json`
 
 ### Checkpointing at Each Step
 
@@ -426,7 +426,7 @@ HiveMind maintains two distinct memory systems:
 
 | Layer | What It Stores | Where | Lifespan |
 |-------|---------------|-------|----------|
-| **Continuity** (state) | Delegation packets, session lifecycle, tool budgets, permission overrides | `.opencode/state/opencode-harness/session-continuity.json` | Session + resume |
+| **Continuity** (state) | Delegation packets, session lifecycle, tool budgets, permission overrides | `.opencode/state/hivemind/session-continuity.json` | Session + resume |
 | **Memory** (intelligence) | Session brain, actor registry, domain knowledge, artifact corpus | `.hivemind/state/session-context-prompt.md` + research files | Cross-session |
 
 Continuity is about **resuming work**; memory is about **getting smarter**.

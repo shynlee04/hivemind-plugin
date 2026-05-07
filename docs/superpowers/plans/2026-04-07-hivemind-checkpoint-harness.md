@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a production-ready npm package (`opencode-harness`) providing turn-based checkpoint validation, incremental skill unlocking, compaction-resilient state, soft-harness discovery, and cross-dependency validation for OpenCode multi-agent workflows.
+**Goal:** Build a production-ready npm package (`hivemind`) providing turn-based checkpoint validation, incremental skill unlocking, compaction-resilient state, soft-harness discovery, and cross-dependency validation for OpenCode multi-agent workflows.
 
 **Architecture:** Single npm package with three internal module directories (`src/kernel/`, `src/harness/`, `src/cli/`). Kernel is pure TypeScript with zero external dependencies (Zod v4 only). Harness adapts kernel to OpenCode hooks. CLI handles initialization, validation, and state management. Assets directory provides `.opencode/` templates loaded at runtime.
 
@@ -39,7 +39,7 @@
 ## File Structure
 
 ```
-opencode-harness/
+hivemind/
 ├── package.json
 ├── tsconfig.json
 ├── vitest.config.ts
@@ -158,7 +158,7 @@ Kernel tasks (2-7) must be complete before harness tasks (8-11). CLI (12) and As
 
 ```json
 {
-  "name": "opencode-harness",
+  "name": "hivemind",
   "version": "0.1.0",
   "description": "Multi-agent checkpoint orchestration framework for OpenCode",
   "type": "module",

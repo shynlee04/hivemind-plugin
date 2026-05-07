@@ -43,12 +43,12 @@ These are hard discrepancies between the codebase and the corrected requirements
 
 | ID | Requirement | Status | Evidence |
 |----|-------------|--------|----------|
-| ARCH-001 | Standalone npm package | **IMPLEMENTED** | `package.json` with name `opencode-harness`, `npm run build` produces `dist/` |
+| ARCH-001 | Standalone npm package | **IMPLEMENTED** | `package.json` with name `hivemind`, `npm run build` produces `dist/` |
 | ARCH-002 | Plugin API integration | **IMPLEMENTED** | `src/plugin.ts:103` — `async ({ client }) => { ... }` returns `{ hooks, tools }` |
 | ARCH-003 | TypeScript compilation to dist/ | **IMPLEMENTED** | Build passes, `tsconfig.json` targets `dist/` |
 | ARCH-004 | Two entry points (main + plugin) | **IMPLEMENTED** | `package.json` exports `.` → `dist/index.js` and `./plugin` → `dist/plugin.js` |
 | ARCH-005 | Node.js >= 20.0.0 | **IMPLEMENTED** | `package.json:41` — `"engines": { "node": ">=20.0.0" }` |
-| ARCH-006 | State outside package source | **IMPLEMENTED** | `continuity.ts:24` — DEFAULT_STATE_DIR = `.opencode/state/opencode-harness/` |
+| ARCH-006 | State outside package source | **IMPLEMENTED** | `continuity.ts:24` — DEFAULT_STATE_DIR = `.opencode/state/hivemind/` |
 | ARCH-007 | Environment variable overrides | **IMPLEMENTED** | `continuity.ts:28-42` — `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE` |
 
 ### 2.2 Module Architecture (MOD-001 to MOD-010)

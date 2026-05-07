@@ -557,8 +557,8 @@ On session resume after compaction:
 - [ ] Total codebase 4,000-5,000 LOC
 - [ ] No circular dependencies
 - [ ] All modules < 500 LOC
-- [ ] `import "opencode-harness"` resolves correctly
-- [ ] `import "opencode-harness/plugin"` resolves correctly
+- [ ] `import "hivemind"` resolves correctly
+- [ ] `import "hivemind/plugin"` resolves correctly
 
 ---
 

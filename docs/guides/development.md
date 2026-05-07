@@ -8,7 +8,7 @@
 
    ```bash
    git clone <repository-url>
-   cd opencode-harness
+   cd hivemind
    ```
 
 2. **Install dependencies:**
