@@ -27,14 +27,12 @@ env:
   # Explicitly sync these config files
   SYNC_FILES: >-
     package.json
-    package-lock.json
     tsconfig.json
     vitest.config.ts
     README.md
     CONTRIBUTING.md
     CHANGELOG.md
     LICENSE
-    opencode.json
 
 jobs:
   sync:
