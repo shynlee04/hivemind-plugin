@@ -253,7 +253,7 @@ HiveMind is not a framework you must conform to. It is an **open architecture** 
 
 It is designed for people who **explore** — who find the journey as valuable as the destination. HiveMind optimizes for **compounded learning**, ensuring every experiment makes future work better.
 
-Read the full philosophy: [HIVEMIND-PHILOSOPHY.md](./docs/draft/HIVEMIND-PHILOSOPHY-2026-04-10.md) · [Vietnamese version](./docs/draft/HIVEMIND-PHILOSOPHY-VI-2026-04-10.md)
+Read the full philosophy: [HIVEMIND-PHILOSOPHY.md](./docs/philosophy/HIVEMIND-PHILOSOPHY.md) · [Phiên bản Tiếng Việt](./docs/philosophy/HIVEMIND-PHILOSOPHY-VI.md)
 
 ---
 
