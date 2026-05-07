@@ -8,10 +8,10 @@
 
 ## Current Status
 
-**Active workstreams:** Bootstrap CLI (WS-BOOT) + Shell/PTY Control-Plane Runway + Meta-Concept Migration (WS-MCM) — Phase 0 governance gate PASSED
-**Current phase:** CP-PTY-00 (docs/spec spike) and MCM-01/MCM-02 (agent/skill migration) ready
-**Blocked:** No — Phase 0 gate passed, BOOT-08 complete, MCM prerequisites met  
-**Health:** 🟢 BOOT-01 through BOOT-08 all complete; CP-PTY-00 and MCM-01/MCM-02 are next
+**Active workstreams:** Bootstrap CLI (WS-BOOT) COMPLETE + Shell/PTY Control-Plane Runway (CP-PTY-00 complete) + Meta-Concept Migration (WS-MCM — MCM-01/MCM-02 complete)
+**Current phase:** MCM-03 (Config Integration) and MCM-04 (Customization) ready
+**Blocked:** No — all prerequisites met for MCM-03/MCM-04
+**Health:** 🟢 BOOT-01 through BOOT-08 all complete; CP-PTY-00 complete; MCM-01/MCM-02 complete
 **Control mode:** Managed autonomous loop — one authorized cycle at a time
 
 ## Project Reference
@@ -45,6 +45,8 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | 123 active skill directories | ✅ | Current primitive inventory excludes `.gitkeep`; lineage counts require MCM doctor proof before shipping claims |
 | 19 commands | ✅ | start-work, plan, deep-init, ultrawork, harness-doctor, etc. |
 | Agent/skill integration constitution | ✅ | BOOT-08: lineage, permissions, hierarchy, routing contracts (L5 governance) |
+| Agent migration verification | ✅ | MCM-01: 56 shipped agents (45 hm-* + 11 hf-*) classified and discoverable |
+| Skill migration verification | ✅ | MCM-02: 48 shipped skills (35 hm-* + 13 hf-*) classified and discoverable |
 
 ---
 
@@ -134,12 +136,11 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **Run CP-PTY-00** — docs/spec shell control-plane spike (artifacts exist, needs verification/completion).
-2. **Run MCM-01** — agent migration to .opencode/ (BOOT-04 symlinks + BOOT-08 constitution ready).
-3. **Run MCM-02** — skill migration to .opencode/ (BOOT-04 symlinks + BOOT-08 constitution ready).
-4. **After MCM-01/MCM-02:** Run MCM-03 (config integration) and MCM-04 (customization).
-5. **After CP-PTY-00:** Authorize or reject CP-PTY-01 runtime implementation.
-6. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation.
+1. **Run MCM-03** — config plane integration: add agent/skill count checks to doctor, wire meta-concept validation.
+2. **Run MCM-04** — end-user customization + ecosystem integration.
+3. **Run CP-PTY-01** — background shell control-plane MVP (L2-L3 runtime, now unblocked).
+4. **After MCM + CP-PTY:** Resume f-04 routing foundation.
+5. **After routing:** Resume HER-3/4/5 execution.
 
 ## Option 3 Foundation Artifacts
 
