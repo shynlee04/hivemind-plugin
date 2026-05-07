@@ -8,17 +8,17 @@
 
 ## Current Status
 
-**Active workstreams:** Phase 0 Governance Baseline; Bootstrap CLI (WS-BOOT) and Meta-Concept Migration (WS-MCM) are queued behind it  
-**Current phase:** Phase 0 — Governance Baseline  
-**Blocked:** Yes — BOOT/MCM/f-04 continuation pending Phase 0 governance gate  
-**Health:** 🟡 L5 governance baseline in progress; runtime health claims unchanged from prior evidence and not re-proven by Phase 0
+**Active workstreams:** Bootstrap CLI (WS-BOOT) — Phase 0 governance gate PASSED  
+**Current phase:** BOOT-02 (CLI Framework + Entry Point) — T01 complete, T02-T13 pending  
+**Blocked:** No — Phase 0 gate passed, BOOT-02 continuation authorized  
+**Health:** 🟢 Phase 0 governance baseline complete; runtime health claims unchanged from prior evidence
 **Control mode:** Managed autonomous loop — one authorized cycle at a time
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Phase 0 governance baseline: identity, lineage, hierarchy, source planes, config contract, meta-authoring boundary, and route/state blocking.
+**Current focus:** BOOT-02 CLI commands. Phase 0 governance baseline complete (identity, lineage, hierarchy, source planes, config contract, meta-authoring boundary).
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -42,7 +42,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | Delegation engine | ✅ | WaiterModel dispatch, dual-signal completion, PTY/SDK lanes |
 | Continuity persistence | ✅ | Deep-clone-on-read, session journal, Q6 state root migration |
 | 89 agents | ✅ | L0/L1/L2/L3 hierarchy, hm-* + hf-* lineages |
-| 124 skills | ✅ | 48/51 hm-* skills ≥6/8 RICH-8, gate-* + stack-* skills |
+| 123 active skill directories | ✅ | Current primitive inventory excludes `.gitkeep`; lineage counts require MCM doctor proof before shipping claims |
 | 19 commands | ✅ | start-work, plan, deep-init, ultrawork, harness-doctor, etc. |
 
 ---
@@ -88,44 +88,43 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 | Artifact | Status | Evidence level |
 |---|---|---|
-| `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
-| `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
-| `.planning/config/hivemind-config-contract-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
-| `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
-| `.planning/checklists/phase-0-governance-gate-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
-| `.planning/roadmap/phase-0-gsd-route-2026-05-07.md` | 🔴 ACTIVE | L5 docs/governance |
-| `.planning/ROADMAP.md` update | 🔴 ACTIVE | L5 docs/governance |
-| `.planning/STATE.md` update | 🔴 ACTIVE | L5 docs/governance |
+| `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/config/hivemind-config-contract-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/checklists/phase-0-governance-gate-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/roadmap/phase-0-gsd-route-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/ROADMAP.md` update | ✅ COMPLETE | L5 docs/governance |
+| `.planning/STATE.md` update | ✅ COMPLETE | L5 docs/governance |
 
-Runtime readiness remains blocked until later L1-L3 proof exists.
+Runtime readiness remains blocked until later L1-L3 proof exists. Phase 0 governance gate PASSED.
 
 ---
 
-## BOOT-02 Progress (Blocked Pending Phase 0 Gate)
+## BOOT-02 Progress (Phase 0 Gate Passed — Authorized)
 
 | Task | Status | File | LOC |
 |------|--------|------|-----|
 | T01 | ✅ COMPLETE | `src/lib/bootstrap-structure.ts` | 124 |
-| T02 | ⬜ BLOCKED BY PHASE 0 | `src/tools/bootstrap-init.ts` | — |
-| T03 | ⬜ BLOCKED BY PHASE 0 | `src/tools/bootstrap-recover.ts` | — |
-| T04 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/init.ts` | — |
-| T05 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/doctor.ts` | — |
-| T06 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/recover.ts` | — |
-| T07 | ⬜ BLOCKED BY PHASE 0 | `src/cli/commands/version.ts` | — |
-| T08 | ⬜ BLOCKED BY PHASE 0 | `src/cli/index.ts` (MODIFY) | — |
-| T09–T13 | ⬜ BLOCKED BY PHASE 0 | `tests/cli/commands/*.test.ts` | — |
+| T02 | ⬜ PENDING | `src/tools/bootstrap-init.ts` | — |
+| T03 | ⬜ PENDING | `src/tools/bootstrap-recover.ts` | — |
+| T04 | ⬜ PENDING | `src/cli/commands/init.ts` | — |
+| T05 | ⬜ PENDING | `src/cli/commands/doctor.ts` | — |
+| T06 | ⬜ PENDING | `src/cli/commands/recover.ts` | — |
+| T07 | ⬜ PENDING | `src/cli/commands/version.ts` | — |
+| T08 | ⬜ PENDING | `src/cli/index.ts` (MODIFY) | — |
+| T09–T13 | ⬜ PENDING | `tests/cli/commands/*.test.ts` | — |
 
 ---
 
 ## Next Actions
 
-1. **Review Phase 0 governance artifacts** — identity, source planes, config, meta-authoring, checklist, route.
-2. **Apply Phase 0 gate** — inspect `.planning/checklists/phase-0-governance-gate-2026-05-07.md` and mark PASS/FAIL/BLOCK.
-3. **If Phase 0 PASS:** Resume BOOT-02 Wave 1 — T02 + T03 (CQRS write-side tools).
-4. **If Phase 0 PASS:** Continue BOOT-02 Waves 2-4 — command handlers, registration wiring, contract tests.
-5. **If Phase 0 PASS:** Continue BOOT-03 through BOOT-07 — state init, primitives recovery, config bootstrap, validation, E2E proof.
-6. **If Phase 0 PASS and BOOT prerequisites pass:** Resume MCM-01 + MCM-02 — agent + skill migration.
-7. **If Phase 0 PASS and MCM/BOOT prerequisites pass:** Resume f-04 routing foundation.
+1. **Phase 0 PASSED** — identity, source planes, config, meta-authoring, checklist, route all complete.
+2. **Resume BOOT-02 Wave 1** — T02 + T03 (CQRS write-side tools).
+3. **Continue BOOT-02 Waves 2-4** — command handlers, registration wiring, contract tests.
+4. **Continue BOOT-03 through BOOT-07** — state init, primitives recovery, config bootstrap, validation, E2E proof.
+5. **After BOOT-04 symlinks:** Resume MCM-01 + MCM-02 — agent + skill migration.
+6. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation.
 
 ## Option 3 Foundation Artifacts
 

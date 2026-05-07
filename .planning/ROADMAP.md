@@ -13,12 +13,12 @@ Phase 0 is the current blocking gate before BOOT, MCM, and f-04 continuation. It
 
 | Phase | Title | Status | Depends On | Blocks |
 |-------|-------|--------|------------|--------|
-| P0-01 | Runtime Identity Taxonomy | 🔴 ACTIVE | Source evidence inspection | BOOT, MCM, f-04 |
-| P0-02 | Source Plane Architecture | 🔴 ACTIVE | P0-01 | BOOT, f-04, source refactors |
-| P0-03 | Config Contract | 🔴 ACTIVE | P0-01 | BOOT config, MCM config integration |
-| P0-04 | HiveFiver Meta-Authoring Architecture | 🔴 ACTIVE | P0-01 | MCM and HF command families |
-| P0-05 | Phase 0 Governance Gate | 🔴 ACTIVE | P0-01..P0-04 | All downstream continuation |
-| P0-06 | Phase 0 Route/State Update | 🔴 ACTIVE | P0-05 | BOOT/MCM/f-04 routing |
+| P0-01 | Runtime Identity Taxonomy | ✅ COMPLETE | Source evidence inspection | BOOT, MCM, f-04 |
+| P0-02 | Source Plane Architecture | ✅ COMPLETE | P0-01 | BOOT, f-04, source refactors |
+| P0-03 | Config Contract | ✅ COMPLETE | P0-01 | BOOT config, MCM config integration |
+| P0-04 | HiveFiver Meta-Authoring Architecture | ✅ COMPLETE | P0-01 | MCM and HF command families |
+| P0-05 | Phase 0 Governance Gate | ✅ COMPLETE | P0-01..P0-04 | All downstream continuation |
+| P0-06 | Phase 0 Route/State Update | ✅ COMPLETE | P0-05 | BOOT/MCM/f-04 routing |
 
 ### Phase 0 Canonical Naming
 
@@ -96,7 +96,7 @@ The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It pr
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
 | BOOT-01 | Dependency Audit + Architecture | ✅ COMPLETE | — | L5 research docs |
-| BOOT-02 | CLI Framework + Entry Point | 🔴 BLOCKED BY PHASE 0 (T01 done) | BOOT-01, Phase 0 gate | L3: `npx hivemind --help` works |
+| BOOT-02 | CLI Framework + Entry Point | 🔴 IN PROGRESS (T01 done) | BOOT-01 | L3: `npx hivemind --help` works |
 | BOOT-03 | State Init (.hivemind/ creation) | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: `npx hivemind init` creates structure |
 | BOOT-04 | Primitives Recovery (.opencode/) | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: symlinks restored from `.hivefiver-meta-builder/` |
 | BOOT-05 | Config Bootstrap + Defaults | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: configs.json initialized with defaults |
@@ -178,32 +178,32 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ### Source inventory
 
-- **Agents lab:** `.hivefiver-meta-builder/agents-lab/active/refactoring/` — 78 agent definitions (33 gsd-*, 12 hf-*, 33 hm-*). Migrate 45 non-gsd agents.
-- **Skills lab:** `.hivefiver-meta-builder/skills-lab/active/refactoring/` — 96 skill packages (47 gsd-*, 13 hf-*, 30 hm-*, 3 gate-*, 6 stack-*, 1 unprefixed). Migrate 49 non-gsd skills.
-- **Total source:** 1177 files in `.hivefiver-meta-builder/` (includes `.hivemind/`, commands-lab, plans, references-lab, research, rules subdirectories).
+- **Agents lab:** `.hivefiver-meta-builder/agents-lab/active/refactoring/` — current active inventory has 89 agent definitions. MCM doctor must classify shipped vs dev-only before migration.
+- **Skills lab:** `.hivefiver-meta-builder/skills-lab/active/refactoring/` — current active inventory has 123 skill directories, excluding `.gitkeep`. MCM doctor must classify shipped vs dev-only before migration.
+- **Total source:** `.hivefiver-meta-builder/` includes active labs plus commands-lab, plans, references-lab, research, and rules subdirectories. Exact file counts are MCM doctor evidence, not Phase 0 evidence.
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| MCM-01 | Agent Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: hm-*/hf-* agents discoverable in `.opencode/agents/` |
-| MCM-02 | Skill Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: hm-*/hf-*/gate-*/stack-* skills discoverable in `.opencode/skills/` |
+| MCM-01 | Agent Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-eligible agents and verifies discoverability in `.opencode/agents/` |
+| MCM-02 | Skill Migration to .opencode/ | ⬜ BLOCKED BY PHASE 0 | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-/gate-/stack-eligible skills and verifies discoverability in `.opencode/skills/` |
 | MCM-03 | Config Plane Integration | ⬜ BLOCKED BY PHASE 0 | MCM-01, MCM-02, BOOT-06, Phase 0 gate | L2: doctor reports agent/skill counts, config validation includes meta-concept checks |
 | MCM-04 | End-User Customization + Ecosystem Integration | ⬜ BLOCKED BY PHASE 0 | MCM-03, Phase 0 gate | L2: end-user projects can customize shipped primitives via config, OpenCode SDK/API integration verified |
 
 ### MCM-01 Scope: Agent Migration
 
-- Copy 45 non-gsd agents from `.hivefiver-meta-builder/agents-lab/active/refactoring/` to `.opencode/agents/`
-- Exclude: all `gsd-*` prefixed agents (33 files) — these are dev tooling
-- Include: `hm-l0-orchestrator.md`, `hm-l1-coordinator.md`, `hm-l2-*.md` (33 hm-* agents), `hf-l0-orchestrator.md`, `hf-l1-coordinator.md`, `hf-l2-*.md` (12 hf-* agents)
+- Classify active agent definitions from `.hivefiver-meta-builder/agents-lab/active/refactoring/` before copying or reflecting into `.opencode/agents/`
+- Exclude: all `gsd-*` prefixed agents — these are dev tooling
+- Include only hm-/hf-eligible agents after MCM doctor confirms lineage, permissions, and discoverability expectations
 - Validate each agent has correct frontmatter, tools permissions, temperature settings
-- Verify all 45 agents are discoverable by OpenCode runtime
+- Verify all migrated agents are discoverable by OpenCode runtime
 
 ### MCM-02 Scope: Skill Migration
 
-- Copy 49 non-gsd skills from `.hivefiver-meta-builder/skills-lab/active/refactoring/` to `.opencode/skills/`
-- Exclude: all `gsd-*` prefixed skills (47 packages)
-- Include: `hm-l2-*.md`, `hm-l3-*.md`, `hf-l2-*.md`, `gate-l3-*.md`, `stack-l3-*.md`, `opencode-config-workflow`
+- Classify active skill directories from `.hivefiver-meta-builder/skills-lab/active/refactoring/` before copying or reflecting into `.opencode/skills/`
+- Exclude: all `gsd-*` prefixed skills unless explicitly retained as internal developer tooling outside the shipped Hivemind primitive set
+- Include only hm-/hf-/gate-/stack-eligible skills after MCM doctor confirms lineage, trigger, and discoverability expectations
 - Validate each skill has correct SKILL.md structure, trigger phrases
-- Verify all 49 skills are discoverable by OpenCode runtime
+- Verify all migrated skills are discoverable by OpenCode runtime
 
 ### MCM-03 Scope: Config + Doctor Integration
 
@@ -261,10 +261,10 @@ Rules:
 - Each cycle must have an entry gate, plan gate, execution gate, review gate, and exit gate.
 - Broad autonomy is blocked until bootstrap recovery, config-to-behavior wiring, f-04 routing, hierarchy enforcement, and E2E proof are complete.
 - Cycle 1 — Lifecycle Alignment: ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
-- Current blocking gate: **Phase 0 — Governance Baseline**.
-- BOOT continuation is pending Phase 0 gate.
-- MCM continuation is pending Phase 0 gate.
-- Next recommended cycle after user approval: **Cycle 3 — Routing Foundation**.
+- Current authorized cycle: **Cycle 2 — Bootstrap Recovery** (Phase 0 gate PASSED, BOOT-02 T01 done).
+- Current blocking gate: **Phase 0 — Governance Baseline** (✅ COMPLETE).
+- MCM continuation pending BOOT-04 symlinks.
+- Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
 ---
-*Last updated: 2026-05-07 after Phase 0 governance baseline routing*
+*Last updated: 2026-05-07 after Phase 0 governance gate PASSED*

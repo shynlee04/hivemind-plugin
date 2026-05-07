@@ -8,14 +8,14 @@
 
 ### CONCERN-C1: Primitives Bootstrap Gap — `.opencode/` + `.hivemind/` Not Git-Tracked
 
-- **Issue:** 89 agents, 124 skills, and 18 commands exist on disk but **zero** are tracked by git (`git ls-files .opencode/agents/` = 0). If deleted, they are permanently lost. No `postinstall` bootstrap, no `npm run build` restore, no fallback generation in `src/`.
+- **Issue:** 89 agents, 123 active skill directories (plus `.gitkeep`), and 18 commands exist on disk but **zero** are tracked by git (`git ls-files .opencode/agents/` = 0). If deleted, they are permanently lost. No `postinstall` bootstrap, no `npm run build` restore, no fallback generation in `src/`.
 - **Files:** `.opencode/agents/`, `.opencode/skills/`, `.opencode/commands/`, `package.json` (no postinstall script)
 - **Evidence:** `git ls-files .opencode/agents/ | wc -l` = 0; `grep -rl "bootstrap\|init\|seed\|fallback" src/` = 0 matches. Audit: `.planning/audits/PRIMITIVES-AUDIT-2026-05-07.md` §B1-B4.
-- **Impact:** `npm install opencode-harness` in a fresh repo ships only compiled `dist/` with **zero agents, skills, or commands**. The harness core (tools, hooks, state) works but has no delegation routing, no quality gates, no slash commands. Effectively a broken install.
+- **Impact:** `npm install hivemind` in a fresh repo ships only compiled `dist/` with **zero agents, skills, or commands** unless bootstrap/recovery is implemented. The harness core (tools, hooks, state) works but has no delegation routing, no quality gates, no slash commands. Effectively a broken install.
 - **Fix approach:**
-  1. **Immediate:** `git add .opencode/agents/ .opencode/skills/ .opencode/commands/` — commit all 233 shipped primitives.
-  2. **This week:** Ship a `bin/init-primitives.ts` bootstrap script that creates the 56 shipped agents + 56 shipped skills + 18 shipped commands if missing. Add `postinstall: "node dist/bin/init-primitives.js"` to `package.json`.
-  3. **Longer term:** Separate GSD-TOOLING (65 gsd commands, 67 gsd skills, 33 gsd agents) from SHIPPED primitives to avoid packaging developer tooling for end users.
+  1. **Immediate:** classify candidate shipped primitives with MCM doctor, then git-track the approved `.opencode/agents/`, `.opencode/skills/`, and `.opencode/commands/` set.
+  2. **This week:** Ship a bootstrap/recovery path that creates the shipped agent/skill/command set after MCM doctor classifies current candidates. Add package lifecycle wiring only after Phase 0 and BOOT gates authorize it.
+  3. **Longer term:** Separate GSD-TOOLING from SHIPPED primitives using the Phase 0 lineage contract to avoid packaging developer tooling for end users.
 
 ### CONCERN-C2: `conversation_language` Config Has Partial Consumers — Not Fully Wired (D-BIND-03)
 

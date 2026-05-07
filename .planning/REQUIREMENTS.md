@@ -16,7 +16,7 @@ Features agents can explicitly call or skills can activate.
 | f-01 | NL command routing (`nl-route` tool) | HIGH | DELIVERED | `src/tools/nl-route.ts`, test coverage |
 | f-02 | Delegation dispatch (`delegate-task` tool) | HIGH | DELIVERED | `src/tools/delegate-task.ts`, `delegation-manager.ts` (450 LOC) |
 | f-03a | Agent registry with permission enforcement | HIGH | PARTIAL | 89 agent files exist, no runtime enforcement |
-| f-03b | Skill registry with consumption tracking | HIGH | PARTIAL | 124 skills, integration-contracts skill maps bindings |
+| f-03b | Skill registry with consumption tracking | HIGH | PARTIAL | 123 active skill directories plus `.gitkeep`; integration-contracts skill maps bindings |
 | f-03c | Tool registry and wiring | HIGH | PARTIAL | 16 tools in plugin.ts, no unified registry |
 | f-03e | Custom tool registry and stacking | MEDIUM | PARTIAL | Tools exist, no stacking |
 | f-03f | Hook registry and feature wiring | MEDIUM | PARTIAL | 6 hook types wired, no registry |

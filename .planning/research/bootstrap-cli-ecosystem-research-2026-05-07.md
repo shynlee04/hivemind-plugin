@@ -24,7 +24,7 @@ Research was conducted across three domains to inform the Bootstrap/Init CLI des
 - Pure renderers (help, table, JSON, error)
 - Only one command: `help`
 - Deliberately avoids commander/yargs/oclif for bin-surface security
-- CJS shim at `bin/hivemind.cjs`; `bin/hivemind-tools.cjs` is legacy alias text only
+- CJS shim at `bin/hivemind.cjs`
 
 **What the user's package.json suggests:** `commander`, `@clack/prompts`, `ink`/`react`, `@json-render/*`
 
@@ -80,11 +80,11 @@ src/cli/
     └── help.ts     # The ONLY built-in command
 
 bin/
-└── hivemind-tools.cjs  # CJS shim → dynamic import dist/cli/index.js
+└── hivemind.cjs        # CJS shim → dynamic import dist/cli/index.js
 ```
 
 **Existing capability:**
-- `npx opencode-harness help` — lists commands
+- `npx hivemind help` — lists commands after build/package linking
 - Framework-free, ~500 LOC total
 - Exit codes: 0 (success), 64 (usage), 70 (software error)
 - `[Harness]` prefix policy on all errors

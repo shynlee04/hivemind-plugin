@@ -110,7 +110,7 @@ All GSD agents are `mode: subagent`, developer-only tooling, NOT shipped. Classi
 |----------------|-------|------------|
 | **SHIPPED-WITH** | 56 (45 hm + 11 hf) | Part of the npm package's soft meta-concepts |
 | **GSD-TOOLING** | 33 | Developer-only build tools; not shipped to users |
-| **PRIMARY** | 4 (hm-l0-orchestrator, hm-l2-build, hm-l2-conductor, hm-l2-test-router; hf-l0-orchestrator) | Front-facing agents with full permission sets |
+| **PRIMARY** | 5 (hm-l0-orchestrator, hm-l2-build, hm-l2-conductor, hm-l2-test-router, hf-l0-orchestrator) | Front-facing or high-permission agents requiring extra review |
 | **ORPHANED** | 0 | All agents reference valid skills or are standalone |
 | **BROKEN** | 0 | All have valid YAML frontmatter |
 
@@ -124,11 +124,11 @@ All GSD agents are `mode: subagent`, developer-only tooling, NOT shipped. Classi
 |---------|-------|----------|-------------|----------|-------------|
 | **gate-*** | 3 | 3/3 ✅ | 3/3 | 3/3 | **0** |
 | **hm-*** | 35 | 35/35 ✅ | 33/35 | 17/35 | **0** |
-| **hf-*** | 12 | 12/12 ✅ | 11/12 | 8/12 | **0** |
+| **hf-*** | 13 | 13/13 ✅ | 12/13 | 9/13 | **0** |
 | **stack-*** | 6 | 6/6 ✅ | 6/6 | 6/6 | **0** |
-| **gsd-*** | 67 | 67/67 ✅ | 0/67 | 0/67 | **0** |
+| **gsd-*** | 65 | 65/65 ✅ | 0/65 | 0/65 | **0** |
 | **Other** | 1 | 1/1 ✅ | 0/1 | 0/1 | **0** |
-| **Total** | **124** | — | — | — | **0** |
+| **Total** | **123 active skill directories** | — | — | — | **0** |
 
 ### 2.2 hm-* Skills (35 skills)
 
@@ -170,7 +170,7 @@ All GSD agents are `mode: subagent`, developer-only tooling, NOT shipped. Classi
 | hm-l3-tech-stack-ingest | L3 | ✅ | — | Third-party repo ingestion |
 | hm-l3-tool-capability-matrix | L3 | ✅ | — | Tool permission/per-lineage rules |
 
-### 2.3 hf-* Skills (12 skills)
+### 2.3 hf-* Skills (13 skills)
 
 | Skill | references/ | scripts/ | assets/ |
 |-------|-------------|----------|---------|
@@ -200,8 +200,8 @@ All GSD agents are `mode: subagent`, developer-only tooling, NOT shipped. Classi
 
 | Classification | Count | Notes |
 |----------------|-------|-------|
-| **SHIPPED-WITH** | 56 (35 hm + 12 hf + 3 gate + 6 stack) | Part of npm package's skill set |
-| **GSD-TOOLING** | 67 | Developer-only; not shipped |
+| **SHIPPED-WITH** | 57 (35 hm + 13 hf + 3 gate + 6 stack) | Candidate shipped skill set; MCM doctor must confirm productized vs internal gate/reference boundaries |
+| **GSD-TOOLING** | 65 | Developer-only; not shipped |
 | **OTHER** | 1 (opencode-config-workflow) | Workflow configuration skill |
 | **BROKEN** | 0 | All have SKILL.md |
 
@@ -320,7 +320,7 @@ Additionally: `gsd/dev-preferences.md` (1 file in commands/gsd/ subdirectory).
 | Artifact | Reason | Impact |
 |----------|--------|--------|
 | **89 agent .md files** | NOT git-tracked; no bootstrap code in src/ | 🔴 CRITICAL — All delegation routing breaks |
-| **124 skill directories** | NOT git-tracked; no bootstrap code in src/ | 🔴 CRITICAL — All quality gates, workflows, and specialist instructions lost |
+| **123 active skill directories** | NOT git-tracked; no bootstrap code in src/ | 🔴 CRITICAL — All quality gates, workflows, and specialist instructions lost |
 | **18 command .md files** | NOT git-tracked; no bootstrap code in src/ | 🔴 CRITICAL — All slash commands stop working |
 | **.hivemind/ runtime state** | Gitignored; no backup | 🟡 Expected — runtime state is ephemeral |
 | `.hivemind/configs.json` | Deleted from working tree | 🟡 Config lost but can be regenerated |
@@ -341,7 +341,7 @@ None of these generate or initialize `.opencode/` primitives.
 | Path | Committed | Should Be | Gap |
 |------|-----------|-----------|-----|
 | `.opencode/agents/*.md` | ❌ | ✅ SHIPPED | 89 files missing |
-| `.opencode/skills/*/` | ❌ | ✅ SHIPPED | 124 directories missing |
+| `.opencode/skills/*/` | ❌ | ✅ SHIPPED | 123 active directories missing (`.gitkeep` excluded) |
 | `.opencode/commands/*.md` | ❌ | ✅ SHIPPED | 18 files missing |
 | `.opencode/rules/*.md` | ✅ | ✅ | OK |
 | `.opencode/command/gsd-*.md` | ✅ | ❌ GSD-TOOLING | Should NOT be shipped (developer-only) |
@@ -354,7 +354,7 @@ None of these generate or initialize `.opencode/` primitives.
 | # | Blocker | Severity | Evidence | Remediation |
 |---|---------|----------|----------|-------------|
 | **B1** | **89 agents not git-tracked** | 🔴 CRITICAL | `git ls-files .opencode/agents/` = 0 | `git add .opencode/agents/*.md` immediately |
-| **B2** | **124 skills not git-tracked** | 🔴 CRITICAL | `git ls-files .opencode/skills/` = 0 | `git add .opencode/skills/` immediately |
+| **B2** | **123 active skill directories not git-tracked** | 🔴 CRITICAL | `git ls-files .opencode/skills/` = 0; `.gitkeep` is not a skill package | `git add .opencode/skills/` immediately after MCM doctor classifies shipped vs dev-only packages |
 | **B3** | **18 commands not git-tracked** | 🔴 CRITICAL | `git ls-files .opencode/commands/` = 0 | `git add .opencode/commands/*.md` immediately |
 | **B4** | **No bootstrap mechanism** | 🔴 CRITICAL | Grep of `src/` for bootstrap/seed/init found nothing | Create a `bin/init-primitives.ts` or npm postinstall script |
 | **B5** | **`.gitignore` contradicts git index** | 🟡 WARNING | `.hivemind/state/` is gitignored but files are tracked | Run `git rm --cached` on stale `.hivemind/state/` files |
@@ -388,7 +388,7 @@ None of these generate or initialize `.opencode/` primitives.
    - Checks if `.opencode/agents/` exists
    - If missing, creates the default 56 shipped agents (45 hm + 11 hf)
    - Checks if `.opencode/skills/` exists
-   - If missing, creates the default 56 shipped skills
+   - If missing, creates the default shipped skill set after MCM doctor classifies the current 57 non-GSD candidate skills
    - Checks if `.opencode/commands/` exists
    - If missing, creates the default 18 shipped commands
    - Uses templates embedded in `src/` or reads from a committed `defaults/` directory
@@ -409,7 +409,7 @@ None of these generate or initialize `.opencode/` primitives.
    - Ensure `npm pack` excludes GSD-TOOLING files
    - Add `.gitignore` exceptions for shipped-only directories
 
-7. **Consider a `harness init` command** that bootstraps a new project with all required primitives.
+7. **Consider a `hivemind init` command** that bootstraps a new project with all required primitives.
 
 ---
 
@@ -418,14 +418,14 @@ None of these generate or initialize `.opencode/` primitives.
 | # | Check | Status |
 |---|-------|--------|
 | V1 | Every agent has valid YAML frontmatter | ✅ PASS (89/89) |
-| V2 | Every skill directory has SKILL.md | ✅ PASS (124/124) |
+| V2 | Every active skill directory has SKILL.md | ✅ PASS (123/123) |
 | V3 | Every command has YAML frontmatter | ✅ PASS (19/19) |
 | V4 | Agent→skill bindings are valid | ✅ PASS (integration-contracts references exist) |
 | V5 | No orphaned agents (unreferenced by any coordinator) | 🔍 NEEDS DEEPER AUDIT |
 | V6 | No orphaned skills (not loaded by any agent) | 🔍 NEEDS DEEPER AUDIT |
 | V7 | `.gitignore` matches actual tracking intent | ❌ FAIL — Contradictory state |
 | V8 | Bootstrap mechanism exists | ❌ FAIL — None found |
-| V9 | Git tracking covers all shipped primitives | ❌ FAIL — 0 of 233 shipped primitives tracked |
+| V9 | Git tracking covers all shipped primitives | ❌ FAIL — primitive shipping set requires MCM doctor classification before a stable total is claimed |
 | V10 | `.hivemind/` state separation (Q6) enforced | 🟡 FLAG — Stale tracked files remain in git index |
 
 ---
@@ -433,7 +433,7 @@ None of these generate or initialize `.opencode/` primitives.
 ## Appendix A: Files Examined
 
 - `.opencode/agents/` — 89 `.md` files (frontmatter extracted via `head -30`)
-- `.opencode/skills/` — 124 directories (structure survey via `ls` + directory checks)
+- `.opencode/skills/` — 123 active skill directories plus `.gitkeep` (structure survey via directory checks)
 - `.opencode/commands/` — 19 `.md` files (frontmatter extracted via `head -30`)
 - `.opencode/command/` — 65 GSD command files (legacy structure)
 - `.opencode/rules/` — 2 `.md` files (full read)

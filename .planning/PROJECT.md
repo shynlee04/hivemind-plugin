@@ -23,7 +23,7 @@ Hivemind is a **runtime composition engine** for OpenCode — an npm package (`h
 - ✓ 125 test files, 1767 tests, 90%+ coverage — gate-enforced
 - ✓ Delegation hierarchy: L0 → L1 → L2 → L3 agent chain with CQRS boundaries
 - ✓ Q6 state root: `.hivemind/` canonical, `.opencode/` primitives-only
-- ✓ 89 agents, 124 skills, 19 commands shipped (source in `.hivefiver-meta-builder/`)
+- ✓ 89 agents, 123 active skill directories, 19 commands tracked in the current primitive inventory (source in `.hivefiver-meta-builder/`)
 - ✓ 3 config modes: expert-advisor, hivemind-powered, free-style
 - ✓ Behavioral profile system with mode dispatch
 - ✓ 14 workflow toggles in configs.json (6 wired, 4 with @future-consumer, 4 deferred)

@@ -4,7 +4,7 @@
 **Phases covered:** BOOT-02 through BOOT-07
 **Source material:** `.planning/research/bootstrap-cli-ecosystem-research-2026-05-07.md`, `.planning/research/bootstrap-cli-grey-areas-2026-05-07.md`, `.planning/ROADMAP.md`, `src/cli/router.ts`, `src/cli/discovery.ts`, `src/cli/renderer.ts`, `src/cli/index.ts`, `src/cli/commands/help.ts`
 
-**Phase 0 supersession note:** `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` supersedes older CLI naming in this spec. Interpret `hivemind-tools` as legacy alias text and implement the canonical package/bin command as `hivemind`. Interpret `opencode-harness` as a legacy package alias unless explicitly discussing migration compatibility.
+**Phase 0 supersession note:** `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` supersedes older CLI naming in this spec. Implement the canonical package/bin command as `hivemind`. Interpret `opencode-harness` as a legacy package alias only when explicitly discussing migration compatibility.
 
 ---
 
@@ -18,7 +18,7 @@ All BOOT-02 through BOOT-07 implementations SHALL adhere to the following archit
 
 | Constraint | Requirement | Evidence Source |
 |------------|-------------|-----------------|
-| **Framework-free** | No commander, yargs, oclif, or CLI framework dependency. Custom `parseArgs()`, `createRouter()`, dispatch. | `src/cli/router.ts:6-11` |
+| **Router-owned execution** | Command execution uses the existing custom `parseArgs()`, `createRouter()`, and dispatch path. Package dependencies may include CLI libraries, but BOOT implementation must not bypass the router without a new decision. | `src/cli/router.ts:6-11` |
 | **`CliCommand` contract** | All commands conform to `{ name: string, summary: string, aliases?: string[], handler: (ctx: CliCommandContext) => Promise<CliRouterResult> }`. | `src/cli/router.ts:44-49` |
 | **`CliCommandContext`** | Handler receives `{ flags: Record<string, CliFlagValue>, positionals: string[], argv: string[] }`. | `src/cli/router.ts:29-36` |
 | **`CliRouterResult`** | Handler returns `{ exitCode: number, error?: string, output?: string }`. | `src/cli/router.ts:38-42` |
@@ -63,7 +63,7 @@ All BOOT-02 through BOOT-07 implementations SHALL adhere to the following archit
 **Condition:** WHEN a new CLI command is added to the harness THE SYSTEM SHALL register it as a `CliCommand` through the existing `discoverCommands` → `createRouter` pipeline without requiring any CLI framework dependency (commander, yargs, oclif).
 
 **Acceptance Criteria:**
-- **Given** the `buildHarnessCli()` factory in `src/cli/index.ts`, **when** `init`, `doctor`, and `recover` commands are added to the `extraCommands` array, **then** `hivemind-tools help` lists all four commands (help, init, doctor, recover) with their summaries.
+- **Given** the `buildHarnessCli()` factory in `src/cli/index.ts`, **when** `init`, `doctor`, and `recover` commands are added to the `extraCommands` array, **then** `hivemind help` lists all four commands (help, init, doctor, recover) with their summaries.
 - **Given** any of the new commands, **when** its handler throws an uncaught error, **then** the router returns exit code 70 with a `[Harness]`-prefixed error message.
 
 **Verification Method:** Unit test: `buildHarnessCli([initCmd, doctorCmd, recoverCmd]).commands()` returns 4 commands.
@@ -76,13 +76,13 @@ All BOOT-02 through BOOT-07 implementations SHALL adhere to the following archit
 
 > **Source:** `.planning/ROADMAP.md:87-89` (BOOT-03 scope), Decision D2 (2C) — CI-aware interactive
 
-**Condition:** The `hivemind-tools init` command SHALL conform to the `CliCommand` contract with name `"init"`, summary `"Initialize Hivemind project structure"`, and accept flags `--yes`/`-y` (skip interactive prompts) and `--root=<path>` (explicit project root).
+**Condition:** The `hivemind init` command SHALL conform to the `CliCommand` contract with name `"init"`, summary `"Initialize Hivemind project structure"`, and accept flags `--yes`/`-y` (skip interactive prompts) and `--root=<path>` (explicit project root).
 
 **Acceptance Criteria:**
-- **Given** a project directory without `.hivemind/`, **when** `hivemind-tools init --yes` is run, **then** the command returns exit code 0 and creates the Tier 1 directory structure.
-- **Given** a project directory with an existing `.hivemind/`, **when** `hivemind-tools init --yes` is run, **then** the command returns exit code 0 with output reporting "already initialized" for each existing directory.
+- **Given** a project directory without `.hivemind/`, **when** `hivemind init --yes` is run, **then** the command returns exit code 0 and creates the Tier 1 directory structure.
+- **Given** a project directory with an existing `.hivemind/`, **when** `hivemind init --yes` is run, **then** the command returns exit code 0 with output reporting "already initialized" for each existing directory.
 
-**Verification Method:** Unit test: `initHandler({ flags: { yes: true }, positionals: [], argv: ["init", "--yes"] })` → `{ exitCode: 0 }`. Integration test: run `hivemind-tools init --yes` in a test project, verify `.hivemind/state/.gitkeep` exists.
+**Verification Method:** Unit test: `initHandler({ flags: { yes: true }, positionals: [], argv: ["init", "--yes"] })` → `{ exitCode: 0 }`. Integration test: run `hivemind init --yes` in a test project, verify `.hivemind/state/.gitkeep` exists.
 
 ---
 
@@ -93,7 +93,7 @@ All BOOT-02 through BOOT-07 implementations SHALL adhere to the following archit
 **Condition:** WHEN `process.stdout.isTTY` is `true` and no `--yes`/`-y` flag is provided THE `init` command SHALL load `@clack/prompts` lazily and present an interactive wizard flow that (a) asks for project name / confirmation, (b) confirms the discovered project root path, and (c) displays a summary of what will be created before proceeding.
 
 **Acceptance Criteria:**
-- **Given** a TTY environment without `--yes`, **when** `hivemind-tools init` is run, **then** `@clack/prompts` is dynamically imported (lazy-loaded, not required at module level).
+- **Given** a TTY environment without `--yes`, **when** `hivemind init` is run, **then** `@clack/prompts` is dynamically imported (lazy-loaded, not required at module level).
 - **Given** the wizard flow, **when** the user confirms, **then** directories are created and a success summary is displayed.
 - **Given** the wizard flow, **when** the user cancels (Ctrl+C or declines), **then** no directories are created and exit code 0 is returned.
 
@@ -108,10 +108,10 @@ All BOOT-02 through BOOT-07 implementations SHALL adhere to the following archit
 **Condition:** WHEN `process.stdout.isTTY` is `false` OR the `--yes`/`-y` flag is provided THE `init` command SHALL execute silently, reporting only errors to stderr and returning exit code 0 on success. No interactive prompts SHALL be attempted.
 
 **Acceptance Criteria:**
-- **Given** a non-TTY environment (CI), **when** `hivemind-tools init` is run, **then** the command completes without attempting to load `@clack/prompts` and exits with code 0.
-- **Given** `--yes` flag, **when** `hivemind-tools init --yes --root=/some/path` is run, **then** the explicit `--root` path is used instead of auto-discovery.
+- **Given** a non-TTY environment (CI), **when** `hivemind init` is run, **then** the command completes without attempting to load `@clack/prompts` and exits with code 0.
+- **Given** `--yes` flag, **when** `hivemind init --yes --root=/some/path` is run, **then** the explicit `--root` path is used instead of auto-discovery.
 
-**Verification Method:** Unit test: mock `process.stdout.isTTY = false`, verify handler never calls dynamic import of `@clack/prompts`. `CI=true hivemind-tools init` → exit code 0, no interactive output.
+**Verification Method:** Unit test: mock `process.stdout.isTTY = false`, verify handler never calls dynamic import of `@clack/prompts`. `CI=true hivemind init` → exit code 0, no interactive output.
 
 ---
 
@@ -121,12 +121,12 @@ All BOOT-02 through BOOT-07 implementations SHALL adhere to the following archit
 
 > **Source:** `.planning/ROADMAP.md:104-108` (BOOT-06 scope), Decision D6 — P0 checks
 
-**Condition:** The `hivemind-tools doctor` command SHALL conform to the `CliCommand` contract with name `"doctor"`, summary `"Run Hivemind health checks"`, accept a `--check=<name>` flag for individual check execution, and return exit code equal to the count of FAIL verdicts.
+**Condition:** The `hivemind doctor` command SHALL conform to the `CliCommand` contract with name `"doctor"`, summary `"Run Hivemind health checks"`, accept a `--check=<name>` flag for individual check execution, and return exit code equal to the count of FAIL verdicts.
 
 **Acceptance Criteria:**
-- **Given** a healthy project, **when** `hivemind-tools doctor` is run, **then** the command returns exit code 0 with output containing "ALL CHECKS PASS".
-- **Given** a project with broken symlinks, **when** `hivemind-tools doctor` is run, **then** the command returns exit code ≥ 1 with output showing "FAIL" for symlink health.
-- **Given** `--check=structure` flag, **when** `hivemind-tools doctor --check=structure` is run, **then** only the structure check is executed.
+- **Given** a healthy project, **when** `hivemind doctor` is run, **then** the command returns exit code 0 with output containing "ALL CHECKS PASS".
+- **Given** a project with broken symlinks, **when** `hivemind doctor` is run, **then** the command returns exit code ≥ 1 with output showing "FAIL" for symlink health.
+- **Given** `--check=structure` flag, **when** `hivemind doctor --check=structure` is run, **then** only the structure check is executed.
 
 **Verification Method:** Unit test for each check function. Integration test: modify `.hivemind/` to break a check, verify doctor returns non-zero exit.
 
@@ -152,8 +152,8 @@ Verdict: ALL CHECKS PASS
 ```
 
 **Acceptance Criteria:**
-- **Given** all checks pass, **when** `hivemind-tools doctor` runs, **then** output exactly matches the format above with the correct SDK version.
-- **Given** one check fails, **when** `hivemind-tools doctor` runs, **then** "PASS" is replaced with "FAIL" for that line and "ALL CHECKS PASS" is replaced with "N CHECKS FAILED".
+- **Given** all checks pass, **when** `hivemind doctor` runs, **then** output exactly matches the format above with the correct SDK version.
+- **Given** one check fails, **when** `hivemind doctor` runs, **then** "PASS" is replaced with "FAIL" for that line and "ALL CHECKS PASS" is replaced with "N CHECKS FAILED".
 - Each check line MUST be independently verifiable by parsing the output.
 
 **Verification Method:** Unit test: capture output string, validate format with regex. Integration: run doctor on clean project, assert output matches expected template.
@@ -166,12 +166,12 @@ Verdict: ALL CHECKS PASS
 
 > **Source:** Decision D4 (4C), `.planning/ROADMAP.md:93-96` (BOOT-04 scope)
 
-**Condition:** The `hivemind-tools recover` command SHALL conform to the `CliCommand` contract with name `"recover"`, summary `"Restore .opencode/ symlinks from .hivefiver-meta-builder/"`, and accept no required arguments. It SHALL walk `.hivefiver-meta-builder/agents/`, `skills/`, and `commands/` directories and create corresponding symlinks in `.opencode/` for any missing or broken entries.
+**Condition:** The `hivemind recover` command SHALL conform to the `CliCommand` contract with name `"recover"`, summary `"Restore .opencode/ symlinks from .hivefiver-meta-builder/"`, and accept no required arguments. It SHALL walk `.hivefiver-meta-builder/agents/`, `skills/`, and `commands/` directories and create corresponding symlinks in `.opencode/` for any missing or broken entries.
 
 **Acceptance Criteria:**
-- **Given** a project where `.opencode/agents/` symlinks are missing, **when** `hivemind-tools recover` is run, **then** the missing symlinks are created pointing to the correct `.hivefiver-meta-builder/agents/` targets.
-- **Given** a project where all symlinks are healthy, **when** `hivemind-tools recover` is run, **then** the command reports "all symlinks OK" and returns exit code 0.
-- **Given** existing real files (not symlinks) in `.opencode/`, **when** `hivemind-tools recover` attempts to create a symlink at that path, **then** the existing file SHALL NOT be overwritten — a warning SHALL be reported instead.
+- **Given** a project where `.opencode/agents/` symlinks are missing, **when** `hivemind recover` is run, **then** the missing symlinks are created pointing to the correct `.hivefiver-meta-builder/agents/` targets.
+- **Given** a project where all symlinks are healthy, **when** `hivemind recover` is run, **then** the command reports "all symlinks OK" and returns exit code 0.
+- **Given** existing real files (not symlinks) in `.opencode/`, **when** `hivemind recover` attempts to create a symlink at that path, **then** the existing file SHALL NOT be overwritten — a warning SHALL be reported instead.
 
 **Verification Method:** Unit test: mock filesystem, verify symlink creation logic. Integration test: remove a symlink, run recover, verify symlink restored with correct target.
 
@@ -184,8 +184,8 @@ Verdict: ALL CHECKS PASS
 **Condition:** WHEN `recover` encounters an existing filesystem entry (file or directory) at a path where it would create a symlink THE SYSTEM SHALL NOT overwrite, delete, or modify the existing entry. A warning SHALL be emitted identifying the path and the conflict.
 
 **Acceptance Criteria:**
-- **Given** a real file at `.opencode/agents/hm-writer.md`, **when** `hivemind-tools recover` runs, **then** the file remains unmodified and a warning is printed: "WARN: .opencode/agents/hm-writer.md exists as a file, skipping symlink creation".
-- **Given** an existing correct symlink, **when** `hivemind-tools recover` runs, **then** the symlink is left untouched and counts as "OK".
+- **Given** a real file at `.opencode/agents/hm-writer.md`, **when** `hivemind recover` runs, **then** the file remains unmodified and a warning is printed: "WARN: .opencode/agents/hm-writer.md exists as a file, skipping symlink creation".
+- **Given** an existing correct symlink, **when** `hivemind recover` runs, **then** the symlink is left untouched and counts as "OK".
 
 **Verification Method:** Unit test: create dummy file at expected symlink path, verify recover handler returns warning in output and does not call `fs.symlink()` for that entry.
 
@@ -197,13 +197,13 @@ Verdict: ALL CHECKS PASS
 
 > **Source:** Task packet specification
 
-**Condition:** WHEN `hivemind-tools --version` is invoked (as an alias for a command or as a recognized flag) THE SYSTEM SHALL print the version string from `package.json` and exit with code 0.
+**Condition:** WHEN `hivemind --version` is invoked (as an alias for a command or as a recognized flag) THE SYSTEM SHALL print the version string from `package.json` and exit with code 0.
 
 **Acceptance Criteria:**
-- **Given** `hivemind-tools --version` is run, **then** output is exactly the version string (e.g., `1.0.0`) with exit code 0.
+- **Given** `hivemind --version` is run, **then** output is exactly the version string (e.g., `1.0.0`) with exit code 0.
 - The version SHALL be read from `package.json` at runtime, not hardcoded in the source.
 
-**Verification Method:** Unit test: verify handler reads `package.json` version. Integration test: `hivemind-tools --version` → prints version, exit 0.
+**Verification Method:** Unit test: verify handler reads `package.json` version. Integration test: `hivemind --version` → prints version, exit 0.
 
 ---
 
@@ -213,10 +213,10 @@ Verdict: ALL CHECKS PASS
 
 > **Source:** `src/cli/commands/help.ts:1-34` (existing implementation)
 
-**Condition:** WHEN `hivemind-tools help` is invoked THE SYSTEM SHALL list all registered CLI commands including `init`, `doctor`, `recover`, and `help` itself, with their summaries and alias hints.
+**Condition:** WHEN `hivemind help` is invoked THE SYSTEM SHALL list all registered CLI commands including `init`, `doctor`, `recover`, and `help` itself, with their summaries and alias hints.
 
 **Acceptance Criteria:**
-- **Given** all BOOT-02 commands are registered, **when** `hivemind-tools help` is run, **then** output includes `init`, `doctor`, `recover`, and `help` with correct summaries.
+- **Given** all BOOT-02 commands are registered, **when** `hivemind help` is run, **then** output includes `init`, `doctor`, `recover`, and `help` with correct summaries.
 - `help` aliases `--help` and `-h` SHALL continue to work.
 
 **Verification Method:** Unit test: `buildHarnessCli([initCmd, doctorCmd, recoverCmd]).run(["help"])` → output contains all four command names.
@@ -228,8 +228,8 @@ Verdict: ALL CHECKS PASS
 | Scenario | Exit Code | Category |
 |----------|-----------|----------|
 | Command succeeds | `0` | Success |
-| Unknown command (`hivemind-tools bogus`) | `64` | Usage error |
-| `hivemind-tools` (no command) | `64` | Usage error |
+| Unknown command (`hivemind bogus`) | `64` | Usage error |
+| `hivemind` (no command) | `64` | Usage error |
 | Handler throws uncaught error | `70` | Software error |
 | `dist/cli/index.js` missing | `70` | Software error |
 | Doctor: some checks fail | `N` (count of failures) | Diagnostic |
@@ -242,7 +242,7 @@ Verdict: ALL CHECKS PASS
 
 > **Source:** Decision D3 (3C), `.planning/research/bootstrap-cli-grey-areas-2026-05-07.md:38-40`
 
-**Condition:** WHEN `hivemind-tools init` executes successfully THE SYSTEM SHALL create the following directories under the project root's `.hivemind/`:
+**Condition:** WHEN `hivemind init` executes successfully THE SYSTEM SHALL create the following directories under the project root's `.hivemind/`:
 - `.hivemind/state/`
 - `.hivemind/delegation/`
 - `.hivemind/event-tracker/`
@@ -253,7 +253,7 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 - **Given** a clean project, **when** `init --yes` runs, **then** `.hivemind/state/.gitkeep`, `.hivemind/delegation/.gitkeep`, and `.hivemind/event-tracker/.gitkeep` all exist.
 - **Given** no `.hivemind/` parent, **when** `init --yes` runs, **then** `.hivemind/` itself is created first, then subdirectories.
 
-**Verification Method:** Integration test: `rm -rf .hivemind && hivemind-tools init --yes` → assert `fs.existsSync()` for all three `.gitkeep` paths.
+**Verification Method:** Integration test: `rm -rf .hivemind && hivemind init --yes` → assert `fs.existsSync()` for all three `.gitkeep` paths.
 
 ---
 
@@ -261,7 +261,7 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 
 > **Source:** `.planning/research/bootstrap-cli-ecosystem-research-2026-05-07.md:119` (DCP `createDefaultConfig()` pattern), Decision D3 (3C)
 
-**Condition:** WHEN `hivemind-tools init` is run and `.hivemind/` already exists with any content THE SYSTEM SHALL NOT overwrite, delete, or modify existing files or directories. The command SHALL report the status of each expected path: "created" if newly created, "exists" if already present.
+**Condition:** WHEN `hivemind init` is run and `.hivemind/` already exists with any content THE SYSTEM SHALL NOT overwrite, delete, or modify existing files or directories. The command SHALL report the status of each expected path: "created" if newly created, "exists" if already present.
 
 **Acceptance Criteria:**
 - **Given** `.hivemind/state/` already exists with custom files, **when** `init --yes` runs, **then** the custom files are untouched and output shows "exists: .hivemind/state/".
@@ -275,7 +275,7 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 
 > **Source:** `.planning/research/bootstrap-cli-ecosystem-research-2026-05-07.md:39` (DCP `findOpencodeDir()` pattern)
 
-**Condition:** WHEN `hivemind-tools init` is called without `--root=<path>` THE SYSTEM SHALL discover the project root by walking up from `process.cwd()`, looking for a `package.json` or existing `.hivemind/` directory. If no project root is found within the filesystem root, the command SHALL exit with code 64 and a `[Harness]`-prefixed error message.
+**Condition:** WHEN `hivemind init` is called without `--root=<path>` THE SYSTEM SHALL discover the project root by walking up from `process.cwd()`, looking for a `package.json` or existing `.hivemind/` directory. If no project root is found within the filesystem root, the command SHALL exit with code 64 and a `[Harness]`-prefixed error message.
 
 **Acceptance Criteria:**
 - **Given** `cwd = /project/subdir` and `/project/package.json` exists, **when** `init` runs, **then** `.hivemind/` is created at `/project/.hivemind/`.
@@ -306,7 +306,7 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 
 > **Source:** Decision D4 (4C), `.planning/ROADMAP.md:93-96`
 
-**Condition:** WHEN `hivemind-tools init` runs (first-time initialization) THE SYSTEM SHALL walk `.hivefiver-meta-builder/agents/`, `.hivefiver-meta-builder/skills/`, and `.hivefiver-meta-builder/commands/`, and create corresponding symlinks in `.opencode/agents/`, `.opencode/skills/`, and `.opencode/commands/` respectively. Each symlink SHALL point from `.opencode/<type>/<name>` → `../.hivefiver-meta-builder/<type>/<name>` using relative paths.
+**Condition:** WHEN `hivemind init` runs (first-time initialization) THE SYSTEM SHALL walk `.hivefiver-meta-builder/agents/`, `.hivefiver-meta-builder/skills/`, and `.hivefiver-meta-builder/commands/`, and create corresponding symlinks in `.opencode/agents/`, `.opencode/skills/`, and `.opencode/commands/` respectively. Each symlink SHALL point from `.opencode/<type>/<name>` → `../.hivefiver-meta-builder/<type>/<name>` using relative paths.
 
 **Acceptance Criteria:**
 - **Given** `.hivefiver-meta-builder/agents/hm-writer.md` exists, **when** `init --yes` runs, **then** `.opencode/agents/hm-writer.md` is a symlink resolving to `../.hivefiver-meta-builder/agents/hm-writer.md`.
@@ -321,7 +321,7 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 
 > **Source:** Decision D4 (4C)
 
-**Condition:** WHEN `hivemind-tools recover` is run THE SYSTEM SHALL compare expected symlinks (derived from `.hivefiver-meta-builder/` contents) against actual `.opencode/` entries and SHALL:
+**Condition:** WHEN `hivemind recover` is run THE SYSTEM SHALL compare expected symlinks (derived from `.hivefiver-meta-builder/` contents) against actual `.opencode/` entries and SHALL:
 - Create missing symlinks.
 - Replace broken symlinks (target does not exist) with correct symlinks.
 - Leave correct symlinks untouched.
@@ -340,7 +340,7 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 
 > **Source:** Decision D4 (4C), Decision D6 — P0 check
 
-**Condition:** WHEN `hivemind-tools doctor` runs the symlink health check THE SYSTEM SHALL:
+**Condition:** WHEN `hivemind doctor` runs the symlink health check THE SYSTEM SHALL:
 - Walk `.hivefiver-meta-builder/agents/`, `skills/`, `commands/`.
 - For each expected primitive, check whether the corresponding `.opencode/` entry exists, is a symlink, and resolves to the correct target.
 - Report status as `OK`, `BROKEN` (symlink exists but target missing or wrong), or `MISSING`.
@@ -363,8 +363,8 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 
 **Acceptance Criteria:**
 - **Given** `init` was run without symlink creation (e.g., symlink step skipped due to error), **when** `recover` is run subsequently, **then** symlinks are created.
-- `hivemind-tools recover` SHALL be invocable independently — not only as a sub-step of `init`.
-- `hivemind-tools doctor` SHALL NOT trigger recovery automatically.
+- `hivemind recover` SHALL be invocable independently — not only as a sub-step of `init`.
+- `hivemind doctor` SHALL NOT trigger recovery automatically.
 
 **Verification Method:** Unit test: verify `recover` handler can run without `init` having run first (only requires `.hivefiver-meta-builder/` to exist).
 
@@ -376,7 +376,7 @@ Each directory SHALL contain a `.gitkeep` file to ensure git tracking of the str
 
 > **Source:** Decision D5 (5A), `.planning/research/bootstrap-cli-ecosystem-research-2026-05-07.md:36-37` (DCP `createDefaultConfig()` pattern)
 
-**Condition:** WHEN `hivemind-tools init` runs and `.hivemind/configs.json` does not exist THE SYSTEM SHALL create the file with the following minimal content:
+**Condition:** WHEN `hivemind init` runs and `.hivemind/configs.json` does not exist THE SYSTEM SHALL create the file with the following minimal content:
 
 ```json
 { "$schema": "./configs.schema.json" }
@@ -410,7 +410,7 @@ All other configuration fields SHALL be resolved at runtime from the Zod schema 
 
 > **Source:** Decision D6 — P0 check, `src/schema-kernel/hivemind-configs.schema.ts`
 
-**Condition:** WHEN `hivemind-tools doctor` runs the config validity check THE SYSTEM SHALL:
+**Condition:** WHEN `hivemind doctor` runs the config validity check THE SYSTEM SHALL:
 - Read `.hivemind/configs.json`.
 - Parse it against the Zod schema from `src/schema-kernel/hivemind-configs.schema.ts`.
 - If the file does not exist: `FAIL — configs.json not found`.
@@ -446,7 +446,7 @@ All other configuration fields SHALL be resolved at runtime from the Zod schema 
 
 > **Source:** Decision D6 — P0 checks, task packet specification
 
-**Condition:** WHEN `hivemind-tools doctor --check=<name>` is invoked THE SYSTEM SHALL execute only the named check. Supported check names: `structure`, `symlinks`, `config`, `sdk`, `typecheck`, `tests`. Omitting `--check` runs all P0 checks.
+**Condition:** WHEN `hivemind doctor --check=<name>` is invoked THE SYSTEM SHALL execute only the named check. Supported check names: `structure`, `symlinks`, `config`, `sdk`, `typecheck`, `tests`. Omitting `--check` runs all P0 checks.
 
 **Acceptance Criteria:**
 - **Given** `--check=structure`, **when** `doctor` runs, **then** only `.hivemind/` structure integrity is checked.
@@ -533,7 +533,7 @@ All other configuration fields SHALL be resolved at runtime from the Zod schema 
 
 > **Source:** Task packet specification
 
-**Condition:** WHEN `hivemind-tools doctor` completes ALL checks THE SYSTEM SHALL return exit code equal to the number of FAIL verdicts. 0 = all checks pass.
+**Condition:** WHEN `hivemind doctor` completes ALL checks THE SYSTEM SHALL return exit code equal to the number of FAIL verdicts. 0 = all checks pass.
 
 **Acceptance Criteria:**
 - **Given** all 6 checks pass, **when** `doctor` runs, **then** exit code is `0`.
@@ -715,15 +715,15 @@ This script serves as the reproducible L1 evidence gate for BOOT-07 completion.
 | Phase | Requirement ID | Verification Method | Evidence Level |
 |-------|---------------|-------------------|----------------|
 | BOOT-02 | REQ-BOOT02-01 | `buildHarnessCli([init, doctor, recover]).commands().length === 4` | L3 |
-| BOOT-02 | REQ-BOOT02-02 | `hivemind-tools init --yes` creates Tier 1 structure | L3 |
+| BOOT-02 | REQ-BOOT02-02 | `hivemind init --yes` creates Tier 1 structure | L3 |
 | BOOT-02 | REQ-BOOT02-03 | Manual TTY test: wizard flow with @clack/prompts | L3 |
-| BOOT-02 | REQ-BOOT02-04 | `CI=true hivemind-tools init` → no interactive output | L3 |
-| BOOT-02 | REQ-BOOT02-05 | `hivemind-tools doctor` → exit 0 on healthy project | L3 |
+| BOOT-02 | REQ-BOOT02-04 | `CI=true hivemind init` → no interactive output | L3 |
+| BOOT-02 | REQ-BOOT02-05 | `hivemind doctor` → exit 0 on healthy project | L3 |
 | BOOT-02 | REQ-BOOT02-06 | Doctor output format matches exact spec | L3 |
-| BOOT-02 | REQ-BOOT02-07 | `hivemind-tools recover` restores missing symlinks | L3 |
+| BOOT-02 | REQ-BOOT02-07 | `hivemind recover` restores missing symlinks | L3 |
 | BOOT-02 | REQ-BOOT02-08 | Recover does not overwrite existing files | L3 |
-| BOOT-02 | REQ-BOOT02-09 | `hivemind-tools --version` prints package.json version | L3 |
-| BOOT-02 | REQ-BOOT02-10 | `hivemind-tools help` lists all four commands | L3 |
+| BOOT-02 | REQ-BOOT02-09 | `hivemind --version` prints package.json version | L3 |
+| BOOT-02 | REQ-BOOT02-10 | `hivemind help` lists all four commands | L3 |
 | BOOT-03 | REQ-BOOT03-01 | Tier 1 directories + .gitkeep created | L3 |
 | BOOT-03 | REQ-BOOT03-02 | Non-destructive: second init preserves existing files | L3 |
 | BOOT-03 | REQ-BOOT03-03 | Root discovery: walk-up from cwd finds package.json | L3 |
