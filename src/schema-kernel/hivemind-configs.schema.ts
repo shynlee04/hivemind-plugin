@@ -358,6 +358,52 @@ export function readConfigs(projectRoot: string): HivemindConfigs {
   }
 }
 
+export type ConfigFileValidationResult =
+  | { success: true; data: HivemindConfigs }
+  | { success: false; error: string }
+
+/**
+ * Validate `.hivemind/configs.json` without silently falling back to defaults.
+ *
+ * This helper is intended for diagnostics such as `hivemind doctor`, where the
+ * caller needs a precise success/failure result instead of the lenient runtime
+ * fallback behavior used by {@link readConfigs}.
+ *
+ * @param projectRoot - Absolute path to the project root directory.
+ * @returns Explicit validation success or a human-readable failure message.
+ *
+ * @example
+ * ```typescript
+ * const result = validateConfigsFile("/path/to/project")
+ * if (!result.success) console.error(result.error)
+ * ```
+ */
+export function validateConfigsFile(projectRoot: string): ConfigFileValidationResult {
+  const configPath = getConfigsPath(projectRoot)
+
+  if (!existsSync(configPath)) {
+    return { success: false, error: `Missing ${configPath}` }
+  }
+
+  try {
+    const raw = readFileSync(configPath, "utf8")
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    migrateKeys(parsed)
+    const result = HivemindConfigsSchema.safeParse(parsed)
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error.issues
+          .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
+          .join("; "),
+      }
+    }
+    return { success: true, data: result.data }
+  } catch (cause) {
+    return { success: false, error: cause instanceof Error ? cause.message : String(cause) }
+  }
+}
+
 /**
  * Validates and writes a Hivemind configuration object to `.hivemind/configs.json`.
  * Creates the parent directory if it does not exist.

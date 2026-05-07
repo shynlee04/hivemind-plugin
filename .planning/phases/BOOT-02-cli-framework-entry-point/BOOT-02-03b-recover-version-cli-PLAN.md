@@ -18,7 +18,7 @@ requirements:
 user_setup: []
 must_haves:
   truths:
-    - "`hivemind recover` wraps `bootstrapRecover`, reports OK/REPAIRED/SKIPPED, and remains idempotent."
+    - "`hivemind recover` wraps `bootstrapRecover`, repairs the selected primitive scope only, reports OK/REPAIRED/SKIPPED plus effective scope, and remains idempotent."
     - "`hivemind version` and `hivemind --version` print package metadata version without hardcoding."
   artifacts:
     - path: "src/cli/commands/recover.ts"
@@ -64,16 +64,17 @@ Output: `recoverCmd`, `versionCmd`, and focused command contract tests.
   <name>Task 1: Implement recover CLI command</name>
   <files>src/cli/commands/recover.ts, tests/cli/commands/recover.test.ts</files>
   <behavior>
-    - RED: command reports `REPAIRED 3` after three missing symlinks and exits 0.
+    - RED: command reports `REPAIRED 3` after three missing project-scope symlinks and exits 0.
+    - RED: explicit `--scope=global` repairs only the global primitive target and reports effective scope in output.
     - RED: second run reports `REPAIRED 0` or all OK and exits 0.
     - RED: real-file conflict is reported as SKIPPED and exits 0.
   </behavior>
-  <action>Per SPEC-05 and D-06, create `recoverCmd: CliCommand`. Parse optional `--root=<path>` and `--scope=project|global`, defaulting to project. Call `bootstrapRecover` and render counts grouped as `OK`, `REPAIRED`, and `SKIPPED`, including warning paths for real-file conflicts. Return exit code 0 for completed recover attempts; return 70 only for unexpected tool errors with `[Harness]`. Export `recoverCmd` with JSDoc documenting flags, result rendering, idempotency, and side effects delegated to the tool.</action>
+  <action>Per SPEC-05, D-03, and D-06, create `recoverCmd: CliCommand`. Parse optional `--root=<path>` and `--scope=project|global`, defaulting to project. Call `bootstrapRecover` and render counts grouped as `OK`, `REPAIRED`, and `SKIPPED`, including warning paths for real-file conflicts and the effective scope used. Scope semantics must match init/doctor: recover repairs only the selected primitive target (project `.opencode/` or resolved OpenCode global path) and does not mutate local `.hivemind/` state. Return exit code 0 for completed recover attempts; return 70 only for unexpected tool errors with `[Harness]`. Export `recoverCmd` with JSDoc documenting flags, scope semantics, result rendering, idempotency, and side effects delegated to the tool.</action>
   <verify>
     <automated>npx vitest run tests/cli/commands/recover.test.ts</automated>
     <automated>npm run typecheck</automated>
   </verify>
-  <done>`hivemind recover` is non-interactive, idempotent, and reports recovery counts without blocking on skipped real files.</done>
+  <done>`hivemind recover` is non-interactive, idempotent, scope-consistent with init/doctor, and reports recovery counts plus effective scope without blocking on skipped real files.</done>
 </task>
 
 <task id="T03B-2" type="auto" tdd="true">
@@ -95,6 +96,7 @@ Output: `recoverCmd`, `versionCmd`, and focused command contract tests.
 <review_checklist>
 - `recoverCmd`, `versionCmd`, and exported helpers have JSDoc.
 - Recover command delegates symlink writes to `bootstrapRecover` and does not create symlinks directly.
+- Recover command scope semantics are explicit and consistent: default project, explicit `--scope=project|global`, effective scope surfaced in output.
 - Version command does not hardcode version values.
 </review_checklist>
 

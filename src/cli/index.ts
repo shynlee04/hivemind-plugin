@@ -23,6 +23,10 @@
  */
 
 import { createHelpCommand } from "./commands/help.js"
+import { initCmd } from "./commands/init.js"
+import { doctorCmd } from "./commands/doctor.js"
+import { recoverCmd } from "./commands/recover.js"
+import { versionCmd } from "./commands/version.js"
 import { discoverCommands } from "./discovery.js"
 import { renderError } from "./renderer.js"
 import {
@@ -57,7 +61,7 @@ export function buildHarnessCli(
   const help = createHelpCommand(() => commands)
 
   commands = discoverCommands([
-    { name: "core", commands: [help] },
+    { name: "core", commands: [help, initCmd, doctorCmd, recoverCmd, versionCmd] },
     { name: "extras", commands: extraCommands },
   ])
 

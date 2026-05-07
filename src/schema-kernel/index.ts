@@ -75,6 +75,30 @@ export type {
 } from "./prompt-enhance.schema.js"
 
 export {
+  BootstrapScopeSchema,
+  BootstrapConfigInputSchema,
+  BootstrapInitInputSchema,
+  BootstrapRecoverInputSchema,
+  BootstrapRecoverCountsSchema,
+  BootstrapInitResultSchema,
+  BootstrapRecoverResultSchema,
+} from "./bootstrap.schema.js"
+
+export type {
+  BootstrapScope,
+  BootstrapConfigInput,
+  BootstrapInitInput,
+  BootstrapRecoverInput,
+  BootstrapInitResult,
+  BootstrapRecoverResult,
+} from "./bootstrap.schema.js"
+
+export {
+  generateHivemindConfigsJsonSchema,
+  writeConfigJsonSchema,
+} from "./generate-config-json-schema.js"
+
+export {
   DocIntelligenceActionSchema,
   DocIntelligenceInputSchema,
 } from "./doc-intelligence.schema.js"
@@ -337,6 +361,7 @@ export {
   getDefaultConfigs,
   getConfigsPath,
   readConfigs,
+  validateConfigsFile,
   writeConfigs,
 } from "./hivemind-configs.schema.js"
 
@@ -348,4 +373,5 @@ export type {
   WorkflowConfig,
   DelegationSystems,
   HivemindConfigs,
+  ConfigFileValidationResult,
 } from "./hivemind-configs.schema.js"

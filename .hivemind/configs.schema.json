@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hivemind.dev/schema/configs/2.0.0",
+  "title": "Hivemind Configs",
+  "description": "IDE-facing JSON Schema for .hivemind/configs.json generated from the runtime config contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "conversation_language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "vi",
+        "zh",
+        "fr",
+        "ja",
+        "ko",
+        "de",
+        "es",
+        "th",
+        "id"
+      ],
+      "default": "en"
+    },
+    "documents_and_artifacts_language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "vi",
+        "zh",
+        "fr",
+        "ja",
+        "ko",
+        "de",
+        "es",
+        "th",
+        "id"
+      ],
+      "default": "en"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "expert-advisor",
+        "hivemind-powered",
+        "free-style"
+      ],
+      "default": "expert-advisor"
+    },
+    "user_expert_level": {
+      "type": "string",
+      "enum": [
+        "clumsy-vibecoder",
+        "beginner-friendly",
+        "intermediate-high-level",
+        "architecture-driven",
+        "absolute-expert"
+      ],
+      "default": "intermediate-high-level"
+    },
+    "delegation_systems": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "native_task": {
+          "type": "boolean",
+          "default": true
+        },
+        "delegate_task": {
+          "type": "boolean",
+          "default": true
+        },
+        "background_delegation": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}

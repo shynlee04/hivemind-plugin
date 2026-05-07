@@ -19,6 +19,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       const router = buildHarnessCli()
       const names = router.commands().map((c) => c.name)
       expect(names).toContain("help")
+      expect(names).toEqual(["help", "init", "doctor", "recover", "version"])
       const help = router.commands().find((c) => c.name === "help")
       expect(help?.aliases).toEqual(expect.arrayContaining(["--help", "-h"]))
     })
@@ -28,7 +29,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
         { name: "ping", summary: "ping", handler: async () => ({ exitCode: 0 }) },
       ])
       const names = router.commands().map((c) => c.name)
-      expect(names).toEqual(["help", "ping"])
+      expect(names).toEqual(["help", "init", "doctor", "recover", "version", "ping"])
     })
 
     it("rejects an extra command whose name collides with a built-in", () => {
@@ -51,6 +52,10 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       expect(exit).toBe(0)
       const out = stdout.join("")
       expect(out).toContain("help")
+      expect(out).toContain("init")
+      expect(out).toContain("doctor")
+      expect(out).toContain("recover")
+      expect(out).toContain("version")
       expect(out).toContain("Available commands:")
       expect(stderr.join("")).toBe("")
     })
@@ -77,6 +82,15 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       const exit = await runCli(["--help"], io)
       expect(exit).toBe(0)
       expect(stdout.join("")).toContain("Available commands:")
+    })
+
+    it("routes doctor --help through the default built-in registry", async () => {
+      // Full npm test is executed as BOOT-02 phase verification; keep this focused on default registration reachability.
+      const { io, stdout, stderr } = mkIO()
+      const exit = await runCli(["doctor", "--help"], io)
+      expect(exit).toBe(0)
+      expect(stdout.join("")).toContain("Usage: hivemind doctor")
+      expect(stderr.join("")).toBe("")
     })
   })
 })

@@ -25,6 +25,8 @@ import { createDelegationStatusTool } from "./tools/delegation-status.js"
 import { createRunBackgroundCommandTool } from "./tools/run-background-command.js"
 import { createConfigurePrimitiveTool } from "./tools/configure-primitive.js"
 import { createValidateRestartTool } from "./tools/validate-restart.js"
+import { createBootstrapInitTool } from "./tools/bootstrap-init.js"
+import { createBootstrapRecoverTool } from "./tools/bootstrap-recover.js"
 import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
 import { createHivemindDocTool } from "./tools/hivemind-doc.js"
 import { createHivemindTrajectoryTool } from "./tools/hivemind-trajectory.js"
@@ -140,6 +142,8 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "hivemind-agent-work-export": createHivemindAgentWorkExportTool(projectDirectory),
       "configure-primitive": createConfigurePrimitiveTool(),
       "validate-restart": createValidateRestartTool(),
+      "bootstrap-init": createBootstrapInitTool(),
+      "bootstrap-recover": createBootstrapRecoverTool(),
     },
     // Auto-persist workflow state after configure-primitive calls with workflow params.
     // Best-effort: failures are silently ignored — does not affect the tool call result.

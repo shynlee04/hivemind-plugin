@@ -108,6 +108,18 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
       continue
     }
 
+    if (token.startsWith("-") && token.length > 1) {
+      const stripped = token.slice(1)
+      const next = rest[index + 1]
+      if (next !== undefined && !next.startsWith("-")) {
+        flags[stripped] = next
+        index += 1
+      } else {
+        flags[stripped] = true
+      }
+      continue
+    }
+
     positionals.push(token)
   }
 

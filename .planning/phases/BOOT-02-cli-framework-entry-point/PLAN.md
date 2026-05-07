@@ -31,9 +31,10 @@ research_decision: "skipped: BOOT-02 has SPEC, CONTEXT, DISCUSSION-LOG, bootstra
 must_haves:
   truths:
     - "`npx hivemind --help` lists help, init, doctor, recover, and version."
-    - "`hivemind init --yes` creates the BOOT-02-owned Tier-1 `.hivemind/` directories, `.opencode/` primitive symlinks, `.hivemind/configs.json`, `.hivemind/configs.schema.json`, and `.hivemind/state/version.json` without prompting."
-    - "`hivemind doctor` reports PASS/FAIL/WARN health lines for BOOT-02-owned structure, symlinks, config, and SDK checks only; typecheck/test remain execution verification commands, not doctor runtime features."
-    - "`hivemind recover` restores missing or broken primitive symlinks without overwriting real files."
+    - "`hivemind init --yes` creates the BOOT-02-owned Tier-1 `.hivemind/` directories, `.hivemind/configs.json`, `.hivemind/configs.schema.json`, and `.hivemind/state/version.json` locally while installing primitive symlinks into the explicit D-03 target (`project .opencode/` by default, or OpenCode global path when selected and writable)."
+    - "If global primitive install is selected but unavailable/unwritable, init falls back to project-scope primitive installation and surfaces the effective scope."
+    - "`hivemind doctor` reports PASS/FAIL/WARN health lines for BOOT-02-owned structure, symlinks, config, and SDK checks only; primitive symlink validation uses the selected or explicit scope consistently with init/recover, while typecheck/test remain execution verification commands, not doctor runtime features."
+    - "`hivemind recover` restores missing or broken primitive symlinks for the selected or explicit scope without overwriting real files."
     - "Version-controlled init backs up prior-version `.opencode/` primitives before replacement and fresh install creates no backup."
     - "All bootstrap commands preserve existing user files and tests prove this with temp directories only."
     - "SPEC-13 is proven with focused contract tests, `npm test`, and coverage evidence for new BOOT-02 files."
@@ -55,12 +56,12 @@ must_haves:
       pattern: "configs.schema.json"
     - from: "BOOT-02-02-bootstrap-tools-PLAN.md"
       to: "BOOT-02-03a-init-doctor-cli-PLAN.md"
-      via: "init/doctor command handlers call/read bootstrap tool outputs"
-      pattern: "bootstrapInit|classify"
+      via: "init/doctor command handlers call/read bootstrap tool outputs with explicit scope/effective-scope semantics"
+      pattern: "bootstrapInit|classify|scope"
     - from: "BOOT-02-02-bootstrap-tools-PLAN.md"
       to: "BOOT-02-03b-recover-version-cli-PLAN.md"
-      via: "recover command wraps recover tool"
-      pattern: "bootstrapRecover"
+      via: "recover command wraps recover tool with matching scope semantics"
+      pattern: "bootstrapRecover|scope"
     - from: "BOOT-02-03a-init-doctor-cli-PLAN.md, BOOT-02-03b-recover-version-cli-PLAN.md"
       to: "BOOT-02-04-registration-evidence-PLAN.md"
       via: "CLI command exports registered in buildHarnessCli"
@@ -123,7 +124,7 @@ Required existing contracts:
 | SPEC-13 Contract tests | COVERED | all wave plans; BOOT-02-04 requires `npm test` and coverage |
 | CONTEXT D-01 TTY wizard lazy-loads `@clack/prompts` | COVERED | BOOT-02-03a |
 | CONTEXT D-02 wizard writes 5 config fields | COVERED | BOOT-02-03a |
-| CONTEXT D-03 global/project meta-concept scope | COVERED | BOOT-02-02, BOOT-02-03a |
+| CONTEXT D-03 global/project meta-concept scope | COVERED | BOOT-02-02, BOOT-02-03a, BOOT-02-03b |
 | CONTEXT D-04 `--yes` defaults | COVERED | BOOT-02-03a |
 | CONTEXT D-05 directory-level symlinks | COVERED | BOOT-02-02 |
 | CONTEXT D-06 recover/doctor symlink status classifications | COVERED | BOOT-02-02, BOOT-02-03a, BOOT-02-03b |
@@ -148,6 +149,7 @@ Required existing contracts:
 
 <scope_boundaries>
 - Doctor runtime feature scope is limited to BOOT-02 SPEC checks: structure, symlinks, config, and SDK. Do not add doctor typecheck/test/module-count runtime checks in BOOT-02; those belong to BOOT-06 unless a later spec revises scope.
+- D-03 semantics are explicit across the phase: `.hivemind/` state/config artifacts remain local to `projectRoot`; primitive symlink target defaults to project `.opencode/`, supports explicit global OpenCode path install/validation/repair, and falls back to project scope when global is unavailable or unwritable.
 - `npm run typecheck`, `npm test`, `npm run test:coverage`, and `npm run build` are execution verification commands only.
 - Do not implement CA-04.2 config consumers, BOOT-03 full state ownership modules, BOOT-04 full primitive migration, BOOT-05 runtime config consumers, BOOT-06 validation expansion, BOOT-07 E2E proof, f-04 routing, or MCM diagnostics.
 - All new exported functions/classes in runtime source require JSDoc with summary, parameters, return values, thrown errors where relevant, and an example when the export is intended for direct use.

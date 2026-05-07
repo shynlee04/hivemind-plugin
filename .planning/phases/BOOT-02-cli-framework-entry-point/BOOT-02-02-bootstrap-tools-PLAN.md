@@ -18,6 +18,9 @@ autonomous: true
 requirements:
   - BOOT02-SPEC-01-init-tool
   - BOOT02-SPEC-02-recover-tool
+  - BOOT02-SPEC-03-init-cli
+  - BOOT02-SPEC-04-doctor-cli
+  - BOOT02-SPEC-05-recover-cli
   - BOOT02-SPEC-08-tool-schema-registration
   - BOOT02-SPEC-09-version-controlled-install
   - BOOT02-SPEC-10-config-initialization
@@ -26,17 +29,18 @@ requirements:
 user_setup: []
 must_haves:
   truths:
-    - "Bootstrap init creates BOOT-02-owned Tier-1 directories, `.gitkeep` files, config files, version file, and directory-level primitive symlinks without overwriting real files."
-    - "Bootstrap recover repairs missing/broken symlinks and skips real files."
+    - "Bootstrap init writes `.hivemind/` state/config artifacts under the local project root while installing primitive symlinks into either project `.opencode/` or the OpenCode global path selected by D-03."
+    - "If global primitive install is unavailable or unwritable, bootstrap init falls back to project-scope primitive installation and returns/report that fallback explicitly."
+    - "Bootstrap recover repairs missing/broken symlinks and skips real files for the selected primitive scope only."
     - "Bootstrap tools are registered in the plugin with Zod validation and no business logic moved into `plugin.ts`."
   artifacts:
     - path: "src/schema-kernel/bootstrap.schema.ts"
       provides: "Zod schemas and inferred types for bootstrap tools"
     - path: "src/tools/bootstrap-init.ts"
-      provides: "write-side init implementation and OpenCode tool factory"
+      provides: "write-side init implementation with local state root + selected primitive install target"
       exports: ["bootstrapInit", "createBootstrapInitTool"]
     - path: "src/tools/bootstrap-recover.ts"
-      provides: "write-side recover implementation and OpenCode tool factory"
+      provides: "write-side recover implementation scoped to project/global primitive target"
       exports: ["bootstrapRecover", "createBootstrapRecoverTool"]
     - path: "src/plugin.ts"
       provides: "bootstrap tool registration only"
@@ -45,6 +49,10 @@ must_haves:
       to: ".hivemind/configs.schema.json"
       via: "copy generated schema into target project"
       pattern: "configs.schema.json"
+    - from: "src/tools/bootstrap-init.ts"
+      to: "OpenCode global path or project .opencode/"
+      via: "primitive install target chosen from D-03 scope with fallback"
+      pattern: "scope|global|project"
     - from: "src/plugin.ts"
       to: "src/tools/bootstrap-*.ts"
       via: "tool factories registered by name"
@@ -55,7 +63,7 @@ must_haves:
 Implement BOOT-02 write-side bootstrap tools and plugin tool registration.
 
 Purpose: provide schema-validated mutation tools that CLI commands can call while preserving CQRS and non-destructive filesystem behavior.
-Output: bootstrap Zod schemas, init/recover tools, plugin registration, and focused tool/plugin tests.
+Output: bootstrap Zod schemas, init/recover tools with explicit project/global primitive scope wiring, plugin registration, and focused tool/plugin tests.
 </objective>
 
 <execution_context>
@@ -94,32 +102,35 @@ export function resolveMetaBuilderRoot(projectRoot: string): string
   <files>src/schema-kernel/bootstrap.schema.ts, src/schema-kernel/index.ts, src/tools/bootstrap-init.ts, tests/tools/bootstrap-init.test.ts</files>
   <behavior>
     - RED: temp-root test expects Tier-1 `.hivemind/state/.gitkeep`, `.hivemind/delegation/.gitkeep`, `.hivemind/event-tracker/.gitkeep` after init.
-    - RED: temp-root test expects directory-level symlinks from `.opencode/agents|skills|commands/<name>` to relative `.hivefiver-meta-builder/<type>/<name>` targets per D-05.
+    - RED: temp-root test expects project-scope directory-level symlinks from `.opencode/agents|skills|commands/<name>` to relative `.hivefiver-meta-builder/<type>/<name>` targets per D-05.
+    - RED: global-scope test expects `.hivemind/` artifacts to remain under the local `projectRoot` while primitive symlinks install under the resolved OpenCode global path rather than project `.opencode/`.
+    - RED: unwritable or unavailable global-path test expects fallback to project-scope primitive install with fallback status reported in the tool result.
     - RED: existing real files and existing `.hivemind/configs.json` remain byte-identical after init per SPEC-12.
     - RED: prior-version `.hivemind/state/version.json` causes backup to `.opencode-backup-<iso-date>/`; fresh install creates no backup per SPEC-09.
   </behavior>
-  <action>Per SPEC-01, SPEC-09, SPEC-10, SPEC-12, D-03, D-04, D-05, D-07, and D-08, create `src/schema-kernel/bootstrap.schema.ts` with Zod input/result schemas and inferred types for init/recover. Implement `bootstrapInit(input)` in `src/tools/bootstrap-init.ts`. It must create only BOOT-02-owned Tier-1 dirs with `.gitkeep`, create `.opencode/agents|skills|commands`, create one directory-level symlink per `.hivefiver-meta-builder/<type>/<name>`, copy the generated `.hivemind/configs.schema.json` into the target `.hivemind/`, write `.hivemind/configs.json` as `$schema` only for non-interactive mode, merge wizard-provided config for interactive mode, and write `.hivemind/state/version.json`. If an existing version differs, back up existing `.opencode/` before replacing symlink-managed entries. Never overwrite non-symlink files or existing configs. Export `bootstrapInit` and `createBootstrapInitTool`. All exported functions/types intended for import must have JSDoc with params, return shape, side effects, non-destructive guarantee, and examples.</action>
+  <action>Per SPEC-01, SPEC-03, SPEC-04, SPEC-05, SPEC-09, SPEC-10, SPEC-12, D-03, D-04, D-05, D-07, and D-08, create `src/schema-kernel/bootstrap.schema.ts` with Zod input/result schemas and inferred types for init/recover. `bootstrapInit(input)` must accept an explicit primitive install-target scope contract, e.g. `scope: "project" | "global"`, plus any resolved global-path metadata needed by CLI callers. It must always write `.hivemind/` directories, `.gitkeep` files, `.hivemind/configs.json`, `.hivemind/configs.schema.json`, and `.hivemind/state/version.json` under the local `projectRoot`. Primitive symlinks must install into project `.opencode/` when `scope === "project"`; when `scope === "global"`, install primitives into the resolved OpenCode global path (per D-03) while leaving `.hivemind/` local to the project. If the global path is unavailable or not writable, fall back to project-scope primitive install, preserve the local `.hivemind/` writes, and return/report that fallback explicitly so `initCmd`, `doctorCmd`, and `recoverCmd` can surface consistent scope behavior. When replacing symlink-managed entries, back up the selected primitive target only if version drift exists. Never overwrite non-symlink files or existing configs. Export `bootstrapInit` and `createBootstrapInitTool`. All exported functions/types intended for import must have JSDoc with params, return shape (including selected/effective scope and fallback status), side effects, non-destructive guarantee, and examples.</action>
   <verify>
     <automated>npx vitest run tests/tools/bootstrap-init.test.ts</automated>
     <automated>npm run typecheck</automated>
   </verify>
-  <done>Init tool creates required BOOT-02 filesystem surfaces, config/schema/version files, version backup behavior, symlinks, and result counts while preserving existing files.</done>
+  <done>Init tool creates required local `.hivemind/` surfaces, installs primitives into the selected project/global target, reports effective scope including project fallback when global is unavailable, and preserves existing files.</done>
 </task>
 
 <task id="T02-2" type="auto" tdd="true">
   <name>Task 2: Implement recover tool with symlink classification</name>
   <files>src/schema-kernel/bootstrap.schema.ts, src/schema-kernel/index.ts, src/tools/bootstrap-recover.ts, tests/tools/bootstrap-recover.test.ts</files>
   <behavior>
-    - RED: deleting three symlinks in temp `.opencode/skills/` returns `repaired: 3` and recreates exactly those symlinks.
+    - RED: deleting three project-scope symlinks in temp `.opencode/skills/` returns `repaired: 3` and recreates exactly those symlinks.
+    - RED: deleting three global-scope symlinks under the resolved OpenCode global path returns `repaired: 3` only for that selected global target.
     - RED: replacing an expected symlink with a real file returns skipped count and leaves file contents unchanged.
     - RED: broken symlink is detected and recreated to the correct relative target.
   </behavior>
-  <action>Per SPEC-02, SPEC-12, D-05, and D-06, implement `bootstrapRecover(input)` in `src/tools/bootstrap-recover.ts` with project/global scope support. Walk `.hivefiver-meta-builder/agents`, `skills`, and `commands`; classify each target as `OK`, `MISSING`, `BROKEN`, or `FILE`; create MISSING symlinks; unlink and recreate BROKEN symlinks only; leave OK and FILE untouched. Return counts per primitive type and status. Export `bootstrapRecover` and `createBootstrapRecoverTool`. All exports must include JSDoc with params, return counts, mutation boundaries, and examples.</action>
+  <action>Per SPEC-02, SPEC-04, SPEC-05, SPEC-12, D-03, D-05, and D-06, implement `bootstrapRecover(input)` in `src/tools/bootstrap-recover.ts` with explicit project/global primitive scope support using the same target-resolution contract as `bootstrapInit`. The tool must repair only the selected/effective primitive target: project `.opencode/` or the resolved OpenCode global path. Walk `.hivefiver-meta-builder/agents`, `skills`, and `commands`; classify each target as `OK`, `MISSING`, `BROKEN`, or `FILE`; create MISSING symlinks; unlink and recreate BROKEN symlinks only; leave OK and FILE untouched. Return counts per primitive type/status plus the effective scope used so CLI commands can render consistent messaging. Export `bootstrapRecover` and `createBootstrapRecoverTool`. All exports must include JSDoc with params, effective-scope return fields, mutation boundaries, and examples.</action>
   <verify>
     <automated>npx vitest run tests/tools/bootstrap-recover.test.ts</automated>
     <automated>npm run typecheck</automated>
   </verify>
-  <done>Recover tool restores missing/broken symlinks only and preserves every real file.</done>
+  <done>Recover tool restores missing/broken symlinks only within the selected/effective primitive scope and preserves every real file.</done>
 </task>
 
 <task id="T02-3" type="auto" tdd="true">
@@ -129,7 +140,7 @@ export function resolveMetaBuilderRoot(projectRoot: string): string
     - RED: plugin tool registry exposes `bootstrap-init` and `bootstrap-recover`.
     - RED: invalid bootstrap init/recover input fails schema validation before mutation.
   </behavior>
-  <action>Per SPEC-08, import `createBootstrapInitTool` and `createBootstrapRecoverTool` into `src/plugin.ts` and register them under tool names `bootstrap-init` and `bootstrap-recover`. Preserve plugin as composition root: no filesystem business logic in `plugin.ts`. Add focused registration/invalid-input tests using existing plugin test patterns or a new `tests/plugin/bootstrap-tools-registration.test.ts` if no suitable file exists.</action>
+  <action>Per SPEC-08 and D-03, import `createBootstrapInitTool` and `createBootstrapRecoverTool` into `src/plugin.ts` and register them under tool names `bootstrap-init` and `bootstrap-recover`. Tool schemas must validate primitive scope inputs and reject invalid scope values before mutation. Preserve plugin as composition root: no filesystem business logic in `plugin.ts`. Add focused registration/invalid-input tests using existing plugin test patterns or a new `tests/plugin/bootstrap-tools-registration.test.ts` if no suitable file exists.</action>
   <verify>
     <automated>npx vitest run tests/plugin/bootstrap-tools-registration.test.ts tests/tools/bootstrap-init.test.ts tests/tools/bootstrap-recover.test.ts</automated>
     <automated>npm run typecheck</automated>
@@ -142,6 +153,7 @@ export function resolveMetaBuilderRoot(projectRoot: string): string
 - New exports in `bootstrap.schema.ts`, `bootstrap-init.ts`, and `bootstrap-recover.ts` have JSDoc.
 - Tests use temp directories and never mutate repository `.opencode/` or `.hivemind/` except reading committed fixtures.
 - No non-symlink path is deleted or overwritten.
+- Tests cover both project-scope primitive install/repair and global-scope primitive install/repair, including explicit fallback to project scope when global is unavailable or unwritable.
 - `plugin.ts` contains registration only, not bootstrap business logic.
 </review_checklist>
 
