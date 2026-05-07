@@ -28,6 +28,7 @@ permission:
     hm-l2-reviewer: allow
   delegate-task: deny
   delegation-status: deny
+  run-background-command: allow
   session-journal-export: deny
   prompt-skim: deny
   prompt-analyze: deny

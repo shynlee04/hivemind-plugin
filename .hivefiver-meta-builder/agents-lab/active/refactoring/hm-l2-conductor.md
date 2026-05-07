@@ -17,6 +17,7 @@ permission:
   task:
     '*': deny
   delegate-task: allow
+  run-background-command: allow
   skill:
     '*': deny
     hm-l2-*: allow
