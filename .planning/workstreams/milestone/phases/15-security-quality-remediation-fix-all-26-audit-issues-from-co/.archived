@@ -1,4 +1,0 @@
-ARCHIVED: 2026-04-30
-REASON: Workstream boundary violation — this phase modifies ONLY soft meta-concepts (.opencode/), not harness code (src/)
-RECLASSIFIED_AS: SE-H0 (skill-ecosystem workstream, historical)
-REFERENCE: ROADMAP.md skill-ecosystem section

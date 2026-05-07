@@ -1,7 +1,7 @@
 # HiveMind V3 — State
 
 **Last updated:** 2026-05-07  
-**Last trigger:** Full audit reconciliation + archive + codebase map + new GSD project init
+**Last trigger:** Full audit reconciliation + archive + codebase map + new GSD project init + Option 3 docs-only sector governance foundation + iteration 2 acceptance matrix remediation
 
 ---
 
@@ -11,12 +11,17 @@
 **Current phase:** CA-04 (restructured from original "CRUD Ownership Modules")  
 **Blocked:** No — ready to implement CA-04.1 Bootstrap  
 **Health:** 🟢 Build passes, typecheck clean, 1765/1767 tests pass
+**Control mode:** Managed autonomous loop — one authorized cycle at a time
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
 **Current focus:** Fix bootstrap gap + `conversation_language` wiring
+
+**Docs-only foundation added:** Option 3 — Sector Governance Foundation. This route produced planning artifacts only and does not alter runtime readiness.
+
+**Docs-only remediation:** Iteration 2 completed acceptance matrix remediation for O3-01/O3-03, strengthened O3-02 traceability, and drafted an O3-04 planning blueprint without authorizing source-sector `AGENTS.md` or runtime edits.
 
 ---
 
@@ -68,16 +73,33 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-LIFECYCLE-01..02 | Lifecycle integration requirements | Locked |
 | D-WS-01..03 | Workstream consolidation (5→3) | Locked |
 | CA-04 RESTRUCTURE | Split into 4 sub-phases with correct dependency order | NEW — 2026-05-07 |
+| O3-DOCS-FOUNDATION | Option 3 Sector Governance Foundation is docs-only L5 evidence layered onto CA-04, not a runtime implementation claim | NEW — 2026-05-07 |
 
 ---
 
 ## Next Actions
 
-1. **CA-04.1** — Create `bin/init-primitives.ts` + postinstall hook (1-2 hours)
-2. **CA-04.2** — Wire `conversation_language` into messages-transform/system-transform hooks (1 hour)
-3. **Cleanup** — Delete `messages-transform.ts`, document 12 stale modules
-4. **CA-04.3** — State ownership modules for `.hivemind/state/` and `.hivemind/delegation-managements/` (2-3 hours)
-5. **Wave 3** — Design f-04 auto-routing from skeleton §5.2
+1. **Cycle 1 — Lifecycle Alignment** — Complete managed loop + lifecycle control artifacts
+2. **Option 3 docs gate review** — Review OMO adaptation, sector AGENTS target, command/workflow/session map, and pre-phase checklist before any sector guidance implementation
+3. **Ask user authorization for Cycle 2** — Do not start implementation automatically
+4. **Cycle 2 — Bootstrap Recovery** — Create `bin/init-primitives.ts` + postinstall/init restoration path only after gates/authorization
+5. **Cycle 3 — Config-to-Behavior Wiring** — Wire `conversation_language` or reject it honestly
+6. **Cycle 4+** — State ownership, f-04 routing, hierarchy enforcement, E2E proof
+
+## Option 3 Foundation Artifacts
+
+- `.planning/research/omo-adaptation-architecture-2026-05-07.md`
+- `.planning/architecture/hivemind-sector-agents-target-2026-05-07.md`
+- `.planning/architecture/hivemind-command-workflow-session-map-2026-05-07.md`
+- `.planning/architecture/sector-agents-docs-implementation-plan-2026-05-07.md`
+- `.planning/checklists/pre-phase-omo-adaptation-2026-05-07.md`
+
+Runtime readiness: FAIL/BLOCK until L1-L3 runtime proof exists
+
+## Current Control Artifacts
+
+- `.planning/roadmap/managed-autonomous-loop-2026-05-07.md`
+- `.planning/lifecycle/lifecycle-overview-2026-05-07.md`
 
 ---
 *State committed: 2026-05-07*

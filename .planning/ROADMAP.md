@@ -26,6 +26,28 @@ Original "CRUD Ownership Modules + Lifecycle Verification" was premature — bui
 | CA-04.3 | **State Directory Ownership Modules** | D-CRUD-05: Each `.hivemind/` subdirectory gets typed module. Tiered by mutation need (7 CRUD, 7 append, 6 read-only). Only AFTER bootstrap exists and tools write state. |
 | CA-04.4 | **Lifecycle Audit + Gate Criteria Synthesis** | Synthesize gate-l3-lifecycle-integration references/ from ARCHITECTURE.md. Audit all 34 src/lib modules. Fix only CA-04 CRUD-owner violations. |
 
+### Option 3 — Sector Governance Foundation (Docs-Only Route)
+
+Option 3 is a new docs-only foundation route layered onto CA-04 governance work. It does **not** replace CA-04 and does **not** claim runtime implementation readiness.
+
+| Phase | Title | Status | Depends On |
+|-------|-------|--------|------------|
+| O3-01 | OMO Architecture Adaptation Research / Context Alignment | ✅ DOCS-ONLY FOUNDATION | CA-04 context |
+| O3-02 | Hivemind Sector AGENTS.md Target Architecture | ✅ DOCS-ONLY FOUNDATION | O3-01 |
+| O3-03 | Command vs Workflow vs Session/Task Continuity Map | ✅ DOCS-ONLY FOUNDATION | O3-01 |
+| O3-04 | Sector AGENTS.md Docs Implementation | 🔒 FUTURE — blueprint drafted; gate blocked | O3-01, O3-02, O3-03, pre-phase checklist pass |
+
+Future phases after O3 gate passage:
+
+- Bootstrap/init CLI — future runtime phase, blocked until SDK/CLI proof and test plan exist.
+- Config realm cleanup — future configuration phase, blocked until actor/consumer/purpose mapping exists.
+- Routing workflow foundation — future f-04 phase, blocked until command/workflow/session boundaries are locked.
+- Session/task continuity management — future lifecycle/state phase, blocked until typed owners and evidence gates exist.
+
+Gate boundary: docs-only artifacts are L5 evidence. Runtime readiness: FAIL/BLOCK until L1-L3 runtime proof exists.
+
+Iteration 2 remediation added acceptance matrices for O3-01/O3-03, strengthened O3-02 matrix traceability, and drafted an O3-04 planning blueprint. This remains docs-only preparation and does not authorize runtime code, `.opencode/**`, `.hivemind/**`, or source-sector `AGENTS.md` edits.
+
 ### Checkpoints
 
 - **CP-CA-1:** configs.json full schema operational ✅
@@ -71,6 +93,20 @@ Original "CRUD Ownership Modules + Lifecycle Verification" was premature — bui
 | **Wave 3** | f-04 Auto-commands + Workflow Router | Depends on CA-04.3 (tools need owners) |
 | **Wave 4** | HER-3/4/5 execution | Depends on Wave 3 routing |
 | **Wave 5+** | WS-AW + WS-UX workstreams | Depends on Waves 1-4 |
+
+---
+
+## Managed Autonomous Loop
+
+Execution now follows the managed autonomous loop described in `.planning/roadmap/managed-autonomous-loop-2026-05-07.md`.
+
+Rules:
+
+- Only one workflow cycle may run per user authorization.
+- Each cycle must have an entry gate, plan gate, execution gate, review gate, and exit gate.
+- Broad autonomy is blocked until bootstrap recovery, config-to-behavior wiring, f-04 routing, hierarchy enforcement, and E2E proof are complete.
+- Current authorized cycle: **Cycle 1 — Lifecycle Alignment**.
+- Next recommended cycle after user approval: **Cycle 2 — Bootstrap Recovery**.
 
 ---
 *Last updated: 2026-05-07 after full audit + archive + codebase map*
