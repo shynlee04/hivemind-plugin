@@ -2,7 +2,7 @@
 # Hivemind — State
 
 **Last updated:** 2026-05-07  
-**Last trigger:** Phase 0 governance baseline created and BOOT/MCM continuation routed behind Phase 0 gate
+**Last trigger:** ROADMAP unblocked — BOOT-03 through BOOT-07 status changed from BLOCKED BY PHASE 0 to PENDING; phase directories created for all 8 BOOT phases
 
 ---
 
@@ -120,11 +120,13 @@ Runtime readiness remains blocked until later L1-L3 proof exists. Phase 0 govern
 ## Next Actions
 
 1. **Phase 0 PASSED** — identity, source planes, config, meta-authoring, checklist, route all complete.
-2. **Resume BOOT-02 Wave 1** — T02 + T03 (CQRS write-side tools).
-3. **Continue BOOT-02 Waves 2-4** — command handlers, registration wiring, contract tests.
-4. **Continue BOOT-03 through BOOT-07** — state init, primitives recovery, config bootstrap, validation, E2E proof.
-5. **After BOOT-04 symlinks:** Resume MCM-01 + MCM-02 — agent + skill migration.
-6. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation.
+2. **BOOT-03 through BOOT-07 unblocked** — Phase 0 gate passed, status changed to PENDING in ROADMAP.md.
+3. **Phase directories created** — `.planning/phases/BOOT-01` through `BOOT-08` with `.gitkeep` registration.
+4. **Resume BOOT-02 Wave 1** — T02 + T03 (CQRS write-side tools).
+5. **Continue BOOT-02 Waves 2-4** — command handlers, registration wiring, contract tests.
+6. **Continue BOOT-03 through BOOT-07** — state init, primitives recovery, config bootstrap, validation, E2E proof.
+7. **After BOOT-04 symlinks:** Resume MCM-01 + MCM-02 — agent + skill migration.
+8. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation.
 
 ## Option 3 Foundation Artifacts
 

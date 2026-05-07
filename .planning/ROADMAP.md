@@ -51,7 +51,7 @@ Gate boundary: Phase 0 artifacts are L5 documentation/governance evidence. Runti
 | CA-01 | configs.json Schema + Runtime Binding | ✅ DELIVERED | — |
 | CA-02 | Behavioral Profile System + Mode Dispatch | ✅ DELIVERED | CA-01 |
 | CA-03 | Workflow Toggle Runtime Binding | ✅ DELIVERED | CA-01 |
-| CA-04 | **Bootstrap + State Ownership** (restructured) | 🔴 BLOCKED BY PHASE 0 | CA-01, CA-02, CA-03, Phase 0 gate |
+| CA-04 | **Bootstrap + State Ownership** (restructured) | 🔴 IN PROGRESS (Phase 0 gate passed) | CA-01, CA-02, CA-03 |
 
 ### CA-04 Restructured Scope
 
@@ -81,7 +81,7 @@ Option 3 implementation phases (in dependency order):
 |---|-------|--------|
 | 1 | Sector AGENTS.md docs | ✅ DELIVERED (O3-04, 9 files committed) |
 | 2 | Config realm cleanup | ✅ DELIVERED (traceability doc, dead code removed) |
-| 3 | **Bootstrap/init CLI** | 🔴 BLOCKED — see BOOT workstream below; pending Phase 0 gate |
+| 3 | **Bootstrap/init CLI** | 🔴 IN PROGRESS — see BOOT workstream below; Phase 0 gate passed |
 | 4 | Routing workflow foundation | ⬜ PENDING — f-04, blocked until Phase 0 + bootstrap complete |
 | 5 | Session/task continuity management | ⬜ PENDING — blocked until typed owners + E2E proof |
 
@@ -91,17 +91,18 @@ Gate boundary: docs-only artifacts are L5 evidence. Runtime readiness: FAIL/BLOC
 
 ## Active Workstream: Bootstrap & Init CLI (WS-BOOT)
 
-The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It provides project initialization, state recovery, primitives restoration, health checking, and rich terminal feedback. BOOT continuation is blocked until the Phase 0 governance gate passes. The package/bin identity is `hivemind`; `opencode-harness` and `hivemind-tools` are legacy aliases only.
+The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It provides project initialization, state recovery, primitives restoration, health checking, and rich terminal feedback. Phase 0 governance gate PASSED — BOOT-02 continuation authorized. The package/bin identity is `hivemind`; `opencode-harness` and `hivemind-tools` are legacy aliases only.
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
 | BOOT-01 | Dependency Audit + Architecture | ✅ COMPLETE | — | L5 research docs |
 | BOOT-02 | CLI Framework + Entry Point | 🔴 IN PROGRESS (T01 done) | BOOT-01 | L3: `npx hivemind --help` works |
-| BOOT-03 | State Init (.hivemind/ creation) | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: `npx hivemind init` creates structure |
-| BOOT-04 | Primitives Recovery (.opencode/) | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: symlinks restored from `.hivefiver-meta-builder/` |
-| BOOT-05 | Config Bootstrap + Defaults | ⬜ BLOCKED BY PHASE 0 | BOOT-02, Phase 0 gate | L3: configs.json initialized with defaults |
-| BOOT-06 | Validation + Health Check | ⬜ BLOCKED BY PHASE 0 | BOOT-03, BOOT-04, BOOT-05, Phase 0 gate | L2: `npx hivemind doctor` PASS |
-| BOOT-07 | End-to-End Proof | ⬜ BLOCKED BY PHASE 0 | BOOT-06, Phase 0 gate | L1: nuke `.hivemind/` + `init` → all gates pass |
+| BOOT-03 | State Init (.hivemind/ creation) | ⬜ PENDING | BOOT-02 | L3: `npx hivemind init` creates structure |
+| BOOT-04 | Primitives Recovery (.opencode/) | ⬜ PENDING | BOOT-02 | L3: symlinks restored from `.hivefiver-meta-builder/` |
+| BOOT-05 | Config Bootstrap + Defaults | ⬜ PENDING | BOOT-02 | L3: configs.json initialized with defaults |
+| BOOT-06 | Validation + Health Check | ⬜ PENDING | BOOT-03, BOOT-04, BOOT-05 | L2: `npx hivemind doctor` PASS |
+| BOOT-07 | End-to-End Proof | ⬜ PENDING | BOOT-06 | L1: nuke `.hivemind/` + `init` → all gates pass |
+| BOOT-08 | Agent + Skill Integration | ⬜ PENDING | BOOT-07 | L5: constitution + routing contracts |
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
