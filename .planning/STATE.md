@@ -2,7 +2,7 @@
 # Hivemind — State
 
 **Last updated:** 2026-05-08
-**Last trigger:** BOOT-08 agent/skill integration constitution completed
+**Last trigger:** CP-PTY-02/03/04 phases added to Shell/PTY Control-Plane Runway
 
 ---
 
@@ -56,7 +56,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 |-------|----------|--------|
 | **Bootstrap/recovery E2E proof complete** — BOOT-02 through BOOT-07 passed local clean-state proof | 🟢 RESOLVED | Maintain regression coverage |
 | **Config consumer gap remains** — `conversation_language` is traced as wired in config traceability, but `delegation_systems` has no runtime consumer | 🔴 CRITICAL | Phase 0 config contract + CA-04.2: wire or explicitly defer dead config fields |
-| **Shell/PTY command lane not fully specified** — background command, PTY, headless fallback, SDK delegation, and future sidecar projection cross-cut multiple modules | 🟡 HIGH | CP-PTY-00 docs/spec spike; CP-PTY-01 blocked until BOOT-07 or explicit authorization |
+| **Shell/PTY command lane fully scoped** — CP-PTY-00 spike complete, CP-PTY-01..04 phases defined covering command-process, SDK session, coordination, and cross-cutting integration | 🟡 HIGH | CP-PTY-01 ready to execute; 02-04 planned |
 | **`messages-transform.ts` dead code** — 67 LOC, zero imports, confirmed dead Phase 35 | 🟡 HIGH | Delete file |
 | **plugin.ts at 447 LOC** — 100 LOC target, needs split | 🟡 HIGH | Extract hook/tool registration modules |
 | **12 stale modules** — exist but no consumers | 🟡 HIGH | Document or wire (see SRC-MODULE-AUDIT) |
@@ -88,6 +88,9 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | BOOT-02R | BOOT-02 implementation summaries were reconciled before BOOT-03 automation resumed | COMPLETE — 2026-05-08 |
 | CP-PTY-00 | Shell/PTY/background command control-plane spike is docs/spec only and may run parallel with BOOT continuation | NEW — 2026-05-08 |
 | CP-PTY-01 | Runtime shell/PTY control-plane implementation is blocked on BOOT-07 unless explicitly authorized earlier | NEW — 2026-05-08 |
+| CP-PTY-02 | SDK session delegation integration — async/sync child-session dispatch, context injection, completion detection | NEW — 2026-05-08 |
+| CP-PTY-03 | Agent/subagent background task coordination — wave dispatch, completion-looping, queue dedup, lifecycle cascade | NEW — 2026-05-08 |
+| CP-PTY-04 | Cross-cutting shell integration — wires background commands to session/task/journal/hooks/permissions | NEW — 2026-05-08 |
 
 ---
 
@@ -130,6 +133,9 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 |---|---|---|---|
 | CP-PTY-00 | ✅ COMPLETE | L5 docs/spec | Context, research, requirements, spec, verification all passed |
 | CP-PTY-01 | 🔵 READY | L2-L3 required | BOOT-07 complete, entry gate satisfied |
+| CP-PTY-02 | ⬜ NOT PLANNED | L2-L3 required | SDK child-session delegation integration |
+| CP-PTY-03 | ⬜ NOT PLANNED | L2-L3 required | Agent/subagent background task coordination |
+| CP-PTY-04 | ⬜ NOT PLANNED | L2-L3 required | Cross-cutting shell integration (wires everything) |
 | SC-PTY-01 | ⬜ DEFERRED | L2-L3 required | Read-only projection only after CP-PTY-01 and Q2 sidecar confirmation |
 
 ---
@@ -139,8 +145,11 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 1. **Run MCM-03** — config plane integration: add agent/skill count checks to doctor, wire meta-concept validation.
 2. **Run MCM-04** — end-user customization + ecosystem integration.
 3. **Run CP-PTY-01** — background shell control-plane MVP (L2-L3 runtime, now unblocked).
-4. **After MCM + CP-PTY:** Resume f-04 routing foundation.
-5. **After routing:** Resume HER-3/4/5 execution.
+4. **Run CP-PTY-02** — SDK session delegation integration (async/sync child-session dispatch).
+5. **Run CP-PTY-03** — agent/subagent background task coordination (wave dispatch, completion-looping).
+6. **Run CP-PTY-04** — cross-cutting shell integration (wires everything to session/task/journal/hooks).
+7. **After MCM + CP-PTY:** Resume f-04 routing foundation.
+8. **After routing:** Resume HER-3/4/5 execution.
 
 ## Option 3 Foundation Artifacts
 

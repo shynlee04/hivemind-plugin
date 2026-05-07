@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Current planning route: BOOT-02R reconciles BOOT-02 status truth before BOOT-03 automation resumes. CP-PTY-00 is the shell/PTY/background-command control-plane spike and is docs/spec-only; CP-PTY-01 runtime implementation is blocked until BOOT-07 E2E proof or explicit user authorization.
+Current planning route: BOOT-02R reconciles BOOT-02 status truth before BOOT-03 automation resumes. CP-PTY-00 is the shell/PTY/background-command control-plane spike (docs/spec-only, COMPLETE). CP-PTY-01 (Background Shell Control-Plane MVP) is READY, unblocked by BOOT-07 completion. CP-PTY-02 (SDK Session Delegation), CP-PTY-03 (Agent/Subagent Coordination), and CP-PTY-04 (Cross-Cutting Integration) extend the runway. SC-PTY-01 (Read-Only Terminal Projection) remains DEFERRED.
 
 
 ## NON-NEGOTIABLE RULES

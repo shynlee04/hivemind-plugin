@@ -3,7 +3,7 @@
 
 **Created:** 2026-05-07  
 **Status:** Active  
-**Dependency order:** Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience
+**Dependency order:** Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway (CP-PTY-00..04) → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience
 
 ---
 
@@ -113,6 +113,9 @@ The shell/PTY/background command lane is real and cross-cutting across `run-back
 |-------|-------|--------|------------|-------------------|
 | CP-PTY-00 | Shell / PTY Control-Plane Spike | ✅ COMPLETE — docs/spec only; may run in parallel with BOOT-03..05 | BOOT-02R | L5: context, research, requirements, spec, route artifacts |
 | CP-PTY-01 | Background Shell Control-Plane MVP | 🔵 READY | CP-PTY-00, BOOT-07 | L2-L3: permission-gated command lifecycle tests; L1 preferred E2E proof |
+| CP-PTY-02 | SDK Session Delegation Integration | ⬜ NOT PLANNED | CP-PTY-01, BOOT-08 | L2-L3: async/sync child-session dispatch, context injection, completion detection tests |
+| CP-PTY-03 | Agent/Subagent Background Task Coordination | ⬜ NOT PLANNED | CP-PTY-02, BOOT-08 | L2-L3: wave dispatch, completion-looping, queue dedup, cascade cleanup tests |
+| CP-PTY-04 | Cross-Cutting Shell Integration | ⬜ NOT PLANNED | CP-PTY-03, MCM-03 | L2-L3: context integration, journal recording, permission propagation, hook guards tests |
 | SC-PTY-01 | Read-Only Terminal Projection | ⬜ DEFERRED | CP-PTY-01, Q2 sidecar decision confirmation | L2-L3: read-only projection proof |
 
 ### BOOT-01 Scope: Research & Architecture Decision
@@ -256,9 +259,12 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 | **Wave 2** | BOOT-03 State Init + BOOT-04 Primitives + BOOT-05 Config; CP-PTY-00 docs/spec spike may run in parallel | Depends on Phase 0 + Wave 1 CLI framework/reconciliation |
 | **Wave 3** | BOOT-06 Validation + BOOT-07 E2E Proof | Depends on Phase 0 + Waves 1-2 |
 | **Wave 3.5** | CP-PTY-01 Background Shell Control-Plane MVP if routing requires command lanes | Depends on CP-PTY-00 + BOOT-07 unless explicitly authorized earlier |
+| **Wave 3.6** | CP-PTY-02 SDK Session Delegation Integration | Depends on CP-PTY-01 + BOOT-08 |
+| **Wave 3.7** | CP-PTY-03 Agent/Subagent Background Task Coordination | Depends on CP-PTY-02 + BOOT-08 |
+| **Wave 3.8** | CP-PTY-04 Cross-Cutting Shell Integration | Depends on CP-PTY-03 + MCM-03 |
 | **Wave 4** | MCM-01 Agent Migration + MCM-02 Skill Migration | Depends on Phase 0 + BOOT-04 (symlinks exist) |
 | **Wave 5** | MCM-03 Config Integration + MCM-04 Customization | Depends on Phase 0 + Wave 4 + BOOT-06 |
-| **Wave 6** | f-04 Auto-commands + Workflow Router | Depends on Phase 0 + BOOT + MCM; also depends on CP-PTY-00/01 if router invokes command lanes |
+| **Wave 6** | f-04 Auto-commands + Workflow Router | Depends on Phase 0 + BOOT + MCM; also depends on CP-PTY-00..04 if router invokes command/session lanes |
 | **Wave 7** | HER-3/4/5 execution | Depends on Wave 6 routing |
 | **Wave 8+** | WS-AW + WS-UX workstreams | Depends on Waves 1-7 |
 
@@ -276,7 +282,7 @@ Rules:
 - Cycle 1 — Lifecycle Alignment: ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
 - Current authorized cycle: **Cycle 2 — Bootstrap Recovery** (Phase 0 gate PASSED, BOOT-02 through BOOT-07 complete; BOOT-08 and CP-PTY-00 remain before downstream runtime expansion).
 - Parallel docs/spec lane: **CP-PTY-00 Shell / PTY Control-Plane Spike** (L5 only; no runtime mutation).
-- Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01 or routing expansion.
+- Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01..04 or routing expansion.
 - MCM continuation pending BOOT-04 symlinks.
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
