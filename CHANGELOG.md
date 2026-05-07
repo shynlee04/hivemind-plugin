@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the `opencode-harness` package will be documented in this file.
+All notable changes to the `hivemind` package will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Phase 0 Governance Baseline (docs/governance)
+- Core Architecture (WS-CA) Bootstrap CLI & Config Consumer Runtime Wiring
+- Sector Governance Foundation (Option 3 Docs-Only Route)
 - HER-0 Ecosystem Re-map & Reality Audit (2026-05-05)
 - HER-1 Documentation & Configuration Recovery (2026-05-05)
 

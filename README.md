@@ -6,8 +6,8 @@
 
 **Agents' Intelligence = HIVE + MIND**
 
-[![npm version](https://img.shields.io/npm/v/opencode-harness?color=blue)](https://www.npmjs.com/package/opencode-harness)
-[![license](https://img.shields.io/npm/l/opencode-harness)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/hivemind?color=blue)](https://www.npmjs.com/package/hivemind)
+[![license](https://img.shields.io/npm/l/hivemind)](./LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/typescript-strict-blue)](https://www.typescriptlang.org)
 [![Tests](https://img.shields.io/badge/tests-1%2C739%20passing-brightgreen)](#testing)
@@ -48,7 +48,7 @@ Together: **Intelligence that compounds.**
 | **Runtime Policy** | Configurable concurrency limits, tool budgets, category gates per workspace |
 | **CQRS Architecture** | Tools mutate state (write-side), hooks observe events (read-side) — enforced at the boundary |
 | **Schema Kernel** | 16 Zod v4 schema files for agent/command/skill validation |
-| **Composable Ecosystem** | 120+ skills, agents, and commands — bring your own workflow |
+| **Composable Ecosystem** | 123 skills, 89 agents, and 19 commands — bring your own workflow |
 
 ---
 
@@ -57,7 +57,7 @@ Together: **Intelligence that compounds.**
 ### Installation
 
 ```bash
-npm install opencode-harness
+npm install hivemind
 ```
 
 **Requirements:** Node.js `>=20.0.0` · OpenCode `>=1.14.28` (peer dependency)
@@ -68,7 +68,7 @@ npm install opencode-harness
 
 ```ts
 // .opencode/plugins/harness.ts
-export { HarnessControlPlane as default } from "opencode-harness/plugin"
+export { HarnessControlPlane as default } from "hivemind/plugin"
 ```
 
 2. **Register the plugin** in `opencode.json`:
