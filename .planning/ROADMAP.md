@@ -37,12 +37,15 @@ Option 3 is a new docs-only foundation route layered onto CA-04 governance work.
 | O3-03 | Command vs Workflow vs Session/Task Continuity Map | ✅ DOCS-ONLY FOUNDATION | O3-01 |
 | O3-04 | Sector AGENTS.md Docs Implementation | ✅ DELIVERED (9 sector AGENTS.md, lifecycle+spec PASS, evidence DUAL) | O3-01, O3-02, O3-03, pre-phase checklist pass |
 
-Future phases after O3 gate passage:
+Option 3 implementation phases (in dependency order):
 
-- Bootstrap/init CLI — future runtime phase, blocked until SDK/CLI proof and test plan exist.
-- Config realm cleanup — future configuration phase, blocked until actor/consumer/purpose mapping exists.
-- Routing workflow foundation — future f-04 phase, blocked until command/workflow/session boundaries are locked.
-- Session/task continuity management — future lifecycle/state phase, blocked until typed owners and evidence gates exist.
+| # | Phase | Status |
+|---|-------|--------|
+| 1 | Sector AGENTS.md docs | ✅ DELIVERED (O3-04, 9 files committed) |
+| 2 | Config realm cleanup | ✅ DELIVERED (traceability doc, dead code removed) |
+| 3 | **Bootstrap/init CLI** | 🔴 ACTIVE — delegated to L1 coordinator |
+| 4 | Routing workflow foundation | ⬜ PENDING — f-04, blocked until bootstrap complete |
+| 5 | Session/task continuity management | ⬜ PENDING — blocked until typed owners + E2E proof |
 
 Gate boundary: docs-only artifacts are L5 evidence. Runtime readiness: FAIL/BLOCK until L1-L3 runtime proof exists.
 
