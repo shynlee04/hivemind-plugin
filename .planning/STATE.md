@@ -126,8 +126,8 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 | Phase | Status | Evidence level | Notes |
 |---|---|---|---|
-| CP-PTY-00 | 🔵 READY | L5 docs/spec | Context, research, requirements, spec, and route skeletons created |
-| CP-PTY-01 | ⛔ BLOCKED | L2-L3 required | Runtime implementation blocked on BOOT-07 or explicit authorization |
+| CP-PTY-00 | ✅ COMPLETE | L5 docs/spec | Context, research, requirements, spec, verification all passed |
+| CP-PTY-01 | 🔵 READY | L2-L3 required | BOOT-07 complete, entry gate satisfied |
 | SC-PTY-01 | ⬜ DEFERRED | L2-L3 required | Read-only projection only after CP-PTY-01 and Q2 sidecar confirmation |
 
 ---
