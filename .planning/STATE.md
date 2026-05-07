@@ -2,16 +2,16 @@
 # Hivemind — State
 
 **Last updated:** 2026-05-08
-**Last trigger:** BOOT-07 clean-state E2E proof completed through manual autonomous fallback
+**Last trigger:** BOOT-08 agent/skill integration constitution completed
 
 ---
 
 ## Current Status
 
-**Active workstreams:** Bootstrap CLI (WS-BOOT) + Shell/PTY Control-Plane Runway — Phase 0 governance gate PASSED
-**Current phase:** BOOT-08 (Agent + Skill Integration) plus CP-PTY-00 docs/spec spike available in parallel
-**Blocked:** No — Phase 0 gate passed, BOOT-02 continuation authorized  
-**Health:** 🟢 BOOT-02 through BOOT-07 are complete; BOOT-08 and CP-PTY-00 remain active planning/integration work
+**Active workstreams:** Bootstrap CLI (WS-BOOT) + Shell/PTY Control-Plane Runway + Meta-Concept Migration (WS-MCM) — Phase 0 governance gate PASSED
+**Current phase:** CP-PTY-00 (docs/spec spike) and MCM-01/MCM-02 (agent/skill migration) ready
+**Blocked:** No — Phase 0 gate passed, BOOT-08 complete, MCM prerequisites met  
+**Health:** 🟢 BOOT-01 through BOOT-08 all complete; CP-PTY-00 and MCM-01/MCM-02 are next
 **Control mode:** Managed autonomous loop — one authorized cycle at a time
 
 ## Project Reference
@@ -44,6 +44,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | 89 agents | ✅ | L0/L1/L2/L3 hierarchy, hm-* + hf-* lineages |
 | 123 active skill directories | ✅ | Current primitive inventory excludes `.gitkeep`; lineage counts require MCM doctor proof before shipping claims |
 | 19 commands | ✅ | start-work, plan, deep-init, ultrawork, harness-doctor, etc. |
+| Agent/skill integration constitution | ✅ | BOOT-08: lineage, permissions, hierarchy, routing contracts (L5 governance) |
 
 ---
 
@@ -133,12 +134,12 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **Run BOOT-08** — agent + skill integration constitution and routing contracts.
-2. **Run CP-PTY-00** — docs/spec shell control-plane spike if still pending.
-3. **Run CP-PTY-00 as parallel docs/spec spike** — no runtime mutation; prepare CP-PTY-01 contract.
-4. **After BOOT-07:** authorize or reject CP-PTY-01 runtime implementation.
-5. **After BOOT-04 symlinks:** Resume MCM-01 + MCM-02 — agent + skill migration.
-6. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation; require CP-PTY contract if router invokes command lanes.
+1. **Run CP-PTY-00** — docs/spec shell control-plane spike (artifacts exist, needs verification/completion).
+2. **Run MCM-01** — agent migration to .opencode/ (BOOT-04 symlinks + BOOT-08 constitution ready).
+3. **Run MCM-02** — skill migration to .opencode/ (BOOT-04 symlinks + BOOT-08 constitution ready).
+4. **After MCM-01/MCM-02:** Run MCM-03 (config integration) and MCM-04 (customization).
+5. **After CP-PTY-00:** Authorize or reject CP-PTY-01 runtime implementation.
+6. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation.
 
 ## Option 3 Foundation Artifacts
 

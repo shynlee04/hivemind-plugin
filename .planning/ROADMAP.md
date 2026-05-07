@@ -103,7 +103,7 @@ The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It pr
 | BOOT-05 | Config Bootstrap + Defaults | ✅ COMPLETE | BOOT-02 | L3: configs.json initializes schema reference and runtime defaults resolve |
 | BOOT-06 | Validation + Health Check | ✅ COMPLETE | BOOT-03, BOOT-04, BOOT-05 | L2-L3: built `hivemind doctor` reports ALL CHECKS PASS |
 | BOOT-07 | End-to-End Proof | ✅ COMPLETE | BOOT-06 | L1-L3: clean temp project init/recover/doctor passed |
-| BOOT-08 | Agent + Skill Integration | 🔵 READY | BOOT-07 | L5: constitution + routing contracts |
+| BOOT-08 | Agent + Skill Integration | ✅ COMPLETE | BOOT-07 | L5: constitution + routing contracts |
 
 ### Shell / PTY Control-Plane Runway
 
