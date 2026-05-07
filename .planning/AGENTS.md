@@ -39,3 +39,9 @@
 - Planning requirements should be falsifiable, source-backed, and mapped to acceptance/verification methods.
 - Completion claims must state evidence level; O3 and docs-only artifacts are L5 and keep runtime readiness blocked. Evidence: `.planning/ROADMAP.md:47-49`.
 - Before a planning artifact authorizes work, it must identify allowed surfaces, forbidden surfaces, actors/consumers, verification commands or inspection methods, and stop conditions.
+
+## 7. Current CP-PTY runway note
+
+- `CP-PTY-00-shell-pty-control-plane-spike` is a docs/spec-only phase. It may update `.planning/**` but must not mutate `src/**`, `tests/**`, `.opencode/**`, or `.hivemind/**`.
+- `CP-PTY-01-background-shell-control-plane-mvp` is blocked until BOOT-07 E2E proof or explicit user authorization. Do not treat CP-PTY-00 L5 artifacts as runtime readiness.
+- Any routing or sidecar plan that invokes background command, PTY, headless shell, or terminal projection behavior must depend on the CP-PTY artifacts and preserve read-only projection boundaries unless a later phase changes them.

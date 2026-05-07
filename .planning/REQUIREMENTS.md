@@ -21,6 +21,7 @@ Features agents can explicitly call or skills can activate.
 | f-03e | Custom tool registry and stacking | MEDIUM | PARTIAL | Tools exist, no stacking |
 | f-03f | Hook registry and feature wiring | MEDIUM | PARTIAL | 6 hook types wired, no registry |
 | f-06 | Multi-lane delegation (native/SDK/PTY) | HIGH | PARTIAL | Core WaiterModel works, lanes exist but not routed |
+| f-06a | Background shell / PTY control-plane contract | HIGH | SPEC READY | CP-PTY-00 phase skeleton defines lanes, permission gates, bounded output, fallback, lifecycle, and restart truth |
 | f-07 | Trajectory and task-plus lifecycle | MEDIUM | PARTIAL | Modules exist, not wired to lifecycle |
 
 ---
@@ -68,6 +69,7 @@ User-facing setup, configuration, and control surfaces.
 | BOOTSTRAP-02 | `npx hivemind init` interactive setup | CRITICAL | MISSING | CLI substrate exists (Phase 40), no init command |
 | BOOTSTRAP-04 | Doctor/checkup mode for primitive health | HIGH | MISSING | validate-restart exists but no health check command |
 | SIDECAR-01 | Sidecar reads artifact JSON from `.hivemind/` and `.planning/` | MEDIUM | PARTIAL | readonly-state.ts exists |
+| SIDECAR-PTY-01 | Read-only terminal/progress projection | LOW-MEDIUM | DEFERRED | SC-PTY-01 skeleton; blocked on CP-PTY-01 and Q2 sidecar confirmation |
 | CONF-01 | Config consumer wiring | CRITICAL | PARTIAL | Phase 0 config contract maps active fields; unresolved fields must be wired or explicitly deferred |
 
 ---
@@ -81,6 +83,7 @@ User-facing setup, configuration, and control surfaces.
 | BOOTSTRAP-RECOVERY | Primitives bootstrap on deletion (postinstall or restore) | Blocked on BOOTSTRAP-02 |
 | CONF-01-CONSUMERS | Config field runtime consumers | Needs Phase 0 config contract follow-through and runtime proof |
 | LIFECYCLE-GATE | gate-l3-lifecycle-integration criteria docs | Needs synthesis from ARCHITECTURE.md |
+| CPPTY-IMPLEMENTATION | Runtime shell/PTY control-plane MVP | Blocked on CP-PTY-00 + BOOT-07 unless explicitly authorized earlier |
 
 ---
 
@@ -93,4 +96,10 @@ User-facing setup, configuration, and control surfaces.
 | Gate triad | Lifecycle → Spec → Evidence | gate skills exist, lifecycle references empty |
 
 ---
-*Last updated: 2026-05-07 after Phase 0 governance baseline*
+## CP-PTY Draft Requirement Links
+
+- Phase requirements: `.planning/phases/CP-PTY-00-shell-pty-control-plane-spike/REQUIREMENTS-2026-05-08.md`
+- Phase spec: `.planning/phases/CP-PTY-00-shell-pty-control-plane-spike/SPEC-2026-05-08.md`
+- Route: `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md`
+
+*Last updated: 2026-05-08 after BOOT-02R + CP-PTY runway insertion*

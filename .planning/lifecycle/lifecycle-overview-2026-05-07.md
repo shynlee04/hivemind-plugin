@@ -77,6 +77,7 @@ The hierarchy is a HIVE invariant: lower layers should not decide global complet
 | Classify intent | Router / command engine | Partial; f-04 missing |
 | Select agent/skill/command | Router / registry | Partial; no unified runtime registry |
 | Dispatch delegated work | Delegation manager and tools | Delivered core path |
+| Dispatch background command work | Command delegation and PTY/headless adapters | Partial; CP-PTY-00 now owns the control-plane spec before runtime hardening |
 | Detect completion | Completion detector | Delivered core path |
 | Persist state | Continuity and delegation persistence | Partial; only some state roots owned |
 | Verify evidence | Gate skills and tests | Partial; lifecycle criteria incomplete |
@@ -132,6 +133,7 @@ Not allowed yet:
 | `conversation_language` unused | Config lies about runtime behavior | Cycle 3 |
 | State ownership partial | MIND surfaces lack typed owners | Cycle 4 |
 | f-04 missing | HIVE cannot route intent reliably | Cycle 5 |
+| Shell/PTY command lane under-specified | HIVE may route into unsafe or ambiguous command execution | Cycle 2P / CP-PTY-00, then CP-PTY-01 after BOOT-07 |
 | Hierarchy not enforced | HIVE cannot prevent delegation drift | Cycle 6 |
 | E2E proof missing | Evidence gate cannot prove claims | Cycle 7 |
 
@@ -150,8 +152,10 @@ Cycle 1 completes when:
 
 ## 10. Next Cycle Recommendation
 
-The next cycle should be **Cycle 2: Bootstrap Recovery**.
+The next cycle should be **Cycle 2: Bootstrap Recovery**, with **BOOT-02R governance reconciliation** first and **CP-PTY-00 Shell / PTY Control-Plane Spike** allowed as a parallel docs/spec lane.
 
 Reason: without bootstrap recovery, Hivemind cannot promise installable, recoverable runtime composition. That gap undermines every later state, routing, and onboarding feature.
+
+CP-PTY-00 is permitted because it does not mutate runtime code. CP-PTY-01 runtime implementation remains blocked until BOOT-07 E2E proof or explicit user authorization.
 
 Do not start Cycle 2 automatically. Ask the user to authorize it.

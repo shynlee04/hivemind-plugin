@@ -66,7 +66,8 @@ Interpretation: feature work is allowed only when it closes architecture-enablin
 | Cycle | Name | Status | Depends On | Exit Gate |
 |-------|------|--------|------------|-----------|
 | Cycle 1 | Lifecycle Alignment | Authorized now | Fresh `.planning` context | User approves routed plan and lifecycle overview |
-| Cycle 2 | Bootstrap Recovery | Pending authorization | Cycle 1 | `.opencode/` and `.hivemind/` restoration path documented and verified |
+| Cycle 2 | Bootstrap Recovery + BOOT-02R Reconciliation | Active/authorized by current user request | Cycle 1 | BOOT-02 status truth reconciled; `.opencode/` and `.hivemind/` restoration path documented and verified |
+| Cycle 2P | Shell / PTY Control-Plane Spike | Parallel docs/spec only | Cycle 2 reconciliation | CP-PTY context, research, requirements, spec, and route artifacts exist with runtime mutation blocked |
 | Cycle 3 | Config-to-Behavior Wiring | Pending authorization | Cycle 2 | `conversation_language` has at least one runtime consumer or is rejected by schema |
 | Cycle 4 | State Ownership | Pending authorization | Cycle 2 and Cycle 3 | Priority `.hivemind/` surfaces have typed ownership modules |
 | Cycle 5 | f-04 Routing Engine | Pending authorization | Cycle 4 | Intent/classification/router path exists with tests |
@@ -81,6 +82,7 @@ Interpretation: feature work is allowed only when it closes architecture-enablin
 |-------------|---------|-----------------|
 | Lifecycle overview | Safe phase routing and gate checks | Any autonomous implementation loop |
 | Bootstrap recovery | Reinstallable harness package behavior | State ownership and user onboarding |
+| Shell/PTY control-plane spec | Safe command lanes, background delegation, and terminal projection boundaries | f-04 routing if command lanes are routed; CP-PTY-01 implementation |
 | Config consumer binding | Honest runtime behavior | Any profile/language automation |
 | State ownership modules | Durable MIND memory surfaces | Auto-routing and long-session recovery |
 | f-04 router | Command/agent/skill coordination | Full autonomous workflow execution |
@@ -99,6 +101,7 @@ Interpretation: feature work is allowed only when it closes architecture-enablin
 | D-005 | f-04 workflow router missing | Deliberate-prudent | P0 | Cycle 5 |
 | D-006 | Lifecycle gate references incomplete | Inadvertent-prudent | P0 | Cycle 1 |
 | D-007 | E2E runtime proof missing | Deliberate-prudent | P1 | Cycle 7 |
+| D-008 | Shell/PTY/background command lane under-specified across delegation, permissions, lifecycle, and projection | Inadvertent-prudent | P1 | Cycle 2P / CP-PTY-00 |
 
 ---
 
@@ -122,7 +125,8 @@ Verdict: proceed with managed cycles only. Do not enable broad autonomous workfl
 | Cycle | Size | Parallelizable | Notes |
 |-------|------|----------------|-------|
 | Cycle 1 | M | Partially | Documentation and routing can be drafted together, but final integration is serial. |
-| Cycle 2 | M | Low | Bootstrap touches package, filesystem conventions, and install behavior; serialize. |
+| Cycle 2 | M | Low | Bootstrap touches package, filesystem conventions, and install behavior; serialize. BOOT-02R governance reconciliation must complete before BOOT-03 resumes. |
+| Cycle 2P | S-M | Medium | CP-PTY-00 is docs/spec only and can run parallel with BOOT continuation because it must not mutate runtime files. |
 | Cycle 3 | S-M | Medium | Config wiring and dead module cleanup can be separate if file overlap is low. |
 | Cycle 4 | L | Medium | State ownership can split by state surface after interface is locked. |
 | Cycle 5 | L-XL | Low initially | Router design must be serialized before implementation slices. |

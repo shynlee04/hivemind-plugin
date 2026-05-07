@@ -2,6 +2,8 @@
 
 ## Project Overview
 
+Current planning route: BOOT-02R reconciles BOOT-02 status truth before BOOT-03 automation resumes. CP-PTY-00 is the shell/PTY/background-command control-plane spike and is docs/spec-only; CP-PTY-01 runtime implementation is blocked until BOOT-07 E2E proof or explicit user authorization.
+
 
 ## NON-NEGOTIABLE RULES
 
@@ -11,6 +13,9 @@
 
 - context git commit for both code implementation, docs, planning, researching, gatekeeping, verification artifacts - do not ask if commit needed
 
+- AGENTS.md must be routinely updated - after each cycle, each batch of implementation.
+
+- AGENTS.md are nested under dirs and subdirs, beware when maintaining them.
 
 - files creation and structure must be registered and keep track - we love our codetree systematically structured and we **DO Registered** folders and subfolders with `.gitkeep` 
 

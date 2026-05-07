@@ -41,7 +41,7 @@ This is L5 documentation evidence. A later runtime gate must prove behavior with
 | `documents_and_artifacts_language` | Default `"en"`; traced as wired | governance block, behavioral profile resolver | Must instruct generated document/artifact language and remain visible in behavioral context. |
 | `mode` | Default `"expert-advisor"`; traced as wired | governance block, behavioral profile resolver | Must select behavior mode. Canonical modes: `expert-advisor`, `hivemind-powered`, `free-style`. |
 | `user_expert_level` | Default `"intermediate-high-level"`; traced as wired | governance block, behavioral profile resolver | Must select expertise framing and behavioral profile expertise. |
-| `delegation_systems` | Default nested object; traced as dead | none | Must not be claimed runtime-active until wired to delegation dispatch gates or explicitly marked deferred. |
+| `delegation_systems` | Default nested object; traced as dead | CP-PTY-00 now defines the future background/PTY control-plane contract; no verified runtime consumer yet | Must not be claimed runtime-active until wired to delegation dispatch gates or explicitly marked deferred. |
 
 ---
 
@@ -56,6 +56,8 @@ This is L5 documentation evidence. A later runtime gate must prove behavior with
 | `background_delegation` | Use background command/process delegation where authorized. | Contract only; must be gated before runtime claims. |
 
 Downstream phases must either wire this field to runtime behavior or label it as deferred. Leaving it silently dead fails Phase 0 config acceptance.
+
+CP-PTY-00 adds the architecture runway for `background_delegation`; it does not prove runtime wiring. CP-PTY-01 must be the first phase allowed to turn this config contract into active behavior, and only after BOOT-07 or explicit authorization.
 
 ---
 
@@ -93,6 +95,7 @@ Downstream phases must either wire this field to runtime behavior or label it as
 | P0-CFG-02 | `delegation_systems` is not presented as runtime-active until a consumer is verified. | Inspect this artifact and downstream roadmap/state text. | Delegation/routing claims. |
 | P0-CFG-03 | Planned `hf-doctor` and `hf-meta-authoring` command families are documented as planned, not delivered. | Inspect planned config consumers. | MCM and meta-authoring command work. |
 | P0-CFG-04 | Config claims are classified as L5 unless later runtime tests or live CLI proof are attached. | Inspect evidence-level statements. | BOOT doctor/init readiness. |
+| P0-CFG-05 | `background_delegation` remains blocked from runtime-active claims until CP-PTY-01 proves permission-gated command execution. | Inspect CP-PTY artifacts and runtime test evidence when available. | Routing and delegation claims. |
 
 ---
 

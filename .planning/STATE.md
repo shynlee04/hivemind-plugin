@@ -1,24 +1,24 @@
 <!-- generated-by: gsd-doc-writer -->
 # Hivemind — State
 
-**Last updated:** 2026-05-07  
-**Last trigger:** ROADMAP unblocked — BOOT-03 through BOOT-07 status changed from BLOCKED BY PHASE 0 to PENDING; phase directories created for all 8 BOOT phases
+**Last updated:** 2026-05-08
+**Last trigger:** BOOT-02R governance reconciliation and CP-PTY shell/PTY control-plane runway inserted as planning skeletons
 
 ---
 
 ## Current Status
 
-**Active workstreams:** Bootstrap CLI (WS-BOOT) — Phase 0 governance gate PASSED  
-**Current phase:** BOOT-02 (CLI Framework + Entry Point) — T01 complete, T02-T13 pending  
+**Active workstreams:** Bootstrap CLI (WS-BOOT) + Shell/PTY Control-Plane Runway — Phase 0 governance gate PASSED
+**Current phase:** BOOT-02R (Governance Reconciliation) plus CP-PTY-00 docs/spec spike skeleton
 **Blocked:** No — Phase 0 gate passed, BOOT-02 continuation authorized  
-**Health:** 🟢 Phase 0 governance baseline complete; runtime health claims unchanged from prior evidence
+**Health:** 🟡 BOOT-02 implementation summaries exist, but ROADMAP/STATE/REQUIREMENTS needed reconciliation before BOOT-03 automation
 **Control mode:** Managed autonomous loop — one authorized cycle at a time
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** BOOT-02 CLI commands. Phase 0 governance baseline complete (identity, lineage, hierarchy, source planes, config contract, meta-authoring boundary).
+**Current focus:** BOOT-02R reconciliation, BOOT-03 readiness, and CP-PTY-00 shell/PTY control-plane architecture runway. Phase 0 governance baseline complete (identity, lineage, hierarchy, source planes, config contract, meta-authoring boundary).
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -51,8 +51,9 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 | Issue | Severity | Action |
 |-------|----------|--------|
-| **No bootstrap/recovery** — delete `.opencode/` or `.hivemind/`, `npm run build` restores nothing | 🔴 CRITICAL | CA-04.1: postinstall script + CLI init |
+| **Bootstrap/recovery not E2E-proven** — BOOT-02 entrypoint summaries exist, but BOOT-03 through BOOT-07 runtime proof remains pending | 🔴 CRITICAL | BOOT-02R reconciliation, then BOOT-03..BOOT-07 |
 | **Config consumer gap remains** — `conversation_language` is traced as wired in config traceability, but `delegation_systems` has no runtime consumer | 🔴 CRITICAL | Phase 0 config contract + CA-04.2: wire or explicitly defer dead config fields |
+| **Shell/PTY command lane not fully specified** — background command, PTY, headless fallback, SDK delegation, and future sidecar projection cross-cut multiple modules | 🟡 HIGH | CP-PTY-00 docs/spec spike; CP-PTY-01 blocked until BOOT-07 or explicit authorization |
 | **`messages-transform.ts` dead code** — 67 LOC, zero imports, confirmed dead Phase 35 | 🟡 HIGH | Delete file |
 | **plugin.ts at 447 LOC** — 100 LOC target, needs split | 🟡 HIGH | Extract hook/tool registration modules |
 | **12 stale modules** — exist but no consumers | 🟡 HIGH | Document or wire (see SRC-MODULE-AUDIT) |
@@ -81,6 +82,9 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-MCM-01 | gsd-* agents/skills are NEVER shipped — dev tooling boundary enforced | NEW — 2026-05-07 |
 | P0-GOV | Phase 0 Governance Baseline blocks BOOT/MCM/f-04 until identity, source-plane, config, meta-authoring, and route gates pass | NEW — 2026-05-07 |
 | P0-ID | Product is Hivemind; package/bin are `hivemind`; harness is project type; OpenCode is platform; `opencode-harness` and `hivemind-tools` are legacy aliases only | NEW — 2026-05-07 |
+| BOOT-02R | BOOT-02 implementation summaries require governance reconciliation before BOOT-03 automation resumes | NEW — 2026-05-08 |
+| CP-PTY-00 | Shell/PTY/background command control-plane spike is docs/spec only and may run parallel with BOOT continuation | NEW — 2026-05-08 |
+| CP-PTY-01 | Runtime shell/PTY control-plane implementation is blocked on BOOT-07 unless explicitly authorized earlier | NEW — 2026-05-08 |
 
 ---
 
@@ -101,7 +105,7 @@ Runtime readiness remains blocked until later L1-L3 proof exists. Phase 0 govern
 
 ---
 
-## BOOT-02 Progress (Phase 0 Gate Passed — Authorized)
+## BOOT-02 / BOOT-02R Progress (Phase 0 Gate Passed — Authorized)
 
 | Task | Status | File | LOC |
 |------|--------|------|-----|
@@ -115,18 +119,26 @@ Runtime readiness remains blocked until later L1-L3 proof exists. Phase 0 govern
 | T08 | ⬜ PENDING | `src/cli/index.ts` (MODIFY) | — |
 | T09–T13 | ⬜ PENDING | `tests/cli/commands/*.test.ts` | — |
 
+BOOT-02 phase-local summaries now report implementation and verification evidence in the working tree. BOOT-02R exists to reconcile the active governance truth before BOOT-03 automation resumes.
+
+## CP-PTY Runway Progress
+
+| Phase | Status | Evidence level | Notes |
+|---|---|---|---|
+| CP-PTY-00 | 🔵 READY | L5 docs/spec | Context, research, requirements, spec, and route skeletons created |
+| CP-PTY-01 | ⛔ BLOCKED | L2-L3 required | Runtime implementation blocked on BOOT-07 or explicit authorization |
+| SC-PTY-01 | ⬜ DEFERRED | L2-L3 required | Read-only projection only after CP-PTY-01 and Q2 sidecar confirmation |
+
 ---
 
 ## Next Actions
 
-1. **Phase 0 PASSED** — identity, source planes, config, meta-authoring, checklist, route all complete.
-2. **BOOT-03 through BOOT-07 unblocked** — Phase 0 gate passed, status changed to PENDING in ROADMAP.md.
-3. **Phase directories created** — `.planning/phases/BOOT-01` through `BOOT-08` with `.gitkeep` registration.
-4. **Resume BOOT-02 Wave 1** — T02 + T03 (CQRS write-side tools).
-5. **Continue BOOT-02 Waves 2-4** — command handlers, registration wiring, contract tests.
-6. **Continue BOOT-03 through BOOT-07** — state init, primitives recovery, config bootstrap, validation, E2E proof.
-7. **After BOOT-04 symlinks:** Resume MCM-01 + MCM-02 — agent + skill migration.
-8. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation.
+1. **Complete BOOT-02R** — reconcile BOOT-02 status across ROADMAP, STATE, REQUIREMENTS, and phase summaries.
+2. **Continue BOOT-03 through BOOT-07** — state init, primitives recovery, config bootstrap, validation, E2E proof.
+3. **Run CP-PTY-00 as parallel docs/spec spike** — no runtime mutation; prepare CP-PTY-01 contract.
+4. **After BOOT-07:** authorize or reject CP-PTY-01 runtime implementation.
+5. **After BOOT-04 symlinks:** Resume MCM-01 + MCM-02 — agent + skill migration.
+6. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation; require CP-PTY contract if router invokes command lanes.
 
 ## Option 3 Foundation Artifacts
 
@@ -153,6 +165,7 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 
 - `.planning/roadmap/managed-autonomous-loop-2026-05-07.md`
 - `.planning/lifecycle/lifecycle-overview-2026-05-07.md`
+- `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md`
 
 ---
-*State updated: 2026-05-07 for Phase 0 governance baseline*
+*State updated: 2026-05-08 for BOOT-02R + CP-PTY runway insertion*

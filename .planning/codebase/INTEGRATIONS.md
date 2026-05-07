@@ -107,9 +107,14 @@
   - `delegations.json` — Delegation records
   - `config-workflows.json` — Config workflow state
   - Continuity store (session persistence) via `src/lib/continuity.ts`
-  - Delegation persistence via `src/lib/delegation-persistence.ts`
+- Delegation persistence via `src/lib/delegation-persistence.ts`
 - Legacy path: `.opencode/state/opencode-harness/` (supported via compatibility bridge, one-way migration)
 - Format: Deep-clone-on-read JSON, module-level singleton cache in `continuity.ts`
+
+**Shell / PTY integration runway (CP-PTY-00):**
+- Background command execution currently crosses plugin tool registration, `DelegationManager`, command delegation, PTY adapter, output polling, and lifecycle cleanup.
+- Future CP-PTY-01 implementation must gate command execution before spawn, bound output reads, preserve headless fallback truth, and mark PTY/headless processes non-resumable after parent runtime restart.
+- Future sidecar/tmux projection is read-only unless a later phase explicitly grants mutation authority.
 
 **File Storage:**
 - `.hivemind/event-tracker/` — Session event tracker artifacts (JSON + Markdown)
@@ -242,4 +247,4 @@ delegation-manager.ts → concurrency + continuity + delegation-persistence + he
 
 ---
 
-*Integration audit: 2026-05-07*
+*Integration audit: 2026-05-07; CP-PTY runway note added 2026-05-08*

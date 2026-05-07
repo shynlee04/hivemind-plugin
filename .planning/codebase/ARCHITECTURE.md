@@ -292,6 +292,8 @@ L0 (Orchestrator) → hf-l0-orchestrator (meta-builder routing)
 4. Output polled via `action: "output"`, input sent via `action: "input"`, terminated via `action: "terminate"`
 5. Queue-governed dispatch with key-based concurrency
 
+**CP-PTY runway note (2026-05-08):** This flow is now tracked by CP-PTY-00 as a cross-cutting control-plane spike. Future implementation must preserve lane separation between SDK child sessions, PTY command sessions, headless command fallback, and read-only projection surfaces. PTY/headless command sessions must not be represented as resumable after parent runtime restart unless a later phase proves that behavior.
+
 ### Tertiary Flow: Prompt Enhancement Pipeline
 
 1. Agent invokes `prompt-skim` → fast scan (words, lines, tokens, URLs, file paths, complexity) (`src/tools/prompt-skim/`)
@@ -325,6 +327,11 @@ L0 (Orchestrator) → hf-l0-orchestrator (meta-builder routing)
 - Purpose: Unified abstraction for all delegation modes (SDK child-session, PTY command, headless process)
 - Examples: `src/lib/delegation-manager.ts` (orchestrator, 500 LOC), `src/lib/sdk-delegation.ts` (SDK polling), `src/lib/command-delegation.ts` (PTY/process)
 - Pattern: dispatch → return ID immediately → poll for status via delegation-status tool
+
+**Shell / PTY Control-Plane:**
+- Purpose: Future CP-PTY phases harden background shell, PTY, and headless command sessions with permission gates, bounded output, cleanup, and restart-truth semantics.
+- Examples: `src/tools/run-background-command.ts`, `src/lib/command-delegation.ts`, `src/lib/pty/`, and future tests.
+- Pattern: start/read/write/list/terminate must remain explicit; read-only sidecar/tmux projections must not mutate canonical state.
 
 **HookDependencies:**
 - Purpose: Shared dependency bundle injected into all hook factories via `deps` object
@@ -416,4 +423,4 @@ L0 (Orchestrator) → hf-l0-orchestrator (meta-builder routing)
 
 ---
 
-*Architecture analysis: 2026-05-07*
+*Architecture analysis: 2026-05-07; CP-PTY runway note added 2026-05-08*

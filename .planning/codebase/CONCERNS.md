@@ -28,6 +28,13 @@
 
 ## High Severity
 
+### CONCERN-H0: Shell / PTY Control-Plane Is Cross-Cutting and Under-Specified
+
+- **Issue:** Background command execution, interactive PTY support, headless process fallback, SDK child-session delegation, lifecycle cleanup, permission gating, and future sidecar/tmux projection are spread across multiple runtime surfaces without one explicit control-plane contract.
+- **Files:** `src/tools/run-background-command.ts`, `src/lib/pty/`, `src/lib/command-delegation.ts`, `src/lib/delegation-manager.ts`, `src/lib/sdk-delegation.ts`, `src/hooks/`, `.planning/phases/CP-PTY-00-shell-pty-control-plane-spike/`.
+- **Impact:** f-04 routing and future sidecar workflows may accidentally depend on ambiguous command-session semantics, especially around permissions, output flooding, cleanup, and restart recovery.
+- **Fix approach:** Complete CP-PTY-00 docs/spec spike first. Do not implement CP-PTY-01 until BOOT-07 E2E proof exists or the user explicitly authorizes higher-risk runtime mutation.
+
 ### CONCERN-H1: Dead Module — `src/hooks/messages-transform.ts`
 
 - **Issue:** 67 LOC file with `summarizeMessages()` export. Confirmed dead by both the source audit and `src/lib/AGENTS.md` documentation ("removed (dead code)" since Phase 35). Zero consumers in all 168 `src/` files. Zero test files.
@@ -165,4 +172,4 @@
 
 ---
 
-*Concerns audit: 2026-05-07*
+*Concerns audit: 2026-05-07; CP-PTY concern added 2026-05-08*
