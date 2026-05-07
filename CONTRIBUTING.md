@@ -1,108 +1,107 @@
-<!-- generated-by: gsd-doc-writer -->
+# Contributing to HiveMind
 
-# Contributing
+Thank you for your interest in contributing to HiveMind! This document provides guidelines and information for contributors.
+
+## Code of Conduct
+
+By participating in this project, you agree to maintain a respectful and inclusive environment for everyone.
+
+## How to Contribute
+
+### Reporting Bugs
+
+1. Check existing [issues](https://github.com/shynlee04/hivemind-plugin/issues) first
+2. Create a new issue with:
+   - Clear, descriptive title
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Node.js version, OS, OpenCode version
+
+### Suggesting Features
+
+Open an issue with the `feature-request` label. Include:
+- Problem statement (what gap does this fill?)
+- Proposed solution
+- How it fits the [5 Pillars](./docs/draft/HIVEMIND-PHILOSOPHY-2026-04-10.md#3-the-5-pillars-of-hivemind-practice)
+
+### Pull Requests
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes following the [Code Style](#code-style) guidelines
+4. Run tests: `npm test`
+5. Run type-check: `npm run typecheck`
+6. Commit with format: `type(scope): description — why`
+7. Push and open a PR
 
 ## Development Setup
 
-Contributing starts with getting the harness running locally. Full setup instructions are in the [README](./README.md#build). At a minimum:
-
 ```bash
-git clone <repo-url> opencode-harness
-cd opencode-harness
+git clone https://github.com/shynlee04/hivemind-plugin.git
+cd hivemind-plugin
 npm install
 npm run build
-npm run typecheck
+npm test
 ```
 
-You will need **Node.js >= 20.0.0**. The harness has no database dependencies or environment variables required for development — it runs entirely in-process against OpenCode's SDK.
-
-For detailed architecture and module layout, see [Architecture Overview](./docs/architecture/overview.md). For runtime configuration options, see [Configuration](./docs/configuration/settings.md).
-
-## Coding Standards
-
-Code quality is enforced through TypeScript strict mode and test coverage, not external formatters or linters.
+## Code Style
 
 ### TypeScript
 
-All source files must conform to the `tsconfig.json` strict settings:
-
-- `strict: true` — no unchecked implicit conversions
-- `noUnusedLocals: true` — no dead variable declarations
-- `noUnusedParameters: true` — no unused function parameters
-- `noImplicitReturns: true` — all code paths must return
-- `verbatimModuleSyntax: true` — use `import type` for type-only imports
-- `noFallthroughCasesInSwitch: true`
-
-**Before committing, always run:**
-
-```bash
-npm run typecheck
-```
-
-### Module structure
-
-- **Max module size:** 500 LOC — if a file approaches this, extract into a focused module
-- **No circular dependencies** — the module graph roots at `src/lib/types.ts`, maximum dependency chain 2 levels
+- **Strict mode** enabled (`strict: true`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`)
+- **ES2022 target**, NodeNext module resolution
+- **`verbatimModuleSyntax: true`** — use `import type` for type-only imports
 - **No `any` types** on new code
-- **`[Harness]` prefix** on all thrown errors for identifiable flow control
-- **Deep-clone-on-read** in `continuity.ts` — all `clone*()` functions prevent mutation aliasing
+- **Max 500 LOC per module** (target 300)
+- **`[Harness]` prefix** on all thrown errors
 
-### Documentation
+### Architecture Rules
 
-All exported functions and classes require JSDoc with descriptions, parameters, return values, and examples. Run the `jsdoc-typescript-docs` skill for assistance.
+- **CQRS enforced**: Tools are write-side (state mutation). Hooks are read-side (observation only).
+- **`types.ts` is leaf** — depends on nothing
+- **No circular dependencies** — max chain depth is 2 levels
+- **Deep-clone-on-read** in continuity store
+- **State root separation**: `.hivemind/` for runtime state, `.opencode/` for primitives only
 
-## Testing
+### Testing
 
-Tests use **Vitest** with globals enabled — no imports needed for `describe`, `it`, or `expect`.
+- Tests in `tests/` directory, mirroring `src/` structure
+- Use vitest globals (`describe`, `it`, `expect` — no imports needed)
+- **Always type-check before committing**: `npm run typecheck`
+- Coverage thresholds: Statements 85%, Branches 72%, Functions 85%, Lines 85%
 
-```bash
-npm test                 # Run full suite
-npm run test:watch       # Watch mode
-npm run test:coverage    # Coverage report
-npx vitest run tests/lib/helpers.test.ts  # Single file
-npx vitest run -t "<test name>"           # Pattern match
+### Commit Messages
+
+```
+type(scope): description — why
+
+Types: feat, fix, refactor, test, docs, chore
+Scope: tools, hooks, lib, schema, cli, docs
 ```
 
-### Coverage thresholds
+Examples:
+```
+feat(tools): add delegation timeout override — prevents orphaned sessions
+fix(lib): deep-clone continuity reads — mutation aliasing caused stale state
+test(hooks): add auto-loop boundary tests — coverage gap in session hooks
+```
 
-Coverage is enforced at these minimums (from `vitest.config.ts`):
+## Project Structure
 
-| Type | Threshold |
-|------|-----------|
-| Statements | 85% |
-| Branches | 72% |
-| Functions | 85% |
-| Lines | 85% |
+```
+src/
+├── plugin.ts          # Composition root (zero business logic)
+├── tools/             # Write-side tools (17 tools)
+├── hooks/             # Read-side hooks (10 factories)
+├── lib/               # Core library modules (34 modules)
+├── shared/            # Cross-cutting utilities
+├── schema-kernel/     # Zod v4 schemas (16 files)
+└── cli/               # CLI tools
 
-Coverage covers `src/**/*.ts`, excluding barrel index files.
+tests/                 # Test files (mirror src/)
+docs/                  # Documentation
+```
 
-### Test file conventions
+## Questions?
 
-- Test files live in `tests/lib/` and `tests/tools/`, mirroring `src/lib/` and `src/tools/`
-- File naming: `tests/*/*.test.ts`
-- Use vitest globals — no `import { describe, it, expect } from 'vitest'` needed
-
-## Branch Conventions
-
-- The default branch is `main` — the canonical `opencode-harness` v3 source
-- The `legacy/v2.x` branch is a frozen forensic reference of the original `hivemind-plugin` — do not target PRs there
-- No formal branch naming convention is documented; use descriptive, lowercase branch names (e.g., `fix/concurrency-leak`, `feat/auto-decompaction`)
-
-## Pull Request Process
-
-1. **Type-check and test first:** Run `npm run typecheck && npm test` before opening a PR — CI may not run these automatically.
-2. **Commit format:** Follow the project convention: `phase: what changed — why it matters`. Prefer small, focused commits over large squashes.
-3. **Keep modules under 500 LOC:** If your change adds more than a few hundred lines to any module, extract into a dedicated file.
-4. **No `any` types:** Reviewers will flag any `any` on new code.
-5. **JSDoc all exports:** Every exported function, class, and interface must be documented.
-6. **Open a PR against `main`:** Include a description of what changed and why. Reference any related issues or phase plans.
-
-The harness does not use a formal PR template — describe intent clearly and include verification steps when applicable.
-
-## Issue Reporting
-
-- **Bugs:** Describe the symptom, steps to reproduce, expected behavior, and actual behavior. Include the harness version (`opencode-harness`) and Node.js version.
-- **Feature requests:** Describe the use case the feature would serve and any constraints or non-goals.
-- **Questions:** Use the [GitHub Issues](https://github.com/anomalyco/opencode-harness/issues) page to start a discussion.
-
-No issue templates are defined for this repository — provide enough context for a contributor to understand the problem without additional questioning.
+Open an issue or start a discussion. We're here to help!

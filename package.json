@@ -1,7 +1,7 @@
 {
   "name": "opencode-harness",
   "version": "0.1.0",
-  "description": "Multi-agent checkpoint orchestration framework for OpenCode",
+  "description": "HiveMind — Runtime composition engine for multi-agent orchestration, session continuity, and compounding intelligence in OpenCode",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {

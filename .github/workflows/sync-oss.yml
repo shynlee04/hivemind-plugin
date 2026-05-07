@@ -1,0 +1,95 @@
+# Sync source changes from feature/harness-implementation to oss-dev
+# Triggered manually or on schedule — cherry-picks src/ and tests/ changes
+name: Sync to OSS Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_range:
+        description: 'Commit range to sync (e.g., HEAD~3..HEAD or specific SHA)'
+        required: false
+        default: 'HEAD~1..HEAD'
+      dry_run:
+        description: 'Dry run — show what would be synced without pushing'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Sync to oss-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Generate sync patch
+        run: |
+          echo "📦 Generating patch for source-only changes..."
+          # Generate patch for only src/, tests/, docs/, package.json, tsconfig.json, vitest.config.ts
+          git diff ${{ github.event.inputs.commit_range }} -- \
+            src/ tests/ docs/ \
+            package.json tsconfig.json vitest.config.ts \
+            README.md CONTRIBUTING.md LICENSE \
+            .github/workflows/ \
+            > /tmp/sync.patch || true
+
+          if [ -s /tmp/sync.patch ]; then
+            echo "✅ Patch generated ($(wc -l < /tmp/sync.patch) lines)"
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          else
+            echo "ℹ️ No source changes to sync"
+            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+          fi
+
+      - name: Preview changes (dry run)
+        if: env.HAS_CHANGES == 'true'
+        run: |
+          echo "📋 Files that would be synced:"
+          git diff --stat ${{ github.event.inputs.commit_range }} -- \
+            src/ tests/ docs/ \
+            package.json tsconfig.json vitest.config.ts \
+            README.md CONTRIBUTING.md LICENSE \
+            .github/workflows/
+
+      - name: Apply to oss-dev
+        if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
+        run: |
+          git checkout oss-dev
+          git apply /tmp/sync.patch --allow-empty || {
+            echo "⚠️ Patch apply failed — conflicts detected"
+            echo "Manual resolution required"
+            exit 1
+          }
+          git add -A
+          git commit -m "sync: merge source changes from feature branch
+
+          Synced files: src/, tests/, docs/, config files
+          Source range: ${{ github.event.inputs.commit_range }}"
+
+      - name: Verify oss-dev build
+        if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          npm test
+
+      - name: Push oss-dev
+        if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
+        run: git push origin oss-dev

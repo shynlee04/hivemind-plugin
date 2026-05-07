@@ -1,117 +1,272 @@
-<!-- generated-by: gsd-doc-writer -->
+<div align="center">
 
-# opencode-harness
+# 🐝 HiveMind
 
-Multi-agent checkpoint orchestration framework for OpenCode. `opencode-harness` provides runtime composition — delegated session orchestration, continuity persistence, concurrency control, completion detection, and runtime guardrails — as a TypeScript plugin that wires tools and hooks into OpenCode.
+### Runtime Composition Engine for OpenCode
+
+**Agents' Intelligence = HIVE + MIND**
 
 [![npm version](https://img.shields.io/npm/v/opencode-harness?color=blue)](https://www.npmjs.com/package/opencode-harness)
 [![license](https://img.shields.io/npm/l/opencode-harness)](./LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/typescript-strict-blue)](https://www.typescriptlang.org)
+[![Tests](https://img.shields.io/badge/tests-1%2C739%20passing-brightgreen)](#testing)
 
-## Installation
+*Multi-agent orchestration, session continuity, and compounding intelligence — as a TypeScript plugin for [OpenCode](https://github.com/anomalyco/opencode).*
+
+</div>
+
+---
+
+## The Problem
+
+Modern AI coding assistants are powerful but **memoryless**. Each session starts from scratch. The agent doesn't know your team's architectural decisions, which conventions you established, or which patterns failed in production. Agents are individually brilliant but collectively naive.
+
+## The HiveMind Thesis
+
+**Agent intelligence is not a property of the model — it is a property of the architecture surrounding the model.**
+
+HiveMind provides two forces:
+
+- **🏗️ The HIVE** — Structure, hierarchy, delegation protocols, domain boundaries, and guardrails that keep agents working on the right things in the right order.
+- **🧠 The MIND** — Accumulated intelligence across sessions. Decisions, patterns, and lessons that compound over time instead of resetting to zero.
+
+Together: **Intelligence that compounds.**
+
+---
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| **17 Custom Tools** | Zod v4 validated tools for delegation, session management, prompt enhancement, trajectory tracking |
+| **10 Hook Factories** | Event observation, auto-loop orchestration, tool guards, context injection (CQRS read-side) |
+| **WaiterModel Delegation** | Dispatch work to specialist agents, poll for results, dual-signal completion detection |
+| **Keyed Semaphore Concurrency** | FIFO per-provider queuing with priority lanes |
+| **Session Continuity** | Durable JSON persistence across restarts — sessions never start from zero |
+| **PTY Integration** | Background command execution via `bun-pty` with graceful Node.js fallback |
+| **Runtime Policy** | Configurable concurrency limits, tool budgets, category gates per workspace |
+| **CQRS Architecture** | Tools mutate state (write-side), hooks observe events (read-side) — enforced at the boundary |
+| **Schema Kernel** | 16 Zod v4 schema files for agent/command/skill validation |
+| **Composable Ecosystem** | 120+ skills, agents, and commands — bring your own workflow |
+
+---
+
+## Quick Start
+
+### Installation
 
 ```bash
 npm install opencode-harness
 ```
 
-Requires Node.js `>=20.0.0` and OpenCode `>=1.14.28` (peer dependency).
+**Requirements:** Node.js `>=20.0.0` · OpenCode `>=1.14.28` (peer dependency)
 
-## Quick Start
+### Configuration
 
-1. **Install** the package in your OpenCode project:
-   ```bash
-   npm install opencode-harness
-   npm run build
-   ```
+1. **Create a plugin loader** in your OpenCode project:
 
-2. **Configure** OpenCode to load the plugin. Add a plugin entry in `.opencode/plugins/` that imports from `opencode-harness/plugin`:
-   ```ts
-   // .opencode/plugins/harness.ts
-   export { HarnessControlPlane as default } from "opencode-harness/plugin"
-   ```
+```ts
+// .opencode/plugins/harness.ts
+export { HarnessControlPlane as default } from "opencode-harness/plugin"
+```
 
-   The harness will begin managing delegated sessions, persisting state to `.hivemind/state/`, and enforcing runtime guardrails on next OpenCode startup.
+2. **Register the plugin** in `opencode.json`:
 
-3. **Verify** the harness is active by checking that plugins load without errors on startup. Runtime state appears at `.hivemind/state/` after the first delegated session.
+```json
+{
+  "plugins": ["./dist/plugin.js"]
+}
+```
 
-## Usage
+3. **Start OpenCode** — HiveMind registers its tools and hooks automatically.
 
-### Package entrypoints
+### CLI Tools
 
-| Import path | Exported file | Purpose |
-|-------------|---------------|---------|
-| `opencode-harness` | `./dist/index.js` | Public API: re-exports `HarnessControlPlane`, all `src/lib/` modules (concurrency, continuity, helpers, types, runtime, etc.) |
-| `opencode-harness/plugin` | `./dist/plugin.js` | Plugin composition root — the `HarnessControlPlane` export for OpenCode to load |
-| `opencode-harness/cli` | `./dist/cli/index.js` | CLI substrate entry — `runCli(argv, io?)` for programmatic CLI dispatch |
+```bash
+npx opencode-harness --help        # Show available commands
+npx opencode-harness init          # Initialize .hivemind/ state directory
+npx opencode-harness doctor        # Health check
+```
 
-### Plugin tools
+---
 
-The harness registers these tools into the OpenCode runtime when the plugin loads:
+## Architecture
+
+HiveMind is architecturally split into two halves that serve fundamentally different purposes:
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                 Hard Harness (npm package: src/)                   │
+├──────────────────┬──────────────────┬──────────────────────────────┤
+│  Tools (Write)   │  Hooks (Read)    │  Kernel (Shared)             │
+│  CQRS mutation   │  CQRS observe    │  types, state, concurrency,  │
+│  authority only  │  only — no       │  continuity, lifecycle,      │
+│                  │  durable writes  │  delegation, session-api     │
+├──────────────────┴──────────────────┴──────────────────────────────┤
+│          Plugin Composition Root (plugin.ts — zero business logic) │
+└────────────┬──────────────────────────────────────┬────────────────┘
+             │                                      │
+             ▼                                      ▼
+┌──────────────────────────┐          ┌──────────────────────────────┐
+│  Soft Meta-Concepts      │          │  Deep Module State           │
+│  .opencode/              │          │  .hivemind/                  │
+│  Skills, Agents,         │          │  Session continuity,         │
+│  Commands, Rules         │          │  delegation records,         │
+│  (user-configurable)     │          │  event journals              │
+└──────────────────────────┘          └──────────────────────────────┘
+```
+
+### The Two Halves
+
+| Half | What It Does | Where |
+|------|-------------|-------|
+| **Hard Harness** | Runtime engine — tools, hooks, plugin assembly, shared kernel | `src/` |
+| **Soft Meta-Concepts** | User-configurable behavior — skills, agents, commands, rules | `.opencode/` |
+| **Internal State** | Session journals, delegation records, runtime state | `.hivemind/` |
+
+### Delegation Hierarchy
+
+```
+L0 Orchestrator  →  Routes intent, never implements
+  └── L1 Coordinator  →  Wave-based dispatch, checkpoint gates
+       └── L2 Specialist  →  Domain experts (researcher, builder, critic, reviewer)
+            └── L3 Reference  →  Skills and stack references consumed by L2
+```
+
+### Design Principles
+
+- **CQRS enforced**: `assertHookWriteBoundary()` prevents hooks from mutating state
+- **Zero business logic in plugin**: Composition root is wiring only
+- **No circular dependencies**: `types.ts` is leaf → max chain depth is 2
+- **500 LOC module cap**: Every module stays readable and testable
+- **`[Harness]` error prefix**: All thrown errors are identifiable
+- **Deep-clone-on-read**: Continuity store prevents mutation aliasing
+
+---
+
+## The 5 Pillars
+
+HiveMind is governed by five interlocking design principles:
+
+1. **🏛️ Hierarchical Superiority** — Dependencies satisfied before work begins. No premature implementation.
+2. **🤝 Collaborative Domains** — Bounded autonomy. Every agent has a domain, every cross-domain operation requires authorization.
+3. **📊 Strategically Measurable** — Success defined before work starts, verified after it completes. Progressive trust-building.
+4. **🔬 Iteratively Granular** — Break everything small enough to verify, trust, and retry. Loop until correct.
+5. **🧠 Growing MEMS-BRAIN** — Intelligence compounds across sessions. Selective retrieval, not dump mining.
+
+---
+
+## Tools Reference
 
 | Tool | Purpose |
 |------|---------|
-| `delegate-task` | Dispatch a subagent with WaiterModel concurrency + dual-signal completion |
-| `delegation-status` | Poll delegation state and retrieve results |
-| `prompt-skim` | Fast scan of prompt content: word/line/token counts, URL extraction, complexity scoring |
-| `prompt-analyze` | Analyze prompts for contradictions, vagueness, missing scope, and clarity |
-| `session-patch` | Patch specific sections in session files with backup |
-| `run-background-command` | Execute CLI commands in shared background PTY sessions with queue-governed dispatch |
-| `configure-primitive` | Configure, read, list, or inspect OpenCode primitives (agent, command, skill) |
-| `validate-restart` | Validate that compiled OpenCode primitives are discoverable after a restart |
-| `session-journal-export` | Export bounded Session Journal and Execution Lineage summaries as JSON or Markdown |
-| `hivemind-doc` | Read-only document intelligence (markdown skim, directory skim, read, chunk, search) |
-| `hivemind-trajectory` | Inspect and update the Hivemind trajectory ledger |
-| `hivemind-pressure` | Classify runtime pressure, inspect tool authority, attach pressure evidence to trajectory |
-| `hivemind-agent-work-create` | Create a durable, pressure-aware agent work contract |
-| `hivemind-agent-work-export` | Export an agent work contract as bounded JSON or Markdown |
-| `hivemind-sdk-supervisor` | Inspect SDK wrapper health, heartbeat, diagnostics, and readiness |
-| `hivemind-command-engine` | Discover command bundles, analyze contracts, render bounded context |
+| `delegate-task` | Dispatch work to specialist agents (WaiterModel) |
+| `delegation-status` | Poll delegation results or list all delegations |
+| `run-background-command` | Execute CLI commands in PTY sessions |
+| `prompt-skim` | Fast prompt scan (word count, URLs, complexity) |
+| `prompt-analyze` | Deep analysis (contradictions, vagueness, clarity) |
+| `session-patch` | Patch session file sections with backup |
+| `session-journal-export` | Export session timeline as JSON/Markdown |
+| `configure-primitive` | Configure OpenCode agents, commands, skills |
+| `validate-restart` | Verify primitives are discoverable after restart |
+| `hivemind-doc` | Search HiveMind documentation artifacts |
+| `hivemind-trajectory` | Track execution trajectory for audit |
+| `hivemind-pressure` | Runtime pressure classification |
+| `hivemind-sdk-supervisor` | SDK health monitoring |
+| `hivemind-command-engine` | Command execution with queue governance |
+| `hivemind-agent-work-create` | Create agent work contracts |
+| `hivemind-agent-work-export` | Export work contracts for audit |
 
-### CLI
+---
 
-```bash
-npx hivemind-tools --help
-```
-
-The CLI substrate (`bin/hivemind-tools.cjs`) discovers commands dynamically and routes them to handlers. Built-in commands include `help`. Requires `npm run build` to have been run first (compiled to `dist/cli/index.js`).
-
-## Runtime state
-
-State is stored in `.hivemind/state/` (canonical per Q6):
-
-| File | Purpose |
-|------|---------|
-| `session-continuity.json` | Durable session state, delegation records, lifecycle metadata |
-| `checkpoints.json` | Compaction checkpoints for long-running sessions |
-
-Optional overrides:
-
-| Variable | Effect |
-|----------|--------|
-| `OPENCODE_HARNESS_STATE_DIR` | Override the state directory (default: `.hivemind/state/`) |
-| `OPENCODE_HARNESS_CONTINUITY_FILE` | Override the continuity file path directly |
-| `OPENCODE_HARNESS_CONCURRENCY_LIMIT` | Override max concurrent delegations (default: `3`) |
-
-Legacy path `.opencode/state/opencode-harness/` is supported via a compatibility bridge during migration (one-way to `.hivemind/state/`).
-
-## Build
+## Testing
 
 ```bash
-npm install          # Install dependencies
-npm run build        # Clean + compile TypeScript to dist/
-npm run typecheck    # Type-check without emitting
-npm test             # Run all tests (vitest)
-npm run test:coverage # Coverage report (src/**/*.ts)
+npm test                    # Run all tests (vitest)
+npm run test:watch          # Watch mode
+npm run test:coverage       # Coverage report
+
+npm run typecheck           # Type-check without emitting
+npm run build               # Clean + compile TypeScript to dist/
 ```
 
-`prepack` runs `build` automatically, so `npm pack` and `npm publish` use the built `dist/` package surface.
+**Coverage thresholds enforced:** Statements 85% · Branches 72% · Functions 85% · Lines 85%
 
-## Branches
+**Current:** 122 test files · 1,739 tests passing · 11 skipped (fixture-dependent integration tests that require internal state directories)
 
-| Branch | Role |
-|--------|------|
-| `main` | Canonical v3 product — runtime composition engine, the `opencode-harness@0.1.x` source |
-| `legacy/v2.x` | Frozen v2.x baseline of the original `hivemind-plugin` — forensic reference only |
+---
+
+## Project Structure
+
+```
+src/
+├── plugin.ts                  # Composition root (zero business logic)
+├── index.ts                   # Public API re-exports
+├── hooks/                     # Event hook factories (10 modules)
+├── tools/                     # Plugin tools (17 tools)
+├── lib/                       # Core library (34 modules)
+│   ├── types.ts               # Shared types (leaf — no imports)
+│   ├── delegation-manager.ts  # WaiterModel orchestrator (500 LOC)
+│   ├── continuity.ts          # Durable JSON persistence (465 LOC)
+│   ├── concurrency.ts         # Keyed semaphore (310 LOC)
+│   ├── lifecycle-manager.ts   # Session state machine (243 LOC)
+│   ├── completion-detector.ts # Dual-signal completion (157 LOC)
+│   └── ...
+├── shared/                    # Tool response envelope
+├── schema-kernel/             # Zod v4 validation schemas (16 files)
+└── cli/                       # CLI tools (commander-based)
+
+tests/                         # Vitest test files (mirror src/)
+docs/                          # Philosophy, architecture docs
+```
+
+---
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+
+### Development Setup
+
+```bash
+git clone https://github.com/shynlee04/hivemind-plugin.git
+cd hivemind-plugin
+npm install
+npm run build
+npm test
+```
+
+### Code Style
+
+- TypeScript strict mode (`strict: true`, `noUnusedLocals`, `noUnusedParameters`)
+- ES2022 target, NodeNext module resolution
+- `verbatimModuleSyntax: true` — use `import type` for type-only imports
+- Max 500 LOC per module · No `any` types on new code
+- `[Harness]` prefix on all thrown errors
+
+---
+
+## Philosophy
+
+HiveMind is not a framework you must conform to. It is an **open architecture** — a runtime composition engine that can host GSD-style phase-gated workflows, BMAD-style constraints, or autonomous agent loops, depending on what your project needs.
+
+It is designed for people who **explore** — who find the journey as valuable as the destination. HiveMind optimizes for **compounded learning**, ensuring every experiment makes future work better.
+
+Read the full philosophy: [HIVEMIND-PHILOSOPHY.md](./docs/draft/HIVEMIND-PHILOSOPHY-2026-04-10.md) · [Vietnamese version](./docs/draft/HIVEMIND-PHILOSOPHY-VI-2026-04-10.md)
+
+---
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+[MIT](./LICENSE) © 2026 Shyn Lee
+
+---
+
+<div align="center">
+
+**Built with 🐝 for the OpenCode ecosystem**
+
+[Documentation](./docs/) · [Report Bug](https://github.com/shynlee04/hivemind-plugin/issues) · [Request Feature](https://github.com/shynlee04/hivemind-plugin/issues)
+
+</div>
