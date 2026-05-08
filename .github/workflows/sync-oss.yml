@@ -134,28 +134,22 @@ jobs:
           SOURCE_SHA=$(git rev-parse HEAD)
           git checkout oss-dev
 
-          echo "🔄 Syncing directories and files from $SOURCE_SHA..."
+          echo "🧹 Cleaning previous state for synced directories..."
+          for path in $SYNC_PATHS; do
+            if [ -d "$path" ] || [[ "$path" == */ ]]; then
+              dir_path=${path%/}
+              if [ -d "$dir_path" ] 2>/dev/null; then
+                echo "  🗑️  Cleaning $dir_path"
+                git rm -r --cached "$dir_path" 2>/dev/null || true
+                rm -rf "$dir_path"
+              fi
+            fi
+          done
 
+          echo "🔄 Syncing directories and files from $SOURCE_SHA..."
           for path in $SYNC_PATHS; do
             echo "  → $path"
             git checkout $SOURCE_SHA -- "$path" 2>/dev/null || echo "  ⚠️  $path skipped"
-          done
-
-          echo "🧹 Checking for deletions..."
-          for path in $SYNC_PATHS; do
-            # Only check deletions for directories
-            if [ -d "$path" ] || [[ "$path" == */ ]]; then
-              # Get directory name without trailing slash
-              dir_path=${path%/}
-              if [ -d "$dir_path" ] 2>/dev/null; then
-                git diff --name-only --diff-filter=D $SOURCE_SHA -- "$dir_path" 2>/dev/null | while read deleted; do
-                  if [ -f "$deleted" ]; then
-                    echo "  🗑️  $deleted (removed in source)"
-                    git rm "$deleted" 2>/dev/null || true
-                  fi
-                done
-              fi
-            fi
           done
 
           git add -A
