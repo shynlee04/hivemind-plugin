@@ -138,6 +138,15 @@ jobs:
         if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
         run: |
           SOURCE_SHA=$(git rev-parse HEAD)
+          
+          echo "🔄 Dereferencing symlinks for agent infrastructure..."
+          mkdir -p /tmp/resolved-opencode
+          for dir in agents commands skills; do
+            if [ -e ".opencode/$dir" ]; then
+              cp -RL ".opencode/$dir" "/tmp/resolved-opencode/"
+            fi
+          done
+
           git checkout oss-dev
 
           echo "🧹 Cleaning previous state for synced directories..."
@@ -156,6 +165,14 @@ jobs:
           for path in $SYNC_PATHS; do
             echo "  → $path"
             git checkout $SOURCE_SHA -- "$path" 2>/dev/null || echo "  ⚠️  $path skipped"
+          done
+          
+          echo "🔄 Restoring dereferenced agent infrastructure..."
+          for dir in agents commands skills; do
+            if [ -d "/tmp/resolved-opencode/$dir" ]; then
+              rm -rf ".opencode/$dir"
+              cp -R "/tmp/resolved-opencode/$dir" ".opencode/"
+            fi
           done
 
           git add -A
