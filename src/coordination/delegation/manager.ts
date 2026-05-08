@@ -1,24 +1,24 @@
-import { CommandDelegationHandler } from "./command-delegation.js"
-import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
-import type { CompletionDetector } from "./completion-detector.js"
-import { readPersistedDelegations } from "../task-management/continuity/delegation-persistence.js"
+import { CommandDelegationHandler } from "../command-delegation/handler.js"
+import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "../concurrency/queue.js"
+import type { CompletionDetector } from "../completion/detector.js"
+import { readPersistedDelegations } from "../../task-management/continuity/delegation-persistence.js"
 import {
   buildDelegationResult,
   DelegationStateMachine,
-} from "./delegation-state-machine.js"
-import type { PtyManager } from "./pty/pty-manager.js"
-import { SdkDelegationHandler } from "./sdk-delegation.js"
+} from "./state-machine.js"
+import type { PtyManager } from "../../lib/pty/pty-manager.js"
+import { SdkDelegationHandler } from "../sdk-delegation/handler.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
 import { recordCategoryGateDeny } from "./category-gate-audit.js"
-import { getAppAgents } from "../shared/app-api.js"
-import { sendPromptAsync, type OpenCodeClient } from "../shared/session-api.js"
-import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../shared/runtime-policy.js"
-import { getCachedConfig } from "./config-subscriber.js"
-import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
-import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
-import { resolveParentWorkingDirectory } from "./spawner/parent-directory.js"
-import { spawnDelegatedSession } from "./spawner/session-creator.js"
-import { buildSdkSpawnRequest, resolveDelegationPermissionProfile, type DelegateParams, type ValidatedAgent } from "./spawner/spawn-request-builder.js"
+import { getAppAgents } from "../../shared/app-api.js"
+import { sendPromptAsync, type OpenCodeClient } from "../../shared/session-api.js"
+import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../../shared/runtime-policy.js"
+import { getCachedConfig } from "../../lib/config-subscriber.js"
+import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "../spawner/agent-primitive-policy.js"
+import { resolveDelegationConcurrencyKey } from "../spawner/concurrency-key.js"
+import { resolveParentWorkingDirectory } from "../spawner/parent-directory.js"
+import { spawnDelegatedSession } from "../spawner/session-creator.js"
+import { buildSdkSpawnRequest, resolveDelegationPermissionProfile, type DelegateParams, type ValidatedAgent } from "../spawner/spawn-request-builder.js"
 import {
   DEFAULT_SAFETY_CEILING_MS,
   type CommandDelegationParams,
@@ -26,8 +26,8 @@ import {
   type DelegationResult,
   type RuntimePolicy,
   MAX_DELEGATION_DEPTH,
-} from "../shared/types.js"
-import type { BehavioralOverrides } from "./behavioral-profile/types.js"
+} from "../../shared/types.js"
+import type { BehavioralOverrides } from "../../lib/behavioral-profile/types.js"
 
 type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }
 

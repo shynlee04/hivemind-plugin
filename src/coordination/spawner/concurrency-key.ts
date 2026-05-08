@@ -1,4 +1,4 @@
-import { buildDelegationQueueKey } from "../concurrency.js"
+import { buildDelegationQueueKey } from "../concurrency/queue.js"
 
 type DelegationConcurrencyKeyArgs = {
   provider?: string

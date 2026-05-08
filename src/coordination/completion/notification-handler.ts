@@ -7,10 +7,10 @@
  * Audit: G-01 closed as by-design (2026-04-21)
  */
 
-import { sendPrompt, type OpenCodeClient } from "../shared/session-api.js"
-import type { Delegation } from "../shared/types.js"
-import type { TaskNotification } from "../shared/types.js"
-import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "../task-management/continuity/index.js"
+import { sendPrompt, type OpenCodeClient } from "../../shared/session-api.js"
+import type { Delegation } from "../../shared/types.js"
+import type { TaskNotification } from "../../shared/types.js"
+import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "../../task-management/continuity/index.js"
 
 const MAX_PREVIEW_LENGTH = 500
 

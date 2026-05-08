@@ -17,7 +17,7 @@ import { getSessionContinuity, recordSessionContinuity } from "../../src/task-ma
 import { createCoreHooks } from "../../src/hooks/create-core-hooks.js"
 import { createSessionHooks } from "../../src/hooks/create-session-hooks.js"
 import { TaskStateManager } from "../../src/shared/state.js"
-import { DelegationManager } from "../../src/lib/delegation-manager.js"
+import { DelegationManager } from "../../src/coordination/delegation/manager.js"
 import { createHarnessLifecycleManager } from "../../src/task-management/lifecycle/index.js"
 import { PtyManager } from "../../src/lib/pty/pty-manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"

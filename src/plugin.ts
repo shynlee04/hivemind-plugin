@@ -8,7 +8,7 @@
 import type { Plugin } from "@opencode-ai/plugin"
 
 import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"
-import { DelegationManager } from "./lib/delegation-manager.js"
+import { DelegationManager } from "./coordination/delegation/manager.js"
 import { taskState } from "./shared/state.js"
 import { createCoreHooks } from "./hooks/create-core-hooks.js"
 import { createSessionHooks } from "./hooks/create-session-hooks.js"
@@ -36,8 +36,8 @@ import { createHivemindSdkSupervisorTool } from "./tools/hivemind-sdk-supervisor
 import { createHivemindCommandEngineTool } from "./tools/hivemind-command-engine.js"
 import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
-import { runAutoLoop } from "./lib/auto-loop.js"
-import { runRalphLoop, escalationMessage } from "./lib/ralph-loop.js"
+import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
+import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-loop.js"
 import {
   createEventTrackerArtifactsFromHook,
   shouldTrackEventTrackerEvent,

@@ -3,7 +3,7 @@ import {
   buildNotificationMessage,
   formatToastMessage,
   notifyParentSession,
-} from "../../src/lib/notification-handler.js"
+} from "../../src/coordination/completion/notification-handler.js"
 import type { TaskNotification } from "../../src/shared/types.js"
 
 /**

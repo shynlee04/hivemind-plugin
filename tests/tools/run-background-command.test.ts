@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { DelegationManager } from "../../src/lib/delegation-manager.js"
+import { DelegationManager } from "../../src/coordination/delegation/manager.js"
 import type { PtyManager } from "../../src/lib/pty/pty-manager.js"
 import { createRunBackgroundCommandTool } from "../../src/tools/run-background-command.js"
 import type { Delegation } from "../../src/shared/types.js"

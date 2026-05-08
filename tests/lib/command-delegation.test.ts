@@ -34,7 +34,7 @@ vi.mock("node:child_process", () => ({
   spawn: spawnHeadlessMock,
 }))
 
-import { CommandDelegationHandler } from "../../src/lib/command-delegation.js"
+import { CommandDelegationHandler } from "../../src/coordination/command-delegation/handler.js"
 import type { Delegation, DelegationResult } from "../../src/shared/types.js"
 
 // ---------------------------------------------------------------------------

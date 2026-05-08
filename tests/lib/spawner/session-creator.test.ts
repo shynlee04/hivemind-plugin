@@ -13,7 +13,7 @@ vi.mock("../../../src/shared/session-api.js", async (importOriginal) => {
 describe("spawnDelegatedSession", () => {
   it("creates a parent-linked child session without unsupported session.create permission fields", async () => {
     createSession.mockResolvedValueOnce({ id: "ses_child_1" })
-    const { spawnDelegatedSession } = await import("../../../src/lib/spawner/session-creator.js")
+    const { spawnDelegatedSession } = await import("../../../src/coordination/spawner/session-creator.js")
 
     const client = { session: { create: vi.fn() } }
     const request = {

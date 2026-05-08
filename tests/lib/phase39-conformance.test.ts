@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { runAutoLoop } from "../../src/lib/auto-loop.js"
-import type { AutoLoopVerification } from "../../src/lib/auto-loop.js"
-import { runRalphLoop } from "../../src/lib/ralph-loop.js"
-import type { RalphValidation } from "../../src/lib/ralph-loop.js"
+import { runAutoLoop } from "../../src/coordination/spawner/auto-loop.js"
+import type { AutoLoopVerification } from "../../src/coordination/spawner/auto-loop.js"
+import { runRalphLoop } from "../../src/coordination/spawner/ralph-loop.js"
+import type { RalphValidation } from "../../src/coordination/spawner/ralph-loop.js"
 
 /**
  * Phase 39 conformance — composing auto-loop with ralph-loop. Failed

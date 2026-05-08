@@ -18,9 +18,9 @@
  * relocated onto this class.
  */
 
-import { persistDelegations } from "../task-management/continuity/delegation-persistence.js"
-import { notifyDelegationTerminal } from "./notification-handler.js"
-import { abortSession, type OpenCodeClient } from "../shared/session-api.js"
+import { persistDelegations } from "../../task-management/continuity/delegation-persistence.js"
+import { notifyDelegationTerminal } from "../completion/notification-handler.js"
+import { abortSession, type OpenCodeClient } from "../../shared/session-api.js"
 import {
   DEFAULT_PRUNE_MAX_AGE_MS,
   DEFAULT_SAFETY_CEILING_MS,
@@ -32,7 +32,7 @@ import {
   type DelegationStatus,
   type DelegationSurface,
   type DelegationTerminalKind,
-} from "../shared/types.js"
+} from "../../shared/types.js"
 
 /**
  * Allowed delegation status transitions.

@@ -7,7 +7,7 @@ import {
   deriveRecoveryGuarantee,
   withContractDefaults,
   buildDelegationResult,
-} from "../../src/lib/delegation-state-machine.js"
+} from "../../src/coordination/delegation/state-machine.js"
 import type { Delegation, DelegationStatus } from "../../src/shared/types.js"
 
 // ---------------------------------------------------------------------------
@@ -18,7 +18,7 @@ vi.mock("../../src/task-management/continuity/delegation-persistence.js", () => 
   persistDelegations: vi.fn(),
 }))
 
-vi.mock("../../src/lib/notification-handler.js", () => ({
+vi.mock("../../src/coordination/completion/notification-handler.js", () => ({
   notifyDelegationTerminal: vi.fn().mockResolvedValue(undefined),
 }))
 

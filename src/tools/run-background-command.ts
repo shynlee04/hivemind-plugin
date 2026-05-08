@@ -1,7 +1,7 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
-import type { DelegationManager } from "../lib/delegation-manager.js"
+import type { DelegationManager } from "../coordination/delegation/manager.js"
 import type { PtyManager } from "../lib/pty/pty-manager.js"
 import type { Delegation } from "../shared/types.js"
 import { getCachedConfig } from "../lib/config-subscriber.js"

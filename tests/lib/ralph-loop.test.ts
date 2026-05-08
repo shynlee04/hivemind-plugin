@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest"
 import {
   escalationMessage,
   runRalphLoop,
-} from "../../src/lib/ralph-loop.js"
-import type { RalphValidation } from "../../src/lib/ralph-loop.js"
+} from "../../src/coordination/spawner/ralph-loop.js"
+import type { RalphValidation } from "../../src/coordination/spawner/ralph-loop.js"
 
 describe("ralph-loop — PH39-02 validate-fix-redispatch cycle", () => {
   it("returns passed with zero cycles when initial validation succeeds", async () => {

@@ -4,10 +4,10 @@
  * Provides transition guards, activity tracking, and event routing
  * for delegated session lifecycle management.
  */
-import { CompletionDetector } from "../../lib/completion-detector.js"
+import { CompletionDetector } from "../../coordination/completion/detector.js"
 import { getSessionContinuity, listSessionContinuity, patchSessionContinuity } from "../continuity/index.js"
-import { replayPendingNotifications } from "../../lib/notification-handler.js"
-import type { DelegationManager } from "../../lib/delegation-manager.js"
+import { replayPendingNotifications } from "../../coordination/completion/notification-handler.js"
+import type { DelegationManager } from "../../coordination/delegation/manager.js"
 import { abortSession, sendPrompt, type OpenCodeClient } from "../../shared/session-api.js"
 import { hydrateDelegationState, taskState } from "../../shared/state.js"
 import type {

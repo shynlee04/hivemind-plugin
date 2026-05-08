@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveCategoryGateDecision, checkSkillFilterAdvisory } from "../../src/lib/category-gates.js"
+import { resolveCategoryGateDecision, checkSkillFilterAdvisory } from "../../src/coordination/delegation/category-gates.js"
 
 describe("category gate", () => {
   it("allows implementation category with write-capable tools", () => {

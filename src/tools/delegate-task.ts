@@ -1,7 +1,7 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
-import type { DelegationManager } from "../lib/delegation-manager.js"
+import type { DelegationManager } from "../coordination/delegation/manager.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"
 

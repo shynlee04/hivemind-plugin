@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { CompletionDetector } from "../../src/lib/completion-detector.js"
-import type { CompletionResult } from "../../src/lib/completion-detector.js"
+import { CompletionDetector } from "../../src/coordination/completion/detector.js"
+import type { CompletionResult } from "../../src/coordination/completion/detector.js"
 
 describe("CompletionDetector", () => {
   let detector: CompletionDetector

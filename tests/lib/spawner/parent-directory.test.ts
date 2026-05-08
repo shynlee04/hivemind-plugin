@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 describe("resolveParentWorkingDirectory", () => {
   it("prefers the explicit context directory", async () => {
-    const { resolveParentWorkingDirectory } = await import("../../../src/lib/spawner/parent-directory.js")
+    const { resolveParentWorkingDirectory } = await import("../../../src/coordination/spawner/parent-directory.js")
 
     expect(
       resolveParentWorkingDirectory({
@@ -14,7 +14,7 @@ describe("resolveParentWorkingDirectory", () => {
   })
 
   it("falls back to the worktree before the parent session directory", async () => {
-    const { resolveParentWorkingDirectory } = await import("../../../src/lib/spawner/parent-directory.js")
+    const { resolveParentWorkingDirectory } = await import("../../../src/coordination/spawner/parent-directory.js")
 
     expect(
       resolveParentWorkingDirectory({
@@ -25,7 +25,7 @@ describe("resolveParentWorkingDirectory", () => {
   })
 
   it("falls back to the parent session directory before process.cwd()", async () => {
-    const { resolveParentWorkingDirectory } = await import("../../../src/lib/spawner/parent-directory.js")
+    const { resolveParentWorkingDirectory } = await import("../../../src/coordination/spawner/parent-directory.js")
 
     expect(
       resolveParentWorkingDirectory({
@@ -36,7 +36,7 @@ describe("resolveParentWorkingDirectory", () => {
 
   it("uses process.cwd() as the final fallback", async () => {
     const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue("/process-cwd")
-    const { resolveParentWorkingDirectory } = await import("../../../src/lib/spawner/parent-directory.js")
+    const { resolveParentWorkingDirectory } = await import("../../../src/coordination/spawner/parent-directory.js")
 
     expect(resolveParentWorkingDirectory({})).toBe("/process-cwd")
 

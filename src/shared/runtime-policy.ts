@@ -21,7 +21,7 @@ import type {
   SessionPolicyOverride,
   TrustedRuntimePolicy,
 } from "./types.js"
-import { DEFAULT_CATEGORY_GATE_POLICY } from "../lib/category-gates.js"
+import { DEFAULT_CATEGORY_GATE_POLICY } from "../coordination/delegation/category-gates.js"
 
 // ---------------------------------------------------------------------------
 // Default policy — mirrors current production constants

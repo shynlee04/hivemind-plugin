@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { runAutoLoop } from "../../src/lib/auto-loop.js"
-import type { AutoLoopVerification } from "../../src/lib/auto-loop.js"
+import { runAutoLoop } from "../../src/coordination/spawner/auto-loop.js"
+import type { AutoLoopVerification } from "../../src/coordination/spawner/auto-loop.js"
 
 describe("auto-loop — PH39-01 self-referential dev loop", () => {
   it("returns completed when the first dispatch satisfies the verifier", async () => {

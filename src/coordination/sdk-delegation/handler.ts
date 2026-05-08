@@ -1,8 +1,8 @@
 import type { OpencodeClient as OpenCodeClient } from "@opencode-ai/sdk"
 
-import type { CompletionDetector } from "./completion-detector.js"
-import { extractAllAssistantText } from "../shared/helpers.js"
-import { getSessionMessageCount, getSessionMessages, getSessionStatusMap } from "../shared/session-api.js"
+import type { CompletionDetector } from "../completion/detector.js"
+import { extractAllAssistantText } from "../../shared/helpers.js"
+import { getSessionMessageCount, getSessionMessages, getSessionStatusMap } from "../../shared/session-api.js"
 import {
   STABLE_POLLS_REQUIRED,
   MIN_STABILITY_TIME_MS,
@@ -13,7 +13,7 @@ import {
   POLL_INTERVAL_IDLE_MS,
   POLL_INTERVAL_DEEP_IDLE_MS,
   type Delegation,
-} from "../shared/types.js"
+} from "../../shared/types.js"
 
 const RECOVERY_UNVERIFIED_ERROR = "[Harness] Delegation unverified after restart; recovery will retry through safety ceiling."
 
