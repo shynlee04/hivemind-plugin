@@ -1,14 +1,32 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const { spawnHeadlessMock } = vi.hoisted(() => {
-  const createMockChildProcess = () => ({
-    stdout: { on: vi.fn() },
-    stderr: { on: vi.fn() },
-    on: vi.fn(),
-  })
+const { spawnHeadlessMock, getLastHeadlessHandlers, clearHandlers } = vi.hoisted(() => {
+  const allHandlers: Array<Record<string, Function>> = []
+
+  const createMockChildProcess = () => {
+    const handlers: Record<string, Function> = {}
+    allHandlers.push(handlers)
+    return {
+      stdout: {
+        on: vi.fn((event: string, handler: Function) => {
+          handlers[`stdout:${event}`] = handler
+        }),
+      },
+      stderr: {
+        on: vi.fn((event: string, handler: Function) => {
+          handlers[`stderr:${event}`] = handler
+        }),
+      },
+      on: vi.fn((event: string, handler: Function) => {
+        handlers[event] = handler
+      }),
+    }
+  }
 
   return {
     spawnHeadlessMock: vi.fn(createMockChildProcess),
+    getLastHeadlessHandlers: () => allHandlers[allHandlers.length - 1],
+    clearHandlers: () => { allHandlers.length = 0 },
   }
 })
 
@@ -109,6 +127,7 @@ describe("CommandDelegationHandler", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     spawnHeadlessMock.mockClear()
+    clearHandlers()
   })
 
   afterEach(() => {
@@ -613,6 +632,99 @@ describe("CommandDelegationHandler", () => {
         expect.stringContaining("non-resumable-after-restart"),
         expect.objectContaining({
           terminalKind: "non-resumable-after-restart",
+        }),
+      )
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Headless child process event flows
+  // -------------------------------------------------------------------------
+
+  describe("headless child process event flows", () => {
+    it("captures headless process stdout and stderr data in delegation result", async () => {
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(null, callbacks)
+
+      const result = await handler.dispatchCommand(
+        {
+          parentSessionId: "ses-parent-headless-data",
+          command: "echo",
+          args: ["hello"],
+        },
+        "agent:builder",
+        1,
+      )
+
+      const handlers = getLastHeadlessHandlers()
+      handlers["stdout:data"](Buffer.from("hello "))
+      handlers["stderr:data"](Buffer.from("world"))
+      handlers["exit"](0, null)
+
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        result.delegationId,
+        "completed",
+        undefined,
+        expect.objectContaining({
+          terminalKind: "completed",
+          explicitCancellation: false,
+        }),
+      )
+
+      const delegation = callbacks.getDelegation(result.delegationId)
+      expect(delegation?.result).toContain("hello world")
+    })
+
+    it("finalizes headless delegation with error status on process error event", async () => {
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(null, callbacks)
+
+      const result = await handler.dispatchCommand(
+        {
+          parentSessionId: "ses-parent-headless-error",
+          command: "nonexistent-command",
+        },
+        "agent:builder",
+        1,
+      )
+
+      const handlers = getLastHeadlessHandlers()
+      handlers["error"](new Error("spawn failed"))
+
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        result.delegationId,
+        "error",
+        expect.stringContaining("spawn failed"),
+        expect.objectContaining({
+          terminalKind: "error",
+          explicitCancellation: false,
+        }),
+      )
+    })
+
+    it("finalizes headless delegation with exit code on process exit event", async () => {
+      const callbacks = createMockCallbacks()
+      const handler = createHandler(null, callbacks)
+
+      const result = await handler.dispatchCommand(
+        {
+          parentSessionId: "ses-parent-headless-exit",
+          command: "false",
+        },
+        "agent:builder",
+        1,
+      )
+
+      const handlers = getLastHeadlessHandlers()
+      handlers["exit"](1, null)
+
+      expect(callbacks.onTerminal).toHaveBeenCalledWith(
+        result.delegationId,
+        "error",
+        expect.stringContaining("exited with code 1"),
+        expect.objectContaining({
+          terminalKind: "error",
+          explicitCancellation: false,
         }),
       )
     })

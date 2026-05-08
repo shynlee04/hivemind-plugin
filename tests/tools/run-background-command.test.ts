@@ -399,4 +399,26 @@ describe("run-background-command tool", () => {
       vi.useRealTimers()
     }
   })
+
+  it("run action dispatches even when abort signal is already aborted", async () => {
+    const delegationManager = createDelegationManagerStub()
+    const ptyManager = createPtyManagerStub()
+    const tool = createRunBackgroundCommandTool({
+      delegationManager: delegationManager as unknown as DelegationManager,
+      ptyManager: ptyManager as unknown as PtyManager,
+    })
+
+    const abortedController = new AbortController()
+    abortedController.abort()
+    const abortedCtx = { ...mockCtx, abort: abortedController.signal }
+
+    const raw = await tool.execute({ action: "run", command: "echo", args: ["hello"] } as never, abortedCtx)
+    const result = parseResult(raw)
+
+    // Current behavior: abort signal does not block dispatch.
+    // Abort propagation to the delegation manager is a future enhancement —
+    // the tool currently ignores context.abort entirely.
+    expect(result.kind).toBe("success")
+    expect(delegationManager.dispatchCommand).toHaveBeenCalled()
+  })
 })
