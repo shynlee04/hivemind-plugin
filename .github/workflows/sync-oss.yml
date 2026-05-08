@@ -105,7 +105,7 @@ jobs:
           git diff ${{ github.event.inputs.commit_range }} -- $SYNC_PATHS > /tmp/sync.patch || true
           
           # Capture new files by diffing against oss-dev
-          git diff oss-dev..HEAD -- $SYNC_PATHS > /tmp/full-sync.patch || true
+          git diff origin/oss-dev..HEAD -- $SYNC_PATHS > /tmp/full-sync.patch || true
 
           if [ -s /tmp/sync.patch ]; then
             echo "✅ Incremental patch: $(wc -l < /tmp/sync.patch) lines"
@@ -126,7 +126,7 @@ jobs:
           git diff --stat ${{ github.event.inputs.commit_range }} -- $SYNC_PATHS
           echo ""
           echo "📋 New files (vs oss-dev):"
-          git diff --stat --diff-filter=A oss-dev..HEAD -- $SYNC_PATHS
+          git diff --stat --diff-filter=A origin/oss-dev..HEAD -- $SYNC_PATHS
 
       - name: Apply to oss-dev (checkout strategy)
         if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
