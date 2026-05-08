@@ -23,7 +23,7 @@ afterEach(async () => {
 
 describe("assessRecoveryState", () => {
   it("flags a missing-session scenario as fresh-start", async () => {
-    const { assessRecoveryState } = await import("../../../src/lib/recovery/assess-state.js")
+    const { assessRecoveryState } = await import("../../../src/task-management/recovery/assess-state.js")
     const assessment = await assessRecoveryState("missing-session", projectRoot)
     expect(assessment.sessionId).toBe("missing-session")
     expect(assessment.failureClass).toBe("unknown")
@@ -36,7 +36,7 @@ describe("assessRecoveryState", () => {
     seedContinuity(projectRoot, {
       sessions: { "alive-session": minimalSessionRecord("alive-session") },
     })
-    const { assessRecoveryState } = await import("../../../src/lib/recovery/assess-state.js")
+    const { assessRecoveryState } = await import("../../../src/task-management/recovery/assess-state.js")
     const assessment = await assessRecoveryState("alive-session", projectRoot)
     expect(assessment.failureClass).toBe("unknown")
     expect(assessment.severity).toBe("recoverable")
@@ -47,7 +47,7 @@ describe("assessRecoveryState", () => {
   it("classifies state-corruption when continuity file is corrupt JSON", async () => {
     const stateDir = resolve(projectRoot, ".hivemind", "state")
     writeFileSync(resolve(stateDir, "session-continuity.json"), "{not valid json", "utf-8")
-    const { assessRecoveryState } = await import("../../../src/lib/recovery/assess-state.js")
+    const { assessRecoveryState } = await import("../../../src/task-management/recovery/assess-state.js")
     const assessment = await assessRecoveryState("any-session", projectRoot)
     expect(assessment.failureClass).toBe("state-corruption")
     expect(assessment.severity).toBe("partial-loss")
@@ -69,7 +69,7 @@ describe("assessRecoveryState", () => {
       }),
       "utf-8",
     )
-    const { assessRecoveryState } = await import("../../../src/lib/recovery/assess-state.js")
+    const { assessRecoveryState } = await import("../../../src/task-management/recovery/assess-state.js")
     const assessment = await assessRecoveryState("checkpoint-session", projectRoot)
     expect(assessment.severity).toBe("partial-loss")
     expect(assessment.recommendedAction).toBe("checkpoint-restore")
@@ -81,7 +81,7 @@ describe("assessRecoveryState", () => {
   it("returns manual-intervention when no recovery path is viable", async () => {
     const stateDir = resolve(projectRoot, ".hivemind", "state")
     writeFileSync(resolve(stateDir, "session-continuity.json"), "{not valid json", "utf-8")
-    const { assessRecoveryState } = await import("../../../src/lib/recovery/assess-state.js")
+    const { assessRecoveryState } = await import("../../../src/task-management/recovery/assess-state.js")
     const assessment = await assessRecoveryState("ghost-session", projectRoot, {
       considerCheckpoints: false,
     })

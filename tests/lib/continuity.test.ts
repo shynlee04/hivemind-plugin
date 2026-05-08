@@ -4,7 +4,7 @@ import { basename, join } from "node:path"
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { Delegation, SessionContinuityRecord } from "../../src/lib/types.js"
+import type { Delegation, SessionContinuityRecord } from "../../src/shared/types.js"
 
 /** Creates a minimal continuity record for persistence regression tests. */
 function makeRecord(sessionID: string): SessionContinuityRecord {
@@ -46,7 +46,7 @@ describe("continuity persistence", () => {
   })
 
   it("quarantines corrupt canonical session-continuity.json and throws visibly", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
     writeFileSync(filePath, "NOT JSON {{{", "utf-8")
 
@@ -72,7 +72,7 @@ describe("continuity persistence", () => {
       }
     })
 
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     continuity.recordSessionContinuity(makeRecord("ses-one"))
     continuity.recordSessionContinuity(makeRecord("ses-two"))
 
@@ -84,7 +84,7 @@ describe("continuity persistence", () => {
   })
 
   it("redacts continuity text fields while preserving session identifiers", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     continuity.recordSessionContinuity({
       ...makeRecord("ses-redaction"),
       metadata: {
@@ -119,8 +119,8 @@ describe("continuity persistence", () => {
     process.env.OPENCODE_HARNESS_STATE_DIR = freshStateDir
     expect(existsSync(freshStateDir)).toBe(false)
 
-    const continuity = await import("../../src/lib/continuity.js")
-    const delegationPersistence = await import("../../src/lib/delegation-persistence.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
+    const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
 
     continuity.recordSessionContinuity(makeRecord("ses-fresh-install"))
     const continuityPath = continuity.getContinuityStoragePath()
@@ -159,7 +159,7 @@ describe("continuity persistence", () => {
 
   it("should rehydrate state from existing continuity file on restart", async () => {
     // Phase 1: write records with first module instance
-    const continuity1 = await import("../../src/lib/continuity.js")
+    const continuity1 = await import("../../src/task-management/continuity/index.js")
     continuity1.recordSessionContinuity(makeRecord("ses-rehydrate-1"))
     continuity1.recordSessionContinuity(makeRecord("ses-rehydrate-2"))
     const filePath = continuity1.getContinuityStoragePath()
@@ -167,7 +167,7 @@ describe("continuity persistence", () => {
 
     // Phase 2: simulate restart — reset module cache so storeCache is undefined
     vi.resetModules()
-    const continuity2 = await import("../../src/lib/continuity.js")
+    const continuity2 = await import("../../src/task-management/continuity/index.js")
 
     // Verify state was rehydrated from disk
     const records = continuity2.listSessionContinuity()
@@ -177,7 +177,7 @@ describe("continuity persistence", () => {
   })
 
   it("should handle corrupt continuity file by quarantining and throwing", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
 
     // Write garbage to the file
@@ -196,7 +196,7 @@ describe("continuity persistence", () => {
   })
 
   it("should handle missing continuity file gracefully", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
 
     // No file exists at the canonical path — but the loader will fall
@@ -211,7 +211,7 @@ describe("continuity persistence", () => {
   })
 
   it("should handle empty continuity file", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
 
     // Write a valid but empty JSON object — parsed as an empty store,
@@ -226,7 +226,7 @@ describe("continuity persistence", () => {
 
   it("should preserve all delegation records across restart", async () => {
     // Phase 1: create records with delegation metadata
-    const continuity1 = await import("../../src/lib/continuity.js")
+    const continuity1 = await import("../../src/task-management/continuity/index.js")
     const baseRecord = makeRecord("ses-deleg-1")
     continuity1.recordSessionContinuity({
       ...baseRecord,
@@ -271,7 +271,7 @@ describe("continuity persistence", () => {
 
     // Phase 2: simulate restart
     vi.resetModules()
-    const continuity2 = await import("../../src/lib/continuity.js")
+    const continuity2 = await import("../../src/task-management/continuity/index.js")
 
     // Verify delegation metadata survived across restart
     const rec1 = continuity2.getSessionContinuity("ses-deleg-1")
@@ -294,7 +294,7 @@ describe("continuity persistence", () => {
   })
 
   it("should survive concurrent read/write without corruption", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
 
     // Rapidly interleave writes and reads
     const sessionIDs = Array.from({ length: 20 }, (_, i) => `ses-concurrent-${i}`)
@@ -318,7 +318,7 @@ describe("continuity persistence", () => {
   })
 
   it("should deep-clone on read to prevent mutation", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     continuity.recordSessionContinuity(makeRecord("ses-clone-test"))
 
     // Read the record
@@ -349,7 +349,7 @@ describe("continuity persistence", () => {
   })
 
   it("should not corrupt file on partial write — atomic write mechanism", async () => {
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
 
     // Write initial data
     continuity.recordSessionContinuity(makeRecord("ses-atomic-1"))
@@ -407,7 +407,7 @@ describe("atomic_commit toggle", () => {
 
   it("writes to disk when atomic_commit is true (default)", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ atomic_commit: true, workflow: { use_worktrees: false } }),
@@ -415,7 +415,7 @@ describe("atomic_commit toggle", () => {
       invalidateConfigCache: vi.fn(),
     }))
 
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
 
     continuity.recordSessionContinuity(makeRecord("ses-atomic-true"))
@@ -429,7 +429,7 @@ describe("atomic_commit toggle", () => {
 
   it("skips disk write when atomic_commit is false", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ atomic_commit: false, workflow: { use_worktrees: false } }),
@@ -437,7 +437,7 @@ describe("atomic_commit toggle", () => {
       invalidateConfigCache: vi.fn(),
     }))
 
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
 
     continuity.recordSessionContinuity(makeRecord("ses-atomic-false"))
@@ -448,13 +448,13 @@ describe("atomic_commit toggle", () => {
 
   it("writes to disk with default config (atomic_commit defaults to true)", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
       invalidateConfigCache: vi.fn(),
     }))
 
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
 
     continuity.recordSessionContinuity(makeRecord("ses-atomic-defaults"))

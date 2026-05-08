@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   compileAgent,
   mixedBatchCompile,
-} from "../src/lib/config-compiler.js"
+} from "../src/config/compiler.js"
 
 describe("Config Stability Metrics", () => {
   it("handle 100+ primitives without crash", () => {

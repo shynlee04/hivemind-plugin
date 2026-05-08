@@ -4,7 +4,7 @@ import { join } from "node:path"
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { Delegation } from "../../src/lib/types.js"
+import type { Delegation } from "../../src/shared/types.js"
 
 function makeDelegation(id: string): Delegation {
   return {
@@ -67,7 +67,7 @@ describe("delegation persistence", () => {
       }
     })
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     nestedPersist = persistence.persistDelegations
 
     expect(() => persistence.persistDelegations([makeDelegation("outer")])).not.toThrow()
@@ -77,7 +77,7 @@ describe("delegation persistence", () => {
   })
 
   it("quarantines corrupt delegations.json and throws a visible harness error", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(persistence.getDelegationsFilePath(), "NOT VALID JSON {{{", "utf-8")
 
     expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\]/)
@@ -86,14 +86,14 @@ describe("delegation persistence", () => {
   })
 
   it("reports non-array delegations.json as invalid persisted shape", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(persistence.getDelegationsFilePath(), JSON.stringify({ invalid: true }), "utf-8")
 
     expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\].*array/)
   })
 
   it("normalizes invalid persisted status values to explicit error metadata", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(
       persistence.getDelegationsFilePath(),
       `${JSON.stringify([{ ...makeDelegation("invalid-status"), status: "unknown-success" }])}\n`,
@@ -109,7 +109,7 @@ describe("delegation persistence", () => {
   })
 
   it("redacts delegation result, error, and fallbackReason while preserving operational identifiers", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     persistence.persistDelegations([
       {
         ...makeDelegation("redacted"),
@@ -166,7 +166,7 @@ describe("commit_docs toggle", () => {
 
   it("writes delegations.json to disk when commit_docs is true (default)", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ commit_docs: true, workflow: { use_worktrees: false } }),
@@ -174,7 +174,7 @@ describe("commit_docs toggle", () => {
       invalidateConfigCache: vi.fn(),
     }))
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     const filePath = persistence.getDelegationsFilePath()
 
     persistence.persistDelegations([makeDelegation("del-commit-true")])
@@ -187,7 +187,7 @@ describe("commit_docs toggle", () => {
 
   it("skips disk write when commit_docs is false", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ commit_docs: false, workflow: { use_worktrees: false } }),
@@ -195,7 +195,7 @@ describe("commit_docs toggle", () => {
       invalidateConfigCache: vi.fn(),
     }))
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     const filePath = persistence.getDelegationsFilePath()
 
     persistence.persistDelegations([makeDelegation("del-commit-false")])
@@ -206,13 +206,13 @@ describe("commit_docs toggle", () => {
 
   it("writes to disk with default config (commit_docs defaults to true)", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
       invalidateConfigCache: vi.fn(),
     }))
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     const filePath = persistence.getDelegationsFilePath()
 
     persistence.persistDelegations([makeDelegation("del-commit-defaults")])

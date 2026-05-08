@@ -2,9 +2,9 @@ import {
   buildDelegationQueueKey,
   DelegationConcurrencyQueue,
   reserveSubagentSpawn,
-} from "../../src/lib/concurrency.js"
-import { TaskStateManager } from "../../src/lib/state.js"
-import { MAX_DESCENDANTS_PER_ROOT } from "../../src/lib/types.js"
+} from "../../src/coordination/concurrency/queue.js"
+import { TaskStateManager } from "../../src/shared/state.js"
+import { MAX_DESCENDANTS_PER_ROOT } from "../../src/shared/types.js"
 
 // ---------------------------------------------------------------------------
 // DelegationConcurrencyQueue

@@ -6,7 +6,7 @@ import {
   getConfig,
   getCachedConfig,
   invalidateConfigCache,
-} from "../../src/lib/config-subscriber.js"
+} from "../../src/config/subscriber.js"
 import { getDefaultConfigs } from "../../src/schema-kernel/hivemind-configs.schema.js"
 
 // ===========================================================================

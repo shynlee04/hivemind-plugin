@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import type { ClassifiedEvent, DualPersistenceFileSystem } from "../../../src/lib/event-tracker/types.js"
+import type { ClassifiedEvent, DualPersistenceFileSystem } from "../../../src/task-management/journal/event-tracker/types.js"
 
 describe("DualPersistence", () => {
-  let persistence: Awaited<ReturnType<typeof import("../../../src/lib/event-tracker/dual-persistence.js")>["createDualPersistence"]>
+  let persistence: Awaited<ReturnType<typeof import("../../../src/task-management/journal/event-tracker/dual-persistence.js")>["createDualPersistence"]>
   let memFs: DualPersistenceFileSystem
   let files: Map<string, string>
 
   beforeEach(async () => {
-    const mod = await import("../../../src/lib/event-tracker/dual-persistence.js")
+    const mod = await import("../../../src/task-management/journal/event-tracker/dual-persistence.js")
     files = new Map()
     memFs = {
       existsSync: (path: string) => files.has(path),
@@ -46,13 +46,13 @@ describe("DualPersistence", () => {
         ...memFs,
         mkdirSync: () => { mkdirCalled = true },
       }
-      const mod = import("../../../src/lib/event-tracker/dual-persistence.js")
+      const mod = import("../../../src/task-management/journal/event-tracker/dual-persistence.js")
       // Re-create persistence with mkdir tracking
       persistence = mod.then(m => m.createDualPersistence({ fs: fsWithMkdir, basePath: "/test/.hivemind/event-tracker" })) as any
     })
 
     it("accumulates events in the same JSON document", async () => {
-      const mod = await import("../../../src/lib/event-tracker/dual-persistence.js")
+      const mod = await import("../../../src/task-management/journal/event-tracker/dual-persistence.js")
       persistence = mod.createDualPersistence({ fs: memFs, basePath: "/test/.hivemind/event-tracker" })
       persistence.persist(makeClassifiedEvent("session_start"))
       persistence.persist(makeClassifiedEvent("user_message"))
@@ -67,7 +67,7 @@ describe("DualPersistence", () => {
 
   describe("persistAppendMarkdown", () => {
     it("appends Markdown entry for a classified event", async () => {
-      const mod = await import("../../../src/lib/event-tracker/dual-persistence.js")
+      const mod = await import("../../../src/task-management/journal/event-tracker/dual-persistence.js")
       persistence = mod.createDualPersistence({ fs: memFs, basePath: "/test/.hivemind/event-tracker" })
       const event = makeClassifiedEvent("error")
       const result = persistence.persistAppendMarkdown(event)
@@ -79,7 +79,7 @@ describe("DualPersistence", () => {
     })
 
     it("appends multiple entries to same Markdown file", async () => {
-      const mod = await import("../../../src/lib/event-tracker/dual-persistence.js")
+      const mod = await import("../../../src/task-management/journal/event-tracker/dual-persistence.js")
       persistence = mod.createDualPersistence({ fs: memFs, basePath: "/test/.hivemind/event-tracker" })
       persistence.persistAppendMarkdown(makeClassifiedEvent("session_start"))
       persistence.persistAppendMarkdown(makeClassifiedEvent("user_message"))
@@ -92,7 +92,7 @@ describe("DualPersistence", () => {
 
   describe("dual write (both JSON + Markdown)", () => {
     it("writes both JSON and Markdown atomically", async () => {
-      const mod = await import("../../../src/lib/event-tracker/dual-persistence.js")
+      const mod = await import("../../../src/task-management/journal/event-tracker/dual-persistence.js")
       persistence = mod.createDualPersistence({ fs: memFs, basePath: "/test/.hivemind/event-tracker" })
       const event = makeClassifiedEvent("tool_invocation")
       const result = persistence.persistDual(event)

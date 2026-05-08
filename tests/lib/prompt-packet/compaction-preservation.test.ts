@@ -4,9 +4,9 @@ import {
   fromCompactionPacket,
   type CompactionPreservationPacket,
   type CompactionExtras,
-} from "../../../src/lib/prompt-packet/compaction-preservation.js"
-import { createKernelPacket, type KernelPacket } from "../../../src/lib/prompt-packet/kernel-packet.js"
-import type { SessionContinuityRecord } from "../../../src/lib/types.js"
+} from "../../../src/features/prompt-packet/compaction-preservation.js"
+import { createKernelPacket, type KernelPacket } from "../../../src/features/prompt-packet/kernel-packet.js"
+import type { SessionContinuityRecord } from "../../../src/shared/types.js"
 
 describe("compaction-preservation", () => {
   it("strips kernel packet to essential fields", () => {

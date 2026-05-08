@@ -7,22 +7,22 @@ import {
   deriveRecoveryGuarantee,
   withContractDefaults,
   buildDelegationResult,
-} from "../../src/lib/delegation-state-machine.js"
-import type { Delegation, DelegationStatus } from "../../src/lib/types.js"
+} from "../../src/coordination/delegation/state-machine.js"
+import type { Delegation, DelegationStatus } from "../../src/shared/types.js"
 
 // ---------------------------------------------------------------------------
 // Mocks — only I/O and SDK boundaries
 // ---------------------------------------------------------------------------
 
-vi.mock("../../src/lib/delegation-persistence.js", () => ({
+vi.mock("../../src/task-management/continuity/delegation-persistence.js", () => ({
   persistDelegations: vi.fn(),
 }))
 
-vi.mock("../../src/lib/notification-handler.js", () => ({
+vi.mock("../../src/coordination/completion/notification-handler.js", () => ({
   notifyDelegationTerminal: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock("../../src/lib/session-api.js", () => ({
+vi.mock("../../src/shared/session-api.js", () => ({
   abortSession: vi.fn().mockResolvedValue(undefined),
 }))
 
@@ -486,7 +486,7 @@ describe("DelegationStateMachine", () => {
 
     it("should abort the child session when safety ceiling fires", async () => {
       vi.spyOn(console, "error").mockImplementation(() => {})
-      const sessionApi = await import("../../src/lib/session-api.js")
+      const sessionApi = await import("../../src/shared/session-api.js")
       const mockAbort = sessionApi.abortSession as ReturnType<typeof vi.fn>
       mockAbort.mockClear()
 
@@ -527,7 +527,7 @@ describe("DelegationStateMachine", () => {
     })
 
     it("should persist gracePeriodExpiresAt when scheduling cleanup", async () => {
-      const types = await import("../../src/lib/types.js")
+      const types = await import("../../src/shared/types.js")
       const TASK_CLEANUP_DELAY_MS = types.TASK_CLEANUP_DELAY_MS as number
       sm.registerDelegation(makeDelegation({ status: "running" }), false)
       sm.transitionToTerminal("del_1", "completed")
@@ -634,7 +634,7 @@ describe("DelegationStateMachine", () => {
     })
 
     it("should return 0 and not persist when nothing to prune", async () => {
-      const delegationPersistence = await import("../../src/lib/delegation-persistence.js")
+      const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
       const mockPersist = delegationPersistence.persistDelegations as ReturnType<typeof vi.fn>
       mockPersist.mockClear()
       sm.registerDelegation(
@@ -673,7 +673,7 @@ describe("DelegationStateMachine", () => {
 
   describe("persistAll", () => {
     it("should call persistDelegations with current delegation values", async () => {
-      const delegationPersistence = await import("../../src/lib/delegation-persistence.js")
+      const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
       const mockPersist = delegationPersistence.persistDelegations as ReturnType<typeof vi.fn>
       mockPersist.mockClear()
 
@@ -687,8 +687,8 @@ describe("DelegationStateMachine", () => {
     })
 
     it("should prune before persisting when over MAX_DELEGATIONS_BEFORE_PRUNE threshold", async () => {
-      const types = await import("../../src/lib/types.js")
-      const delegationPersistence = await import("../../src/lib/delegation-persistence.js")
+      const types = await import("../../src/shared/types.js")
+      const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
       const MAX_DELEGATIONS_BEFORE_PRUNE = types.MAX_DELEGATIONS_BEFORE_PRUNE as number
       const mockPersist = delegationPersistence.persistDelegations as ReturnType<typeof vi.fn>
       mockPersist.mockClear()

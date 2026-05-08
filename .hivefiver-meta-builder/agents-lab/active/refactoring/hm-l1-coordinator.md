@@ -32,6 +32,7 @@ permission:
     hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
+  run-background-command: allow
   session-journal-export: allow
   prompt-skim: deny
   prompt-analyze: deny

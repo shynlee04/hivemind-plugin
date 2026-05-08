@@ -23,7 +23,7 @@
  * heuristic works correctly as a potential mitigation path.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { CompletionDetector } from "../../src/lib/completion-detector.js"
+import { CompletionDetector } from "../../src/coordination/completion/detector.js"
 
 describe("CompletionDetector crash scenarios", () => {
   let detector: CompletionDetector

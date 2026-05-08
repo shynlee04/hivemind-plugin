@@ -19,7 +19,7 @@ import {
   detectFrameworks,
   validateBoundaries,
   KNOWN_FRAMEWORKS,
-} from "../../src/lib/framework-detector.js"
+} from "../../src/features/bootstrap/framework-detector.js"
 
 describe("framework-detector", () => {
   let tempDir: string

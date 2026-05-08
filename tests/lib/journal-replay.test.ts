@@ -1,9 +1,9 @@
-import { createJournalEntry, type SessionJournalEntry } from "../../src/lib/session-journal.js"
+import { createJournalEntry, type SessionJournalEntry } from "../../src/task-management/journal/index.js"
 import {
   reconstructStateAt,
   reduceJournalEntries,
   replayChronological,
-} from "../../src/lib/journal-replay.js"
+} from "../../src/task-management/journal/replay.js"
 
 function makeEntry(overrides: {
   sessionId: string

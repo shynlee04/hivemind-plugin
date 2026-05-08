@@ -3,10 +3,10 @@ import {
   validateCrossPrimitive,
   type PrimitiveMap,
   type ValidationReport,
-} from "../../src/lib/cross-primitive-validator.js"
+} from "../../src/features/bootstrap/cross-primitive-validator.js"
 import type { AgentFile, CommandFile, SkillFile, ToolFile } from "../../src/schema-kernel/index.js"
 import type { MCPServerConfig, OpenCodeConfig } from "../../src/schema-kernel/index.js"
-import type { DetectedFramework } from "../../src/lib/framework-detector.js"
+import type { DetectedFramework } from "../../src/features/bootstrap/framework-detector.js"
 
 // ---------------------------------------------------------------------------
 // Helpers

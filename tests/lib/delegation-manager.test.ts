@@ -3,13 +3,13 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "../../src/lib/concurrency.js"
-import { getSessionContinuity, recordSessionContinuity } from "../../src/lib/continuity.js"
-import * as sessionApi from "../../src/lib/session-api.js"
-import * as spawnerConcurrencyKey from "../../src/lib/spawner/concurrency-key.js"
-import { DelegationManager } from "../../src/lib/delegation-manager.js"
-import { readPersistedDelegations } from "../../src/lib/delegation-persistence.js"
-import { DEFAULT_RUNTIME_POLICY } from "../../src/lib/runtime-policy.js"
+import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "../../src/coordination/concurrency/queue.js"
+import { getSessionContinuity, recordSessionContinuity } from "../../src/task-management/continuity/index.js"
+import * as sessionApi from "../../src/shared/session-api.js"
+import * as spawnerConcurrencyKey from "../../src/coordination/spawner/concurrency-key.js"
+import { DelegationManager } from "../../src/coordination/delegation/manager.js"
+import { readPersistedDelegations } from "../../src/task-management/continuity/delegation-persistence.js"
+import { DEFAULT_RUNTIME_POLICY } from "../../src/shared/runtime-policy.js"
 import {
   DEFAULT_PRUNE_MAX_AGE_MS,
   DEFAULT_SAFETY_CEILING_MS,
@@ -18,12 +18,12 @@ import {
   STABLE_POLLS_REQUIRED,
   type Delegation,
   type RuntimePolicy,
-} from "../../src/lib/types.js"
+} from "../../src/shared/types.js"
 
 // CA-03: export override tracker for parallelization toggle tests.
 // vitest's module graph allows spying on the config-subscriber export
 // and all consumers of that export will see the spy.
-import * as configSubscriber from "../../src/lib/config-subscriber.js"
+import * as configSubscriber from "../../src/config/subscriber.js"
 
 type MockClient = {
   session: {

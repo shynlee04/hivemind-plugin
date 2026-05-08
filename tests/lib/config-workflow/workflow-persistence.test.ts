@@ -17,8 +17,8 @@ describe("workflow-persistence", () => {
 
   describe("persistWorkflow + readWorkflow", () => {
     it("should persist and read back a workflow state", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { persistWorkflow, readWorkflow } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { persistWorkflow, readWorkflow } = await import("../../../src/config/workflow/workflow-persistence.js")
 
       const state = createWorkflowState({
         type: "agent-config",
@@ -36,8 +36,8 @@ describe("workflow-persistence", () => {
     })
 
     it("should survive a simulated context reset (write, clear cache, read)", async () => {
-      const { createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { persistWorkflow, readWorkflow } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/config/workflow/workflow-state.js")
+      const { persistWorkflow, readWorkflow } = await import("../../../src/config/workflow/workflow-persistence.js")
 
       let state = createWorkflowState({
         type: "command-config",
@@ -60,14 +60,14 @@ describe("workflow-persistence", () => {
     })
 
     it("should return undefined for non-existent workflow ID", async () => {
-      const { readWorkflow } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { readWorkflow } = await import("../../../src/config/workflow/workflow-persistence.js")
       const result = readWorkflow("wf-nonexistent-12345")
       expect(result).toBeUndefined()
     })
 
     it("should handle Unicode in target primitive names round-trip", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { persistWorkflow, readWorkflow } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { persistWorkflow, readWorkflow } = await import("../../../src/config/workflow/workflow-persistence.js")
 
       const unicodeName = "ägent-日本語-🤖"
       const state = createWorkflowState({
@@ -86,8 +86,8 @@ describe("workflow-persistence", () => {
 
   describe("deleteWorkflow", () => {
     it("should remove a workflow from persisted store", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { persistWorkflow, readWorkflow, deleteWorkflow } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { persistWorkflow, readWorkflow, deleteWorkflow } = await import("../../../src/config/workflow/workflow-persistence.js")
 
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
@@ -100,15 +100,15 @@ describe("workflow-persistence", () => {
     })
 
     it("should be a no-op for non-existent workflow ID", async () => {
-      const { deleteWorkflow } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { deleteWorkflow } = await import("../../../src/config/workflow/workflow-persistence.js")
       expect(() => deleteWorkflow("wf-no-such-id")).not.toThrow()
     })
   })
 
   describe("concurrent access protection", () => {
     it("should handle two rapid sequential writes without corruption", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { persistWorkflow, readWorkflow } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { persistWorkflow, readWorkflow } = await import("../../../src/config/workflow/workflow-persistence.js")
 
       const state1 = createWorkflowState({
         type: "agent-config", targetPrimitives: [{ type: "agent", name: "a" }], scope: "project", mode: "create",
@@ -132,7 +132,7 @@ describe("workflow-persistence", () => {
 
   describe("getWorkflowStorePath", () => {
     it("should return a path ending with config-workflows.json", async () => {
-      const { getWorkflowStorePath } = await import("../../../src/lib/config-workflow/workflow-persistence.js")
+      const { getWorkflowStorePath } = await import("../../../src/config/workflow/workflow-persistence.js")
       const path = getWorkflowStorePath()
       expect(path).toMatch(/config-workflows\.json$/)
     })

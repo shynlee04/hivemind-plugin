@@ -12,7 +12,7 @@ import {
   type AgentSpec,
   type CommandSpec,
   type SkillSpec,
-} from "../../src/lib/config-compiler.js"
+} from "../../src/config/compiler.js"
 
 // ---------------------------------------------------------------------------
 // Fixtures

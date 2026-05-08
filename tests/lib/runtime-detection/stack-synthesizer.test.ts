@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { synthesizeTechStack, type SynthesizedStack } from "../../../src/lib/runtime-detection/stack-synthesizer.js"
+import { synthesizeTechStack, type SynthesizedStack } from "../../../src/features/bootstrap/runtime-detection/stack-synthesizer.js"
 
 describe("stack-synthesizer", () => {
   let tempDir: string

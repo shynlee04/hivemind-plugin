@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 import { createDoctorCommand } from "../../../src/cli/commands/doctor.js"
-import { TIER_1_DIRECTORIES } from "../../../src/lib/bootstrap-structure.js"
+import { TIER_1_DIRECTORIES } from "../../../src/features/bootstrap/structure.js"
 import { generateHivemindConfigsJsonSchema } from "../../../src/schema-kernel/generate-config-json-schema.js"
 
 function createHealthyProject(): string {
@@ -103,7 +103,12 @@ describe("doctor command", () => {
       mkdirSync(join(projectRoot, ".opencode", "agents"), { recursive: true })
       writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring", "hm-agent.md"), "---\nname: hm-agent\n---\n", "utf8")
       writeFileSync(join(projectRoot, ".opencode", "agents", "hm-agent.md"), "real file", "utf8")
-      const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })
+      const command = createDoctorCommand({
+        resolveProjectRoot: () => projectRoot,
+        resolveSdk: () => "/sdk/path",
+        runHealthCommand: () => ({ exitCode: 0 }),
+        countSourceModules: () => 42,
+      })
 
       const result = await command.handler({ flags: { check: "symlinks" }, positionals: [], argv: ["doctor", "--check=symlinks"] })
 
@@ -119,7 +124,12 @@ describe("doctor command", () => {
     const projectRoot = createHealthyProject()
     try {
       rmSync(join(projectRoot, ".hivemind", "state", ".gitkeep"))
-      const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })
+      const command = createDoctorCommand({
+        resolveProjectRoot: () => projectRoot,
+        resolveSdk: () => "/sdk/path",
+        runHealthCommand: () => ({ exitCode: 0 }),
+        countSourceModules: () => 42,
+      })
       const result = await command.handler({ flags: {}, positionals: [], argv: ["doctor"] })
       expect(result.exitCode).toBe(1)
       expect(result.output).toContain("structure")

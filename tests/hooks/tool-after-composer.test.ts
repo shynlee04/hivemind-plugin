@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
 
-import { createToolExecuteAfterHook, resolveToolHookSessionId } from "../../src/hooks/tool-after-composer.js"
+import { createToolExecuteAfterHook, resolveToolHookSessionId } from "../../src/hooks/transforms/tool-after-composer.js"
 
 describe("tool-after composer", () => {
   it("resolves supported session id fields", () => {
@@ -25,7 +25,7 @@ describe("tool-after composer", () => {
   })
 
   it("does not import durable writers", () => {
-    const source = readFileSync("src/hooks/tool-after-composer.ts", "utf-8")
+    const source = readFileSync("src/hooks/transforms/tool-after-composer.ts", "utf-8")
 
     expect(source).not.toMatch(/createEventTrackerArtifactsFromHook|persistWorkflow|config-workflow|continuity/)
   })

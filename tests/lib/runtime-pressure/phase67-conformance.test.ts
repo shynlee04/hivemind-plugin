@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest"
 import {
   detectRuntimePressure,
   inspectToolAuthorityCatalog,
-} from "../../../src/lib/runtime-pressure/index.js"
+} from "../../../src/features/runtime-pressure/index.js"
 import type {
   ToolEvidenceAttachment,
   ToolStateSurface,
-} from "../../../src/lib/runtime-pressure/types.js"
+} from "../../../src/features/runtime-pressure/types.js"
 
 const STATE_SURFACES = new Set<ToolStateSurface>([
   "hivemind-state",

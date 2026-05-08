@@ -20,7 +20,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.create.mockResolvedValue({ data: { id: "ses_1", title: "test" } })
 
-      const { createSession } = await import("../../src/lib/session-api.js")
+      const { createSession } = await import("../../src/shared/session-api.js")
       const result = await createSession(client, {
         parentID: "ses_parent_1",
         title: "builder: fix bug",
@@ -36,7 +36,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.create.mockResolvedValue({ data: { id: "s2" } })
 
-      const { createSession } = await import("../../src/lib/session-api.js")
+      const { createSession } = await import("../../src/shared/session-api.js")
       await createSession(client, { title: "test", directory: "/tmp" })
 
       expect(client.session.create).toHaveBeenCalledWith({
@@ -49,7 +49,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.create.mockResolvedValue({ data: { id: "s3" } })
 
-      const { createSession } = await import("../../src/lib/session-api.js")
+      const { createSession } = await import("../../src/shared/session-api.js")
       await createSession(client, {
         title: "test",
       })
@@ -62,7 +62,7 @@ describe("session-api typed wrappers", () => {
     it("rejects invalid parent session IDs before calling the SDK", async () => {
       const client = mockClient()
 
-      const { createSession } = await import("../../src/lib/session-api.js")
+      const { createSession } = await import("../../src/shared/session-api.js")
 
       await expect(createSession(client, { title: "test", parentID: "   " })).rejects.toThrow(
         "[Harness] Invalid parent session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
@@ -77,7 +77,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.get.mockResolvedValue({ data: { id: "ses_1" } })
 
-      const { getSession } = await import("../../src/lib/session-api.js")
+      const { getSession } = await import("../../src/shared/session-api.js")
       const result = await getSession(client, "ses_1")
 
       expect(client.session.get).toHaveBeenCalledWith({ path: { id: "ses_1" } })
@@ -87,7 +87,7 @@ describe("session-api typed wrappers", () => {
     it("rejects invalid session IDs before calling the SDK", async () => {
       const client = mockClient()
 
-      const { getSession } = await import("../../src/lib/session-api.js")
+      const { getSession } = await import("../../src/shared/session-api.js")
 
       await expect(getSession(client, "not-a-session")).rejects.toThrow(
         "[Harness] Invalid session ID 'not-a-session'. Expected an OpenCode session ID starting with 'ses'.",
@@ -102,7 +102,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.abort.mockResolvedValue({ data: true })
 
-      const { abortSession } = await import("../../src/lib/session-api.js")
+      const { abortSession } = await import("../../src/shared/session-api.js")
       await abortSession(client, "ses_1")
 
       expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "ses_1" } })
@@ -111,7 +111,7 @@ describe("session-api typed wrappers", () => {
     it("rejects invalid session IDs before calling the SDK", async () => {
       const client = mockClient()
 
-      const { abortSession } = await import("../../src/lib/session-api.js")
+      const { abortSession } = await import("../../src/shared/session-api.js")
 
       await expect(abortSession(client, "bad-session")).rejects.toThrow(
         "[Harness] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
@@ -126,7 +126,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.messages.mockResolvedValue({ data: [] })
 
-      const { getSessionMessages } = await import("../../src/lib/session-api.js")
+      const { getSessionMessages } = await import("../../src/shared/session-api.js")
       const result = await getSessionMessages(client, "ses_1")
 
       expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "ses_1" } })
@@ -137,7 +137,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.messages.mockResolvedValue({ data: [] })
 
-      const { getSessionMessages } = await import("../../src/lib/session-api.js")
+      const { getSessionMessages } = await import("../../src/shared/session-api.js")
       await getSessionMessages(client, "ses_1", { limit: 5 })
 
       expect(client.session.messages).toHaveBeenCalledWith({
@@ -150,7 +150,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.messages.mockResolvedValue({ data: "not-an-array" })
 
-      const { getSessionMessages } = await import("../../src/lib/session-api.js")
+      const { getSessionMessages } = await import("../../src/shared/session-api.js")
       const result = await getSessionMessages(client, "ses_1")
 
       expect(result).toEqual([])
@@ -159,7 +159,7 @@ describe("session-api typed wrappers", () => {
     it("rejects blank session IDs before calling the SDK", async () => {
       const client = mockClient()
 
-      const { getSessionMessages } = await import("../../src/lib/session-api.js")
+      const { getSessionMessages } = await import("../../src/shared/session-api.js")
 
       await expect(getSessionMessages(client, "   ")).rejects.toThrow(
         "[Harness] Invalid session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
@@ -174,7 +174,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.messages.mockResolvedValue({ data: [{ id: "m1" }, { id: "m2" }] })
 
-      const { getSessionMessageCount } = await import("../../src/lib/session-api.js")
+      const { getSessionMessageCount } = await import("../../src/shared/session-api.js")
       const result = await getSessionMessageCount(client, "ses_1")
 
       expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "ses_1" } })
@@ -185,7 +185,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.messages.mockRejectedValue(new Error("temporary failure"))
 
-      const { getSessionMessageCount } = await import("../../src/lib/session-api.js")
+      const { getSessionMessageCount } = await import("../../src/shared/session-api.js")
       const result = await getSessionMessageCount(client, "ses_1")
 
       expect(result).toBeNull()
@@ -198,7 +198,7 @@ describe("session-api typed wrappers", () => {
       client.session.prompt.mockResolvedValue({ data: { info: {}, parts: [] } })
       client.session.messages.mockResolvedValue({ data: [] })
 
-      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const { sendPrompt } = await import("../../src/shared/session-api.js")
       await sendPrompt(client, "ses_1", {
         parts: [{ type: "text", text: "hello" }],
       })
@@ -214,7 +214,7 @@ describe("session-api typed wrappers", () => {
     it("rejects invalid session IDs before reading messages or prompting", async () => {
       const client = mockClient()
 
-      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const { sendPrompt } = await import("../../src/shared/session-api.js")
 
       await expect(sendPrompt(client, "bad-session", { parts: [] })).rejects.toThrow(
         "[Harness] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
@@ -229,7 +229,7 @@ describe("session-api typed wrappers", () => {
       client.session.messages.mockResolvedValue({ data: [] })
       client.session.prompt.mockResolvedValue({ data: { info: { id: "msg-1" }, parts: [] } })
 
-      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const { sendPrompt } = await import("../../src/shared/session-api.js")
       const result = await sendPrompt(client, "ses_1", { parts: [] })
 
       expect(result).toEqual({ info: { id: "msg-1" }, parts: [] })
@@ -246,7 +246,7 @@ describe("session-api typed wrappers", () => {
           ],
         })
 
-      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const { sendPrompt } = await import("../../src/shared/session-api.js")
       const result = await sendPrompt(client, "ses_1", { parts: [{ type: "text", text: "hello" }] })
 
       expect(client.session.prompt).toHaveBeenCalledWith({
@@ -282,7 +282,7 @@ describe("session-api typed wrappers", () => {
         },
       })
 
-      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const { sendPrompt } = await import("../../src/shared/session-api.js")
       const result = await sendPrompt(client, "ses_1", { parts: [{ type: "text", text: "hello" }] })
 
       expect(client.session.prompt).toHaveBeenCalledWith({
@@ -314,7 +314,7 @@ describe("session-api typed wrappers", () => {
       const client = mockClient()
       client.session.promptAsync.mockResolvedValue(undefined)
 
-      const { sendPromptAsync } = await import("../../src/lib/session-api.js")
+      const { sendPromptAsync } = await import("../../src/shared/session-api.js")
       await sendPromptAsync(client, "ses_1", {
         parts: [{ type: "text", text: "hello" }],
       })
@@ -330,7 +330,7 @@ describe("session-api typed wrappers", () => {
     it("rejects blank session IDs before calling the SDK", async () => {
       const client = mockClient()
 
-      const { sendPromptAsync } = await import("../../src/lib/session-api.js")
+      const { sendPromptAsync } = await import("../../src/shared/session-api.js")
 
       await expect(sendPromptAsync(client, "\n\t ", { parts: [] })).rejects.toThrow(
         "[Harness] Invalid session ID '\n\t '. Expected an OpenCode session ID starting with 'ses'.",
@@ -350,7 +350,7 @@ describe("session-api typed wrappers", () => {
         },
       })
 
-      const { getSessionStatusMap } = await import("../../src/lib/session-api.js")
+      const { getSessionStatusMap } = await import("../../src/shared/session-api.js")
       const result = await getSessionStatusMap(client)
 
       expect(client.session.status).toHaveBeenCalledWith()
@@ -366,94 +366,94 @@ describe("session-api typed wrappers", () => {
 describe("session-api helpers", () => {
   describe("getSessionID", () => {
     it("extracts id from plain object", async () => {
-      const { getSessionID } = await import("../../src/lib/session-api.js")
+      const { getSessionID } = await import("../../src/shared/session-api.js")
       expect(getSessionID({ id: "s1" })).toBe("s1")
     })
 
     it("extracts sessionID from plain object", async () => {
-      const { getSessionID } = await import("../../src/lib/session-api.js")
+      const { getSessionID } = await import("../../src/shared/session-api.js")
       expect(getSessionID({ sessionID: "s2" })).toBe("s2")
     })
 
     it("extracts from nested info.id", async () => {
-      const { getSessionID } = await import("../../src/lib/session-api.js")
+      const { getSessionID } = await import("../../src/shared/session-api.js")
       expect(getSessionID({ info: { id: "s3" } })).toBe("s3")
     })
 
     it("extracts from nested info.sessionID", async () => {
-      const { getSessionID } = await import("../../src/lib/session-api.js")
+      const { getSessionID } = await import("../../src/shared/session-api.js")
       expect(getSessionID({ info: { sessionID: "s4" } })).toBe("s4")
     })
 
     it("returns undefined for non-object input", async () => {
-      const { getSessionID } = await import("../../src/lib/session-api.js")
+      const { getSessionID } = await import("../../src/shared/session-api.js")
       expect(getSessionID(null)).toBeUndefined()
       expect(getSessionID(undefined)).toBeUndefined()
       expect(getSessionID(42)).toBeUndefined()
     })
 
     it("prefers top-level id over nested info.id", async () => {
-      const { getSessionID } = await import("../../src/lib/session-api.js")
+      const { getSessionID } = await import("../../src/shared/session-api.js")
       expect(getSessionID({ id: "top", info: { id: "nested" } })).toBe("top")
     })
   })
 
   describe("getParentID", () => {
     it("extracts parentID from plain object", async () => {
-      const { getParentID } = await import("../../src/lib/session-api.js")
+      const { getParentID } = await import("../../src/shared/session-api.js")
       expect(getParentID({ parentID: "p1" })).toBe("p1")
     })
 
     it("extracts parentId (camelCase) from plain object", async () => {
-      const { getParentID } = await import("../../src/lib/session-api.js")
+      const { getParentID } = await import("../../src/shared/session-api.js")
       expect(getParentID({ parentId: "p2" })).toBe("p2")
     })
 
     it("extracts from nested info.parentID", async () => {
-      const { getParentID } = await import("../../src/lib/session-api.js")
+      const { getParentID } = await import("../../src/shared/session-api.js")
       expect(getParentID({ info: { parentID: "p3" } })).toBe("p3")
     })
 
     it("returns undefined when no parent fields exist", async () => {
-      const { getParentID } = await import("../../src/lib/session-api.js")
+      const { getParentID } = await import("../../src/shared/session-api.js")
       expect(getParentID({ id: "s1" })).toBeUndefined()
     })
   })
 
   describe("getEventSessionID", () => {
     it("extracts from properties.info.id for lifecycle events", async () => {
-      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
       const event = { properties: { info: { id: "sess-123" } } }
       expect(getEventSessionID(event)).toBe("sess-123")
     })
 
     it("extracts from properties.sessionID for status events", async () => {
-      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
       const event = { properties: { sessionID: "sess-456" } }
       expect(getEventSessionID(event)).toBe("sess-456")
     })
 
     it("prefers properties.info.id over properties.sessionID", async () => {
-      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
       const event = { properties: { info: { id: "from-info" }, sessionID: "from-session" } }
       expect(getEventSessionID(event)).toBe("from-info")
     })
 
     it("falls back to top-level event.sessionID", async () => {
-      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
       const event = { sessionID: "top-level" }
       expect(getEventSessionID(event)).toBe("top-level")
     })
 
     it("does not treat message.updated info.id as a session root", async () => {
-      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
       const event = { type: "message.updated", properties: { info: { id: "msg_dc683580e001KJ4Am2DWo63Yqs" } } }
 
       expect(getEventSessionID(event)).toBeUndefined()
     })
 
     it("does not treat message.part delta/update info.id values as root sessions", async () => {
-      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
       const deltaEvent = { type: "message.part.delta", properties: { info: { id: "ses_2397d5cf7ffeF57rGCsLddMRvN" } } }
       const updatedEvent = { type: "message.part.updated", properties: { info: { id: "ses_2397d5cf7ffeF57rGCsLddMRvN" } } }
 
@@ -462,7 +462,7 @@ describe("session-api helpers", () => {
     })
 
     it("uses explicit message event sessionID instead of message info.id", async () => {
-      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
       const event = {
         type: "message.updated",
         properties: { info: { id: "msg_dc683580e001KJ4Am2DWo63Yqs" }, sessionID: "ses_23a0b5eabffeB413854W6gnUKC" },
@@ -474,13 +474,13 @@ describe("session-api helpers", () => {
 
   describe("getEventParentID", () => {
     it("extracts parentID from properties.info", async () => {
-      const { getEventParentID } = await import("../../src/lib/session-api.js")
+      const { getEventParentID } = await import("../../src/shared/session-api.js")
       const event = { properties: { info: { parentID: "parent-1" } } }
       expect(getEventParentID(event)).toBe("parent-1")
     })
 
     it("returns undefined when no parent info exists", async () => {
-      const { getEventParentID } = await import("../../src/lib/session-api.js")
+      const { getEventParentID } = await import("../../src/shared/session-api.js")
       const event = { properties: { info: { id: "sess-1" } } }
       expect(getEventParentID(event)).toBeUndefined()
     })
@@ -495,7 +495,7 @@ describe("session-api helpers", () => {
         return Promise.reject(new Error("not found"))
       })
 
-      const { walkParentChain } = await import("../../src/lib/session-api.js")
+      const { walkParentChain } = await import("../../src/shared/session-api.js")
       const chain = await walkParentChain(client, "ses_child")
 
       expect(chain).toHaveLength(2)
@@ -507,7 +507,7 @@ describe("session-api helpers", () => {
       const client = mockClient()
       client.session.get.mockResolvedValue({ data: { id: "ses_root" } })
 
-      const { walkParentChain } = await import("../../src/lib/session-api.js")
+      const { walkParentChain } = await import("../../src/shared/session-api.js")
       const chain = await walkParentChain(client, "ses_root")
 
       expect(chain).toHaveLength(1)
@@ -522,14 +522,14 @@ describe("session-api helpers", () => {
         return Promise.reject(new Error("not found"))
       })
 
-      const { walkParentChain } = await import("../../src/lib/session-api.js")
+      const { walkParentChain } = await import("../../src/shared/session-api.js")
       await expect(walkParentChain(client, "ses_a")).rejects.toThrow(/\[Harness\].*cyclic/)
     })
 
     it("rejects invalid starting session IDs before calling the SDK", async () => {
       const client = mockClient()
 
-      const { walkParentChain } = await import("../../src/lib/session-api.js")
+      const { walkParentChain } = await import("../../src/shared/session-api.js")
 
       await expect(walkParentChain(client, "root-123")).rejects.toThrow(
         "[Harness] Invalid session ID 'root-123'. Expected an OpenCode session ID starting with 'ses'.",

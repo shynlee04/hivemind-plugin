@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { resolveWorkspaceRuntimePolicy } from "../../src/lib/workspace-runtime-policy.js"
+import { resolveWorkspaceRuntimePolicy } from "../../src/shared/workspace-runtime-policy.js"
 
 describe("resolveWorkspaceRuntimePolicy", () => {
   let tempDir: string

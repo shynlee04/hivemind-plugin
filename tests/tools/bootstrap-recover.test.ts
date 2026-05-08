@@ -4,8 +4,8 @@ import { tmpdir } from "node:os"
 
 import { describe, expect, it } from "vitest"
 
-import { bootstrapInit } from "../../src/tools/bootstrap-init.js"
-import { bootstrapRecover } from "../../src/tools/bootstrap-recover.js"
+import { bootstrapInit } from "../../src/tools/config/bootstrap-init.js"
+import { bootstrapRecover } from "../../src/tools/config/bootstrap-recover.js"
 
 function createTempProject(): string {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-recover-"))

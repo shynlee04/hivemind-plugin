@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
-import { createHivemindAgentWorkCreateTool, createHivemindAgentWorkExportTool } from "../../src/tools/hivemind-agent-work.js"
+import { createHivemindAgentWorkCreateTool, createHivemindAgentWorkExportTool } from "../../src/tools/hivemind/hivemind-agent-work.js"
 
 const mockCtx = {
   sessionID: "parent-session",

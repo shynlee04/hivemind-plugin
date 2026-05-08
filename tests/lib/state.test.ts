@@ -1,5 +1,5 @@
-import { TaskStateManager } from "../../src/lib/state.js"
-import type { DelegationMeta } from "../../src/lib/types.js"
+import { TaskStateManager } from "../../src/shared/state.js"
+import type { DelegationMeta } from "../../src/shared/types.js"
 
 const makeValidMeta = (rootID: string): DelegationMeta => ({
   rootID,

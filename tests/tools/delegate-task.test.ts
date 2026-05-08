@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { DelegationManager } from "../../src/lib/delegation-manager.js"
+import { DelegationManager } from "../../src/coordination/delegation/manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
-import { createDelegateTaskTool, DelegateTaskInputSchema } from "../../src/tools/delegate-task.js"
+import { createDelegateTaskTool, DelegateTaskInputSchema } from "../../src/tools/delegation/delegate-task.js"
 
 const mockCtx = {
   sessionID: "parent-session",

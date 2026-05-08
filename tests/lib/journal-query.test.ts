@@ -2,14 +2,14 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { appendJournalEntry, createJournalEntry } from "../../src/lib/session-journal.js"
+import { appendJournalEntry, createJournalEntry } from "../../src/task-management/journal/index.js"
 import {
   queryByEventType,
   queryBySession,
   queryByTimeRange,
   queryJournal,
   readJournalEntries,
-} from "../../src/lib/journal-query.js"
+} from "../../src/task-management/journal/query.js"
 
 function makeEntry(overrides: {
   sessionId: string

@@ -14,9 +14,9 @@ import {
   PromptAnalysisResultSchema,
   SessionPatchRecordSchema,
 } from "../../src/schema-kernel/prompt-enhance.schema.js"
-import { createPromptSkimTool } from "../../src/tools/prompt-skim/index.js"
-import { createPromptAnalyzeTool } from "../../src/tools/prompt-analyze/index.js"
-import { createSessionPatchTool } from "../../src/tools/session-patch/index.js"
+import { createPromptSkimTool } from "../../src/tools/prompt/prompt-skim/index.js"
+import { createPromptAnalyzeTool } from "../../src/tools/prompt/prompt-analyze/index.js"
+import { createSessionPatchTool } from "../../src/tools/session/session-patch/index.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 
 const mockCtx = {

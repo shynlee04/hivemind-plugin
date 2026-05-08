@@ -3,7 +3,7 @@
  * @module tests/tools/prompt-skim-tool
  */
 import { describe, it, expect } from "vitest"
-import { createPromptSkimTool } from "../../src/tools/prompt-skim/index.js"
+import { createPromptSkimTool } from "../../src/tools/prompt/prompt-skim/index.js"
 import { PromptSkimResultSchema } from "../../src/schema-kernel/prompt-enhance.schema.js"
 
 const mockCtx = {

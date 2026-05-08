@@ -2,23 +2,23 @@
 # Hivemind — State
 
 **Last updated:** 2026-05-08
-**Last trigger:** BOOT-07 clean-state E2E proof completed through manual autonomous fallback
+**Last trigger:** SR remediation completed — corrected source-plane restructuring
 
 ---
 
 ## Current Status
 
-**Active workstreams:** Bootstrap CLI (WS-BOOT) + Shell/PTY Control-Plane Runway — Phase 0 governance gate PASSED
-**Current phase:** BOOT-08 (Agent + Skill Integration) plus CP-PTY-00 docs/spec spike available in parallel
-**Blocked:** No — Phase 0 gate passed, BOOT-02 continuation authorized  
-**Health:** 🟢 BOOT-02 through BOOT-07 are complete; BOOT-08 and CP-PTY-00 remain active planning/integration work
-**Control mode:** Managed autonomous loop — one authorized cycle at a time
+**Active workstreams:** Structure Restructuring (WS-SR) complete + Shell/PTY Control-Plane Runway (CP-PTY-00 complete) + Meta-Concept Migration (WS-MCM — MCM-01/MCM-02 complete)
+**Current phase:** SR-10 complete — source planes remediated and verified after aborted SR-4 retry
+**Blocked:** No for WS-SR — corrected architecture decision accepted; CP-PTY/MCM downstream work can resume from roadmap gates
+**Health:** 🟢 SR-04 through SR-10 completed with `npm run typecheck`, `npm test`, and `npm run build` passing; known Vitest hoist warnings remain non-fatal
+**Control mode:** Managed autonomous loop — WS-SR exit evidence recorded; next work should return to CP-PTY/MCM/f-04 dependency order
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** BOOT-08 agent/skill integration and CP-PTY-00 shell/PTY control-plane architecture runway. Phase 0 governance baseline complete (identity, lineage, hierarchy, source planes, config contract, meta-authoring boundary).
+**Current focus:** Post-restructuring continuation — `src/lib/` has been removed and source planes now live under shared, task-management, coordination, features, config, routing, hooks, and tools. CP-PTY-01..04 can resume from their gates.
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -44,6 +44,9 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | 89 agents | ✅ | L0/L1/L2/L3 hierarchy, hm-* + hf-* lineages |
 | 123 active skill directories | ✅ | Current primitive inventory excludes `.gitkeep`; lineage counts require MCM doctor proof before shipping claims |
 | 19 commands | ✅ | start-work, plan, deep-init, ultrawork, harness-doctor, etc. |
+| Agent/skill integration constitution | ✅ | BOOT-08: lineage, permissions, hierarchy, routing contracts (L5 governance) |
+| Agent migration verification | ✅ | MCM-01: 56 shipped agents (45 hm-* + 11 hf-*) classified and discoverable |
+| Skill migration verification | ✅ | MCM-02: 48 shipped skills (35 hm-* + 13 hf-*) classified and discoverable |
 
 ---
 
@@ -53,7 +56,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 |-------|----------|--------|
 | **Bootstrap/recovery E2E proof complete** — BOOT-02 through BOOT-07 passed local clean-state proof | 🟢 RESOLVED | Maintain regression coverage |
 | **Config consumer gap remains** — `conversation_language` is traced as wired in config traceability, but `delegation_systems` has no runtime consumer | 🔴 CRITICAL | Phase 0 config contract + CA-04.2: wire or explicitly defer dead config fields |
-| **Shell/PTY command lane not fully specified** — background command, PTY, headless fallback, SDK delegation, and future sidecar projection cross-cut multiple modules | 🟡 HIGH | CP-PTY-00 docs/spec spike; CP-PTY-01 blocked until BOOT-07 or explicit authorization |
+| **Shell/PTY command lane fully scoped** — CP-PTY-00 spike complete, CP-PTY-01..04 phases defined covering command-process, SDK session, coordination, and cross-cutting integration | 🟡 HIGH | CP-PTY-01 ready to execute; 02-04 planned |
 | **`messages-transform.ts` dead code** — 67 LOC, zero imports, confirmed dead Phase 35 | 🟡 HIGH | Delete file |
 | **plugin.ts at 447 LOC** — 100 LOC target, needs split | 🟡 HIGH | Extract hook/tool registration modules |
 | **12 stale modules** — exist but no consumers | 🟡 HIGH | Document or wire (see SRC-MODULE-AUDIT) |
@@ -85,6 +88,9 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | BOOT-02R | BOOT-02 implementation summaries were reconciled before BOOT-03 automation resumed | COMPLETE — 2026-05-08 |
 | CP-PTY-00 | Shell/PTY/background command control-plane spike is docs/spec only and may run parallel with BOOT continuation | NEW — 2026-05-08 |
 | CP-PTY-01 | Runtime shell/PTY control-plane implementation is blocked on BOOT-07 unless explicitly authorized earlier | NEW — 2026-05-08 |
+| CP-PTY-02 | SDK session delegation integration — async/sync child-session dispatch, context injection, completion detection | NEW — 2026-05-08 |
+| CP-PTY-03 | Agent/subagent background task coordination — wave dispatch, completion-looping, queue dedup, lifecycle cascade | NEW — 2026-05-08 |
+| CP-PTY-04 | Cross-cutting shell integration — wires background commands to session/task/journal/hooks/permissions | NEW — 2026-05-08 |
 
 ---
 
@@ -125,20 +131,43 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 | Phase | Status | Evidence level | Notes |
 |---|---|---|---|
-| CP-PTY-00 | 🔵 READY | L5 docs/spec | Context, research, requirements, spec, and route skeletons created |
-| CP-PTY-01 | ⛔ BLOCKED | L2-L3 required | Runtime implementation blocked on BOOT-07 or explicit authorization |
+| CP-PTY-00 | ✅ COMPLETE | L5 docs/spec | Context, research, requirements, spec, verification all passed |
+| CP-PTY-01 | 🔵 READY | L2-L3 required | BOOT-07 complete, entry gate satisfied |
+| CP-PTY-02 | ⬜ NOT PLANNED | L2-L3 required | SDK child-session delegation integration |
+| CP-PTY-03 | ⬜ NOT PLANNED | L2-L3 required | Agent/subagent background task coordination |
+| CP-PTY-04 | ⬜ NOT PLANNED | L2-L3 required | Cross-cutting shell integration (wires everything) |
 | SC-PTY-01 | ⬜ DEFERRED | L2-L3 required | Read-only projection only after CP-PTY-01 and Q2 sidecar confirmation |
+
+---
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- **2026-05-08** — SR-00 through SR-10 phase directories created: 11 directories with `.gitkeep` registration under `.planning/phases/SR-*/`
+- **2026-05-08** — WS-SR ROADMAP.md updated: improved phase descriptions with OMO kebab-case conventions, feature-module pattern (index.ts + types.ts + AGENTS.md per module), colocated tests, barrel exports, hierarchical AGENTS.md guidance, 500 LOC cap enforcement, verification commands per phase
+- **2026-05-08** — STATE.md updated: current phase set to SR-0, health green, control mode set to managed autonomous loop, SR directories registered
+- **2026-05-08** — Restructuring plan refined: `.planning/architecture/structure-restructuring-plan-2026-05-08.md` contains complete file mapping (current → target), 10-phase migration plan with risk assessment, rollback strategy, circular dependency resolution, verification commands
+
+### Key Restructuring Decisions
+
+| ID | Decision |
+|----|----------|
+| SR-D-01 | kebab-case everywhere — directories and files follow OMO naming conventions |
+| SR-D-02 | Feature-module pattern — each module has `index.ts` (barrel), `types.ts`, `AGENTS.md` |
+| SR-D-03 | Colocated tests — `manager.ts` + `manager.test.ts` in same directory (not separate `tests/`) |
+| SR-D-04 | 500 LOC cap — modules exceeding 500 LOC (continuity.ts: 465, plugin.ts: 447, delegation-manager.ts: ~500) must be split |
+| SR-D-05 | AGENTS.md at every level — hierarchical guidance from `src/AGENTS.md` down to individual module `AGENTS.md` |
+| SR-D-06 | Circular dependency resolution — `primitive-scanners.ts ↔ primitive-registry.ts` and `runtime-validator.ts ↔ cross-primitive-validator.ts` resolved by extracting shared types |
+| SR-D-07 | Rollback strategy — per-phase atomic commits; full rollback via `git checkout main && git branch -D refactor/structure-restructuring` |
 
 ---
 
 ## Next Actions
 
-1. **Run BOOT-08** — agent + skill integration constitution and routing contracts.
-2. **Run CP-PTY-00** — docs/spec shell control-plane spike if still pending.
-3. **Run CP-PTY-00 as parallel docs/spec spike** — no runtime mutation; prepare CP-PTY-01 contract.
-4. **After BOOT-07:** authorize or reject CP-PTY-01 runtime implementation.
-5. **After BOOT-04 symlinks:** Resume MCM-01 + MCM-02 — agent + skill migration.
-6. **After BOOT + MCM prerequisites:** Resume f-04 routing foundation; require CP-PTY contract if router invokes command lanes.
+1. **Commit SR remediation** — include source-plane moves, test updates, architecture decision, and summary artifacts; exclude incidental `.hivemind/state/**` runtime-state drift.
+2. **Return to CP-PTY-01** — background shell control-plane MVP is ready after WS-SR completion.
+3. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
 
 ## Option 3 Foundation Artifacts
 
@@ -168,4 +197,4 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 - `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md`
 
 ---
-*State updated: 2026-05-08 for BOOT-07 E2E proof completion*
+*State updated: 2026-05-08 for SR remediation completion*

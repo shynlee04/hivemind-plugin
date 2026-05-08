@@ -4,7 +4,7 @@ import {
   PURPOSE_CLASSES,
   type PurposeClass,
   type ClassificationResult,
-} from "../../../src/lib/session-entry/purpose-classifier.js"
+} from "../../../src/routing/session-entry/purpose-classifier.js"
 
 describe("classifyPurpose", () => {
   // ── SEI-01: 8 purpose classes ────────────────────────────────────────

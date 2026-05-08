@@ -1,221 +1,143 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-05-07
+**Analysis Date:** 2026-05-08
 
 ## Test Framework
 
 **Runner:**
-- Vitest 4.1.5 — `"vitest": "^4.1.5"`
-- Config: `vitest.config.ts`
-- Coverage provider: v8 (`@vitest/coverage-v8` 4.1.5)
+- Vitest 4.x (`^4.1.5`)
+- Config: `vitest.config.ts` at project root
+- Globals mode enabled (`globals: true`)
+- Coverage provider: `v8` (`@vitest/coverage-v8 ^4.1.5`)
 
-**Configuration (`vitest.config.ts`):**
-```typescript
-import { defineConfig } from 'vitest/config'
-
-export default defineConfig({
-  test: {
-    globals: true,                              // describe/it/expect/expec without imports
-    include: ['tests/**/*.test.ts', 'eval/**/*.test.ts'],
-    coverage: {
-      provider: 'v8',
-      include: ['src/**/*.ts'],
-      exclude: ['src/index.ts', 'src/**/index.ts'],
-      reporter: ['text', 'lcov', 'json-summary'],
-      thresholds: {
-        statements: 85,
-        branches: 72,
-        functions: 85,
-        lines: 85,
-      },
-    },
-  },
-})
-```
-
-**Current coverage baseline (Node 20, 1163 tests):**
-- Statements: 89.94% | Branches: 79.25% | Functions: 92.38% | Lines: 90.95%
-- Thresholds sit ~5pp below actual to absorb normal churn while catching real regressions.
-- Never lower thresholds without an explicit audit amendment (per Phase 48.4.1 gate).
+**Assertion Library:**
+- Vitest built-in `expect` (no separate assertion library)
 
 **Run Commands:**
 ```bash
-npm test                    # Run all tests (vitest run)
-npm run test:watch          # Watch mode (vitest)
-npm run test:coverage       # Coverage report (vitest run --coverage)
-npx vitest run tests/lib/helpers.test.ts          # Run single file
-npx vitest run -t "<test name>"                    # Run tests matching pattern
+npm test                     # Run all tests (vitest run)
+npm run test:watch           # Watch mode (vitest)
+npm run test:coverage        # Run with coverage report
+npx vitest run tests/lib/helpers.test.ts                    # Single file
+npx vitest run -t "<test name>"                             # Name-filtered
+npx vitest run tests/lib/                                  # Directory-scoped
 ```
 
 ## Test File Organization
 
 **Location:**
-- Tests mirror source structure at the top level:
-  ```
-  tests/lib/     → src/lib/     (library unit tests)
-  tests/tools/   → src/tools/   (tool unit tests)
-  tests/hooks/   → src/hooks/   (hook factory tests)
-  tests/cli/     → src/cli/     (CLI tooling tests)
-  tests/plugins/ → src/plugin.ts (plugin lifecycle tests)
-  tests/integration/             (cross-module integration tests)
-  tests/sidecar/ → src/sidecar/ (sidecar tests)
-  tests/schema-kernel/           (Zod schema validation tests)
-  eval/                          (evaluation tests, separate from unit tests)
-  ```
+- Separate `tests/` directory at project root, mirroring `src/` structure
+- `tests/lib/` ⇔ source in `src/coordination/`, `src/task-management/`, `src/features/` (legacy grouping from pre-refactor)
+- `tests/tools/` ⇔ `src/tools/`
+- `tests/hooks/` ⇔ `src/hooks/`
+- `tests/schema-kernel/` ⇔ `src/schema-kernel/`
+- `tests/cli/` ⇔ `src/cli/`
+- `tests/plugin/` ⇔ `src/plugin.ts` (bootstrap/registration tests)
+- `tests/integration/` ⇔ cross-tool pipeline tests (no single source mirror)
+- `tests/sidecar/` ⇔ `src/sidecar/`
 
 **Naming:**
-- Test files: `<source-filename>.test.ts` — e.g., `helpers.test.ts` tests `helpers.ts`
-- Subdirectory tests: `<submodule>.test.ts` in matching directory — e.g., `tests/lib/event-tracker/writer.test.ts` tests `src/lib/event-tracker/writer.ts`
+- All test files use `*.test.ts` suffix
+- Mirror source filename exactly: `src/shared/helpers.ts` → `tests/lib/helpers.test.ts`
+- Multi-file modules: `tests/tools/prompt-skim.test.ts` maps to `src/tools/prompt/prompt-skim/`
 
-**Current test stats (2026-05-07):**
-- 125 test files
-- 1,767 tests total
-- 1,765 passing, 2 failing
-- 2 failures in `tests/lib/session-journal.test.ts` — missing `.hivemind/journal/README.md` and `.hivemind/lineage/README.md` files (taxonomy heading assertion tests)
+**Structure:**
+```
+tests/
+├── lib/                        # Legacy grouping for coordination/task-mgmt/features
+│   ├── helpers.test.ts
+│   ├── state.test.ts
+│   ├── completion-detector.test.ts
+│   ├── delegation-state-machine.test.ts
+│   ├── runtime-policy.test.ts
+│   ├── config-workflow/
+│   ├── prompt-packet/
+│   ├── recovery/
+│   ├── security/
+│   ├── spawner/
+│   └── ...
+├── tools/
+│   ├── prompt-skim.test.ts
+│   ├── prompt-analyze.test.ts
+│   ├── session-patch.test.ts
+│   ├── configure-primitive.test.ts
+│   └── validate-restart.test.ts
+├── hooks/
+│   ├── create-core-hooks.test.ts
+│   ├── create-session-hooks.test.ts
+│   ├── create-tool-guard-hooks.test.ts
+│   ├── hook-cqrs-boundary.test.ts
+│   └── governance-block.test.ts
+├── schema-kernel/
+│   ├── hivemind-configs.schema.test.ts
+│   ├── prompt-enhance.schema.test.ts
+│   └── opencode-config.schemas.test.ts
+├── cli/
+│   ├── commands/
+│   ├── discovery.test.ts
+│   └── router.test.ts
+├── plugin/
+│   └── bootstrap-tools-registration.test.ts
+├── integration/
+│   └── prompt-enhance-pipeline.test.ts
+└── sidecar/
+    └── readonly-state.test.ts
+```
 
 ## Test Structure
 
 **Suite Organization:**
 ```typescript
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { someFunction } from "../../src/lib/module.js"
-import type { SomeType } from "../../src/lib/types.js"
+import { describe, it, expect } from "vitest"
+import { isObject } from "../../src/shared/helpers.js"
 
-describe("someFunction", () => {
-  // Setup at describe level
-  const baseArgs = { sessionID: "ses-test", agent: "hm-l2-researcher" }
-
-  it("returns expected value for normal input", () => {
-    const result = someFunction(baseArgs)
-    expect(result).toEqual({ /* expected */ })
+describe("isObject", () => {
+  it("returns true for plain objects", () => {
+    expect(isObject({})).toBe(true)
+    expect(isObject({ a: 1 })).toBe(true)
   })
 
-  it("throws [Harness] on invalid input", () => {
-    expect(() => someFunction({ ...baseArgs, sessionID: "" }))
-      .toThrow("[Harness] sessionId must be a non-empty string")
-  })
-
-  it("handles edge case: undefined input", () => {
-    expect(someFunction(undefined as never)).toBeUndefined()
+  it("returns false for null", () => {
+    expect(isObject(null)).toBe(false)
   })
 })
 ```
 
-**Test structure conventions:**
-- Each `describe` block maps to one exported function or class
-- Each `it` block tests one behavior or edge case
-- Test names are descriptive and lowercase: "returns true for plain objects", "throws on error property"
-- Setup shared within `describe` via `const` or `let` assignments at the top of the block
-- `beforeEach` / `afterEach` for lifecycle management (env cleanup, temp directories, mock resets)
+**Patterns:**
+- One `describe` per exported function/class
+- One `it` per behavior (descriptive lowercase names)
+- Nested `describe` blocks for grouping related behaviors
+- `beforeEach` for common setup (instantiation, temp dirs, timers, env vars)
+- `afterEach` for teardown (restore timers, delete temp dirs, reset env)
+- Section comments with `// --- label ---` for visual grouping
 
-**Assertion patterns:**
-- `.toEqual()` — deep equality for objects and arrays
-- `.toBe()` — strict equality for primitives
-- `.toContain()` — substring or array membership
-- `.toBeUndefined()`, `.toBeNull()`, `.toBeTruthy()`, `.toBeFalsy()`
-- `.toThrow()` — exact match on error message (must include `[Harness]` prefix)
-- `.toHaveLength()`, `.toStrictEqual()`
-- `expect(new Set(values).size).toBe(expected)` — uniqueness assertions
-
-**Edge case coverage (expected per function):**
-- Null/undefined inputs
-- Empty strings/arrays/objects
-- Boundary values (max, min, zero)
-- Invalid type inputs (string where object expected, etc.)
-- Non-object intermediates in nested access patterns
-
-## Mocking
-
-**Framework:** vitest built-in mocking (`vi.fn()`, `vi.spyOn()`, `vi.mock()`, `vi.doMock()`)
-
-**Mock patterns — SDK API faking:**
+**Setup/Teardown:**
 ```typescript
-// Pattern 1: vi.fn() for SDK method stubs
-const mockSessionApi = {
-  create: vi.fn().mockResolvedValue({ data: { id: "child-ses-123" } }),
-  prompt: vi.fn().mockResolvedValue(undefined),
-  promptAsync: vi.fn().mockResolvedValue(undefined),
-  status: vi.fn().mockResolvedValue({ data: {} }),
-  messages: vi.fn().mockResolvedValue({
-    data: { messages: [{ role: "assistant", content: [{ type: "text", text: "result" }] }] }
-  }),
-  abort: vi.fn().mockResolvedValue(undefined),
-  agents: vi.fn().mockResolvedValue({ data: { agents: [{ name: "hm-l2-researcher" }] } }),
-}
-```
+describe("CompletionDetector", () => {
+  let detector: CompletionDetector
 
-**Mock patterns — vi.spyOn for module interception:**
-```typescript
-// Spy on exported functions to track calls
-vi.spyOn(sessionApi, "sendPrompt").mockResolvedValue("ok")
-vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
+  beforeEach(() => {
+    vi.useFakeTimers()
+    detector = new CompletionDetector(100)
+  })
 
-// Spy on console for error/warning assertions
-const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("[Harness]"))
-
-// Spy on class methods
-const acquireSpy = vi.spyOn(DelegationConcurrencyQueue.prototype, "acquire")
-```
-
-**Mock patterns — vi.doMock for file-system level mocking:**
-```typescript
-// Used for continuity persistence tests — mock node:fs inline
-vi.doMock("node:fs", async () => {
-  const actual = await vi.importActual<typeof import("node:fs")>("node:fs")
-  return {
-    ...actual,
-    writeFileSync: vi.fn<typeof actual.writeFileSync>((...args) => {
-      // Track temp file writes while preserving actual behavior
-      actual.writeFileSync(...args)
-    }),
-  }
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+  // ...
 })
 ```
 
-**Mock patterns — vi.mock for static module replacement:**
+**Test Data Factories:**
 ```typescript
-vi.mock("../../../src/lib/config-subscriber.js", () => ({
-  getConfig: vi.fn(),
-  getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
-  invalidateConfigCache: vi.fn(),
-}))
-```
-
-**Mock lifecycle:**
-```typescript
-beforeEach(() => {
-  vi.resetModules()        // Reset module cache for clean imports
-  vi.unmock("node:fs")     // Ensure module is unmocked before re-mocking
-  // Set up temp directories and env vars
+const makeValidMeta = (rootID: string): DelegationMeta => ({
+  rootID,
+  depth: 1,
+  budgetUsed: 1,
+  agent: "builder",
+  queueKey: "default",
 })
 
-afterEach(() => {
-  vi.doUnmock("node:fs")   // Clean up dynamic mocks
-  vi.resetModules()
-  // Clean up temp directories
-  // Restore env vars
-})
-```
-
-**What to mock:**
-- OpenCode SDK methods (`sessionApi`, `getSession`, `sendPrompt`, etc.) — any external dependency
-- Node.js built-in modules (`node:fs`, `node:os`) when testing file I/O
-- Config subscribers (`getCachedConfig`, `getConfig`)
-- Console methods (`console.error`, `console.warn`) when testing logging behavior
-- PTY operations (`spawn`, `read`, `write`, `terminate`)
-
-**What NOT to mock:**
-- Pure utility functions (`helpers.ts`) — tested with real inputs
-- Type definitions and constants — tested through their consumers
-- Simple state machines (`task-status.ts`) — tested directly
-- Data validation (schemas) — tested with real Zod validation
-
-## Fixtures and Factories
-
-**Factory functions in test files:**
-```typescript
-// Inline factory at top of describe block
 function makeRecord(sessionID: string): SessionContinuityRecord {
   return {
     sessionID,
@@ -232,145 +154,237 @@ function makeRecord(sessionID: string): SessionContinuityRecord {
 }
 ```
 
-**Default config fixtures:**
+**Assertion Patterns:**
+- `expect(value).toBe(expected)` — strict equality for primitives
+- `expect(value).toEqual(expected)` — deep equality for objects/arrays
+- `expect(value).toMatchObject(partial)` — subset match
+- `expect(value).toBeDefined()` / `.toBeUndefined()` — presence checks
+- `expect(() => fn()).toThrow(/regex/)` — error assertion with pattern
+- `expect(promise).resolves.toEqual(...)` — async success
+- `expect(Set).toBeEmpty()` (via `size === 0` or `expect(set.size).toBe(0)`)
+- `expect(array).toContain(item)` — membership
+
+## Mocking
+
+**Framework:** Vitest `vi` utilities (built-in)
+
+**Module-Level Mocking (`vi.mock`):**
 ```typescript
-function getDefaultConfigs() {
-  return {
-    MAX_DESCENDANTS_PER_ROOT: 5,
-    CIRCUIT_BREAKER_THRESHOLD: 12,
-  }
-}
+vi.mock("bun-pty", () => ({
+  PtyManager: class {
+    isSupported = vi.fn(() => false)
+  },
+}))
+
+vi.mock("../../../src/shared/session-api.js", async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, createSession: vi.fn() }
+})
+
+vi.mock("../../../src/config/subscriber.js", () => ({
+  getCachedConfig: vi.fn(() => ({ features: {} })),
+}))
 ```
 
-**Location:** Factories are defined inline in the test file, typically at the top of the `describe` block that uses them. No separate fixture files or directories.
+**Method-Level Mocking (`vi.spyOn`):**
+```typescript
+vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(0)
+vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(false)
+vi.spyOn(console, "error").mockImplementation(() => {})
+vi.spyOn(process, "cwd").mockReturnValue("/process-cwd")
+```
+
+**Timer Mocking:**
+```typescript
+beforeEach(() => { vi.useFakeTimers() })
+afterEach(() => { vi.useRealTimers() })
+// In tests:
+vi.advanceTimersByTime(100)
+vi.advanceTimersByTime(60)
+```
+
+**Dynamic Import for Module-Level Mocks:**
+When `vi.mock` is used, the module must be dynamically imported AFTER the mocks:
+```typescript
+describe("bootstrap tool registration", () => {
+  it("registers tools", async () => {
+    const { HarnessControlPlane } = await import("../../src/plugin.js")
+    const plugin = await HarnessControlPlane({ client: {}, directory: process.cwd() } as never)
+    // ...
+  })
+})
+```
+
+**Reset Between Tests:**
+```typescript
+beforeEach(() => {
+  vi.resetModules()       // Clear module cache
+  vi.unmock("node:fs")    // Remove module-level mock
+})
+afterEach(() => {
+  vi.doUnmock("node:fs")  // Restore
+  vi.resetModules()
+})
+```
+
+**What to Mock:**
+- External SDKs (`@opencode-ai/sdk`, `bun-pty`)
+- File system operations when testing persistence logic (`node:fs`)
+- Session API wrappers when testing delegation/state machines (`src/shared/session-api.js`)
+- Config subscribers when testing config-dependent behavior
+- `console.error` to suppress expected error output in tests
+
+**What NOT to Mock:**
+- Pure utility functions (`helpers.ts`, `task-status.ts`, `tool-response.ts`)
+- State managers under test (`TaskStateManager` is instantiated directly)
+- Zod schemas (tested via `safeParse` on real instances)
+- Internal module boundaries within the same concern
+
+## Test Tool Executions
+
+**Testing Tool Implementations:**
+```typescript
+const mockCtx = {
+  sessionID: "test_ses_001",
+  agent: "builder",
+  directory: process.cwd(),
+  worktree: process.cwd(),
+  abort: new AbortController().signal,
+  metadata: () => ({}),
+  ask: async () => ({ state: "approved" as const }),
+}
+
+// Direct execute call
+const tool = createPromptSkimTool(process.cwd())
+const raw = await tool.execute(
+  { content: "MUST build this. NEVER do that.\nCheck https://example.com", workspaceRoot: process.cwd() },
+  mockCtx,
+)
+const parsed = JSON.parse(raw)
+expect(parsed.kind).toBe("success")
+```
+
+## Schema Testing
+
+**Zod Schema Validation:**
+```typescript
+it("prompt-skim output validates against PromptSkimResultSchema", async () => {
+  const raw = await tool.execute(args, mockCtx)
+  const parsed = JSON.parse(raw)
+  const result = PromptSkimResultSchema.safeParse(parsed.data)
+  expect(result.success).toBe(true)
+})
+```
+
+Use `safeParse` (not `parse`) to avoid throwing — test the `success` boolean directly.
 
 ## Coverage
 
 **Requirements:**
-- Coverage thresholds enforced in `vitest.config.ts`: 85% statements, 72% branches, 85% functions, 85% lines
-- Coverage includes all `src/**/*.ts` files except `src/index.ts` and `src/**/index.ts` (barrel files)
-- JSON summary reporter enables CI/automation parsing without scraping text output
+- Coverage thresholds enforced in `vitest.config.ts`:
+  - Statements: **85%**
+  - Branches: **72%**
+  - Functions: **85%**
+  - Lines: **85%**
+- Coverage includes `src/**/*.ts`, excludes `src/index.ts` and `src/**/index.ts` (barrel files)
+- Reporters: `text`, `lcov`, `json-summary`
+- Provider: `v8`
+- Thresholds are gated — lowering requires explicit audit amendment
 
-**Known coverage gaps (from 2026-05-07 audit):**
-| Area | Files | Gap |
-|------|-------|-----|
-| Schema-kernel files (10 files) | `trajectory.schema.ts`, `sdk-supervisor.schema.ts`, `runtime-pressure.schema.ts`, `skill-metadata.schema.ts`, `tool-definition.schema.ts`, `permission.schema.ts`, `mcp-server.schema.ts`, `doc-intelligence.schema.ts`, `command-engine.schema.ts`, `command-frontmatter.schema.ts` | No dedicated test files |
-| `primitive-scanners.ts` | 182 LOC | Zero test coverage |
-| `cli/commands/help.ts` | 28 LOC | No test file |
-
-**View coverage:**
+**View Coverage:**
 ```bash
 npm run test:coverage
 ```
 
+**Current State (as of build audit):**
+~1,765/1,767 tests passing (2 known session-journal taxonomy failures)
+
 ## Test Types
 
 **Unit Tests:**
-- Scope: individual functions, classes, and modules
-- Location: `tests/lib/`, `tests/tools/`, `tests/hooks/`, `tests/schema-kernel/`
-- Approach: mock all external dependencies; test one function per `describe` block
-- Count: ~120+ unit test files
+- Located in `tests/lib/`, `tests/tools/`, `tests/hooks/`, `tests/schema-kernel/`
+- Test individual functions, classes, and modules in isolation
+- Heavy use of `vi.mock` for external dependencies
+- Fast execution with fake timers
 
 **Integration Tests:**
-- Location: `tests/integration/`
-- Example: `tests/integration/prompt-enhance-pipeline.test.ts` — tests the full prompt skim → analyze → patch pipeline
-- Scope: cross-module workflows where multiple units interact
+- Located in `tests/integration/`
+- Test cross-tool pipelines (e.g., prompt-enhance: skim → analyze → patch)
+- Use real tool instances with Zod schema validation
+- Filesystem operations use `tmpdir()` with cleanup in `afterEach`
 
-**Plugin Lifecycle Tests:**
-- Location: `tests/plugins/plugin-lifecycle.test.ts`
-- Scope: verifies `plugin.ts` composition root wiring — hooks registration, tool mounting, lifecycle events
+**E2E Tests:** Not detected — no E2E test framework present.
 
-**E2E Tests:**
-- Location: `eval/` directory (separate from main test suite)
-- Included in vitest config: `include: ['tests/**/*.test.ts', 'eval/**/*.test.ts']`
-- Scope: end-to-end verification of full workflows
+## Common Patterns
 
-## TDD Approach
-
-**Workflow: RED → GREEN → REFACTOR**
-
-Evidence from git history shows consistent TDD patterns:
-
-```
-test(CA-03-02): add failing tests for atomic_commit and commit_docs toggles
-feat(CA-03-02): implement atomic_commit and commit_docs toggle gates
-
-test(CA-03-01): add 12 governance block injection tests to system.transform
-feat(CA-03-01): inject governance block at position 0 of system.transform
-
-test(CA-03-01): add failing tests for toggle gate helpers
-feat(CA-03-01): implement isToggleEnabled and getDiscussMode toggle gate helpers
-```
-
-**Process:**
-1. **RED:** Write a failing test that asserts the desired behavior
-2. **GREEN:** Implement the minimal code to make the test pass
-3. **REFACTOR:** Clean up code while tests remain green
-4. Commit after each step (test commit, then implementation commit)
-
-**When to use TDD:**
-- All new feature implementation
-- Bug fixes (write test reproducing the bug first)
-- Cross-cutting changes (see `hm-l2-cross-cutting-change` skill)
-
-**When NOT to use TDD:**
-- Exploratory spikes (use `gsd-spike` workflow)
-- Documentation-only changes
-- Purely cosmetic refactors where existing tests already cover behavior
-
-## Async Testing
-
+**Async Testing:**
 ```typescript
-it("quarantines corrupt session-continuity.json and throws visibly", async () => {
-  const continuity = await import("../../src/lib/continuity.js")
-  const filePath = continuity.getContinuityStoragePath()
-  writeFileSync(filePath, "NOT JSON {{{", "utf-8")
-
-  expect(() => continuity.listSessionContinuity()).toThrow(/^\[Harness\]/)
-  expect(existsSync(filePath)).toBe(false)
+it("resolves with idle when session.idle is fed", async () => {
+  const resultPromise = detector.watch("ses_1", 5000)
+  detector.feed("session.idle", "ses_1")
+  await expect(resultPromise).resolves.toEqual({
+    signal: "idle",
+    sessionID: "ses_1",
+  })
 })
 ```
 
-**Patterns:**
-- Use `async () =>` for dynamic imports (`await import(...)`) — used when mocking requires fresh module loads
-- Use `mockResolvedValue()` / `mockRejectedValue()` for async mock returns
-- No `done()` callback pattern — vitest handles promises natively
-
-## Error Testing
-
+**Error Testing:**
 ```typescript
-// Exact error string matching with [Harness] prefix
-expect(() => unwrapData({ error: "Something went wrong" })).toThrow(
-  "[Harness] Something went wrong"
-)
+it("throws on error property with string message", () => {
+  expect(() => unwrapData({ error: "Something went wrong" })).toThrow(
+    "[Harness] Something went wrong"
+  )
+})
 
-// Regex pattern matching for dynamic error content
-expect(() => continuity.listSessionContinuity()).toThrow(/^\[Harness\]/)
+it("throws when exceeding max with [Harness] prefix", () => {
+  expect(() => mgr.reserveDescendant("root-limit", 3)).toThrow(/^\[Harness\]/)
+})
 ```
 
-**Pattern:** Test both the presence of the `[Harness]` prefix and the descriptive message content. Use exact match when the message is predictable, regex when dynamic content is included (timestamps, paths, UUIDs).
+**Temp Directory Testing:**
+```typescript
+let stateDir: string
+beforeEach(() => {
+  stateDir = mkdtempSync(join(tmpdir(), "continuity-test-"))
+})
+afterEach(() => {
+  rmSync(stateDir, { recursive: true, force: true })
+})
+```
 
-## Common Conventions
+**Environment Variable Testing:**
+```typescript
+let previousEnv: string | undefined
+beforeEach(() => {
+  previousEnv = process.env.OPENCODE_HARNESS_STATE_DIR
+  process.env.OPENCODE_HARNESS_STATE_DIR = "/test/path"
+})
+afterEach(() => {
+  if (previousEnv === undefined) {
+    delete process.env.OPENCODE_HARNESS_STATE_DIR
+  } else {
+    process.env.OPENCODE_HARNESS_STATE_DIR = previousEnv
+  }
+})
+```
 
-**Import style in tests:**
-- vitest globals explicitly imported: `import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"`
-- Source imports use `.js` extension: `from "../../src/lib/helpers.js"`
-- Type imports use `import type`: `import type { SomeType } from "../../src/lib/types.js"`
+**Conformance Tests:**
+Phase-specific conformance tests validate architectural contracts:
+```typescript
+import { describe, it, expect } from "vitest"
+// tests/lib/phase39-conformance.test.ts
+// tests/lib/runtime-pressure/phase59-authority-matrix.test.ts
+// tests/lib/runtime-pressure/phase67-conformance.test.ts
+```
 
-**No test globals auto-import:** Despite `globals: true` in config, test files explicitly import `describe`/`it`/`expect`/`vi` from `vitest` — this is the consistent convention observed across all test files.
-
-**Test data:**
-- Inline constants and fixtures preferred over external files
-- Factory functions at top of `describe` block
-- Explicit types on test data: `const rules: PermissionRule[] = [...]`
-- Temporary directories via `mkdtempSync(join(tmpdir(), "test-name-"))` — cleaned in `afterEach`
-
-**Test isolation:**
-- Each test file is self-contained
-- `vi.resetModules()` in `beforeEach` ensures clean module cache
-- Environment variables set/restored in `beforeEach`/`afterEach`
-- No shared state between test files
+**Regression Tests:**
+Named test files for specific regression scenarios:
+```typescript
+// tests/lib/completion-detector-crash.test.ts
+// tests/lib/config-workflow/workflow-regression.test.ts
+```
 
 ---
 
-*Testing analysis: 2026-05-07*
+*Testing analysis: 2026-05-08*

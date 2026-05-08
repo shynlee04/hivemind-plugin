@@ -9,8 +9,8 @@ import {
   getPromptToolCompatibility,
   buildPromptText,
   extractAssistantText,
-} from "../../src/lib/helpers.js"
-import type { PermissionRule } from "../../src/lib/types.js"
+} from "../../src/shared/helpers.js"
+import type { PermissionRule } from "../../src/shared/types.js"
 
 describe("isObject", () => {
   it("returns true for plain objects", () => {

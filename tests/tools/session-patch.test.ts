@@ -3,7 +3,7 @@
  * @module tests/tools/session-patch-tool
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
-import { createSessionPatchTool } from "../../src/tools/session-patch/index.js"
+import { createSessionPatchTool } from "../../src/tools/session/session-patch/index.js"
 import { readFileSync, writeFileSync, unlinkSync, mkdirSync, rmSync, existsSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"

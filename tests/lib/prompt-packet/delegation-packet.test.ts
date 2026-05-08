@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest"
 import {
   createDelegationPacket,
   type DelegationPacket,
-} from "../../../src/lib/prompt-packet/delegation-packet.js"
-import type { SessionContinuityRecord } from "../../../src/lib/types.js"
+} from "../../../src/features/prompt-packet/delegation-packet.js"
+import type { SessionContinuityRecord } from "../../../src/shared/types.js"
 
 describe("delegation-packet", () => {
   it("extends kernel packet with 4 delegation fields", () => {

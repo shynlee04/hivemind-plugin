@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
-import { executeDocIntelligenceAction } from "../../../src/lib/doc-intelligence/router.js"
+import { executeDocIntelligenceAction } from "../../../src/features/doc-intelligence/router.js"
 
 describe("doc intelligence router", () => {
   let root: string

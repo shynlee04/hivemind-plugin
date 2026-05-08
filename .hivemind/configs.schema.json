@@ -66,7 +66,7 @@
       "default": {
         "native_task": true,
         "delegate_task": true,
-        "background_delegation": false
+        "background_delegation": true
       },
       "type": "object",
       "properties": {
@@ -79,7 +79,7 @@
           "type": "boolean"
         },
         "background_delegation": {
-          "default": false,
+          "default": true,
           "type": "boolean"
         }
       },

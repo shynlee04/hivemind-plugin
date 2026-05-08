@@ -3,7 +3,7 @@
  * @module tests/tools/prompt-analyze-tool
  */
 import { describe, it, expect } from "vitest"
-import { createPromptAnalyzeTool } from "../../src/tools/prompt-analyze/index.js"
+import { createPromptAnalyzeTool } from "../../src/tools/prompt/prompt-analyze/index.js"
 import { PromptAnalysisResultSchema } from "../../src/schema-kernel/prompt-enhance.schema.js"
 
 const mockCtx = {

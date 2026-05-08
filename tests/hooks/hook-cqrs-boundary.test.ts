@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { assertHookWriteBoundary, classifyHookEffect } from "../../src/hooks/hook-cqrs-boundary.js"
+import { assertHookWriteBoundary, classifyHookEffect } from "../../src/hooks/composition/cqrs-boundary.js"
 
 describe("hook CQRS boundary", () => {
   it("classifies messages and shell hooks as response shaping", () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest"
 import { existsSync, readdirSync, promises as fs, mkdirSync, writeFileSync, rmSync } from "node:fs"
 import path from "node:path"
-import { loadPrimitives, loadPrimitive } from "../../src/lib/primitive-loader.js"
+import { loadPrimitives, loadPrimitive } from "../../src/features/bootstrap/primitive-loader.js"
 
 const AGENTS_DIR = path.join(process.cwd(), ".opencode", "agents")
 const HAS_OPENCODE_DIR = existsSync(AGENTS_DIR) && readdirSync(AGENTS_DIR).some(f => f.endsWith(".md"))

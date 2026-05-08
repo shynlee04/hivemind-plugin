@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   createSdkSupervisor,
   executeSdkSupervisorAction,
-} from "../../../src/lib/sdk-supervisor/index.js"
+} from "../../../src/features/sdk-supervisor/index.js"
 
 describe("sdk supervisor", () => {
   it("reports health for available SDK wrapper seams", async () => {

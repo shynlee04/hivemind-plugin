@@ -3,8 +3,8 @@ import {
   buildNotificationMessage,
   formatToastMessage,
   notifyParentSession,
-} from "../../src/lib/notification-handler.js"
-import type { TaskNotification } from "../../src/lib/types.js"
+} from "../../src/coordination/completion/notification-handler.js"
+import type { TaskNotification } from "../../src/shared/types.js"
 
 /**
  * Stateful fake client that records sent prompts.

@@ -20,7 +20,7 @@ import {
   type PrimitiveEntry,
   type RegistrySnapshot,
   type ConflictEntry,
-} from "../../src/lib/primitive-registry.js"
+} from "../../src/features/bootstrap/primitive-registry.js"
 
 // ---------------------------------------------------------------------------
 // Test fixtures — temporary directory with mock .opencode/ structure

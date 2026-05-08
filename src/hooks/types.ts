@@ -1,11 +1,11 @@
-import type { HarnessLifecycleManager } from "../lib/lifecycle-manager.js"
-import type { OpenCodeClient } from "../lib/session-api.js"
-import type { TaskStateManager } from "../lib/state.js"
-import type { AutoLoopOptions, AutoLoopResult } from "../lib/auto-loop.js"
-import type { RalphLoopOptions, RalphLoopResult } from "../lib/ralph-loop.js"
-import type { IntakeResult } from "../lib/session-entry/intake-gate.js"
+import type { HarnessLifecycleManager } from "../task-management/lifecycle/index.js"
+import type { OpenCodeClient } from "../shared/session-api.js"
+import type { TaskStateManager } from "../shared/state.js"
+import type { AutoLoopOptions, AutoLoopResult } from "../coordination/spawner/auto-loop.js"
+import type { RalphLoopOptions, RalphLoopResult } from "../coordination/spawner/ralph-loop.js"
+import type { IntakeResult } from "../routing/session-entry/intake-gate.js"
 import type { HivemindConfigs } from "../schema-kernel/hivemind-configs.schema.js"
-import type { ResolvedBehavioralProfile } from "../lib/behavioral-profile/types.js"
+import type { ResolvedBehavioralProfile } from "../routing/behavioral-profile/types.js"
 
 export interface AutoLoopConfig {
   maxIterations: number

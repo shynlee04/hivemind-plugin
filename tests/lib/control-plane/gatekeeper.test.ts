@@ -21,14 +21,14 @@ import {
   type GateResult,
   BLOCKING_GATES,
   NON_BLOCKING_GATES,
-} from "../../../src/lib/control-plane/gatekeeper.js"
+} from "../../../src/features/bootstrap/control-plane/gatekeeper.js"
 
 import {
   GateDecisionType,
   type GateDecisionRecord,
   isBlockingDecision,
   classifyGateDecision,
-} from "../../../src/lib/control-plane/gate-decision.js"
+} from "../../../src/features/bootstrap/control-plane/gate-decision.js"
 
 let tmpDir: string
 

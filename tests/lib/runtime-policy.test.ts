@@ -17,12 +17,12 @@ import {
   DEFAULT_RUNTIME_POLICY,
   loadRuntimePolicy,
   getRuntimePolicyForSession,
-} from "../../src/lib/runtime-policy.js"
+} from "../../src/shared/runtime-policy.js"
 import type {
   RuntimePolicy,
   SessionPolicyOverride,
-} from "../../src/lib/types.js"
-import { resolveWorkspaceRuntimePolicy } from "../../src/lib/workspace-runtime-policy.js"
+} from "../../src/shared/types.js"
+import { resolveWorkspaceRuntimePolicy } from "../../src/shared/workspace-runtime-policy.js"
 
 // ---------------------------------------------------------------------------
 // Test 1: Missing policy file resolves defaults that match current behavior

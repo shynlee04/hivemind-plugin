@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { createSessionJournalExportTool } from "../../src/tools/session-journal-export.js"
+import { createSessionJournalExportTool } from "../../src/tools/session/session-journal-export.js"
 
 const mockCtx = {
   sessionID: "parent-session",
@@ -138,7 +138,7 @@ describe("session-journal-export tool", () => {
   it("registers plugin tool and public package exports", () => {
     expect(readFileSync("src/plugin.ts", "utf-8")).toContain("session-journal-export")
     const index = readFileSync("src/index.ts", "utf-8")
-    expect(index).toContain('export * from "./lib/session-journal.js"')
-    expect(index).toContain('export * from "./lib/execution-lineage.js"')
+    expect(index).toContain('export * from "./task-management/journal/index.js"')
+    expect(index).toContain('export * from "./task-management/journal/execution-lineage.js"')
   })
 })

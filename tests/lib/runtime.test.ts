@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { inferContinuityStatusFromEvent } from "../../src/lib/runtime.js"
+import { inferContinuityStatusFromEvent } from "../../src/shared/runtime.js"
 
 describe("inferContinuityStatusFromEvent", () => {
   // Test 1: session.created → "pending"

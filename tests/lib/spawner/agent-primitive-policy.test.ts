@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { parseToolBooleans, parsePermissionRecord } from "../../../src/lib/spawner/agent-primitive-policy.js"
+import { parseToolBooleans, parsePermissionRecord } from "../../../src/coordination/spawner/agent-primitive-policy.js"
 
 describe("parseToolBooleans", () => {
   it("returns parsed boolean map for valid boolean record entries", () => {

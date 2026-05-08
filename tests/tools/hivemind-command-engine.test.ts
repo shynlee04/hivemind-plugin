@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
-import { executeCommandEngineToolAction } from "../../src/tools/hivemind-command-engine.js"
+import { executeCommandEngineToolAction } from "../../src/tools/hivemind/hivemind-command-engine.js"
 
 describe("hivemind-command-engine tool", () => {
   let projectRoot: string

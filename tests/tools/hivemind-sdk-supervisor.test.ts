@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { executeSdkSupervisorToolAction } from "../../src/tools/hivemind-sdk-supervisor.js"
+import { executeSdkSupervisorToolAction } from "../../src/tools/hivemind/hivemind-sdk-supervisor.js"
 
 describe("hivemind-sdk-supervisor tool", () => {
   it("executes readiness through validated tool input", async () => {

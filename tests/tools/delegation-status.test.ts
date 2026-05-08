@@ -4,9 +4,9 @@ import { join } from "node:path"
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { Delegation } from "../../src/lib/types.js"
-import { persistDelegations } from "../../src/lib/delegation-persistence.js"
-import { createDelegationStatusTool } from "../../src/tools/delegation-status.js"
+import type { Delegation } from "../../src/shared/types.js"
+import { persistDelegations } from "../../src/task-management/continuity/delegation-persistence.js"
+import { createDelegationStatusTool } from "../../src/tools/delegation/delegation-status.js"
 
 const mockCtx = {
   sessionID: "parent-session",

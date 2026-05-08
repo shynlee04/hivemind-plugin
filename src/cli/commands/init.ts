@@ -2,7 +2,7 @@ import type * as ClackPrompts from "@clack/prompts"
 import { dirname, resolve } from "node:path"
 import { existsSync } from "node:fs"
 
-import { bootstrapInit } from "../../tools/bootstrap-init.js"
+import { bootstrapInit } from "../../tools/config/bootstrap-init.js"
 import type { BootstrapConfigInput, BootstrapInitResult, BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
 import type {
   SupportedLanguage,

@@ -10,7 +10,7 @@ import {
   getTrajectoryLedgerPath,
   inspectTrajectoryLedger,
   traverseTrajectory,
-} from "../../../src/lib/trajectory/index.js"
+} from "../../../src/task-management/trajectory/index.js"
 
 function tempProjectRoot(): string {
   return mkdtempSync(join(tmpdir(), "harness-trajectory-"))

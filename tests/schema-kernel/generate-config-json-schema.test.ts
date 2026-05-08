@@ -8,7 +8,7 @@ import {
   generateHivemindConfigsJsonSchema,
   writeConfigJsonSchema,
 } from "../../src/schema-kernel/generate-config-json-schema.js"
-import { DEFAULT_CONFIG_JSON } from "../../src/lib/bootstrap-structure.js"
+import { DEFAULT_CONFIG_JSON } from "../../src/features/bootstrap/structure.js"
 
 function validateSampleAgainstGeneratedSchema(sample: unknown, schema: Record<string, unknown>): void {
   const assertNode = (value: unknown, node: Record<string, unknown>, path: string): void => {

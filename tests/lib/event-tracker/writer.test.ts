@@ -9,14 +9,14 @@ import {
   getEventTrackerArtifactPaths,
   writeSessionJourneyArtifacts,
   createEventTrackerArtifactsFromHook,
-} from "../../../src/lib/event-tracker/writer.js"
+} from "../../../src/task-management/journal/event-tracker/writer.js"
 import {
   createJourneyEventFromHook as createJourneyEventFromHookDirect,
   sanitizeSessionArtifactStem as sanitizeSessionArtifactStemDirect,
   shouldTrackEventTrackerEvent as shouldTrackEventTrackerEventDirect,
-} from "../../../src/lib/event-tracker/hook-event.js"
-import { renderJourneyEventMarkdown } from "../../../src/lib/event-tracker/markdown-renderer.js"
-import { writeSessionJourneyArtifacts as writeSessionJourneyArtifactsDirect } from "../../../src/lib/event-tracker/artifact-writer.js"
+} from "../../../src/task-management/journal/event-tracker/hook-event.js"
+import { renderJourneyEventMarkdown } from "../../../src/task-management/journal/event-tracker/markdown-renderer.js"
+import { writeSessionJourneyArtifacts as writeSessionJourneyArtifactsDirect } from "../../../src/task-management/journal/event-tracker/artifact-writer.js"
 
 describe("sanitizeSessionArtifactStem", () => {
   it("extracts 4-character alphanumeric suffix from session ID", () => {

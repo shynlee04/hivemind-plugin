@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
-import { assertPathWithinRoot, resolveScopedPath } from "../../../src/lib/security/path-scope.js"
+import { assertPathWithinRoot, resolveScopedPath } from "../../../src/shared/security/path-scope.js"
 
 describe("path scope", () => {
   let root: string

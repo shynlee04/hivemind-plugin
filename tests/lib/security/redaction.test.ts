@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { redactBoundaryFields, redactTextSecrets } from "../../../src/lib/security/redaction.js"
+import { redactBoundaryFields, redactTextSecrets } from "../../../src/shared/security/redaction.js"
 
 describe("field-aware redaction", () => {
   it("redacts env-style API keys and bearer tokens", () => {

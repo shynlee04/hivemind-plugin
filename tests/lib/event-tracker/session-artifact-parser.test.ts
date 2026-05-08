@@ -4,7 +4,7 @@ import { join } from "node:path"
 const SESSION_FIXTURE = join(process.cwd(), "session-ses_23a0.md")
 const HAS_SESSION_FIXTURE = existsSync(SESSION_FIXTURE)
 
-import { parseProductDetoxSessionMarkdown } from "../../../src/lib/event-tracker/index.js"
+import { parseProductDetoxSessionMarkdown } from "../../../src/task-management/journal/event-tracker/index.js"
 
 describe("event-tracker product-detox artifact parser", () => {
   it("parses header, assistant metadata, tools, and task delegation evidence from session Markdown", () => {

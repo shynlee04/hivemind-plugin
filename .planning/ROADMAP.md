@@ -3,7 +3,7 @@
 
 **Created:** 2026-05-07  
 **Status:** Active  
-**Dependency order:** Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience
+**Dependency order:** Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway (CP-PTY-00..04) → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience
 
 ---
 
@@ -103,7 +103,7 @@ The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It pr
 | BOOT-05 | Config Bootstrap + Defaults | ✅ COMPLETE | BOOT-02 | L3: configs.json initializes schema reference and runtime defaults resolve |
 | BOOT-06 | Validation + Health Check | ✅ COMPLETE | BOOT-03, BOOT-04, BOOT-05 | L2-L3: built `hivemind doctor` reports ALL CHECKS PASS |
 | BOOT-07 | End-to-End Proof | ✅ COMPLETE | BOOT-06 | L1-L3: clean temp project init/recover/doctor passed |
-| BOOT-08 | Agent + Skill Integration | 🔵 READY | BOOT-07 | L5: constitution + routing contracts |
+| BOOT-08 | Agent + Skill Integration | ✅ COMPLETE | BOOT-07 | L5: constitution + routing contracts |
 
 ### Shell / PTY Control-Plane Runway
 
@@ -111,8 +111,11 @@ The shell/PTY/background command lane is real and cross-cutting across `run-back
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| CP-PTY-00 | Shell / PTY Control-Plane Spike | 🔵 READY — docs/spec only; may run in parallel with BOOT-03..05 | BOOT-02R | L5: context, research, requirements, spec, route artifacts |
-| CP-PTY-01 | Background Shell Control-Plane MVP | ⬜ PENDING AFTER CP-PTY-00 | CP-PTY-00, BOOT-07 | L2-L3: permission-gated command lifecycle tests; L1 preferred E2E proof |
+| CP-PTY-00 | Shell / PTY Control-Plane Spike | ✅ COMPLETE — docs/spec only; may run in parallel with BOOT-03..05 | BOOT-02R | L5: context, research, requirements, spec, route artifacts |
+| CP-PTY-01 | Background Shell Control-Plane MVP | 🔵 READY | CP-PTY-00, BOOT-07 | L2-L3: permission-gated command lifecycle tests; L1 preferred E2E proof |
+| CP-PTY-02 | SDK Session Delegation Integration | ⬜ NOT PLANNED | CP-PTY-01, BOOT-08 | L2-L3: async/sync child-session dispatch, context injection, completion detection tests |
+| CP-PTY-03 | Agent/Subagent Background Task Coordination | ⬜ NOT PLANNED | CP-PTY-02, BOOT-08 | L2-L3: wave dispatch, completion-looping, queue dedup, cascade cleanup tests |
+| CP-PTY-04 | Cross-Cutting Shell Integration | ⬜ NOT PLANNED | CP-PTY-03, MCM-03 | L2-L3: context integration, journal recording, permission propagation, hook guards tests |
 | SC-PTY-01 | Read-Only Terminal Projection | ⬜ DEFERRED | CP-PTY-01, Q2 sidecar decision confirmation | L2-L3: read-only projection proof |
 
 ### BOOT-01 Scope: Research & Architecture Decision
@@ -196,8 +199,8 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| MCM-01 | Agent Migration to .opencode/ | 🔵 READY AFTER BOOT-04 — pending BOOT cycle ordering | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-eligible agents and verifies discoverability in `.opencode/agents/` |
-| MCM-02 | Skill Migration to .opencode/ | 🔵 READY AFTER BOOT-04 — pending BOOT cycle ordering | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-/gate-/stack-eligible skills and verifies discoverability in `.opencode/skills/` |
+| MCM-01 | Agent Migration to .opencode/ | ✅ COMPLETE | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-eligible agents and verifies discoverability in `.opencode/agents/` |
+| MCM-02 | Skill Migration to .opencode/ | ✅ COMPLETE | BOOT-04 (symlinks exist), Phase 0 gate | L3: MCM doctor classifies hm-/hf-/gate-/stack-eligible skills and verifies discoverability in `.opencode/skills/` |
 | MCM-03 | Config Plane Integration | ⬜ BLOCKED BY PHASE 0 | MCM-01, MCM-02, BOOT-06, Phase 0 gate | L2: doctor reports agent/skill counts, config validation includes meta-concept checks |
 | MCM-04 | End-User Customization + Ecosystem Integration | ⬜ BLOCKED BY PHASE 0 | MCM-03, Phase 0 gate | L2: end-user projects can customize shipped primitives via config, OpenCode SDK/API integration verified |
 
@@ -247,6 +250,63 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ---
 
+## Active Workstream: Structure Restructuring (WS-SR)
+
+OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries) into organized planes following OMO naming conventions (kebab-case everywhere), feature-module pattern (index.ts, types.ts, AGENTS.md per module), colocated tests, barrel exports, and hierarchical AGENTS.md guidance. Plan: `.planning/architecture/structure-restructuring-plan-2026-05-08.md`
+
+| Phase | Title | Status | Depends On | Key Improvements |
+|-------|-------|--------|------------|------------------|
+| SR-0 | Preparation (safety net) | ✅ COMPLETE | — | Baseline branch and safety checks completed before restructuring |
+| SR-1 | Leaf Modules → `src/shared/` | ✅ COMPLETE | SR-0 | Leaf modules moved to `src/shared/`; import compatibility verified |
+| SR-2 | Persistence/Journal → `src/task-management/` | ✅ COMPLETE | SR-1 | Persistence, journal, recovery, trajectory, and lifecycle surfaces moved |
+| SR-3 | Delegation/Concurrency → `src/coordination/` | ✅ COMPLETE | SR-1 | Delegation, completion, command delegation, SDK delegation, concurrency, and spawner surfaces moved |
+| SR-4 | Features → `src/features/` | ✅ COMPLETE | SR-2, SR-3 | Corrected mapping: standalone features only; command engine and config workflow excluded |
+| SR-5 | Config → `src/config/` | ✅ COMPLETE | SR-1 | Config subscriber/compiler/workflow moved to config realm |
+| SR-6 | Routing → `src/routing/` | ✅ COMPLETE | SR-1 | Session entry, behavioral profile, and command engine moved to routing plane |
+| SR-7 | Hooks Reorganization | ✅ COMPLETE | SR-4 | Hooks reorganized by lifecycle, guards, observers, transforms, and composition |
+| SR-8 | Tools Reorganization | ✅ COMPLETE | SR-4 | Tools categorized by delegation, session, config, hivemind, and prompt domains |
+| SR-9 | Plugin Composition Root Update | ✅ COMPLETE | SR-7, SR-8 | `src/plugin.ts` imports updated; `src/plugin/` intentionally not created by SR remediation decision |
+| SR-10 | Cleanup + AGENTS.md Updates | ✅ COMPLETE | SR-9 | `src/lib/` removed; sector/module AGENTS.md added; typecheck/tests/build passed |
+
+### Target Structure
+
+```
+src/
+├── AGENTS.md                    # Top-level sector guidance
+├── index.ts                     # Public API re-exports
+├── plugin.ts                    # Plugin composition root
+├── routing/           # Intent → session → task → workflow pipeline
+├── task-management/   # Continuity, journal, trajectory, recovery, lifecycle
+├── coordination/      # Delegation, concurrency, completion, spawner
+├── features/          # Standalone feature modules (each with index.ts, types.ts, AGENTS.md)
+├── hooks/             # Reorganized by purpose (lifecycle, guards, observers, transforms, composition)
+├── tools/             # Categorized by domain (delegation, session, config, hivemind, prompt)
+├── shared/            # Expanded leaf modules, security/, tmux/, model-capabilities/
+├── config/            # Config realm (subscriber, compiler, workflow, types.ts)
+├── schema-kernel/     # Zod schemas (unchanged)
+├── plugin/            # DEFERRED: `src/plugin.ts` remains canonical composition root
+├── cli/               # CLI substrate (unchanged — AGENTS.md, discovery, renderer, router, commands/)
+└── sidecar/           # Read-only state (unchanged)
+```
+
+### SR Phase Directories
+
+| Phase | Directory | Slug |
+|-------|-----------|------|
+| SR-0 | `.planning/phases/SR-00-preparation-safety-net/` | preparation-safety-net |
+| SR-1 | `.planning/phases/SR-01-leaf-modules-to-shared/` | leaf-modules-to-shared |
+| SR-2 | `.planning/phases/SR-02-persistence-journal-to-task-management/` | persistence-journal-to-task-management |
+| SR-3 | `.planning/phases/SR-03-delegation-concurrency-to-coordination/` | delegation-concurrency-to-coordination |
+| SR-4 | `.planning/phases/SR-04-features-to-features-plane/` | features-to-features-plane |
+| SR-5 | `.planning/phases/SR-05-config-to-config-realm/` | config-to-config-realm |
+| SR-6 | `.planning/phases/SR-06-routing-to-routing-plane/` | routing-to-routing-plane |
+| SR-7 | `.planning/phases/SR-07-hooks-reorganization/` | hooks-reorganization |
+| SR-8 | `.planning/phases/SR-08-tools-reorganization/` | tools-reorganization |
+| SR-9 | `.planning/phases/SR-09-plugin-composition-root-update/` | plugin-composition-root-update |
+| SR-10 | `.planning/phases/SR-10-cleanup-agents-md-updates/` | cleanup-agents-md-updates |
+
+---
+
 ## Deliverables & Timeline
 
 | Wave | What | Blocks |
@@ -256,9 +316,12 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 | **Wave 2** | BOOT-03 State Init + BOOT-04 Primitives + BOOT-05 Config; CP-PTY-00 docs/spec spike may run in parallel | Depends on Phase 0 + Wave 1 CLI framework/reconciliation |
 | **Wave 3** | BOOT-06 Validation + BOOT-07 E2E Proof | Depends on Phase 0 + Waves 1-2 |
 | **Wave 3.5** | CP-PTY-01 Background Shell Control-Plane MVP if routing requires command lanes | Depends on CP-PTY-00 + BOOT-07 unless explicitly authorized earlier |
+| **Wave 3.6** | CP-PTY-02 SDK Session Delegation Integration | Depends on CP-PTY-01 + BOOT-08 |
+| **Wave 3.7** | CP-PTY-03 Agent/Subagent Background Task Coordination | Depends on CP-PTY-02 + BOOT-08 |
+| **Wave 3.8** | CP-PTY-04 Cross-Cutting Shell Integration | Depends on CP-PTY-03 + MCM-03 |
 | **Wave 4** | MCM-01 Agent Migration + MCM-02 Skill Migration | Depends on Phase 0 + BOOT-04 (symlinks exist) |
 | **Wave 5** | MCM-03 Config Integration + MCM-04 Customization | Depends on Phase 0 + Wave 4 + BOOT-06 |
-| **Wave 6** | f-04 Auto-commands + Workflow Router | Depends on Phase 0 + BOOT + MCM; also depends on CP-PTY-00/01 if router invokes command lanes |
+| **Wave 6** | f-04 Auto-commands + Workflow Router | Depends on Phase 0 + BOOT + MCM; also depends on CP-PTY-00..04 if router invokes command/session lanes |
 | **Wave 7** | HER-3/4/5 execution | Depends on Wave 6 routing |
 | **Wave 8+** | WS-AW + WS-UX workstreams | Depends on Waves 1-7 |
 
@@ -276,9 +339,9 @@ Rules:
 - Cycle 1 — Lifecycle Alignment: ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
 - Current authorized cycle: **Cycle 2 — Bootstrap Recovery** (Phase 0 gate PASSED, BOOT-02 through BOOT-07 complete; BOOT-08 and CP-PTY-00 remain before downstream runtime expansion).
 - Parallel docs/spec lane: **CP-PTY-00 Shell / PTY Control-Plane Spike** (L5 only; no runtime mutation).
-- Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01 or routing expansion.
+- Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01..04 or routing expansion.
 - MCM continuation pending BOOT-04 symlinks.
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
 ---
-*Last updated: 2026-05-08 after BOOT-07 E2E proof completion*
+*Last updated: 2026-05-08 after SR-04 through SR-10 remediation completion*

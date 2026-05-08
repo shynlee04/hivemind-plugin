@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { PtySpawnRequest } from "../../../src/lib/pty/pty-types.js"
+import type { PtySpawnRequest } from "../../../src/features/background-command/pty/pty-types.js"
 
 type ExitListener = (event: { exitCode: number; signal?: number | string }) => void
 type DataListener = (data: string) => void
@@ -77,7 +77,7 @@ describe("PtyManager", () => {
   })
 
   it("registers a PTY session record with mode, cwd, and pid", async () => {
-    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
 
     const manager = new PtyManager()
     const session = manager.spawn(request)
@@ -89,7 +89,7 @@ describe("PtyManager", () => {
   })
 
   it("appends PTY output to a bounded buffer and advances incremental reads", async () => {
-    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
 
     const manager = new PtyManager({ maxBufferChars: 5 })
     const session = manager.spawn(request)
@@ -115,7 +115,7 @@ describe("PtyManager", () => {
   })
 
   it("captures PTY output emitted before session metadata is returned", async () => {
-    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
     outputOnPidRead = "early-output\r\n"
 
     const manager = new PtyManager()
@@ -129,7 +129,7 @@ describe("PtyManager", () => {
   })
 
   it("terminate kills the PTY process and removes the session from the registry", async () => {
-    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
 
     const manager = new PtyManager()
     const session = manager.spawn(request)
@@ -142,7 +142,7 @@ describe("PtyManager", () => {
   })
 
   it("persists exit state on the session record before explicit cleanup", async () => {
-    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
 
     const manager = new PtyManager()
     const session = manager.spawn(request)
@@ -158,5 +158,76 @@ describe("PtyManager", () => {
 
     await manager.terminate(session.id)
     expect(manager.getSession(session.id)).toBeUndefined()
+  })
+
+  it("write delegates to the underlying PTY process.write()", async () => {
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
+
+    const manager = new PtyManager()
+    const session = manager.spawn(request)
+
+    manager.write(session.id, "ls -la\n")
+
+    expect(currentPty?.write).toHaveBeenCalledWith("ls -la\n")
+  })
+
+  it("listSessions returns all active sessions with correct metadata", async () => {
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
+
+    const manager = new PtyManager()
+    const session1 = manager.spawn(request)
+    const session2 = manager.spawn({ ...request, command: "zsh" })
+
+    const sessions = manager.listSessions()
+
+    expect(sessions).toHaveLength(2)
+    expect(sessions.map((s) => s.id).sort()).toEqual([session1.id, session2.id].sort())
+    expect(sessions.find((s) => s.id === session1.id)).toEqual(
+      expect.objectContaining({ mode: "pty", cwd: request.cwd, command: "bash" }),
+    )
+    expect(sessions.find((s) => s.id === session2.id)).toEqual(
+      expect.objectContaining({ mode: "pty", command: "zsh" }),
+    )
+  })
+
+  it("listSessions returns empty array when no sessions exist", async () => {
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
+
+    const manager = new PtyManager()
+
+    expect(manager.listSessions()).toEqual([])
+  })
+
+  it("terminate on a non-existent session ID does not throw", async () => {
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
+
+    const manager = new PtyManager()
+
+    await expect(manager.terminate("pty-nonexistent-id")).resolves.toBeUndefined()
+  })
+
+  it("terminate called twice on the same session is a no-op on the second call", async () => {
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
+
+    const manager = new PtyManager()
+    const session = manager.spawn(request)
+
+    await manager.terminate(session.id)
+    expect(currentPty?.kill).toHaveBeenCalledTimes(1)
+
+    // Second terminate should be a no-op — no throw, no additional kill
+    await expect(manager.terminate(session.id)).resolves.toBeUndefined()
+    expect(currentPty?.kill).toHaveBeenCalledTimes(1)
+  })
+
+  it("read on a terminated session throws an error", async () => {
+    const { PtyManager } = await import("../../../src/features/background-command/pty/pty-manager.js")
+
+    const manager = new PtyManager()
+    const session = manager.spawn(request)
+
+    await manager.terminate(session.id)
+
+    expect(() => manager.read(session.id, 0)).toThrow(`[Harness] Unknown PTY session: ${session.id}`)
   })
 })

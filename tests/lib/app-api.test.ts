@@ -1,4 +1,4 @@
-import type { OpenCodeClient } from "../../src/lib/session-api.js"
+import type { OpenCodeClient } from "../../src/shared/session-api.js"
 import { describe, expect, it, vi } from "vitest"
 
 type MockAppClient = {
@@ -20,7 +20,7 @@ describe("app-api typed wrappers", () => {
     const client = mockClient()
     client.app.agents.mockResolvedValue({ data: [{ name: "builder" }] })
 
-    const { getAppAgents } = await import("../../src/lib/app-api.js")
+    const { getAppAgents } = await import("../../src/shared/app-api.js")
     const result = await getAppAgents(client as unknown as OpenCodeClient)
 
     expect(client.app.agents).toHaveBeenCalledTimes(1)
@@ -32,7 +32,7 @@ describe("app-api typed wrappers", () => {
     const client = mockClient()
     client.app.agents.mockResolvedValue({ data: { agents: [{ name: "critic" }] } })
 
-    const { getAppAgents } = await import("../../src/lib/app-api.js")
+    const { getAppAgents } = await import("../../src/shared/app-api.js")
     const result = await getAppAgents(client as unknown as OpenCodeClient)
 
     expect(client.app.agents).toHaveBeenCalledTimes(1)
@@ -43,7 +43,7 @@ describe("app-api typed wrappers", () => {
     const client = mockClient()
     client.app.agents.mockResolvedValue({ data: { agents: "not-an-array" } })
 
-    const { getAppAgents } = await import("../../src/lib/app-api.js")
+    const { getAppAgents } = await import("../../src/shared/app-api.js")
     const result = await getAppAgents(client as unknown as OpenCodeClient)
 
     expect(result).toEqual([])

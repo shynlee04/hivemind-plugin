@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { buildSdkSpawnRequest, resolveDelegationPermissionProfile } from "../../../src/lib/spawner/spawn-request-builder.js"
+import { buildSdkSpawnRequest, resolveDelegationPermissionProfile } from "../../../src/coordination/spawner/spawn-request-builder.js"
 
 const baseParams = {
   parentSessionId: "ses_parent_1",

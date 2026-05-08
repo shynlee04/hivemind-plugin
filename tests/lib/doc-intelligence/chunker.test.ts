@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { chunkMarkdownDocument } from "../../../src/lib/doc-intelligence/chunker.js"
+import { chunkMarkdownDocument } from "../../../src/features/doc-intelligence/chunker.js"
 
 describe("doc intelligence chunker", () => {
   it("creates stable heading-aware chunks with deterministic ids", () => {

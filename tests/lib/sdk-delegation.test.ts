@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { CompletionDetector } from "../../src/lib/completion-detector.js"
-import * as sessionApi from "../../src/lib/session-api.js"
-import { SdkDelegationHandler } from "../../src/lib/sdk-delegation.js"
+import { CompletionDetector } from "../../src/coordination/completion/detector.js"
+import * as sessionApi from "../../src/shared/session-api.js"
+import { SdkDelegationHandler } from "../../src/coordination/sdk-delegation/handler.js"
 import {
   DEFAULT_STALE_TIMEOUT_MS,
   MIN_IDLE_TIME_MS,
@@ -13,7 +13,7 @@ import {
   POLL_INTERVAL_IDLE_MS,
   STABLE_POLLS_REQUIRED,
   type Delegation,
-} from "../../src/lib/types.js"
+} from "../../src/shared/types.js"
 
 // ---------------------------------------------------------------------------
 // Types

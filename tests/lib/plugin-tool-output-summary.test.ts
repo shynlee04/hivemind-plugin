@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { summarizePluginToolOutput } from "../../src/lib/plugin-tool-output-summary.js"
+import { summarizePluginToolOutput } from "../../src/shared/plugin-tool-output-summary.js"
 
 describe("summarizePluginToolOutput", () => {
   it("redacts secrets and removes control characters", () => {
