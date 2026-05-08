@@ -250,6 +250,44 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ---
 
+## Active Workstream: Structure Restructuring (WS-SR)
+
+OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries) into organized planes. Plan: `.planning/architecture/structure-restructuring-plan-2026-05-08.md`
+
+| Phase | Title | Status | Depends On |
+|-------|-------|--------|------------|
+| SR-0 | Preparation (safety net) | ⬜ PENDING | — |
+| SR-1 | Leaf Modules → `src/shared/` | ⬜ PENDING | SR-0 |
+| SR-2 | Persistence/Journal → `src/task-management/` | ⬜ PENDING | SR-1 |
+| SR-3 | Delegation/Concurrency → `src/coordination/` | ⬜ PENDING | SR-1 |
+| SR-4 | Features → `src/features/` | ⬜ PENDING | SR-2, SR-3 |
+| SR-5 | Config → `src/config/` | ⬜ PENDING | SR-1 |
+| SR-6 | Routing → `src/routing/` | ⬜ PENDING | SR-1 |
+| SR-7 | Hooks Reorganization | ⬜ PENDING | SR-4 |
+| SR-8 | Tools Reorganization | ⬜ PENDING | SR-4 |
+| SR-9 | Plugin Composition Root Update | ⬜ PENDING | SR-7, SR-8 |
+| SR-10 | Cleanup + AGENTS.md Updates | ⬜ PENDING | SR-9 |
+
+### Target Structure
+
+```
+src/
+├── routing/           # Intent → session → task → workflow pipeline
+├── task-management/   # Continuity, journal, trajectory, recovery, lifecycle
+├── coordination/      # Delegation, concurrency, completion, spawner
+├── features/          # Standalone feature modules
+├── hooks/             # Reorganized by purpose (lifecycle, guards, observers, transforms)
+├── tools/             # Categorized (delegation, session, config, hivemind, prompt)
+├── shared/            # Expanded with leaf modules from lib/
+├── config/            # Config realm
+├── schema-kernel/     # Zod schemas (unchanged)
+├── plugin/            # Plugin composition and registration
+├── cli/               # CLI substrate (unchanged)
+└── sidecar/           # Read-only state (unchanged)
+```
+
+---
+
 ## Deliverables & Timeline
 
 | Wave | What | Blocks |
