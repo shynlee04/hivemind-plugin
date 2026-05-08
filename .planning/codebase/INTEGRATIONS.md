@@ -1,250 +1,140 @@
 # External Integrations
 
-**Analysis Date:** 2026-05-07
+**Analysis Date:** 2026-05-08
 
 ## APIs & External Services
 
-### OpenCode Platform Integration
+**AI Model Provider:**
+- Osiris AI — LLM inference provider
+  - SDK/Client: `@ai-sdk/openai-compatible` (referenced in `opencode.json`)
+  - Auth: API key configured in `opencode.json` provider options
+  - Endpoint: `https://ai.osiris-code.com/v1`
+  - Models: Claude Opus 4.6, Claude Sonnet 4.5, GPT-5.4, GPT-5.5, DeepSeek V4 Pro, Gemini 3.1 Pro, GLM 5.1, GLM 5V Turbo, Kimi K2.6
 
-**Plugin SDK:**
-- Package: `@opencode-ai/plugin` ^1.14.28 (peer + dev dependency)
-- Entry: `src/plugin.ts` — `HarnessControlPlane: Plugin` async factory
-- Registration: `opencode.json` → `plugin: [..., "./dist/plugin.js"]`
-- The plugin factory receives `{ client, directory }` from OpenCode at startup
+**OpenCode Platform:**
+- OpenCode Plugin SDK (`@opencode-ai/plugin` ^1.14.28) — Plugin lifecycle hooks, tool registration, session events
+  - Composition root: `src/plugin.ts` → `HarnessControlPlane` async factory
+  - Hooks registered: `session.idle`, `session.error`, `session.deleted`, `tool.execute.before`, `tool.execute.after`
+  - 18 custom tools registered via the `tool` namespace
+  - Loaded via `opencode.json` → `./dist/plugin.js`
 
-**OpenCode SDK:**
-- Package: `@opencode-ai/sdk` ^1.14.28
-- Client type: `OpenCodeClient = ReturnType<typeof createOpencodeClient>`
-- Wrapper: `src/lib/session-api.ts` (~285 LOC) — typed wrappers for:
-  - `client.session.create()` — Create child sessions
-  - `client.session.prompt()` — Send prompts (sync + async fallback)
-  - `client.session.messages()` — Retrieve messages
-  - `client.session.abort()` — Abort sessions
-  - Session ID validation (must start with `ses`)
+- OpenCode Client SDK (`@opencode-ai/sdk` ^1.14.28) — Programmatic session/agent operations
+  - Wrapped in `src/shared/session-api.ts` (session CRUD, prompt, messages)
+  - Wrapped in `src/shared/app-api.ts` (agent registry query)
+  - Used by `src/coordination/delegation/manager.ts` for child session dispatch
+  - Used by `src/task-management/lifecycle/index.ts` for session polling
 
-**Plugin Hook Surfaces (registered in `src/plugin.ts`):**
+- OpenCode GitHub Action — CI integration for issue/PR comments
+  - Config: `.github/workflows/opencode.yml`
+  - Trigger: `/oc` or `/opencode` in issue/PR comments
+  - Model: `zai-coding-plan/glm-5.1`
+  - Auth: `ZAI_API_KEY` GitHub secret
 
-| Hook | Source Factory | Purpose |
-|------|---------------|---------|
-| `event` | `createCoreHooks()` | Routes all SDK events to `lifecycleManager.handleEvent()` + observers |
-| `system.transform` | `createCoreHooks()` | Injects governance block, intake context, behavioral profile |
-| `messages.transform` | `createCoreHooks()` | Classifies hook effect (CQRS boundary check) |
-| `shell.env` | `createCoreHooks()` | Injects `CI=true`, `GIT_TERMINAL_PROMPT=0`, `NO_COLOR=1` |
-| `tool.execute.after` | Inline in `plugin.ts` | Workflow state persistence, event tracker artifacts |
+**Code Analysis:**
+- ast-grep (^0.42.1) — Structural pattern-based code search
+  - SDK: `@ast-grep/cli`, `@ast-grep/napi`
+  - Used for codebase analysis and pattern matching
+- Tree-sitter — Syntax-aware parsing
+  - `tree-sitter-javascript` ^0.25.0, `web-tree-sitter` ^0.26.8
+  - Used for code structure analysis
 
-**Plugin Tools (15 registered):**
-
-| Tool Name | Source | Purpose |
-|-----------|--------|---------|
-| `delegate-task` | `src/tools/delegate-task.ts` | Dispatch work to specialist agents (WaiterModel) |
-| `delegation-status` | `src/tools/delegation-status.ts` | Poll delegation state and retrieve results |
-| `run-background-command` | `src/tools/run-background-command.ts` | Background PTY command execution |
-| `prompt-skim` | `src/tools/prompt-skim/index.ts` | Fast scan of prompt content |
-| `prompt-analyze` | `src/tools/prompt-analyze/index.ts` | Analyze prompt for contradictions, vagueness |
-| `session-patch` | `src/tools/session-patch/index.ts` | Patch session files with backup |
-| `session-journal-export` | `src/tools/session-journal-export.ts` | Export session journal/lineage as JSON or Markdown |
-| `hivemind-doc` | `src/tools/hivemind-doc.ts` | Read-only document intelligence (skim, read, chunk, search) |
-| `hivemind-trajectory` | `src/tools/hivemind-trajectory.ts` | Inspect/update trajectory ledger |
-| `hivemind-pressure` | `src/tools/hivemind-pressure.ts` | Classify runtime pressure, inspect tool authority |
-| `hivemind-sdk-supervisor` | `src/tools/hivemind-sdk-supervisor.ts` | Inspect SDK wrapper health and readiness |
-| `hivemind-command-engine` | `src/tools/hivemind-command-engine.ts` | Discover command bundles, analyze contracts |
-| `hivemind-agent-work-create` | `src/tools/hivemind-agent-work.ts` | Create durable agent work contracts |
-| `hivemind-agent-work-export` | `src/tools/hivemind-agent-work.ts` | Export work contracts as JSON/Markdown payloads |
-| `configure-primitive` | `src/tools/configure-primitive.ts` | Configure OpenCode primitives (agents, commands, skills) |
-| `validate-restart` | `src/tools/validate-restart.ts` | Validate primitives are discoverable after restart |
-
-### MCP Server Integrations
-
-**Location:** `mcp.json` — 20 MCP servers configured
-
-**HTTP-based MCP Servers:**
-| Server | URL | Auth | Timeout |
-|--------|-----|------|---------|
-| `notion` | `https://mcp.notion.com/mcp` | Bearer `$NOTION_API_TOKEN` | 15s |
-| `stitch` | `https://stitch.googleapis.com/mcp` | None | Default |
-| `gitmcp` | `https://gitmcp.io` | None | 35s |
-| `web-search-prime` | `https://api.z.ai/api/mcp/web_search_prime/mcp` | Bearer `$ZAI_API_KEY` | Default |
-| `web-reader` | `https://api.z.ai/api/mcp/web_reader/mcp` | Bearer `$ZAI_API_KEY` | Default |
-| `zread` | `https://api.z.ai/api/mcp/zread/mcp` | Bearer `$ZAI_API_KEY` | Default |
-| `context7` | `https://mcp.context7.com/mcp` | None | Default |
-| `deepwiki` | `https://mcp.deepwiki.com/mcp` | None | 15s |
-| `tavily` | `https://mcp.tavily.com/mcp/?tavilyApiKey=$TAVILY_API_KEY` | Query param | 35s |
-
-**NPX-based MCP Servers:**
-| Server | Command | Auth |
-|--------|---------|------|
-| `fetcher` | `npx -y fetcher-mcp` | None |
-| `desktop-commander` | `npx -y @smithery/cli@latest` | `$SMITHERY_CLI_KEY` |
-| `exa` | `npx -y mcp-remote https://mcp.exa.ai/mcp` | Env: `$EXA_API_KEY` |
-| `github` | `npx -y @modelcontextprotocol/server-github` | Env: `$GITHUB_PAT` |
-| `mcp-playwright` | `npx -y @playwright/mcp@latest` | None |
-| `memory` | `npx -y @modelcontextprotocol/server-memory` | None |
-| `netlify` | `npx -y @netlify/mcp` | Env: `$NETLIFY_PAT` |
-| `repomix` | `npx -y repomix --mcp` | None |
-| `sequential-thinking` | `npx -y @modelcontextprotocol/server-sequential-thinking` | None |
-| `brave-search` | `npx -y @brave/brave-search-mcp-server` | Env: `$BRAVE_API_KEY` |
-
-**UVX-based:**
-| Server | Command | Auth |
-|--------|---------|------|
-| `fetch` | `uvx mcp-server-fetch` | None |
-
-### AI Provider
-
-**Provider:** Osiris (`@ai-sdk/openai-compatible`)
-- Base URL: `https://ai.osiris-code.com/v1`
-- Available models: Claude Opus 4.6, Claude Sonnet 4.5, GPT-5.4, GPT-5.5, DeepSeek V4 Pro, Gemini 3.1 Pro, GLM 5.1, GLM 5V Turbo, Kimi K2.6
-- Default model: `osiris/claude-opus-4-6` (1M context)
-- Config: `opencode.json` provider section
+**MCP Protocol:**
+- `@modelcontextprotocol/sdk` ^1.29.0 — Model Context Protocol library
+  - Present in `package.json` dependencies
+  - Not directly imported in `src/` source code (available for future MCP server implementation)
+  - JSON-RPC foundation via `vscode-jsonrpc` ^8.2.1
 
 ## Data Storage
 
 **Databases:**
-- No traditional database. All persistence is file-based JSON.
-
-**File-Based State Store:**
-- `.hivemind/state/` — Canonical state root (per Q6 architectural decision)
-  - `delegations.json` — Delegation records
-  - `config-workflows.json` — Config workflow state
-  - Continuity store (session persistence) via `src/lib/continuity.ts`
-- Delegation persistence via `src/lib/delegation-persistence.ts`
-- Legacy path: `.opencode/state/opencode-harness/` (supported via compatibility bridge, one-way migration)
-- Format: Deep-clone-on-read JSON, module-level singleton cache in `continuity.ts`
-
-**Shell / PTY integration runway (CP-PTY-00):**
-- Background command execution currently crosses plugin tool registration, `DelegationManager`, command delegation, PTY adapter, output polling, and lifecycle cleanup.
-- Future CP-PTY-01 implementation must gate command execution before spawn, bound output reads, preserve headless fallback truth, and mark PTY/headless processes non-resumable after parent runtime restart.
-- Future sidecar/tmux projection is read-only unless a later phase explicitly grants mutation authority.
+- None — No SQL or NoSQL database dependencies. The harness is file-based.
 
 **File Storage:**
-- `.hivemind/event-tracker/` — Session event tracker artifacts (JSON + Markdown)
-- `.hivemind/poor-prompts/` — Project issues/captures
-- Local filesystem only — no cloud storage integration
+- Local filesystem only — State persisted to `.hivemind/` directory at project root
+  - Session continuity: `src/task-management/continuity/index.ts` → `.hivemind/state/`
+  - Delegation records: `src/task-management/continuity/delegation-persistence.ts`
+  - Event journals: `src/task-management/journal/` → `.hivemind/journal/`
+  - Event tracker: `src/task-management/journal/event-tracker/`
+  - Execution lineage: `src/task-management/journal/execution-lineage.ts`
+  - Workflow config: `src/config/workflow/`
 
 **Caching:**
-- In-memory Maps in `src/lib/state.ts`: `sessionStats`, `rootBudgets`, `sessionToRoot`, `sessionDelegationMeta`
-- Config subscriber lazy-cache (`src/lib/config-subscriber.ts`)
-- No distributed cache
+- In-memory Maps only — `src/shared/state.ts` for task state
+- No Redis, Memcached, or external cache dependencies
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- Not applicable — harness is an OpenCode plugin, delegates auth to the host platform
-- Session IDs validated by prefix check (must start with `ses`)
-- MCP server auth via environment variables and API keys (Bearer tokens)
-
-**Permission Model:**
-- OpenCode permission config in `opencode.json`: `read: allow`, `edit: allow`, `bash: allow` (with restricted git patterns), `task: allow`, `skill: allow`
-- Category gate policies for delegation: `src/lib/category-gates.ts`, `src/lib/category-gate-audit.ts`
-- Runtime policy overrides per session/delegation in `src/lib/runtime-policy.ts`
+- Not applicable — The harness is a plugin loaded by OpenCode, not a standalone service. Authentication is delegated to the host OpenCode platform.
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- `[Harness]` prefix on all thrown errors
-- Session journal (append-only event timeline, Q3 architectural decision) — `src/lib/session-journal.ts`
-- Execution lineage tracking — `src/lib/execution-lineage.ts`
-- Trajectory ledger — `src/lib/trajectory/index.ts`
-- Event tracker — `src/lib/event-tracker/index.ts`
+- None — No external error tracking service (Sentry, Datadog, etc.)
 
 **Logs:**
-- Best-effort audit projection (failures silently ignored, never block canonical event handling)
-- Warning cap at 25 per session (`src/lib/state.ts`)
-- Runtime pressure classification — `src/lib/runtime-pressure/index.ts`
-- SDK supervisor health diagnostics — `src/lib/sdk-supervisor/index.ts`
-
-**Compaction:**
-- OpenCode auto-compaction enabled (`compaction.auto: true`, `compaction.prune: true`)
-- Reserved context: 10,000 tokens
+- Best-effort structured logging via event tracking (`src/task-management/journal/event-tracker/`)
+- Session journal export tool (`src/tools/session/session-journal-export.js`)
+- SDK supervisor health diagnostics (`src/tools/hivemind/hivemind-sdk-supervisor.js`)
+- Console output only — no external log aggregation
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- npm package: `hivemind` v0.1.0
-- Local plugin loaded from `./dist/plugin.js`
-- No CI/CD pipeline detected in current workspace
+- npm package — Published via `npm publish` / `npm pack`, entrypoints at `./dist/`
+- GitHub repository: `https://github.com/shynlee04/hivemind-plugin.git`
 
 **CI Pipeline:**
-- Not configured in this repository (no GitHub Actions workflows detected)
+- GitHub Actions — `.github/workflows/ci.yml`
+  - Runs on: push/PR to `oss-dev`, `main`
+  - Matrix: Node.js 20, 22 on ubuntu-latest
+  - Steps: `npm ci`, `npm run typecheck`, `npm run build`, `npm test`, `npm run test:coverage` (Node 22 only)
+- Branch sync: `.github/workflows/sync-oss.yml`
+  - Manual trigger (`workflow_dispatch`) to sync source changes from feature branch to `oss-dev`
+  - Build verification before push
+  - Auth: `PUBLIC_REPO_PAT` GitHub secret
+- OpenCode CI: `.github/workflows/opencode.yml`
+  - Triggered by issue/PR comments containing `/oc` or `/opencode`
+  - Uses `anomalyco/opencode/github@latest` action
 
 ## Environment Configuration
 
-**Required env vars (for MCP server operation):**
-- `NOTION_API_TOKEN` — Notion integration
-- `ZAI_API_KEY` — Web search, web reader, zread
-- `TAVILY_API_KEY` — Tavily search/research/extract
-- `BRAVE_API_KEY` — Brave search
-- `GITHUB_PAT` — GitHub API
-- `EXA_API_KEY` — Exa web search
-- `NETLIFY_PAT` — Netlify deployment
-- `SMITHERY_CLI_KEY` — Desktop commander
+**Required env vars (runtime):**
+- None strictly required — defaults for all config paths
+
+**Optional env vars:**
+- `OPENCODE_SESSION_ID` — Current session ID (injected by OpenCode runtime)
+- `OPENCODE_CONFIG_DIR` — Override OpenCode config directory (default: `~/.config/opencode`)
+- `OPENCODE_HARNESS_STATE_DIR` — Override harness state directory
+- `OPENCODE_HARNESS_CONCURRENCY_LIMIT` — Max concurrent delegations (default: 3)
+- `CI` — Forces non-interactive mode in CLI
 
 **Secrets location:**
-- `.env` file present at project root — contains environment configuration
-- `mcp.json` references env vars using `$VAR` syntax
-
-**Runtime overrides (optional):**
-- `OPENCODE_HARNESS_STATE_DIR` — Override state directory path
-- `OPENCODE_HARNESS_CONTINUITY_FILE` — Override continuity file path
-- `NODE_ENV` — When set to `test`, session ID validation relaxed (accepts `child-*`/`parent-*` prefixes)
+- GitHub Actions secrets for CI: `ZAI_API_KEY`, `PUBLIC_REPO_PAT`
+- AI provider API key: configured in `opencode.json` (provider options)
+- No `.env` file detected in repository
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- None — harness is a plugin, not a server
+- None — The harness has no HTTP server, no webhook endpoints
 
 **Outgoing:**
-- MCP server calls via configured servers
-- OpenCode SDK session operations (create, prompt, messages, abort)
-- File system writes to `.hivemind/` state directory
+- None — No outbound webhook calls to external services
 
-## Cross-Module Dependency Patterns
+## External Libraries (Summary)
 
-**Core Dependency Graph (critical paths):**
-```
-types.ts (leaf, 415 LOC)
-├── task-status.ts → types.ts
-├── state.ts → types.ts
-├── helpers.ts → types.ts
-├── concurrency.ts (self-contained, ~98 LOC)
-├── continuity.ts → types.ts (~401 LOC, state persistence)
-├── delegation-persistence.ts → types.ts, continuity.ts (~78 LOC)
-├── session-api.ts → helpers.ts (~285 LOC, SDK wrappers)
-├── runtime.ts → helpers.ts + types.ts (~43 LOC)
-├── completion-detector.ts (self-contained, ~120 LOC)
-├── notification-handler.ts → helpers.ts
-└── lifecycle-manager.ts → concurrency + continuity + helpers + session-api + state + types (~152 LOC)
-
-delegation-manager.ts → concurrency + continuity + delegation-persistence + helpers + types + @opencode-ai/sdk (~500 LOC)
-```
-
-**Max chain depth:** 2 levels. `types.ts` changes ripple to most modules.
-
-**Non-negotiable constraints:**
-- No circular dependencies
-- Max module size: 500 LOC
-- `verbatimModuleSyntax: true` — use `import type` for type-only imports
-- Deep-clone-on-read in continuity store
-- `types.ts` is leaf — depends on nothing
-
-**Integration surface layers:**
-1. **Plugin composition root** (`src/plugin.ts`, 183 LOC) — Wires all factories, tools, hooks
-2. **Hook factories** (`src/hooks/`, 10 files) — Event observers, CQRS boundary checks, governance injection
-3. **Tool implementations** (`src/tools/`, 13 top-level + 3 subdirectories) — 16 registered tools
-4. **Core lib** (`src/lib/`, 25+ modules) — State, concurrency, delegation, lifecycle, continuity
-5. **Schema kernel** (`src/schema-kernel/`, 16 files) — Zod schemas for tool I/O and config validation
-6. **Shared utilities** (`src/shared/`, 2 files) — Tool response envelope, tool helpers
-
-**File system boundaries:**
-| Path | Classification | Role |
-|------|---------------|------|
-| `src/` | Hard harness (npm package) | TypeScript source — tools, hooks, plugin, lib |
-| `.opencode/` | Soft meta-concepts | Agents, skills, commands, rules, permissions — NO state |
-| `.hivemind/` | Internal state | Session journals, lineage, runtime state, events — canonical per Q6 |
-| `.planning/` | Planning artifacts | Codebase maps, phase plans, specs — project governance |
-| `dist/` | Build output | Compiled JS + declarations + sourcemaps (gitignored) |
-| `tests/` | Test suite | Vitest unit tests mirroring `src/` structure |
+| Library | Version | Category | Used In |
+|---------|---------|----------|---------|
+| @opencode-ai/sdk | ^1.14.28 | Platform SDK | `src/shared/session-api.ts` |
+| @opencode-ai/plugin | ^1.14.28 | Platform Plugin | `src/plugin.ts` |
+| @modelcontextprotocol/sdk | ^1.29.0 | Protocol | Available, not yet used |
+| @ast-grep/napi | ^0.42.1 | Code Analysis | AST-based search |
+| tree-sitter-javascript | ^0.25.0 | Code Analysis | Syntax parsing |
+| bun-pty | ^0.4.8 | PTY | Background commands (optional) |
+| node-pty | ^1.1.0 | PTY | Background commands (fallback) |
+| @json-render/* | ^0.18.0 | UI | Sidecar dashboard |
 
 ---
 
-*Integration audit: 2026-05-07; CP-PTY runway note added 2026-05-08*
+*Integration audit: 2026-05-08*
