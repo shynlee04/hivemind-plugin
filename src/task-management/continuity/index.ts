@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { redactBoundaryFields } from "../../shared/security/redaction.js"
-import { getCachedConfig } from "../../lib/config-subscriber.js"
+import { getCachedConfig } from "../../config/subscriber.js"
 import type {
   CapturedResult,
   CompactionCheckpointData,

@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest"
 describe("workflow-guards", () => {
   describe("validateTurnPrecondition", () => {
     it("should pass for Turn 0 with no prerequisites", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { validateTurnPrecondition } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { validateTurnPrecondition } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -13,8 +13,8 @@ describe("workflow-guards", () => {
     })
 
     it("should fail Turn 1 when targetPrimitives is empty", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { validateTurnPrecondition } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { validateTurnPrecondition } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -27,8 +27,8 @@ describe("workflow-guards", () => {
     })
 
     it("should pass Turn 1 when targetPrimitives has at least one entry", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { validateTurnPrecondition } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { validateTurnPrecondition } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config",
         targetPrimitives: [{ type: "agent", name: "researcher" }],
@@ -40,8 +40,8 @@ describe("workflow-guards", () => {
     })
 
     it("should fail Turn 5 when Turn 4 output is missing", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { validateTurnPrecondition } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { validateTurnPrecondition } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config",
         targetPrimitives: [{ type: "agent", name: "researcher" }],
@@ -58,8 +58,8 @@ describe("workflow-guards", () => {
     })
 
     it("should return descriptive error messages listing what is missing", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { validateTurnPrecondition } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { validateTurnPrecondition } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -73,8 +73,8 @@ describe("workflow-guards", () => {
     })
 
     it("should reject unknown turn indices", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { validateTurnPrecondition } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { validateTurnPrecondition } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -88,8 +88,8 @@ describe("workflow-guards", () => {
 
   describe("hasCollectedPrerequisites", () => {
     it("should return false when no target primitives", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { hasCollectedPrerequisites } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { hasCollectedPrerequisites } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -97,8 +97,8 @@ describe("workflow-guards", () => {
     })
 
     it("should return true when at least one target primitive", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { hasCollectedPrerequisites } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { hasCollectedPrerequisites } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config",
         targetPrimitives: [{ type: "agent", name: "builder" }],
@@ -111,8 +111,8 @@ describe("workflow-guards", () => {
 
   describe("hasCompilePrerequisites", () => {
     it("should return false when Turn 2 has no output", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { hasCompilePrerequisites } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
+      const { hasCompilePrerequisites } = await import("../../../src/config/workflow/workflow-guards.js")
       const state = createWorkflowState({
         type: "agent-config",
         targetPrimitives: [{ type: "agent", name: "builder" }],
@@ -123,8 +123,8 @@ describe("workflow-guards", () => {
     })
 
     it("should return true when Turn 2 output contains spec data", async () => {
-      const { createWorkflowState, completeCurrentTurn, advanceTurn } = await import("../../../src/lib/config-workflow/workflow-state.js")
-      const { hasCompilePrerequisites } = await import("../../../src/lib/config-workflow/workflow-guards.js")
+      const { createWorkflowState, completeCurrentTurn, advanceTurn } = await import("../../../src/config/workflow/workflow-state.js")
+      const { hasCompilePrerequisites } = await import("../../../src/config/workflow/workflow-guards.js")
       let state = createWorkflowState({
         type: "agent-config",
         targetPrimitives: [{ type: "agent", name: "builder" }],

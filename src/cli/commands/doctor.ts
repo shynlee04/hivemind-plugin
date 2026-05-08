@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process"
 import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync } from "node:fs"
 import { dirname, resolve, join } from "node:path"
 
-import { DOCTOR_CHECKS, GITKEEP_FILE, PRIMITIVE_TYPES, resolveHiveMindRoot, resolveMetaBuilderRoot, resolveOpenCodeRoot, TIER_1_DIRECTORIES } from "../../lib/bootstrap-structure.js"
+import { DOCTOR_CHECKS, GITKEEP_FILE, PRIMITIVE_TYPES, resolveHiveMindRoot, resolveMetaBuilderRoot, resolveOpenCodeRoot, TIER_1_DIRECTORIES } from "../../features/bootstrap/structure.js"
 import { validateConfigsFile } from "../../schema-kernel/hivemind-configs.schema.js"
 import { generateHivemindConfigsJsonSchema } from "../../schema-kernel/generate-config-json-schema.js"
 import type { BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"

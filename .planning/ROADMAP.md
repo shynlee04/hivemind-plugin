@@ -256,17 +256,17 @@ OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries
 
 | Phase | Title | Status | Depends On | Key Improvements |
 |-------|-------|--------|------------|------------------|
-| SR-0 | Preparation (safety net) | ⬜ PENDING | — | Full test suite pass, typecheck, branch creation, import graph documentation, .gitkeep verification |
-| SR-1 | Leaf Modules → `src/shared/` | ⬜ PENDING | SR-0 | Move 12 leaf modules (types, helpers, state, task-status, runtime, runtime-policy, workspace-runtime-policy, app-api, session-api, plugin-tool-output-summary, security/) to `src/shared/` with kebab-case file naming |
-| SR-2 | Persistence/Journal → `src/task-management/` | ⬜ PENDING | SR-1 | Move continuity, journal, trajectory, recovery, lifecycle modules. Split `continuity.ts` (465 LOC) into `store-io.ts`, `normalizers.ts`, `clone-helpers.ts`, `api.ts` per 500 LOC cap |
-| SR-3 | Delegation/Concurrency → `src/coordination/` | ⬜ PENDING | SR-1 | Move delegation-manager (500 LOC cap enforced), delegation-state-machine, concurrency, completion, spawner, auto-loop, ralph-loop to coordination plane with types per module |
-| SR-4 | Features → `src/features/` | ⬜ PENDING | SR-2, SR-3 | Move pty, doc-intelligence, runtime-pressure, agent-work-contracts, sdk-supervisor, command-engine, bootstrap, behavioral-profile, config-workflow, prompt-packet to features plane with AGENTS.md per module |
-| SR-5 | Config → `src/config/` | ⬜ PENDING | SR-1 | Move config-subscriber, config-compiler, config-workflow to config realm with types.ts per module |
-| SR-6 | Routing → `src/routing/` | ⬜ PENDING | SR-1 | Move session-entry to routing plane; set up intent-classifier, workflow-router, command-engine sub-modules |
-| SR-7 | Hooks Reorganization | ⬜ PENDING | SR-4 | Reorganize hooks by purpose: lifecycle/ (core-hooks, session-hooks), guards/ (tool-guard-hooks), observers/ (event-observers), transforms/ (toggle-gates, governance-block, tool-after-composer), composition/ (cqrs-boundary) |
-| SR-8 | Tools Reorganization | ⬜ PENDING | SR-4 | Categorize tools by domain: delegation/ (delegate-task, delegation-status), session/ (session-patch, session-journal-export), config/ (configure-primitive, bootstrap-*, validate-restart), hivemind/ (hivemind-* tools), prompt/ (prompt-skim, prompt-analyze) |
-| SR-9 | Plugin Composition Root Update | ⬜ PENDING | SR-7, SR-8 | Update `src/plugin.ts` (447 LOC) to use new import paths; split hook/tool registration into `src/plugin/hooks/` and `src/plugin/tools/` sub-modules per 100 LOC target |
-| SR-10 | Cleanup + AGENTS.md Updates | ⬜ PENDING | SR-9 | Remove empty `src/lib/`, create AGENTS.md at every level (src/, routing/, task-management/, coordination/, features/, hooks/, tools/, shared/, config/), update `.planning/codebase/` docs, verify no circular dependencies with madge |
+| SR-0 | Preparation (safety net) | ✅ COMPLETE | — | Baseline branch and safety checks completed before restructuring |
+| SR-1 | Leaf Modules → `src/shared/` | ✅ COMPLETE | SR-0 | Leaf modules moved to `src/shared/`; import compatibility verified |
+| SR-2 | Persistence/Journal → `src/task-management/` | ✅ COMPLETE | SR-1 | Persistence, journal, recovery, trajectory, and lifecycle surfaces moved |
+| SR-3 | Delegation/Concurrency → `src/coordination/` | ✅ COMPLETE | SR-1 | Delegation, completion, command delegation, SDK delegation, concurrency, and spawner surfaces moved |
+| SR-4 | Features → `src/features/` | ✅ COMPLETE | SR-2, SR-3 | Corrected mapping: standalone features only; command engine and config workflow excluded |
+| SR-5 | Config → `src/config/` | ✅ COMPLETE | SR-1 | Config subscriber/compiler/workflow moved to config realm |
+| SR-6 | Routing → `src/routing/` | ✅ COMPLETE | SR-1 | Session entry, behavioral profile, and command engine moved to routing plane |
+| SR-7 | Hooks Reorganization | ✅ COMPLETE | SR-4 | Hooks reorganized by lifecycle, guards, observers, transforms, and composition |
+| SR-8 | Tools Reorganization | ✅ COMPLETE | SR-4 | Tools categorized by delegation, session, config, hivemind, and prompt domains |
+| SR-9 | Plugin Composition Root Update | ✅ COMPLETE | SR-7, SR-8 | `src/plugin.ts` imports updated; `src/plugin/` intentionally not created by SR remediation decision |
+| SR-10 | Cleanup + AGENTS.md Updates | ✅ COMPLETE | SR-9 | `src/lib/` removed; sector/module AGENTS.md added; typecheck/tests/build passed |
 
 ### Target Structure
 
@@ -284,7 +284,7 @@ src/
 ├── shared/            # Expanded leaf modules, security/, tmux/, model-capabilities/
 ├── config/            # Config realm (subscriber, compiler, workflow, types.ts)
 ├── schema-kernel/     # Zod schemas (unchanged)
-├── plugin/            # Plugin composition: hooks/, tools/, config/ sub-modules
+├── plugin/            # DEFERRED: `src/plugin.ts` remains canonical composition root
 ├── cli/               # CLI substrate (unchanged — AGENTS.md, discovery, renderer, router, commands/)
 └── sidecar/           # Read-only state (unchanged)
 ```
@@ -344,4 +344,4 @@ Rules:
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
 ---
-*Last updated: 2026-05-08 after BOOT-07 E2E proof completion*
+*Last updated: 2026-05-08 after SR-04 through SR-10 remediation completion*

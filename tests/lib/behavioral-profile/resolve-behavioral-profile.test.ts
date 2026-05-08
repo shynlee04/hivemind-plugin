@@ -11,29 +11,29 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 
 // Mock config-subscriber BEFORE importing resolution module
-vi.mock("../../../src/lib/config-subscriber.js", () => ({
+vi.mock("../../../src/config/subscriber.js", () => ({
   getConfig: vi.fn(),
 }))
 
 // Mock profile-resolver
-vi.mock("../../../src/lib/session-entry/profile-resolver.js", () => ({
+vi.mock("../../../src/routing/session-entry/profile-resolver.js", () => ({
   resolveProfile: vi.fn(),
 }))
 
-import { getConfig } from "../../../src/lib/config-subscriber.js"
-import { resolveProfile } from "../../../src/lib/session-entry/profile-resolver.js"
-import { BehavioralProfiles } from "../../../src/lib/behavioral-profile/profiles.js"
+import { getConfig } from "../../../src/config/subscriber.js"
+import { resolveProfile } from "../../../src/routing/session-entry/profile-resolver.js"
+import { BehavioralProfiles } from "../../../src/routing/behavioral-profile/profiles.js"
 import {
   resolveBehavioralProfile,
   invalidateBehavioralProfile,
   clearAllBehavioralProfiles,
   mapLevelToExpertise,
-} from "../../../src/lib/behavioral-profile/resolve-behavioral-profile.js"
+} from "../../../src/routing/behavioral-profile/resolve-behavioral-profile.js"
 import type {
   BehavioralProfile,
   ResolvedBehavioralProfile,
   BehavioralOverrides,
-} from "../../../src/lib/behavioral-profile/types.js"
+} from "../../../src/routing/behavioral-profile/types.js"
 
 // ---------------------------------------------------------------------------
 // Test helpers

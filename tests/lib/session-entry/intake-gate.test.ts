@@ -5,7 +5,7 @@ import {
   createRegistryValidator,
   type IntakeResult,
   type RegistryValidator,
-} from "../../../src/lib/session-entry/intake-gate.js"
+} from "../../../src/routing/session-entry/intake-gate.js"
 
 describe("resolveIntake", () => {
   // ── SEI-03: Intake gate resolution ──────────────────────────────────

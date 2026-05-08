@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
-import { createDelegationEventObserver, createSessionJourneyEventObserver } from "../../src/hooks/plugin-event-observers.js"
+import { createDelegationEventObserver, createSessionJourneyEventObserver } from "../../src/hooks/observers/event-observers.js"
 
 describe("plugin event observers", () => {
   it("extracts delegation lifecycle facts without write-capable dependencies", async () => {
@@ -24,7 +24,7 @@ describe("plugin event observers", () => {
   })
 
   it("does not import durable writers or managers", () => {
-    const source = readFileSync("src/hooks/plugin-event-observers.ts", "utf-8")
+    const source = readFileSync("src/hooks/observers/event-observers.ts", "utf-8")
 
     expect(source).not.toMatch(/createEventTrackerArtifactsFromHook|continuity|delegation-persistence|DelegationManager/)
   })

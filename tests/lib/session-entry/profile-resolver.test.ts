@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   resolveProfile,
   type ProfileMatch,
-} from "../../../src/lib/session-entry/profile-resolver.js"
+} from "../../../src/routing/session-entry/profile-resolver.js"
 
 describe("resolveProfile", () => {
   // ── SEI-04: Profile resolution ──────────────────────────────────────

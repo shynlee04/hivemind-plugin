@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   createDelegationPacket,
   type DelegationPacket,
-} from "../../../src/lib/prompt-packet/delegation-packet.js"
+} from "../../../src/features/prompt-packet/delegation-packet.js"
 import type { SessionContinuityRecord } from "../../../src/shared/types.js"
 
 describe("delegation-packet", () => {

@@ -9,7 +9,7 @@
  * @module spawner-types
  */
 
-import type { PtyExecutionMode } from "../../lib/pty/pty-types.js"
+import type { PtyExecutionMode } from "../../features/background-command/pty/pty-types.js"
 
 export type DelegationExecutionMode = "sdk" | PtyExecutionMode
 

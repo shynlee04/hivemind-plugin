@@ -10,30 +10,30 @@ import type { Plugin } from "@opencode-ai/plugin"
 import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"
 import { DelegationManager } from "./coordination/delegation/manager.js"
 import { taskState } from "./shared/state.js"
-import { createCoreHooks } from "./hooks/create-core-hooks.js"
-import { createSessionHooks } from "./hooks/create-session-hooks.js"
-import { createToolGuardHooks } from "./hooks/create-tool-guard-hooks.js"
-import { createDelegationEventObserver, createSessionEntryEventObserver, createSessionJourneyEventObserver } from "./hooks/plugin-event-observers.js"
-import { createToolExecuteAfterHook } from "./hooks/tool-after-composer.js"
+import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
+import { createSessionHooks } from "./hooks/lifecycle/session-hooks.js"
+import { createToolGuardHooks } from "./hooks/guards/tool-guard-hooks.js"
+import { createDelegationEventObserver, createSessionEntryEventObserver, createSessionJourneyEventObserver } from "./hooks/observers/event-observers.js"
+import { createToolExecuteAfterHook } from "./hooks/transforms/tool-after-composer.js"
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
-import { createPtyManagerIfSupported } from "./lib/pty/pty-runtime.js"
-import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
-import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
-import { createSessionPatchTool } from "./tools/session-patch/index.js"
-import { createDelegateTaskTool } from "./tools/delegate-task.js"
-import { createDelegationStatusTool } from "./tools/delegation-status.js"
-import { createRunBackgroundCommandTool } from "./tools/run-background-command.js"
-import { createConfigurePrimitiveTool } from "./tools/configure-primitive.js"
-import { createValidateRestartTool } from "./tools/validate-restart.js"
-import { createBootstrapInitTool } from "./tools/bootstrap-init.js"
-import { createBootstrapRecoverTool } from "./tools/bootstrap-recover.js"
-import { createSessionJournalExportTool } from "./tools/session-journal-export.js"
-import { createHivemindDocTool } from "./tools/hivemind-doc.js"
-import { createHivemindTrajectoryTool } from "./tools/hivemind-trajectory.js"
-import { createHivemindPressureTool } from "./tools/hivemind-pressure.js"
-import { createHivemindAgentWorkCreateTool, createHivemindAgentWorkExportTool } from "./tools/hivemind-agent-work.js"
-import { createHivemindSdkSupervisorTool } from "./tools/hivemind-sdk-supervisor.js"
-import { createHivemindCommandEngineTool } from "./tools/hivemind-command-engine.js"
+import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
+import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
+import { createPromptAnalyzeTool } from "./tools/prompt/prompt-analyze/index.js"
+import { createSessionPatchTool } from "./tools/session/session-patch/index.js"
+import { createDelegateTaskTool } from "./tools/delegation/delegate-task.js"
+import { createDelegationStatusTool } from "./tools/delegation/delegation-status.js"
+import { createRunBackgroundCommandTool } from "./tools/hivemind/run-background-command.js"
+import { createConfigurePrimitiveTool } from "./tools/config/configure-primitive.js"
+import { createValidateRestartTool } from "./tools/config/validate-restart.js"
+import { createBootstrapInitTool } from "./tools/config/bootstrap-init.js"
+import { createBootstrapRecoverTool } from "./tools/config/bootstrap-recover.js"
+import { createSessionJournalExportTool } from "./tools/session/session-journal-export.js"
+import { createHivemindDocTool } from "./tools/hivemind/hivemind-doc.js"
+import { createHivemindTrajectoryTool } from "./tools/hivemind/hivemind-trajectory.js"
+import { createHivemindPressureTool } from "./tools/hivemind/hivemind-pressure.js"
+import { createHivemindAgentWorkCreateTool, createHivemindAgentWorkExportTool } from "./tools/hivemind/hivemind-agent-work.js"
+import { createHivemindSdkSupervisorTool } from "./tools/hivemind/hivemind-sdk-supervisor.js"
+import { createHivemindCommandEngineTool } from "./tools/hivemind/hivemind-command-engine.js"
 import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
@@ -43,8 +43,8 @@ import {
   shouldTrackEventTrackerEvent,
 } from "./task-management/journal/event-tracker/index.js"
 
-import { getConfig } from "./lib/config-subscriber.js"
-import { resolveBehavioralProfile } from "./lib/behavioral-profile/resolve-behavioral-profile.js"
+import { getConfig } from "./config/subscriber.js"
+import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
@@ -169,7 +169,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
       try {
         const { readWorkflow, persistWorkflow, advanceTurn, completeCurrentTurn } =
-          await import("./lib/config-workflow/index.js")
+          await import("./config/workflow/index.js")
         const workflow = readWorkflow(args.workflowId)
         if (!workflow) return
 

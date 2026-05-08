@@ -23,7 +23,7 @@ import {
 // CA-03: export override tracker for parallelization toggle tests.
 // vitest's module graph allows spying on the config-subscriber export
 // and all consumers of that export will see the spy.
-import * as configSubscriber from "../../src/lib/config-subscriber.js"
+import * as configSubscriber from "../../src/config/subscriber.js"
 
 type MockClient = {
   session: {

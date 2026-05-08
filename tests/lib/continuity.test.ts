@@ -407,7 +407,7 @@ describe("atomic_commit toggle", () => {
 
   it("writes to disk when atomic_commit is true (default)", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ atomic_commit: true, workflow: { use_worktrees: false } }),
@@ -429,7 +429,7 @@ describe("atomic_commit toggle", () => {
 
   it("skips disk write when atomic_commit is false", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ atomic_commit: false, workflow: { use_worktrees: false } }),
@@ -448,7 +448,7 @@ describe("atomic_commit toggle", () => {
 
   it("writes to disk with default config (atomic_commit defaults to true)", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
       invalidateConfigCache: vi.fn(),

@@ -3,7 +3,7 @@ import {
   createKernelPacket,
   type KernelPacket,
   KERNEL_PACKET_VERSION,
-} from "../../../src/lib/prompt-packet/kernel-packet.js"
+} from "../../../src/features/prompt-packet/kernel-packet.js"
 import type { SessionContinuityRecord } from "../../../src/shared/types.js"
 
 describe("kernel-packet", () => {

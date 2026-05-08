@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "./index.js"
-import { getCachedConfig } from "../../lib/config-subscriber.js"
+import { getCachedConfig } from "../../config/subscriber.js"
 import { redactBoundaryFields } from "../../shared/security/redaction.js"
 import type { Delegation, DelegationStatus } from "../../shared/types.js"
 

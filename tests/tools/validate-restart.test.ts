@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createValidateRestartTool } from "../../src/tools/validate-restart.js"
+import { createValidateRestartTool } from "../../src/tools/config/validate-restart.js"
 
 describe("validate-restart tool", () => {
   let tempDir: string

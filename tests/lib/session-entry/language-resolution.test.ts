@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   detectLanguage,
   type LanguageDetection,
-} from "../../../src/lib/session-entry/language-resolution.js"
+} from "../../../src/routing/session-entry/language-resolution.js"
 
 describe("detectLanguage", () => {
   // ── SEI-02: Unicode-range language detection ─────────────────────────

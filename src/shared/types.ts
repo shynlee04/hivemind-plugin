@@ -410,6 +410,6 @@ export type {
   WorkflowTurnRecord,
   WorkflowTurnStatus,
   WorkflowResumeResult,
-} from "../lib/config-workflow/workflow-types.js"
+} from "../config/workflow/workflow-types.js"
 
-export { WORKFLOW_TURNS } from "../lib/config-workflow/workflow-types.js"
+export { WORKFLOW_TURNS } from "../config/workflow/workflow-types.js"

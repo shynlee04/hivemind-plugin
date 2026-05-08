@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { createToolGuardHooks } from "../../src/hooks/create-tool-guard-hooks.js"
+import { createToolGuardHooks } from "../../src/hooks/guards/tool-guard-hooks.js"
 
 /**
  * In-memory state manager that tracks tool calls.

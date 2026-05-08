@@ -1,4 +1,4 @@
-import { loadPrimitives } from "../../lib/primitive-loader.js"
+import { loadPrimitives } from "../../features/bootstrap/primitive-loader.js"
 import type { ValidatedAgent } from "./spawn-request-builder.js"
 
 function isRecord(value: unknown): value is Record<string, unknown> {

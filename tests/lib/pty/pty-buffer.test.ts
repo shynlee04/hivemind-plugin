@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createPtyBuffer } from "../../../src/lib/pty/pty-buffer.js"
+import { createPtyBuffer } from "../../../src/features/background-command/pty/pty-buffer.js"
 
 describe("createPtyBuffer", () => {
   it("returns exact incremental reads for appended content", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { detectRuntimePressure } from "../../../src/lib/runtime-pressure/index.js"
+import { detectRuntimePressure } from "../../../src/features/runtime-pressure/index.js"
 
 describe("runtime pressure control plane", () => {
   it("allows steady pressure actions", () => {

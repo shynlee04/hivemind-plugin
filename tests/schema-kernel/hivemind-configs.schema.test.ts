@@ -184,7 +184,7 @@ describe("DelegationSystemsSchema", () => {
     if (result.success) {
       expect(result.data.native_task).toBe(true)
       expect(result.data.delegate_task).toBe(true)
-      expect(result.data.background_delegation).toBe(false)
+      expect(result.data.background_delegation).toBe(true)
     }
   })
 
@@ -271,7 +271,7 @@ describe("HivemindConfigsSchema", () => {
       expect(result.data.user_expert_level).toBe("intermediate-high-level")
       expect(result.data.delegation_systems.native_task).toBe(true)
       expect(result.data.delegation_systems.delegate_task).toBe(true)
-      expect(result.data.delegation_systems.background_delegation).toBe(false)
+      expect(result.data.delegation_systems.background_delegation).toBe(true)
       // New execution fields
       expect(result.data.parallelization).toBe(true)
       expect(result.data.atomic_commit).toBe(true)
@@ -364,7 +364,7 @@ describe("getDefaultConfigs", () => {
     expect(defaults.delegation_systems).toEqual({
       native_task: true,
       delegate_task: true,
-      background_delegation: false,
+      background_delegation: true,
     })
     // New fields
     expect(defaults.parallelization).toBe(true)

@@ -6,7 +6,7 @@ import {
   decompileAgent,
   decompileCommand,
   decompileSkill,
-} from "../src/lib/config-compiler.js"
+} from "../src/config/compiler.js"
 
 // ---------------------------------------------------------------------------
 // Correctness metrics

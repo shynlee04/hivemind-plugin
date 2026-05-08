@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest"
-import { createCoreHooks } from "../../src/hooks/create-core-hooks.js"
+import { createCoreHooks } from "../../src/hooks/lifecycle/core-hooks.js"
 import type { HookDependencies } from "../../src/hooks/types.js"
-import type { ResolvedBehavioralProfile } from "../../src/lib/behavioral-profile/types.js"
-import type { IntakeResult } from "../../src/lib/session-entry/intake-gate.js"
+import type { ResolvedBehavioralProfile } from "../../src/routing/behavioral-profile/types.js"
+import type { IntakeResult } from "../../src/routing/session-entry/intake-gate.js"
 import { HivemindConfigsSchema } from "../../src/schema-kernel/hivemind-configs.schema.js"
 
 function createFakeLifecycleManager() {

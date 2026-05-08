@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { createSessionJournalExportTool } from "../../src/tools/session-journal-export.js"
+import { createSessionJournalExportTool } from "../../src/tools/session/session-journal-export.js"
 
 const mockCtx = {
   sessionID: "parent-session",

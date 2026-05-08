@@ -9,7 +9,7 @@ import {
   renderCommandContext,
   routeCommandPreview,
   transformCommandMessages,
-} from "../../../src/lib/command-engine/index.js"
+} from "../../../src/routing/command-engine/index.js"
 
 describe("command engine", () => {
   let projectRoot: string

@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest"
 import { HivemindConfigsSchema } from "../../src/schema-kernel/hivemind-configs.schema.js"
 import type { HivemindConfigs } from "../../src/schema-kernel/hivemind-configs.schema.js"
-import type { ResolvedBehavioralProfile } from "../../src/lib/behavioral-profile/types.js"
-import { buildGovernanceBlock } from "../../src/hooks/governance-block.js"
+import type { ResolvedBehavioralProfile } from "../../src/routing/behavioral-profile/types.js"
+import { buildGovernanceBlock } from "../../src/hooks/guards/governance-block.js"
 
 // ---------------------------------------------------------------------------
 // Helpers

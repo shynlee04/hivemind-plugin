@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { createSessionHooks } from "../../src/hooks/create-session-hooks.js"
+import { createSessionHooks } from "../../src/hooks/lifecycle/session-hooks.js"
 
 /**
  * Returns a sessionID or undefined from a mock event based on

@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest"
 describe("workflow-state", () => {
   describe("createWorkflowState", () => {
     it("should create state at turn 0 with all turns pending", async () => {
-      const { createWorkflowState, TOTAL_TURNS } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { createWorkflowState, TOTAL_TURNS } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config",
         targetPrimitives: [{ type: "agent", name: "test-agent" }],
@@ -21,7 +21,7 @@ describe("workflow-state", () => {
     })
 
     it("should set startedAt and updatedAt to current timestamp", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const before = Date.now()
       const state = createWorkflowState({
         type: "skill-config",
@@ -36,7 +36,7 @@ describe("workflow-state", () => {
     })
 
     it("should store target primitives, scope, and mode", async () => {
-      const { createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const targets = [
         { type: "agent" as const, name: "researcher" },
         { type: "command" as const, name: "start-work" },
@@ -55,7 +55,7 @@ describe("workflow-state", () => {
 
   describe("canAdvanceTurn", () => {
     it("should allow advancing from turn 0 to turn 1", async () => {
-      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -63,7 +63,7 @@ describe("workflow-state", () => {
     })
 
     it("should allow advancing from turn 6 to turn 7", async () => {
-      const { canAdvanceTurn, createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { canAdvanceTurn, createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/config/workflow/workflow-state.js")
       let state = createWorkflowState({
         type: "agent-config", targetPrimitives: [{ type: "agent", name: "a" }], scope: "project", mode: "create",
       })
@@ -77,7 +77,7 @@ describe("workflow-state", () => {
     })
 
     it("should allow skip-back from turn 5 to turn 3", async () => {
-      const { canAdvanceTurn, createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { canAdvanceTurn, createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/config/workflow/workflow-state.js")
       let state = createWorkflowState({
         type: "agent-config", targetPrimitives: [{ type: "agent", name: "a" }], scope: "project", mode: "create",
       })
@@ -90,7 +90,7 @@ describe("workflow-state", () => {
     })
 
     it("should reject skip-forward from turn 0 to turn 3", async () => {
-      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -98,7 +98,7 @@ describe("workflow-state", () => {
     })
 
     it("should reject negative turn numbers", async () => {
-      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -106,7 +106,7 @@ describe("workflow-state", () => {
     })
 
     it("should reject turn numbers > 7", async () => {
-      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { canAdvanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -117,7 +117,7 @@ describe("workflow-state", () => {
 
   describe("advanceTurn", () => {
     it("should return new state with updated currentTurn", async () => {
-      const { advanceTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { advanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -127,7 +127,7 @@ describe("workflow-state", () => {
     })
 
     it("should not mutate the original state", async () => {
-      const { advanceTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { advanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -137,7 +137,7 @@ describe("workflow-state", () => {
     })
 
     it("should throw [Harness] error on invalid transition", async () => {
-      const { advanceTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { advanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -148,7 +148,7 @@ describe("workflow-state", () => {
 
   describe("completeCurrentTurn", () => {
     it("should mark current turn as complete with output", async () => {
-      const { completeCurrentTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { completeCurrentTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -159,7 +159,7 @@ describe("workflow-state", () => {
     })
 
     it("should not mutate the original state", async () => {
-      const { completeCurrentTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { completeCurrentTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -168,7 +168,7 @@ describe("workflow-state", () => {
     })
 
     it("should refresh updatedAt timestamp", async () => {
-      const { completeCurrentTurn, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { completeCurrentTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -179,7 +179,7 @@ describe("workflow-state", () => {
 
   describe("isWorkflowComplete", () => {
     it("should return false when currentTurn < 7", async () => {
-      const { isWorkflowComplete, createWorkflowState } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { isWorkflowComplete, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
@@ -187,7 +187,7 @@ describe("workflow-state", () => {
     })
 
     it("should return true when turn 7 is complete", async () => {
-      const { isWorkflowComplete, createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { isWorkflowComplete, createWorkflowState, advanceTurn, completeCurrentTurn } = await import("../../../src/config/workflow/workflow-state.js")
       let state = createWorkflowState({
         type: "agent-config", targetPrimitives: [{ type: "agent", name: "a" }], scope: "project", mode: "create",
       })
@@ -201,7 +201,7 @@ describe("workflow-state", () => {
 
   describe("cloneWorkflowState", () => {
     it("should produce a deep copy (mutation safe)", async () => {
-      const { cloneWorkflowState, createWorkflowState, completeCurrentTurn } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { cloneWorkflowState, createWorkflowState, completeCurrentTurn } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config",
         targetPrimitives: [{ type: "agent", name: "original" }],
@@ -222,7 +222,7 @@ describe("workflow-state", () => {
 
   describe("getTurnName", () => {
     it("should return correct turn names for indices 0-7", async () => {
-      const { getTurnName } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { getTurnName } = await import("../../../src/config/workflow/workflow-state.js")
       expect(getTurnName(0)).toBe("discovery")
       expect(getTurnName(1)).toBe("investigate")
       expect(getTurnName(2)).toBe("collect")
@@ -234,7 +234,7 @@ describe("workflow-state", () => {
     })
 
     it("should throw for out-of-range indices", async () => {
-      const { getTurnName } = await import("../../../src/lib/config-workflow/workflow-state.js")
+      const { getTurnName } = await import("../../../src/config/workflow/workflow-state.js")
       expect(() => getTurnName(-1)).toThrow(/\[Harness\]/)
       expect(() => getTurnName(8)).toThrow(/\[Harness\]/)
     })

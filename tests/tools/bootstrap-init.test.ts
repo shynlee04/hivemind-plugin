@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 
 import { describe, expect, it } from "vitest"
 
-import { bootstrapInit } from "../../src/tools/bootstrap-init.js"
+import { bootstrapInit } from "../../src/tools/config/bootstrap-init.js"
 
 const CANONICAL_HIVEMIND_DIRECTORIES = [
   "state",

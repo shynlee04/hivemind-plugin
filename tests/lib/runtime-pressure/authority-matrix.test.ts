@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { getToolAuthority, inspectToolAuthorityCatalog } from "../../../src/lib/runtime-pressure/index.js"
+import { getToolAuthority, inspectToolAuthorityCatalog } from "../../../src/features/runtime-pressure/index.js"
 
 describe("runtime pressure authority matrix", () => {
   it("covers the currently registered plugin tools", () => {

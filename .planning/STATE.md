@@ -2,23 +2,23 @@
 # Hivemind — State
 
 **Last updated:** 2026-05-08
-**Last trigger:** Architecture restructuring plan created — OMO-inspired src/ reorganization
+**Last trigger:** SR remediation completed — corrected source-plane restructuring
 
 ---
 
 ## Current Status
 
-**Active workstreams:** Structure Restructuring (WS-SR) — OMO-inspired src/ reorganization + Shell/PTY Control-Plane Runway (CP-PTY-00 complete) + Meta-Concept Migration (WS-MCM — MCM-01/MCM-02 complete)
-**Current phase:** SR-0 (Preparation — safety net) — 11 SR phase directories created (SR-00 through SR-10); kebab-case conventions, colocated tests, barrel exports, AGENTS.md at every level specified
-**Blocked:** No — restructuring plan finalized, SR directories initialized, ready for autonomous execution
-**Health:** 🟢 BOOT-01 through BOOT-08 all complete; CP-PTY-00 complete; MCM-01/MCM-02 complete; CP-PTY-01 agent permissions + config consumer wired; SR-00..SR-10 directories created
-**Control mode:** Managed autonomous loop — architecture-first approach; WS-SR ready for discuss → research → execute cycle
+**Active workstreams:** Structure Restructuring (WS-SR) complete + Shell/PTY Control-Plane Runway (CP-PTY-00 complete) + Meta-Concept Migration (WS-MCM — MCM-01/MCM-02 complete)
+**Current phase:** SR-10 complete — source planes remediated and verified after aborted SR-4 retry
+**Blocked:** No for WS-SR — corrected architecture decision accepted; CP-PTY/MCM downstream work can resume from roadmap gates
+**Health:** 🟢 SR-04 through SR-10 completed with `npm run typecheck`, `npm test`, and `npm run build` passing; known Vitest hoist warnings remain non-fatal
+**Control mode:** Managed autonomous loop — WS-SR exit evidence recorded; next work should return to CP-PTY/MCM/f-04 dependency order
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Architecture restructuring — transforming scattered src/lib/ (56 entries) into organized OMO-inspired planes (routing, task-management, coordination, features). CP-PTY-01..04 paused until restructuring completes.
+**Current focus:** Post-restructuring continuation — `src/lib/` has been removed and source planes now live under shared, task-management, coordination, features, config, routing, hooks, and tools. CP-PTY-01..04 can resume from their gates.
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -165,17 +165,9 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **SR-0 (Preparation)** — safety net: full test suite pass, typecheck, branch creation, import graph documentation
-2. **SR-1** — move 12 leaf modules to `src/shared/` with kebab-case file naming
-3. **SR-2** — move persistence/journal to `src/task-management/`; split `continuity.ts`
-4. **SR-3** — move delegation/concurrency to `src/coordination/`; enforce 500 LOC cap
-5. **SR-4** — move features to `src/features/`; add AGENTS.md per module
-6. **SR-5** — move config modules to `src/config/`
-7. **SR-6** — move routing modules to `src/routing/`
-8. **SR-7** — reorganize hooks by purpose (lifecycle, guards, observers, transforms, composition)
-9. **SR-8** — categorize tools by domain (delegation, session, config, hivemind, prompt)
-10. **SR-9** — update `plugin.ts` imports; split hook/tool registration sub-modules
-11. **SR-10** — cleanup `src/lib/`; create AGENTS.md at every level; update `.planning/codebase/` docs
+1. **Commit SR remediation** — include source-plane moves, test updates, architecture decision, and summary artifacts; exclude incidental `.hivemind/state/**` runtime-state drift.
+2. **Return to CP-PTY-01** — background shell control-plane MVP is ready after WS-SR completion.
+3. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
 
 ## Option 3 Foundation Artifacts
 
@@ -205,4 +197,4 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 - `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md`
 
 ---
-*State updated: 2026-05-08 for BOOT-07 E2E proof completion*
+*State updated: 2026-05-08 for SR remediation completion*

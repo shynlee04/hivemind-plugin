@@ -8,7 +8,7 @@ import {
   exportAgentWorkContract,
   getAgentWorkContractsFilePath,
   readAgentWorkContracts,
-} from "../../../src/lib/agent-work-contracts/index.js"
+} from "../../../src/features/agent-work-contracts/index.js"
 
 const baseContract = {
   owner: { agent: "gsd-executor", sessionId: "ses_parent" },

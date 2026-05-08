@@ -1,7 +1,7 @@
 import { dirname, resolve } from "node:path"
 import { existsSync } from "node:fs"
 
-import { bootstrapRecover } from "../../tools/bootstrap-recover.js"
+import { bootstrapRecover } from "../../tools/config/bootstrap-recover.js"
 import type { BootstrapRecoverResult, BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
 import type { CliCommand, CliCommandContext, CliRouterResult } from "../router.js"
 

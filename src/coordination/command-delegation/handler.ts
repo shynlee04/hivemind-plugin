@@ -1,7 +1,7 @@
 import { spawn as spawnHeadlessProcess, type ChildProcessWithoutNullStreams } from "node:child_process"
 
 import { describeError } from "../../shared/helpers.js"
-import type { PtyManager } from "../../lib/pty/pty-manager.js"
+import type { PtyManager } from "../../features/background-command/pty/pty-manager.js"
 import type { CommandDelegationParams, Delegation, DelegationResult, DelegationTerminalKind } from "../../shared/types.js"
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { classifyRuntimePressure, getPressureBand } from "../../../src/lib/runtime-pressure/index.js"
+import { classifyRuntimePressure, getPressureBand } from "../../../src/features/runtime-pressure/index.js"
 
 describe("runtime pressure model — Phase 67 contract band mapping", () => {
   // Source: 57-CONTRACT-2026-04-30.md §"Pressure Bands"

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { parseMarkdownDocument } from "../../../src/lib/doc-intelligence/parser.js"
+import { parseMarkdownDocument } from "../../../src/features/doc-intelligence/parser.js"
 
 describe("doc intelligence parser", () => {
   it("extracts frontmatter, title, and nested heading outline", () => {

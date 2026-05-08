@@ -29,10 +29,10 @@ describe("workflow regression tests", () => {
   describe("concurrent reads do not mutate state", () => {
     it("should return identical values from 10 rapid reads", async () => {
       const { createWorkflowState, completeCurrentTurn, advanceTurn } = await import(
-        "../../../src/lib/config-workflow/workflow-state.js"
+        "../../../src/config/workflow/workflow-state.js"
       )
       const { persistWorkflow, readWorkflow } = await import(
-        "../../../src/lib/config-workflow/workflow-persistence.js"
+        "../../../src/config/workflow/workflow-persistence.js"
       )
 
       let state = createWorkflowState({
@@ -65,10 +65,10 @@ describe("workflow regression tests", () => {
   describe("corrupted JSON file handling", () => {
     it("should return undefined (not crash) when JSON file contains garbage", async () => {
       const { getWorkflowStorePath } = await import(
-        "../../../src/lib/config-workflow/workflow-persistence.js"
+        "../../../src/config/workflow/workflow-persistence.js"
       )
       const { readWorkflow } = await import(
-        "../../../src/lib/config-workflow/workflow-persistence.js"
+        "../../../src/config/workflow/workflow-persistence.js"
       )
 
       const filePath = getWorkflowStorePath()
@@ -88,10 +88,10 @@ describe("workflow regression tests", () => {
   describe("auto-creation of state directory", () => {
     it("should recreate state directory when persistWorkflow is called", async () => {
       const { createWorkflowState } = await import(
-        "../../../src/lib/config-workflow/workflow-state.js"
+        "../../../src/config/workflow/workflow-state.js"
       )
       const { persistWorkflow, readWorkflow, getWorkflowStorePath } = await import(
-        "../../../src/lib/config-workflow/workflow-persistence.js"
+        "../../../src/config/workflow/workflow-persistence.js"
       )
 
       // Delete the state directory entirely
@@ -124,7 +124,7 @@ describe("workflow regression tests", () => {
   describe("empty workflow ID handling", () => {
     it("should readWorkflow returns undefined for empty string ID", async () => {
       const { readWorkflow } = await import(
-        "../../../src/lib/config-workflow/workflow-persistence.js"
+        "../../../src/config/workflow/workflow-persistence.js"
       )
 
       const result = readWorkflow("")
@@ -133,7 +133,7 @@ describe("workflow regression tests", () => {
 
     it("should deleteWorkflow be a no-op for empty string ID", async () => {
       const { deleteWorkflow } = await import(
-        "../../../src/lib/config-workflow/workflow-persistence.js"
+        "../../../src/config/workflow/workflow-persistence.js"
       )
 
       expect(() => deleteWorkflow("")).not.toThrow()
@@ -147,7 +147,7 @@ describe("workflow regression tests", () => {
   describe("advanceTurn to same turn (idempotent re-do)", () => {
     it("should allow advancing from turn 3 to turn 3 (no-op re-do)", async () => {
       const { createWorkflowState, advanceTurn, completeCurrentTurn } = await import(
-        "../../../src/lib/config-workflow/workflow-state.js"
+        "../../../src/config/workflow/workflow-state.js"
       )
 
       let state = createWorkflowState({
@@ -179,7 +179,7 @@ describe("workflow regression tests", () => {
   describe("complete already-complete turn", () => {
     it("should overwrite the previous completion with new output", async () => {
       const { createWorkflowState, completeCurrentTurn } = await import(
-        "../../../src/lib/config-workflow/workflow-state.js"
+        "../../../src/config/workflow/workflow-state.js"
       )
 
       const state = createWorkflowState({
@@ -208,10 +208,10 @@ describe("workflow regression tests", () => {
   describe("persist then delete then read", () => {
     it("should fully remove a workflow after deletion", async () => {
       const { createWorkflowState } = await import(
-        "../../../src/lib/config-workflow/workflow-state.js"
+        "../../../src/config/workflow/workflow-state.js"
       )
       const { persistWorkflow, readWorkflow, deleteWorkflow, readPersistedWorkflows } = await import(
-        "../../../src/lib/config-workflow/workflow-persistence.js"
+        "../../../src/config/workflow/workflow-persistence.js"
       )
 
       const state = createWorkflowState({

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
-import { loadPrimitives } from "../src/lib/primitive-loader.js"
-import { validateCrossPrimitive } from "../src/lib/cross-primitive-validator.js"
-import type { PrimitiveMap } from "../src/lib/cross-primitive-validator.js"
+import { loadPrimitives } from "../src/features/bootstrap/primitive-loader.js"
+import { validateCrossPrimitive } from "../src/features/bootstrap/cross-primitive-validator.js"
+import type { PrimitiveMap } from "../src/features/bootstrap/cross-primitive-validator.js"
 
 describe("Ecosystem Coherence Metrics", () => {
   it("no overlapping agent descriptions", async () => {

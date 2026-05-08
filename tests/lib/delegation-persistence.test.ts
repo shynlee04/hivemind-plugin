@@ -166,7 +166,7 @@ describe("commit_docs toggle", () => {
 
   it("writes delegations.json to disk when commit_docs is true (default)", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ commit_docs: true, workflow: { use_worktrees: false } }),
@@ -187,7 +187,7 @@ describe("commit_docs toggle", () => {
 
   it("skips disk write when commit_docs is false", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(
         HivemindConfigsSchema.parse({ commit_docs: false, workflow: { use_worktrees: false } }),
@@ -206,7 +206,7 @@ describe("commit_docs toggle", () => {
 
   it("writes to disk with default config (commit_docs defaults to true)", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/lib/config-subscriber.js", () => ({
+    vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
       getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
       invalidateConfigCache: vi.fn(),

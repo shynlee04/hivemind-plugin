@@ -27,12 +27,12 @@ describe("workflow E2E: full 8-turn configuration journey", () => {
     const {
       createWorkflowState, advanceTurn, completeCurrentTurn,
       isWorkflowComplete, canAdvanceTurn, getTurnName,
-    } = await import("../../../src/lib/config-workflow/workflow-state.js")
+    } = await import("../../../src/config/workflow/workflow-state.js")
     const { persistWorkflow, readWorkflow } = await import(
-      "../../../src/lib/config-workflow/workflow-persistence.js"
+      "../../../src/config/workflow/workflow-persistence.js"
     )
     const { validateTurnPrecondition } = await import(
-      "../../../src/lib/config-workflow/workflow-guards.js"
+      "../../../src/config/workflow/workflow-guards.js"
     )
 
     // 1. Create workflow for batch-config of 3 primitives
@@ -135,7 +135,7 @@ describe("workflow E2E: full 8-turn configuration journey", () => {
 
   it("should reject out-of-order transitions at every boundary", async () => {
     const { createWorkflowState, canAdvanceTurn } = await import(
-      "../../../src/lib/config-workflow/workflow-state.js"
+      "../../../src/config/workflow/workflow-state.js"
     )
 
     const state = createWorkflowState({
@@ -158,7 +158,7 @@ describe("workflow E2E: full 8-turn configuration journey", () => {
 
   it("should support skip-back to re-do a previous turn", async () => {
     const { createWorkflowState, advanceTurn, completeCurrentTurn } = await import(
-      "../../../src/lib/config-workflow/workflow-state.js"
+      "../../../src/config/workflow/workflow-state.js"
     )
 
     let state = createWorkflowState({

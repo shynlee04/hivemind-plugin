@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { createConfigurePrimitiveTool } from "../../src/tools/configure-primitive.js"
-import { mixedBatchCompile } from "../../src/lib/config-compiler.js"
+import { createConfigurePrimitiveTool } from "../../src/tools/config/configure-primitive.js"
+import { mixedBatchCompile } from "../../src/config/compiler.js"
 import { existsSync, readdirSync, unlinkSync, rmdirSync, mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
@@ -557,10 +557,10 @@ describe("resume action", () => {
 
   it("should return correct workflow state on resume", async () => {
     const { createWorkflowState, completeCurrentTurn, advanceTurn } = await import(
-      "../../src/lib/config-workflow/workflow-state.js"
+      "../../src/config/workflow/workflow-state.js"
     )
     const { persistWorkflow } = await import(
-      "../../src/lib/config-workflow/workflow-persistence.js"
+      "../../src/config/workflow/workflow-persistence.js"
     )
 
     // Create a workflow, advance to turn 3

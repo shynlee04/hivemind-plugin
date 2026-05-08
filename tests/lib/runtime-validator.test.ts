@@ -18,8 +18,8 @@ import {
   validateInheritanceChain,
   validatePipelinePosition,
   validateRuntime,
-} from "../../src/lib/runtime-validator.js"
-import type { PrimitiveMap } from "../../src/lib/cross-primitive-validator.js"
+} from "../../src/features/bootstrap/runtime-validator.js"
+import type { PrimitiveMap } from "../../src/features/bootstrap/cross-primitive-validator.js"
 
 function makePrimitiveMap(overrides?: Partial<PrimitiveMap>): PrimitiveMap {
   return {

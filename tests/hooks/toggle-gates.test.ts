@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { HivemindConfigsSchema, getDefaultConfigs } from "../../src/schema-kernel/hivemind-configs.schema.js"
-import { isToggleEnabled, getDiscussMode } from "../../src/hooks/toggle-gates.js"
+import { isToggleEnabled, getDiscussMode } from "../../src/hooks/transforms/toggle-gates.js"
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -14,12 +14,12 @@ vi.mock("bun-pty", () => ({
 }))
 
 import { getSessionContinuity, recordSessionContinuity } from "../../src/task-management/continuity/index.js"
-import { createCoreHooks } from "../../src/hooks/create-core-hooks.js"
-import { createSessionHooks } from "../../src/hooks/create-session-hooks.js"
+import { createCoreHooks } from "../../src/hooks/lifecycle/core-hooks.js"
+import { createSessionHooks } from "../../src/hooks/lifecycle/session-hooks.js"
 import { TaskStateManager } from "../../src/shared/state.js"
 import { DelegationManager } from "../../src/coordination/delegation/manager.js"
 import { createHarnessLifecycleManager } from "../../src/task-management/lifecycle/index.js"
-import { PtyManager } from "../../src/lib/pty/pty-manager.js"
+import { PtyManager } from "../../src/features/background-command/pty/pty-manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 
 function createPluginClient() {
@@ -431,7 +431,7 @@ describe("plugin lifecycle wiring", () => {
 describe("behavioral assertions", () => {
   it("tool.execute.after injects _harness metadata with tool name and session ID", async () => {
     const { createToolGuardHooks } = await import(
-      "../../src/hooks/create-tool-guard-hooks.js"
+      "../../src/hooks/guards/tool-guard-hooks.js"
     )
     const stateManager = {
       ensureStats: vi.fn(() => ({
@@ -460,7 +460,7 @@ describe("behavioral assertions", () => {
 
   it("shell.env injects CI environment variables", async () => {
     const { createCoreHooks } = await import(
-      "../../src/hooks/create-core-hooks.js"
+      "../../src/hooks/lifecycle/core-hooks.js"
     )
     const hooks = createCoreHooks({
       lifecycleManager: {
