@@ -48,4 +48,55 @@ describe("createPtyBuffer", () => {
       truncated: true,
     })
   })
+
+  it("readSince on empty buffer returns empty content with zero offset", () => {
+    const buffer = createPtyBuffer(10)
+
+    expect(buffer.readSince(0)).toEqual({
+      content: "",
+      nextOffset: 0,
+      truncated: false,
+    })
+  })
+
+  it("readSince with offset beyond nextOffset returns empty content", () => {
+    const buffer = createPtyBuffer(10)
+
+    buffer.append("abc")
+
+    expect(buffer.readSince(100)).toEqual({
+      content: "",
+      nextOffset: 3,
+      truncated: false,
+    })
+  })
+
+  it("snapshot on empty buffer returns empty content", () => {
+    const buffer = createPtyBuffer(10)
+
+    expect(buffer.snapshot()).toEqual({
+      content: "",
+      nextOffset: 0,
+      truncated: false,
+    })
+  })
+
+  it("append with empty string does not change buffer", () => {
+    const buffer = createPtyBuffer(10)
+
+    buffer.append("abc")
+    buffer.append("")
+    buffer.append("")
+
+    expect(buffer.snapshot()).toEqual({
+      content: "abc",
+      nextOffset: 3,
+      truncated: false,
+    })
+    expect(buffer.readSince(0)).toEqual({
+      content: "abc",
+      nextOffset: 3,
+      truncated: false,
+    })
+  })
 })

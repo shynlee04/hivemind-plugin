@@ -13,4 +13,26 @@ describe("createPtyManagerIfSupported", () => {
 
     await expect(createPtyManagerIfSupported()).resolves.toBeNull()
   })
+
+  it("returns a PtyManager when PTY support is available", async () => {
+    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(true)
+
+    const { createPtyManagerIfSupported } = await import("../../../src/lib/pty/pty-runtime.js")
+
+    const result = await createPtyManagerIfSupported()
+    expect(result).not.toBeNull()
+    expect(result).toBeInstanceOf(PtyManager)
+  })
+
+  it("returns null when PTY detection throws an exception", async () => {
+    const { PtyManager } = await import("../../../src/lib/pty/pty-manager.js")
+    vi.spyOn(PtyManager.prototype, "isSupported").mockImplementation(() => {
+      throw new Error("bun-pty not available")
+    })
+
+    const { createPtyManagerIfSupported } = await import("../../../src/lib/pty/pty-runtime.js")
+
+    await expect(createPtyManagerIfSupported()).resolves.toBeNull()
+  })
 })
