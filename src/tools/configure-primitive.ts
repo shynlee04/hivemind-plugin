@@ -15,7 +15,7 @@ import {
   decompileSkill,
   mixedBatchCompile,
 } from "../lib/config-compiler.js"
-import { assertPathWithinRoot } from "../lib/security/path-scope.js"
+import { assertPathWithinRoot } from "../shared/security/path-scope.js"
 import { loadPrimitives, loadPrimitive } from "../lib/primitive-loader.js"
 import {
   canAdvanceTurn,

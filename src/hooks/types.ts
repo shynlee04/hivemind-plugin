@@ -1,6 +1,6 @@
 import type { HarnessLifecycleManager } from "../lib/lifecycle-manager.js"
-import type { OpenCodeClient } from "../lib/session-api.js"
-import type { TaskStateManager } from "../lib/state.js"
+import type { OpenCodeClient } from "../shared/session-api.js"
+import type { TaskStateManager } from "../shared/state.js"
 import type { AutoLoopOptions, AutoLoopResult } from "../lib/auto-loop.js"
 import type { RalphLoopOptions, RalphLoopResult } from "../lib/ralph-loop.js"
 import type { IntakeResult } from "../lib/session-entry/intake-gate.js"

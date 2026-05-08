@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest"
 
 const createSession = vi.fn()
 
-vi.mock("../../../src/lib/session-api.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../../src/lib/session-api.js")>()
+vi.mock("../../../src/shared/session-api.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../src/shared/session-api.js")>()
   return {
     ...actual,
     createSession,

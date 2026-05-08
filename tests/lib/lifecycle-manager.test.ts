@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getSessionContinuity, recordSessionContinuity } from "../../src/lib/continuity.js"
 import { createHarnessLifecycleManager, isTerminalPhase, isValidTransition } from "../../src/lib/lifecycle-manager.js"
-import type { SessionLifecyclePhase } from "../../src/lib/types.js"
+import type { SessionLifecyclePhase } from "../../src/shared/types.js"
 
 function createMockClient() {
   return {

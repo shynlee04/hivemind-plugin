@@ -1,4 +1,4 @@
-import type { DelegationRecoveryGuarantee, DelegationStatus } from "./delegation-types.js"
+import type { DelegationRecoveryGuarantee, DelegationStatus } from "../lib/delegation-types.js"
 
 export type TaskStatus = "pending" | "queued" | "running" | "completed" | "failed" | "error" | "cancelled" | "interrupt"
 
@@ -378,7 +378,7 @@ export type {
   Delegation,
   DelegationResult,
   CommandDelegationParams,
-} from "./delegation-types.js"
+} from "../lib/delegation-types.js"
 
 export {
   DEFAULT_SAFETY_CEILING_MS,
@@ -396,7 +396,7 @@ export {
   STABLE_POLLS_REQUIRED,
   STABILITY_THRESHOLD,
   STABILITY_POLL_INTERVAL_MS,
-} from "./delegation-types.js"
+} from "../lib/delegation-types.js"
 
 // ---------------------------------------------------------------------------
 // Config workflow state machine types (Phase 16.5 fix)
@@ -410,6 +410,6 @@ export type {
   WorkflowTurnRecord,
   WorkflowTurnStatus,
   WorkflowResumeResult,
-} from "./config-workflow/workflow-types.js"
+} from "../lib/config-workflow/workflow-types.js"
 
-export { WORKFLOW_TURNS } from "./config-workflow/workflow-types.js"
+export { WORKFLOW_TURNS } from "../lib/config-workflow/workflow-types.js"

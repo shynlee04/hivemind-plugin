@@ -1,8 +1,8 @@
 import type { createOpencodeClient } from "@opencode-ai/sdk"
 
 import { asString, getNestedValue, unwrapData } from "./helpers.js"
-import type { ResolvedBehavioralProfile } from "./behavioral-profile/types.js"
-import { resolveBehavioralProfile } from "./behavioral-profile/resolve-behavioral-profile.js"
+import type { ResolvedBehavioralProfile } from "../lib/behavioral-profile/types.js"
+import { resolveBehavioralProfile } from "../lib/behavioral-profile/resolve-behavioral-profile.js"
 
 export type OpenCodeClient = ReturnType<typeof createOpencodeClient>
 

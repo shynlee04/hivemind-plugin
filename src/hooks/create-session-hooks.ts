@@ -11,11 +11,11 @@ import {
   getContinuityStoragePath,
   getSessionContinuity,
 } from "../lib/continuity.js"
-import { asString, extractAssistantText, getNestedValue } from "../lib/helpers.js"
+import { asString, extractAssistantText, getNestedValue } from "../shared/helpers.js"
 import {
   getEventSessionID,
   getSessionMessages,
-} from "../lib/session-api.js"
+} from "../shared/session-api.js"
 import { toCompactionPacket, type CompactionExtras } from "../lib/prompt-packet/compaction-preservation.js"
 import type { KernelPacket } from "../lib/prompt-packet/kernel-packet.js"
 import type { HookDependencies } from "./types.js"

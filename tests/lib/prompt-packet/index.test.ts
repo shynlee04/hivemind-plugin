@@ -9,7 +9,7 @@ import {
   type DelegationPacket,
   type CompactionPreservationPacket,
 } from "../../../src/lib/prompt-packet/index.js"
-import type { SessionContinuityRecord } from "../../../src/lib/types.js"
+import type { SessionContinuityRecord } from "../../../src/shared/types.js"
 
 describe("prompt-packet index exports", () => {
   const baseRecord: SessionContinuityRecord = {

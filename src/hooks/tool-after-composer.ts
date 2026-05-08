@@ -1,4 +1,4 @@
-import { asString, getNestedValue } from "../lib/helpers.js"
+import { asString, getNestedValue } from "../shared/helpers.js"
 
 export type ToolAfterProjectionFact =
   | {

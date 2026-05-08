@@ -12,7 +12,7 @@ import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { resolve } from "node:path"
 
-import { assertPathWithinRoot } from "../security/path-scope.js"
+import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 
 // ---------------------------------------------------------------------------
 // Public types

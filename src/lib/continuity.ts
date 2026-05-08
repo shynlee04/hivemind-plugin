@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
-import { assertPathWithinRoot } from "./security/path-scope.js"
-import { redactBoundaryFields } from "./security/redaction.js"
+import { assertPathWithinRoot } from "../shared/security/path-scope.js"
+import { redactBoundaryFields } from "../shared/security/redaction.js"
 import { getCachedConfig } from "./config-subscriber.js"
 import type {
   CapturedResult,
@@ -15,7 +15,7 @@ import type {
   SessionContinuityMetadata,
   SessionContinuityRecord,
   SessionLifecycleState,
-} from "./types.js"
+} from "../shared/types.js"
 
 const CONTINUITY_VERSION = 1 as const
 const CANONICAL_STATE_DIR = resolve(process.cwd(), ".hivemind", "state")

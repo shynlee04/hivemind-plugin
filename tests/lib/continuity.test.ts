@@ -4,7 +4,7 @@ import { basename, join } from "node:path"
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { Delegation, SessionContinuityRecord } from "../../src/lib/types.js"
+import type { Delegation, SessionContinuityRecord } from "../../src/shared/types.js"
 
 /** Creates a minimal continuity record for persistence regression tests. */
 function makeRecord(sessionID: string): SessionContinuityRecord {

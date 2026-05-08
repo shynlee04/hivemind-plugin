@@ -1,4 +1,4 @@
-import { redactTextSecrets } from "../security/redaction.js"
+import { redactTextSecrets } from "../../shared/security/redaction.js"
 import { parseProductDetoxSessionMarkdown } from "./parser.js"
 import { sanitizeSessionArtifactStem } from "./hook-event.js"
 import type {

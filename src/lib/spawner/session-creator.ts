@@ -1,5 +1,5 @@
-import type { OpenCodeClient } from "../session-api.js"
-import { createSession, getSessionID } from "../session-api.js"
+import type { OpenCodeClient } from "../../shared/session-api.js"
+import { createSession, getSessionID } from "../../shared/session-api.js"
 import type { DelegationSpawnRequest } from "./spawner-types.js"
 
 type SpawnDelegatedSessionArgs = {

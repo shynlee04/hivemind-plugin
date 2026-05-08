@@ -3,10 +3,10 @@ import { z } from "zod"
 
 import type { DelegationManager } from "../lib/delegation-manager.js"
 import { readPersistedDelegations } from "../lib/delegation-persistence.js"
-import { redactTextSecrets } from "../lib/security/redaction.js"
+import { redactTextSecrets } from "../shared/security/redaction.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"
-import type { Delegation } from "../lib/types.js"
+import type { Delegation } from "../shared/types.js"
 
 const DelegationStatusInputSchema = z.object({
   delegationId: z.string().min(1).optional().describe("Specific delegation ID to check"),

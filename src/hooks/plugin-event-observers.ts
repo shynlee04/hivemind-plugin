@@ -1,5 +1,5 @@
-import { asString, getNestedValue } from "../lib/helpers.js"
-import { getEventSessionID } from "../lib/session-api.js"
+import { asString, getNestedValue } from "../shared/helpers.js"
+import { getEventSessionID } from "../shared/session-api.js"
 import type { IntakeResult } from "../lib/session-entry/intake-gate.js"
 import { resolveIntake } from "../lib/session-entry/intake-gate.js"
 

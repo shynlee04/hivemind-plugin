@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path"
 
 import { AgentWorkContractStoreSchema, type AgentWorkContract, type AgentWorkContractStore } from "../../schema-kernel/agent-work-contract.schema.js"
-import { assertPathWithinRoot } from "../security/path-scope.js"
+import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 
 const STORE_VERSION = 1 as const
 

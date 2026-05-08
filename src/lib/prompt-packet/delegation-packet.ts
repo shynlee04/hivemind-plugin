@@ -1,5 +1,5 @@
 import { createKernelPacket, type KernelPacket } from "./kernel-packet.js"
-import type { SessionContinuityRecord } from "../types.js"
+import type { SessionContinuityRecord } from "../../shared/types.js"
 
 /**
  * Extra fields specific to delegation packets, beyond the kernel base.

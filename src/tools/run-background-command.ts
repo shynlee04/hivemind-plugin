@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import type { DelegationManager } from "../lib/delegation-manager.js"
 import type { PtyManager } from "../lib/pty/pty-manager.js"
-import type { Delegation } from "../lib/types.js"
+import type { Delegation } from "../shared/types.js"
 import { getCachedConfig } from "../lib/config-subscriber.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"

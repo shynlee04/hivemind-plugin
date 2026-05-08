@@ -10,7 +10,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs"
 import { resolve } from "node:path"
 
-import { assertPathWithinRoot } from "../security/path-scope.js"
+import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { classifyFailure, type FailureClass } from "./failure-classes.js"
 
 // ---------------------------------------------------------------------------

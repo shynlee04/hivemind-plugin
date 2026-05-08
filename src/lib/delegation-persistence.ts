@@ -4,8 +4,8 @@ import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "./continuity.js"
 import { getCachedConfig } from "./config-subscriber.js"
-import { redactBoundaryFields } from "./security/redaction.js"
-import type { Delegation, DelegationStatus } from "./types.js"
+import { redactBoundaryFields } from "../shared/security/redaction.js"
+import type { Delegation, DelegationStatus } from "../shared/types.js"
 
 const VALID_DELEGATION_STATUSES: ReadonlySet<string> = new Set<string>([
   "dispatched",

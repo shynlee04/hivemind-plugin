@@ -1,4 +1,4 @@
-import type { Delegation, SessionContinuityRecord } from "../../src/lib/types.js"
+import type { Delegation, SessionContinuityRecord } from "../../src/shared/types.js"
 import type { SessionJournalEntry } from "../../src/lib/session-journal.js"
 import {
   buildExecutionLineage,

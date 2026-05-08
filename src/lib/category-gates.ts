@@ -1,4 +1,4 @@
-import { VALID_DELEGATION_CATEGORIES, type CategoryGateDecision, type CategoryGatePolicy, type CategoryGateSurface } from "./types.js"
+import { VALID_DELEGATION_CATEGORIES, type CategoryGateDecision, type CategoryGatePolicy, type CategoryGateSurface } from "../shared/types.js"
 import type { SkillFilter } from "./behavioral-profile/types.js"
 
 type CategoryGateInput = {

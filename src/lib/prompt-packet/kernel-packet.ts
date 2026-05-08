@@ -1,4 +1,4 @@
-import type { SessionContinuityRecord } from "../types.js"
+import type { SessionContinuityRecord } from "../../shared/types.js"
 
 /** Version of the kernel packet schema. */
 export const KERNEL_PACKET_VERSION = "1.0.0"

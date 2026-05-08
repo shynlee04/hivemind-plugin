@@ -1,5 +1,5 @@
-import type { TaskStateManager } from "./state.js"
-import { MAX_DESCENDANTS_PER_ROOT } from "./types.js"
+import type { TaskStateManager } from "../shared/state.js"
+import { MAX_DESCENDANTS_PER_ROOT } from "../shared/types.js"
 
 // ---------------------------------------------------------------------------
 // Internal lane type for DelegationConcurrencyQueue

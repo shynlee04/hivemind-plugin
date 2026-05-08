@@ -10,9 +10,9 @@ import type { PtyManager } from "./pty/pty-manager.js"
 import { SdkDelegationHandler } from "./sdk-delegation.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
 import { recordCategoryGateDeny } from "./category-gate-audit.js"
-import { getAppAgents } from "./app-api.js"
-import { sendPromptAsync, type OpenCodeClient } from "./session-api.js"
-import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "./runtime-policy.js"
+import { getAppAgents } from "../shared/app-api.js"
+import { sendPromptAsync, type OpenCodeClient } from "../shared/session-api.js"
+import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../shared/runtime-policy.js"
 import { getCachedConfig } from "./config-subscriber.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "./spawner/agent-primitive-policy.js"
 import { resolveDelegationConcurrencyKey } from "./spawner/concurrency-key.js"
@@ -26,7 +26,7 @@ import {
   type DelegationResult,
   type RuntimePolicy,
   MAX_DELEGATION_DEPTH,
-} from "./types.js"
+} from "../shared/types.js"
 import type { BehavioralOverrides } from "./behavioral-profile/types.js"
 
 type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }

@@ -16,7 +16,7 @@ vi.mock("../../src/lib/delegation-manager.js", () => ({
   },
 }))
 
-vi.mock("../../src/lib/state.js", () => ({ taskState: {} }))
+vi.mock("../../src/shared/state.js", () => ({ taskState: {} }))
 vi.mock("../../src/hooks/create-core-hooks.js", () => ({ createCoreHooks: () => ({}) }))
 vi.mock("../../src/hooks/create-session-hooks.js", () => ({
   createSessionHooks: () => ({ event: vi.fn(async () => ({ kind: "noop" })) }),
@@ -32,10 +32,10 @@ vi.mock("../../src/hooks/plugin-event-observers.js", () => ({
 vi.mock("../../src/hooks/tool-after-composer.js", () => ({
   createToolExecuteAfterHook: () => vi.fn(async () => ({ kind: "noop" })),
 }))
-vi.mock("../../src/lib/plugin-tool-output-summary.js", () => ({ summarizePluginToolOutput: vi.fn(() => "summary") }))
+vi.mock("../../src/shared/plugin-tool-output-summary.js", () => ({ summarizePluginToolOutput: vi.fn(() => "summary") }))
 vi.mock("../../src/lib/pty/pty-runtime.js", () => ({ createPtyManagerIfSupported: vi.fn(async () => null) }))
-vi.mock("../../src/lib/runtime-policy.js", () => ({ loadRuntimePolicy: vi.fn(() => ({})) }))
-vi.mock("../../src/lib/workspace-runtime-policy.js", () => ({ resolveWorkspaceRuntimePolicy: vi.fn(() => "/policy") }))
+vi.mock("../../src/shared/runtime-policy.js", () => ({ loadRuntimePolicy: vi.fn(() => ({})) }))
+vi.mock("../../src/shared/workspace-runtime-policy.js", () => ({ resolveWorkspaceRuntimePolicy: vi.fn(() => "/policy") }))
 vi.mock("../../src/lib/auto-loop.js", () => ({ runAutoLoop: vi.fn(async () => undefined) }))
 vi.mock("../../src/lib/ralph-loop.js", () => ({ runRalphLoop: vi.fn(async () => undefined), escalationMessage: "escalate" }))
 vi.mock("../../src/lib/event-tracker/index.js", () => ({

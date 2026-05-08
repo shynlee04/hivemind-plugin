@@ -1,6 +1,6 @@
 ---
 phase: CP-PTY-01-background-shell-control-plane-mvp
-status: ready
+status: in_progress
 created: 2026-05-08
 updated: 2026-05-08
 evidence_level_required: L2-L3 minimum, L1 preferred for E2E

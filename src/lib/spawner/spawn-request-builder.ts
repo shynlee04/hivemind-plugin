@@ -1,5 +1,5 @@
 import type { DelegationSpawnRequest } from "./spawner-types.js"
-import { DEFAULT_SAFETY_CEILING_MS } from "../types.js"
+import { DEFAULT_SAFETY_CEILING_MS } from "../../shared/types.js"
 
 type PrimitivePermission = Record<string, unknown>
 

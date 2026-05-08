@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { extname, relative, sep } from "node:path"
 
-import { assertPathWithinRoot } from "../security/path-scope.js"
+import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { chunkMarkdownDocument } from "./chunker.js"
 import { parseMarkdownDocument } from "./parser.js"
 import type { DocIntelligenceInput, DocIntelligenceResult, DocSearchMatch, ParsedMarkdownDocument } from "./types.js"

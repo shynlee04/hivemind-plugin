@@ -35,7 +35,7 @@ vi.mock("node:child_process", () => ({
 }))
 
 import { CommandDelegationHandler } from "../../src/lib/command-delegation.js"
-import type { Delegation, DelegationResult } from "../../src/lib/types.js"
+import type { Delegation, DelegationResult } from "../../src/shared/types.js"
 
 // ---------------------------------------------------------------------------
 // Types

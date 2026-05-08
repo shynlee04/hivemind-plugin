@@ -5,7 +5,7 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs"
 import { dirname, join, basename } from "node:path"
-import { assertPathWithinRoot } from "../../lib/security/path-scope.js"
+import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 import { SessionPatchRecordSchema } from "../../schema-kernel/prompt-enhance.schema.js"

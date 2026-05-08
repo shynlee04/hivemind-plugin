@@ -1,6 +1,6 @@
 import { vi } from "vitest"
 
-import type { OpenCodeClient } from "../../../src/lib/session-api.js"
+import type { OpenCodeClient } from "../../../src/shared/session-api.js"
 
 type SessionRecord = { id: string; status?: { type?: string } } & Record<string, unknown>
 

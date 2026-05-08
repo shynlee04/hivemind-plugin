@@ -7,8 +7,8 @@
  * Stripped in 14-01: injection-engine, governance-engine removed.
  * Stripped in 35: messages-transform removed (dead code). Notification-handler re-activated in Phase 16.2.
  */
-import { asString, getNestedValue, isObject } from "../lib/helpers.js"
-import { getEventSessionID } from "../lib/session-api.js"
+import { asString, getNestedValue, isObject } from "../shared/helpers.js"
+import { getEventSessionID } from "../shared/session-api.js"
 import { classifyHookEffect } from "./hook-cqrs-boundary.js"
 import { buildGovernanceBlock } from "./governance-block.js"
 import type { HookDependencies } from "./types.js"
