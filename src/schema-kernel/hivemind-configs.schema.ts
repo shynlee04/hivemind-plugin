@@ -186,12 +186,12 @@ export const DelegationSystemsSchema = z
   .object({
     native_task: z.boolean().default(true),
     delegate_task: z.boolean().default(true),
-    background_delegation: z.boolean().default(false),
+    background_delegation: z.boolean().default(true),
   })
   .default({
     native_task: true,
     delegate_task: true,
-    background_delegation: false,
+    background_delegation: true,
   })
 
 export type DelegationSystems = z.infer<typeof DelegationSystemsSchema>

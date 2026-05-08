@@ -4,6 +4,7 @@ import { z } from "zod"
 import type { DelegationManager } from "../lib/delegation-manager.js"
 import type { PtyManager } from "../lib/pty/pty-manager.js"
 import type { Delegation } from "../lib/types.js"
+import { getCachedConfig } from "../lib/config-subscriber.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"
 
@@ -155,6 +156,13 @@ export function createRunBackgroundCommandTool(args: {
     },
     async execute(rawArgs: RunBackgroundCommandInput, context: ToolContext): Promise<string> {
       try {
+        const config = getCachedConfig()
+        if (!config.delegation_systems.background_delegation) {
+          return renderToolResult(error(
+            `[Harness] Background delegation is disabled. Set delegation_systems.background_delegation to true in .hivemind/configs.json to enable run-background-command.`,
+          ))
+        }
+
         const parsed = parseRunBackgroundCommandInput(rawArgs)
         if (parsed.action === "run") {
           assertExecutableCommandShape(parsed.command, parsed.args)
