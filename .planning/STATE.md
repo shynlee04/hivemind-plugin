@@ -9,10 +9,10 @@
 ## Current Status
 
 **Active workstreams:** Structure Restructuring (WS-SR) — OMO-inspired src/ reorganization + Shell/PTY Control-Plane Runway (CP-PTY-00 complete) + Meta-Concept Migration (WS-MCM — MCM-01/MCM-02 complete)
-**Current phase:** SR-0 (Preparation) — architecture restructuring takes priority over CP-PTY-01..04
-**Blocked:** No — restructuring plan created, ready to execute
-**Health:** 🟢 BOOT-01 through BOOT-08 all complete; CP-PTY-00 complete; MCM-01/MCM-02 complete; CP-PTY-01 agent permissions + config consumer wired
-**Control mode:** Managed autonomous loop — architecture-first approach
+**Current phase:** SR-0 (Preparation — safety net) — 11 SR phase directories created (SR-00 through SR-10); kebab-case conventions, colocated tests, barrel exports, AGENTS.md at every level specified
+**Blocked:** No — restructuring plan finalized, SR directories initialized, ready for autonomous execution
+**Health:** 🟢 BOOT-01 through BOOT-08 all complete; CP-PTY-00 complete; MCM-01/MCM-02 complete; CP-PTY-01 agent permissions + config consumer wired; SR-00..SR-10 directories created
+**Control mode:** Managed autonomous loop — architecture-first approach; WS-SR ready for discuss → research → execute cycle
 
 ## Project Reference
 
@@ -140,16 +140,42 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ---
 
+## Accumulated Context
+
+### Roadmap Evolution
+
+- **2026-05-08** — SR-00 through SR-10 phase directories created: 11 directories with `.gitkeep` registration under `.planning/phases/SR-*/`
+- **2026-05-08** — WS-SR ROADMAP.md updated: improved phase descriptions with OMO kebab-case conventions, feature-module pattern (index.ts + types.ts + AGENTS.md per module), colocated tests, barrel exports, hierarchical AGENTS.md guidance, 500 LOC cap enforcement, verification commands per phase
+- **2026-05-08** — STATE.md updated: current phase set to SR-0, health green, control mode set to managed autonomous loop, SR directories registered
+- **2026-05-08** — Restructuring plan refined: `.planning/architecture/structure-restructuring-plan-2026-05-08.md` contains complete file mapping (current → target), 10-phase migration plan with risk assessment, rollback strategy, circular dependency resolution, verification commands
+
+### Key Restructuring Decisions
+
+| ID | Decision |
+|----|----------|
+| SR-D-01 | kebab-case everywhere — directories and files follow OMO naming conventions |
+| SR-D-02 | Feature-module pattern — each module has `index.ts` (barrel), `types.ts`, `AGENTS.md` |
+| SR-D-03 | Colocated tests — `manager.ts` + `manager.test.ts` in same directory (not separate `tests/`) |
+| SR-D-04 | 500 LOC cap — modules exceeding 500 LOC (continuity.ts: 465, plugin.ts: 447, delegation-manager.ts: ~500) must be split |
+| SR-D-05 | AGENTS.md at every level — hierarchical guidance from `src/AGENTS.md` down to individual module `AGENTS.md` |
+| SR-D-06 | Circular dependency resolution — `primitive-scanners.ts ↔ primitive-registry.ts` and `runtime-validator.ts ↔ cross-primitive-validator.ts` resolved by extracting shared types |
+| SR-D-07 | Rollback strategy — per-phase atomic commits; full rollback via `git checkout main && git branch -D refactor/structure-restructuring` |
+
+---
+
 ## Next Actions
 
-1. **Run MCM-03** — config plane integration: add agent/skill count checks to doctor, wire meta-concept validation.
-2. **Run MCM-04** — end-user customization + ecosystem integration.
-3. **Run CP-PTY-01** — background shell control-plane MVP (L2-L3 runtime, now unblocked).
-4. **Run CP-PTY-02** — SDK session delegation integration (async/sync child-session dispatch).
-5. **Run CP-PTY-03** — agent/subagent background task coordination (wave dispatch, completion-looping).
-6. **Run CP-PTY-04** — cross-cutting shell integration (wires everything to session/task/journal/hooks).
-7. **After MCM + CP-PTY:** Resume f-04 routing foundation.
-8. **After routing:** Resume HER-3/4/5 execution.
+1. **SR-0 (Preparation)** — safety net: full test suite pass, typecheck, branch creation, import graph documentation
+2. **SR-1** — move 12 leaf modules to `src/shared/` with kebab-case file naming
+3. **SR-2** — move persistence/journal to `src/task-management/`; split `continuity.ts`
+4. **SR-3** — move delegation/concurrency to `src/coordination/`; enforce 500 LOC cap
+5. **SR-4** — move features to `src/features/`; add AGENTS.md per module
+6. **SR-5** — move config modules to `src/config/`
+7. **SR-6** — move routing modules to `src/routing/`
+8. **SR-7** — reorganize hooks by purpose (lifecycle, guards, observers, transforms, composition)
+9. **SR-8** — categorize tools by domain (delegation, session, config, hivemind, prompt)
+10. **SR-9** — update `plugin.ts` imports; split hook/tool registration sub-modules
+11. **SR-10** — cleanup `src/lib/`; create AGENTS.md at every level; update `.planning/codebase/` docs
 
 ## Option 3 Foundation Artifacts
 

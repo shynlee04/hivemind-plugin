@@ -252,39 +252,58 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ## Active Workstream: Structure Restructuring (WS-SR)
 
-OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries) into organized planes. Plan: `.planning/architecture/structure-restructuring-plan-2026-05-08.md`
+OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries) into organized planes following OMO naming conventions (kebab-case everywhere), feature-module pattern (index.ts, types.ts, AGENTS.md per module), colocated tests, barrel exports, and hierarchical AGENTS.md guidance. Plan: `.planning/architecture/structure-restructuring-plan-2026-05-08.md`
 
-| Phase | Title | Status | Depends On |
-|-------|-------|--------|------------|
-| SR-0 | Preparation (safety net) | ⬜ PENDING | — |
-| SR-1 | Leaf Modules → `src/shared/` | ⬜ PENDING | SR-0 |
-| SR-2 | Persistence/Journal → `src/task-management/` | ⬜ PENDING | SR-1 |
-| SR-3 | Delegation/Concurrency → `src/coordination/` | ⬜ PENDING | SR-1 |
-| SR-4 | Features → `src/features/` | ⬜ PENDING | SR-2, SR-3 |
-| SR-5 | Config → `src/config/` | ⬜ PENDING | SR-1 |
-| SR-6 | Routing → `src/routing/` | ⬜ PENDING | SR-1 |
-| SR-7 | Hooks Reorganization | ⬜ PENDING | SR-4 |
-| SR-8 | Tools Reorganization | ⬜ PENDING | SR-4 |
-| SR-9 | Plugin Composition Root Update | ⬜ PENDING | SR-7, SR-8 |
-| SR-10 | Cleanup + AGENTS.md Updates | ⬜ PENDING | SR-9 |
+| Phase | Title | Status | Depends On | Key Improvements |
+|-------|-------|--------|------------|------------------|
+| SR-0 | Preparation (safety net) | ⬜ PENDING | — | Full test suite pass, typecheck, branch creation, import graph documentation, .gitkeep verification |
+| SR-1 | Leaf Modules → `src/shared/` | ⬜ PENDING | SR-0 | Move 12 leaf modules (types, helpers, state, task-status, runtime, runtime-policy, workspace-runtime-policy, app-api, session-api, plugin-tool-output-summary, security/) to `src/shared/` with kebab-case file naming |
+| SR-2 | Persistence/Journal → `src/task-management/` | ⬜ PENDING | SR-1 | Move continuity, journal, trajectory, recovery, lifecycle modules. Split `continuity.ts` (465 LOC) into `store-io.ts`, `normalizers.ts`, `clone-helpers.ts`, `api.ts` per 500 LOC cap |
+| SR-3 | Delegation/Concurrency → `src/coordination/` | ⬜ PENDING | SR-1 | Move delegation-manager (500 LOC cap enforced), delegation-state-machine, concurrency, completion, spawner, auto-loop, ralph-loop to coordination plane with types per module |
+| SR-4 | Features → `src/features/` | ⬜ PENDING | SR-2, SR-3 | Move pty, doc-intelligence, runtime-pressure, agent-work-contracts, sdk-supervisor, command-engine, bootstrap, behavioral-profile, config-workflow, prompt-packet to features plane with AGENTS.md per module |
+| SR-5 | Config → `src/config/` | ⬜ PENDING | SR-1 | Move config-subscriber, config-compiler, config-workflow to config realm with types.ts per module |
+| SR-6 | Routing → `src/routing/` | ⬜ PENDING | SR-1 | Move session-entry to routing plane; set up intent-classifier, workflow-router, command-engine sub-modules |
+| SR-7 | Hooks Reorganization | ⬜ PENDING | SR-4 | Reorganize hooks by purpose: lifecycle/ (core-hooks, session-hooks), guards/ (tool-guard-hooks), observers/ (event-observers), transforms/ (toggle-gates, governance-block, tool-after-composer), composition/ (cqrs-boundary) |
+| SR-8 | Tools Reorganization | ⬜ PENDING | SR-4 | Categorize tools by domain: delegation/ (delegate-task, delegation-status), session/ (session-patch, session-journal-export), config/ (configure-primitive, bootstrap-*, validate-restart), hivemind/ (hivemind-* tools), prompt/ (prompt-skim, prompt-analyze) |
+| SR-9 | Plugin Composition Root Update | ⬜ PENDING | SR-7, SR-8 | Update `src/plugin.ts` (447 LOC) to use new import paths; split hook/tool registration into `src/plugin/hooks/` and `src/plugin/tools/` sub-modules per 100 LOC target |
+| SR-10 | Cleanup + AGENTS.md Updates | ⬜ PENDING | SR-9 | Remove empty `src/lib/`, create AGENTS.md at every level (src/, routing/, task-management/, coordination/, features/, hooks/, tools/, shared/, config/), update `.planning/codebase/` docs, verify no circular dependencies with madge |
 
 ### Target Structure
 
 ```
 src/
+├── AGENTS.md                    # Top-level sector guidance
+├── index.ts                     # Public API re-exports
+├── plugin.ts                    # Plugin composition root
 ├── routing/           # Intent → session → task → workflow pipeline
 ├── task-management/   # Continuity, journal, trajectory, recovery, lifecycle
 ├── coordination/      # Delegation, concurrency, completion, spawner
-├── features/          # Standalone feature modules
-├── hooks/             # Reorganized by purpose (lifecycle, guards, observers, transforms)
-├── tools/             # Categorized (delegation, session, config, hivemind, prompt)
-├── shared/            # Expanded with leaf modules from lib/
-├── config/            # Config realm
+├── features/          # Standalone feature modules (each with index.ts, types.ts, AGENTS.md)
+├── hooks/             # Reorganized by purpose (lifecycle, guards, observers, transforms, composition)
+├── tools/             # Categorized by domain (delegation, session, config, hivemind, prompt)
+├── shared/            # Expanded leaf modules, security/, tmux/, model-capabilities/
+├── config/            # Config realm (subscriber, compiler, workflow, types.ts)
 ├── schema-kernel/     # Zod schemas (unchanged)
-├── plugin/            # Plugin composition and registration
-├── cli/               # CLI substrate (unchanged)
+├── plugin/            # Plugin composition: hooks/, tools/, config/ sub-modules
+├── cli/               # CLI substrate (unchanged — AGENTS.md, discovery, renderer, router, commands/)
 └── sidecar/           # Read-only state (unchanged)
 ```
+
+### SR Phase Directories
+
+| Phase | Directory | Slug |
+|-------|-----------|------|
+| SR-0 | `.planning/phases/SR-00-preparation-safety-net/` | preparation-safety-net |
+| SR-1 | `.planning/phases/SR-01-leaf-modules-to-shared/` | leaf-modules-to-shared |
+| SR-2 | `.planning/phases/SR-02-persistence-journal-to-task-management/` | persistence-journal-to-task-management |
+| SR-3 | `.planning/phases/SR-03-delegation-concurrency-to-coordination/` | delegation-concurrency-to-coordination |
+| SR-4 | `.planning/phases/SR-04-features-to-features-plane/` | features-to-features-plane |
+| SR-5 | `.planning/phases/SR-05-config-to-config-realm/` | config-to-config-realm |
+| SR-6 | `.planning/phases/SR-06-routing-to-routing-plane/` | routing-to-routing-plane |
+| SR-7 | `.planning/phases/SR-07-hooks-reorganization/` | hooks-reorganization |
+| SR-8 | `.planning/phases/SR-08-tools-reorganization/` | tools-reorganization |
+| SR-9 | `.planning/phases/SR-09-plugin-composition-root-update/` | plugin-composition-root-update |
+| SR-10 | `.planning/phases/SR-10-cleanup-agents-md-updates/` | cleanup-agents-md-updates |
 
 ---
 
