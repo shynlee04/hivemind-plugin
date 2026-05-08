@@ -1,6 +1,6 @@
 import { tool } from "@opencode-ai/plugin/tool"
 
-import { eventTrajectory } from "../lib/trajectory/index.js"
+import { eventTrajectory } from "../task-management/trajectory/index.js"
 import {
   classifyRuntimePressure,
   detectRuntimePressure,

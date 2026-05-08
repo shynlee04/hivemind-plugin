@@ -138,7 +138,7 @@ describe("session-journal-export tool", () => {
   it("registers plugin tool and public package exports", () => {
     expect(readFileSync("src/plugin.ts", "utf-8")).toContain("session-journal-export")
     const index = readFileSync("src/index.ts", "utf-8")
-    expect(index).toContain('export * from "./lib/session-journal.js"')
-    expect(index).toContain('export * from "./lib/execution-lineage.js"')
+    expect(index).toContain('export * from "./task-management/journal/index.js"')
+    expect(index).toContain('export * from "./task-management/journal/execution-lineage.js"')
   })
 })

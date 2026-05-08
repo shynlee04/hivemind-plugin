@@ -1,5 +1,5 @@
-import type { Delegation, SessionContinuityRecord } from "../shared/types.js"
-import type { SessionJournalEntry } from "./session-journal.js"
+import type { Delegation, SessionContinuityRecord } from "../../shared/types.js"
+import type { SessionJournalEntry } from "./index.js"
 
 export type ExecutionLineageStateRole = "derived projection"
 

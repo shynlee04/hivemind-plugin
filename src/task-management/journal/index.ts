@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs"
 import { dirname } from "node:path"
-import { redactBoundaryFields } from "../shared/security/redaction.js"
+import { redactBoundaryFields } from "../../shared/security/redaction.js"
 
 export const SESSION_JOURNAL_STATE_ROLES = [
   "canonical runtime state",

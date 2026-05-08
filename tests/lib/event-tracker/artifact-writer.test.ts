@@ -15,11 +15,11 @@ import {
   createEventTrackerArtifactsFromHook,
   cleanupEventTrackerArtifacts,
   mergeSessionExportMarkdownArtifacts,
-} from "../../../src/lib/event-tracker/artifact-writer.js"
+} from "../../../src/task-management/journal/event-tracker/artifact-writer.js"
 import type {
   EventTrackerFileSystem,
   SessionJourneyEvent,
-} from "../../../src/lib/event-tracker/types.js"
+} from "../../../src/task-management/journal/event-tracker/types.js"
 
 /**
  * Helper: creates a valid SessionJourneyEvent for testing.

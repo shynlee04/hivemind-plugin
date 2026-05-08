@@ -27,7 +27,7 @@ describe("repairRecoveryState", () => {
     const continuityPath = resolve(stateDir, "session-continuity.json")
     writeFileSync(continuityPath, "{not valid", "utf-8")
 
-    const { repairRecoveryState } = await import("../../../src/lib/recovery/repair-state.js")
+    const { repairRecoveryState } = await import("../../../src/task-management/recovery/repair-state.js")
     const result = await repairRecoveryState({ sessionId: "any", projectRoot })
 
     expect(result.status).toBe("repaired")
@@ -52,7 +52,7 @@ describe("repairRecoveryState", () => {
       "utf-8",
     )
 
-    const { repairRecoveryState } = await import("../../../src/lib/recovery/repair-state.js")
+    const { repairRecoveryState } = await import("../../../src/task-management/recovery/repair-state.js")
     const result = await repairRecoveryState({
       sessionId: "kept",
       projectRoot,
@@ -74,7 +74,7 @@ describe("repairRecoveryState", () => {
       JSON.stringify({ version: 1, sessions: { ok: { sessionID: "ok" } } }),
       "utf-8",
     )
-    const { repairRecoveryState } = await import("../../../src/lib/recovery/repair-state.js")
+    const { repairRecoveryState } = await import("../../../src/task-management/recovery/repair-state.js")
     const result = await repairRecoveryState({ sessionId: "ok", projectRoot })
     expect(result.status).toBe("noop")
     expect(result.repairedFiles).toEqual([])
@@ -84,7 +84,7 @@ describe("repairRecoveryState", () => {
     const stateDir = resolve(projectRoot, ".hivemind", "state")
     writeFileSync(resolve(stateDir, "session-continuity.json"), "{not valid", "utf-8")
 
-    const { repairRecoveryState } = await import("../../../src/lib/recovery/repair-state.js")
+    const { repairRecoveryState } = await import("../../../src/task-management/recovery/repair-state.js")
     await expect(
       repairRecoveryState({
         sessionId: "x",
@@ -101,7 +101,7 @@ describe("repairRecoveryState", () => {
     mkdirSync(checkpointDir, { recursive: true })
     const ckpt = resolve(checkpointDir, "broken.json")
     writeFileSync(ckpt, "{also not valid", "utf-8")
-    const { repairRecoveryState } = await import("../../../src/lib/recovery/repair-state.js")
+    const { repairRecoveryState } = await import("../../../src/task-management/recovery/repair-state.js")
     const result = await repairRecoveryState({
       sessionId: "x",
       projectRoot,
@@ -113,7 +113,7 @@ describe("repairRecoveryState", () => {
 
   it("creates state directory if missing", async () => {
     await rm(resolve(projectRoot, ".hivemind"), { recursive: true, force: true })
-    const { repairRecoveryState } = await import("../../../src/lib/recovery/repair-state.js")
+    const { repairRecoveryState } = await import("../../../src/task-management/recovery/repair-state.js")
     const result = await repairRecoveryState({ sessionId: "fresh", projectRoot })
     expect(result.status === "repaired" || result.status === "noop").toBe(true)
     expect(existsSync(resolve(projectRoot, ".hivemind", "state"))).toBe(true)

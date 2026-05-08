@@ -1,13 +1,13 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
-import { listSessionContinuity } from "../lib/continuity.js"
-import { readPersistedDelegations } from "../lib/delegation-persistence.js"
+import { listSessionContinuity } from "../task-management/continuity/index.js"
+import { readPersistedDelegations } from "../task-management/continuity/delegation-persistence.js"
 import {
   buildExecutionLineage,
   renderExecutionLineageMarkdown,
   type ExecutionLineageRecord,
-} from "../lib/execution-lineage.js"
+} from "../task-management/journal/execution-lineage.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"
 

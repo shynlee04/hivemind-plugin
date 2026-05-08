@@ -18,7 +18,7 @@
  * relocated onto this class.
  */
 
-import { persistDelegations } from "./delegation-persistence.js"
+import { persistDelegations } from "../task-management/continuity/delegation-persistence.js"
 import { notifyDelegationTerminal } from "./notification-handler.js"
 import { abortSession, type OpenCodeClient } from "../shared/session-api.js"
 import {

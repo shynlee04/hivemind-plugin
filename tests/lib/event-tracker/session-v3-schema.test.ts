@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 
-import { createEmptyDocument, renderDocumentMarkdown } from "../../../src/lib/event-tracker/index.js"
+import { createEmptyDocument, renderDocumentMarkdown } from "../../../src/task-management/journal/event-tracker/index.js"
 
 describe("event-tracker session v3 metadata", () => {
   it("defaults v3 metadata on newly created and legacy-shaped documents", () => {
@@ -62,6 +62,6 @@ describe("event-tracker session v3 metadata", () => {
     expect(markdown).toContain("**Lineage:** ses_root → ses_v3")
     expect(markdown).toContain("**Purpose Class:** implementation")
     expect(markdown).toContain("**Resumable:** false")
-    expect(markdown.length).toBeLessThan(readFileSync(new URL("../../../src/lib/event-tracker/markdown-renderer.ts", import.meta.url), "utf-8").length + 5_000)
+    expect(markdown.length).toBeLessThan(readFileSync(new URL("../../../src/task-management/journal/event-tracker/markdown-renderer.ts", import.meta.url), "utf-8").length + 5_000)
   })
 })

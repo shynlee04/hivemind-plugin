@@ -7,7 +7,7 @@
  */
 import type { Plugin } from "@opencode-ai/plugin"
 
-import { createHarnessLifecycleManager } from "./lib/lifecycle-manager.js"
+import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"
 import { DelegationManager } from "./lib/delegation-manager.js"
 import { taskState } from "./shared/state.js"
 import { createCoreHooks } from "./hooks/create-core-hooks.js"
@@ -41,7 +41,7 @@ import { runRalphLoop, escalationMessage } from "./lib/ralph-loop.js"
 import {
   createEventTrackerArtifactsFromHook,
   shouldTrackEventTrackerEvent,
-} from "./lib/event-tracker/index.js"
+} from "./task-management/journal/event-tracker/index.js"
 
 import { getConfig } from "./lib/config-subscriber.js"
 import { resolveBehavioralProfile } from "./lib/behavioral-profile/resolve-behavioral-profile.js"

@@ -67,7 +67,7 @@ describe("delegation persistence", () => {
       }
     })
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     nestedPersist = persistence.persistDelegations
 
     expect(() => persistence.persistDelegations([makeDelegation("outer")])).not.toThrow()
@@ -77,7 +77,7 @@ describe("delegation persistence", () => {
   })
 
   it("quarantines corrupt delegations.json and throws a visible harness error", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(persistence.getDelegationsFilePath(), "NOT VALID JSON {{{", "utf-8")
 
     expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\]/)
@@ -86,14 +86,14 @@ describe("delegation persistence", () => {
   })
 
   it("reports non-array delegations.json as invalid persisted shape", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(persistence.getDelegationsFilePath(), JSON.stringify({ invalid: true }), "utf-8")
 
     expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\].*array/)
   })
 
   it("normalizes invalid persisted status values to explicit error metadata", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(
       persistence.getDelegationsFilePath(),
       `${JSON.stringify([{ ...makeDelegation("invalid-status"), status: "unknown-success" }])}\n`,
@@ -109,7 +109,7 @@ describe("delegation persistence", () => {
   })
 
   it("redacts delegation result, error, and fallbackReason while preserving operational identifiers", async () => {
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     persistence.persistDelegations([
       {
         ...makeDelegation("redacted"),
@@ -174,7 +174,7 @@ describe("commit_docs toggle", () => {
       invalidateConfigCache: vi.fn(),
     }))
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     const filePath = persistence.getDelegationsFilePath()
 
     persistence.persistDelegations([makeDelegation("del-commit-true")])
@@ -195,7 +195,7 @@ describe("commit_docs toggle", () => {
       invalidateConfigCache: vi.fn(),
     }))
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     const filePath = persistence.getDelegationsFilePath()
 
     persistence.persistDelegations([makeDelegation("del-commit-false")])
@@ -212,7 +212,7 @@ describe("commit_docs toggle", () => {
       invalidateConfigCache: vi.fn(),
     }))
 
-    const persistence = await import("../../src/lib/delegation-persistence.js")
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     const filePath = persistence.getDelegationsFilePath()
 
     persistence.persistDelegations([makeDelegation("del-commit-defaults")])

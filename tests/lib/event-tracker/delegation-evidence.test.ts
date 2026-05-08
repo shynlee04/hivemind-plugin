@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import type { DelegationEvidenceRecord } from "../../../src/lib/event-tracker/types.js"
+import type { DelegationEvidenceRecord } from "../../../src/task-management/journal/event-tracker/types.js"
 
 describe("trackDelegationEvidence", () => {
-  let tracker: Awaited<ReturnType<typeof import("../../../src/lib/event-tracker/delegation-evidence.js")>["createDelegationEvidenceTracker"]>
+  let tracker: Awaited<ReturnType<typeof import("../../../src/task-management/journal/event-tracker/delegation-evidence.js")>["createDelegationEvidenceTracker"]>
 
   beforeEach(async () => {
-    const mod = await import("../../../src/lib/event-tracker/delegation-evidence.js")
+    const mod = await import("../../../src/task-management/journal/event-tracker/delegation-evidence.js")
     tracker = mod.createDelegationEvidenceTracker()
   })
 

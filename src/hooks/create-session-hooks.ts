@@ -10,7 +10,7 @@
 import {
   getContinuityStoragePath,
   getSessionContinuity,
-} from "../lib/continuity.js"
+} from "../task-management/continuity/index.js"
 import { asString, extractAssistantText, getNestedValue } from "../shared/helpers.js"
 import {
   getEventSessionID,

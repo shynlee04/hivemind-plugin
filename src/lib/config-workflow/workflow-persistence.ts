@@ -13,7 +13,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 
-import { getContinuityStoragePath } from "../continuity.js"
+import { getContinuityStoragePath } from "../../task-management/continuity/index.js"
 import type { ConfigWorkflowState } from "./workflow-types.js"
 
 // ---------------------------------------------------------------------------

@@ -8,9 +8,9 @@ import {
   getCanonicalStateDir,
   getLegacyStateDir,
   getContinuityStoragePath,
-} from "../../src/lib/continuity.js"
-import { getDelegationsFilePath } from "../../src/lib/delegation-persistence.js"
-import { getEventTrackerArtifactPaths } from "../../src/lib/event-tracker/writer.js"
+} from "../../src/task-management/continuity/index.js"
+import { getDelegationsFilePath } from "../../src/task-management/continuity/delegation-persistence.js"
+import { getEventTrackerArtifactPaths } from "../../src/task-management/journal/event-tracker/writer.js"
 
 const PROJECT_ROOT = process.cwd()
 

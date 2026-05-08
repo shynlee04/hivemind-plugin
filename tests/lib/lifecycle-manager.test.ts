@@ -3,8 +3,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { getSessionContinuity, recordSessionContinuity } from "../../src/lib/continuity.js"
-import { createHarnessLifecycleManager, isTerminalPhase, isValidTransition } from "../../src/lib/lifecycle-manager.js"
+import { getSessionContinuity, recordSessionContinuity } from "../../src/task-management/continuity/index.js"
+import { createHarnessLifecycleManager, isTerminalPhase, isValidTransition } from "../../src/task-management/lifecycle/index.js"
 import type { SessionLifecyclePhase } from "../../src/shared/types.js"
 
 function createMockClient() {

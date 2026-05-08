@@ -16,7 +16,7 @@ import {
   renderJourneyEventMarkdown,
   writeSessionJourneyArtifacts,
   type EventTrackerFileSystem,
-} from "../../../src/lib/event-tracker/index.js"
+} from "../../../src/task-management/journal/event-tracker/index.js"
 
 function tempProjectRoot(): string {
   return mkdtempSync(join(tmpdir(), "harness-event-tracker-"))

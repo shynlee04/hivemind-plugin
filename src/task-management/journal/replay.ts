@@ -26,7 +26,7 @@
  * provides primitives, not an opinionated "current state" object.
  */
 
-import type { SessionJournalEntry, SessionJournalStateRole } from "./session-journal.js"
+import type { SessionJournalEntry, SessionJournalStateRole } from "./index.js"
 
 /**
  * Options accepted by {@link reconstructStateAt}.

@@ -2,7 +2,7 @@ import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
 import type { DelegationManager } from "../lib/delegation-manager.js"
-import { readPersistedDelegations } from "../lib/delegation-persistence.js"
+import { readPersistedDelegations } from "../task-management/continuity/delegation-persistence.js"
 import { redactTextSecrets } from "../shared/security/redaction.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"

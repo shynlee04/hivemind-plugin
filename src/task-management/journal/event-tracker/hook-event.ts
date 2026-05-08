@@ -1,6 +1,6 @@
-import { asString, getNestedValue } from "../../shared/helpers.js"
-import { redactTextSecrets } from "../../shared/security/redaction.js"
-import { getEventParentID, getEventSessionID } from "../../shared/session-api.js"
+import { asString, getNestedValue } from "../../../shared/helpers.js"
+import { redactTextSecrets } from "../../../shared/security/redaction.js"
+import { getEventParentID, getEventSessionID } from "../../../shared/session-api.js"
 import type { JourneyEventHookInput, JourneyEventType, SessionJourneyEvent, SessionJourneyToolUsage } from "./types.js"
 
 const MAX_TOOL_SUMMARY_LENGTH = 240

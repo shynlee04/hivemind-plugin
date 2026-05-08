@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 
 describe("ClassifiedEventType", () => {
   it("exports all 10 required event types", async () => {
-    const types = await import("../../../src/lib/event-tracker/types.js")
+    const types = await import("../../../src/task-management/journal/event-tracker/types.js")
     const expected: string[] = [
       "user_message",
       "assistant_output",
@@ -21,7 +21,7 @@ describe("ClassifiedEventType", () => {
   })
 
   it("exports ClassifiedEvent type with required fields", async () => {
-    const types = await import("../../../src/lib/event-tracker/types.js")
+    const types = await import("../../../src/task-management/journal/event-tracker/types.js")
     // Verify the type exists by using it
     const event: types.ClassifiedEvent = {
       type: "user_message",
@@ -33,7 +33,7 @@ describe("ClassifiedEventType", () => {
   })
 
   it("exports DelegationEvidenceRecord type with required fields", async () => {
-    const types = await import("../../../src/lib/event-tracker/types.js")
+    const types = await import("../../../src/task-management/journal/event-tracker/types.js")
     const record: types.DelegationEvidenceRecord = {
       id: "del_001::partial::1234",
       delegationId: "del_001",
@@ -46,13 +46,13 @@ describe("ClassifiedEventType", () => {
   })
 
   it("exports DelegationEvidenceState union type", async () => {
-    const types = await import("../../../src/lib/event-tracker/types.js")
+    const types = await import("../../../src/task-management/journal/event-tracker/types.js")
     expect(types.DELEGATION_EVIDENCE_STATES).toEqual(["partial", "blocked", "complete"])
   })
 
   it("exports DualPersistenceFileSystem with appendFileSync", async () => {
     // This is a type-level check — just verify the module loaded
-    const types = await import("../../../src/lib/event-tracker/types.js")
+    const types = await import("../../../src/task-management/journal/event-tracker/types.js")
     expect(typeof types.DualPersistenceFileSystem).toBe("undefined") // type-only, not a runtime value
   })
 })

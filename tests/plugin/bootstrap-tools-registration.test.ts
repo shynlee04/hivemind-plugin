@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-vi.mock("../../src/lib/lifecycle-manager.js", () => ({
+vi.mock("../../src/task-management/lifecycle/index.js", () => ({
   createHarnessLifecycleManager: () => ({
     hydrateFromContinuity: vi.fn(),
     getCompletionDetector: vi.fn(() => ({})),
@@ -38,7 +38,7 @@ vi.mock("../../src/shared/runtime-policy.js", () => ({ loadRuntimePolicy: vi.fn(
 vi.mock("../../src/shared/workspace-runtime-policy.js", () => ({ resolveWorkspaceRuntimePolicy: vi.fn(() => "/policy") }))
 vi.mock("../../src/lib/auto-loop.js", () => ({ runAutoLoop: vi.fn(async () => undefined) }))
 vi.mock("../../src/lib/ralph-loop.js", () => ({ runRalphLoop: vi.fn(async () => undefined), escalationMessage: "escalate" }))
-vi.mock("../../src/lib/event-tracker/index.js", () => ({
+vi.mock("../../src/task-management/journal/event-tracker/index.js", () => ({
   createEventTrackerArtifactsFromHook: vi.fn(),
   shouldTrackEventTrackerEvent: vi.fn(() => false),
 }))

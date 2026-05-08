@@ -23,7 +23,7 @@ describe("category gate audit", () => {
 
   it("persists compact category gate deny evidence", async () => {
     const audit = await import("../../src/lib/category-gate-audit.js")
-    const continuity = await import("../../src/lib/continuity.js")
+    const continuity = await import("../../src/task-management/continuity/index.js")
 
     expect(audit.recordCategoryGateDeny({
       callerSessionId: "ses-parent",

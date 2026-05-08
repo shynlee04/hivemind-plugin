@@ -13,12 +13,12 @@ vi.mock("bun-pty", () => ({
   })),
 }))
 
-import { getSessionContinuity, recordSessionContinuity } from "../../src/lib/continuity.js"
+import { getSessionContinuity, recordSessionContinuity } from "../../src/task-management/continuity/index.js"
 import { createCoreHooks } from "../../src/hooks/create-core-hooks.js"
 import { createSessionHooks } from "../../src/hooks/create-session-hooks.js"
 import { TaskStateManager } from "../../src/shared/state.js"
 import { DelegationManager } from "../../src/lib/delegation-manager.js"
-import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
+import { createHarnessLifecycleManager } from "../../src/task-management/lifecycle/index.js"
 import { PtyManager } from "../../src/lib/pty/pty-manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 

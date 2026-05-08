@@ -1,4 +1,4 @@
-import type { HarnessLifecycleManager } from "../lib/lifecycle-manager.js"
+import type { HarnessLifecycleManager } from "../task-management/lifecycle/index.js"
 import type { OpenCodeClient } from "../shared/session-api.js"
 import type { TaskStateManager } from "../shared/state.js"
 import type { AutoLoopOptions, AutoLoopResult } from "../lib/auto-loop.js"

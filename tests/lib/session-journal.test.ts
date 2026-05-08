@@ -9,7 +9,7 @@ import {
   createJournalEntry,
   renderJournalEntryMarkdown,
   serializeJournalEntryJson,
-} from "../../src/lib/session-journal.js"
+} from "../../src/task-management/journal/index.js"
 
 describe("session journal contract", () => {
   it("serializes all required journal fields as JSON", () => {

@@ -10,7 +10,7 @@
 import { sendPrompt, type OpenCodeClient } from "../shared/session-api.js"
 import type { Delegation } from "../shared/types.js"
 import type { TaskNotification } from "../shared/types.js"
-import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
+import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "../task-management/continuity/index.js"
 
 const MAX_PREVIEW_LENGTH = 500
 

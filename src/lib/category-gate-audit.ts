@@ -1,4 +1,4 @@
-import { getGovernancePersistenceState, recordGovernancePersistenceState } from "./continuity.js"
+import { getGovernancePersistenceState, recordGovernancePersistenceState } from "../task-management/continuity/index.js"
 
 type CategoryGateDenyInput = {
   callerSessionId: string

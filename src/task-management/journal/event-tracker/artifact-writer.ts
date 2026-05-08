@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
-import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
+import { assertPathWithinRoot } from "../../../shared/security/path-scope.js"
 import { parseProductDetoxSessionMarkdown } from "./parser.js"
 import { createJourneyEventFromHook, sanitizeSessionArtifactStem, shouldTrackEventTrackerEvent } from "./hook-event.js"
 import { addEvent, createEmptyDocument, documentContainsSession, mergeExportMetadata, readDocument, readExistingDocumentForScan } from "./document-store.js"

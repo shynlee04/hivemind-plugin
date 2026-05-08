@@ -1,7 +1,7 @@
 import { CommandDelegationHandler } from "./command-delegation.js"
 import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
 import type { CompletionDetector } from "./completion-detector.js"
-import { readPersistedDelegations } from "./delegation-persistence.js"
+import { readPersistedDelegations } from "../task-management/continuity/delegation-persistence.js"
 import {
   buildDelegationResult,
   DelegationStateMachine,

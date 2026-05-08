@@ -27,7 +27,7 @@ describe("createRecoveryCheckpoint", () => {
       sessions: { "alpha": { sessionID: "alpha", createdAt: 1, updatedAt: 2 } },
     })
 
-    const { createRecoveryCheckpoint } = await import("../../../src/lib/recovery/create-checkpoint.js")
+    const { createRecoveryCheckpoint } = await import("../../../src/task-management/recovery/create-checkpoint.js")
     const checkpoint = await createRecoveryCheckpoint("alpha", projectRoot)
 
     expect(checkpoint.sessionId).toBe("alpha")
@@ -47,7 +47,7 @@ describe("createRecoveryCheckpoint", () => {
 
   it("places the checkpoint under .hivemind/state/checkpoints/", async () => {
     seedContinuity(projectRoot, { sessions: { beta: { sessionID: "beta" } } })
-    const { createRecoveryCheckpoint } = await import("../../../src/lib/recovery/create-checkpoint.js")
+    const { createRecoveryCheckpoint } = await import("../../../src/task-management/recovery/create-checkpoint.js")
     const checkpoint = await createRecoveryCheckpoint("beta", projectRoot)
     expect(checkpoint.snapshotPath).toContain(`${".hivemind"}`)
     expect(checkpoint.snapshotPath).toContain("checkpoints")
@@ -55,7 +55,7 @@ describe("createRecoveryCheckpoint", () => {
   })
 
   it("captures empty snapshot when no continuity file exists", async () => {
-    const { createRecoveryCheckpoint } = await import("../../../src/lib/recovery/create-checkpoint.js")
+    const { createRecoveryCheckpoint } = await import("../../../src/task-management/recovery/create-checkpoint.js")
     const checkpoint = await createRecoveryCheckpoint("ghost", projectRoot)
     const persisted = JSON.parse(readFileSync(checkpoint.snapshotPath, "utf-8")) as {
       snapshot: { sessions: Record<string, unknown> }
@@ -65,14 +65,14 @@ describe("createRecoveryCheckpoint", () => {
 
   it("creates unique checkpoint paths for back-to-back calls", async () => {
     seedContinuity(projectRoot, { sessions: {} })
-    const { createRecoveryCheckpoint } = await import("../../../src/lib/recovery/create-checkpoint.js")
+    const { createRecoveryCheckpoint } = await import("../../../src/task-management/recovery/create-checkpoint.js")
     const a = await createRecoveryCheckpoint("g", projectRoot)
     const b = await createRecoveryCheckpoint("g", projectRoot)
     expect(a.snapshotPath).not.toBe(b.snapshotPath)
   })
 
   it("rejects path traversal in projectRoot", async () => {
-    const { createRecoveryCheckpoint } = await import("../../../src/lib/recovery/create-checkpoint.js")
+    const { createRecoveryCheckpoint } = await import("../../../src/task-management/recovery/create-checkpoint.js")
     await expect(
       createRecoveryCheckpoint("../escape", projectRoot),
     ).rejects.toThrow(/sessionId/i)
@@ -80,7 +80,7 @@ describe("createRecoveryCheckpoint", () => {
 
   it("emits an ISO-8601 timestamp", async () => {
     seedContinuity(projectRoot, { sessions: {} })
-    const { createRecoveryCheckpoint } = await import("../../../src/lib/recovery/create-checkpoint.js")
+    const { createRecoveryCheckpoint } = await import("../../../src/task-management/recovery/create-checkpoint.js")
     const checkpoint = await createRecoveryCheckpoint("ts-check", projectRoot)
     expect(() => new Date(checkpoint.timestamp).toISOString()).not.toThrow()
   })

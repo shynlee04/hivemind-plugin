@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
 
-import { attachTrajectoryEvidence } from "../trajectory/index.js"
+import { attachTrajectoryEvidence } from "../../task-management/trajectory/index.js"
 import { detectRuntimePressure } from "../runtime-pressure/index.js"
 import { getAgentWorkContract, upsertAgentWorkContract } from "./store.js"
 import type {

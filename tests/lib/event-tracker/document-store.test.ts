@@ -13,12 +13,12 @@ import {
   documentContainsSession,
   addEvent,
   mergeExportMetadata,
-} from "../../../src/lib/event-tracker/document-store.js"
+} from "../../../src/task-management/journal/event-tracker/document-store.js"
 import type {
   EventTrackerFileSystem,
   SessionJourneyDocument,
   SessionJourneyEvent,
-} from "../../../src/lib/event-tracker/types.js"
+} from "../../../src/task-management/journal/event-tracker/types.js"
 
 /**
  * Helper: creates a valid SessionJourneyEvent for testing.

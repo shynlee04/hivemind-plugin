@@ -10,11 +10,11 @@
 import {
   getSessionContinuity,
   getContinuityStoragePath,
-} from "../lib/continuity.js"
+} from "../task-management/continuity/index.js"
 import { asString, getNestedValue, isObject, makeToolSignature } from "../shared/helpers.js"
 import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../shared/runtime-policy.js"
 import type { RuntimePolicy } from "../shared/types.js"
-import type { HarnessLifecycleManager } from "../lib/lifecycle-manager.js"
+import type { HarnessLifecycleManager } from "../task-management/lifecycle/index.js"
 import type { TaskStateManager } from "../shared/state.js"
 import { getDelegationMeta } from "../shared/state.js"
 import { classifyHookEffect } from "./hook-cqrs-boundary.js"

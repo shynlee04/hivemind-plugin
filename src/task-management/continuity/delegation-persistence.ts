@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 
-import { getContinuityStoragePath } from "./continuity.js"
-import { getCachedConfig } from "./config-subscriber.js"
-import { redactBoundaryFields } from "../shared/security/redaction.js"
-import type { Delegation, DelegationStatus } from "../shared/types.js"
+import { getContinuityStoragePath } from "./index.js"
+import { getCachedConfig } from "../../lib/config-subscriber.js"
+import { redactBoundaryFields } from "../../shared/security/redaction.js"
+import type { Delegation, DelegationStatus } from "../../shared/types.js"
 
 const VALID_DELEGATION_STATUSES: ReadonlySet<string> = new Set<string>([
   "dispatched",

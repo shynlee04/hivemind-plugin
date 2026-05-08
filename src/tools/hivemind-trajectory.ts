@@ -7,7 +7,7 @@ import {
   eventTrajectory,
   inspectTrajectoryLedger,
   traverseTrajectory,
-} from "../lib/trajectory/index.js"
+} from "../task-management/trajectory/index.js"
 import { parseTrajectoryToolInput, TrajectoryToolInputSchema, type TrajectoryToolInput } from "../schema-kernel/trajectory.schema.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { error, success } from "../shared/tool-response.js"

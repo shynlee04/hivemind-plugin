@@ -22,7 +22,7 @@
 
 import { existsSync, readFileSync } from "node:fs"
 
-import type { SessionJournalEntry, SessionJournalStateRole } from "./session-journal.js"
+import type { SessionJournalEntry, SessionJournalStateRole } from "./index.js"
 
 /**
  * Composable filter criteria accepted by {@link queryJournal}.

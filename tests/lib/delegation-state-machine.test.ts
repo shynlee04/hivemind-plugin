@@ -14,7 +14,7 @@ import type { Delegation, DelegationStatus } from "../../src/shared/types.js"
 // Mocks — only I/O and SDK boundaries
 // ---------------------------------------------------------------------------
 
-vi.mock("../../src/lib/delegation-persistence.js", () => ({
+vi.mock("../../src/task-management/continuity/delegation-persistence.js", () => ({
   persistDelegations: vi.fn(),
 }))
 
@@ -634,7 +634,7 @@ describe("DelegationStateMachine", () => {
     })
 
     it("should return 0 and not persist when nothing to prune", async () => {
-      const delegationPersistence = await import("../../src/lib/delegation-persistence.js")
+      const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
       const mockPersist = delegationPersistence.persistDelegations as ReturnType<typeof vi.fn>
       mockPersist.mockClear()
       sm.registerDelegation(
@@ -673,7 +673,7 @@ describe("DelegationStateMachine", () => {
 
   describe("persistAll", () => {
     it("should call persistDelegations with current delegation values", async () => {
-      const delegationPersistence = await import("../../src/lib/delegation-persistence.js")
+      const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
       const mockPersist = delegationPersistence.persistDelegations as ReturnType<typeof vi.fn>
       mockPersist.mockClear()
 
@@ -688,7 +688,7 @@ describe("DelegationStateMachine", () => {
 
     it("should prune before persisting when over MAX_DELEGATIONS_BEFORE_PRUNE threshold", async () => {
       const types = await import("../../src/shared/types.js")
-      const delegationPersistence = await import("../../src/lib/delegation-persistence.js")
+      const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
       const MAX_DELEGATIONS_BEFORE_PRUNE = types.MAX_DELEGATIONS_BEFORE_PRUNE as number
       const mockPersist = delegationPersistence.persistDelegations as ReturnType<typeof vi.fn>
       mockPersist.mockClear()
