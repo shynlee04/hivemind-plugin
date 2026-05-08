@@ -180,7 +180,7 @@ jobs:
       - name: Verify oss-dev build
         if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
         run: |
-          npm ci
+          npm install
           npm run typecheck
           npm run build
           npm test
