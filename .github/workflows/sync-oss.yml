@@ -69,6 +69,12 @@ jobs:
             PATHS="$PATHS $dir/"
             echo "  ✅ $dir/ (auto-detected)"
           done
+
+          # Explicitly add .opencode
+          if [ -d ".opencode" ]; then
+            PATHS="$PATHS .opencode/"
+            echo "  ✅ .opencode/ (explicitly added)"
+          fi
           
           # Handle docs specially (only philosophy, guides, architecture)
           for docdir in docs/philosophy docs/guides docs/architecture; do
