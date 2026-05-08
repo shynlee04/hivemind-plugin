@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Current planning route: BOOT-02R reconciles BOOT-02 status truth before BOOT-03 automation resumes. CP-PTY-00 is the shell/PTY/background-command control-plane spike (docs/spec-only, COMPLETE). CP-PTY-01 (Background Shell Control-Plane MVP) is READY, unblocked by BOOT-07 completion. CP-PTY-02 (SDK Session Delegation), CP-PTY-03 (Agent/Subagent Coordination), and CP-PTY-04 (Cross-Cutting Integration) extend the runway. SC-PTY-01 (Read-Only Terminal Projection) remains DEFERRED.
+Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04 through SR-10 remediation (`882b0686`). `src/lib/` has been removed; runtime code now lives under `src/shared/`, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, `src/hooks/`, and `src/tools/`. CP-PTY-00 is the shell/PTY/background-command control-plane spike (docs/spec-only, COMPLETE). CP-PTY-01 (Background Shell Control-Plane MVP) is READY, unblocked by BOOT-07 and WS-SR completion. CP-PTY-02, CP-PTY-03, and CP-PTY-04 extend the runway. SC-PTY-01 remains DEFERRED.
 
 
 ## NON-NEGOTIABLE RULES
@@ -204,36 +204,17 @@ npm run test:coverage          # Coverage report (src/**/*.ts)
 src/
 ├── plugin.ts                  # Composition root
 ├── index.ts                   # Public API re-exports
-├── hooks/                     # Event hook factories
-├── tools/                     # Plugin tools
-│   ├── delegate-task.ts       # DelegationManager-backed delegation tool
-│   ├── delegation-status.ts   # Delegation status polling and result retrieval
-│   ├── prompt-skim/           # Prompt skimming tool
-│   ├── prompt-analyze/        # Prompt analysis tool
-│   └── session-patch/         # Session patching tool
-└── lib/                       # Core library modules
-    ├── types.ts               # Shared types + constants (leaf — no imports)
-    ├── task-status.ts         # Task status transitions + guards
-    ├── state.ts               # In-memory Maps (sessionStats, rootBudgets)
-    ├── helpers.ts             # Pure utilities only
-    ├── concurrency.ts         # Keyed semaphore (FIFO queue)
-    ├── continuity.ts          # Durable JSON persistence (~401 LOC)
-    ├── session-api.ts         # Typed OpenCode SDK wrappers
-    ├── runtime.ts             # Event→status mapping
-    ├── completion-detector.ts # Two-signal completion detection
-    ├── notification-handler.ts # Async completion notification
-    ├── lifecycle-manager.ts   # Session lifecycle state machine (~152 LOC, STUB)
-    ├── runtime-policy.ts      # Trusted runtime policy loading and resolution
-    ├── delegation-manager.ts  # Core delegation orchestrator
-    └── delegation-persistence.ts # Delegation record persistence helper
-shared/                      # Cross-cutting tool utilities
-    ├── tool-response.ts      # Standard tool response envelope
-    └── tool-helpers.ts       # Tool helper conventions
-schema-kernel/                # Zod schemas for prompt-enhance pipeline
-    ├── index.ts              # Schema re-exports
-    └── prompt-enhance.schema.ts  # Prompt skim/analyze/patch schemas
+├── shared/                    # Leaf utilities, types, SDK wrappers, runtime policy, security
+├── task-management/           # Continuity, journal, event tracker, recovery, trajectory, lifecycle
+├── coordination/              # Delegation, completion, concurrency, SDK/command delegation, spawner
+├── features/                  # Standalone runtime features: bootstrap, PTY/background command, doc intelligence, prompt packets, pressure, SDK supervisor, work contracts
+├── config/                    # Config subscriber/compiler/workflow
+├── routing/                   # Session entry, behavioral profile, command engine
+├── hooks/                     # Lifecycle, guards, observers, transforms, composition
+├── tools/                     # Delegation, session, config, hivemind, prompt tool entrypoints
+└── schema-kernel/             # Zod schemas and generated config schema support
 
-tests/lib/                     # Unit tests (vitest, globals: true)
+tests/lib/                     # Legacy test grouping for moved runtime modules
 tests/tools/                   # Tool-focused unit tests
 .opencode/                 # Soft meta-concepts (skills, agents, commands) — NO state storage
 .hivemind/               # Internal deep module state (journals, lineage, runtime state) — canonical per Q6
@@ -241,29 +222,29 @@ tests/tools/                   # Tool-focused unit tests
 
 ### Dependency rules (non-negotiable)
 
-- `types.ts` is leaf — depends on nothing
-- `helpers.ts`, `concurrency.ts`, `completion-detector.ts` — leaf or near-leaf
-- `lifecycle-manager.ts` depends on most modules (deepest chain: 2 levels)
+- `src/shared/types.ts` is leaf-like shared contract authority; avoid adding deep runtime imports without a source-backed decision
+- `src/shared/helpers.ts`, `src/coordination/concurrency/queue.ts`, `src/coordination/completion/detector.ts` — leaf or near-leaf
+- `src/task-management/lifecycle/index.ts` is the lifecycle manager surface
 - No circular dependencies
 - Max module size: 500 LOC
-- `delegation-persistence.ts` — depends on `types.ts`, `continuity.ts` (delegation record I/O)
+- `src/task-management/continuity/delegation-persistence.ts` — delegation record I/O
 
 ### Where to find things
 
 | Task | File |
 |------|------|
-| Change session persistence format | `src/lib/continuity.ts` |
-| Add a lifecycle phase | `src/lib/types.ts` + `src/lib/lifecycle-manager.ts` |
-| Change SDK call patterns | `src/lib/session-api.ts` |
-| Change concurrency model | `src/lib/concurrency.ts` |
-| Change delegation behavior | `src/lib/delegation-manager.ts` — DelegationManager class (WaiterModel dispatch, dual-signal completion) |
-| Change delegate-task tool | `src/tools/delegate-task.ts` — dispatch tool wrapper |
-| Check delegation status | `src/tools/delegation-status.ts` — status polling tool |
-| Change completion detection | `src/lib/completion-detector.ts` |
-| Change task status transitions | `src/lib/task-status.ts` |
+| Change session persistence format | `src/task-management/continuity/index.ts` |
+| Add a lifecycle phase | `src/shared/types.ts` + `src/task-management/lifecycle/index.ts` |
+| Change SDK call patterns | `src/shared/session-api.ts` |
+| Change concurrency model | `src/coordination/concurrency/queue.ts` |
+| Change delegation behavior | `src/coordination/delegation/manager.ts` — DelegationManager class (WaiterModel dispatch, dual-signal completion) |
+| Change delegate-task tool | `src/tools/delegation/delegate-task.ts` — dispatch tool wrapper |
+| Check delegation status | `src/tools/delegation/delegation-status.ts` — status polling tool |
+| Change completion detection | `src/coordination/completion/detector.ts` |
+| Change task status transitions | `src/shared/task-status.ts` |
 | Change agent config (temperature, tools) | `src/plugin.ts` — `AGENT_DEFAULTS`, `AGENT_TOOLS` |
 | Change circuit breaker / tool budget | `src/plugin.ts` — `CIRCUIT_BREAKER_THRESHOLD`, `MAX_TOOL_CALLS_PER_SESSION` |
-| Persist delegation records | `src/lib/delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
+| Persist delegation records | `src/task-management/continuity/delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
 | Change tool response envelope | `src/shared/tool-response.ts` — standard response wrapper |
 | Change prompt-enhance schemas | `src/schema-kernel/prompt-enhance.schema.ts` — Zod schemas for skim/analyze/patch |
 
