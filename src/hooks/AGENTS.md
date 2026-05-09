@@ -6,6 +6,8 @@
 
 `src/hooks/` is the Hard Harness read-side sector. Hook factories observe OpenCode lifecycle events, perform response shaping, make guard decisions, route events to runtime managers, and inject shell/system/message transformations without owning durable state mutation. Source evidence: `.planning/codebase/ARCHITECTURE.md:115-134`, `.planning/codebase/STRUCTURE.md:99-103`.
 
+Source architecture: `.planning/codebase/ARCHITECTURE.md:115-134` — CQRS read-side observers. Hooks MUST NOT perform durable writes; `assertHookWriteBoundary()` enforces this. `.opencode/` agents and commands may trigger hooks indirectly via OpenCode lifecycle events; hooks themselves are Hard Harness, not Soft Meta-Concepts.
+
 ## 2. Allowed mutation authority
 
 - Hooks may observe lifecycle events and pass facts to injected runtime dependencies. Evidence: `.planning/codebase/ARCHITECTURE.md:302-310`.

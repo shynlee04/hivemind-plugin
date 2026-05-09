@@ -4,7 +4,7 @@
 
 ## 1. Sector purpose and lifecycle role
 
-`src/config/` owns config compilation, subscription, and configuration workflow state machines. The compiler transforms workspace config into runtime policy; the subscriber observes config changes and notifies dependents; the workflow module manages turn-based OpenCode primitive configuration state. Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`, `.planning/codebase/STRUCTURE.md:110-112`.
+`src/config/` owns config compilation, subscription, and configuration workflow state machines. The compiler transforms workspace config into runtime policy; the subscriber observes config changes and notifies dependents; the workflow module manages turn-based OpenCode primitive configuration state. Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`, `.planning/codebase/STRUCTURE.md:110-112`. Classification: Hard Harness — config modules compile `.opencode/` Soft Meta-Concepts primitives into runtime policy within the npm package. `.opencode/` IS the config surface; `src/config/` IS the config compiler. Internal state persists to `.hivemind/`.
 
 ## 2. Allowed mutation authority
 

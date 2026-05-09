@@ -4,13 +4,14 @@
 
 ## 1. Sector purpose and lifecycle role
 
-`src/features/` owns standalone runtime feature modules that are neither routing, config, coordination, task-management, nor shared leaf utilities. Features include bootstrap (primitive loading and framework detection), background-command (PTY/headless execution), doc-intelligence (markdown parsing/chunking), prompt-packet (packet creation and compaction), runtime-pressure (pressure scoring and control-plane decisions), sdk-supervisor (read-only SDK diagnostics), and agent-work-contracts (durable contract creation/export). Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`, `.planning/codebase/STRUCTURE.md:110-112`.
+`src/features/` owns standalone runtime feature modules that are neither routing, config, coordination, task-management, nor shared leaf utilities. Features include bootstrap (primitive loading and framework detection), background-command (PTY/headless execution), doc-intelligence (markdown parsing/chunking), prompt-packet (packet creation and compaction), runtime-pressure (pressure scoring and control-plane decisions), sdk-supervisor (read-only SDK diagnostics), and agent-work-contracts (durable contract creation/export). Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`, `.planning/codebase/STRUCTURE.md:110-112`. Source-plane classification: Hard Harness — runtime features belong to `src/` (not `.opencode/`). Each feature is a dedicated npm-package module; `.opencode/` Soft Meta-Concepts configure features from outside the package boundary.
 
 ## 2. Allowed mutation authority
 
 - Feature modules may define and export typed public interfaces consumed by tools, hooks, and coordination modules.
 - Features may perform internal state computation (pressure scoring, profile resolution, document parsing) without durable writes.
 - Agent-work-contracts may write durable contract records through `.hivemind/` authority surfaces. Source evidence: `.planning/codebase/ARCHITECTURE.md:247-255`.
+- Features follow factory injection patterns ADAPTED from OMO (`.planning/research/omo-adaptation-architecture-2026-05-07.md`): typed dependencies are injected at composition time, not hidden globals.
 
 ## 3. Forbidden mutations / explicit no-go boundaries
 

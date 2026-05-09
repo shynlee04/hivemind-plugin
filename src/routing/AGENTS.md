@@ -4,7 +4,7 @@
 
 ## 1. Sector purpose and lifecycle role
 
-`src/routing/` owns session entry classification, behavioral profile resolution, command interpretation, and workflow route selection. Session-entry handles language, profile, and purpose classification at intake. Behavioral-profile resolves config-first profiles with lazy session cache invalidation. Command-engine discovers and renders bounded command contexts. Routing may classify and dispatch; it must not perform durable writes. Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`, `.planning/codebase/STRUCTURE.md:110-112`.
+`src/routing/` owns session entry classification, behavioral profile resolution, command interpretation, and workflow route selection. Session-entry handles language, profile, and purpose classification at intake. Behavioral-profile resolves config-first profiles with lazy session cache invalidation. Command-engine discovers and renders bounded command contexts. Routing may classify and dispatch; it must not perform durable writes. Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`, `.planning/codebase/STRUCTURE.md:110-112`. Classification: Hard Harness — read-side routing. Routing consumes `.opencode/` Soft Meta-Concepts (commands, agents) as classification inputs but does not mutate them. Internal state caches live in `.hivemind/`.
 
 ## 2. Allowed mutation authority
 
