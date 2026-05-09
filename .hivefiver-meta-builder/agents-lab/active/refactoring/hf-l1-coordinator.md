@@ -28,19 +28,19 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   webfetch: allow
   websearch: allow
   skill:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow

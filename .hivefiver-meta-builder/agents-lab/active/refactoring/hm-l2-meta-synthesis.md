@@ -6,7 +6,7 @@ depth: L2
 lineage: hm
 permission:
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

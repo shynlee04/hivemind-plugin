@@ -15,17 +15,17 @@ permission:
     node *: allow
     npx *: allow
   task:
-    '*': deny
+    '*': ask
   delegate-task: allow
   run-background-command: allow
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
   read:
-    '*': deny
+    '*': ask
     '*.md': allow
     '*.json': allow
   glob: allow

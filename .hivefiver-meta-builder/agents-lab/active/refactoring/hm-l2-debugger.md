@@ -23,17 +23,17 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
     hm-l2-investigator: allow
-  delegate-task: deny
-  delegation-status: deny
+  delegate-task: ask
+  delegation-status: ask
   run-background-command: allow
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
