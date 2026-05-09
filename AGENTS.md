@@ -38,64 +38,64 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 
 - When delegating to agents these are the list of agents that must learn and delegate to the correct ones. When delegate to subagents make sure setting up strict guardrails, boundaries, success metrics, making sure they are awared that they are subagents and fulfill the tasked within boundaries and without any deviation ans seriously go through gatekeeping.
 
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-advisor-hm-l2-researcher.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ai-hm-l2-researcher.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-assumptions-analyzer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-code-fixer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-code-reviewer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-codebase-mapper.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-debug-session-manager.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-debugger.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-classifier.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-synthesizer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-verifier.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-doc-writer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-domain-hm-l2-researcher.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-eval-auditor.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-eval-planner.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-executor.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-framework-selector.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-integration-checker.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-intel-updater.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-nyquist-auditor.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-pattern-mapper.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-phase-hm-l2-researcher.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-plan-checker.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-planner.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-project-hm-l2-researcher.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-research-synthesizer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-roadmapper.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-security-auditor.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-auditor.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-checker.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-ui-hm-l2-researcher.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-user-profiler.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/gsd-verifier.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-prompter.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-l2-agent-builder.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-l2-command-builder.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-l0-hm-l0-orchestrator.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-l2-skill-builder.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-l2-tool-builder.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hf-l2-meta-builder.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-intent-loop.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-meta-synthesis.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l0-orchestrator.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-phase-guardian.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-prompt-analyzer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-prompt-repackager.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-prompt-skimmer.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-researcher.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-risk-assessor.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-spec-verifier.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-context-mapper.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-context-purifier.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-build.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-conductor.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l1-coordinator.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-critic.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-general.md
-/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hm-l2-test-router.md
+.opencode/agents/gsd-advisor-hm-l2-researcher.md
+.opencode/agents/gsd-ai-hm-l2-researcher.md
+.opencode/agents/gsd-assumptions-analyzer.md
+.opencode/agents/gsd-code-fixer.md
+.opencode/agents/gsd-code-reviewer.md
+.opencode/agents/gsd-codebase-mapper.md
+.opencode/agents/gsd-debug-session-manager.md
+.opencode/agents/gsd-debugger.md
+.opencode/agents/gsd-doc-classifier.md
+.opencode/agents/gsd-doc-synthesizer.md
+.opencode/agents/gsd-doc-verifier.md
+.opencode/agents/gsd-doc-writer.md
+.opencode/agents/gsd-domain-hm-l2-researcher.md
+.opencode/agents/gsd-eval-auditor.md
+.opencode/agents/gsd-eval-planner.md
+.opencode/agents/gsd-executor.md
+.opencode/agents/gsd-framework-selector.md
+.opencode/agents/gsd-integration-checker.md
+.opencode/agents/gsd-intel-updater.md
+.opencode/agents/gsd-nyquist-auditor.md
+.opencode/agents/gsd-pattern-mapper.md
+.opencode/agents/gsd-phase-hm-l2-researcher.md
+.opencode/agents/gsd-plan-checker.md
+.opencode/agents/gsd-planner.md
+.opencode/agents/gsd-project-hm-l2-researcher.md
+.opencode/agents/gsd-research-synthesizer.md
+.opencode/agents/gsd-roadmapper.md
+.opencode/agents/gsd-security-auditor.md
+.opencode/agents/gsd-ui-auditor.md
+.opencode/agents/gsd-ui-checker.md
+.opencode/agents/gsd-ui-hm-l2-researcher.md
+.opencode/agents/gsd-user-profiler.md
+.opencode/agents/gsd-verifier.md
+.opencode/agents/hf-prompter.md
+.opencode/agents/hf-l2-agent-builder.md
+.opencode/agents/hf-l2-command-builder.md
+.opencode/agents/hf-l0-hm-l0-orchestrator.md
+.opencode/agents/hf-l2-skill-builder.md
+.opencode/agents/hf-l2-tool-builder.md
+.opencode/agents/hf-l2-meta-builder.md
+.opencode/agents/hm-l2-intent-loop.md
+.opencode/agents/hm-l2-meta-synthesis.md
+.opencode/agents/hm-l0-orchestrator.md
+.opencode/agents/hm-l2-phase-guardian.md
+.opencode/agents/hm-l2-prompt-analyzer.md
+.opencode/agents/hm-l2-prompt-repackager.md
+.opencode/agents/hm-l2-prompt-skimmer.md
+.opencode/agents/hm-l2-researcher.md
+.opencode/agents/hm-l2-risk-assessor.md
+.opencode/agents/hm-l2-spec-verifier.md
+.opencode/agents/hm-l2-context-mapper.md
+.opencode/agents/hm-l2-context-purifier.md
+.opencode/agents/hm-l2-build.md
+.opencode/agents/hm-l2-conductor.md
+.opencode/agents/hm-l1-coordinator.md
+.opencode/agents/hm-l2-critic.md
+.opencode/agents/hm-l2-general.md
+.opencode/agents/hm-l2-test-router.md
 <!-- NOTE: explore agent is MISSING from the filesystem -->
 
 - For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
@@ -264,7 +264,7 @@ tests/tools/                   # Tool-focused unit tests
 - Run tests matching pattern: `npx vitest run -t "<test name>"`
 - Watch mode: `npm run test:watch`
 - Coverage: `npm run test:coverage` — covers `src/**/*.ts`, excludes `src/index.ts`
-- Test files live in `tests/lib/` and `tests/tools/` — mirror `src/lib/` and `src/tools/`
+- Test files live in `tests/lib/` and `tests/tools/` — mirror `src/` modules and `src/tools/`
 - Tests use vitest globals (no imports needed for `describe`, `it`, `expect`)
 - **Type-check before committing:** `npm run typecheck`
 
