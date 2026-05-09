@@ -26,9 +26,9 @@ Hivefiver is the **hm-meta-builder module** of the HiveMind Framework. It create
 ### Testing → Shipping Pipeline
 
 ```
-.hivefiver-hm-meta-builder/**-lab/  ← Source of truth (edit here)
+.hivefiver-meta-builder/**-lab/  ← Source of truth (edit here)
         ↓ symlinks
-.opencode/{agents,commands,skills,hivefiver}/  ← Live testing (OpenCode reads here)
+.opencode/{agents,commands,skills}/  ← Live testing (OpenCode reads here)
         ↓ when validated
 TS runtime builder (opencode-harness npm package)  ← Final shipping format
 ```
@@ -38,7 +38,7 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 ## Lab Structure
 
 ```
-.hivefiver-hm-meta-builder/
+.hivefiver-meta-builder/
 ├── agents-lab/active/refactoring/     ← Agent definitions (source of truth)
 ├── commands-lab/active/refactoring/   ← Command definitions (source of truth)
 ├── skills-lab/active/refactoring/     ← Skill packages (source of truth)
@@ -48,17 +48,17 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 └── orchestrator/                      ← Coordinator definitions
 ```
 
-### Symlinks (`.opencode/` → labs)
+### Lab → `.opencode/` Sync
 
-| `.opencode/` path | → Lab directory |
+The `.opencode/` directories (`agents/`, `commands/`, `skills/`) are **standalone directories** — they contain real files, not symlinks. Changes in labs must be copied/synced to `.opencode/` for live testing.
+
+| `.opencode/` path | Source in lab |
 |---|---|
-| `.opencode/agents/` | `../.hivefiver-hm-meta-builder/agents-lab/active/refactoring/` |
-| `.opencode/commands/` | `../.hivefiver-hm-meta-builder/commands-lab/active/refactoring/` |
-| `.opencode/skills/` | `../.hivefiver-hm-meta-builder/skills-lab/active/refactoring/` |
-| `.opencode/hivefiver/workflows/` | `../../.hivefiver-hm-meta-builder/workflows-lab/active/refactoring/` |
-| `.opencode/hivefiver/references/` | `../../.hivefiver-hm-meta-builder/references-lab/active/refactoring/` |
+| `.opencode/agents/` | `.hivefiver-meta-builder/agents-lab/active/refactoring/` |
+| `.opencode/commands/` | `.hivefiver-meta-builder/commands-lab/active/refactoring/` |
+| `.opencode/skills/` | `.hivefiver-meta-builder/skills-lab/active/refactoring/` |
 
-**Edit in labs → instantly visible via `.opencode/` symlinks for live testing.**
+**Edit in labs → sync to `.opencode/` for live testing.**
 
 ---
 
@@ -68,37 +68,37 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 
 | Agent | File | Role |
 |-------|------|------|
-| **hivefiver-orchestrator** | `agents-lab/active/refactoring/hivefiver-orchestrator.md` | Meta-builder routing brain. Receives requests → classifies intent → delegates to specialists → two-stage review → reports. |
-| **coordinator** | `agents-lab/active/refactoring/coordinator.md` | Interactive orchestrator. Task management, delegation, parallel execution. |
-| **conductor** | `agents-lab/active/refactoring/conductor.md` | Command execution workhorse. Intent classification, wisdom system, delegate-task routing. |
+| **hf-l0-orchestrator** | `.opencode/agents/hf-l0-orchestrator.md` | Meta-builder routing brain. Receives requests → classifies intent → delegates to specialists → two-stage review → reports. |
+| **hf-l1-coordinator** | `.opencode/agents/hf-l1-coordinator.md` | Interactive orchestrator. Task management, delegation, parallel execution. |
+| **hm-l2-conductor** | `.opencode/agents/hm-l2-conductor.md` | Command execution workhorse. Intent classification, wisdom system, delegate-task routing. |
 
 ### Tier 2: Specialist Subagents (dispatched by primaries)
 
 | Agent | File | Role |
 |-------|------|------|
-| **hivefiver-skill-author** | `agents-lab/active/refactoring/hivefiver-skill-author.md` | Creates/audits/repairs skills. Enforces agentskills.io principles. |
-| **hivefiver-agent-builder** | `agents-lab/active/refactoring/hivefiver-agent-builder.md` | Creates/audits/repairs agent definitions. Explicit permissions, execution flows. |
-| **hivefiver-command-builder** | `agents-lab/active/refactoring/hivefiver-command-builder.md` | Creates/audits/repairs commands. Non-interactive shell safety, $ARGUMENTS, !bash. |
-| **builder** | `agents-lab/active/refactoring/builder.md` | Atomic code implementation. Reads before writes, follows patterns. |
-| **critic** | `agents-lab/active/refactoring/critic.md` | Quality verification. Ruthless review, correctness validation. |
-| **researcher** | `agents-lab/active/refactoring/researcher.md` | Deep investigation. Evidence collection, pattern discovery. |
+| **hf-l2-skill-builder** | `.opencode/agents/hf-l2-skill-builder.md` | Creates/audits/repairs skills. Enforces agentskills.io principles. |
+| **hf-l2-agent-builder** | `.opencode/agents/hf-l2-agent-builder.md` | Creates/audits/repairs agent definitions. Explicit permissions, execution flows. |
+| **hf-l2-command-builder** | `.opencode/agents/hf-l2-command-builder.md` | Creates/audits/repairs commands. Non-interactive shell safety, $ARGUMENTS, !bash. |
+| **hm-l2-executor** | `.opencode/agents/hm-l2-executor.md` | Atomic code implementation. Reads before writes, follows patterns. |
+| **hm-l2-critic** | `.opencode/agents/hm-l2-critic.md` | Quality verification. Ruthless review, correctness validation. |
+| **hm-l2-researcher** | `.opencode/agents/hm-l2-researcher.md` | Deep investigation. Evidence collection, pattern discovery. |
 
 ### Tier 3: Fast Subagents
 
 | Agent | File | Role |
 |-------|------|------|
-| **explore** | `agents-lab/active/refactoring/explore.md` | Fast codebase scan. Lightweight, high-throughput. |
+| **explore** | ⚠️ MISSING from filesystem | Fast codebase scan. Lightweight, high-throughput. **Note:** No `explore.md` exists in `.opencode/agents/`. May need to be created or this row removed. |
 
 ### Tier 4: Prompt-Enhance Lane Agents
 
 | Agent | File | Role |
 |-------|------|------|
-| **prompt-skimmer** | `agents-lab/active/refactoring/prompt-skimmer.md` | Phase 0 skim for prompt-enhancement routing. |
-| **prompt-analyzer** | `agents-lab/active/refactoring/prompt-analyzer.md` | Deep text-quality lane for prompts. |
-| **context-mapper** | `agents-lab/active/refactoring/context-mapper.md` | Grounds prompt references in repo reality. |
-| **risk-assessor** | `agents-lab/active/refactoring/risk-assessor.md` | Flags destructive, security, and scope risks. |
-| **context-purifier** | `agents-lab/active/refactoring/context-purifier.md` | Distills noisy prompts without changing intent. |
-| **prompt-repackager** | `agents-lab/active/refactoring/prompt-repackager.md` | Produces the final YAML+XML enhanced prompt payload. |
+| **hm-l2-prompt-skimmer** | `.opencode/agents/hm-l2-prompt-skimmer.md` | Phase 0 skim for prompt-enhancement routing. |
+| **hm-l2-prompt-analyzer** | `.opencode/agents/hm-l2-prompt-analyzer.md` | Deep text-quality lane for prompts. |
+| **hm-l2-context-mapper** | `.opencode/agents/hm-l2-context-mapper.md` | Grounds prompt references in repo reality. |
+| **hm-l2-risk-assessor** | `.opencode/agents/hm-l2-risk-assessor.md` | Flags destructive, security, and scope risks. |
+| **hm-l2-context-purifier** | `.opencode/agents/hm-l2-context-purifier.md` | Distills noisy prompts without changing intent. |
+| **hm-l2-prompt-repackager** | `.opencode/agents/hm-l2-prompt-repackager.md` | Produces the final YAML+XML enhanced prompt payload. |
 
 ---
 
@@ -108,20 +108,20 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 
 | Command | Agent | Purpose |
 |---------|-------|---------|
-| `/hf-create` | hivefiver-orchestrator | Create skill/agent/command/tool via specialist routing |
-| `/hf-audit` | hivefiver-orchestrator | Audit meta-concepts for quality, overlaps, dead refs |
-| `/hf-stack` | hivefiver-orchestrator | Stack 2-3 skills with loading order validation |
-| `/hf-prompt-enhance` | hivefiver-orchestrator | Enhance, audit, or repack prompts via skim → bridge → lanes → assembly |
+| `/hf-create` | hf-l0-orchestrator | Create skill/agent/command/tool via specialist routing |
+| `/hf-audit` | hf-l0-orchestrator | Audit meta-concepts for quality, overlaps, dead refs |
+| `/hf-stack` | hf-l0-orchestrator | Stack 2-3 skills with loading order validation |
+| `/hf-prompt-enhance` | hf-l0-orchestrator | Enhance, audit, or repack prompts via skim → bridge → lanes → assembly |
 
 ### Existing Commands (updated)
 
 | Command | Agent | Status |
 |---------|-------|--------|
-| `/start-work` | conductor | Updated with $ARGUMENTS, bash injection, skill loading |
-| `/plan` | coordinator | Updated with $ARGUMENTS, bash injection |
-| `/ultrawork` | conductor | Updated with bash injection, skill loading |
-| `/deep-init` | coordinator | Keep as-is |
-| `/harness-doctor` | coordinator | Keep as-is |
+| `/start-work` | hm-l2-conductor | Updated with $ARGUMENTS, bash injection, skill loading |
+| `/plan` | hm-l1-coordinator | Updated with $ARGUMENTS, bash injection |
+| `/ultrawork` | hm-l2-conductor | Updated with bash injection, skill loading |
+| `/deep-init` | hm-l1-coordinator | Keep as-is |
+| `/harness-doctor` | hm-l1-coordinator | Keep as-is |
 
 ---
 
@@ -204,8 +204,8 @@ Task tool (<specialist>):
 
 ## Testing Workflow
 
-1. **Edit in labs** — `.hivefiver-hm-meta-builder/**-lab/active/refactoring/`
-2. **Test via symlinks** — `.opencode/` resolves to lab directories
+1. **Edit in labs** — `.hivefiver-meta-builder/**-lab/active/refactoring/`
+2. **Test via sync** — `.opencode/` directories contain live copies
 3. **Validate** — Run OpenCode commands, verify agents load, check skill triggers
 4. **Commit** — Changes in labs are committed to git
 5. **Ship** — When validated, pack into TS runtime builder
@@ -219,5 +219,5 @@ If interrupted:
 2. `cd` to the right worktree
 3. `git status` — see what was in progress
 4. `git log --oneline -5` — see recent commits
-5. Read `.hivefiver-hm-meta-builder/plans/` for current plans
+5. Read `.hivefiver-meta-builder/plans/` for current plans
 6. Resume from where you left off
