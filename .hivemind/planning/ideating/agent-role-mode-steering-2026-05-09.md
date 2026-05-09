@@ -52,3 +52,6 @@ role and current hierarchy,steps, tasks of the on-going , constitutions, po with
 - becareful when using method related to sessions and messages, and paths ->>> NECAUSE sessions are main and sub - these sessions are with id but do not mistake them with the other id which are also recorded with tools, message parts etc
 
 - must allow extensions and comply to architecture - meaning allowing configuration with registry of schema and interfaces which need to comply toward both Hivemind and Opencode
+
+
+with this as team-b research and recommendation as references to pick the worth learning point >>>> '/Users/apple/hivemind-plugin-private/.hivemind/planning/team-b-references/session-ses_1f2e-another-team-work-toward-agent-role-steering-reccomendation.md' >>> make a master plan that honor 
