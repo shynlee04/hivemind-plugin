@@ -25,7 +25,7 @@
 |---|---|---|
 | Agents and commands | Invoke tool contracts during workflows | Must pass schema-valid inputs |
 | `src/plugin.ts` | Registers tool definitions with OpenCode | Does not embed tool business logic |
-| `src/lib/` owners | Perform durable state, lifecycle, SDK, and orchestration logic | Tools call them; tools do not duplicate deep logic |
+| `src/task-management/`, `src/coordination/`, `src/features/` owners | Perform durable state, lifecycle, SDK, and orchestration logic | Tools call them; tools do not duplicate deep logic |
 | `src/shared/` | Provides response envelope rendering | Shared stays leaf |
 | Tests/gates | Verify validation, outputs, and side effects | Integration claims require integration evidence |
 

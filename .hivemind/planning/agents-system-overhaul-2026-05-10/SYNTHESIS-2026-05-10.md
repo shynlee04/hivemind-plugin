@@ -33,8 +33,11 @@ Two investigations — a deep lifecycle research report and a cross-lineage audi
 1. **gate-\* skills are project-internal governance** — hand-authored quality gates specific to this Hivemind plugin project, NOT portable to user projects.
 2. **stack-\* skills are project-specific reference packs** — curated tech stack references for THIS project's dependencies. User projects would need different stack-\* skills.
 3. **Shipped primitive count is 49** (35 hm-\* + 13 hf-\* + 1 opencode-config-workflow), NOT 58.
-4. **hf-l0-orchestrator agent file is MISSING** from `.opencode/agents/` — a blocking defect for the entire hf-\* command chain.
+4. **hf-l0-orchestrator agent file EXISTS** — previously reported MISSING; confirmed at 19,410 bytes (2026-05-09 19:48). Original RESEARCH glob error. See STATE-2026-05-10.md §1.
 5. **Zero delegation boundary violations** — the hm↔hf delegation rules are clean; conflicts are in metadata, not architecture.
+6. **Delegation loop coverage is 87.5%** — 49 of 56 agents reachable from L0; 21 delegation gaps; 4 blocking agents. Source: MATRIX.
+7. **45 gaps across all primitives** — 14 P0, 12 P1, 10 P2, 9 P3. 15 agents have zero skills (27% of fleet). Source: GAPS.
+8. **5 broken command→agent→skill chains** — commands that reference agents which reference skills that don't exist. 6 referenced commands are missing entirely. Source: LIFECYCLE.
 
 ---
 
@@ -124,7 +127,7 @@ From AUDIT-cross-lineage-2026-05-10.md: **75 total conflicts (11 CRITICAL, 41 HI
 | 2 | B1-1..3 | 3 L2 agents with `mode: primary` — should be subagent | CRITICAL | Change to `mode: subagent` | Hierarchy violation |
 | 3 | A1 | hf-l2-meta-builder name collision (agent AND skill) | CRITICAL | Rename one (suggest: skill → hf-l2-meta-builder-core) | Runtime namespace ambiguity |
 | 4 | B5-1 | hm-l2-build has `skill: allow` outside permission block | CRITICAL | Move inside `permission:` block | Permission ignored |
-| 5 | RESEARCH-3 | hf-l0-orchestrator agent file MISSING from disk | CRITICAL | Create or fix command references | ALL 7 hf-\* commands broken |
+| 5 | ~~RESEARCH-3~~ | ~~hf-l0-orchestrator agent file MISSING~~ — **INVALIDATED**: File exists (19,410 bytes). No action needed. | ~~CRITICAL~~ → **CLOSED** | None required | N/A — file exists |
 | 6 | B2-8 | hm-l2-meta-synthesis: MINIMAL SHELL (missing 6 fields) | CRITICAL | Complete all frontmatter fields | Agent is non-functional |
 | 7 | B2-9 | hm-l2-general: MINIMAL SHELL (missing 5 fields) | CRITICAL | Complete all frontmatter fields | Agent is non-functional |
 | 8 | B2-10 | hm-l2-test-router: MINIMAL SHELL (missing 8 fields) | CRITICAL | Complete all frontmatter fields | Agent is non-functional |
@@ -135,8 +138,8 @@ From AUDIT-cross-lineage-2026-05-10.md: **75 total conflicts (11 CRITICAL, 41 HI
 ### Resolution Dependencies
 
 ```
-#5 (hf-l0-orchestrator MISSING) ← BLOCKS all hf-* commands
-  └── Must be resolved BEFORE PH-07 (command validation) can verify hf-* commands
+#5 (hf-l0-orchestrator) ← CLOSED 2026-05-10: File exists. No longer blocking.
+  └── PH-07 (command validation) can proceed without creating this file
 
 #1 (instructions: plural) ← INDEPENDENT, mechanical fix
 #2 (mode: primary) ← DEPENDS on #1 (agents must be fixed before mode change)
@@ -240,7 +243,7 @@ The `l3` designation is architecturally correct because:
 | hf-\* agents | 11 |
 | **Total Shipped** | **56** |
 
-Note: hf-l0-orchestrator is counted but the agent FILE IS MISSING from disk. The count reflects intended state, not filesystem reality.
+Note: hf-l0-orchestrator is confirmed to exist on disk at 19,410 bytes. The count reflects both intended state and filesystem reality.
 
 ---
 
@@ -269,13 +272,17 @@ Note: hf-l0-orchestrator is counted but the agent FILE IS MISSING from disk. The
 
 **Shipped count:** Counted as 0 shipped (project-specific content). The CONCEPT of stack-\* skills ships, but the current 6 instances do not.
 
-### AD-03: hf-l0-orchestrator Missing File
+### AD-03: hf-l0-orchestrator — Previously Reported Missing (CLOSED)
 
-**Decision:** This is a CRITICAL blocking defect. 7 hf-\* commands route to this agent but the file doesn't exist.
+**Decision:** This was a FALSE ALARM. The file exists at `.opencode/agents/hf-l0-orchestrator.md` (19,410 bytes, modified 2026-05-09 19:48).
 
-**Impact:** harness-audit, hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-stack — all broken at entry point.
+**Original claim:** RESEARCH §Q3 reported "glob returned no files found."
 
-**Resolution:** Create the agent file OR update commands to route through an existing agent. Must be resolved before any hf-\* command testing.
+**Correction:** The glob was likely executed with incorrect path resolution. LIFECYCLE investigation confirmed existence. AUDIT §C3 also correctly showed hf-l0-orchestrator as "Yes" (exists).
+
+**Impact:** No remediation needed. All 7 hf-* commands route to an existing agent file.
+
+**Previous impact claim (now invalid):** "harness-audit, hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-stack — all broken at entry point." — This claim was incorrect.
 
 ### AD-04: Naming Collision hf-l2-meta-builder
 
@@ -291,7 +298,7 @@ Note: hf-l0-orchestrator is counted but the agent FILE IS MISSING from disk. The
 
 2. **No gate-\* portability strategy.** If gate-\* are project-internal, what quality governance do user projects get? Should hf-\* generate generic gate triads per project?
 
-3. **hf-l0-orchestrator file missing.** Commands reference it but file doesn't exist. Unknown if it was deleted accidentally or never created.
+3. **hf-l0-orchestrator file exists.** Originally reported missing; confirmed at 19,410 bytes. The RESEARCH glob error has been traced. No action needed.
 
 4. **75 conflicts remediation priority.** Audit found 75 conflicts but remediation order and batch size need planning.
 

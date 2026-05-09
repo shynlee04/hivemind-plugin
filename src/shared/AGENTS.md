@@ -16,7 +16,7 @@
 
 - Shared utilities SHALL NOT import from tools, hooks, plugin, or deep state owners; this sector must remain leaf-like.
 - Shared utilities SHALL NOT perform durable writes, SDK calls, event handling, command execution, or runtime policy loading.
-- Shared utilities SHALL NOT become a dumping ground for feature logic; put business logic in `src/lib/` or the owning tool.
+- Shared utilities SHALL NOT become a dumping ground for feature logic; put business logic in `src/task-management/`, `src/coordination/`, `src/features/`, or the owning tool.
 
 ## 4. Actors and consumers
 

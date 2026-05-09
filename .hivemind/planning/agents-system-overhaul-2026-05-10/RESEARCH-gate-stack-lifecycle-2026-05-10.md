@@ -325,7 +325,7 @@ The count would be: 35 hm-* + 13 hf-* + 1 opencode-config-workflow = **49 shippe
 
 2. **No gate-* portability strategy.** If gate-* skills are project-internal, what quality governance do USER projects get? Is there a "generic gate triad" that should be generated for each project?
 
-3. **hf-l0-orchestrator agent file is MISSING from disk.** The glob for `.opencode/agents/hf-l0*.md` returned "No files found." The commands reference `agent: hf-l0-orchestrator` but the agent definition file doesn't exist in `.opencode/agents/`. This is a critical gap — the hf command chain has a broken entry point.
+3. **~~hf-l0-orchestrator agent file is MISSING from disk.~~** **CORRECTION 2026-05-10:** The original glob `glob(.opencode/agents/hf-l0*.md)` returned "No files found" — this was a path resolution error. The file exists at `.opencode/agents/hf-l0-orchestrator.md` (19,410 bytes, modified 2026-05-09 19:48). The AUDIT document correctly confirmed existence. See STATE-2026-05-10.md §1. This gap is CLOSED.
 
 4. **No documented workflow for gate-* → user-project generation.** The SKELETON question K.8 asks about this but provides no answer.
 
@@ -339,7 +339,7 @@ The count would be: 35 hm-* + 13 hf-* + 1 opencode-config-workflow = **49 shippe
 
 3. **Create gate-* generation workflow (optional).** If user projects need quality gates, create a generic gate triad template that hf-* can instantiate per project.
 
-4. **Fix missing hf-l0-orchestrator agent file.** The hf-* command chain depends on this agent but the file is missing from `.opencode/agents/`. This is a blocking defect.
+4. **~~Fix missing hf-l0-orchestrator agent file.~~** **CLOSED 2026-05-10:** File exists at 19,410 bytes. No fix needed. The original glob error has been documented.
 
 5. **Keep gate-*/stack-* naming as-is.** The l3 designation is architecturally correct (loaded by L2 agents). The prefix communicates purpose (governance vs reference). No renaming needed.
 
@@ -359,7 +359,7 @@ The count would be: 35 hm-* + 13 hf-* + 1 opencode-config-workflow = **49 shippe
 | 4 | stack-l3-nextjs says "Auto-generated" | `.opencode/skills/stack-l3-nextjs/SKILL.md:28` |
 | 5 | stack-* are version-pinned reference packs | `stack-l3-opencode/SKILL.md:39`, `stack-l3-zod/SKILL.md:115` |
 | 6 | hf-create routes to hf-l0-orchestrator | `.opencode/commands/hf-create.md:3` |
-| 7 | hf-l0-orchestrator agent file MISSING | `glob(.opencode/agents/hf-l0*.md)` → "No files found" |
+| 7 | ~~hf-l0-orchestrator agent file MISSING~~ | ~~`glob(.opencode/agents/hf-l0*.md)` → "No files found"~~ — **CORRECTED:** File exists (19,410 bytes). Glob was path resolution error. |
 | 8 | Bootstrap only scans, never generates | `src/features/bootstrap/primitive-loader.ts:67-95` |
 | 9 | Bootstrap scans all skills without lineage filter | `src/features/bootstrap/primitive-scanners.ts:100-118` |
 | 10 | SKELETON marks gate-* as "THIS PROJECT ONLY" | `SKELETON-2026-05-10.md:27` |

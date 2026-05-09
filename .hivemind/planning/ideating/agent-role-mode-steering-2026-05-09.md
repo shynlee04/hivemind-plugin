@@ -55,3 +55,8 @@ role and current hierarchy,steps, tasks of the on-going , constitutions, po with
 
 
 with this as team-b research and recommendation as references to pick the worth learning point >>>> '/Users/apple/hivemind-plugin-private/.hivemind/planning/team-b-references/session-ses_1f2e-another-team-work-toward-agent-role-steering-reccomendation.md' >>> make a master plan that honor 
+
+
+- ANY PAST REFERENCES, AND DOCUMENTATIONS BEFORE THIS ARE NON-TRUSTED, ALL MUST BE CAREFULLY SYNTHESIZE AND PULLED FROM VALID RESOURCES ONLINE NOT TRUSTING EVEN AGENTS.md unless date-time and diff of sections are validated of up-to-date
+
+- THESE  WORK HARMONIZELY WITH THE END-USERS' PROJECT SPECIFIC ->>> so any implementation toward this-project specific and expecting they are the runtime-default is all wrong (THE MODIFICATION OF AGENTS.md is one example, we can only do so with this project as development environment, the same AGENTS.md at end-users space is not what we are governing., similar to .opencode/** or any non-defined schema and fileds)

@@ -4,7 +4,6 @@ description: 'Quality verification agent. Ruthless code review, correctness vali
 mode: subagent
 depth: L2
 lineage: hm
-model: opencode-go/kimi-k2.6
 temperature: 0.05
 instructions:
   - .opencode/rules/anti-patterns.md

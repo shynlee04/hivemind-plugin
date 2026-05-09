@@ -6,6 +6,8 @@
 
 **Scope:** 56 agents (45 hm-* + 11 hf-*), 57 skills (35 hm + 13 hf + 3 gate + 6 stack), 18 commands
 
+> **CORRECTION NOTE 2026-05-10:** This audit correctly identified hf-l0-orchestrator as existing in §C3 (all command→agent references resolved to "Yes"). Other documents (RESEARCH, SYNTHESIS, SKELETON) incorrectly reported this file as MISSING. The file exists at `.opencode/agents/hf-l0-orchestrator.md` (19,410 bytes). See STATE-2026-05-10.md §1.
+
 **Sources:**
 - `.opencode/agents/hm-*.md` (45 files)
 - `.opencode/agents/hf-*.md` (11 files)

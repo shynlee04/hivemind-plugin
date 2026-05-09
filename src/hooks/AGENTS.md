@@ -25,7 +25,7 @@
 |---|---|---|
 | `src/plugin.ts` | Instantiates hook factories and spread-merges hook return objects | Keeps assembly logic only |
 | OpenCode runtime | Emits session, message, tool, shell, and compaction events | Hooks observe and respond through supported surfaces |
-| `src/lib/lifecycle-manager.ts` and related deps | Receive routed event facts | Owns lifecycle/state logic, not hook files |
+| `src/task-management/lifecycle/` and related deps | Receive routed event facts | Owns lifecycle/state logic, not hook files |
 | Tests | Validate hook behavior and CQRS boundary behavior | Must not treat mocked hook calls as full integration proof |
 
 ## 5. Naming and placement conventions
