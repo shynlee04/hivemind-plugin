@@ -8,7 +8,7 @@
 
 ## 2. Allowed mutation authority
 
-- Typed runtime owners in `src/lib/` may write their assigned state files through approved persistence modules. Evidence: `.planning/codebase/ARCHITECTURE.md:311-315`, `.planning/codebase/ARCHITECTURE.md:405-411`.
+- Typed runtime owners in `src/task-management/`, `src/coordination/`, and `src/features/` may write their assigned state files through approved persistence modules. Evidence: `.planning/codebase/ARCHITECTURE.md:311-315`, `.planning/codebase/ARCHITECTURE.md:405-411`.
 - Tools may trigger state mutations through library owners when the tool contract permits mutation. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
 - Event tracker artifacts may be best-effort hook-driven outputs only when routed through library/event-tracker owners; they must not block canonical handling. Evidence: `.planning/codebase/ARCHITECTURE.md:302-315`, `.planning/codebase/ARCHITECTURE.md:388-392`.
 
@@ -23,8 +23,8 @@
 
 | Actor / consumer | Uses this sector for | Boundary |
 |---|---|---|
-| `src/lib/continuity.ts` | Owns session continuity JSON persistence | Must deep-clone/normalize/quarantine through code owners |
-| `src/lib/delegation-persistence.ts` | Owns delegation record I/O | Tools/managers call the owner, not raw edits |
+| `src/task-management/continuity/` | Owns session continuity JSON persistence | Must deep-clone/normalize/quarantine through code owners |
+| `src/task-management/continuity/delegation-persistence.ts` | Owns delegation record I/O | Tools/managers call the owner, not raw edits |
 | Event tracker/session journal/lineage modules | Produce audit and timeline artifacts | Best-effort artifacts are not completion proof by themselves |
 | Sidecar/planning readers | May read canonical artifacts | Read-only consumers must not mutate state |
 | Recovery workflows | Assess and repair state under authorization | Must preserve evidence and avoid manual drift |

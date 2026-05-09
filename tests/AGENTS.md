@@ -31,7 +31,7 @@
 ## 5. Naming and placement conventions
 
 - Test files mirror source names with `.test.ts` suffix. Evidence: `.planning/codebase/TESTING.md:66-69`, `.planning/codebase/STRUCTURE.md:186-195`.
-- Test directories mirror source sectors: `tests/lib/` → `src/lib/`, `tests/tools/` → `src/tools/`, `tests/hooks/` → `src/hooks/`, `tests/schema-kernel/` → `src/schema-kernel/`. Evidence: `.planning/codebase/TESTING.md:52-64`.
+- Test directories mirror source sectors: `tests/lib/` → `src/` runtime modules, `tests/tools/` → `src/tools/`, `tests/hooks/` → `src/hooks/`, `tests/schema-kernel/` → `src/schema-kernel/`. Evidence: `.planning/codebase/TESTING.md:52-64`.
 - Use descriptive lowercase `it()` names and one behavior per test. Evidence: `.planning/codebase/TESTING.md:104-110`.
 
 ## 6. Quality gates and evidence expectations
