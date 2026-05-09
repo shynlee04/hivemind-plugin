@@ -1,11 +1,11 @@
 # Table of Contents — OpenCode SDK + Plugin Stack
 
-> Version 1.14.28 | Source: [sst/opencode](https://github.com/sst/opencode)
+> Version 1.14.44 | Source: [anomalyco/opencode](https://github.com/anomalyco/opencode)
 
 ## Package Structure
 
 ```
-sst/opencode/
+anomalyco/opencode/
 ├── packages/
 │   ├── plugin/              @opencode-ai/plugin
 │   │   ├── src/
@@ -15,7 +15,7 @@ sst/opencode/
 │   │   │   ├── tui.ts       ← TUI plugin API: TuiPluginApi, TuiApp, TuiCommand, etc.
 │   │   │   ├── example.ts   ← Minimal example plugin
 │   │   │   └── example-workspace.ts ← Workspace adaptor example
-│   │   └── package.json     ← v1.14.28, exports: ".", "./tool", "./tui"
+│   │   └── package.json     ← v1.14.44, exports: ".", "./tool", "./tui"
 │   └── sdk/
 │       └── js/              @opencode-ai/sdk
 │           ├── src/
@@ -35,7 +35,7 @@ sst/opencode/
 │           │       ├── server.ts
 │           │       ├── data.ts
 │           │       └── gen/           ← Generated v2 SDK
-│           └── package.json     ← v1.14.28, exports: ".", "./client", "./server", "./v2", "./v2/client"
+│           └── package.json     ← v1.14.44, exports: ".", "./client", "./server", "./v2", "./v2/client"
 ```
 
 ## Expert Knowledge (BEYOND-DOCS)
@@ -47,6 +47,21 @@ These files contain knowledge extracted from source code that is NOT in official
 | [Expert: Hook Composition](references/expert/hook-composition.md) | Multi-plugin ordering, output mutation, event types (32-40+), compaction flow, permission override, env injection | No priority system; last-write-wins; event hook receives ALL events; compaction has overflow flag |
 | [Expert: Tool Internals](references/expert/tool-internals.md) | tool() zero-validation, Zod→JSON Schema failures, ToolResult shape, context.ask() returns Effect, ToolState machine, abort cooperative | tool() is identity function; z.transform/refine/lazy silently break; ask() is NOT awaitable |
 | [Expert: Client-Server](references/expert/client-server.md) | SSE event bus, session lifecycle, prompt_async, part mutations, v1 vs v2 differences, HTTP endpoints | 3 session states (no completed); SSE for events; v2 adds workspace isolation |
+
+## Cross-Cutting References (NEW in v1.14.44 rebuild)
+
+| File | Topics | Purpose |
+|------|--------|---------|
+| [Pipeline Patterns](references/pipeline-patterns.md) | Skill composition in dev workflows, pipeline diagrams, loading order | Maps how stack-opencode composes with sibling skills |
+| [Stack Chains](references/stack-chains.md) | Dependency graph between stack-* skills, version compatibility | Defines loading order and dependency rules |
+| [Department Bundles](references/department-bundles.md) | Role-based bundles for Plugin Dev, Infra, TUI, Gate Audit, IDE Integration | Role-optimized loading to minimize context cost |
+
+## New API References (v1.14.44)
+
+| File | Topics | Purpose |
+|------|--------|---------|
+| [API: ACP](references/api/acp.md) | Agent Client Protocol, JSON-RPC over stdio, session/fork/prompt methods, IDE integration | Building IDE plugins (Zed, VS Code), ACP agent implementation |
+| [API: TUI v2](references/api/tui-v2.md) | Keymap API, api.keymap.registerLayer, keybinding layers, migration from api.command | TUI plugin development, custom keybindings |
 
 ## API Reference Jump Links
 
@@ -62,11 +77,13 @@ These files contain knowledge extracted from source code that is NOT in official
 | `Hooks` | Interface | `index.ts` | [Hooks Interface](references/api/plugin.md#hooks-interface) |
 | `AuthHook` | Type | `index.ts` | [AuthHook](references/api/plugin.md#authhook) |
 | `AuthOAuthResult` | Type | `index.ts` | [AuthOAuthResult](references/api/plugin.md#authoauthresult) |
+| `AuthOAuthResult` | Type | `index.ts` | [AuthOAuthResult](references/api/plugin.md#authoauthresult) |
 | `ProviderHook` | Type | `index.ts` | [ProviderHook](references/api/plugin.md#providerhook) |
+| `ProviderHookContext` | Type | `index.ts` | [ProviderHookContext](references/api/plugin.md#providerhookcontext) |
 | `ProviderContext` | Type | `index.ts` | [ProviderContext](references/api/plugin.md#providercontext) |
 | `WorkspaceInfo` | Type | `index.ts` | [Workspace Types](references/api/plugin.md#workspace-types) |
 | `WorkspaceTarget` | Type | `index.ts` | [Workspace Types](references/api/plugin.md#workspace-types) |
-| `WorkspaceAdaptor` | Type | `index.ts` | [Workspace Types](references/api/plugin.md#workspace-types) |
+| `WorkspaceAdapter` | Type | `index.ts` | [Workspace Types](references/api/plugin.md#workspace-types) |
 | `tool()` | Function | `tool.ts` | [tool() Helper](references/api/plugin.md#tool-helper) |
 | `tool.schema` | Property | `tool.ts` | [tool.schema](references/api/plugin.md#toolschema) |
 | `ToolContext` | Type | `tool.ts` | [ToolContext](references/api/plugin.md#toolcontext) |

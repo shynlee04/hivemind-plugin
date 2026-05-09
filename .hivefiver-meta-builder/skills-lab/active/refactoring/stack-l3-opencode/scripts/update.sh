@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # update.sh — Re-download OpenCode source and regenerate skill files
 # Usage: bash scripts/update.sh [version]
+# Source: anomalyco/opencode (dev branch) — v1.14.44+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,24 +11,30 @@ TMP_DIR=$(mktemp -d)
 VERSION="${1:-latest}"
 echo "[stack-opencode] Updating to version: $VERSION"
 
-# ── Download source via GitHub API ──
+# ── Download plugin source (anomalyco/opencode, dev branch) ──
 echo "[stack-opencode] Downloading plugin source..."
 mkdir -p "$TMP_DIR/plugin"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/plugin/src/index.ts" -o "$TMP_DIR/plugin/index.ts"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/plugin/src/tool.ts" -o "$TMP_DIR/plugin/tool.ts"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/plugin/src/shell.ts" -o "$TMP_DIR/plugin/shell.ts"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/plugin/src/tui.ts" -o "$TMP_DIR/plugin/tui.ts"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/plugin/src/example.ts" -o "$TMP_DIR/plugin/example.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/plugin/src/index.ts" -o "$TMP_DIR/plugin/index.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/plugin/src/tool.ts" -o "$TMP_DIR/plugin/tool.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/plugin/src/shell.ts" -o "$TMP_DIR/plugin/shell.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/plugin/src/tui.ts" -o "$TMP_DIR/plugin/tui.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/plugin/src/example.ts" -o "$TMP_DIR/plugin/example.ts"
 
 echo "[stack-opencode] Downloading SDK source..."
 mkdir -p "$TMP_DIR/sdk"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/sdk/js/src/index.ts" -o "$TMP_DIR/sdk/index.ts"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/sdk/js/src/client.ts" -o "$TMP_DIR/sdk/client.ts"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/sdk/js/src/server.ts" -o "$TMP_DIR/sdk/server.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/sdk/js/src/index.ts" -o "$TMP_DIR/sdk/index.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/sdk/js/src/client.ts" -o "$TMP_DIR/sdk/client.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/sdk/js/src/server.ts" -o "$TMP_DIR/sdk/server.ts"
+
+echo "[stack-opencode] Downloading ACP source..."
+mkdir -p "$TMP_DIR/acp"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/opencode/src/acp/agent.ts" -o "$TMP_DIR/acp/agent.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/opencode/src/acp/session.ts" -o "$TMP_DIR/acp/session.ts"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/opencode/src/acp/types.ts" -o "$TMP_DIR/acp/types.ts"
 
 echo "[stack-opencode] Downloading package.json files..."
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/plugin/package.json" -o "$TMP_DIR/plugin-package.json"
-curl -sL "https://raw.githubusercontent.com/sst/opencode/dev/packages/sdk/js/package.json" -o "$TMP_DIR/sdk-package.json"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/plugin/package.json" -o "$TMP_DIR/plugin-package.json"
+curl -sL "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/sdk/js/package.json" -o "$TMP_DIR/sdk-package.json"
 
 # ── Extract version ──
 PLUGIN_VERSION=$(node -e "console.log(require('$TMP_DIR/plugin-package.json').version)")
@@ -53,3 +60,4 @@ rm -rf "$TMP_DIR"
 
 echo "[stack-opencode] ✅ Update complete. Version: $PLUGIN_VERSION"
 echo "[stack-opencode] NOTE: Reference files in references/ should be manually reviewed for API changes."
+echo "[stack-opencode] Source: anomalyco/opencode (dev branch) — https://github.com/anomalyco/opencode"

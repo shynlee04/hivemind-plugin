@@ -6,7 +6,7 @@ description: >
   authority, CQRS boundaries, actor hierarchy, event-driven wiring, classification
   fit (src/ vs .opencode/ vs .hivemind/), and OpenCode SDK surface compliance.
   Synthesized from .planning/codebase/ARCHITECTURE.md (9-surface authority table)
-  and ingested @opencode-ai/plugin SDK v1.14.28 docs (tool(), hook() signatures).
+  and ingested @opencode-ai/plugin SDK v1.14.44 from anomalyco/opencode (tool(), hook() signatures).
   Use when performing a lifecycle gate check, auditing harness module integration,
   verifying CQRS boundary compliance, checking delegation hierarchy constraints,
   evaluating tool/hook registration correctness, running a harness quality gate,
@@ -82,11 +82,11 @@ Assembly: `plugin.ts`.
 
 ## OpenCode SDK Surface Compliance
 
-Validate against the real `@opencode-ai/plugin` v1.14.28 API surface. Three areas:
+Validate against the real `@opencode-ai/plugin` v1.14.44 API surface from `anomalyco/opencode`. Three areas:
 
-1. **tool() factory**: `description`, `args` (Zod), `execute` → string. Registered in plugin.ts.
-2. **Hook handlers**: Exactly 4 hooks (`tool.execute.before/after`, `experimental.session.compacting`, `shell.env`).
-3. **Plugin composition**: Async function, type-only imports, no inline business logic, lazy PTY.
+1. **tool() factory**: `ToolDefinition` is now `ReturnType<typeof tool>` (derived, not explicit inline type). Still `description`, `args` (Zod via `tool.schema`), `execute` → string. Registered in plugin.ts.
+2. **Hook handlers**: 4 core hooks plus new types: `chat.params` now requires `model: Model` (non-optional), `ProviderHookContext` is a named exported type, `AuthOAuthResult` replaces deprecated `AuthOuathResult`, `WorkspaceAdapter` spelling corrected.
+3. **Plugin composition**: Async function, type-only imports, no inline business logic, lazy PTY. ACP (Agent Client Protocol) awareness — harness hooks must not interfere with ACP stdio JSON-RPC transport.
 
 > **Full checklists with real signatures**: `references/sdk-compliance.md`
 >

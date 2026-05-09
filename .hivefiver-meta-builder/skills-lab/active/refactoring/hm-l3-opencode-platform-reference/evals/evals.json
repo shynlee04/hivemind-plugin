@@ -1,6 +1,6 @@
 {
   "skill": "hm-opencode-platform-reference",
-  "version": "2026-04-25-rich-closure",
+  "version": "2026-05-10-audit-refresh",
   "scenarios": [
     {
       "name": "agent configuration lookup",

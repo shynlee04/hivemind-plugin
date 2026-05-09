@@ -1,42 +1,12 @@
 ---
 name: stack-l3-opencode
-version: "1.14.28"
-description: "OpenCode SDK + Plugin internals for feature development, architecture, auditing, quality checking, test building, and gatekeeping. Contains BEYOND-DOCS expert knowledge extracted from source."
-triggers:
-  - "opencode sdk"
-  - "opencode plugin"
-  - "definePlugin"
-  - "tool registration"
-  - "hook registration"
-  - "session management"
-  - "delegate task"
-  - "opencode api"
-  - "plugin development"
-  - "opencode tool"
-  - "opencode hook"
-  - "tool.execute"
-  - "chat.params"
-  - "chat.headers"
-  - "shell.env"
-  - "permission.ask"
-  - "session.compacting"
-  - "ToolContext"
-  - "ToolResult"
-  - "PluginInput"
-  - "Hooks"
-  - "AuthHook"
-  - "ProviderHook"
-  - "createOpencodeClient"
-  - "BunShell"
-  - "hook composition"
-  - "tool schema validation"
-  - "opencode sse"
-  - "opencode abort signal"
+  version: "1.14.44"
+description: "OpenCode SDK v1.14.44 + Plugin internals for feature development, architecture, auditing, quality checking, test building, TUI development, ACP IDE integration, and gatekeeping. Use when you need to: create an OpenCode tool, register a plugin hook, understand chat.params or shell.env, work with the TUI keymap API, implement ACP agent client protocol, debug hook composition chains, validate tool schemas with Zod, handle session compaction, build TUI plugins with keybindings, integrate OpenCode with an IDE via ACP, or understand the SDK client/server architecture. Contains BEYOND-DOCS expert knowledge extracted from anomalyco/opencode source. Triggers on: opencode sdk, opencode plugin, definePlugin, tool registration, hook registration, session management, delegate task, opencode api, plugin development, opencode tool, opencode hook, tool.execute, chat.params, chat.headers, shell.env, permission.ask, session.compacting, ToolContext, ToolResult, PluginInput, Hooks, AuthHook, ProviderHook, createOpencodeClient, BunShell, hook composition, tool schema validation, opencode sse, opencode abort signal, acp protocol, agent client protocol, TUI keymap, workspace adapter, api.keymap, TUI plugin, ACP integration, IDE integration, keybinding, keymap registerLayer, opencode ACP, opencode TUI v2, stack opencode, opencode reference, opencode API docs."
 ---
 
 # Stack: OpenCode SDK + Plugin
 
-> **Version:** 1.14.28 | **Source:** [sst/opencode](https://github.com/sst/opencode) | **Bundled:** 20,546 lines
+> **Version:** 1.14.44 | **Source:** [anomalyco/opencode](https://github.com/anomalyco/opencode) | **Bundled:** 22,771 lines
 
 ## ⚠️ Key Gotchas (Read Before Coding)
 
@@ -61,6 +31,11 @@ triggers:
 | [Patterns: Dev](references/patterns/dev.md) | Tool creation, hook wiring, plugin assembly | Feature development |
 | [Patterns: Testing](references/patterns/testing.md) | Mock SDK, tool testing, hook testing | Writing tests |
 | [Patterns: Gatekeeping](references/patterns/gatekeeping.md) | Quality gates, type safety, hook correctness | Code review |
+| **[API: ACP](references/api/acp.md)** | Agent Client Protocol — JSON-RPC over stdio for IDE integration | Building IDE plugins, Zed/VS Code integration |
+| **[API: TUI v2](references/api/tui-v2.md)** | TUI keymap API, keybinding layers, command dispatch | TUI plugin development, custom keybindings |
+| **[Pipeline Patterns](references/pipeline-patterns.md)** | How stack-opencode composes with other skills in development workflows | Architecture design, workflow composition |
+| **[Stack Chains](references/stack-chains.md)** | Dependency ordering between stack-* skills | Skill loading order, dependency resolution |
+| **[Department Bundles](references/department-bundles.md)** | Role-based skill loading bundles | Team configuration, agent setup |
 
 ## Decision Trees
 
@@ -118,23 +93,23 @@ Run `scripts/update.sh` to re-download source when OpenCode version changes.
 > Reference documents provide facts, not workflows. When facts conflict with reality, this section guides resolution.
 
 ### When Information Is Outdated
-1. **Check the version in frontmatter** (currently: 1.14.28) — OpenCode SDK updates frequently; verify against installed version.
-2. **Run `scripts/update.sh`** to re-download source from `sst/opencode` and refresh bundled references.
-3. **Verify against live source:** The bundled 20,546-line source pack is the ground truth. If runtime behavior differs from gotchas, the source has changed.
+1. **Check the version in frontmatter** (currently: 1.14.44) — OpenCode SDK updates frequently; verify against installed version.
+2. **Run `scripts/update.sh`** to re-download source from `anomalyco/opencode` and refresh bundled references.
+3. **Verify against live source:** The bundled 22,771-line source pack is the ground truth. If runtime behavior differs from gotchas, the source has changed.
 4. **Key gotchas are version-sensitive:** The `context.ask()` returning Effect (not Promise) and `tool()` being an identity function are behavioral claims — verify against source if the version changes.
 
 ### When Unsure About API Accuracy
 1. **Grep the bundled source:** `references/expert/tool-internals.md` for tool behavior, `references/expert/hook-composition.md` for hook ordering.
-2. **Read actual source:** The source files at `sst/opencode` on GitHub are canonical. Check the tag matching the installed version.
-3. **The Zod reliability matrix (lines 78-84) is source-verified at v1.14.28:** If `z.transform()` behavior changes in a newer SDK, the matrix must be re-verified.
+2. **Read actual source:** The source files at `anomalyco/opencode` on GitHub are canonical. Check the tag matching the installed version.
+3. **The Zod reliability matrix (lines 78-84) is source-verified at v1.14.44:** If `z.transform()` behavior changes in a newer SDK, the matrix must be re-verified.
 
 ### When the User Contradicts Reference Content
-1. **Cite the source:** "This stack-opencode reference (v1.14.28) documents behavior extracted from source. Your installed version may differ — check `@opencode-ai/plugin` version in `node_modules`."
+1. **Cite the source:** "This stack-opencode reference (v1.14.44) documents behavior extracted from source. Your installed version may differ — check `@opencode-ai/plugin` version in `node_modules`."
 2. **Offer verification:** Run `npm list @opencode-ai/plugin @opencode-ai/sdk` to compare installed versions.
 3. **Do not override:** Source-extracted behavioral claims are version-specific. User's runtime takes precedence.
 
 ### When an Edge Case Is Encountered
 1. **Document the gap:** Missing coverage includes hook composition with 3+ plugins, ToolContext timeout behavior, SSE event ordering guarantees, session state machine edge cases (retry→idle transition), and permission inheritance across nested delegations.
 2. **Search bundled references** — expert docs (`references/expert/`) cover deep internals.
-3. **Check GitHub issues:** `sst/opencode` repo for known SDK bugs.
+3. **Check GitHub issues:** `anomalyco/opencode` repo for known SDK bugs.
 4. **Escalate to skill maintainer:** File an update request with SDK version, hook/tool chain, and observed behavior.

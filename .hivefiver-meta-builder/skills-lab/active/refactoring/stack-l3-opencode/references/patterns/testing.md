@@ -1,6 +1,6 @@
 # Patterns: Testing
 
-> OpenCode SDK + Plugin v1.14.28
+> OpenCode SDK + Plugin v1.14.44
 
 ## Pattern: Plugin Unit Test
 

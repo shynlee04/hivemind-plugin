@@ -1,6 +1,6 @@
 # Patterns: Feature Development
 
-> OpenCode SDK + Plugin v1.14.28
+> OpenCode SDK + Plugin v1.14.44
 
 ## Pattern: Minimal Plugin
 

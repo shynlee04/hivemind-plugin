@@ -1,6 +1,6 @@
 # Patterns: Gatekeeping
 
-> OpenCode SDK + Plugin v1.14.28
+> OpenCode SDK + Plugin v1.14.44
 
 ## Quality Gates for Plugin Code
 

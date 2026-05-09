@@ -34,9 +34,9 @@ Decision trees encode architectural thinking: tool vs hook selection, Zod type r
 ### D4: Specification Compliance — Description (15 points)
 **Score: 14/15**
 
-Valid frontmatter with name, version (1.14.28), 34 trigger keywords — among the most comprehensive in the skill set. Covers SDK API names (definePlugin, tool registration, hook registration, ToolContext, ToolResult, PluginInput, Hooks, AuthHook, ProviderHook, createOpencodeClient, BunShell), lifecycle events (session.compacting, permission.ask), concepts (hook composition, tool schema validation, opencode sse, opencode abort signal), and patterns (plugin development, opencode tool, opencode hook).
+Valid frontmatter with name, version (1.14.44), 39 trigger keywords — among the most comprehensive in the skill set. Covers SDK API names (definePlugin, tool registration, hook registration, ToolContext, ToolResult, PluginInput, Hooks, AuthHook, ProviderHook, createOpencodeClient, BunShell), lifecycle events (session.compacting, permission.ask), concepts (hook composition, tool schema validation, opencode sse, opencode abort signal), new subsystems (ACP protocol, TUI keymap, workspace adapter), and patterns (plugin development, opencode tool, opencode hook).
 
-**Deductions:** Some triggers are overly specific (chat.params, chat.headers) and may not match natural language usage. Version is a string "1.14.28" — other skills use semver ranges.
+**Deductions:** Some triggers are overly specific (chat.params, chat.headers) and may not match natural language usage. Version is a string "1.14.44" — other skills use semver ranges.
 
 ### D5: Progressive Disclosure (15 points)
 **Score: 14/15**
@@ -88,13 +88,13 @@ Gotchas prevent the most common failures. Decision trees resolve 80% of routing 
 
 | Gate | Criterion | Status | Notes |
 |------|-----------|--------|-------|
-| RICH-1 | Source lineage documented | ✅ PASS | OpenCode SDK+Plugin 1.14.28; source repo `sst/opencode`; 20,546-line bundled source confirmed |
+| RICH-1 | Source lineage documented | ✅ PASS | OpenCode SDK+Plugin 1.14.44; source repo `anomalyco/opencode`; 22,771-line bundled source confirmed |
 | RICH-2 | Pattern decisions documented | ⚠️ N/A | Reference docs document SDK behavior, not pattern decisions |
 | RICH-3 | Cross-refs to related stack skills | ✅ PASS | Ecosystem routing to stack-zod, stack-vitest, stack-nextjs, gate-lifecycle-integration, gate-evidence-truth, gate-spec-compliance |
 | RICH-4 | Script with validation | ⚠️ N/A | Reference docs have `scripts/update.sh` for version refresh, not validation |
 | RICH-5 | Bundled references are substantive | ✅ PASS | 9 bundled references: hook-composition, tool-internals, client-server, plugin API, SDK API, types, dev patterns, testing patterns, gatekeeping patterns |
 | RICH-6 | Framework-agnostic paths | ✅ PASS | All paths relative; no project-local hardcodes |
-| RICH-7 | Version coverage gaps documented | ⚠️ PARTIAL | Version 1.14.28 tracked; v1 vs v2 SDK differences documented; Plugin API noted as version-independent |
+| RICH-7 | Version coverage gaps documented | ⚠️ PARTIAL | Version 1.14.44 tracked; v1 vs v2 SDK differences documented; Plugin API noted as version-independent |
 | RICH-8 | Scorecard + evals exist | ✅ PASS | This scorecard + `evals/evals.json` created |
 
 **RICH gates applicable:** 5/6 — 83.3% on applicable gates

@@ -1,6 +1,6 @@
 ---
 name: hm-l3-opencode-platform-reference
-description: Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models. Use when needing OpenCode-specific agents, SDK, plugin hooks, tool definitions, permission model, MCP server config, or platform architecture. NOT for general coding tasks or non-OpenCode framework lookup.
+description: Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models sourced from anomalyco/opencode v1.14.44. Use when the user asks about "how to create an OpenCode agent", "OpenCode plugin hooks", "custom tool in OpenCode", "OpenCode permission rules", "configure OpenCode MCP server", "OpenCode SDK API", "OpenCode agent frontmatter", "opencode.json schema", "OpenCode command definition", "how does OpenCode skills work", "OpenCode platform architecture", or any question about OpenCode platform surfaces (agents, plugins, tools, SDK, permissions, skills, commands, configs, MCP, models). NOT for general coding tasks or non-OpenCode framework lookup.
 metadata:
   layer: "3"
   role: "reference"
@@ -18,7 +18,11 @@ Complete OpenCode platform documentation covering agents, plugins, custom tools,
 
 ## Source Freshness Gate
 
-OpenCode platform behavior is version-sensitive. Before making a platform claim, prefer the current official docs or the bundled reference file if it has been refreshed within the project's freshness window. For this Phase 29 pass, official docs for agents, commands, config, and rules were fetched on 2026-04-25 and used to update the scope matrix below.
+OpenCode platform behavior is version-sensitive. Before making a platform claim, prefer the current official docs or the bundled reference file if it has been refreshed within the project's freshness window.
+
+**Repomix source:** `anomalyco/opencode` v1.14.44 (active). Previously sourced from ARCHIVED `sst/opencode` v1.14.28. Both repomix files were refreshed 2026-05-10. Focus: `packages/plugin/src/**`, `packages/sdk/js/src/**`, `packages/opencode/src/acp/**`.
+
+Official docs for agents, commands, config, and rules were last fetched on 2026-04-25 and used to update the scope matrix below.
 
 ## Reference Files
 
@@ -44,8 +48,32 @@ All files in `references/` directory:
 | opencode-share-usage.md | Session sharing |
 | opencode-skills.md | Skill discovery, SKILL.md format, permissions, loading mechanism |
 | opencode-troubleShooting.md | Troubleshooting guide |
-| repomix-opencode.md | Full OpenCode source code packed by repomix (markdown format) |
-| repomix-opencode.xml | Full OpenCode source code packed by repomix (XML format, use with attach_packed_output) |
+| repomix-opencode.md | Full OpenCode source packed by repomix from `anomalyco/opencode` v1.14.44 (2026-05-10). Markdown format. Focus: plugin/src, sdk/js/src, opencode/src/acp. |
+| repomix-opencode.xml | Full OpenCode source packed by repomix from `anomalyco/opencode` v1.14.44 (2026-05-10). XML format. Use with `attach_packed_output`. Focus: plugin/src, sdk/js/src, opencode/src/acp. |
+| rich-resource-rationale.md | Self-audit: RICH scorecard evidence, source decisions, bundled resource inventory, independence audit |
+| evals/evals.json | Reference-routing test scenarios (3) for this skill |
+| metrics/rich-gate-scorecard.md | RICH-8 quality scorecard (2026-05-10) |
+| scripts/validate-skill.sh | Static skill package structure validator |
+
+## Loading Decision Table — Which Reference to Read
+
+**Rule:** Load only the specific reference file needed. Do not load all references at once.
+
+| Question / Scenario | Load This File | Do NOT Load |
+|--------------------|---------------|--------------|
+| "How do I define an agent?" / Agent frontmatter | opencode-agents.md | opencode-configs.md |
+| "What built-in tools exist?" / Tool reference | opencode-built-in-tools.md | opencode-custom-tools.md |
+| "How do slash commands work?" / Command syntax | opencode-commands.md | opencode-skills.md |
+| "What's in opencode.json?" / Config schema | opencode-configs.md | opencode-github.md |
+| "How to create a custom tool?" / Tool SDK | opencode-custom-tools.md | opencode-built-in-tools.md |
+| "How does plugin system work?" / Hooks | opencode-plugins.md | opencode-mcp-servers.md |
+| "How are permissions structured?" / Perm model | opencode-permissions.md | opencode-rules.md |
+| "MCP server setup" / MCP config | opencode-mcp-servers.md | opencode-plugins.md |
+| "SDK API reference" / Session API | opencode-sdk.md | opencode-commands.md |
+| "Skills format / loading" / SKILL.md spec | opencode-skills.md | opencode-commands.md |
+| "GitHub integration" / CI with OpenCode | opencode-github.md | opencode-server.md |
+| Platform docs insufficient → verify source code | repomix-opencode.xml (use grep) | repomix-opencode.md (both contain same data) |
+| Model provider configuration | opencode-models.md | opencode-commands.md |
 
 ## Official Scope Matrix
 
@@ -90,9 +118,9 @@ Commands with subtask:true create SubtaskPart → child session → inherits tar
 
 | Anti-Pattern | Detection | Correction |
 |-------------|-----------|------------|
-| **The Memorizer** | Tries to memorize all 20 reference files | Use progressive disclosure. Read only the reference needed for the current task. |
+| **The Memorizer** | Tries to memorize all reference files | Use progressive disclosure. Read only the reference needed for the current task. |
 | **The Outdated Citer** | Cites reference content as current runtime truth | References describe platform capabilities, not current project state. Verify against actual config. |
-| **The Over-Loader** | Loads all 20 references at once | Load only the specific reference file needed. SKILL.md is the index, not the content. |
+| **The Over-Loader** | Loads all references at once | Load only the specific reference file needed. See Loading Decision Table. SKILL.md is the index, not the content. |
 | **The Assumer** | Assumes platform behavior from training knowledge | Always verify via `context7` or live platform inspection before claiming platform behavior. |
 
 ## Self-Correction

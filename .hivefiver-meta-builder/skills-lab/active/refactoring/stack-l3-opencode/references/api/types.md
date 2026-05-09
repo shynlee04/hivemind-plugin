@@ -1,6 +1,6 @@
 # API: Type System Deep Reference
 
-> Version 1.14.28 | Sources: `packages/plugin/src/index.ts`, `packages/sdk/js/src/gen/types.gen.ts`, `packages/plugin/src/tui.ts`
+> Version 1.14.44 | Sources: `packages/plugin/src/index.ts`, `packages/sdk/js/src/gen/types.gen.ts`, `packages/plugin/src/tui.ts`
 
 ## Part Types (Message Parts)
 
@@ -100,7 +100,23 @@ type Event =
   | { type: "permission.request"; data: Permission }
   | { type: "question.request"; data: Question }
   | { type: "session.abort"; data: { sessionID: string } }
+  | EventCommandExecuted     // NEW in v1.14.44
 ```
+
+### EventCommandExecuted (NEW in v1.14.44)
+
+```typescript
+type EventCommandExecuted = {
+  type: "command.executed"
+  properties: {
+    command: string
+    sessionID: string
+    arguments: string
+  }
+}
+```
+
+Emitted when a slash command is executed. Available via the `event` hook and SSE event stream.
 
 ### Gotcha: Event subscription is via `Hooks.event`
 
@@ -279,6 +295,16 @@ type TuiKeybind = {
 }
 ```
 
+### TuiKeymap (NEW in v1.14.44)
+
+```typescript
+import type { Keymap, KeyEvent, Renderable } from "@opentui/keymap"
+
+type TuiKeymap = Keymap<Renderable, KeyEvent>
+```
+
+The `TuiKeymap` type wraps `@opentui/keymap`'s `Keymap<Renderable, KeyEvent>` — allowing plugins to register custom keybinding layers with `api.keymap.registerLayer()`.
+
 ### TuiCommand
 
 ```typescript
@@ -290,27 +316,75 @@ type TuiCommand = {
 }
 ```
 
-### TuiLifecycle & TuiEventBus
+### TuiCommandApi (DEPRECATED in v1.14.44)
 
 ```typescript
-type TuiLifecycle = {
-  signal: AbortSignal
-  onDispose(fn: () => void): () => void  // returns unsub function
+/** @deprecated Use api.keymap.registerLayer({ commands, bindings }) instead. */
+type TuiCommandApi = {
+  /** @deprecated Use api.keymap.registerLayer({ commands, bindings }) instead. */
+  register: (commands: TuiCommand[]) => () => void
+  /** @deprecated Use api.keymap.dispatchCommand(name) instead. */
+  dispatch: (name: string) => void
+  /** @deprecated Use api.keymap.dispatchCommand("command.palette.show") instead. */
+  prompt: () => void
 }
+```
 
-type TuiEventBus = {
-  on<T>(type: string, handler: (data: T) => void): () => void  // returns unsub
+The `api.command` API is kept for backward compatibility with v1 TUI plugins. New plugins should use `api.keymap.registerLayer()` with `{ commands, bindings }` structure. See [TUI v2](tui-v2.md) for migration guide.
+
+### TuiPluginApi (Full Shape — v1.14.44)
+
+```typescript
+type TuiPluginApi = {
+  app: TuiApp
+  command?: TuiCommandApi                         // DEPRECATED
+  keys: TuiKeys
+  keymap: TuiKeymap                               // NEW v2 keybinding API
+  route: {
+    register: (routes: TuiRouteDefinition[]) => () => void
+    navigate: (name: string, params?: Record<string, unknown>) => void
+    readonly current: TuiRouteCurrent
+  }
+  ui: {
+    Dialog, DialogAlert, DialogConfirm, DialogPrompt, DialogSelect,
+    Slot, Prompt, toast, dialog
+  }
+  readonly tuiConfig: Frozen<TuiConfigView>
+  kv: TuiKV
+  state: TuiState
+  theme: TuiTheme
+  client: OpencodeClient
+  event: TuiEventBus
+  renderer: CliRenderer
+  slots: TuiSlots
+  plugins: {
+    list: () => ReadonlyArray<TuiPluginStatus>
+    activate: (id: string) => Promise<boolean>
+    deactivate: (id: string) => Promise<boolean>
+    add: (spec: string) => Promise<boolean>
+    install: (spec: string, options?: TuiPluginInstallOptions) => Promise<TuiPluginInstallResult>
+  }
+  lifecycle: TuiLifecycle
+}
+```
+
+### TuiPlugin (v1.14.44)
+
+```typescript
+type TuiPlugin = (api: TuiPluginApi, options: PluginOptions | undefined, meta: TuiPluginMeta) => Promise<void>
+```
+
+### TuiPluginMeta
+
+```typescript
+type TuiPluginMeta = {
+  state: TuiPluginState          // "first" | "updated" | "same"
+  fingerprint: string            // hash of plugin code
+  entry: TuiPluginEntry
 }
 ```
 
 ### Gotcha: TuiPluginMeta fingerprinting
-
-```typescript
-type TuiPluginMeta = {
-  state: "first" | "updated" | "same"
-  fingerprint: string
-}
-```
 
 - `"first"` → plugin first loaded
 - `"updated"` → plugin code changed (hot reload)
