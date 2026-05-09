@@ -175,11 +175,13 @@ HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm packa
 
 ### Two Halves (never confuse them)
 
-| Half | What | Where |
-|------|------|-------|
-| **Hard Harness** (npm package) | Tools (write-side), Hooks (read-side), Plugin (assembly), Shared (leaf) | `src/` |
-| **Soft Meta-Concepts** (user-configurable) | Skills, Agents, Commands, Rules, Permissions | `.opencode/` |
-| **Internal State** (deep module persistence) | Session journals, execution lineage, runtime state, vector/graph memory | `.hivemind/` |
+| Half | What | Where | Architecture Reference |
+|------|------|-------|----------------------|
+| **Hard Harness** (npm package) | Tools (write-side), Hooks (read-side), Plugin (assembly), Shared (leaf), Task-Management (state), Coordination (delegation), Features (runtime), Config, Routing | `src/` | `.planning/codebase/ARCHITECTURE.md` — CQRS, 9-surface model |
+| **Soft Meta-Concepts** (user-configurable) | Skills, Agents, Commands, Rules, Permissions — NEVER development implementation, NEVER runtime state | `.opencode/` | `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` — primitives-only |
+| **Internal State** (deep module persistence) | Session journals, execution lineage, runtime state, vector/graph memory — NEVER stored in `.opencode/` | `.hivemind/` | `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` — canonical Q6 root |
+| **Meta-Authoring** (source-of-truth) | Lab environment for authoring primitives before reflection to `.opencode/` | `.hivefiver-meta-builder/` | `.planning/codebase/ARCHITECTURE.md` — Source-of-Truth layer |
+| **Governance** (planning/authorization) | Requirements, roadmaps, architecture maps, phase authorization — never runtime code | `.planning/` | `.planning/AGENTS.md` — Planning/Governance sector |
 
 ### Runtime features this project delivers
 
@@ -303,15 +305,37 @@ tests/tools/                   # Tool-focused unit tests
 - Note: 65 gsd-* skills and 33 gsd-* agents exist in `.opencode/` as developer tooling (GSD framework used to build this project). They are NOT shipped primitives. Any synthesis from gsd-* must be transformed to hm-*/hf-* conventions.
 - 18 commands in `.opencode/commands/`: 7 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, harness-audit, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack) + 1 sync (sync-agents-md) + 3 test (test-echo, test-list, test-status)
 
-### State Root Separation (Q6)
+### `.opencode/` = Soft Meta-Concepts ONLY — NEVER Development Assets
 
-`.opencode/` is **ONLY** for OpenCode primitives (agents, commands, skills, rules, permissions). **No internal runtime state** is stored here. All Hivemind deep module state (journals, lineage, runtime state, graph/vector memory) writes to `.hivemind/` at project root. This prevents corruption by other plugins or user dependencies.
+`.opencode/` is **ONLY** for OpenCode configurable primitives (agents, commands, skills, rules, permissions) that compose runtime behavior from outside the npm package. **No internal runtime state** is stored here. **No development implementation** lives here. **No build artifacts** belong here.
+
+This is a critical distinction:
+- **`.opencode/` IS:** Agent definitions, skill packages, command files, permission rules, plugin loader wrappers → these CONFIGURE runtime behavior
+- **`.opencode/` IS NOT:** Source code, compiled output, business logic, state persistence, development tools, npm package assets → these belong in `src/`, `dist/`, or `.hivemind/`
+
+All Hivemind deep module state (journals, lineage, runtime state, graph/vector memory) writes to `.hivemind/` at project root per Q6. This prevents corruption by other plugins or user dependencies.
 
 ### Canonical Skill Location
 
-`.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-meta-builder/skills-lab/active/refactoring/` and is reflected in `.opencode/skills/` via directory-level symlink.
+`.opencode/skills/` is the **ONLY** canonical location for project skills. All skill authoring happens in `.hivefiver-meta-builder/skills-lab/` and is reflected in `.opencode/skills/` via directory-level symlink.
 
 IDE-managed directories (`.trae/skills/`, `.windsurf/skills/`, `.codex/skills/`, `.github/skills/`) are **third-party sync artifacts**, not project deliverables. They are gitignored and must never be committed. `.claude/skills/` does not exist in this repository.
+
+---
+
+## Architecture Foundation (Authoritative Docs)
+
+### Must-Have References (current as of 2026-05-10)
+
+| Document | Purpose | Authority |
+|----------|---------|-----------|
+| `.planning/codebase/ARCHITECTURE.md` | CQRS model, 9-surface authority, component graph, dependency rules | Source-backed architecture map |
+| `.planning/codebase/STRUCTURE.md` | File tree, placement conventions, naming, folder registration | Source-backed structure map |
+| `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` | Surface ownership model, Phase 0 mutation gates, target source planes | Governance baseline |
+| `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` | Naming contract, lineage contract (hm/hf/gate/stack/gsd), L0-L3 hierarchy | Governance baseline |
+| `.planning/architecture/hivemind-sector-agents-target-2026-05-07.md` | Target sector AGENTS.md shape, deferred implementation | Target architecture |
+| `.planning/research/omo-adaptation-architecture-2026-05-07.md` | OMO adapt/reject table, Hivemind surface preservation rules | Research foundation |
+| `.hivemind/planning/agents-system-overhaul-2026-05-10/` | Agent/skill/command overhaul: 15 REQs, 12 phases, shipped count = 49 | Overhaul planning |
 
 ---
 
