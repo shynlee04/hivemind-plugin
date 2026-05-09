@@ -3,9 +3,9 @@ feature: agent-steering-engine
 status: active-planning
 created: 2026-05-09
 updated: 2026-05-09
-current-phase: 01-Research-And-Architecture
+current-phase: 02-Schema-And-Policy-Design
 phase-status: completed
-overall-progress: 12%
+overall-progress: 25%
 blocked: false
 blocker: none
 ---
@@ -14,16 +14,16 @@ blocker: none
 
 ## Current Position
 
-**Phase:** 01-Research-And-Architecture — COMPLETE
-**Status:** Research completed, artifacts written
-**Next action:** Begin Phase 02 (Schema And Policy Design) after checkpoint review
+**Phase:** 02-Schema-And-Policy-Design — COMPLETE
+**Status:** Schema and policy design complete, artifacts written
+**Next action:** Begin Phase 03 (Core Engine Implementation) after checkpoint review
 
 ## Phase Tracking
 
 | Phase | Status | Artifacts | Atomic Plans | Commits |
 |-------|--------|-----------|-------------|---------|
 | 01-Research-And-Architecture | complete | CONTEXT.md, RESEARCH.md | — | pending |
-| 02-Schema-And-Policy-Design | pending | — | — | — |
+| 02-Schema-And-Policy-Design | complete | SPEC.md (362 lines), PATTERNS.md (570 lines) | — | pending |
 | 03-Core-Engine-Implementation | pending | — | — | — |
 | 04-Dynamic-Primitive-Registration | pending | — | — | — |
 | 05-Injection-Surfaces-Wiring | pending | — | — | — |
@@ -37,6 +37,7 @@ blocker: none
 |-----------|-------|--------|----------|
 | Master plan creation | Pre-phase | Created REQUIREMENTS.md, STATE.md, ROADMAP.md | This file |
 | Phase 01 research complete | 01 | Online-validated findings across 12 sources | CONTEXT.md (80 lines), RESEARCH.md (283 lines) |
+| Phase 02 schema design complete | 02 | Zod schemas, policy resolution, CQRS boundary, 4 default policies | SPEC.md (362 lines), PATTERNS.md (570 lines) |
 
 ## Dependency Map
 
