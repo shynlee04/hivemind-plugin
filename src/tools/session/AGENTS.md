@@ -6,6 +6,8 @@
 
 `src/tools/session/` owns bounded session patching and journal export surfaces. `session-patch/` provides session state modification through validated inputs. `session-journal-export.ts` exports append-only journal evidence. These tools preserve state-root separation and use shared response envelopes. Source evidence: `.planning/codebase/ARCHITECTURE.md:87-113`, `.planning/codebase/STRUCTURE.md:104-108`.
 
+Key tools: `session-patch/index.ts` (multi-file, state modification), `session-journal-export.ts` (single-file, read-only export). Architecture: `.planning/codebase/ARCHITECTURE.md:87-113`. Classification: Hard Harness — write-side tools. Session state lives in `.hivemind/`, never `.opencode/`.
+
 ## 2. Allowed mutation authority
 
 - Tools may parse input via Zod schemas and render standardized responses with `src/shared/`.

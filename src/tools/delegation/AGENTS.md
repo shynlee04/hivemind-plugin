@@ -6,6 +6,8 @@
 
 `src/tools/delegation/` owns write-side OpenCode tool entrypoints for session/task delegation. `delegate-task.ts` dispatches delegated work through the coordination layer. `delegation-status.ts` polls delegation state for completion signals. Validation lives at the tool boundary; orchestration logic lives in `src/coordination/`. Source evidence: `.planning/codebase/ARCHITECTURE.md:87-113`, `.planning/codebase/STRUCTURE.md:104-108`.
 
+Delegation uses `DelegationManager` (WaiterModel dispatch + dual-signal completion) from `src/coordination/delegation/manager.ts`. Architecture: `.planning/codebase/ARCHITECTURE.md:87-113`. Classification: Hard Harness — write-side tools calling coordination layer. `.opencode/` agents trigger delegation via these tools but never own delegation logic.
+
 ## 2. Allowed mutation authority
 
 - Tools may parse input via Zod schemas and render standardized responses with `src/shared/`.

@@ -6,6 +6,8 @@
 
 `src/tools/prompt/` owns bounded prompt skimming and analysis surfaces. `prompt-skim/` performs lightweight prompt classification. `prompt-analyze/` performs deeper prompt structure analysis. Both tools use schema-kernel contracts for input validation and produce compact, deterministic outputs. Source evidence: `.planning/codebase/ARCHITECTURE.md:87-113`, `.planning/codebase/STRUCTURE.md:104-108`.
 
+Key tools: `prompt-skim/index.ts` (classification), `prompt-analyze/index.ts` (structural analysis). Both use `src/schema-kernel/prompt-enhance.schema.ts` for validation. Architecture: `.planning/codebase/ARCHITECTURE.md:87-113`. Classification: Hard Harness — read-only analysis tools. No durable writes.
+
 ## 2. Allowed mutation authority
 
 - Tools may parse input via Zod schemas and render standardized responses with `src/shared/`.

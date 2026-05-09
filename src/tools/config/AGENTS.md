@@ -6,6 +6,8 @@
 
 `src/tools/config/` owns OpenCode primitive configuration and bootstrap layout tool entrypoints. `configure-primitive.ts` creates, reads, lists, or inspects OpenCode primitives (agents, commands, skills). `validate-restart.ts` verifies compiled primitives are discoverable and free of runtime issues after restart. `bootstrap-init.ts` creates local `.hivemind/` surfaces and installs symlinks. `bootstrap-recover.ts` repairs missing or broken symlinks. Source evidence: `.planning/codebase/ARCHITECTURE.md:87-113`, `.planning/codebase/STRUCTURE.md:104-108`.
 
+Key tools: `configure-primitive.ts`, `validate-restart.ts`, `bootstrap-init.ts`, `bootstrap-recover.ts`. These tools WRITE to `.opencode/` (primitives) and `.hivemind/` (surfaces) but own NO logic in `.opencode/` — they are Hard Harness tools that CONFIGURE Soft Meta-Concepts from outside. Architecture: `.planning/codebase/ARCHITECTURE.md:87-113`.
+
 ## 2. Allowed mutation authority
 
 - Tools may parse input via Zod schemas and render standardized responses with `src/shared/`.
