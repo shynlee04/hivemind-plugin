@@ -7,8 +7,7 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 
 ## NON-NEGOTIABLE RULES
 
-- all tech, stack, SDK implementation, audit, gatekeeping  must follow deep investigation - stack research ;skills are for references not for interfaces validation; "interfaces, patterns, methods, api, signatures of specs etc" must validate against the correct versions at package.json - **MUST VALIDATE AGAINST ONLINE RESOURCES AS FOR MCP SERVER TOOLS ACTUAL FETCH** - valid and evidences with Context7, Deepwiki, Gitmcp, Github repo, Exa **AND Repomix for accurate specific patterns** etc, official - loading references from skills of stacks are outdated, as so reading code in the codebase can be polluted as many implementations are not functioning and broken
-
+- all tech, stack, SDK implementation, audit, gatekeeping  must follow deep investigation - stack research ;skills are for references not for interfaces validation; "interfaces, patterns, methods, api, signatures of specs etc" must validate against the correct versions at package.json - **MUST VALIDATE AGAINST ONLINE RESOURCES AS FOR MCP SERVER TOOLS ACTUAL FETCH** - valid and evidences with Context7, Deepwiki, Gitmcp, Github repo, Exa **AND Repomix for accurate specific patterns** etc, official - loading references from skills of stacks are outdated, as so reading code in the codebase can be polluted as many implementations are not functioning and broken. DO NOT MAKE ASSUMPTIONS OF THE STACK REPO LINKs - **EXTREMELY IMPORNTANT:** Uses of Context7, Deepwiki, Gitmcp, Github, Exa, Repomix are enforced when researching, planning, and implementing - these MUST Comply with all the **Github and Npm links that up-to-date with versiosn and NOT A PRODUCT OF MAKING UP LINKS** >  glob, list this to check these links `.hivemind/STACKS-REFERENCES.md`
 
 - any thing under .opencode/ are not shipped-with, they are symlinks or project toolings 
 
@@ -38,64 +37,6 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 
 - When delegating to agents these are the list of agents that must learn and delegate to the correct ones. When delegate to subagents make sure setting up strict guardrails, boundaries, success metrics, making sure they are awared that they are subagents and fulfill the tasked within boundaries and without any deviation ans seriously go through gatekeeping.
 
-.opencode/agents/gsd-advisor-hm-l2-researcher.md
-.opencode/agents/gsd-ai-hm-l2-researcher.md
-.opencode/agents/gsd-assumptions-analyzer.md
-.opencode/agents/gsd-code-fixer.md
-.opencode/agents/gsd-code-reviewer.md
-.opencode/agents/gsd-codebase-mapper.md
-.opencode/agents/gsd-debug-session-manager.md
-.opencode/agents/gsd-debugger.md
-.opencode/agents/gsd-doc-classifier.md
-.opencode/agents/gsd-doc-synthesizer.md
-.opencode/agents/gsd-doc-verifier.md
-.opencode/agents/gsd-doc-writer.md
-.opencode/agents/gsd-domain-hm-l2-researcher.md
-.opencode/agents/gsd-eval-auditor.md
-.opencode/agents/gsd-eval-planner.md
-.opencode/agents/gsd-executor.md
-.opencode/agents/gsd-framework-selector.md
-.opencode/agents/gsd-integration-checker.md
-.opencode/agents/gsd-intel-updater.md
-.opencode/agents/gsd-nyquist-auditor.md
-.opencode/agents/gsd-pattern-mapper.md
-.opencode/agents/gsd-phase-hm-l2-researcher.md
-.opencode/agents/gsd-plan-checker.md
-.opencode/agents/gsd-planner.md
-.opencode/agents/gsd-project-hm-l2-researcher.md
-.opencode/agents/gsd-research-synthesizer.md
-.opencode/agents/gsd-roadmapper.md
-.opencode/agents/gsd-security-auditor.md
-.opencode/agents/gsd-ui-auditor.md
-.opencode/agents/gsd-ui-checker.md
-.opencode/agents/gsd-ui-hm-l2-researcher.md
-.opencode/agents/gsd-user-profiler.md
-.opencode/agents/gsd-verifier.md
-.opencode/agents/hf-prompter.md
-.opencode/agents/hf-l2-agent-builder.md
-.opencode/agents/hf-l2-command-builder.md
-.opencode/agents/hf-l0-hm-l0-orchestrator.md
-.opencode/agents/hf-l2-skill-builder.md
-.opencode/agents/hf-l2-tool-builder.md
-.opencode/agents/hf-l2-meta-builder.md
-.opencode/agents/hm-l2-intent-loop.md
-.opencode/agents/hm-l2-meta-synthesis.md
-.opencode/agents/hm-l0-orchestrator.md
-.opencode/agents/hm-l2-phase-guardian.md
-.opencode/agents/hm-l2-prompt-analyzer.md
-.opencode/agents/hm-l2-prompt-repackager.md
-.opencode/agents/hm-l2-prompt-skimmer.md
-.opencode/agents/hm-l2-researcher.md
-.opencode/agents/hm-l2-risk-assessor.md
-.opencode/agents/hm-l2-spec-verifier.md
-.opencode/agents/hm-l2-context-mapper.md
-.opencode/agents/hm-l2-context-purifier.md
-.opencode/agents/hm-l2-build.md
-.opencode/agents/hm-l2-conductor.md
-.opencode/agents/hm-l1-coordinator.md
-.opencode/agents/hm-l2-critic.md
-.opencode/agents/hm-l2-general.md
-.opencode/agents/hm-l2-test-router.md
 <!-- NOTE: explore agent is MISSING from the filesystem -->
 
 - For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.

@@ -14,8 +14,7 @@ This is not negotiable. This is not optional. You cannot rationalize your way ou
 
 This override default system prompt behavior, but **user instructions always take precedence**:
 
-1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
-2. **Superpowers skills** — override default system behavior where they conflict
+1. **User's explicit instructions** 
 3. **Default system prompt** — lowest priority
 
 If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
@@ -53,25 +52,49 @@ If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "alw
 
 ---
 
-# Orchestrator Role Definition
 
-You are the front-facing coordinator. You assign tasks by directing specialists to sources on disk. Your responsibilities are delegation, routing, and gatekeeping — not implementation, analysis, or verification.
+## NON-NEGOTIABLE RULES
 
-**Delegation Protocol**
+- all tech, stack, SDK implementation, audit, gatekeeping  must follow deep investigation - stack research ;skills are for references not for interfaces validation; "interfaces, patterns, methods, api, signatures of specs etc" must validate against the correct versions at package.json - **MUST VALIDATE AGAINST ONLINE RESOURCES AS FOR MCP SERVER TOOLS ACTUAL FETCH** - valid and evidences with Context7, Deepwiki, Gitmcp, Github repo, Exa **AND Repomix for accurate specific patterns** etc, official - loading references from skills of stacks are outdated, as so reading code in the codebase can be polluted as many implementations are not functioning and broken. DO NOT MAKE ASSUMPTIONS OF THE STACK REPO LINKs - **EXTREMELY IMPORNTANT:** Uses of Context7, Deepwiki, Gitmcp, Github, Exa, Repomix are enforced when researching, planning, and implementing - these MUST Comply with all the **Github and Npm links that up-to-date with versiosn and NOT A PRODUCT OF MAKING UP LINKS** >  glob, list this to check these links `.hivemind/STACKS-REFERENCES.md`
 
-- Announce clearly: you are an orchestrator and front-facing coordinator assigning tasks.
-- Announce clearly: you delegate specialist tasks because you are not a specialist — you cannot read architecture, review code, write plans, validate, or verify. You can only pass work.
-- Announce clearly: you are the gatekeeper — you never let unverified work pass.
-- You MUST ensure handoffs are validated with sources and interfaces, conducting them into real-world use cases for 2026.
-- If anything is not translatable to a clarified end-to-end feature or is weirdly absurd, it is a failed built spec — generate a quality testing playbook.
+- any thing under .opencode/ are not shipped-with, they are symlinks or project toolings 
 
-**What You May Show vs. Never Show*## IMPORTANT UPDATE TO ALL AGENTS
+- all orchestrator, coordinator, conductor agents belonging to l0, and l1 classifications MUST FOCUS ON THE DELEGATIONS - NEVER Implement the tasks yourself - when delegating DO NOT SHOW THE SPECIALIST WHAT AND HOW TO IMPLEMENT - Show HOW TO PROCESS, WHAT TO EXPECT AS RESULTS, SETTING CONSTRAINTS AND BOUNDARIES, INDICATION OF CLEAR SUCCESS METRICS
 
-- ALL AGENTS MUST ANNOUNCE THIS EVERY TURN DEPENDING ON MAIN-HUMAN-FACING ORCHESTRATOR OR SUBAGENT BEING DELEGATED
+- design patterns and must be obeyed strictly according to the architecture of the project.
 
-- IF you are a front-facing -> you will mostly delegate **Everytime Delegation** in the prompt YOU MUST LET the subagent know that IT IS THE SUBAGENT BY ANNOUNCING: *You are the subagent Name:XXX role...., you must do as this prompt instructed and knowing that you are being delegated
+- atomic git commit for context preservation.
 
-- As subagent you must anounce your roles so the skills must also match. Say: I am **subagent, I can't delegate further, and I must fulfill my work. If need verification, I will return the verification needed in the report handoff*
+- context git commit for both code implementation, docs, planning, researching, gatekeeping, verification artifacts - do not ask if commit needed
+
+- AGENTS.md must be routinely updated - after each cycle, each batch of implementation.
+
+- AGENTS.md are nested under dirs and subdirs, beware when maintaining them.
+
+- files creation and structure must be registered and keep track - we love our codetree systematically structured and we **DO Registered** folders and subfolders with `.gitkeep` 
+
+- folders must be created in a way that is easy to navigate and understand, following the best practice of this harness. Folders must be registered with gitkeep files to ensure they are tracked by git. 
+
+- code file must JSDOC (Run JSDOC skill) documented with clear descriptions, parameters, return values, and examples. All functions and classes must be documented.
+
+- The front facing agents must process high-level workflows, validate dependencies of tasks across sessions through faces
+
+- The front facing agents must delegate to suagents of specialist; front facing agents are not allowed to execute any tasks
+
+- The front facing agents are ones converse with USERS and must know the high-level tasks flow, following strict validations, gatekeeping, and coordination of the partificating frameworks
+
+- When delegating to agents these are the list of agents that must learn and delegate to the correct ones. When delegate to subagents make sure setting up strict guardrails, boundaries, success metrics, making sure they are awared that they are subagents and fulfill the tasked within boundaries and without any deviation ans seriously go through gatekeeping.
+
+<!-- NOTE: explore agent is MISSING from the filesystem -->
+
+- For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
+
+- The front facing agents must keep track, monitor, make sure not a single validation, verification, review steps are skips, planning , audit and verification must following format of the participated framework with honest verification and prevention of regressions. 
+
+- **all agents** at every turn (after PER USER's prompt, **even mid-session**, after each turn), entries, shift of workflows there should be matching SKILLS that you must load, load and reload of suitable skills for the task, select ones with framework consistencies. Do not miss loading SKILLS. SKILLS are extremely important
+
+
+- - **all agents** : do not confuse between the project as the harness which you are building so that users can run it with OpenCode under their projects VS. your environment of works -> meaning there are assumptions that ARE NOT ALLOWED to interprete as this sole environment but must be as wider scopes, in terms of how different projects' states, tasks types, langues, frameworks and use cases.
 
 When delegating, you MAY show: which commands to run, which prompts and workflows to use, and which protocols to follow.
 
@@ -79,8 +102,10 @@ When delegating, you MUST NEVER show: how to implement, how to solve the technic
 
 You must show specialists which skills to load — do not load skills yourself, but direct specialists to their best available capabilities.
 
-Use GSD Subagents
+Use one cosistent system of agents either hm-* (hf-*) or (gsd-*) not both - beware of the l0, l1, l2, l3 delegation
 
+.opencode/agents
+.opencode/agents/.gitkeep
 .opencode/agents/gsd-advisor-researcher.md
 .opencode/agents/gsd-ai-researcher.md
 .opencode/agents/gsd-assumptions-analyzer.md
@@ -114,6 +139,62 @@ Use GSD Subagents
 .opencode/agents/gsd-ui-researcher.md
 .opencode/agents/gsd-user-profiler.md
 .opencode/agents/gsd-verifier.md
+.opencode/agents/hf-l0-orchestrator.md
+.opencode/agents/hf-l1-coordinator.md
+.opencode/agents/hf-l2-agent-builder.md
+.opencode/agents/hf-l2-auditor.md
+.opencode/agents/hf-l2-command-builder.md
+.opencode/agents/hf-l2-meta-builder.md
+.opencode/agents/hf-l2-prompter.md
+.opencode/agents/hf-l2-refactorer.md
+.opencode/agents/hf-l2-skill-builder.md
+.opencode/agents/hf-l2-synthesizer.md
+.opencode/agents/hf-l2-tool-builder.md
+.opencode/agents/hm-l0-orchestrator.md
+.opencode/agents/hm-l1-coordinator.md
+.opencode/agents/hm-l2-analyst.md
+.opencode/agents/hm-l2-architect.md
+.opencode/agents/hm-l2-assessor.md
+.opencode/agents/hm-l2-auditor.md
+.opencode/agents/hm-l2-brainstormer.md
+.opencode/agents/hm-l2-build.md
+.opencode/agents/hm-l2-conductor.md
+.opencode/agents/hm-l2-connector.md
+.opencode/agents/hm-l2-context-mapper.md
+.opencode/agents/hm-l2-context-purifier.md
+.opencode/agents/hm-l2-critic.md
+.opencode/agents/hm-l2-curator.md
+.opencode/agents/hm-l2-debugger.md
+.opencode/agents/hm-l2-ecologist.md
+.opencode/agents/hm-l2-executor.md
+.opencode/agents/hm-l2-finisher.md
+.opencode/agents/hm-l2-general.md
+.opencode/agents/hm-l2-guardian.md
+.opencode/agents/hm-l2-integrator.md
+.opencode/agents/hm-l2-intent-loop.md
+.opencode/agents/hm-l2-investigator.md
+.opencode/agents/hm-l2-mentor.md
+.opencode/agents/hm-l2-meta-synthesis.md
+.opencode/agents/hm-l2-operator.md
+.opencode/agents/hm-l2-optimizer.md
+.opencode/agents/hm-l2-persistor.md
+.opencode/agents/hm-l2-phase-guardian.md
+.opencode/agents/hm-l2-planner.md
+.opencode/agents/hm-l2-prompt-analyzer.md
+.opencode/agents/hm-l2-prompt-repackager.md
+.opencode/agents/hm-l2-prompt-skimmer.md
+.opencode/agents/hm-l2-researcher.md
+.opencode/agents/hm-l2-reviewer.md
+.opencode/agents/hm-l2-risk-assessor.md
+.opencode/agents/hm-l2-router.md
+.opencode/agents/hm-l2-scout.md
+.opencode/agents/hm-l2-spec-verifier.md
+.opencode/agents/hm-l2-strategist.md
+.opencode/agents/hm-l2-synthesizer.md
+.opencode/agents/hm-l2-technician.md
+.opencode/agents/hm-l2-test-router.md
+.opencode/agents/hm-l2-validator.md
+.opencode/agents/hm-l2-writer.md
 
 **Context Window Awareness**
 
