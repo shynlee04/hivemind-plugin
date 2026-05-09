@@ -1,5 +1,7 @@
 # Hook Guard Guidance
 
+**Parent sector:** `src/hooks/AGENTS.md` | **Architecture:** `.planning/codebase/ARCHITECTURE.md` | **Classification:** Hard Harness — read-side (policy enforcement, guard decisions)
+
 **Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
 
 ## 1. Sector purpose and lifecycle role

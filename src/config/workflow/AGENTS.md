@@ -1,5 +1,7 @@
 # Config Workflow Guidance
 
+**Parent sector:** `src/config/AGENTS.md` | **Architecture:** `.planning/codebase/ARCHITECTURE.md` | **Classification:** Hard Harness — write-side (workflow state transitions, `.hivemind/` persistence)
+
 **Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
 
 ## 1. Sector purpose and lifecycle role

@@ -1,5 +1,7 @@
 # Schema Kernel Sector Guidance
 
+**Parent sector:** `src/AGENTS.md` | **Architecture:** `.planning/codebase/ARCHITECTURE.md` | **Classification:** Hard Harness — validation-leaf (Zod v4 contracts, no durable writes)
+
 **Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
 
 ## 1. Sector purpose and lifecycle role
