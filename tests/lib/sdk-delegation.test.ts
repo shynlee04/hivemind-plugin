@@ -521,7 +521,12 @@ describe("SdkDelegationHandler", () => {
       vi.spyOn(sessionApi, "getSessionMessageCount").mockResolvedValue(5)
 
       handler.scheduleStabilityPoll(delegation.id)
-      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS)
+      // Advance enough to fire the calculated adaptive interval (which may be
+      // POLL_INTERVAL_BASE_MS or POLL_INTERVAL_IDLE_MS depending on how much
+      // fake time was consumed by the detector stability timeout above).
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_IDLE_MS)
+      // Flush microtasks for nested async operations (finalizeSdkDelegation → getSessionMessages)
+      await vi.advanceTimersByTimeAsync(0)
 
       expect(callbacks.onTerminal).toHaveBeenCalledWith(
         delegation.id,

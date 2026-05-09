@@ -1,7 +1,7 @@
 import type { OpencodeClient as OpenCodeClient } from "@opencode-ai/sdk"
 
 import type { CompletionDetector } from "../completion/detector.js"
-import { extractAllAssistantText } from "../../shared/helpers.js"
+import { extractAllAssistantText, hasAssistantWorkEvidence } from "../../shared/helpers.js"
 import { getSessionMessageCount, getSessionMessages, getSessionStatusMap } from "../../shared/session-api.js"
 import {
   STABLE_POLLS_REQUIRED,
@@ -256,6 +256,27 @@ export class SdkDelegationHandler {
     }
   }
 
+  /**
+   * Check if a child session is still actively processing (not idle).
+   *
+   * Queries the session status map via the SDK. Returns `true` if the session
+   * is in a non-idle state (e.g., "busy" / "running"), meaning the agent is
+   * still actively working. Returns `false` if the session is idle or if the
+   * status cannot be determined (defensive: treat unknown as not-busy to avoid
+   * blocking finalization indefinitely).
+   */
+  private async isSessionBusy(childSessionId: string): Promise<boolean> {
+    try {
+      const statusMap = await getSessionStatusMap(this.client)
+      const status = statusMap[childSessionId]
+      // If status exists and has a type that is NOT "idle", the session is busy
+      return status?.type != null && status.type !== "idle"
+    } catch {
+      // Defensive: if we can't get status, don't block finalization
+      return false
+    }
+  }
+
   private async finalizeSdkDelegation(delegationId: string): Promise<void> {
     const delegation = this.callbacks.getDelegation(delegationId)
     if (!delegation || delegation.status !== "running") {
@@ -265,7 +286,29 @@ export class SdkDelegationHandler {
     try {
       const messages = await getSessionMessages(this.client, delegation.childSessionId)
       delegation.result = extractAllAssistantText(messages)
+
+      // Layer 3: If text is empty but assistant has tool-use evidence (active work),
+      // treat as success rather than error — the agent was productive even without
+      // emitting text output.
       if (!delegation.result.trim()) {
+        if (hasAssistantWorkEvidence(messages)) {
+          delegation.result = "[Harness] Delegation completed with tool-use evidence but no text output."
+          this.callbacks.onTerminal(delegationId, "completed")
+          return
+        }
+
+        // Layer 2: Before erroring on empty result, check if session is still busy.
+        // If the agent is still actively working (e.g., executing tool calls),
+        // re-schedule the poll instead of finalizing with an error.
+        const busy = await this.isSessionBusy(delegation.childSessionId)
+        if (busy) {
+          // Session is still active — re-schedule stability poll
+          if (!this.stabilityTimers.has(delegationId)) {
+            this.scheduleStabilityPoll(delegationId)
+          }
+          return
+        }
+
         this.callbacks.onTerminal(
           delegationId,
           "error",

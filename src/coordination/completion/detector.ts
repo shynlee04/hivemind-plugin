@@ -23,7 +23,7 @@ export class CompletionDetector {
   private messageCounts = new Map<string, number>()
   private stabilityTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
-  constructor(private readonly stabilityTimeoutMs: number = 10000) {}
+  constructor(private readonly stabilityTimeoutMs: number = 30000) {}
 
   feed(eventType: string, sessionID: string | undefined, error?: string): void {
     if (!sessionID) {

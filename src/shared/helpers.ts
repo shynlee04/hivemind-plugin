@@ -250,6 +250,44 @@ export function extractAllAssistantText(messages: unknown[]): string {
 }
 
 /**
+ * Check whether assistant messages contain tool-use or other non-text work evidence.
+ *
+ * Used by delegation finalization to avoid erroring on "empty text" when the
+ * assistant has been actively calling tools (tool_use, tool_result, or other
+ * non-text part types indicate productive work even if no text was emitted).
+ *
+ * @param messages - Array of session messages (same shape as extractAllAssistantText).
+ * @returns `true` if any assistant message contains at least one non-text part,
+ *          indicating tool-use or other work evidence.
+ */
+export function hasAssistantWorkEvidence(messages: unknown[]): boolean {
+  for (const message of messages) {
+    const role =
+      asString(getNestedValue(message, ["info", "role"])) ??
+      asString(getNestedValue(message, ["role"]))
+
+    if (role !== "assistant") {
+      continue
+    }
+
+    const parts = getNestedValue(message, ["parts"])
+    if (!Array.isArray(parts)) {
+      continue
+    }
+
+    for (const part of parts) {
+      const partType = getNestedValue(part, ["type"])
+      // Any non-text part (tool_use, tool_result, etc.) indicates active work
+      if (typeof partType === "string" && partType !== "text") {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+/**
  * Convert an unknown error value to a human-readable string message.
  */
 export function describeError(error: unknown): string {
