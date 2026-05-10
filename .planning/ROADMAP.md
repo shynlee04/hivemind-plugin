@@ -118,6 +118,14 @@ The shell/PTY/background command lane is real and cross-cutting across `run-back
 | CP-PTY-04 | Cross-Cutting Shell Integration | ⬜ NOT PLANNED | CP-PTY-03, MCM-03 | L2-L3: context integration, journal recording, permission propagation, hook guards tests |
 | SC-PTY-01 | Read-Only Terminal Projection | ⬜ DEFERRED | CP-PTY-01, Q2 sidecar decision confirmation | L2-L3: read-only projection proof |
 
+### Session Tracker Runway
+
+The session tracker replaces the broken event-tracker (`src/task-management/journal/event-tracker/`) with a new `src/features/session-tracker/` module that captures session lifecycle, messages, tool calls, and delegation hierarchies into structured `.hivemind/session-tracker/` artifacts. Uses OpenCode SDK v2 hooks (`chat.message`, `tool.execute.after`, `event`, `experimental.session.compacting`). Fixes 12 catalogued flaws (F1-F12) from `.hivemind/audit/flaw-register-2026-05-10.json`.
+
+| Phase | Title | Status | Depends On | Evidence Required |
+|-------|-------|--------|------------|-------------------|
+| CP-ST-01 | Session Tracker Revamp | 🔵 SPEC-PHASE | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: hook wiring tests, file format validation, migration verification |
+
 ### BOOT-01 Scope: Research & Architecture Decision
 
 Before writing code:
