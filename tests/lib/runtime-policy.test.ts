@@ -53,9 +53,9 @@ describe("DEFAULT_RUNTIME_POLICY", () => {
     expect(DEFAULT_RUNTIME_POLICY.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(false)
   })
 
-  it("category gate defaults deny unknown categories and protect review/research", () => {
+  it("category gate defaults ask unknown categories and protect review/research", () => {
     expect(DEFAULT_RUNTIME_POLICY.categoryGate).toMatchObject({
-      denyUnknownCategories: true,
+      askUnknownCategories: true,
       commandCategory: "command",
     })
     expect(DEFAULT_RUNTIME_POLICY.categoryGate?.readonlyCategories).toEqual(expect.arrayContaining(["review", "research"]))
@@ -76,7 +76,7 @@ describe("loadRuntimePolicy", () => {
 
   it("rejects malformed category gate policy with [Harness] errors", () => {
     expect(() => loadRuntimePolicy({
-      categoryGate: { denyUnknownCategories: true, readonlyCategories: "review" as never, commandCategory: "command" },
+      categoryGate: { askUnknownCategories: true, readonlyCategories: "review" as never, commandCategory: "command" },
     })).toThrow("[Harness]")
   })
 

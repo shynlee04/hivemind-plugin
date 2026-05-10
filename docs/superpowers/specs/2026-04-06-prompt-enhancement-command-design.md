@@ -220,7 +220,7 @@ All agents use **only OpenCode native tools** — no skill dependencies, no MCP 
 | `webfetch` | allow | context-mapper |
 | `websearch` | ask | context-mapper (optional) |
 | `lsp` | ask | context-mapper (optional) |
-| `task` | deny | ALL subagents |
+| `task` | ask | ALL subagents |
 | `task` | allow | hivefiver-orchestrator (required for dispatching subagents) |
 | `todowrite` | allow | orchestrator only |
 

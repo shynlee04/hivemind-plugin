@@ -14,9 +14,9 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
@@ -86,7 +86,7 @@ List CI-fallback assumptions, unresolved clarifications, or intentionally deferr
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- NEVER spawn subagents (task: ask).
 - NEVER ask clarifying questions — assemble from available inputs only.
 - NEVER omit any of the required XML-tagged sections.
 - NEVER include unverified references — use context-mapper verified paths only.

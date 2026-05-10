@@ -88,7 +88,7 @@ Control which skills agents can access using pattern-based permissions in openco
     "skill": {
       "*": "allow",
       "pr-review": "allow",
-      "internal-*": "deny",
+      "internal-*": "ask",
       "experimental-*": "ask"
     }
   }
@@ -96,7 +96,7 @@ Control which skills agents can access using pattern-based permissions in openco
 
 Permission	Behavior
 allow	Skill loads immediately
-deny	Skill hidden from agent, access rejected
+ask	Skill hidden from agent, access rejected
 ask	User prompted for approval before loading
 Patterns support wildcards: internal-* matches internal-docs, internal-tools, etc.
 
@@ -155,4 +155,4 @@ If a skill does not show up:
 Verify SKILL.md is spelled in all caps
 Check that frontmatter includes name and description
 Ensure skill names are unique across all locations
-Check permissions—skills with deny are hidden from agents
+Check permissions—skills with ask are hidden from agents

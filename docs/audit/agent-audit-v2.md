@@ -28,7 +28,7 @@ The following are valid permission keys in OpenCode:
 
 `read`, `edit`, `bash`, `task`, `skill`, `glob`, `grep`, `list`, `webfetch`, `websearch`, `codesearch`, `external_directory`, `doom_loop`, `lsp`, `question`, `patch` (alias for edit)
 
-Valid values: `"allow"`, `"ask"`, `"deny"`, or object with pattern → value mapping.
+Valid values: `"allow"`, `"ask"`, `"ask"`, or object with pattern → value mapping.
 
 **Invalid permission keys found in this audit:**
 - `delegate-task` — NOT a valid OpenCode permission key (should be `task`)
@@ -118,7 +118,7 @@ Legend: ✅ PASS | ❌ FAIL | ⚠️ PARTIAL | 🔴 CRITICAL
 | Frontmatter validity | 🔴 **CRITICAL** — Uses `instruction:` (singular, not `instructions:`) with glob pattern `.opencode/rules/*.md` — valid YAML but non-standard field name |
 | Cross-references resolve | ❌ References skills that DON'T EXIST in active directory: `meta-builder`, `hivefiver`, `planning-with-files`, `coordinating-loop`, `use-authoring-skills`, `user-intent-interactive-loop`, `opencode-platform-reference`, `repomix-exploration-guide`, `opencode-non-interactive-shell`, `repomix-explorer`, `skill-synthesis`, `agents-and-subagents-dev`, `command-dev`, `custom-tools-dev` — ALL are in `.archive` directories |
 | No duplicates | 🔴 **CRITICAL** — File contains DUPLICATE Task_Management sections (lines ~55-113 and ~116-166). Contains duplicate `permission:` blocks (the second overrides the first). Contains malformed markdown with backtick escaping (`\Todowrite\``). Body content appears to be injected TypeScript code from `buildDefaultSisyphusPrompt()` function — not agent instructions. |
-| Tool permissions valid | ⚠️ `patch` is valid but redundant with `edit`. First `permission` block has `read: {"*": deny, "*.json": allow, "*.md": allow}` but second block has `read: allow` — the second overrides, making the first useless. |
+| Tool permissions valid | ⚠️ `patch` is valid but redundant with `edit`. First `permission` block has `read: {"*": ask, "*.json": allow, "*.md": allow}` but second block has `read: allow` — the second overrides, making the first useless. |
 | Role distinct | ❌ **Description is IDENTICAL to conductor.md** — "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly." |
 | Connects to ≥1 resource | ⚠️ No command directly invokes coordinator.md |
 | No hardcoded paths | ✅ | All relative |
@@ -424,7 +424,7 @@ Legend: ✅ PASS | ❌ FAIL | ⚠️ PARTIAL | 🔴 CRITICAL
 | Frontmatter validity | 🔴 **CRITICAL** — Uses `tools:` (deprecated), has TWO `permission:` blocks (second overrides first), `"temperature":` with quotes |
 | Cross-references resolve | ❌ Same dead skill references as refactoring/coordinator.md |
 | No duplicates | 🔴 **CRITICAL** — Same corruption: duplicate Task_Management sections, TypeScript code injection, malformed backticks |
-| Tool permissions valid | ❌ First block: `read: {"*": deny}` overridden by second block: `read: allow` |
+| Tool permissions valid | ❌ First block: `read: {"*": ask}` overridden by second block: `read: allow` |
 | Role distinct | ❌ Same description as conductor.md |
 | Connects to ≥1 resource | ❌ No command invokes this orchestrator copy |
 | No hardcoded paths | ✅ | All relative |

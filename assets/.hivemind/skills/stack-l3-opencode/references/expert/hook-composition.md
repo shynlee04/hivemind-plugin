@@ -150,9 +150,9 @@ Context Overflow Detected
 
 ```typescript
 "permission.ask": async (input, output) => {
-  // Circuit breaker: auto-deny when budget exhausted
+  // Circuit breaker: auto-ask when budget exhausted
   if (await isBudgetExhausted(input.sessionID)) {
-    output.status = "deny"
+    output.status = "ask"
     return
   }
 
@@ -167,7 +167,7 @@ Context Overflow Detected
 }
 ```
 
-**Three states:** `"ask"` (default, show prompt), `"allow"` (silently approve), `"deny"` (silently reject). The `Permission` type includes `metadata: { [key: string]: unknown }` with tool-specific context.
+**Three states:** `"ask"` (default, show prompt), `"allow"` (silently approve), `"ask"` (silently reject). The `Permission` type includes `metadata: { [key: string]: unknown }` with tool-specific context.
 
 ---
 

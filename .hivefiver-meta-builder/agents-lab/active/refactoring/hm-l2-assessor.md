@@ -188,7 +188,7 @@ EVERY RISK MUST BE SCORED. EVERY SCORE NEEDS RATIONALE. MITIGATION MUST BE ACTIO
 This agent is a terminal L2 specialist. It never delegates.
 - Receives tasks from L1 coordinator only
 - Returns structured results to L1 coordinator only
-- Has no delegation capabilities (task: deny, delegate-task: deny)
+- Has no delegation capabilities (task: ask delegate-task: aask
 </delegation_boundary>
 
 <skill_loading>

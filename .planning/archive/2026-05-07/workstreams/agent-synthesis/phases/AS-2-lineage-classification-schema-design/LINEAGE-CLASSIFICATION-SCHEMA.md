@@ -41,30 +41,30 @@ Every hm-* and hf-* agent MUST declare these fields in its YAML frontmatter. The
 
 ### 1.2 Permission Block (Required)
 
-Every agent MUST declare a `permission:` block following the deny-all + explicit allow principle (AS-1 Section 4). The permission block contains:
+Every agent MUST declare a `permission:` block following the ask-all + explicit allow principle (AS-1 Section 4). The permission block contains:
 
 ```yaml
 permission:
   # Native OpenCode tools
-  read: allow | deny
-  edit: allow | deny | { scope: pattern }
-  write: allow | deny | { scope: pattern }
-  bash: allow | deny | { pattern: value }
-  glob: allow | deny
-  grep: allow | deny
+  read: allow | ask
+  edit: allow | ask | { scope: pattern }
+  write: allow | ask | { scope: pattern }
+  bash: allow | ask | { pattern: value }
+  glob: allow | ask
+  grep: allow | ask
 
   # Hivemind custom tools
-  task: allow | deny | { pattern: value }
-  delegate-task: allow | deny
-  delegation-status: allow | deny
-  session-journal-export: allow | deny
-  prompt-skim: allow | deny
-  prompt-analyze: allow | deny
-  session-patch: allow | deny
+  task: allow | ask | { pattern: value }
+  delegate-task: allow | ask
+  delegation-status: allow | ask
+  session-journal-export: allow | ask
+  prompt-skim: allow | ask
+  prompt-analyze: allow | ask
+  session-patch: allow | ask
 
-  # Skill loading (deny-all base required)
+  # Skill loading (ask-all base required)
   skill:
-    "*": deny
+    "*": ask
     "hm-detective": allow
     # ... domain-specific skills
 ```
@@ -134,20 +134,20 @@ export const HivemindAgentFrontmatterSchema = AgentFrontmatterSchema.extend({
   domain: z.string().optional(),
   instruction: z.array(z.string()).default([]),
   permission: z.object({
-    read: z.union([z.enum(["allow", "deny"]), z.record(z.string())]),
-    edit: z.union([z.enum(["allow", "deny"]), z.record(z.string())]),
-    write: z.union([z.enum(["allow", "deny"]), z.record(z.string())]),
-    bash: z.union([z.enum(["allow", "deny"]), z.record(z.string())]),
-    glob: z.enum(["allow", "deny"]),
-    grep: z.enum(["allow", "deny"]),
-    task: z.union([z.enum(["allow", "deny"]), z.record(z.string())]),
-    delegate-task: z.enum(["allow", "deny"]),
-    delegation-status: z.enum(["allow", "deny"]),
-    session-journal-export: z.enum(["allow", "deny"]),
-    prompt-skim: z.enum(["allow", "deny"]),
-    prompt-analyze: z.enum(["allow", "deny"]),
-    session-patch: z.enum(["allow", "deny"]),
-    skill: z.record(z.enum(["allow", "deny"])),
+    read: z.union([z.enum(["allow", "ask"]), z.record(z.string())]),
+    edit: z.union([z.enum(["allow", "ask"]), z.record(z.string())]),
+    write: z.union([z.enum(["allow", "ask"]), z.record(z.string())]),
+    bash: z.union([z.enum(["allow", "ask"]), z.record(z.string())]),
+    glob: z.enum(["allow", "ask"]),
+    grep: z.enum(["allow", "ask"]),
+    task: z.union([z.enum(["allow", "ask"]), z.record(z.string())]),
+    delegate-task: z.enum(["allow", "ask"]),
+    delegation-status: z.enum(["allow", "ask"]),
+    session-journal-export: z.enum(["allow", "ask"]),
+    prompt-skim: z.enum(["allow", "ask"]),
+    prompt-analyze: z.enum(["allow", "ask"]),
+    session-patch: z.enum(["allow", "ask"]),
+    skill: z.record(z.enum(["allow", "ask"])),
   }),
 }).strict()
 ```
@@ -179,29 +179,29 @@ color: blue
 steps: 100
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
   glob: allow
   grep: allow
   task:
     "*": allow
-    "L2-*": deny
+    "L2-*": ask
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
-  session-patch: deny
+  session-patch: ask
   skill:
-    "*": deny
+    "*": ask
     "hm-*": allow
     "gate-*": allow
     "stack-*": allow
-    "hf-*": deny
+    "hf-*": ask
 ---
 ```
 
@@ -225,25 +225,25 @@ instruction:
   - AGENTS.md
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
   glob: allow
   grep: allow
   task:
-    "*": deny
+    "*": ask
     "hm-*": allow
-    "hf-*": deny
+    "hf-*": ask
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    "*": deny
+    "*": ask
     "hm-coordinating-loop": allow
     "hm-subagent-delegation-patterns": allow
     "hm-completion-looping": allow
@@ -268,23 +268,23 @@ skills:
   - hm-synthesis
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
   glob: allow
   grep: allow
-  task: deny
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  task: ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    "*": deny
+    "*": ask
     "hm-detective": allow
     "hm-deep-research": allow
     "hm-synthesis": allow
@@ -313,25 +313,25 @@ instruction:
   - AGENTS.md
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
   glob: allow
   grep: allow
   task:
     "*": allow
-    "L2-*": deny
+    "L2-*": ask
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
-  session-patch: deny
+  session-patch: ask
   skill:
-    "*": deny
+    "*": ask
     "hf-*": allow
     "hm-*": allow
     "gate-*": allow
@@ -357,25 +357,25 @@ skills:
   - gate-lifecycle-integration
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
   glob: allow
   grep: allow
   task:
-    "*": deny
+    "*": ask
     "hf-*": allow
     "hm-*": allow
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    "*": deny
+    "*": ask
     "hf-agents-and-subagents-dev": allow
     "hf-delegation-gates": allow
     "hm-completion-looping": allow
@@ -409,19 +409,19 @@ permission:
   write:
     scope: ".opencode/agents/"
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
   glob: allow
   grep: allow
-  task: deny
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  task: ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    "*": deny
+    "*": ask
     "hf-agents-and-subagents-dev": allow
     "hf-agent-composition": allow
     "hm-detective": allow
@@ -555,7 +555,7 @@ An agent qualifies as **hf-*** when:
 
 1. **L0 → L1 only.** An orchestrator dispatches work to L1 coordinators. It never delegates directly to L2 specialists.
 2. **L1 → L2 only.** A coordinator dispatches tasks to L2 specialists. It never delegates to another L1 or back to L0.
-3. **L2 cannot delegate.** A specialist executes its task and returns results. It never spawns subagents. The `task: deny` and `delegate-task: deny` permissions are mandatory.
+3. **L2 cannot delegate.** A specialist executes its task and returns results. It never spawns subagents. The `task: ask` and `delegate-task: ask` permissions are mandatory.
 4. **Temperature decreases with depth.** Lower depth = more deterministic. L0 needs flexibility for routing decisions and intent classification. L2 needs precision for implementation correctness.
 5. **Permission scope narrows with depth.** L0 has broad read access and delegation rights. L1 has scoped read and delegation. L2 has domain-scoped write and no delegation.
 
@@ -590,9 +590,9 @@ An agent qualifies as **hf-*** when:
 
 ## 4. Permission Model Templates
 
-### 4.1 Core Principle: Deny-All, Allow-Explicit
+### 4.1 Core Principle: ask-All, Allow-Explicit
 
-Every agent's permission block MUST start with `"*": deny` for each category. No implicit access — every tool access must be explicitly granted.
+Every agent's permission block MUST start with `"*": ask` for each category. No implicit access — every tool access must be explicitly granted.
 
 ### 4.2 Tool Categories Reference
 
@@ -614,10 +614,10 @@ Every agent's permission block MUST start with `"*": deny` for each category. No
 permission:
   # ── Native OpenCode ───────────────────────
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
     "npx *": allow
@@ -626,16 +626,16 @@ permission:
 
   # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
+    "*": ask
     "hm-*": allow
     "hf-*": allow    # L0 orchestrator may dispatch to any L1
-    "L2-*": deny      # Never delegate directly to L2
+    "L2-*": ask      # Never delegate directly to L2
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
-  session-patch: deny
+  session-patch: ask
 
   # ── MCP / Web ─────────────────────────────
   webfetch: allow
@@ -643,11 +643,11 @@ permission:
 
   # ── Skills ────────────────────────────────
   skill:
-    "*": deny
+    "*": ask
     "hm-*": allow      # All product-dev skills
     "gate-*": allow    # Quality gate triad
     "stack-*": allow   # Tech stack references
-    "hf-*": deny       # hm STRICT: no meta-builder skills
+    "hf-*": ask       # hm STRICT: no meta-builder skills
 ```
 
 ### 4.4 Template: hm-L1 (Coordinator)
@@ -656,10 +656,10 @@ permission:
 permission:
   # ── Native OpenCode ───────────────────────
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
   glob: allow
@@ -667,17 +667,17 @@ permission:
 
   # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
+    "*": ask
     "hm-*": allow
-    "hf-*": deny      # hm STRICT
-    "L0-*": deny       # Never delegate upward
-    "L1-*": deny       # Never delegate laterally
+    "hf-*": ask      # hm STRICT
+    "L0-*": ask       # Never delegate upward
+    "L1-*": ask       # Never delegate laterally
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
 
   # ── MCP / Web ─────────────────────────────
   webfetch: allow
@@ -685,7 +685,7 @@ permission:
 
   # ── Skills ────────────────────────────────
   skill:
-    "*": deny
+    "*": ask
     "hm-coordinating-loop": allow
     "hm-subagent-delegation-patterns": allow
     "hm-completion-looping": allow
@@ -701,30 +701,30 @@ permission:
 permission:
   # ── Native OpenCode ───────────────────────
   read: allow
-  edit: deny           # Read-only specialist
-  write: deny
+  edit: ask           # Read-only specialist
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
   glob: allow
   grep: allow
 
   # ── Hivemind Custom ───────────────────────
-  task: deny            # L2 never delegates
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  task: ask            # L2 never delegates
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
 
   # ── MCP / Web ─────────────────────────────
-  webfetch: deny
-  websearch: deny
+  webfetch: ask
+  websearch: ask
 
   # ── Skills ────────────────────────────────
   skill:
-    "*": deny
+    "*": ask
     "hm-detective": allow
     "hm-deep-research": allow
     "hm-synthesis": allow
@@ -737,10 +737,10 @@ permission:
 permission:
   # ── Native OpenCode ───────────────────────
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
     "npx *": allow
@@ -749,16 +749,16 @@ permission:
 
   # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
+    "*": ask
     "hf-*": allow      # Dispatch to hf L1 coordinators
     "hm-*": allow      # May dispatch to hm L1 for cross-cutting work
-    "L2-*": deny        # Never delegate directly to L2
+    "L2-*": ask        # Never delegate directly to L2
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
-  session-patch: deny
+  session-patch: ask
 
   # ── MCP / Web ─────────────────────────────
   webfetch: allow
@@ -766,7 +766,7 @@ permission:
 
   # ── Skills ────────────────────────────────
   skill:
-    "*": deny
+    "*": ask
     "hf-*": allow       # All meta-builder skills
     "hm-*": allow       # hf FLEXIBLE: cross-lineage access
     "gate-*": allow     # Quality gate triad
@@ -779,10 +779,10 @@ permission:
 permission:
   # ── Native OpenCode ───────────────────────
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
   glob: allow
@@ -790,18 +790,18 @@ permission:
 
   # ── Hivemind Custom ───────────────────────
   task:
-    "*": deny
+    "*": ask
     "hf-agent-builder": allow
     "hf-skill-author": allow
     "hivefiver-*": allow
-    "L0-*": deny        # Never delegate upward
-    "L1-*": deny         # Never delegate laterally
+    "L0-*": ask        # Never delegate upward
+    "L1-*": ask         # Never delegate laterally
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
 
   # ── MCP / Web ─────────────────────────────
   webfetch: allow
@@ -809,7 +809,7 @@ permission:
 
   # ── Skills ────────────────────────────────
   skill:
-    "*": deny
+    "*": ask
     "hf-agents-and-subagents-dev": allow
     "hf-delegation-gates": allow
     "hm-coordinating-loop": allow
@@ -828,7 +828,7 @@ permission:
   write:
     scope: ".opencode/agents/"
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
     "node *": allow
     "npx *": allow
@@ -836,21 +836,21 @@ permission:
   grep: allow
 
   # ── Hivemind Custom ───────────────────────
-  task: deny             # L2 never delegates
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  task: ask             # L2 never delegates
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
 
   # ── MCP / Web ─────────────────────────────
-  webfetch: deny
-  websearch: deny
+  webfetch: ask
+  websearch: ask
 
   # ── Skills ────────────────────────────────
   skill:
-    "*": deny
+    "*": ask
     "hf-agents-and-subagents-dev": allow
     "hf-agent-composition": allow
     "hm-detective": allow
@@ -865,7 +865,7 @@ permission:
 1. L2 specialists inherit default read permissions from their L1 coordinator (read, glob, grep).
 2. Explicit permission in the agent's own frontmatter always overrides inherited defaults.
 3. Pattern-matched bash permissions follow glob semantics: `"git *"` matches `git status`, `git log`, etc.
-4. `"*": deny` is the mandatory base for all permission categories — no implicit access ever.
+4. `"*": ask` is the mandatory base for all permission categories — no implicit access ever.
 5. Write permission on L2 specialists MUST be scope-bound: `{ scope: ".opencode/agents/" }` or `{ scope: "src/" }`. Blanket `write: allow` is an AQUAL-05 violation.
 
 ---
@@ -921,7 +921,7 @@ When a task spans multiple domains:
 
 | Anti-Pattern | Detection | Correction |
 |-------------|-----------|------------|
-| **Direct-to-L2 dispatch** — L0 dispatches to L2 without L1 coordination | L0's `task:` has `"L2-*": deny` but dispatches to an L2-named agent | Route through L1 coordinator |
+| **Direct-to-L2 dispatch** — L0 dispatches to L2 without L1 coordination | L0's `task:` has `"L2-*": ask` but dispatches to an L2-named agent | Route through L1 coordinator |
 | **Cross-lineage confusion** — hm-L0 dispatches to hf-* agents for product work | hm agent task list includes hf-* names | hm agents route to hm coordinators only; hf tasks go through hf-orchestrator |
 | **Specialist overload** — L2 agent receives task outside its domain | L2 agent tries to load skills outside its domain | L1 coordinator validates domain match before dispatch |
 | **Cycle delegation** — L1-A delegates to L1-B which delegates back to L1-A | Circular `task:` permission chain | L1 never delegates laterally; depth hierarchy is strict tree |
@@ -938,7 +938,7 @@ When a task spans multiple domains:
 | **AQUAL-02** | 10 XML sections in body | Count XML closing tags | Yes | `</role>`, `</depth>`, `</lineage>`, `</task>`, `</scope>`, `</context>`, `</expected_output>`, `</verification>`, `</iron_law>`, `</output_contract>` all present |
 | **AQUAL-03** | Lineage match | Compare declared lineage vs skill list | Yes | hm-* agent has zero hf-* skills; hf-* agent may have hm-* skills |
 | **AQUAL-04** | Valid depth declared | Verify depth field | Yes | depth is exactly "L0", "L1", or "L2" |
-| **AQUAL-05** | Granular permissions | Check permission block | Partial | read, write, delegate arrays are explicit; no blanket `"*": allow` without deny base |
+| **AQUAL-05** | Granular permissions | Check permission block | Partial | read, write, delegate arrays are explicit; no blanket `"*": allow` without ask base |
 | **AQUAL-06** | Max 500 lines | Line count | Yes | `wc -l` (frontmatter + body) ≤ 500 |
 | **AQUAL-07** | Skill references resolve | Verify each skill exists | Yes | Every skill in `skills:` maps to `.opencode/skills/<name>/SKILL.md` (or recognized installed skill) |
 | **AQUAL-08** | Temperature within depth range | Numeric check | Yes | L0: 0.2–0.3, L1: 0.1–0.2, L2: 0.0–0.15 (or 0.15–0.25 with `# creative exception` comment) |
@@ -1029,15 +1029,15 @@ function validatePermissions(agent: AgentFrontmatter): ValidationResult {
     return { valid: false, errors }
   }
 
-  // Check deny-all base for skills
+  // Check ask-all base for skills
   if (perm.skill && !perm.skill["*"]) {
-    errors.push("AQUAL-05 WARNING: skill block missing '*' deny base. Add 'skill: {\"*\": \"deny\"}'")
+    errors.push("AQUAL-05 WARNING: skill block missing '*' ask base. Add 'skill: {\"*\": \"ask\"}'")
   }
 
   // Check delegation rules by depth
   if (agent.depth === "L2") {
-    if (perm.task !== "deny" || perm["delegate-task"] !== "deny") {
-      errors.push("AQUAL-05 VIOLATION: L2 specialist must have task: deny and delegate-task: deny")
+    if (perm.task !== "ask" || perm["delegate-task"] !== "ask") {
+      errors.push("AQUAL-05 VIOLATION: L2 specialist must have task: ask and delegate-task: ask")
     }
   }
 
@@ -1057,15 +1057,15 @@ function validatePermissions(agent: AgentFrontmatter): ValidationResult {
 [ ] AQUAL-02: All 10 XML closing tags present in body
 [ ] AQUAL-03: hm agent has zero hf-* skills (automated)
 [ ] AQUAL-04: depth is exactly L0, L1, or L2 (automated)
-[ ] AQUAL-05: permission block has deny-all base, L2 has task:deny (semi-automated)
+[ ] AQUAL-05: permission block has ask-all base, L2 has task:ask (semi-automated)
 [ ] AQUAL-06: `wc -l` ≤ 500 (automated)
 [ ] AQUAL-07: Every skill in skills: array resolves to existing skill file (automated)
 [ ] AQUAL-08: Temperature within depth range (automated)
 [ ] NAME-01: Name matches lineage-domain-role pattern (automated regex)
 [ ] NAME-02: Name prefix matches declared lineage (automated)
 [ ] LINEAGE-01: Cross-lineage skill binding enforced (automated via AQUAL-03)
-[ ] PERM-01: `"*": deny` base for skill loading (semi-automated)
-[ ] PERM-02: L2 has task: deny, delegate-task: deny (automated)
+[ ] PERM-01: `"*": ask` base for skill loading (semi-automated)
+[ ] PERM-02: L2 has task: ask, delegate-task: ask (automated)
 ```
 
 ---
@@ -1195,16 +1195,16 @@ depth: <L0|L1|L2>
 lineage: <hm|hf>
 permission:
   read: allow
-  edit: deny
-  write: deny
-  bash: { "*": deny }
+  edit: ask
+  write: ask
+  bash: { "*": ask }
   glob: allow
   grep: allow
-  task: deny
-  delegate-task: deny
-  delegation-status: deny
+  task: ask
+  delegate-task: ask
+  delegation-status: ask
   skill:
-    "*": deny
+    "*": ask
     "<skill-name>": allow
 ---
 ```
@@ -1259,7 +1259,7 @@ grep "^temperature:" agent.md
 | D-AD-01 (STRICT/FLEXIBLE) | REQUIREMENTS.md §4 | §2 (Two-Lineage Taxonomy) | 2026-04-29 |
 | D-AD-02 (3-level depth) | REQUIREMENTS.md §5 | §3 (Depth Level Definitions) | 2026-04-29 |
 | D-AD-04 (XML body) | AGENT-ARCHITECTURE-SYNTHESIS.md §3 | §1 (YAML Frontmatter Schema, references XML) | 2026-04-29 |
-| Permission deny-all principle | AGENT-ARCHITECTURE-SYNTHESIS.md §4 | §4 (Permission Model Templates) | 2026-04-29 |
+| Permission ask-all principle | AGENT-ARCHITECTURE-SYNTHESIS.md §4 | §4 (Permission Model Templates) | 2026-04-29 |
 | Temperature ranges by depth | AGENT-ARCHITECTURE-SYNTHESIS.md §8 | §3.3 (Temperature Guidelines) | 2026-04-29 |
 | Migration map (59 agents) | AGENT-ARCHITECTURE-SYNTHESIS.md §7 | §7 (Old→New Agent Mapping) | 2026-04-29 |
 | Anti-pattern catalog (AP-01–AP-07) | AGENT-ARCHITECTURE-SYNTHESIS.md §6 | §5.4 (Routing Anti-Patterns) | 2026-04-29 |

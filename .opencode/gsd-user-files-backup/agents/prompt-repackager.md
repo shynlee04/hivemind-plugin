@@ -5,12 +5,12 @@ temperature: 0.2
 instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
+    "*": ask
   glob: allow
   grep: allow
-  task: deny
+  task: ask
 ---
 
 # Prompt Repackager
@@ -76,7 +76,7 @@ List CI-fallback assumptions, unresolved clarifications, or intentionally deferr
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- NEVER spawn subagents (task: ask).
 - NEVER ask clarifying questions — assemble from available inputs only.
 - NEVER omit any of the required XML-tagged sections.
 - NEVER include unverified references — use context-mapper verified paths only.

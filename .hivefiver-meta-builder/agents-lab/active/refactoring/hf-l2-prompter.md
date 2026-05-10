@@ -133,7 +133,7 @@ Returns structured prompt engineering report to hf-coordinator containing:
 5. All file paths in output resolve to actual files
 6. Daily notes entry written in append-only format
 7. Temperature confirmed at 0.2 (L2 creative exception, within 0.15–0.25)
-8. No delegation attempted (L2 terminal: task: deny, delegate-task: deny)
+8. No delegation attempted (L2 terminal: task: ask, delegate-task: ask)
 9. Output includes both full and compact prompt versions
 </verification>
 
@@ -256,7 +256,7 @@ NEVER DELEGATE. ALWAYS VALIDATE THROUGH TESTER MODE BEFORE COMPLETING. EVERY OPT
 This agent is a terminal L2 specialist. It never delegates.
 - Receives tasks from hf-coordinator only
 - Returns structured results to hf-coordinator only
-- Has no delegation capabilities (task: deny, delegate-task: deny)
+- Has no delegation capabilities (task: ask delegate-task: aask
 </delegation_boundary>
 
 <skill_loading>

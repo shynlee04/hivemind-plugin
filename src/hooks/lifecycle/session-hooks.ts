@@ -257,11 +257,11 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
           contextLines.push(`- auto_loop_exhausted: ${autoLoopState.exhausted}`)
         }
 
-        ;(output.context as string[]).push(contextLines.join("\n"))
+        ; (output.context as string[]).push(contextLines.join("\n"))
       }
 
       if (continuity) {
-        ;(output.context as string[]).push(
+        ; (output.context as string[]).push(
           [
             "Harness continuity snapshot:",
             JSON.stringify(
@@ -306,7 +306,7 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
             model: continuity?.metadata.delegation?.model ?? null,
             temperature: null,
             tool_allow_list: [],
-            tool_deny_list: [],
+            tool_ask_list: [],
             constraints: continuity?.metadata.constraints ?? [],
             scope: null,
             project_root: null,
@@ -330,9 +330,9 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
           }
 
           const compactionPacket = toCompactionPacket(kernelPacket, extras)
-          ;(output.context as string[]).push(
-            "Intake compaction preservation:\n" + JSON.stringify(compactionPacket, null, 2)
-          )
+            ; (output.context as string[]).push(
+              "Intake compaction preservation:\n" + JSON.stringify(compactionPacket, null, 2)
+            )
         }
       }
     },

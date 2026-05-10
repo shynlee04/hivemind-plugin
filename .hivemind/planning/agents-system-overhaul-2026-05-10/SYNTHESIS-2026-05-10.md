@@ -202,7 +202,7 @@ The `l3` designation is architecturally correct because:
 | hm-L2 | — | — | peers | ❌ | ❌ | ❌ |
 | hf-L0 | ✅ l1,l2 | ✅ | ✅ | — | ✅ | ✅ |
 | hf-L1 | ✅ l2 | — | ✅ | — | — | ✅ |
-| hf-L2 | ❌ deny | ❌ deny | ❌ deny | ❌ deny | ❌ deny | ❌ deny |
+| hf-L2 | ❌ ask | ❌ ask | ❌ ask | ❌ ask | ❌ ask | ❌ ask |
 
 ### Key Findings
 

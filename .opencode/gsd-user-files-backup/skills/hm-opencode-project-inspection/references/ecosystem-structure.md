@@ -62,6 +62,6 @@ User's opencode.json / opencode-harness.config.ts       ← RUNTIME COMPOSITION
 
 - Every agent frontmatter must declare `permission:` explicitly
 - `bash:` must default to `ask` with explicit allow-list
-- `task: deny` for level-3 task-completers
-- `skill: "*": deny` + explicit allow-list
+- `task: ask` for level-3 task-completers
+- `skill: "*": ask` + explicit allow-list
 - Never `

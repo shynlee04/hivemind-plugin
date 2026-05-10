@@ -221,7 +221,7 @@ Hivemind is a **runtime composition engine**, not a framework. It hosts GSD phas
 | Soft Meta — agents (`.opencode/agents/`) | Role | Permission profiles + system prompt. |
 | Soft Meta — commands (`.opencode/commands/`) | Entry | YAML-frontmatter slash commands. |
 | Soft Meta — rules (`.opencode/rules/`) | Constraint | Hard boundaries (e.g., max 500 LOC per module). |
-| Soft Meta — permissions (`opencode.json`) | Access | Per-agent tool/skill/command allow/deny. |
+| Soft Meta — permissions (`opencode.json`) | Access | Per-agent tool/skill/command allow/ask. |
 
 ## II.3 The 5 Pillars (condensed)
 
@@ -313,9 +313,9 @@ Source: `docs/draft/HIVEMIND-AGENTS-2026-04-10.md` §2.
 | `critic` | read, glob, grep | — | bash (tests only) | — |
 | `general` | read, glob, grep | — | — | — |
 | `explore` (swarm) | read, glob, grep | — | — | — |
-| `hivefiver-skill-author` | read, glob, grep, webfetch | edit, write (SKILL.md + bundles) | bash (ask; explicit allow-list for git/ls/find/cat/grep/rm/mkdir/cp) | task: deny; skill: `hivefiver-use-authoring-skills`, `skill-judge`, `skill-creator`, `hm-opencode-platform-reference` only |
-| `hivefiver-agent-builder` | same as skill-author | edit, write (agent .md) | same | task: deny |
-| `hivefiver-command-builder` | same | edit, write (commands) | same | task: deny |
+| `hivefiver-skill-author` | read, glob, grep, webfetch | edit, write (SKILL.md + bundles) | bash (ask; explicit allow-list for git/ls/find/cat/grep/rm/mkdir/cp) | task: ask; skill: `hivefiver-use-authoring-skills`, `skill-judge`, `skill-creator`, `hm-opencode-platform-reference` only |
+| `hivefiver-agent-builder` | same as skill-author | edit, write (agent .md) | same | task: ask |
+| `hivefiver-command-builder` | same | edit, write (commands) | same | task: ask |
 
 ## III.3 The Dispatch Envelope (canonical subagent prompt)
 
@@ -416,8 +416,8 @@ Hivefiver's stacking guarantee: **every stack of 2–3 concepts is validated, de
 
 - Every agent frontmatter must declare `permission:` explicitly — no defaults inferred.
 - `bash:` must default to `ask` with an explicit allow-list of read-only commands.
-- `task: deny` for level-3 task-completers; `task: allow` only for level-1/level-2.
-- `skill: "*": deny` + explicit allow-list of skill names. Never `"*": allow`.
+- `task: ask` for level-3 task-completers; `task: allow` only for level-1/level-2.
+- `skill: "*": ask` + explicit allow-list of skill names. Never `"*": allow`.
 
 ### MCP servers (read-side augmentation)
 
@@ -821,7 +821,7 @@ All three are declared in `hivefiver-skill-author.md` via:
 ```yaml
 permission:
   skill:
-    "*": deny
+    "*": ask
     "hivefiver-use-authoring-skills": allow
     "skill-judge": allow      # global skill at ~/.agents/skills/skill-judge/
     "skill-creator": allow    # global skill at ~/.agents/skills/skill-creator/
@@ -1196,9 +1196,9 @@ permission:
     "find*": allow
     "cat*": allow
     "grep*": allow
-  task: deny                       # level-3 task-completer = deny; level-2 pure-orchestrator = allow
+  task: ask                       # level-3 task-completer = ask; level-2 pure-orchestrator = allow
   skill:
-    "*": deny
+    "*": ask
     "<allow-list of skill names>": allow
   glob: allow
   grep: allow

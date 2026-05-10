@@ -32,8 +32,8 @@ These are hard discrepancies between the codebase and the corrected requirements
 | MAX_DESCENDANTS_PER_ROOT | **50** | **10** | `src/plugin.ts:38` | **CRITICAL** — Was corrected in v2.0 (H-1) but code still uses 50 |
 | Default concurrency per lane | **1** | **3–5** | `src/lib/concurrency.ts:37` (`defaultLimit = 1`) | **HIGH** — Was corrected in v2.0 (H-2) but code still uses 1 |
 | Builder temperature | **0.2** (code) / **0.15** (agent md) | **0.15** | `src/lib/routing.ts:18` vs `agents/builder.md:4` | **MEDIUM** — Code routing and agent definition disagree |
-| `doom_loop` in opencode.json | **"deny"** | **"allow"** | `opencode.json:25` | **CRITICAL** — PERM-002 requires `allow`; `deny` will prompt user on 3 identical calls, conflicting with harness circuit breaker |
-| Conductor `task` permission | **"deny"** | **"ask"** (PERM-003) | `.opencode/agents/conductor.md:15` | **MEDIUM** — Conductor has `task: deny` but PERM-003 says root should be `ask`. Conductor is primary agent and uses `delegate-task` instead, but strict deny contradicts spec |
+| `doom_loop` in opencode.json | **"ask"** | **"allow"** | `opencode.json:25` | **CRITICAL** — PERM-002 requires `allow`; `ask` will prompt user on 3 identical calls, conflicting with harness circuit breaker |
+| Conductor `task` permission | **"ask"** | **"ask"** (PERM-003) | `.opencode/agents/conductor.md:15` | **MEDIUM** — Conductor has `task: ask` but PERM-003 says root should be `ask`. Conductor is primary agent and uses `delegate-task` instead, but strict ask contradicts spec |
 
 ---
 
@@ -74,9 +74,9 @@ These are hard discrepancies between the codebase and the corrected requirements
 | AGT-002 | Conductor as primary-mode | **IMPLEMENTED** | `conductor.md:3` — `mode: "primary"` |
 | AGT-003 | Intent classification (research/implement/review/plan/hybrid) | **IMPLEMENTED** | `conductor.md:32-48` — 5-category classification table |
 | AGT-004 | Conductor never implements directly | **IMPLEMENTED** | `conductor.md:90` — "NEVER edit files directly" |
-| AGT-005 | Researcher: read-only, denied edit/write/bash/task | **IMPLEMENTED** | `researcher.md:7-10` — all denied, `task: deny` |
-| AGT-006 | Builder: full access, denied task | **IMPLEMENTED** | `builder.md:7-10` — `task: deny` |
-| AGT-007 | Critic: read + bash, denied edit/write/task | **IMPLEMENTED** | `critic.md:7-9` — `edit: deny`, `write: deny`, `task: deny`, `bash: allow` |
+| AGT-005 | Researcher: read-only, denied edit/write/bash/task | **IMPLEMENTED** | `researcher.md:7-10` — all denied, `task: ask` |
+| AGT-006 | Builder: full access, denied task | **IMPLEMENTED** | `builder.md:7-10` — `task: ask` |
+| AGT-007 | Critic: read + bash, denied edit/write/task | **IMPLEMENTED** | `critic.md:7-9` — `edit: ask`, `write: ask`, `task: ask`, `bash: allow` |
 | AGT-008 | Default temperatures | **PARTIAL** | Researcher=0.1 ✅, Builder=0.15 ✅ (agent md) / 0.2 (routing code) ❌, Critic=0.05 ✅, Conductor=0.3 ✅. **Code mismatch**: `routing.ts:18` has builder at 0.2 |
 | AGT-009 | Max steps limits | **IMPLEMENTED** | researcher=60 ✅, builder=80 ✅, critic=40 ✅, conductor=80 ✅ |
 
@@ -99,11 +99,11 @@ These are hard discrepancies between the codebase and the corrected requirements
 | ID | Requirement | Status | Evidence |
 |----|-------------|--------|----------|
 | PERM-001 | 3-tier permission config | **PARTIAL** | Root config in `opencode.json`, per-agent in agent md files, per-delegation in `getPermissionRulesForAgent()`. Missing: no `tool.execute.before` enforcement of per-delegation rules |
-| PERM-002 | Root `doom_loop: "allow"` | **BROKEN** | `opencode.json:25` — `doom_loop: "deny"`. Must be `"allow"` per PERM-002 |
+| PERM-002 | Root `doom_loop: "allow"` | **BROKEN** | `opencode.json:25` — `doom_loop: "ask"`. Must be `"allow"` per PERM-002 |
 | PERM-003 | Root `task: "ask"` | **IMPLEMENTED** | `opencode.json:20` — `"task": "ask"` ✅ |
-| PERM-004 | Researcher denied edit/write/bash, task:{"*":"deny"} | **IMPLEMENTED** | `researcher.md:7-10` + `plugin.ts:74-81` |
-| PERM-005 | Builder denied task:{"*":"deny"} | **IMPLEMENTED** | `builder.md:10` + `plugin.ts:83-86` |
-| PERM-006 | Critic denied edit/write, task:{"*":"deny"} | **IMPLEMENTED** | `critic.md:7-9` + `plugin.ts:89-98` |
+| PERM-004 | Researcher denied edit/write/bash, task:{"*":"ask"} | **IMPLEMENTED** | `researcher.md:7-10` + `plugin.ts:74-81` |
+| PERM-005 | Builder denied task:{"*":"ask"} | **IMPLEMENTED** | `builder.md:10` + `plugin.ts:83-86` |
+| PERM-006 | Critic denied edit/write, task:{"*":"ask"} | **IMPLEMENTED** | `critic.md:7-9` + `plugin.ts:89-98` |
 | PERM-007 | Per-delegation enforcement via tool.execute.before | **MISSING** | `plugin.ts:112-151` — `tool.execute.before` handles tool call budget and circuit breaker but does NOT inspect delegation metadata to reject tool calls outside the delegated agent's permitted tool set |
 | PERM-008 | delegate-task registered via tool() factory | **IMPLEMENTED** | `plugin.ts:348-464` — `tool({ description, args, execute })` |
 
@@ -326,7 +326,7 @@ These are hard discrepancies between the codebase and the corrected requirements
 |-----|----------|------------|---------|
 | GRD-002: MAX_DESCENDANTS_PER_ROOT=50 → 10 | P0 | Small | `src/plugin.ts:38` |
 | CON-003: defaultLimit=1 → 3-5, configurable | P0 | Medium | `src/lib/concurrency.ts:37`, `src/lib/lifecycle-manager.ts:115` |
-| PERM-002: doom_loop "deny" → "allow" | P0 | Small | `opencode.json:25` |
+| PERM-002: doom_loop "ask" → "allow" | P0 | Small | `opencode.json:25` |
 | CAT-004/AGT-008: Builder temp 0.2 → 0.15 in routing code | P0 | Small | `src/lib/routing.ts:18` |
 | PER-003: No debounced writes (immediate writes) | P1 | Medium | `src/lib/continuity.ts` — add debounce timer |
 | TOOL-001: Missing explicit temperature parameter | P1 | Small | `src/plugin.ts` — add temperature arg to delegate-task |
@@ -389,7 +389,7 @@ These are hard discrepancies between the codebase and the corrected requirements
 ### Must-Fix Before Production
 
 1. **MAX_DESCENDANTS_PER_ROOT = 50** → must be 10 (requirements v2.0+)
-2. **doom_loop: "deny"** → must be "allow" (PERM-002)
+2. **doom_loop: "ask"** → must be "allow" (PERM-002)
 3. **Default concurrency = 1** → must be 3-5 (CON-003)
 4. **No per-delegation tool restriction enforcement** → PERM-007
 5. **No 6-section delegation prompt** → CAT-009/TOOL-005

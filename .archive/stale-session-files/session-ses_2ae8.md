@@ -10606,7 +10606,7 @@ Now I see the failure. Let me read the command file that was referenced:
 182:       "mode": "primary",
 183:       "permission": {
 184:         "task": {
-185:           "*": "deny",
+185:           "*": "ask",
 186:           "explore": "allow",
 187:           "general": "allow",
 188:           "researcher-*": "allow"
@@ -10616,7 +10616,7 @@ Now I see the failure. Let me read the command file that was referenced:
 192:   }
 193: }
 194: ```
-195: Last matching rule wins. When set to `deny`, the subagent is removed from the Task tool description entirely. [1-cite-16](#1-cite-16) 
+195: Last matching rule wins. When set to `ask`, the subagent is removed from the Task tool description entirely. [1-cite-16](#1-cite-16) 
 196: 
 197: ### 2.4 Batch Tool -- Parallel Tool Execution Within a Single Agent
 198: 
@@ -11018,7 +11018,7 @@ Now I see the failure. Let me read the command file that was referenced:
 594:       "mode": "subagent",
 595:       "description": "Deep codebase researcher. Use for comprehensive architecture analysis, cross-repo dependency tracing, and synthesis document generation.",
 596:       "permission": {
-597:         "edit": { "*": "deny", ".opencode/research/*": "allow" },
+597:         "edit": { "*": "ask", ".opencode/research/*": "allow" },
 598:         "task": { "explore": "allow" }
 599:       }
 600:     }

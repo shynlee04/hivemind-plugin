@@ -25,7 +25,7 @@ All 5 agents pass quality baseline checks:
 - ✅ Depth: all `L2`
 - ✅ Lineage: all `hm` (STRICT binding)
 - ✅ Temperature: all within L2 range (0.0-0.15) — Mentor at 0.15 (upper bound for creative facilitation)
-- ✅ Permission: deny-all base with explicit tool/skill allows
+- ✅ Permission: ask-all base with explicit tool/skill allows
 - ✅ Body: all 10 required XML tags present
 - ✅ Body: all 6 optional XML tags present
 - ✅ hm STRICT binding: no hf-* skills in allowed list
@@ -46,7 +46,7 @@ None — all 5 agents created exactly as specified in AS-5-CONTEXT.md.
 
 ## Threat Flags
 
-None — all agents are read-only (edit: deny, write: deny) with no network surface beyond webfetch/websearch for research (Mentor, Operator, Connector, Assessor) and test execution (Finisher via npm/npx).
+None — all agents are read-only (edit: ask, write: ask) with no network surface beyond webfetch/websearch for research (Mentor, Operator, Connector, Assessor) and test execution (Finisher via npm/npx).
 
 ## Files Created
 

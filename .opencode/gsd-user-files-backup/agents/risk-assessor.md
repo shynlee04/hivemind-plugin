@@ -5,12 +5,12 @@ temperature: 0.1
 instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
+    "*": ask
   grep: allow
   glob: allow
-  task: deny
+  task: ask
 ---
 
 # Risk Assessor
@@ -52,7 +52,7 @@ risks:
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- NEVER spawn subagents (task: ask).
 - NEVER execute any commands or operations.
 - NEVER suggest forceful or destructive operations as defaults.
 - NEVER ask clarifying questions — return findings only.

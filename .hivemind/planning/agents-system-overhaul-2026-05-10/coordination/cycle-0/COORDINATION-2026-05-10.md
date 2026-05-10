@@ -18,7 +18,7 @@ Cycle 0 contains 2 P0 phases that CAN run in parallel:
 
 | Phase | Scope | Risk | Files |
 |-------|-------|------|-------|
-| PH-01: Permissions Fix | 56 agents (deny→ask) | LOW | .opencode/agents/hm-*.md, hf-*.md |
+| PH-01: Permissions Fix | 56 agents (ask→ask) | LOW | .opencode/agents/hm-*.md, hf-*.md |
 | PH-02: Agent Profile Repair | 15 agents (3 sub-tiers) | MEDIUM | .opencode/agents/hm-*.md |
 
 ## PH-01: Permissions Fix — Execution Spec
@@ -44,19 +44,19 @@ Last matching rule wins. We must be GRANULAR, not mechanical.
 | `bash` specific (`git *`, etc.) | `allow` | Most agents | PRESERVE (no change) |
 | `glob` | `allow` | Most agents | PRESERVE (no change) |
 | `grep` | `allow` | Most agents | PRESERVE (no change) |
-| `task` `'*'` | `deny` | L2 terminal agents | → `ask` (wildcard parent → ask) |
+| `task` `'*'` | `ask` | L2 terminal agents | → `ask` (wildcard parent → ask) |
 | `task` specific (`hm-l2-*`, etc.) | `allow` | L0/L1 only | PRESERVE (children already allow) |
-| `delegate-task` | `deny` | L2 terminal, most hf-L2 | → `ask` (tool-level deny → ask) |
-| `delegation-status` | `deny` | L2 terminal, most hf-L2 | → `ask` (tool-level deny → ask) |
-| `session-journal-export` | `deny` | L2 terminal, most hf-L2 | → `ask` (tool-level deny → ask) |
-| `session-patch` | `deny` | Even L0 | → `ask` (tool-level deny → ask) |
-| `webfetch` | `allow` / varies | Some agents | PRESERVE or → `ask` if deny |
-| `websearch` | varies | Some agents | PRESERVE or → `ask` if deny |
-| `skill` `'*'` | varies | Some agents | → `ask` if deny; PRESERVE if allow/specific |
+| `delegate-task` | `ask` | L2 terminal, most hf-L2 | → `ask` (tool-level ask → ask) |
+| `delegation-status` | `ask` | L2 terminal, most hf-L2 | → `ask` (tool-level ask → ask) |
+| `session-journal-export` | `ask` | L2 terminal, most hf-L2 | → `ask` (tool-level ask → ask) |
+| `session-patch` | `ask` | Even L0 | → `ask` (tool-level ask → ask) |
+| `webfetch` | `allow` / varies | Some agents | PRESERVE or → `ask` if ask |
+| `websearch` | varies | Some agents | PRESERVE or → `ask` if ask |
+| `skill` `'*'` | varies | Some agents | → `ask` if ask; PRESERVE if allow/specific |
 
-### Decision Matrix for deny→ask vs deny→allow
+### Decision Matrix for ask→ask vs ask→allow
 
-| Pattern | deny on wildcard `*` | deny on specific pattern | deny on entire tool |
+| Pattern | ask on wildcard `*` | ask on specific pattern | ask on entire tool |
 |---------|---------------------|------------------------|-------------------|
 | **Action** | → `ask` | → `allow` if the specific pattern is a legitimate child (e.g., `task: hm-l2-*`) | → `ask` |
 | **Rationale** | User approves at runtime | Specific patterns are intentional grants, not blanket | User approves at runtime |
@@ -68,8 +68,8 @@ Last matching rule wins. We must be GRANULAR, not mechanical.
 
 ### Verification
 ```bash
-# Must return zero deny on wildcards and tool-level:
-grep -n "deny" .opencode/agents/hm-*.md .opencode/agents/hf-*.md
+# Must return zero ask on wildcards and tool-level:
+grep -n "ask" .opencode/agents/hm-*.md .opencode/agents/hf-*.md
 # Must confirm allow preserved where expected:
 grep "allow" .opencode/agents/hf-l2-prompter.md
 # Must confirm bash children still allow:
@@ -104,7 +104,7 @@ grep -r "instructions:" .opencode/agents/
 
 ## Cycle 0 Gate Criteria
 
-- [ ] Zero `deny` in any shipped agent permission block
+- [ ] Zero `ask` in any shipped agent permission block
 - [ ] Zero `instructions:` (plural) in any agent file
 - [ ] All 15 broken agents have complete YAML frontmatter
 - [ ] hf-l2-prompter still has `edit: allow` and `write: allow`

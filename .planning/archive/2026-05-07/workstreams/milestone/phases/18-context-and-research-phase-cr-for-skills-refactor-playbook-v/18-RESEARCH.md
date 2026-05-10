@@ -210,7 +210,7 @@ done | sort
 # [VERIFIED: executed during this research session, 2026-04-23]
 # Note: grep for "skill: \"" in agents/commands returned empty —
 # permissions use YAML format without quotes. Correct probe:
-rg -n "skill" .opencode/agents/*.md | grep -i "permission\|allow\|deny"
+rg -n "skill" .opencode/agents/*.md | grep -i "permission\|allow\|ask"
 # Result: 17 skill permission entries found across agent files
 ```
 

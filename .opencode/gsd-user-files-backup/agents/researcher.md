@@ -4,19 +4,19 @@ mode: subagent
 instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   edit: 
-    "*": deny
+    "*": ask
     "*.json": allow
     "*.md": allow
     "**/.opencode/**": allow
     "**/docs/**": allow
   write: 
-    "*": deny
+    "*": ask
     "*.json": allow
     "*.md": allow
     "**/.opencode/**": allow
     "**/docs/**": allow
   bash: allow
-  task: deny
+  task: ask
   skill: allow
   webfetch: allow
   webbrowse: allow

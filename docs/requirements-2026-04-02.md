@@ -60,9 +60,9 @@ Agents are defined via markdown files in `.opencode/agents/` or JSON in `opencod
 | AGT-002 | The system SHALL define a `conductor` agent as a `primary`-mode agent (Tab-cycle accessible) that serves as the top-level orchestrator. The conductor combines OMO's Prometheus (intent classification) and Atlas (session lifecycle) roles for MVP | P0 | Not Started |
 | AGT-003 | The conductor agent SHALL classify user intent into: research, implement, review, plan, hybrid | P0 | Not Started |
 | AGT-004 | The conductor agent SHALL NEVER implement code directly — all execution SHALL be delegated via the harness `delegate-task` custom tool | P0 | Not Started |
-| AGT-005 | The researcher agent SHALL operate in read-only mode: denied `edit`, `write`, `bash` permissions. Allowed tools: `read`, `glob`, `grep`, `list`, `webfetch`, `websearch`, `codesearch`. Denied task spawning via `task: { "*": "deny" }` | P0 | Not Started |
-| AGT-006 | The builder agent SHALL have full file modification and shell access. Denied task spawning via `task: { "*": "deny" }` so all delegation routes through the conductor | P0 | Not Started |
-| AGT-007 | The critic agent SHALL have read-only file access plus `bash` permission restricted to test execution. Denied `edit`, `write`. Denied task spawning via `task: { "*": "deny" }` | P0 | Not Started |
+| AGT-005 | The researcher agent SHALL operate in read-only mode: denied `edit`, `write`, `bash` permissions. Allowed tools: `read`, `glob`, `grep`, `list`, `webfetch`, `websearch`, `codesearch`. Denied task spawning via `task: { "*": "ask" }` | P0 | Not Started |
+| AGT-006 | The builder agent SHALL have full file modification and shell access. Denied task spawning via `task: { "*": "ask" }` so all delegation routes through the conductor | P0 | Not Started |
+| AGT-007 | The critic agent SHALL have read-only file access plus `bash` permission restricted to test execution. Denied `edit`, `write`. Denied task spawning via `task: { "*": "ask" }` | P0 | Not Started |
 | AGT-008 | The system SHALL configure default temperatures per agent: researcher=0.1, builder=0.15, critic=0.05, conductor=0.3 | P0 | Not Started |
 | AGT-009 | Each agent SHALL have a configured max steps limit: researcher=60, builder=80, critic=40, conductor=80 | P1 | Not Started |
 
@@ -86,18 +86,18 @@ Agents are defined via markdown files in `.opencode/agents/` or JSON in `opencod
 
 ### 4.1 Platform Permission Model
 
-The OpenCode platform provides a permission system where each tool can be set to `allow`, `ask`, or `deny`. The `permission.task` field accepts glob patterns to control which subagent types an agent can spawn. For example: `"task": { "*": "deny", "explore": "allow" }` means the agent can only spawn `explore` subagents.
+The OpenCode platform provides a permission system where each tool can be set to `allow`, `ask`, or `ask`. The `permission.task` field accepts glob patterns to control which subagent types an agent can spawn. For example: `"task": { "*": "ask", "explore": "allow" }` means the agent can only spawn `explore` subagents.
 
-The platform's `doom_loop` permission is an ACTION (allow/ask/deny), not a configurable threshold. The platform always triggers doom_loop detection at 3 consecutive identical tool calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` means the platform will NOT prompt the user when this condition is detected — it silently permits the repetition.
+The platform's `doom_loop` permission is an ACTION (allow/ask/ask), not a configurable threshold. The platform always triggers doom_loop detection at 3 consecutive identical tool calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` means the platform will NOT prompt the user when this condition is detected — it silently permits the repetition.
 
 | ID | Requirement | Priority | Status |
 |----|-------------|----------|--------|
 | PERM-001 | The system SHALL implement a three-tier permission configuration: root (default), per-agent, per-delegation (enforced via hooks) | P0 | Not Started |
 | PERM-002 | The root permission model SHALL set `doom_loop` to `"allow"` to prevent the platform from blocking/prompting on repeated identical tool calls. This is necessary because the harness implements its own independent loop detection at a higher semantic level (see GRD-004). These two mechanisms serve different purposes: platform doom_loop catches exact duplicates at threshold 3; harness circuit breaker catches semantically similar patterns at threshold 16 | P0 | Not Started |
 | PERM-003 | The root permission model SHALL set the platform `task` tool to `"ask"` so the user is prompted before any subagent spawn that bypasses the harness | P0 | Not Started |
-| PERM-004 | The researcher agent SHALL be denied: `edit`, `write`, `bash` permissions and all task spawning via `"task": { "*": "deny" }` | P0 | Not Started |
-| PERM-005 | The builder agent SHALL be denied task spawning via `"task": { "*": "deny" }` — all delegation routes through the conductor's `delegate-task` custom tool | P0 | Not Started |
-| PERM-006 | The critic agent SHALL be denied: `edit`, `write` permissions and all task spawning via `"task": { "*": "deny" }` | P0 | Not Started |
+| PERM-004 | The researcher agent SHALL be denied: `edit`, `write`, `bash` permissions and all task spawning via `"task": { "*": "ask" }` | P0 | Not Started |
+| PERM-005 | The builder agent SHALL be denied task spawning via `"task": { "*": "ask" }` — all delegation routes through the conductor's `delegate-task` custom tool | P0 | Not Started |
+| PERM-006 | The critic agent SHALL be denied: `edit`, `write` permissions and all task spawning via `"task": { "*": "ask" }` | P0 | Not Started |
 | PERM-007 | The system SHALL enforce per-delegation tool restrictions via the plugin's `tool.execute.before` hook. This hook inspects the current session's delegation metadata and rejects tool calls that fall outside the delegated agent's permitted tool set | P0 | Not Started |
 | PERM-008 | The system SHALL register `delegate-task` as a custom tool via the plugin `tool()` factory from `@opencode-ai/plugin`. This is a harness-owned tool, NOT a platform primitive. Its tool context receives `{ agent, sessionID, messageID, directory, worktree }` | P0 | Not Started |
 
@@ -311,8 +311,8 @@ This section explicitly catalogues what is harness-internal versus what the Open
 | Hook: chat parameters | `chat.params` | Override model/temperature per delegation |
 | Hook: shell environment | `shell.env` | Set CI=true, GIT_TERMINAL_PROMPT=0, etc. |
 | Hook: events | `event` | Session lifecycle tracking |
-| Permission: doom_loop | `"doom_loop": "allow"/"ask"/"deny"` | Set to `allow` to let harness manage its own loop detection |
-| Permission: task glob patterns | `"task": { "*": "deny", "explore": "allow" }` | Control which subagent types each agent can spawn |
+| Permission: doom_loop | `"doom_loop": "allow"/"ask"/"ask"` | Set to `allow` to let harness manage its own loop detection |
+| Permission: task glob patterns | `"task": { "*": "ask", "explore": "allow" }` | Control which subagent types each agent can spawn |
 | Session CRUD | `client.session.create/get/list/delete/update/prompt/abort/share/children/messages` | Core delegation lifecycle |
 | Event streaming | `client.event.subscribe()` | SSE stream for async session monitoring |
 | TUI interaction | `client.tui.appendPrompt/showToast/executeCommand` | User feedback |
@@ -406,11 +406,11 @@ This version corrects all contradictions identified between the specification an
 
 | ID | Issue | Resolution |
 |----|--------|------------|
-| V3-1 | `doom_loop` described as a configurable threshold | **Fixed:** doom_loop is a permission action (allow/ask/deny), not a threshold. Platform always detects at 3 identical calls. Harness circuit breaker (threshold 16) is a separate mechanism in `tool.execute.before` hook. PERM-002 and GRD-004 now clearly distinguish these. |
+| V3-1 | `doom_loop` described as a configurable threshold | **Fixed:** doom_loop is a permission action (allow/ask/ask), not a threshold. Platform always detects at 3 identical calls. Harness circuit breaker (threshold 16) is a separate mechanism in `tool.execute.before` hook. PERM-002 and GRD-004 now clearly distinguish these. |
 | V3-2 | Custom tools (`delegate-task`, `context-checkpoint_*`) treated as platform primitives | **Fixed:** Added Section 15 with explicit custom tool definitions. All three tools are documented as harness-registered via `tool()` factory. CHK-001 and PERM-008 now state "NOT a platform primitive." |
 | V3-3 | Implicit references to `reserveConcurrencySlot()` and `getAvailableSpawnCapacity()` as platform APIs | **Fixed:** CON-001 and BUD-001 explicitly mark concurrency and budget as harness-internal abstractions. Added Section 14 boundary table. |
 | V3-4 | Environment variables presented as platform-native | **Fixed:** ARCH-007, PER-001, CHK-005, and GRD-002 now mark `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`, and `MAX_DESCENDANTS` as harness-specific. |
-| V3-5 | `permission.task` glob pattern semantics undocumented | **Fixed:** Added explanation in Section 4.1 header with example: `"task": { "*": "deny", "explore": "allow" }`. PERM-004/005/006 use this pattern explicitly. |
+| V3-5 | `permission.task` glob pattern semantics undocumented | **Fixed:** Added explanation in Section 4.1 header with example: `"task": { "*": "ask", "explore": "allow" }`. PERM-004/005/006 use this pattern explicitly. |
 | V3-6 | `/harness-doctor` described as aspirational "8-point health diagnostics" | **Fixed:** CMD-004 now specifies 5 concrete, testable checks: plugin loaded, continuity file valid, agent files exist, command files exist, skill files exist. |
 | V3-7 | OMO role mapping unclear for MVP | **Fixed:** AGT-002 now states conductor combines Prometheus + Atlas roles for MVP. Added LIM-010 as known limitation. |
 | V3-8 | SDK references used invented method names | **Fixed:** Section 9 now lists actual SDK methods with their correct signatures. SDK-001 through SDK-007 reference real methods only. |
@@ -425,7 +425,7 @@ This version corrects all contradictions identified between the specification an
 
 | ID | Issue | Resolution |
 |----|--------|------------|
-| C-1 | `delegate-task` is not a native OpenCode permission | Resolved: PERM-008 requires harness to register `delegate-task` as a custom tool via plugin `tool()` API. PERM-004, PERM-005, PERM-006 refactored to use native `task` permission with glob patterns (`task: { "*": "deny" }`). |
+| C-1 | `delegate-task` is not a native OpenCode permission | Resolved: PERM-008 requires harness to register `delegate-task` as a custom tool via plugin `tool()` API. PERM-004, PERM-005, PERM-006 refactored to use native `task` permission with glob patterns (`task: { "*": "ask" }`). |
 | C-2 | Dynamic permissions cannot be passed to session creation | Resolved: PERM-007 refactored to use plugin `tool.execute.before` hooks for enforcement. Static agent permissions provide base layer; plugin hooks add per-delegation restrictions. |
 | C-3 | SDK-002 references non-existent `promptAsync` method | Resolved: SDK-002 rewritten to use `client.session.prompt()` for synchronous delegation and `client.session.promptAsync()` for asynchronous delegation. The method EXISTS — returns void (204). |
 | C-4 | `session.create()` does not accept tool restrictions | Resolved: Architecture refactored to rely on agent-level static permissions + plugin-hook-enforced restrictions. Delegation uses `client.session.create({ title })` + `client.session.prompt({ body: { model, parts } })`. |

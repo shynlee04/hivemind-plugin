@@ -552,7 +552,7 @@ Now let me read both documents and the wisdom files in parallel to understand th
 82: | ID | Requirement | Priority | Status |
 83: |----|-------------|----------|--------|
 84: | PERM-001 | The system SHALL implement a three-tier permission system: root, agent, delegation | P0 | Not Started |
-85: | PERM-002 | The root permission model SHALL deny `doom_loop` tool globally | P0 | Not Started |
+85: | PERM-002 | The root permission model SHALL ask `doom_loop` tool globally | P0 | Not Started |
 86: | PERM-003 | The root permission model SHALL require user approval (`ask`) for the built-in `task` tool | P0 | Not Started |
 87: | PERM-004 | The researcher agent SHALL be denied: edit, write, bash, task, delegate-task | P0 | Not Started |
 88: | PERM-005 | The builder agent SHALL be denied: task, delegate-task | P0 | Not Started |
@@ -756,7 +756,7 @@ Now let me read both documents and the wisdom files in parallel to understand th
 286: |----|-------|---------|----------|
 287: | PERM-004 | Researcher agent denied `delegate-task` | `.opencode/agents/researcher.md` does NOT list `delegate-task` in its permission block. Root `opencode.json` sets `task: "ask"`, but `delegate-task` is not mentioned in root config either. The researcher inherits whatever OpenCode's default is for `delegate-task` — **NOT explicitly denied**. | **Critical** |
 288: | PERM-006 | Critic agent denied `delegate-task` | `.opencode/agents/critic.md` does NOT list `delegate-task` in its permission block. Same inheritance gap as researcher. | **Critical** |
-289: | PERM-005 | Builder agent denied `task, delegate-task` | `.opencode/agents/builder.md` has `task: "*": deny` but `delegate-task` is not listed. | **High** |
+289: | PERM-005 | Builder agent denied `task, delegate-task` | `.opencode/agents/builder.md` has `task: "*": ask` but `delegate-task` is not listed. | **High** |
 290: 
 291: **Evidence:** Read `.opencode/agents/researcher.md` (lines 6-24), `.opencode/agents/critic.md` (lines 7-24), `.opencode/agents/builder.md` (lines 6-24). None contain a `delegate-task` permission entry.
 292: 
@@ -861,10 +861,10 @@ Now let me read both documents and the wisdom files in parallel to understand th
 391: 
 392: **Evidence:**
 393: - OpenCode permissions doc lists exactly 15 permission keys. `delegate-task` is not among them.
-394: - `task` permission uses glob patterns: `"*": "deny", "orchestrator-*": "allow"` controls which subagents can be invoked.
+394: - `task` permission uses glob patterns: `"*": "ask", "orchestrator-*": "allow"` controls which subagents can be invoked.
 395: - Custom tools registered via `tool()` from `@opencode-ai/plugin` do get their own permission entries, but the requirement doesn't specify `delegate-task` as a custom tool.
 396: 
-397: **Recommendation:** Add an explicit requirement that the harness SHALL register `delegate-task` as a custom tool via the plugin `tool()` API. Alternatively, refactor all `delegate-task` denials to use OpenCode's native `task` permission with glob patterns (e.g., `task: { "*": "deny" }`). The custom-tool approach is more aligned with OMO's pattern where delegation is a plugin-provided capability.
+397: **Recommendation:** Add an explicit requirement that the harness SHALL register `delegate-task` as a custom tool via the plugin `tool()` API. Alternatively, refactor all `delegate-task` denials to use OpenCode's native `task` permission with glob patterns (e.g., `task: { "*": "ask" }`). The custom-tool approach is more aligned with OMO's pattern where delegation is a plugin-provided capability.
 398: 
 399: ---
 400: 
@@ -1041,16 +1041,16 @@ Now let me read both documents and the wisdom files in parallel to understand th
 571: 
 572: **Requirement IDs:** GRD-004, GRD-005
 573: 
-574: **Finding:** OpenCode has a built-in `doom_loop` permission that triggers when "the same tool call repeats 3 times with identical input." The harness proposes an additional circuit breaker at 16 consecutive identical tool calls (GRD-004). If `doom_loop` is set to `"deny"` (PERM-002), the tool is blocked at 3 repetitions. The harness's circuit breaker at 16 would never fire because OpenCode already blocked the tool 13 calls earlier.
+574: **Finding:** OpenCode has a built-in `doom_loop` permission that triggers when "the same tool call repeats 3 times with identical input." The harness proposes an additional circuit breaker at 16 consecutive identical tool calls (GRD-004). If `doom_loop` is set to `"ask"` (PERM-002), the tool is blocked at 3 repetitions. The harness's circuit breaker at 16 would never fire because OpenCode already blocked the tool 13 calls earlier.
 575: 
-576: If `doom_loop` is set to `"ask"`, the user would be prompted at 3 repetitions and likely deny, again preventing the circuit breaker from firing. The circuit breaker only adds value if `doom_loop` is set to `"allow"` — but PERM-002 explicitly denies it.
+576: If `doom_loop` is set to `"ask"`, the user would be prompted at 3 repetitions and likely ask, again preventing the circuit breaker from firing. The circuit breaker only adds value if `doom_loop` is set to `"allow"` — but PERM-002 explicitly denies it.
 577: 
 578: **Evidence:**
 579: - OpenCode permissions: `doom_loop` triggers at 3 identical repetitions.
-580: - PERM-002: "root permission model SHALL deny `doom_loop` tool globally."
+580: - PERM-002: "root permission model SHALL ask `doom_loop` tool globally."
 581: - OMO circuit breaker = 20 consecutive similar calls (not identical) — this is subtly different from OpenCode's 3 identical calls.
 582: 
-583: **Recommendation:** Either: (a) Remove the harness circuit breaker entirely since `doom_loop: "deny"` covers this case, or (b) Redefine it as a "similar calls" detector (matching OMO's pattern) that catches tool calls with different arguments but similar semantic intent — a capability OpenCode's `doom_loop` does not provide. If option (b), specify the similarity matching algorithm.
+583: **Recommendation:** Either: (a) Remove the harness circuit breaker entirely since `doom_loop: "ask"` covers this case, or (b) Redefine it as a "similar calls" detector (matching OMO's pattern) that catches tool calls with different arguments but similar semantic intent — a capability OpenCode's `doom_loop` does not provide. If option (b), specify the similarity matching algorithm.
 584: 
 585: ---
 586: 
@@ -1557,8 +1557,8 @@ Now let me read the user stories document and the wisdom files:
 253: - [ ] The system rejects the request if depth > 3
 254: - [ ] The system identifies the root session for budget tracking
 255: - [ ] The system reserves a slot in the root's descendant budget (max 50)
-256: - [ ] The system builds permission rules for the target agent, explicitly denying delegate-task for researcher and critic
-257: - [ ] The system computes which tools should be disabled based on deny rules, including skill and webfetch permissions
+256: - [ ] The system builds permission rules for the target agent, explicitly asking delegate-task for researcher and critic
+257: - [ ] The system computes which tools should be disabled based on ask rules, including skill and webfetch permissions
 258: - [ ] The system creates the child session via the OpenCode client API
 259: - [ ] The system records continuity metadata to durable storage
 260: - [ ] The system acquires a concurrency queue slot
@@ -1862,7 +1862,7 @@ Now let me read the user stories document and the wisdom files:
 558: - Researcher agent: `delegate-task` not explicitly denied (see requirements audit)
 559: - Critic agent: `delegate-task` not explicitly denied
 560: 
-561: **Evidence:** The US-010 criteria say "The system builds permission rules for the target agent" (criterion 9) and "The system computes which tools should be disabled based on deny rules" (criterion 10). But if `delegate-task` isn't in the deny rules, it won't be disabled. This edge case is completely missing.
+561: **Evidence:** The US-010 criteria say "The system builds permission rules for the target agent" (criterion 9) and "The system computes which tools should be disabled based on ask rules" (criterion 10). But if `delegate-task` isn't in the ask rules, it won't be disabled. This edge case is completely missing.
 562: 
 563: ---
 564: 
@@ -1982,16 +1982,16 @@ Now let me read the user stories document and the wisdom files:
 678: #### C-1: `delegate-task` Custom Tool vs Built-in Task Tool — Architectural Redundancy
 679: **User Stories:** US-001, US-007, US-010  
 680: **Finding:** The user stories explicitly state (US-007 AC-7) "All specialist work routes through delegate-task (not the built-in task tool)." This means the harness is building a complete delegation system from scratch using the SDK (`session.create()` / `session.prompt()`), entirely bypassing OpenCode's built-in Task tool.  
-681: **OpenCode Evidence:** The platform has a built-in Task tool with: automatic session creation, agent routing, `permission.task` glob-pattern access control (agents.md:464-486), and depth management. The `task` permission lets you deny `*` and allow specific patterns like `researcher`, `builder`, `critic`. The Task tool already respects agent-specific permissions.  
+681: **OpenCode Evidence:** The platform has a built-in Task tool with: automatic session creation, agent routing, `permission.task` glob-pattern access control (agents.md:464-486), and depth management. The `task` permission lets you ask `*` and allow specific patterns like `researcher`, `builder`, `critic`. The Task tool already respects agent-specific permissions.  
 682: **OMO Evidence:** OMO uses the built-in `task()` tool with category-based routing — it does NOT build a custom delegation system.  
 683: **Recommendation:** Either (a) justify why the built-in Task tool is insufficient and a custom `delegate-task` is worth the engineering cost, or (b) adopt the built-in Task tool and use `permission.task` + `hidden` agents to achieve the same access control. The custom approach reimplements session lifecycle, permission scoping, depth tracking, and message routing — all of which the platform already provides.
 684: 
 685: #### C-2: Platform's Built-in `doom_loop` vs Custom Circuit Breaker — Overlapping Safety Nets
 686: **User Stories:** US-015  
 687: **Finding:** OpenCode has a built-in `doom_loop` permission that triggers when "the same tool call repeats 3 times with identical input" (permissions.md:120). US-015 describes a custom circuit breaker at 16 consecutive identical calls. The user stories don't acknowledge the built-in safety net or explain how the custom circuit breaker interacts with it.  
-688: **OpenCode Evidence:** The `doom_loop` permission is configurable as ask/allow/deny. If set to `deny`, the platform already aborts looping tool calls at threshold 3.  
+688: **OpenCode Evidence:** The `doom_loop` permission is configurable as ask/allow/ask. If set to `ask`, the platform already aborts looping tool calls at threshold 3.  
 689: **OMO Evidence:** OMO uses a circuit breaker at 20 consecutive calls, implemented at the plugin level on top of the platform's loop detection.  
-690: **Recommendation:** Explicitly state the relationship between the platform's `doom_loop` and the custom circuit breaker. Configure `doom_loop` to `allow` (to avoid double-aborting) and handle loop detection solely in the plugin, or set `doom_loop` to `deny` and eliminate the custom circuit breaker entirely. Document this architectural decision.
+690: **Recommendation:** Explicitly state the relationship between the platform's `doom_loop` and the custom circuit breaker. Configure `doom_loop` to `allow` (to avoid double-aborting) and handle loop detection solely in the plugin, or set `doom_loop` to `ask` and eliminate the custom circuit breaker entirely. Document this architectural decision.
 691: 
 692: #### C-3: US-019 Metadata Injection — Platform Hook Capability Unclear
 693: **User Stories:** US-019  
@@ -2100,7 +2100,7 @@ Now let me read the user stories document and the wisdom files:
 796: 
 797: #### P-1: Permission Scoping Architecture — Well-Aligned with Platform
 798: **User Stories:** US-002, US-004, US-010  
-799: The per-agent permission model (Researcher: read-only, Critic: read + bash for tests, Builder: full access) maps directly to OpenCode's agent-specific permission overrides (permissions.md:147-196). The `permission.task` glob patterns can deny `*` for Researcher/Critic to prevent re-delegation. This is architecturally sound.
+799: The per-agent permission model (Researcher: read-only, Critic: read + bash for tests, Builder: full access) maps directly to OpenCode's agent-specific permission overrides (permissions.md:147-196). The `permission.task` glob patterns can ask `*` for Researcher/Critic to prevent re-delegation. This is architecturally sound.
 800: 
 801: #### P-2: Shell Environment Injection — Exact Platform Match
 802: **User Stories:** US-020  
@@ -2893,7 +2893,7 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 10: 
 11: "allow" — run without approval
 12: "ask" — prompt for approval
-13: "deny" — block the action
+13: "ask" — block the action
 14: Configuration
 15: You can set permissions globally (with *), and override specific tools.
 16: 
@@ -2903,7 +2903,7 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 20:   "permission": {
 21:     "*": "ask",
 22:     "bash": "allow",
-23:     "edit": "deny"
+23:     "edit": "ask"
 24:   }
 25: }
 26: 
@@ -2926,11 +2926,11 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 43:       "*": "ask",
 44:       "git *": "allow",
 45:       "npm *": "allow",
-46:       "rm *": "deny",
+46:       "rm *": "ask",
 47:       "grep *": "allow"
 48:     },
 49:     "edit": {
-50:       "*": "deny",
+50:       "*": "ask",
 51:       "packages/web/src/content/docs/*.mdx": "allow"
 52:     }
 53:   }
@@ -2977,12 +2977,12 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 94:       "~/projects/personal/**": "allow"
 95:     },
 96:     "edit": {
-97:       "~/projects/personal/**": "deny"
+97:       "~/projects/personal/**": "ask"
 98:     }
 99:   }
 100: }
 101: 
-102: Keep the list focused on trusted paths, and layer extra allow or deny rules as needed for other tools (for example bash).
+102: Keep the list focused on trusted paths, and layer extra allow or ask rules as needed for other tools (for example bash).
 103: 
 104: Available Permissions
 105: OpenCode permissions are keyed by tool name, plus a couple of safety guards:
@@ -3012,8 +3012,8 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 129:   "permission": {
 130:     "read": {
 131:       "*": "allow",
-132:       "*.env": "deny",
-133:       "*.env.*": "deny",
+132:       "*.env": "ask",
+133:       "*.env.*": "ask",
 134:       "*.env.example": "allow"
 135:     }
 136:   }
@@ -3024,7 +3024,7 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 141: 
 142: once — approve just this request
 143: always — approve future requests matching the suggested patterns (for the rest of the current OpenCode session)
-144: reject — deny the request
+144: reject — ask the request
 145: The set of patterns that always would approve is provided by the tool (for example, bash approvals typically whitelist a safe command prefix like git status*).
 146: 
 147: Agents
@@ -3041,8 +3041,8 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 158:     "bash": {
 159:       "*": "ask",
 160:       "git *": "allow",
-161:       "git commit *": "deny",
-162:       "git push *": "deny",
+161:       "git commit *": "ask",
+162:       "git push *": "ask",
 163:       "grep *": "allow"
 164:     }
 165:   },
@@ -3053,7 +3053,7 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 170:           "*": "ask",
 171:           "git *": "allow",
 172:           "git commit *": "ask",
-173:           "git push *": "deny",
+173:           "git push *": "ask",
 174:           "grep *": "allow"
 175:         }
 176:       }
@@ -3068,9 +3068,9 @@ Good, let me retry the delegation now that the tool should be available. Let me 
 185: description: Code review without edits
 186: mode: subagent
 187: permission:
-188:   edit: deny
+188:   edit: ask
 189:   bash: ask
-190:   webfetch: deny
+190:   webfetch: ask
 191: ---
 192: 
 193: Only analyze code and suggest changes.
@@ -3881,7 +3881,7 @@ I now I have all the evidence I need. Let me dispatch two parallel builder agent
 {
   "agent": "builder",
   "description": "Rewrite the requirements document as a pure forward-looking specification. Remove ALL codebase references, validation sections, integrate all critical findings, and make it a clean, consistent spec.",
-  "prompt": "## SCOPE\nRewrite the file `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md` as a pure forward-looking specification. No codebase implementation references.\n\n## CONTEXT\nThis is a project is building a OpenCode Harness — a standalone control-plane package for the OpenCode AI coding assistant. It provides delegated session orchestchest, multi-agent routing, and permission isolation, concurrency control, and and runtime guardrails. The transforming a single AI agent into a coordinated multi-agent system.\n\nThe two documents that need to be rewritten:\n1. `requirements-2026-04-02.md` — 785 lines\n2. `user-stories-2026-04-02.md` — 882 lines\n\nCurrent state: Both documents contain:\n- Forward-looking spec content (Sections 1-13,14, Non-functional Requirements 14. Known Limitations)\n- Two appended \"Validation Feedback\" sections with codebase-specific findings\n\nThe user instructions state: treat these as forward-looking spec and treat ALL validation findings as if they are spec requirements that not \"reference any codebase state\"\n\n## VALIDation Findings to Integrate\n\n### CRITICAL Findings (from requirements doc):\n1. **C-1: delegate-task is not a native OpenCode permission key** — Must be registered as a custom tool via `plugin tool()`. API, Also enforcement will be via static agent permissions in `permission.task` glob patterns, OR via `tool.execute.before` hooks.\n2. **C-2: Dynamic per-session permissions impossible via SDK** — OpenCode's `session.create()` only accepts `{ title }`. No tool restriction or agent overrides. Must use plugin hooks (`tool.execute.before`) for enforcement.\n3. **C-3: promptAsync doesn't exist** — Only `session.prompt()` (returns Promise). Async completion via `session.idle` SSE events subscription\n4. **C-4: session.create() doesn't accept tool restrictions** — Agent-level static permissions + plugin hooks\n\n### HIGH Findings (from requirements doc)\n1. **H-1: maxDescendants=50 is 5x OMO** 10** — Reduce to OMO's proven 10, make configurable\n2. **H-2: Concurrency default=1 too conservative** — Increase to 3-5 per lane ( default from OMO's 5\n3. **H-3: Missing 6-section delegation prompt format** — Add mandatory sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n4. **H-4: Missing background task manager** — Use SSE `session.idle` events + `session.abort()` for cancellation\n5. **H-5: Missing planning quality gate** — Conductor plan review before executing\n6. **H-6: Missing model-specific prompt variants** — Add as P2 requirement\n7. **H-7: Polling when SSE events available** — Replace with SSE event subscription\n\n### MEDIUM Findings (from both docs):\n1. **M-1: Circuit breaker at 16 redundant with doom_loop at 3** — Redefine as semantic similarity detector or remove entirely\n2. **M-2: 8 fallback paths over-engineered** — Reduce to 2 paths max\n3. **M-3: Metadata injection feasibility unclear** — Use compaction hook instead\n4. **M-4: Only 4 categories vs OMO's 8** — Add `quick` and `writing` categories minimum\n5. **M-5: Missing per-plan notepad system** — extend planning-with-files skill\n6. **M-6: Immediate persistence I/O risk** — Allow debounced persistence (100ms batch window)\n\n### LOW Findings (from both docs):\n1. **L-1: \"Exactly three\" prevents extension** — change to \"at minimum three\"\n2. **L-2: Temperature values lack justification** — Add brief justification\n3. **L-3: Shell env should use native hook** — explicitly state `shell.env` hook\n\n## CONSTRAINTS\n- This is a forward-looking specification. ALL \"Status\" columns must be \"Not Started\".\n- Status column has been removed entirely.\n- All validation findings must be integrated into the corrected requirements, not appended separately.\n- No \"AGENTS.md\", or implementation file references.\n- No references to specific line numbers in source files.\n- Document metadata should say Version 3.0.\n- File naming: `requirements-2026-04-02.md` (no date change).\n\n## INSTRUCTIONS FOR THE REWRITER\n\n### Architecture\nThe specification is will include these sections:\n1. Product Overview\n2. System Architecture Requirements (Core, Modules)\n3. Multi-Agent System (Agents, Categories, Delegation Prompts)\n4. Permission and Security (Plugin-Hook Model, Session, Delegation)\n5. Session Lifecycle (SSE-based,Event-Driven)\n6. Persistence (Debounced)\n7. Concurrency (Configurable per Lane)\n8. Context Management (Compaction + Checkpoints)\n9. SDK Compatibility\n10. Routing\n11. Commands\n12. Skills\n13. Non-Functional Requirements\n14. Known Limitations and Future Work\n\n### Key Requirements Changes\n- **PERM-007/PERM-008**: Remove \"dynamic per-session permissions passed to session creation.\" Replace with:The harness SHALL enforce per-delegation tool restrictions via `tool.execute.before` plugin hooks, intercepting tool calls and checking the harness's own permission state against the target agent's deny list.\"\n- **PERM-008**: Remove \"tool compatibility map.\" Replace with:The harness SHALL register `delegate-task` as a custom tool via the plugin `tool()` API from `@opencode-ai/plugin`. Agent permissions defined in `.opencode/agents/*.md` or `opencode.json` agent.<name>.permission` provide the base layer. The plugin hook layer adds per-delegation restrictions.\"\n- **SDK-002**: Remove `promptAsync` reference entirely. Replace with: \"The system SHALL support synchronous delegation (await `session.prompt()` result) and asynchronous delegation (`session.prompt()` + SSE `session.idle` event subscription via `client.event.subscribe()`)\"\n- **GRD-002**: Change maxDescendants to 10 (OMO's proven limit). Make configurable.\n- **GRD-004**: Remove circuit breaker at 16. Replace with semantic similarity detection — circuit breaker triggers on tool calls have similar semantic intent but different arguments, at 15-consecutive threshold\n- **CON-003**: Increase default concurrency to 3-5 per lane ( make configurable\n- **CON-005**: Require debounce batch window ( reduce I/O pressure\n- **LIF-006**: Replace polling with SSE event subscription, degrade gracefully\n- **CAT-001**: Expand to at minimum 6 categories: research, implementation, review, writing, quick\n- **H-3**: Add delegation prompt requirement: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- **H-4**: Replace polling with SSE events subscription + graceful degradation\n- **EVT-006**: Reduce fallback paths from 2 maximum\n- **CTX-004**: Use compaction hook for metadata injection\n- **M-5**: Extend planning-with-files for per-plan notes\n- **GRD-006**: Use native `shell.env` hook explicitly\n- **AGT-001**: Change \"exactly three\" to \"at minimum three\"\n\n## IMPORTANT\nEvery validation finding has been auditedited and rewritten into the corrected requirement. The appended as a separate section. No references to source code, line numbers, or files paths.\n\nWrite the complete, clean documents to `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md`.\n\nRemember:\n- This must be a complete file — no partial edits\n no appending\n- All validation findings must be integrated into corrected requirements, not appended separately\n- No \"AGENTS.md\" file references\n- No references to specific line numbers in source files\n- Document metadata should say Version 3.0",
+  "prompt": "## SCOPE\nRewrite the file `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md` as a pure forward-looking specification. No codebase implementation references.\n\n## CONTEXT\nThis is a project is building a OpenCode Harness — a standalone control-plane package for the OpenCode AI coding assistant. It provides delegated session orchestchest, multi-agent routing, and permission isolation, concurrency control, and and runtime guardrails. The transforming a single AI agent into a coordinated multi-agent system.\n\nThe two documents that need to be rewritten:\n1. `requirements-2026-04-02.md` — 785 lines\n2. `user-stories-2026-04-02.md` — 882 lines\n\nCurrent state: Both documents contain:\n- Forward-looking spec content (Sections 1-13,14, Non-functional Requirements 14. Known Limitations)\n- Two appended \"Validation Feedback\" sections with codebase-specific findings\n\nThe user instructions state: treat these as forward-looking spec and treat ALL validation findings as if they are spec requirements that not \"reference any codebase state\"\n\n## VALIDation Findings to Integrate\n\n### CRITICAL Findings (from requirements doc):\n1. **C-1: delegate-task is not a native OpenCode permission key** — Must be registered as a custom tool via `plugin tool()`. API, Also enforcement will be via static agent permissions in `permission.task` glob patterns, OR via `tool.execute.before` hooks.\n2. **C-2: Dynamic per-session permissions impossible via SDK** — OpenCode's `session.create()` only accepts `{ title }`. No tool restriction or agent overrides. Must use plugin hooks (`tool.execute.before`) for enforcement.\n3. **C-3: promptAsync doesn't exist** — Only `session.prompt()` (returns Promise). Async completion via `session.idle` SSE events subscription\n4. **C-4: session.create() doesn't accept tool restrictions** — Agent-level static permissions + plugin hooks\n\n### HIGH Findings (from requirements doc)\n1. **H-1: maxDescendants=50 is 5x OMO** 10** — Reduce to OMO's proven 10, make configurable\n2. **H-2: Concurrency default=1 too conservative** — Increase to 3-5 per lane ( default from OMO's 5\n3. **H-3: Missing 6-section delegation prompt format** — Add mandatory sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n4. **H-4: Missing background task manager** — Use SSE `session.idle` events + `session.abort()` for cancellation\n5. **H-5: Missing planning quality gate** — Conductor plan review before executing\n6. **H-6: Missing model-specific prompt variants** — Add as P2 requirement\n7. **H-7: Polling when SSE events available** — Replace with SSE event subscription\n\n### MEDIUM Findings (from both docs):\n1. **M-1: Circuit breaker at 16 redundant with doom_loop at 3** — Redefine as semantic similarity detector or remove entirely\n2. **M-2: 8 fallback paths over-engineered** — Reduce to 2 paths max\n3. **M-3: Metadata injection feasibility unclear** — Use compaction hook instead\n4. **M-4: Only 4 categories vs OMO's 8** — Add `quick` and `writing` categories minimum\n5. **M-5: Missing per-plan notepad system** — extend planning-with-files skill\n6. **M-6: Immediate persistence I/O risk** — Allow debounced persistence (100ms batch window)\n\n### LOW Findings (from both docs):\n1. **L-1: \"Exactly three\" prevents extension** — change to \"at minimum three\"\n2. **L-2: Temperature values lack justification** — Add brief justification\n3. **L-3: Shell env should use native hook** — explicitly state `shell.env` hook\n\n## CONSTRAINTS\n- This is a forward-looking specification. ALL \"Status\" columns must be \"Not Started\".\n- Status column has been removed entirely.\n- All validation findings must be integrated into the corrected requirements, not appended separately.\n- No \"AGENTS.md\", or implementation file references.\n- No references to specific line numbers in source files.\n- Document metadata should say Version 3.0.\n- File naming: `requirements-2026-04-02.md` (no date change).\n\n## INSTRUCTIONS FOR THE REWRITER\n\n### Architecture\nThe specification is will include these sections:\n1. Product Overview\n2. System Architecture Requirements (Core, Modules)\n3. Multi-Agent System (Agents, Categories, Delegation Prompts)\n4. Permission and Security (Plugin-Hook Model, Session, Delegation)\n5. Session Lifecycle (SSE-based,Event-Driven)\n6. Persistence (Debounced)\n7. Concurrency (Configurable per Lane)\n8. Context Management (Compaction + Checkpoints)\n9. SDK Compatibility\n10. Routing\n11. Commands\n12. Skills\n13. Non-Functional Requirements\n14. Known Limitations and Future Work\n\n### Key Requirements Changes\n- **PERM-007/PERM-008**: Remove \"dynamic per-session permissions passed to session creation.\" Replace with:The harness SHALL enforce per-delegation tool restrictions via `tool.execute.before` plugin hooks, intercepting tool calls and checking the harness's own permission state against the target agent's ask list.\"\n- **PERM-008**: Remove \"tool compatibility map.\" Replace with:The harness SHALL register `delegate-task` as a custom tool via the plugin `tool()` API from `@opencode-ai/plugin`. Agent permissions defined in `.opencode/agents/*.md` or `opencode.json` agent.<name>.permission` provide the base layer. The plugin hook layer adds per-delegation restrictions.\"\n- **SDK-002**: Remove `promptAsync` reference entirely. Replace with: \"The system SHALL support synchronous delegation (await `session.prompt()` result) and asynchronous delegation (`session.prompt()` + SSE `session.idle` event subscription via `client.event.subscribe()`)\"\n- **GRD-002**: Change maxDescendants to 10 (OMO's proven limit). Make configurable.\n- **GRD-004**: Remove circuit breaker at 16. Replace with semantic similarity detection — circuit breaker triggers on tool calls have similar semantic intent but different arguments, at 15-consecutive threshold\n- **CON-003**: Increase default concurrency to 3-5 per lane ( make configurable\n- **CON-005**: Require debounce batch window ( reduce I/O pressure\n- **LIF-006**: Replace polling with SSE event subscription, degrade gracefully\n- **CAT-001**: Expand to at minimum 6 categories: research, implementation, review, writing, quick\n- **H-3**: Add delegation prompt requirement: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- **H-4**: Replace polling with SSE events subscription + graceful degradation\n- **EVT-006**: Reduce fallback paths from 2 maximum\n- **CTX-004**: Use compaction hook for metadata injection\n- **M-5**: Extend planning-with-files for per-plan notes\n- **GRD-006**: Use native `shell.env` hook explicitly\n- **AGT-001**: Change \"exactly three\" to \"at minimum three\"\n\n## IMPORTANT\nEvery validation finding has been auditedited and rewritten into the corrected requirement. The appended as a separate section. No references to source code, line numbers, or files paths.\n\nWrite the complete, clean documents to `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md`.\n\nRemember:\n- This must be a complete file — no partial edits\n no appending\n- All validation findings must be integrated into corrected requirements, not appended separately\n- No \"AGENTS.md\" file references\n- No references to specific line numbers in source files\n- Document metadata should say Version 3.0",
   "run_in_background": true,
   "scope": "docs"
 }

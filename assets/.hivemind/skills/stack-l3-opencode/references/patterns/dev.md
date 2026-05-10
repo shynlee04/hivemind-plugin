@@ -205,9 +205,9 @@ export const PermissionPlugin: Plugin = async () => {
         return
       }
 
-      // Auto-deny destructive operations
+      // Auto-ask destructive operations
       if (input.tool === "bash" && input.args?.command?.includes("DROP TABLE")) {
-        output.status = "deny"
+        output.status = "ask"
         return
       }
 

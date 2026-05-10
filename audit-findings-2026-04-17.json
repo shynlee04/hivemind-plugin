@@ -2,7 +2,14 @@
   "audit_metadata": {
     "report_date": "2026-04-17",
     "auditor": "harness-synthesis-auditor",
-    "phases_audited": [1, 2, 3, 4, 5, 6],
+    "phases_audited": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
     "profile_version": "1.0.0"
   },
   "executive_summary": {
@@ -31,7 +38,10 @@
       "phase": 5,
       "title": "Wildcard skill permission + profanity in build.md",
       "severity": "critical",
-      "evidence": ["build.md:1-11", "build.md:13-16"],
+      "evidence": [
+        "build.md:1-11",
+        "build.md:13-16"
+      ],
       "impact": "Privilege escalation - skill: *: allow grants full admin access; vulgar language violates professional standards",
       "remediation": "Delete build.md or strip wildcard permissions and rewrite with professional language"
     },
@@ -40,9 +50,11 @@
       "phase": 5,
       "title": "Excessive permissions without scoping in conductor.md",
       "severity": "critical",
-      "evidence": ["conductor.md permission block"],
+      "evidence": [
+        "conductor.md permission block"
+      ],
       "impact": "Violates least-privilege security principle - read/edit/write/bash/task/skill all set to allow with no restrictions",
-      "remediation": "Apply deny-by-default pattern: read: { '*': 'deny', '*.json': 'allow', '*.md': 'allow' }"
+      "remediation": "Apply ask-by-default pattern: read: { '*': 'ask', '*.json': 'allow', '*.md': 'allow' }"
     }
   ],
   "warnings": [
@@ -51,7 +63,9 @@
       "phase": 2,
       "title": "Missing frontmatter in deep-init.md and deep-research-synthesis-repomix.md",
       "severity": "warning",
-      "evidence": ["Both files start with content directly, no --- delimiters"],
+      "evidence": [
+        "Both files start with content directly, no --- delimiters"
+      ],
       "likelihood": "High"
     },
     {
@@ -97,7 +111,9 @@
       "phase": 5,
       "title": "Non-standard agent schema in orchestrator.md",
       "severity": "warning",
-      "evidence": ["orchestrator.md:1-9 uses textVerbosity + nested skill instead of permission record"],
+      "evidence": [
+        "orchestrator.md:1-9 uses textVerbosity + nested skill instead of permission record"
+      ],
       "likelihood": "Medium"
     },
     {
@@ -105,7 +121,9 @@
       "phase": 5,
       "title": "Role overlap - coordinator and conductor both labeled primary orchestrator",
       "severity": "warning",
-      "evidence": ["coordinator.md and conductor.md have near-identical role descriptions"],
+      "evidence": [
+        "coordinator.md and conductor.md have near-identical role descriptions"
+      ],
       "likelihood": "Medium"
     },
     {
@@ -137,7 +155,9 @@
       "phase": 2,
       "title": "Hardcoded absolute path in hf-prompt-enhance-to-plan.md",
       "severity": "warning",
-      "evidence": ["hf-prompt-enhance-to-plan.md:226 - @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/..."],
+      "evidence": [
+        "hf-prompt-enhance-to-plan.md:226 - @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/..."
+      ],
       "likelihood": "High"
     },
     {
@@ -156,7 +176,9 @@
       "phase": 5,
       "title": "Orchestrator hierarchy confusion - 4 agents serve as primary orchestrator",
       "severity": "warning",
-      "evidence": ["coordinator, conductor, hivefiver, orchestrator all labeled primary orchestrator"],
+      "evidence": [
+        "coordinator, conductor, hivefiver, orchestrator all labeled primary orchestrator"
+      ],
       "likelihood": "High"
     },
     {
@@ -164,7 +186,9 @@
       "phase": 1,
       "title": "Intentional trigger overlaps between meta-builder and specialist skills",
       "severity": "info",
-      "evidence": ["meta-builder routes to use-authoring-skills, command-dev, custom-tools-dev, agents-and-subagents-dev"],
+      "evidence": [
+        "meta-builder routes to use-authoring-skills, command-dev, custom-tools-dev, agents-and-subagents-dev"
+      ],
       "likelihood": "Low"
     }
   ],
@@ -172,28 +196,40 @@
     {
       "id": "XPR-1",
       "title": "Governance stripped + wildcard permissions = privilege escalation",
-      "phases_affected": [5, 6],
+      "phases_affected": [
+        5,
+        6
+      ],
       "propagation": "build.md skill:*:allow combined with AGENT_TOOLS not implemented means no tool restrictions enforced",
       "severity": "critical"
     },
     {
       "id": "XPR-2",
       "title": "Dangling skill refs + missing files_to_read = cascade failure",
-      "phases_affected": [1, 5],
+      "phases_affected": [
+        1,
+        5
+      ],
       "propagation": "skill-creator/skill-judge don't exist + scripts not declared = agent load failures",
       "severity": "high"
     },
     {
       "id": "XPR-3",
       "title": "Portability gap",
-      "phases_affected": [1, 2],
+      "phases_affected": [
+        1,
+        2
+      ],
       "propagation": "$HOME hardcoded + /Users/apple/ absolute paths = complete failure on other systems",
       "severity": "high"
     },
     {
       "id": "XPR-4",
       "title": "Role overlap creates delegation ambiguity",
-      "phases_affected": [1, 5],
+      "phases_affected": [
+        1,
+        5
+      ],
       "propagation": "meta-builder routing intentional; coordinator/conductor overlap unintentional = wrong agent spawned",
       "severity": "medium"
     }
@@ -238,7 +274,10 @@
       "checks_passed": 0,
       "warnings": 3,
       "failures": 2,
-      "critical_issues": ["build.md wildcard permissions + profanity", "conductor.md excessive permissions"]
+      "critical_issues": [
+        "build.md wildcard permissions + profanity",
+        "conductor.md excessive permissions"
+      ]
     },
     "phase_6_subagents": {
       "status": "warning",
@@ -252,7 +291,7 @@
   "recommendations": {
     "immediate": [
       "Remove or rewrite build.md (delete wildcard permissions, remove profanity)",
-      "Fix conductor.md permissions - apply deny-by-default pattern like coordinator.md",
+      "Fix conductor.md permissions - apply ask-by-default pattern like coordinator.md",
       "Replace hardcoded $HOME/.claude/get-shit-done/ with ${OPENCODE_HARNESS_BIN_DIR} environment variable"
     ],
     "short_term": [

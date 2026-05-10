@@ -39,7 +39,7 @@ export const VALID_DELEGATION_CATEGORIES = [
 
 export type SpecialistAgent = string
 export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
-export type PermissionAction = "allow" | "deny" | "ask"
+export type PermissionAction = "allow" | "ask" | "ask"
 
 export type PermissionRule = {
   permission: string
@@ -214,19 +214,19 @@ export type CategoryGateSurface = "agent-delegation" | "command-process"
 
 /** Narrowing-only delegation category gate policy. */
 export type CategoryGatePolicy = {
-  denyUnknownCategories: boolean
+  askUnknownCategories: boolean
   readonlyCategories: readonly string[]
   commandCategory: string
 }
 
-/** Auditable category gate allow/deny decision. */
+/** Auditable category gate allow/ask decision. */
 export type CategoryGateDecision = {
   allowed: boolean
   reason: string
   category?: string
   audit: {
     gate: "category"
-    denyReason?: string
+    askReason?: string
   }
 }
 
@@ -332,8 +332,8 @@ export type SessionContinuityRecord = {
 
 export type GovernanceRule = {
   id: string
-  condition: { toolNames?: string[]; sessionIDs?: string[]; [key: string]: unknown }
-  action: { type: string; escalation?: Record<string, unknown>; [key: string]: unknown }
+  condition: { toolNames?: string[]; sessionIDs?: string[];[key: string]: unknown }
+  action: { type: string; escalation?: Record<string, unknown>;[key: string]: unknown }
   enabled: boolean
 }
 

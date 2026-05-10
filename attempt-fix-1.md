@@ -12368,7 +12368,7 @@ I found the exact defects in the live code. Next I’m checking whether existing
 117:     expect(launchArgs.route.temperature).toBe(0.05)
 118:     expect(launchArgs.route.agentSource).toBe("explicit")
 119:     expect(launchArgs.route.temperatureSource).toBe("agent")
-120:     expect(launchArgs.permissionRules).toContainEqual({ permission: "edit", pattern: "*", action: "deny" })
+120:     expect(launchArgs.permissionRules).toContainEqual({ permission: "edit", pattern: "*", action: "ask" })
 121:   })
 122: 
 123:   it("lets an explicit model override category model resolution", async () => {

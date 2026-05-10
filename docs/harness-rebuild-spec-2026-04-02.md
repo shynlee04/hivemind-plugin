@@ -89,7 +89,7 @@ A harness is **not** a replacement for OpenCode's agent system. It is a **contro
 | CompletionDetector | ✅ KEEP | Two-signal detection (idle + stability) is sound |
 | Test framework (152 tests) | ✅ KEEP | Good coverage of existing components |
 | Agent definitions (researcher/builder/critic) | ✅ KEEP | Core triad is sufficient for MVP |
-| Permission profiles | ✅ KEEP | Clean allow/deny model |
+| Permission profiles | ✅ KEEP | Clean allow/ask model |
 
 ---
 

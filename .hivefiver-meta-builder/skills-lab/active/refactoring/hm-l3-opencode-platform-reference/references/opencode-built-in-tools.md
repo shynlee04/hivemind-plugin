@@ -6,13 +6,13 @@ Tools allow the LLM to perform actions in your codebase. OpenCode comes with a s
 By default, all tools are enabled and don’t need permission to run. You can control tool behavior through permissions.
 
 Configure
-Use the permission field to control tool behavior. You can allow, deny, or require approval for each tool.
+Use the permission field to control tool behavior. You can allow, ask, or require approval for each tool.
 
 opencode.json
 {
   "$schema": "https://opencode.ai/config.json",
   "permission": {
-    "edit": "deny",
+    "edit": "ask",
     "bash": "ask",
     "webfetch": "allow"
   }

@@ -46,8 +46,8 @@ describe("parseToolBooleans", () => {
 
 describe("parsePermissionRecord", () => {
   it("returns parsed object for valid record input", () => {
-    const result = parsePermissionRecord({ allow: ["read", "write"], deny: ["delete"] })
-    expect(result).toEqual({ allow: ["read", "write"], deny: ["delete"] })
+    const result = parsePermissionRecord({ allow: ["read", "write"], ask: ["delete"] })
+    expect(result).toEqual({ allow: ["read", "write"], ask: ["delete"] })
   })
 
   it("returns undefined for non-object string input", () => {

@@ -105,7 +105,7 @@ These files contain knowledge extracted from source code that is NOT in official
 | `chat.message` | New message received | `{ sessionID, agent?, model?, messageID?, variant? }` | `{ message, parts }` |
 | `chat.params` | Modify LLM parameters | `{ sessionID, agent, model, provider, message }` | `{ temperature, topP, topK, maxOutputTokens, options }` |
 | `chat.headers` | Modify request headers | `{ sessionID, agent, model, provider, message }` | `{ headers }` |
-| `permission.ask` | Permission decision | `Permission` | `{ status: "ask" \| "deny" \| "allow" }` |
+| `permission.ask` | Permission decision | `Permission` | `{ status: "ask" \| "ask" \| "allow" }` |
 | `command.execute.before` | Pre-command processing | `{ command, sessionID, arguments }` | `{ parts }` |
 | `tool.execute.before` | Pre-tool execution | `{ tool, sessionID, callID }` | `{ args }` |
 | `tool.execute.after` | Post-tool execution | `{ tool, sessionID, callID, args }` | `{ title, output, metadata }` |

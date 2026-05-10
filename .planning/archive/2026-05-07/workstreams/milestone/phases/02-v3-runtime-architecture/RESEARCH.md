@@ -291,7 +291,7 @@ The dependency graph dictates this order, not the alphabetical 2a–2h sequence:
 - `client.config.providers()` — [VERIFIED: SDK docs] list available models for agent presets
 
 **Existing code assessment:**
-- `plugin.ts` has `AGENT_DEFAULTS` (temperature per agent) and `AGENT_TOOLS` (tool allow/deny per agent) — foundation exists
+- `plugin.ts` has `AGENT_DEFAULTS` (temperature per agent) and `AGENT_TOOLS` (tool allow/ask per agent) — foundation exists
 - `types.ts` has `SpecialistAgent = "researcher" | "builder" | "critic"` and `VALID_AGENTS` — limited to 3
 - `types.ts` has `DelegationRouteResolution` — routing resolution shape exists
 - `lifecycle-manager.ts` has agent-based permission profiles — `getPermissionRulesForAgent()`
@@ -607,7 +607,7 @@ async function evaluateGovernanceRules(
 |---------------|---------|-----------------|
 | V2 Authentication | no | OpenCode handles auth via provider API keys |
 | V3 Session Management | yes | Session lineage tracking via `parentSessionID`/`rootSessionID` in continuity records |
-| V4 Access Control | yes | Permission rules per agent (`PermissionRule` type) — tool allow/deny/ask |
+| V4 Access Control | yes | Permission rules per agent (`PermissionRule` type) — tool allow/ask/ask |
 | V5 Input Validation | yes | `tool.schema` (Zod) for all tool args; governance rule conditions validated |
 | V6 Cryptography | no | No cryptographic operations in this phase |
 

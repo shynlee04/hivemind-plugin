@@ -5,25 +5,25 @@ temperature: 0.3
 steps: 80
 permission:
   edit:
-    "*": deny
+    "*": ask
     "*.md": allow
   write:
-    "*": deny
+    "*": ask
   bash:
-    "*": deny
+    "*": ask
     "git status*": allow
     "git diff*": allow
     "git log*": allow
     "ls*": allow
-  task: deny
+  task: ask
   delegate-task: allow
   skill:
-    "*": deny
+    "*": ask
     "hm-coordinating-loop": allow
     "hivefiver-use-authoring-skills": allow
     "hm-planning-with-files": allow
   read:
-    "*": deny
+    "*": ask
     "*.md": allow
     "*.json": allow
   glob: allow

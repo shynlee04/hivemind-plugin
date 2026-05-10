@@ -21,7 +21,7 @@ overrides_applied: 0
 |---|-------|--------|----------|
 | 1 | No profanity exists in any .opencode/agents/ file | ✓ VERIFIED | `grep -rni 'FUCK' .opencode/agents/` returns 0 results |
 | 2 | No wildcard skill permissions (`skill: "*": allow`) exist in build.md | ✓ VERIFIED | `grep '"\*": allow' .opencode/agents/build.md` returns empty |
-| 3 | conductor.md uses deny-by-default permissions scoped to minimum-required access | ✓ VERIFIED | 4 deny-all entries with specific allow overrides for edit/write/bash/skill/read |
+| 3 | conductor.md uses ask-by-default permissions scoped to minimum-required access | ✓ VERIFIED | 4 ask-all entries with specific allow overrides for edit/write/bash/skill/read |
 | 4 | coordinator.md is the sole primary orchestrator; all other agents have disambiguated specialist roles | ✓ VERIFIED | `SINGLE PRIMARY ORCHESTRATOR` hierarchy comment in coordinator.md; 3 agents have `SPECIALIST under coordinator` comments |
 | 5 | No hardcoded $HOME or absolute user paths exist in harness-delegation-inspection | ✓ VERIFIED | `grep -rn '$HOME\|/Users/apple/' .opencode/skills/harness-delegation-inspection/` returns 0 |
 | 6 | orchestrator.md uses standard YAML frontmatter schema (no textVerbosity) | ✓ VERIFIED | `grep 'textVerbosity' .opencode/agents/orchestrator.md` returns 0; mode=subagent; skill under permission: |
@@ -42,7 +42,7 @@ overrides_applied: 0
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
 | `.opencode/agents/build.md` | Professional agent with explicit skill allowlist | ✓ VERIFIED | 28 lines, MANDATORY_COMPLIANCE_REQUIRED tag, 6 explicit skill patterns |
-| `.opencode/agents/conductor.md` | Scoped delegation routing specialist | ✓ VERIFIED | Deny-by-default permissions with 3 scoped skills |
+| `.opencode/agents/conductor.md` | Scoped delegation routing specialist | ✓ VERIFIED | ask-by-default permissions with 3 scoped skills |
 | `.opencode/agents/coordinator.md` | Single primary orchestrator with hierarchy assertion | ✓ VERIFIED | `SINGLE PRIMARY ORCHESTRATOR` comment on line 51 |
 | `.opencode/agents/orchestrator.md` | Standard YAML schema, subagent mode | ✓ VERIFIED | No textVerbosity, mode: subagent, skill under permission: |
 | `.opencode/agents/hivefiver.md` | Disambiguated meta-concept specialist | ✓ VERIFIED | `META-CONCEPT WORKFLOW SPECIALIST under coordinator.md` |
@@ -84,7 +84,7 @@ N/A — No runnable entry points in this phase (YAML/markdown configuration only
 |-------------|------------|-------------|--------|----------|
 | C-1 | 15-01 | Remove hardcoded $HOME paths in skills | ✓ SATISFIED | 0 $HOME or /Users/apple/ paths in harness-delegation-inspection/ |
 | C-2 | 15-01 | Remove profanity + wildcard permissions from build.md | ✓ SATISFIED | 0 profanity, 0 wildcards in build.md |
-| C-3 | 15-01 | Scope conductor access (deny-by-default) | ✓ SATISFIED | conductor.md has deny-all with scoped allow overrides |
+| C-3 | 15-01 | Scope conductor access (ask-by-default) | ✓ SATISFIED | conductor.md has ask-all with scoped allow overrides |
 | W-1 | 15-02 | Add YAML frontmatter to deep-init.md | ✓ SATISFIED | deep-init.md has `---` delimiters with description field |
 | W-2 | 15-02 | Quote $ARGUMENTS in command files | ✓ SATISFIED | 0 bare $ARGUMENTS across 4 command files |
 | W-3 | 15-02 | Add files_to_read blocks to 5 skills | ✓ SATISFIED | All 5 skills have files_to_read blocks |
@@ -114,7 +114,7 @@ None required. This phase modifies only YAML frontmatter and markdown configurat
 
 No gaps found. All 15 must-have truths verified against the actual codebase:
 
-**Critical fixes (C-1, C-2, C-3):** All resolved — no hardcoded paths, no profanity, no wildcard permissions, conductor uses deny-by-default.
+**Critical fixes (C-1, C-2, C-3):** All resolved — no hardcoded paths, no profanity, no wildcard permissions, conductor uses ask-by-default.
 
 **High-severity fixes (W-1 through W-6, W-9, W-11):** All resolved — frontmatter added, $ARGUMENTS quoted, files_to_read blocks added, dangling refs annotated, standard schema enforced, hierarchy established, absolute paths eliminated.
 

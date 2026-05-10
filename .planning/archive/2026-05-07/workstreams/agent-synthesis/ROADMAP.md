@@ -161,7 +161,7 @@ Design the 2-lineage taxonomy (hm-* and hf-*), YAML frontmatter schema extending
 - [ ] 2-lineage taxonomy defined with clear membership rules
 - [ ] YAML frontmatter schema extending schema-kernel (Phase 16.5)
 - [ ] Depth levels L0/L1/L2 defined with delegation rules
-- [ ] Permission model templates: tool allow/deny, temperature, budget per depth
+- [ ] Permission model templates: tool allow/ask, temperature, budget per depth
 - [ ] Domain classification matrix: agent domain → authorized skills/tools
 
 ---
@@ -355,7 +355,7 @@ Define formal tool capability per agent. Create `TOOL-CAPABILITY-MATRIX.md` and 
 - OpenCode native tools (read, write, edit, bash, glob, grep, task, skill, todowrite)
 - Hivemind custom tools (delegate-task, delegation-status, run-background-command, prompt-skim, prompt-analyze, session-patch, session-journal-export, configure-primitive, validate-restart)
 - MCP/external tools (tavily-*, brave-*, deepwiki-*, github-*, repomix-*)
-- Permission model: `allow` array or `deny-all` + `allow-specific`
+- Permission model: `allow` array or `ask-all` + `allow-specific`
 
 Tool permission rules:
 1. No agent has blanket `"*"` allow — all permissions are explicit

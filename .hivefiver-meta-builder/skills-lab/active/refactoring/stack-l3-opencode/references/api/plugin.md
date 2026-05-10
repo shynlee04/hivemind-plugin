@@ -64,7 +64,7 @@ interface Hooks {
   "chat.message"?: (input: ChatMessageInput, output: ChatMessageOutput) => Promise<void>
   "chat.params"?: (input: ChatParamsInput, output: ChatParamsOutput) => Promise<void>
   "chat.headers"?: (input: ChatHeadersInput, output: ChatHeadersOutput) => Promise<void>
-  "permission.ask"?: (input: Permission, output: { status: "ask" | "deny" | "allow" }) => Promise<void>
+  "permission.ask"?: (input: Permission, output: { status: "ask" | "ask" | "allow" }) => Promise<void>
   "command.execute.before"?: (input: CommandBeforeInput, output: CommandBeforeOutput) => Promise<void>
   "tool.execute.before"?: (input: ToolBeforeInput, output: ToolBeforeOutput) => Promise<void>
   "tool.execute.after"?: (input: ToolAfterInput, output: ToolAfterOutput) => Promise<void>

@@ -81,8 +81,8 @@ No dependencies. Can execute in parallel.
 - **hm-l0-orchestrator** — front-facing orchestrator, already has `delegate-task: allow`, needs background command for long-running tasks
 - **hm-l1-coordinator** — delegation coordinator, already has `delegate-task: allow`, needs background command for wave dispatch
 - **hm-l2-conductor** — delegation routing specialist, already has `delegate-task: allow`, needs background command for command dispatch
-- **hm-l2-executor** — implementation specialist, currently has `delegate-task: deny` but needs background command for build/test/compile tasks
-- **hm-l2-debugger** — debug specialist, currently has `delegate-task: deny` but needs background command for running debug scripts
+- **hm-l2-executor** — implementation specialist, currently has `delegate-task: ask` but needs background command for build/test/compile tasks
+- **hm-l2-debugger** — debug specialist, currently has `delegate-task: ask` but needs background command for running debug scripts
 
 **Output files:**
 - `.opencode/agents/hm-l0-orchestrator.md` — add `run-background-command: allow`

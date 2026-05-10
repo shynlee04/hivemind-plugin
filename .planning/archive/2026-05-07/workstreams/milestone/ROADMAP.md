@@ -1059,7 +1059,7 @@ Plans:
 ### Success Criteria
 1. No secret material is persisted or surfaced through planning/runtime artifacts outside explicit placeholders.
 2. Tool scope enforcement blocks path traversal and cross-root writes while preserving valid project-local workflows.
-3. Category gates deny unsafe delegation/tool combinations with auditable reasons.
+3. Category gates ask unsafe delegation/tool combinations with auditable reasons.
 
 ## Phase 48.3: OpenCode SDK/CQRS Integration Alignment
 
@@ -1184,7 +1184,7 @@ Plans:
 ### Success Criteria
 1. User can run restart validation and see no missing-reference or circular-dependency blockers for active project primitives.
 2. User can list/read primitives without invalid required frontmatter warnings on active agents, commands, or skills.
-3. Permission inheritance reports use readable values, not `[object Object]`, and distinguish intentional deny overlays from real conflicts.
+3. Permission inheritance reports use readable values, not `[object Object]`, and distinguish intentional ask overlays from real conflicts.
 
 Plans:
 - [x] 50-01-PLAN-2026-04-28.md — Restart-readiness validator, loader, and primitive frontmatter repairs

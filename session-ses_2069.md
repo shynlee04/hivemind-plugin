@@ -1342,7 +1342,7 @@ All 8 files exist. Let me read them all in parallel, along with key codebase sta
 132: │   ├── plugins/                  # Plugin loaders (prompt-enhance.ts)
 133: │   ├── tools/                    # OpenCode-native tools (nl-route.ts)
 134: │   ├── hooks/                    # OpenCode-native hooks
-135: │   ├── deny-prompts/             # Denied prompt patterns
+135: │   ├── ask-prompts/             # Denied prompt patterns
 136: │   ├── settings.json             # OpenCode settings
 137: │   └── opencode.json             # OpenCode project config
 138: ├── .hivemind/                    # Deep Module State (internal, Q6 canonical)
@@ -2107,7 +2107,7 @@ All 8 files exist. Let me read them all in parallel, along with key codebase sta
 90: | `src/lib/primitive-scanners.ts` | 182 | IMPLEMENTED | scanAgentFile, scanCommandFile, scanSkillFile | primitive-loader.ts |
 91: | `src/lib/config-compiler.ts` | 410 | IMPLEMENTED | compileAgent, compileCommand, compileSkill, decompileAgent, decompileCommand | configure-primitive.ts |
 92: | `src/lib/category-gates.ts` | 59 | IMPLEMENTED | resolveCategoryGateDecision, DEFAULT_CATEGORY_GATE_POLICY | delegation-manager.ts, runtime-policy.ts |
-93: | `src/lib/category-gate-audit.ts` | 41 | IMPLEMENTED | recordCategoryGateDeny | delegation-manager.ts |
+93: | `src/lib/category-gate-audit.ts` | 41 | IMPLEMENTED | recordCategoryGateask | delegation-manager.ts |
 94: | `src/lib/session-journal.ts` | 119 | IMPLEMENTED | SessionJournalEntry, createSessionJournal | journal-query.ts, journal-replay.ts |
 95: | `src/lib/journal-query.ts` | 168 | IMPLEMENTED | querySessionJournal | index.ts (public API), session-journal-export.ts |
 96: | `src/lib/journal-replay.ts` | 131 | IMPLEMENTED | replayJournalEntries | index.ts (public API) |

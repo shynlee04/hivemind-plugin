@@ -93,7 +93,7 @@ Understands the Hivemind quality model:
 - **RICH checklist:** Progressive disclosure, trigger completeness, anti-pattern adherence, cross-lineage justification
 - **Two-lineage taxonomy:** hm-* (STRICT, 11 domains), hf-* (FLEXIBLE, 7 domains)
 - **Three depth levels:** L0 (primary, 0.2-0.3), L1 (subagent, 0.1-0.2), L2 (subagent, 0.0-0.15)
-- **Permission model:** Deny-all base + explicit allow per tool category
+- **Permission model:** ask-all base + explicit allow per tool category
 - **XML body standard:** 10 required tags, 6 optional tags (D-AD-04)
 - **Naming conventions:** Agent `^(hm|hf)-[a-z0-9]+-[a-z0-9]+(-[a-z0-9]+)?$`, Skill `^(hm|hf|gate|stack)-[a-z0-9]+(-[a-z0-9]+)?$`, Command `^(/)hf-|^(/)hm-`
 - **Anti-pattern catalog:** 15 documented agent patterns + 12 skill patterns + 8 command patterns
@@ -119,7 +119,7 @@ Returns structured output to hf-coordinator containing:
 2. Every agent checked against AQUAL-01 through AQUAL-08
 3. Every skill checked against RICH checklist
 4. YAML frontmatter parsed without error for all primitives
-5. Permission blocks verified as deny-all + explicit allow
+5. Permission blocks verified as ask-all + explicit allow
 6. Skill references all resolve to existing SKILL.md files
 7. Cross-lineage access documented with justification in all hf-* agents
 8. Temperature values within declared depth range for all agents
@@ -238,7 +238,7 @@ EVERY FINDING MUST HAVE FILE:LINE EVIDENCE. NO SUBJECTIVE JUDGMENT WITHOUT CODE 
 
   <step name="validate_permissions" priority="normal">
   For each primitive:
-  1. Verify permission block uses deny-all base + explicit allow pattern
+  1. Verify permission block uses ask-all base + explicit allow pattern
   2. Check that temperature matches depth range
   3. Validate skill references resolve to existing SKILL.md files
   4. Verify lineage-skill binding (hm STRICT, hf FLEXIBLE)
@@ -271,7 +271,7 @@ EVERY FINDING MUST HAVE FILE:LINE EVIDENCE. NO SUBJECTIVE JUDGMENT WITHOUT CODE 
   <step name="classify_findings" priority="normal">
   Assign severity to every finding:
   - CRITICAL: Blocks primitive functionality (e.g., missing file, broken YAML)
-  - HIGH: Violates iron law (e.g., hf skills in hm agent, no deny-all permissions)
+  - HIGH: Violates iron law (e.g., hf skills in hm agent, no ask-all permissions)
   - MEDIUM: Quality degradation (e.g., missing optional XML tag, temperature near range edge)
   - LOW: Cosmetic (e.g., whitespace inconsistency, non-standard but valid naming)
   </step>
@@ -297,7 +297,7 @@ EVERY FINDING MUST HAVE FILE:LINE EVIDENCE. NO SUBJECTIVE JUDGMENT WITHOUT CODE 
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody (task: deny, delegate-task: deny)
+**Delegates to:** Nobody (task: ask, delegate-task: ask)
 
 **Does NOT delegate when:**
 - Scanning primitives (self-executed via glob/grep)

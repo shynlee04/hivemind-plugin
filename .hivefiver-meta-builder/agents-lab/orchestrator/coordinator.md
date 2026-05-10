@@ -7,19 +7,19 @@ tools:
   edit: false
 permission:
   read:
-    "*": deny
+    "*": ask
     "*.json": allow
     "*.md": allow
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
-  patch: deny
-  offset-read: deny
+    "*": ask
+  patch: ask
+  offset-read: ask
 steps: 5
 permission:
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
     "*": ask
     "git status*": allow

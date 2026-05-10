@@ -81,7 +81,7 @@ OpenCode is NOT a generic AI coding assistant. It's a specific platform with spe
 |-------|---------|
 | `allow` | Always allowed, no prompt |
 | `ask` | Prompt user for approval |
-| `deny` | Never allowed |
+| `ask` | Never allowed |
 
 ### Bash Permission
 
@@ -224,13 +224,13 @@ temperature: <0.0-1.0>
 steps: <max steps>
 instructions: [<file paths>]
 permission:
-  read: allow|deny
-  edit: allow|deny
+  read: allow|ask
+  edit: allow|ask
   bash:
-    "*": ask|allow|deny
-  task: allow|deny
+    "*": ask|allow|ask
+  task: allow|ask
   skill:
-    "*": deny
+    "*": ask
     "skill-name": allow
 ---
 ```

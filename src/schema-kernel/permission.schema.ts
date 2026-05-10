@@ -6,8 +6,8 @@ export const PERMISSION_SCHEMA_VERSION = "1.0.0"
 // 1. Permission Actions — allowed values for any permission rule
 // ---------------------------------------------------------------------------
 
-/** Three-state permission action: allow, ask for approval, or deny outright. */
-export const PermissionActionSchema = z.enum(["allow", "ask", "deny"])
+/** Three-state permission action: allow, ask for approval, or ask outright. */
+export const PermissionActionSchema = z.enum(["allow", "ask", "ask"])
 
 export type PermissionAction = z.infer<typeof PermissionActionSchema>
 

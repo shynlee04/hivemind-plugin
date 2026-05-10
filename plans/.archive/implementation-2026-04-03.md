@@ -1401,7 +1401,7 @@ Create 8 additional specialist skills following the exact same pattern as Steps 
 |------|-----------|-----------------|-----------------|-------------------|
 | 6 | `use-authoring-agents` | "create agent", "configure agent", "subagent" | 01-agent-types.md, 02-permission-patterns.md, 03-model-selection.md, 04-prompt-files.md, 05-subagent-task-permissions.md | validate-agent.sh |
 | 7 | `use-authoring-commands` | "create command", "/my-command", "command template" | 01-command-anatomy.md, 02-placeholders.md, 03-shell-injection.md, 04-file-references.md, 05-agent-model-binding.md | validate-command.sh |
-| 8 | `use-authoring-permissions` | "create permission", "permission rule", "allow deny" | 01-permission-keys.md, 02-granular-rules.md, 03-wildcard-patterns.md, 04-agent-overrides.md, 05-external-directories.md | validate-permissions.sh |
+| 8 | `use-authoring-permissions` | "create permission", "permission rule", "allow ask" | 01-permission-keys.md, 02-granular-rules.md, 03-wildcard-patterns.md, 04-agent-overrides.md, 05-external-directories.md | validate-permissions.sh |
 | 9 | `use-authoring-configs` | "configure opencode", "opencode.json", "set up config" | 01-config-precedence.md, 02-variable-substitution.md, 03-tui-config.md, 04-server-config.md, 05-provider-models.md | validate-config.sh |
 | 10 | `use-authoring-rules` | "create rule", "AGENTS.md", "custom rules" | 01-agents-md-patterns.md, 02-custom-instructions.md, 03-remote-urls.md, 04-precedence-chains.md | validate-rules.sh |
 | 11 | `use-authoring-plugins` | "create plugin", "plugin authoring", "plugin assembly" | 01-plugin-anatomy.md, 02-hook-registration.md, 03-event-handlers.md, 04-npm-packaging.md, 05-compaction-hooks.md | validate-plugin.sh |
@@ -1477,7 +1477,7 @@ Steps:       1. Create plugin entry (<100 LOC)  2. Add tools via use-authoring-t
 Primary:     use-authoring-agents
 Complement:  use-authoring-permissions
 When:        User creates an agent with specific permission constraints
-Steps:       1. Define agent (mode, model, prompt)  2. Set permissions (allow/ask/deny per tool)
+Steps:       1. Define agent (mode, model, prompt)  2. Set permissions (allow/ask/ask per tool)
              3. Test agent behavior  4. Validate permission enforcement
 ```
 

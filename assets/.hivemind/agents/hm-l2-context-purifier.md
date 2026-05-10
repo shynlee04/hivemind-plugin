@@ -14,9 +14,9 @@ permission:
   grep: allow
   glob: allow
   task:
-    '*': deny
+    '*': ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
@@ -67,7 +67,7 @@ removed_content:
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- NEVER spawn subagents (task: ask).
 - NEVER ask clarifying questions — return findings only.
 - NEVER change the core intent — compression preserves meaning, never alters it.
 - NEVER remove constraints — all non-negotiable requirements must appear in preserved_constraints.

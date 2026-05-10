@@ -11,7 +11,7 @@ instruction:
 steps: 50
 permission:
   read:
-    '*': deny
+    '*': ask
     '*.md': allow
     '*.json': allow
     '*.ts': allow
@@ -25,17 +25,17 @@ permission:
     node *: allow
     npx *: allow
   task:
-    '*': deny
+    '*': ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
   glob: allow
   grep: allow
-  webfetch: deny
-  websearch: deny
+  webfetch: ask
+  websearch: ask
 ---
 
 # Intent Loop — Phase 0 Specialist

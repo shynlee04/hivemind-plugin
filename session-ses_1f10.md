@@ -2798,7 +2798,7 @@ If interrupted:
 90: | `chat.message` | New message received | `{ sessionID, agent?, model?, messageID?, variant? }` | `{ message, parts }` |
 91: | `chat.params` | Modify LLM parameters | `{ sessionID, agent, model, provider, message }` | `{ temperature, topP, topK, maxOutputTokens, options }` |
 92: | `chat.headers` | Modify request headers | `{ sessionID, agent, model, provider, message }` | `{ headers }` |
-93: | `permission.ask` | Permission decision | `Permission` | `{ status: "ask" \| "deny" \| "allow" }` |
+93: | `permission.ask` | Permission decision | `Permission` | `{ status: "ask" \| "ask" \| "allow" }` |
 94: | `command.execute.before` | Pre-command processing | `{ command, sessionID, arguments }` | `{ parts }` |
 95: | `tool.execute.before` | Pre-tool execution | `{ tool, sessionID, callID }` | `{ args }` |
 96: | `tool.execute.after` | Post-tool execution | `{ tool, sessionID, callID, args }` | `{ title, output, metadata }` |

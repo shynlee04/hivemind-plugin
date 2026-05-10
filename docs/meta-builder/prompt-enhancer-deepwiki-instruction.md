@@ -81,9 +81,9 @@ The prompt-enhancer **can** read on-disk files natively using the `read`, `glob`
         "glob": "allow",
         "grep": "allow",
         "list": "allow",
-        "write": { "*": "deny" },
-        "bash": "deny",
-        "task": { "*": "deny" }
+        "write": { "*": "ask" },
+        "bash": "ask",
+        "task": { "*": "ask" }
       }
     }
   }
@@ -286,7 +286,7 @@ const parameters = z.object({
                   {
                     permission: "todowrite" as const,
                     pattern: "*" as const,
-                    action: "deny" as const,
+                    action: "ask" as const,
                   },
                 ]),
             ...(hasTaskPermission
@@ -295,7 +295,7 @@ const parameters = z.object({
                   {
                     permission: "task" as const,
                     pattern: "*" as const,
-                    action: "deny" as const,
+                    action: "ask" as const,
                   },
                 ]),
             ...(config.experimental?.primary_tools?.map((t) => ({

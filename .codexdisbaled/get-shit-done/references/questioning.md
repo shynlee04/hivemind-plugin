@@ -72,7 +72,7 @@ Use AskUserQuestion to help users think by presenting concrete options to react 
 
 **Good options:**
 - Interpretations of what they might mean
-- Specific examples to confirm or deny
+- Specific examples to confirm or ask
 - Concrete choices that reveal priorities
 
 **Bad options:**

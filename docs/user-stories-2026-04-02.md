@@ -64,7 +64,7 @@
 **Acceptance Criteria:**
 - [ ] Researcher agent receives a prompt with all 6 delegation sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT (CAT-009)
 - [ ] Researcher operates in read-only mode: denied `edit`, `write`, `bash` permissions. Allowed tools: `read`, `glob`, `grep`, `list`, `webfetch`, `websearch`, `codesearch` (AGT-005)
-- [ ] Researcher is denied ALL task spawning via `"task": { "*": "deny" }` permission glob pattern — cannot spawn any subagent type (PERM-004)
+- [ ] Researcher is denied ALL task spawning via `"task": { "*": "ask" }` permission glob pattern — cannot spawn any subagent type (PERM-004)
 - [ ] [AGENT INSTRUCTION] Researcher follows the 5-phase methodology: Scope → Broad Sweep → Deep Read → Cross-Reference → Synthesize
 - [ ] [AGENT INSTRUCTION] Every claim in the Researcher's output cites file:line references
 - [ ] Researcher runs on the configured model with temperature 0.1 (CAT-003)
@@ -92,7 +92,7 @@
 **Acceptance Criteria:**
 - [ ] Builder agent receives a prompt with all 6 delegation sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT (CAT-009)
 - [ ] Builder has full file modification access (`edit`, `write` allowed) and shell access (`bash` allowed) (AGT-006)
-- [ ] Builder is denied ALL task spawning via `"task": { "*": "deny" }` permission glob pattern — all delegation routes through the conductor's `delegate-task` custom tool (PERM-005)
+- [ ] Builder is denied ALL task spawning via `"task": { "*": "ask" }` permission glob pattern — all delegation routes through the conductor's `delegate-task` custom tool (PERM-005)
 - [ ] [AGENT INSTRUCTION] Builder follows the 5-step workflow: Read Everything → Map Patterns → Plan Change → Implement Atomically → Verify
 - [ ] [AGENT INSTRUCTION] Builder matches existing code style (indentation, naming, import ordering, error handling patterns)
 - [ ] [AGENT INSTRUCTION] Builder makes atomic changes — one change at a time, verifying after each
@@ -122,7 +122,7 @@
 **Acceptance Criteria:**
 - [ ] Critic agent receives a prompt with all 6 delegation sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT (CAT-009)
 - [ ] Critic operates in read-only file access mode: denied `edit` and `write` permissions, but allowed `bash` restricted to test execution (AGT-007)
-- [ ] Critic is denied ALL task spawning via `"task": { "*": "deny" }` permission glob pattern (PERM-006)
+- [ ] Critic is denied ALL task spawning via `"task": { "*": "ask" }` permission glob pattern (PERM-006)
 - [ ] [AGENT INSTRUCTION] Critic follows the 8-step review process: Understand Contract → Read Diff → Verify Acceptance Criteria → Correctness Check → Security Check → Performance Check → Conventions Check → Run Tests
 - [ ] [AGENT INSTRUCTION] Critic marks each acceptance criterion as MET or NOT MET with file:line evidence
 - [ ] [AGENT INSTRUCTION] Critic categorizes findings as Critical (must fix), Warning (should fix), or Info (nice to have)
@@ -244,7 +244,7 @@
 - [ ] The Conductor creates or updates `.harness/boulder.json` for structured task state: plan reference, current phase, completed phases, errors, continuation context
 - [ ] For each pending phase, the Conductor delegates via the harness's `delegate-task` custom tool (registered via plugin `tool()` factory) to the appropriate specialist agent (AGT-004, PERM-008)
 - [ ] Per-delegation tool restrictions are enforced via the plugin's `tool.execute.before` hook, which inspects the current session's delegation metadata and rejects tool calls outside the delegated agent's permitted tool set (PERM-007)
-- [ ] All specialist agents have `task: { "*": "deny" }` preventing re-delegation (PERM-004, PERM-005, PERM-006)
+- [ ] All specialist agents have `task: { "*": "ask" }` preventing re-delegation (PERM-004, PERM-005, PERM-006)
 - [ ] The Conductor updates the plan status after each phase (in_progress → complete) in both `task_plan.md` and `.harness/boulder.json`
 - [ ] The Conductor logs errors encountered in the plan file
 - [ ] The Conductor supports resumption via `progress.md` — if interrupted, it picks up where it left off by reading `.harness/boulder.json` for structured state (CMD-006)
@@ -451,7 +451,7 @@
 - [ ] The circuit breaker is implemented in the plugin's `tool.execute.before` hook — NOT using the platform's `doom_loop` mechanism (GRD-004)
 - [ ] When tripped, the system throws an error and aborts execution
 - [ ] The loop detection state is included in the `_harness` metadata
-- [ ] **Architectural separation:** The platform's `doom_loop` is a permission action (allow/ask/deny) that detects at exactly 3 consecutive identical calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` in root permissions prevents the platform from prompting the user — it silently permits. The harness circuit breaker is a SEPARATE mechanism at threshold 16 that catches semantically similar patterns. These two mechanisms serve different purposes and coexist (PERM-002, GRD-004)
+- [ ] **Architectural separation:** The platform's `doom_loop` is a permission action (allow/ask/ask) that detects at exactly 3 consecutive identical calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` in root permissions prevents the platform from prompting the user — it silently permits. The harness circuit breaker is a SEPARATE mechanism at threshold 16 that catches semantically similar patterns. These two mechanisms serve different purposes and coexist (PERM-002, GRD-004)
 
 **Edge Cases:**
 - E-049: Agent makes 15 similar calls, then a different call, then repeats — Counter resets on the different call
@@ -848,12 +848,12 @@ This version corrects all contradictions between the user stories and the platfo
 |----|--------|------------|
 | V3-1 | Delegation described as using "platform's built-in Task tool" | **Fixed:** All delegation now explicitly routes through the harness's `delegate-task` custom tool (registered via plugin `tool()` factory). US-001, US-002, US-003, US-004, US-007, US-008 updated. |
 | V3-2 | Category routing listed 5 categories (quick, research, deep, writing, unspecified) not matching requirements | **Fixed:** Aligned with requirements CAT-001: 4 categories — `research`, `implementation`, `review`, `visual-engineering`. US-001 and MP-3 updated. |
-| V3-3 | `doom_loop` described as "configurable threshold" or "triggers at 3" | **Fixed:** All doom_loop references now state it is a permission action (allow/ask/deny), not a threshold. Platform detects at 3 identical calls regardless; setting `"allow"` prevents user prompts. US-014, US-015, E-012, E-027 updated. |
+| V3-3 | `doom_loop` described as "configurable threshold" or "triggers at 3" | **Fixed:** All doom_loop references now state it is a permission action (allow/ask/ask), not a threshold. Platform detects at 3 identical calls regardless; setting `"allow"` prevents user prompts. US-014, US-015, E-012, E-027 updated. |
 | V3-4 | `reserveConcurrencySlot()` and `getAvailableSpawnCapacity()` referenced as if platform APIs | **Fixed:** US-010, US-022, US-023 rewritten to describe these as harness-internal mechanisms in `concurrency.ts` and `state.ts`. All invented API names removed. |
 | V3-5 | Custom tools (`delegate-task`, `context-checkpoint_*`) treated as platform primitives | **Fixed:** US-013 now explicitly states these are "harness-registered custom tools via plugin `tool()` factory, NOT platform primitives." US-010 updated similarly. |
 | V3-6 | Environment variables (`OPENCODE_HARNESS_STATE_DIR`, etc.) presented as platform-native | **Fixed:** US-012, US-013 now specify these are "harness-specific environment variables, NOT platform-native environment variables" per ARCH-007. |
 | V3-7 | `/harness-doctor` described as aspirational 8-point health diagnostics | **Fixed:** US-009 reduced to 5 concrete, testable checks matching CMD-004: plugin loaded, continuity file valid, agent files exist, command files exist, skill files exist. |
-| V3-8 | Permission model described `delegate-task` as denied via `permission.task` glob | **Fixed:** All specialist agents use `task: { "*": "deny" }` to prevent ANY subagent spawning (PERM-004/005/006). The `delegate-task` custom tool is a separate mechanism from the platform's `task` tool. Per-delegation restrictions are enforced via `tool.execute.before` hook (PERM-007). |
+| V3-8 | Permission model described `delegate-task` as denied via `permission.task` glob | **Fixed:** All specialist agents use `task: { "*": "ask" }` to prevent ANY subagent spawning (PERM-004/005/006). The `delegate-task` custom tool is a separate mechanism from the platform's `task` tool. Per-delegation restrictions are enforced via `tool.execute.before` hook (PERM-007). |
 | V3-9 | Missing [AGENT INSTRUCTION] tags on non-code-enforceable criteria | **Fixed:** Added [AGENT INSTRUCTION] tags to all acceptance criteria that are agent instruction quality bars, not code-enforceable. |
 | V3-10 | Missing requirement traceability on stories | **Fixed:** Added "Traces to:" field to every user story linking to specific requirement IDs. |
 | V3-11 | SDK error handling section referenced invented error types | **Fixed:** Section 9.4 now only references actual SDK methods from the requirements. Removed invented error type names. |
@@ -872,7 +872,7 @@ This version corrects all contradictions between the user stories and the platfo
 
 **Fix Applied (v2.0):** Updated to use platform's Task tool for delegation.
 
-**Further Correction (v3.0):** The v2.0 fix was itself incorrect. The requirements clearly state that `delegate-task` IS a harness-registered custom tool (PERM-008, TOOL-001). Delegation goes through this custom tool, which internally uses `client.session.create()` + `client.session.prompt()` (SDK methods). The platform's built-in `task` tool is set to `"ask"` at root level to prevent bypassing the harness (PERM-003). All specialist agents have `task: { "*": "deny" }` to prevent any subagent spawning.
+**Further Correction (v3.0):** The v2.0 fix was itself incorrect. The requirements clearly state that `delegate-task` IS a harness-registered custom tool (PERM-008, TOOL-001). Delegation goes through this custom tool, which internally uses `client.session.create()` + `client.session.prompt()` (SDK methods). The platform's built-in `task` tool is set to `"ask"` at root level to prevent bypassing the harness (PERM-003). All specialist agents have `task: { "*": "ask" }` to prevent any subagent spawning.
 
 ---
 
@@ -881,7 +881,7 @@ This version corrects all contradictions between the user stories and the platfo
 
 **Fix Applied (v2.0):** Added architectural decision noting the coexistence.
 
-**Further Correction (v3.0):** Clarified that `doom_loop` is a permission ACTION (allow/ask/deny), not a configurable threshold. The platform always detects at 3 identical calls. Setting `"allow"` prevents user prompts. The harness circuit breaker at 16 is a separate mechanism in `tool.execute.before`.
+**Further Correction (v3.0):** Clarified that `doom_loop` is a permission ACTION (allow/ask/ask), not a configurable threshold. The platform always detects at 3 identical calls. Setting `"allow"` prevents user prompts. The harness circuit breaker at 16 is a separate mechanism in `tool.execute.before`.
 
 ---
 
@@ -922,7 +922,7 @@ This version corrects all contradictions between the user stories and the platfo
 **The user stories document is now fully aligned with the platform-grounded requirements (v3.0).** All corrections from the v3.0 requirements validation have been applied:
 
 1. ✅ Delegation routes through the harness's `delegate-task` custom tool (plugin-registered via `tool()` factory), NOT the platform's built-in Task tool
-2. ✅ `doom_loop` is documented as a permission action (allow/ask/deny), NOT a configurable threshold
+2. ✅ `doom_loop` is documented as a permission action (allow/ask/ask), NOT a configurable threshold
 3. ✅ All custom tools (`delegate-task`, `context-checkpoint_*`) described as harness-registered, not platform primitives
 4. ✅ No invented platform API references (`reserveConcurrencySlot()`, `getAvailableSpawnCapacity()` removed)
 5. ✅ All environment variables marked as harness-specific, not platform-native

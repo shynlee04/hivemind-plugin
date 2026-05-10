@@ -1549,7 +1549,7 @@ Found them — all under `.hivemind/research/skills-audit/`. Let me pull the Cyc
 60: | opencode-lsp-servers.md | YES | 149 | LSP server configuration | Listed in SKILL.md table | Language server integration, diagnostics |
 61: | opencode-mcp-servers.md | YES | 402 | MCP server setup (local and remote) | Listed in SKILL.md table | MCP config, tool discovery, caveats |
 62: | opencode-models.md | YES | 183 | Model providers, model selection | Listed in SKILL.md table | 75+ LLM providers, local models |
-63: | opencode-permissions.md | YES | 196 | Permission system, cascading, glob patterns, per-agent overrides | Listed in SKILL.md table | allow/deny/ask, cascading rules |
+63: | opencode-permissions.md | YES | 196 | Permission system, cascading, glob patterns, per-agent overrides | Listed in SKILL.md table | allow/ask/ask, cascading rules |
 64: | opencode-plugins.md | YES | 294 | Plugin system, hooks, tool registration, dependencies | Listed in SKILL.md table | tool.execute.before/after, event hooks, compacting |
 65: | opencode-rules.md | YES | 145 | Rules system (AGENTS.md, project/global scopes) | Listed in SKILL.md table | Rule files, custom instructions |
 66: | opencode-sdk.md | YES | 302 | Full SDK API (session CRUD, prompt, abort, events, TUI control) | Listed in SKILL.md table | JS/TS client, programmatic control |

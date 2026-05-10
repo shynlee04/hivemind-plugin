@@ -35,7 +35,7 @@ describe("kernel-packet", () => {
     expect(packet.session_id).toBe("sess-123")
     expect(packet.agent_type).toBe("builder")
     expect(packet.tool_allow_list).toEqual(["read_file", "edit_file"])
-    expect(packet.tool_deny_list).toEqual(["delete_file"])
+    expect(packet.tool_ask_list).toEqual(["delete_file"])
     expect(packet.constraints).toEqual(["use TypeScript", "max 500 LOC"])
   })
 

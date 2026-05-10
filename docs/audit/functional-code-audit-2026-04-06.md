@@ -57,7 +57,7 @@ These 9 modules are **production-quality** — no bugs, no noise, no blocking, g
 
 **Evidence:** Not imported by any production file. Not re-exported from `index.ts`. Only imported by its own test. 112 LOC doing nothing.
 
-**Why it fails:** OpenCode handles agent definitions natively via `.opencode/agents/*.md`. This module's hand-rolled YAML parser (lines 16-93) is fragile and handles only a subset of YAML. The `isToolDenied` function checks for `{ "*": "deny" }` objects that no code path creates.
+**Why it fails:** OpenCode handles agent definitions natively via `.opencode/agents/*.md`. This module's hand-rolled YAML parser (lines 16-93) is fragile and handles only a subset of YAML. The `isToolDenied` function checks for `{ "*": "ask" }` objects that no code path creates.
 
 **Fix:** Delete the file and its test. Or wire it into `plugin.ts` if it's intended for future use — but right now it's dead weight.
 

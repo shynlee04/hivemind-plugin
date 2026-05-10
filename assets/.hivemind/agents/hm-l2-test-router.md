@@ -8,9 +8,9 @@ permission:
   read: allow
   bash: allow
   task:
-    '*': deny
+    '*': ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

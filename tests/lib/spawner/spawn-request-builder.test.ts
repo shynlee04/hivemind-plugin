@@ -27,7 +27,7 @@ describe("buildSdkSpawnRequest", () => {
           glob: "allow",
           grep: "allow",
           edit: "allow",
-          write: "deny",
+          write: "ask",
           bash: { "npm test": "allow" },
         },
       },
@@ -51,13 +51,13 @@ describe("buildSdkSpawnRequest", () => {
     })
   })
 
-  it("fails closed when restrictive ask and deny permission records do not explicitly allow tools", () => {
+  it("fails closed when restrictive ask and ask permission records do not explicitly allow tools", () => {
     const profile = resolveDelegationPermissionProfile(
       { ...baseParams, agent: "review", prompt: "review code" },
       {
         name: "review",
         permission: {
-          edit: "deny",
+          edit: "ask",
           bash: "ask",
         },
       },

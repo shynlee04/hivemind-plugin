@@ -131,7 +131,7 @@ describe("agent-command binding detection", () => {
 describe("permission deadlock detection", () => {
   it("warns when agent denies tool that command needs", () => {
     const agents = new Map<string, AgentFile>([
-      ["agent1", makeAgentFile("agent1", { permission: { bash: "deny" } })],
+      ["agent1", makeAgentFile("agent1", { permission: { bash: "ask" } })],
     ])
     const commands = new Map<string, CommandFile>([
       ["cmd1", makeCommandFile("cmd1", { agent: "agent1" }, "!bash echo hi")],
@@ -299,7 +299,7 @@ describe("runtime validation integration", () => {
     const agents = new Map<string, AgentFile>([
       ["agent-a", makeAgentFile("agent-a", { permission: { read: "allow" } })],
     ])
-    const config = { instructions: [], permission: { read: "deny" } }
+    const config = { instructions: [], permission: { read: "ask" } }
 
     const report = validateCrossPrimitive(makePrimitiveMap({ agents, config: config as any }))
     expect(report.warnings.some(w => w.category === "inheritance-chain")).toBe(true)

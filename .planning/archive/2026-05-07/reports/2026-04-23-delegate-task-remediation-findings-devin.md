@@ -29,7 +29,7 @@ The graceful-degradation code added at `delegation-manager.ts:356-376` (R-AGENT-
 ```typescript
 type PermissionRule = {        // LOCAL — shadows src/lib/types.ts PermissionRule
   permission: string
-  action: "allow" | "deny"
+  action: "allow" | "ask"
   // MISSING: pattern: string
 }
 
@@ -40,8 +40,8 @@ const WRITE_CAPABLE_PERMISSION_RULES: PermissionRule[] = [
   { permission: "bash",          action: "allow" },  // #4
   { permission: "glob",          action: "allow" },  // #5
   { permission: "grep",          action: "allow" },  // #6
-  { permission: "delegate-task", action: "deny"  },  // #7
-  { permission: "task",          action: "deny"  },  // #8
+  { permission: "delegate-task", action: "ask"  },  // #7
+  { permission: "task",          action: "ask"  },  // #8
 ]
 ```
 
@@ -76,8 +76,8 @@ The Ruleset is a `Schema.Array(Rule)` — every element must be a complete `Rule
 | 3     | `{permission:"bash",   action:"allow"}`          | `pattern` |
 | 4     | `{permission:"glob",   action:"allow"}`          | `pattern` |
 | 5     | `{permission:"grep",   action:"allow"}`          | `pattern` |
-| 6     | `{permission:"delegate-task", action:"deny"}`    | `pattern` |
-| 7     | `{permission:"task",   action:"deny"}`           | `pattern` |
+| 6     | `{permission:"delegate-task", action:"ask"}`    | `pattern` |
+| 7     | `{permission:"task",   action:"ask"}`           | `pattern` |
 
 8 missing `pattern` fields → 8 Zod errors → server returns `{ errors: [8× "expected string, received undefined"] }` → SDK returns `{ error: { errors: [...] } }` → hivemind's `unwrapData` (`src/lib/helpers.ts:75-85`) joins them with "; " and throws `[Harness] Invalid input: expected string, received undefined; ... (x8)`.
 
@@ -88,7 +88,7 @@ Every permission ruleset in oh-my-openagent (the project cited as the architectu
 - `src/shared/question-denied-session-permission.ts:7-9`
   ```typescript
   export const QUESTION_DENIED_SESSION_PERMISSION: SessionPermissionRule[] = [
-    { permission: "question", action: "deny", pattern: "*" },
+    { permission: "question", action: "ask", pattern: "*" },
   ]
   ```
 - `src/cli/run/session-resolver.ts:32`
@@ -100,7 +100,7 @@ The declared type is explicit:
 ```typescript
 export type SessionPermissionRule = {
   permission: string
-  action: "allow" | "deny"
+  action: "allow" | "ask"
   pattern: string   // required
 }
 ```
@@ -188,8 +188,8 @@ const WRITE_CAPABLE_PERMISSION_RULES: PermissionRule[] = [
   { permission: "bash",          pattern: "*", action: "allow" },
   { permission: "glob",          pattern: "*", action: "allow" },
   { permission: "grep",          pattern: "*", action: "allow" },
-  { permission: "delegate-task", pattern: "*", action: "deny"  },
-  { permission: "task",          pattern: "*", action: "deny"  },
+  { permission: "delegate-task", pattern: "*", action: "ask"  },
+  { permission: "task",          pattern: "*", action: "ask"  },
 ]
 ```
 
@@ -283,7 +283,7 @@ HEAD commit da80b439 includes 7000+ lines of ad-hoc session transcript files (`s
 - `tests/integration/session-create-permissions.test.ts`:
   - Spin up `createOpencode({ directory: tmp })`
   - Call `createSession(client, { directory: tmp, permission: WRITE_CAPABLE_PERMISSION_RULES })`
-  - Assert `result.id` is a string, assert no `error` field, assert the created session honors `bash` allow / `task` deny when inspected via `/session/:id/permission`
+  - Assert `result.id` is a string, assert no `error` field, assert the created session honors `bash` allow / `task` ask when inspected via `/session/:id/permission`
 
 ### 4.3 Typecheck
 - `npm run typecheck` — unchanged, 0 errors

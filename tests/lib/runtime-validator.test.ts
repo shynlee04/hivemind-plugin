@@ -170,7 +170,7 @@ describe("runtime-validator", () => {
       ])
       const config = {
         instructions: [],
-        permission: { read: "deny" },
+        permission: { read: "ask" },
       }
 
       const result = validateInheritanceChain(makePrimitiveMap({ agents, config: config as any }))
@@ -184,7 +184,7 @@ describe("runtime-validator", () => {
           frontmatter: {
             description: "Critic",
             mode: "subagent" as const,
-            permission: { edit: "deny", task: "deny" },
+            permission: { edit: "ask", task: "ask" },
           },
           body: "Review only",
           filePath: ".opencode/agents/critic.md",

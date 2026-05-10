@@ -10,7 +10,7 @@ Each permission rule resolves to one of:
 
 "allow" — run without approval
 "ask" — prompt for approval
-"deny" — block the action
+"ask" — block the action
 Configuration
 You can set permissions globally (with *), and override specific tools.
 
@@ -20,7 +20,7 @@ opencode.json
   "permission": {
     "*": "ask",
     "bash": "allow",
-    "edit": "deny"
+    "edit": "ask"
   }
 }
 
@@ -43,11 +43,11 @@ opencode.json
       "*": "ask",
       "git *": "allow",
       "npm *": "allow",
-      "rm *": "deny",
+      "rm *": "ask",
       "grep *": "allow"
     },
     "edit": {
-      "*": "deny",
+      "*": "ask",
       "packages/web/src/content/docs/*.mdx": "allow"
     }
   }
@@ -94,12 +94,12 @@ opencode.json
       "~/projects/personal/**": "allow"
     },
     "edit": {
-      "~/projects/personal/**": "deny"
+      "~/projects/personal/**": "ask"
     }
   }
 }
 
-Keep the list focused on trusted paths, and layer extra allow or deny rules as needed for other tools (for example bash).
+Keep the list focused on trusted paths, and layer extra allow or ask rules as needed for other tools (for example bash).
 
 Available Permissions
 OpenCode permissions are keyed by tool name, plus a couple of safety guards:
@@ -129,8 +129,8 @@ opencode.json
   "permission": {
     "read": {
       "*": "allow",
-      "*.env": "deny",
-      "*.env.*": "deny",
+      "*.env": "ask",
+      "*.env.*": "ask",
       "*.env.example": "allow"
     }
   }
@@ -141,7 +141,7 @@ When OpenCode prompts for approval, the UI offers three outcomes:
 
 once — approve just this request
 always — approve future requests matching the suggested patterns (for the rest of the current OpenCode session)
-reject — deny the request
+reject — ask the request
 The set of patterns that always would approve is provided by the tool (for example, bash approvals typically whitelist a safe command prefix like git status*).
 
 Agents
@@ -158,8 +158,8 @@ opencode.json
     "bash": {
       "*": "ask",
       "git *": "allow",
-      "git commit *": "deny",
-      "git push *": "deny",
+      "git commit *": "ask",
+      "git push *": "ask",
       "grep *": "allow"
     }
   },
@@ -170,7 +170,7 @@ opencode.json
           "*": "ask",
           "git *": "allow",
           "git commit *": "ask",
-          "git push *": "deny",
+          "git push *": "ask",
           "grep *": "allow"
         }
       }
@@ -185,9 +185,9 @@ You can also configure agent permissions in Markdown:
 description: Code review without edits
 mode: subagent
 permission:
-  edit: deny
+  edit: ask
   bash: ask
-  webfetch: deny
+  webfetch: ask
 ---
 
 Only analyze code and suggest changes.

@@ -6,29 +6,29 @@ steps: 50
 instruction: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   read:
-    "*": deny
+    "*": ask
     "*.md": allow
     "*.json": allow
     "*.ts": allow
     "*.yaml": allow
     "*.yml": allow
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
+    "*": ask
     ".opencode/**/*.md": allow
   bash:
-    "*": deny
+    "*": ask
   task:
-    "*": deny
+    "*": ask
   skill:
     "*": ask
     "brainstorming": allow
     "hivefiver-use-authoring-skills": allow
   glob: allow
   grep: allow
-  webfetch: deny
-  websearch: deny
+  webfetch: ask
+  websearch: ask
 ---
 
 # Intent Loop — Phase 0 Specialist

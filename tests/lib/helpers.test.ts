@@ -241,10 +241,10 @@ describe("makeToolSignature", () => {
 })
 
 describe("getPromptToolCompatibility", () => {
-  it("maps deny rules to {permission: false}", () => {
+  it("maps ask rules to {permission: false}", () => {
     const rules: PermissionRule[] = [
-      { permission: "edit", pattern: "*", action: "deny" },
-      { permission: "write", pattern: "*", action: "deny" },
+      { permission: "edit", pattern: "*", action: "ask" },
+      { permission: "write", pattern: "*", action: "ask" },
     ]
     const result = getPromptToolCompatibility(rules)
     expect(result).toEqual({ edit: false, write: false })
@@ -253,13 +253,13 @@ describe("getPromptToolCompatibility", () => {
   it("ignores allow rules", () => {
     const rules: PermissionRule[] = [
       { permission: "read", pattern: "*", action: "allow" },
-      { permission: "edit", pattern: "*", action: "deny" },
+      { permission: "edit", pattern: "*", action: "ask" },
     ]
     const result = getPromptToolCompatibility(rules)
     expect(result).toEqual({ edit: false })
   })
 
-  it("returns undefined when no deny rules exist", () => {
+  it("returns undefined when no ask rules exist", () => {
     const rules: PermissionRule[] = [
       { permission: "read", pattern: "*", action: "allow" },
     ]

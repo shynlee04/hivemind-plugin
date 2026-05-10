@@ -2939,7 +2939,7 @@ AA-4_NO_GSD_DEPS: PASS
 
 AA-5_SPECIALIST_SUBAGENTS: N/A
   detail: Agent does not dispatch subagents. It works directly with the user via
-          iterative questions. `task: "*": deny` and no delegation references.
+          iterative questions. `task: "*": ask` and no delegation references.
 
 AA-6_ROLE_CLARITY: PASS
   detail: Role is specific: "Phase 0 intent clarification agent" (line 38).
@@ -2987,9 +2987,9 @@ AA-1_YAML_FRONTMATTER: PASS
           `description` present (line 3). `mode: subagent` valid (line 4).
           `temperature: 0.1` valid (line 5). `steps: 60` valid.
           `instruction` is a proper YAML list (line 7).
-          NOTE: `bash: deny` and `task: deny` are scalar values (lines 22-23),
+          NOTE: `bash: ask` and `task: ask` are scalar values (lines 22-23),
           whereas intent-loop and phase-guardian use nested objects for bash
-          (e.g., `bash: { "*": deny }`). May be functionally equivalent but
+          (e.g., `bash: { "*": ask }`). May be functionally equivalent but
           inconsistent across the agent fleet.
 
 AA-2_NO_HARDCODED_PATHS: PASS
@@ -3003,7 +3003,7 @@ AA-4_NO_GSD_DEPS: PASS
   detail: No GSD CLI references anywhere.
 
 AA-5_SPECIALIST_SUBAGENTS: N/A
-  detail: Agent does not dispatch subagents. `task: deny` confirms no delegation.
+  detail: Agent does not dispatch subagents. `task: ask` confirms no delegation.
           Works directly on spec files.
 
 AA-6_ROLE_CLARITY: PASS
@@ -3039,8 +3039,8 @@ DEFECT_LIST:
      its own stated rules without any permission violation warning.
      
   2. [INFO] Inconsistent permission format for `bash` and `task` fields
-     (lines 22-23). Uses scalar `deny` while other agents use nested objects
-     (`bash: { "*": deny }`). Functionally may be equivalent but creates
+     (lines 22-23). Uses scalar `ask` while other agents use nested objects
+     (`bash: { "*": ask }`). Functionally may be equivalent but creates
      maintenance inconsistency across the agent fleet.
 
 NOISE: low
@@ -3078,7 +3078,7 @@ AA-4_NO_GSD_DEPS: PASS
   detail: No GSD CLI references anywhere.
 
 AA-5_SPECIALIST_SUBAGENTS: N/A
-  detail: Agent does not dispatch subagents. `task: deny` and `delegate-task: deny`
+  detail: Agent does not dispatch subagents. `task: ask` and `delegate-task: ask`
           (lines 18-19) confirm no delegation capability. Works as a gatekeeper
           that returns status to its caller.
 
@@ -3132,11 +3132,11 @@ VERDICT: CLEAN
 
 ### Critical Finding (1)
 
-**`spec-verifier.md` lines 14-20 vs line 142** — Permission/instruction contradiction. The frontmatter grants write access to `**/specs/**` but the agent's own rules say "NEVER modify spec files directly — report findings only." If the agent is supposed to only report, the `edit` and `write` permissions for `**/specs/**` should be `deny`. If the agent should be allowed to fix specs, the rule text should be updated. The current state creates a trust boundary ambiguity where the agent can violate its stated rules without any system-level enforcement.
+**`spec-verifier.md` lines 14-20 vs line 142** — Permission/instruction contradiction. The frontmatter grants write access to `**/specs/**` but the agent's own rules say "NEVER modify spec files directly — report findings only." If the agent is supposed to only report, the `edit` and `write` permissions for `**/specs/**` should be `ask`. If the agent should be allowed to fix specs, the rule text should be updated. The current state creates a trust boundary ambiguity where the agent can violate its stated rules without any system-level enforcement.
 
 ### Fleet-Level Observations
 
-1. **Permission schema inconsistency**: `bash` field is scalar `deny` in spec-verifier but nested object in intent-loop and phase-guardian. If OpenCode treats these equivalently, this is cosmetic. If not, spec-verifier's `bash: deny` may not parse correctly.
+1. **Permission schema inconsistency**: `bash` field is scalar `ask` in spec-verifier but nested object in intent-loop and phase-guardian. If OpenCode treats these equivalently, this is cosmetic. If not, spec-verifier's `bash: ask` may not parse correctly.
 2. **`name` field inconsistency**: intent-loop omits `name` (relies on filename), other two include it explicitly. Should standardize for fleet coherence.
 3. **All three agents are well-structured**: Concrete workflows, clear entry/exit conditions, specific output contracts, proper cross-references, no GSD contamination, no pseudo-code.
 </task_result>
@@ -3392,7 +3392,7 @@ Now dispatching **Wave 4: Cross-concept integration** — checking whether skill
 ```json
 {
   "description": "Cross-concept integration audit",
-  "prompt": "You are a specialist integration auditor. Your job is to verify that skills, agents, and commands in the Hivefiver framework actually wire together as a functioning system. You check cross-references, dependency chains, and concept-to-concept flows.\n\nYou do NOT use bash. Use Read, Grep, and Glob tools only.\n\n## The System Under Test\n\nThe Hivefiver meta-builder claims these concepts work together:\n1. **Skills** provide instructions that agents load\n2. **Agents** are dispatched by commands or orchestrators\n3. **Commands** are user-facing slash commands that trigger agents\n\n## Target Files\n\n### Skills (read each):\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/session-context-manager/SKILL.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/phase-loop/SKILL.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/command-parser/SKILL.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/agent-authorization/SKILL.md`\n\n### Agents (read each):\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/intent-loop.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/spec-verifier.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/phase-guardian.md`\n\n### Commands (check what exists):\n- Glob for: `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/commands/*.md`\n\n### Also read:\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/rules/universal-rules.md`\n\n## Integration Checks\n\n### IC-1: Skill → Agent Loading\n- Do the 4 skills reference any agents that actually exist?\n- Do the 3 agents reference any skills that actually exist?\n- Are skill references in agent `instruction` fields pointing to valid files?\n\n### IC-2: Command → Agent Dispatch\n- Do any commands exist that trigger the 3 new agents (intent-loop, spec-verifier, phase-guardian)?\n- If no commands trigger them, how would a user invoke them?\n- Are the agents discoverable (correct directory, correct mode)?\n\n### IC-3: Agent → Agent Delegation\n- Do any of the 3 agents dispatch to other agents?\n- If so, do the target agents exist?\n- Do they use specialist types per universal-rules.md?\n\n### IC-4: Skill → Skill Dependencies\n- Do the 4 skills reference each other?\n- If so, is there a circular dependency?\n- Can each skill function independently?\n\n### IC-5: Permission Compatibility\n- If an agent references a skill, does the agent's permission model allow the tools the skill needs?\n- Example: If a skill needs `Write` but the agent has `write: deny`, there's a conflict.\n\n### IC-6: Orphan Detection\n- Are there skills no agent or command ever loads? (dead skills)\n- Are there agents no command or orchestrator ever dispatches? (dead agents)\n- Are there commands referencing agents/skills that don't exist? (dead commands)\n\n### IC-7: Flow Completeness\nThe Hivefiver claims this flow: User → Command → Orchestrator → Agent (loads Skill) → executes\n- Is every link in this chain present for the 4 new skills + 3 new agents?\n- Where are the gaps?\n\n## Output Format\n\n```\nINTEGRATION_AUDIT: Hivefiver Cross-Concept\n\nIC-1_SKILL_AGENT_LOADING: PASS|FAIL\n  detail: [findings]\n\nIC-2_COMMAND_AGENT_DISPATCH: PASS|FAIL\n  detail: [findings]\n\nIC-3_AGENT_AGENT_DELEGATION: PASS|FAIL\n  detail: [findings]\n\nIC-4_SKILL_SKILL_DEPS: PASS|FAIL\n  detail: [findings]\n\nIC-5_PERMISSION_COMPAT: PASS|FAIL\n  detail: [conflicts found]\n\nIC-6_ORPHAN_DETECTION: PASS|FAIL\n  detail: [dead concepts listed]\n\nIC-7_FLOW_COMPLETENESS: PASS|FAIL\n  detail: [gaps in the chain]\n\nINTEGRATION_DEFECTS: [count]\nINTEGRATION_DEFECT_LIST:\n  1. [severity] [description]\n  ...\n\nCONNECTED_GRAPH:\n  [draw the actual connections: which skills connect to which agents, which commands connect to which agents]\n  \nMISSING_LINKS:\n  [what would need to be created to make the system fully connected]\n\nVERDICT: INTEGRATED | PARTIALLY_INTEGRATED | DISCONNECTED\n```",
+  "prompt": "You are a specialist integration auditor. Your job is to verify that skills, agents, and commands in the Hivefiver framework actually wire together as a functioning system. You check cross-references, dependency chains, and concept-to-concept flows.\n\nYou do NOT use bash. Use Read, Grep, and Glob tools only.\n\n## The System Under Test\n\nThe Hivefiver meta-builder claims these concepts work together:\n1. **Skills** provide instructions that agents load\n2. **Agents** are dispatched by commands or orchestrators\n3. **Commands** are user-facing slash commands that trigger agents\n\n## Target Files\n\n### Skills (read each):\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/session-context-manager/SKILL.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/phase-loop/SKILL.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/command-parser/SKILL.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/agent-authorization/SKILL.md`\n\n### Agents (read each):\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/intent-loop.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/spec-verifier.md`\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/phase-guardian.md`\n\n### Commands (check what exists):\n- Glob for: `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/commands/*.md`\n\n### Also read:\n- `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/rules/universal-rules.md`\n\n## Integration Checks\n\n### IC-1: Skill → Agent Loading\n- Do the 4 skills reference any agents that actually exist?\n- Do the 3 agents reference any skills that actually exist?\n- Are skill references in agent `instruction` fields pointing to valid files?\n\n### IC-2: Command → Agent Dispatch\n- Do any commands exist that trigger the 3 new agents (intent-loop, spec-verifier, phase-guardian)?\n- If no commands trigger them, how would a user invoke them?\n- Are the agents discoverable (correct directory, correct mode)?\n\n### IC-3: Agent → Agent Delegation\n- Do any of the 3 agents dispatch to other agents?\n- If so, do the target agents exist?\n- Do they use specialist types per universal-rules.md?\n\n### IC-4: Skill → Skill Dependencies\n- Do the 4 skills reference each other?\n- If so, is there a circular dependency?\n- Can each skill function independently?\n\n### IC-5: Permission Compatibility\n- If an agent references a skill, does the agent's permission model allow the tools the skill needs?\n- Example: If a skill needs `Write` but the agent has `write: ask`, there's a conflict.\n\n### IC-6: Orphan Detection\n- Are there skills no agent or command ever loads? (dead skills)\n- Are there agents no command or orchestrator ever dispatches? (dead agents)\n- Are there commands referencing agents/skills that don't exist? (dead commands)\n\n### IC-7: Flow Completeness\nThe Hivefiver claims this flow: User → Command → Orchestrator → Agent (loads Skill) → executes\n- Is every link in this chain present for the 4 new skills + 3 new agents?\n- Where are the gaps?\n\n## Output Format\n\n```\nINTEGRATION_AUDIT: Hivefiver Cross-Concept\n\nIC-1_SKILL_AGENT_LOADING: PASS|FAIL\n  detail: [findings]\n\nIC-2_COMMAND_AGENT_DISPATCH: PASS|FAIL\n  detail: [findings]\n\nIC-3_AGENT_AGENT_DELEGATION: PASS|FAIL\n  detail: [findings]\n\nIC-4_SKILL_SKILL_DEPS: PASS|FAIL\n  detail: [findings]\n\nIC-5_PERMISSION_COMPAT: PASS|FAIL\n  detail: [conflicts found]\n\nIC-6_ORPHAN_DETECTION: PASS|FAIL\n  detail: [dead concepts listed]\n\nIC-7_FLOW_COMPLETENESS: PASS|FAIL\n  detail: [gaps in the chain]\n\nINTEGRATION_DEFECTS: [count]\nINTEGRATION_DEFECT_LIST:\n  1. [severity] [description]\n  ...\n\nCONNECTED_GRAPH:\n  [draw the actual connections: which skills connect to which agents, which commands connect to which agents]\n  \nMISSING_LINKS:\n  [what would need to be created to make the system fully connected]\n\nVERDICT: INTEGRATED | PARTIALLY_INTEGRATED | DISCONNECTED\n```",
   "subagent_type": "critic"
 }
 ```

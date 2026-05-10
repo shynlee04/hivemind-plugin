@@ -523,7 +523,7 @@ export const PermissionRequestSchema = z.object({
 
 export type PermissionRequest = z.infer<typeof PermissionRequestSchema>
 
-export type PermissionOutput = { status: 'ask' | 'deny' | 'allow' }
+export type PermissionOutput = { status: 'ask' | 'ask' | 'allow' }
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -1881,7 +1881,7 @@ export const CheckpointHarness: Plugin = async ({ client }) => {
   const directory = process.cwd() + '/.hivemind'
 
   return {
-    'permission.ask': async (input: PermissionInput, output: { status: 'ask' | 'deny' | 'allow' }) => {
+    'permission.ask': async (input: PermissionInput, output: { status: 'ask' | 'ask' | 'allow' }) => {
       const { handlePermissionAsk } = await import('./hooks/permission-gate.js')
       return handlePermissionAsk(input, output, directory)
     },
@@ -1971,7 +1971,7 @@ function extractPhase(request: PermissionRequest): string | null {
 
 export function handlePermissionAsk(
   nativeInput: PermissionInput,
-  output: { status: 'ask' | 'deny' | 'allow' },
+  output: { status: 'ask' | 'ask' | 'allow' },
   directory: string,
 ): void {
   const request = adaptPermission(nativeInput)
@@ -1989,10 +1989,10 @@ export function handlePermissionAsk(
     if (isToolAllowedForPhase(request, effectivePhase, gateResult, requirements)) {
       output.status = 'allow'
     } else {
-      output.status = 'deny'
+      output.status = 'ask'
     }
   } catch {
-    output.status = 'deny'
+    output.status = 'ask'
   }
 }
 
@@ -2053,7 +2053,7 @@ function findActivePad(padDir: string): string {
 
 export function handlePermissionAsk(
   nativeInput: PermissionInput,
-  output: { status: 'ask' | 'deny' | 'allow' },
+  output: { status: 'ask' | 'ask' | 'allow' },
   directory: string,
 ): void {
   const request = adaptPermission(nativeInput)
@@ -2071,10 +2071,10 @@ export function handlePermissionAsk(
     if (isToolAllowedForPhase(request, effectivePhase, gateResult, requirements)) {
       output.status = 'allow'
     } else {
-      output.status = 'deny'
+      output.status = 'ask'
     }
   } catch {
-    output.status = 'deny'
+    output.status = 'ask'
   }
 }
 ```
@@ -2718,13 +2718,13 @@ description: Read-only reviewer that validates checkpoint work against locked re
 mode: subagent
 permission:
   edit:
-    "*": "deny"
+    "*": "ask"
     ".hivemind/reviews/*.json": "allow"
   bash:
-    "*": "deny"
+    "*": "ask"
     "bun test *": "allow"
     "npm test *": "allow"
-  question: "deny"
+  question: "ask"
   skill: "allow"
   read: "allow"
   grep: "allow"

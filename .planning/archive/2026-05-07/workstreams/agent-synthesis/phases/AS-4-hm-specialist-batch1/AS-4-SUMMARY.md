@@ -25,7 +25,7 @@ All 5 agents pass quality baseline checks:
 - ✅ Depth: all `L2`
 - ✅ Lineage: all `hm` (STRICT binding)
 - ✅ Temperature: all within L2 range (0.0-0.15)
-- ✅ Permission: deny-all base with explicit tool/skill allows
+- ✅ Permission: ask-all base with explicit tool/skill allows
 - ✅ Body: all 10 required XML tags present (role, depth, lineage, task, scope, context, expected_output, verification, iron_law, output_contract)
 - ✅ Body: all 6 optional XML tags present (behavioral_contract, anti_patterns, delegation_boundary, skill_loading, session_continuity, self_correction)
 - ✅ hm STRICT binding: no hf-* skills in allowed list
@@ -45,7 +45,7 @@ None — all 5 agents created exactly as specified in AS-4-CONTEXT.md.
 
 ## Threat Flags
 
-None — all agents are read-only (edit: deny, write: deny) with no network surface beyond webfetch/websearch for research.
+None — all agents are read-only (edit: ask, write: ask) with no network surface beyond webfetch/websearch for research.
 
 ## Files Created
 

@@ -27,13 +27,13 @@ mode: primary | subagent        # primary = top-level, subagent = delegated
 temperature: 0.15               # per-agent temperature
 steps: 80                       # per-agent step limit
 permission:
-  edit: allow | deny | ask
-  write: allow | deny | ask
+  edit: allow | ask | ask
+  write: allow | ask | ask
   bash:
     "*": ask                    # default: ask
     "git status*": allow        # pattern-matched overrides
     "git diff*": allow
-  task: deny
+  task: ask
   delegate-task: allow
   read: allow
   glob: allow
@@ -129,8 +129,8 @@ const AGENT_DEFAULTS = {
 Hardcoded permission rules per agent: researcher denies edit/write/bash/task, builder denies task, critic denies edit/write/task.
 
 **Already native?** YES. Each agent `.md` has `permission:` frontmatter with identical rules:
-- `researcher.md`: `edit: deny, write: deny, bash: deny, task: deny`
-- `builder.md`: `edit: allow, write: allow, bash: allow, task: deny`
+- `researcher.md`: `edit: ask, write: ask, bash: ask, task: ask`
+- `builder.md`: `edit: allow, write: allow, bash: allow, task: ask`
 
 **Verdict:** REDUNDANT. Duplicates what the platform already reads and enforces from agent frontmatter.
 
@@ -144,7 +144,7 @@ const AGENT_TOOLS = {
 }
 ```
 
-**Already native?** YES — the `permission:` frontmatter in agent .md files expresses identical information. `deny` = mustNot, `allow` = required.
+**Already native?** YES — the `permission:` frontmatter in agent .md files expresses identical information. `ask` = mustNot, `allow` = required.
 
 **Verdict:** REDUNDANT. And worse — these are only used in `buildPromptText()` as advisory text. The native frontmatter is what actually blocks tools.
 

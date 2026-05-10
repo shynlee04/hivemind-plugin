@@ -89,7 +89,7 @@ We do NOT merge detox into harness. We **extract and clean** individual features
 
 **Refactoring Required:**
 - Change `MAX_DESCENDANTS_PER_ROOT` from 50 → 10 (`src/plugin.ts:38`)
-- Change `doom_loop` from `"deny"` → `"allow"` (`opencode.json:25`)
+- Change `doom_loop` from `"ask"` → `"allow"` (`opencode.json:25`)
 - Change builder temperature from 0.2 → 0.15 (`src/lib/routing.ts:18`)
 - Change default concurrency from 1 → 3, make configurable (`src/lib/concurrency.ts:37`)
 - Rewrite `buildPromptText` to produce 6-section format (`src/lib/helpers.ts:77-107`)

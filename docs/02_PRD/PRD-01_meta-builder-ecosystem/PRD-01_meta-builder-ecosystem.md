@@ -120,7 +120,7 @@ This PRD defines the product requirements for the full harness, synthesizing val
 
 | ID | Role | Summary | Acceptance |
 |----|------|---------|------------|
-| US-01 | Platform Engineer | Create agent with restricted permissions | Agent created with deny rules; eval confirms |
+| US-01 | Platform Engineer | Create agent with restricted permissions | Agent created with ask rules; eval confirms |
 | US-02 | Skill Author | Convert markdown command into skill pack | SKILL.md + references + evals generated |
 | US-03 | DevOps Engineer | Run eval harness from CLI | `hivemind-tools eval run` produces benchmark |
 | US-04 | Team Lead | Configure MCP per-agent | MCP enabled for specific agents only |

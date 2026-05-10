@@ -36,7 +36,7 @@ Design the 2-lineage taxonomy (hm-* and hf-*), YAML frontmatter schema extending
    - **L0 Orchestrator** — temperature 0.2-0.3, mode: primary, delegates to L1 only, never implements
    - **L1 Coordinator** — temperature 0.1-0.2, mode: subagent, delegates to L2 only, manages waves
    - **L2 Specialist** — temperature 0.0-0.15, mode: subagent, never delegates, always implements
-4. **Permission model templates** — Tool allow/deny patterns per depth and lineage:
+4. **Permission model templates** — Tool allow/ask patterns per depth and lineage:
    - L0: broad read access, delegate-task only custom tool
    - L1: scoped read, delegate-task + delegation-status custom tools
    - L2: domain-scoped read/write, no delegation tools
@@ -50,7 +50,7 @@ Design the 2-lineage taxonomy (hm-* and hf-*), YAML frontmatter schema extending
 - [ ] 2-lineage taxonomy defined with clear membership rules
 - [ ] YAML frontmatter schema extending schema-kernel defined and documented
 - [ ] Depth levels L0/L1/L2 defined with temperature ranges and delegation rules
-- [ ] Permission model templates: tool allow/deny, temperature, budget per depth
+- [ ] Permission model templates: tool allow/ask, temperature, budget per depth
 - [ ] Domain classification matrix: agent domain → authorized skills/tools
 - [ ] Zod validation schemas written for all required frontmatter fields
 - [ ] Example frontmatter provided for each lineage × depth combination (6 examples)

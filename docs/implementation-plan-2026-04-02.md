@@ -285,7 +285,7 @@ Refs: GRD-002, H-1
 
 ---
 
-### Task 3: Fix doom_loop Permission ("deny" → "allow")
+### Task 3: Fix doom_loop Permission ("ask" → "allow")
 
 **Requirement:** PERM-002 — root doom_loop must be "allow"
 **Files:**
@@ -321,7 +321,7 @@ describe("PERM-002: opencode.json doom_loop permission", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `npx vitest run tests/config.test.ts`
-Expected: FAIL — `doom_loop` is `"deny"`, test expects `"allow"`
+Expected: FAIL — `doom_loop` is `"ask"`, test expects `"allow"`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -329,7 +329,7 @@ In `opencode.json`, change line 25:
 
 ```jsonc
 // Before:
-"doom_loop": "deny"
+"doom_loop": "ask"
 
 // After:
 "doom_loop": "allow"
@@ -345,7 +345,7 @@ Expected: PASS
 ```
 fix(perm): set doom_loop to "allow" per PERM-002
 
-Was "deny" which would prompt the user on 3 identical tool calls,
+Was "ask" which would prompt the user on 3 identical tool calls,
 conflicting with the harness circuit breaker at threshold 16.
 Setting to "allow" lets the harness manage its own loop detection.
 
@@ -1163,7 +1163,7 @@ describe("PERM-007: Per-delegation tool restriction rules", () => {
     // For now, document the expected behavior
     const deniedTools = ["edit", "write", "bash", "task", "delegate-task"]
     // After export, test: const rules = getPermissionRulesForAgent("researcher")
-    // expect(rules.filter(r => r.action === "deny").map(r => r.permission))
+    // expect(rules.filter(r => r.action === "ask").map(r => r.permission))
     //   .toEqual(expect.arrayContaining(deniedTools))
     expect(deniedTools).toEqual(["edit", "write", "bash", "task", "delegate-task"])
   })
@@ -1237,7 +1237,7 @@ In `src/plugin.ts`, add per-delegation tool restriction enforcement inside the `
     const permissionRules = getPermissionRulesForAgent(delegation.agent)
     const deniedRule = permissionRules.find(
       (rule) =>
-        rule.action === "deny" &&
+        rule.action === "ask" &&
         (rule.permission === toolName ||
          (rule.pattern === "*" && rule.permission === toolName))
     )
@@ -1819,7 +1819,7 @@ npm pack --dry-run                   # Must be clean
 | Gap ID | Before | After | Verification |
 |--------|--------|-------|-------------|
 | GRD-002 | MAX_DESCENDANTS_PER_ROOT=50 | =10, env-configurable | `grep MAX_DESCENDANTS src/plugin.ts` |
-| PERM-002 | doom_loop="deny" | ="allow" | `grep doom_loop opencode.json` |
+| PERM-002 | doom_loop="ask" | ="allow" | `grep doom_loop opencode.json` |
 | CON-003 | defaultLimit=1 | =3, env-configurable | `grep defaultLimit src/lib/concurrency.ts` |
 | CAT-009 | No 6-section format | Full 6-section format | `grep "## TASK" src/lib/helpers.ts` |
 | CAT-004 | builder temp=0.2 | =0.15 | `grep "builder:" src/lib/routing.ts` |

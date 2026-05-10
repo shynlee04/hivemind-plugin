@@ -23,17 +23,17 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+    '*': ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   webfetch: allow
   websearch: allow
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
@@ -179,7 +179,7 @@ EVERY VERDICT NEEDS EVIDENCE. NO PASS WITHOUT RUNTIME PROOF. NO FAIL WITHOUT FIL
 This agent is a terminal L2 specialist. It never delegates.
 - Receives tasks from L1 coordinator only
 - Returns structured results to L1 coordinator only
-- Has no delegation capabilities (task: deny, delegate-task: deny)
+- Has no delegation capabilities (task: ask, delegate-task: ask)
 </delegation_boundary>
 
 <skill_loading>

@@ -261,7 +261,7 @@ These cannot be replicated with `.md` files.
 
 1. **`delegate-task` tool does not exist at runtime** — The conductor agent references it but it's never registered
 2. **No hooks fire** — Circuit breaker, budget enforcement, metadata injection, compaction context, shell env — all inert
-3. **Conductor is broken by design** — It has `task: deny` and depends on `delegate-task: allow`, but `delegate-task` doesn't exist. The conductor has no delegation mechanism.
+3. **Conductor is broken by design** — It has `task: ask` and depends on `delegate-task: allow`, but `delegate-task` doesn't exist. The conductor has no delegation mechanism.
 
 This explains the user's experience: "dumber than without anything, nor can it use any tools."
 
@@ -312,7 +312,7 @@ LIF-006 requires SSE as primary completion detection with polling as fallback. T
 **NOT READY for production use.** Reasons:
 
 1. **Plugin not deployed** — The entire control plane is inert. This is the single biggest blocker.
-2. **Conductor agent is broken** — Without `delegate-task`, the conductor has no way to delegate. Its permissions (`task: deny`) actively prevent it from using the platform's built-in task tool.
+2. **Conductor agent is broken** — Without `delegate-task`, the conductor has no way to delegate. Its permissions (`task: ask`) actively prevent it from using the platform's built-in task tool.
 3. **Missing critical tools** — Checkpoint save/restore not implemented.
 4. **Missing hooks** — `chat.params` not registered, so model/temperature overrides don't work.
 5. **No root permission config** — Platform doom_loop will conflict with harness circuit breaker.

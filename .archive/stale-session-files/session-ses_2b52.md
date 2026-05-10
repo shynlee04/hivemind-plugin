@@ -521,7 +521,7 @@ Note: file list is sampled.
 82: | ID | Requirement | Priority | Status |
 83: |----|-------------|----------|--------|
 84: | PERM-001 | The system SHALL implement a three-tier permission system: root, agent, delegation | P0 | Not Started |
-85: | PERM-002 | The root permission model SHALL deny `doom_loop` tool globally | P0 | Not Started |
+85: | PERM-002 | The root permission model SHALL ask `doom_loop` tool globally | P0 | Not Started |
 86: | PERM-003 | The root permission model SHALL require user approval (`ask`) for the built-in `task` tool | P0 | Not Started |
 87: | PERM-004 | The researcher agent SHALL be denied: edit, write, bash, task, delegate-task | P0 | Not Started |
 88: | PERM-005 | The builder agent SHALL be denied: task, delegate-task | P0 | Not Started |
@@ -725,7 +725,7 @@ Note: file list is sampled.
 286: |----|-------|---------|----------|
 287: | PERM-004 | Researcher agent denied `delegate-task` | `.opencode/agents/researcher.md` does NOT list `delegate-task` in its permission block. Root `opencode.json` sets `task: "ask"`, but `delegate-task` is not mentioned in root config either. The researcher inherits whatever OpenCode's default is for `delegate-task` — **NOT explicitly denied**. | **Critical** |
 288: | PERM-006 | Critic agent denied `delegate-task` | `.opencode/agents/critic.md` does NOT list `delegate-task` in its permission block. Same inheritance gap as researcher. | **Critical** |
-289: | PERM-005 | Builder agent denied `task, delegate-task` | `.opencode/agents/builder.md` has `task: "*": deny` but `delegate-task` is not listed. | **High** |
+289: | PERM-005 | Builder agent denied `task, delegate-task` | `.opencode/agents/builder.md` has `task: "*": ask` but `delegate-task` is not listed. | **High** |
 290: 
 291: **Evidence:** Read `.opencode/agents/researcher.md` (lines 6-24), `.opencode/agents/critic.md` (lines 7-24), `.opencode/agents/builder.md` (lines 6-24). None contain a `delegate-task` permission entry.
 292: 
@@ -830,10 +830,10 @@ Note: file list is sampled.
 391: 
 392: **Evidence:**
 393: - OpenCode permissions doc lists exactly 15 permission keys. `delegate-task` is not among them.
-394: - `task` permission uses glob patterns: `"*": "deny", "orchestrator-*": "allow"` controls which subagents can be invoked.
+394: - `task` permission uses glob patterns: `"*": "ask", "orchestrator-*": "allow"` controls which subagents can be invoked.
 395: - Custom tools registered via `tool()` from `@opencode-ai/plugin` do get their own permission entries, but the requirement doesn't specify `delegate-task` as a custom tool.
 396: 
-397: **Recommendation:** Add an explicit requirement that the harness SHALL register `delegate-task` as a custom tool via the plugin `tool()` API. Alternatively, refactor all `delegate-task` denials to use OpenCode's native `task` permission with glob patterns (e.g., `task: { "*": "deny" }`). The custom-tool approach is more aligned with OMO's pattern where delegation is a plugin-provided capability.
+397: **Recommendation:** Add an explicit requirement that the harness SHALL register `delegate-task` as a custom tool via the plugin `tool()` API. Alternatively, refactor all `delegate-task` denials to use OpenCode's native `task` permission with glob patterns (e.g., `task: { "*": "ask" }`). The custom-tool approach is more aligned with OMO's pattern where delegation is a plugin-provided capability.
 398: 
 399: ---
 400: 
@@ -1010,16 +1010,16 @@ Note: file list is sampled.
 571: 
 572: **Requirement IDs:** GRD-004, GRD-005
 573: 
-574: **Finding:** OpenCode has a built-in `doom_loop` permission that triggers when "the same tool call repeats 3 times with identical input." The harness proposes an additional circuit breaker at 16 consecutive identical tool calls (GRD-004). If `doom_loop` is set to `"deny"` (PERM-002), the tool is blocked at 3 repetitions. The harness's circuit breaker at 16 would never fire because OpenCode already blocked the tool 13 calls earlier.
+574: **Finding:** OpenCode has a built-in `doom_loop` permission that triggers when "the same tool call repeats 3 times with identical input." The harness proposes an additional circuit breaker at 16 consecutive identical tool calls (GRD-004). If `doom_loop` is set to `"ask"` (PERM-002), the tool is blocked at 3 repetitions. The harness's circuit breaker at 16 would never fire because OpenCode already blocked the tool 13 calls earlier.
 575: 
-576: If `doom_loop` is set to `"ask"`, the user would be prompted at 3 repetitions and likely deny, again preventing the circuit breaker from firing. The circuit breaker only adds value if `doom_loop` is set to `"allow"` — but PERM-002 explicitly denies it.
+576: If `doom_loop` is set to `"ask"`, the user would be prompted at 3 repetitions and likely ask, again preventing the circuit breaker from firing. The circuit breaker only adds value if `doom_loop` is set to `"allow"` — but PERM-002 explicitly denies it.
 577: 
 578: **Evidence:**
 579: - OpenCode permissions: `doom_loop` triggers at 3 identical repetitions.
-580: - PERM-002: "root permission model SHALL deny `doom_loop` tool globally."
+580: - PERM-002: "root permission model SHALL ask `doom_loop` tool globally."
 581: - OMO circuit breaker = 20 consecutive similar calls (not identical) — this is subtly different from OpenCode's 3 identical calls.
 582: 
-583: **Recommendation:** Either: (a) Remove the harness circuit breaker entirely since `doom_loop: "deny"` covers this case, or (b) Redefine it as a "similar calls" detector (matching OMO's pattern) that catches tool calls with different arguments but similar semantic intent — a capability OpenCode's `doom_loop` does not provide. If option (b), specify the similarity matching algorithm.
+583: **Recommendation:** Either: (a) Remove the harness circuit breaker entirely since `doom_loop: "ask"` covers this case, or (b) Redefine it as a "similar calls" detector (matching OMO's pattern) that catches tool calls with different arguments but similar semantic intent — a capability OpenCode's `doom_loop` does not provide. If option (b), specify the similarity matching algorithm.
 584: 
 585: ---
 586: 
@@ -1458,8 +1458,8 @@ Note: file list is sampled.
 253: - [ ] The system rejects the request if depth > 3
 254: - [ ] The system identifies the root session for budget tracking
 255: - [ ] The system reserves a slot in the root's descendant budget (max 50)
-256: - [ ] The system builds permission rules for the target agent, explicitly denying delegate-task for researcher and critic
-257: - [ ] The system computes which tools should be disabled based on deny rules, including skill and webfetch permissions
+256: - [ ] The system builds permission rules for the target agent, explicitly asking delegate-task for researcher and critic
+257: - [ ] The system computes which tools should be disabled based on ask rules, including skill and webfetch permissions
 258: - [ ] The system creates the child session via the OpenCode client API
 259: - [ ] The system records continuity metadata to durable storage
 260: - [ ] The system acquires a concurrency queue slot
@@ -1763,7 +1763,7 @@ Note: file list is sampled.
 558: - Researcher agent: `delegate-task` not explicitly denied (see requirements audit)
 559: - Critic agent: `delegate-task` not explicitly denied
 560: 
-561: **Evidence:** The US-010 criteria say "The system builds permission rules for the target agent" (criterion 9) and "The system computes which tools should be disabled based on deny rules" (criterion 10). But if `delegate-task` isn't in the deny rules, it won't be disabled. This edge case is completely missing.
+561: **Evidence:** The US-010 criteria say "The system builds permission rules for the target agent" (criterion 9) and "The system computes which tools should be disabled based on ask rules" (criterion 10). But if `delegate-task` isn't in the ask rules, it won't be disabled. This edge case is completely missing.
 562: 
 563: ---
 564: 
@@ -1883,16 +1883,16 @@ Note: file list is sampled.
 678: #### C-1: `delegate-task` Custom Tool vs Built-in Task Tool — Architectural Redundancy
 679: **User Stories:** US-001, US-007, US-010  
 680: **Finding:** The user stories explicitly state (US-007 AC-7) "All specialist work routes through delegate-task (not the built-in task tool)." This means the harness is building a complete delegation system from scratch using the SDK (`session.create()` / `session.prompt()`), entirely bypassing OpenCode's built-in Task tool.  
-681: **OpenCode Evidence:** The platform has a built-in Task tool with: automatic session creation, agent routing, `permission.task` glob-pattern access control (agents.md:464-486), and depth management. The `task` permission lets you deny `*` and allow specific patterns like `researcher`, `builder`, `critic`. The Task tool already respects agent-specific permissions.  
+681: **OpenCode Evidence:** The platform has a built-in Task tool with: automatic session creation, agent routing, `permission.task` glob-pattern access control (agents.md:464-486), and depth management. The `task` permission lets you ask `*` and allow specific patterns like `researcher`, `builder`, `critic`. The Task tool already respects agent-specific permissions.  
 682: **OMO Evidence:** OMO uses the built-in `task()` tool with category-based routing — it does NOT build a custom delegation system.  
 683: **Recommendation:** Either (a) justify why the built-in Task tool is insufficient and a custom `delegate-task` is worth the engineering cost, or (b) adopt the built-in Task tool and use `permission.task` + `hidden` agents to achieve the same access control. The custom approach reimplements session lifecycle, permission scoping, depth tracking, and message routing — all of which the platform already provides.
 684: 
 685: #### C-2: Platform's Built-in `doom_loop` vs Custom Circuit Breaker — Overlapping Safety Nets
 686: **User Stories:** US-015  
 687: **Finding:** OpenCode has a built-in `doom_loop` permission that triggers when "the same tool call repeats 3 times with identical input" (permissions.md:120). US-015 describes a custom circuit breaker at 16 consecutive identical calls. The user stories don't acknowledge the built-in safety net or explain how the custom circuit breaker interacts with it.  
-688: **OpenCode Evidence:** The `doom_loop` permission is configurable as ask/allow/deny. If set to `deny`, the platform already aborts looping tool calls at threshold 3.  
+688: **OpenCode Evidence:** The `doom_loop` permission is configurable as ask/allow/ask. If set to `ask`, the platform already aborts looping tool calls at threshold 3.  
 689: **OMO Evidence:** OMO uses a circuit breaker at 20 consecutive calls, implemented at the plugin level on top of the platform's loop detection.  
-690: **Recommendation:** Explicitly state the relationship between the platform's `doom_loop` and the custom circuit breaker. Configure `doom_loop` to `allow` (to avoid double-aborting) and handle loop detection solely in the plugin, or set `doom_loop` to `deny` and eliminate the custom circuit breaker entirely. Document this architectural decision.
+690: **Recommendation:** Explicitly state the relationship between the platform's `doom_loop` and the custom circuit breaker. Configure `doom_loop` to `allow` (to avoid double-aborting) and handle loop detection solely in the plugin, or set `doom_loop` to `ask` and eliminate the custom circuit breaker entirely. Document this architectural decision.
 691: 
 692: #### C-3: US-019 Metadata Injection — Platform Hook Capability Unclear
 693: **User Stories:** US-019  
@@ -2001,7 +2001,7 @@ Note: file list is sampled.
 796: 
 797: #### P-1: Permission Scoping Architecture — Well-Aligned with Platform
 798: **User Stories:** US-002, US-004, US-010  
-799: The per-agent permission model (Researcher: read-only, Critic: read + bash for tests, Builder: full access) maps directly to OpenCode's agent-specific permission overrides (permissions.md:147-196). The `permission.task` glob patterns can deny `*` for Researcher/Critic to prevent re-delegation. This is architecturally sound.
+799: The per-agent permission model (Researcher: read-only, Critic: read + bash for tests, Builder: full access) maps directly to OpenCode's agent-specific permission overrides (permissions.md:147-196). The `permission.task` glob patterns can ask `*` for Researcher/Critic to prevent re-delegation. This is architecturally sound.
 800: 
 801: #### P-2: Shell Environment Injection — Exact Platform Match
 802: **User Stories:** US-020  
@@ -2519,7 +2519,7 @@ Let me continue reading the rest of both documents and also load the critical Op
 10: 
 11: "allow" — run without approval
 12: "ask" — prompt for approval
-13: "deny" — block the action
+13: "ask" — block the action
 14: Configuration
 15: You can set permissions globally (with *), and override specific tools.
 16: 
@@ -2529,7 +2529,7 @@ Let me continue reading the rest of both documents and also load the critical Op
 20:   "permission": {
 21:     "*": "ask",
 22:     "bash": "allow",
-23:     "edit": "deny"
+23:     "edit": "ask"
 24:   }
 25: }
 26: 
@@ -2552,11 +2552,11 @@ Let me continue reading the rest of both documents and also load the critical Op
 43:       "*": "ask",
 44:       "git *": "allow",
 45:       "npm *": "allow",
-46:       "rm *": "deny",
+46:       "rm *": "ask",
 47:       "grep *": "allow"
 48:     },
 49:     "edit": {
-50:       "*": "deny",
+50:       "*": "ask",
 51:       "packages/web/src/content/docs/*.mdx": "allow"
 52:     }
 53:   }
@@ -2603,12 +2603,12 @@ Let me continue reading the rest of both documents and also load the critical Op
 94:       "~/projects/personal/**": "allow"
 95:     },
 96:     "edit": {
-97:       "~/projects/personal/**": "deny"
+97:       "~/projects/personal/**": "ask"
 98:     }
 99:   }
 100: }
 101: 
-102: Keep the list focused on trusted paths, and layer extra allow or deny rules as needed for other tools (for example bash).
+102: Keep the list focused on trusted paths, and layer extra allow or ask rules as needed for other tools (for example bash).
 103: 
 104: Available Permissions
 105: OpenCode permissions are keyed by tool name, plus a couple of safety guards:
@@ -2638,8 +2638,8 @@ Let me continue reading the rest of both documents and also load the critical Op
 129:   "permission": {
 130:     "read": {
 131:       "*": "allow",
-132:       "*.env": "deny",
-133:       "*.env.*": "deny",
+132:       "*.env": "ask",
+133:       "*.env.*": "ask",
 134:       "*.env.example": "allow"
 135:     }
 136:   }
@@ -2650,7 +2650,7 @@ Let me continue reading the rest of both documents and also load the critical Op
 141: 
 142: once — approve just this request
 143: always — approve future requests matching the suggested patterns (for the rest of the current OpenCode session)
-144: reject — deny the request
+144: reject — ask the request
 145: The set of patterns that always would approve is provided by the tool (for example, bash approvals typically whitelist a safe command prefix like git status*).
 146: 
 147: Agents
@@ -2667,8 +2667,8 @@ Let me continue reading the rest of both documents and also load the critical Op
 158:     "bash": {
 159:       "*": "ask",
 160:       "git *": "allow",
-161:       "git commit *": "deny",
-162:       "git push *": "deny",
+161:       "git commit *": "ask",
+162:       "git push *": "ask",
 163:       "grep *": "allow"
 164:     }
 165:   },
@@ -2679,7 +2679,7 @@ Let me continue reading the rest of both documents and also load the critical Op
 170:           "*": "ask",
 171:           "git *": "allow",
 172:           "git commit *": "ask",
-173:           "git push *": "deny",
+173:           "git push *": "ask",
 174:           "grep *": "allow"
 175:         }
 176:       }
@@ -2694,9 +2694,9 @@ Let me continue reading the rest of both documents and also load the critical Op
 185: description: Code review without edits
 186: mode: subagent
 187: permission:
-188:   edit: deny
+188:   edit: ask
 189:   bash: ask
-190:   webfetch: deny
+190:   webfetch: ask
 191: ---
 192: 
 193: Only analyze code and suggest changes.
@@ -3009,7 +3009,7 @@ Let me continue reading the rest of both documents and also load the critical Op
 285: Tools (deprecated)
 286: tools is deprecated. Prefer the agent’s permission field for new configs, updates and more fine-grained control.
 287: 
-288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "deny"} permission.
+288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "ask"} permission.
 289: 
 290: opencode.json
 291: {
@@ -3055,12 +3055,12 @@ Let me continue reading the rest of both documents and also load the critical Op
 331: 
 332: "ask" — Prompt for approval before running the tool
 333: "allow" — Allow all operations without approval
-334: "deny" — Disable the tool
+334: "ask" — Disable the tool
 335: opencode.json
 336: {
 337:   "$schema": "https://opencode.ai/config.json",
 338:   "permission": {
-339:     "edit": "deny"
+339:     "edit": "ask"
 340:   }
 341: }
 342: 
@@ -3070,7 +3070,7 @@ Let me continue reading the rest of both documents and also load the critical Op
 346: {
 347:   "$schema": "https://opencode.ai/config.json",
 348:   "permission": {
-349:     "edit": "deny"
+349:     "edit": "ask"
 350:   },
 351:   "agent": {
 352:     "build": {
@@ -3088,13 +3088,13 @@ Let me continue reading the rest of both documents and also load the critical Op
 364: description: Code review without edits
 365: mode: subagent
 366: permission:
-367:   edit: deny
+367:   edit: ask
 368:   bash:
 369:     "*": ask
 370:     "git diff": allow
 371:     "git log*": allow
 372:     "grep *": allow
-373:   webfetch: deny
+373:   webfetch: ask
 374: ---
 375: 
 376: Only analyze code and suggest changes.
@@ -3194,7 +3194,7 @@ Let me continue reading the rest of both documents and also load the critical Op
 470:       "mode": "primary",
 471:       "permission": {
 472:         "task": {
-473:           "*": "deny",
+473:           "*": "ask",
 474:           "orchestrator-*": "allow",
 475:           "code-reviewer": "ask"
 476:         }
@@ -3203,15 +3203,15 @@ Let me continue reading the rest of both documents and also load the critical Op
 479:   }
 480: }
 481: 
-482: When set to deny, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
+482: When set to ask, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
 483: 
 484: Tip
 485: 
-486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (deny) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
+486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (ask) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
 487: 
 488: Tip
 489: 
-490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would deny it.
+490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would ask it.
 491: 
 492: Color
 493: Customize the agent’s visual appearance in the UI with the color option. This affects how the agent appears in the interface.
@@ -4891,7 +4891,7 @@ Now I'll spawn two parallel subagents to fix both documents simultaneously, each
 ```json
 {
   "description": "Fix requirements document critical and high issues",
-  "prompt": "You are a specialist technical writer fixing critical architectural issues in a requirements document. Your task is to rewrite the requirements document at `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md` to resolve all CRITICAL and HIGH validation findings.\n\n## Context\nThis is a forward-looking specification (NOT describing existing implementation). The document was validated against OpenCode platform capabilities and found to have 4 CRITICAL and 7 HIGH issues that assume platform capabilities that don't exist.\n\n## Platform Facts (from OpenCode reference docs)\n- `delegate-task` is NOT a native permission key. Native permissions: read, edit, bash, glob, grep, list, task, skill, lsp, question, webfetch, websearch, codesearch, external_directory, doom_loop\n- The `task` permission controls subagent invocation with glob patterns (e.g., `\"*\": \"deny\", \"researcher\": \"allow\"`)\n- Custom tools registered via `tool()` from `@opencode-ai/plugin` get their own permission entries\n- `session.create({ body: { title } })` — ONLY accepts `title`. No tool/permission/model overrides\n- `session.prompt()` — single async method, returns Promise. No `promptAsync` variant exists\n- `client.event.subscribe()` — returns SSE stream with `session.idle` events for completion detection\n- `tool.execute.before` hook — can mutate args, throw errors to block execution\n- `tool.execute.after` hook — can mutate output but output-mutation contract is implicit\n- `shell.env` hook — injects env vars: `output.env.KEY = value`\n- `experimental.session.compacting` hook — injects context via `output.context.push()`\n- Agent permissions are STATIC config in `opencode.json` or markdown frontmatter\n- OpenCode temperature guidance: 0.0-0.2 focused/code analysis, 0.3-0.5 balanced, 0.6-1.0 creative\n- OMO proven constants: maxDescendants=10, circuit_breaker=20, concurrency=5 per model\n- OMO's 6-section delegation prompt: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- OMO's planning triad: Prometheus (strategic planner), Metis (gap analyzer), Momus (reviewer)\n\n## CRITICAL Fixes Required\n\n### C-1: `delegate-task` Permission (PERM-004, PERM-005, PERM-006, PERM-008)\n- Add explicit requirement that harness SHALL register `delegate-task` as a custom tool via `tool()` API\n- Change all `delegate-task` permission denials to use native `task` permission with glob patterns\n- PERM-004: researcher denied `task: { \"*\": \"deny\" }` (prevents any subagent spawning)\n- PERM-005: builder denied `task: { \"*\": \"deny\" }`  \n- PERM-006: critic denied `task: { \"*\": \"deny\" }`\n\n### C-2: Dynamic Permissions (PERM-007, PERM-008)\n- Reframe as plugin-hook-enforced permissions via `tool.execute.before` hooks\n- Static agent permissions provide base layer; plugin hooks add per-delegation restrictions\n- Remove concept of \"passing tool compatibility maps to session creation\"\n\n### C-3: `promptAsync` (SDK-002)\n- Remove all references to `promptAsync`\n- Rewrite as: use `session.prompt()` for synchronous delegation (await result) and `session.prompt()` + `event.subscribe()` listening for `session.idle` for asynchronous delegation\n\n### C-4: `session.create()` Tool Restrictions (PERM-008, MOD-007, AGT-006)\n- Remove concept of passing tool restriction lists to session creation\n- Refactor to: agent-level static permissions + plugin-hook-enforced restrictions\n- Delegation uses `session.create({ title })` + `session.prompt({ body: { model, parts } })` for model override\n\n## HIGH Fixes Required\n\n### H-1: maxDescendants=50 (GRD-002)\n- Change default to 10 (OMO's proven limit), make configurable\n\n### H-2: Concurrency=1 (CON-003)\n- Change default to 3-5 per lane (aligning with OMO's per-model default of 5)\n\n### H-3: Missing 6-Section Delegation Prompt Format\n- Add CAT-009: \"Each delegation prompt SHALL include structured sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\"\n\n### H-4: Missing Background Task Manager\n- Add requirements for background task manager using `session.abort()` for cancellation and SSE `session.idle` events for tracking\n- Define task lifecycle API: spawn, track, cancel, query status\n\n### H-5: Missing Planning Triad\n- Add requirement for plan-review as formal phase between planning and implementation\n- Conductor SHALL have plan reviewed by critic agent before delegating implementation\n\n### H-6: Missing Model-Specific Prompt Variants\n- Add P2 requirement: \"Agent prompts SHOULD include model-specific guidance sections\"\n\n### H-7: Polling vs SSE (LIF-006)\n- Replace polling with SSE event subscription as primary mechanism\n- Keep polling as degraded-mode fallback only if SSE connection fails\n\n## What to Do\n1. Read the current file first\n2. Rewrite the ENTIRE document (lines 1-785) with all fixes applied\n3. Keep the document structure (sections, tables, IDs) but fix the content\n4. Update the validation feedback section to reflect the corrected state\n5. The document should read as a forward-looking specification aligned with OpenCode platform reality\n6. Do NOT reference existing codebase implementation — this is a specification document\n7. Write the corrected file back to the same path\n\n## Constraints\n- Do NOT change requirement IDs (ARCH-001, MOD-001, etc.) — only fix their content\n- Do NOT remove any sections — only modify content\n- Maintain the table format for requirements\n- Keep the validation feedback section but update it to show \"resolved\" status\n- No comments in the output",
+  "prompt": "You are a specialist technical writer fixing critical architectural issues in a requirements document. Your task is to rewrite the requirements document at `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md` to resolve all CRITICAL and HIGH validation findings.\n\n## Context\nThis is a forward-looking specification (NOT describing existing implementation). The document was validated against OpenCode platform capabilities and found to have 4 CRITICAL and 7 HIGH issues that assume platform capabilities that don't exist.\n\n## Platform Facts (from OpenCode reference docs)\n- `delegate-task` is NOT a native permission key. Native permissions: read, edit, bash, glob, grep, list, task, skill, lsp, question, webfetch, websearch, codesearch, external_directory, doom_loop\n- The `task` permission controls subagent invocation with glob patterns (e.g., `\"*\": \"ask\", \"researcher\": \"allow\"`)\n- Custom tools registered via `tool()` from `@opencode-ai/plugin` get their own permission entries\n- `session.create({ body: { title } })` — ONLY accepts `title`. No tool/permission/model overrides\n- `session.prompt()` — single async method, returns Promise. No `promptAsync` variant exists\n- `client.event.subscribe()` — returns SSE stream with `session.idle` events for completion detection\n- `tool.execute.before` hook — can mutate args, throw errors to block execution\n- `tool.execute.after` hook — can mutate output but output-mutation contract is implicit\n- `shell.env` hook — injects env vars: `output.env.KEY = value`\n- `experimental.session.compacting` hook — injects context via `output.context.push()`\n- Agent permissions are STATIC config in `opencode.json` or markdown frontmatter\n- OpenCode temperature guidance: 0.0-0.2 focused/code analysis, 0.3-0.5 balanced, 0.6-1.0 creative\n- OMO proven constants: maxDescendants=10, circuit_breaker=20, concurrency=5 per model\n- OMO's 6-section delegation prompt: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- OMO's planning triad: Prometheus (strategic planner), Metis (gap analyzer), Momus (reviewer)\n\n## CRITICAL Fixes Required\n\n### C-1: `delegate-task` Permission (PERM-004, PERM-005, PERM-006, PERM-008)\n- Add explicit requirement that harness SHALL register `delegate-task` as a custom tool via `tool()` API\n- Change all `delegate-task` permission denials to use native `task` permission with glob patterns\n- PERM-004: researcher denied `task: { \"*\": \"ask\" }` (prevents any subagent spawning)\n- PERM-005: builder denied `task: { \"*\": \"ask\" }`  \n- PERM-006: critic denied `task: { \"*\": \"ask\" }`\n\n### C-2: Dynamic Permissions (PERM-007, PERM-008)\n- Reframe as plugin-hook-enforced permissions via `tool.execute.before` hooks\n- Static agent permissions provide base layer; plugin hooks add per-delegation restrictions\n- Remove concept of \"passing tool compatibility maps to session creation\"\n\n### C-3: `promptAsync` (SDK-002)\n- Remove all references to `promptAsync`\n- Rewrite as: use `session.prompt()` for synchronous delegation (await result) and `session.prompt()` + `event.subscribe()` listening for `session.idle` for asynchronous delegation\n\n### C-4: `session.create()` Tool Restrictions (PERM-008, MOD-007, AGT-006)\n- Remove concept of passing tool restriction lists to session creation\n- Refactor to: agent-level static permissions + plugin-hook-enforced restrictions\n- Delegation uses `session.create({ title })` + `session.prompt({ body: { model, parts } })` for model override\n\n## HIGH Fixes Required\n\n### H-1: maxDescendants=50 (GRD-002)\n- Change default to 10 (OMO's proven limit), make configurable\n\n### H-2: Concurrency=1 (CON-003)\n- Change default to 3-5 per lane (aligning with OMO's per-model default of 5)\n\n### H-3: Missing 6-Section Delegation Prompt Format\n- Add CAT-009: \"Each delegation prompt SHALL include structured sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\"\n\n### H-4: Missing Background Task Manager\n- Add requirements for background task manager using `session.abort()` for cancellation and SSE `session.idle` events for tracking\n- Define task lifecycle API: spawn, track, cancel, query status\n\n### H-5: Missing Planning Triad\n- Add requirement for plan-review as formal phase between planning and implementation\n- Conductor SHALL have plan reviewed by critic agent before delegating implementation\n\n### H-6: Missing Model-Specific Prompt Variants\n- Add P2 requirement: \"Agent prompts SHOULD include model-specific guidance sections\"\n\n### H-7: Polling vs SSE (LIF-006)\n- Replace polling with SSE event subscription as primary mechanism\n- Keep polling as degraded-mode fallback only if SSE connection fails\n\n## What to Do\n1. Read the current file first\n2. Rewrite the ENTIRE document (lines 1-785) with all fixes applied\n3. Keep the document structure (sections, tables, IDs) but fix the content\n4. Update the validation feedback section to reflect the corrected state\n5. The document should read as a forward-looking specification aligned with OpenCode platform reality\n6. Do NOT reference existing codebase implementation — this is a specification document\n7. Write the corrected file back to the same path\n\n## Constraints\n- Do NOT change requirement IDs (ARCH-001, MOD-001, etc.) — only fix their content\n- Do NOT remove any sections — only modify content\n- Maintain the table format for requirements\n- Keep the validation feedback section but update it to show \"resolved\" status\n- No comments in the output",
   "run_in_background": false,
   "agent": "builder"
 }
@@ -4907,7 +4907,7 @@ Complete rewrite of the entire requirements document (785 lines) to resolve all 
 
 ### CRITICAL Fixes (Lines 84-91, 406-415, 419-432, 435-455)
 
-- **PERM-004, PERM-005, PERM-006** (lines 84-90): Changed from denying `delegate-task` (non-existent permission) to denying `task` with glob patterns: `task: { "*": "deny" }` for researcher, builder, and critic agents.
+- **PERM-004, PERM-005, PERM-006** (lines 84-90): Changed from asking `delegate-task` (non-existent permission) to asking `task` with glob patterns: `task: { "*": "ask" }` for researcher, builder, and critic agents.
 
 - **PERM-007** (line 90): Reframed from "dynamically generated permission rules per delegated session" to "enforce delegation-scoped tool restrictions via plugin `tool.execute.before` hooks."
 
@@ -5066,7 +5066,7 @@ The requirements document is done. Now I need to fix the user-stories document. 
 ```json
 {
   "description": "Fix user stories document all validation issues",
-  "prompt": "You are a specialist technical writer fixing architectural issues in a user stories document. Your task is to rewrite the user stories document at `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/user-stories-2026-04-02.md` to resolve ALL validation findings (CRITICAL, HIGH, MEDIUM, LOW, and MISSING OMO PATTERNS).\n\n## Context\nThis is a forward-looking specification (NOT describing existing implementation). The document was validated against OpenCode platform capabilities and OMO patterns and found to have 3 CRITICAL, 5 HIGH, 6 MEDIUM, 4 LOW issues plus 8 missing OMO patterns.\n\n## Platform Facts (from OpenCode reference docs)\n- `delegate-task` is NOT a native permission key. Native permissions: read, edit, bash, glob, grep, list, task, skill, lsp, question, webfetch, websearch, codesearch, external_directory, doom_loop\n- The `task` permission controls subagent invocation with glob patterns (e.g., `\"*\": \"deny\", \"researcher\": \"allow\"`)\n- Custom tools registered via `tool()` from `@opencode-ai/plugin` get their own permission entries\n- `session.create({ body: { title } })` — ONLY accepts `title`. No tool/permission/model overrides\n- `session.prompt()` — single async method, returns Promise. No `promptAsync` variant exists\n- `client.event.subscribe()` — returns SSE stream with `session.idle` events for completion detection\n- `tool.execute.before` hook — can mutate args, throw errors to block execution\n- `tool.execute.after` hook — can mutate output but output-mutation contract is implicit\n- `shell.env` hook — injects env vars: `output.env.KEY = value`\n- `experimental.session.compacting` hook — injects context via `output.context.push()`\n- Agent permissions are STATIC config in `opencode.json` or markdown frontmatter\n- OpenCode temperature guidance: 0.0-0.2 focused/code analysis, 0.3-0.5 balanced, 0.6-1.0 creative\n- OMO proven constants: maxDescendants=10, circuit_breaker=20, concurrency=5 per model\n- OMO's 6-section delegation prompt: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- OMO's planning triad: Prometheus (strategic planner with interview mode + clearance checks), Metis (gap analyzer), Momus (plan reviewer)\n- OMO categories: visual-engineering, ultrabrain, deep, artistry, quick, unspecified-low, unspecified-high, writing\n- OMO's notepad system: `.sisyphus/notepads/{plan-name}/` with learnings.md, decisions.md, issues.md, problems.md\n- OMO's boulder-state: `.sisyphus/boulder.json` for structured task state persistence\n\n## CRITICAL Fixes Required\n\n### C-1: Custom delegate-task vs Built-in Task Tool (US-001, US-007, US-010)\n- The document says \"All specialist work routes through delegate-task (not the built-in task tool)\" — this is architecturally redundant\n- OpenCode's built-in Task tool already provides: automatic session creation, agent routing, `permission.task` glob-pattern access control, depth management\n- **Fix**: Reframe delegation to use OpenCode's built-in Task tool with `permission.task` glob patterns for access control. The `delegate-task` custom tool should be positioned as an OPTIONAL enhancement for advanced scenarios (custom routing, metadata enrichment), not a replacement.\n- Update US-007 AC-7: Change from \"All specialist work routes through delegate-task (not the built-in task tool)\" to \"Specialist work routes through the platform's Task tool with harness-enforced permission scoping via `permission.task` glob patterns.\"\n- Update US-010: Session creation uses `session.create({ title })` + `session.prompt()` for model override, not custom delegation SDK calls\n\n### C-2: Circuit Breaker vs doom_loop Overlap (US-015)\n- OpenCode's `doom_loop` triggers at 3 identical repetitions\n- US-015 describes custom circuit breaker at 16 consecutive identical calls\n- **Fix**: Explicitly state the relationship. Configure `doom_loop` to `allow` (to avoid double-aborting) and handle loop detection solely in the plugin at threshold 16. OR set `doom_loop` to `deny` and eliminate the custom circuit breaker. Document this architectural decision.\n- Update US-015 acceptance criteria to acknowledge the platform's `doom_loop` and specify how they interact\n\n### C-3: Metadata Injection Feasibility (US-019)\n- US-019 requires appending `_harness` metadata to every tool output\n- `tool.execute.after` output modification is not documented as supported\n- **Fix**: Specify the primary mechanism as `tool.execute.before` injecting metadata as a pre-amble in args (visible in context), with `tool.execute.after` as experimental. Alternative: use compaction hook for state injection. Update acceptance criteria to reflect what's confirmed vs experimental.\n\n## HIGH Fixes Required\n\n### H-1: Missing 3-Agent Planning Pipeline (US-006)\n- OMO uses Prometheus (interview-based strategic planner with clearance checks), Metis (gap analyzer), Momus (plan reviewer)\n- US-006 collapses all into single Conductor agent\n- **Fix**: Add new user stories:\n  - US-006a: Gap Analysis — before plan finalization, a specialist reviews draft plan for hidden assumptions, ambiguities, missing edge cases (delegated to Researcher)\n  - US-006b: Plan Review — a specialist validates file references exist, acceptance criteria are testable, all requirements addressed (delegated to Critic)\n- Update US-006 to include clearance-check criteria: what dimensions must be clarified before planning, how Conductor determines sufficient context, what happens if user can't provide clarity\n\n### H-2: Missing 6-Section Delegation Prompt Format (US-001, US-002, US-003, US-004)\n- OMO mandates: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- US-001 AC-6 only specifies: SCOPE, CONSTRAINTS, REFERENCES\n- **Fix**: Update US-001 AC-6 to mandate all 6 sections. Update US-002, US-003, US-004 acceptance criteria to verify delegation prompts include all 6 sections.\n\n### H-3: Missing Category-Based Routing (US-001)\n- OMO routes through 8 categories mapping to model/temperature/step combinations\n- US-001 has simple intent classification with no routing layer\n- **Fix**: Add a category or complexity routing layer to US-001. At minimum, distinguish between \"quick research\" (fast model, low steps) and \"deep research\" (powerful model, high steps). Add to delegation categories: `quick` (for trivial tasks) and `writing` (for documentation).\n\n### H-4: Concurrency Default of 1 vs OMO's 5 (US-016)\n- US-016 specifies \"Default limit is 1 concurrent execution per lane\"\n- OMO uses per-model limits with default 5\n- **Fix**: Increase default concurrency per lane to at least 3. Add a global concurrency limit across all lanes as additional safety net.\n\n### H-5: No Interview-Mode Planning with Clearance Checks (US-006)\n- OMO's Prometheus uses structured interview protocol with clearance-check lists\n- US-006 says \"Conductor asks clarifying questions\" but defines no structure\n- **Fix**: Add clearance-check criteria to US-006: (a) what dimensions must be clarified (scope, constraints, dependencies, acceptance criteria), (b) how Conductor determines sufficient context, (c) defaults/assumptions protocol if user can't provide clarity\n\n## MEDIUM Fixes Required\n\n### M-1: Conductor Combines Multiple OMO Roles (US-001, US-005, US-006, US-008)\n- Conductor absorbs Sisyphus + Prometheus + Atlas — violates separation of concerns\n- **Fix**: Document as known trade-off for MVP. Add note that future iterations may split Conductor into Planner and Executor roles.\n\n### M-2: Tool Call Budget (400) Arbitrary (US-014)\n- OMO does NOT have per-session tool call limit — uses circuit breaker only\n- **Fix**: Make budget configurable per agent (Researcher: 200, Builder: 600, Critic: 300) and justify the numbers. OR rely solely on circuit breaker + OpenCode's built-in `steps` config.\n\n### M-3: Missing Boulder-State Persistence (US-007)\n- OMO has `.sisyphus/boulder.json` for structured task state\n- US-007 relies on `progress.md` (freeform markdown)\n- **Fix**: Add structured state file (`.harness/boulder.json`) to US-007 for tracking plan execution progress. Use `progress.md` for human-readable summaries only.\n\n### M-4: Behavioral Criteria Not Testable (US-005)\n- \"Conductor resolves conflicts\", \"Conductor verifies results\", \"Conductor records wisdom\" — depend on agent prompt compliance\n- **Fix**: For each behavioral criterion, either add code-level enforcement mechanism OR reclassify as \"agent instruction\" rather than \"acceptance criteria\"\n\n### M-5: Missing Background Task Lifecycle (US-010, US-011)\n- OMO has launch/track/cancel/assertCanSpawn/reserveSubagentSpawn\n- **Fix**: Add user stories for: (a) Cancel a running delegated session, (b) Query available spawn capacity before delegation, (c) Pre-reserve a concurrency slot before session creation\n\n### M-6: Wisdom Cleanup Over-Engineered (US-017)\n- Complex cleanup rules before proving basic value\n- **Fix**: For MVP, simplify to: (a) append-only wisdom files, (b) manual cleanup via `/clean-wisdom` command, (c) inject relevant wisdom via agent instructions\n\n## LOW Fixes Required\n\n### L-1: Descendant Budget 50 vs OMO's 10 (US-001 E-003)\n- **Fix**: Start with 10 (OMO's proven limit), add configuration option for tuning\n\n### L-2: Harness Doctor Tightly Coupled (US-009)\n- Health check references specific counts (\"all 4 agent files exist\")\n- **Fix**: Parameterize checks — read expected agent/skill/command lists from config rather than hardcoding counts\n\n### L-3: No SDK Error Handling Strategy (US-010, US-011)\n- **Fix**: Add cross-cutting section on SDK error handling patterns, referencing SDK's error types\n\n### L-4: Shell Safety Two Mechanisms (US-020)\n- `shell.env` hook only covers environment, command banning requires `tool.execute.before`\n- **Fix**: Split US-020 into two criteria groups: (a) Environment injection via `shell.env` hook, (b) Command interception via `tool.execute.before` hook\n\n## MISSING OMO PATTERNS to Add\n\nAdd a new section \"OMO Pattern Coverage\" documenting:\n- MP-1: 3-Agent Planning Pipeline — add US-006a, US-006b\n- MP-2: 6-Section Delegation Prompt — update US-001, US-002, US-003, US-004\n- MP-3: Category-Based Routing — update US-001\n- MP-4: Interview-Mode Planning with Clearance Checks — update US-006\n- MP-5: Model-Specific Prompt Variants — add as future enhancement note\n- MP-6: Plan-Scoped Notepad System — extend US-017 or add new story\n- MP-7: Mandatory Pre-Plan Gap Analysis — covered by US-006a\n- MP-8: Background Task Lifecycle — add new user stories\n\n## What to Do\n1. Read the current file first\n2. Rewrite the ENTIRE document (lines 1-882) with all fixes applied\n3. Keep the document structure (sections, user story format, edge cases) but fix the content\n4. Add new user stories where needed (US-006a, US-006b, cancellation story, etc.)\n5. Update the validation feedback section to reflect the corrected state\n6. The document should read as a forward-looking specification aligned with OpenCode platform reality\n7. Do NOT reference existing codebase implementation — this is a specification document\n8. Write the corrected file back to the same path\n\n## Constraints\n- Do NOT change user story IDs (US-001, US-002, etc.) — only fix their content\n- Do NOT remove any sections — only modify content and add new stories\n- Maintain the user story format (As a/I want to/So that, Acceptance Criteria, Edge Cases)\n- Keep the validation feedback section but update it to show \"resolved\" status\n- No comments in the output\n- Ensure cross-reference consistency with the requirements document (which has been updated to use native `task` permission, SSE events, etc.)",
+  "prompt": "You are a specialist technical writer fixing architectural issues in a user stories document. Your task is to rewrite the user stories document at `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/user-stories-2026-04-02.md` to resolve ALL validation findings (CRITICAL, HIGH, MEDIUM, LOW, and MISSING OMO PATTERNS).\n\n## Context\nThis is a forward-looking specification (NOT describing existing implementation). The document was validated against OpenCode platform capabilities and OMO patterns and found to have 3 CRITICAL, 5 HIGH, 6 MEDIUM, 4 LOW issues plus 8 missing OMO patterns.\n\n## Platform Facts (from OpenCode reference docs)\n- `delegate-task` is NOT a native permission key. Native permissions: read, edit, bash, glob, grep, list, task, skill, lsp, question, webfetch, websearch, codesearch, external_directory, doom_loop\n- The `task` permission controls subagent invocation with glob patterns (e.g., `\"*\": \"ask\", \"researcher\": \"allow\"`)\n- Custom tools registered via `tool()` from `@opencode-ai/plugin` get their own permission entries\n- `session.create({ body: { title } })` — ONLY accepts `title`. No tool/permission/model overrides\n- `session.prompt()` — single async method, returns Promise. No `promptAsync` variant exists\n- `client.event.subscribe()` — returns SSE stream with `session.idle` events for completion detection\n- `tool.execute.before` hook — can mutate args, throw errors to block execution\n- `tool.execute.after` hook — can mutate output but output-mutation contract is implicit\n- `shell.env` hook — injects env vars: `output.env.KEY = value`\n- `experimental.session.compacting` hook — injects context via `output.context.push()`\n- Agent permissions are STATIC config in `opencode.json` or markdown frontmatter\n- OpenCode temperature guidance: 0.0-0.2 focused/code analysis, 0.3-0.5 balanced, 0.6-1.0 creative\n- OMO proven constants: maxDescendants=10, circuit_breaker=20, concurrency=5 per model\n- OMO's 6-section delegation prompt: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- OMO's planning triad: Prometheus (strategic planner with interview mode + clearance checks), Metis (gap analyzer), Momus (plan reviewer)\n- OMO categories: visual-engineering, ultrabrain, deep, artistry, quick, unspecified-low, unspecified-high, writing\n- OMO's notepad system: `.sisyphus/notepads/{plan-name}/` with learnings.md, decisions.md, issues.md, problems.md\n- OMO's boulder-state: `.sisyphus/boulder.json` for structured task state persistence\n\n## CRITICAL Fixes Required\n\n### C-1: Custom delegate-task vs Built-in Task Tool (US-001, US-007, US-010)\n- The document says \"All specialist work routes through delegate-task (not the built-in task tool)\" — this is architecturally redundant\n- OpenCode's built-in Task tool already provides: automatic session creation, agent routing, `permission.task` glob-pattern access control, depth management\n- **Fix**: Reframe delegation to use OpenCode's built-in Task tool with `permission.task` glob patterns for access control. The `delegate-task` custom tool should be positioned as an OPTIONAL enhancement for advanced scenarios (custom routing, metadata enrichment), not a replacement.\n- Update US-007 AC-7: Change from \"All specialist work routes through delegate-task (not the built-in task tool)\" to \"Specialist work routes through the platform's Task tool with harness-enforced permission scoping via `permission.task` glob patterns.\"\n- Update US-010: Session creation uses `session.create({ title })` + `session.prompt()` for model override, not custom delegation SDK calls\n\n### C-2: Circuit Breaker vs doom_loop Overlap (US-015)\n- OpenCode's `doom_loop` triggers at 3 identical repetitions\n- US-015 describes custom circuit breaker at 16 consecutive identical calls\n- **Fix**: Explicitly state the relationship. Configure `doom_loop` to `allow` (to avoid double-aborting) and handle loop detection solely in the plugin at threshold 16. OR set `doom_loop` to `ask` and eliminate the custom circuit breaker. Document this architectural decision.\n- Update US-015 acceptance criteria to acknowledge the platform's `doom_loop` and specify how they interact\n\n### C-3: Metadata Injection Feasibility (US-019)\n- US-019 requires appending `_harness` metadata to every tool output\n- `tool.execute.after` output modification is not documented as supported\n- **Fix**: Specify the primary mechanism as `tool.execute.before` injecting metadata as a pre-amble in args (visible in context), with `tool.execute.after` as experimental. Alternative: use compaction hook for state injection. Update acceptance criteria to reflect what's confirmed vs experimental.\n\n## HIGH Fixes Required\n\n### H-1: Missing 3-Agent Planning Pipeline (US-006)\n- OMO uses Prometheus (interview-based strategic planner with clearance checks), Metis (gap analyzer), Momus (plan reviewer)\n- US-006 collapses all into single Conductor agent\n- **Fix**: Add new user stories:\n  - US-006a: Gap Analysis — before plan finalization, a specialist reviews draft plan for hidden assumptions, ambiguities, missing edge cases (delegated to Researcher)\n  - US-006b: Plan Review — a specialist validates file references exist, acceptance criteria are testable, all requirements addressed (delegated to Critic)\n- Update US-006 to include clearance-check criteria: what dimensions must be clarified before planning, how Conductor determines sufficient context, what happens if user can't provide clarity\n\n### H-2: Missing 6-Section Delegation Prompt Format (US-001, US-002, US-003, US-004)\n- OMO mandates: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT\n- US-001 AC-6 only specifies: SCOPE, CONSTRAINTS, REFERENCES\n- **Fix**: Update US-001 AC-6 to mandate all 6 sections. Update US-002, US-003, US-004 acceptance criteria to verify delegation prompts include all 6 sections.\n\n### H-3: Missing Category-Based Routing (US-001)\n- OMO routes through 8 categories mapping to model/temperature/step combinations\n- US-001 has simple intent classification with no routing layer\n- **Fix**: Add a category or complexity routing layer to US-001. At minimum, distinguish between \"quick research\" (fast model, low steps) and \"deep research\" (powerful model, high steps). Add to delegation categories: `quick` (for trivial tasks) and `writing` (for documentation).\n\n### H-4: Concurrency Default of 1 vs OMO's 5 (US-016)\n- US-016 specifies \"Default limit is 1 concurrent execution per lane\"\n- OMO uses per-model limits with default 5\n- **Fix**: Increase default concurrency per lane to at least 3. Add a global concurrency limit across all lanes as additional safety net.\n\n### H-5: No Interview-Mode Planning with Clearance Checks (US-006)\n- OMO's Prometheus uses structured interview protocol with clearance-check lists\n- US-006 says \"Conductor asks clarifying questions\" but defines no structure\n- **Fix**: Add clearance-check criteria to US-006: (a) what dimensions must be clarified (scope, constraints, dependencies, acceptance criteria), (b) how Conductor determines sufficient context, (c) defaults/assumptions protocol if user can't provide clarity\n\n## MEDIUM Fixes Required\n\n### M-1: Conductor Combines Multiple OMO Roles (US-001, US-005, US-006, US-008)\n- Conductor absorbs Sisyphus + Prometheus + Atlas — violates separation of concerns\n- **Fix**: Document as known trade-off for MVP. Add note that future iterations may split Conductor into Planner and Executor roles.\n\n### M-2: Tool Call Budget (400) Arbitrary (US-014)\n- OMO does NOT have per-session tool call limit — uses circuit breaker only\n- **Fix**: Make budget configurable per agent (Researcher: 200, Builder: 600, Critic: 300) and justify the numbers. OR rely solely on circuit breaker + OpenCode's built-in `steps` config.\n\n### M-3: Missing Boulder-State Persistence (US-007)\n- OMO has `.sisyphus/boulder.json` for structured task state\n- US-007 relies on `progress.md` (freeform markdown)\n- **Fix**: Add structured state file (`.harness/boulder.json`) to US-007 for tracking plan execution progress. Use `progress.md` for human-readable summaries only.\n\n### M-4: Behavioral Criteria Not Testable (US-005)\n- \"Conductor resolves conflicts\", \"Conductor verifies results\", \"Conductor records wisdom\" — depend on agent prompt compliance\n- **Fix**: For each behavioral criterion, either add code-level enforcement mechanism OR reclassify as \"agent instruction\" rather than \"acceptance criteria\"\n\n### M-5: Missing Background Task Lifecycle (US-010, US-011)\n- OMO has launch/track/cancel/assertCanSpawn/reserveSubagentSpawn\n- **Fix**: Add user stories for: (a) Cancel a running delegated session, (b) Query available spawn capacity before delegation, (c) Pre-reserve a concurrency slot before session creation\n\n### M-6: Wisdom Cleanup Over-Engineered (US-017)\n- Complex cleanup rules before proving basic value\n- **Fix**: For MVP, simplify to: (a) append-only wisdom files, (b) manual cleanup via `/clean-wisdom` command, (c) inject relevant wisdom via agent instructions\n\n## LOW Fixes Required\n\n### L-1: Descendant Budget 50 vs OMO's 10 (US-001 E-003)\n- **Fix**: Start with 10 (OMO's proven limit), add configuration option for tuning\n\n### L-2: Harness Doctor Tightly Coupled (US-009)\n- Health check references specific counts (\"all 4 agent files exist\")\n- **Fix**: Parameterize checks — read expected agent/skill/command lists from config rather than hardcoding counts\n\n### L-3: No SDK Error Handling Strategy (US-010, US-011)\n- **Fix**: Add cross-cutting section on SDK error handling patterns, referencing SDK's error types\n\n### L-4: Shell Safety Two Mechanisms (US-020)\n- `shell.env` hook only covers environment, command banning requires `tool.execute.before`\n- **Fix**: Split US-020 into two criteria groups: (a) Environment injection via `shell.env` hook, (b) Command interception via `tool.execute.before` hook\n\n## MISSING OMO PATTERNS to Add\n\nAdd a new section \"OMO Pattern Coverage\" documenting:\n- MP-1: 3-Agent Planning Pipeline — add US-006a, US-006b\n- MP-2: 6-Section Delegation Prompt — update US-001, US-002, US-003, US-004\n- MP-3: Category-Based Routing — update US-001\n- MP-4: Interview-Mode Planning with Clearance Checks — update US-006\n- MP-5: Model-Specific Prompt Variants — add as future enhancement note\n- MP-6: Plan-Scoped Notepad System — extend US-017 or add new story\n- MP-7: Mandatory Pre-Plan Gap Analysis — covered by US-006a\n- MP-8: Background Task Lifecycle — add new user stories\n\n## What to Do\n1. Read the current file first\n2. Rewrite the ENTIRE document (lines 1-882) with all fixes applied\n3. Keep the document structure (sections, user story format, edge cases) but fix the content\n4. Add new user stories where needed (US-006a, US-006b, cancellation story, etc.)\n5. Update the validation feedback section to reflect the corrected state\n6. The document should read as a forward-looking specification aligned with OpenCode platform reality\n7. Do NOT reference existing codebase implementation — this is a specification document\n8. Write the corrected file back to the same path\n\n## Constraints\n- Do NOT change user story IDs (US-001, US-002, etc.) — only fix their content\n- Do NOT remove any sections — only modify content and add new stories\n- Maintain the user story format (As a/I want to/So that, Acceptance Criteria, Edge Cases)\n- Keep the validation feedback section but update it to show \"resolved\" status\n- No comments in the output\n- Ensure cross-reference consistency with the requirements document (which has been updated to use native `task` permission, SSE events, etc.)",
   "run_in_background": false,
   "agent": "builder"
 }

@@ -235,7 +235,7 @@ All hivefiver agents have `permission:` blocks in YAML frontmatter:
 - **Lines:** 413 (386 body LOC) — substantial body
 - **YAML:** All fields present: name, description, mode (`all`), temperature (0.3)
 - **Mode note:** `all` is non-standard (typically primary or subagent). Likely intentional to allow both direct invocation and subagent use.
-- **Permissions:** Granular skill allowlist with wildcard deny-default pattern. Allows hm-* skills (hm-deep-research, hm-detective, hm-synthesis, hm-opencode-non-interactive-shell) and hf-* skills (hf-use-authoring-skills, hf-command-parser). Mode `all` + cross-lineage skill access consistent with hf-* FLEXIBLE binding (D-AD-01).
+- **Permissions:** Granular skill allowlist with wildcard ask-default pattern. Allows hm-* skills (hm-deep-research, hm-detective, hm-synthesis, hm-opencode-non-interactive-shell) and hf-* skills (hf-use-authoring-skills, hf-command-parser). Mode `all` + cross-lineage skill access consistent with hf-* FLEXIBLE binding (D-AD-01).
 - **Body format:** Markdown with H2 sections — no XML tags.
 - **Quality:** HIGH (comprehensive body >200 LOC, full permissions, cross-lineage skill bindings).
 - **Defects:** KI-02 RESOLVED — `name:` field present in current file.

@@ -88,7 +88,7 @@ Located at `.hivemind/state/hivemind.runtime-policy.json`. A project-local JSON 
     "builtinAsyncBackgroundChildSessions": false
   },
   "categoryGate": {
-    "denyUnknownCategories": true,
+    "askUnknownCategories": true,
     "readonlyCategories": ["review", "research"],
     "commandCategory": "command"
   },
@@ -134,7 +134,7 @@ The harness default constants are defined in two source files:
 | `budget.warningCap` | `25` | `DEFAULT_RUNTIME_POLICY` |
 | `budget.resetOnCompact` | `true` | `DEFAULT_RUNTIME_POLICY` |
 | `trustedRuntime.builtinAsyncBackgroundChildSessions` | `false` | `DEFAULT_RUNTIME_POLICY` |
-| `categoryGate.denyUnknownCategories` | `true` | `src/lib/category-gates.ts` |
+| `categoryGate.askUnknownCategories` | `true` | `src/lib/category-gates.ts` |
 | `categoryGate.readonlyCategories` | `["review", "research"]` | `src/lib/category-gates.ts` |
 | `categoryGate.commandCategory` | `"command"` | `src/lib/category-gates.ts` |
 

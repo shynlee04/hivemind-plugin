@@ -469,17 +469,17 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 5: instruction: [.opencode/rules/*.md]
 6: permission:
 7:   read:
-8:     "*": deny
+8:     "*": ask
 9:     "*.json": allow
 10:     "*.md": allow
 11:   edit:
-12:     "*": deny
+12:     "*": ask
 13:     "*.json": allow
 14:     "*.md": allow
 15:   write:
-16:     "*": deny
+16:     "*": ask
 17:   patch: allow
-18:   offset-read: deny
+18:   offset-read: ask
 19: permission:
 20:   bash:
 21:     "*": ask
@@ -489,7 +489,7 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 25:     "ls*": allow
 26:   task: allow
 27:   skill: 
-28:     "*": deny
+28:     "*": ask
 29:     "meta-builder": allow
 30:     "hivefiver": allow
 31:     "planning-with-files": allow
@@ -501,7 +501,7 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 37:     "opencode-non-interactive-shell": allow
 38:     "repomix-explorer": allow
 39:   patch: allow
-40:   offset-read: deny
+40:   offset-read: ask
 41:   glob: allow
 42:   grep: allow
 43:   webfetch: allow
@@ -670,7 +670,7 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 8:   edit: allow
 9:   write: allow
 10:   bash: allow
-11:   task: deny
+11:   task: ask
 12:   skill: allow
 13:   read: allow
 14:   glob: allow
@@ -789,7 +789,7 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 11:     "bash scripts/*": allow
 12:   task: allow
 13:   skill: 
-14:     "*": deny
+14:     "*": ask
 15:     "meta-builder": allow
 16:     "planning-with-files": allow
 17:     "coordinating-loop": allow
@@ -800,7 +800,7 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 22:     "opencode-non-interactive-shell": allow
 23:     "repomix-explorer": allow
 24:   patch: allow
-25:   offset-read: deny
+25:   offset-read: ask
 26:   glob: allow
 27:   grep: allow
 28:   webfetch: allow
@@ -876,15 +876,15 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 4: temperature: 0.3
 5: steps: 80
 6: permission:
-7:   edit: deny
-8:   write: deny
+7:   edit: ask
+8:   write: ask
 9:   bash:
 10:     "*": ask
 11:     "git status*": allow
 12:     "git diff*": allow
 13:     "git log*": allow
 14:     "ls*": allow
-15:   task: deny
+15:   task: ask
 16:   delegate-task: allow
 17:   skill: allow
 18:   read: allow
@@ -992,19 +992,19 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 4: instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 5: permission:
 6:   edit: 
-7:     "*": deny
+7:     "*": ask
 8:     "*.json": allow
 9:     "*.md": allow
 10:     "**/.opencode/**": allow
 11:     "**/docs/**": allow
 12:   write: 
-13:     "*": deny
+13:     "*": ask
 14:     "*.json": allow
 15:     "*.md": allow
 16:     "**/.opencode/**": allow
 17:     "**/docs/**": allow
 18:   bash: allow
-19:   task: deny
+19:   task: ask
 20:   skill: allow
 21:   webfetch: allow
 22:   webbrowse: allow
@@ -1422,10 +1422,10 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 5: instructions: [".opencode/rules/anti-patterns.md", "opencode/rules/execution-loop.md", ".opencode/rules/skill-activation.md"]
 6: steps: 40
 7: permission:
-8:   edit: deny
-9:   write: deny
+8:   edit: ask
+9:   write: ask
 10:   bash: allow
-11:   task: deny
+11:   task: ask
 12:   skill: allow
 13:   read: allow
 14:   glob: allow
@@ -1559,19 +1559,19 @@ Now let me read the actual agent definitions and command files, plus the OpenCod
 3: mode: subagent
 4: permission:
 5:   edit: 
-6:     "*": deny
+6:     "*": ask
 7:     "*.json": allow
 8:     "*.md": allow
 9:     "**/.opencode/**": allow
 10:     "**/docs/**": allow
 11:   write: 
-12:     "*": deny
+12:     "*": ask
 13:     "*.json": allow
 14:     "*.md": allow
 15:     "**/.opencode/**": allow
 16:     "**/docs/**": allow
 17:   bash: allow
-18:   task: deny
+18:   task: ask
 19:   skill: allow
 20:   webfetch: allow
 21:   webbrowse: allow
@@ -2763,7 +2763,7 @@ Now let me read the commands and the OpenCode agent architecture reference:
 285: Tools (deprecated)
 286: tools is deprecated. Prefer the agent’s permission field for new configs, updates and more fine-grained control.
 287: 
-288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "deny"} permission.
+288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "ask"} permission.
 289: 
 290: opencode.json
 291: {
@@ -2809,12 +2809,12 @@ Now let me read the commands and the OpenCode agent architecture reference:
 331: 
 332: "ask" — Prompt for approval before running the tool
 333: "allow" — Allow all operations without approval
-334: "deny" — Disable the tool
+334: "ask" — Disable the tool
 335: opencode.json
 336: {
 337:   "$schema": "https://opencode.ai/config.json",
 338:   "permission": {
-339:     "edit": "deny"
+339:     "edit": "ask"
 340:   }
 341: }
 342: 
@@ -2824,7 +2824,7 @@ Now let me read the commands and the OpenCode agent architecture reference:
 346: {
 347:   "$schema": "https://opencode.ai/config.json",
 348:   "permission": {
-349:     "edit": "deny"
+349:     "edit": "ask"
 350:   },
 351:   "agent": {
 352:     "build": {
@@ -2842,13 +2842,13 @@ Now let me read the commands and the OpenCode agent architecture reference:
 364: description: Code review without edits
 365: mode: subagent
 366: permission:
-367:   edit: deny
+367:   edit: ask
 368:   bash:
 369:     "*": ask
 370:     "git diff": allow
 371:     "git log*": allow
 372:     "grep *": allow
-373:   webfetch: deny
+373:   webfetch: ask
 374: ---
 375: 
 376: Only analyze code and suggest changes.
@@ -2948,7 +2948,7 @@ Now let me read the commands and the OpenCode agent architecture reference:
 470:       "mode": "primary",
 471:       "permission": {
 472:         "task": {
-473:           "*": "deny",
+473:           "*": "ask",
 474:           "orchestrator-*": "allow",
 475:           "code-reviewer": "ask"
 476:         }
@@ -2957,15 +2957,15 @@ Now let me read the commands and the OpenCode agent architecture reference:
 479:   }
 480: }
 481: 
-482: When set to deny, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
+482: When set to ask, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
 483: 
 484: Tip
 485: 
-486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (deny) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
+486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (ask) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
 487: 
 488: Tip
 489: 
-490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would deny it.
+490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would ask it.
 491: 
 492: Color
 493: Customize the agent’s visual appearance in the UI with the color option. This affects how the agent appears in the interface.

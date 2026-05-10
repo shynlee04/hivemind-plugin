@@ -9,7 +9,7 @@ permission:
   bash: allow
   task: allow
   skill:
-    "*": deny
+    "*": ask
     "hm-opencode-non-interactive-shell": allow
     "hm-meta-builder": allow
     "hm-deep-research": allow

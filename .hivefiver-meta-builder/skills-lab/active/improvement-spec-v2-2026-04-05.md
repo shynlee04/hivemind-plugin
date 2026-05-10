@@ -104,7 +104,7 @@ These go in a new skill directory alongside the SKILL.md, following the superpow
 - `implementer` — receives filled template, executes, returns status
 - `reviewer` — receives filled template + work output, returns verdict
 
-Each has the right permissions (not the hivefiver "deny everything" approach).
+Each has the right permissions (not the hivefiver "ask everything" approach).
 
 ---
 

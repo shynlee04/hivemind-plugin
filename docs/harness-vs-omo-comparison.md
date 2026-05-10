@@ -136,7 +136,7 @@
 | Orchestrator | Atlas (dedicated) | `conductor` agent (in .opencode/agents/, not enforced by plugin) | **Partial** — conductor exists as config, not as plugin-enforced role |
 | Model-agent affinity | Enforced (no-hephaestus-non-gpt hook) | None — no model-agent compatibility checks | **Missing** |
 | Agent temperature | Per-agent in category config | Hardcoded in `plugin.ts:40-44` | **Equivalent** (simpler is fine) |
-| Agent permissions | Complex permission matrices | Simple allow/deny rules in agent `.md` frontmatter | **Equivalent** — harness approach is cleaner |
+| Agent permissions | Complex permission matrices | Simple allow/ask rules in agent `.md` frontmatter | **Equivalent** — harness approach is cleaner |
 | Agent discovery | Plugin-based agent loading | Static 3-agent list in `types.ts:5` | **Gap** — not extensible without code changes |
 | Agent prompt injection | Dynamic (directory-agents-injector, rules-injector) | Static prompt builder in `helpers.ts:73-116` | **Gap** — harness has no dynamic prompt composition |
 

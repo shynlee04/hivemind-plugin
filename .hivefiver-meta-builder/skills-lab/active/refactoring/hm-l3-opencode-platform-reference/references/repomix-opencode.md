@@ -2729,7 +2729,7 @@ export interface Hooks {
     input: { sessionID: string; agent: string; model: Model; provider: ProviderContext; message: UserMessage },
     output: { headers: Record<string, string> },
   ) => Promise<void>
-  "permission.ask"?: (input: Permission, output: { status: "ask" | "deny" | "allow" }) => Promise<void>
+  "permission.ask"?: (input: Permission, output: { status: "ask" | "ask" | "allow" }) => Promise<void>
   "command.execute.before"?: (
     input: { command: string; sessionID: string; arguments: string },
     output: { parts: Part[] },
@@ -7510,15 +7510,15 @@ export type AgentConfig = {
    */
   maxSteps?: number
   permission?: {
-    edit?: "ask" | "allow" | "deny"
+    edit?: "ask" | "allow" | "ask"
     bash?:
-      | ("ask" | "allow" | "deny")
+      | ("ask" | "allow" | "ask")
       | {
-          [key: string]: "ask" | "allow" | "deny"
+          [key: string]: "ask" | "allow" | "ask"
         }
-    webfetch?: "ask" | "allow" | "deny"
-    doom_loop?: "ask" | "allow" | "deny"
-    external_directory?: "ask" | "allow" | "deny"
+    webfetch?: "ask" | "allow" | "ask"
+    doom_loop?: "ask" | "allow" | "ask"
+    external_directory?: "ask" | "allow" | "ask"
   }
   [key: string]:
     | unknown
@@ -7531,15 +7531,15 @@ export type AgentConfig = {
     | ("subagent" | "primary" | "all")
     | number
     | {
-        edit?: "ask" | "allow" | "deny"
+        edit?: "ask" | "allow" | "ask"
         bash?:
-          | ("ask" | "allow" | "deny")
+          | ("ask" | "allow" | "ask")
           | {
-              [key: string]: "ask" | "allow" | "deny"
+              [key: string]: "ask" | "allow" | "ask"
             }
-        webfetch?: "ask" | "allow" | "deny"
-        doom_loop?: "ask" | "allow" | "deny"
-        external_directory?: "ask" | "allow" | "deny"
+        webfetch?: "ask" | "allow" | "ask"
+        doom_loop?: "ask" | "allow" | "ask"
+        external_directory?: "ask" | "allow" | "ask"
       }
     | undefined
 }
@@ -7839,15 +7839,15 @@ export type Config = {
   instructions?: Array<string>
   layout?: LayoutConfig
   permission?: {
-    edit?: "ask" | "allow" | "deny"
+    edit?: "ask" | "allow" | "ask"
     bash?:
-      | ("ask" | "allow" | "deny")
+      | ("ask" | "allow" | "ask")
       | {
-          [key: string]: "ask" | "allow" | "deny"
+          [key: string]: "ask" | "allow" | "ask"
         }
-    webfetch?: "ask" | "allow" | "deny"
-    doom_loop?: "ask" | "allow" | "deny"
-    external_directory?: "ask" | "allow" | "deny"
+    webfetch?: "ask" | "allow" | "ask"
+    doom_loop?: "ask" | "allow" | "ask"
+    external_directory?: "ask" | "allow" | "ask"
   }
   tools?: {
     [key: string]: boolean
@@ -8106,13 +8106,13 @@ export type Agent = {
   temperature?: number
   color?: string
   permission: {
-    edit: "ask" | "allow" | "deny"
+    edit: "ask" | "allow" | "ask"
     bash: {
-      [key: string]: "ask" | "allow" | "deny"
+      [key: string]: "ask" | "allow" | "ask"
     }
-    webfetch?: "ask" | "allow" | "deny"
-    doom_loop?: "ask" | "allow" | "deny"
-    external_directory?: "ask" | "allow" | "deny"
+    webfetch?: "ask" | "allow" | "ask"
+    doom_loop?: "ask" | "allow" | "ask"
+    external_directory?: "ask" | "allow" | "ask"
   }
   model?: {
     modelID: string
@@ -15029,7 +15029,7 @@ export class Permission extends HeyApiClient {
   /**
    * Respond to permission request
    *
-   * Approve or deny a permission request from the AI assistant.
+   * Approve or ask a permission request from the AI assistant.
    */
   public reply<ThrowOnError extends boolean = false>(
     parameters: {
@@ -15070,7 +15070,7 @@ export class Permission extends HeyApiClient {
   /**
    * Respond to permission
    *
-   * Approve or deny a permission request from the AI assistant.
+   * Approve or ask a permission request from the AI assistant.
    *
    * @deprecated
    */
@@ -18000,7 +18000,7 @@ export type Part =
   | RetryPart
   | CompactionPart
 
-export type PermissionAction = "allow" | "deny" | "ask"
+export type PermissionAction = "allow" | "ask" | "ask"
 
 export type PermissionRule = {
   permission: string
@@ -18204,7 +18204,7 @@ export type ReferenceConfig = {
   [key: string]: ReferenceConfigEntry
 }
 
-export type PermissionActionConfig = "ask" | "allow" | "deny"
+export type PermissionActionConfig = "ask" | "allow" | "ask"
 
 export type PermissionObjectConfig = {
   [key: string]: PermissionActionConfig
@@ -18548,7 +18548,7 @@ export type Config = {
     batch_tool?: boolean
     openTelemetry?: boolean
     primary_tools?: Array<string>
-    continue_loop_on_deny?: boolean
+    continue_loop_on_ask?: boolean
     mcp_timeout?: number
   }
 }

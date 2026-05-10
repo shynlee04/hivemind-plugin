@@ -64,7 +64,7 @@ findings:
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- Cannot spawn subagents withouaskproval (task: ask).
 - NEVER ask clarifying questions — return findings only.
 - NEVER provide implementation advice — report analysis only.
 

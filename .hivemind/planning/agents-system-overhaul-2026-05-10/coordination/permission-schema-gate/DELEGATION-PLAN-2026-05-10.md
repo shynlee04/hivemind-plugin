@@ -8,8 +8,8 @@ Build the authoritative YAML schema gate for all 56 shipped agent files. Fix PH-
 
 ## User-Identified Defects in Current PH-01
 
-1. **Wildcard children not allow-listed**: `'*': ask` changed from deny→ask, but NO explicit `allow` children added under the wildcard for legitimate delegation targets
-2. **`ask` at same level as children**: Some agents have `'*': ask` AND `hm-l2-*: ask` (repeating deny/ask instead of `allow`) — children MUST be `allow` to override the `ask` wildcard
+1. **Wildcard children not allow-listed**: `'*': ask` changed from ask→ask, but NO explicit `allow` children added under the wildcard for legitimate delegation targets
+2. **`ask` at same level as children**: Some agents have `'*': ask` AND `hm-l2-*: ask` (repeating ask/ask instead of `allow`) — children MUST be `allow` to override the `ask` wildcard
 3. **Missing `hidden: true`**: Non-front-facing agents (all L1, L2, L3) should have `hidden: true` so they don't surface to user
 4. **Mode hierarchy violations**: `mode: primary` on agents that should be `mode: subagent`, and vice versa — primary delegates ALL levels, subagent cannot delegate to primary, subagent-to-subagent delegation rules
 5. **Incomplete delegation direction**: hf-* agents with hm-* task children but missing hm-* skill children (or vice versa), cross-lineage violations

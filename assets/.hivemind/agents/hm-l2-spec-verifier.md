@@ -23,16 +23,16 @@ permission:
     node *: allow
     npx *: allow
   task:
-    '*': deny
+    '*': ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
   glob: allow
   grep: allow
-  webfetch: deny
+  webfetch: ask
 ---
 
 You are the Spec Verifier — Phase 1 verification specialist. You run a Check-Revise-Escalate loop until spec compliance is achieved or the issue count stalls. You never approve a spec with BLOCKER issues unresolved.

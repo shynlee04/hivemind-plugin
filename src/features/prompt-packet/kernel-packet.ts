@@ -22,7 +22,7 @@ export const KERNEL_PACKET_VERSION = "1.0.0"
  * @property model - Requested LLM model identifier, or null for default.
  * @property temperature - Requested sampling temperature, or null for default.
  * @property tool_allow_list - Explicitly allowed tool names.
- * @property tool_deny_list - Explicitly denied tool names.
+ * @property tool_ask_list - Explicitly denied tool names.
  * @property constraints - Constraints applied to this session.
  * @property scope - Scope string, or null.
  * @property project_root - Absolute project root path, or null.
@@ -57,7 +57,7 @@ export type KernelPacket = {
   model: string | null
   temperature: number | null
   tool_allow_list: string[]
-  tool_deny_list: string[]
+  tool_ask_list: string[]
   constraints: string[]
   scope: string | null
   project_root: string | null
@@ -124,7 +124,7 @@ export function createKernelPacket(
     model: (typeof record.promptParams.model === "string" ? record.promptParams.model : null) ?? null,
     temperature: typeof record.promptParams.temperature === "number" ? record.promptParams.temperature : null,
     tool_allow_list: Array.isArray(record.toolProfile?.allowed) ? record.toolProfile.allowed : [],
-    tool_deny_list: Array.isArray(record.toolProfile?.denied) ? record.toolProfile.denied : [],
+    tool_ask_list: Array.isArray(record.toolProfile?.denied) ? record.toolProfile.denied : [],
     constraints: meta.constraints,
     scope: (typeof record.promptParams.scope === "string" ? record.promptParams.scope : null) ?? null,
     project_root: (typeof record.promptParams.projectRoot === "string" ? record.promptParams.projectRoot : null) ?? null,

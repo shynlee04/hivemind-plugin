@@ -22,16 +22,16 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+    '*': ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   webfetch: allow
   skill:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
@@ -318,7 +318,7 @@ EVERY SYNTHESIZED SKILL MUST CITE ITS SOURCE. NO PLAGIARISM. VALIDATE TECH STACK
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody (task: deny, delegate-task: deny)
+**Delegates to:** Nobody (task: ask, delegate-task: ask)
 
 **Does NOT delegate when:**
 - Ingesting source material (self-executed via hm-* skill loading)

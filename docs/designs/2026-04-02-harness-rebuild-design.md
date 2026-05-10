@@ -23,7 +23,7 @@
 | Agent permissions | `.opencode/agents/*.md` `permission:` frontmatter | `getPermissionRulesForAgent()`, `RESTRICTED_TOOLS_PER_AGENT` |
 | Temperature routing | `.opencode/agents/*.md` `temperature:` frontmatter | `AGENT_TEMPERATURES` |
 | Model selection | `.opencode/agents/*.md` `model:` frontmatter | `CATEGORY_CONFIGS` model overrides |
-| Tool restriction | `.opencode/agents/*.md` `permission: edit: deny` | `isToolRestrictedForAgent()` |
+| Tool restriction | `.opencode/agents/*.md` `permission: edit: ask` | `isToolRestrictedForAgent()` |
 | Prompt blocking | `session.prompt()` returns `AssistantMessage` when done | No need for completion detection in sync mode |
 
 ## What the Plugin Adds That the Platform Does NOT

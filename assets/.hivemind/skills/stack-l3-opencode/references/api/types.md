@@ -130,7 +130,7 @@ type Permission = {
 ### Permission Flow
 
 1. Tool execution needs permission → `permission.request` event emitted
-2. `permission.ask` hook fires → plugin can set `output.status` to `"allow"`, `"deny"`, or `"ask"`
+2. `permission.ask` hook fires → plugin can set `output.status` to `"allow"`, `"ask"`, or `"ask"`
 3. If `"ask"` → user sees permission prompt in TUI
 4. User response → sent back via callback ID
 

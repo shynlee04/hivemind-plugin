@@ -1,11 +1,11 @@
 import { getGovernancePersistenceState, recordGovernancePersistenceState } from "../../task-management/continuity/index.js"
 
-type CategoryGateDenyInput = {
+type CategoryGateaskInput = {
   callerSessionId: string
   requestedAgent?: string
   requestedCategory?: string
   surface: string
-  denyReason: string
+  askReason: string
 }
 
 /**
@@ -14,7 +14,7 @@ type CategoryGateDenyInput = {
  * @param input - Bounded denial metadata; prompt text and tool output are intentionally excluded.
  * @returns True when evidence was written, false when persistence failed safely.
  */
-export function recordCategoryGateDeny(input: CategoryGateDenyInput): boolean {
+export function recordCategoryGateask(input: CategoryGateaskInput): boolean {
   try {
     const state = getGovernancePersistenceState()
     recordGovernancePersistenceState({
@@ -25,7 +25,7 @@ export function recordCategoryGateDeny(input: CategoryGateDenyInput): boolean {
           ruleId: "category-gate",
           sessionID: input.callerSessionId,
           timestamp: Date.now(),
-          detail: input.denyReason,
+          detail: input.askReason,
           escalation: {
             requestedAgent: input.requestedAgent,
             requestedCategory: input.requestedCategory,

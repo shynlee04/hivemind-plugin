@@ -134,7 +134,7 @@
 │   ├── plugins/                  # Plugin loaders (prompt-enhance.ts)
 │   ├── tools/                    # OpenCode-native tools (nl-route.ts)
 │   ├── hooks/                    # OpenCode-native hooks
-│   ├── deny-prompts/             # Denied prompt patterns
+│   ├── ask-prompts/             # Denied prompt patterns
 │   ├── settings.json             # OpenCode settings
 │   └── opencode.json             # OpenCode project config
 ├── .hivemind/                    # Deep Module State (internal, Q6 canonical)

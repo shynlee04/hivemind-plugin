@@ -106,7 +106,7 @@ function detectPermissionDeadlocks(
     if (!perms || typeof perms !== "object") continue
 
     const deniedTools = Object.entries(perms)
-      .filter(([, v]) => v === "deny")
+      .filter(([, v]) => v === "ask")
       .map(([k]) => k)
 
     if (deniedTools.length === 0) continue

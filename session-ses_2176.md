@@ -826,7 +826,7 @@ Now let me read the current milestone state and roadmap to understand where we a
 355: - **2026-04-23:** R-AGENT-01 shim in `delegation-manager.ts` was masking the symptom (treating `app.agents()` as the source) but not the cause (`session.create` permission payload). Shim should be reverted in Wave B once runtime verified.
 356: - DelegationManager now hydrates surface and recovery defaults from executionMode so all tool outputs stay aligned.
 357: - Legacy persisted records keep the existing sdk-vs-headless inference rule, then receive explicit truthful recovery guarantees.
-358: - Child delegated sessions remain non-delegating; contract hardening does not relax deny rules for delegate-task or task.
+358: - Child delegated sessions remain non-delegating; contract hardening does not relax ask rules for delegate-task or task.
 359: - Terminal notifications now carry one text contract with a concise human summary plus JSON metadata instead of raw JSON-only delivery.
 360: - Undelivered parent notifications are queued in continuity metadata and replayed through the same notifyParentSession path on resume.
 361: - Replay clears pendingNotifications only after successful delivery; transient failures leave the queue intact for another resume attempt.

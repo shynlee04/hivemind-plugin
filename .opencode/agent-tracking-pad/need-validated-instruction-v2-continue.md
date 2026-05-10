@@ -8,7 +8,7 @@ The key insight is that opencode already has three primitives that compose into 
 
 1. **`Session.setPermission()`** — dynamically changes which tools are available mid-session [1-cite-0](#1-cite-0) 
 
-2. **`PermissionNext.disabled()`** — filters tools out of the LLM's tool list based on the permission ruleset (tools with `pattern: "*", action: "deny"` are removed entirely) [1-cite-1](#1-cite-1) 
+2. **`PermissionNext.disabled()`** — filters tools out of the LLM's tool list based on the permission ruleset (tools with `pattern: "*", action: "ask"` are removed entirely) [1-cite-1](#1-cite-1) 
 
 3. **`experimental.chat.system.transform`** — plugin hook that injects/modifies system prompts before each LLM call [1-cite-2](#1-cite-2) 
 
@@ -92,7 +92,7 @@ sequenceDiagram
     O->>W: Write .opencode/plans/pipeline.md
 ```
 
-The `question` tool requires `permission.question: "allow"` on the agent. The orchestrator has this; subagents do not (by default `question` is `"deny"`). [1-cite-4](#1-cite-4) 
+The `question` tool requires `permission.question: "allow"` on the agent. The orchestrator has this; subagents do not (by default `question` is `"ask"`). [1-cite-4](#1-cite-4) 
 
 ---
 
@@ -145,7 +145,7 @@ The `code-critic` is a read-only subagent that reviews work and **writes its app
       "permission": {
         "question": "allow",
         "task": {
-          "*": "deny",
+          "*": "ask",
           "phase-worker": "allow",
           "code-critic": "allow",
           "explore": "allow"
@@ -157,11 +157,11 @@ The `code-critic` is a read-only subagent that reviews work and **writes its app
       "description": "Reviews code against requirements. Writes approval/rejection to .opencode/harness/reviews/",
       "permission": {
         "edit": {
-          "*": "deny",
+          "*": "ask",
           ".opencode/harness/reviews/*.json": "allow"
         },
         "bash": {
-          "*": "deny",
+          "*": "ask",
           "bun test *": "allow",
           "npm test *": "allow"
         },
@@ -533,11 +533,11 @@ const session = await Session.create({
   title: `Phase ${phase} Task ${task}`,
   permission: [
     // Lock down tools not needed for this phase
-    { permission: "edit", pattern: "*", action: "deny" },
+    { permission: "edit", pattern: "*", action: "ask" },
     // Only allow edits to phase-specific directories
     { permission: "edit", pattern: "src/types/*", action: "allow" },  // phase 1
     // Allow bash only for specific commands
-    { permission: "bash", pattern: "*", action: "deny" },
+    { permission: "bash", pattern: "*", action: "ask" },
     { permission: "bash", pattern: "bun test *", action: "allow" },
     { permission: "bash", pattern: "bun run lint *", action: "allow" },
   ],
@@ -565,7 +565,7 @@ When `SessionPrompt.prompt()` is called, it converts the `tools` map to permissi
       "permission": {
         "question": "allow",
         "task": {
-          "*": "deny",
+          "*": "ask",
           "phase-worker": "allow",
           "code-critic": "allow",
           "explore": "allow"
@@ -582,14 +582,14 @@ When `SessionPrompt.prompt()` is called, it converts the `tools` map to permissi
       "description": "Read-only reviewer. Validates against locked requirements. Writes approval to .opencode/harness/reviews/. Uses gate-check tool.",
       "permission": {
         "edit": {
-          "*": "deny",
+          "*": "ask",
           ".opencode/harness/reviews/*.json": "allow"
         },
         "bash": {
-          "*": "deny",
+          "*": "ask",
           "bun test *": "allow"
         },
-        "question": "deny",
+        "question": "ask",
         "skill": "allow",
         "read": "allow",
         "grep": "allow"

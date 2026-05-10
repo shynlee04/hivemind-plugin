@@ -189,7 +189,7 @@ Configure which subagents an orchestrator can invoke:
       "mode": "primary",
       "permission": {
         "task": {
-          "*": "deny",
+          "*": "ask",
           "explore": "allow",
           "general": "allow",
           "researcher-*": "allow"
@@ -199,7 +199,7 @@ Configure which subagents an orchestrator can invoke:
   }
 }
 ```
-Last matching rule wins. When set to `deny`, the subagent is removed from the Task tool description entirely. [1-cite-16](#1-cite-16) 
+Last matching rule wins. When set to `ask`, the subagent is removed from the Task tool description entirely. [1-cite-16](#1-cite-16) 
 
 ### 2.4 Batch Tool -- Parallel Tool Execution Within a Single Agent
 
@@ -601,7 +601,7 @@ todowrite({ todos: [
       "mode": "subagent",
       "description": "Deep codebase researcher. Use for comprehensive architecture analysis, cross-repo dependency tracing, and synthesis document generation.",
       "permission": {
-        "edit": { "*": "deny", ".opencode/research/*": "allow" },
+        "edit": { "*": "ask", ".opencode/research/*": "allow" },
         "task": { "explore": "allow" }
       }
     }

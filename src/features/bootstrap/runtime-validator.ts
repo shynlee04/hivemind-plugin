@@ -238,7 +238,7 @@ export function validateInheritanceChain(primitives: PrimitiveMap): InheritanceC
 
     for (const [key, agentValue] of Object.entries(agentPerms)) {
       const globalValue = globalPerms[key]
-      if (agentBroadensGlobalDeny(globalValue, agentValue)) {
+      if (agentBroadensGlobalask(globalValue, agentValue)) {
         broken.push({
           agent: agentName,
           permission: key,
@@ -257,16 +257,16 @@ export function validateInheritanceChain(primitives: PrimitiveMap): InheritanceC
 }
 
 /**
- * Checks whether an agent-specific permission attempts to widen a global deny.
+ * Checks whether an agent-specific permission attempts to widen a global ask.
  * OpenCode agents may safely narrow globally allowed tools, but they must not
- * override a top-level deny with an allow.
+ * override a top-level ask with an allow.
  *
  * @param globalValue - Permission value from opencode.json.
  * @param agentValue - Permission value from agent frontmatter.
- * @returns True when the agent value broadens a global deny.
+ * @returns True when the agent value broadens a global ask.
  */
-function agentBroadensGlobalDeny(globalValue: unknown, agentValue: unknown): boolean {
-  return globalValue === "deny" && agentValue !== "deny"
+function agentBroadensGlobalask(globalValue: unknown, agentValue: unknown): boolean {
+  return globalValue === "ask" && agentValue !== "ask"
 }
 
 // ---------------------------------------------------------------------------

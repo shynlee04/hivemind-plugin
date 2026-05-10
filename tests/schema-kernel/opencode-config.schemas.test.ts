@@ -58,10 +58,10 @@ const validCmdFile = () => ({
 })
 
 // Permission fixtures
-const validPermRule = () => ({ permission: "bash", action: "deny" as const, pattern: "rm -rf *" })
-const PK = ["read","edit","glob","grep","bash","task","skill","lsp","question","webfetch","websearch","codesearch","external_directory","doom_loop"]
+const validPermRule = () => ({ permission: "bash", action: "ask" as const, pattern: "rm -rf *" })
+const PK = ["read", "edit", "glob", "grep", "bash", "task", "skill", "lsp", "question", "webfetch", "websearch", "codesearch", "external_directory", "doom_loop"]
 const validPatternBased = () => Object.fromEntries(PK.map(k =>
-  [k, k === "bash" ? { "*": "ask", "git *": "allow" } : k === "external_directory" || k === "doom_loop" ? { "*": "deny" } : { "*": "allow" }]
+  [k, k === "bash" ? { "*": "ask", "git *": "allow" } : k === "external_directory" || k === "doom_loop" ? { "*": "ask" } : { "*": "allow" }]
 ))
 
 // Skill fixtures
@@ -193,7 +193,7 @@ describe("CommandFileSchema", () => {
 describe("PermissionActionSchema", () => {
   it('accepts "allow"', () => expect(sp(PermissionActionSchema, "allow").success).toBe(true))
   it('accepts "ask"', () => expect(sp(PermissionActionSchema, "ask").success).toBe(true))
-  it('accepts "deny"', () => expect(sp(PermissionActionSchema, "deny").success).toBe(true))
+  it('accepts "ask"', () => expect(sp(PermissionActionSchema, "ask").success).toBe(true))
   it('rejects "block"', () => expect(sp(PermissionActionSchema, "block").success).toBe(false))
   it('rejects "grant"', () => expect(sp(PermissionActionSchema, "grant").success).toBe(false))
   it("rejects empty string", () => expect(sp(PermissionActionSchema, "").success).toBe(false))
@@ -230,7 +230,7 @@ describe("PatternBasedPermissionSchema", () => {
     expect(sp(PatternBasedPermissionSchema, { "future-permission": { "*": "allow" } }).success).toBe(true)
   })
   it("accepts partial keys (no longer requires all keys)", () => {
-    expect(sp(PatternBasedPermissionSchema, { bash: { "*": "deny" } }).success).toBe(true)
+    expect(sp(PatternBasedPermissionSchema, { bash: { "*": "ask" } }).success).toBe(true)
   })
 })
 

@@ -60,7 +60,7 @@
 
 ### 2.1 Agent Permission Entries
 
-[PROBE: `rg -n "skill" .opencode/agents/*.md | grep -i "permission\|allow\|deny"`] → [RESULT: 18 entries across 10 agents] [DATE: 2026-04-23]
+[PROBE: `rg -n "skill" .opencode/agents/*.md | grep -i "permission\|allow\|ask"`] → [RESULT: 18 entries across 10 agents] [DATE: 2026-04-23]
 
 | Agent | Skill Permission | Type |
 |-------|-----------------|------|
@@ -179,7 +179,7 @@ Third-party pattern sources:
 | 3 | 5 skills with evals | `ls .opencode/skills/*/evals/ \| wc -l` per skill | 5 | 2026-04-23 |
 | 4 | 3 retired skills | `ls .hivefiver-meta-builder/skills-lab/retired/` | repomix-exploration-guide, repomix-explorer, research-operations | 2026-04-23 |
 | 5 | 78 GSD workflows | `ls .opencode/get-shit-done/workflows/*.md \| wc -l` | 78 | 2026-04-23 |
-| 6 | 3 wildcard skill permissions | `rg -n "skill" .opencode/agents/*.md \| grep -i "permission\|allow\|deny"` | build.md, critic.md, researcher.md | 2026-04-23 |
+| 6 | 3 wildcard skill permissions | `rg -n "skill" .opencode/agents/*.md \| grep -i "permission\|allow\|ask"` | build.md, critic.md, researcher.md | 2026-04-23 |
 | 7 | 10 agents with skill permissions | Same probe | 10 agents | 2026-04-23 |
 | 8 | `coordinating-loop` is largest skill | `wc -l` per skill | 387 LOC | 2026-04-23 |
 | 9 | `opencode-platform-reference` has 20 refs | `ls .opencode/skills/opencode-platform-reference/references/ \| wc -l` | 20 | 2026-04-23 |

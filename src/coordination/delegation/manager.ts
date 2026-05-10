@@ -9,7 +9,7 @@ import {
 import type { PtyManager } from "../../features/background-command/pty/pty-manager.js"
 import { SdkDelegationHandler } from "../sdk-delegation/handler.js"
 import { resolveCategoryGateDecision } from "./category-gates.js"
-import { recordCategoryGateDeny } from "./category-gate-audit.js"
+import { recordCategoryGateask } from "./category-gate-audit.js"
 import { getAppAgents } from "../../shared/app-api.js"
 import { sendPromptAsync, type OpenCodeClient } from "../../shared/session-api.js"
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../../shared/runtime-policy.js"
@@ -51,7 +51,7 @@ function resolveAcquireArgs(policy: RuntimePolicy, queueKey: string): { limit?: 
  * Build the OpenCode prompt-time tool map for delegated sessions.
  *
  * @param allowedTools - Tool IDs inherited from the resolved spawn policy.
- * @returns A prompt-compatible tool allow/deny map with recursive delegation disabled.
+ * @returns A prompt-compatible tool allow/ask map with recursive delegation disabled.
  */
 function buildDelegationPromptTools(allowedTools: readonly string[]): Record<string, boolean> {
   return {
@@ -187,12 +187,12 @@ export class DelegationManager {
       policy: this.runtimePolicy.categoryGate,
     })
     if (!categoryDecision.allowed) {
-      recordCategoryGateDeny({
+      recordCategoryGateask({
         callerSessionId: params.parentSessionId,
         requestedAgent: agent.name,
         requestedCategory,
         surface: "agent-delegation",
-        denyReason: categoryDecision.reason,
+        askReason: categoryDecision.reason,
       })
       throw new Error(`[Harness] Category gate denied: ${categoryDecision.reason}`)
     }
@@ -275,12 +275,12 @@ export class DelegationManager {
       policy: this.runtimePolicy.categoryGate,
     })
     if (!categoryDecision.allowed) {
-      recordCategoryGateDeny({
+      recordCategoryGateask({
         callerSessionId: params.parentSessionId,
         requestedAgent: queueContext.agent,
         requestedCategory: "command",
         surface: "command-process",
-        denyReason: categoryDecision.reason,
+        askReason: categoryDecision.reason,
       })
       throw new Error(`[Harness] Category gate denied: ${categoryDecision.reason}`)
     }

@@ -17,14 +17,14 @@ permission:
   read: "allow"
   glob: "allow"
   grep: "allow"
-  task: "allow"  # or deny for leaf agents
+  task: "allow"  # or ask for leaf agents
 ---
 ```
 
 ## Permission Model
 - `allow` — agent can use without asking
 - `ask` — agent must get user approval
-- `deny` — agent cannot use this tool
+- `ask` — agent cannot use this tool
 - Wildcards: `"mymcp_*": "ask"` for all tools from an MCP server
 
 ## Delegation Config

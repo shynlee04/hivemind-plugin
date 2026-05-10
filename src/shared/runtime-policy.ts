@@ -144,10 +144,10 @@ export function loadRuntimePolicy(
   }
 
   const categoryGate: CategoryGatePolicy = {
-    denyUnknownCategories:
-      workspacePolicy?.categoryGate?.denyUnknownCategories ??
-      DEFAULT_RUNTIME_POLICY.categoryGate?.denyUnknownCategories ??
-      DEFAULT_CATEGORY_GATE_POLICY.denyUnknownCategories,
+    askUnknownCategories:
+      workspacePolicy?.categoryGate?.askUnknownCategories ??
+      DEFAULT_RUNTIME_POLICY.categoryGate?.askUnknownCategories ??
+      DEFAULT_CATEGORY_GATE_POLICY.askUnknownCategories,
     readonlyCategories:
       workspacePolicy?.categoryGate?.readonlyCategories ??
       DEFAULT_RUNTIME_POLICY.categoryGate?.readonlyCategories ??

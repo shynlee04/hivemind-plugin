@@ -194,11 +194,11 @@ export type PermissionRequest = z.infer<typeof PermissionRequestSchema>
 **PermissionOutput** — Matches OpenCode's actual hook output type:
 
 ```typescript
-// OpenCode's real output: { status: "ask" | "deny" | "allow" }
+// OpenCode's real output: { status: "ask" | "ask" | "allow" }
 // Note: no 'message' field exists in the real API. Denial messages must be
 // communicated via prompt-inject.ts system prompt injection instead.
 interface PermissionOutput {
-  status: 'allow' | 'deny' | 'ask'
+  status: 'allow' | 'ask' | 'ask'
 }
 ```
 
@@ -332,7 +332,7 @@ Registers 3 hooks and 1 custom tool. Uses kernel for all state reads. No busines
 
 **Hook:** `permission.ask`
 
-This is the **core runtime gating mechanism**. It intercepts every permission request and decides whether to allow or deny based on the current gate state.
+This is the **core runtime gating mechanism**. It intercepts every permission request and decides whether to allow or ask based on the current gate state.
 
 ```typescript
 import type { Plugin } from '@opencode-ai/plugin'
@@ -379,13 +379,13 @@ export function createPermissionGate(directory: string) {
       if (isToolAllowedForPhase(request, effectivePhase, gateResult, requirements)) {
         output.status = 'allow'
       } else {
-        output.status = 'deny'
+        output.status = 'ask'
         // Note: no message field in real OpenCode API — denial context is
         // communicated via prompt-inject.ts system prompt injection
       }
     } catch {
-      // State files missing or corrupted — deny
-      output.status = 'deny'
+      // State files missing or corrupted — ask
+      output.status = 'ask'
     }
   }
 }
@@ -748,15 +748,15 @@ No dynamic permission injection or agent file generation is needed.
 ```json
 {
   "edit": {
-    "*": "deny",
+    "*": "ask",
     ".hivemind/reviews/*.json": "allow"
   },
   "bash": {
-    "*": "deny",
+    "*": "ask",
     "bun test *": "allow",
     "npm test *": "allow"
   },
-  "question": "deny",
+  "question": "ask",
   "skill": "allow",
   "read": "allow",
   "grep": "allow"

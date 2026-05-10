@@ -75,7 +75,7 @@ The orchestrator is a `primary` agent with controlled `permission.task` rules. S
       "description": "Macro-level orchestrator. Coordinates checkpoint-gated pipeline via subagents.",
       "permission": {
         "task": {
-          "*": "deny",
+          "*": "ask",
           "onboarding-setup": "allow",
           "phase-worker": "allow",
           "gate-validator": "allow",
@@ -97,8 +97,8 @@ The orchestrator is a `primary` agent with controlled `permission.task` rules. S
       "mode": "subagent",
       "description": "Read-only validator. Runs TDD assertions and checks LSP diagnostics. Returns pass/fail.",
       "permission": {
-        "edit": "deny",
-        "write": "deny",
+        "edit": "ask",
+        "write": "ask",
         "bash": "allow",
         "read": "allow",
         "grep": "allow",
@@ -114,7 +114,7 @@ The orchestrator is a `primary` agent with controlled `permission.task` rules. S
 }
 ```
 
-The `permission.task` glob pattern on the orchestrator ensures it can only invoke its designated subagents — the `"*": "deny"` base rule blocks everything, then specific agents are allowed. This is enforced by `PermissionNext.evaluate("task", agentName, ruleset)`. [0-cite-4](#0-cite-4) 
+The `permission.task` glob pattern on the orchestrator ensures it can only invoke its designated subagents — the `"*": "ask"` base rule blocks everything, then specific agents are allowed. This is enforced by `PermissionNext.evaluate("task", agentName, ruleset)`. [0-cite-4](#0-cite-4) 
 
 ---
 

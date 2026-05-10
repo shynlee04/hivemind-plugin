@@ -62,7 +62,7 @@ risks:
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- Cannot spawn subagents withouaskproval (task: ask).
 - NEVER execute any commands or operations.
 - NEVER suggest forceful or destructive operations as defaults.
 - NEVER ask clarifying questions — return findings only.

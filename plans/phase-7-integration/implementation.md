@@ -147,29 +147,29 @@ steps: 50
 instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   read:
-    "*": deny
+    "*": ask
     "*.md": allow
     "*.json": allow
     "*.ts": allow
     "*.yaml": allow
     "*.yml": allow
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
+    "*": ask
     ".opencode/**/*.md": allow
   bash:
-    "*": deny
+    "*": ask
   task:
-    "*": deny
+    "*": ask
   skill:
     "*": ask
     "brainstorming": allow
     "use-authoring-skills": allow
   glob: allow
   grep: allow
-  webfetch: deny
-  websearch: deny
+  webfetch: ask
+  websearch: ask
 ---
 ```
 
@@ -206,22 +206,22 @@ permission:
     "*.ts": allow
     "*.json": allow
   edit:
-    "*": deny
+    "*": ask
     "**/specs/**": allow
     "**/.opencode/**": allow
   write:
-    "*": deny
+    "*": ask
     "**/specs/**": allow
     "**/.opencode/**": allow
-  bash: deny
-  task: deny
+  bash: ask
+  task: ask
   skill:
-    "*": deny
+    "*": ask
     "use-authoring-skills": allow
     "planning-with-files": allow
   glob: allow
   grep: allow
-  webfetch: deny
+  webfetch: ask
 ---
 ```
 
@@ -253,22 +253,22 @@ steps: 60
 instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/execution-loop.md"]
 permission:
   read: allow
-  edit: deny
-  write: deny
+  edit: ask
+  write: ask
   bash:
-    "*": deny
+    "*": ask
     "git status*": allow
     "git diff*": allow
     "git log*": allow
-  task: deny
-  delegate-task: deny
+  task: ask
+  delegate-task: ask
   skill:
-    "*": deny
+    "*": ask
     "agent-authorization": allow
     "use-authoring-skills": allow
   glob: allow
   grep: allow
-  webfetch: deny
+  webfetch: ask
 ---
 ```
 

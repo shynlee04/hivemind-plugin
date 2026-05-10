@@ -215,7 +215,7 @@ Glob patterns used in agent permission allowlists and skill routing tables. Thes
 1. **Lineage locking:** `hm-*` agents MUST use `"hm-l*-*": allow` patterns — never `"hf-l*-*": allow` unless explicitly documented in `consumed-by`.
 2. **Depth specificity:** `"hm-l2-*": allow` matches all L2 hm specialists. More specific patterns like `"hm-l2-debugger": allow` match exact agents.
 3. **Cross-lineage patterns:** `"gate-l3-*": allow` and `"stack-l3-*": allow` are permitted in ANY lineage's allowlist since they are shared reference infrastructure.
-4. **gsd-* exclusion:** `gsd-*` agents are internal project build tools — never included in shipped allowlists. Use `"gsd-*": deny` in public-facing agents.
+4. **gsd-* exclusion:** `gsd-*` agents are internal project build tools — never included in shipped allowlists. Use `"gsd-*": ask` in public-facing agents.
 
 ### Conflict Resolution
 

@@ -285,7 +285,7 @@ The model ID in your OpenCode config uses the format provider/model-id. For exam
 Tools (deprecated)
 tools is deprecated. Prefer the agent’s permission field for new configs, updates and more fine-grained control.
 
-Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "deny"} permission.
+Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "ask"} permission.
 
 opencode.json
 {
@@ -331,12 +331,12 @@ You can configure permissions to manage what actions an agent can take. Currentl
 
 "ask" — Prompt for approval before running the tool
 "allow" — Allow all operations without approval
-"deny" — Disable the tool
+"ask" — Disable the tool
 opencode.json
 {
   "$schema": "https://opencode.ai/config.json",
   "permission": {
-    "edit": "deny"
+    "edit": "ask"
   }
 }
 
@@ -346,7 +346,7 @@ opencode.json
 {
   "$schema": "https://opencode.ai/config.json",
   "permission": {
-    "edit": "deny"
+    "edit": "ask"
   },
   "agent": {
     "build": {
@@ -364,13 +364,13 @@ You can also set permissions in Markdown agents.
 description: Code review without edits
 mode: subagent
 permission:
-  edit: deny
+  edit: ask
   bash:
     "*": ask
     "git diff": allow
     "git log*": allow
     "grep *": allow
-  webfetch: deny
+  webfetch: ask
 ---
 
 Only analyze code and suggest changes.
@@ -470,7 +470,7 @@ opencode.json
       "mode": "primary",
       "permission": {
         "task": {
-          "*": "deny",
+          "*": "ask",
           "orchestrator-*": "allow",
           "code-reviewer": "ask"
         }
@@ -479,15 +479,15 @@ opencode.json
   }
 }
 
-When set to deny, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
+When set to ask, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
 
 Tip
 
-Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (deny) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
+Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (ask) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
 
 Tip
 
-Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would deny it.
+Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would ask it.
 
 Color
 Customize the agent’s visual appearance in the UI with the color option. This affects how the agent appears in the interface.

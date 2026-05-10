@@ -24,16 +24,16 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
     hm-l2-reviewer: allow
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

@@ -141,7 +141,7 @@ The most significant change: `hf-prompter.md` was completely rebuilt from its ol
 | Format | Free-text markdown with H2 headings | XML-tagged body with 16 tags |
 | Frontmatter | `name: "hf-prompter"`, `mode: all`, `temperature: 0.3`, missing depth/lineage/domain | `mode: subagent`, `temperature: 0.2` (creative exception), `depth: L2`, `lineage: hf`, `domain: Prompt Engineering` |
 | Body | Tier system, Builder/Tester modes, 10 core patterns, anti-patterns | Same content wrapped in `<role>`, `<task>`, `<scope>`, `<expected_output>`, `<iron_law>`, `<output_contract>`, `<behavioral_contract>`, `<execution_flow>`, etc. |
-| Permission | Minimal: `read/edit/write/bash: allow` | Full deny-all base: task: deny, delegate-task: deny, scoped bash access |
+| Permission | Minimal: `read/edit/write/bash: allow` | Full ask-all base: task: ask, delegate-task: ask, scoped bash access |
 | Skill loading | Inline instructions | Structured `<skill_loading>` with mandatory/on-demand/never categories |
 
 All original content (tier system, 10 core patterns, 4 workflow templates, Builder/Tester modes, quality criteria, anti-patterns, daily notes protocol) was preserved and enriched within XML tags.

@@ -244,7 +244,7 @@ export const PTYPlugin = async ({ client, directory }: PluginContext): Promise<P
 ### 5.2 Permission Model (`permissions.ts`)
 
 - Checks command against `permission.bash` patterns (glob matching)
-- "ask" permissions treated as "deny" (plugins can't trigger UI prompts)
+- "ask" permissions treated as "ask" (plugins can't trigger UI prompts)
 - `external_directory` with "ask" treated as "allow"
 - Workdir permission checked separately
 

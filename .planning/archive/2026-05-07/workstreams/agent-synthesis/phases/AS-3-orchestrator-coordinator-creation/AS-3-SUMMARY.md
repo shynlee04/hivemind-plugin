@@ -22,7 +22,7 @@ decisions:
   - D-AS3-03: hf-orchestrator has FLEXIBLE cross-lineage access to hm-* skills (justified for codebase investigation during meta-concept creation)
   - D-AS3-04: hf-coordinator may dispatch hm-* L2 specialists for codebase investigation (documented justification required)
   - D-AS3-05: All 4 agents include all 6 optional XML tags (behavioral_contract, anti_patterns, execution_flow, delegation_boundary, skill_loading, session_continuity)
-  - D-AS3-06: hm-* agents explicitly deny hf-* in both task and skill permissions (STRICT binding)
+  - D-AS3-06: hm-* agents explicitly ask hf-* in both task and skill permissions (STRICT binding)
 ---
 
 # AS-3 Summary: Orchestrator & Coordinator Creation
@@ -106,8 +106,8 @@ decisions:
 
 | Agent | Lineage | hf-* in skills | hf-* in permissions | Verdict |
 |-------|---------|----------------|--------------------|---------|
-| hm-orchestrator | hm (STRICT) | 0 | deny only | PASS |
-| hm-coordinator | hm (STRICT) | 0 | deny only | PASS |
+| hm-orchestrator | hm (STRICT) | 0 | ask only | PASS |
+| hm-coordinator | hm (STRICT) | 0 | ask only | PASS |
 | hf-orchestrator | hf (FLEXIBLE) | N/A | hm-* allowed | PASS |
 | hf-coordinator | hf (FLEXIBLE) | N/A | hm-* allowed | PASS |
 
@@ -129,7 +129,7 @@ decisions:
 3. **D-AS3-03:** hf FLEXIBLE cross-lineage access — justified when meta-concept creation requires codebase understanding
 4. **D-AS3-04:** hf-coordinator may dispatch hm-* L2 specialists — documented justification required per dispatch
 5. **D-AS3-05:** All 6 optional XML tags included in all 4 agents — sets quality bar for subsequent phases
-6. **D-AS3-06:** hm-* agents explicitly deny hf-* in both task delegation and skill loading (STRICT binding enforced)
+6. **D-AS3-06:** hm-* agents explicitly ask hf-* in both task delegation and skill loading (STRICT binding enforced)
 
 ---
 

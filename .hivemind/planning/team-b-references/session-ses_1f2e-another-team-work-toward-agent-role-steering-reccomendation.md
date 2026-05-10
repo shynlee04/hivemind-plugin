@@ -832,7 +832,7 @@ return {
 | `state-machine.ts` (L1-426) | `DelegationStateMachine` — in-memory store, terminal transitions, timers |
 | `types.ts` (L1-140) | Delegation types: `Delegation`, `DelegationResult`, `DelegationStatus`, constants |
 | `category-gates.ts` | Category gate policy enforcement |
-| `category-gate-audit.ts` | Category gate deny audit recording |
+| `category-gate-audit.ts` | Category gate ask audit recording |
 
 **Subagent awareness of their role:**
 
@@ -995,7 +995,7 @@ The OpenCode plugin system (`@opencode-ai/plugin`) provides hooks as the primary
 | `tool.execute.before` | `(input, output) => Promise<void>` | Mutate tool args before execution (runs AFTER schema validation) | Indirectly — can alter tool inputs |
 | `tool.execute.after` | `(input, output) => Promise<void>` | Mutate tool output/title/metadata after execution | **Yes — can inject metadata into tool results** |
 | `tool.definition` | `(input, output) => Promise<void>` | Modify tool description/parameters seen by LLM | Indirectly — changes what LLM sees |
-| `permission.ask` | `(input, output) => Promise<void>` | Auto-allow/deny/ask for permissions | No |
+| `permission.ask` | `(input, output) => Promise<void>` | Auto-allow/ask/ask for permissions | No |
 | `shell.env` | `(input, output) => Promise<void>` | Inject env vars into every shell execution | No (env only) |
 | `command.execute.before` | `(input, output) => Promise<void>` | Before command execution | Indirectly |
 | `experimental.chat.messages.transform` | `(input, output) => Promise<void>` | **Transform the entire message array** before LLM sees it | **Yes — primary message injection surface** |

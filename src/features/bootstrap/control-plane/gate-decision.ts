@@ -20,10 +20,10 @@ export enum GateDecisionType {
   WARN = "warn",
   /** Defer decision — needs more context or async resolution. */
   DEFER = "defer",
-  /** Block the message — hard deny from a blocking gate. */
+  /** Block the message — hard ask from a blocking gate. */
   BLOCK = "block",
-  /** Deny with explicit reason — hard deny from policy enforcement. */
-  DENY = "deny",
+  /** ask with explicit reason — hard ask from policy enforcement. */
+  ask = "ask",
 }
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ export interface GateDecisionRecord {
  * ```
  */
 export function isBlockingDecision(decision: GateDecisionType): boolean {
-  return decision === GateDecisionType.BLOCK || decision === GateDecisionType.DENY
+  return decision === GateDecisionType.BLOCK || decision === GateDecisionType.ask
 }
 
 /**
@@ -92,7 +92,7 @@ export function classifyGateDecision(record: GateDecisionRecord): {
       const filePath = typeof toolArgs?.path === "string" ? toolArgs.path : ""
       if (isStateFilePath(filePath)) {
         return {
-          decision: GateDecisionType.DENY,
+          decision: GateDecisionType.ask,
           reason: `[Harness] Direct writes to state files are forbidden (Q6: manualStateWritesForbidden). Path: ${filePath}`,
           blocking: true,
         }

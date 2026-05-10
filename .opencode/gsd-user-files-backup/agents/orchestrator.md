@@ -4,22 +4,22 @@ description: Phase-gated workflow specialist for multi-step orchestration. Manag
 mode: subagent
 permission:
   read:
-    "*": deny
+    "*": ask
     "*.md": allow
     "*.json": allow
   edit:
-    "*": deny
+    "*": ask
     "*.md": allow
   write:
-    "*": deny
+    "*": ask
   bash:
-    "*": deny
+    "*": ask
     "git status*": allow
     "git diff*": allow
     "git log*": allow
   task: allow
   skill:
-    "*": deny
+    "*": ask
     "hm-*": allow
 ---
 <!-- Hierarchy: This agent is a PHASE-GATED WORKFLOW SPECIALIST under coordinator.md. It manages sequential stage delivery only. -->

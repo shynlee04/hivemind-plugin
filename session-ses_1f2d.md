@@ -954,7 +954,7 @@ Dispatching Wave 1 — all 3 detectives in parallel:
 
 **Error:**
 ```
-The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{"permission":"*","action":"allow","pattern":"*"},{"permission":"task","action":"allow","pattern":"*"},{"permission":"task","pattern":"*","action":"deny"},{"permission":"task","pattern":"hm-l2-*","action":"allow"}]
+The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{"permission":"*","action":"allow","pattern":"*"},{"permission":"task","action":"allow","pattern":"*"},{"permission":"task","pattern":"*","action":"ask"},{"permission":"task","pattern":"hm-l2-*","action":"allow"}]
 ```
 
 **Tool: task**
@@ -970,7 +970,7 @@ The user has specified a rule which prevents you from using this specific tool c
 
 **Error:**
 ```
-The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{"permission":"*","action":"allow","pattern":"*"},{"permission":"task","action":"allow","pattern":"*"},{"permission":"task","pattern":"*","action":"deny"},{"permission":"task","pattern":"hm-l2-*","action":"allow"}]
+The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{"permission":"*","action":"allow","pattern":"*"},{"permission":"task","action":"allow","pattern":"*"},{"permission":"task","pattern":"*","action":"ask"},{"permission":"task","pattern":"hm-l2-*","action":"allow"}]
 ```
 
 **Tool: task**
@@ -986,7 +986,7 @@ The user has specified a rule which prevents you from using this specific tool c
 
 **Error:**
 ```
-The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{"permission":"*","action":"allow","pattern":"*"},{"permission":"task","action":"allow","pattern":"*"},{"permission":"task","pattern":"*","action":"deny"},{"permission":"task","pattern":"hm-l2-*","action":"allow"}]
+The user has specified a rule which prevents you from using this specific tool call. Here are some of the relevant rules [{"permission":"*","action":"allow","pattern":"*"},{"permission":"task","action":"allow","pattern":"*"},{"permission":"task","pattern":"*","action":"ask"},{"permission":"task","pattern":"hm-l2-*","action":"allow"}]
 ```
 
 ---
@@ -1195,7 +1195,7 @@ The OpenCode `Hooks` interface supports these hook names:
 | `shell.env` | Yes (mutable env) | Inject shell environment variables |
 | `experimental.session.compacting` | Yes (mutable context/prompt) | Preserve context across compaction |
 | `experimental.compaction.autocontinue` | Yes | Control auto-continue after compaction |
-| `permission.ask` | Yes (mutable status) | Auto-approve/deny permission requests |
+| `permission.ask` | Yes (mutable status) | Auto-approve/ask permission requests |
 | `chat.params` | Yes (mutable temperature, etc.) | Per-agent parameter injection |
 | `chat.headers` | Yes | HTTP header injection |
 | `command.execute.before` | Yes | Pre-command execution hook |
@@ -1251,7 +1251,7 @@ The following SDK hooks exist but are **NOT currently used** by the harness:
 | Available Hook | Status in Harness | Use for Agent Steering |
 |----------------|-------------------|----------------------|
 | `tool.definition` | **NOT registered** | Could dynamically modify tool descriptions per-session |
-| `permission.ask` | **NOT registered** | Could auto-approve/deny based on behavioral profile |
+| `permission.ask` | **NOT registered** | Could auto-approve/ask based on behavioral profile |
 | `chat.params` | **NOT registered** | Could set temperature/model per agent type |
 | `chat.headers` | **NOT registered** | HTTP header injection |
 | `command.execute.before` | **NOT registered** | Pre-command interception |
@@ -1335,7 +1335,7 @@ The prompt enhancement pipeline has these stages:
 
 2. **`chat.params` hook NOT registered** — No per-agent temperature/model injection. The `AgentDefaults` are set in `src/plugin.ts` but via static config, not via the `chat.params` hook which could dynamically override per-request.
 
-3. **`permission.ask` hook NOT registered** — No auto-approve/deny based on behavioral profile or delegation depth. All permissions go through default user-ask flow.
+3. **`permission.ask` hook NOT registered** — No auto-approve/ask based on behavioral profile or delegation depth. All permissions go through default user-ask flow.
 
 4. **Pipeline phases `bridge`, `investigation`, `clarification`, `repackage`, `report` are NOT implemented** — Only `skim` and `analyze` stages have tool implementations. `EnhancedPromptOutputSchema` and `PipelineStateSchema` exist but no orchestrator chains them.
 
@@ -1351,7 +1351,7 @@ The prompt enhancement pipeline has these stages:
 
 2. **For prompt pipeline completion**: The schema contracts exist for full pipeline (skim→bridge→investigation→clarification→repackage→report) but need a pipeline orchestrator to chain them.
 
-3. **For agent permission control**: Register `permission.ask` hook to auto-approve trusted operations (`.hivemind/` writes) and auto-deny budget-exhausted sessions.
+3. **For agent permission control**: Register `permission.ask` hook to auto-approve trusted operations (`.hivemind/` writes) and auto-ask budget-exhausted sessions.
 
 4. **The `chat.params` hook is the missing piece for temperature-per-agent** — Currently `AGENT_DEFAULTS` in plugin.ts are static; `chat.params` could dynamically set temperature based on `getBehavioralProfile()` and delegation depth.
 </task_result>
@@ -1542,7 +1542,7 @@ delegate-task tool call
 DelegationManager.dispatch()  (manager.ts:163)
     ├── resolveNestingDepth()    :156    → max 3 levels
     ├── validateAgent()          :425    → verify agent exists
-    ├── resolveCategoryGateDecision()    → deny/allow
+    ├── resolveCategoryGateDecision()    → ask/allow
     ├── buildDelegationQueueKey()        → concurrency routing
     ├── semaphore.acquire()              → concurrency limit
     ├── spawnDelegatedSession()  :210    → SDK session.create()
@@ -1773,7 +1773,7 @@ DelegationManager.recoverPending()
 | `src/coordination/delegation/manager.ts` | 500 | DelegationManager — dispatch, concurrency, agent validation, recovery |
 | `src/coordination/delegation/state-machine.ts` | 426 | DelegationStateMachine — in-memory store, transitions, timers, persistence |
 | `src/coordination/delegation/category-gates.ts` | — | Category gate decision logic |
-| `src/coordination/delegation/category-gate-audit.ts` | — | Category gate deny audit |
+| `src/coordination/delegation/category-gate-audit.ts` | — | Category gate ask audit |
 | `src/coordination/completion/detector.ts` | 157 | CompletionDetector — dual-signal detection (events + message stability) |
 | `src/coordination/completion/notification-handler.ts` | 238 | Parent notification delivery + pending queue |
 | `src/coordination/sdk-delegation/handler.ts` | 324 | SdkDelegationHandler — adaptive polling, result extraction, recovery |

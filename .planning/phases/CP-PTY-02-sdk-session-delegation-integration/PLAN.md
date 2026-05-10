@@ -313,7 +313,7 @@ client.session.children({ path: { id: parentSessionId } })
    - Test: Category gate denies unknown category before session create.
    - Test: Category gate denies review category with write-capable tools.
    - Test: Category gate allows command-process category.
-   - Test: Category gate denial records audit entry via `recordCategoryGateDeny`.
+   - Test: Category gate denial records audit entry via `recordCategoryGateask`.
    - Test: Nesting depth exceeded → throws `[Harness] Maximum delegation nesting depth`.
    - Test: Agent validation failure → throws `[Harness] Invalid agent`.
    - Test: Agent validation graceful degradation when SDK returns agents with missing fields.

@@ -18,7 +18,7 @@ affects:
   - AS-8 (body enrichment — these are already fully enriched)
 tech_stack:
   added: []
-  patterns: [L2 FLEXIBLE lineage, deny-all permissions, AQUAL compliance, 10+6 XML tags]
+  patterns: [L2 FLEXIBLE lineage, ask-all permissions, AQUAL compliance, 10+6 XML tags]
 key_files:
   created:
     - .hivefiver-meta-builder/agents-lab/active/refactoring/hf-auditor.md
@@ -54,7 +54,7 @@ Three new hf-* FLEXIBLE lineage L2 subagents were created to fill gaps in the hf
 All 3 agents follow the exact format established by `hf-agent-builder.md` (the reference L2 agent):
 
 - **YAML frontmatter:** 6 required fields (name, description, mode, temperature, depth, lineage) + domain + skills + instruction + permission block
-- **Permission model:** Deny-all base + explicit allow per tool category (AQUAL-05 ✓)
+- **Permission model:** ask-all base + explicit allow per tool category (AQUAL-05 ✓)
 - **XML body:** All 10 required tags present (role, depth, lineage, task, scope, context, expected_output, verification, iron_law, output_contract)
 - **Optional tags:** All 6 optional tags present (behavioral_contract, anti_patterns, execution_flow, delegation_boundary, skill_loading, session_continuity)
 - **Line count:** All under 500 (AQUAL-06 ✓): 364, 353, 390

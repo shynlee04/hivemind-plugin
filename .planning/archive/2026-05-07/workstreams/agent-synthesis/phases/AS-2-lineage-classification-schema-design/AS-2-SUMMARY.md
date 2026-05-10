@@ -8,7 +8,7 @@ provides: [LINEAGE-CLASSIFICATION-SCHEMA.md]
 affects: [AS-3, AS-4, AS-5, AS-6, AS-7, AS-8, AS-9, AS-10, AS-11]
 tech-stack:
   added: []
-  patterns: [YAML frontmatter schema, deny-all permission model, depth-based delegation, lineage-scoped skill binding, Zod validation pseudocode]
+  patterns: [YAML frontmatter schema, ask-all permission model, depth-based delegation, lineage-scoped skill binding, Zod validation pseudocode]
 key-files:
   created:
     - .planning/workstreams/agent-synthesis/phases/AS-2-lineage-classification-schema-design/LINEAGE-CLASSIFICATION-SCHEMA.md
@@ -19,7 +19,7 @@ decisions:
   - "D-AD-01 confirmed: hm STRICT (no hf-* skills), hf FLEXIBLE (hm-* skills allowed for codebase investigation)"
   - "D-AD-02 confirmed: 3-level depth (L0 Orchestrator, L1 Coordinator, L2 Specialist) with delegation rules (L0→L1→L2, no lateral/upward delegation)"
   - "Temperature ranges locked: L0=0.2-0.3, L1=0.1-0.2, L2=0.0-0.15 with creative exception allowance (0.15-0.25 for doc/UI L2 agents)"
-  - "Permission model: deny-all + explicit allow for all 6 depth×lineage combinations"
+  - "Permission model: ask-all + explicit allow for all 6 depth×lineage combinations"
   - "Agent naming convention: <lineage>-<domain>-<role> pattern (e.g., hm-research-detective, hf-agent-builder)"
   - "59-agent migration map finalized: 33 gsd→hm, 6 hivefiver→hf, 18 core→hm, 1 ghost, 1 unchanged"
   - "11 hm-* domains and 7 hf-* domains defined with task-to-domain routing rules"
@@ -35,7 +35,7 @@ metrics:
 
 # Phase AS-2 Plan Lineage Classification Schema Design: Summary
 
-**One-liner:** Formal 2-lineage taxonomy (hm-*/hf-*) with YAML frontmatter schema, 3-level depth definitions (L0/L1/L2), deny-all permission model templates for 6 depth×lineage combinations, domain routing rules with 18-domain mapping, machine-verifiable AQUAL validation rules, and complete 59-agent migration map — the definitive schema all subsequent agent authoring phases follow.
+**One-liner:** Formal 2-lineage taxonomy (hm-*/hf-*) with YAML frontmatter schema, 3-level depth definitions (L0/L1/L2), ask-all permission model templates for 6 depth×lineage combinations, domain routing rules with 18-domain mapping, machine-verifiable AQUAL validation rules, and complete 59-agent migration map — the definitive schema all subsequent agent authoring phases follow.
 
 ---
 
@@ -79,7 +79,7 @@ AS-2 executed the full GSD pipeline: Research → Plan → Execute → Verify �
 - 5 delegation rules, temperature guidelines with creative exceptions, permission scope by depth
 
 ### §4: Permission Model Templates
-- Deny-all + explicit allow principle enforced
+- ask-all + explicit allow principle enforced
 - 8 tool categories defined (Native Read, Native Write, Native Shell, Hivemind Delegate, Hivemind Status, Hivemind Session, Hivemind Prompt, MCP/Web, Skills)
 - 6 complete YAML templates: hm-L0, hm-L1, hm-L2, hf-L0, hf-L1, hf-L2
 - 5 permission inheritance rules

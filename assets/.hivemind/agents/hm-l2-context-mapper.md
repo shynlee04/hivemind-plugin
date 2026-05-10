@@ -15,9 +15,9 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
@@ -68,7 +68,7 @@ unstated_assumptions:
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- NEVER spawn subagents (task: ask).
 - NEVER ask clarifying questions — return findings only.
 - NEVER suggest fixes or recommend changes — report ground truth only.
 - NEVER assume a reference is valid without repository verification.

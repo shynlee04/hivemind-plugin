@@ -47,7 +47,7 @@ verified_by: hm-l2-researcher
 2. The delegation hierarchy is **shallow** — only L0→L1→L2 chains exist; L3 has no agents (skills only).
 3. **8 L2 agents have peer delegation capability** (task: specific hm-l2-*: allow), creating same-level loops.
 4. **15 agents have incomplete YAML** — missing domain, temperature, task block, or delegation fields.
-5. **No infinite loop risk** — all L2→L2 peer delegations are terminal (target has task: deny all).
+5. **No infinite loop risk** — all L2→L2 peer delegations are terminal (target has task: ask all).
 6. **Cross-lineage delegation is correctly asymmetric** — hm→hf is blocked at all levels; hf→hm is allowed at L0→hm-L1 and hf-L1→hm-L2.
 
 ---
@@ -77,54 +77,54 @@ verified_by: hm-l2-researcher
 
 | Source | Level | Domain | Can Delegate To (task allow) | delegate-task | Loop Type |
 |--------|-------|--------|------------------------------|---------------|-----------|
-| hm-l2-debugger | L2 | Debug | hm-l2-investigator | deny | Same-level, terminal |
-| hm-l2-executor | L2 | Implementation | hm-l2-reviewer | deny | Same-level, terminal |
-| hm-l2-planner | L2 | Planning | hm-l2-architect, hm-l2-strategist | deny | Same-level, terminal |
-| hm-l2-researcher | L2 | Research | hm-l2-synthesizer | deny | Same-level, terminal |
-| hm-l2-reviewer | L2 | Quality | hm-l2-validator | deny | Same-level, terminal |
+| hm-l2-debugger | L2 | Debug | hm-l2-investigator | ask | Same-level, terminal |
+| hm-l2-executor | L2 | Implementation | hm-l2-reviewer | ask | Same-level, terminal |
+| hm-l2-planner | L2 | Planning | hm-l2-architect, hm-l2-strategist | ask | Same-level, terminal |
+| hm-l2-researcher | L2 | Research | hm-l2-synthesizer | ask | Same-level, terminal |
+| hm-l2-reviewer | L2 | Quality | hm-l2-validator | ask | Same-level, terminal |
 
-**Loop termination:** All 5 peer-delegating L2 agents delegate to terminal L2 agents (task: deny all), preventing infinite loops.
+**Loop termination:** All 5 peer-delegating L2 agents delegate to terminal L2 agents (task: ask all), preventing infinite loops.
 
 #### L2 → Terminal (No Delegation)
 
 | Agent | Domain | task | delegate-task | Notes |
 |-------|--------|------|---------------|-------|
-| hm-l2-analyst | Quality | deny all | deny | Terminal |
-| hm-l2-architect | Planning | deny all | deny | Terminal |
-| hm-l2-assessor | Quality | deny all | deny | Terminal |
-| hm-l2-auditor | Quality | deny all | deny | Terminal |
-| hm-l2-brainstormer | Planning | deny all | deny | Terminal |
-| hm-l2-connector | Integration | deny all | deny | Terminal |
-| hm-l2-context-mapper | (missing) | deny all | (missing) | Terminal |
-| hm-l2-context-purifier | (missing) | deny all | (missing) | Terminal |
-| hm-l2-critic | (missing) | deny all | (missing) | Terminal |
-| hm-l2-curator | Quality | deny all | deny | Terminal |
-| hm-l2-ecologist | Ecosystem | deny all | deny | Terminal |
-| hm-l2-finisher | Execution | deny all | deny | Terminal |
-| hm-l2-general | (missing) | deny all | (missing) | Terminal |
-| hm-l2-guardian | Execution | deny all | deny | Terminal |
-| hm-l2-integrator | Implementation | deny all | deny | Terminal |
-| hm-l2-intent-loop | (missing) | deny all | (missing) | Terminal |
-| hm-l2-investigator | Debug | deny all | deny | Terminal |
-| hm-l2-mentor | Discovery | deny all | deny | Terminal |
-| hm-l2-meta-synthesis | (missing) | deny all | (missing) | Terminal |
-| hm-l2-operator | Execution | deny all | deny | Terminal |
-| hm-l2-optimizer | Implementation | deny all | deny | Terminal |
-| hm-l2-persistor | Phase Lifecycle | deny all | deny | Terminal |
-| hm-l2-phase-guardian | (missing) | deny all | deny | Terminal |
-| hm-l2-prompt-analyzer | (missing) | deny all | (missing) | Terminal |
-| hm-l2-prompt-repackager | (missing) | deny all | (missing) | Terminal |
-| hm-l2-prompt-skimmer | (missing) | deny all | (missing) | Terminal |
-| hm-l2-risk-assessor | (missing) | deny all | (missing) | Terminal |
-| hm-l2-router | Planning | deny all | deny | Terminal |
-| hm-l2-scout | Research | deny all | deny | Terminal |
-| hm-l2-spec-verifier | (missing) | deny all | (missing) | Terminal |
-| hm-l2-strategist | Planning | deny all | deny | Terminal |
-| hm-l2-synthesizer | Research | deny all | deny | Terminal |
-| hm-l2-technician | Technology | deny all | deny | Terminal |
-| hm-l2-test-router | (missing) | deny all | (missing) | Terminal |
-| hm-l2-validator | Quality | deny all | deny | Terminal |
-| hm-l2-writer | Documentation | deny all | deny | Terminal |
+| hm-l2-analyst | Quality | ask all | ask | Terminal |
+| hm-l2-architect | Planning | ask all | ask | Terminal |
+| hm-l2-assessor | Quality | ask all | ask | Terminal |
+| hm-l2-auditor | Quality | ask all | ask | Terminal |
+| hm-l2-brainstormer | Planning | ask all | ask | Terminal |
+| hm-l2-connector | Integration | ask all | ask | Terminal |
+| hm-l2-context-mapper | (missing) | ask all | (missing) | Terminal |
+| hm-l2-context-purifier | (missing) | ask all | (missing) | Terminal |
+| hm-l2-critic | (missing) | ask all | (missing) | Terminal |
+| hm-l2-curator | Quality | ask all | ask | Terminal |
+| hm-l2-ecologist | Ecosystem | ask all | ask | Terminal |
+| hm-l2-finisher | Execution | ask all | ask | Terminal |
+| hm-l2-general | (missing) | ask all | (missing) | Terminal |
+| hm-l2-guardian | Execution | ask all | ask | Terminal |
+| hm-l2-integrator | Implementation | ask all | ask | Terminal |
+| hm-l2-intent-loop | (missing) | ask all | (missing) | Terminal |
+| hm-l2-investigator | Debug | ask all | ask | Terminal |
+| hm-l2-mentor | Discovery | ask all | ask | Terminal |
+| hm-l2-meta-synthesis | (missing) | ask all | (missing) | Terminal |
+| hm-l2-operator | Execution | ask all | ask | Terminal |
+| hm-l2-optimizer | Implementation | ask all | ask | Terminal |
+| hm-l2-persistor | Phase Lifecycle | ask all | ask | Terminal |
+| hm-l2-phase-guardian | (missing) | ask all | ask | Terminal |
+| hm-l2-prompt-analyzer | (missing) | ask all | (missing) | Terminal |
+| hm-l2-prompt-repackager | (missing) | ask all | (missing) | Terminal |
+| hm-l2-prompt-skimmer | (missing) | ask all | (missing) | Terminal |
+| hm-l2-risk-assessor | (missing) | ask all | (missing) | Terminal |
+| hm-l2-router | Planning | ask all | ask | Terminal |
+| hm-l2-scout | Research | ask all | ask | Terminal |
+| hm-l2-spec-verifier | (missing) | ask all | (missing) | Terminal |
+| hm-l2-strategist | Planning | ask all | ask | Terminal |
+| hm-l2-synthesizer | Research | ask all | ask | Terminal |
+| hm-l2-technician | Technology | ask all | ask | Terminal |
+| hm-l2-test-router | (missing) | ask all | (missing) | Terminal |
+| hm-l2-validator | Quality | ask all | ask | Terminal |
+| hm-l2-writer | Documentation | ask all | ask | Terminal |
 
 ### 1.2 hf-* Lineage
 
@@ -151,23 +151,23 @@ verified_by: hm-l2-researcher
 
 | Agent | Domain | task | delegate-task | Notes |
 |-------|--------|------|---------------|-------|
-| hf-l2-agent-builder | Agent Building | deny all | deny | Terminal |
-| hf-l2-auditor | Primitive Auditing | deny all | deny | Terminal |
-| hf-l2-command-builder | Command Building | deny all | deny | Terminal |
-| hf-l2-meta-builder | Meta-Building | deny all | deny | Terminal |
-| hf-l2-prompter | Prompt Engineering | deny all | deny | Terminal (edit/write: allow) |
-| hf-l2-refactorer | Primitive Refactoring | deny all | deny | Terminal |
-| hf-l2-skill-builder | Skill Authoring | deny all | deny | Terminal |
-| hf-l2-synthesizer | Skill Synthesis | deny all | deny | Terminal |
-| hf-l2-tool-builder | Tool Building | deny all | deny | Terminal |
+| hf-l2-agent-builder | Agent Building | ask all | ask | Terminal |
+| hf-l2-auditor | Primitive Auditing | ask all | ask | Terminal |
+| hf-l2-command-builder | Command Building | ask all | ask | Terminal |
+| hf-l2-meta-builder | Meta-Building | ask all | ask | Terminal |
+| hf-l2-prompter | Prompt Engineering | ask all | ask | Terminal (edit/write: allow) |
+| hf-l2-refactorer | Primitive Refactoring | ask all | ask | Terminal |
+| hf-l2-skill-builder | Skill Authoring | ask all | ask | Terminal |
+| hf-l2-synthesizer | Skill Synthesis | ask all | ask | Terminal |
+| hf-l2-tool-builder | Tool Building | ask all | ask | Terminal |
 
 ### 1.3 Special Cases
 
 | Agent | Level | Mode | task | delegate-task | Notes |
 |-------|-------|------|------|---------------|-------|
-| hm-l2-build | L2 | primary | deny all | (missing) | Primary mode L2 — unusual; has GSD delegation in body text but task: deny in YAML |
-| hm-l2-conductor | L2 | primary | deny all | allow | Primary mode L2 — unusual; has delegate-task: allow but task: deny all |
-| hm-l2-test-router | L2 | primary | deny all | (missing) | Primary mode L2 — test agent |
+| hm-l2-build | L2 | primary | ask all | (missing) | Primary mode L2 — unusual; has GSD delegation in body text but task: ask in YAML |
+| hm-l2-conductor | L2 | primary | ask all | allow | Primary mode L2 — unusual; has delegate-task: allow but task: ask all |
+| hm-l2-test-router | L2 | primary | ask all | (missing) | Primary mode L2 — test agent |
 
 ---
 
@@ -186,7 +186,7 @@ verified_by: hm-l2-researcher
 
 | Source Agent | Level | Peer Target | Termination | Loop Depth |
 |-------------|-------|-------------|-------------|------------|
-| hm-l2-debugger | L2 | hm-l2-investigator | Target is terminal (task: deny) | 1 |
+| hm-l2-debugger | L2 | hm-l2-investigator | Target is terminal (task: ask) | 1 |
 | hm-l2-executor | L2 | hm-l2-reviewer | Target is terminal | 1 |
 | hm-l2-planner | L2 | hm-l2-architect, hm-l2-strategist | Both terminal | 1 |
 | hm-l2-researcher | L2 | hm-l2-synthesizer | Target is terminal | 1 |
@@ -201,18 +201,18 @@ verified_by: hm-l2-researcher
 | hf-l0-orchestrator | hf | hm-l1-coordinator | hm | hf→hm | YES |
 | hf-l0-orchestrator | hf | hm-l2-* | hm | hf→hm | YES |
 | hf-l1-coordinator | hf | hm-l2-* | hm | hf→hm | YES |
-| hm-l0-orchestrator | hm | hf-* | hf | hm→hf | NO (blocked: task deny) |
-| hm-l1-coordinator | hm | hf-* | hf | hm→hf | NO (blocked: task deny) |
+| hm-l0-orchestrator | hm | hf-* | hf | hm→hf | NO (blocked: task ask) |
+| hm-l1-coordinator | hm | hf-* | hf | hm→hf | NO (blocked: task ask) |
 
 ### 2.4 Loop Safety Analysis
 
 | Risk | Status | Evidence |
 |------|--------|----------|
-| Infinite delegation loop | IMPOSSIBLE | All L2 targets are terminal (task: deny all); max chain = 3 hops |
+| Infinite delegation loop | IMPOSSIBLE | All L2 targets are terminal (task: ask all); max chain = 3 hops |
 | Circular delegation | IMPOSSIBLE | No agent delegates back to its caller (hierarchy is strict tree) |
 | Cross-lineage escape | IMPOSSIBLE | hm→hf blocked at all levels; hf→hm only at L0/L1 |
 | L3 agent loop | N/A | L3 has no agents (skills only) — no delegation possible |
-| delegate-task without task allow | 2 agents | hm-l2-conductor has delegate-task: allow but task: deny all — can create delegation records but cannot dispatch |
+| delegate-task without task allow | 2 agents | hm-l2-conductor has delegate-task: allow but task: ask all — can create delegation records but cannot dispatch |
 
 ---
 
@@ -222,8 +222,8 @@ verified_by: hm-l2-researcher
 
 | # | Gap | Source | Target | Issue | Severity |
 |---|-----|--------|--------|-------|----------|
-| G1 | hm-l2-conductor cannot be dispatched by hm-l1-coordinator | hm-l1-coordinator task: hm-l2-*: allow | hm-l2-conductor task: deny all | conductor CAN be dispatched (L1→L2 works), BUT conductor CANNOT dispatch further (task: deny all + delegate-task: allow = orphan delegation capability) | BLOCKING |
-| G2 | hm-l2-build is mode:primary at L2 but has no skills, domain, or temperature | hm-l1-coordinator task: hm-l2-*: allow | hm-l2-build | build CAN be dispatched but has no domain/skills to specialize. Body text references GSD agents but task: deny all | BLOCKING |
+| G1 | hm-l2-conductor cannot be dispatched by hm-l1-coordinator | hm-l1-coordinator task: hm-l2-*: allow | hm-l2-conductor task: ask all | conductor CAN be dispatched (L1→L2 works), BUT conductor CANNOT dispatch further (task: ask all + delegate-task: allow = orphan delegation capability) | BLOCKING |
+| G2 | hm-l2-build is mode:primary at L2 but has no skills, domain, or temperature | hm-l1-coordinator task: hm-l2-*: allow | hm-l2-build | build CAN be dispatched but has no domain/skills to specialize. Body text references GSD agents but task: ask all | BLOCKING |
 | G3 | hm-l2-meta-synthesis missing domain, temperature, skills, instruction | hm-l1-coordinator task: hm-l2-*: allow | hm-l2-meta-synthesis | Agent exists but has no task, domain, temperature, skills, or instruction fields. Only has skill: allow block | BLOCKING |
 | G4 | hm-l2-test-router is mode:primary at L2 with no domain, temperature, or skills | hm-l1-coordinator | hm-l2-test-router | Test agent with minimal config. Missing domain, temp, edit, write, glob, grep, skills, instruction | BLOCKING |
 
@@ -236,7 +236,7 @@ verified_by: hm-l2-researcher
 | G7 | hm-l2-context-mapper uses instructions: (plural) | hm-l2-context-mapper | should be instruction: (singular); missing domain | HIGH |
 | G8 | hm-l2-context-purifier uses instructions: (plural) | hm-l2-context-purifier | should be instruction: (singular); missing domain, bash | HIGH |
 | G9 | hm-l2-critic uses instructions: (plural) | hm-l2-critic | should be instruction: (singular); missing domain | HIGH |
-| G10 | hm-l2-general missing fields | hm-l2-general | domain, task deny block, delegate-task, delegation-status, skills, instruction | HIGH |
+| G10 | hm-l2-general missing fields | hm-l2-general | domain, task ask block, delegate-task, delegation-status, skills, instruction | HIGH |
 | G11 | hm-l2-intent-loop missing domain | hm-l2-intent-loop | domain, delegate-task, delegation-status | HIGH |
 | G12 | hm-l2-prompt-analyzer uses instructions: (plural) | hm-l2-prompt-analyzer | should be instruction: (singular); missing domain, delegate-task, delegation-status | HIGH |
 | G13 | hm-l2-prompt-repackager uses instructions: (plural) | hm-l2-prompt-repackager | should be instruction: (singular); missing domain, delegate-task, delegation-status | HIGH |
@@ -251,8 +251,8 @@ verified_by: hm-l2-researcher
 | # | Gap | Agent | Missing Fields | Severity |
 |---|-----|-------|----------------|----------|
 | G19 | hm-l2-persistor references missing skill hm-l2-planning-persistence | hm-l2-persistor | Skill listed in skills array may not exist | MEDIUM |
-| G20 | hm-l2-general missing explicit delegation fields | hm-l2-general | delegate-task, delegation-status (implicit deny from lack of block) | MEDIUM |
-| G21 | hf-l2-prompter has skill: deny all (blocks hm-* skill loading) | hf-l2-prompter | skill: '*': deny with no exceptions — contradicts AGENTS.md FLEXIBLE lineage rules | MEDIUM |
+| G20 | hm-l2-general missing explicit delegation fields | hm-l2-general | delegate-task, delegation-status (implicit ask from lack of block) | MEDIUM |
+| G21 | hf-l2-prompter has skill: ask all (blocks hm-* skill loading) | hf-l2-prompter | skill: '*': ask with no exceptions — contradicts AGENTS.md FLEXIBLE lineage rules | MEDIUM |
 
 ---
 
@@ -273,9 +273,9 @@ No delegation path is broken. All edges have valid source and target agents on d
 
 | # | Agent | Issue | Risk |
 |---|-------|-------|------|
-| NB1 | hm-l2-conductor | Has delegate-task: allow but task: deny all — can create delegation records but cannot dispatch via task tool | If conductor tries to delegate, it will fail at task dispatch |
-| NB2 | hm-l2-build | Body text says "MUST DELEGATE TO GSD subagents" but task: deny all — contradicts body instructions | Body instructions cannot override YAML permissions |
-| NB3 | hf-l2-prompter | skill: deny all with no exceptions — contradicts FLEXIBLE lineage rules that allow hm-* skill loading | Prompter cannot load any skills at runtime |
+| NB1 | hm-l2-conductor | Has delegate-task: allow but task: ask all — can create delegation records but cannot dispatch via task tool | If conductor tries to delegate, it will fail at task dispatch |
+| NB2 | hm-l2-build | Body text says "MUST DELEGATE TO GSD subagents" but task: ask all — contradicts body instructions | Body instructions cannot override YAML permissions |
+| NB3 | hf-l2-prompter | skill: ask all with no exceptions — contradicts FLEXIBLE lineage rules that allow hm-* skill loading | Prompter cannot load any skills at runtime |
 | NB4 | hm-l2-meta-synthesis | Has skill: allow block but no task, domain, temperature, skills, or instruction | Agent is a shell — can load skills but has no behavioral guidance |
 
 ---
@@ -390,7 +390,7 @@ USER (Tab key)
         │     ├── hf-l2-auditor
         │     ├── hf-l2-command-builder
         │     ├── hf-l2-meta-builder
-        │     ├── hf-l2-prompter (skill: deny all — INCONSISTENT)
+        │     ├── hf-l2-prompter (skill: ask all — INCONSISTENT)
         │     ├── hf-l2-refactorer
         │     ├── hf-l2-skill-builder
         │     ├── hf-l2-synthesizer
@@ -453,14 +453,14 @@ hm-l2-* ────────────── ✗ hf-* (BLOCKED by task rul
 
 ### Priority 2 — HIGH (14 items)
 
-Standardize all 14 agents with missing fields to include: domain, instruction: (singular), task block with deny-all, delegate-task: deny, delegation-status: deny.
+Standardize all 14 agents with missing fields to include: domain, instruction: (singular), task block with ask-all, delegate-task: ask, delegation-status: ask.
 
 ### Priority 3 — MEDIUM (3 items)
 
 | # | Fix | Impact |
 |---|-----|--------|
 | M1 | Verify hm-l2-planning-persistence skill exists (referenced by hm-l2-persistor) | Skill may not exist |
-| M2 | Add skill exceptions to hf-l2-prompter (currently deny all) | Prompter cannot load skills at runtime |
+| M2 | Add skill exceptions to hf-l2-prompter (currently ask all) | Prompter cannot load skills at runtime |
 | M3 | Resolve mode:primary at L2 for hm-l2-build and hm-l2-conductor | Primary mode at L2 bypasses L1 coordinator |
 
 ---

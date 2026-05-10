@@ -235,7 +235,7 @@ EVERY COMMAND SURVIVES CI=TRUE. NO TTY-DEPENDENT OPERATIONS. COMMANDS ARE THIN S
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody (task: deny, delegate-task: deny)
+**Delegates to:** Nobody unless approved (task: ask, delegate-task: ask)
 
 **Escalates to L1 when:**
 - Task scope exceeds command creation

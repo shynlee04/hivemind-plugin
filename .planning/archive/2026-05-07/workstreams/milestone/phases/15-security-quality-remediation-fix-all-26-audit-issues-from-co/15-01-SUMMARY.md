@@ -10,7 +10,7 @@ requires:
     provides: Codebase audit findings that identified 26 issues
 provides:
   - Professional build.md with explicit skill allowlist (no wildcards)
-  - Deny-by-default conductor.md permissions scoped to minimum access
+  - ask-by-default conductor.md permissions scoped to minimum access
   - Coordinator.md asserted as sole primary orchestrator
   - hivefiver.md disambiguated as meta-concept specialist
   - orchestrator.md using standard YAML schema with subagent mode
@@ -20,7 +20,7 @@ affects: [agent-definitions, skill-definitions, gsd-execution]
 # Tech tracking
 tech-stack:
   added: []
-  patterns: [deny-by-default permissions, explicit skill allowlists, hierarchy comments, project-relative paths]
+  patterns: [ask-by-default permissions, explicit skill allowlists, hierarchy comments, project-relative paths]
 
 key-files:
   created: []
@@ -36,13 +36,13 @@ key-files:
 key-decisions:
   - "Replaced MUST_FUCKING_READ_AND_OBEY with MANDATORY_COMPLIANCE_REQUIRED (D-01, D-02)"
   - "Replaced wildcard skill:*:allow with explicit allowlist of 6 skill patterns (D-10)"
-  - "Conductor changed from skill:allow to deny-by-default with only coordinating-loop, use-authoring-skills, planning-with-files (D-11)"
+  - "Conductor changed from skill:allow to ask-by-default with only coordinating-loop, use-authoring-skills, planning-with-files (D-11)"
   - "Coordinator asserted as SINGLE PRIMARY ORCHESTRATOR — all others are specialists (D-03)"
   - "Orchestrator changed from mode:primary to mode:subagent — coordinator is sole primary (D-04)"
   - "Replaced $HOME/.claude/ paths with .opencode/ project-relative paths (D-08, D-09)"
 
 patterns-established:
-  - "Deny-by-default permissions: All agent permissions start with deny-all, then allow only what's needed"
+  - "ask-by-default permissions: All agent permissions start with ask-all, then allow only what's needed"
   - "Hierarchy comments: Every agent .md has an HTML comment declaring its role under coordinator"
   - "Project-relative paths: Skills use .opencode/ instead of $HOME for portability"
 
@@ -68,7 +68,7 @@ completed: 2026-04-17
 ## Accomplishments
 - Removed all profanity from build.md and replaced with professional MANDATORY_COMPLIANCE_REQUIRED tag
 - Replaced wildcard `skill: "*": allow` in build.md with explicit allowlist of 6 skill patterns
-- Converted conductor.md from overly-permissive `skill: allow` to deny-by-default with 3 scoped skills
+- Converted conductor.md from overly-permissive `skill: allow` to ask-by-default with 3 scoped skills
 - Established coordinator.md as sole primary orchestrator with hierarchy comments on all agents
 - Fixed all 6 hardcoded `$HOME/.claude/` paths in harness-delegation-inspection skill to `.opencode/`
 - Fixed orchestrator.md: removed non-standard textVerbosity, moved skill under permission, changed mode to subagent
@@ -83,7 +83,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 - `.opencode/agents/build.md` - Professional agent definition with explicit skill allowlist, no profanity
-- `.opencode/agents/conductor.md` - Deny-by-default permissions, delegation routing specialist role
+- `.opencode/agents/conductor.md` - ask-by-default permissions, delegation routing specialist role
 - `.opencode/agents/coordinator.md` - Added SINGLE PRIMARY ORCHESTRATOR hierarchy comment
 - `.opencode/agents/hivefiver.md` - Disambiguated as meta-concept workflow specialist
 - `.opencode/agents/orchestrator.md` - Standard YAML schema, subagent mode, hierarchy comment

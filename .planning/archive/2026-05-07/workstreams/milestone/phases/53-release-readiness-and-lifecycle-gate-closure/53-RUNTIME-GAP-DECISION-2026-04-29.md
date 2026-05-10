@@ -22,7 +22,7 @@ No operator-approved destructive/live-session interruption method was provided i
 | approve-sdk-delegation-interrupt | No for L1 | No operator procedure supplied; replaced by deterministic persisted SDK recovery proof for L2/L3 only. |
 | approve-pty-command-interrupt | No | No operator procedure supplied. |
 | waive-recovery-for-this-release | No | No waiver owner, scope, risk, or rollback trigger supplied. |
-| deny-recovery-no-ship | No for runway / Yes for SHIP | L2/L3 proof is enough to unblock non-release runway, but not enough for unconditional release. |
+| ask-recovery-no-ship | No for runway / Yes for SHIP | L2/L3 proof is enough to unblock non-release runway, but not enough for unconditional release. |
 
 ## Waiver Metadata
 

@@ -830,10 +830,10 @@ Every steering action traverses a matrix of permission surfaces. A single steeri
 | **Custom Tools** | `.opencode/tools/*.ts`, plugins | Tool name (may shadow built-ins) | Arbitrary code execution, state mutation |
 | **Plugin Hooks** | `tool.execute.before/after`, `system.transform`, `messages.transform`, `session.compacting`, `event`, `permission.ask` | Hook scope | Read-only interception or state mutation |
 | **MCP Servers** | User-configured local/remote MCP servers | `mcp_*` glob patterns | External API calls, database queries, third-party state |
-| **Permissions** | Global + per-agent rules | `edit`, `bash`, `skill`, `task`, `question`, `external_directory`, `doom_loop` | Allow/deny/ask gating |
+| **Permissions** | Global + per-agent rules | `edit`, `bash`, `skill`, `task`, `question`, `external_directory`, `doom_loop` | Allow/ask/ask gating |
 
 **The Conflict**: When steering injects a message, skill, or rule, any of these actors may:
-1. **Block** it (permission = `"deny"`)
+1. **Block** it (permission = `"ask"`)
 2. **Delay** it (permission = `"ask"` — user must approve)
 3. **Override** it (custom tool shadows built-in, plugin hook intercepts)
 4. **Ignore** it (skill disabled for agent, MCP server disabled)
@@ -862,14 +862,14 @@ In this mode, `permission.ask` never fires. Steering actions execute immediately
 **Protocol Extension — YOLO-Aware Steering**:
 
 ```typescript
-type PermissionMode = "yolo" | "ask" | "deny"
+type PermissionMode = "yolo" | "ask" | "ask"
 
 async function detectPermissionMode(): Promise<PermissionMode> {
   const config = await client.config.get()
   const perm = config.data?.permission
 
   if (perm === "allow" || perm?.["*"] === "allow") return "yolo"
-  if (perm === "deny" || perm?.["*"] === "deny") return "deny"
+  if (perm === "ask" || perm?.["*"] === "ask") return "ask"
   return "ask"
 }
 
@@ -926,7 +926,7 @@ async function askWithTimeout(
 
 ### 9.3 The `question` Tool: A Superior Alternative to `permission.ask` for Steering
 
-The `question` tool allows agents to ask the user multi-choice or single-choice questions with adjustable timeouts. This is more expressive than binary `permission.ask` (allow/deny) and provides better UX for steering decisions.
+The `question` tool allows agents to ask the user multi-choice or single-choice questions with adjustable timeouts. This is more expressive than binary `permission.ask` (allow/ask) and provides better UX for steering decisions.
 
 #### 9.3.1 Design: Steering Questions with Multiple Options
 
@@ -1049,7 +1049,7 @@ When multiple tool definitions compete for the same name, the steering protocol 
 | Plugin tool vs. built-in tool (same name) | **Plugin tool** | Plugin tools take precedence |
 | MCP tool vs. built-in tool (same name) | **MCP tool** | MCP tools registered with server name prefix, but if shadowed, MCP wins |
 | Multiple custom tools (same name, different files) | **Last loaded** | Load order determines winner |
-| Agent permission denies tool | **Tool removed** | `permission.task` with `"deny"` removes tool from Task tool description entirely |
+| Agent permission denies tool | **Tool removed** | `permission.task` with `"ask"` removes tool from Task tool description entirely |
 
 #### 9.4.2 Steering Impact: Which Tool Actually Runs?
 
@@ -1248,7 +1248,7 @@ Steering Intent
 │  1. Permission Mode Detection        │
 │     YOLO → Conservative downgrade    │
 │     Ask  → Timed approval + fallback │
-│     Deny → Block immediately         │
+│     ask → Block immediately         │
 └──────────────┬───────────────────────┘
                │
                ▼
@@ -1317,7 +1317,7 @@ Steering Intent
 | Field | Value |
 |-------|-------|
 | **Status** | Proposed |
-| **Context** | `permission.ask` is binary (allow/deny), which doesn't capture the nuanced decisions steering requires. The `question` tool supports multi-choice options with descriptions, timeouts, and auto-selection. |
+| **Context** | `permission.ask` is binary (allow/ask), which doesn't capture the nuanced decisions steering requires. The `question` tool supports multi-choice options with descriptions, timeouts, and auto-selection. |
 | **Decision** | For high-impact steering actions (`redirect`, `abort`, `inject-skill`), use the `question` tool instead of `permission.ask`. Present 2-4 options with trade-off descriptions. Auto-select the least disruptive option on timeout. |
 | **Consequences** | Better UX — users understand the implications of each choice. Timeout-based auto-selection prevents hanging sessions. However, this requires the `question` tool to be enabled (it's disabled for subagents by default). A protocol-level override may be needed to enable it for steering orchestrators. |
 
@@ -1555,7 +1555,7 @@ For engineering teams building multi-agent systems on OpenCode, this protocol pr
 
 ### ADR-005: The `question` Tool Replaces Binary `permission.ask` for Steering Decisions
 
-**Context**: `permission.ask` is binary (allow/deny), which doesn't capture the nuanced decisions steering requires. The `question` tool supports multi-choice options with descriptions, timeouts, and auto-selection.
+**Context**: `permission.ask` is binary (allow/ask), which doesn't capture the nuanced decisions steering requires. The `question` tool supports multi-choice options with descriptions, timeouts, and auto-selection.
 
 **Decision**: For high-impact steering actions (`redirect`, `abort`, `inject-skill`), use the `question` tool instead of `permission.ask`. Present 2-4 options with trade-off descriptions. Auto-select the least disruptive option on timeout.
 

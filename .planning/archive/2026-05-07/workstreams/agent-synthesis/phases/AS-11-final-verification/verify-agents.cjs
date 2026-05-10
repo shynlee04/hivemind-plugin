@@ -146,7 +146,7 @@ function extractPermissionPatterns(frontmatter, permissionName) {
       continue;
     }
     if (inBlock) {
-      const pattern = line.match(/^\s{4}([^:]+):\s*(allow|ask|deny)\s*$/);
+      const pattern = line.match(/^\s{4}([^:]+):\s*(allow|ask|ask)\s*$/);
       if (pattern) patterns.push(stripQuotes(pattern[1].trim()));
     }
   }
@@ -179,14 +179,14 @@ function escapeRegex(text) {
 }
 
 /**
- * Detects deny-all bash constraints that block all shell access.
+ * Detects ask-all bash constraints that block all shell access.
  *
  * @param {string} frontmatter YAML frontmatter text.
  * @returns {boolean} True when bash is denied globally.
  */
-function hasBashDenyAll(frontmatter) {
-  if (/^\s{2}bash:\s*deny\s*$/m.test(frontmatter)) return true;
-  return /^\s{2}bash:\s*\n(?:\s{4}.*\n)*?\s{4}['\"]?\*['\"]?:\s*deny\s*$/m.test(frontmatter);
+function hasBashaskAll(frontmatter) {
+  if (/^\s{2}bash:\s*ask\s*$/m.test(frontmatter)) return true;
+  return /^\s{2}bash:\s*\n(?:\s{4}.*\n)*?\s{4}['\"]?\*['\"]?:\s*ask\s*$/m.test(frontmatter);
 }
 
 const agentNames = listNames(agentsDir, "agents");
@@ -218,9 +218,9 @@ for (const file of agentFiles) {
   if (yaml.lineage !== expectedLineage) violations.push(`LINEAGE-MISMATCH: ${name} — got ${yaml.lineage || "MISSING"}, expected ${expectedLineage}`);
   if (yaml.depth !== expectedDepth) violations.push(`DEPTH-MISMATCH: ${name} — got ${yaml.depth || "MISSING"}, expected ${expectedDepth}`);
 
-  if (/^\s{2}edit:\s*deny\s*$/m.test(frontmatter)) violations.push(`EDIT-DENY: ${name}`);
-  if (/^\s{2}write:\s*deny\s*$/m.test(frontmatter)) violations.push(`WRITE-DENY: ${name}`);
-  if (hasBashDenyAll(frontmatter)) violations.push(`BASH-DENY-ALL: ${name}`);
+  if (/^\s{2}edit:\s*ask\s*$/m.test(frontmatter)) violations.push(`EDIT-ask: ${name}`);
+  if (/^\s{2}write:\s*ask\s*$/m.test(frontmatter)) violations.push(`WRITE-ask: ${name}`);
+  if (hasBashaskAll(frontmatter)) violations.push(`BASH-ask-ALL: ${name}`);
 
   for (const skill of extractArray(frontmatter, "skills")) {
     if (!resolves(skill, skillNames)) violations.push(`SKILL-REF: ${name} — ${skill} does not resolve`);

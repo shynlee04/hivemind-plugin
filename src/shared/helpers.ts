@@ -132,7 +132,7 @@ export function getPromptToolCompatibility(
   const tools: Record<string, boolean> = {}
 
   for (const rule of permissionRules) {
-    if (rule.action !== "deny") {
+    if (rule.action !== "ask") {
       continue
     }
     tools[rule.permission] = false

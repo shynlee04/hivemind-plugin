@@ -523,7 +523,7 @@ permission:
   grep: allow
   bash:
     "git ls-files*": allow
-  task: deny
+  task: ask
 ---
 
 Return a skim summary only. Do not write files. Do not ask questions. Do not spawn subagents.
@@ -541,7 +541,7 @@ instruction: [.opencode/rules/*.md]
 permission:
   read: allow
   grep: allow
-  task: deny
+  task: ask
 ---
 
 Return findings only with line references, severity, and suggestions. Do not write session state.
@@ -562,7 +562,7 @@ permission:
   grep: allow
   bash:
     "git ls-files*": allow
-  task: deny
+  task: ask
 ---
 
 Return verified references, dead references, and stale assumptions only. Do not patch session files.
@@ -580,7 +580,7 @@ instruction: [.opencode/rules/*.md]
 permission:
   read: allow
   grep: allow
-  task: deny
+  task: ask
 ---
 
 Return risk entries with severity and mitigation only. Never execute or suggest forceful operations as defaults.
@@ -598,7 +598,7 @@ instruction: [.opencode/rules/*.md]
 permission:
   read: allow
   grep: allow
-  task: deny
+  task: ask
 ---
 
 Return a reduced prompt candidate plus preserved constraints. Do not modify any files.
@@ -615,7 +615,7 @@ temperature: 0.2
 instruction: [.opencode/rules/*.md]
 permission:
   read: allow
-  task: deny
+  task: ask
 ---
 
 Return one final payload only. Do not write session state.

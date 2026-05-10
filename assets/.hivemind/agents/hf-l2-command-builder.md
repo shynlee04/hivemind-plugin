@@ -23,15 +23,15 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+    '*': ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
@@ -235,7 +235,7 @@ EVERY COMMAND SURVIVES CI=TRUE. NO TTY-DEPENDENT OPERATIONS. COMMANDS ARE THIN S
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody (task: deny, delegate-task: deny)
+**Delegates to:** Nobody (task: ask, delegate-task: ask)
 
 **Escalates to L1 when:**
 - Task scope exceeds command creation

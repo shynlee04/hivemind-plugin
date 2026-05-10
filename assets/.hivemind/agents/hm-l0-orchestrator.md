@@ -41,7 +41,7 @@ permission:
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
-  session-patch: deny
+  session-patch: ask
   webfetch: allow
   websearch: allow
   skill:

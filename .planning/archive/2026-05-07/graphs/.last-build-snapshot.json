@@ -4512,13 +4512,13 @@
       "norm_label": "allow()"
     },
     {
-      "label": "deny()",
+      "label": "ask()",
       "file_type": "code",
       "source_file": "src/lib/category-gates.ts",
       "source_location": "L57",
-      "id": "lib_category_gates_deny",
+      "id": "lib_category_gates_ask",
       "community": 34,
-      "norm_label": "deny()"
+      "norm_label": "ask()"
     },
     {
       "label": "continuity.ts",
@@ -5448,13 +5448,13 @@
       "norm_label": "category-gate-audit.ts"
     },
     {
-      "label": "recordCategoryGateDeny()",
+      "label": "recordCategoryGateask()",
       "file_type": "code",
       "source_file": "src/lib/category-gate-audit.ts",
       "source_location": "L17",
-      "id": "lib_category_gate_audit_recordcategorygatedeny",
+      "id": "lib_category_gate_audit_recordcategorygateask",
       "community": 3,
-      "norm_label": "recordcategorygatedeny()"
+      "norm_label": "recordcategorygateask()"
     },
     {
       "label": "primitive-scanners.ts",
@@ -6582,13 +6582,13 @@
       "norm_label": "validateinheritancechain()"
     },
     {
-      "label": "agentBroadensGlobalDeny()",
+      "label": "agentBroadensGlobalask()",
       "file_type": "code",
       "source_file": "src/lib/runtime-validator.ts",
       "source_location": "L268",
-      "id": "lib_runtime_validator_agentbroadensglobaldeny",
+      "id": "lib_runtime_validator_agentbroadensglobalask",
       "community": 10,
-      "norm_label": "agentbroadensglobaldeny()"
+      "norm_label": "agentbroadensglobalask()"
     },
     {
       "label": "validatePipelinePosition()",
@@ -22471,7 +22471,7 @@
       "source_location": "L12",
       "weight": 1,
       "source": "src_lib_delegation_manager_ts",
-      "target": "lib_category_gate_audit_recordcategorygatedeny",
+      "target": "lib_category_gate_audit_recordcategorygateask",
       "confidence_score": 1
     },
     {
@@ -23096,7 +23096,7 @@
       "source_location": "L160",
       "weight": 1,
       "source": "lib_delegation_manager_delegationmanager_dispatch",
-      "target": "lib_category_gate_audit_recordcategorygatedeny"
+      "target": "lib_category_gate_audit_recordcategorygateask"
     },
     {
       "relation": "calls",
@@ -23184,7 +23184,7 @@
       "source_location": "L246",
       "weight": 1,
       "source": "lib_delegation_manager_delegationmanager_dispatchcommand",
-      "target": "lib_category_gate_audit_recordcategorygatedeny"
+      "target": "lib_category_gate_audit_recordcategorygateask"
     },
     {
       "relation": "calls",
@@ -23960,7 +23960,7 @@
       "source_location": "L57",
       "weight": 1,
       "source": "src_lib_category_gates_ts",
-      "target": "lib_category_gates_deny",
+      "target": "lib_category_gates_ask",
       "confidence_score": 1
     },
     {
@@ -23993,7 +23993,7 @@
       "source_location": "L30",
       "weight": 1,
       "source": "lib_category_gates_resolvecategorygatedecision",
-      "target": "lib_category_gates_deny",
+      "target": "lib_category_gates_ask",
       "confidence_score": 1
     },
     {
@@ -25246,7 +25246,7 @@
       "source_file": "src/lib/category-gate-audit.ts",
       "source_location": "L19",
       "weight": 1,
-      "source": "lib_category_gate_audit_recordcategorygatedeny",
+      "source": "lib_category_gate_audit_recordcategorygateask",
       "target": "lib_continuity_getgovernancepersistencestate"
     },
     {
@@ -25268,7 +25268,7 @@
       "source_file": "src/lib/category-gate-audit.ts",
       "source_location": "L20",
       "weight": 1,
-      "source": "lib_category_gate_audit_recordcategorygatedeny",
+      "source": "lib_category_gate_audit_recordcategorygateask",
       "target": "lib_continuity_recordgovernancepersistencestate"
     },
     {
@@ -26813,7 +26813,7 @@
       "source_location": "L17",
       "weight": 1,
       "source": "src_lib_category_gate_audit_ts",
-      "target": "lib_category_gate_audit_recordcategorygatedeny",
+      "target": "lib_category_gate_audit_recordcategorygateask",
       "confidence_score": 1
     },
     {
@@ -29067,7 +29067,7 @@
       "source_location": "L268",
       "weight": 1,
       "source": "src_lib_runtime_validator_ts",
-      "target": "lib_runtime_validator_agentbroadensglobaldeny",
+      "target": "lib_runtime_validator_agentbroadensglobalask",
       "confidence_score": 1
     },
     {
@@ -29186,7 +29186,7 @@
       "source_location": "L241",
       "weight": 1,
       "source": "lib_runtime_validator_validateinheritancechain",
-      "target": "lib_runtime_validator_agentbroadensglobaldeny",
+      "target": "lib_runtime_validator_agentbroadensglobalask",
       "confidence_score": 1
     },
     {

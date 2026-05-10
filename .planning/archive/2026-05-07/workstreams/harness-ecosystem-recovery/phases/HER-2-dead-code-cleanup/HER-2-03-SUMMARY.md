@@ -75,7 +75,7 @@ Wires the highest-value dead code modules (`session-entry/`, `prompt-packet/`) a
 
 **3. [Rule 1 - Bug] Plan kernel packet missing required KernelPacket fields**
 - **Found during:** Task 3
-- **Issue:** Plan's kernel packet literal omitted 18 required fields (`packet_type`, `temperature`, `tool_allow_list`, `tool_deny_list`, `scope`, etc.)
+- **Issue:** Plan's kernel packet literal omitted 18 required fields (`packet_type`, `temperature`, `tool_allow_list`, `tool_ask_list`, `scope`, etc.)
 - **Fix:** Added all required KernelPacket fields with sensible defaults
 - **Files modified:** `src/hooks/create-session-hooks.ts`
 - **Commit:** `7b628d92`

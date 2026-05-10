@@ -20,9 +20,9 @@ permission:
     "rm -f*": allow
     "mkdir*": allow
     "npx tsc*": allow
-  task: deny
+  task: ask
   skill:
-    "*": deny
+    "*": ask
     "hivefiver-custom-tools-dev": allow
     "hm-opencode-platform-reference": allow
     "hm-opencode-non-interactive-shell": allow

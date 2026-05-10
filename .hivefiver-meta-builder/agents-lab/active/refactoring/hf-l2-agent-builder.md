@@ -271,7 +271,7 @@ EVERY AGENT MUST PASS AQUAL VALIDATION. NO HARDCODED PATHS. JUSTIFY ALL CROSS-LI
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody (task: deny, delegate-task: deny)
+**Delegates to:** Nobody unless approved (task: ask, delegate-task: ask)
 
 **Does NOT delegate when:**
 - Investigating patterns (self-executed via hm-detective skill)

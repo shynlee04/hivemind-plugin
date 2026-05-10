@@ -249,7 +249,7 @@ EVERY SKILL MUST HAVE SPECIFIC TRIGGER PHRASES IN DESCRIPTION. PROGRESSIVE DISCL
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody (task: deny, delegate-task: deny)
+**Delegates to:** Nobody (task: ask, delegate-task: ask)
 
 **Escalates to L1 when:**
 - Task scope exceeds skill creation (e.g., needs agent definition too)

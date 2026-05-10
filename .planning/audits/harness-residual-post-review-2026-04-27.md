@@ -33,7 +33,7 @@ I am subagent gsd-code-reviewer; I cannot delegate further; I fulfilled the boun
 
 ## Summary
 
-Reviewed commit `566ffd56` for regressions and incomplete fixes in the agent primitive policy resolver, spawn request builder, delegation manager integration, configure-primitive path/name validation, and session patch resolver. The session patch resolver hardening is directionally correct, and targeted tests still pass, but the permission-profile resolver contains a permission-boundary regression that can grant write-capable prompt tools to agents whose primitive policy only requests `ask`/`deny` permissions. Configure-primitive also still misses the new primitive-name validation path for single compile requests.
+Reviewed commit `566ffd56` for regressions and incomplete fixes in the agent primitive policy resolver, spawn request builder, delegation manager integration, configure-primitive path/name validation, and session patch resolver. The session patch resolver hardening is directionally correct, and targeted tests still pass, but the permission-profile resolver contains a permission-boundary regression that can grant write-capable prompt tools to agents whose primitive policy only requests `ask`/`ask` permissions. Configure-primitive also still misses the new primitive-name validation path for single compile requests.
 
 ## Findings by Severity
 
@@ -53,13 +53,13 @@ Reviewed commit `566ffd56` for regressions and incomplete fixes in the agent pri
 
 **File:** `src/lib/spawner/spawn-request-builder.ts:84-94`  
 **Immediate integration path:** `src/lib/delegation-manager.ts:144-150`, `src/lib/spawner/session-creator.ts:30-34`  
-**Issue:** `toolsFromAgentMetadata()` treats any present `agent.permission` as explicit policy, but when no reviewed tool key resolves to literal `"allow"`, it falls back to `WRITE_CAPABLE_TOOLS` and only removes keys explicitly detected as `deny`:
+**Issue:** `toolsFromAgentMetadata()` treats any present `agent.permission` as explicit policy, but when no reviewed tool key resolves to literal `"allow"`, it falls back to `WRITE_CAPABLE_TOOLS` and only removes keys explicitly detected as `ask`:
 
 ```ts
 const result = (allowed.length > 0 ? allowed : WRITE_CAPABLE_TOOLS).filter((toolName) => !denied.has(toolName))
 ```
 
-That is unsafe for normal OpenCode permission records. OpenCode supports `"ask"` as a third state and documents agent markdown such as `permission: { edit: deny, bash: ask }` for review agents (`.opencode/skills/hm-opencode-platform-reference/references/opencode-permissions.md:181-190`). For that policy, current code resolves `allowed.length === 0`, `denied === { edit }`, then grants `read`, `write`, `bash`, `glob`, and `grep`. DelegationManager sends those as prompt-time `tools: { write: true, bash: true, ... }` at `src/lib/delegation-manager.ts:144-150`, so the child session can receive capabilities the selected agent policy did not allow. This reopens the residual permission boundary the commit is intended to close.
+That is unsafe for normal OpenCode permission records. OpenCode supports `"ask"` as a third state and documents agent markdown such as `permission: { edit: ask, bash: ask }` for review agents (`.opencode/skills/hm-opencode-platform-reference/references/opencode-permissions.md:181-190`). For that policy, current code resolves `allowed.length === 0`, `denied === { edit }`, then grants `read`, `write`, `bash`, `glob`, and `grep`. DelegationManager sends those as prompt-time `tools: { write: true, bash: true, ... }` at `src/lib/delegation-manager.ts:144-150`, so the child session can receive capabilities the selected agent policy did not allow. This reopens the residual permission boundary the commit is intended to close.
 
 **Fix:** Treat only literal `allow` entries as allowed, treat `ask` as not auto-allowed for prompt-time delegation, map OpenCode `edit` denial to all write/edit-style prompt tools used by the harness, and default to read-only when a permission record exists but does not explicitly allow a tool.
 
@@ -92,7 +92,7 @@ Add regression coverage for at least:
 ```ts
 expect(resolveDelegationPermissionProfile(
   { agent: "review", prompt: "review code" },
-  { name: "review", permission: { edit: "deny", bash: "ask" } },
+  { name: "review", permission: { edit: "ask", bash: "ask" } },
 )).toEqual({ mode: "review-only", tools: ["read", "glob", "grep"] })
 ```
 
@@ -128,4 +128,4 @@ Add a test parallel to the new batch test that calls `action: "compile"` with a 
 
 ## Confidence Level
 
-High. The blocker is directly traceable from the resolver implementation to the prompt-time tool map sent by DelegationManager, and the OpenCode permission reference confirms `ask`/`deny` are valid agent policy states that must not be transformed into automatic tool allows.
+High. The blocker is directly traceable from the resolver implementation to the prompt-time tool map sent by DelegationManager, and the OpenCode permission reference confirms `ask`/`ask` are valid agent policy states that must not be transformed into automatic tool allows.

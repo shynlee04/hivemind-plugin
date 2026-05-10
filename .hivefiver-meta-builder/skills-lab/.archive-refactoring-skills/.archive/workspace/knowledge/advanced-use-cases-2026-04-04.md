@@ -556,7 +556,7 @@ Step 1 — Intent Confirmation (user-intent-interactive-loop)
 
 Step 2 — Current State Check (researcher subagent)
   → Reads .opencode/agents/coordinator.md
-  → Finds: permission.skill section has "*": deny with specific allows
+  → Finds: permission.skill section has "*": ask with specific allows
   → But permission section does NOT have task: allow (it's missing entirely)
   → Reads other agent files to understand permission patterns
   → Writes findings.md: current state, expected state, impact analysis
@@ -691,12 +691,12 @@ Turn 4: "All checks pass. 1 file changed, 1 line added. System health: OK."
 | Agent | Role | Can it edit files? | Can it spawn subagents? |
 |-------|------|-------------------|----------------------|
 | coordinator | Primary orchestrator — routes, delegates, tracks | Only .md and .json | Yes (task: allow) |
-| conductor | Primary orchestrator — intent classification, delegation | No (edit: deny, write: deny) | Yes (delegate-task: allow) |
+| conductor | Primary orchestrator — intent classification, delegation | No (edit: ask, write: ask) | Yes (delegate-task: allow) |
 | hivefiver | Orchestrator — MINDNETWORK graph traversal | Only .md and .json | Yes (task: allow) |
-| researcher | Read-only investigation | Only .md and .json | No (task: deny) |
-| explore | Read-only investigation (near-identical to researcher) | Only .md and .json | No (task: deny) |
-| builder | Code implementation | Yes (edit/write/bash: allow) | No (task: deny) |
-| critic | Quality verification | No (edit/write: deny) | No (task: deny) |
+| researcher | Read-only investigation | Only .md and .json | No (task: ask) |
+| explore | Read-only investigation (near-identical to researcher) | Only .md and .json | No (task: ask) |
+| builder | Code implementation | Yes (edit/write/bash: allow) | No (task: ask) |
+| critic | Quality verification | No (edit/write: ask) | No (task: ask) |
 
 ---
 

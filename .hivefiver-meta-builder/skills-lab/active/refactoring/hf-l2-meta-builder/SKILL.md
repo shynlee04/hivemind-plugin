@@ -208,7 +208,7 @@ These OpenCode built-in tools are the most powerful primitives for meta-builder 
 # Find all skills with missing trigger phrases
 grep -r "description:" .opencode/skills/*/SKILL.md | grep -v "Use when"
 
-# Find all agent definitions with task: deny
+# Find all agent definitions with task: ask
 grep -r '"task"' .opencode/agents/*.md
 ```
 

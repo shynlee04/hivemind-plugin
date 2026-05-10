@@ -15,9 +15,9 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
   skill:
-    '*': deny
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
@@ -65,7 +65,7 @@ recommended_lanes:
 
 - NEVER write, edit, create, or delete files.
 - NEVER ask clarifying questions — return findings only.
-- NEVER spawn subagents (task: deny).
+- NEVER spawn subagents (task: ask).
 - NEVER modify session state or session files.
 - NEVER provide implementation advice — report findings only.
 

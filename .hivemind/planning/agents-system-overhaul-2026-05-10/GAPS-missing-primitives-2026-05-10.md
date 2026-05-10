@@ -115,7 +115,7 @@ traceability: each gap traceable to user requirement or f-0x issue
 | **Mode** | subagent |
 | **Temperature** | 0.15 |
 | **task allow** | hm-l2-guardian, hm-l2-phase-guardian |
-| **delegate-task** | deny |
+| **delegate-task** | ask |
 | **Rationale** | User requirement: "3-level-depth loops with strict guardrails." No agent manages loop state (current depth, iteration count, termination conditions). The existing hm-l2-completion-looping skill handles completion detection but there's no agent that OWNS loop lifecycle. The L1 coordinator delegates into loops but has no loop-aware agent to track state. This is a P0 gap because without it, the 3-level loop system cannot function. |
 | **Traceability** | f-07, philosophy: "3-level-depth cycles of loopings and coordinations," AGENTS.md: "graphical loops up to 3 levels depth" |
 | **Skills Needed** | hm-l2-loop-control (NEW), hm-l2-completion-looping (existing), hm-l2-phase-loop (existing) |

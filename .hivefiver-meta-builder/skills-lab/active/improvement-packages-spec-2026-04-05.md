@@ -31,7 +31,7 @@ Actionable improvement packages. Each package: what to change, why, how it chain
 | use-authoring-skills | Has scripts but many are stubs; validate-gate.sh exits 0 always; check-overlaps.sh is placeholder | MEDIUM |
 | repomix-explorer | Works but thin; no chaining to other skills | LOW |
 | oh-my-openagent-reference | 87MB reference bloat; copy/ directory is stale | LOW |
-| hivefiver agent | Single agent doing too much; no team; wrong permissions (skill: "*" deny by default) | HIGH |
+| hivefiver agent | Single agent doing too much; no team; wrong permissions (skill: "*" ask by default) | HIGH |
 
 ### What's Missing (Superpowers Has, We Don't)
 | Capability | Superpowers Pattern | .skills-lab Gap |
@@ -192,7 +192,7 @@ User says...                    → Route to
 
 ## Package C: Agent Team — Replace Single Hivefiver
 
-**Current state:** One agent (hivefiver) does everything. Permissions are wrong (skill: "*" deny by default).
+**Current state:** One agent (hivefiver) does everything. Permissions are wrong (skill: "*" ask by default).
 
 **Target state:** 3 specialized agents that mirror superpowers chain.
 
@@ -202,7 +202,7 @@ User says...                    → Route to
 **Permissions:**
 ```yaml
 skill:
-  "*": deny
+  "*": ask
   "planning-with-files": allow
   "user-intent-interactive-loop": allow
   "coordinating-loop": allow
@@ -230,7 +230,7 @@ bash:
   "npm run typecheck": allow
   "npm run build": allow
 skill:
-  "*": deny
+  "*": ask
   "opencode-platform-reference": allow
   "opencode-non-interactive-shell": allow
 edit: allow
@@ -253,9 +253,9 @@ read: allow
 grep: allow
 glob: allow
 skill:
-  "*": deny
+  "*": ask
   "opencode-platform-reference": allow
-task: deny  # critic never dispatches further
+task: ask  # critic never dispatches further
 ```
 
 ---

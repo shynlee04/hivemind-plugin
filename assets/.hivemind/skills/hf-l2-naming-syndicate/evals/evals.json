@@ -190,7 +190,7 @@
       "assertions": [
         "Returns: NO — gsd-* agents are excluded from naming scheme",
         "Explains: GSD agents are internal project build tools, NOT shipped",
-        "Recommends: 'gsd-*': deny in public-facing agents",
+        "Recommends: 'gsd-*': ask in public-facing agents",
         "Cites Glob Enforcement Rule 4"
       ]
     }

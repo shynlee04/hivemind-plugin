@@ -34,25 +34,25 @@ OpenCode natively supports defining multiple agents with different permission pr
       "description": "Discovery phase. Only read, question, and skill tools.",
       "mode": "primary",
       "permission": {
-        "edit": "deny",
-        "bash": { "*": "deny", "git status*": "allow" },
-        "task": { "*": "deny", "explore": "allow" }
+        "edit": "ask",
+        "bash": { "*": "ask", "git status*": "allow" },
+        "task": { "*": "ask", "explore": "allow" }
       }
     },
     "harness-phase-1": {
       "description": "Implementation phase 1. Edit allowed in src/types/ only.",
       "mode": "primary",
       "permission": {
-        "edit": { "*": "deny", "src/types/**": "allow" },
+        "edit": { "*": "ask", "src/types/**": "allow" },
         "bash": { "*": "ask", "bun test*": "allow" },
-        "task": { "*": "deny", "phase-worker": "allow", "code-critic": "allow" }
+        "task": { "*": "ask", "phase-worker": "allow", "code-critic": "allow" }
       }
     },
     "harness-phase-2": {
       "description": "Implementation phase 2. Edit allowed in src/handlers/ only.",
       "mode": "primary",
       "permission": {
-        "edit": { "*": "deny", "src/handlers/**": "allow" },
+        "edit": { "*": "ask", "src/handlers/**": "allow" },
         "bash": { "*": "ask", "bun test*": "allow" }
       }
     },
@@ -60,7 +60,7 @@ OpenCode natively supports defining multiple agents with different permission pr
       "description": "Review/audit phase. Read-only with bash for tests.",
       "mode": "primary",
       "permission": {
-        "edit": "deny",
+        "edit": "ask",
         "bash": { "*": "ask", "bun test*": "allow", "git diff*": "allow" }
       }
     }
@@ -84,7 +84,7 @@ The plugin intercepts permission requests and auto-approves/denies based on gate
   if (isPermissionAllowed(permission, state)) {
     output.status = 'allow'
   } else {
-    output.status = 'deny'
+    output.status = 'ask'
     output.message = `Permission denied. Current phase: ${state.currentPhase}.`
   }
 }
@@ -175,7 +175,7 @@ Additionally, the orchestrator agent's self-setup protocol reads state from `.hi
 | Feature Needed | Native Primitive | How It Works |
 |---|---|---|
 | **Phase-gated tool access** | Multi-state agent profiles + `permission` | Each phase agent has scoped permissions |
-| **Hidden tools per phase** | Agent `tools` config (deprecated but works) or `permission` | `"edit": "deny"` removes edit from tool list |
+| **Hidden tools per phase** | Agent `tools` config (deprecated but works) or `permission` | `"edit": "ask"` removes edit from tool list |
 | **Phase-specific instructions** | Commands with `$ARGUMENTS` + Skills | `/harness-execute phase-1` loads skill |
 | **Template injection** | Commands with `!bash` + `@file` | Shell output and file refs in prompts |
 | **Review/validation subagent** | `subtask: true` on commands | Forces subagent invocation in child session |
@@ -294,7 +294,7 @@ export const HarnessGatePlugin: Plugin = async (ctx) => {
 | Original Spec | Revised (Native-First) | Impact |
 |---|---|---|
 | `Session.setPermission()` API | Multi-state agent profiles in `opencode.json` | Simpler, no plugin needed |
-| `PermissionNext.disabled()` | Agent `tools` config + `permission` deny | Native, documented |
+| `PermissionNext.disabled()` | Agent `tools` config + `permission` ask | Native, documented |
 | `PRUNE_PROTECTED_TOOLS` constant | `experimental.session.compacting` hook | Works, documented |
 | Plugin is REQUIRED | Plugin is OPTIONAL enhancement | Smaller MVP surface |
 | Dynamic permission changes | Static agent profiles + Tab switching | User-visible, explicit |

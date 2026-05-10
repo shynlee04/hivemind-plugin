@@ -28,7 +28,7 @@ Structured audit checklist for OpenCode project inspection.
 - [ ] Every agent has YAML frontmatter with `name`, `description`, `permission`
 - [ ] `permission.skill` uses explicit allow-list (never `"*": allow`)
 - [ ] `bash` defaults to `ask` with explicit allow-list
-- [ ] `task` is `deny` for level-3 task-completers
+- [ ] `task` is `ask` for level-3 task-completers
 - [ ] No duplicate agent names
 - [ ] Agent descriptions contain trigger phrases
 

@@ -41,7 +41,7 @@ The Hivemind harness implements a **delegation-time permission resolution** mode
 - **Function:** `resolveDelegationPermissionProfile()` — the core permission resolver
 - **What it does:**
   1. Checks `agent.tools` (legacy boolean map) → if present, uses those
-  2. Checks `agent.permission` (pattern-based map) → extracts tool allow/deny
+  2. Checks `agent.permission` (pattern-based map) → extracts tool allow/ask
   3. Falls back to task-intent heuristic (review-only vs read-only)
   4. Computes `mode: "read-only" | "review-only" | "write-capable"`
 
@@ -126,7 +126,7 @@ The Hivemind harness implements a **delegation-time permission resolution** mode
 
 ### What Hivemind Does for Bash
 - Hivemind resolves `bash` as a tool-level permission at delegation time
-- If `permission.bash` resolves to `deny` at the top level, the child session won't have bash in its tool allowlist
+- If `permission.bash` resolves to `ask` at the top level, the child session won't have bash in its tool allowlist
 - **File:** `src/coordination/spawner/spawn-request-builder.ts:33` — `WRITE_TOOLS = new Set(["edit", "write", "bash"])`
 - If bash is denied, it's excluded from the tool allowlist → the child session cannot use bash at all
 
@@ -215,7 +215,7 @@ The harness resolves tool-level permissions at delegation dispatch time and inje
 
 ### Finding 2: Permission Schema Exists But Is Only Used by configure-primitive
 The comprehensive permission schema at `src/schema-kernel/permission.schema.ts` (168 lines) defines:
-- `PermissionActionSchema` (allow/ask/deny)
+- `PermissionActionSchema` (allow/ask/ask)
 - `PatternEntrySchema` (glob→action mapping)
 - `PermissionRuleSchema` (structured rules)
 - `PermissionRulesetSchema` (union format)
@@ -232,19 +232,19 @@ Child sessions get `delegate-task: false` and `task: false` injected into their 
 ### Finding 5: `isPermissionAllowed()` Uses Recursive Deep Check
 - **File:** `spawn-request-builder.ts:114-125`
 - The function recursively checks if ANY nested value in the permission map resolves to `allow`
-- `isPermissionDenied()` requires ALL nested values to be `deny` (strict AND logic)
+- `isPermissionDenied()` requires ALL nested values to be `ask` (strict AND logic)
 - This means `{ bash: { '*': 'ask', 'git *': 'allow' } }` would resolve to `allowed` because `git *` has `allow`
 
 ### Finding 6: No Glob/Regex Pattern Matching in src/
-The harness never compiles or evaluates glob patterns from the `permission:` field. It reads the raw permission value and checks top-level truthiness or string matching (`=== "allow"`, `=== "deny"`, `=== true`, `=== false`).
+The harness never compiles or evaluates glob patterns from the `permission:` field. It reads the raw permission value and checks top-level truthiness or string matching (`=== "allow"`, `=== "ask"`, `=== true`, `=== false`).
 
 ### Finding 7: Hidden Agents Are Still Delegatable
 The `hidden` field only affects OpenCode autocomplete. Hivemind's `validateAgent()` only checks agent name existence — hidden agents can be delegated to by name.
 
 ### Finding 8: Category Gates Are the Only Runtime Permission Gate
 `resolveCategoryGateDecision()` at `category-gates.ts:23-50` is the only runtime permission gate that checks:
-- Unknown categories (deny by default)
-- Read-only categories with write-capable tools (deny)
+- Unknown categories (ask by default)
+- Read-only categories with write-capable tools (ask)
 
 ---
 
@@ -273,7 +273,7 @@ enrichAgentFromPrimitives (agent-primitive-policy.ts:37)
        │
        ▼
 resolveDelegationPermissionProfile (spawn-request-builder.ts:70)
-  → checks agent.permission[key] for "allow"/"deny"/true/false
+  → checks agent.permission[key] for "allow"/"ask"/true/false
   → isPermissionAllowed() recursively checks nested values
   → produces { mode: "read-only"|"write-capable", tools: string[] }
        │

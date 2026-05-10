@@ -95,7 +95,7 @@ Nodes (60): buildEventId(), cleanupEventTrackerArtifacts(), createEventTrackerAr
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (44): recordCategoryGateDeny(), cloneCapturedResult(), cloneCompactionCheckpoint(), cloneContinuityRecord(), cloneDelegationMeta(), cloneDelegationPacket(), cloneGovernanceState(), cloneLifecycleState() (+36 more)
+Nodes (44): recordCategoryGateask(), cloneCapturedResult(), cloneCompactionCheckpoint(), cloneContinuityRecord(), cloneDelegationMeta(), cloneDelegationPacket(), cloneGovernanceState(), cloneLifecycleState() (+36 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.06
@@ -191,7 +191,7 @@ Nodes (4): enrichAgentFromPrimitives(), isRecord(), parsePermissionRecord(), par
 
 ### Community 34 - "Community 34"
 Cohesion: 0.7
-Nodes (3): allow(), deny(), resolveCategoryGateDecision()
+Nodes (3): allow(), ask(), resolveCategoryGateDecision()
 
 ### Community 35 - "Community 35"
 Cohesion: 0.8

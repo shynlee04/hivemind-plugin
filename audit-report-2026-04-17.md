@@ -130,7 +130,7 @@ The HiveMind harness codebase has **significant security and structural issues**
 **Findings:**
 - Permission structure well-formed in `opencode.json`
 - Coordinator's read/edit restrictions are intentional security hardening (least privilege)
-- Researcher and critic appropriately have `task: deny` (leaf nodes shouldn't delegate)
+- Researcher and critic appropriately have `task: ask` (leaf nodes shouldn't delegate)
 - Permission cascading correct, no conflicts detected
 - 2 medium issues are intentional patterns, not bugs
 
@@ -212,7 +212,7 @@ The HiveMind harness codebase has **significant security and structural issues**
 ### Immediate (Critical Path)
 
 1. **Remove or rewrite `build.md`** — Delete this file entirely or strip the wildcard permission and vulgar language. Wildcard `skill: *` grants admin-equivalent access.
-2. **Fix `conductor.md` permissions** — Apply same deny-by-default pattern as `coordinator.md`: `read: { '*': 'deny', '*.json': 'allow', '*.md': 'allow' }`
+2. **Fix `conductor.md` permissions** — Apply same ask-by-default pattern as `coordinator.md`: `read: { '*': 'ask', '*.json': 'allow', '*.md': 'allow' }`
 3. **Replace hardcoded `$HOME` path** — In `harness-delegation-inspection`, replace `$HOME/.claude/get-shit-done/` with environment variable `${OPENCODE_HARNESS_BIN_DIR}` or similar
 
 ### Short-Term (Within Sprint)

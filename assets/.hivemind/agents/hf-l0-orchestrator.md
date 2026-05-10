@@ -31,7 +31,7 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
     hf-l1-coordinator: allow
     hm-l1-coordinator: allow
     hf-l2-*: allow
@@ -41,11 +41,11 @@ permission:
   session-journal-export: allow
   prompt-skim: allow
   prompt-analyze: allow
-  session-patch: deny
+  session-patch: ask
   webfetch: allow
   websearch: allow
   skill:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow

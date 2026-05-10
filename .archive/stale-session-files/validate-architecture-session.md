@@ -659,7 +659,7 @@ agent-tracking-pad/
 agents/
 bun.lock
 commands/
-deny-prompts/
+ask-prompts/
 hivefiver/
 node_modules/
 package-lock.json
@@ -1133,7 +1133,7 @@ user-stories-2026-04-02.md
 75:       "description": "Macro-level orchestrator. Coordinates checkpoint-gated pipeline via subagents.",
 76:       "permission": {
 77:         "task": {
-78:           "*": "deny",
+78:           "*": "ask",
 79:           "onboarding-setup": "allow",
 80:           "phase-worker": "allow",
 81:           "gate-validator": "allow",
@@ -1155,8 +1155,8 @@ user-stories-2026-04-02.md
 97:       "mode": "subagent",
 98:       "description": "Read-only validator. Runs TDD assertions and checks LSP diagnostics. Returns pass/fail.",
 99:       "permission": {
-100:         "edit": "deny",
-101:         "write": "deny",
+100:         "edit": "ask",
+101:         "write": "ask",
 102:         "bash": "allow",
 103:         "read": "allow",
 104:         "grep": "allow",
@@ -1172,7 +1172,7 @@ user-stories-2026-04-02.md
 114: }
 115: ```
 116: 
-117: The `permission.task` glob pattern on the orchestrator ensures it can only invoke its designated subagents — the `"*": "deny"` base rule blocks everything, then specific agents are allowed. This is enforced by `PermissionNext.evaluate("task", agentName, ruleset)`. [0-cite-4](#0-cite-4) 
+117: The `permission.task` glob pattern on the orchestrator ensures it can only invoke its designated subagents — the `"*": "ask"` base rule blocks everything, then specific agents are allowed. This is enforced by `PermissionNext.evaluate("task", agentName, ruleset)`. [0-cite-4](#0-cite-4) 
 118: 
 119: ---
 120: 
@@ -1464,7 +1464,7 @@ user-stories-2026-04-02.md
 8: 
 9: 1. **`Session.setPermission()`** — dynamically changes which tools are available mid-session [1-cite-0](#1-cite-0) 
 10: 
-11: 2. **`PermissionNext.disabled()`** — filters tools out of the LLM's tool list based on the permission ruleset (tools with `pattern: "*", action: "deny"` are removed entirely) [1-cite-1](#1-cite-1) 
+11: 2. **`PermissionNext.disabled()`** — filters tools out of the LLM's tool list based on the permission ruleset (tools with `pattern: "*", action: "ask"` are removed entirely) [1-cite-1](#1-cite-1) 
 12: 
 13: 3. **`experimental.chat.system.transform`** — plugin hook that injects/modifies system prompts before each LLM call [1-cite-2](#1-cite-2) 
 14: 
@@ -1548,7 +1548,7 @@ user-stories-2026-04-02.md
 92:     O->>W: Write .opencode/plans/pipeline.md
 93: ```
 94: 
-95: The `question` tool requires `permission.question: "allow"` on the agent. The orchestrator has this; subagents do not (by default `question` is `"deny"`). [1-cite-4](#1-cite-4) 
+95: The `question` tool requires `permission.question: "allow"` on the agent. The orchestrator has this; subagents do not (by default `question` is `"ask"`). [1-cite-4](#1-cite-4) 
 96: 
 97: ---
 98: 
@@ -1601,7 +1601,7 @@ user-stories-2026-04-02.md
 145:       "permission": {
 146:         "question": "allow",
 147:         "task": {
-148:           "*": "deny",
+148:           "*": "ask",
 149:           "phase-worker": "allow",
 150:           "code-critic": "allow",
 151:           "explore": "allow"
@@ -1613,11 +1613,11 @@ user-stories-2026-04-02.md
 157:       "description": "Reviews code against requirements. Writes approval/rejection to .opencode/harness/reviews/",
 158:       "permission": {
 159:         "edit": {
-160:           "*": "deny",
+160:           "*": "ask",
 161:           ".opencode/harness/reviews/*.json": "allow"
 162:         },
 163:         "bash": {
-164:           "*": "deny",
+164:           "*": "ask",
 165:           "bun test *": "allow",
 166:           "npm test *": "allow"
 167:         },
@@ -1989,11 +1989,11 @@ user-stories-2026-04-02.md
 533:   title: `Phase ${phase} Task ${task}`,
 534:   permission: [
 535:     // Lock down tools not needed for this phase
-536:     { permission: "edit", pattern: "*", action: "deny" },
+536:     { permission: "edit", pattern: "*", action: "ask" },
 537:     // Only allow edits to phase-specific directories
 538:     { permission: "edit", pattern: "src/types/*", action: "allow" },  // phase 1
 539:     // Allow bash only for specific commands
-540:     { permission: "bash", pattern: "*", action: "deny" },
+540:     { permission: "bash", pattern: "*", action: "ask" },
 541:     { permission: "bash", pattern: "bun test *", action: "allow" },
 542:     { permission: "bash", pattern: "bun run lint *", action: "allow" },
 543:   ],
@@ -2021,7 +2021,7 @@ user-stories-2026-04-02.md
 565:       "permission": {
 566:         "question": "allow",
 567:         "task": {
-568:           "*": "deny",
+568:           "*": "ask",
 569:           "phase-worker": "allow",
 570:           "code-critic": "allow",
 571:           "explore": "allow"
@@ -2038,14 +2038,14 @@ user-stories-2026-04-02.md
 582:       "description": "Read-only reviewer. Validates against locked requirements. Writes approval to .opencode/harness/reviews/. Uses gate-check tool.",
 583:       "permission": {
 584:         "edit": {
-585:           "*": "deny",
+585:           "*": "ask",
 586:           ".opencode/harness/reviews/*.json": "allow"
 587:         },
 588:         "bash": {
-589:           "*": "deny",
+589:           "*": "ask",
 590:           "bun test *": "allow"
 591:         },
-592:         "question": "deny",
+592:         "question": "ask",
 593:         "skill": "allow",
 594:         "read": "allow",
 595:         "grep": "allow"

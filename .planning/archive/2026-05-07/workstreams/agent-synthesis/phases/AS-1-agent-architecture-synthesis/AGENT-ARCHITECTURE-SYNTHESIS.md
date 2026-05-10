@@ -93,9 +93,9 @@ permission:
   bash:
     "*": ask
     "git status*": allow
-  task: deny
+  task: ask
   skill:
-    "*": deny
+    "*": ask
     "hf-agents-and-subagents-dev": allow
   glob: allow
   grep: allow
@@ -117,7 +117,7 @@ permission:
 **Section Inventory (hivefiver-orchestrator — 255 lines):** Identity, The Iron Law, Routing Table, Real Delegation Protocol, Status Protocol, Two-Stage Review, Execution Flow (6 steps), Configuration Intent Detection, Executing the Prompt-Enhance Pipeline, Anti-Patterns (7 entries), Output Contract
 
 **Strengths:**
-- **Granular permission model:** `permission` record with deny-all base and explicit allow per tool + pattern-matching — this is the gold standard
+- **Granular permission model:** `permission` record with ask-all base and explicit allow per tool + pattern-matching — this is the gold standard
 - **Low temperature:** All hivefiver agents set temperature 0.15–0.2 for deterministic behavior
 - **Skill routing:** `skill:` permission block explicitly allows specific skills (preventing skill abuse)
 - **Iron Law pattern:** Single ALL-CAPS non-negotiable rule prevents the most common agent failures
@@ -163,23 +163,23 @@ mode: primary
 temperature: 0.25
 permission:
   read:
-    "*": deny
+    "*": ask
     "*.md": allow
     "*.json": allow
     "*.ts": allow
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
+    "*": ask
   bash:
-    "*": deny
+    "*": ask
     "git status*": allow
     "git diff*": allow
     "git log*": allow
   task: allow
   delegate-task: allow
   skill:
-    "*": deny
+    "*": ask
     "hm-*": allow
     "hf-*": allow
   glob: allow
@@ -201,7 +201,7 @@ permission:
 
 **This is the target format** — the best of all three worlds:
 1. **GSD's XML structure** for machine-parseability and execution flow clarity
-2. **Hivefiver's granular permissions** for deny-all + explicit allow security
+2. **Hivefiver's granular permissions** for ask-all + explicit allow security
 3. **Compact size** — 50-200 lines, well within AQUAL-06 (500 LOC)
 
 ---
@@ -213,7 +213,7 @@ permission:
 | Pattern Element | Source | Verdict | Rationale |
 |----------------|--------|---------|-----------|
 | XML-tagged body sections | GSD | **ADOPT** | Machine-parseable, self-documenting, D-AD-04 locked |
-| Granular permissions (deny-all) | Hivefiver | **ADOPT** | Security baseline; prevents tool abuse |
+| Granular permissions (ask-all) | Hivefiver | **ADOPT** | Security baseline; prevents tool abuse |
 | Low temperature (0.0–0.3) | Hivefiver | **ADOPT** | Deterministic behavior for agents |
 | Depth + Lineage in body | Enriched | **ADOPT** | Explicit classification in body (not just naming) |
 | Execution flow with `<step>` tags | GSD | **ADAPT** | Required for L0/L1 agents; optional for L2 |
@@ -237,7 +237,7 @@ permission:
 5. Behavioral contracts as `<behavioral_contract>` (optional tag)
 
 **From Hivefiver (security, determinism, routing):**
-1. `permission:` record with deny-all base — the gold standard
+1. `permission:` record with ask-all base — the gold standard
 2. `temperature:` in frontmatter — explicit, not runtime-default (L0: 0.2–0.3, L1: 0.1–0.2, L2: 0.0–0.15)
 3. Iron Law → `<iron_law>` XML tag — single non-negotiable constraint
 4. Anti-Pattern catalog → `<anti_patterns>` XML section
@@ -363,18 +363,18 @@ temperature: 0.05
 permission:
   read: allow
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
+    "*": ask
   bash:
-    "*": deny
+    "*": ask
     "git *": allow
   glob: allow
   grep: allow
   task:
-    "*": deny
+    "*": ask
   skill:
-    "*": deny
+    "*": ask
     "hm-detective": allow
     "hm-deep-research": allow
 ---
@@ -434,37 +434,37 @@ READ-ONLY. NEVER MUTATE FILES. NEVER EDIT OR WRITE.
 
 ## 4. Permission Model Standard
 
-### Principle: Deny-All, Allow-Explicit
+### Principle: ask-All, Allow-Explicit
 
 Every agent's `permission:` block follows this structure:
 
 ```yaml
 permission:
   # Native OpenCode tools
-  read: allow | deny | { pattern: value }
-  edit: allow | deny | { pattern: value }
-  write: allow | deny | { pattern: value }
-  bash: allow | deny | { pattern: value }
-  glob: allow | deny
-  grep: allow | deny
+  read: allow | ask | { pattern: value }
+  edit: allow | ask | { pattern: value }
+  write: allow | ask | { pattern: value }
+  bash: allow | ask | { pattern: value }
+  glob: allow | ask
+  grep: allow | ask
 
   # Hivemind custom tools
-  task: allow | deny | { pattern: value }
-  delegate-task: allow | deny
-  delegation-status: allow | deny
-  session-journal-export: allow | deny
-  prompt-skim: allow | deny
-  prompt-analyze: allow | deny
-  session-patch: allow | deny
+  task: allow | ask | { pattern: value }
+  delegate-task: allow | ask
+  delegation-status: allow | ask
+  session-journal-export: allow | ask
+  prompt-skim: allow | ask
+  prompt-analyze: allow | ask
+  session-patch: allow | ask
 
   # MCP / External tools
-  webfetch: allow | deny
-  websearch: allow | deny
-  {mcp_tool_name}: allow | deny
+  webfetch: allow | ask
+  websearch: allow | ask
+  {mcp_tool_name}: allow | ask
 
   # Skill loading
   skill:
-    "*": deny
+    "*": ask
     "hm-*": allow
     "hf-*": allow
     # Or explicit per-skill:
@@ -476,19 +476,19 @@ permission:
 | Category | Tools | Default for L0 | Default for L1 | Default for L2 |
 |----------|-------|---------------|---------------|---------------|
 | **Read** | read, glob, grep | allow | allow | allow |
-| **Write** | edit, write | deny | deny | allow (scope-bound) |
-| **Shell** | bash | deny (git only) | deny (git only) | deny (git only) |
-| **Delegate** | task, delegate-task | allow | allow | deny |
+| **Write** | edit, write | ask | ask | allow (scope-bound) |
+| **Shell** | bash | ask (git only) | ask (git only) | ask (git only) |
+| **Delegate** | task, delegate-task | allow | allow | ask |
 | **Skill** | skill | allow (hm-*, hf-*) | allow (specific) | allow (specific) |
-| **Web** | webfetch, websearch | allow | allow | deny |
-| **Prompt** | prompt-skim, prompt-analyze | allow | deny | deny |
+| **Web** | webfetch, websearch | allow | allow | ask |
+| **Prompt** | prompt-skim, prompt-analyze | allow | ask | ask |
 
 ### Permission Inheritance Rules
 
 1. L2 specialists inherit default permissions from their L1 coordinator
 2. Explicit permission always overrides inherited
 3. Pattern-matched permissions follow glob semantics
-4. `"*": deny` is the base for all permission categories — no implicit access
+4. `"*": ask` is the base for all permission categories — no implicit access
 
 ---
 
@@ -501,7 +501,7 @@ permission:
 | **Body LOC** | ≥ 200 (target), ≥ 50 (minimum) | `wc -l` minus YAML frontmatter |
 | **XML Tags** | All 10 required tags present | grep for `</role>`, `</depth>`, etc. |
 | **Behavioral Contract** | `<behavioral_contract>` or `<iron_law>` present | At least one guardrail tag |
-| **Permission Model** | `permission:` block with deny-all base | YAML validation |
+| **Permission Model** | `permission:` block with ask-all base | YAML validation |
 | **Temperature** | Explicitly set in frontmatter | YAML field check |
 | **Mode** | `primary` or `subagent` declared | YAML field check |
 | **Lineage** | `<lineage>` tag matches filename prefix | hm-* → `hm-*`, hf-* → `hf-*` |
@@ -528,7 +528,7 @@ permission:
 | **AP-02** | **Infinite Loop** — Agent keeps retrying without changing approach | Same error repeated 3+ times without strategy change | Max 3 retry attempts. After 3 failures, escalate with evidence. Never retry without parameter change. | HIGH |
 | **AP-03** | **Silent Fix** — Agent edits files without telling the coordinator what changed | File modification without commit or report | Always declare what was changed, why, and commit atomically after each fix. | MEDIUM |
 | **AP-04** | **Skipped Gate** — Agent bypasses verification/quality gate | No evidence of gate execution in output | Gates are mandatory. Lifecycle → Spec → Evidence triad must execute in order. Never skip. | CRITICAL |
-| **AP-05** | **Blanket Permission** — Agent has `read: allow` without `"*": deny` base | Permission block has `allow` without deny default | Always start with `"*": deny`, then allow specific patterns. | HIGH |
+| **AP-05** | **Blanket Permission** — Agent has `read: allow` without `"*": ask` base | Permission block has `allow` without ask default | Always start with `"*": ask`, then allow specific patterns. | HIGH |
 | **AP-06** | **Undocumented Role** — Agent body has no `<role>` tag | Missing `<role>` tag | Every agent must declare its identity. Who am I? Why do I exist? Who spawns me? | MEDIUM |
 | **AP-07** | **Context Pollution** — Agent passes full conversation history to subagents | Subagent prompt includes "earlier in this conversation" or lengthy context dumps | Construct fresh context: task text + scene-setting + scope + output format. Let subagent read files itself. | MEDIUM |
 
@@ -657,7 +657,7 @@ GSD agents are internal-only build tools. They are NOT shipped but serve as qual
 |-----------|---------|-------------|-----------------|-----------------|
 | **Body format** | XML tags | Markdown H2 | XML tags in MD | XML tags in MD |
 | **Frontmatter richness** | Minimal (3 fields) | Rich (6+ fields) | Rich (6+ fields) | Rich (6+ fields) |
-| **Permission model** | None | Deny-all granular | Deny-all granular | Deny-all granular |
+| **Permission model** | None | ask-all granular | ask-all granular | ask-all granular |
 | **Temperature** | Not set (runtime) | 0.15–0.2 | 0.2–0.25 | Set by depth: 0.0–0.3 |
 | **Execution flow** | `<step>` tags (5/33 agents) | Numbered steps | Prose | `<step>` tags for L0/L1 |
 | **Behavioral contracts** | Embedded in XML | `## The Iron Law` | `<iron_law>` | `<iron_law>` + `<behavioral_contract>` |

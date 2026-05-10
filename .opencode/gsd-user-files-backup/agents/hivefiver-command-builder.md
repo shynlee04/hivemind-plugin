@@ -19,9 +19,9 @@ permission:
     "grep*": allow
     "rm -f*": allow
     "mkdir*": allow
-  task: deny
+  task: ask
   skill:
-    "*": deny
+    "*": ask
     "hivefiver-command-dev": allow
     "hm-opencode-non-interactive-shell": allow
     "hm-opencode-platform-reference": allow

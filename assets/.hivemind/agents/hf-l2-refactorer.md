@@ -23,15 +23,15 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
-  delegate-task: deny
-  delegation-status: deny
-  session-journal-export: deny
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+    '*': ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
@@ -71,7 +71,7 @@ hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for quality standards 
 **In scope:**
 - Agent refactoring: YAML frontmatter repair, XML body restructuring, permission model cleanup, skill resolution fix
 - Skill refactoring: SKILL.md restructuring, progressive disclosure improvement, trigger phrase expansion, reference consolidation
-- Anti-pattern removal: blanket permissions → deny-all + explicit allow, missing YAML → complete frontmatter, temperature mismatch → correct range
+- Anti-pattern removal: blanket permissions → ask-all + explicit allow, missing YAML → complete frontmatter, temperature mismatch → correct range
 - Structure improvement: flat body → XML-tagged, bloated body → compressed (<500 lines), redundant sections → consolidated
 - Migration: hivefiver-* → hf-* prefix, core agent → hm-* prefix, updating skill references
 - Drift fixes: aligning agent claims with codebase reality, fixing AGENTS.md inventory counts
@@ -99,7 +99,7 @@ Understands the Hivemind refactoring model:
 - **Anti-pattern catalog:** 15 agent patterns + 12 skill patterns — each has a defined correction strategy
 - **Migration map (AS-2):** 33 gsd-* → hm-*, 6 hivefiver-* → hf-*, 18 core → hm-*
 - **Naming conventions:** Agent `^(hm|hf)-[a-z0-9]+-[a-z0-9]+(-[a-z0-9]+)?$`, Skill `^(hm|hf|gate|stack)-[a-z0-9]+(-[a-z0-9]+)?$`
-- **Permission model:** Deny-all base + explicit allow per tool category (Section 4 of LINEAGE-CLASSIFICATION-SCHEMA.md)
+- **Permission model:** ask-all base + explicit allow per tool category (Section 4 of LINEAGE-CLASSIFICATION-SCHEMA.md)
 </context>
 
 <expected_output>
@@ -118,7 +118,7 @@ Returns structured output to hf-coordinator containing:
 1. Refactored file exists at declared path
 2. YAML frontmatter parses without error (all required fields present)
 3. Behavior preserved: name, domain, lineage, depth, mode unchanged
-4. Permission block follows deny-all + explicit allow pattern (AQUAL-05)
+4. Permission block follows ask-all + explicit allow pattern (AQUAL-05)
 5. 10 required XML tags present in body (AQUAL-02)
 6. Temperature within declared depth range (AQUAL-08)
 7. Name matches naming convention pattern
@@ -232,7 +232,7 @@ PRESERVE BEHAVIOR. EVERY REFACTOR MUST PASS AQUAL VALIDATION. NEVER CHANGE WHAT 
   1. Read target primitive(s) completely
   2. Parse YAML frontmatter — identify missing or invalid fields
   3. Analyze body structure — identify format issues, missing XML tags, bloat
-  4. Audit permissions — find blanket allows, missing deny-all base
+  4. Audit permissions — find blanket allows, missing ask-all base
   5. Resolve skill references — check all resolve to existing SKILL.md files
   6. Verify temperature matches depth range
   7. Document current state as baseline for behavior preservation
@@ -249,7 +249,7 @@ PRESERVE BEHAVIOR. EVERY REFACTOR MUST PASS AQUAL VALIDATION. NEVER CHANGE WHAT 
   1. Add missing required fields (name, description, mode, temperature, depth, lineage)
   2. Fix temperature to match depth range (L0: 0.2-0.3, L1: 0.1-0.2, L2: 0.0-0.15)
   3. Update skills list — remove unresolved, add missing cross-lineage justifications
-  4. Fix permission block — replace blanket allows with deny-all + explicit allow
+  4. Fix permission block — replace blanket allows with ask-all + explicit allow
   5. Validate frontmatter after each fix
   </step>
 
@@ -267,7 +267,7 @@ PRESERVE BEHAVIOR. EVERY REFACTOR MUST PASS AQUAL VALIDATION. NEVER CHANGE WHAT 
   2. RICH checklist for skills
   3. Behavior preservation check: name, domain, lineage, depth, mode, tool scope, delegation rules unchanged
   4. Skill resolution check: all referenced skills exist
-  5. Permission model check: deny-all + explicit allow
+  5. Permission model check: ask-all + explicit allow
   6. Line count check: ≤500
   </step>
 
@@ -286,7 +286,7 @@ PRESERVE BEHAVIOR. EVERY REFACTOR MUST PASS AQUAL VALIDATION. NEVER CHANGE WHAT 
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody (task: deny, delegate-task: deny)
+**Delegates to:** Nobody (task: ask, delegate-task: ask)
 
 **Does NOT delegate when:**
 - Investigating target primitives (self-executed reads)

@@ -76,7 +76,7 @@ return {
 | `chat.params` | `{ sessionID, agent, model, provider, message }` | `{ temperature, topP, topK, maxOutputTokens, options }` |
 | `chat.headers` | `{ sessionID, agent, model, provider, message }` | `{ headers }` |
 | `shell.env` | `{ cwd, sessionID?, callID? }` | `{ env }` |
-| `permission.ask` | `Permission` | `{ status: "ask" \| "deny" \| "allow" }` |
+| `permission.ask` | `Permission` | `{ status: "ask" \| "ask" \| "allow" }` |
 
 ### Gate 4: Tool Registration Compliance
 

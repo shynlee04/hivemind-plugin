@@ -179,17 +179,17 @@
 
 | Agent | `delegate-task` | Expected | Status |
 |-------|-----------------|----------|--------|
-| hf-l2-agent-builder | deny | deny | ✅ PASS |
-| hf-l2-auditor | deny | deny | ✅ PASS |
-| hf-l2-command-builder | deny | deny | ✅ PASS |
-| hf-l2-meta-builder | deny | deny | ✅ PASS |
-| hf-l2-prompter | deny | deny | ✅ PASS |
-| hf-l2-refactorer | deny | deny | ✅ PASS |
-| hf-l2-skill-builder | deny | deny | ✅ PASS |
-| hf-l2-synthesizer | deny | deny | ✅ PASS |
-| hf-l2-tool-builder | deny | deny | ✅ PASS |
+| hf-l2-agent-builder | ask | ask | ✅ PASS |
+| hf-l2-auditor | ask | ask | ✅ PASS |
+| hf-l2-command-builder | ask | ask | ✅ PASS |
+| hf-l2-meta-builder | ask | ask | ✅ PASS |
+| hf-l2-prompter | ask | ask | ✅ PASS |
+| hf-l2-refactorer | ask | ask | ✅ PASS |
+| hf-l2-skill-builder | ask | ask | ✅ PASS |
+| hf-l2-synthesizer | ask | ask | ✅ PASS |
+| hf-l2-tool-builder | ask | ask | ✅ PASS |
 
-**Finding:** All 9 hf-L2 agents correctly have `delegate-task: deny`. Per SKELETON Section F, hf-L2 cannot delegate agents.
+**Finding:** All 9 hf-L2 agents correctly have `delegate-task: ask`. Per SKELETON Section F, hf-L2 cannot delegate agents.
 
 ### C3. Commands Referencing Non-Existent Agents
 

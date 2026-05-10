@@ -14,13 +14,13 @@ depends_on: []
 tags: [audit, permissions, tools, lineage, verification]
 key_decisions:
   - "All 40 hm-*/hf-* agents pass lineage boundary checks with zero violations"
-  - "Universal deny-all + explicit allow permission model confirmed across all agents"
+  - "Universal ask-all + explicit allow permission model confirmed across all agents"
   - "All 50+ skill references resolve to actual SKILL.md files"
   - "Depth-respecting delegation chain verified: L0→L1→L2"
 tech_stack:
   added: []
   patterns:
-    - "deny-all + explicit allow permission model"
+    - "ask-all + explicit allow permission model"
     - "Pattern-based task delegation (wildcard rules)"
     - "Domain-scoped write access (edit/write restricted by file path patterns)"
     - "STRICT vs FLEXIBLE lineage skill binding"
@@ -48,7 +48,7 @@ key_files:
 
 ## One-Liner
 
-Complete permissions audit of all 40 hm-*/hf-* agents confirms zero lineage boundary violations, universal deny-all+explicit-allow model, and full skill reference resolution — no fixes needed.
+Complete permissions audit of all 40 hm-*/hf-* agents confirms zero lineage boundary violations, universal ask-all+explicit-allow model, and full skill reference resolution — no fixes needed.
 
 ---
 
@@ -88,18 +88,18 @@ Complete permissions audit of all 40 hm-*/hf-* agents confirms zero lineage boun
 |-------|--------|--------|
 | hm-* agents referencing hf-* skills | 30 | **0 violations** — all clean |
 | hf-* agents with cross-lineage hm-* skills | 10 | **All justified** — FLEXIBLE lineage allows this |
-| L2 agents with task:allow | 36 L2 | **0 violations** — all L2 agents have task:deny |
-| L2 agents with delegate-task:allow | 36 L2 | **0 violations** — all L2 agents have delegate-task:deny |
+| L2 agents with task:allow | 36 L2 | **0 violations** — all L2 agents have task:ask |
+| L2 agents with delegate-task:allow | 36 L2 | **0 violations** — all L2 agents have delegate-task:ask |
 | L0/L1 missing delegate-task:allow | 4 orchestrators | **0 violations** — all have delegate-task:allow |
 
 ### Gate 2: Permission Model Consistency
 
 | Pattern | Coverage |
 |---------|----------|
-| Deny-all + explicit allow | 40/40 agents (100%) |
+| ask-all + explicit allow | 40/40 agents (100%) |
 | Domain-scoped write access | 12/40 agents with write/edit: patterns targeting specific directories |
 | Pattern-based bash access | 40/40 agents: `git *` baseline, domain additions (node, npx, npm) |
-| Universal session-patch:deny | 40/40 agents — state mutation through src/ tools only |
+| Universal session-patch:ask | 40/40 agents — state mutation through src/ tools only |
 
 ### Gate 3: Skill Reference Resolution
 
@@ -131,11 +131,11 @@ This is a remarkably clean result. The agent synthesis pipeline (AS-3 through AS
 - Correct depth-based permission escalation
 - Appropriate tool access for domain
 - STRICT (hm-*) or FLEXIBLE (hf-*) skill binding
-- Consistent deny-all + explicit allow model
+- Consistent ask-all + explicit allow model
 
 ### 2. Permission Model Architecture Proven
 
-The deny-all + explicit allow model has been applied consistently. Key patterns:
+The ask-all + explicit allow model has been applied consistently. Key patterns:
 - **L0 orchestrators**: Read-only codebase access, wildcard delegation, prompt-* tools, gate skills
 - **L1 coordinators**: Read-only codebase access, pattern-restricted delegation, no prompt-* tools
 - **L2 specialists**: Read-only (default) or domain-scoped write, no delegation whatsoever
@@ -181,7 +181,7 @@ None. All 40 agents have fully specified permission blocks. No placeholder permi
 ## Threat Flags
 
 None. The permission model follows least-privilege:
-- All agents deny-all by default
+- All agents ask-all by default
 - Write access is directory-scoped
 - Delegation is depth-restricted
 - Session files cannot be patched directly

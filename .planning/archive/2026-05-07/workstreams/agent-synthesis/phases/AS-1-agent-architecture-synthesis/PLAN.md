@@ -52,7 +52,7 @@ Output: AGENT-ARCHITECTURE-SYNTHESIS.md with 8 required sections.
   1. Pattern Comparison: GSD XML vs Hivefiver Markdown vs OMO vs Enriched Hybrid
   2. Best-of-Both Synthesis: ADOPT/ADAPT/REJECT/DEFER per pattern
   3. Unified Body Template (D-AD-04 confirmed): All required + optional XML tags
-  4. Permission Model Standard: deny-all base, explicit allow per tool category
+  4. Permission Model Standard: ask-all base, explicit allow per tool category
   5. Quality Baseline: HIGH quality criteria (≥200 LOC, 10 XML sections, behavioral contracts)
   6. Anti-Pattern Catalog: 7 documented anti-patterns with detection and correction
   7. Migration Map: gsd-* → hm-* (33 agents), hivefiver-* → hf-* (6 agents), core → hm-* (18 agents)
@@ -73,7 +73,7 @@ No code execution in this phase — analysis and documentation only. No trust bo
 2. All 8 H2 sections present (verified via grep)
 3. Migration map covers all 59 agents (verified via count)
 4. Body template has all 10 required XML tags
-5. Permission model uses deny-all + explicit allow pattern
+5. Permission model uses ask-all + explicit allow pattern
 6. Temperature ranges match depth levels
 7. Anti-pattern catalog has 7 documented entries
 8. File size: 300-600 lines (AQUAL-06: max 500 LOC for agents, but synthesis doc is not an agent body)

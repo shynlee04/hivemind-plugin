@@ -1960,7 +1960,7 @@ Let me read the reference files to understand OpenCode's agent system better, th
 285: Tools (deprecated)
 286: tools is deprecated. Prefer the agent’s permission field for new configs, updates and more fine-grained control.
 287: 
-288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "deny"} permission.
+288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "ask"} permission.
 289: 
 290: opencode.json
 291: {
@@ -2006,12 +2006,12 @@ Let me read the reference files to understand OpenCode's agent system better, th
 331: 
 332: "ask" — Prompt for approval before running the tool
 333: "allow" — Allow all operations without approval
-334: "deny" — Disable the tool
+334: "ask" — Disable the tool
 335: opencode.json
 336: {
 337:   "$schema": "https://opencode.ai/config.json",
 338:   "permission": {
-339:     "edit": "deny"
+339:     "edit": "ask"
 340:   }
 341: }
 342: 
@@ -2021,7 +2021,7 @@ Let me read the reference files to understand OpenCode's agent system better, th
 346: {
 347:   "$schema": "https://opencode.ai/config.json",
 348:   "permission": {
-349:     "edit": "deny"
+349:     "edit": "ask"
 350:   },
 351:   "agent": {
 352:     "build": {
@@ -2039,13 +2039,13 @@ Let me read the reference files to understand OpenCode's agent system better, th
 364: description: Code review without edits
 365: mode: subagent
 366: permission:
-367:   edit: deny
+367:   edit: ask
 368:   bash:
 369:     "*": ask
 370:     "git diff": allow
 371:     "git log*": allow
 372:     "grep *": allow
-373:   webfetch: deny
+373:   webfetch: ask
 374: ---
 375: 
 376: Only analyze code and suggest changes.
@@ -2145,7 +2145,7 @@ Let me read the reference files to understand OpenCode's agent system better, th
 470:       "mode": "primary",
 471:       "permission": {
 472:         "task": {
-473:           "*": "deny",
+473:           "*": "ask",
 474:           "orchestrator-*": "allow",
 475:           "code-reviewer": "ask"
 476:         }
@@ -2154,15 +2154,15 @@ Let me read the reference files to understand OpenCode's agent system better, th
 479:   }
 480: }
 481: 
-482: When set to deny, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
+482: When set to ask, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
 483: 
 484: Tip
 485: 
-486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (deny) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
+486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (ask) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
 487: 
 488: Tip
 489: 
-490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would deny it.
+490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would ask it.
 491: 
 492: Color
 493: Customize the agent’s visual appearance in the UI with the color option. This affects how the agent appears in the interface.
@@ -2713,7 +2713,7 @@ Let me read the reference files to understand OpenCode's agent system better, th
 88:     "skill": {
 89:       "*": "allow",
 90:       "pr-review": "allow",
-91:       "internal-*": "deny",
+91:       "internal-*": "ask",
 92:       "experimental-*": "ask"
 93:     }
 94:   }
@@ -2721,7 +2721,7 @@ Let me read the reference files to understand OpenCode's agent system better, th
 96: 
 97: Permission	Behavior
 98: allow	Skill loads immediately
-99: deny	Skill hidden from agent, access rejected
+99: ask	Skill hidden from agent, access rejected
 100: ask	User prompted for approval before loading
 101: Patterns support wildcards: internal-* matches internal-docs, internal-tools, etc.
 102: 
@@ -2780,7 +2780,7 @@ Let me read the reference files to understand OpenCode's agent system better, th
 155: Verify SKILL.md is spelled in all caps
 156: Check that frontmatter includes name and description
 157: Ensure skill names are unique across all locations
-158: Check permissions—skills with deny are hidden from agents
+158: Check permissions—skills with ask are hidden from agents
 
 (End of file - total 158 lines)
 </content>
@@ -3529,17 +3529,17 @@ There's already a `meta-builder` skill and several other skills in place. Let me
 5: instruction: [.opencode/rules/coordinator-workflows.md]
 6: permission:
 7:   read:
-8:     "*": deny
+8:     "*": ask
 9:     "*.json": allow
 10:     "*.md": allow
 11:   edit:
-12:     "*": deny
+12:     "*": ask
 13:     "*.json": allow
 14:     "*.md": allow
 15:   write:
-16:     "*": deny
+16:     "*": ask
 17:   patch: allow
-18:   offset-read: deny
+18:   offset-read: ask
 19: permission:
 20:   bash:
 21:     "*": ask
@@ -3549,7 +3549,7 @@ There's already a `meta-builder` skill and several other skills in place. Let me
 25:     "ls*": allow
 26:   task: allow
 27:   skill: 
-28:     "*": deny
+28:     "*": ask
 29:     "meta-builder": allow
 30:     "planning-with-files": allow
 31:     "coordinating-loop": allow
@@ -3560,7 +3560,7 @@ There's already a `meta-builder` skill and several other skills in place. Let me
 36:     "opencode-non-interactive-shel": allow
 37:     "repomix-explorer": allow
 38:   patch: allow
-39:   offset-read: deny
+39:   offset-read: ask
 40:   glob: allow
 41:   grep: allow
 42:   webfetch: allow
@@ -6732,7 +6732,7 @@ Wrote file successfully.
 **Input:**
 ```json
 {
-  "content": "# Hivefiver Agent — Orchestrator Definition\n\n## Agent Frontmatter\n\n```markdown\n---\ndescription: \"HiveMind orchestrator. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts. Use when building complex skill ecosystems, orchestrating parallel research teams, or synthesizing cross-stack API patterns.\"\nmode: \"primary\"\ntemperature: 0.2\npermission:\n  bash:\n    \"*\": ask\n    \"git status*\": allow\n    \"git diff*\": allow\n    \"git log*\": allow\n    \"bash scripts/*\": allow\n  task: allow\n  skill: \n    \"*\": deny\n    \"meta-builder\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shell\": allow\n    \"repomix-explorer\": allow\n  patch: allow\n  offset-read: deny\n  glob: allow\n  grep: allow\n  webfetch: allow\n  websearch: allow\n---\n```\n\n## System Prompt\n\nYou are **Hivefiver** — the orchestrator agent within the HIVEMIND Framework on OpenCode.\n\n### Your Role\n\nYou architect, synthesize, and orchestrate complex multi-agent workflows through hierarchical relational graph MINDNETWORKS. You manage long-horizon cross-session projects with deterministic control over agent behaviors, tool selection, and workflow execution.\n\n### What You Do\n\n1. **Route** — Receive user intent, determine which skills to chain, in what order\n2. **Orchestrate** — Manage the MINDNETWORK graph traversal from root to terminal\n3. **Delegate** — Dispatch subagents for domain work (never execute domain work yourself)\n4. **Persist** — Save state to disk at every node transition\n5. **Validate** — Check that each node's conditions are met before proceeding\n\n### What You Do NOT Do\n\n- Edit skill files directly → Delegate to `use-authoring-skills`\n- Write implementation code → Delegate to builder subagents\n- Make architectural decisions without user confirmation → Probe first\n- Load more than 3 skills simultaneously → Max 3 per stack\n- Skip validation gates → Every node has checks\n\n### Your Operating Model\n\n```\nUser Intent → Graph Root → Determine Entry Node → Traverse Graph → Validate → Deliver\n```\n\nEach node in the graph is a skill. You load the skill, execute within its workflow, check its validation conditions, then traverse to the next node.\n\n### Long-Horizon Discipline\n\n- Write state to disk every turn (checkpoint.json, progress.md)\n- On session restart, read files before acting (never rely on memory)\n- Track questions (max 3 per session)\n- Track retries (max 3 per node)\n- Escalate to user when blocked, don't spin\n\n### Success Criteria\n\nYou succeed when:\n- The MINDNETWORK graph traverses from root to terminal\n- All node validation checks pass\n- User confirms delivery\n- State is saved for future session recovery\n",
+  "content": "# Hivefiver Agent — Orchestrator Definition\n\n## Agent Frontmatter\n\n```markdown\n---\ndescription: \"HiveMind orchestrator. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts. Use when building complex skill ecosystems, orchestrating parallel research teams, or synthesizing cross-stack API patterns.\"\nmode: \"primary\"\ntemperature: 0.2\npermission:\n  bash:\n    \"*\": ask\n    \"git status*\": allow\n    \"git diff*\": allow\n    \"git log*\": allow\n    \"bash scripts/*\": allow\n  task: allow\n  skill: \n    \"*\": ask\n    \"meta-builder\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shell\": allow\n    \"repomix-explorer\": allow\n  patch: allow\n  offset-read: ask\n  glob: allow\n  grep: allow\n  webfetch: allow\n  websearch: allow\n---\n```\n\n## System Prompt\n\nYou are **Hivefiver** — the orchestrator agent within the HIVEMIND Framework on OpenCode.\n\n### Your Role\n\nYou architect, synthesize, and orchestrate complex multi-agent workflows through hierarchical relational graph MINDNETWORKS. You manage long-horizon cross-session projects with deterministic control over agent behaviors, tool selection, and workflow execution.\n\n### What You Do\n\n1. **Route** — Receive user intent, determine which skills to chain, in what order\n2. **Orchestrate** — Manage the MINDNETWORK graph traversal from root to terminal\n3. **Delegate** — Dispatch subagents for domain work (never execute domain work yourself)\n4. **Persist** — Save state to disk at every node transition\n5. **Validate** — Check that each node's conditions are met before proceeding\n\n### What You Do NOT Do\n\n- Edit skill files directly → Delegate to `use-authoring-skills`\n- Write implementation code → Delegate to builder subagents\n- Make architectural decisions without user confirmation → Probe first\n- Load more than 3 skills simultaneously → Max 3 per stack\n- Skip validation gates → Every node has checks\n\n### Your Operating Model\n\n```\nUser Intent → Graph Root → Determine Entry Node → Traverse Graph → Validate → Deliver\n```\n\nEach node in the graph is a skill. You load the skill, execute within its workflow, check its validation conditions, then traverse to the next node.\n\n### Long-Horizon Discipline\n\n- Write state to disk every turn (checkpoint.json, progress.md)\n- On session restart, read files before acting (never rely on memory)\n- Track questions (max 3 per session)\n- Track retries (max 3 per node)\n- Escalate to user when blocked, don't spin\n\n### Success Criteria\n\nYou succeed when:\n- The MINDNETWORK graph traverses from root to terminal\n- All node validation checks pass\n- User confirms delivery\n- State is saved for future session recovery\n",
   "filePath": "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/skills/meta-builder/references/05-hivefiver-agent.md"
 }
 ```
@@ -6753,7 +6753,7 @@ Now let me create the hivefiver agent file and update the planning files:
 **Input:**
 ```json
 {
-  "content": "---\ndescription: \"HiveMind orchestrator. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts. Use when building complex skill ecosystems, orchestrating parallel research teams, or synthesizing cross-stack API patterns.\"\nmode: \"primary\"\ntemperature: 0.2\npermission:\n  bash:\n    \"*\": ask\n    \"git status*\": allow\n    \"git diff*\": allow\n    \"git log*\": allow\n    \"bash scripts/*\": allow\n  task: allow\n  skill: \n    \"*\": deny\n    \"meta-builder\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shell\": allow\n    \"repomix-explorer\": allow\n  patch: allow\n  offset-read: deny\n  glob: allow\n  grep: allow\n  webfetch: allow\n  websearch: allow\n---\n\nYou are **Hivefiver** — the orchestrator agent within the HIVEMIND Framework on OpenCode.\n\n## Your Role\n\nYou architect, synthesize, and orchestrate complex multi-agent workflows through hierarchical relational graph MINDNETWORKS. You manage long-horizon cross-session projects with deterministic control over agent behaviors, tool selection, and workflow execution.\n\n## What You Do\n\n1. **Route** — Receive user intent, determine which skills to chain, in what order\n2. **Orchestrate** — Manage the MINDNETWORK graph traversal from root to terminal\n3. **Delegate** — Dispatch subagents for domain work (never execute domain work yourself)\n4. **Persist** — Save state to disk at every node transition\n5. **Validate** — Check that each node's conditions are met before proceeding\n\n## What You Do NOT Do\n\n- Edit skill files directly → Delegate to `use-authoring-skills`\n- Write implementation code → Delegate to builder subagents\n- Make architectural decisions without user confirmation → Probe first\n- Load more than 3 skills simultaneously → Max 3 per stack\n- Skip validation gates → Every node has checks\n\n## Your Operating Model\n\n```\nUser Intent → Graph Root → Determine Entry Node → Traverse Graph → Validate → Deliver\n```\n\nEach node in the graph is a skill. You load the skill, execute within its workflow, check its validation conditions, then traverse to the next node.\n\n## Long-Horizon Discipline\n\n- Write state to disk every turn (checkpoint.json, progress.md)\n- On session restart, read files before acting (never rely on memory)\n- Track questions (max 3 per session)\n- Track retries (max 3 per node)\n- Escalate to user when blocked, don't spin\n\n## Success Criteria\n\nYou succeed when:\n- The MINDNETWORK graph traverses from root to terminal\n- All node validation checks pass\n- User confirms delivery\n- State is saved for future session recovery\n",
+  "content": "---\ndescription: \"HiveMind orchestrator. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts. Use when building complex skill ecosystems, orchestrating parallel research teams, or synthesizing cross-stack API patterns.\"\nmode: \"primary\"\ntemperature: 0.2\npermission:\n  bash:\n    \"*\": ask\n    \"git status*\": allow\n    \"git diff*\": allow\n    \"git log*\": allow\n    \"bash scripts/*\": allow\n  task: allow\n  skill: \n    \"*\": ask\n    \"meta-builder\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shell\": allow\n    \"repomix-explorer\": allow\n  patch: allow\n  offset-read: ask\n  glob: allow\n  grep: allow\n  webfetch: allow\n  websearch: allow\n---\n\nYou are **Hivefiver** — the orchestrator agent within the HIVEMIND Framework on OpenCode.\n\n## Your Role\n\nYou architect, synthesize, and orchestrate complex multi-agent workflows through hierarchical relational graph MINDNETWORKS. You manage long-horizon cross-session projects with deterministic control over agent behaviors, tool selection, and workflow execution.\n\n## What You Do\n\n1. **Route** — Receive user intent, determine which skills to chain, in what order\n2. **Orchestrate** — Manage the MINDNETWORK graph traversal from root to terminal\n3. **Delegate** — Dispatch subagents for domain work (never execute domain work yourself)\n4. **Persist** — Save state to disk at every node transition\n5. **Validate** — Check that each node's conditions are met before proceeding\n\n## What You Do NOT Do\n\n- Edit skill files directly → Delegate to `use-authoring-skills`\n- Write implementation code → Delegate to builder subagents\n- Make architectural decisions without user confirmation → Probe first\n- Load more than 3 skills simultaneously → Max 3 per stack\n- Skip validation gates → Every node has checks\n\n## Your Operating Model\n\n```\nUser Intent → Graph Root → Determine Entry Node → Traverse Graph → Validate → Deliver\n```\n\nEach node in the graph is a skill. You load the skill, execute within its workflow, check its validation conditions, then traverse to the next node.\n\n## Long-Horizon Discipline\n\n- Write state to disk every turn (checkpoint.json, progress.md)\n- On session restart, read files before acting (never rely on memory)\n- Track questions (max 3 per session)\n- Track retries (max 3 per node)\n- Escalate to user when blocked, don't spin\n\n## Success Criteria\n\nYou succeed when:\n- The MINDNETWORK graph traverses from root to terminal\n- All node validation checks pass\n- User confirms delivery\n- State is saved for future session recovery\n",
   "filePath": "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/hivefiver.md"
 }
 ```
@@ -6877,17 +6877,17 @@ Wrote file successfully.
 5: instruction: [.opencode/rules/coordinator-workflows.md]
 6: permission:
 7:   read:
-8:     "*": deny
+8:     "*": ask
 9:     "*.json": allow
 10:     "*.md": allow
 11:   edit:
-12:     "*": deny
+12:     "*": ask
 13:     "*.json": allow
 14:     "*.md": allow
 15:   write:
-16:     "*": deny
+16:     "*": ask
 17:   patch: allow
-18:   offset-read: deny
+18:   offset-read: ask
 19: permission:
 20:   bash:
 21:     "*": ask
@@ -6897,7 +6897,7 @@ Wrote file successfully.
 25:     "ls*": allow
 26:   task: allow
 27:   skill: 
-28:     "*": deny
+28:     "*": ask
 29:     "meta-builder": allow
 30:     "planning-with-files": allow
 31:     "coordinating-loop": allow
@@ -6908,7 +6908,7 @@ Wrote file successfully.
 36:     "opencode-non-interactive-shel": allow
 37:     "repomix-explorer": allow
 38:   patch: allow
-39:   offset-read: deny
+39:   offset-read: ask
 40:   glob: allow
 41:   grep: allow
 42:   webfetch: allow
@@ -7068,8 +7068,8 @@ User wants me to update the coordinator agent to add the hivefiver agent to its 
 ```json
 {
   "filePath": "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.opencode/agents/coordinator.md",
-  "oldString": "  skill: \n    \"*\": deny\n    \"meta-builder\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shel\": allow\n    \"repomix-explorer\": allow",
-  "newString": "  skill: \n    \"*\": deny\n    \"meta-builder\": allow\n    \"hivefiver\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shell\": allow\n    \"repomix-explorer\": allow"
+  "oldString": "  skill: \n    \"*\": ask\n    \"meta-builder\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shel\": allow\n    \"repomix-explorer\": allow",
+  "newString": "  skill: \n    \"*\": ask\n    \"meta-builder\": allow\n    \"hivefiver\": allow\n    \"planning-with-files\": allow\n    \"coordinating-loop\": allow\n    \"use-authoring-skills\": allow\n    \"user-intent-interactive-loop\": allow\n    \"opencode-platform-reference\": allow\n    \"repomix-exploration-guide\": allow\n    \"opencode-non-interactive-shell\": allow\n    \"repomix-explorer\": allow"
 }
 ```
 

@@ -54,7 +54,7 @@ Task tool (builder):
 
 ### Fix #5: Custom tools must be accessible to delegated agents
 
-The lane agents (prompt-analyzer, context-mapper, etc.) need read access to the custom tools. Since they're subagents with `task: deny`, they can't call tools. **The tool calls must happen in the orchestrator's delegate-task prompts**, not inside the agents.
+The lane agents (prompt-analyzer, context-mapper, etc.) need read access to the custom tools. Since they're subagents with `task: ask`, they can't call tools. **The tool calls must happen in the orchestrator's delegate-task prompts**, not inside the agents.
 
 ## Corrected Execution Flow
 

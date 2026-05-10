@@ -10,7 +10,7 @@ tech-stack:
   added: []
   patterns:
     - XML-tagged body as canonical agent format (D-AD-04 confirmed)
-    - Deny-all + explicit allow permission model (from Hivefiver)
+    - ask-all + explicit allow permission model (from Hivefiver)
     - Depth-gated temperature ranges (from Enriched Hybrid)
     - 10 required + 6 optional XML tags in unified template
 key-files:
@@ -21,7 +21,7 @@ key-files:
     - .planning/workstreams/agent-synthesis/STATE.md
 decisions:
   - D-AD-04 confirmed: XML-tagged body sections are the standard
-  - Permission model: deny-all base, explicit allow per tool category (adopted from Hivefiver)
+  - Permission model: ask-all base, explicit allow per tool category (adopted from Hivefiver)
   - Temperature ranges locked: L0 (0.2-0.3), L1 (0.1-0.2), L2 (0.0-0.15)
   - Body template: 10 required tags (role, depth, lineage, task, scope, context, expected_output, verification, iron_law, output_contract)
   - Markdown-allowed zones: within <context>, <scope>, <expected_output>, <output_contract>, <anti_patterns>, <behavioral_contract>
@@ -34,7 +34,7 @@ metrics:
 
 # Phase AS-1 Plan 01: Agent Architecture Synthesis Summary
 
-**One-liner:** Definitive agent architecture reference comparing GSD XML, Hivefiver Markdown, OMO, and Enriched Hybrid patterns with 8-section synthesis — unified body template (D-AD-04 confirmed), deny-all permission model, quality baseline, anti-pattern catalog, 59-agent migration map, and depth-gated temperature ranges.
+**One-liner:** Definitive agent architecture reference comparing GSD XML, Hivefiver Markdown, OMO, and Enriched Hybrid patterns with 8-section synthesis — unified body template (D-AD-04 confirmed), ask-all permission model, quality baseline, anti-pattern catalog, 59-agent migration map, and depth-gated temperature ranges.
 
 ---
 
@@ -83,7 +83,7 @@ None — plan executed exactly as written.
 ## Key Decisions Locked
 
 1. **D-AD-04 confirmed:** XML-tagged body sections are the standard for all hm-* and hf-* agents
-2. **Permission model:** Deny-all base with explicit allow per tool category (adopted from Hivefiver)
+2. **Permission model:** ask-all base with explicit allow per tool category (adopted from Hivefiver)
 3. **Temperature ranges:** L0 (0.2-0.3), L1 (0.1-0.2), L2 (0.0-0.15)
 4. **Body template:** 10 required XML tags, 6 optional
 5. **Migration strategy:** Conceptual mapping (not file copy) — GSD agents serve as quality benchmarks

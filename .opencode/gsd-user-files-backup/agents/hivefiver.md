@@ -29,7 +29,7 @@ permission:
     "hivefiver-command-dev": allow
     "hivefiver-custom-tools-dev": allow
   patch: allow
-  offset-read: deny
+  offset-read: ask
   glob: allow
   grep: allow
   webfetch: allow

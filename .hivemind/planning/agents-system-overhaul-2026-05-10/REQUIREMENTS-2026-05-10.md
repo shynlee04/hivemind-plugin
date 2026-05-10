@@ -53,18 +53,18 @@ traceability: bidirectional — each REQ maps to skeleton defect(s) and context 
 
 ---
 
-## REQ-02: All hm-*/hf-* Agent Permissions Must Use `ask` (Not `deny`)
+## REQ-02: All hm-*/hf-* Agent Permissions Must Use `ask` (Not `ask`)
 
 | Field | Value |
 |-------|-------|
 | **ID** | REQ-02 |
-| **Title** | Replace all `deny` tool permissions with `ask` for 56 shipped agents |
+| **Title** | Replace all `ask` tool permissions with `ask` for 56 shipped agents |
 | **Priority** | P0 — CRITICAL |
-| **Source** | Skeleton §G "MEDIUM — deny vs ask permissions (56 agents)"; Context §3 Defect #2 |
+| **Source** | Skeleton §G "MEDIUM — ask vs ask permissions (56 agents)"; Context §3 Defect #2 |
 
 ### Description
 
-All 56 shipped agents (45 hm-* + 11 hf-*) use `deny` for tool permissions. The user has explicitly requested changing ALL `deny` to `ask` for runtime granularity — agents should be able to request tool access with user approval rather than being hard-blocked. The `permission` object is the preferred OpenCode SDK mechanism (the `tools` field is deprecated).
+All 56 shipped agents (45 hm-* + 11 hf-*) use `ask` for tool permissions. The user has explicitly requested changing ALL `ask` to `ask` for runtime granularity — agents should be able to request tool access with user approval rather than being hard-blocked. The `permission` object is the preferred OpenCode SDK mechanism (the `tools` field is deprecated).
 
 ### Permission Semantics
 
@@ -72,11 +72,11 @@ All 56 shipped agents (45 hm-* + 11 hf-*) use `deny` for tool permissions. The u
 |-------|----------|
 | `allow` | Execute without asking |
 | `ask` | Prompt user: approve once / always / reject |
-| `deny` | Block entirely — **MUST NOT be used for shipped agents** |
+| `ask` | Block entirely — **MUST NOT be used for shipped agents** |
 
 ### Acceptance Criteria
 
-- [ ] Zero `deny` values in any shipped agent's `permission` block
+- [ ] Zero `ask` values in any shipped agent's `permission` block
 - [ ] All 56 agents use `ask` or `allow` for every tool in their permission block
 - [ ] Tool authorization follows the 9-surface authority model from ARCHITECTURE.md
 - [ ] No agent uses the deprecated `tools` field — all use `permission` object
@@ -302,7 +302,7 @@ AGENTS.md states "59 skills" but the actual count is 58 (Context §3 Defect #7).
 The delegation rules in Skeleton §A define strict boundaries:
 - hm-* agents CANNOT delegate to hf-* agents (ever)
 - hf-* agents CAN delegate to hm-* agents (at specific levels)
-- hf-L2 CANNOT delegate agents at all (task: deny all)
+- hf-L2 CANNOT delegate agents at all (task: ask all)
 
 These rules exist in documentation but are not enforced programmatically. After the overhaul, the delegation graph and agent YAML must be audited to confirm no rule violations exist.
 
@@ -315,14 +315,14 @@ These rules exist in documentation but are not enforced programmatically. After 
 | hm-L2 | ✅ hm-L2 peers, hm-L3 | ❌ NONE |
 | hf-L0 | ✅ hm-L1, hm-L2 | ✅ hf-L1, hf-L2 |
 | hf-L1 | ✅ hm-L2 | ✅ hf-L2 |
-| hf-L2 | ❌ task deny all | ❌ task deny all |
+| hf-L2 | ❌ task ask all | ❌ task ask all |
 
 ### Acceptance Criteria
 
 - [ ] Cross-lineage rules from Skeleton §A are present in AGENTS.md
 - [ ] No hm-* agent has `task allow` referencing an hf-* agent
 - [ ] hf-L0 and hf-L1 have explicit cross-lineage `task allow` entries
-- [ ] All hf-L2 agents have `task allow: deny all` (no agent delegation)
+- [ ] All hf-L2 agents have `task allow: ask all` (no agent delegation)
 - [ ] Audit checklist produced for future validation
 
 ---
@@ -338,21 +338,21 @@ These rules exist in documentation but are not enforced programmatically. After 
 
 ### Description
 
-9 custom tools are registered in `plugin.ts`. Each tool needs a documented permission decision for every agent level and lineage. Currently permissions are ad-hoc — some agents have explicit entries, most use blanket `deny`.
+9 custom tools are registered in `plugin.ts`. Each tool needs a documented permission decision for every agent level and lineage. Currently permissions are ad-hoc — some agents have explicit entries, most use blanket `ask`.
 
 ### Tool Permission Matrix Template
 
 | Tool | hm-L0 | hm-L1 | hm-L2 (delegators) | hm-L2 (terminal) | hf-L0 | hf-L1 | hf-L2 |
 |------|-------|-------|---------------------|-------------------|-------|-------|-------|
-| delegate-task | allow | allow | ask | deny | allow | allow | deny |
-| delegation-status | allow | allow | ask | deny | allow | allow | deny |
-| run-background-command | allow | allow | ask | deny | allow | allow | deny |
+| delegate-task | allow | allow | ask | ask | allow | allow | ask |
+| delegation-status | allow | allow | ask | ask | allow | allow | ask |
+| run-background-command | allow | allow | ask | ask | allow | allow | ask |
 | prompt-skim | allow | ask | ask | ask | allow | allow | ask |
 | prompt-analyze | allow | ask | ask | ask | allow | allow | ask |
-| session-patch | ask | ask | deny | deny | ask | ask | deny |
-| session-journal-export | allow | allow | ask | deny | allow | allow | deny |
-| configure-primitive | ask | deny | deny | deny | allow | allow | ask |
-| validate-restart | ask | deny | deny | deny | allow | ask | deny |
+| session-patch | ask | ask | ask | ask | ask | ask | ask |
+| session-journal-export | allow | allow | ask | ask | allow | allow | ask |
+| configure-primitive | ask | ask | ask | ask | allow | allow | ask |
+| validate-restart | ask | ask | ask | ask | allow | ask | ask |
 
 > Note: The above is a PROPOSAL — final values must be validated against actual agent role requirements.
 
@@ -362,7 +362,7 @@ These rules exist in documentation but are not enforced programmatically. After 
 - [ ] Permission decisions are justified by agent role (delegator vs terminal vs orchestrator)
 - [ ] Write-side tools (delegate-task, configure-primitive) have stricter permissions than read-side
 - [ ] Matrix is included in AGENTS.md or a referenced document
-- [ ] No tool has `deny` for any shipped agent — use `ask` per REQ-02
+- [ ] No tool has `ask` for any shipped agent — use `ask` per REQ-02
 
 ---
 
@@ -666,7 +666,7 @@ The MATRIX found 21 delegation gaps (agents listed in `task allow` that have no 
 | REQ | Priority | Source Sections | Defect Count | Depends On |
 |-----|----------|----------------|--------------|------------|
 | REQ-01 | P0 | Skeleton §G #1–15, Context §3 #1 | 15 | None |
-| REQ-02 | P0 | Skeleton §G "deny vs ask", Context §3 #2 | 56 | None |
+| REQ-02 | P0 | Skeleton §G "ask vs ask", Context §3 #2 | 56 | None |
 | REQ-03 | P0 | Skeleton §G "Misclassified primary", §K #1 | 3 | None |
 | REQ-04 | P1 | Skeleton §G "Missing domains", §K #5, §I | 16 | REQ-01 |
 | REQ-05 | P1 | Skeleton §C, Context §3 #4,#8,#9 | 19 | None |

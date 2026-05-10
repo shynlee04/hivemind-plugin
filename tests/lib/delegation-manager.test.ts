@@ -306,7 +306,7 @@ describe("DelegationManager", () => {
       const manager = new DelegationManager(createMockClient() as never)
 
       await expect(manager.dispatch({
-          parentSessionId: "ses-parent-1",
+        parentSessionId: "ses-parent-1",
         agent: "not-real",
         prompt: "do work",
       })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
@@ -2053,7 +2053,7 @@ describe("DelegationManager", () => {
         throw new Error("Notification delivery failed")
       })
 
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { })
       const manager = new DelegationManager(client as never)
       const result = await manager.dispatch({
         parentSessionId: "ses-parent-notify-fail",
@@ -2909,10 +2909,10 @@ describe("DelegationManager", () => {
       })
 
       await expect(manager.dispatch({
-        parentSessionId: "ses_parent_policy_deny",
+        parentSessionId: "ses_parent_policy_ask",
         agent: "builder",
         prompt: "do work",
-        title: "policy deny",
+        title: "policy ask",
         category: "implementation",
       })).rejects.toThrow("category \"implementation\" cannot use write-capable tools")
     })

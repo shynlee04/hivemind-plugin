@@ -21,16 +21,16 @@ describe("category gate audit", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
-  it("persists compact category gate deny evidence", async () => {
+  it("persists compact category gate ask evidence", async () => {
     const audit = await import("../../src/coordination/delegation/category-gate-audit.js")
     const continuity = await import("../../src/task-management/continuity/index.js")
 
-    expect(audit.recordCategoryGateDeny({
+    expect(audit.recordCategoryGateask({
       callerSessionId: "ses-parent",
       requestedAgent: "critic",
       requestedCategory: "review",
       surface: "agent-delegation",
-      denyReason: "category \"review\" cannot use write-capable tools",
+      askReason: "category \"review\" cannot use write-capable tools",
     })).toBe(true)
 
     expect(continuity.getGovernancePersistenceState().violations).toEqual([

@@ -20,9 +20,9 @@ permission:
     "rm -f*": allow
     "mkdir*": allow
     "cp*": allow
-  task: deny
+  task: ask
   skill:
-    "*": deny
+    "*": ask
     "hivefiver-use-authoring-skills": allow
     "skill-judge": allow      # global skill at ~/.agents/skills/skill-judge/
     "skill-creator": allow    # global skill at ~/.agents/skills/skill-creator/

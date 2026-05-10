@@ -7316,7 +7316,7 @@ import type { Environment } from '../../types/environment'
 import { Console } from 'node:console'
 
 // some globals we do not want, either because deprecated or we set it ourselves
-const denyList = new Set([
+const askList = new Set([
   'GLOBAL',
   'root',
   'global',
@@ -7336,7 +7336,7 @@ function populateNodeGlobals() {
   const length = names.length
   for (let i = 0; i < length; i++) {
     const globalName = names[i]
-    if (!denyList.has(globalName)) {
+    if (!askList.has(globalName)) {
       const descriptor = Object.getOwnPropertyDescriptor(
         globalThis,
         globalName,

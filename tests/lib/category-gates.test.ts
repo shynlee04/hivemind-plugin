@@ -17,7 +17,7 @@ describe("category gate", () => {
 
   it("denies unknown categories with auditable reason", () => {
     expect(resolveCategoryGateDecision({ category: "unknown", surface: "agent-delegation", toolProfileMode: "read-only" }))
-      .toMatchObject({ allowed: false, reason: "unknown delegation category", audit: { gate: "category", denyReason: "unknown delegation category" } })
+      .toMatchObject({ allowed: false, reason: "unknown delegation category", audit: { gate: "category", askReason: "unknown delegation category" } })
   })
 
   it("allows command category only for command-process dispatch", () => {

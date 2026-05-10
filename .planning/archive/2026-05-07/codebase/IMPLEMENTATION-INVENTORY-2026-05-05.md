@@ -101,7 +101,7 @@
 | `src/lib/primitive-scanners.ts` | 182 | IMPLEMENTED | scanAgentFile, scanCommandFile, scanSkillFile | primitive-loader.ts |
 | `src/lib/config-compiler.ts` | 410 | IMPLEMENTED | compileAgent, compileCommand, compileSkill, decompileAgent, decompileCommand | configure-primitive.ts |
 | `src/lib/category-gates.ts` | 59 | IMPLEMENTED | resolveCategoryGateDecision, DEFAULT_CATEGORY_GATE_POLICY | delegation-manager.ts, runtime-policy.ts |
-| `src/lib/category-gate-audit.ts` | 41 | IMPLEMENTED | recordCategoryGateDeny | delegation-manager.ts |
+| `src/lib/category-gate-audit.ts` | 41 | IMPLEMENTED | recordCategoryGateask | delegation-manager.ts |
 | `src/lib/session-journal.ts` | 119 | IMPLEMENTED | SessionJournalEntry, createSessionJournal | journal-query.ts, journal-replay.ts |
 | `src/lib/journal-query.ts` | 168 | IMPLEMENTED | querySessionJournal | index.ts (public API), session-journal-export.ts |
 | `src/lib/journal-replay.ts` | 131 | IMPLEMENTED | replayJournalEntries | index.ts (public API) |

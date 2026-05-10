@@ -1,1 +1,1471 @@
-{"nodes": [{"id": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "label": "delegation-manager.ts", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L1"}, {"id": "lib_delegation_manager_resolveacquireargs", "label": "resolveAcquireArgs()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L40"}, {"id": "lib_delegation_manager_builddelegationprompttools", "label": "buildDelegationPromptTools()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L54"}, {"id": "lib_delegation_manager_delegationmanager", "label": "DelegationManager", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L71"}, {"id": "lib_delegation_manager_delegationmanager_constructor", "label": ".constructor()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L79"}, {"id": "lib_delegation_manager_delegationmanager_setcompletiondetector", "label": ".setCompletionDetector()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L127"}, {"id": "lib_delegation_manager_delegationmanager_resolvenestingdepth", "label": ".resolveNestingDepth()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L131"}, {"id": "lib_delegation_manager_delegationmanager_dispatch", "label": ".dispatch()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L138"}, {"id": "lib_delegation_manager_delegationmanager_dispatchcommand", "label": ".dispatchCommand()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L230"}, {"id": "lib_delegation_manager_delegationmanager_handlesessionidle", "label": ".handleSessionIdle()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L265"}, {"id": "lib_delegation_manager_delegationmanager_handlesessiondeleted", "label": ".handleSessionDeleted()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L279"}, {"id": "lib_delegation_manager_delegationmanager_recoverpending", "label": ".recoverPending()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L290"}, {"id": "lib_delegation_manager_delegationmanager_getstatus", "label": ".getStatus()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L316"}, {"id": "lib_delegation_manager_delegationmanager_getalldelegations", "label": ".getAllDelegations()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L320"}, {"id": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation", "label": ".canSessionAccessDelegation()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L331"}, {"id": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession", "label": ".getVisibleDelegationsForSession()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L362"}, {"id": "lib_delegation_manager_delegationmanager_getdelegationforptysession", "label": ".getDelegationForPtySession()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L372"}, {"id": "lib_delegation_manager_delegationmanager_markcommandcancellationforptysession", "label": ".markCommandCancellationForPtySession()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L381"}, {"id": "lib_delegation_manager_delegationmanager_prunecompleteddelegations", "label": ".pruneCompletedDelegations()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L389"}, {"id": "lib_delegation_manager_delegationmanager_validateagent", "label": ".validateAgent()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L393"}, {"id": "lib_delegation_manager_delegationmanager_buildcanonicalqueuecontext", "label": ".buildCanonicalQueueContext()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L431"}, {"id": "lib_delegation_manager_delegationmanager_buildcommandqueuecontext", "label": ".buildCommandQueueContext()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L440"}, {"id": "lib_delegation_manager_delegationmanager_stabilitytimers", "label": ".stabilityTimers()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L450"}, {"id": "lib_delegation_manager_delegationmanager_delegations", "label": ".delegations()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L455"}, {"id": "lib_delegation_manager_delegationmanager_delegationsbysession", "label": ".delegationsBySession()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L460"}, {"id": "lib_delegation_manager_delegationmanager_safetytimers", "label": ".safetyTimers()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L465"}], "edges": [{"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_command_delegation_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L1", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_command_delegation_commanddelegationhandler", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L1", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_concurrency_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L2", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_concurrency_builddelegationqueuekey", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L2", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_concurrency_delegationconcurrencyqueue", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L2", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_completion_detector_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L3", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_completion_detector_completiondetector", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L3", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_persistence_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L4", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_delegation_persistence_readpersisteddelegations", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L4", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_state_machine_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L5", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_delegation_state_machine_builddelegationresult", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L5", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_delegation_state_machine_delegationstatemachine", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L5", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_pty_pty_manager_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L9", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "pty_pty_manager_ptymanager", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L9", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_sdk_delegation_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L10", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_sdk_delegation_sdkdelegationhandler", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L10", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gates_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L11", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_category_gates_resolvecategorygatedecision", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L11", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L12", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_category_gate_audit_recordcategorygatedeny", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L12", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_app_api_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L13", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_app_api_getappagents", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L13", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_session_api_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L14", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_session_api_sendpromptasync", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L14", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_session_api_opencodeclient", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L14", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_runtime_policy_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L15", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_runtime_policy_default_runtime_policy", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L15", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_runtime_policy_resolveconcurrencyforkey", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L15", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_agent_primitive_policy_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L16", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_agent_primitive_policy_enrichagentfromprimitives", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L16", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_agent_primitive_policy_parsepermissionrecord", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L16", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_agent_primitive_policy_parsetoolbooleans", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L16", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_concurrency_key_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L17", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_concurrency_key_resolvedelegationconcurrencykey", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L17", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_parent_directory_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L18", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_parent_directory_resolveparentworkingdirectory", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L18", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_session_creator_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L19", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_session_creator_spawndelegatedsession", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L19", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_spawn_request_builder_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L20", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_spawn_request_builder_buildsdkspawnrequest", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L20", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_spawn_request_builder_resolvedelegationpermissionprofile", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L20", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_spawn_request_builder_delegateparams", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L20", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "spawner_spawn_request_builder_validatedagent", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L20", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_types_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L21", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_types_default_safety_ceiling_ms", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L21", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_types_commanddelegationparams", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L21", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_types_delegation", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L21", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_types_delegationresult", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L21", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_types_runtimepolicy", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L21", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_types_max_delegation_depth", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L21", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_delegation_manager_resolveacquireargs", "relation": "contains", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L40", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_delegation_manager_builddelegationprompttools", "relation": "contains", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L54", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts", "target": "lib_delegation_manager_delegationmanager", "relation": "contains", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L71", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_constructor", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L79", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_setcompletiondetector", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L127", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_resolvenestingdepth", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L131", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_dispatch", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L138", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_dispatchcommand", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L230", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_handlesessionidle", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L265", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_handlesessiondeleted", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L279", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_recoverpending", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L290", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_getstatus", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L316", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_getalldelegations", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L320", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L331", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L362", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_getdelegationforptysession", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L372", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_markcommandcancellationforptysession", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L381", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_prunecompleteddelegations", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L389", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_validateagent", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L393", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_buildcanonicalqueuecontext", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L431", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_buildcommandqueuecontext", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L440", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_stabilitytimers", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L450", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_delegations", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L455", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_delegationsbysession", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L460", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager", "target": "lib_delegation_manager_delegationmanager_safetytimers", "relation": "method", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L465", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatch", "target": "lib_delegation_manager_delegationmanager_resolvenestingdepth", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L139", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatch", "target": "lib_delegation_manager_delegationmanager_validateagent", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L150", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatch", "target": "lib_delegation_manager_delegationmanager_buildcanonicalqueuecontext", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L169", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatch", "target": "lib_delegation_manager_resolveacquireargs", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L175", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatch", "target": "lib_delegation_manager_builddelegationprompttools", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L205", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatchcommand", "target": "lib_delegation_manager_delegationmanager_resolvenestingdepth", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L231", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatchcommand", "target": "lib_delegation_manager_delegationmanager_buildcommandqueuecontext", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L238", "weight": 1.0}, {"source": "lib_delegation_manager_delegationmanager_dispatchcommand", "target": "lib_delegation_manager_resolveacquireargs", "relation": "calls", "context": "call", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L256", "weight": 1.0}], "raw_calls": [{"caller_nid": "lib_delegation_manager_resolveacquireargs", "callee": "resolveConcurrencyForKey", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L41"}, {"caller_nid": "lib_delegation_manager_builddelegationprompttools", "callee": "fromEntries", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L56"}, {"caller_nid": "lib_delegation_manager_builddelegationprompttools", "callee": "map", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L56"}, {"caller_nid": "lib_delegation_manager_delegationmanager_resolvenestingdepth", "callee": "getDelegationIdForSession", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L132"}, {"caller_nid": "lib_delegation_manager_delegationmanager_resolvenestingdepth", "callee": "get", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L134"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "resolveParentWorkingDirectory", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L146"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "resolveDelegationPermissionProfile", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L151"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "resolveCategoryGateDecision", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L153"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "recordCategoryGateDeny", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L160"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "buildDelegationQueueKey", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L170"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "resolveDelegationConcurrencyKey", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L171"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "acquire", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L176"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "spawnDelegatedSession", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L178"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "buildSdkSpawnRequest", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L180"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "randomUUID", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L184"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "now", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L189"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "now", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L193"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "registerDelegation", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L199"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "persistAll", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L200"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "sendPromptAsync", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L218"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "transition", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L219"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "transitionToTerminal", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L221"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "buildDelegationResult", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L222"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "get", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L222"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "buildDelegationResult", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L224"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "get", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L224"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatch", "callee": "release", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L226"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand", "callee": "resolveCategoryGateDecision", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L239"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand", "callee": "recordCategoryGateDeny", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L246"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand", "callee": "buildDelegationQueueKey", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L255"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand", "callee": "acquire", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L257"}, {"caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand", "callee": "release", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L261"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle", "callee": "getDelegationIdForSession", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L266"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle", "callee": "get", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L268"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle", "callee": "transition", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L272"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle", "callee": "isPolling", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L274"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle", "callee": "scheduleStabilityPoll", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L275"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted", "callee": "getDelegationIdForSession", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L280"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted", "callee": "get", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L282"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted", "callee": "cleanupTracking", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L284"}, {"caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted", "callee": "transitionToTerminal", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L287"}, {"caller_nid": "lib_delegation_manager_delegationmanager_recoverpending", "callee": "readPersistedDelegations", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L291"}, {"caller_nid": "lib_delegation_manager_delegationmanager_recoverpending", "callee": "hydrateFromPersistence", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L293"}, {"caller_nid": "lib_delegation_manager_delegationmanager_recoverpending", "callee": "trackSession", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L296"}, {"caller_nid": "lib_delegation_manager_delegationmanager_recoverpending", "callee": "recoverSdkDelegation", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L297"}, {"caller_nid": "lib_delegation_manager_delegationmanager_recoverpending", "callee": "recoverPtyDelegation", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L301"}, {"caller_nid": "lib_delegation_manager_delegationmanager_recoverpending", "callee": "transitionToTerminal", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L304"}, {"caller_nid": "lib_delegation_manager_delegationmanager_getstatus", "callee": "get", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L317"}, {"caller_nid": "lib_delegation_manager_delegationmanager_getalldelegations", "callee": "getAll", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L321"}, {"caller_nid": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation", "callee": "getDelegationIdForSession", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L339"}, {"caller_nid": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation", "callee": "get", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L347"}, {"caller_nid": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession", "callee": "filter", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L363"}, {"caller_nid": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession", "callee": "getAll", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L363"}, {"caller_nid": "lib_delegation_manager_delegationmanager_getdelegationforptysession", "callee": "findByPtySession", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L373"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "filter", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L397"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "getAppAgents", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L397"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "String", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L405"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "includes", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L406"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "warn", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L407"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "enrichAgentFromPrimitives", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L410"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "filter", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L415"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "map", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L415"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "map", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L424"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "includes", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L425"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "join", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L426"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "enrichAgentFromPrimitives", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L428"}, {"caller_nid": "lib_delegation_manager_delegationmanager_validateagent", "callee": "find", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L428"}, {"caller_nid": "lib_delegation_manager_delegationmanager_stabilitytimers", "callee": "getTimerMap", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts", "source_location": "L451"}]}
+{
+    "nodes": [
+        {
+            "id": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "label": "delegation-manager.ts",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L1"
+        },
+        {
+            "id": "lib_delegation_manager_resolveacquireargs",
+            "label": "resolveAcquireArgs()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L40"
+        },
+        {
+            "id": "lib_delegation_manager_builddelegationprompttools",
+            "label": "buildDelegationPromptTools()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L54"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager",
+            "label": "DelegationManager",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L71"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_constructor",
+            "label": ".constructor()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L79"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_setcompletiondetector",
+            "label": ".setCompletionDetector()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L127"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_resolvenestingdepth",
+            "label": ".resolveNestingDepth()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L131"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_dispatch",
+            "label": ".dispatch()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L138"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "label": ".dispatchCommand()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L230"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_handlesessionidle",
+            "label": ".handleSessionIdle()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L265"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_handlesessiondeleted",
+            "label": ".handleSessionDeleted()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L279"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_recoverpending",
+            "label": ".recoverPending()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L290"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_getstatus",
+            "label": ".getStatus()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L316"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_getalldelegations",
+            "label": ".getAllDelegations()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L320"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation",
+            "label": ".canSessionAccessDelegation()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L331"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession",
+            "label": ".getVisibleDelegationsForSession()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L362"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_getdelegationforptysession",
+            "label": ".getDelegationForPtySession()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L372"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_markcommandcancellationforptysession",
+            "label": ".markCommandCancellationForPtySession()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L381"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_prunecompleteddelegations",
+            "label": ".pruneCompletedDelegations()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L389"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_validateagent",
+            "label": ".validateAgent()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L393"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_buildcanonicalqueuecontext",
+            "label": ".buildCanonicalQueueContext()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L431"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_buildcommandqueuecontext",
+            "label": ".buildCommandQueueContext()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L440"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_stabilitytimers",
+            "label": ".stabilityTimers()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L450"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_delegations",
+            "label": ".delegations()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L455"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_delegationsbysession",
+            "label": ".delegationsBySession()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L460"
+        },
+        {
+            "id": "lib_delegation_manager_delegationmanager_safetytimers",
+            "label": ".safetyTimers()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L465"
+        }
+    ],
+    "edges": [
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_command_delegation_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L1",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_command_delegation_commanddelegationhandler",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L1",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_concurrency_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L2",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_concurrency_builddelegationqueuekey",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L2",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_concurrency_delegationconcurrencyqueue",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L2",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_completion_detector_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_completion_detector_completiondetector",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_persistence_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L4",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_delegation_persistence_readpersisteddelegations",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L4",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_state_machine_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L5",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_delegation_state_machine_builddelegationresult",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L5",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_delegation_state_machine_delegationstatemachine",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L5",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_pty_pty_manager_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L9",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "pty_pty_manager_ptymanager",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L9",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_sdk_delegation_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L10",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_sdk_delegation_sdkdelegationhandler",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L10",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gates_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L11",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_category_gates_resolvecategorygatedecision",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L11",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L12",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_category_gate_audit_recordcategorygateask",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L12",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_app_api_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L13",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_app_api_getappagents",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L13",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_session_api_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L14",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_session_api_sendpromptasync",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L14",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_session_api_opencodeclient",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L14",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_runtime_policy_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L15",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_runtime_policy_default_runtime_policy",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L15",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_runtime_policy_resolveconcurrencyforkey",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L15",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_agent_primitive_policy_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L16",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_agent_primitive_policy_enrichagentfromprimitives",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L16",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_agent_primitive_policy_parsepermissionrecord",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L16",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_agent_primitive_policy_parsetoolbooleans",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L16",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_concurrency_key_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L17",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_concurrency_key_resolvedelegationconcurrencykey",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L17",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_parent_directory_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L18",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_parent_directory_resolveparentworkingdirectory",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L18",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_session_creator_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L19",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_session_creator_spawndelegatedsession",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L19",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_spawner_spawn_request_builder_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L20",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_spawn_request_builder_buildsdkspawnrequest",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L20",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_spawn_request_builder_resolvedelegationpermissionprofile",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L20",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_spawn_request_builder_delegateparams",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L20",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "spawner_spawn_request_builder_validatedagent",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L20",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_types_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L21",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_types_default_safety_ceiling_ms",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L21",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_types_commanddelegationparams",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L21",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_types_delegation",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L21",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_types_delegationresult",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L21",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_types_runtimepolicy",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L21",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_types_max_delegation_depth",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L21",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_delegation_manager_resolveacquireargs",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L40",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_delegation_manager_builddelegationprompttools",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L54",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_delegation_manager_ts",
+            "target": "lib_delegation_manager_delegationmanager",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L71",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_constructor",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L79",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_setcompletiondetector",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L127",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_resolvenestingdepth",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L131",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_dispatch",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L138",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L230",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_handlesessionidle",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L265",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_handlesessiondeleted",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L279",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_recoverpending",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L290",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_getstatus",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L316",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_getalldelegations",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L320",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L331",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L362",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_getdelegationforptysession",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L372",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_markcommandcancellationforptysession",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L381",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_prunecompleteddelegations",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L389",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_validateagent",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L393",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_buildcanonicalqueuecontext",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L431",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_buildcommandqueuecontext",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L440",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_stabilitytimers",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L450",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_delegations",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L455",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_delegationsbysession",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L460",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager",
+            "target": "lib_delegation_manager_delegationmanager_safetytimers",
+            "relation": "method",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L465",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatch",
+            "target": "lib_delegation_manager_delegationmanager_resolvenestingdepth",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L139",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatch",
+            "target": "lib_delegation_manager_delegationmanager_validateagent",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L150",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatch",
+            "target": "lib_delegation_manager_delegationmanager_buildcanonicalqueuecontext",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L169",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatch",
+            "target": "lib_delegation_manager_resolveacquireargs",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L175",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatch",
+            "target": "lib_delegation_manager_builddelegationprompttools",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L205",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "target": "lib_delegation_manager_delegationmanager_resolvenestingdepth",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L231",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "target": "lib_delegation_manager_delegationmanager_buildcommandqueuecontext",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L238",
+            "weight": 1.0
+        },
+        {
+            "source": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "target": "lib_delegation_manager_resolveacquireargs",
+            "relation": "calls",
+            "context": "call",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L256",
+            "weight": 1.0
+        }
+    ],
+    "raw_calls": [
+        {
+            "caller_nid": "lib_delegation_manager_resolveacquireargs",
+            "callee": "resolveConcurrencyForKey",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L41"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_builddelegationprompttools",
+            "callee": "fromEntries",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L56"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_builddelegationprompttools",
+            "callee": "map",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L56"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_resolvenestingdepth",
+            "callee": "getDelegationIdForSession",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L132"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_resolvenestingdepth",
+            "callee": "get",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L134"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "resolveParentWorkingDirectory",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L146"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "resolveDelegationPermissionProfile",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L151"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "resolveCategoryGateDecision",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L153"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "recordCategoryGateask",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L160"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "buildDelegationQueueKey",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L170"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "resolveDelegationConcurrencyKey",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L171"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "acquire",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L176"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "spawnDelegatedSession",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L178"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "buildSdkSpawnRequest",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L180"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "randomUUID",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L184"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "now",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L189"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "now",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L193"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "registerDelegation",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L199"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "persistAll",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L200"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "sendPromptAsync",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L218"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "transition",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L219"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "transitionToTerminal",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L221"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "buildDelegationResult",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L222"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "get",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L222"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "buildDelegationResult",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L224"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "get",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L224"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatch",
+            "callee": "release",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L226"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "callee": "resolveCategoryGateDecision",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L239"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "callee": "recordCategoryGateask",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L246"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "callee": "buildDelegationQueueKey",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L255"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "callee": "acquire",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L257"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_dispatchcommand",
+            "callee": "release",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L261"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle",
+            "callee": "getDelegationIdForSession",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L266"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle",
+            "callee": "get",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L268"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle",
+            "callee": "transition",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L272"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle",
+            "callee": "isPolling",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L274"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessionidle",
+            "callee": "scheduleStabilityPoll",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L275"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted",
+            "callee": "getDelegationIdForSession",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L280"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted",
+            "callee": "get",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L282"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted",
+            "callee": "cleanupTracking",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L284"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_handlesessiondeleted",
+            "callee": "transitionToTerminal",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L287"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_recoverpending",
+            "callee": "readPersistedDelegations",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L291"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_recoverpending",
+            "callee": "hydrateFromPersistence",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L293"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_recoverpending",
+            "callee": "trackSession",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L296"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_recoverpending",
+            "callee": "recoverSdkDelegation",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L297"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_recoverpending",
+            "callee": "recoverPtyDelegation",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L301"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_recoverpending",
+            "callee": "transitionToTerminal",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L304"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_getstatus",
+            "callee": "get",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L317"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_getalldelegations",
+            "callee": "getAll",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L321"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation",
+            "callee": "getDelegationIdForSession",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L339"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_cansessionaccessdelegation",
+            "callee": "get",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L347"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession",
+            "callee": "filter",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L363"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_getvisibledelegationsforsession",
+            "callee": "getAll",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L363"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_getdelegationforptysession",
+            "callee": "findByPtySession",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L373"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "filter",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L397"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "getAppAgents",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L397"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "String",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L405"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "includes",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L406"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "warn",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L407"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "enrichAgentFromPrimitives",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L410"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "filter",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L415"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "map",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L415"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "map",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L424"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "includes",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L425"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "join",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L426"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "enrichAgentFromPrimitives",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L428"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_validateagent",
+            "callee": "find",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L428"
+        },
+        {
+            "caller_nid": "lib_delegation_manager_delegationmanager_stabilitytimers",
+            "callee": "getTimerMap",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/delegation-manager.ts",
+            "source_location": "L451"
+        }
+    ]
+}

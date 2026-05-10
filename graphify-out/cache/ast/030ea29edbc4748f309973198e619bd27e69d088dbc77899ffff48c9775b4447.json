@@ -1,1 +1,82 @@
-{"nodes": [{"id": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts", "label": "category-gate-audit.ts", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L1"}, {"id": "lib_category_gate_audit_recordcategorygatedeny", "label": "recordCategoryGateDeny()", "file_type": "code", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L17"}], "edges": [{"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts", "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_continuity_ts", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L1", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts", "target": "lib_continuity_getgovernancepersistencestate", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L1", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts", "target": "lib_continuity_recordgovernancepersistencestate", "relation": "imports", "context": "import", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L1", "weight": 1.0}, {"source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts", "target": "lib_category_gate_audit_recordcategorygatedeny", "relation": "contains", "confidence": "EXTRACTED", "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L17", "weight": 1.0}], "raw_calls": [{"caller_nid": "lib_category_gate_audit_recordcategorygatedeny", "callee": "getGovernancePersistenceState", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L19"}, {"caller_nid": "lib_category_gate_audit_recordcategorygatedeny", "callee": "recordGovernancePersistenceState", "is_member_call": false, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L20"}, {"caller_nid": "lib_category_gate_audit_recordcategorygatedeny", "callee": "now", "is_member_call": true, "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts", "source_location": "L27"}]}
+{
+    "nodes": [
+        {
+            "id": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts",
+            "label": "category-gate-audit.ts",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L1"
+        },
+        {
+            "id": "lib_category_gate_audit_recordcategorygateask",
+            "label": "recordCategoryGateask()",
+            "file_type": "code",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L17"
+        }
+    ],
+    "edges": [
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts",
+            "target": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_continuity_ts",
+            "relation": "imports_from",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L1",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts",
+            "target": "lib_continuity_getgovernancepersistencestate",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L1",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts",
+            "target": "lib_continuity_recordgovernancepersistencestate",
+            "relation": "imports",
+            "context": "import",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L1",
+            "weight": 1.0
+        },
+        {
+            "source": "users_apple_documents_coding_projects_hivemind_plugin_1_src_lib_category_gate_audit_ts",
+            "target": "lib_category_gate_audit_recordcategorygateask",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L17",
+            "weight": 1.0
+        }
+    ],
+    "raw_calls": [
+        {
+            "caller_nid": "lib_category_gate_audit_recordcategorygateask",
+            "callee": "getGovernancePersistenceState",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L19"
+        },
+        {
+            "caller_nid": "lib_category_gate_audit_recordcategorygateask",
+            "callee": "recordGovernancePersistenceState",
+            "is_member_call": false,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L20"
+        },
+        {
+            "caller_nid": "lib_category_gate_audit_recordcategorygateask",
+            "callee": "now",
+            "is_member_call": true,
+            "source_file": "/Users/apple/Documents/coding-projects/hivemind-plugin-1/src/lib/category-gate-audit.ts",
+            "source_location": "L27"
+        }
+    ]
+}

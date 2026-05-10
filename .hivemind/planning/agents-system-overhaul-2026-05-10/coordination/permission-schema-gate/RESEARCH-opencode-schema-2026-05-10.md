@@ -117,7 +117,7 @@ StructWithRest({
 
 Three possible actions (defined in `ConfigPermission.Action`):
 - `"allow"` — Tool executes without user confirmation
-- `"deny"` — Tool is blocked entirely
+- `"ask"` — Tool is blocked entirely
 - `"ask"` — User is prompted for permission before execution
 
 ### Rule Types
@@ -128,7 +128,7 @@ Each permission key accepts one of two forms:
    ```yaml
    permission:
      bash: allow        # all bash commands allowed
-     websearch: deny    # websearch blocked
+     websearch: ask    # websearch blocked
    ```
 
 2. **Pattern object (Record<string, Action>):** Fine-grained per-pattern control
@@ -139,10 +139,10 @@ Each permission key accepts one of two forms:
        "*.env": ask         # .env files require approval
        "*.env.*": ask       # .env.local, .env.production etc require approval
      edit:
-       "*": deny            # default: deny all edits
+       "*": ask            # default: ask all edits
        "src/**": allow      # except src/ directory
      task:
-       "*": deny            # deny delegation to all agents by default
+       "*": ask            # ask delegation to all agents by default
        "general": allow     # allow delegation to general agent
        "explore": allow     # allow delegation to explore agent
    ```
@@ -240,7 +240,7 @@ Source: `packages/opencode/src/tool/task.ts`
 
 - A subagent CAN delegate to another agent if its `task` permission allows it
 - The task tool checks `patterns: [params.subagent_type]` against the calling agent's task permission rules
-- Child sessions inherit `external_directory` rules and `deny` rules from parent
+- Child sessions inherit `external_directory` rules and `ask` rules from parent
 - If the target agent has no `task` rule in its permission ruleset, the task tool is explicitly denied in the child session
 - If the target agent has no `todowrite` rule, todowrite is denied in the child session
 
@@ -276,7 +276,7 @@ YAML frontmatter uses `top_p` (snake_case). The runtime `Agent.Info` schema uses
 The `AgentSchema` uses `Schema.StructWithRest` with `[Record<String, Any>]`, meaning any unrecognized key is collected and preserved in the `options` field. This means Hivemind-internal fields like `depth`, `lineage`, `domain` silently survive parsing but are not used by OpenCode itself.
 
 ### 4. `tools` (deprecated) is auto-converted to `permission`
-The old `tools: { name: boolean }` map is normalized: enabled tools become `"allow"`, disabled become `"deny"`. Write-adjacent tools (`write`, `edit`, `patch`) all collapse into `permission.edit`.
+The old `tools: { name: boolean }` map is normalized: enabled tools become `"allow"`, disabled become `"ask"`. Write-adjacent tools (`write`, `edit`, `patch`) all collapse into `permission.edit`.
 
 ### 5. `disable` field exists but is not in the Agent.Info runtime schema
 The `disable` field is in the config schema but used only during agent loading — disabled agents are deleted from the registry entirely. It does not appear in the runtime `Agent.Info`.
@@ -325,18 +325,18 @@ model:
 permission:
   read: allow                     # shorthand
   edit:                           # pattern object
-    "*": deny
+    "*": ask
     "src/**": allow
   task:                           # controls delegation
-    "*": deny
+    "*": ask
     "general": allow
     "explore": allow
   skill:                          # controls skill loading
     "*": allow
   bash: allow
   webfetch: ask
-  websearch: deny
-  question: deny
+  websearch: ask
+  question: ask
   doom_loop: ask
 
 # Deprecated (use permission instead)
@@ -358,7 +358,7 @@ Agent system prompt goes here as markdown body content.
 | Valid frontmatter fields | `packages/opencode/src/config/agent.ts` | `AgentSchema = Schema.StructWithRest(...)` definition |
 | Mode values | `packages/opencode/src/config/agent.ts` | `mode: Schema.optional(Schema.Literals(["subagent", "primary", "all"]))` |
 | Hidden semantics | `packages/opencode/src/config/agent.ts` | `.annotate({ description: "Hide this subagent from the @ autocomplete menu..." })` |
-| Permission actions | `packages/opencode/src/config/permission.ts` | `Action = Schema.Literals(["ask", "allow", "deny"])` |
+| Permission actions | `packages/opencode/src/config/permission.ts` | `Action = Schema.Literals(["ask", "allow", "ask"])` |
 | Rule vs Action types | `packages/opencode/src/config/permission.ts` | Known keys with `Rule` vs `Action` type in `InputObject` |
 | findLast evaluation | `packages/opencode/src/permission/evaluate.ts` | `rules.findLast(...)` |
 | Glob pattern matching | `packages/opencode/src/util/wildcard.ts` | `*` → `.*`, space+star optional trailing |

@@ -29,9 +29,9 @@ Extracted from all plan, summary, verification, context, and discussion artifact
 - **Rationale:** Eliminates role overlap confusion where multiple agents claimed "primary orchestrator" role, causing ambiguous dispatch. Each specialist gets a non-overlapping scope with hierarchy comments.
 - **Source:** `15-DISCUSSION-LOG.md` (Orchestrator Hierarchy table), `15-CONTEXT.md` (D-03, D-04, D-05), `15-01-SUMMARY.md` (key-decisions)
 
-### D-15.3: Deny-by-default permissions for all agents
-- **What was decided:** All agent permission blocks start with `"*": deny` for each tool category, then explicitly allow only what's needed.
-- **Rationale:** Prevents privilege escalation from wildcard or blanket `allow` permissions. conductor.md went from `skill: allow` to deny-all with only 3 scoped skills.
+### D-15.3: ask-by-default permissions for all agents
+- **What was decided:** All agent permission blocks start with `"*": ask` for each tool category, then explicitly allow only what's needed.
+- **Rationale:** Prevents privilege escalation from wildcard or blanket `allow` permissions. conductor.md went from `skill: allow` to ask-all with only 3 scoped skills.
 - **Source:** `15-01-SUMMARY.md` (patterns-established), `15-01-PLAN.md` (Task 2), `15-VERIFICATION.md` (truth #3)
 
 ### D-15.4: Replace wildcard skill permissions with explicit allowlists
@@ -107,8 +107,8 @@ Extracted from all plan, summary, verification, context, and discussion artifact
 
 ## Patterns
 
-### P-15.1: Deny-by-default permissions with scoped overrides
-- **Pattern:** Agent permission blocks start with deny-all (`"*": deny`) for each tool category, then explicitly list only the specific resources/actions that agent needs.
+### P-15.1: ask-by-default permissions with scoped overrides
+- **Pattern:** Agent permission blocks start with ask-all (`"*": ask`) for each tool category, then explicitly list only the specific resources/actions that agent needs.
 - **When to use:** Any new agent definition file. Also applicable to any system where least-privilege access control is needed.
 - **Source:** `15-01-SUMMARY.md` (patterns-established), `15-01-PLAN.md` (Task 2A conductor.md replacement)
 

@@ -38,7 +38,7 @@ The SE-12 phase executed as a single-task plan: creating the `hm-l3-tool-capabil
 
 ### hm-l3-tool-capability-matrix SKILL.md (340+ lines)
 
-- **Part 1: Complete Tool Catalog** — 17 native OpenCode tools, 10 Hivemind custom tools, 13 MCP provider groups. Each tool documented with: category, permission options (allow/deny/ask), glob/pattern support status, and description.
+- **Part 1: Complete Tool Catalog** — 17 native OpenCode tools, 10 Hivemind custom tools, 13 MCP provider groups. Each tool documented with: category, permission options (allow/ask/ask), glob/pattern support status, and description.
 - **Part 2: Per-Depth Typical Permissions** — Templates for L0 orchestrator, L1 coordinator, L2 read-only specialist, L2 read-write specialist, and L3 reference. All templates derived from actual 56 agent definitions in `.opencode/agents/`.
 - **Part 3: Per-Lineage Tool Rules** — hm-* (STRICT: no hf tools/skills), hf-* (FLEXIBLE: can access hm-* tools), gate-* (INTERNAL ONLY: read-only, not shipped), stack-* (REFERENCE: read-only), unprefixed (NEUTRAL).
 - **Part 4: Permission Pattern Reference** — Copy-paste JSON templates for granular bash rules, edit rules (path-scoped), task rules (agent-type-scoped), and skill rules (lineage-scoped).

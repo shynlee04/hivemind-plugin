@@ -372,7 +372,7 @@ Now let me read the actual implementation files to audit against the requirement
 12: 
 13: export type SpecialistAgent = (typeof VALID_AGENTS)[number]
 14: export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
-15: export type PermissionAction = "allow" | "deny" | "ask"
+15: export type PermissionAction = "allow" | "ask" | "ask"
 16: 
 17: export type PermissionRule = {
 18:   permission: string
@@ -690,25 +690,25 @@ types.ts (leaf — no imports)
 71: }
 72: 
 73: function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[] {
-74:   const commonDelegateDeny: PermissionRule = {
+74:   const commonDelegateask: PermissionRule = {
 75:     permission: "delegate-task",
 76:     pattern: "*",
-77:     action: "deny",
+77:     action: "ask",
 78:   }
 79: 
 80:   switch (agentName) {
 81:     case "researcher":
 82:       return [
-83:         { permission: "edit", pattern: "*", action: "deny" },
-84:         { permission: "write", pattern: "*", action: "deny" },
-85:         { permission: "bash", pattern: "*", action: "deny" },
-86:         { permission: "task", pattern: "*", action: "deny" },
-87:         commonDelegateDeny,
+83:         { permission: "edit", pattern: "*", action: "ask" },
+84:         { permission: "write", pattern: "*", action: "ask" },
+85:         { permission: "bash", pattern: "*", action: "ask" },
+86:         { permission: "task", pattern: "*", action: "ask" },
+87:         commonDelegateask,
 88:       ]
 89:     case "builder":
 90:       return [
-91:         { permission: "task", pattern: "*", action: "deny" },
-92:         commonDelegateDeny,
+91:         { permission: "task", pattern: "*", action: "ask" },
+92:         commonDelegateask,
 93:       ]
 94:     case "critic":
 95:       return [
@@ -716,10 +716,10 @@ types.ts (leaf — no imports)
 97:         { permission: "read", pattern: "*", action: "allow" },
 98:         { permission: "grep", pattern: "*", action: "allow" },
 99:         { permission: "glob", pattern: "*", action: "allow" },
-100:         { permission: "edit", pattern: "*", action: "deny" },
-101:         { permission: "write", pattern: "*", action: "deny" },
-102:         { permission: "task", pattern: "*", action: "deny" },
-103:         commonDelegateDeny,
+100:         { permission: "edit", pattern: "*", action: "ask" },
+101:         { permission: "write", pattern: "*", action: "ask" },
+102:         { permission: "task", pattern: "*", action: "ask" },
+103:         commonDelegateask,
 104:       ]
 105:     default:
 106:       throw new Error(`[Harness] Unsupported agent for permission profile: ${String(agentName)}`)
@@ -1138,7 +1138,7 @@ File not found: /Users/apple/hivemind-plugin/.worktrees/harness-experiment/src/l
 40:   const tools: Record<string, boolean> = {}
 41: 
 42:   for (const rule of permissionRules) {
-43:     if (rule.action !== "deny") {
+43:     if (rule.action !== "ask") {
 44:       continue
 45:     }
 46:     tools[rule.permission] = false
@@ -1602,7 +1602,7 @@ Let me continue reading the remaining implementation files to complete the audit
 122: function normalizePermissionAction(value: unknown): PermissionAction | undefined {
 123:   switch (value) {
 124:     case "allow":
-125:     case "deny":
+125:     case "ask":
 126:     case "ask":
 127:       return value
 128:     default:
@@ -3404,7 +3404,7 @@ Now let me read the remaining files and the test files to complete the audit.
 ```
 <path>/Users/apple/hivemind-plugin/.worktrees/harness-experiment/src/lib/agent-registry.ts</path>
 <type>file</type>
-<content>1: export type PermissionValue = "allow" | "deny" | "ask" | Record<string, string>
+<content>1: export type PermissionValue = "allow" | "ask" | "ask" | Record<string, string>
 2: 
 3: export type AgentConfig = {
 4:   description?: string
@@ -3512,8 +3512,8 @@ Now let me read the remaining files and the test files to complete the audit.
 106:   toolName: string
 107: ): boolean {
 108:   const value = getPermissionForTool(permission, toolName)
-109:   if (value === "deny") return true
-110:   if (typeof value === "object" && value && value["*"] === "deny") return true
+109:   if (value === "ask") return true
+110:   if (typeof value === "object" && value && value["*"] === "ask") return true
 111:   return false
 112: }
 
@@ -3553,9 +3553,9 @@ We need to read the test files and the OMO reference files to complete the audit
 9: description: "Research agent"
 10: mode: subagent
 11: permission:
-12:   edit: deny
-13:   write: deny
-14:   bash: deny
+12:   edit: ask
+13:   write: ask
+14:   bash: ask
 15:   webfetch: allow
 16: ---
 17: 
@@ -3563,9 +3563,9 @@ We need to read the test files and the OMO reference files to complete the audit
 19: 
 20:       const config = parseAgentFrontmatter(md)
 21:       expect(config.permission).toEqual({
-22:         edit: "deny",
-23:         write: "deny",
-24:         bash: "deny",
+22:         edit: "ask",
+23:         write: "ask",
+24:         bash: "ask",
 25:         webfetch: "allow",
 26:       })
 27:     })
@@ -3606,7 +3606,7 @@ We need to read the test files and the OMO reference files to complete the audit
 62:   bash:
 63:     "*": ask
 64:     "git status*": allow
-65:     "rm *": deny
+65:     "rm *": ask
 66: ---
 67: 
 68: Prompt.`
@@ -3616,7 +3616,7 @@ We need to read the test files and the OMO reference files to complete the audit
 72:         bash: {
 73:           "*": "ask",
 74:           "git status*": "allow",
-75:           "rm *": "deny",
+75:           "rm *": "ask",
 76:         },
 77:       })
 78:     })
@@ -3669,10 +3669,10 @@ We need to read the test files and the OMO reference files to complete the audit
 125: steps: 80
 126: hidden: true
 127: permission:
-128:   edit: deny
-129:   write: deny
+128:   edit: ask
+129:   write: ask
 130:   bash: ask
-131:   task: deny
+131:   task: ask
 132: ---
 133: 
 134: Full prompt.`
@@ -3684,10 +3684,10 @@ We need to read the test files and the OMO reference files to complete the audit
 140:       expect(config.steps).toBe(80)
 141:       expect(config.hidden).toBe(true)
 142:       expect(config.permission).toEqual({
-143:         edit: "deny",
-144:         write: "deny",
+143:         edit: "ask",
+144:         write: "ask",
 145:         bash: "ask",
-146:         task: "deny",
+146:         task: "ask",
 147:       })
 148:     })
 149:   })
@@ -3696,15 +3696,15 @@ We need to read the test files and the OMO reference files to complete the audit
 152:     it("should return the permission value for a tool", async () => {
 153:       const { getPermissionForTool } = await import("../../src/lib/agent-registry.js")
 154: 
-155:       const permission = { edit: "deny", bash: "allow" }
-156:       expect(getPermissionForTool(permission, "edit")).toBe("deny")
+155:       const permission = { edit: "ask", bash: "allow" }
+156:       expect(getPermissionForTool(permission, "edit")).toBe("ask")
 157:       expect(getPermissionForTool(permission, "bash")).toBe("allow")
 158:     })
 159: 
 160:     it("should return undefined for unknown tool", async () => {
 161:       const { getPermissionForTool } = await import("../../src/lib/agent-registry.js")
 162: 
-163:       const permission = { edit: "deny" }
+163:       const permission = { edit: "ask" }
 164:       expect(getPermissionForTool(permission, "unknown")).toBeUndefined()
 165:     })
 166: 
@@ -3719,15 +3719,15 @@ We need to read the test files and the OMO reference files to complete the audit
 175:     it("should return true when tool is denied", async () => {
 176:       const { isToolDenied } = await import("../../src/lib/agent-registry.js")
 177: 
-178:       const permission = { edit: "deny", bash: "allow" }
+178:       const permission = { edit: "ask", bash: "allow" }
 179:       expect(isToolDenied(permission, "edit")).toBe(true)
 180:       expect(isToolDenied(permission, "bash")).toBe(false)
 181:     })
 182: 
-183:     it("should return true when nested wildcard is deny", async () => {
+183:     it("should return true when nested wildcard is ask", async () => {
 184:       const { isToolDenied } = await import("../../src/lib/agent-registry.js")
 185: 
-186:       const permission = { bash: { "*": "deny", "git status*": "allow" } }
+186:       const permission = { bash: { "*": "ask", "git status*": "allow" } }
 187:       expect(isToolDenied(permission, "bash")).toBe(true)
 188:     })
 189: 
@@ -4223,10 +4223,10 @@ We need to read the test files and the OMO reference files to complete the audit
 202: })
 203: 
 204: describe("getPromptToolCompatibility", () => {
-205:   it("maps deny rules to {permission: false}", () => {
+205:   it("maps ask rules to {permission: false}", () => {
 206:     const rules: PermissionRule[] = [
-207:       { permission: "edit", pattern: "*", action: "deny" },
-208:       { permission: "write", pattern: "*", action: "deny" },
+207:       { permission: "edit", pattern: "*", action: "ask" },
+208:       { permission: "write", pattern: "*", action: "ask" },
 209:     ]
 210:     const result = getPromptToolCompatibility(rules)
 211:     expect(result).toEqual({ edit: false, write: false })
@@ -4235,13 +4235,13 @@ We need to read the test files and the OMO reference files to complete the audit
 214:   it("ignores allow rules", () => {
 215:     const rules: PermissionRule[] = [
 216:       { permission: "read", pattern: "*", action: "allow" },
-217:       { permission: "edit", pattern: "*", action: "deny" },
+217:       { permission: "edit", pattern: "*", action: "ask" },
 218:     ]
 219:     const result = getPromptToolCompatibility(rules)
 220:     expect(result).toEqual({ edit: false })
 221:   })
 222: 
-223:   it("returns undefined when no deny rules exist", () => {
+223:   it("returns undefined when no ask rules exist", () => {
 224:     const rules: PermissionRule[] = [
 225:       { permission: "read", pattern: "*", action: "allow" },
 226:     ]
@@ -5451,15 +5451,15 @@ Let me check the opencode.json and agent files:
 4: temperature: 0.3
 5: steps: 80
 6: permission:
-7:   edit: deny
-8:   write: deny
+7:   edit: ask
+8:   write: ask
 9:   bash:
 10:     "*": ask
 11:     "git status*": allow
 12:     "git diff*": allow
 13:     "git log*": allow
 14:     "ls*": allow
-15:   task: deny
+15:   task: ask
 16:   delegate-task: allow
 17:   skill: allow
 18:   read: allow
@@ -5598,7 +5598,7 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 
 - **Agent prompts** are markdown files with behavioral rules (NEVER/ALWAYS directives)
 - **Conductor** never edits files directly — routes to builder/researcher/critic only
-- **Each agent** has explicit tool allowlists and denylists matching `src/lib/helpers.ts` restriction tables
+- **Each agent** has explicit tool allowlists and asklists matching `src/lib/helpers.ts` restriction tables
 - **Rules** in `harness-rules.md` are NON-NEGOTIABLE — loaded into every session via `opencode.json.instructions`
 - **Skills** use progressive disclosure — SKILL.md entry point, references/ for detail
 - **State dir** is the runtime persistence location — do not commit contents
@@ -5637,10 +5637,10 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 4: temperature: 0.1
 5: steps: 60
 6: permission:
-7:   edit: deny
-8:   write: deny
-9:   bash: deny
-10:   task: deny
+7:   edit: ask
+8:   write: ask
+9:   bash: ask
+10:   task: ask
 11:   skill: allow
 12:   read: allow
 13:   glob: allow
@@ -5787,9 +5787,9 @@ The implementation is **substantially aligned** with the requirements and user s
 | AGT-002 | Conductor agent | `conductor.md` with `mode: primary` |
 | AGT-003 | Intent classification | `conductor.md` lines 32-49 — 5 categories |
 | AGT-004 | Conductor never implements | `conductor.md` rules: "NEVER edit files directly" |
-| AGT-005 | Researcher read-only | `researcher.md` permissions: edit/write/bash/task all deny |
+| AGT-005 | Researcher read-only | `researcher.md` permissions: edit/write/bash/task all ask |
 | AGT-006 | Builder full access | `builder.md` — edit/write/bash allowed, task denied |
-| AGT-007 | Critic read-only + bash | `critic.md` — edit/write deny, bash allow |
+| AGT-007 | Critic read-only + bash | `critic.md` — edit/write ask, bash allow |
 | AGT-008 | Default temperatures | `plugin.ts:40-44` — researcher=0.1, builder=0.15, critic=0.05 |
 | AGT-009 | Max steps | Agent frontmatter: researcher=60, builder=80, critic=40, conductor=80 |
 | CAT-001 | Four delegation categories | `types.ts:6-11` — research, implementation, review, visual-engineering |
@@ -5907,8 +5907,8 @@ The implementation is **substantially aligned** with the requirements and user s
 |-------|--------|-------|
 | US-001: User Submits Task | ✅ | Intent classification, delegation, 6-section prompts all implemented |
 | US-002: Research Specialist | ✅ | Read-only permissions, 5-phase methodology in agent prompt, temperature 0.1 |
-| US-003: Builder Agent | ✅ | Full access, task deny, 5-step workflow in agent prompt |
-| US-004: Critic Agent | ✅ | Read-only + bash, task deny, review process in agent prompt |
+| US-003: Builder Agent | ✅ | Full access, task ask, 5-step workflow in agent prompt |
+| US-004: Critic Agent | ✅ | Read-only + bash, task ask, review process in agent prompt |
 | US-005: Conductor Synthesizes | ✅ | Background completion, notification to parent |
 | US-010: Delegated Session Creation | ✅ | Depth check, budget reserve, concurrency acquire, continuity record |
 | US-011: Session Completion Detection | ✅ | `CompletionDetector` with idle/error/deleted/timeout/cancelled signals |
@@ -6360,7 +6360,7 @@ Let me analyze the actual capabilities:
    - Agent definitions via .opencode/agents/*.md
    - Commands via .opencode/commands/*.md
    - Skills via .opencode/skills/*/SKILL.md
-   - Permission system (allow/ask/deny per tool)
+   - Permission system (allow/ask/ask per tool)
    - Subtask spawning via `task` tool
    - Session lifecycle management
    - Plugin hooks (tool.execute.before/after, event, shell.env, compaction)
@@ -7194,7 +7194,7 @@ Let me actually read the platform docs to understand what OpenCode natively prov
 285: Tools (deprecated)
 286: tools is deprecated. Prefer the agent’s permission field for new configs, updates and more fine-grained control.
 287: 
-288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "deny"} permission.
+288: Allows you to control which tools are available in this agent. You can enable or disable specific tools by setting them to true or false. In an agent’s tools config, true is equivalent to {"*": "allow"} permission and false is equivalent to {"*": "ask"} permission.
 289: 
 290: opencode.json
 291: {
@@ -7240,12 +7240,12 @@ Let me actually read the platform docs to understand what OpenCode natively prov
 331: 
 332: "ask" — Prompt for approval before running the tool
 333: "allow" — Allow all operations without approval
-334: "deny" — Disable the tool
+334: "ask" — Disable the tool
 335: opencode.json
 336: {
 337:   "$schema": "https://opencode.ai/config.json",
 338:   "permission": {
-339:     "edit": "deny"
+339:     "edit": "ask"
 340:   }
 341: }
 342: 
@@ -7255,7 +7255,7 @@ Let me actually read the platform docs to understand what OpenCode natively prov
 346: {
 347:   "$schema": "https://opencode.ai/config.json",
 348:   "permission": {
-349:     "edit": "deny"
+349:     "edit": "ask"
 350:   },
 351:   "agent": {
 352:     "build": {
@@ -7273,13 +7273,13 @@ Let me actually read the platform docs to understand what OpenCode natively prov
 364: description: Code review without edits
 365: mode: subagent
 366: permission:
-367:   edit: deny
+367:   edit: ask
 368:   bash:
 369:     "*": ask
 370:     "git diff": allow
 371:     "git log*": allow
 372:     "grep *": allow
-373:   webfetch: deny
+373:   webfetch: ask
 374: ---
 375: 
 376: Only analyze code and suggest changes.
@@ -7379,7 +7379,7 @@ Let me actually read the platform docs to understand what OpenCode natively prov
 470:       "mode": "primary",
 471:       "permission": {
 472:         "task": {
-473:           "*": "deny",
+473:           "*": "ask",
 474:           "orchestrator-*": "allow",
 475:           "code-reviewer": "ask"
 476:         }
@@ -7388,15 +7388,15 @@ Let me actually read the platform docs to understand what OpenCode natively prov
 479:   }
 480: }
 481: 
-482: When set to deny, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
+482: When set to ask, the subagent is removed from the Task tool description entirely, so the model won’t attempt to invoke it.
 483: 
 484: Tip
 485: 
-486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (deny) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
+486: Rules are evaluated in order, and the last matching rule wins. In the example above, orchestrator-planner matches both * (ask) and orchestrator-* (allow), but since orchestrator-* comes after *, the result is allow.
 487: 
 488: Tip
 489: 
-490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would deny it.
+490: Users can always invoke any subagent directly via the @ autocomplete menu, even if the agent’s task permissions would ask it.
 491: 
 492: Color
 493: Customize the agent’s visual appearance in the UI with the color option. This affects how the agent appears in the interface.

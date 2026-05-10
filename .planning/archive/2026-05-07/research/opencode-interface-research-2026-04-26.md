@@ -60,7 +60,7 @@ The highest-value audit focus is not generic TypeScript compilation alone. Revie
 ### Built-in Tool and Permission Interfaces
 
 1. Built-in tool IDs documented in current docs include `bash`, `edit`, `write`, `read`, `grep`, `glob`, `lsp`, `apply_patch`, `skill`, `todowrite`, `webfetch`, `websearch`, and `question`. [DOCS-PROVEN: https://opencode.ai/docs/tools/]
-2. Tool permissions are configured through the `permission` field in config with values `allow`, `deny`, or `ask`; wildcard matching is supported. [DOCS-PROVEN: https://opencode.ai/docs/tools/] [DOCS-PROVEN: https://opencode.ai/docs/permissions linked from tools docs]
+2. Tool permissions are configured through the `permission` field in config with values `allow`, `ask`, or `ask`; wildcard matching is supported. [DOCS-PROVEN: https://opencode.ai/docs/tools/] [DOCS-PROVEN: https://opencode.ai/docs/permissions linked from tools docs]
 3. Docs explicitly warn that `tool.execute.before`/`after` checks should use `input.tool === "apply_patch"`, not `"patch"`, and that `apply_patch` uses `output.args.patchText`. [DOCS-PROVEN: https://opencode.ai/docs/tools/]
 
 ## Repository Code Paths Depending on External OpenCode Contracts

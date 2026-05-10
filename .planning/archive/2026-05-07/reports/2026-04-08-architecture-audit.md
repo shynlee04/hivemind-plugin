@@ -204,7 +204,7 @@ A single delegated session lifecycle triggers **5-10 synchronous disk writes**. 
 | 8 | Two-phase budget commit | `reserveSubagentSpawn` + `commitDescendant` pattern |
 | 9 | Continuity hydration | State restored from disk on startup |
 | 10 | Cycle detection | `walkParentChain()` detects and breaks cycles |
-| 11 | Permission scoping | Per-agent allow/deny lists enforced |
+| 11 | Permission scoping | Per-agent allow/ask lists enforced |
 | 12 | Dependency injection | All hook factories accept `HookDependencies` bundles |
 | 13 | Error prefix convention | All errors prefixed with `[Harness]` |
 | 14 | LOC limits respected | Most modules under 500 LOC |
@@ -314,7 +314,7 @@ Backward-compatible wrapper functions (`getDelegationMeta`, `setDelegationMeta`,
 
 | Aspect | Status | Detail |
 |--------|--------|--------|
-| Permission scoping per agent | ✅ researcher/builder/critic allow/deny lists |
+| Permission scoping per agent | ✅ researcher/builder/critic allow/ask lists |
 | Tool budget enforcement | ✅ 400/session, throws `[Harness]` error |
 | Circuit breaker | ✅ Signature-based, threshold=16 |
 | Arbitrary command execution | 🔴 Background tool accepts raw `command` string |

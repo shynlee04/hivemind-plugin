@@ -649,9 +649,9 @@ Note: file list is sampled.
 60: | AGT-002 | The system SHALL define a `conductor` agent as a `primary`-mode agent (Tab-cycle accessible) that serves as the top-level orchestrator. The conductor combines OMO's Prometheus (intent classification) and Atlas (session lifecycle) roles for MVP | P0 | Not Started |
 61: | AGT-003 | The conductor agent SHALL classify user intent into: research, implement, review, plan, hybrid | P0 | Not Started |
 62: | AGT-004 | The conductor agent SHALL NEVER implement code directly — all execution SHALL be delegated via the harness `delegate-task` custom tool | P0 | Not Started |
-63: | AGT-005 | The researcher agent SHALL operate in read-only mode: denied `edit`, `write`, `bash` permissions. Allowed tools: `read`, `glob`, `grep`, `list`, `webfetch`, `websearch`, `codesearch`. Denied task spawning via `task: { "*": "deny" }` | P0 | Not Started |
-64: | AGT-006 | The builder agent SHALL have full file modification and shell access. Denied task spawning via `task: { "*": "deny" }` so all delegation routes through the conductor | P0 | Not Started |
-65: | AGT-007 | The critic agent SHALL have read-only file access plus `bash` permission restricted to test execution. Denied `edit`, `write`. Denied task spawning via `task: { "*": "deny" }` | P0 | Not Started |
+63: | AGT-005 | The researcher agent SHALL operate in read-only mode: denied `edit`, `write`, `bash` permissions. Allowed tools: `read`, `glob`, `grep`, `list`, `webfetch`, `websearch`, `codesearch`. Denied task spawning via `task: { "*": "ask" }` | P0 | Not Started |
+64: | AGT-006 | The builder agent SHALL have full file modification and shell access. Denied task spawning via `task: { "*": "ask" }` so all delegation routes through the conductor | P0 | Not Started |
+65: | AGT-007 | The critic agent SHALL have read-only file access plus `bash` permission restricted to test execution. Denied `edit`, `write`. Denied task spawning via `task: { "*": "ask" }` | P0 | Not Started |
 66: | AGT-008 | The system SHALL configure default temperatures per agent: researcher=0.1, builder=0.15, critic=0.05, conductor=0.3 | P0 | Not Started |
 67: | AGT-009 | Each agent SHALL have a configured max steps limit: researcher=60, builder=80, critic=40, conductor=80 | P1 | Not Started |
 68: 
@@ -675,18 +675,18 @@ Note: file list is sampled.
 86: 
 87: ### 4.1 Platform Permission Model
 88: 
-89: The OpenCode platform provides a permission system where each tool can be set to `allow`, `ask`, or `deny`. The `permission.task` field accepts glob patterns to control which subagent types an agent can spawn. For example: `"task": { "*": "deny", "explore": "allow" }` means the agent can only spawn `explore` subagents.
+89: The OpenCode platform provides a permission system where each tool can be set to `allow`, `ask`, or `ask`. The `permission.task` field accepts glob patterns to control which subagent types an agent can spawn. For example: `"task": { "*": "ask", "explore": "allow" }` means the agent can only spawn `explore` subagents.
 90: 
-91: The platform's `doom_loop` permission is an ACTION (allow/ask/deny), not a configurable threshold. The platform always triggers doom_loop detection at 3 consecutive identical tool calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` means the platform will NOT prompt the user when this condition is detected — it silently permits the repetition.
+91: The platform's `doom_loop` permission is an ACTION (allow/ask/ask), not a configurable threshold. The platform always triggers doom_loop detection at 3 consecutive identical tool calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` means the platform will NOT prompt the user when this condition is detected — it silently permits the repetition.
 92: 
 93: | ID | Requirement | Priority | Status |
 94: |----|-------------|----------|--------|
 95: | PERM-001 | The system SHALL implement a three-tier permission configuration: root (default), per-agent, per-delegation (enforced via hooks) | P0 | Not Started |
 96: | PERM-002 | The root permission model SHALL set `doom_loop` to `"allow"` to prevent the platform from blocking/prompting on repeated identical tool calls. This is necessary because the harness implements its own independent loop detection at a higher semantic level (see GRD-004). These two mechanisms serve different purposes: platform doom_loop catches exact duplicates at threshold 3; harness circuit breaker catches semantically similar patterns at threshold 16 | P0 | Not Started |
 97: | PERM-003 | The root permission model SHALL set the platform `task` tool to `"ask"` so the user is prompted before any subagent spawn that bypasses the harness | P0 | Not Started |
-98: | PERM-004 | The researcher agent SHALL be denied: `edit`, `write`, `bash` permissions and all task spawning via `"task": { "*": "deny" }` | P0 | Not Started |
-99: | PERM-005 | The builder agent SHALL be denied task spawning via `"task": { "*": "deny" }` — all delegation routes through the conductor's `delegate-task` custom tool | P0 | Not Started |
-100: | PERM-006 | The critic agent SHALL be denied: `edit`, `write` permissions and all task spawning via `"task": { "*": "deny" }` | P0 | Not Started |
+98: | PERM-004 | The researcher agent SHALL be denied: `edit`, `write`, `bash` permissions and all task spawning via `"task": { "*": "ask" }` | P0 | Not Started |
+99: | PERM-005 | The builder agent SHALL be denied task spawning via `"task": { "*": "ask" }` — all delegation routes through the conductor's `delegate-task` custom tool | P0 | Not Started |
+100: | PERM-006 | The critic agent SHALL be denied: `edit`, `write` permissions and all task spawning via `"task": { "*": "ask" }` | P0 | Not Started |
 101: | PERM-007 | The system SHALL enforce per-delegation tool restrictions via the plugin's `tool.execute.before` hook. This hook inspects the current session's delegation metadata and rejects tool calls that fall outside the delegated agent's permitted tool set | P0 | Not Started |
 102: | PERM-008 | The system SHALL register `delegate-task` as a custom tool via the plugin `tool()` factory from `@opencode-ai/plugin`. This is a harness-owned tool, NOT a platform primitive. Its tool context receives `{ agent, sessionID, messageID, directory, worktree }` | P0 | Not Started |
 103: 
@@ -900,8 +900,8 @@ Note: file list is sampled.
 311: | Hook: chat parameters | `chat.params` | Override model/temperature per delegation |
 312: | Hook: shell environment | `shell.env` | Set CI=true, GIT_TERMINAL_PROMPT=0, etc. |
 313: | Hook: events | `event` | Session lifecycle tracking |
-314: | Permission: doom_loop | `"doom_loop": "allow"/"ask"/"deny"` | Set to `allow` to let harness manage its own loop detection |
-315: | Permission: task glob patterns | `"task": { "*": "deny", "explore": "allow" }` | Control which subagent types each agent can spawn |
+314: | Permission: doom_loop | `"doom_loop": "allow"/"ask"/"ask"` | Set to `allow` to let harness manage its own loop detection |
+315: | Permission: task glob patterns | `"task": { "*": "ask", "explore": "allow" }` | Control which subagent types each agent can spawn |
 316: | Session CRUD | `client.session.create/get/list/delete/update/prompt/abort/share/children/messages` | Core delegation lifecycle |
 317: | Event streaming | `client.event.subscribe()` | SSE stream for async session monitoring |
 318: | TUI interaction | `client.tui.appendPrompt/showToast/executeCommand` | User feedback |
@@ -995,11 +995,11 @@ Note: file list is sampled.
 406: 
 407: | ID | Issue | Resolution |
 408: |----|--------|------------|
-409: | V3-1 | `doom_loop` described as a configurable threshold | **Fixed:** doom_loop is a permission action (allow/ask/deny), not a threshold. Platform always detects at 3 identical calls. Harness circuit breaker (threshold 16) is a separate mechanism in `tool.execute.before` hook. PERM-002 and GRD-004 now clearly distinguish these. |
+409: | V3-1 | `doom_loop` described as a configurable threshold | **Fixed:** doom_loop is a permission action (allow/ask/ask), not a threshold. Platform always detects at 3 identical calls. Harness circuit breaker (threshold 16) is a separate mechanism in `tool.execute.before` hook. PERM-002 and GRD-004 now clearly distinguish these. |
 410: | V3-2 | Custom tools (`delegate-task`, `context-checkpoint_*`) treated as platform primitives | **Fixed:** Added Section 15 with explicit custom tool definitions. All three tools are documented as harness-registered via `tool()` factory. CHK-001 and PERM-008 now state "NOT a platform primitive." |
 411: | V3-3 | Implicit references to `reserveConcurrencySlot()` and `getAvailableSpawnCapacity()` as platform APIs | **Fixed:** CON-001 and BUD-001 explicitly mark concurrency and budget as harness-internal abstractions. Added Section 14 boundary table. |
 412: | V3-4 | Environment variables presented as platform-native | **Fixed:** ARCH-007, PER-001, CHK-005, and GRD-002 now mark `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`, and `MAX_DESCENDANTS` as harness-specific. |
-413: | V3-5 | `permission.task` glob pattern semantics undocumented | **Fixed:** Added explanation in Section 4.1 header with example: `"task": { "*": "deny", "explore": "allow" }`. PERM-004/005/006 use this pattern explicitly. |
+413: | V3-5 | `permission.task` glob pattern semantics undocumented | **Fixed:** Added explanation in Section 4.1 header with example: `"task": { "*": "ask", "explore": "allow" }`. PERM-004/005/006 use this pattern explicitly. |
 414: | V3-6 | `/harness-doctor` described as aspirational "8-point health diagnostics" | **Fixed:** CMD-004 now specifies 5 concrete, testable checks: plugin loaded, continuity file valid, agent files exist, command files exist, skill files exist. |
 415: | V3-7 | OMO role mapping unclear for MVP | **Fixed:** AGT-002 now states conductor combines Prometheus + Atlas roles for MVP. Added LIM-010 as known limitation. |
 416: | V3-8 | SDK references used invented method names | **Fixed:** Section 9 now lists actual SDK methods with their correct signatures. SDK-001 through SDK-007 reference real methods only. |
@@ -1014,7 +1014,7 @@ Note: file list is sampled.
 425: 
 426: | ID | Issue | Resolution |
 427: |----|--------|------------|
-428: | C-1 | `delegate-task` is not a native OpenCode permission | Resolved: PERM-008 requires harness to register `delegate-task` as a custom tool via plugin `tool()` API. PERM-004, PERM-005, PERM-006 refactored to use native `task` permission with glob patterns (`task: { "*": "deny" }`). |
+428: | C-1 | `delegate-task` is not a native OpenCode permission | Resolved: PERM-008 requires harness to register `delegate-task` as a custom tool via plugin `tool()` API. PERM-004, PERM-005, PERM-006 refactored to use native `task` permission with glob patterns (`task: { "*": "ask" }`). |
 429: | C-2 | Dynamic permissions cannot be passed to session creation | Resolved: PERM-007 refactored to use plugin `tool.execute.before` hooks for enforcement. Static agent permissions provide base layer; plugin hooks add per-delegation restrictions. |
 430: | C-3 | SDK-002 references non-existent `promptAsync` method | Resolved: SDK-002 rewritten to use `client.session.prompt()` for synchronous delegation and `client.session.promptAsync()` for asynchronous delegation. The method EXISTS — returns void (204). |
 431: | C-4 | `session.create()` does not accept tool restrictions | Resolved: Architecture refactored to rely on agent-level static permissions + plugin-hook-enforced restrictions. Delegation uses `client.session.create({ title })` + `client.session.prompt({ body: { model, parts } })`. |
@@ -1114,7 +1114,7 @@ Note: file list is sampled.
 64: **Acceptance Criteria:**
 65: - [ ] Researcher agent receives a prompt with all 6 delegation sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT (CAT-009)
 66: - [ ] Researcher operates in read-only mode: denied `edit`, `write`, `bash` permissions. Allowed tools: `read`, `glob`, `grep`, `list`, `webfetch`, `websearch`, `codesearch` (AGT-005)
-67: - [ ] Researcher is denied ALL task spawning via `"task": { "*": "deny" }` permission glob pattern — cannot spawn any subagent type (PERM-004)
+67: - [ ] Researcher is denied ALL task spawning via `"task": { "*": "ask" }` permission glob pattern — cannot spawn any subagent type (PERM-004)
 68: - [ ] [AGENT INSTRUCTION] Researcher follows the 5-phase methodology: Scope → Broad Sweep → Deep Read → Cross-Reference → Synthesize
 69: - [ ] [AGENT INSTRUCTION] Every claim in the Researcher's output cites file:line references
 70: - [ ] Researcher runs on the configured model with temperature 0.1 (CAT-003)
@@ -1142,7 +1142,7 @@ Note: file list is sampled.
 92: **Acceptance Criteria:**
 93: - [ ] Builder agent receives a prompt with all 6 delegation sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT (CAT-009)
 94: - [ ] Builder has full file modification access (`edit`, `write` allowed) and shell access (`bash` allowed) (AGT-006)
-95: - [ ] Builder is denied ALL task spawning via `"task": { "*": "deny" }` permission glob pattern — all delegation routes through the conductor's `delegate-task` custom tool (PERM-005)
+95: - [ ] Builder is denied ALL task spawning via `"task": { "*": "ask" }` permission glob pattern — all delegation routes through the conductor's `delegate-task` custom tool (PERM-005)
 96: - [ ] [AGENT INSTRUCTION] Builder follows the 5-step workflow: Read Everything → Map Patterns → Plan Change → Implement Atomically → Verify
 97: - [ ] [AGENT INSTRUCTION] Builder matches existing code style (indentation, naming, import ordering, error handling patterns)
 98: - [ ] [AGENT INSTRUCTION] Builder makes atomic changes — one change at a time, verifying after each
@@ -1172,7 +1172,7 @@ Note: file list is sampled.
 122: **Acceptance Criteria:**
 123: - [ ] Critic agent receives a prompt with all 6 delegation sections: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT (CAT-009)
 124: - [ ] Critic operates in read-only file access mode: denied `edit` and `write` permissions, but allowed `bash` restricted to test execution (AGT-007)
-125: - [ ] Critic is denied ALL task spawning via `"task": { "*": "deny" }` permission glob pattern (PERM-006)
+125: - [ ] Critic is denied ALL task spawning via `"task": { "*": "ask" }` permission glob pattern (PERM-006)
 126: - [ ] [AGENT INSTRUCTION] Critic follows the 8-step review process: Understand Contract → Read Diff → Verify Acceptance Criteria → Correctness Check → Security Check → Performance Check → Conventions Check → Run Tests
 127: - [ ] [AGENT INSTRUCTION] Critic marks each acceptance criterion as MET or NOT MET with file:line evidence
 128: - [ ] [AGENT INSTRUCTION] Critic categorizes findings as Critical (must fix), Warning (should fix), or Info (nice to have)
@@ -1294,7 +1294,7 @@ Note: file list is sampled.
 244: - [ ] The Conductor creates or updates `.harness/boulder.json` for structured task state: plan reference, current phase, completed phases, errors, continuation context
 245: - [ ] For each pending phase, the Conductor delegates via the harness's `delegate-task` custom tool (registered via plugin `tool()` factory) to the appropriate specialist agent (AGT-004, PERM-008)
 246: - [ ] Per-delegation tool restrictions are enforced via the plugin's `tool.execute.before` hook, which inspects the current session's delegation metadata and rejects tool calls outside the delegated agent's permitted tool set (PERM-007)
-247: - [ ] All specialist agents have `task: { "*": "deny" }` preventing re-delegation (PERM-004, PERM-005, PERM-006)
+247: - [ ] All specialist agents have `task: { "*": "ask" }` preventing re-delegation (PERM-004, PERM-005, PERM-006)
 248: - [ ] The Conductor updates the plan status after each phase (in_progress → complete) in both `task_plan.md` and `.harness/boulder.json`
 249: - [ ] The Conductor logs errors encountered in the plan file
 250: - [ ] The Conductor supports resumption via `progress.md` — if interrupted, it picks up where it left off by reading `.harness/boulder.json` for structured state (CMD-006)
@@ -1501,7 +1501,7 @@ Note: file list is sampled.
 451: - [ ] The circuit breaker is implemented in the plugin's `tool.execute.before` hook — NOT using the platform's `doom_loop` mechanism (GRD-004)
 452: - [ ] When tripped, the system throws an error and aborts execution
 453: - [ ] The loop detection state is included in the `_harness` metadata
-454: - [ ] **Architectural separation:** The platform's `doom_loop` is a permission action (allow/ask/deny) that detects at exactly 3 consecutive identical calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` in root permissions prevents the platform from prompting the user — it silently permits. The harness circuit breaker is a SEPARATE mechanism at threshold 16 that catches semantically similar patterns. These two mechanisms serve different purposes and coexist (PERM-002, GRD-004)
+454: - [ ] **Architectural separation:** The platform's `doom_loop` is a permission action (allow/ask/ask) that detects at exactly 3 consecutive identical calls (same tool name + same serialized arguments). Setting `"doom_loop": "allow"` in root permissions prevents the platform from prompting the user — it silently permits. The harness circuit breaker is a SEPARATE mechanism at threshold 16 that catches semantically similar patterns. These two mechanisms serve different purposes and coexist (PERM-002, GRD-004)
 455: 
 456: **Edge Cases:**
 457: - E-049: Agent makes 15 similar calls, then a different call, then repeats — Counter resets on the different call
@@ -2085,25 +2085,25 @@ Let me now read all the source files to conduct the audit. I'll read them in par
 71: }
 72: 
 73: function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[] {
-74:   const commonDelegateDeny: PermissionRule = {
+74:   const commonDelegateask: PermissionRule = {
 75:     permission: "delegate-task",
 76:     pattern: "*",
-77:     action: "deny",
+77:     action: "ask",
 78:   }
 79: 
 80:   switch (agentName) {
 81:     case "researcher":
 82:       return [
-83:         { permission: "edit", pattern: "*", action: "deny" },
-84:         { permission: "write", pattern: "*", action: "deny" },
-85:         { permission: "bash", pattern: "*", action: "deny" },
-86:         { permission: "task", pattern: "*", action: "deny" },
-87:         commonDelegateDeny,
+83:         { permission: "edit", pattern: "*", action: "ask" },
+84:         { permission: "write", pattern: "*", action: "ask" },
+85:         { permission: "bash", pattern: "*", action: "ask" },
+86:         { permission: "task", pattern: "*", action: "ask" },
+87:         commonDelegateask,
 88:       ]
 89:     case "builder":
 90:       return [
-91:         { permission: "task", pattern: "*", action: "deny" },
-92:         commonDelegateDeny,
+91:         { permission: "task", pattern: "*", action: "ask" },
+92:         commonDelegateask,
 93:       ]
 94:     case "critic":
 95:       return [
@@ -2111,10 +2111,10 @@ Let me now read all the source files to conduct the audit. I'll read them in par
 97:         { permission: "read", pattern: "*", action: "allow" },
 98:         { permission: "grep", pattern: "*", action: "allow" },
 99:         { permission: "glob", pattern: "*", action: "allow" },
-100:         { permission: "edit", pattern: "*", action: "deny" },
-101:         { permission: "write", pattern: "*", action: "deny" },
-102:         { permission: "task", pattern: "*", action: "deny" },
-103:         commonDelegateDeny,
+100:         { permission: "edit", pattern: "*", action: "ask" },
+101:         { permission: "write", pattern: "*", action: "ask" },
+102:         { permission: "task", pattern: "*", action: "ask" },
+103:         commonDelegateask,
 104:       ]
 105:     default:
 106:       throw new Error(`[Harness] Unsupported agent for permission profile: ${String(agentName)}`)
@@ -2563,7 +2563,7 @@ Let me read all the source files to do a thorough audit.
 12: 
 13: export type SpecialistAgent = (typeof VALID_AGENTS)[number]
 14: export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
-15: export type PermissionAction = "allow" | "deny" | "ask"
+15: export type PermissionAction = "allow" | "ask" | "ask"
 16: 
 17: export type PermissionRule = {
 18:   permission: string
@@ -2822,7 +2822,7 @@ types.ts (leaf — no imports)
 12: 
 13: export type SpecialistAgent = (typeof VALID_AGENTS)[number]
 14: export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
-15: export type PermissionAction = "allow" | "deny" | "ask"
+15: export type PermissionAction = "allow" | "ask" | "ask"
 16: 
 17: export type PermissionRule = {
 18:   permission: string
@@ -3025,7 +3025,7 @@ types.ts (leaf — no imports)
 40:   const tools: Record<string, boolean> = {}
 41: 
 42:   for (const rule of permissionRules) {
-43:     if (rule.action !== "deny") {
+43:     if (rule.action !== "ask") {
 44:       continue
 45:     }
 46:     tools[rule.permission] = false
@@ -3605,7 +3605,7 @@ types.ts (leaf — no imports)
 122: function normalizePermissionAction(value: unknown): PermissionAction | undefined {
 123:   switch (value) {
 124:     case "allow":
-125:     case "deny":
+125:     case "ask":
 126:     case "ask":
 127:       return value
 128:     default:
@@ -4261,7 +4261,7 @@ types.ts (leaf — no imports)
 122: function normalizePermissionAction(value: unknown): PermissionAction | undefined {
 123:   switch (value) {
 124:     case "allow":
-125:     case "deny":
+125:     case "ask":
 126:     case "ask":
 127:       return value
 128:     default:
@@ -6881,7 +6881,7 @@ types.ts (leaf — no imports)
 ```
 <path>/Users/apple/hivemind-plugin/.worktrees/harness-experiment/src/lib/agent-registry.ts</path>
 <type>file</type>
-<content>1: export type PermissionValue = "allow" | "deny" | "ask" | Record<string, string>
+<content>1: export type PermissionValue = "allow" | "ask" | "ask" | Record<string, string>
 2: 
 3: export type AgentConfig = {
 4:   description?: string
@@ -6989,8 +6989,8 @@ types.ts (leaf — no imports)
 106:   toolName: string
 107: ): boolean {
 108:   const value = getPermissionForTool(permission, toolName)
-109:   if (value === "deny") return true
-110:   if (typeof value === "object" && value && value["*"] === "deny") return true
+109:   if (value === "ask") return true
+110:   if (typeof value === "object" && value && value["*"] === "ask") return true
 111:   return false
 112: }
 
@@ -7011,7 +7011,7 @@ types.ts (leaf — no imports)
 ```
 <path>/Users/apple/hivemind-plugin/.worktrees/harness-experiment/src/lib/agent-registry.ts</path>
 <type>file</type>
-<content>1: export type PermissionValue = "allow" | "deny" | "ask" | Record<string, string>
+<content>1: export type PermissionValue = "allow" | "ask" | "ask" | Record<string, string>
 2: 
 3: export type AgentConfig = {
 4:   description?: string
@@ -7119,8 +7119,8 @@ types.ts (leaf — no imports)
 106:   toolName: string
 107: ): boolean {
 108:   const value = getPermissionForTool(permission, toolName)
-109:   if (value === "deny") return true
-110:   if (typeof value === "object" && value && value["*"] === "deny") return true
+109:   if (value === "ask") return true
+110:   if (typeof value === "object" && value && value["*"] === "ask") return true
 111:   return false
 112: }
 
@@ -7271,15 +7271,15 @@ Let me read the critical configuration files - the agent definitions, commands, 
 4: temperature: 0.3
 5: steps: 80
 6: permission:
-7:   edit: deny
-8:   write: deny
+7:   edit: ask
+8:   write: ask
 9:   bash:
 10:     "*": ask
 11:     "git status*": allow
 12:     "git diff*": allow
 13:     "git log*": allow
 14:     "ls*": allow
-15:   task: deny
+15:   task: ask
 16:   delegate-task: allow
 17:   skill: allow
 18:   read: allow
@@ -7418,7 +7418,7 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 
 - **Agent prompts** are markdown files with behavioral rules (NEVER/ALWAYS directives)
 - **Conductor** never edits files directly — routes to builder/researcher/critic only
-- **Each agent** has explicit tool allowlists and denylists matching `src/lib/helpers.ts` restriction tables
+- **Each agent** has explicit tool allowlists and asklists matching `src/lib/helpers.ts` restriction tables
 - **Rules** in `harness-rules.md` are NON-NEGOTIABLE — loaded into every session via `opencode.json.instructions`
 - **Skills** use progressive disclosure — SKILL.md entry point, references/ for detail
 - **State dir** is the runtime persistence location — do not commit contents
@@ -7457,15 +7457,15 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 4: temperature: 0.3
 5: steps: 80
 6: permission:
-7:   edit: deny
-8:   write: deny
+7:   edit: ask
+8:   write: ask
 9:   bash:
 10:     "*": ask
 11:     "git status*": allow
 12:     "git diff*": allow
 13:     "git log*": allow
 14:     "ls*": allow
-15:   task: deny
+15:   task: ask
 16:   delegate-task: allow
 17:   skill: allow
 18:   read: allow
@@ -7573,10 +7573,10 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 4: temperature: 0.1
 5: steps: 60
 6: permission:
-7:   edit: deny
-8:   write: deny
-9:   bash: deny
-10:   task: deny
+7:   edit: ask
+8:   write: ask
+9:   bash: ask
+10:   task: ask
 11:   skill: allow
 12:   read: allow
 13:   glob: allow
@@ -7691,7 +7691,7 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 7:   edit: allow
 8:   write: allow
 9:   bash: allow
-10:   task: deny
+10:   task: ask
 11:   skill: allow
 12:   read: allow
 13:   glob: allow
@@ -7806,7 +7806,7 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 7:   edit: allow
 8:   write: allow
 9:   bash: allow
-10:   task: deny
+10:   task: ask
 11:   skill: allow
 12:   read: allow
 13:   glob: allow
@@ -7918,10 +7918,10 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 4: temperature: 0.05
 5: steps: 40
 6: permission:
-7:   edit: deny
-8:   write: deny
+7:   edit: ask
+8:   write: ask
 9:   bash: allow
-10:   task: deny
+10:   task: ask
 11:   skill: allow
 12:   read: allow
 13:   glob: allow
@@ -8056,10 +8056,10 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 4: temperature: 0.05
 5: steps: 40
 6: permission:
-7:   edit: deny
-8:   write: deny
+7:   edit: ask
+8:   write: ask
 9:   bash: allow
-10:   task: deny
+10:   task: ask
 11:   skill: allow
 12:   read: allow
 13:   glob: allow
@@ -8194,10 +8194,10 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 4: temperature: 0.05
 5: steps: 40
 6: permission:
-7:   edit: deny
-8:   write: deny
+7:   edit: ask
+8:   write: ask
 9:   bash: allow
-10:   task: deny
+10:   task: ask
 11:   skill: allow
 12:   read: allow
 13:   glob: allow
@@ -9475,7 +9475,7 @@ Now let me check the tests and the session file the user referenced:
 372: 12: 
 373: 13: export type SpecialistAgent = (typeof VALID_AGENTS)[number]
 374: 14: export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
-375: 15: export type PermissionAction = "allow" | "deny" | "ask"
+375: 15: export type PermissionAction = "allow" | "ask" | "ask"
 376: 16: 
 377: 17: export type PermissionRule = {
 378: 18:   permission: string
@@ -9793,25 +9793,25 @@ Now let me check the tests and the session file the user referenced:
 690: 71: }
 691: 72: 
 692: 73: function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[] {
-693: 74:   const commonDelegateDeny: PermissionRule = {
+693: 74:   const commonDelegateask: PermissionRule = {
 694: 75:     permission: "delegate-task",
 695: 76:     pattern: "*",
-696: 77:     action: "deny",
+696: 77:     action: "ask",
 697: 78:   }
 698: 79: 
 699: 80:   switch (agentName) {
 700: 81:     case "researcher":
 701: 82:       return [
-702: 83:         { permission: "edit", pattern: "*", action: "deny" },
-703: 84:         { permission: "write", pattern: "*", action: "deny" },
-704: 85:         { permission: "bash", pattern: "*", action: "deny" },
-705: 86:         { permission: "task", pattern: "*", action: "deny" },
-706: 87:         commonDelegateDeny,
+702: 83:         { permission: "edit", pattern: "*", action: "ask" },
+703: 84:         { permission: "write", pattern: "*", action: "ask" },
+704: 85:         { permission: "bash", pattern: "*", action: "ask" },
+705: 86:         { permission: "task", pattern: "*", action: "ask" },
+706: 87:         commonDelegateask,
 707: 88:       ]
 708: 89:     case "builder":
 709: 90:       return [
-710: 91:         { permission: "task", pattern: "*", action: "deny" },
-711: 92:         commonDelegateDeny,
+710: 91:         { permission: "task", pattern: "*", action: "ask" },
+711: 92:         commonDelegateask,
 712: 93:       ]
 713: 94:     case "critic":
 714: 95:       return [
@@ -9819,10 +9819,10 @@ Now let me check the tests and the session file the user referenced:
 716: 97:         { permission: "read", pattern: "*", action: "allow" },
 717: 98:         { permission: "grep", pattern: "*", action: "allow" },
 718: 99:         { permission: "glob", pattern: "*", action: "allow" },
-719: 100:         { permission: "edit", pattern: "*", action: "deny" },
-720: 101:         { permission: "write", pattern: "*", action: "deny" },
-721: 102:         { permission: "task", pattern: "*", action: "deny" },
-722: 103:         commonDelegateDeny,
+719: 100:         { permission: "edit", pattern: "*", action: "ask" },
+720: 101:         { permission: "write", pattern: "*", action: "ask" },
+721: 102:         { permission: "task", pattern: "*", action: "ask" },
+722: 103:         commonDelegateask,
 723: 104:       ]
 724: 105:     default:
 725: 106:       throw new Error(`[Harness] Unsupported agent for permission profile: ${String(agentName)}`)
@@ -10241,7 +10241,7 @@ Now let me check the tests and the session file the user referenced:
 1138: 40:   const tools: Record<string, boolean> = {}
 1139: 41: 
 1140: 42:   for (const rule of permissionRules) {
-1141: 43:     if (rule.action !== "deny") {
+1141: 43:     if (rule.action !== "ask") {
 1142: 44:       continue
 1143: 45:     }
 1144: 46:     tools[rule.permission] = false
@@ -10841,7 +10841,7 @@ Now let me check the tests and the session file the user referenced:
 372: 12: 
 373: 13: export type SpecialistAgent = (typeof VALID_AGENTS)[number]
 374: 14: export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
-375: 15: export type PermissionAction = "allow" | "deny" | "ask"
+375: 15: export type PermissionAction = "allow" | "ask" | "ask"
 376: 16: 
 377: 17: export type PermissionRule = {
 378: 18:   permission: string
@@ -11159,25 +11159,25 @@ Now let me check the tests and the session file the user referenced:
 690: 71: }
 691: 72: 
 692: 73: function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[] {
-693: 74:   const commonDelegateDeny: PermissionRule = {
+693: 74:   const commonDelegateask: PermissionRule = {
 694: 75:     permission: "delegate-task",
 695: 76:     pattern: "*",
-696: 77:     action: "deny",
+696: 77:     action: "ask",
 697: 78:   }
 698: 79: 
 699: 80:   switch (agentName) {
 700: 81:     case "researcher":
 701: 82:       return [
-702: 83:         { permission: "edit", pattern: "*", action: "deny" },
-703: 84:         { permission: "write", pattern: "*", action: "deny" },
-704: 85:         { permission: "bash", pattern: "*", action: "deny" },
-705: 86:         { permission: "task", pattern: "*", action: "deny" },
-706: 87:         commonDelegateDeny,
+702: 83:         { permission: "edit", pattern: "*", action: "ask" },
+703: 84:         { permission: "write", pattern: "*", action: "ask" },
+704: 85:         { permission: "bash", pattern: "*", action: "ask" },
+705: 86:         { permission: "task", pattern: "*", action: "ask" },
+706: 87:         commonDelegateask,
 707: 88:       ]
 708: 89:     case "builder":
 709: 90:       return [
-710: 91:         { permission: "task", pattern: "*", action: "deny" },
-711: 92:         commonDelegateDeny,
+710: 91:         { permission: "task", pattern: "*", action: "ask" },
+711: 92:         commonDelegateask,
 712: 93:       ]
 713: 94:     case "critic":
 714: 95:       return [
@@ -11185,10 +11185,10 @@ Now let me check the tests and the session file the user referenced:
 716: 97:         { permission: "read", pattern: "*", action: "allow" },
 717: 98:         { permission: "grep", pattern: "*", action: "allow" },
 718: 99:         { permission: "glob", pattern: "*", action: "allow" },
-719: 100:         { permission: "edit", pattern: "*", action: "deny" },
-720: 101:         { permission: "write", pattern: "*", action: "deny" },
-721: 102:         { permission: "task", pattern: "*", action: "deny" },
-722: 103:         commonDelegateDeny,
+719: 100:         { permission: "edit", pattern: "*", action: "ask" },
+720: 101:         { permission: "write", pattern: "*", action: "ask" },
+721: 102:         { permission: "task", pattern: "*", action: "ask" },
+722: 103:         commonDelegateask,
 723: 104:       ]
 724: 105:     default:
 725: 106:       throw new Error(`[Harness] Unsupported agent for permission profile: ${String(agentName)}`)
@@ -11607,7 +11607,7 @@ Now let me check the tests and the session file the user referenced:
 1138: 40:   const tools: Record<string, boolean> = {}
 1139: 41: 
 1140: 42:   for (const rule of permissionRules) {
-1141: 43:     if (rule.action !== "deny") {
+1141: 43:     if (rule.action !== "ask") {
 1142: 44:       continue
 1143: 45:     }
 1144: 46:     tools[rule.permission] = false
@@ -12191,10 +12191,10 @@ Let me check the test files and the package.json to understand the build state:
 202: })
 203: 
 204: describe("getPromptToolCompatibility", () => {
-205:   it("maps deny rules to {permission: false}", () => {
+205:   it("maps ask rules to {permission: false}", () => {
 206:     const rules: PermissionRule[] = [
-207:       { permission: "edit", pattern: "*", action: "deny" },
-208:       { permission: "write", pattern: "*", action: "deny" },
+207:       { permission: "edit", pattern: "*", action: "ask" },
+208:       { permission: "write", pattern: "*", action: "ask" },
 209:     ]
 210:     const result = getPromptToolCompatibility(rules)
 211:     expect(result).toEqual({ edit: false, write: false })
@@ -12203,13 +12203,13 @@ Let me check the test files and the package.json to understand the build state:
 214:   it("ignores allow rules", () => {
 215:     const rules: PermissionRule[] = [
 216:       { permission: "read", pattern: "*", action: "allow" },
-217:       { permission: "edit", pattern: "*", action: "deny" },
+217:       { permission: "edit", pattern: "*", action: "ask" },
 218:     ]
 219:     const result = getPromptToolCompatibility(rules)
 220:     expect(result).toEqual({ edit: false })
 221:   })
 222: 
-223:   it("returns undefined when no deny rules exist", () => {
+223:   it("returns undefined when no ask rules exist", () => {
 224:     const rules: PermissionRule[] = [
 225:       { permission: "read", pattern: "*", action: "allow" },
 226:     ]
@@ -15552,7 +15552,7 @@ Runtime config for the OpenCode harness. Loaded by `opencode.json` at session st
 
 - **Agent prompts** are markdown files with behavioral rules (NEVER/ALWAYS directives)
 - **Conductor** never edits files directly — routes to builder/researcher/critic only
-- **Each agent** has explicit tool allowlists and denylists matching `src/lib/helpers.ts` restriction tables
+- **Each agent** has explicit tool allowlists and asklists matching `src/lib/helpers.ts` restriction tables
 - **Rules** in `harness-rules.md` are NON-NEGOTIABLE — loaded into every session via `opencode.json.instructions`
 - **Skills** use progressive disclosure — SKILL.md entry point, references/ for detail
 - **State dir** is the runtime persistence location — do not commit contents
@@ -16710,7 +16710,7 @@ export const CustomToolsPlugin: Plugin = async (ctx) => {
 |--------|----------|
 | `"allow"` | Run without approval |
 | `"ask"` | Prompt for approval |
-| `"deny"` | Block the action |
+| `"ask"` | Block the action |
 
 ### Permission Resolution
 - Global permissions set with `*`, overridden per-tool
@@ -16745,7 +16745,7 @@ export const CustomToolsPlugin: Plugin = async (ctx) => {
   "permission": {
     "external_directory": {
       "~/projects/**": "allow",
-      "$HOME/.secrets/**": "deny"
+      "$HOME/.secrets/**": "ask"
     }
   }
 }
@@ -16760,7 +16760,7 @@ export const CustomToolsPlugin: Plugin = async (ctx) => {
         "bash": {
           "*": "ask",
           "git *": "allow",
-          "rm *": "deny"
+          "rm *": "ask"
         }
       }
     }
@@ -16814,7 +16814,7 @@ export const CustomToolsPlugin: Plugin = async (ctx) => {
     "orchestrator": {
       "permission": {
         "task": {
-          "*": "deny",
+          "*": "ask",
           "orchestrator-*": "allow",
           "code-reviewer": "ask"
         }
@@ -16864,7 +16864,7 @@ for await (const event of events.stream) {
 
 ### Config-Only Capabilities
 - Agent definitions (name, model, prompt, temperature, tools, permissions)
-- Permission rules (allow/ask/deny with glob patterns)
+- Permission rules (allow/ask/ask with glob patterns)
 - MCP server configuration (local/remote with OAuth)
 - Custom commands (JSON or markdown with template, agent, model)
 - Skills discovery and permission control
@@ -17298,7 +17298,7 @@ The comparison document has been written to `docs/harness-vs-omo-comparison.md`.
 136: | Orchestrator | Atlas (dedicated) | `conductor` agent (in .opencode/agents/, not enforced by plugin) | **Partial** — conductor exists as config, not as plugin-enforced role |
 137: | Model-agent affinity | Enforced (no-hephaestus-non-gpt hook) | None — no model-agent compatibility checks | **Missing** |
 138: | Agent temperature | Per-agent in category config | Hardcoded in `plugin.ts:40-44` | **Equivalent** (simpler is fine) |
-139: | Agent permissions | Complex permission matrices | Simple allow/deny rules in agent `.md` frontmatter | **Equivalent** — harness approach is cleaner |
+139: | Agent permissions | Complex permission matrices | Simple allow/ask rules in agent `.md` frontmatter | **Equivalent** — harness approach is cleaner |
 140: | Agent discovery | Plugin-based agent loading | Static 3-agent list in `types.ts:5` | **Gap** — not extensible without code changes |
 141: | Agent prompt injection | Dynamic (directory-agents-injector, rules-injector) | Static prompt builder in `helpers.ts:73-116` | **Gap** — harness has no dynamic prompt composition |
 142: 
@@ -17693,7 +17693,7 @@ The comparison document has been written to `docs/harness-vs-omo-comparison.md`.
 136: | Orchestrator | Atlas (dedicated) | `conductor` agent (in .opencode/agents/, not enforced by plugin) | **Partial** — conductor exists as config, not as plugin-enforced role |
 137: | Model-agent affinity | Enforced (no-hephaestus-non-gpt hook) | None — no model-agent compatibility checks | **Missing** |
 138: | Agent temperature | Per-agent in category config | Hardcoded in `plugin.ts:40-44` | **Equivalent** (simpler is fine) |
-139: | Agent permissions | Complex permission matrices | Simple allow/deny rules in agent `.md` frontmatter | **Equivalent** — harness approach is cleaner |
+139: | Agent permissions | Complex permission matrices | Simple allow/ask rules in agent `.md` frontmatter | **Equivalent** — harness approach is cleaner |
 140: | Agent discovery | Plugin-based agent loading | Static 3-agent list in `types.ts:5` | **Gap** — not extensible without code changes |
 141: | Agent prompt injection | Dynamic (directory-agents-injector, rules-injector) | Static prompt builder in `helpers.ts:73-116` | **Gap** — harness has no dynamic prompt composition |
 142: 
@@ -18106,7 +18106,7 @@ Now let me write the actual synthesis document — the transferrable spec for a 
 **Input:**
 ```json
 {
-  "content": "# Harness Framework: Rebuild Specification\n\n**Date:** 2026-04-02\n**Type:** Architecture Specification + Implementation Blueprint\n**Status:** Draft — requires validation\n\n---\n\n## 1. Context: What We Know Now\n\n### 1.1 Three-Way Comparison Results\n\n| Dimension | OpenCode Native | Oh-My-Openagent (OMO) | Our Harness |\n|-----------|----------------|----------------------|-------------|\n| **Agent orchestration** | Flat: pick one agent per session | Hierarchical: Atlas→8 specialists with retry, fallback, recovery | Parent→child only, no retry, no fallback |\n| **Plugin hooks** | 27 event hooks available | 48 hooks composed across 5 subsystems | 5 hooks (before/after/event/compacting/shell.env) |\n| **Custom tools** | Built-in + MCP | 26 custom tools | 1 custom tool (delegate-task) |\n| **State durability** | Sessions persist in memory | Boulder state (JSON) + SQLite + worktree sync | Single continuity JSON file |\n| **Resilience** | None — errors propagate | Session recovery (14 files), model fallback (14 files), retry logic | None — errors propagate |\n| **Concurrency** | None | Per-model + provider + global limits, stale detection | Per-key semaphore only |\n| **Context engineering** | Static prompts in .md files | Dynamic prompt builder, model-family variants, directory injection | Static template in helpers.ts |\n| **Code volume** | Platform (~50K LOC) | ~276K packed (est. 15K+ source) | ~2,800 LOC |\n\n### 1.2 What the Previous Audit Got Right\n\n1. **The harness wraps OpenCode's native capabilities** — delegate-task is a thin session.create() wrapper\n2. **Circuit breaker at threshold=16 is too high** — OpenCode's doom_loop catches 3 identical calls\n3. **Continuity JSON has no consumer** — no agent reads from it programmatically\n4. **Concurrency queues are underutilized** — keyed semaphore exists but nothing waits in them meaningfully\n5. **Metadata injection is verbose but unused** — `_harness` metadata goes nowhere\n\n### 1.3 What the Previous Audit Got Wrong\n\n1. **\"Delete everything\"** — the plugin hook infrastructure IS the only way to extend OpenCode. The hooks work correctly.\n2. **\"Tests pass but functionality is wrong\"** — the 152 tests verify correct behavior of the components that exist. The problem is scope, not correctness.\n3. **\"Conductor agent can't use tools\"** — this is a model selection issue (qwen3.6-plus-free), not a harness issue. The `delegate-task` tool works with capable models.\n4. **\"Continuity store is redundant\"** — it's not redundant, it's incomplete. The schema is well-designed but nothing consumes it yet.\n\n---\n\n## 2. Core Insight: What a Harness Framework Actually Is\n\nA harness is **not** a replacement for OpenCode's agent system. It is a **control plane** that sits above it. The correct mental model:\n\n```\n┌─────────────────────────────────────────────────┐\n│  HARNESS CONTROL PLANE (plugin code)            │\n│  ┌───────────┐  ┌──────────┐  ┌──────────────┐ │\n│  │ Task      │  │ State    │  │ Resilience   │ │\n│  │ Decompose │  │ Manager  │  │ Engine       │ │\n│  └─────┬─────┘  └────┬─────┘  └──────┬───────┘ │\n│        └──────────────┼───────────────┘         │\n│                       ▼                         │\n│  ┌───────────────────────────────────────────┐  │\n│  │  Delegation Router                        │  │\n│  │  (category → agent + model + permissions) │  │\n│  └─────────────────┬─────────────────────────┘  │\n└────────────────────┼────────────────────────────┘\n                     ▼\n┌─────────────────────────────────────────────────┐\n│  OPENCODE PLATFORM (config + built-in tools)    │\n│  ┌────────┐ ┌───────┐ ┌──────┐ ┌──────┐        │\n│  │Agents  │ │Skills │ │Tools │ │Rules │        │\n│  │(.md)   │ │(.md)  │ │(SDK) │ │(.md) │        │\n│  └────────┘ └───────┘ └──────┘ └──────┘        │\n└─────────────────────────────────────────────────┘\n```\n\n**The harness owns:** task decomposition, state durability, resilience (retry/fallback/recovery), concurrency control, delegation routing.\n\n**OpenCode owns:** agent definitions, skill loading, tool execution, rule enforcement, session management.\n\n**The boundary:** the harness should NEVER duplicate what OpenCode config can express. It should ONLY add capabilities that require plugin-level code.\n\n---\n\n## 3. What to Keep (Proven Working)\n\n| Component | Keep? | Reason |\n|-----------|-------|--------|\n| Plugin hook infrastructure | ✅ KEEP | Correctly intercepts tool calls, events, compaction |\n| `tool.execute.before` circuit breaker | ⚠️ IMPROVE | Lower threshold from 16 to 5, add per-tool-type thresholds |\n| `tool.execute.after` metadata | ⚠️ REDESIGN | Make it actionable — feed into state manager, not just verbose output |\n| `event` handler | ✅ KEEP | Correctly routes events to lifecycle manager |\n| `experimental.session.compacting` | ✅ KEEP | Preserves harness state during compaction — genuinely useful |\n| `shell.env` hook | ✅ KEEP | CI mode safety is correct |\n| Typed SDK wrappers (`session-api.ts`) | ✅ KEEP | Better than OMO's `any` usage |\n| Concurrency semaphore (`concurrency.ts`) | ✅ KEEP | Well-implemented, just needs global limit + stale detection |\n| CompletionDetector | ✅ KEEP | Two-signal detection (idle + stability) is sound |\n| Test framework (152 tests) | ✅ KEEP | Good coverage of existing components |\n| Agent definitions (researcher/builder/critic) | ✅ KEEP | Core triad is sufficient for MVP |\n| Permission profiles | ✅ KEEP | Clean allow/deny model |\n\n---\n\n## 4. What to Delete (Redundant or Broken)\n\n| Component | Delete? | Reason |\n|-----------|---------|--------|\n| Continuity JSON store (635 LOC) | ✅ DELETE | No consumer. Replace with task state manager (see §5) |\n| `routing.ts` (already deleted) | ✅ GONE | Was redundant — agent .md files define routing |\n| Hardcoded agent temperature defaults | ✅ DELETE | Should come from agent config, not plugin constants |\n| `AGENT_TOOLS` restriction table | ✅ DELETE | Overlaps with agent .md frontmatter permissions |\n| `getPermissionRulesForAgent()` | ✅ DELETE | Redundant with agent frontmatter permission blocks |\n| Metadata injection verbosity | ✅ REDUCE | Keep essential fields, remove noise |\n| `MAX_DESCENDANTS_PER_ROOT = 10` | ✅ DELETE | Arbitrary limit with no enforcement mechanism |\n| `RootBudget` type with `Set<string>` | ✅ DELETE | Never iterated over, never used |\n\n---\n\n## 5. What to Build (The Real Value)\n\n### Phase 1: Task State Manager (replaces continuity.ts)\n\n**Problem:** The current continuity store persists data but nothing reads it. It's a data graveyard.\n\n**Solution:** A task state manager that:\n- Tracks task lifecycle: `pending → dispatched → running → completed | failed | retrying`\n- Persists state to disk (single JSON file, but with consumers)\n- Provides checkpoint/restore for delegated tasks\n- Exposes state to agents via compaction injection\n- Supports task dependency graphs (task B depends on task A)\n\n**Interface:**\n```typescript\ninterface TaskState {\n  id: string\n  parentTaskId?: string\n  status: 'pending' | 'dispatched' | 'running' | 'completed' | 'failed' | 'retrying'\n  agent: string\n  category?: string\n  model?: string\n  prompt: string\n  result?: string\n  error?: string\n  retryCount: number\n  maxRetries: number\n  dependencies: string[]\n  createdAt: number\n  updatedAt: number\n  completedAt?: number\n}\n\ninterface TaskStateManager {\n  createTask(spec: TaskSpec): string\n  getTask(id: string): TaskState | undefined\n  updateTask(id: string, patch: Partial<TaskState>): void\n  getReadyTasks(): TaskState[]  // tasks with all dependencies met\n  getPendingTasks(): TaskState[]\n  getCompletedTasks(): TaskState[]\n  persist(): void\n  hydrate(): void\n}\n```\n\n**Files to create:**\n- `src/lib/task-state.ts` — TaskStateManager implementation\n- `src/lib/task-state.test.ts` — Tests\n\n**Files to delete:**\n- `src/lib/continuity.ts` — Replaced by task-state.ts\n\n### Phase 2: Retry Engine\n\n**Problem:** Any transient failure (rate limit, timeout, model unavailable) permanently kills a delegated task.\n\n**Solution:** Automatic retry with:\n- Configurable max retries per task (default: 2)\n- Exponential backoff between retries (1s, 2s, 4s)\n- Model fallback chain on repeated failures\n- Guidance injection on retry (tell the agent what went wrong)\n\n**Interface:**\n```typescript\ninterface RetryEngine {\n  executeWithRetry(\n    task: TaskSpec,\n    options: RetryOptions\n  ): Promise<TaskResult>\n}\n\ninterface RetryOptions {\n  maxRetries: number\n  backoffMs: number\n  fallbackModels?: string[]\n  onRetry?: (attempt: number, error: Error) => void\n}\n\ninterface TaskResult {\n  success: boolean\n  output?: string\n  error?: string\n  attempts: number\n  modelUsed: string\n}\n```\n\n**Files to create:**\n- `src/lib/retry-engine.ts` — RetryEngine implementation\n- `src/lib/retry-engine.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Use RetryEngine in `launchDelegatedSession`\n\n### Phase 3: Dynamic Prompt Builder\n\n**Problem:** All agents get the same prompt template regardless of model, context, or task type.\n\n**Solution:** Runtime prompt composition that:\n- Adapts to model family (Claude vs GPT vs Gemini have different optimal prompt patterns)\n- Injects directory-specific context (README, AGENTS.md, project type)\n- Adds category-specific guidance\n- Includes task dependencies and prior results when available\n\n**Interface:**\n```typescript\ninterface PromptBuilder {\n  buildPrompt(args: PromptArgs): string\n}\n\ninterface PromptArgs {\n  task: string\n  agent: string\n  category?: string\n  model?: string\n  scope?: string\n  constraints?: string[]\n  priorResults?: { taskId: string; result: string }[]\n  directory?: string\n}\n```\n\n**Files to create:**\n- `src/lib/prompt-builder.ts` — DynamicPromptBuilder implementation\n- `src/lib/prompt-builder.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/helpers.ts` — Remove `buildPromptText`, replace with PromptBuilder\n- `src/lib/lifecycle-manager.ts` — Use PromptBuilder instead of buildPromptText\n\n### Phase 4: Stale Task Detection\n\n**Problem:** Hung delegated sessions occupy concurrency lanes indefinitely.\n\n**Solution:** Stale detection that:\n- Tracks last activity timestamp per session\n- Flags sessions with no activity for >180 seconds\n- Automatically cancels sessions with no activity for >30 minutes\n- Reports stale status to parent session\n\n**Files to create:**\n- `src/lib/stale-detector.ts` — StaleDetector implementation\n- `src/lib/stale-detector.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Integrate stale detection into background observer\n\n### Phase 5: Global Concurrency Limits\n\n**Problem:** Per-key semaphore exists but no global limit prevents resource exhaustion.\n\n**Solution:** Add global concurrency ceiling:\n- `maxConcurrentSessions` (default: 5)\n- Per-provider limits (optional)\n- Per-model limits (optional)\n- Queue overflow handling (reject vs wait)\n\n**Files to modify:**\n- `src/lib/concurrency.ts` — Add global limit to DelegationConcurrencyQueue\n- `src/lib/lifecycle-manager.ts` — Check global limit before acquiring lane\n\n---\n\n## 6. What NOT to Build (Out of Scope)\n\nThese are capabilities that oh-my-openagent has but are NOT appropriate for this harness:\n\n| Capability | Why Not |\n|------------|---------|\n| LSP integration | OpenCode should provide this natively. Plugin shouldn't duplicate IDE features. |\n| Hashline editing | OpenCode's edit tool is sufficient. Content-addressable editing is a nice-to-have, not core. |\n| Tmux multi-pane visualization | UI concern, not orchestration. OpenCode TUI handles this. |\n| MCP per skill isolation | OpenCode's MCP config is sufficient. Per-skill isolation is over-engineering. |\n| AST-grep | OpenCode's grep is sufficient for most use cases. |\n| Multimodal (look-at) | Model capability, not harness concern. |\n| Ralph Loop (iteration controller) | Complex workflow pattern. Better as a command, not plugin code. |\n| 8 specialist agents | 3 agents (researcher/builder/critic) covers the core triad. More agents = more config complexity. |\n| Worktree sync | Niche use case. Can be added later if needed. |\n| SQLite-backed state | Over-engineering for a zero-dependency package. JSON file is sufficient. |\n\n---\n\n## 7. Architecture After Rebuild\n\n```\nsrc/\n├── plugin.ts              # Composition root — hook handlers + delegate-task tool\n├── index.ts               # Barrel re-exports only\n└── lib/\n    ├── types.ts           # Shared types (KEEP, update for new interfaces)\n    ├── helpers.ts         # Pure utilities (KEEP, remove buildPromptText)\n    ├── state.ts           # In-memory Maps (KEEP, add task state references)\n    ├── concurrency.ts     # Keyed semaphore (KEEP, add global limits)\n    ├── session-api.ts     # Typed SDK wrappers (KEEP)\n    ├── completion-detector.ts  # Two-signal detection (KEEP)\n    ├── notification-handler.ts # Async completion notifications (KEEP)\n    ├── task-status.ts     # Task status type system (KEEP)\n    ├── agent-registry.ts  # Agent metadata (KEEP)\n    ├── task-state.ts      # NEW: Task state manager (replaces continuity.ts)\n    ├── retry-engine.ts    # NEW: Retry with fallback\n    ├── prompt-builder.ts  # NEW: Dynamic prompt composition\n    ├── stale-detector.ts  # NEW: Stale task detection\n    └── lifecycle-manager.ts  # MODIFIED: Use new components\n```\n\n**Target LOC:** ~4,500 (up from ~2,800, down from OMO's ~15,000+)\n**Target test count:** ~250 (up from 152)\n**Zero runtime dependencies:** maintained\n\n---\n\n## 8. Implementation Priority\n\n### Week 1: Foundation\n1. **Task State Manager** — Replace continuity.ts (highest impact, enables everything else)\n2. **Retry Engine** — Wire into lifecycle-manager (highest reliability improvement)\n3. **Stale Detector** — Prevent hung sessions (critical for production use)\n\n### Week 2: Intelligence\n4. **Dynamic Prompt Builder** — Model-aware prompts (biggest quality improvement)\n5. **Global Concurrency Limits** — Prevent resource exhaustion (critical for stability)\n6. **Lower circuit breaker threshold** — 16 → 5, per-tool-type (quick win)\n\n### Week 3: Polish\n7. **Clean up redundancy** — Remove AGENT_TOOLS, getPermissionRulesForAgent, hardcoded temps\n8. **Reduce metadata verbosity** — Keep essential fields only\n9. **Update tests** — Cover new components, maintain coverage\n\n### Week 4: Integration\n10. **End-to-end testing** — Test full delegation flow with retry, staleness, prompts\n11. **Documentation** — Update AGENTS.md, add architecture diagrams\n12. **Performance validation** — Benchmark delegation latency, memory usage\n\n---\n\n## 9. Success Criteria\n\nThe rebuilt harness should be judged on:\n\n| Metric | Current | Target | How to Measure |\n|--------|---------|--------|----------------|\n| Task completion rate | ~60% (no retry) | >90% (with retry) | Track failed vs completed delegations |\n| Stale session rate | Unknown (no detection) | <1% | Stale detector reports |\n| Prompt quality | Static template | Model-adapted | Agent output quality review |\n| Code maintainability | 2,800 LOC, 12 files | 4,500 LOC, 16 files | LOC count, file count |\n| Test coverage | 152 tests | 250+ tests | vitest run --coverage |\n| Zero dependencies | ✅ | ✅ | package.json peerDependencies only |\n| Delegation works end-to-end | Broken on free models | Works on capable models | Integration test with Claude/Sonnet |\n\n---\n\n## 10. Risks and Mitigations\n\n| Risk | Impact | Mitigation |\n|------|--------|------------|\n| Retry engine adds latency | Medium | Configurable backoff, fast-fail on permanent errors |\n| Dynamic prompts increase token usage | Low | Prompt size limits, caching of common sections |\n| Stale detection cancels valid long-running tasks | Medium | Configurable thresholds, warning before cancellation |\n| Task state manager complexity | Medium | Keep interface simple, test thoroughly |\n| Model fallback requires API key for multiple providers | High | Make fallback optional, document requirements |\n\n---\n\n## 11. What This Enables (The Real Value Proposition)\n\nAfter this rebuild, the harness provides capabilities that **cannot** be achieved through OpenCode config alone:\n\n1. **Resilient delegation** — Tasks survive transient failures through retry + fallback\n2. **State-aware orchestration** — Task state persists across sessions, enables dependency graphs\n3. **Model-adaptive prompting** — Prompts adapt to the model being used, improving output quality\n4. **Resource protection** — Global concurrency limits + stale detection prevent resource exhaustion\n5. **Observable workflows** — Task state is queryable, enabling progress tracking and debugging\n\nThese are genuinely plugin-level capabilities. They require code, not config. They extend OpenCode rather than duplicate it.\n\n---\n\n## 12. Comparison to Oh-My-Openagent\n\n| Dimension | OMO | Rebuilt Harness | Assessment |\n|-----------|-----|-----------------|------------|\n| Scope | Full agent OS (26 tools, 48 hooks, 8 agents) | Focused control plane (1 tool, 5 hooks, 3 agents + extensions) | Harness is narrower but deeper in its domain |\n| Resilience | 14-file recovery + 14-file fallback + retry | Retry engine + stale detector | OMO is more comprehensive, harness is sufficient for MVP |\n| Tools | 26 custom tools | 1 custom tool (delegate-task) + OpenCode native tools | Harness relies on OpenCode's tool ecosystem — correct choice |\n| State | Boulder JSON + SQLite + worktree sync | Task state JSON | Harness is simpler, sufficient for single-worktree use |\n| Prompts | Dynamic builder + model-family variants + directory injection | Dynamic builder + model-family awareness | OMO is more sophisticated, harness covers the essentials |\n| Concurrency | Per-model + provider + global + stale detection | Per-key + global + stale detection | Equivalent for practical purposes |\n| Code volume | ~15,000+ source LOC | ~4,500 LOC | Harness is 3x smaller, more auditable |\n| Dependencies | Zod, SQLite, runtime deps | Zero runtime deps | Harness wins — truly zero-dep |\n\n**The rebuilt harness is not a competitor to oh-my-openagent. It is a focused, zero-dependency subset that delivers the core control plane capabilities without the tool ecosystem, LSP integration, tmux visualization, or 8-agent complexity.**\n\n---\n\n## 13. Appendix: What the Skills Ecosystem Offers\n\nRelevant skills discovered during this audit:\n\n| Skill | Installs | Relevance |\n|-------|----------|-----------|\n| `jasonkneen/kiro/spec-driven-development` | 221 | Requirements → Design → Task planning workflow |\n| `jasonkneen/kiro/requirements-engineering` | 118 | EARS format for testable requirements |\n| `jasonkneen/kiro/task-breakdown` | 32 | Task decomposition methodology |\n| `borghei/claude-skills/product-manager` | 121 | RICE/ICE prioritization, roadmap planning |\n| `404kidwiz/claude-supercode-skills/project-manager` | 906 | Project management with WBS, risk registers |\n\nThese skills inform the **process** of building the harness (requirements, planning, task breakdown) but are not part of the harness runtime. They should be used by the development team during implementation.\n",
+  "content": "# Harness Framework: Rebuild Specification\n\n**Date:** 2026-04-02\n**Type:** Architecture Specification + Implementation Blueprint\n**Status:** Draft — requires validation\n\n---\n\n## 1. Context: What We Know Now\n\n### 1.1 Three-Way Comparison Results\n\n| Dimension | OpenCode Native | Oh-My-Openagent (OMO) | Our Harness |\n|-----------|----------------|----------------------|-------------|\n| **Agent orchestration** | Flat: pick one agent per session | Hierarchical: Atlas→8 specialists with retry, fallback, recovery | Parent→child only, no retry, no fallback |\n| **Plugin hooks** | 27 event hooks available | 48 hooks composed across 5 subsystems | 5 hooks (before/after/event/compacting/shell.env) |\n| **Custom tools** | Built-in + MCP | 26 custom tools | 1 custom tool (delegate-task) |\n| **State durability** | Sessions persist in memory | Boulder state (JSON) + SQLite + worktree sync | Single continuity JSON file |\n| **Resilience** | None — errors propagate | Session recovery (14 files), model fallback (14 files), retry logic | None — errors propagate |\n| **Concurrency** | None | Per-model + provider + global limits, stale detection | Per-key semaphore only |\n| **Context engineering** | Static prompts in .md files | Dynamic prompt builder, model-family variants, directory injection | Static template in helpers.ts |\n| **Code volume** | Platform (~50K LOC) | ~276K packed (est. 15K+ source) | ~2,800 LOC |\n\n### 1.2 What the Previous Audit Got Right\n\n1. **The harness wraps OpenCode's native capabilities** — delegate-task is a thin session.create() wrapper\n2. **Circuit breaker at threshold=16 is too high** — OpenCode's doom_loop catches 3 identical calls\n3. **Continuity JSON has no consumer** — no agent reads from it programmatically\n4. **Concurrency queues are underutilized** — keyed semaphore exists but nothing waits in them meaningfully\n5. **Metadata injection is verbose but unused** — `_harness` metadata goes nowhere\n\n### 1.3 What the Previous Audit Got Wrong\n\n1. **\"Delete everything\"** — the plugin hook infrastructure IS the only way to extend OpenCode. The hooks work correctly.\n2. **\"Tests pass but functionality is wrong\"** — the 152 tests verify correct behavior of the components that exist. The problem is scope, not correctness.\n3. **\"Conductor agent can't use tools\"** — this is a model selection issue (qwen3.6-plus-free), not a harness issue. The `delegate-task` tool works with capable models.\n4. **\"Continuity store is redundant\"** — it's not redundant, it's incomplete. The schema is well-designed but nothing consumes it yet.\n\n---\n\n## 2. Core Insight: What a Harness Framework Actually Is\n\nA harness is **not** a replacement for OpenCode's agent system. It is a **control plane** that sits above it. The correct mental model:\n\n```\n┌─────────────────────────────────────────────────┐\n│  HARNESS CONTROL PLANE (plugin code)            │\n│  ┌───────────┐  ┌──────────┐  ┌──────────────┐ │\n│  │ Task      │  │ State    │  │ Resilience   │ │\n│  │ Decompose │  │ Manager  │  │ Engine       │ │\n│  └─────┬─────┘  └────┬─────┘  └──────┬───────┘ │\n│        └──────────────┼───────────────┘         │\n│                       ▼                         │\n│  ┌───────────────────────────────────────────┐  │\n│  │  Delegation Router                        │  │\n│  │  (category → agent + model + permissions) │  │\n│  └─────────────────┬─────────────────────────┘  │\n└────────────────────┼────────────────────────────┘\n                     ▼\n┌─────────────────────────────────────────────────┐\n│  OPENCODE PLATFORM (config + built-in tools)    │\n│  ┌────────┐ ┌───────┐ ┌──────┐ ┌──────┐        │\n│  │Agents  │ │Skills │ │Tools │ │Rules │        │\n│  │(.md)   │ │(.md)  │ │(SDK) │ │(.md) │        │\n│  └────────┘ └───────┘ └──────┘ └──────┘        │\n└─────────────────────────────────────────────────┘\n```\n\n**The harness owns:** task decomposition, state durability, resilience (retry/fallback/recovery), concurrency control, delegation routing.\n\n**OpenCode owns:** agent definitions, skill loading, tool execution, rule enforcement, session management.\n\n**The boundary:** the harness should NEVER duplicate what OpenCode config can express. It should ONLY add capabilities that require plugin-level code.\n\n---\n\n## 3. What to Keep (Proven Working)\n\n| Component | Keep? | Reason |\n|-----------|-------|--------|\n| Plugin hook infrastructure | ✅ KEEP | Correctly intercepts tool calls, events, compaction |\n| `tool.execute.before` circuit breaker | ⚠️ IMPROVE | Lower threshold from 16 to 5, add per-tool-type thresholds |\n| `tool.execute.after` metadata | ⚠️ REDESIGN | Make it actionable — feed into state manager, not just verbose output |\n| `event` handler | ✅ KEEP | Correctly routes events to lifecycle manager |\n| `experimental.session.compacting` | ✅ KEEP | Preserves harness state during compaction — genuinely useful |\n| `shell.env` hook | ✅ KEEP | CI mode safety is correct |\n| Typed SDK wrappers (`session-api.ts`) | ✅ KEEP | Better than OMO's `any` usage |\n| Concurrency semaphore (`concurrency.ts`) | ✅ KEEP | Well-implemented, just needs global limit + stale detection |\n| CompletionDetector | ✅ KEEP | Two-signal detection (idle + stability) is sound |\n| Test framework (152 tests) | ✅ KEEP | Good coverage of existing components |\n| Agent definitions (researcher/builder/critic) | ✅ KEEP | Core triad is sufficient for MVP |\n| Permission profiles | ✅ KEEP | Clean allow/ask model |\n\n---\n\n## 4. What to Delete (Redundant or Broken)\n\n| Component | Delete? | Reason |\n|-----------|---------|--------|\n| Continuity JSON store (635 LOC) | ✅ DELETE | No consumer. Replace with task state manager (see §5) |\n| `routing.ts` (already deleted) | ✅ GONE | Was redundant — agent .md files define routing |\n| Hardcoded agent temperature defaults | ✅ DELETE | Should come from agent config, not plugin constants |\n| `AGENT_TOOLS` restriction table | ✅ DELETE | Overlaps with agent .md frontmatter permissions |\n| `getPermissionRulesForAgent()` | ✅ DELETE | Redundant with agent frontmatter permission blocks |\n| Metadata injection verbosity | ✅ REDUCE | Keep essential fields, remove noise |\n| `MAX_DESCENDANTS_PER_ROOT = 10` | ✅ DELETE | Arbitrary limit with no enforcement mechanism |\n| `RootBudget` type with `Set<string>` | ✅ DELETE | Never iterated over, never used |\n\n---\n\n## 5. What to Build (The Real Value)\n\n### Phase 1: Task State Manager (replaces continuity.ts)\n\n**Problem:** The current continuity store persists data but nothing reads it. It's a data graveyard.\n\n**Solution:** A task state manager that:\n- Tracks task lifecycle: `pending → dispatched → running → completed | failed | retrying`\n- Persists state to disk (single JSON file, but with consumers)\n- Provides checkpoint/restore for delegated tasks\n- Exposes state to agents via compaction injection\n- Supports task dependency graphs (task B depends on task A)\n\n**Interface:**\n```typescript\ninterface TaskState {\n  id: string\n  parentTaskId?: string\n  status: 'pending' | 'dispatched' | 'running' | 'completed' | 'failed' | 'retrying'\n  agent: string\n  category?: string\n  model?: string\n  prompt: string\n  result?: string\n  error?: string\n  retryCount: number\n  maxRetries: number\n  dependencies: string[]\n  createdAt: number\n  updatedAt: number\n  completedAt?: number\n}\n\ninterface TaskStateManager {\n  createTask(spec: TaskSpec): string\n  getTask(id: string): TaskState | undefined\n  updateTask(id: string, patch: Partial<TaskState>): void\n  getReadyTasks(): TaskState[]  // tasks with all dependencies met\n  getPendingTasks(): TaskState[]\n  getCompletedTasks(): TaskState[]\n  persist(): void\n  hydrate(): void\n}\n```\n\n**Files to create:**\n- `src/lib/task-state.ts` — TaskStateManager implementation\n- `src/lib/task-state.test.ts` — Tests\n\n**Files to delete:**\n- `src/lib/continuity.ts` — Replaced by task-state.ts\n\n### Phase 2: Retry Engine\n\n**Problem:** Any transient failure (rate limit, timeout, model unavailable) permanently kills a delegated task.\n\n**Solution:** Automatic retry with:\n- Configurable max retries per task (default: 2)\n- Exponential backoff between retries (1s, 2s, 4s)\n- Model fallback chain on repeated failures\n- Guidance injection on retry (tell the agent what went wrong)\n\n**Interface:**\n```typescript\ninterface RetryEngine {\n  executeWithRetry(\n    task: TaskSpec,\n    options: RetryOptions\n  ): Promise<TaskResult>\n}\n\ninterface RetryOptions {\n  maxRetries: number\n  backoffMs: number\n  fallbackModels?: string[]\n  onRetry?: (attempt: number, error: Error) => void\n}\n\ninterface TaskResult {\n  success: boolean\n  output?: string\n  error?: string\n  attempts: number\n  modelUsed: string\n}\n```\n\n**Files to create:**\n- `src/lib/retry-engine.ts` — RetryEngine implementation\n- `src/lib/retry-engine.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Use RetryEngine in `launchDelegatedSession`\n\n### Phase 3: Dynamic Prompt Builder\n\n**Problem:** All agents get the same prompt template regardless of model, context, or task type.\n\n**Solution:** Runtime prompt composition that:\n- Adapts to model family (Claude vs GPT vs Gemini have different optimal prompt patterns)\n- Injects directory-specific context (README, AGENTS.md, project type)\n- Adds category-specific guidance\n- Includes task dependencies and prior results when available\n\n**Interface:**\n```typescript\ninterface PromptBuilder {\n  buildPrompt(args: PromptArgs): string\n}\n\ninterface PromptArgs {\n  task: string\n  agent: string\n  category?: string\n  model?: string\n  scope?: string\n  constraints?: string[]\n  priorResults?: { taskId: string; result: string }[]\n  directory?: string\n}\n```\n\n**Files to create:**\n- `src/lib/prompt-builder.ts` — DynamicPromptBuilder implementation\n- `src/lib/prompt-builder.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/helpers.ts` — Remove `buildPromptText`, replace with PromptBuilder\n- `src/lib/lifecycle-manager.ts` — Use PromptBuilder instead of buildPromptText\n\n### Phase 4: Stale Task Detection\n\n**Problem:** Hung delegated sessions occupy concurrency lanes indefinitely.\n\n**Solution:** Stale detection that:\n- Tracks last activity timestamp per session\n- Flags sessions with no activity for >180 seconds\n- Automatically cancels sessions with no activity for >30 minutes\n- Reports stale status to parent session\n\n**Files to create:**\n- `src/lib/stale-detector.ts` — StaleDetector implementation\n- `src/lib/stale-detector.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Integrate stale detection into background observer\n\n### Phase 5: Global Concurrency Limits\n\n**Problem:** Per-key semaphore exists but no global limit prevents resource exhaustion.\n\n**Solution:** Add global concurrency ceiling:\n- `maxConcurrentSessions` (default: 5)\n- Per-provider limits (optional)\n- Per-model limits (optional)\n- Queue overflow handling (reject vs wait)\n\n**Files to modify:**\n- `src/lib/concurrency.ts` — Add global limit to DelegationConcurrencyQueue\n- `src/lib/lifecycle-manager.ts` — Check global limit before acquiring lane\n\n---\n\n## 6. What NOT to Build (Out of Scope)\n\nThese are capabilities that oh-my-openagent has but are NOT appropriate for this harness:\n\n| Capability | Why Not |\n|------------|---------|\n| LSP integration | OpenCode should provide this natively. Plugin shouldn't duplicate IDE features. |\n| Hashline editing | OpenCode's edit tool is sufficient. Content-addressable editing is a nice-to-have, not core. |\n| Tmux multi-pane visualization | UI concern, not orchestration. OpenCode TUI handles this. |\n| MCP per skill isolation | OpenCode's MCP config is sufficient. Per-skill isolation is over-engineering. |\n| AST-grep | OpenCode's grep is sufficient for most use cases. |\n| Multimodal (look-at) | Model capability, not harness concern. |\n| Ralph Loop (iteration controller) | Complex workflow pattern. Better as a command, not plugin code. |\n| 8 specialist agents | 3 agents (researcher/builder/critic) covers the core triad. More agents = more config complexity. |\n| Worktree sync | Niche use case. Can be added later if needed. |\n| SQLite-backed state | Over-engineering for a zero-dependency package. JSON file is sufficient. |\n\n---\n\n## 7. Architecture After Rebuild\n\n```\nsrc/\n├── plugin.ts              # Composition root — hook handlers + delegate-task tool\n├── index.ts               # Barrel re-exports only\n└── lib/\n    ├── types.ts           # Shared types (KEEP, update for new interfaces)\n    ├── helpers.ts         # Pure utilities (KEEP, remove buildPromptText)\n    ├── state.ts           # In-memory Maps (KEEP, add task state references)\n    ├── concurrency.ts     # Keyed semaphore (KEEP, add global limits)\n    ├── session-api.ts     # Typed SDK wrappers (KEEP)\n    ├── completion-detector.ts  # Two-signal detection (KEEP)\n    ├── notification-handler.ts # Async completion notifications (KEEP)\n    ├── task-status.ts     # Task status type system (KEEP)\n    ├── agent-registry.ts  # Agent metadata (KEEP)\n    ├── task-state.ts      # NEW: Task state manager (replaces continuity.ts)\n    ├── retry-engine.ts    # NEW: Retry with fallback\n    ├── prompt-builder.ts  # NEW: Dynamic prompt composition\n    ├── stale-detector.ts  # NEW: Stale task detection\n    └── lifecycle-manager.ts  # MODIFIED: Use new components\n```\n\n**Target LOC:** ~4,500 (up from ~2,800, down from OMO's ~15,000+)\n**Target test count:** ~250 (up from 152)\n**Zero runtime dependencies:** maintained\n\n---\n\n## 8. Implementation Priority\n\n### Week 1: Foundation\n1. **Task State Manager** — Replace continuity.ts (highest impact, enables everything else)\n2. **Retry Engine** — Wire into lifecycle-manager (highest reliability improvement)\n3. **Stale Detector** — Prevent hung sessions (critical for production use)\n\n### Week 2: Intelligence\n4. **Dynamic Prompt Builder** — Model-aware prompts (biggest quality improvement)\n5. **Global Concurrency Limits** — Prevent resource exhaustion (critical for stability)\n6. **Lower circuit breaker threshold** — 16 → 5, per-tool-type (quick win)\n\n### Week 3: Polish\n7. **Clean up redundancy** — Remove AGENT_TOOLS, getPermissionRulesForAgent, hardcoded temps\n8. **Reduce metadata verbosity** — Keep essential fields only\n9. **Update tests** — Cover new components, maintain coverage\n\n### Week 4: Integration\n10. **End-to-end testing** — Test full delegation flow with retry, staleness, prompts\n11. **Documentation** — Update AGENTS.md, add architecture diagrams\n12. **Performance validation** — Benchmark delegation latency, memory usage\n\n---\n\n## 9. Success Criteria\n\nThe rebuilt harness should be judged on:\n\n| Metric | Current | Target | How to Measure |\n|--------|---------|--------|----------------|\n| Task completion rate | ~60% (no retry) | >90% (with retry) | Track failed vs completed delegations |\n| Stale session rate | Unknown (no detection) | <1% | Stale detector reports |\n| Prompt quality | Static template | Model-adapted | Agent output quality review |\n| Code maintainability | 2,800 LOC, 12 files | 4,500 LOC, 16 files | LOC count, file count |\n| Test coverage | 152 tests | 250+ tests | vitest run --coverage |\n| Zero dependencies | ✅ | ✅ | package.json peerDependencies only |\n| Delegation works end-to-end | Broken on free models | Works on capable models | Integration test with Claude/Sonnet |\n\n---\n\n## 10. Risks and Mitigations\n\n| Risk | Impact | Mitigation |\n|------|--------|------------|\n| Retry engine adds latency | Medium | Configurable backoff, fast-fail on permanent errors |\n| Dynamic prompts increase token usage | Low | Prompt size limits, caching of common sections |\n| Stale detection cancels valid long-running tasks | Medium | Configurable thresholds, warning before cancellation |\n| Task state manager complexity | Medium | Keep interface simple, test thoroughly |\n| Model fallback requires API key for multiple providers | High | Make fallback optional, document requirements |\n\n---\n\n## 11. What This Enables (The Real Value Proposition)\n\nAfter this rebuild, the harness provides capabilities that **cannot** be achieved through OpenCode config alone:\n\n1. **Resilient delegation** — Tasks survive transient failures through retry + fallback\n2. **State-aware orchestration** — Task state persists across sessions, enables dependency graphs\n3. **Model-adaptive prompting** — Prompts adapt to the model being used, improving output quality\n4. **Resource protection** — Global concurrency limits + stale detection prevent resource exhaustion\n5. **Observable workflows** — Task state is queryable, enabling progress tracking and debugging\n\nThese are genuinely plugin-level capabilities. They require code, not config. They extend OpenCode rather than duplicate it.\n\n---\n\n## 12. Comparison to Oh-My-Openagent\n\n| Dimension | OMO | Rebuilt Harness | Assessment |\n|-----------|-----|-----------------|------------|\n| Scope | Full agent OS (26 tools, 48 hooks, 8 agents) | Focused control plane (1 tool, 5 hooks, 3 agents + extensions) | Harness is narrower but deeper in its domain |\n| Resilience | 14-file recovery + 14-file fallback + retry | Retry engine + stale detector | OMO is more comprehensive, harness is sufficient for MVP |\n| Tools | 26 custom tools | 1 custom tool (delegate-task) + OpenCode native tools | Harness relies on OpenCode's tool ecosystem — correct choice |\n| State | Boulder JSON + SQLite + worktree sync | Task state JSON | Harness is simpler, sufficient for single-worktree use |\n| Prompts | Dynamic builder + model-family variants + directory injection | Dynamic builder + model-family awareness | OMO is more sophisticated, harness covers the essentials |\n| Concurrency | Per-model + provider + global + stale detection | Per-key + global + stale detection | Equivalent for practical purposes |\n| Code volume | ~15,000+ source LOC | ~4,500 LOC | Harness is 3x smaller, more auditable |\n| Dependencies | Zod, SQLite, runtime deps | Zero runtime deps | Harness wins — truly zero-dep |\n\n**The rebuilt harness is not a competitor to oh-my-openagent. It is a focused, zero-dependency subset that delivers the core control plane capabilities without the tool ecosystem, LSP integration, tmux visualization, or 8-agent complexity.**\n\n---\n\n## 13. Appendix: What the Skills Ecosystem Offers\n\nRelevant skills discovered during this audit:\n\n| Skill | Installs | Relevance |\n|-------|----------|-----------|\n| `jasonkneen/kiro/spec-driven-development` | 221 | Requirements → Design → Task planning workflow |\n| `jasonkneen/kiro/requirements-engineering` | 118 | EARS format for testable requirements |\n| `jasonkneen/kiro/task-breakdown` | 32 | Task decomposition methodology |\n| `borghei/claude-skills/product-manager` | 121 | RICE/ICE prioritization, roadmap planning |\n| `404kidwiz/claude-supercode-skills/project-manager` | 906 | Project management with WBS, risk registers |\n\nThese skills inform the **process** of building the harness (requirements, planning, task breakdown) but are not part of the harness runtime. They should be used by the development team during implementation.\n",
   "filePath": "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/harness-rebuild-spec-2026-04-02.md"
 }
 ```
@@ -18121,7 +18121,7 @@ Wrote file successfully.
 **Input:**
 ```json
 {
-  "content": "# Harness Framework: Rebuild Specification\n\n**Date:** 2026-04-02\n**Type:** Architecture Specification + Implementation Blueprint\n**Status:** Draft — requires validation\n\n---\n\n## 1. Context: What We Know Now\n\n### 1.1 Three-Way Comparison Results\n\n| Dimension | OpenCode Native | Oh-My-Openagent (OMO) | Our Harness |\n|-----------|----------------|----------------------|-------------|\n| **Agent orchestration** | Flat: pick one agent per session | Hierarchical: Atlas→8 specialists with retry, fallback, recovery | Parent→child only, no retry, no fallback |\n| **Plugin hooks** | 27 event hooks available | 48 hooks composed across 5 subsystems | 5 hooks (before/after/event/compacting/shell.env) |\n| **Custom tools** | Built-in + MCP | 26 custom tools | 1 custom tool (delegate-task) |\n| **State durability** | Sessions persist in memory | Boulder state (JSON) + SQLite + worktree sync | Single continuity JSON file |\n| **Resilience** | None — errors propagate | Session recovery (14 files), model fallback (14 files), retry logic | None — errors propagate |\n| **Concurrency** | None | Per-model + provider + global limits, stale detection | Per-key semaphore only |\n| **Context engineering** | Static prompts in .md files | Dynamic prompt builder, model-family variants, directory injection | Static template in helpers.ts |\n| **Code volume** | Platform (~50K LOC) | ~276K packed (est. 15K+ source) | ~2,800 LOC |\n\n### 1.2 What the Previous Audit Got Right\n\n1. **The harness wraps OpenCode's native capabilities** — delegate-task is a thin session.create() wrapper\n2. **Circuit breaker at threshold=16 is too high** — OpenCode's doom_loop catches 3 identical calls\n3. **Continuity JSON has no consumer** — no agent reads from it programmatically\n4. **Concurrency queues are underutilized** — keyed semaphore exists but nothing waits in them meaningfully\n5. **Metadata injection is verbose but unused** — `_harness` metadata goes nowhere\n\n### 1.3 What the Previous Audit Got Wrong\n\n1. **\"Delete everything\"** — the plugin hook infrastructure IS the only way to extend OpenCode. The hooks work correctly.\n2. **\"Tests pass but functionality is wrong\"** — the 152 tests verify correct behavior of the components that exist. The problem is scope, not correctness.\n3. **\"Conductor agent can't use tools\"** — this is a model selection issue (qwen3.6-plus-free), not a harness issue. The `delegate-task` tool works with capable models.\n4. **\"Continuity store is redundant\"** — it's not redundant, it's incomplete. The schema is well-designed but nothing consumes it yet.\n\n---\n\n## 2. Core Insight: What a Harness Framework Actually Is\n\nA harness is **not** a replacement for OpenCode's agent system. It is a **control plane** that sits above it. The correct mental model:\n\n```\n┌─────────────────────────────────────────────────┐\n│  HARNESS CONTROL PLANE (plugin code)            │\n│  ┌───────────┐  ┌──────────┐  ┌──────────────┐ │\n│  │ Task      │  │ State    │  │ Resilience   │ │\n│  │ Decompose │  │ Manager  │  │ Engine       │ │\n│  └─────┬─────┘  └────┬─────┘  └──────┬───────┘ │\n│        └──────────────┼───────────────┘         │\n│                       ▼                         │\n│  ┌───────────────────────────────────────────┐  │\n│  │  Delegation Router                        │  │\n│  │  (category → agent + model + permissions) │  │\n│  └─────────────────┬─────────────────────────┘  │\n└────────────────────┼────────────────────────────┘\n                     ▼\n┌─────────────────────────────────────────────────┐\n│  OPENCODE PLATFORM (config + built-in tools)    │\n│  ┌────────┐ ┌───────┐ ┌──────┐ ┌──────┐        │\n│  │Agents  │ │Skills │ │Tools │ │Rules │        │\n│  │(.md)   │ │(.md)  │ │(SDK) │ │(.md) │        │\n│  └────────┘ └───────┘ └──────┘ └──────┘        │\n└─────────────────────────────────────────────────┘\n```\n\n**The harness owns:** task decomposition, state durability, resilience (retry/fallback/recovery), concurrency control, delegation routing.\n\n**OpenCode owns:** agent definitions, skill loading, tool execution, rule enforcement, session management.\n\n**The boundary:** the harness should NEVER duplicate what OpenCode config can express. It should ONLY add capabilities that require plugin-level code.\n\n---\n\n## 3. What to Keep (Proven Working)\n\n| Component | Keep? | Reason |\n|-----------|-------|--------|\n| Plugin hook infrastructure | ✅ KEEP | Correctly intercepts tool calls, events, compaction |\n| `tool.execute.before` circuit breaker | ⚠️ IMPROVE | Lower threshold from 16 to 5, add per-tool-type thresholds |\n| `tool.execute.after` metadata | ⚠️ REDESIGN | Make it actionable — feed into state manager, not just verbose output |\n| `event` handler | ✅ KEEP | Correctly routes events to lifecycle manager |\n| `experimental.session.compacting` | ✅ KEEP | Preserves harness state during compaction — genuinely useful |\n| `shell.env` hook | ✅ KEEP | CI mode safety is correct |\n| Typed SDK wrappers (`session-api.ts`) | ✅ KEEP | Better than OMO's `any` usage |\n| Concurrency semaphore (`concurrency.ts`) | ✅ KEEP | Well-implemented, just needs global limit + stale detection |\n| CompletionDetector | ✅ KEEP | Two-signal detection (idle + stability) is sound |\n| Test framework (152 tests) | ✅ KEEP | Good coverage of existing components |\n| Agent definitions (researcher/builder/critic) | ✅ KEEP | Core triad is sufficient for MVP |\n| Permission profiles | ✅ KEEP | Clean allow/deny model |\n\n---\n\n## 4. What to Delete (Redundant or Broken)\n\n| Component | Delete? | Reason |\n|-----------|---------|--------|\n| Continuity JSON store (635 LOC) | ✅ DELETE | No consumer. Replace with task state manager (see §5) |\n| `routing.ts` (already deleted) | ✅ GONE | Was redundant — agent .md files define routing |\n| Hardcoded agent temperature defaults | ✅ DELETE | Should come from agent config, not plugin constants |\n| `AGENT_TOOLS` restriction table | ✅ DELETE | Overlaps with agent .md frontmatter permissions |\n| `getPermissionRulesForAgent()` | ✅ DELETE | Redundant with agent frontmatter permission blocks |\n| Metadata injection verbosity | ✅ REDUCE | Keep essential fields, remove noise |\n| `MAX_DESCENDANTS_PER_ROOT = 10` | ✅ DELETE | Arbitrary limit with no enforcement mechanism |\n| `RootBudget` type with `Set<string>` | ✅ DELETE | Never iterated over, never used |\n\n---\n\n## 5. What to Build (The Real Value)\n\n### Phase 1: Task State Manager (replaces continuity.ts)\n\n**Problem:** The current continuity store persists data but nothing reads it. It's a data graveyard.\n\n**Solution:** A task state manager that:\n- Tracks task lifecycle: `pending → dispatched → running → completed | failed | retrying`\n- Persists state to disk (single JSON file, but with consumers)\n- Provides checkpoint/restore for delegated tasks\n- Exposes state to agents via compaction injection\n- Supports task dependency graphs (task B depends on task A)\n\n**Interface:**\n```typescript\ninterface TaskState {\n  id: string\n  parentTaskId?: string\n  status: 'pending' | 'dispatched' | 'running' | 'completed' | 'failed' | 'retrying'\n  agent: string\n  category?: string\n  model?: string\n  prompt: string\n  result?: string\n  error?: string\n  retryCount: number\n  maxRetries: number\n  dependencies: string[]\n  createdAt: number\n  updatedAt: number\n  completedAt?: number\n}\n\ninterface TaskStateManager {\n  createTask(spec: TaskSpec): string\n  getTask(id: string): TaskState | undefined\n  updateTask(id: string, patch: Partial<TaskState>): void\n  getReadyTasks(): TaskState[]  // tasks with all dependencies met\n  getPendingTasks(): TaskState[]\n  getCompletedTasks(): TaskState[]\n  persist(): void\n  hydrate(): void\n}\n```\n\n**Files to create:**\n- `src/lib/task-state.ts` — TaskStateManager implementation\n- `src/lib/task-state.test.ts` — Tests\n\n**Files to delete:**\n- `src/lib/continuity.ts` — Replaced by task-state.ts\n\n### Phase 2: Retry Engine\n\n**Problem:** Any transient failure (rate limit, timeout, model unavailable) permanently kills a delegated task.\n\n**Solution:** Automatic retry with:\n- Configurable max retries per task (default: 2)\n- Exponential backoff between retries (1s, 2s, 4s)\n- Model fallback chain on repeated failures\n- Guidance injection on retry (tell the agent what went wrong)\n\n**Interface:**\n```typescript\ninterface RetryEngine {\n  executeWithRetry(\n    task: TaskSpec,\n    options: RetryOptions\n  ): Promise<TaskResult>\n}\n\ninterface RetryOptions {\n  maxRetries: number\n  backoffMs: number\n  fallbackModels?: string[]\n  onRetry?: (attempt: number, error: Error) => void\n}\n\ninterface TaskResult {\n  success: boolean\n  output?: string\n  error?: string\n  attempts: number\n  modelUsed: string\n}\n```\n\n**Files to create:**\n- `src/lib/retry-engine.ts` — RetryEngine implementation\n- `src/lib/retry-engine.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Use RetryEngine in `launchDelegatedSession`\n\n### Phase 3: Dynamic Prompt Builder\n\n**Problem:** All agents get the same prompt template regardless of model, context, or task type.\n\n**Solution:** Runtime prompt composition that:\n- Adapts to model family (Claude vs GPT vs Gemini have different optimal prompt patterns)\n- Injects directory-specific context (README, AGENTS.md, project type)\n- Adds category-specific guidance\n- Includes task dependencies and prior results when available\n\n**Interface:**\n```typescript\ninterface PromptBuilder {\n  buildPrompt(args: PromptArgs): string\n}\n\ninterface PromptArgs {\n  task: string\n  agent: string\n  category?: string\n  model?: string\n  scope?: string\n  constraints?: string[]\n  priorResults?: { taskId: string; result: string }[]\n  directory?: string\n}\n```\n\n**Files to create:**\n- `src/lib/prompt-builder.ts` — DynamicPromptBuilder implementation\n- `src/lib/prompt-builder.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/helpers.ts` — Remove `buildPromptText`, replace with PromptBuilder\n- `src/lib/lifecycle-manager.ts` — Use PromptBuilder instead of buildPromptText\n\n### Phase 4: Stale Task Detection\n\n**Problem:** Hung delegated sessions occupy concurrency lanes indefinitely.\n\n**Solution:** Stale detection that:\n- Tracks last activity timestamp per session\n- Flags sessions with no activity for >180 seconds\n- Automatically cancels sessions with no activity for >30 minutes\n- Reports stale status to parent session\n\n**Files to create:**\n- `src/lib/stale-detector.ts` — StaleDetector implementation\n- `src/lib/stale-detector.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Integrate stale detection into background observer\n\n### Phase 5: Global Concurrency Limits\n\n**Problem:** Per-key semaphore exists but no global limit prevents resource exhaustion.\n\n**Solution:** Add global concurrency ceiling:\n- `maxConcurrentSessions` (default: 5)\n- Per-provider limits (optional)\n- Per-model limits (optional)\n- Queue overflow handling (reject vs wait)\n\n**Files to modify:**\n- `src/lib/concurrency.ts` — Add global limit to DelegationConcurrencyQueue\n- `src/lib/lifecycle-manager.ts` — Check global limit before acquiring lane\n\n---\n\n## 6. What NOT to Build (Out of Scope)\n\nThese are capabilities that oh-my-openagent has but are NOT appropriate for this harness:\n\n| Capability | Why Not |\n|------------|---------|\n| LSP integration | OpenCode should provide this natively. Plugin shouldn't duplicate IDE features. |\n| Hashline editing | OpenCode's edit tool is sufficient. Content-addressable editing is a nice-to-have, not core. |\n| Tmux multi-pane visualization | UI concern, not orchestration. OpenCode TUI handles this. |\n| MCP per skill isolation | OpenCode's MCP config is sufficient. Per-skill isolation is over-engineering. |\n| AST-grep | OpenCode's grep is sufficient for most use cases. |\n| Multimodal (look-at) | Model capability, not harness concern. |\n| Ralph Loop (iteration controller) | Complex workflow pattern. Better as a command, not plugin code. |\n| 8 specialist agents | 3 agents (researcher/builder/critic) covers the core triad. More agents = more config complexity. |\n| Worktree sync | Niche use case. Can be added later if needed. |\n| SQLite-backed state | Over-engineering for a zero-dependency package. JSON file is sufficient. |\n\n---\n\n## 7. Architecture After Rebuild\n\n```\nsrc/\n├── plugin.ts              # Composition root — hook handlers + delegate-task tool\n├── index.ts               # Barrel re-exports only\n└── lib/\n    ├── types.ts           # Shared types (KEEP, update for new interfaces)\n    ├── helpers.ts         # Pure utilities (KEEP, remove buildPromptText)\n    ├── state.ts           # In-memory Maps (KEEP, add task state references)\n    ├── concurrency.ts     # Keyed semaphore (KEEP, add global limits)\n    ├── session-api.ts     # Typed SDK wrappers (KEEP)\n    ├── completion-detector.ts  # Two-signal detection (KEEP)\n    ├── notification-handler.ts # Async completion notifications (KEEP)\n    ├── task-status.ts     # Task status type system (KEEP)\n    ├── agent-registry.ts  # Agent metadata (KEEP)\n    ├── task-state.ts      # NEW: Task state manager (replaces continuity.ts)\n    ├── retry-engine.ts    # NEW: Retry with fallback\n    ├── prompt-builder.ts  # NEW: Dynamic prompt composition\n    ├── stale-detector.ts  # NEW: Stale task detection\n    └── lifecycle-manager.ts  # MODIFIED: Use new components\n```\n\n**Target LOC:** ~4,500 (up from ~2,800, down from OMO's ~15,000+)\n**Target test count:** ~250 (up from 152)\n**Zero runtime dependencies:** maintained\n\n---\n\n## 8. Implementation Priority\n\n### Week 1: Foundation\n1. **Task State Manager** — Replace continuity.ts (highest impact, enables everything else)\n2. **Retry Engine** — Wire into lifecycle-manager (highest reliability improvement)\n3. **Stale Detector** — Prevent hung sessions (critical for production use)\n\n### Week 2: Intelligence\n4. **Dynamic Prompt Builder** — Model-aware prompts (biggest quality improvement)\n5. **Global Concurrency Limits** — Prevent resource exhaustion (critical for stability)\n6. **Lower circuit breaker threshold** — 16 → 5, per-tool-type (quick win)\n\n### Week 3: Polish\n7. **Clean up redundancy** — Remove AGENT_TOOLS, getPermissionRulesForAgent, hardcoded temps\n8. **Reduce metadata verbosity** — Keep essential fields only\n9. **Update tests** — Cover new components, maintain coverage\n\n### Week 4: Integration\n10. **End-to-end testing** — Test full delegation flow with retry, staleness, prompts\n11. **Documentation** — Update AGENTS.md, add architecture diagrams\n12. **Performance validation** — Benchmark delegation latency, memory usage\n\n---\n\n## 9. Success Criteria\n\nThe rebuilt harness should be judged on:\n\n| Metric | Current | Target | How to Measure |\n|--------|---------|--------|----------------|\n| Task completion rate | ~60% (no retry) | >90% (with retry) | Track failed vs completed delegations |\n| Stale session rate | Unknown (no detection) | <1% | Stale detector reports |\n| Prompt quality | Static template | Model-adapted | Agent output quality review |\n| Code maintainability | 2,800 LOC, 12 files | 4,500 LOC, 16 files | LOC count, file count |\n| Test coverage | 152 tests | 250+ tests | vitest run --coverage |\n| Zero dependencies | ✅ | ✅ | package.json peerDependencies only |\n| Delegation works end-to-end | Broken on free models | Works on capable models | Integration test with Claude/Sonnet |\n\n---\n\n## 10. Risks and Mitigations\n\n| Risk | Impact | Mitigation |\n|------|--------|------------|\n| Retry engine adds latency | Medium | Configurable backoff, fast-fail on permanent errors |\n| Dynamic prompts increase token usage | Low | Prompt size limits, caching of common sections |\n| Stale detection cancels valid long-running tasks | Medium | Configurable thresholds, warning before cancellation |\n| Task state manager complexity | Medium | Keep interface simple, test thoroughly |\n| Model fallback requires API key for multiple providers | High | Make fallback optional, document requirements |\n\n---\n\n## 11. What This Enables (The Real Value Proposition)\n\nAfter this rebuild, the harness provides capabilities that **cannot** be achieved through OpenCode config alone:\n\n1. **Resilient delegation** — Tasks survive transient failures through retry + fallback\n2. **State-aware orchestration** — Task state persists across sessions, enables dependency graphs\n3. **Model-adaptive prompting** — Prompts adapt to the model being used, improving output quality\n4. **Resource protection** — Global concurrency limits + stale detection prevent resource exhaustion\n5. **Observable workflows** — Task state is queryable, enabling progress tracking and debugging\n\nThese are genuinely plugin-level capabilities. They require code, not config. They extend OpenCode rather than duplicate it.\n\n---\n\n## 12. Comparison to Oh-My-Openagent\n\n| Dimension | OMO | Rebuilt Harness | Assessment |\n|-----------|-----|-----------------|------------|\n| Scope | Full agent OS (26 tools, 48 hooks, 8 agents) | Focused control plane (1 tool, 5 hooks, 3 agents + extensions) | Harness is narrower but deeper in its domain |\n| Resilience | 14-file recovery + 14-file fallback + retry | Retry engine + stale detector | OMO is more comprehensive, harness is sufficient for MVP |\n| Tools | 26 custom tools | 1 custom tool (delegate-task) + OpenCode native tools | Harness relies on OpenCode's tool ecosystem — correct choice |\n| State | Boulder JSON + SQLite + worktree sync | Task state JSON | Harness is simpler, sufficient for single-worktree use |\n| Prompts | Dynamic builder + model-family variants + directory injection | Dynamic builder + model-family awareness | OMO is more sophisticated, harness covers the essentials |\n| Concurrency | Per-model + provider + global + stale detection | Per-key + global + stale detection | Equivalent for practical purposes |\n| Code volume | ~15,000+ source LOC | ~4,500 LOC | Harness is 3x smaller, more auditable |\n| Dependencies | Zod, SQLite, runtime deps | Zero runtime deps | Harness wins — truly zero-dep |\n\n**The rebuilt harness is not a competitor to oh-my-openagent. It is a focused, zero-dependency subset that delivers the core control plane capabilities without the tool ecosystem, LSP integration, tmux visualization, or 8-agent complexity.**\n\n---\n\n## 13. Appendix: What the Skills Ecosystem Offers\n\nRelevant skills discovered during this audit:\n\n| Skill | Installs | Relevance |\n|-------|----------|-----------|\n| `jasonkneen/kiro/spec-driven-development` | 221 | Requirements → Design → Task planning workflow |\n| `jasonkneen/kiro/requirements-engineering` | 118 | EARS format for testable requirements |\n| `jasonkneen/kiro/task-breakdown` | 32 | Task decomposition methodology |\n| `borghei/claude-skills/product-manager` | 121 | RICE/ICE prioritization, roadmap planning |\n| `404kidwiz/claude-supercode-skills/project-manager` | 906 | Project management with WBS, risk registers |\n\nThese skills inform the **process** of building the harness (requirements, planning, task breakdown) but are not part of the harness runtime. They should be used by the development team during implementation.\n",
+  "content": "# Harness Framework: Rebuild Specification\n\n**Date:** 2026-04-02\n**Type:** Architecture Specification + Implementation Blueprint\n**Status:** Draft — requires validation\n\n---\n\n## 1. Context: What We Know Now\n\n### 1.1 Three-Way Comparison Results\n\n| Dimension | OpenCode Native | Oh-My-Openagent (OMO) | Our Harness |\n|-----------|----------------|----------------------|-------------|\n| **Agent orchestration** | Flat: pick one agent per session | Hierarchical: Atlas→8 specialists with retry, fallback, recovery | Parent→child only, no retry, no fallback |\n| **Plugin hooks** | 27 event hooks available | 48 hooks composed across 5 subsystems | 5 hooks (before/after/event/compacting/shell.env) |\n| **Custom tools** | Built-in + MCP | 26 custom tools | 1 custom tool (delegate-task) |\n| **State durability** | Sessions persist in memory | Boulder state (JSON) + SQLite + worktree sync | Single continuity JSON file |\n| **Resilience** | None — errors propagate | Session recovery (14 files), model fallback (14 files), retry logic | None — errors propagate |\n| **Concurrency** | None | Per-model + provider + global limits, stale detection | Per-key semaphore only |\n| **Context engineering** | Static prompts in .md files | Dynamic prompt builder, model-family variants, directory injection | Static template in helpers.ts |\n| **Code volume** | Platform (~50K LOC) | ~276K packed (est. 15K+ source) | ~2,800 LOC |\n\n### 1.2 What the Previous Audit Got Right\n\n1. **The harness wraps OpenCode's native capabilities** — delegate-task is a thin session.create() wrapper\n2. **Circuit breaker at threshold=16 is too high** — OpenCode's doom_loop catches 3 identical calls\n3. **Continuity JSON has no consumer** — no agent reads from it programmatically\n4. **Concurrency queues are underutilized** — keyed semaphore exists but nothing waits in them meaningfully\n5. **Metadata injection is verbose but unused** — `_harness` metadata goes nowhere\n\n### 1.3 What the Previous Audit Got Wrong\n\n1. **\"Delete everything\"** — the plugin hook infrastructure IS the only way to extend OpenCode. The hooks work correctly.\n2. **\"Tests pass but functionality is wrong\"** — the 152 tests verify correct behavior of the components that exist. The problem is scope, not correctness.\n3. **\"Conductor agent can't use tools\"** — this is a model selection issue (qwen3.6-plus-free), not a harness issue. The `delegate-task` tool works with capable models.\n4. **\"Continuity store is redundant\"** — it's not redundant, it's incomplete. The schema is well-designed but nothing consumes it yet.\n\n---\n\n## 2. Core Insight: What a Harness Framework Actually Is\n\nA harness is **not** a replacement for OpenCode's agent system. It is a **control plane** that sits above it. The correct mental model:\n\n```\n┌─────────────────────────────────────────────────┐\n│  HARNESS CONTROL PLANE (plugin code)            │\n│  ┌───────────┐  ┌──────────┐  ┌──────────────┐ │\n│  │ Task      │  │ State    │  │ Resilience   │ │\n│  │ Decompose │  │ Manager  │  │ Engine       │ │\n│  └─────┬─────┘  └────┬─────┘  └──────┬───────┘ │\n│        └──────────────┼───────────────┘         │\n│                       ▼                         │\n│  ┌───────────────────────────────────────────┐  │\n│  │  Delegation Router                        │  │\n│  │  (category → agent + model + permissions) │  │\n│  └─────────────────┬─────────────────────────┘  │\n└────────────────────┼────────────────────────────┘\n                     ▼\n┌─────────────────────────────────────────────────┐\n│  OPENCODE PLATFORM (config + built-in tools)    │\n│  ┌────────┐ ┌───────┐ ┌──────┐ ┌──────┐        │\n│  │Agents  │ │Skills │ │Tools │ │Rules │        │\n│  │(.md)   │ │(.md)  │ │(SDK) │ │(.md) │        │\n│  └────────┘ └───────┘ └──────┘ └──────┘        │\n└─────────────────────────────────────────────────┘\n```\n\n**The harness owns:** task decomposition, state durability, resilience (retry/fallback/recovery), concurrency control, delegation routing.\n\n**OpenCode owns:** agent definitions, skill loading, tool execution, rule enforcement, session management.\n\n**The boundary:** the harness should NEVER duplicate what OpenCode config can express. It should ONLY add capabilities that require plugin-level code.\n\n---\n\n## 3. What to Keep (Proven Working)\n\n| Component | Keep? | Reason |\n|-----------|-------|--------|\n| Plugin hook infrastructure | ✅ KEEP | Correctly intercepts tool calls, events, compaction |\n| `tool.execute.before` circuit breaker | ⚠️ IMPROVE | Lower threshold from 16 to 5, add per-tool-type thresholds |\n| `tool.execute.after` metadata | ⚠️ REDESIGN | Make it actionable — feed into state manager, not just verbose output |\n| `event` handler | ✅ KEEP | Correctly routes events to lifecycle manager |\n| `experimental.session.compacting` | ✅ KEEP | Preserves harness state during compaction — genuinely useful |\n| `shell.env` hook | ✅ KEEP | CI mode safety is correct |\n| Typed SDK wrappers (`session-api.ts`) | ✅ KEEP | Better than OMO's `any` usage |\n| Concurrency semaphore (`concurrency.ts`) | ✅ KEEP | Well-implemented, just needs global limit + stale detection |\n| CompletionDetector | ✅ KEEP | Two-signal detection (idle + stability) is sound |\n| Test framework (152 tests) | ✅ KEEP | Good coverage of existing components |\n| Agent definitions (researcher/builder/critic) | ✅ KEEP | Core triad is sufficient for MVP |\n| Permission profiles | ✅ KEEP | Clean allow/ask model |\n\n---\n\n## 4. What to Delete (Redundant or Broken)\n\n| Component | Delete? | Reason |\n|-----------|---------|--------|\n| Continuity JSON store (635 LOC) | ✅ DELETE | No consumer. Replace with task state manager (see §5) |\n| `routing.ts` (already deleted) | ✅ GONE | Was redundant — agent .md files define routing |\n| Hardcoded agent temperature defaults | ✅ DELETE | Should come from agent config, not plugin constants |\n| `AGENT_TOOLS` restriction table | ✅ DELETE | Overlaps with agent .md frontmatter permissions |\n| `getPermissionRulesForAgent()` | ✅ DELETE | Redundant with agent frontmatter permission blocks |\n| Metadata injection verbosity | ✅ REDUCE | Keep essential fields, remove noise |\n| `MAX_DESCENDANTS_PER_ROOT = 10` | ✅ DELETE | Arbitrary limit with no enforcement mechanism |\n| `RootBudget` type with `Set<string>` | ✅ DELETE | Never iterated over, never used |\n\n---\n\n## 5. What to Build (The Real Value)\n\n### Phase 1: Task State Manager (replaces continuity.ts)\n\n**Problem:** The current continuity store persists data but nothing reads it. It's a data graveyard.\n\n**Solution:** A task state manager that:\n- Tracks task lifecycle: `pending → dispatched → running → completed | failed | retrying`\n- Persists state to disk (single JSON file, but with consumers)\n- Provides checkpoint/restore for delegated tasks\n- Exposes state to agents via compaction injection\n- Supports task dependency graphs (task B depends on task A)\n\n**Interface:**\n```typescript\ninterface TaskState {\n  id: string\n  parentTaskId?: string\n  status: 'pending' | 'dispatched' | 'running' | 'completed' | 'failed' | 'retrying'\n  agent: string\n  category?: string\n  model?: string\n  prompt: string\n  result?: string\n  error?: string\n  retryCount: number\n  maxRetries: number\n  dependencies: string[]\n  createdAt: number\n  updatedAt: number\n  completedAt?: number\n}\n\ninterface TaskStateManager {\n  createTask(spec: TaskSpec): string\n  getTask(id: string): TaskState | undefined\n  updateTask(id: string, patch: Partial<TaskState>): void\n  getReadyTasks(): TaskState[]  // tasks with all dependencies met\n  getPendingTasks(): TaskState[]\n  getCompletedTasks(): TaskState[]\n  persist(): void\n  hydrate(): void\n}\n```\n\n**Files to create:**\n- `src/lib/task-state.ts` — TaskStateManager implementation\n- `src/lib/task-state.test.ts` — Tests\n\n**Files to delete:**\n- `src/lib/continuity.ts` — Replaced by task-state.ts\n\n### Phase 2: Retry Engine\n\n**Problem:** Any transient failure (rate limit, timeout, model unavailable) permanently kills a delegated task.\n\n**Solution:** Automatic retry with:\n- Configurable max retries per task (default: 2)\n- Exponential backoff between retries (1s, 2s, 4s)\n- Model fallback chain on repeated failures\n- Guidance injection on retry (tell the agent what went wrong)\n\n**Interface:**\n```typescript\ninterface RetryEngine {\n  executeWithRetry(\n    task: TaskSpec,\n    options: RetryOptions\n  ): Promise<TaskResult>\n}\n\ninterface RetryOptions {\n  maxRetries: number\n  backoffMs: number\n  fallbackModels?: string[]\n  onRetry?: (attempt: number, error: Error) => void\n}\n\ninterface TaskResult {\n  success: boolean\n  output?: string\n  error?: string\n  attempts: number\n  modelUsed: string\n}\n```\n\n**Files to create:**\n- `src/lib/retry-engine.ts` — RetryEngine implementation\n- `src/lib/retry-engine.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Use RetryEngine in `launchDelegatedSession`\n\n### Phase 3: Dynamic Prompt Builder\n\n**Problem:** All agents get the same prompt template regardless of model, context, or task type.\n\n**Solution:** Runtime prompt composition that:\n- Adapts to model family (Claude vs GPT vs Gemini have different optimal prompt patterns)\n- Injects directory-specific context (README, AGENTS.md, project type)\n- Adds category-specific guidance\n- Includes task dependencies and prior results when available\n\n**Interface:**\n```typescript\ninterface PromptBuilder {\n  buildPrompt(args: PromptArgs): string\n}\n\ninterface PromptArgs {\n  task: string\n  agent: string\n  category?: string\n  model?: string\n  scope?: string\n  constraints?: string[]\n  priorResults?: { taskId: string; result: string }[]\n  directory?: string\n}\n```\n\n**Files to create:**\n- `src/lib/prompt-builder.ts` — DynamicPromptBuilder implementation\n- `src/lib/prompt-builder.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/helpers.ts` — Remove `buildPromptText`, replace with PromptBuilder\n- `src/lib/lifecycle-manager.ts` — Use PromptBuilder instead of buildPromptText\n\n### Phase 4: Stale Task Detection\n\n**Problem:** Hung delegated sessions occupy concurrency lanes indefinitely.\n\n**Solution:** Stale detection that:\n- Tracks last activity timestamp per session\n- Flags sessions with no activity for >180 seconds\n- Automatically cancels sessions with no activity for >30 minutes\n- Reports stale status to parent session\n\n**Files to create:**\n- `src/lib/stale-detector.ts` — StaleDetector implementation\n- `src/lib/stale-detector.test.ts` — Tests\n\n**Files to modify:**\n- `src/lib/lifecycle-manager.ts` — Integrate stale detection into background observer\n\n### Phase 5: Global Concurrency Limits\n\n**Problem:** Per-key semaphore exists but no global limit prevents resource exhaustion.\n\n**Solution:** Add global concurrency ceiling:\n- `maxConcurrentSessions` (default: 5)\n- Per-provider limits (optional)\n- Per-model limits (optional)\n- Queue overflow handling (reject vs wait)\n\n**Files to modify:**\n- `src/lib/concurrency.ts` — Add global limit to DelegationConcurrencyQueue\n- `src/lib/lifecycle-manager.ts` — Check global limit before acquiring lane\n\n---\n\n## 6. What NOT to Build (Out of Scope)\n\nThese are capabilities that oh-my-openagent has but are NOT appropriate for this harness:\n\n| Capability | Why Not |\n|------------|---------|\n| LSP integration | OpenCode should provide this natively. Plugin shouldn't duplicate IDE features. |\n| Hashline editing | OpenCode's edit tool is sufficient. Content-addressable editing is a nice-to-have, not core. |\n| Tmux multi-pane visualization | UI concern, not orchestration. OpenCode TUI handles this. |\n| MCP per skill isolation | OpenCode's MCP config is sufficient. Per-skill isolation is over-engineering. |\n| AST-grep | OpenCode's grep is sufficient for most use cases. |\n| Multimodal (look-at) | Model capability, not harness concern. |\n| Ralph Loop (iteration controller) | Complex workflow pattern. Better as a command, not plugin code. |\n| 8 specialist agents | 3 agents (researcher/builder/critic) covers the core triad. More agents = more config complexity. |\n| Worktree sync | Niche use case. Can be added later if needed. |\n| SQLite-backed state | Over-engineering for a zero-dependency package. JSON file is sufficient. |\n\n---\n\n## 7. Architecture After Rebuild\n\n```\nsrc/\n├── plugin.ts              # Composition root — hook handlers + delegate-task tool\n├── index.ts               # Barrel re-exports only\n└── lib/\n    ├── types.ts           # Shared types (KEEP, update for new interfaces)\n    ├── helpers.ts         # Pure utilities (KEEP, remove buildPromptText)\n    ├── state.ts           # In-memory Maps (KEEP, add task state references)\n    ├── concurrency.ts     # Keyed semaphore (KEEP, add global limits)\n    ├── session-api.ts     # Typed SDK wrappers (KEEP)\n    ├── completion-detector.ts  # Two-signal detection (KEEP)\n    ├── notification-handler.ts # Async completion notifications (KEEP)\n    ├── task-status.ts     # Task status type system (KEEP)\n    ├── agent-registry.ts  # Agent metadata (KEEP)\n    ├── task-state.ts      # NEW: Task state manager (replaces continuity.ts)\n    ├── retry-engine.ts    # NEW: Retry with fallback\n    ├── prompt-builder.ts  # NEW: Dynamic prompt composition\n    ├── stale-detector.ts  # NEW: Stale task detection\n    └── lifecycle-manager.ts  # MODIFIED: Use new components\n```\n\n**Target LOC:** ~4,500 (up from ~2,800, down from OMO's ~15,000+)\n**Target test count:** ~250 (up from 152)\n**Zero runtime dependencies:** maintained\n\n---\n\n## 8. Implementation Priority\n\n### Week 1: Foundation\n1. **Task State Manager** — Replace continuity.ts (highest impact, enables everything else)\n2. **Retry Engine** — Wire into lifecycle-manager (highest reliability improvement)\n3. **Stale Detector** — Prevent hung sessions (critical for production use)\n\n### Week 2: Intelligence\n4. **Dynamic Prompt Builder** — Model-aware prompts (biggest quality improvement)\n5. **Global Concurrency Limits** — Prevent resource exhaustion (critical for stability)\n6. **Lower circuit breaker threshold** — 16 → 5, per-tool-type (quick win)\n\n### Week 3: Polish\n7. **Clean up redundancy** — Remove AGENT_TOOLS, getPermissionRulesForAgent, hardcoded temps\n8. **Reduce metadata verbosity** — Keep essential fields only\n9. **Update tests** — Cover new components, maintain coverage\n\n### Week 4: Integration\n10. **End-to-end testing** — Test full delegation flow with retry, staleness, prompts\n11. **Documentation** — Update AGENTS.md, add architecture diagrams\n12. **Performance validation** — Benchmark delegation latency, memory usage\n\n---\n\n## 9. Success Criteria\n\nThe rebuilt harness should be judged on:\n\n| Metric | Current | Target | How to Measure |\n|--------|---------|--------|----------------|\n| Task completion rate | ~60% (no retry) | >90% (with retry) | Track failed vs completed delegations |\n| Stale session rate | Unknown (no detection) | <1% | Stale detector reports |\n| Prompt quality | Static template | Model-adapted | Agent output quality review |\n| Code maintainability | 2,800 LOC, 12 files | 4,500 LOC, 16 files | LOC count, file count |\n| Test coverage | 152 tests | 250+ tests | vitest run --coverage |\n| Zero dependencies | ✅ | ✅ | package.json peerDependencies only |\n| Delegation works end-to-end | Broken on free models | Works on capable models | Integration test with Claude/Sonnet |\n\n---\n\n## 10. Risks and Mitigations\n\n| Risk | Impact | Mitigation |\n|------|--------|------------|\n| Retry engine adds latency | Medium | Configurable backoff, fast-fail on permanent errors |\n| Dynamic prompts increase token usage | Low | Prompt size limits, caching of common sections |\n| Stale detection cancels valid long-running tasks | Medium | Configurable thresholds, warning before cancellation |\n| Task state manager complexity | Medium | Keep interface simple, test thoroughly |\n| Model fallback requires API key for multiple providers | High | Make fallback optional, document requirements |\n\n---\n\n## 11. What This Enables (The Real Value Proposition)\n\nAfter this rebuild, the harness provides capabilities that **cannot** be achieved through OpenCode config alone:\n\n1. **Resilient delegation** — Tasks survive transient failures through retry + fallback\n2. **State-aware orchestration** — Task state persists across sessions, enables dependency graphs\n3. **Model-adaptive prompting** — Prompts adapt to the model being used, improving output quality\n4. **Resource protection** — Global concurrency limits + stale detection prevent resource exhaustion\n5. **Observable workflows** — Task state is queryable, enabling progress tracking and debugging\n\nThese are genuinely plugin-level capabilities. They require code, not config. They extend OpenCode rather than duplicate it.\n\n---\n\n## 12. Comparison to Oh-My-Openagent\n\n| Dimension | OMO | Rebuilt Harness | Assessment |\n|-----------|-----|-----------------|------------|\n| Scope | Full agent OS (26 tools, 48 hooks, 8 agents) | Focused control plane (1 tool, 5 hooks, 3 agents + extensions) | Harness is narrower but deeper in its domain |\n| Resilience | 14-file recovery + 14-file fallback + retry | Retry engine + stale detector | OMO is more comprehensive, harness is sufficient for MVP |\n| Tools | 26 custom tools | 1 custom tool (delegate-task) + OpenCode native tools | Harness relies on OpenCode's tool ecosystem — correct choice |\n| State | Boulder JSON + SQLite + worktree sync | Task state JSON | Harness is simpler, sufficient for single-worktree use |\n| Prompts | Dynamic builder + model-family variants + directory injection | Dynamic builder + model-family awareness | OMO is more sophisticated, harness covers the essentials |\n| Concurrency | Per-model + provider + global + stale detection | Per-key + global + stale detection | Equivalent for practical purposes |\n| Code volume | ~15,000+ source LOC | ~4,500 LOC | Harness is 3x smaller, more auditable |\n| Dependencies | Zod, SQLite, runtime deps | Zero runtime deps | Harness wins — truly zero-dep |\n\n**The rebuilt harness is not a competitor to oh-my-openagent. It is a focused, zero-dependency subset that delivers the core control plane capabilities without the tool ecosystem, LSP integration, tmux visualization, or 8-agent complexity.**\n\n---\n\n## 13. Appendix: What the Skills Ecosystem Offers\n\nRelevant skills discovered during this audit:\n\n| Skill | Installs | Relevance |\n|-------|----------|-----------|\n| `jasonkneen/kiro/spec-driven-development` | 221 | Requirements → Design → Task planning workflow |\n| `jasonkneen/kiro/requirements-engineering` | 118 | EARS format for testable requirements |\n| `jasonkneen/kiro/task-breakdown` | 32 | Task decomposition methodology |\n| `borghei/claude-skills/product-manager` | 121 | RICE/ICE prioritization, roadmap planning |\n| `404kidwiz/claude-supercode-skills/project-manager` | 906 | Project management with WBS, risk registers |\n\nThese skills inform the **process** of building the harness (requirements, planning, task breakdown) but are not part of the harness runtime. They should be used by the development team during implementation.\n",
   "filePath": "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/harness-rebuild-spec-2026-04-02.md"
 }
 ```

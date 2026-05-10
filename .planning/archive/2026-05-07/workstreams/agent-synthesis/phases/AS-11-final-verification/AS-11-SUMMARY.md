@@ -46,7 +46,7 @@ Final hm/hf agent verification now checks all 56 shipped agents for naming, fron
 - Verified all 56 hm/hf agents from the canonical Hivefiver agents lab.
 - Fixed stale skill references to renamed skill IDs.
 - Added missing `depth: L2` and `lineage: hm` metadata to legacy hm-l2 agent frontmatter.
-- Confirmed no `edit: deny`, `write: deny`, or bash deny-all constraints remain in the 56-agent set.
+- Confirmed no `edit: ask`, `write: ask`, or bash ask-all constraints remain in the 56-agent set.
 - Confirmed all task/skill permission patterns resolve to existing agents/skills or valid globs.
 - Confirmed all 56 agents include a `<naming>` body block.
 
@@ -68,7 +68,7 @@ None — 0 violations after repair.
 
 **1. [Rule 1 - Bug] Repaired obsolete verifier assertions**
 - **Found during:** AS-11 verification run
-- **Issue:** The existing script still enforced obsolete deny-all and XML optional-tag rules instead of the delegated AS-11 contract.
+- **Issue:** The existing script still enforced obsolete ask-all and XML optional-tag rules instead of the delegated AS-11 contract.
 - **Fix:** Replaced it with a scoped verifier for the 56 hm/hf agents and the requested acceptance checks.
 - **Files modified:** `.planning/workstreams/agent-synthesis/phases/AS-11-final-verification/verify-agents.cjs`
 

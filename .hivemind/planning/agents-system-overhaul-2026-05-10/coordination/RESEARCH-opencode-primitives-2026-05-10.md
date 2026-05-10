@@ -72,8 +72,8 @@ Agent.Info = {
 | Agent | Mode | Hidden | Description | Key Permissions |
 |-------|------|--------|-------------|-----------------|
 | **build** | primary | no | Default agent. Executes tools based on configured permissions. | question: allow, plan_enter: allow |
-| **plan** | primary | no | Plan mode. Disallows all edit tools. | edit: deny (except .opencode/plans/*.md), plan_exit: allow |
-| **general** | subagent | no | General-purpose agent for researching and multi-step tasks. | todowrite: deny |
+| **plan** | primary | no | Plan mode. Disallows all edit tools. | edit: ask (except .opencode/plans/*.md), plan_exit: allow |
+| **general** | subagent | no | General-purpose agent for researching and multi-step tasks. | todowrite: ask |
 | **explore** | subagent | no | Fast agent specialized for exploring codebases. | Only: grep, glob, list, bash, webfetch, websearch, read |
 | **compaction** | primary | yes | Context compaction agent. | All tools denied |
 | **title** | primary | yes | Session title generator. temp=0.5 | All tools denied |
@@ -196,7 +196,7 @@ Tool permissions are evaluated against the tool's `id`:
 type Rule = {
   permission: string    // Tool name or wildcard
   pattern: string       // Glob pattern for matching
-  action: "allow" | "deny" | "ask"
+  action: "allow" | "ask" | "ask"
 }
 
 type Ruleset = Rule[]  // Ordered rules, last match wins
@@ -209,7 +209,7 @@ type Ruleset = Rule[]  // Ordered rules, last match wins
 ### 3.2 Permission Merge Order
 
 For each agent, permissions merge in this order (later wins):
-1. **System defaults** — `*` → allow, doom_loop → ask, external_directory `*` → ask, question → deny, etc.
+1. **System defaults** — `*` → allow, doom_loop → ask, external_directory `*` → ask, question → ask, etc.
 2. **Agent-specific defaults** — e.g., build gets question: allow; explore gets only read/grep/glob/bash
 3. **User config** — from `opencode.json` → `permission` field
 4. **Per-agent config** — from `opencode.json` → `agent.<name>.permission`
@@ -220,7 +220,7 @@ For each agent, permissions merge in this order (later wins):
 
 Child sessions inherit from parent:
 - Parent's `external_directory` rules carry over
-- Parent's `deny` rules carry over
+- Parent's `ask` rules carry over
 - If child agent lacks `task` permission → task denied in child
 - If child agent lacks `todowrite` permission → todowrite denied in child
 - `experimental.primary_tools` from config → allowed in child sessions
@@ -262,7 +262,7 @@ Child sessions inherit from parent:
 | `chat.message` | `{ sessionID, agent?, model?, messageID?, variant? }` | `{ message, parts }` | New message received |
 | `chat.params` | `{ sessionID, agent, model, provider, message }` | `{ temperature, topP, topK, maxOutputTokens, options }` | Modify LLM params before request |
 | `chat.headers` | `{ sessionID, agent, model, provider, message }` | `{ headers }` | Inject HTTP headers |
-| `permission.ask` | `Permission` | `{ status: "ask" \| "deny" \| "allow" }` | Custom permission handling |
+| `permission.ask` | `Permission` | `{ status: "ask" \| "ask" \| "allow" }` | Custom permission handling |
 | `command.execute.before` | `{ command, sessionID, arguments }` | `{ parts }` | Intercept before command runs |
 | `tool.execute.before` | `{ tool, sessionID, callID }` | `{ args }` | Modify tool args or block |
 | `shell.env` | `{ cwd, sessionID?, callID? }` | `{ env }` | Inject env vars |
@@ -402,7 +402,7 @@ Skill.Info = {
 ```typescript
 // Skills are filtered: if agent.permission denies "skill" for the skill's name, it's excluded
 list.filter(skill => 
-  Permission.evaluate("skill", skill.name, agent.permission).action !== "deny"
+  Permission.evaluate("skill", skill.name, agent.permission).action !== "ask"
 )
 ```
 
@@ -525,7 +525,7 @@ Config.Info = {
     batch_tool?: boolean
     openTelemetry?: boolean
     primary_tools?: string[]        // Tools only for primary agents
-    continue_loop_on_deny?: boolean
+    continue_loop_on_ask?: boolean
     mcp_timeout?: number
   }
 }
@@ -593,9 +593,9 @@ TaskTool.Parameters = {
    - `parentID: currentSessionID`
    - Permission rules inherited from parent:
      - Parent's `external_directory` rules
-     - Parent's `deny` rules
-     - If child lacks `todowrite` → deny todowrite
-     - If child lacks `task` → deny task
+     - Parent's `ask` rules
+     - If child lacks `todowrite` → ask todowrite
+     - If child lacks `task` → ask task
      - `experimental.primary_tools` → allowed
 5. Resolve model from agent config or parent message
 6. Dispatch prompt to child session
@@ -659,7 +659,7 @@ tool: {
 | Post-tool processing | `tool.execute.after` | Truncation, logging, pressure tracking |
 | System prompt injection | `experimental.chat.system.transform` | Inject agent instructions, skill content |
 | Event bus listening | `event` | Session lifecycle events |
-| Permission override | `permission.ask` | Auto-approve/deny based on agent config |
+| Permission override | `permission.ask` | Auto-approve/ask based on agent config |
 | Shell env injection | `shell.env` | Inject OPENCODE_HARNESS_* env vars |
 | LLM param modification | `chat.params` | Agent-specific temperature/topP |
 | Tool definition modification | `tool.definition` | Enhance tool descriptions dynamically |
@@ -668,7 +668,7 @@ tool: {
 
 Hivemind's permission model must map to OpenCode's `{permission, pattern, action}` ruleset:
 - Hivemind agent configs → OpenCode `agent.<name>.permission`
-- Hivemind tool restrictions → OpenCode permission deny rules
+- Hivemind tool restrictions → OpenCode permission ask rules
 - Hivemind delegation boundaries → Task tool permission inheritance
 
 ### 10.5 Session Continuity via Task Tool
@@ -703,7 +703,7 @@ Hivemind's permission model must map to OpenCode's `{permission, pattern, action
 | `formatter` config | Code formatting | Auto-format after edits |
 | `disabled_providers` / `enabled_providers` | Provider filtering | Lock down to specific providers |
 | `experimental.primary_tools` | Tools only for primary agents | Prevent subagents from accessing coordination tools |
-| `experimental.continue_loop_on_deny` | Continue when tool denied | Resilience in autonomous loops |
+| `experimental.continue_loop_on_ask` | Continue when tool denied | Resilience in autonomous loops |
 
 ### 11.2 Primitives Hivemind Should NOT Use
 

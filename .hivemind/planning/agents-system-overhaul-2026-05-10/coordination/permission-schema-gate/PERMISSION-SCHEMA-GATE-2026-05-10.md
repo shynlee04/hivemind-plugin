@@ -90,7 +90,7 @@ Order: `defaults → user config → agent-specific config` — later layers alw
 |-------------------|--------|----------|
 | `'*': ask` then `'hm-l2-*': allow` | `allow` wins (last match) | ✅ Correct |
 | `'hm-l2-*': allow` then `'*': ask` | `ask` wins (last match) | ❌ Wrong — blocks everything |
-| `'*': deny` then `'git *': allow` | `allow` wins for `git` commands | ✅ Correct |
+| `'*': ask` then `'git *': allow` | `allow` wins for `git` commands | ✅ Correct |
 
 **Iron rule for auditors:** In every pattern object under `permission:`, the wildcard `'*'` entry MUST appear BEFORE specific patterns. Specific patterns MUST come AFTER wildcards in YAML key order.
 
@@ -146,7 +146,7 @@ Source: `packages/opencode/src/config/permission.ts` — `InputObject` struct
 | Action | Behavior |
 |--------|----------|
 | `"allow"` | Tool executes without user confirmation |
-| `"deny"` | Tool is blocked entirely |
+| `"ask"` | Tool is blocked entirely |
 | `"ask"` | User is prompted for permission before execution |
 
 ---
@@ -220,11 +220,11 @@ Cross-referenced with SKELETON §A (Cross-Lineage Delegation Rules) and §F (Del
 |-------------|-------------------------------|-------------------|---------------|
 | **hm-L0** | hm-l1-coordinator, hm-l2-\*, hm-l3-\* (none as agents) | hf-\* (FORBIDDEN) | ❌ hm→hf forbidden |
 | **hm-L1** | hm-l2-\* (all 43 L2 agents) | hm-L0, hm-L1, hf-\* | ❌ hm→hf forbidden |
-| **hm-L2 (non-delegating)** | NONE (task: deny all) | All levels | ❌ No delegation at all |
+| **hm-L2 (non-delegating)** | NONE (task: ask all) | All levels | ❌ No delegation at all |
 | **hm-L2 (delegating)** | Specific hm-l2-\* peers per SKELETON | hm-L0, hm-L1, hf-\* | ❌ hm→hf forbidden |
 | **hf-L0** | hf-l1-coordinator, hm-l1-coordinator, hf-l2-\*, hm-l2-\* | — | ✅ hf→hm allowed |
 | **hf-L1** | hf-l2-\*, hm-l2-\* | hf-L0, hf-L1, hm-L0 | ✅ hf→hm allowed |
-| **hf-L2 (all)** | NONE (task: deny all) | All levels | No delegation |
+| **hf-L2 (all)** | NONE (task: ask all) | All levels | No delegation |
 
 ### hm-L2 Delegating Agents (from SKELETON §B)
 
@@ -613,10 +613,10 @@ Each violation type includes a severity, detection method, and remediation guida
 - **Known violation:** hm-l2-build (SKELETON §G item 11)
 - **Remediation:** Move `skill:` under `permission:` block
 
-### V-13: `deny` vs `ask` Granularity
+### V-13: `ask` vs `ask` Granularity
 - **Severity:** MEDIUM
-- **Detection:** ALL 56 agents use `deny` for various tools — user requested change to `ask` for granularity
-- **Remediation:** Replace `deny` with `ask` across all agents for all permission keys (except where `deny` is intentional, e.g., recursive delegation prevention)
+- **Detection:** ALL 56 agents use `ask` for various tools — user requested change to `ask` for granularity
+- **Remediation:** Replace `ask` with `ask` across all agents for all permission keys (except where `ask` is intentional, e.g., recursive delegation prevention)
 
 ### V-14: Missing `domain` Field
 - **Severity:** MEDIUM
@@ -653,7 +653,7 @@ Each violation type includes a severity, detection method, and remediation guida
 | task patterns match agent names | `packages/opencode/src/tool/task.ts` | `patterns: [params.subagent_type]` |
 | Mode values | `packages/opencode/src/config/agent.ts` | `Schema.Literals(["subagent", "primary", "all"])` |
 | Hidden semantics | `packages/opencode/src/config/agent.ts` | `.annotate({ description: "Hide from @ autocomplete..." })` |
-| Permission actions | `packages/opencode/src/config/permission.ts` | `Schema.Literals(["ask", "allow", "deny"])` |
+| Permission actions | `packages/opencode/src/config/permission.ts` | `Schema.Literals(["ask", "allow", "ask"])` |
 | edit gates 3 tools | `packages/opencode/src/permission/index.ts` | `EDIT_TOOLS` array |
 | Unknown keys → options | `packages/opencode/src/config/agent.ts` | `StructWithRest` normalization |
 | Hivemind passthrough | `src/schema-kernel/agent-frontmatter.schema.ts:122` | `z.record(z.string(), z.unknown()).optional()` |
@@ -684,6 +684,6 @@ For each of the 56 agent YAML files, WAVE-3 auditor checks:
 - [ ] `lineage:` field present and correct (hm/hf) (Hivemind-internal)
 - [ ] `temperature:` matches domain guidelines
 - [ ] `steps:` present (not deprecated `maxSteps:`)
-- [ ] `deny` replaced with `ask` per user request
+- [ ] `ask` replaced with `ask` per user request
 - [ ] `bash:` children present if agent needs shell access
 - [ ] Hivemind custom tool keys (`delegate-task`, `delegation-status`, etc.) have correct allow/ask values per level

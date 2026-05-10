@@ -95,7 +95,7 @@ function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | unde
 }
 
 /**
- * Expand OpenCode primitive-level deny records into the prompt-time tool IDs
+ * Expand OpenCode primitive-level ask records into the prompt-time tool IDs
  * controlled by the harness delegation layer.
  *
  * @param permission - Agent primitive permission map from OpenCode metadata.
@@ -118,7 +118,7 @@ function isPermissionAllowed(value: unknown): boolean {
 }
 
 function isPermissionDenied(value: unknown): boolean {
-  if (value === false || value === "deny") return true
+  if (value === false || value === "ask") return true
   if (typeof value !== "object" || value === null) return false
   const nestedValues = Object.values(value as Record<string, unknown>)
   return nestedValues.length > 0 && nestedValues.every(isPermissionDenied)

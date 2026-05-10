@@ -239,7 +239,7 @@ Harness's approach is simpler but lacks the safety of global limits and per-mode
 
 1. **Simpler continuity model** — harness uses a single JSON file for all session state vs oh-my-openagent's boulder.json + in-memory + SQLite. Simpler to reason about.
 2. **Typed SDK wrappers** — harness's `session-api.ts` uses TypeScript types from `@opencode-ai/sdk` vs oh-my-openagent's untyped client flow.
-3. **Cleaner permission model** — harness uses `PermissionRule[]` with allow/deny/ask actions vs oh-my-openagent's more complex tool restriction system.
+3. **Cleaner permission model** — harness uses `PermissionRule[]` with allow/ask/ask actions vs oh-my-openagent's more complex tool restriction system.
 4. **Two-signal completion detection** — harness's `CompletionDetector` uses both session.idle events AND message count stability vs oh-my-openagent's simpler idle detection.
 5. **Zero runtime dependencies** — harness is zero-dep by design vs oh-my-openagent's extensive dependency tree.
 6. **Compact codebase** — ~3,200 LOC vs 276,598 lines. Easier to audit, modify, and maintain.

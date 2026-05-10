@@ -4,15 +4,15 @@ mode: primary
 instruction: [.opencode/rules/universal-rules.md, .opencode/rules/commit-governance.md, .opencode/rules/anti-patterns.md, opencode/rules/coordinator-rules.md,.opencode/rules/execution-loop.md,.opencode/rules/skill-activation.md]
 permission:
   read:
-    "*": deny
+    "*": ask
     "*.json": allow
     "*.md": allow
   edit:
-    "*": deny
+    "*": ask
     "*.json": allow
     "*.md": allow
   write:
-    "*": deny
+    "*": ask
     "*.json": allow
     "*.md": allow
   bash:

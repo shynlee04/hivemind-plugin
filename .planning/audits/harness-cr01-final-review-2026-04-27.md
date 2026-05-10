@@ -38,7 +38,7 @@ Immediate dependencies checked:
 
 - `src/lib/delegation-manager.ts:52-57`, `144-150` — consumes `allowedTools` in prompt-time `tools` map and denies recursive delegation.
 - `src/lib/spawner/agent-primitive-policy.ts:37-47` — enriches SDK agent metadata with local primitive `permission` / legacy `tools` data.
-- `.opencode/skills/hm-opencode-platform-reference/references/opencode-permissions.md:9-13`, `104-113`, `181-190` — confirms OpenCode permission states include `allow`, `ask`, and `deny`, and review-agent examples use `edit: deny`, `bash: ask`.
+- `.opencode/skills/hm-opencode-platform-reference/references/opencode-permissions.md:9-13`, `104-113`, `181-190` — confirms OpenCode permission states include `allow`, `ask`, and `ask`, and review-agent examples use `edit: ask`, `bash: ask`.
 
 ## Findings by Severity
 
@@ -55,9 +55,9 @@ Immediate dependencies checked:
 The previous blocker was that `toolsFromAgentMetadata()` could treat a present-but-restrictive `permission` record as explicit policy and then fall back to broad write-capable tools when no tool resolved to literal `allow`. Commit `02a4bdf2` removes that unsafe fallback:
 
 - `src/lib/spawner/spawn-request-builder.ts:90-94` now computes allowed tools only from explicit `allow` matches, subtracts denied tools, and falls back to `READ_ONLY_TOOLS` when the resulting allowlist is empty.
-- `src/lib/spawner/spawn-request-builder.ts:104-112` expands `edit: deny` into both prompt-time `edit` and `write` denials, preventing OpenCode's primitive-level edit denial from leaving the harness `write` tool auto-allowed.
+- `src/lib/spawner/spawn-request-builder.ts:104-112` expands `edit: ask` into both prompt-time `edit` and `write` denials, preventing OpenCode's primitive-level edit denial from leaving the harness `write` tool auto-allowed.
 - `src/lib/spawner/spawn-request-builder.ts:120-124` no longer treats empty nested permission objects as denied by default; denial requires at least one nested value and all nested values denied. This avoids accidental denial classification from empty objects while preserving fail-closed behavior through the empty allowlist fallback.
-- `tests/lib/spawner/spawn-request-builder.test.ts:54-88` adds regression coverage for the exact CR-01 scenarios: `edit: deny` + `bash: ask` resolves to review-only read/glob/grep, and `edit: ask` + `bash: ask` for a write-intent builder task resolves to read-only read/glob/grep.
+- `tests/lib/spawner/spawn-request-builder.test.ts:54-88` adds regression coverage for the exact CR-01 scenarios: `edit: ask` + `bash: ask` resolves to review-only read/glob/grep, and `edit: ask` + `bash: ask` for a write-intent builder task resolves to read-only read/glob/grep.
 
 Integration path remains aligned: `DelegationManager` sends `child.allowedTools` into `session.promptAsync(... body.tools ...)` at `src/lib/delegation-manager.ts:144-150`, so the resolver's read-only output prevents the prior write-capable prompt-tool escalation.
 

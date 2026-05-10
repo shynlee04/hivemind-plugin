@@ -28,19 +28,19 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
   delegate-task: allow
   delegation-status: allow
   session-journal-export: allow
-  prompt-skim: deny
-  prompt-analyze: deny
-  session-patch: deny
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   webfetch: allow
   websearch: allow
   skill:
-    '*': deny
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
@@ -100,7 +100,7 @@ Understands the Hivemind meta-concept creation model:
   - Tools → hf-tool-builder
 - **AQUAL quality standards:** 8-point compliance checklist for agent definitions
 - **XML body standard:** 10 required tags, 6 optional tags (D-AD-04)
-- **Permission model:** Deny-all + explicit allow pattern
+- **Permission model:** ask-all + explicit allow pattern
 - **Temperature by depth:** L0 (0.2-0.3), L1 (0.1-0.2), L2 (0.0-0.15)
 - **Cross-lineage access:** hf FLEXIBLE binding allows hm-* skill access with justification
 - **Quality gates:** gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth

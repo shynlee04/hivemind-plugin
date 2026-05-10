@@ -223,7 +223,7 @@ Defines which fields are owned by the setup generator versus explicitly editable
 
 ### Background command policy
 
-- `deny-all`
+- `ask-all`
 - `allowlist`
 - `prompt-once`
 

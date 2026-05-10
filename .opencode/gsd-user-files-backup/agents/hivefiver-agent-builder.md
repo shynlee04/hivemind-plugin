@@ -19,9 +19,9 @@ permission:
     "grep*": allow
     "rm -f*": allow
     "mkdir*": allow
-  task: deny
+  task: ask
   skill:
-    "*": deny
+    "*": ask
     "hivefiver-agents-and-subagents-dev": allow
     "hm-opencode-platform-reference": allow
     "hm-opencode-non-interactive-shell": allow
@@ -75,13 +75,13 @@ Every permission must be explicitly declared. No implicit access. If a permissio
 
 ```yaml
 permission:
-  read: allow                          # simple allow/deny/ask
+  read: allow                          # simple allow/ask/ask
   edit:                                # pattern-matched access
-    "*": deny                          # default: deny all
+    "*": ask                          # default: ask all
     "*.md": allow                      # allow markdown files
     "*.json": allow                    # allow json files
   write:                               # same pattern-matching
-    "*": deny
+    "*": ask
     "*.md": allow
   bash:                                # command-pattern matching
     "*": ask                           # default: ask for all commands
@@ -90,7 +90,7 @@ permission:
     "mkdir*": allow
   task: allow                          # allow spawning subagents
   skill:                               # skill-name matching
-    "*": deny                          # default: deny all
+    "*": ask                          # default: ask all
     "hm-meta-builder": allow              # allow specific skills
     "hivefiver-command-dev": allow
   glob: allow
@@ -103,7 +103,7 @@ permission:
 
 **Valid permission keys:** `read`, `edit`, `write`, `bash`, `task`, `skill`, `glob`, `grep`, `webfetch`, `webbrowse`, `todoread`, `todowrite`, `patch`, `question`
 
-**Valid permission values:** `allow`, `deny`, `ask`, or a pattern-matched sub-record.
+**Valid permission values:** `allow`, `ask`, `ask`, or a pattern-matched sub-record.
 
 ### Frontmatter Template (CORRECT)
 
@@ -119,7 +119,7 @@ permission:
   bash: allow
   task: allow
   skill:
-    "*": deny
+    "*": ask
     "skill-name-1": allow
     "skill-name-2": allow
   glob: allow
@@ -199,19 +199,19 @@ temperature: <0.0-0.5>
 steps: <30-80>
 instruction: [.opencode/rules/*.md]
 permission:
-  read: <allow|deny|{patterns}>
-  edit: <allow|deny|{patterns}>
-  write: <allow|deny|{patterns}>
+  read: <allow|ask|{patterns}>
+  edit: <allow|ask|{patterns}>
+  write: <allow|ask|{patterns}>
   bash:
-    "*": <ask|allow|deny>
-    "<pattern>": <allow|deny>
-  task: <allow|deny>
+    "*": <ask|allow|ask>
+    "<pattern>": <allow|ask>
+  task: <allow|ask>
   skill:
-    "*": <allow|deny>
-    "<skill-name>": <allow|deny>
-  glob: <allow|deny>
-  grep: <allow|deny>
-  webfetch: <allow|deny|ask>
+    "*": <allow|ask>
+    "<skill-name>": <allow|ask>
+  glob: <allow|ask>
+  grep: <allow|ask>
+  webfetch: <allow|ask|ask>
 ---
 ```
 

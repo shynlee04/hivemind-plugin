@@ -139,18 +139,18 @@ temperature: <0.0-1.0>
 steps: <max steps, e.g. 80>
 instructions: [<file paths>]
 permission:
-  read: allow|deny
-  edit: allow|deny
-  write: allow|deny
+  read: allow|ask
+  edit: allow|ask
+  write: allow|ask
   bash:
-    "*": ask|allow|deny
+    "*": ask|allow|ask
     "git status*": allow
-  task: allow|deny
+  task: allow|ask
   skill:
-    "*": deny
+    "*": ask
     "skill-name": allow
-  glob: allow|deny
-  grep: allow|deny
+  glob: allow|ask
+  grep: allow|ask
 ---
 ```
 

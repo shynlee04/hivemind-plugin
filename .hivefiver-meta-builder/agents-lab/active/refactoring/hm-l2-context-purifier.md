@@ -67,7 +67,7 @@ removed_content:
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- Cannot spawn subagents withouaskproval (task: ask).
 - NEVER ask clarifying questions — return findings only.
 - NEVER change the core intent — compression preserves meaning, never alters it.
 - NEVER remove constraints — all non-negotiable requirements must appear in preserved_constraints.

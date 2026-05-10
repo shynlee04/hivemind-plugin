@@ -16,7 +16,7 @@ For skill creation, agent authoring, or workflow design — skip this file and r
 | **Commands** | "custom command", "/my-command", "command template", "$ARGUMENTS" | `opencode-platform-reference` |
 | **Tools** | "restrict tool", "enable tool", "disable tool", "tool permissions" | `opencode-platform-reference` |
 | **Skills** | "skill permissions", "skill discovery", "skill loading" | `use-authoring-skills` |
-| **Permissions** | "permission", "allow", "deny", "ask", "pattern matching" | `opencode-platform-reference` |
+| **Permissions** | "permission", "allow", "ask", "ask", "pattern matching" | `opencode-platform-reference` |
 | **Custom Tools** | "tool()", ".opencode/tools/", "custom function", "TypeScript tool" | `opencode-tool-architect` |
 | **MCP Servers** | "MCP", "Model Context Protocol", "external tool", "OAuth" | `opencode-platform-reference` |
 | **LSP Servers** | "LSP", "language server", "code intelligence" | `opencode-platform-reference` |
@@ -46,7 +46,7 @@ For skill creation, agent authoring, or workflow design — skip this file and r
     "reviewer": {
       "description": "Code review without edits",
       "mode": "subagent",
-      "permission": { "edit": "deny", "bash": { "*": "ask", "git *": "allow" } }
+      "permission": { "edit": "ask", "bash": { "*": "ask", "git *": "allow" } }
     }
   }
 }
@@ -85,7 +85,7 @@ Focus on failing tests and suggest fixes.
 
 **Definition:** Control which actions require approval, are allowed, or are blocked.
 
-**Values:** `"allow"` (run without approval), `"ask"` (prompt), `"deny"` (block).
+**Values:** `"allow"` (run without approval), `"ask"` (prompt), `"ask"` (block).
 
 **Rule order:** Last matching rule wins. Put catch-all `*` first, specific rules after.
 
@@ -97,7 +97,7 @@ Focus on failing tests and suggest fixes.
   "permission": {
     "skill": {
       "*": "allow",
-      "internal-*": "deny",
+      "internal-*": "ask",
       "experimental-*": "ask"
     }
   }

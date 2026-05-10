@@ -83,7 +83,7 @@
 - **Files:** `src/coordination/command-delegation/handler.ts:381` — `.map((key) => [key, process.env[key]])`
 - **Risk:** If a new sensitive environment variable is added to the runtime (e.g., `LLM_API_KEY`), it could leak to delegated sessions unless the filter is updated.
 - **Current mitigation:** The `buildMinimalEnv` method filters to known-safe vars only, not `process.env` wholesale.
-- **Recommendations:** Audit `buildMinimalEnv` to ensure it uses a strict allowlist, not a denylist. Add integration test that verifies no unrecognized sensitive env vars pass through delegation.
+- **Recommendations:** Audit `buildMinimalEnv` to ensure it uses a strict allowlist, not a asklist. Add integration test that verifies no unrecognized sensitive env vars pass through delegation.
 
 ### path-scope.ts Symlink Resolution Could Return null for Non-Existent Paths
 

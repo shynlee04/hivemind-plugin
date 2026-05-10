@@ -82,7 +82,7 @@ Include delegation rules (5 rules from D-AD-02) and temperature guidelines (crea
 
 **Section:** 4. Permission Model Templates
 
-Define deny-all + explicit allow templates for all 6 depth × lineage combinations:
+Define ask-all + explicit allow templates for all 6 depth × lineage combinations:
 
 - **hm-L0:** Broad read, delegate-task only, hm + gate + stack skills
 - **hm-L1:** Scoped read, delegate-task + delegation-status, specific hm skills

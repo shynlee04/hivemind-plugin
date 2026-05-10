@@ -41,9 +41,9 @@ depths:
 | Symbol | Meaning |
 |--------|---------|
 | ✓ | allow |
-| ✗ | deny |
+| ✗ | ask |
 | ✓P | allow with pattern restriction |
-| — | not specified (default deny) |
+| — | not specified (default ask) |
 | N/A | tool not applicable to agent role |
 
 ### Tool Categories
@@ -126,10 +126,10 @@ depths:
 
 | Agent | Depth | task | delegate-task | delegation-status | session-journal-export |
 |-------|-------|------|---------------|-------------------|----------------------|
-| **hm-orchestrator** | L0 | ✓P (hm-*, deny hf-*, L2-*) | ✓ | ✓ | ✓ |
-| **hm-coordinator** | L1 | ✓P (hm-*, deny hf-*, L0-*, L1-*) | ✓ | ✓ | ✓ |
-| **hf-orchestrator** | L0 | ✓P (hf-*, hm-*, deny L2-*) | ✓ | ✓ | ✓ |
-| **hf-coordinator** | L1 | ✓P (hf-agent-builder, hf-skill-author, hf-command-builder, hf-tool-builder, hm-*, deny L0-*, L1-*) | ✓ | ✓ | ✓ |
+| **hm-orchestrator** | L0 | ✓P (hm-*, ask hf-*, L2-*) | ✓ | ✓ | ✓ |
+| **hm-coordinator** | L1 | ✓P (hm-*, ask hf-*, L0-*, L1-*) | ✓ | ✓ | ✓ |
+| **hf-orchestrator** | L0 | ✓P (hf-*, hm-*, ask L2-*) | ✓ | ✓ | ✓ |
+| **hf-coordinator** | L1 | ✓P (hf-agent-builder, hf-skill-author, hf-command-builder, hf-tool-builder, hm-*, ask L0-*, L1-*) | ✓ | ✓ | ✓ |
 | **All 36 L2 agents** | L2 | ✗ | ✗ | ✗ | ✗ |
 
 ### Custom Tool Access
@@ -138,13 +138,13 @@ All 36 L2 agents (hm-* and hf-*) have the following consistent pattern:
 
 | Tool | Permission |
 |------|-----------|
-| task | ✗ (deny) |
-| delegate-task | ✗ (deny) |
-| delegation-status | ✗ (deny) |
-| session-journal-export | ✗ (deny) |
-| prompt-skim | ✗ (deny) |
-| prompt-analyze | ✗ (deny) |
-| session-patch | ✗ (deny) |
+| task | ✗ (ask) |
+| delegate-task | ✗ (ask) |
+| delegation-status | ✗ (ask) |
+| session-journal-export | ✗ (ask) |
+| prompt-skim | ✗ (ask) |
+| prompt-analyze | ✗ (ask) |
+| session-patch | ✗ (ask) |
 
 L0/L1 orchestrators differ only in task/delegate-task authority:
 
@@ -192,11 +192,11 @@ All hm-* agents follow the **STRICT** rule: skill permissions only allow hm-*, g
 
 ```
 skill:
-  "*": deny
+  "*": ask
   "hm-*": allow      # All product-dev skills
   "gate-*": allow    # Quality gate triad
   "stack-*": allow   # Tech stack references
-  "hf-*": deny       # hm STRICT: no meta-builder skills
+  "hf-*": ask       # hm STRICT: no meta-builder skills
 ```
 
 #### hm-coordinator (L1)
@@ -249,7 +249,7 @@ All hf-* agents follow the **FLEXIBLE** rule: skill permissions CAN reference bo
 
 ```
 skill:
-  "*": deny
+  "*": ask
   "hf-*": allow       # All meta-builder skills
   "hm-*": allow       # hf FLEXIBLE: cross-lineage access
   "gate-*": allow     # Quality gate triad
@@ -359,11 +359,11 @@ All skill names referenced in agent permission blocks were verified against `.op
 
 ### Check 2: hm-* L2 agents NEVER have task:allow or delegate-task:allow
 
-**Result: PASS ✓** — All 28 hm-* L2 agents have `task: deny` and `delegate-task: deny`.
+**Result: PASS ✓** — All 28 hm-* L2 agents have `task: ask` and `delegate-task: ask`.
 
 ### Check 3: hf-* L2 agents NEVER have task:allow or delegate-task:allow
 
-**Result: PASS ✓** — All 8 hf-* L2 agents have `task: deny` and `delegate-task: deny`.
+**Result: PASS ✓** — All 8 hf-* L2 agents have `task: ask` and `delegate-task: ask`.
 
 ### Check 4: L0/L1 orchestrators HAVE delegate-task:allow
 
@@ -375,7 +375,7 @@ All skill names referenced in agent permission blocks were verified against `.op
 
 ### Check 6: hm-* task delegation never targets hf-* agents
 
-**Result: PASS ✓** — hm-orchestrator and hm-coordinator explicitly deny hf-* task delegation.
+**Result: PASS ✓** — hm-orchestrator and hm-coordinator explicitly ask hf-* task delegation.
 
 ### Check 7: Delegation patterns are depth-respecting
 
@@ -387,13 +387,13 @@ All skill names referenced in agent permission blocks were verified against `.op
 
 ### Universal Pattern
 
-All 40 agents follow the same deny-all + explicit allow model:
+All 40 agents follow the same ask-all + explicit allow model:
 
 ```yaml
 permission:
-  # Every tool category starts with a deny-all base
+  # Every tool category starts with a ask-all base
   tool_name:
-    "*": deny        # Deny everything by default
+    "*": ask        # ask everything by default
     "pattern": allow # Allow only specific patterns/names
 ```
 
@@ -401,14 +401,14 @@ permission:
 
 | Permission | L0 (Orchestrator) | L1 (Coordinator) | L2 (Specialist) |
 |------------|-------------------|-------------------|-----------------|
-| task delegation | Pattern-restricted allow | Pattern-restricted allow | Deny |
-| delegate-task | Allow | Allow | Deny |
-| delegation-status | Allow | Allow | Deny |
-| session-journal-export | Allow | Allow | Deny |
-| prompt-skim | Allow (L0 only) | Deny | Deny |
-| prompt-analyze | Allow (L0 only) | Deny | Deny |
+| task delegation | Pattern-restricted allow | Pattern-restricted allow | ask |
+| delegate-task | Allow | Allow | ask |
+| delegation-status | Allow | Allow | ask |
+| session-journal-export | Allow | Allow | ask |
+| prompt-skim | Allow (L0 only) | ask | ask |
+| prompt-analyze | Allow (L0 only) | ask | ask |
 | bash (run tests) | node, npx | node | Varies by domain |
-| write/edit | Deny (L0) | Deny (L1) | Domain-scoped patterns |
+| write/edit | ask (L0) | ask (L1) | Domain-scoped patterns |
 
 ---
 
@@ -423,6 +423,6 @@ permission:
 | hf-* FLEXIBLE (cross-lineage justified) | **PASS** |
 | All skill references resolve | **PASS** |
 | Task delegation patterns depth-respecting | **PASS** |
-| Permission model consistently deny-all + explicit allow | **PASS** |
+| Permission model consistently ask-all + explicit allow | **PASS** |
 
 **FINAL VERDICT: ALL GATES PASS — 0 violations, 0 fixes needed**

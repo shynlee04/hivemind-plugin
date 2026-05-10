@@ -86,7 +86,7 @@ List CI-fallback assumptions, unresolved clarifications, or intentionally deferr
 
 - NEVER write, edit, create, or delete files.
 - NEVER modify session state or session files.
-- NEVER spawn subagents (task: deny).
+- Cannot spawn subagents withouaskproval (task: ask).
 - NEVER ask clarifying questions — assemble from available inputs only.
 - NEVER omit any of the required XML-tagged sections.
 - NEVER include unverified references — use context-mapper verified paths only.
