@@ -36,6 +36,32 @@ Research without synthesis is hoarding. Synthesis without evidence is hallucinat
 Ingestion without caching is repetition.
 ```
 
+## Constitutional Compliance
+
+### Two-Tier Trust Model
+
+| Tier | Role | Sources | When to Trust |
+|------|------|---------|---------------|
+| **Validation Tier** (PRIMARY) | Verify truth | Live Context7, Live DeepWiki, Live Exa/Tavily, Live GitMCP, Live Repomix | For API signatures, version-sensitive claims, breaking changes, current behavior |
+| **Reference Tier** (SUPPLEMENTARY) | Provide context | Cached source code, Cached API docs, Cached structured docs | For architecture orientation, pattern understanding, historical context, offline research |
+
+### Staleness Severity Scale
+
+| Severity | Age | Action |
+|----------|-----|--------|
+| CRITICAL | > 24 hours | MUST re-verify via live source before trusting for production decisions |
+| HIGH | > 7 days | SHOULD re-verify; cached data acceptable for orientation only |
+| STANDARD | > 30 days | Re-verify before finalizing findings |
+| LOW | > 90 days | Treat as potentially outdated; note in findings |
+
+### Constitutional Gate Rule
+
+Before any finding is passed from one stage to the next, at least 50% of the findings must cite live (non-cached) sources. If this threshold is not met, the orchestrating agent MUST re-run Stage 2 (Research) with explicit live-source requirements before proceeding to Stage 3 (Synthesize).
+
+### MCP Tool Fallback Chain
+
+`Context7 → Repomix → DeepWiki → GitHub (GitMCP) → Exa → Tavily`
+
 # Research Chain
 ## The Canonical Chain
 
@@ -49,7 +75,9 @@ Ingestion without caching is repetition.
 
 ### Stage 0: Ingest (hm-tech-stack-ingest)
 
-**Purpose:** Cache third-party repositories, SDK docs, and API references BEFORE researching. This ensures all downstream stages validate against REAL code, not assumptions.
+**Purpose:** Cache third-party repositories, SDK docs, and API references BEFORE researching. Cache **informs the research plan** but does NOT skip stages. This ensures all downstream stages validate against REAL code, not assumptions.
+
+**Constitutional Rule:** Even when cache is fresh, the Validation Tier requires at least one live verification per research session. Cached assets inform DISCOVERY (what to research) but never replace VALIDATION (confirming truth).
 
 ```bash
 # Check if the target tech stack is already cached
@@ -61,7 +89,7 @@ ls references/tech-stacks/<name>/ && cat references/tech-stacks/<name>/metadata.
 
 **Output:** Cached tech stack in `references/tech-stacks/<name>/` with TOC.md, metadata.json, api/, docs/, examples/
 
-**Gate:** Cached assets must have valid `metadata.json` with `version`, `source_url`, and `ingest_date`. If the cached version differs from the installed version, re-ingestion must complete before research starts.
+**Gate:** Cached assets must have valid `metadata.json` with `version`, `source_url`, and `ingest_date`. If the cached version differs from the installed version, re-ingestion must complete before research starts. Cache freshness gates the DISCOVERY process. Validation always requires live sources regardless of cache state.
 
 ### Stage 1: Detect (hm-detective)
 
@@ -91,6 +119,25 @@ ls references/tech-stacks/<name>/ && cat references/tech-stacks/<name>/metadata.
 
 **Gate:** research output must include source evaluation, contradiction status, and blocked-source notes before synthesis starts.
 
+### Version Validation Gate (Between Stage 2 and Stage 3)
+
+**Before synthesis begins, verify:**
+1. All version-sensitive findings (API signatures, package interfaces) match the project's `package.json` versions
+2. If any finding references a version that differs from the installed version, flag it as `VERSION-MISMATCH` and re-run the specific research query with the correct version constraint
+3. Pass `package.json` version constraints to hm-synthesis as mandatory context
+
+**Re-Verification Record format (consistent with hm-tech-stack-ingest):**
+```yaml
+claim: <precise API claim being verified>
+cache_source: references/tech-stacks/<name>/api/<file>:<line>
+live_source: <Context7/Repomix/DeepWiki/GitHub/Exa/Tavily>
+live_result: <confirmed/different/does-not-exist>
+version_match: <installed version> == <live source version> → <MATCH/MISMATCH>
+severity: <CRITICAL/HIGH/STANDARD/LOW>
+verified: <date>
+verdict: <CONFIRMED | STALE-UPDATE-CACHE | UNVERIFIED>
+```
+
 ### Stage 3: Synthesize (hm-synthesis)
 
 **Purpose:** Compress findings into actionable artifacts.
@@ -103,6 +150,20 @@ ls references/tech-stacks/<name>/ && cat references/tech-stacks/<name>/metadata.
 **Output:** Final artifact (report, plan, or specification)
 
 **Gate:** synthesis output must include methodology/limitations and link each recommendation to evidence.
+
+**Synthesis Quality Gate (expanded):**
+- synthesis output must include methodology/limitations and link each recommendation to evidence
+- **Anti-pattern detection scan:** Before producing final artifact, check findings for:
+  - Single-source findings (only one tool used → flag as `SINGLE-SOURCE`)
+  - Cache-only findings (no live verification → flag as `CACHE-ONLY`)
+  - Version-mismatched findings (version differs from installed → flag as `VERSION-MISMATCH`)
+  - Contradictory findings without resolution (flag as `UNRESOLVED-CONTRADICTION`)
+- **Research Quality Score:** Rate the final artifact:
+  - **A:** Multi-source, >80% live verification, all versions match, no contradictions
+  - **B:** Multi-source, >50% live verification, most versions match, contradictions resolved
+  - **C:** Multi-source but <50% live verification, or minor version mismatches
+  - **D:** Single-source dominant, or significant version mismatches, or unresolved contradictions
+  - **F:** Cannot verify any findings, or all findings are cache-only, or critical version mismatches
 
 ### Stage 4: Artifact + Continuation
 
@@ -119,6 +180,10 @@ sources_reviewed: []
 blocked_sources: []
 contradictions: resolved | unresolved | none
 next_action: verify | implement | ask | block
+evidence_quality: live | cached | mixed
+live_source_ratio: <percentage of findings citing live sources>
+research_quality_score: <A/B/C/D/F>
+quality_score_rationale: <brief explanation>
 ```
 
 **Stop rule:** If a required stage artifact is missing, return `BLOCKED` with the missing gate. Do not synthesize or mark complete from partial chain state.
@@ -142,6 +207,7 @@ next_action: verify | implement | ask | block
 | **The Single-Source** | Uses only one tool (e.g., only web search) | Use the full MCP matrix |
 | **The Orphan Artifact** | Produces artifact but never links to source evidence | Every claim in artifact must cite source |
 | **The Ungated Chain** | Starts a later stage while prior stage output is missing | Stop and create the missing stage artifact first |
+| **The Unscored Chain** | Completes without assessing research quality | Always compute Research Quality Score at Stage 3 gate |
 
 ## Self-Correction
 
