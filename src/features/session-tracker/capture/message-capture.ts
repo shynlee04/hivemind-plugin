@@ -1,0 +1,193 @@
+/**
+ * Chat message capture handler for user and assistant messages.
+ *
+ * Handles `chat.message` hook events from OpenCode. User messages are
+ * captured as `## USER (turn N)` sections with sequential turn counters.
+ * Assistant messages are transformed into `main_l0_agent` blocks via
+ * {@link AgentTransform}. Thinking blocks are filtered out.
+ *
+ * Turn counters are maintained per-session in an instance-level Map.
+ * All handlers are best-effort — errors are logged, never thrown.
+ *
+ * @module session-tracker/capture/message-capture
+ */
+
+import type { SessionWriter } from "../persistence/session-writer.js"
+import type { AgentTransform } from "../transform/agent-transform.js"
+import { isValidSessionID } from "../types.js"
+
+// ---------------------------------------------------------------------------
+// Hook input/output shapes
+// ---------------------------------------------------------------------------
+
+/** Shape of the chat.message hook input. */
+interface ChatMessageInput {
+  sessionID: string
+  agent?: string
+  model?: {
+    providerID: string
+    modelID: string
+  }
+  messageID?: string
+  variant?: string
+}
+
+/** Shape of a part within the hook output. */
+interface OutputPart {
+  type: string
+  text?: string
+}
+
+/** Shape of the chat.message hook output. */
+interface ChatMessageOutput {
+  message: { role: string }
+  parts: OutputPart[]
+}
+
+// ---------------------------------------------------------------------------
+// MessageCapture class
+// ---------------------------------------------------------------------------
+
+/**
+ * Captures user and assistant messages from the `chat.message` hook.
+ *
+ * Maintains per-session turn counters and delegates to {@link SessionWriter}
+ * for persistence and {@link AgentTransform} for metadata extraction.
+ */
+export class MessageCapture {
+  private sessionWriter: SessionWriter
+  private agentTransform: AgentTransform
+
+  /**
+   * Per-session turn counters. Keyed by sessionID, values are the next
+   * turn number to assign (1-based).
+   */
+  private turnCounters: Map<string, number> = new Map()
+
+  /**
+   * @param deps - Injected dependencies.
+   * @param deps.sessionWriter - The session writer for persistence.
+   * @param deps.agentTransform - The agent metadata transform utility.
+   */
+  constructor(deps: {
+    sessionWriter: SessionWriter
+    agentTransform: AgentTransform
+  }) {
+    this.sessionWriter = deps.sessionWriter
+    this.agentTransform = deps.agentTransform
+  }
+
+  /**
+   * Handles a chat.message hook event.
+   *
+   * @param input - Hook input containing sessionID, agent, model metadata.
+   * @param output - Hook output containing the message and response parts.
+   * @returns Promise that resolves when the message has been captured.
+   *
+   * @remarks
+   * - User messages (`role === "user"`) are captured as `## USER (turn N)`.
+   * - Assistant messages (`role === "assistant"`) are transformed to
+   *   `main_l0_agent` with name, model, and thinking_duration.
+   * - Thinking blocks (`type === "thinking"`) are filtered out.
+   * - All errors are caught and logged; the hook pipeline is never blocked.
+   */
+  async handleChatMessage(
+    input: ChatMessageInput,
+    output: ChatMessageOutput,
+  ): Promise<void> {
+    try {
+      if (!input?.sessionID || !isValidSessionID(input.sessionID)) {
+        return
+      }
+      if (!output?.message?.role) {
+        return
+      }
+
+      const role = output.message.role
+
+      if (role === "user") {
+        await this.handleUserMessage(input.sessionID, output.parts)
+      } else if (role === "assistant") {
+        await this.handleAssistantMessage(input, output.parts)
+      }
+    } catch (err) {
+      console.warn(
+        "[Harness] Session tracker: chat.message handler failed:",
+        err,
+      )
+    }
+  }
+
+  /**
+   * Captures a user message as `## USER (turn N)`.
+   *
+   * Increments the turn counter for the given session, then appends
+   * the user's text content to the main session `.md` file.
+   */
+  private async handleUserMessage(
+    sessionID: string,
+    parts: OutputPart[],
+  ): Promise<void> {
+    const turnNumber = this.nextTurnNumber(sessionID)
+    const textContent = this.extractTextContent(parts)
+    await this.sessionWriter.appendUserTurn(
+      sessionID,
+      turnNumber,
+      textContent,
+    )
+  }
+
+  /**
+   * Transforms and captures an assistant message as `main_l0_agent`.
+   *
+   * Extracts agent metadata via {@link AgentTransform.extractAssistantMetadata},
+   * filters out thinking blocks, and appends the agent block to the session `.md`.
+   */
+  private async handleAssistantMessage(
+    input: ChatMessageInput,
+    parts: OutputPart[],
+  ): Promise<void> {
+    // Filter out thinking blocks before passing to agent transform
+    const nonThinkingParts = (parts || []).filter(
+      (p) => p.type !== "thinking",
+    )
+
+    const metadata = this.agentTransform.extractAssistantMetadata(input, {
+      parts: nonThinkingParts,
+    })
+
+    await this.sessionWriter.appendAgentBlock(
+      input.sessionID,
+      metadata.name,
+      metadata.model,
+      metadata.thinkingDuration,
+    )
+  }
+
+  /**
+   * Returns the next turn number for a session and increments the counter.
+   *
+   * @param sessionID - The session identifier.
+   * @returns The next one-based turn number.
+   */
+  private nextTurnNumber(sessionID: string): number {
+    const current = this.turnCounters.get(sessionID) ?? 0
+    const next = current + 1
+    this.turnCounters.set(sessionID, next)
+    return next
+  }
+
+  /**
+   * Extracts the concatenated text content from an array of output parts.
+   *
+   * @param parts - Array of hook output parts.
+   * @returns The concatenated text content, or empty string if no text found.
+   */
+  private extractTextContent(parts: OutputPart[] | null | undefined): string {
+    if (!Array.isArray(parts)) return ""
+    return parts
+      .filter((p) => p.type === "text" && typeof p.text === "string")
+      .map((p) => p.text!)
+      .join("")
+  }
+}
