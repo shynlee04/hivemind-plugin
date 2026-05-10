@@ -1,9 +1,10 @@
 # RICH Gate Scorecard — gate-evidence-truth
 
-**Evaluated:** 2026-04-29 (SE-5.5 hardening pass)
+**Evaluated:** 2026-05-10 (hf-l2-skill-builder audit-refresh)
 **Scoring system:** skill-judge v1.0 (D1-D8, 120 points total)
 **RICH gates:** HMQUAL-01 through HMQUAL-08
-**Previous evaluation:** 2026-04-28 (98/120, Proficient)
+**Source verified:** anomalyco/opencode v1.14.44 (STACKS-REFERENCES.md)
+**Previous evaluation:** 2026-04-29 (107/120, Expert)
 
 ---
 

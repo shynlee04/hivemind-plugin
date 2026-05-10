@@ -177,6 +177,5 @@ This gate participates in the triad orchestrated by `hm-gate-orchestrator`. The 
 | `references/harness-verification-trees.md` | Module-specific verification trees |
 | `templates/evidence-report.md` | Standardized report template |
 | `scripts/run-evidence-check.sh` | Deterministic evidence classification checker |
-| `references/project-adapter-guide.md` | Project-to-harness path mapping adapter |
 | `metrics/rich-gate-scorecard.md` | RICH-8 quality scorecard |
 | `evals/evals.json` | Test scenarios for this skill |
