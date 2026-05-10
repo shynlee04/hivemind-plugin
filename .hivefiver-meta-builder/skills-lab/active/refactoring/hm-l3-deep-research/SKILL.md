@@ -31,8 +31,7 @@ For reading modes during investigation: load skill "hm-detective"
 Reading modes: SKIM for orientation, SCAN for targeted extraction, DEEP for interface analysis
 
 For cached tech stack assets (offline API signatures, repo references): load skill "hm-tech-stack-ingest"
-Cross-architecture research routing: When hm-tech-stack-ingest has cached a library, use the cached
-API signatures instead of Context7 or web searches. This validates against REAL code, not assumptions.
+Cross-architecture research routing: LIVE external sources are PRIMARY. Cached assets provide CONTEXT and SUPPLEMENT live verification. When hm-tech-stack-ingest has cached a library, use cached assets for ORIENTATION but ALWAYS validate API signatures and version-sensitive claims against live Context7, DeepWiki, or other MCP tools before finalizing findings.
 
 For artifact export and compression: load skill "hm-synthesis"
 Export tier: Standard (findings + decisions) for most research
@@ -44,34 +43,63 @@ hm-deep-research is Stage 2 of the canonical research chain.
 
 ## Cross-Architecture Research Routing
 
-When `hm-tech-stack-ingest` has cached a library's full source, API signatures, or documentation, route research requests through cached assets BEFORE external MCP tools.
+LIVE external sources are PRIMARY. Cached assets provide CONTEXT, not TRUTH. For interface validation and API signature lookups, ALWAYS prefer live sources. Cached assets supplement understanding but cannot substitute for live verification of version-sensitive claims.
 
-### Routing Decision Tree
+### Two-Tier Trust Model (Consistent with hm-tech-stack-ingest)
+
+| Tier | Role | Sources | When to Trust |
+|------|------|---------|---------------|
+| **Validation Tier** (PRIMARY) | Verify truth | Live Context7, Live DeepWiki, Live Exa/Tavily, Live GitMCP, Live Repomix | For API signatures, version-sensitive claims, breaking changes, current behavior |
+| **Reference Tier** (SUPPLEMENTARY) | Provide context | Cached source code (repomix raw/), Cached API docs (context7 api/), Cached structured docs (deepwiki docs/) | For architecture orientation, pattern understanding, historical context, offline research |
+
+### Staleness Severity Scale
+
+| Severity | Age | Action |
+|----------|-----|--------|
+| CRITICAL | > 24 hours | MUST re-verify via live source before trusting for production decisions |
+| HIGH | > 7 days | SHOULD re-verify; cached data acceptable for orientation only |
+| STANDARD | > 30 days | Re-verify before finalizing findings |
+| LOW | > 90 days | Treat as potentially outdated; note in findings |
+
+### Routing Decision Tree (Live-First)
 
 ```
-Is the target library cached in references/tech-stacks/<name>/?
-├── YES → Use cached assets first
-│   ├── Need API signature? → grep references/tech-stacks/<name>/api/
-│   ├── Need full source? → read references/tech-stacks/<name>/raw/
-│   ├── Need usage examples? → read references/tech-stacks/<name>/examples/
-│   └── Cached version differs from installed? → Flag discrepancy, use installed version
-└── NO → Use MCP tools (Context7, DeepWiki, Repomix, Tavily)
-    └── After research, consider ingesting via hm-tech-stack-ingest for future use
+1. ALWAYS start with live sources:
+   ├── Need library documentation? → Context7 (resolve → query with version)
+   ├── Need GitHub-hosted docs/source? → GitMCP or Repomix
+   ├── Need web sources/articles? → Exa or Tavily search
+   └── Need architecture overview? → DeepWiki
+
+2. SUPPLEMENT with cached assets (if available):
+   ├── Cached source code exists? → Use for orientation and pattern understanding
+   ├── Cached API docs exist? → Use to formulate better live queries
+   └── Cached version differs from installed? → Flag discrepancy, trust INSTALLED version
+
+3. VALIDATE findings:
+   ├── For version-sensitive claims → Live re-verification is MANDATORY
+   ├── For API signatures → Live Context7 or source inspection is PRIMARY
+   └── For architectural patterns → Cached + live corroboration is ideal
 ```
 
-### Validation Priority
-
-When both cached assets and web documentation are available:
+### Validation Priority (Constitutional)
 
 | Source | Priority | When to Trust |
 |--------|----------|---------------|
-| **Cached source code** (repomix raw/) | HIGHEST | For API signatures, type definitions, and implementation details |
-| **Cached API docs** (context7 api/) | HIGH | For official API behavior and examples |
-| **Cached structured docs** (deepwiki docs/) | MEDIUM | For architecture overview and module relationships |
-| **Web search** (Tavily, Brave) | LOW | Only for current information, news, or community patterns |
-| **Live Context7** | FALLBACK | When nothing is cached |
+| **Live Context7 query** | PRIMARY | For API signatures, type definitions, version-matched documentation |
+| **Live DeepWiki/Exa/Tavily** | PRIMARY | For web sources, architecture overview, community patterns |
+| **Live GitMCP/GitHub** | PRIMARY | For GitHub-hosted source code, README, issue discussions |
+| **Live Repomix** | PRIMARY | For full repo analysis with cross-dependency tracking |
+| **Cached source code** | SUPPLEMENTARY | For orientation only — provides CONTEXT, not TRUTH |
+| **Cached API docs** | SUPPLEMENTARY | For initial understanding — MUST validate against live sources |
+| **Cached structured docs** | SUPPLEMENTARY | For background — flag staleness in findings |
 
-**Rule:** If cached source code exists for the exact version in use, validate every claimed API signature against the cached source. Do not trust web documentation without verification against cached code.
+### Critical Decision Checkpoint
+
+Before finalizing ANY version-sensitive finding (API signature, breaking change, deprecation notice):
+1. **Ask:** "Was this verified against a live source?"
+2. **If NO:** Stop. Re-verify via live MCP tool before including in findings.
+3. **If YES but from cached source:** Mark as "needs live corroboration" in findings.
+4. **Record:** Source URL, fetch timestamp, and version in every citation.
 
 ---
 
@@ -344,16 +372,19 @@ Produce the artifact. Minimum structure:
 
 ## Tool Quick Reference
 
-| Task | Primary Tool | Fallback |
-|------|-------------|----------|
-| Broad discovery | tavily-search (basic) | brave-search |
-| Targeted extraction | tavily-extract | fetcher |
-| Library documentation | Context7 (resolve → query) | DeepWiki |
-| Repo understanding | DeepWiki | repomix pack |
-| Code search | exa web search | grep |
-| Recent news/releases | brave-news | tavily-search (time_range) |
-| Site documentation | tavily-crawl | manual extract loop |
-| Complex multi-source | tavily-research (pro) | multi-search + manual synthesize |
+| Task | Primary Tool | Fallback | Tool Type |
+|------|-------------|----------|-----------|
+| Library documentation | Context7 (resolve → query) | DeepWiki | Live Validation |
+| Repo understanding | DeepWiki | Repomix pack | Live Validation |
+| GitHub docs/source | GitMCP | GitHub API | Live Validation |
+| Broad web discovery | Exa (semantic search) | Tavily search | Live Validation |
+| Targeted web extraction | Tavily extract | Fetcher | Live Validation |
+| Code search | Exa web search | Grep | Live Validation |
+| Recent news/releases | Tavily search (time_range) | Exa | Live Validation |
+| Site documentation crawl | Tavily crawl | Manual extract loop | Live Validation |
+| Complex multi-source | Tavily research (pro) | Multi-search + manual synthesize | Live Validation |
+| Cached API signatures | hm-tech-stack-ingest references | — | Reference Tier |
+| Cached source code | hm-tech-stack-ingest raw/ | — | Reference Tier |
 
 ### Budget Rules
 
@@ -422,6 +453,57 @@ Step 4: Detect breaking changes
 | Solution Shopping | Only researching one option | Require 2+ alternatives before recommending |
 | Context Graveyard | 30 min investigation with nothing on disk | Write findings every batch |
 | Stale Cite | Source > 6 months old for current tech | Use freshness filters, re-validate |
+
+## Research Quality Gate
+
+Before finalizing ANY research artifact, run this quality gate check:
+
+### Pre-Delivery Checklist
+
+| Check | Condition | Action |
+|-------|-----------|--------|
+| Single-source flag | Key claim backed by only 1 source | Mark as "needs corroboration"; seek 2nd source |
+| Cache-only flag | Finding based solely on cached data | Mark as "needs live verification"; run live MCP query |
+| Version-mismatch flag | Doc version ≠ installed version | Mark as "potentially inaccurate"; verify against correct version |
+| Staleness flag | Source > severity threshold age | Re-verify via live source per Staleness Severity Scale |
+| Missing citation flag | Finding has no source URL | Add source URL or remove finding |
+
+### Evidence Confidence Scale
+
+| Level | Meaning | Requirements |
+|-------|---------|-------------|
+| HIGH | Live-verified + corroborated | ≥1 live source + ≥1 independent source agree |
+| MEDIUM | Live-verified but single source | 1 live source, no corroboration available |
+| LOW | Cached-only or stale | Based on cached/supplementary data; needs live re-verification |
+| UNVERIFIED | No source evidence | Hypothesis only; do not use for production decisions |
+
+### Per-Finding Citation Requirements
+
+Every finding MUST include:
+1. **Source URL or file path** — even for cached asset findings
+2. **Fetch timestamp** — when the source was consulted (use ISO 8601)
+3. **Source tier** — "Validation Tier (live)" or "Reference Tier (cached)"
+4. **Staleness indicator** — "This finding is based on cached data from YYYY-MM-DD" (for cached sources)
+5. **Confidence level** — HIGH / MEDIUM / LOW / UNVERIFIED
+
+### Tool Selection Decision Tree
+
+```
+What type of source are you researching?
+├── GitHub-hosted project? → GitMCP (read docs/search code) OR Repomix (pack repo)
+├── npm package documentation? → Context7 (resolve → query with version)
+├── General web content? → Exa (semantic search) OR Tavily (search/extract)
+├── Architecture/overview needed? → DeepWiki (repo wiki) OR Tavily Research (comprehensive)
+└── Multiple sources needed? → Tavily Research (pro mode, multi-source synthesis)
+```
+
+### MCP Tool Fallback Chain (Consistent with hm-tech-stack-ingest)
+
+```
+Context7 → Repomix → DeepWiki → GitHub (GitMCP) → Exa → Tavily
+```
+
+Each step is tried if the previous returns insufficient results. Document which tool(s) were used in findings.
 
 ## References (Progressive Disclosure)
 
@@ -492,10 +574,11 @@ Self-check:
 
 ```
 1. Re-read .tech-registry.json for the exact pinned version
-2. If hm-tech-stack-ingest has cached this version → use cached API signatures (highest priority)
-3. If not cached → run version-specific Context7 query with the exact version
-4. If latest docs don't match → check migration guides, changelogs, breaking change notices
+2. Run version-specific Context7 query with the exact version (LIVE source first)
+3. If live source unavailable → check cached API signatures from hm-tech-stack-ingest (SUPPLEMENTARY)
+4. If latest docs don't match → check migration guides, changelogs, breaking change notices via live search
 5. If version gap > 2 majors → require ADR before recommending upgrade
+6. Always record: source URL, fetch timestamp, version verified, confidence level
 ```
 
 ### Maximum Correction Attempts
