@@ -4,6 +4,7 @@ description: 'Safety lane for prompt enhancement. Flags destructive, security, a
 mode: subagent
 depth: L2
 lineage: hm
+domain: Risk
 temperature: 0.1
 instruction:
   - .opencode/rules/anti-patterns.md

@@ -4,6 +4,7 @@ description: Phase 0 skim agent for prompt enhancement. Use when you need a fast
 mode: subagent
 depth: L2
 lineage: hm
+domain: Context & Memory
 temperature: 0.1
 instruction:
   - .opencode/rules/anti-patterns.md

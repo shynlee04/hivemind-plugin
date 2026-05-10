@@ -4,6 +4,7 @@ description: Final assembly lane for prompt enhancement. Returns the enhanced pr
 mode: subagent
 depth: L2
 lineage: hm
+domain: Context & Memory
 temperature: 0.2
 instruction:
   - .opencode/rules/anti-patterns.md

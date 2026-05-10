@@ -4,6 +4,7 @@ description: 'Deep prompt-analysis lane for contradictions, vagueness, missing s
 mode: subagent
 depth: L2
 lineage: hm
+domain: Context & Memory
 temperature: 0.1
 instruction:
   - .opencode/rules/anti-patterns.md

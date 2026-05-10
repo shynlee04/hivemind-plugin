@@ -4,6 +4,7 @@ description: Ground prompt references against the current repository and report 
 mode: subagent
 depth: L2
 lineage: hm
+domain: Context & Memory
 temperature: 0.1
 instruction:
   - .opencode/rules/anti-patterns.md

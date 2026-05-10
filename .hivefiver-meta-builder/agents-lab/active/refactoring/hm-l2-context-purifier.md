@@ -4,6 +4,7 @@ description: Distillation lane for prompt enhancement. Compresses noisy prompts 
 mode: subagent
 depth: L2
 lineage: hm
+domain: Context & Memory
 temperature: 0.1
 instruction:
   - .opencode/rules/anti-patterns.md

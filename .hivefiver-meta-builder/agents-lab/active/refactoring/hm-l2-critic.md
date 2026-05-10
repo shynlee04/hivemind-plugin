@@ -4,6 +4,7 @@ description: 'Quality verification agent. Ruthless code review, correctness vali
 mode: subagent
 depth: L2
 lineage: hm
+domain: Quality & Audit
 temperature: 0.05
 instruction:
   - .opencode/rules/anti-patterns.md
