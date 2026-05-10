@@ -149,12 +149,28 @@ The TOC must be the first file loaded. It must be concise (<10KB) and contain ON
     "context7": "api/context7-exports.md",
     "deepwiki": "docs/deepwiki-contents.md"
   },
-  "size_kb": {
-    "total": 4500,
-    "api": 1200,
-    "docs": 2800,
-    "examples": 500
-  }
+   "size_kb": {
+     "total": 4500,
+     "api": 1200,
+     "docs": 2800,
+     "examples": 500
+   },
+   "severity_tier": "STANDARD",
+   "constitutional_override": {
+     "requires_live_validation": true,
+     "re_verify_within_days": 30,
+     "reason": "Mature library with stable API surface",
+     "critical_apis": ["z.object", "z.string", "z.number"]
+   },
+   "last_diff": {
+     "from_version": null,
+     "to_version": "4.3.6",
+     "added": null,
+     "removed": null,
+     "changed": null,
+     "unchanged": null,
+     "diff_date": null
+   }
 }
 ```
 
@@ -286,3 +302,5 @@ When quality gates validate an SDK like `@opencode-ai/plugin`, they may also nee
 | No metadata.json | Without version tracking, stale docs get used for validation. | Always create metadata.json. Always check staleness. |
 | Disorganized api/ structure | grep can't find specific symbols without consistent formatting. | Use the standard format from `api/ Files Format` above. |
 | No cross-referencing | Quality gates don't know about transitive dependencies to validate. | Track `dependencies` and `peer_dependencies` in metadata. |
+| **Missing constitutional_override** | Without severity_tier and re-verify window, agents cannot determine when live re-verification is mandatory. | Always set `severity_tier` and `constitutional_override` in metadata.json. |
+| **No diff-tracking** | Re-ingestion overwrites old API surface without recording what changed. | Always run the diff-tracking protocol from `version-tracking.md` when re-ingesting. |

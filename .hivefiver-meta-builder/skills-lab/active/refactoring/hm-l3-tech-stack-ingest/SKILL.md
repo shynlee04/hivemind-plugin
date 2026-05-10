@@ -35,13 +35,145 @@ task-group: "how-to-implement"
 hierarchy: "subagent-level"
 ---
 
-## The Rule
+## Constitutional Rule
 
 ```
-Ingest once. Use everywhere. Never assume an API signature you haven't cached.
+LIVE is truth. Cache is search index. Never validate against cache — always re-verify against live sources.
 ```
 
-Every tech stack this skill ingests becomes a local, searchable asset. hm-deep-research, hm-synthesis, and gate orchestration skills load these assets to validate against REAL code — not guesses, stale docs, or hallucinated APIs.
+This skill ingests tech stacks into a local search index for DISCOVERY. Cached assets let agents FIND relevant APIs quickly. But for VALIDATION — confirming signatures, interfaces, patterns, versions — agents MUST re-fetch from live external sources (Context7, Repomix, DeepWiki, GitHub, Exa, Tavily) and cite evidence with source URL + version + fetch date.
+
+**Cache is for finding. Live is for confirming.**
+
+### What Cache IS Good For
+- Discovering what APIs exist in a package
+- Understanding module structure and architecture
+- Finding examples and patterns for reference
+- Building search indexes for rapid lookup
+
+### What Cache is NOT Good For
+- Confirming exact function signatures (params, return types)
+- Validating version-specific behavior
+- Trusting interface definitions without live verification
+- Assuming cached patterns work in the currently installed version
+
+## Two-Tier Trust Model
+
+```
+CACHED ASSETS ARE REFERENCES ONLY.
+For interface validation, version-sensitive decisions, and API signature lookups,
+ALWAYS re-verify against live sources via MCP tools.
+```
+
+This skill enforces a strict two-tier trust model. Every interaction with cached assets MUST classify into one of these tiers BEFORE proceeding:
+
+### Reference Tier (Cache-Acceptable)
+
+Cached assets MAY be used without live re-verification when the agent is:
+
+- Discovering what APIs exist in a package
+- Understanding module structure and architecture
+- Finding examples and patterns for exploratory reference
+- Building search indexes for rapid lookup
+- Browsing available APIs to understand the landscape
+- Planning which areas need deeper investigation
+
+**Rule:** If the outcome is a decision that affects implementation code, the Reference Tier is INSUFFICIENT. You must escalate to the Validation Tier.
+
+### Validation Tier (Live-Re-Verification MANDATORY)
+
+Before ANY of these actions, the agent MUST re-fetch from a live source via MCP tools:
+
+- Confirming exact function signatures (params, return types, overloads)
+- Validating version-specific behavior or breaking changes
+- Trusting interface definitions for quality gate generation
+- Generating code that depends on exact function signatures
+- Checking whether an API exists in the installed version
+- Comparing code against SDK interfaces for compliance checks
+
+**Enforcement:** If a live re-fetch fails and cannot be retried with an alternative MCP tool, the agent MUST flag the finding as `UNVERIFIED — do not use for validation` and MUST NOT proceed with the validation decision.
+
+## Staleness Severity Scale
+
+Not all cached assets have the same re-verification urgency. Use this scale to determine how urgently a live re-fetch is needed:
+
+| Severity | API Type | Re-Verify Within | Examples |
+|----------|----------|-------------------|----------|
+| **CRITICAL** | APIs with frequent breaking changes, pre-1.0 packages, active betas | **24 hours** | `@opencode-ai/plugin` (pre-stable), Next.js canary, React experimental |
+| **HIGH** | Frameworks with major-version breaking changes, plugin SDKs | **7 days** | `@opencode-ai/plugin` stable, Express middleware APIs, Vite plugin API |
+| **STANDARD** | Mature, stable libraries with infrequent breaking changes | **30 days** | Zod, Lodash, date-fns, most utility libraries |
+| **LOW** | Specification-stable, rarely changing APIs | **90 days** | DOM APIs, Node.js built-in modules, CSS properties |
+
+**How to classify:** Check the package's version and changelog history. If the major version is 0.x or the changelog shows breaking changes in the last 3 minor releases, classify as CRITICAL or HIGH.
+
+**Decision rule:** If the cache age exceeds the re-verify window for its severity level, the cached asset CANNOT be used for the Validation Tier until a live re-fetch confirms it.
+
+## Critical Decision Re-Verification Protocol
+
+When a downstream agent (hm-deep-research, hm-synthesis, hm-detective, or any quality gate) reaches a decision point where cached API data would determine the outcome, this protocol is MANDATORY:
+
+### Step 0: Classify the Decision
+
+Before using any cached data, ask: "Would getting this wrong cause incorrect code to be written?"
+
+- **YES** → This is a Validation Tier decision. Proceed with Steps 1-4 below.
+- **NO** → This is a Reference Tier lookup. Cache is acceptable.
+
+### Step 1: Identify the Exact Claim
+
+Extract the precise claim from the cached asset:
+
+```
+Claim: "z.object() accepts a record of ZodType instances"
+Source: references/tech-stacks/zod/api/exports.md:42
+Version cached: 4.3.6
+```
+
+### Step 2: Live Re-Fetch (MANDATORY — no exceptions)
+
+Re-fetch the specific API from a live source using the MCP tool fallback chain:
+
+1. **Context7** (first choice for API signatures): `context7_resolve_library_id` → `context7_query_docs`
+2. **Repomix** (for exact source code): `repomix_grep_repomix_output` on the raw ingested output
+3. **DeepWiki** (for behavioral docs): `deepwiki_ask_question`
+4. **GitHub** (for actual source): `gitmcp_search_github_com_code`
+5. **Exa** (for latest docs/tutorials): `exa_web_search_exa` + `exa_web_fetch_exa`
+6. **Tavily** (for version-specific info): `tavily_tavily_search` + `tavily_tavily_extract`
+
+### Step 3: Cross-Reference Against package.json
+
+Before accepting any live result, confirm the version matches the installed version:
+
+```bash
+# Extract the exact installed version
+npm ls <package-name> --depth=0 2>/dev/null
+
+# OR read from lock file
+grep '"<package-name>"' package-lock.json | head -1
+
+# Compare with the live result's stated version
+# If versions don't match → the live result is for the wrong version → retry with correct version
+```
+
+### Step 4: Record the Verification
+
+Every re-verification must produce a verification record:
+
+```markdown
+**Re-Verification Record:**
+- Claim: `<precise API claim being verified>`
+- Cache Source: `references/tech-stacks/<name>/api/<file>:<line>`
+- Live Source: `<Context7/Repomix/DeepWiki/GitHub/Exa/Tavily>`
+- Live Result: `<confirmed/different/does-not-exist>`
+- Version Match: `<installed version> == <live source version> → <MATCH/MISMATCH>`
+- Severity: `<CRITICAL/HIGH/STANDARD/LOW>`
+- Verified: `<date>`
+- Verdict: `<CONFIRMED | STALE-UPDATE-CACHE | UNVERIFIED>`
+```
+
+**If the live result differs from the cache:** Update the cache immediately. Use the LIVE result for the decision.
+
+**If the live fetch fails entirely:** Flag as `UNVERIFIED`. The claim MUST NOT be used for any validation decision. Report the failure to the orchestrating agent.
 
 ## Quick Jump
 
@@ -54,6 +186,9 @@ Every tech stack this skill ingests becomes a local, searchable asset. hm-deep-r
 | "Step-by-step: detect → ingest → index" | `references/ingestion-protocol.md` |
 | "How do I search inside cached tech stacks?" | [Search and Index](#search-and-index) |
 | "When should I re-ingest?" | [Update Mechanism](#update-mechanism) |
+| "When is live re-verification MANDATORY?" | [Two-Tier Trust Model](#two-tier-trust-model) |
+| "How urgent is a re-verify for this API?" | [Staleness Severity Scale](#staleness-severity-scale) |
+| "Step-by-step: verify before a critical decision" | [Critical Decision Re-Verification Protocol](#critical-decision-re-verification-protocol) |
 
 ## Entry Gate
 
@@ -66,11 +201,23 @@ Proceed only when at least one of these conditions is true:
 
 If none of these conditions are met but you suspect tech stack work is needed, route to `hm-tech-context-compliance` to auto-detect the stack first.
 
-Before starting ingestion:
+### Pre-Ingestion Cache Check (DISCOVERY only)
+
 1. Read the `references/tech-stacks/` directory to check if the target stack is already cached.
 2. If cached, check version staleness using `references/version-tracking.md`.
-3. If the stack is fresh, use the cached assets — skip re-ingestion.
-4. If stale or not cached, proceed with the ingestion pipeline below.
+3. **If stale or not cached:** Proceed with the full ingestion pipeline below to BUILD the cache.
+4. **If fresh:** The cache is valid for DISCOVERY (finding what exists), but NOT for VALIDATION (confirming signatures).
+
+### ⚠️ Live Validation Gate (MANDATORY before any validation decision)
+
+Before any agent uses cached API data to make a validation decision (confirming a signature, checking an interface, verifying a pattern), they MUST:
+
+1. **Re-fetch from Context7:** `context7_resolve_library_id` → `context7_query_docs` for the specific API in question.
+2. **OR re-fetch from Repomix:** `repomix_grep_repomix_output` on the raw ingested output for exact source.
+3. **OR re-fetch from GitHub:** `gitmcp_search_github_com_code` for the specific file/function.
+4. **Cite the evidence:** Source URL, version matched to `package.json`, date of fetch.
+
+This gate is NON-NEGOTIABLE. A cached signature that cannot be confirmed via live fetch within the current session MUST be flagged as `UNVERIFIED — do not use for validation`.
 
 ## Ingestion Pipeline
 
@@ -224,10 +371,17 @@ See `references/progressive-disclosure-design.md` for the detailed design ration
      "source_url": "https://github.com/colinhacks/zod",
      "ingest_date": "2026-04-28",
      "ingest_tool": "repomix + context7 + deepwiki",
-     "last_validated": "2026-04-28",
-     "checksum": "sha256-...",
-     "tags": ["schema", "validation", "typescript", "runtime"]
-   }
+      "last_validated": "2026-04-28",
+      "checksum": "sha256-...",
+      "tags": ["schema", "validation", "typescript", "runtime"],
+      "severity_tier": "STANDARD",
+      "constitutional_override": {
+        "requires_live_validation": true,
+        "re_verify_within_days": 30,
+        "reason": "Mature library with stable API surface",
+        "critical_apis": ["z.object", "z.string", "z.number"]
+      }
+    }
    ```
 
 2. Write `TOC.md` with jump links to all ingested content:
@@ -335,6 +489,64 @@ cat references/tech-stacks/<stack-name>/TOC.md
 # Then read specific sections
 cat references/tech-stacks/<stack-name>/api/exports.md
 ```
+
+## Live Validation Protocol
+
+When any downstream skill (hm-deep-research, hm-synthesis, hm-detective, quality gates) needs to VALIDATE an API signature, interface, or pattern, they follow this protocol — NOT the cache-first approach.
+
+### Step 1: IDENTIFY what needs validation
+
+From the cached search index, find the relevant symbol/interface/pattern:
+
+```bash
+grep -r "<symbol-name>" references/tech-stacks/<stack-name>/api/
+```
+
+### Step 2: RE-FETCH from live source (MANDATORY)
+
+Do NOT trust the cached result. Re-fetch the specific API from a live source:
+
+| Source | Tool | When to Use |
+|--------|------|-------------|
+| Context7 | `context7_resolve_library_id` → `context7_query_docs` | First choice for API signatures, types, patterns |
+| Repomix | `repomix_grep_repomix_output` on raw/ | When you need exact source code with line numbers |
+| DeepWiki | `deepwiki_ask_question` | When you need behavioral docs or usage patterns |
+| GitHub | `gitmcp_search_github_com_code` | When you need the actual source file |
+| Exa | `exa_web_search_exa` + `exa_web_fetch_exa` | When you need latest blog/docs/tutorial |
+| Tavily | `tavily_tavily_search` + `tavily_tavily_extract` | When you need version-specific migration info |
+
+### Step 3: COMPARE cache vs live
+
+- If cache matches live → cache is confirmed, safe to use for discovery.
+- If cache differs from live → cache is STALE. Update the cache. Use the LIVE result.
+- If live fetch fails → flag as `UNVERIFIED`. Do NOT use for validation decisions.
+
+### Step 4: CITE the evidence
+
+Every validation result must include:
+
+```markdown
+**Validation Evidence:**
+- Symbol: `<function/interface/type name>`
+- Live Source: `<Context7/Repomix/DeepWiki/GitHub/Exa/Tavily>`
+- Version Confirmed: `<version matched to package.json>`
+- Fetched: `<date>`
+- Cache Match: `<MATCHED/DIFFERED/UNVERIFIED>`
+```
+
+### Cache-Only Mode (Discovery, NOT Validation)
+
+Cache-only mode is acceptable when the agent is:
+- Browsing available APIs to understand the landscape
+- Looking for module structure and architecture
+- Finding examples for reference
+- Searching for relevant patterns to investigate further
+
+Cache-only mode is FORBIDDEN when the agent is:
+- Confirming an API signature for implementation
+- Validating an interface for quality gate generation
+- Checking version-specific behavior
+- Generating code that depends on exact function signatures
 
 ## Update Mechanism
 
@@ -471,6 +683,8 @@ hm-tech-stack-ingest is **Stage 0 (Ingest)** of the canonical `hm-research-chain
 | **The Tool Fixation** — using only one MCP tool when better sources exist | Only repomix calls, no context7, no deepwiki | Load `references/mcp-tool-cheatsheet.md` and select the best tool for each package type |
 | **The SDK Hallucination** — quality gates validating against assumed API signatures | grep in cached stack returns 0 results for claimed API | Run Phase 2 (DISCOVER) + Phase 3 (INGEST) before validation |
 | **The Monorepo Blind Ingest** — ingesting a monorepo package-by-package | Multiple separate ingests for `@scope/*` packages from the same repo | Detect monorepo pattern; ingest once, create per-package indexes |
+| **The Cache-as-Truth** — using cached API signatures as authoritative without live verification | Agent reads `api/exports.md` and trusts the signature without re-fetching from Context7/GitHub | ALWAYS run the Live Validation Protocol before using cached data for validation decisions. Cache is discovery, not truth. |
+| **The Version Assumption** — assuming the cached version matches the installed version | `metadata.json` version checked at ingestion but not at consumption time | Before ANY validation, confirm installed version via `npm ls` / lock file, then verify cache matches. If mismatch, re-ingest. |
 
 ## Validation Loop
 

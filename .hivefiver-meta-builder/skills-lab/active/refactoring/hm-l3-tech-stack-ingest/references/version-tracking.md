@@ -45,7 +45,27 @@ grep '<crate-name>' Cargo.lock | head -1
 grep -A 1 "<artifactId><package-name>" pom.xml | grep version
 ```
 
-### Step 2: Compare Against Cached Version
+### Step 2: Cross-Reference Against package.json (MANDATORY)
+
+Before comparing against the cached version, confirm the exact installed version by cross-referencing both the manifest and the lock file:
+
+```bash
+# Step 2a: Read the declared version range from the manifest
+grep '"<package-name>"' package.json
+
+# Step 2b: Read the exact installed version from the lock file
+grep -A 2 '"<package-name>"' package-lock.json | grep '"version"'
+
+# Step 2c: If no lock file, resolve from the manifest range
+npm ls <package-name> --depth=0 2>/dev/null
+
+# Step 2d: Cross-validate — lock file version MUST match what npm ls reports
+# If mismatch → the project may have uncommitted changes → flag as NEEDS_INVESTIGATION
+```
+
+**Rule:** The lock file version is canonical. The manifest version is a range. Never use the manifest version alone for staleness decisions.
+
+### Step 3: Compare Against Cached Version
 
 ```bash
 # Read cached version
@@ -76,6 +96,19 @@ Not all staleness is equal. Use these thresholds:
 | 30-90 days | WARM | Check if installed version changed. Re-ingest if yes. |
 | 90-180 days | STALE | Flag for re-ingestion even if version unchanged (docs may have updated). |
 | > 180 days | ROTTEN | Do NOT use for quality gate validation. Force re-ingestion. |
+
+### Severity-Aware Re-Verification Windows
+
+The staleness thresholds above are the DEFAULT for STANDARD severity. Adjust based on the package's severity tier:
+
+| Severity Tier | Re-Verify Window | Override Threshold | Examples |
+|---------------|-----------------|-------------------|----------|
+| **CRITICAL** | 24 hours | Any cache > 1 day MUST be re-verified before Validation Tier use | Pre-1.0 packages, active betas, canary releases |
+| **HIGH** | 7 days | Any cache > 7 days MUST be re-verified before Validation Tier use | Plugin SDKs, frameworks with major-version breaks |
+| **STANDARD** | 30 days (default above) | Follow the standard staleness thresholds | Most mature libraries (Zod, Lodash, date-fns) |
+| **LOW** | 90 days | Only flag for re-verification after 90 days | DOM APIs, Node.js built-ins, stable specs |
+
+**How to determine severity:** Check `metadata.json` → `severity_tier`. If not set, default to STANDARD. Classify as CRITICAL if the package version starts with `0.` or the changelog shows breaking changes in the last 3 releases.
 
 ## Automated Staleness Scan
 
@@ -247,6 +280,67 @@ When a library has a major version bump (e.g., v3 → v4), track migration docum
    }
    ```
 
+## Diff-Tracking Between Ingestion Versions
+
+When re-ingesting a stack (version upgrade), capture what changed between the old and new cached versions:
+
+### Step 1: Snapshot the Old API Surface
+
+Before re-ingesting, extract the old API surface for comparison:
+
+```bash
+# Snapshot exported symbols from the old cache
+grep -r "^## \`" references/tech-stacks/<stack-name>/api/exports.md > /tmp/old-exports.txt
+grep -r "^## \`" references/tech-stacks/<stack-name>/api/types.md >> /tmp/old-exports.txt
+```
+
+### Step 2: Re-Ingest and Snapshot the New API Surface
+
+After re-ingesting, extract the new API surface:
+
+```bash
+# Snapshot exported symbols from the new cache
+grep -r "^## \`" references/tech-stacks/<stack-name>/api/exports.md > /tmp/new-exports.txt
+grep -r "^## \`" references/tech-stacks/<stack-name>/api/types.md >> /tmp/new-exports.txt
+```
+
+### Step 3: Diff and Record
+
+```bash
+# Find added, removed, and changed symbols
+diff /tmp/old-exports.txt /tmp/new-exports.txt
+```
+
+Append the diff summary to `changelog.md`:
+
+```markdown
+## YYYY-MM-DD — Re-ingested vNEW (was vOLD)
+
+**API Diff:**
+- ADDED: `newFunction()`, `NewType`
+- REMOVED: `deprecatedFunction()`, `OldType`
+- CHANGED: `existingFunction()` (signature changed: added optional param)
+- UNCHANGED: 42 symbols
+```
+
+### Step 4: Update metadata.json with Diff Summary
+
+```json
+{
+  "last_diff": {
+    "from_version": "4.3.5",
+    "to_version": "4.3.6",
+    "added": 3,
+    "removed": 1,
+    "changed": 2,
+    "unchanged": 42,
+    "diff_date": "2026-05-10"
+  }
+}
+```
+
+This diff-tracking enables downstream agents to quickly understand whether a version bump affects their validation scope without reading the entire API surface.
+
 ## Anti-Patterns in Version Tracking
 
 | Anti-Pattern | Detection | Correction |
@@ -258,3 +352,5 @@ When a library has a major version bump (e.g., v3 → v4), track migration docum
 | **Stale Changelog** | Re-ingested but changelog.md not updated | Always append to changelog after re-ingestion. |
 | **Forgetting Peer Dependencies** | Main package re-ingested but peer deps still stale | When a package changes version, check its peer deps too. |
 | **The "Close Enough" Assumption** | "v4.3.5 cache is fine for v4.3.6 — it's a patch release" | Patch releases can change APIs. Always match EXACT versions for quality gate validation. |
+| **The Severity Ignorance** | CRITICAL-tier package treated with STANDARD 30-day re-verify window | Check `severity_tier` in metadata.json. Apply the correct re-verification window. |
+| **The Diff Skip** | Re-ingested without comparing old vs new API surface | Always run the Diff-Tracking protocol to capture added/removed/changed symbols. |
