@@ -109,9 +109,11 @@ plugin.ts returns {
 // INSIDE createCoreHooks — extend, don't replace
 "messages.transform": async (input, output) => {
   // Existing behavior (pass-through)
-  output.messages = input.messages ?? []
+  // WARNING: reassignment is silent no-op (anomalyco/opencode#25754)
+  // Must use in-place mutation instead
+  output.messages.splice(0, output.messages.length, ...(input.messages ?? []))
 
-  // Steering extension: conditional injection
+  // Steering extension: conditional injection (in-place push — safe per #25754)
   const decision = deps.evaluateSteeringPolicy?.(sessionID)
   if (decision.shouldInject) {
     const content = deps.buildSteeringContent?.(decision)
@@ -291,6 +293,8 @@ Same `SteeringContext` produces different content for different surfaces:
 already builds context strings from lifecycle + continuity data. The steering
 builder follows the same "collect data → format lines → push to output"
 pattern with the addition of token budgeting.
+
+**⚠️ Mutation constraint (anomalyco/opencode#25754):** All `messages.transform` injection MUST use `output.messages.push(...)`. Reassignment (`output.messages = ...`) is a silent no-op. See RESEARCH.md §1.5.
 
 ---
 

@@ -202,11 +202,34 @@ All templates use `{{variable}}` interpolation.
 
 ### 3.3 Surface-Specific Requirements
 
-**REQ-02 (messages.transform):** `<system_reminder>` block with role + delegation chain. Budget ≤200 tokens. Cadence: every N turns via `min_turn_interval`. MUST NOT mutate existing messages (REQ-02 constraint).
+**REQ-02 (messages.transform):** `<system_reminder>` block with role + delegation chain. Budget ≤200 tokens. Cadence: every N turns via `min_turn_interval`. Appends to `output.messages` via `push()` (in-place mutation required per §3.4). MUST NOT reassign or replace existing messages.
 
 **REQ-03 (session.compacting):** Full context packet (role + hierarchy + workflow phase + delegation chain + active skills). Budget ≤800 tokens. Fires ONLY on compaction event. Pushed to `output.context[]`, not `output.prompt`.
 
 **REQ-04 (system.transform):** Single-line `[role: {hierarchy}-{depth} | lineage: {lineage}]`. Budget ≤50 tokens. Fires on session start. Appends to `output.system[]` — never replaces (C6).
+
+---
+
+### 3.4 CRITICAL: In-Place Mutation Requirement
+
+**Research finding (RESEARCH.md §1.5):** `output.messages = newArray` is a silent no-op in `messages.transform` ([anomalyco/opencode#25754](https://github.com/anomalyco/opencode/issues/25754)). All injection logic MUST use in-place mutation.
+
+**Steering content injection — corrected approach:**
+```typescript
+// ✅ CORRECT: Append steering content
+output.messages.push({ 
+  info: { role: "system" }, 
+  parts: [{ type: "text", text: steeringContent }] 
+})
+
+// ✅ CORRECT: Filter existing messages (if needed)
+output.messages.splice(0, output.messages.length, ...filteredMessages)
+
+// ❌ WRONG: Reassign (silent no-op)
+output.messages = filteredMessages  
+```
+
+**This overrides the PATTERNS.md §2 hook extension pattern** — the pass-through must use splice, not assignment.
 
 ---
 

@@ -96,7 +96,17 @@ export const Plugin: Plugin = async (ctx) => {
 - Modify the list of system prompt segments
 - Add, remove, or replace system prompt paragraphs via `output.system` array
 
-**Known issue:** Currently fires AFTER `messages.transform` (tracked in GitHub issue #19960, proposed fix PR #19961). This means plugins cannot coordinate system+message mutations atomically in current SDK version.
+**Known issue:** Currently fires AFTER `messages.transform` in `llm.ts` (issue confirmed: [GitHub anomalyco/opencode#19960](https://github.com/anomalyco/opencode/issues/19960), open, assigned). Proposed fix would swap order so system.transform fires FIRST, enabling coordinated mutations. No PR exists yet (reference to PR #19961 removed — not confirmed).
+
+**Current order (verified from issue #19960):**
+1. `messages.transform` fires in prompt.ts (blind to system prompt)
+2. System prompt partially built
+3. `system.transform` fires in llm.ts
+
+**Proposed order (per issue #19960):**
+1. Full system prompt assembled
+2. `system.transform` fires FIRST (plugins inspect system state)
+3. `messages.transform` fires SECOND (plugins react to system state)
 
 **Sources:** opencodebook.xyz, GitHub anomalyco/opencode/issues/17637, GitHub anomalyco/opencode/issues/19960
 
@@ -111,6 +121,56 @@ All hooks follow the same `(input, output) => Promise<void>` pattern. Plugin mut
 | messages.transform | `{}` | `{ messages: {info, parts}[] }` | Conditional steering injection |
 | session.compacting | `{ sessionID }` | `{ context: string[], prompt?: string }` | Post-compact role recovery |
 | system.transform | `{ sessionID?, model }` | `{ system: string[] }` | Persistent role marker |
+
+---
+
+### 1.5 CRITICAL: In-Place Mutation Required (Issue #25754)
+
+**Finding:** `output.messages = newArray` in `messages.transform` is a **silent no-op**. The trigger system passes the original array reference to the downstream consumer; reassigning the wrapper property does nothing.
+
+**Evidence:** GitHub [anomalyco/opencode#25754](https://github.com/anomalyco/opencode/issues/25754), filed 2026-05-04, open, assigned.
+
+**Root cause (from issue body):**
+```js
+// In the bundled binary:
+yield* $.trigger("experimental.chat.messages.transform", {}, { messages: e });
+// Plugin mutates output.messages = X (new reference)
+let [..., T1] = yield* K.all([..., Q1.toModelMessagesEffect(e, G_)]);  // Still uses e!
+```
+
+**Correct approach — in-place mutation ONLY:**
+```typescript
+// ✅ CORRECT: Append via push
+output.messages.push({ info: ..., parts: [...] })
+
+// ✅ CORRECT: Replace via splice  
+output.messages.splice(0, output.messages.length, ...newArray)
+
+// ❌ WRONG: Reassignment (silent no-op)
+output.messages = newArray
+```
+
+**Impact on steering engine:** All injection logic MUST use `output.messages.push(...)` for appending or `output.messages.splice(0, output.messages.length, ...filtered)` for filtering. NEVER reassign `output.messages`. This affects REQ-02 (messages.transform) injection design in SPEC.md §3.3 and PATTERNS.md §2, §5.
+
+**Sources:** GitHub anomalyco/opencode#25754
+
+---
+
+### 1.6 Additional Plugin Hooks (Not Currently Used by Steering)
+
+The `Hooks` interface in `packages/plugin/src/index.ts` exposes these additional hooks. Listed for completeness; not needed for MVP but may enable future enrichment phases.
+
+| Hook | Input | Output | Steering Relevance |
+|------|-------|--------|-------------------|
+| `chat.message` | `{ sessionID, agent?, model?, messageID?, variant? }` | `{ message: UserMessage, parts: Part[] }` | Could detect new user messages for turn counting |
+| `chat.params` | `{ sessionID, agent, model, provider, message }` | `{ temperature, topP, topK, maxOutputTokens, options }` | Could enforce steering-relevant LLM params |
+| `chat.headers` | `{ sessionID, agent, model, provider, message }` | `{ headers }` | Low relevance to steering |
+| `command.execute.before` | `{ command, sessionID, arguments }` | `{ parts: Part[] }` | Could intercept slash commands |
+| `experimental.compaction.autocontinue` | `{ sessionID, agent, model, provider, message, overflow }` | `{ enabled: boolean }` | Could disable auto-continue for subagents |
+| `experimental.text.complete` | `{ sessionID, messageID, partID }` | `{ text: string }` | Low relevance |
+| `tool.definition` | `{ toolID }` | `{ description, parameters }` | Could modify tool descriptions per role |
+
+**Source:** [`anomalyco/opencode/packages/plugin/src/index.ts`](https://github.com/anomalyco/opencode/blob/master/packages/plugin/src/index.ts), lines covering `Hooks` interface.
 
 ---
 
@@ -208,6 +268,7 @@ All hooks follow the same `(input, output) => Promise<void>` pattern. Plugin mut
 | Behavioral profile | ~60-100 | core-hooks.ts:109-133 |
 | **Per-turn total** | **~180-300** | — |
 | Compaction context | ~660-1,400 | session-hooks.ts:222-338 |
+| Compaction config (available) | N/A (not yet used) | `compaction.auto`, `compaction.prune`, `compaction.tail_turns` (default 2), `compaction.preserve_recent_tokens` | opencode config.ts |
 
 ### 4.4 Proposed Injection Impact
 
@@ -259,7 +320,7 @@ All hooks follow the same `(input, output) => Promise<void>` pattern. Plugin mut
 
 1. **Exact `Model` type definition** — `input.model` in system.transform typed as `Model` but full interface not extracted
 2. **Command `.md` file required frontmatter** — Only JSON config schema confirmed; `.md` command file schema unclear
-3. **Hook execution order after fix** — Issue #19960 proposes reordering but fix status unknown
+3. **Hook execution order AFTER fix** — Issue #19960 (open, unassigned since 2026-03-29) proposes reordering system.transform before messages.transform. No timeline available. Steering engine MUST handle CURRENT order (messages first, then system) and be prepared to swap injection logic if fixed.
 4. **Model-specific degradation curves** — "15 tool call" observation is Claude-specific; GPT/Gemini curves not publicly documented
 5. **No published research on optimal cadence for AI coding agents specifically**
 
@@ -281,3 +342,7 @@ All hooks follow the same `(input, output) => Promise<void>` pattern. Plugin mut
 | S10 | anthropic.com, openai.com, blog.google | Official | Model context window specs |
 | S11 | morphllm.com, codeongrass.com, indiehackers.com | Research | Degradation curves, best practices |
 | S12 | langchain.com/blog/context-engineering | Framework | Per-node context engineering |
+| S13 | GitHub anomalyco/opencode#25754 | Primary | messages.transform silent no-op bug |
+| S14 | GitHub anomalyco/opencode#19960 | Primary | Hook firing order confirmed |
+| S15 | anomalyco/opencode/packages/plugin/src/index.ts | Primary | Complete Hooks interface |
+| S16 | anomalyco/opencode/packages/opencode/src/config/config.ts | Primary | Config loading + compaction options |
