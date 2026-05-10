@@ -10,6 +10,16 @@
   "update_command": "scripts/update.sh",
   "tags": ["sdk", "plugin", "typescript", "session", "tools", "hooks", "delegation", "zod", "effect"],
   "repomix_status": "SUCCESS — re-ingested 2026-05-10 from anomalyco/opencode (55 files, 127K tokens)",
+  "constitutional_override": {
+    "trust_model": "two-tier",
+    "validation_tier": "live-primary",
+    "reference_tier": "bundled-supplementary",
+    "staleness_severity_scale": true,
+    "live_verification_required": true
+  },
+  "last_live_verified": null,
+  "staleness_window_days": 7,
+  "version_drift_detection": true,
   "source_files": {
     "plugin": {
       "index.ts": { "size_bytes": 8785, "sha": "71a3278cbb074604270945fe061f18ffa7faa05a" },
