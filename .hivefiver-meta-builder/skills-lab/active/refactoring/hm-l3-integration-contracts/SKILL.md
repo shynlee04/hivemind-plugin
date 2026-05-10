@@ -220,7 +220,7 @@ Each skill declares which agent types consume it. This enables orphan detection 
 | hf-l2-custom-tools-dev | hf-l2-tool-builder | hf STRICT |
 | hf-l2-context-absorb | hf-l2-prompter | hf STRICT |
 | hf-l2-agents-md-sync | hf-l2-auditor | hf STRICT |
-| hf-l2-meta-builder | hf-l0-orchestrator, hf-l1-coordinator | hf STRICT |
+| hf-l2-meta-builder-core | hf-l0-orchestrator, hf-l1-coordinator | hf STRICT |
 
 ### Human-Facing Interaction Skills
 | Skill | Consumed By | Lineage |

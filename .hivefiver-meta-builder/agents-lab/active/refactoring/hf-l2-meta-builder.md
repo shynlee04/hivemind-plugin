@@ -7,7 +7,7 @@ depth: L2
 lineage: hf
 domain: Meta-Building
 skills:
-  - hf-l2-meta-builder
+  - hf-l2-meta-builder-core
   - hf-l2-skill-synthesis
   - hm-l2-coordinating-loop
   - hm-l2-planning-persistence

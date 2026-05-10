@@ -7,7 +7,7 @@ depth: L0
 lineage: hf
 domain: Orchestration
 skills:
-  - hf-l2-meta-builder
+  - hf-l2-meta-builder-core
   - hm-l2-coordinating-loop
   - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping
