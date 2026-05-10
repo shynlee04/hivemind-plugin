@@ -35,7 +35,16 @@
 
 <!-- NOTE: explore agent is MISSING from the filesystem -->
 
-- For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
+- **Session Resumption Protocol:** For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
+  1. **Locate Aborted Tasks:** Look upwards from the user's prompt (indicated by `#USER`). Identify the canceled `task` tool calls.
+  2. **Identify Task Details:** 
+     - The tool call starts with `"Tool: task"` and an input JSON containing `"description"` and `"prompt"`.
+     - The tool call specifies the subagent, e.g., `"subagent_type": "hm-l2-researcher"`.
+  3. **Extract Task ID:** Find the `task_id` from the output of the initiated task, e.g., `task_id: ses_1f2d999b6ffevXCPdbFUmkOEN9`.
+  4. **Resume Execution:** Invoke the `task` tool again using the EXACT SAME `task_id` and `subagent_type`. 
+     - Provide a short, precise notice of resumption in the description.
+     - **DO NOT repeat the original task prompt.** The context is already preserved downstream.
+     - **ONLY add extra prompting** if the user explicitly requests it.
 
 - The front facing agents must keep track, monitor, make sure not a single validation, verification, review steps are skips, planning , audit and verification must following format of the participated framework with honest verification and prevention of regressions. 
 
