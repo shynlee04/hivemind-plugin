@@ -2,7 +2,7 @@
 name: hm-l3-tech-stack-ingest
 description: Downloads and caches third-party repositories, SDK docs, and API references as progressive-disclosure bundled assets. Use when ingesting a tech stack, downloading repo docs, caching dependency docs, performing tech stack ingestion, downloading library documentation, ingesting a dependency, fetching SDK API docs, storing a repository as reference, caching tech stack assets, downloading API documentation for offline use, or building a local tech stack cache. This is the foundation skill that enables hm-deep-research, hm-synthesis, and quality gate generation to work against ACTUAL code, not assumptions.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "domain-execution"
   pattern: P2
   version: "1.0.0"

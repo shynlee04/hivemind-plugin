@@ -2,7 +2,7 @@
 name: hm-l3-opencode-project-audit
 description: Audit OpenCode projects across skills, commands, tools, permissions, agents, and subagents. Use when checking boundaries, verifying architecture, mapping ecosystem structure, or auditing setup. NOT for code review or direct implementation.
 metadata:
-  layer: "1"
+  layer: "3"
   role: "auditor"
   pattern: P3
   version: "3.0.0"

@@ -2,7 +2,7 @@
 name: hm-l3-detective
 description: Investigate codebases with SCAN, READ, and DEEP reading modes. Use when navigating large codebases, finding definitions, or recovering session context. Stage 1 of the hm-research-chain pipeline. Feeds findings into hm-deep-research and hm-synthesis. Consumes cached assets from hm-tech-stack-ingest. NOT for writing code or running tests.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "investigation"
   pattern: P2
 allowed-tools: Read Write Edit Bash Glob Grep

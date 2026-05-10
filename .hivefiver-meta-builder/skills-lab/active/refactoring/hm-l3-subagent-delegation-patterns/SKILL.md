@@ -2,7 +2,7 @@
 name: hm-l3-subagent-delegation-patterns
 description: Document and apply subagent delegation patterns for OpenCode. Use when dispatching subagents, resuming interrupted sessions, implementing checkpoint protocols, or designing wave-based execution. NOT for general task planning or project inspection.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "domain-execution"
   pattern: P2
   version: "1.0.0"

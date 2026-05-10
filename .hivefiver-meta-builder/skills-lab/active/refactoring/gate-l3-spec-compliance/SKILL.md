@@ -11,7 +11,7 @@ description: >
   "phase audit gate", "acceptance criteria check", "spec-to-code", "deployment readiness",
   "triad gate", "spec gate middle", "quality triad".
 metadata:
-  layer: "2"
+  layer: "3"
   role: "domain-execution"
   pattern: P2
   version: "1.1.0"

@@ -14,7 +14,7 @@ description: >
   Activates during code review of src/ files, phase audit, milestone verification,
   integration check, and deployment readiness workflows.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "domain-execution"
   pattern: P2
   version: "2.0.0"

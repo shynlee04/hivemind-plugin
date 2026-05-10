@@ -2,7 +2,7 @@
 name: hm-l3-tech-context-compliance
 description: Validate that proposed libraries, frameworks, SDKs, and dependencies are compatible with the project's existing tech stack. Use when checking tech context, running compatibility checks, performing stack validation, verifying dependency compatibility, checking SDK compliance, validating API compatibility, running peer dependency checks, detecting version conflicts, enforcing tech constraints, or validating dependencies against project standards. NOT for deep package research — that is hm-deep-research.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "domain-execution"
   pattern: P2
   version: "1.0.0"

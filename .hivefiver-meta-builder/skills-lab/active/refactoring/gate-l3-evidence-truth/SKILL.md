@@ -12,7 +12,7 @@ description: >
   "integration evidence", "mock-only detection", "completion honesty", "gate passed",
   "gate failed". Terminal skill in the quality gate triad — if evidence PASSES, all 3 gates clear.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "domain-execution"
   pattern: P2
   version: "1.0.0"

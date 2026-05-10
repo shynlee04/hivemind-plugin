@@ -11,7 +11,7 @@ description: >
   gathering, "hm-synthesis" for compression, "hm-tech-stack-ingest" for dependency caching.
   NOT for single-source lookups or quick fact-checking.
 metadata:
-  layer: "1"
+  layer: "3"
   role: "orchestrator"
   pattern: P1
   version: "1.0.0"

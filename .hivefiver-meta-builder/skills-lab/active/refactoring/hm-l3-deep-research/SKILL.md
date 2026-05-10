@@ -2,7 +2,7 @@
 name: hm-l3-deep-research
 description: Conduct version-matched deep research with MCP tools and citation tracking. Use when investigating libraries, verifying API signatures, or gathering multi-source evidence. Stage 2 of the hm-research-chain pipeline. Consumes codebase maps from hm-detective and cached assets from hm-tech-stack-ingest. Feeds findings into hm-synthesis for artifact compression. NOT for quick lookups or single-source checks.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "research"
   pattern: P1
 allowed-tools: Read Write Edit Bash Glob Grep

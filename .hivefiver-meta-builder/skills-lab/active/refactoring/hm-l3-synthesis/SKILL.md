@@ -2,7 +2,7 @@
 name: hm-l3-synthesis
 description: Compress research findings into actionable artifacts with tiered reduction. Use when packing codebases, extracting interfaces, or producing validated reports. Stage 3 of the hm-research-chain pipeline. Consumes findings from hm-detective and evidence from hm-deep-research. Uses cached API signatures from hm-tech-stack-ingest for validation. NOT for raw data collection or unfiltered dumps.
 metadata:
-  layer: "2"
+  layer: "3"
   role: "compression"
   pattern: P2
 allowed-tools: Read Write Edit Bash Glob Grep
