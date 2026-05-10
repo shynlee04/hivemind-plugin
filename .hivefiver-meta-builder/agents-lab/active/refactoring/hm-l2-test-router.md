@@ -1,4 +1,4 @@
- ---
+---
 name: hm-l2-test-router
 description: Test agent for natural language command routing. Has access to nl-route tool.
 mode: subagent
