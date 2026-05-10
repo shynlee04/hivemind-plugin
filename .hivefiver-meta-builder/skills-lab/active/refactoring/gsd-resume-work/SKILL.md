@@ -21,15 +21,5 @@ Routes to the resume-project workflow which handles:
 </execution_context>
 
 <process>
-**Follow the resume-project workflow** from `@.agent/get-shit-done/workflows/resume-project.md`.
-
-The workflow handles all resumption logic including:
-
-1. Project existence verification
-2. STATE.md loading or reconstruction
-3. Checkpoint and incomplete work detection
-4. Visual status presentation
-5. Context-aware option offering (checks CONTEXT.md before suggesting plan vs discuss)
-6. Routing to appropriate next command
-7. Session continuity updates
-   </process>
+Execute end-to-end.
+</process>

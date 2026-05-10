@@ -39,7 +39,7 @@ Context files (GEMINI.md, SUMMARY.md, phase state) are resolved inside the workf
 <process>
 This command is a thin dispatch layer. It parses arguments and delegates to the workflow.
 
-Execute the code-review workflow from @.agent/get-shit-done/workflows/code-review.md end-to-end.
+Execute end-to-end.
 
 The workflow (not this command) enforces these gates:
 - Phase validation (before config gate)

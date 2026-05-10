@@ -32,7 +32,7 @@ npm-debug.log*
 !package-lock.json
 
 # Runtime state
-!.opencode/state/
+!.opencode/
 .harness/
 
 # Hivemind runtime state — gitignored (per Q6 + WS1-01-SPEC §7)

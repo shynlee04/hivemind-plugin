@@ -19,6 +19,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute @.agent/get-shit-done/workflows/eval-review.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates.
 </process>

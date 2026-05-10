@@ -12,5 +12,5 @@ Display comprehensive project statistics including phase progress, plan executio
 </execution_context>
 
 <process>
-Execute the stats workflow from @.agent/get-shit-done/workflows/stats.md end-to-end.
+Execute end-to-end.
 </process>

@@ -5,8 +5,7 @@
   ],
   "plugin": [
     "superpowers@git+https://github.com/obra/superpowers.git",
-    "./dist/plugin.js",
-    "./.planning/spikes/003-custom-tool-wrapper/spike-plugin.js"
+    "./dist/plugin.js"
   ],
   "provider": {
     "opencode-go": {
@@ -55,7 +54,8 @@
     "apply_patch": "allow",
     "todowrite": "allow",
     "webfetch": "allow",
-    "websearch": "allow"
+    "websearch": "allow",
+    "execute-slash-command": "allow"
   },
   "compaction": {
     "auto": true,

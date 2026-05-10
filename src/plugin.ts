@@ -20,6 +20,7 @@ import { createPtyManagerIfSupported } from "./features/background-command/pty/p
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt/prompt-analyze/index.js"
 import { createSessionPatchTool } from "./tools/session/session-patch/index.js"
+import { createExecuteSlashCommandTool } from "./tools/session/execute-slash-command.js"
 import { createDelegateTaskTool } from "./tools/delegation/delegate-task.js"
 import { createDelegationStatusTool } from "./tools/delegation/delegation-status.js"
 import { createRunBackgroundCommandTool } from "./tools/hivemind/run-background-command.js"
@@ -172,6 +173,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "prompt-skim": createPromptSkimTool(projectDirectory),
       "prompt-analyze": createPromptAnalyzeTool(projectDirectory),
       "session-patch": createSessionPatchTool(projectDirectory),
+      "execute-slash-command": createExecuteSlashCommandTool(client),
       "session-journal-export": createSessionJournalExportTool(),
       "hivemind-doc": createHivemindDocTool(projectDirectory),
       "hivemind-trajectory": createHivemindTrajectoryTool(projectDirectory),

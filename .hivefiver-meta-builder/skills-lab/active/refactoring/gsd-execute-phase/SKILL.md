@@ -48,6 +48,6 @@ Context files are resolved inside the workflow via `gsd-sdk query init.execute-p
 </context>
 
 <process>
-Execute the execute-phase workflow from @.agent/get-shit-done/workflows/execute-phase.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (wave execution, checkpoint handling, verification, state updates, routing).
 </process>

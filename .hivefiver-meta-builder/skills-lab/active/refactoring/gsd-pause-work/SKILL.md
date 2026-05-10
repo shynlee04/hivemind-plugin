@@ -24,7 +24,10 @@ State and phase progress are gathered in-workflow with targeted reads.
 </context>
 
 <process>
-**Follow the pause-work workflow** from `@.agent/get-shit-done/workflows/pause-work.md`.
+If `--report` is in $ARGUMENTS:
+Read and execute `.agent/get-shit-done/workflows/session-report.md` end-to-end.
+
+**Follow the pause-work workflow**.
 
 The workflow handles all logic including:
 1. Phase directory detection

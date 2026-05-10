@@ -20,6 +20,6 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </execution_context>
 
 <process>
-Execute the health workflow from @.agent/get-shit-done/workflows/health.md end-to-end.
+Execute end-to-end.
 Parse `--repair` and `--context` flags from arguments and pass to workflow.
 </process>

@@ -30,7 +30,7 @@ Output: MILESTONE_SUMMARY written to `.planning/reports/`, presented inline, opt
 </context>
 
 <process>
-Read and execute the milestone-summary workflow from @.agent/get-shit-done/workflows/milestone-summary.md end-to-end.
+Execute end-to-end.
 </process>
 
 <success_criteria>

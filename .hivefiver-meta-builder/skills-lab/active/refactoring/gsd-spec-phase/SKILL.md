@@ -40,7 +40,7 @@ Context files are resolved in-workflow using `init phase-op`.
 </context>
 
 <process>
-Execute the spec-phase workflow from @.agent/get-shit-done/workflows/spec-phase.md end-to-end.
+Execute end-to-end.
 
 **MANDATORY:** Read the workflow file BEFORE taking any action. The workflow contains the complete step-by-step process including the Socratic interview loop, ambiguity scoring gate, and SPEC.md generation. Do not improvise from the objective summary above.
 </process>

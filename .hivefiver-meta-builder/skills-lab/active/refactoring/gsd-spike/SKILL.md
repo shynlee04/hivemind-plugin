@@ -37,8 +37,8 @@ Idea: $ARGUMENTS
 
 <process>
 Parse the first token of $ARGUMENTS:
-- If it is `--wrap-up`: strip the flag, execute the spike-wrap-up workflow from @.agent/get-shit-done/workflows/spike-wrap-up.md.
-- Otherwise: pass all of $ARGUMENTS as the idea to the spike workflow from @.agent/get-shit-done/workflows/spike.md end-to-end.
+- If it is `--wrap-up`: strip the flag, execute the spike-wrap-up workflow
+- Otherwise: pass all of $ARGUMENTS as the idea to the spike workflow end-to-end.
 
 Preserve all workflow gates (prior spike check, decomposition, research, risk ordering, observability assessment, verification, MANIFEST updates, commit patterns).
 </process>

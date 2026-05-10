@@ -25,6 +25,6 @@ Context files are resolved inside the workflow (`init verify-work`) and delegate
 </context>
 
 <process>
-Execute the verify-work workflow from @.agent/get-shit-done/workflows/verify-work.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (session management, test presentation, diagnosis, fix planning, routing).
 </process>

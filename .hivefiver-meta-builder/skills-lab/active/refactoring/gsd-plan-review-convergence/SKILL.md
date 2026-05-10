@@ -45,6 +45,6 @@ Phase number: extracted from $ARGUMENTS (required)
 </context>
 
 <process>
-Execute the plan-review-convergence workflow from @.agent/get-shit-done/workflows/plan-review-convergence.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (pre-flight, revision loop, stall detection, escalation).
 </process>
