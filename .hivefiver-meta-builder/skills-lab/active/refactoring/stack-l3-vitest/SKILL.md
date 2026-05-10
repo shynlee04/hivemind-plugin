@@ -24,6 +24,10 @@ triggers:
   - afterAll
   - vitest.config
   - test.extend
+metadata:
+  layer: "3"
+  role: "reference"
+  lineage: "stack"
 ---
 
 # Stack: Vitest

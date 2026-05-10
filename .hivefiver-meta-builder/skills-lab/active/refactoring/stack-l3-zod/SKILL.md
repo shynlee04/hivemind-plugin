@@ -22,6 +22,10 @@ triggers:
   - .refine
   - .transform
   - .pipe
+metadata:
+  layer: "3"
+  role: "reference"
+  lineage: "stack"
 ---
 
 # Stack Skill: Zod v4

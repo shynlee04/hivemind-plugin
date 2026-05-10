@@ -19,6 +19,10 @@ triggers:
   - "JSONUIProvider"
   - "useUIStream"
   - "spec-driven UI"
+metadata:
+  layer: "3"
+  role: "reference"
+  lineage: "stack"
 ---
 
 # @json-render/react Stack Reference

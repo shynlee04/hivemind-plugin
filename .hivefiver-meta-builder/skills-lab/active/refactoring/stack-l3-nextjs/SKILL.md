@@ -21,6 +21,10 @@ triggers:
   - "turbopack"
   - "use cache"
   - "cache components"
+metadata:
+  layer: "3"
+  role: "reference"
+  lineage: "stack"
 ---
 
 # Next.js 16.x Stack Reference

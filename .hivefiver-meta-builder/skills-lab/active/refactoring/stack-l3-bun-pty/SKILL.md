@@ -18,6 +18,10 @@ triggers:
   - terminal session
   - lazy load pty
   - pty zombie process
+metadata:
+  layer: "3"
+  role: "reference"
+  lineage: "stack"
 ---
 
 # Stack: bun-pty
