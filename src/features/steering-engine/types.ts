@@ -1,22 +1,3 @@
-import type {
-  CompactionCondition,
-  DepthCondition,
-  HierarchyCondition,
-  InjectionSurface,
-  LineageCondition,
-  MessageTransformContent,
-  PhaseCondition,
-  RegisteredPrimitive,
-  SessionCompactingContent,
-  SteeringCondition,
-  SteeringConfig,
-  SteeringContent,
-  SteeringPolicy,
-  SystemTransformContent,
-  TaskBoundaryCondition,
-  TurnsSinceCondition,
-} from "./schema/steering-policy.schema.js"
-
 // ---------------------------------------------------------------------------
 // Re-export schema-inferred types for downstream consumers
 // ---------------------------------------------------------------------------

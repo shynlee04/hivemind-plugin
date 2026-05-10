@@ -222,9 +222,13 @@ export const SteeringConfigSchema = z
         max_token_budget: z.number().int().min(0).default(600),
         enabled: z.boolean().default(true),
       })
-      .default({}),
+      .default({
+        min_turn_interval: 3,
+        max_token_budget: 600,
+        enabled: true,
+      }),
   })
-  .default({})
+  .default({ policies: [], defaults: { min_turn_interval: 3, max_token_budget: 600, enabled: true } })
 export type SteeringConfig = z.infer<typeof SteeringConfigSchema>
 
 // ---------------------------------------------------------------------------
@@ -256,7 +260,7 @@ export const RegisteredPrimitiveSchema = z.object({
   mode: z.enum(["subagent"]).optional(),
   lineage: z.enum(["hm", "hf"]).optional(),
   hierarchy: z.enum(["L0", "L1", "L2", "L3"]).optional(),
-  tools: z.record(z.unknown()).optional(),
+  tools: z.record(z.string(), z.unknown()).optional(),
   temperature: z.number().min(0).max(2).optional(),
   source_path: z.string(),
   scope: z.enum(["project", "global"]),
