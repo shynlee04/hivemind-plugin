@@ -48,6 +48,51 @@ This skill performs automated detection, compatibility validation, and complianc
 Before accepting any new dependency or SDK usage, validate it against what exists.
 ```
 
+## Constitutional Compliance
+
+### Two-Tier Trust Model
+
+All compatibility verdicts MUST follow this authority hierarchy:
+
+| Tier | Role | Sources | When Used |
+|------|------|---------|-----------|
+| **Validation (PRIMARY)** | Live truth | Context7, DeepWiki, Exa, GitMCP, Repomix, GitHub source | Confirming compatibility or incompatibility |
+| **Reference (SUPPLEMENTARY)** | Orientation only | Local `package.json`, lock files, `node_modules/`, cached docs | Initial scan, narrowing candidates |
+
+**Rule:** Before declaring any library/framework as "compatible" or "incompatible", at least ONE live verification source MUST confirm the finding. Package.json version checks are orientation — live verification is truth.
+
+### Staleness Severity Scale
+
+| Severity | Threshold | Action |
+|----------|-----------|--------|
+| CRITICAL | > 24 hours for security-critical deps | MUST re-validate before any compliance verdict |
+| HIGH | > 7 days for runtime deps | MUST verify current version before marking compatible |
+| STANDARD | > 30 days for tooling deps | SHOULD verify but may proceed with warning |
+| LOW | > 90 days for dev dependencies | Proceed with staleness note in report |
+
+### MCP Tool Integration for Tech Compliance
+
+| Validation Task | Primary Tool | Fallback Tool | What It Verifies |
+|-----------------|-------------|---------------|------------------|
+| Library API compatibility | `context7_resolve_library_id` → `context7_query_docs` | `deepwiki_ask_question` | Actual method signatures, types, return values at the declared version |
+| Framework migration/breaking changes | `deepwiki_ask_question` | `exa_web_search_exa` | Breaking changes between major versions, migration guides |
+| Changelog / compatibility discussions | `exa_web_search_exa` | `tavily_tavily_search` | Community reports of version conflicts, compatibility matrices |
+| Source-level compatibility checks | `gitmcp_search_github_com_code` | `github_search_code` | Peer dependency enforcement in actual source, not just declared |
+| Full library dependency analysis | `repomix_pack_remote_repository` | — | Transitive dependency tree for deep conflict detection |
+
+### Constitutional Gate Rule
+
+```
+COMPLIANCE VERDICTS REQUIRE LIVE EVIDENCE.
+
+Phase 1 (Version Constraints): Uses Reference Tier — package.json, lock files.
+Phase 2 (API/SDK Surface): MUST use Validation Tier — live tool verification.
+Phase 3 (Cross-Stack Conflicts): MUST use Validation Tier for FAIL verdicts.
+Phase 4 (Report): MUST cite at least 1 live source per PASS/FAIL decision.
+```
+
+No compliance report is valid without at least one citation from the Validation Tier.
+
 ## Quick Jump
 
 | Task | Section / Reference |
@@ -124,7 +169,8 @@ Produce a concise stack summary:
 
 1. Extract the proposed dependency's version and its declared peer dependencies.
 2. Cross-reference against the project's current versions using `references/compatibility-rules.md`.
-3. Check for:
+3. **LIVE VERIFICATION (REQUIRED):** Use `context7_resolve_library_id` → `context7_query_docs` to confirm the declared peer dependency ranges match the library's actual published requirements — do not trust only what package.json declares.
+4. Check for:
    - **Major version conflicts** — e.g., React 18 and a library requiring React 17
    - **Peer dependency violations** — library needs peer X@^2 but project has X@^3
    - **Engine constraints** — library requires Node >= 22 but project uses Node 20
@@ -133,7 +179,8 @@ Produce a concise stack summary:
 ### Phase 2: API/SDK Surface Compliance
 
 1. If the proposal involves SDK usage, load `references/sdk-compliance-checks.md`.
-2. Verify that the proposed SDK calls match actual API signatures:
+2. **LIVE VERIFICATION (REQUIRED):** Use `deepwiki_ask_question` or `context7_query_docs` to verify API signatures against the installed version — do not assume signatures from bundled or cached docs.
+3. Verify that the proposed SDK calls match actual API signatures:
    - Check parameter types, return types, and error handling patterns.
    - For TypeScript projects, type-check against installed `@types/` packages.
    - For OpenCode-specific SDKs (plugin API, tools, hooks), validate against `hm-opencode-platform-reference`.
@@ -157,6 +204,14 @@ Write a compliance report using the template in `references/report-template.md`.
 - **PASS** — fully compatible, no issues detected
 - **FAIL** — blocked by incompatible version, missing peer dep, or engine violation
 - **NEEDS_INVESTIGATION** — uncertain (ambiguous version ranges, missing docs, new library)
+
+**Evidence Collection Requirements (MANDATORY):** Every compliance verdict MUST include:
+1. **Live source(s) consulted** — which MCP tool(s) were used (Context7, DeepWiki, Exa, GitMCP, etc.)
+2. **Version verified against** — the exact version confirmed by live source, not just package.json range
+3. **Specific compatibility evidence** — concrete API signature match, peer dep resolution, or breaking change confirmation (not just "looks compatible")
+4. **Version-specific caveats** — any breaking changes, deprecations, or migration notes discovered during live verification
+
+Reports without evidence citations are INCOMPLETE and MUST NOT be used to unblock downstream decisions.
 
 Write the report to `<project-root>/evidence/tech-compliance-report-<timestamp>.md` for durable traceability. In HiveMind harness projects, use `.hivemind/evidence/`; in GSD projects, use `.planning/evidence/`; in arbitrary projects, default to `evidence/` at project root.
 
@@ -261,6 +316,10 @@ What are you checking?
 | **The Silent Overlap** — installing a dependency that duplicates existing capability | Two packages solve same problem, no alert | Run Phase 3 cross-stack conflict detection |
 | **The Monorepo Blind Spot** — checking only root manifest | Only root `package.json` checked, workspaces ignored | Check all workspace/package manifests in monorepo projects |
 | **The Stale Doc** — trusting docs over actual installed types | Doc says X, installed version is Y | Prioritize installed types (`npm ls`, `pip freeze`, etc.) over documentation |
+| **The Package.json Leap** — declaring compatibility from version ranges alone | Peer deps checked only against package.json ranges, not actual published compatibility | MUST verify peer dep compatibility via `context7_query_docs` or `deepwiki_ask_question` — version ranges do not prove compatibility |
+| **The Cached Assumption** — declaring compatibility from previously-cached docs | No live verification performed, relying on docs from a previous session or cached read | MUST perform at least 1 live MCP tool query per compliance verdict. Cached reads are orientation only |
+| **The Major Version Shortcut** — "v2 should work with v2" without checking breaking changes | Compatibility declared based on matching major version number | MUST check breaking changes via `exa_web_search_exa` or `deepwiki_ask_question` for the specific version transition |
+| **The DevDependency Skip** — skipping compatibility checks for devDependencies | Only runtime deps validated, dev tools ignored | Run Phase 1 version checks on ALL dependency categories — dev tool conflicts cause build failures |
 
 ## Validation Loop
 
@@ -289,7 +348,7 @@ If any check returns FAIL:
 
 ### When a FAIL result is based on stale lock file data
 **Detection:** Compliance report shows FAIL for a version constraint, but the user says "we just upgraded that last week."
-**Recovery:** Re-read the lock file fresh (do not trust cached reads). If the lock file is outdated, flag it: "The lock file shows version X but you indicate version Y. Please run `install` to update the lock file, then re-check."
+**Recovery:** **LIVE-FIRST:** Before re-reading local lock files, verify the claimed version via `context7_query_docs` or `deepwiki_ask_question` to confirm what the current published version actually is. Then re-read the lock file fresh (do not trust cached reads). If the lock file is outdated, flag it: "The lock file shows version X but you indicate version Y. Please run `install` to update the lock file, then re-check."
 
 ### When ecosystem misclassification produces wrong compatibility rules
 **Detection:** Python-specific rules (requirements.txt, pip) are being applied to a Node.js project, or vice versa.
