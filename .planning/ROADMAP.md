@@ -124,7 +124,13 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| CP-ST-01 | Session Tracker Revamp | 🔵 SPEC-PHASE | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: hook wiring tests, file format validation, migration verification |
+| CP-ST-01 | Session Tracker Revamp | 🔵 PLANNED | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: hook wiring tests, file format validation, migration verification |
+
+**Plans:**
+- [ ] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)
+- [ ] CP-ST-01-02-PLAN.md — Capture Handlers + Index Writers (Wave 2)
+- [ ] CP-ST-01-03-PLAN.md — Integration + Recovery + Tool (Wave 3)
+- [ ] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
