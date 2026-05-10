@@ -1,7 +1,7 @@
 ---
 name: hm-l2-conductor
 description: 'Delegation routing specialist. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly.'
-mode: primary
+mode: subagent
 depth: L2
 lineage: hm
 temperature: 0.3

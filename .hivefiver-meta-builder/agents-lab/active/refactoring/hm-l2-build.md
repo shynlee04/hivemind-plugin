@@ -1,7 +1,7 @@
 ---
 name: hm-l2-build
 description: The default primary agent with all tools enabled for development work requiring full access to file operations and system commands. MANDATORY_COMPLIANCE_REQUIRED.
-mode: primary
+mode: subagent
 depth: L2
 lineage: hm
 temperature: 0.15
