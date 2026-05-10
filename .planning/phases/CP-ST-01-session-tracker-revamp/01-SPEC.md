@@ -26,7 +26,8 @@ The current event tracker (`src/task-management/journal/event-tracker/`) produce
 - New session tracker module under `src/features/session-tracker/` (owning typed module)
 - Hook integration via existing `createCoreHooks()` observer pipeline
 - File structure: `.hivemind/session-tracker/{main-session-id}/` with MD + JSON outputs
-- Session continuity index: `.hivemind/session-tracker/session-continuity.json`
+- Project-level index: `.hivemind/session-tracker/project-continuity.json` (cross-session connections)
+- Session-local index: `.hivemind/session-tracker/{main-session-id}/session-continuity.json` (parent-child hierarchy within session)
 - Recovery/reconsumption via OpenCode SDK REST API (`client.session.*`)
 - Up to 3 levels of delegation depth, up to 6 concurrent sessions
 - Conservative cleanup of contaminated `.hivemind/event-tracker/` state files
@@ -68,18 +69,19 @@ The harness plugin runs INSIDE the OpenCode runtime. It receives events directly
 ```
 .hivemind/
 ├── session-tracker/                              # NEW root
-│   ├── session-continuity.json                    # Index/manifest of all sessions
+│   ├── project-continuity.json                    # Cross-session index (connects ALL main sessions)
 │   └── ses_1ed9df1adffe2hbJudz3sK60y3/           # One subdir per main session
 │       ├── ses_1ed9df1adffe2hbJudz3sK60y3.md     # Primary knowledge capture (YAML + MD)
 │       ├── ses_1ed9c5c20ffePWOXce5JQpS5Yk.json   # Child session (delegation level 1)
-│       └── ses_1ed9bffbcffesN10Er8Pd91tW7.json   # Child session (delegation level 1)
+│       ├── ses_1ed9bffbcffesN10Er8Pd91tW7.json   # Child session (delegation level 1)
+│       └── session-continuity.json                # Session-local index (hierarchy within THIS session)
 ├── state/
 │   ├── session-continuity.json                    # EXISTING — harness delegation state
 │   └── delegations.json                           # EXISTING — delegation records
 └── event-tracker/                                 # LEGACY — kept as safety net, state files cleaned
 ```
 
-**Key rule:** Subdirectories are created ONLY when a user starts a new main session (not before). Child session files are written under the parent's subdir.
+**Key rule:** Subdirectories are created ONLY when a user starts a new main session (not before). Child session files are written under the parent's subdir. The `session-continuity.json` lives INSIDE each session subdir (not at the top level). The top-level `project-continuity.json` connects all main sessions across the project.
 
 ---
 
@@ -99,6 +101,7 @@ children:
     child_file: "ses_1ed9c5c20ffePWOXce5JQpS5Yk.json"
   - session_id: "ses_1ed9bffbcffesN10Er8Pd91tW7"
     child_file: "ses_1ed9bffbcffesN10Er8Pd91tW7.json"
+continuity_index: "session-continuity.json"
 status: "active"                           # active | idle | completed | error
 ---
 
@@ -218,36 +221,84 @@ Continue if you have next steps...
 
 **Critical transformation:** In child sessions, the `##USER` block is NOT a human user — it's the parent agent delegating. The session tracker must recognize this (by checking `session.parentID` via SDK) and transform `##USER` into `main_l0_agent` with the parent's agent name and model.
 
-### 5.3 Session Continuity Index (`session-continuity.json`)
+### 5.3 Session-Local Continuity Index (`{session-dir}/session-continuity.json`)
+
+Lives INSIDE each main session subdir. Tracks the parent-child hierarchy within that specific session.
 
 ```json
 {
   "version": "2.0",
+  "session_id": "ses_1ed9df1adffe2hbJudz3sK60y3",
   "last_updated": "2026-05-10T22:08:04Z",
-  "sessions": {
-    "ses_1ed9df1adffe2hbJudz3sK60y3": {
-      "path": "ses_1ed9df1adffe2hbJudz3sK60y3/ses_1ed9df1adffe2hbJudz3sK60y3.md",
-      "parent_session_id": null,
-      "delegation_depth": 0,
-      "status": "active",
-      "created": "2026-05-10T21:54:36Z",
-      "updated": "2026-05-10T22:08:04Z",
-      "children": ["ses_1ed9c5c20ffePWOXce5JQpS5Yk", "ses_1ed9bffbcffesN10Er8Pd91tW7"],
-      "child_files": {
-        "ses_1ed9c5c20ffePWOXce5JQpS5Yk": "ses_1ed9df1adffe2hbJudz3sK60y3/ses_1ed9c5c20ffePWOXce5JQpS5Yk.json",
-        "ses_1edbffbcffesN10Er8Pd91tW7": "ses_1ed9df1adffe2hbJudz3sK60y3/ses_1ed9bffbcffesN10Er8Pd91tW7.json"
+  "hierarchy": {
+    "root": "ses_1ed9df1adffe2hbJudz3sK60y3",
+    "children": {
+      "ses_1ed9c5c20ffePWOXce5JQpS5Yk": {
+        "file": "ses_1ed9c5c20ffePWOXce5JQpS5Yk.json",
+        "depth": 1,
+        "status": "completed",
+        "delegated_by": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1ed9bffbcffesN10Er8Pd91tW7": {
+        "file": "ses_1ed9bffbcffesN10Er8Pd91tW7.json",
+        "depth": 1,
+        "status": "completed",
+        "delegated_by": "main_l0_agent",
+        "children": {}
       }
-    },
-    "ses_1ed9c5c20ffePWOXce5JQpS5Yk": {
-      "path": "ses_1ed9df1adffe2hbJudz3sK60y3/ses_1ed9c5c20ffePWOXce5JQpS5Yk.json",
-      "parent_session_id": "ses_1ed9df1adffe2hbJudz3sK60y3",
-      "delegation_depth": 1,
-      "status": "completed",
-      "children": []
     }
+  },
+  "turn_count": 2,
+  "tool_summary": {
+    "skill": 3,
+    "read": 12,
+    "task": 2
   }
 }
 ```
+
+### 5.4 Project-Level Continuity Index (`project-continuity.json`)
+
+Lives at the top level of `session-tracker/`. Connects ALL main sessions across the project. Supports cross-session navigation and chronological ordering.
+
+```json
+{
+  "version": "2.0",
+  "project_root": "/Users/apple/hivemind-plugin-private",
+  "last_updated": "2026-05-10T22:08:04Z",
+  "sessions": {
+    "ses_1ed9df1adffe2hbJudz3sK60y3": {
+      "dir": "ses_1ed9df1adffe2hbJudz3sK60y3/",
+      "main_file": "ses_1ed9df1adffe2hbJudz3sK60y3.md",
+      "continuity_index": "ses_1ed9df1adffe2hbJudz3sK60y3/session-continuity.json",
+      "created": "2026-05-10T21:54:36Z",
+      "updated": "2026-05-10T22:08:04Z",
+      "status": "active",
+      "child_count": 2,
+      "total_delegation_depth": 1
+    },
+    "ses_1ed8a1b2cffeXyZ789AbCdEf01": {
+      "dir": "ses_1ed8a1b2cffeXyZ789AbCdEf01/",
+      "main_file": "ses_1ed8a1b2cffeXyZ789AbCdEf01.md",
+      "continuity_index": "ses_1ed8a1b2cffeXyZ789AbCdEf01/session-continuity.json",
+      "created": "2026-05-10T19:30:00Z",
+      "updated": "2026-05-10T20:15:00Z",
+      "status": "completed",
+      "child_count": 5,
+      "total_delegation_depth": 3
+    }
+  },
+  "chronological_order": [
+    "ses_1ed8a1b2cffeXyZ789AbCdEf01",
+    "ses_1ed9df1adffe2hbJudz3sK60y3"
+  ]
+}
+```
+
+**Purpose separation:**
+- `project-continuity.json` → "What sessions exist in this project, when did they run, how do I navigate between them?"
+- `{session-dir}/session-continuity.json` → "What delegations happened within this session, what's the parent-child hierarchy, where are the jump links?"
 
 ---
 
@@ -356,14 +407,16 @@ Continue if you have next steps...
 
 ---
 
-### REQ-ST-08: Session Continuity Index
+### REQ-ST-08: Dual Continuity Indices
 **Source:** User spec line 34, "the session-continuity.json — like the index and manifestation"
-**Condition:** A JSON index file at `.hivemind/session-tracker/session-continuity.json` maintains the complete session hierarchy with jump links.
+**Condition:** Two separate index files at different scopes — session-local hierarchy index and project-level cross-session index.
 **Acceptance Criteria:**
-- Given any session file is created or updated, the index is updated atomically.
-- Given the index is read by a recovery workflow, all session relationships are navigable without scanning the filesystem.
-- Given concurrent sessions, the index update is serialized (no corruption).
-**Verification:** Unit test verifying index integrity after 6 concurrent session simulations.
+- Given any session file is created or updated, the session-local `session-continuity.json` (inside the session subdir) is updated atomically with the parent-child hierarchy.
+- Given any main session is created or completed, the project-level `project-continuity.json` (at session-tracker root) is updated with cross-session navigation data.
+- Given the session-local index is read by a recovery workflow, all delegation relationships are navigable without scanning the filesystem.
+- Given the project-level index is read, all main sessions are listed chronologically with paths to their dirs and local indices.
+- Given concurrent sessions, both index updates are serialized (no corruption).
+**Verification:** Unit test verifying both index files' integrity after 6 concurrent session simulations.
 
 ---
 
@@ -433,7 +486,7 @@ Continue if you have next steps...
 | REQ-ST-05 | User spec line 59 | Read path captured, no content | Read error captured | Read of binary file | 20 reads in sequence | No file content in output |
 | REQ-ST-06 | User spec line 94 | Task delegation spawns child .json | Task with no session ID output | Task delegation to same session | 3-level delegation chain | Child file exists + index updated |
 | REQ-ST-07 | User spec line 114 | Child ##USER → main_l0_agent | Root ##USER stays as ##USER | Session with parentID but no parent data | SDK parentID check | Transform verified in .json |
-| REQ-ST-08 | User spec line 34 | Index updated on every write | Index survives crash mid-update | 100 sessions in index | Concurrent index writes | JSON.parse(session-continuity.json) |
+| REQ-ST-08 | User spec line 34 | Both indices updated on write | Index survives crash mid-update | 100 sessions in project index | Concurrent writes to both indices | JSON.parse on both files |
 | REQ-ST-09 | User requirement | 6 concurrent sessions, no corruption | Write conflict detected | 6 sessions same parent | Parent-child concurrent writes | File integrity check |
 | REQ-ST-10 | User requirement | Reconsumption from .md/.json files | Incomplete file parses | Missing child file | SDK + file hybrid recovery | Agent rebuilds context |
 | REQ-ST-11 | ARCHITECTURE.md:339 | Hook routes through module | Direct write attempted → blocked | Module throws during write | Hook chain continues on failure | Code review + test |
@@ -454,7 +507,8 @@ src/features/session-tracker/
 ├── persistence/
 │   ├── session-writer.ts       # MD + YAML frontmatter writer
 │   ├── child-writer.ts         # JSON child session writer
-│   └── index-writer.ts         # session-continuity.json index writer
+│   ├── session-index-writer.ts # Session-local session-continuity.json writer
+│   └── project-index-writer.ts # Project-level project-continuity.json writer
 ├── transform/
 │   ├── agent-transform.ts      # ##USER → main_l0_agent for child sessions
 │   └── schema-normalizer.ts    # camelCase normalization
