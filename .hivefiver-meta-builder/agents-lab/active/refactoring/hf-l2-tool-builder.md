@@ -249,7 +249,7 @@ NO ANY TYPES. EVERY TOOL USES ZOD SCHEMAS. CQRS WRITE-SIDE ONLY. [HARNESS] PREFI
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody unless approved (task: ask, delegate-task: ask)
+**Delegates to:** Nobody (task: ask, delegate-task: ask)
 
 **Escalates to L1 when:**
 - Task scope exceeds tool creation (e.g., needs hook changes too)

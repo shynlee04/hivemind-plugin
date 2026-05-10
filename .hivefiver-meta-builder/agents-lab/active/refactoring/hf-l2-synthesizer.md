@@ -318,7 +318,7 @@ EVERY SYNTHESIZED SKILL MUST CITE ITS SOURCE. NO PLAGIARISM. VALIDATE TECH STACK
 <delegation_boundary>
 This agent is a terminal L2 specialist. It never delegates.
 
-**Delegates to:** Nobody unless approved (task: ask, delegate-task: ask)
+**Delegates to:** Nobody (task: ask, delegate-task: ask)
 
 **Does NOT delegate when:**
 - Ingesting source material (self-executed via hm-* skill loading)
