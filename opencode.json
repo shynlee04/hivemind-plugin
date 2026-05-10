@@ -12,24 +12,21 @@
       "models": {
         "deepseek-v4-pro": {
           "options": {
-            "reasoningEffort": "high"
+            "reasoningEffort": "max"
           }
         },
-        "deepseek-v4-flash": {
+        "small": {
+          "id": "deepseek-v4-flash",
           "options": {
-            "reasoningEffort": "high"
+            "reasoningEffort": "max"
           }
         }
       }
     },
-    "zai-coidng-plan": {
+    "zai-codng-plan": {
       "models": {
-        "glm-5.1": {
-          "name": "GLM-5.1",
-          "limit": {
-            "context": 203000,
-            "output": 84000
-          }
+        "large": {
+          "id": "glm-5.1"
         }
       }
     }

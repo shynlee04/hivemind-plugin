@@ -12,7 +12,6 @@ This is not negotiable. This is not optional. You cannot rationalize your way ou
 
 ## Instruction Priority
 
-
 This override default system prompt behavior, but **user instructions always take precedence**:
 
 1. **User's explicit instructions** 
@@ -31,31 +30,15 @@ If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "alw
 
 **Delegation Guidelines**
 
-- **Prioritize using the `task` tool for delegation.** 
-- **Session Resumption Protocol:** When a user disconnects, previous delegation tasks may be aborted. To perform a simple resume:
-  1. **Locate Aborted Tasks:** Look upwards from the user's prompt (indicated by `#USER`). Identify the canceled `task` tool calls.
-  2. **Identify Task Details:** 
-     - The tool call starts with `"Tool: task"` and an input JSON containing `"description"` and `"prompt"`.
-     - The tool call specifies the subagent, e.g., `"subagent_type": "hm-l2-researcher"`.
-  3. **Extract Task ID:** Find the `task_id` from the output of the initiated task, e.g., `task_id: ses_1f2d999b6ffevXCPdbFUmkOEN9`.
-  4. **Resume Execution:** Invoke the `task` tool again using the EXACT SAME `task_id` and `subagent_type`. 
-     - Provide a short, precise notice of resumption in the description.
-     - **DO NOT repeat the original task prompt.** The context is already preserved downstream.
-     - **ONLY add extra prompting** if the user explicitly requests it.
-
-
 - Delegate heavy work to subagents — the orchestrator routes, it does not build, analyze, research, investigate, or verify.
-
 - Delegation tasks of search and inspection, investigation, and research scale with context window. Factor file counts, result sizes, and consumption patterns into workflow design, knowing LLM models are typically capped at 200000 tokens with effective limits around 180000.
-
 - For research and investigation tasks, prioritize skimming and sampling strategies: grep, regex, keywords, metadata, TOC, inline offset-reading, glob, list operations. Read only frontmatter, status fields, or summaries first.
-
+- Only launch full-text agents for synthesis or when using models >= 500000-1M tokens. Full body reads are permitted when inline content decisions require semantic understanding.
 - Reference the complete context budget table at references/context-budget.md for sizing guidance.
 
 **Context Monitoring**
 
 - Proactive pause warning: If significant context has been consumed (large file reads, multiple subagent results), warn the user: "Context budget is getting heavy. Consider checkpointing progress."
-
 - At 70% context, automatically run the CLI context compact command and ask the user to copy the last output message to resume in a new conversation.
 
 ---

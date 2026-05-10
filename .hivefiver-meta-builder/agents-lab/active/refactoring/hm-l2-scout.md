@@ -2,6 +2,7 @@
 name: hm-l2-scout
 description: 'Rapid codebase detection specialist. Scans for patterns, extracts structure, ingests tech stacks. Uses hm-detective and hm-tech-stack-ingest for fast investigation. Spawned by L1 coordinators. Cannot delegate.'
 mode: subagent
+model: opencode-go/deepseek-v4-flash
 temperature: 0.05
 depth: L2
 lineage: hm
