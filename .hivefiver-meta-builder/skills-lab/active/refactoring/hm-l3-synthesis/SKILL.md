@@ -56,6 +56,25 @@ Before producing a final report, plan, or reusable artifact:
 
 **BLOCKED rule:** If a high-impact contradiction remains unresolved, the artifact may recommend investigation, but it must not claim a settled answer.
 
+### Input Quality Gate (MANDATORY)
+
+Before any synthesis operation, validate inputs. Synthesis amplifies input quality — garbage in means compressed garbage out.
+
+**Four mandatory checks:**
+
+1. **Source provenance check:** At least 50% of findings must cite live (non-cached) sources. Findings from hm-deep-research with MCP tool citations count as live. Findings from hm-detective cache-only reads do not.
+2. **Version match check:** Findings referencing specific APIs/libraries must match project's installed versions (verify against `package.json` / lockfile). Version-mismatched findings are flagged, not silently accepted.
+3. **Staleness check:** No finding older than CRITICAL staleness (24h) without a re-verification flag. Use CRITICAL=24h / HIGH=7d / STANDARD=30d / LOW=90d severity scale.
+4. **Contradiction resolution:** Any contradictory findings must be resolved before synthesis. Unresolved high-impact contradictions block synthesis entirely.
+
+**Gate outcomes:**
+
+| Result | Condition | Action |
+|--------|-----------|--------|
+| **PASS** | All 4 checks satisfied | Proceed with synthesis |
+| **PASS_WITH_WARNINGS** | Provenance ≥50% live but <80%, or minor staleness | Synthesize with quality score ≤B and methodology/limitations section |
+| **BLOCKED** | Provenance <50% live, unresolved contradictions, or critical version mismatches | Return to hm-deep-research for better inputs. Do NOT synthesize. |
+
 | Tier | Reduction | Content | When |
 |------|-----------|---------|------|
 | **Snapshot** | 0% | Full source, every line, every comment | Final audit, security review, legal compliance |
@@ -380,6 +399,73 @@ See [references/artifact-export.md](references/artifact-export.md) for the full 
 | **Interface Drift** | Extracted interfaces don't match running code | Validate with `npm run typecheck` after extraction |
 | **Orphaned Artifact** | ADR or registry entry with no linked source file | Every artifact must reference its source file and line range |
 
+### Synthesis-Specific Anti-Patterns
+
+| Anti-Pattern | Detection | Fix |
+|-------------|-----------|-----|
+| **Garbage Compactor** | Synthesizing from unverified inputs without running Input Quality Gate | Run all 4 quality checks before synthesis. If BLOCKED, return to hm-deep-research |
+| **Echo Chamber** | All findings from a single tool/source (e.g., only repomix, only context7) | Require ≥2 distinct source tools. Route back for multi-source research |
+| **Version Blender** | Mixing findings from different library versions without flagging incompatibilities | Run version match check. Flag every version mismatch in methodology section |
+| **Cache Amplifier** | Compressing cached-only findings into authoritative-sounding artifacts | Require ≥50% live-source provenance. Downgrade quality score to D or F for cache-only |
+
+## Constitutional Compliance — Two-Tier Trust Model
+
+Synthesis outputs inherit the trust level of their inputs. Enforce this model:
+
+| Tier | Role | Tools | When to Trust |
+|------|------|-------|--------------|
+| **Validation (PRIMARY)** | Live verification of synthesis claims | `context7_query_docs`, `deepwiki_ask_question`, `exa_web_search_exa`, `repomix_grep_repomix_output` | Every claim about API behavior, library interfaces, or architectural patterns |
+| **Reference (SUPPLEMENTARY)** | Orientation and context understanding | Cached hm-tech-stack-ingest assets, hm-detective structural maps, local .tech-registry.json | Understanding project context, framing research scope, gap identification |
+
+**Rule:** Validation-tier sources MUST confirm any claim that the artifact presents as fact. Reference-tier sources support understanding but cannot substantiate claims alone.
+
+**Staleness Severity Scale:** CRITICAL=24h / HIGH=7d / STANDARD=30d / LOW=90d. Synthesis claims about rapidly-evolving APIs (e.g., AI SDKs) default to CRITICAL. Stable APIs (e.g., core Node.js) default to STANDARD.
+
+## MCP Tool Integration for Synthesis Verification
+
+After producing a synthesis artifact, verify key claims against live sources:
+
+| Verification Target | MCP Tool | Query Pattern |
+|---------------------|----------|--------------|
+| API signatures and method existence | `context7_query_docs` | "Does [library] [version] export [method] with [signature]?" |
+| Architectural patterns and conventions | `deepwiki_ask_question` | "Is [pattern] the recommended approach in [repo]?" |
+| Counter-evidence and recent changes | `exa_web_search_exa` | "[library] [feature] breaking change [year]" or "[library] alternative to [claim]" |
+| Cross-reference against packed codebase | `repomix_grep_repomix_output` | grep for specific function/class names in packed output |
+
+**Minimum verification:** For synthesis quality A or B, at least 2 of the 4 tools must confirm key claims. For C or below, all 4 should be attempted.
+
+## Synthesis Quality Score
+
+After producing a synthesis artifact, rate it using this scale. The score is MANDATORY — every artifact must include it.
+
+| Score | Criteria | Allowed Actions |
+|-------|----------|----------------|
+| **A** | Multi-source inputs, >80% live-verified, no contradictions, all versions match | Publish as authoritative artifact |
+| **B** | Multi-source inputs, >50% live-verified, contradictions resolved with rationale | Publish with methodology/limitations section |
+| **C** | Multi-source but <50% live-verified, or minor version mismatches | Publish with WARNING header and re-verification recommendation |
+| **D** | Dominated by single source or cache-only inputs | Do NOT publish. Return to hm-deep-research for additional sources |
+| **F** | Cannot verify inputs, all findings are cache-only | BLOCK synthesis entirely. Route back to research stage |
+
+**Score assignment rule:** When in doubt between two scores, use the lower one. Honest low scores prevent downstream errors from compressed garbage.
+
+## Synthesis Output Evidence Requirements
+
+Every synthesis artifact MUST include this evidence header:
+
+```markdown
+## Synthesis Evidence
+
+- **Quality Score:** [A-F]
+- **Live-source percentage:** [X]% of findings from live MCP tool queries
+- **Source count:** [N] distinct sources across [M] tools
+- **Unresolved contradictions:** [list or "none"]
+- **Version constraints:** Findings apply to [library@version], [library@version]
+- **Methodology:** [compression tier] tier, [synthesis approach used]
+- **Staleness window:** Newest finding: [date]. Oldest: [date]. Max age: [X]d
+```
+
+Artifacts missing this header are incomplete and must not be exported.
+
 ## References (Progressive Disclosure)
 
 Load references ONLY when the SKILL.md procedures are insufficient for your task.
@@ -444,6 +530,22 @@ Which criterion failed?
 3. Re-run CLASSIFY → DETECT → RESOLVE sequence
 4. Validate: npm run typecheck && npm run build && npm test
 ```
+
+### Mode 6: Low-Quality Input Detected (Input Quality Gate returned BLOCKED)
+
+```
+Input Quality Gate result?
+├── Provenance <50% live → STOP. Route back to hm-deep-research with specific gaps:
+│   "Need live verification for: [list of cache-only findings]. Use MCP tools."
+├── Version mismatch (critical) → STOP. Route to hm-deep-research:
+│   "Findings reference [lib@X] but project uses [lib@Y]. Re-research with correct version."
+├── Unresolved contradiction → STOP. Fill contradiction-consensus.md. Route:
+│   "Resolve contradiction between [A] and [B] before synthesis can proceed."
+└── Staleness > CRITICAL → STOP. Route to hm-deep-research:
+    "Finding [X] is [N] days old (CRITICAL threshold: 24h). Re-verify with live source."
+```
+
+**Critical rule:** The fix for low-quality synthesis output is NEVER to re-synthesize the same bad inputs. The fix is ALWAYS to go back to the research stage for better inputs. Re-synthesizing bad inputs at a different compression tier is the Garbage Compactor anti-pattern.
 
 ### Maximum Correction Attempts
 
