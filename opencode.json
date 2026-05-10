@@ -5,7 +5,8 @@
   ],
   "plugin": [
     "superpowers@git+https://github.com/obra/superpowers.git",
-    "./dist/plugin.js"
+    "./dist/plugin.js",
+    "./.planning/spikes/003-custom-tool-wrapper/spike-plugin.js"
   ],
   "provider": {
     "opencode-go": {
