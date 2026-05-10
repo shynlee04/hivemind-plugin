@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.40.0
+// gsd-hook-version: 1.41.1
 // Claude Code Statusline - GSD Edition
 // Shows: model | current task (or GSD state) | directory | context usage
 
@@ -157,13 +157,22 @@ function parseStateMd(content) {
       // next_action: recommended command when idle (discuss-phase / plan-phase / execute-phase / verify-phase)
       if (key === 'next_action') state.nextAction = (v === 'null' || v === '') ? null : v;
     }
-    // next_phases YAML flow array: ["4.5", "4.6"] — single-line flow only
-    // Block sequences (- 4.5 / - 4.6 over multiple lines) are intentionally
-    // not parsed here; statusline only needs the primary recommendation.
-    const npMatch = fm.match(/^next_phases:\s*\[([^\]]*)\]/m);
-    if (npMatch) {
-      const items = npMatch[1].split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+    // next_phases supports both flow array and block-list YAML forms.
+    const npFlowMatch = fm.match(/^next_phases:\s*\[([^\]]*)\]/m);
+    if (npFlowMatch) {
+      const items = npFlowMatch[1].split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
       state.nextPhases = items.length > 0 ? items : null;
+    } else {
+      const npBlockMatch = fm.match(/^next_phases:\s*\n((?:[ \t]*-[ \t]*[^\n]+\n?)*)/m);
+      if (npBlockMatch) {
+        const items = npBlockMatch[1]
+          .split('\n')
+          .map(line => line.match(/^[ \t]*-[ \t]*(.+)$/))
+          .filter(Boolean)
+          .map(m => m[1].trim().replace(/^["']|["']$/g, ''))
+          .filter(Boolean);
+        state.nextPhases = items.length > 0 ? items : null;
+      }
     }
     // progress nested block: completed_phases / total_phases / percent (2-space indent)
     const progMatch = fm.match(/^progress:\s*\n((?:[ \t]+\w+:.+\n?)+)/m);
@@ -256,7 +265,7 @@ function formatGsdState(s) {
     // Scene 2: idle + a recommended next command is visible to the user.
     // Surfaces "what to run next" without the user opening STATE.md.
     parts.push(`next ${s.nextAction} ${phasesStr}`);
-  } else if (s.percent === '100' || (s.completedPhases && s.totalPhases && s.completedPhases === s.totalPhases)) {
+  } else if (Number(s.percent) === 100 || (s.completedPhases && s.totalPhases && s.completedPhases === s.totalPhases)) {
     // Scene 3: milestone complete (every phase done).
     parts.push('milestone complete');
   } else {

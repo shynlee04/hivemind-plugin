@@ -28,9 +28,9 @@ Does not require `/gsd-new-project` — auto-creates `.planning/spikes/` if need
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/spike.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/spike-wrap-up.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/spike.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/spike-wrap-up.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>
@@ -48,8 +48,8 @@ Idea: $ARGUMENTS
 
 <process>
 Parse the first token of $ARGUMENTS:
-- If it is `--wrap-up`: strip the flag, execute the spike-wrap-up workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/spike-wrap-up.md.
-- Otherwise: pass all of $ARGUMENTS as the idea to the spike workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/spike.md end-to-end.
+- If it is `--wrap-up`: strip the flag, execute the spike-wrap-up workflow
+- Otherwise: pass all of $ARGUMENTS as the idea to the spike workflow end-to-end.
 
 Preserve all workflow gates (prior spike check, decomposition, research, risk ordering, observability assessment, verification, MANIFEST updates, commit patterns).
 </process>

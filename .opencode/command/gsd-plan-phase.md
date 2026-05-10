@@ -1,14 +1,13 @@
 ---
 description: Create detailed phase plan (PLAN.md) with verification loop
 argument-hint: "[phase] [--auto] [--research] [--skip-research] [--research-phase <N>] [--view] [--gaps] [--skip-verify] [--prd <file>] [--reviews] [--text] [--tdd] [--mvp]"
-agent: gsd-planner
 tools:
   read: true
   write: true
   bash: true
   glob: true
   grep: true
-  task: true
+  agent: true
   question: true
   webfetch: true
   mcp__context7__*: true
@@ -29,8 +28,8 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/plan-phase.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/plan-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>
@@ -54,6 +53,6 @@ Normalize phase input in step 2 before any directory lookups.
 </context>
 
 <process>
-Execute the plan-phase workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/plan-phase.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (validation, research, planning, verification loop, routing).
 </process>

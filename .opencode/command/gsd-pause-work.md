@@ -1,5 +1,6 @@
 ---
 description: Create context handoff when pausing work mid-phase
+argument-hint: "[--report]"
 tools:
   read: true
   write: true
@@ -18,7 +19,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/pause-work.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/pause-work.md
 </execution_context>
 
 <context>
@@ -26,7 +27,10 @@ State and phase progress are gathered in-workflow with targeted reads.
 </context>
 
 <process>
-**Follow the pause-work workflow** from `@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/pause-work.md`.
+If `--report` is in $ARGUMENTS:
+Read and execute `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/session-report.md` end-to-end.
+
+**Follow the pause-work workflow**.
 
 The workflow handles all logic including:
 1. Phase directory detection

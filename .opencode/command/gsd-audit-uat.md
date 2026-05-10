@@ -11,7 +11,7 @@ Scan all phases for pending, skipped, blocked, and human_needed UAT items. Cross
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/audit-uat.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/audit-uat.md
 </execution_context>
 
 <context>

@@ -12,7 +12,7 @@ Default: `balanced` if not set or config missing.
 
 ## Lookup Table
 
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/model-profiles.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/model-profiles.md
 
 Look up the agent in the table for the resolved profile. Pass the model parameter to Task calls:
 

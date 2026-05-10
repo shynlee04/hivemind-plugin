@@ -8,9 +8,9 @@ This workflow wires Phase 1 (session pipeline) and Phase 2 (profiling engine) in
 Read all files referenced by the invoking prompt's execution_context before starting.
 
 Key references:
-- @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md (display patterns)
-- @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-user-profiler.md (profiler agent definition)
-- @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/user-profiling.md (profiling reference doc)
+- @/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md (display patterns)
+- @/Users/apple/hivemind-plugin-private/.opencode/agents/gsd-user-profiler.md (profiler agent definition)
+- @/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/user-profiling.md (profiling reference doc)
 </required_reading>
 
 <process>
@@ -24,7 +24,7 @@ Parse flags from $ARGUMENTS:
 Check for existing profile:
 
 ```bash
-PROFILE_PATH="/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md"
 [ -f "$PROFILE_PATH" ] && echo "EXISTS" || echo "NOT_FOUND"
 ```
 
@@ -48,7 +48,7 @@ If "Cancel": Display "No changes made." and exit.
 
 Backup existing profile:
 ```bash
-cp "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md" "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/USER-PROFILE.backup.md"
+cp "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md" "/Users/apple/hivemind-plugin-private/.opencode/USER-PROFILE.backup.md"
 ```
 
 Display: "Re-analyzing your sessions to update your profile."
@@ -92,7 +92,7 @@ Your recent Claude Code sessions, looking for patterns in these
 
 ✓ Reads session files locally (read-only, nothing modified)
 ✓ Analyzes message patterns (not content meaning)
-✓ Stores profile at /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md
+✓ Stores profile at /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md
 ✗ Nothing is sent to external services
 ✗ Sensitive content (API keys, passwords) is automatically excluded
 ```
@@ -163,13 +163,13 @@ Display: "◆ Analyzing patterns..."
 
 Use the Task tool to spawn the `gsd-user-profiler` agent. Provide it with:
 - The sampled JSONL file path from profile-sample output
-- The user-profiling reference doc at `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/user-profiling.md`
+- The user-profiling reference doc at `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/user-profiling.md`
 
 The agent prompt should follow this structure:
 ```
 Read the profiling reference document and the sampled session messages, then analyze the developer's behavioral patterns across all 8 dimensions.
 
-Reference: @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/user-profiling.md
+Reference: @/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/user-profiling.md
 Session data: @{temp_dir}/profile-sample.jsonl
 
 Analyze these messages and return your analysis in the <analysis> JSON format specified in the reference document.
@@ -274,7 +274,7 @@ Display: "◆ Writing profile..."
 gsd-sdk query write-profile --input "$ANALYSIS_PATH" --json
 ```
 
-Display: "✓ Profile written to /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md"
+Display: "✓ Profile written to /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md"
 
 ---
 
@@ -337,9 +337,9 @@ Use question with multiSelect:
 - options (ALL pre-selected by default):
   - "/gsd-dev-preferences command file" -- "Load your preferences in any session"
   - "AGENTS.md profile section" -- "Add profile to this project's AGENTS.md"
-  - "Global AGENTS.md" -- "Add profile to /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/AGENTS.md for all projects"
+  - "Global AGENTS.md" -- "Add profile to /Users/apple/hivemind-plugin-private/.opencode/AGENTS.md for all projects"
 
-**If no artifacts selected:** Display "No artifacts generated. Your profile is saved at /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md" and jump to step 10.
+**If no artifacts selected:** Display "No artifacts generated. Your profile is saved at /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md" and jump to step 10.
 
 ---
 
@@ -353,7 +353,7 @@ Generate selected artifacts sequentially (file I/O is fast, no benefit from para
 gsd-sdk query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
 ```
 
-Display: "✓ Generated /gsd-dev-preferences at /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/skills/gsd-dev-preferences/SKILL.md"
+Display: "✓ Generated /gsd-dev-preferences at /Users/apple/hivemind-plugin-private/.opencode/skills/gsd-dev-preferences/SKILL.md"
 
 **For AGENTS.md profile section (if selected):**
 
@@ -369,7 +369,7 @@ Display: "✓ Added profile section to AGENTS.md"
 gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
 ```
 
-Display: "✓ Added profile section to /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/AGENTS.md"
+Display: "✓ Added profile section to /Users/apple/hivemind-plugin-private/.opencode/AGENTS.md"
 
 **Error handling:** If any `gsd-sdk query` or gsd-tools.cjs call fails, display the error message and use question to offer "Retry" or "Skip this artifact". On retry, re-run the command. On skip, continue to next artifact.
 
@@ -383,7 +383,7 @@ Read both old backup and new analysis to compare dimension ratings/confidence.
 
 Read the backed-up profile:
 ```bash
-BACKUP_PATH="/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/USER-PROFILE.backup.md"
+BACKUP_PATH="/Users/apple/hivemind-plugin-private/.opencode/USER-PROFILE.backup.md"
 ```
 
 Compare each dimension's rating and confidence between old and new. Display diff table showing only changed dimensions:
@@ -406,15 +406,15 @@ If nothing changed: Display "No changes detected -- your profile is already up t
  GSD > PROFILE COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Your profile:    /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md
+Your profile:    /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md
 ```
 
 Then list paths for each generated artifact:
 ```
 Artifacts:
-  ✓ /gsd-dev-preferences   /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/skills/gsd-dev-preferences/SKILL.md
+  ✓ /gsd-dev-preferences   /Users/apple/hivemind-plugin-private/.opencode/skills/gsd-dev-preferences/SKILL.md
   ✓ AGENTS.md section       ./AGENTS.md
-  ✓ Global AGENTS.md        /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/AGENTS.md
+  ✓ Global AGENTS.md        /Users/apple/hivemind-plugin-private/.opencode/AGENTS.md
 ```
 
 (Only show artifacts that were actually generated.)

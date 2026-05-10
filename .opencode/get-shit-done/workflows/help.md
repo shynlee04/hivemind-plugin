@@ -64,12 +64,13 @@ Usage: `/gsd-map-codebase`
 
 ### Phase Planning
 
-**`/gsd-discuss-phase <number> [--chain | --analyze | --power] [--batch[=N]]`**
+**`/gsd-discuss-phase <number> [--chain | --analyze | --power | --assumptions] [--batch[=N]]`**
 Help articulate your vision for a phase before planning.
 
 - `--chain` — chained-prompt discuss flow
 - `--analyze` — deep assumption analysis pass
 - `--power` — power-user mode with extended question set
+- `--assumptions` — surface the agent's implementation assumptions about the phase without an interactive session
 
 - Captures how you imagine this phase working
 - Creates CONTEXT.md with your vision, essentials, and boundaries
@@ -79,6 +80,17 @@ Help articulate your vision for a phase before planning.
 Usage: `/gsd-discuss-phase 2`
 Usage: `/gsd-discuss-phase 2 --batch`
 Usage: `/gsd-discuss-phase 2 --batch=3`
+
+**`/gsd-mvp-phase <number> [--force]`**
+Plan a phase as a vertical MVP slice — three structured user-story prompts (`As a / I want to / So that`), SPIDR splitting if the story is too large, then delegates to `/gsd-plan-phase` with MVP mode active.
+
+- Mutates the phase's ROADMAP entry: writes `**Mode:** mvp` + replaces `**Goal:**` with the assembled user story
+- Validates the story via `gsd-sdk query user-story.validate` (canonical regex `/^As a .+, I want to .+, so that .+\.$/`)
+- `--force` overrides the status guard (required if the phase is already `in_progress` or `completed`)
+- Pairs with the new-project mode prompt (Vertical MVP vs Horizontal Layers)
+
+Usage: `/gsd-mvp-phase 1`
+Usage: `/gsd-mvp-phase 2 --force`
 
 **`/gsd-plan-phase <number> [--research] [--skip-research] [--research-phase <N>] [--view] [--gaps] [--skip-verify] [--tdd] [--mvp]`**
 Create detailed execution plan for a specific phase.
@@ -271,9 +283,10 @@ Resume work from previous session with full context restoration.
 
 Usage: `/gsd-resume-work`
 
-**`/gsd-pause-work`**
+**`/gsd-pause-work [--report]`**
 Create context handoff when pausing work mid-phase.
 
+- `--report` — generate a post-session summary in `.planning/reports/` capturing commits, file changes, and phase progress
 - Creates .continue-here file with current state
 - Updates STATE.md session continuity section
 - Captures in-progress work context
@@ -364,7 +377,7 @@ Usage: `/gsd-capture Add auth token refresh`
 **`/gsd-capture --note <text>`**
 Zero-friction note capture — one command, instant save, no questions.
 
-- Saves timestamped note to `.planning/notes/` (or `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/notes/` globally)
+- Saves timestamped note to `.planning/notes/` (or `/Users/apple/hivemind-plugin-private/.opencode/notes/` globally)
 - Three subcommands: append (default), list, promote
 - Promote converts a note into a structured todo
 - Works without a project (falls back to global scope)
@@ -543,7 +556,7 @@ The commands above cover the most common day-to-day flows. Every command listed 
 - **`/gsd-spec-phase <phase> [--auto] [--text]`** — Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.
 - **`/gsd-ai-integration-phase [phase]`** — Generate an AI-SPEC.md design contract for phases that involve building AI systems.
 - **`/gsd-ui-phase [phase]`** — Generate UI design contract (UI-SPEC.md) for frontend phases.
-- **`/gsd-import --from <filepath>`** — Ingest external plans with conflict detection against project decisions before writing anything.
+- **`/gsd-import --from <filepath> | --from-gsd2`** — Ingest external plans with conflict detection, or reverse-migrate a GSD-2 (`.gsd/`) project back to GSD v1 (`.planning/`) format.
 - **`/gsd-ingest-docs [path] [--mode new|merge] [--manifest <file>] [--resolve auto|interactive]`** — Bootstrap or merge a `.planning/` setup from existing ADRs, PRDs, SPECs, and docs in a repo.
 
 ### Planning & Execution
@@ -579,7 +592,7 @@ The commands above cover the most common day-to-day flows. Every command listed 
 
 ### Workflow & Orchestration
 
-- **`/gsd-manager`** — Interactive command center for managing multiple phases from one terminal.
+- **`/gsd-manager [--analyze-deps]`** — Interactive command center for managing multiple phases from one terminal. `--analyze-deps` scans ROADMAP phases for dependency relationships before parallel execution.
 - **`/gsd-workspace [--new | --list | --remove] [name]`** — Manage GSD workspaces: create, list, or remove isolated workspace environments.
 - **`/gsd-workstreams`** — Manage parallel workstreams: list, create, switch, status, progress, complete, and resume.
 - **`/gsd-review-backlog`** — Review and promote backlog items to active milestone.

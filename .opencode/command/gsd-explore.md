@@ -6,7 +6,7 @@ tools:
   bash: true
   grep: true
   glob: true
-  task: true
+  agent: true
   question: true
 ---
 <objective>
@@ -18,9 +18,9 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/explore.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/explore.md
 </execution_context>
 
 <process>
-Execute the explore workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/explore.md end-to-end.
+Execute end-to-end.
 </process>

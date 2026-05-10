@@ -19,9 +19,9 @@ Three modes:
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/undo.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gate-prompts.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/undo.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gate-prompts.md
 </execution_context>
 
 <context>
@@ -29,5 +29,5 @@ $ARGUMENTS
 </context>
 
 <process>
-Execute the undo workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/undo.md end-to-end.
+Execute end-to-end.
 </process>

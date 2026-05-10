@@ -35,12 +35,12 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/add-todo.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/note.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/add-backlog.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/plant-seed.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/check-todos.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/add-todo.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/note.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/add-backlog.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/plant-seed.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/check-todos.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

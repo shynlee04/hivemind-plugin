@@ -8,7 +8,7 @@ tools:
   glob: true
   grep: true
   question: true
-  task: true
+  agent: true
 ---
 
 <objective>
@@ -18,8 +18,8 @@ Routes to the profile-user workflow which orchestrates the full flow: consent ga
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/profile-user.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/profile-user.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

@@ -9,7 +9,7 @@ A completed phase has been submitted for goal-backward verification. Verify that
 
 Goal-backward verification. Start from what the phase SHOULD deliver, verify it actually exists and works in the codebase.
 
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/mandatory-initial-read.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/mandatory-initial-read.md
 
 **Critical mindset:** Do NOT trust SUMMARY.md claims. SUMMARYs document what the agent SAID it did. You verify what ACTUALLY exists in the code. These often differ.
 
@@ -32,8 +32,8 @@ Every truth must resolve to VERIFIED, FAILED (BLOCKER), or UNCERTAIN (WARNING wi
 </adversarial_stance>
 
 <required_reading>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/verification-overrides.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gates.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/verification-overrides.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gates.md
 </required_reading>
 
 This agent implements the **Escalation Gate** pattern (surfaces unresolvable gaps to the developer for decision).
@@ -42,7 +42,7 @@ Before verifying, discover project context:
 
 **Project instructions:** Read `./AGENTS.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
-**Project skills:** @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **verification**.
 - Apply skill rules when scanning for anti-patterns and verifying quality.
 </project_context>
@@ -64,10 +64,10 @@ Then verify each level against the actual codebase.
 <verification_process>
 
 At verification decision points, apply structured reasoning:
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/thinking-models-verification.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/thinking-models-verification.md
 
 At verification decision points, reference calibration examples:
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/few-shot-examples/verifier.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/few-shot-examples/verifier.md
 
 ## Step 0: Check for Previous Verification
 
@@ -577,6 +577,33 @@ Deferred items are informational only — they do not require closure plans.
 **Group related gaps by concern** — if multiple truths fail from the same root cause, note this to help the planner create focused plans.
 
 </verification_process>
+
+<mvp_mode_verification>
+
+## MVP Mode Verification
+
+**When the phase under verification has `mode: mvp` in ROADMAP.md (resolved by the verify-work workflow):** Apply the goal-backward methodology, narrowed to the phase's user-story goal. Required reading: `@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/verify-mvp-mode.md`.
+
+**Core narrowing rule:** Goal-backward verification normally checks that the phase goal is observably true in the codebase. Under MVP mode, the phase goal IS a user story ("As a [user role], I want to [capability], so that [outcome]."). Verify the `[outcome]` clause is observably true — that is the success condition.
+
+**VERIFICATION.md output structure under MVP mode:**
+
+1. Top-level "User Flow Coverage" table: each step of the user story → expected → evidence in codebase → status. (Format defined in `references/verify-mvp-mode.md`.)
+2. Standard technical-check sections (API verification, error handling, etc.) follow below — only if the user flow coverage is complete.
+
+**User Story format guard:** Apply via the centralized verb instead of inlining the regex:
+
+```bash
+USER_STORY_VALID=$(gsd-sdk query user-story.validate --story "$PHASE_GOAL" --pick valid)
+```
+
+If `valid != true`, refuse to verify. Surface the discrepancy and ask the user to run `/gsd mvp-phase ${PHASE}` to set a proper User Story goal. The verb owns the canonical regex `/^As a .+, I want to .+, so that .+\.$/` and surfaces per-error guidance in `errors[]` plus slot extractions in `slots`. Do NOT attempt to verify against a non-User Story goal under MVP mode — the User Flow Coverage section would be low-quality.
+
+**Mode is all-or-nothing per phase** (PRD decision Q1, inherited from Phase 1). The MVP Mode Verification rules apply to the whole phase or not at all.
+
+**Compatibility with existing verifier behavior:** When the phase mode is null/absent, this section is dormant. The existing goal-backward verification methodology is unchanged for non-MVP phases.
+
+</mvp_mode_verification>
 
 <output>
 

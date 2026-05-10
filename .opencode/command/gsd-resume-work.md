@@ -21,19 +21,9 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/resume-project.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/resume-project.md
 </execution_context>
 
 <process>
-**Follow the resume-project workflow** from `@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/resume-project.md`.
-
-The workflow handles all resumption logic including:
-
-1. Project existence verification
-2. STATE.md loading or reconstruction
-3. Checkpoint and incomplete work detection
-4. Visual status presentation
-5. Context-aware option offering (checks CONTEXT.md before suggesting plan vs discuss)
-6. Routing to appropriate next command
-7. Session continuity updates
-   </process>
+Execute end-to-end.
+</process>

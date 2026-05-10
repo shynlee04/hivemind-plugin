@@ -600,7 +600,7 @@ Some things can't be verified programmatically. Flag these for human testing:
 
 For automation-first checkpoint patterns, server lifecycle management, CLI installation handling, and error recovery protocols, see:
 
-**@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/checkpoints.md** → `<automation_reference>` section
+**@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/checkpoints.md** → `<automation_reference>` section
 
 Key principles:
 - the agent sets up verification environment BEFORE presenting checkpoints

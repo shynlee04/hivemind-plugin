@@ -12,7 +12,7 @@ tools:
   bash: true
   glob: true
   grep: true
-  task: true
+  agent: true
   question: true
 ---
 <objective>
@@ -24,7 +24,7 @@ Output: Test files committed with message `test(phase-{N}): add unit and E2E tes
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/add-tests.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/add-tests.md
 </execution_context>
 
 <context>
@@ -35,6 +35,6 @@ Phase: $ARGUMENTS
 </context>
 
 <process>
-Execute the add-tests workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/add-tests.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (classification approval, test plan approval, RED-GREEN verification, gap reporting).
 </process>

@@ -5,7 +5,7 @@ tools:
   read: true
   bash: true
   write: true
-  task: true
+  agent: true
   question: true
 ---
 <runtime_note>
@@ -32,14 +32,14 @@ Initialize a new project through unified flow: questioning → research (optiona
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/new-project.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/questioning.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/project.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/requirements.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/new-project.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/questioning.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/project.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/requirements.md
 </execution_context>
 
 <process>
-Execute the new-project workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/new-project.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (validation, approvals, commits, routing).
 </process>

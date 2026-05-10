@@ -9,7 +9,7 @@ tools:
   glob: true
   grep: true
   question: true
-  task: true
+  agent: true
 ---
 
 <objective>
@@ -26,10 +26,10 @@ Auto-synthesizes most conflicts using the precedence rule `ADR > SPEC > PRD > DO
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/ingest-docs.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gate-prompts.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/doc-conflict-engine.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/ingest-docs.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gate-prompts.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/doc-conflict-engine.md
 </execution_context>
 
 <context>

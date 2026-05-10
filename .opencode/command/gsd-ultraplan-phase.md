@@ -19,8 +19,8 @@ Requirements: Claude Code v2.1.91+, claude.ai account, GitHub repository.
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/ultraplan-phase.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/ultraplan-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

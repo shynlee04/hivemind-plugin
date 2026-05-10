@@ -517,7 +517,7 @@ Smart discuss is an autonomous-optimized variant of `gsd-discuss-phase`. It prop
 
 **Inputs:** `PHASE_NUM` from execute_phase.
 
-Read and execute: `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/autonomous-smart-discuss.md`
+Read and execute: `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/autonomous-smart-discuss.md`
 
 </step>
 

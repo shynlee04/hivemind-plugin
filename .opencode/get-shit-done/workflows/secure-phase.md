@@ -3,7 +3,7 @@ Verify threat mitigations for a completed phase. Confirm PLAN.md threat register
 </purpose>
 
 <required_reading>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -58,6 +58,8 @@ Read SUMMARY.md — extract `## Threat Flags` entries.
 
 Per threat: `{ threat_id, category, component, disposition, mitigation_pattern, files_to_check }`
 
+Also set `register_authored_at_plan_time: true` if **at least one** PLAN file contained a parseable `<threat_model>` block; `false` if no PLAN files had any `<threat_model>` block (legacy phase authored before formal threat modelling was standard).
+
 ## 3. Threat Classification
 
 Classify each threat:
@@ -69,7 +71,10 @@ Classify each threat:
 
 Build: `{ threat_id, category, component, disposition, status, evidence }`
 
-If `threats_open: 0` → skip to Step 6 directly.
+**Short-circuit rule:**
+- If `threats_open: 0 AND register_authored_at_plan_time: true` → skip to Step 6 directly. All plan-time threats are verified CLOSED.
+- If `threats_open: 0 AND register_authored_at_plan_time: false` → **do NOT skip**. Empty-by-no-planning must not rubber-stamp a clean SECURITY.md. Proceed to Step 5 in **retroactive-STRIDE mode** — the auditor builds a register from implementation files first, then verifies mitigations.
+- If `threats_open > 0` → proceed to Step 4 (present threat plan to user).
 
 ## 4. Present Threat Plan
 
@@ -82,9 +87,14 @@ Call question with threat table and options:
 
 ## 5. Spawn gsd-security-auditor
 
+**Auditor constraint — varies by register origin:**
+
+- `register_authored_at_plan_time: true` — **Verify mitigations exist** — do not scan for new threats. The register is complete; verify each threat's mitigation is present in the implementation.
+- `register_authored_at_plan_time: false` (retroactive-STRIDE mode) — **Retroactive-STRIDE: build a STRIDE register from implementation files first, then verify mitigations.** The phase was authored before formal threat modelling; the auditor must construct the register from scratch before verifying.
+
 ```
-Task(
-  prompt="Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-security-auditor.md for instructions.\n\n" +
+Agent(
+  prompt="Read /Users/apple/hivemind-plugin-private/.opencode/agents/gsd-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
@@ -96,7 +106,7 @@ Task(
 )
 ```
 
-> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 Handle return:
 - `## SECURED` → record closures → Step 6
@@ -106,7 +116,7 @@ Handle return:
 ## 6. Write/Update SECURITY.md
 
 **State B (create):**
-1. Read template from `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/SECURITY.md`
+1. Read template from `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/SECURITY.md`
 2. Fill: frontmatter, threat register, accepted risks, audit trail
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-SECURITY.md`
 
@@ -158,7 +168,8 @@ Display `/clear` reminder.
 - [ ] Input state detected (A/B/C) — state C exits cleanly
 - [ ] PLAN.md threat model parsed, register built
 - [ ] SUMMARY.md threat flags incorporated
-- [ ] threats_open: 0 → skip directly to Step 6
+- [ ] threats_open: 0 AND register_authored_at_plan_time: true → skip directly to Step 6
+- [ ] threats_open: 0 AND register_authored_at_plan_time: false → retroactive-STRIDE mode (Step 5), not skipped
 - [ ] User gate with threat table presented
 - [ ] Auditor spawned with complete context
 - [ ] All three return formats (SECURED/OPEN_THREATS/ESCALATE) handled

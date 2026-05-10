@@ -236,7 +236,7 @@ keeps raw file contents out of the main context window, protecting token budget.
 **Resolve calibration tier (if USER-PROFILE.md exists):**
 
 ```bash
-PROFILE_PATH="/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md"
 ```
 
 If file exists at PROFILE_PATH:
@@ -254,7 +254,7 @@ If no USER-PROFILE.md: calibration_tier = "standard"
 **Spawn Explore subagent:**
 
 ```
-Task(subagent_type="gsd-assumptions-analyzer", prompt="""
+Agent(subagent_type="gsd-assumptions-analyzer", prompt="""
 Analyze the codebase for Phase {PHASE}: {phase_name}.
 
 Phase goal: {roadmap_description}
@@ -294,7 +294,7 @@ ${AGENT_SKILLS_ANALYZER}
 """)
 ```
 
-> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, analyze the codebase, or process assumptions while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, analyze the codebase, or process assumptions while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 Parse the subagent's response. Extract:
 - `assumptions[]` — each with area, statement, evidence, consequence, confidence
@@ -312,7 +312,7 @@ Parse the subagent's response. Extract:
 If research topics were flagged, spawn a general-purpose research agent:
 
 ```
-Task(subagent_type="general", prompt="""
+Agent(subagent_type="general", prompt="""
 Research the following topics for Phase {PHASE}: {phase_name}.
 
 Topics needing research:
@@ -327,7 +327,7 @@ Use Context7 (resolve-library-id then query-docs) for library-specific questions
 Use WebSearch for ecosystem/best-practice questions.
 """)
 
-> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not independently research any of these topics while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work and wasted context. Only resume when the subagent result is available.
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not independently research any of these topics while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work and wasted context. Only resume when the subagent result is available.
 ```
 
 Merge findings back into assumptions:

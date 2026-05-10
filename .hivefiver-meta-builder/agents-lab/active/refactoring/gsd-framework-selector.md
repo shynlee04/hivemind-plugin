@@ -10,7 +10,7 @@ Run a ≤6-question interview, score frameworks, return a ranked recommendation 
 </role>
 
 <required_reading>
-Read `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-frameworks.md` before asking questions. This is your decision matrix.
+Read `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-frameworks.md` before asking questions. This is your decision matrix.
 </required_reading>
 
 <project_context>

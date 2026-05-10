@@ -5,9 +5,9 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 </purpose>
 
 <required_reading>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/domain-probes.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gate-prompts.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/universal-anti-patterns.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/domain-probes.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gate-prompts.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/universal-anti-patterns.md
 </required_reading>
 
 <progressive_disclosure>
@@ -129,7 +129,7 @@ Exit workflow.
 
 ```bash
 # Detect advisor mode (file-existence guard — no Read until needed)
-if [ -f "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md" ]; then
+if [ -f "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md" ]; then
   ADVISOR_MODE=true
 else
   ADVISOR_MODE=false
@@ -244,8 +244,8 @@ For each CONTEXT.md read: extract `<decisions>` (locked preferences), `<specific
 
 **Spike/sketch findings:** Check for project-local skills:
 ```bash
-SPIKE_FINDINGS=$(ls ./.opencode/skills/spike-findings-*/SKILL.md 2>/dev/null | head -1)
-SKETCH_FINDINGS=$(ls ./.opencode/skills/sketch-findings-*/SKILL.md 2>/dev/null | head -1)
+SPIKE_FINDINGS=$(ls ./.opencode/skills/spike-findings-*/SKILL.md 2>/dev/null | head -1 || true)
+SKETCH_FINDINGS=$(ls ./.opencode/skills/sketch-findings-*/SKILL.md 2>/dev/null | head -1 || true)
 RAW_SPIKES=$(ls .planning/spikes/MANIFEST.md 2>/dev/null)
 RAW_SKETCHES=$(ls .planning/sketches/MANIFEST.md 2>/dev/null)
 ```
@@ -280,7 +280,7 @@ Parse JSON for: `todo_count`, `matches[]` (each with `file`, `title`, `area`, `s
 <step name="scout_codebase">
 Lightweight scan of existing code to inform gray area identification (~10% context).
 
-Read `@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/scout-codebase.md` — it contains the phase-type→map selection table, single-read rule, no-maps fallback, and `<codebase_context>` output schema. Then execute:
+Read `@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/scout-codebase.md` — it contains the phase-type→map selection table, single-read rule, no-maps fallback, and `<codebase_context>` output schema. Then execute:
 1. `ls .planning/codebase/*.md` to find existing maps
 2. Select 2–3 maps via the reference's table; or grep fallback if none exist
 3. Build internal `<codebase_context>` per the reference's output schema

@@ -1,25 +1,15 @@
 {
-  "backed_up_at": "2026-04-20T23:13:52.394Z",
-  "from_version": "1.34.2",
-  "from_manifest_timestamp": "2026-04-08T12:44:30.398Z",
+  "backed_up_at": "2026-05-10T20:26:46.048Z",
+  "from_version": "1.40.0",
+  "from_manifest_timestamp": "2026-05-05T20:01:02.637Z",
   "files": [
-    "agents/gsd-code-fixer.md",
-    "agents/gsd-debugger.md",
-    "agents/gsd-executor.md",
-    "agents/gsd-phase-researcher.md",
-    "agents/gsd-plan-checker.md",
-    "agents/gsd-planner.md",
-    "agents/gsd-roadmapper.md",
-    "agents/gsd-verifier.md"
+    "get-shit-done/references/questioning.md",
+    "get-shit-done/workflows/map-codebase.md",
+    "agents/gsd-executor.md"
   ],
   "pristine_hashes": {
-    "agents/gsd-code-fixer.md": "dd31dcd60d65dac6352be17defc99d749171d3dd87286422a46a1233ec717d43",
-    "agents/gsd-debugger.md": "cd1d520eeea2222d6533521ffd7047073464d506b0ff3b0a8b17f997f811ec2d",
-    "agents/gsd-executor.md": "514046b6a18cb1203c1b78926c994134f194848e8159226a75d8bf6b2dce1f16",
-    "agents/gsd-phase-researcher.md": "6a80c4ffe3a0ffa7f763e2ae742bae8e159bdabd1b7d84125478cd41c769a938",
-    "agents/gsd-plan-checker.md": "bfa6fb8d151bb3851a3319544285e55c8559e9b8979845a5926d880ffc3113bc",
-    "agents/gsd-planner.md": "40297bb01f08117164d176e7ab8ceb7ee3e3029c78a68412cf289b3cc319a8bb",
-    "agents/gsd-roadmapper.md": "7a52befe88e20e7d67e45d0014ed82b3c24669c3d7761297bbc523e858dd071f",
-    "agents/gsd-verifier.md": "402eed18efad4e97600aa9a6b4fd2cf00bdfa3bb5df1d96cc527ca3b1d9a2f88"
+    "get-shit-done/references/questioning.md": "a083e5e3e16dd8027788cbb673b73927c55861fd82e51e192acfad4c36721bdb",
+    "get-shit-done/workflows/map-codebase.md": "6d63b25fc6486a94a44b145ddc15c30c49c32350288ba9ff9aee6e6501ff6837",
+    "agents/gsd-executor.md": "8f9ef85ec0e0ed4ac0317ed9453d0886fb4ee1e856536a19cad1c7c77966965b"
   }
 }

@@ -8,7 +8,6 @@ tools:
   glob: true
   grep: true
   question: true
-  task: true
   agent: true
 ---
 <objective>
@@ -25,8 +24,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/autonomous.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/autonomous.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -40,6 +39,6 @@ Project context, phase list, and state are resolved inside the workflow using in
 </context>
 
 <process>
-Execute the autonomous workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/autonomous.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (phase discovery, per-phase execution, blocker handling, progress display).
 </process>

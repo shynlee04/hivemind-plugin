@@ -16,9 +16,9 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/pr-branch.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/pr-branch.md
 </execution_context>
 
 <process>
-Execute the pr-branch workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/pr-branch.md end-to-end.
+Execute end-to-end.
 </process>

@@ -2,14 +2,14 @@
 
 > **Lazy-loaded and gated.** The parent `workflows/discuss-phase.md` Reads
 > this file ONLY when `ADVISOR_MODE` is true (i.e., when
-> `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md` exists). Skip the Read
+> `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md` exists). Skip the Read
 > entirely when no profile is present — that's the inverse of the
 > `--advisor` flag from #2174 (don't pay the cost when unused).
 
 ## Activation
 
 ```bash
-PROFILE_PATH="/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md"
 if [ -f "$PROFILE_PATH" ]; then
   ADVISOR_MODE=true
 else
@@ -45,7 +45,7 @@ ADVISOR_MODEL=$(gsd-sdk query resolve-model gsd-advisor-researcher --raw)
 Read USER-PROFILE.md and check for product-owner signals:
 
 ```bash
-PROFILE_CONTENT=$(cat "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/USER-PROFILE.md" 2>/dev/null || true)
+PROFILE_CONTENT=$(cat "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/USER-PROFILE.md" 2>/dev/null || true)
 ```
 
 Set `NON_TECHNICAL_OWNER = true` if ANY of the following are present:
@@ -87,11 +87,11 @@ research agents.
 
 1. Display brief status: `Researching {N} areas...`
 
-2. For EACH user-selected gray area, spawn a `Task()` in parallel:
+2. For EACH user-selected gray area, spawn a `Agent()` in parallel:
 
    ```
-   Task(
-     prompt="First, read @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-advisor-researcher.md for your role and instructions.
+   Agent(
+     prompt="First, read @/Users/apple/hivemind-plugin-private/.opencode/agents/gsd-advisor-researcher.md for your role and instructions.
 
      <gray_area>{area_name}: {area_description from gray area identification}</gray_area>
      <phase_context>{phase_goal and description from ROADMAP.md}</phase_context>
@@ -106,10 +106,10 @@ research agents.
    )
    ```
 
-   All `Task()` calls spawn simultaneously — do NOT wait for one before
+   All `Agent()` calls spawn simultaneously — do NOT wait for one before
    starting the next.
 
-   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all Task() calls above to spawn research agents, do NOT independently research or analyze any of the gray areas while the subagents are active. Wait for all subagents to return before synthesizing results. This prevents duplicate work and wasted context.
+   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all Agent() calls above to spawn research agents, do NOT independently research or analyze any of the gray areas while the subagents are active. Wait for all subagents to return before synthesizing results. This prevents duplicate work and wasted context.
 
 3. After ALL agents return, **synthesize results** before presenting:
 

@@ -42,7 +42,7 @@ Issues without a severity classification are not valid output.
 </adversarial_stance>
 
 <required_reading>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/gates.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gates.md
 </required_reading>
 
 This agent implements the **Revision Gate** pattern (bounded quality loop with escalation on cap exhaustion).
@@ -102,10 +102,10 @@ Same methodology (goal-backward), different timing, different subject matter.
 <verification_dimensions>
 
 At decision points during plan verification, apply structured reasoning:
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/thinking-models-planning.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/thinking-models-planning.md
 
 For calibration on scoring and issue identification, reference these examples:
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/few-shot-examples/plan-checker.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/few-shot-examples/plan-checker.md
 
 ## Dimension 1: Requirement Coverage
 
@@ -654,11 +654,11 @@ Extract from init JSON: `phase_dir`, `phase_number`, `has_plans`, `plan_count`.
 Orchestrator provides CONTEXT.md content in the verification prompt. If provided, parse for locked decisions, discretion areas, deferred ideas.
 
 ```bash
-node ./node_modules/@gsd-build/sdk/dist/cli.js query phase.list-plans "$phase_number"
+gsd-sdk query phase.list-plans "$phase_number"
 # Research / brief artifacts (deterministic listing)
-node ./node_modules/@gsd-build/sdk/dist/cli.js query phase.list-artifacts "$phase_number" --type research
-node ./node_modules/@gsd-build/sdk/dist/cli.js query roadmap.get-phase "$phase_number"
-node ./node_modules/@gsd-build/sdk/dist/cli.js query phase.list-artifacts "$phase_number" --type summary
+gsd-sdk query phase.list-artifacts "$phase_number" --type research
+gsd-sdk query roadmap.get-phase "$phase_number"
+gsd-sdk query phase.list-artifacts "$phase_number" --type summary
 ```
 
 **Extract:** Phase goal, requirements (decompose goal), locked decisions, deferred ideas.
@@ -746,7 +746,7 @@ The `tasks` array in the result shows each task's completeness:
 
 **For manual validation of specificity** (`verify.plan-structure` checks structure, not content quality), use structured extraction instead of grepping raw XML:
 ```bash
-node ./node_modules/@gsd-build/sdk/dist/cli.js query plan.task-structure "$PLAN_PATH"
+gsd-sdk query plan.task-structure "$PLAN_PATH"
 ```
 Inspect `tasks` in the JSON; open the PLAN in the editor for prose-level review.
 
@@ -773,8 +773,8 @@ Missing: No mention of fetch/API call → Issue: Key link not planned
 ## Step 8: Assess Scope
 
 ```bash
-node ./node_modules/@gsd-build/sdk/dist/cli.js query plan.task-structure "$PHASE_DIR/$PHASE-01-PLAN.md"
-node ./node_modules/@gsd-build/sdk/dist/cli.js query frontmatter.get "$PHASE_DIR/$PHASE-01-PLAN.md" files_modified
+gsd-sdk query plan.task-structure "$PHASE_DIR/$PHASE-01-PLAN.md"
+gsd-sdk query frontmatter.get "$PHASE_DIR/$PHASE-01-PLAN.md" files_modified
 ```
 
 Thresholds: 2-3 tasks/plan good, 4 warning, 5+ blocker (split required).

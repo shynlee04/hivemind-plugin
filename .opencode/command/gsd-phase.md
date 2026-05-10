@@ -30,10 +30,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/add-phase.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/insert-phase.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/remove-phase.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/edit-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/add-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/insert-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/remove-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/edit-phase.md
 </execution_context>
 
 <context>

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.40.0
+// gsd-hook-version: 1.41.1
 // SessionStart banner that surfaces GSD update availability when GSD's
 // statusline isn't installed. Reads the cache that
 // gsd-check-update-worker.js writes to ~/.cache/gsd/gsd-update-check.json.

@@ -367,11 +367,11 @@ This annotation is consumed by downstream workflows (`new-project`, `progress`) 
 | 2. Name | 0/2 | Not started | - |
 ```
 
-Reference full template: `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/roadmap.md`
+Reference full template: `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/roadmap.md`
 
 ## STATE.md Structure
 
-Use template from `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/state.md`.
+Use template from `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/state.md`.
 
 Key sections:
 - Project Reference (core value, current focus)
@@ -553,7 +553,7 @@ When files are written and returning to orchestrator:
 
 ### Files Ready for Review
 
-User can review actual files in the editor or via SDK queries (e.g. `node ./node_modules/@gsd-build/sdk/dist/cli.js query roadmap.analyze` and `query state.load`) instead of ad-hoc shell `cat`.
+User can review actual files in the editor or via SDK queries (e.g. `gsd-sdk query roadmap.analyze` and `gsd-sdk query state.load`) instead of ad-hoc shell `cat`.
 
 {If gaps found during creation:}
 

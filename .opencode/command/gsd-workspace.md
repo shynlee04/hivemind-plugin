@@ -28,10 +28,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/new-workspace.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/list-workspaces.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/remove-workspace.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/new-workspace.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/list-workspaces.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/remove-workspace.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

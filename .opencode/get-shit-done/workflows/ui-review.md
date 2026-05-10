@@ -3,7 +3,7 @@ Retroactive 6-pillar visual audit of implemented frontend code. Standalone comma
 </purpose>
 
 <required_reading>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -73,7 +73,7 @@ Build file list for auditor:
 Build prompt:
 
 ```markdown
-Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-ui-auditor.md for instructions.
+Read /Users/apple/hivemind-plugin-private/.opencode/agents/gsd-ui-auditor.md for instructions.
 
 <objective>
 Conduct 6-pillar visual audit of Phase {phase_number}: {phase_name}
@@ -99,7 +99,7 @@ padded_phase: {padded_phase}
 Omit null file paths.
 
 ```
-Task(
+Agent(
   prompt=ui_audit_prompt,
   subagent_type="gsd-ui-auditor",
   model="{UI_AUDITOR_MODEL}",
@@ -107,7 +107,7 @@ Task(
 )
 ```
 
-> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 ## 4. Handle Return
 

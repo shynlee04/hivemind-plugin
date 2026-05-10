@@ -42,7 +42,7 @@ If PLAN.md or SUMMARY.md files are not found or missing, exit with error: "Requi
 Track which optional artifacts are missing for the `missing_artifacts` frontmatter field.
 </step>
 
-<step name="extract_learnings">
+<step name="extract-learnings">
 Analyze all collected artifacts and extract learnings into 4 categories:
 
 ### 1. Decisions

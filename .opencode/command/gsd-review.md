@@ -18,7 +18,7 @@ planning via /gsd-plan-phase --reviews.
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/review.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/review.md
 </execution_context>
 
 <context>
@@ -35,5 +35,5 @@ Phase number: extracted from $ARGUMENTS (required)
 </context>
 
 <process>
-Execute the review workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/review.md end-to-end.
+Execute end-to-end.
 </process>

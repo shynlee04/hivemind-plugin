@@ -7,7 +7,7 @@ tools:
   bash: true
   glob: true
   grep: true
-  task: true
+  agent: true
   webfetch: true
   websearch: true
   question: true
@@ -20,9 +20,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/ai-integration-phase.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-frameworks.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-evals.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/ai-integration-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-frameworks.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>
@@ -30,6 +30,6 @@ Phase number: $ARGUMENTS — optional, auto-detects next unplanned phase if omit
 </context>
 
 <process>
-Execute @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/ai-integration-phase.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates.
 </process>

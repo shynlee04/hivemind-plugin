@@ -14,6 +14,30 @@ const { maskIfSecret } = require('./secrets.cjs');
 // same in markdown but differ textually.
 const REQUIREMENTS_HEADER_RE = /^\*\*Requirements:?\*\*[^\S\n]*:?[^\S\n]*([^\n]*)$/m;
 
+function listPhaseSummaryFiles(phaseDir) {
+  const phaseFiles = fs.readdirSync(phaseDir);
+  const rootSummaries = phaseFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
+  const plansDir = path.join(phaseDir, 'plans');
+  let nestedSummaries = [];
+  if (fs.existsSync(plansDir)) {
+    const files = fs.readdirSync(plansDir);
+    nestedSummaries = files.filter(f => /^SUMMARY-\d+.*\.md$/i.test(f));
+  }
+  return rootSummaries.concat(nestedSummaries);
+}
+
+function listPhasePlanFiles(phaseDir) {
+  const phaseFiles = fs.readdirSync(phaseDir);
+  const rootPlans = phaseFiles.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md');
+  const plansDir = path.join(phaseDir, 'plans');
+  let nestedPlans = [];
+  if (fs.existsSync(plansDir)) {
+    const files = fs.readdirSync(plansDir);
+    nestedPlans = files.filter(f => /^PLAN-\d+.*\.md$/i.test(f));
+  }
+  return rootPlans.concat(nestedPlans);
+}
+
 function getLatestCompletedMilestone(cwd) {
   const milestonesPath = path.join(planningRoot(cwd), 'MILESTONES.md');
   if (!fs.existsSync(milestonesPath)) return null;
@@ -901,8 +925,7 @@ function cmdInitMilestoneOp(cwd, raw) {
       const dirName = diskPhaseDirs.get(canonicalizePhase(num));
       if (!dirName) continue;
       try {
-        const phaseFiles = fs.readdirSync(path.join(phasesDir, dirName));
-        const hasSummary = phaseFiles.some(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
+        const hasSummary = listPhaseSummaryFiles(path.join(phasesDir, dirName)).length > 0;
         if (hasSummary) completedPhases++;
       } catch { /* intentionally empty */ }
     }
@@ -914,8 +937,7 @@ function cmdInitMilestoneOp(cwd, raw) {
       phaseCount = dirs.length;
       for (const dir of dirs) {
         try {
-          const phaseFiles = fs.readdirSync(path.join(phasesDir, dir));
-          const hasSummary = phaseFiles.some(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
+          const hasSummary = listPhaseSummaryFiles(path.join(phasesDir, dir)).length > 0;
           if (hasSummary) completedPhases++;
         } catch { /* intentionally empty */ }
       }
@@ -1072,8 +1094,8 @@ function cmdInitManager(cwd, raw) {
       if (dirMatch) {
         const fullDir = path.join(phasesDir, dirMatch);
         const phaseFiles = fs.readdirSync(fullDir);
-        planCount = phaseFiles.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md').length;
-        summaryCount = phaseFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md').length;
+        planCount = listPhasePlanFiles(fullDir).length;
+        summaryCount = listPhaseSummaryFiles(fullDir).length;
         hasContext = phaseFiles.some(f => f.endsWith('-CONTEXT.md') || f === 'CONTEXT.md');
         hasResearch = phaseFiles.some(f => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md');
 
@@ -1353,8 +1375,8 @@ function cmdInitProgress(cwd, raw) {
       const phasePath = path.join(phasesDir, dir);
       const phaseFiles = fs.readdirSync(phasePath);
 
-      const plans = phaseFiles.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md');
-      const summaries = phaseFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
+      const plans = listPhasePlanFiles(phasePath);
+      const summaries = listPhaseSummaryFiles(phasePath);
       const hasResearch = phaseFiles.some(f => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md');
 
       const status = summaries.length >= plans.length && plans.length > 0 ? 'complete' :
@@ -1632,7 +1654,9 @@ function cmdInitRemoveWorkspace(cwd, name, raw) {
 function buildAgentSkillsBlock(config, agentType, projectRoot) {
   const { validatePath } = require('./security.cjs');
   const os = require('os');
-  const globalSkillsBase = path.join(os.homedir(), '.claude', 'skills');
+  const { getGlobalSkillDir, getGlobalSkillDisplayPath } = require('./runtime-homes.cjs');
+  const runtime = (config && config.runtime) || 'claude';
+  const globalSkillsBase = require('./runtime-homes.cjs').getGlobalSkillsBase(runtime);
 
   if (!config || !config.agent_skills || !agentType) return '';
 
@@ -1647,7 +1671,7 @@ function buildAgentSkillsBlock(config, agentType, projectRoot) {
   for (const skillPath of skillPaths) {
     if (typeof skillPath !== 'string') continue;
 
-    // Support global: prefix for skills installed at ~/.claude/skills/ (#1992)
+    // Support global: prefix for skills installed at the runtime's global skills directory (#1992, #3126)
     if (skillPath.startsWith('global:')) {
       const skillName = skillPath.slice(7);
       // Explicit empty-name guard before regex for clearer error message
@@ -1660,10 +1684,16 @@ function buildAgentSkillsBlock(config, agentType, projectRoot) {
         process.stderr.write(`[agent-skills] WARNING: Invalid global skill name "${skillName}" — skipping\n`);
         continue;
       }
-      const globalSkillDir = path.join(globalSkillsBase, skillName);
+      // Cline is rules-based and has no global skills directory
+      if (globalSkillsBase === null) {
+        process.stderr.write(`[agent-skills] WARNING: Runtime "${runtime}" does not use a skills directory — "global:${skillName}" is not supported on this runtime\n`);
+        continue;
+      }
+      const globalSkillDir = getGlobalSkillDir(runtime, skillName);
       const globalSkillMd = path.join(globalSkillDir, 'SKILL.md');
+      const displayPath = getGlobalSkillDisplayPath(runtime, skillName);
       if (!fs.existsSync(globalSkillMd)) {
-        process.stderr.write(`[agent-skills] WARNING: Global skill not found at "~/.claude/skills/${skillName}/SKILL.md" — skipping\n`);
+        process.stderr.write(`[agent-skills] WARNING: Global skill not found at "${displayPath}/SKILL.md" — skipping\n`);
         continue;
       }
       // Symlink escape guard: validatePath resolves symlinks and enforces
@@ -1674,7 +1704,7 @@ function buildAgentSkillsBlock(config, agentType, projectRoot) {
         process.stderr.write(`[agent-skills] WARNING: Global skill "${skillName}" failed path check (symlink escape?) — skipping\n`);
         continue;
       }
-      validPaths.push({ ref: `${globalSkillDir}/SKILL.md`, display: `~/.claude/skills/${skillName}` });
+      validPaths.push({ ref: `${globalSkillDir}/SKILL.md`, display: displayPath });
       continue;
     }
 

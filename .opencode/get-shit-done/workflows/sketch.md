@@ -11,10 +11,10 @@ Supports two modes:
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-theme-system.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-variant-patterns.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-interactivity.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-tooling.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-theme-system.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-variant-patterns.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-interactivity.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-tooling.md
 </required_reading>
 
 <process>

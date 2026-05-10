@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.40.0
+// gsd-hook-version: 1.41.1
 // Background worker spawned by gsd-check-update.js (SessionStart hook).
 // Checks for GSD updates and stale hooks, writes result to cache file.
 // Receives paths via environment variables set by the parent hook.
@@ -93,6 +93,13 @@ try {
     encoding: 'utf8',
     timeout: 10000,
     windowsHide: true,
+    // On Windows, 'npm' is distributed as npm.cmd. Node's execFileSync does
+    // not apply PATHEXT resolution and looks for a literal 'npm' binary,
+    // failing with ENOENT. Setting shell:true on Windows routes through
+    // cmd.exe which resolves npm.cmd via PATHEXT.
+    // POSIX (Linux/macOS) is left untouched — no shell spawn, no extra
+    // signal/exit-code semantics, no overhead.
+    shell: process.platform === 'win32',
   }).trim();
 } catch (e) {}
 

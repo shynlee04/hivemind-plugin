@@ -121,7 +121,7 @@ Choice [S]:
 
 **Goal:** Resolve plans that ran without producing summaries during Phase {src} execution
 **Source phase:** {src}
-**Deferred at:** {date} during /gsd-next advancement to Phase {dest}
+**Deferred at:** {date} during /gsd-progress --next advancement to Phase {dest}
 **Plans:**
 - [ ] {N}-{M}: {slug} (ran, no SUMMARY.md)
 ```
@@ -207,7 +207,7 @@ Display the determination:
 ```
 
 Then immediately invoke the determined command via skill.
-Do not ask for confirmation — the whole point of `/gsd-next` is zero-friction advancement.
+Do not ask for confirmation — the whole point of `/gsd-progress --next` is zero-friction advancement.
 </step>
 
 </process>

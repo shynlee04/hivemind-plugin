@@ -28,6 +28,8 @@ export type {
 } from "./types.js"
 
 export { isValidSessionID, isValidHookPayload } from "./types.js"
+export { SessionRecovery } from "./recovery/session-recovery.js"
+export type { ReconsumptionResult, SessionContext } from "./recovery/session-recovery.js"
 
 // ---------------------------------------------------------------------------
 // SessionTracker class

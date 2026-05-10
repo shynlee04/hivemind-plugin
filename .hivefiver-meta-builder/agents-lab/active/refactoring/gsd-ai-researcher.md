@@ -33,7 +33,7 @@ works via Bash and produces equivalent output.
 </documentation_lookup>
 
 <required_reading>
-Read `/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-frameworks.md` for framework profiles and known pitfalls before fetching docs.
+Read `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-frameworks.md` for framework profiles and known pitfalls before fetching docs.
 </required_reading>
 
 <input>

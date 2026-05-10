@@ -7,7 +7,7 @@ tools:
   bash: true
   glob: true
   grep: true
-  task: true
+  agent: true
   webfetch: true
   question: true
   mcp__context7__*: true
@@ -19,8 +19,8 @@ Flow: Validate → Research UI → Verify UI-SPEC → Done
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/ui-phase.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/ui-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -28,6 +28,6 @@ Phase number: $ARGUMENTS — optional, auto-detects next unplanned phase if omit
 </context>
 
 <process>
-Execute @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/ui-phase.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates.
 </process>

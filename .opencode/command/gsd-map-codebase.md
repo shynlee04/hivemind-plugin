@@ -7,7 +7,7 @@ tools:
   glob: true
   grep: true
   write: true
-  task: true
+  agent: true
 ---
 
 <objective>
@@ -19,7 +19,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/map-codebase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/map-codebase.md
 </execution_context>
 
 <flags>

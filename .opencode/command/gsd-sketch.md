@@ -28,13 +28,13 @@ Does not require `/gsd-new-project` — auto-creates `.planning/sketches/` if ne
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch-wrap-up.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-theme-system.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-interactivity.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-tooling.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/sketch-variant-patterns.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/sketch.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/sketch-wrap-up.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-theme-system.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-interactivity.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-tooling.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>
@@ -51,8 +51,8 @@ Design idea: $ARGUMENTS
 
 <process>
 Parse the first token of $ARGUMENTS:
-- If it is `--wrap-up`: strip the flag, execute the sketch-wrap-up workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch-wrap-up.md end-to-end.
-- Otherwise: execute the sketch workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/sketch.md end-to-end.
+- If it is `--wrap-up`: strip the flag, execute the sketch-wrap-up workflow end-to-end.
+- Otherwise: execute the sketch workflow end-to-end.
 
 Preserve all workflow gates (intake, decomposition, target stack research, variant evaluation, MANIFEST updates, commit patterns).
 </process>

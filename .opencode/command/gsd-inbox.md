@@ -19,7 +19,7 @@ and optionally applies labels or closes non-compliant submissions.
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/inbox.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/inbox.md
 </execution_context>
 
 <context>
@@ -32,6 +32,6 @@ and optionally applies labels or closes non-compliant submissions.
 </context>
 
 <process>
-Execute the inbox workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/inbox.md end-to-end.
+Execute end-to-end.
 Parse flags from arguments and pass to workflow.
 </process>

@@ -11,8 +11,8 @@ This prevents the two most common AI development failures: choosing the wrong fr
 </purpose>
 
 <required_reading>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-frameworks.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/ai-evals.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-frameworks.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-evals.md
 </required_reading>
 
 <process>
@@ -102,7 +102,7 @@ Display:
 
 Spawn `gsd-framework-selector` with:
 ```markdown
-Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-framework-selector.md for instructions.
+Read /Users/apple/hivemind-plugin-private/.opencode/agents/gsd-framework-selector.md for instructions.
 
 <objective>
 Select the right AI framework for Phase {phase_number}: {phase_name}
@@ -128,7 +128,7 @@ Parse selector output for: `primary_framework`, `system_type`, `model_provider`,
 
 Copy template:
 ```bash
-cp "/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
+cp "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
 ```
 
 Fill in header fields:
@@ -139,6 +139,8 @@ Fill in header fields:
 
 ## 7. Spawn gsd-ai-researcher
 
+> **Ordering note (prevents tool-level last-writer-wins race):** Steps 7 and 8 write disjoint sections of AI-SPEC.md but MUST run sequentially — wait for Step 7 to complete before spawning Step 8. Both agents use the `Edit` tool exclusively (never `Write`) when modifying AI-SPEC.md. A `Write` on a shared file replaces the entire file, silently overwriting the other agent's work; `Edit` targets only the relevant lines. See #3096 for a confirmed 40%-incidence race on parallel dispatch.
+
 Display:
 ```
 ◆ Step 2/4 — Researching {primary_framework} docs + AI systems best practices...
@@ -146,11 +148,14 @@ Display:
 
 Spawn `gsd-ai-researcher` with:
 ```markdown
-Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-ai-researcher.md for instructions.
+Read /Users/apple/hivemind-plugin-private/.opencode/agents/gsd-ai-researcher.md for instructions.
+
+**Tool discipline (mandatory):**
+Use the Edit tool exclusively when modifying AI-SPEC.md — NEVER use Write on this file.
+Write replaces the entire file and will overwrite work from parallel or sequential sibling agents.
+Before editing, verify the section you are about to write is still a template placeholder.
 
 <objective>
-Research {primary_framework} for Phase {phase_number}: {phase_name}
-Write Sections 3 and 4 of AI-SPEC.md
 </objective>
 
 <files_to_read>
@@ -169,6 +174,8 @@ phase_context: Phase {phase_number}: {phase_name} — {phase_goal}
 
 ## 8. Spawn gsd-domain-researcher
 
+> **Wait for Step 7 to complete before spawning this step** (see ordering note in Step 7).
+
 Display:
 ```
 ◆ Step 3/4 — Researching domain context and expert evaluation criteria...
@@ -176,11 +183,14 @@ Display:
 
 Spawn `gsd-domain-researcher` with:
 ```markdown
-Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-domain-researcher.md for instructions.
+Read /Users/apple/hivemind-plugin-private/.opencode/agents/gsd-domain-researcher.md for instructions.
+
+**Tool discipline (mandatory):**
+Use the Edit tool exclusively when modifying AI-SPEC.md — NEVER use Write on this file.
+Write replaces the entire file and will overwrite work from parallel or sequential sibling agents.
+Before editing, verify the section you are about to write is still a template placeholder.
 
 <objective>
-Research the business domain and expert evaluation criteria for Phase {phase_number}: {phase_name}
-Write Section 1b (Domain Context) of AI-SPEC.md
 </objective>
 
 <files_to_read>
@@ -206,7 +216,7 @@ Display:
 
 Spawn `gsd-eval-planner` with:
 ```markdown
-Read /Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/agents/gsd-eval-planner.md for instructions.
+Read /Users/apple/hivemind-plugin-private/.opencode/agents/gsd-eval-planner.md for instructions.
 
 <objective>
 Design evaluation strategy for Phase {phase_number}: {phase_name}

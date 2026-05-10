@@ -24,9 +24,9 @@ Flags:
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/audit-fix.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/audit-fix.md
 </execution_context>
 
 <process>
-Execute the audit-fix workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/audit-fix.md end-to-end.
+Execute end-to-end.
 </process>

@@ -20,10 +20,10 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/health.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/health.md
 </execution_context>
 
 <process>
-Execute the health workflow from @/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/health.md end-to-end.
+Execute end-to-end.
 Parse `--repair` and `--context` flags from arguments and pass to workflow.
 </process>

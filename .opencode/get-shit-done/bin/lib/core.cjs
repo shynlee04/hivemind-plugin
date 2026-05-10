@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const { execSync, execFileSync, spawnSync } = require('child_process');
 const { MODEL_PROFILES, AGENT_TO_PHASE_TYPE, VALID_PHASE_TYPES, AGENT_DEFAULT_TIERS, VALID_AGENT_TIERS, nextTier } = require('./model-profiles.cjs');
+const { MODEL_ALIAS_MAP, RUNTIME_PROFILE_MAP, KNOWN_RUNTIMES, RUNTIMES_WITH_REASONING_EFFORT } = require('./model-catalog.cjs');
 // Compatibility shim: new imports should use planning-workspace.cjs directly.
 const {
   planningDir,
@@ -792,19 +793,13 @@ function parseWorktreePorcelain(porcelain) {
 }
 
 /**
- * Remove linked git worktrees whose branch has already been merged into the
- * current HEAD of the main worktree.  Also runs `git worktree prune` to clear
- * any stale references left by manually-deleted worktree directories.
+ * Clear stale worktree metadata references via `git worktree prune`.
  *
- * Safe guards:
- *  - Never removes the main worktree (first entry in --porcelain output).
- *  - Never removes the worktree at process.cwd().
- *  - Never removes a worktree whose branch has unmerged commits.
- *  - Skips detached-HEAD worktrees (no branch name).
+ * Destructive linked-worktree removal is disabled by default for safety.
  *
  * @param {string} repoRoot - absolute path to the main (or any) worktree of
  *   the repository; used as `cwd` for git commands.
- * @returns {string[]} list of worktree paths that were removed
+ * @returns {string[]} list of worktree paths that were removed (always empty)
  */
 function pruneOrphanedWorktrees(repoRoot) {
   const pruned = [];
@@ -821,37 +816,14 @@ function pruneOrphanedWorktrees(repoRoot) {
       return pruned;
     }
 
-    // 2. First entry is the main worktree — never touch it
-    const mainWorktreePath = worktrees[0].path;
-
-    // 3. Check each non-main worktree
-    for (let i = 1; i < worktrees.length; i++) {
-      const { path: wtPath, branch } = worktrees[i];
-
-      // Never remove the worktree for the current process directory
-      if (wtPath === cwd || cwd.startsWith(wtPath + path.sep)) continue;
-
-      // Check if the branch is fully merged into HEAD (main)
-      // git merge-base --is-ancestor <branch> HEAD exits 0 when merged
-      const ancestorCheck = execGit(repoRoot, [
-        'merge-base', '--is-ancestor', branch, 'HEAD',
-      ]);
-
-      if (ancestorCheck.exitCode !== 0) {
-        // Not yet merged — leave it alone
-        continue;
-      }
-
-      // Remove the worktree and delete the branch
-      const removeResult = execGit(repoRoot, ['worktree', 'remove', '--force', wtPath]);
-      if (removeResult.exitCode === 0) {
-        execGit(repoRoot, ['branch', '-D', branch]);
-        pruned.push(wtPath);
-      }
-    }
+    // Destructive removal of linked worktrees is intentionally disabled.
+    // Keep metadata cleanup only (git worktree prune), which clears stale refs
+    // for manually-deleted directories without removing active sibling worktrees.
+    void cwd;
+    void worktrees;
   } catch { /* never crash the caller */ }
 
-  // 4. Always run prune to clear stale references (e.g. manually-deleted dirs)
+  // Always run prune to clear stale references (e.g. manually-deleted dirs)
   execGit(repoRoot, ['worktree', 'prune']);
 
   return pruned;
@@ -950,6 +922,17 @@ function phaseTokenMatches(dirName, normalized) {
   return false;
 }
 
+function extractCanonicalPlanId(filename) {
+  const base = filename.replace(/-PLAN\.md$/i, '').replace(/-SUMMARY\.md$/i, '').replace(/\.md$/i, '');
+  const parts = base.split('-').filter(Boolean);
+  const tokenRe = /^\d+[A-Z]?(?:\.\d+)*$/i;
+  const phaseIdx = parts.findIndex(p => tokenRe.test(p));
+  if (phaseIdx >= 0 && phaseIdx + 1 < parts.length && tokenRe.test(parts[phaseIdx + 1])) {
+    return `${parts[phaseIdx]}-${parts[phaseIdx + 1]}`;
+  }
+  return base;
+}
+
 function searchPhaseInDir(baseDir, relBase, normalized) {
   try {
     const dirs = readSubdirectories(baseDir, true);
@@ -970,11 +953,16 @@ function searchPhaseInDir(baseDir, relBase, normalized) {
     const summaries = unsortedSummaries.sort();
 
     const completedPlanIds = new Set(
-      summaries.map(s => s.replace('-SUMMARY.md', '').replace('SUMMARY.md', ''))
+      summaries.flatMap(s => {
+        const exact = s.replace('-SUMMARY.md', '').replace('SUMMARY.md', '');
+        const canonical = extractCanonicalPlanId(s);
+        return canonical === exact ? [exact] : [exact, canonical];
+      })
     );
     const incompletePlans = plans.filter(p => {
       const planId = p.replace('-PLAN.md', '').replace('PLAN.md', '');
-      return !completedPlanIds.has(planId);
+      const canonical = extractCanonicalPlanId(p);
+      return !completedPlanIds.has(planId) && !completedPlanIds.has(canonical);
     });
 
     return {
@@ -1314,102 +1302,9 @@ function checkAgentsInstalled() {
 
 // ─── Model alias resolution ───────────────────────────────────────────────────
 
-/**
- * Map short model aliases to full model IDs.
- * Updated each release to match current model versions.
- * Users can override with model_overrides in config.json for custom/latest models.
- */
-const MODEL_ALIAS_MAP = {
-  'opus': 'claude-opus-4-7',
-  'sonnet': 'claude-sonnet-4-6',
-  'haiku': 'claude-haiku-4-5',
-};
-
-/**
- * #2517 — runtime-aware tier resolution.
- * Maps `model_profile` tiers (opus/sonnet/haiku) to runtime-native model IDs and
- * (where supported) reasoning_effort settings.
- *
- * Each entry: { model: <id>, reasoning_effort?: <level> }
- *
- * `claude` mirrors MODEL_ALIAS_MAP — present for symmetry so `runtime: "claude"`
- * resolves through the same code path. `codex` defaults are taken from the spec
- * in #2517. Unknown runtimes fall back to the Claude alias to avoid emitting
- * provider-specific IDs the runtime cannot accept.
- */
-const RUNTIME_PROFILE_MAP = {
-  claude: Object.fromEntries(
-    Object.entries(MODEL_ALIAS_MAP).map(([tier, model]) => [tier, { model }])
-  ),
-  codex: {
-    opus:   { model: 'gpt-5.4',        reasoning_effort: 'xhigh' },
-    sonnet: { model: 'gpt-5.3-codex',  reasoning_effort: 'medium' },
-    haiku:  { model: 'gpt-5.4-mini',   reasoning_effort: 'medium' },
-  },
-  gemini: {
-    opus:   { model: 'gemini-3-pro' },
-    sonnet: { model: 'gemini-3-flash' },
-    haiku:  { model: 'gemini-2.5-flash-lite' },
-  },
-  qwen: {
-    opus:   { model: 'qwen3-max-2026-01-23' },
-    sonnet: { model: 'qwen3-coder-plus' },
-    haiku:  { model: 'qwen3-coder-next' },
-  },
-  opencode: {
-    opus:   { model: 'anthropic/claude-opus-4-7' },
-    sonnet: { model: 'anthropic/claude-sonnet-4-6' },
-    haiku:  { model: 'anthropic/claude-haiku-4-5' },
-  },
-  copilot: {
-    opus:   { model: 'claude-opus-4-7' },
-    sonnet: { model: 'claude-sonnet-4-6' },
-    haiku:  { model: 'claude-haiku-4-5' },
-  },
-  hermes: {
-    // Hermes Agent is provider-agnostic; users pick any provider in ~/.hermes/config.yaml.
-    // Defaults use OpenRouter slugs because (a) OpenRouter is Hermes' default provider and
-    // (b) the same slugs resolve on OpenRouter, native Anthropic, and Copilot via Hermes'
-    // aggregator-aware resolver. Users on a different provider override per-tier via
-    // model_profile_overrides.hermes.{opus,sonnet,haiku} in .planning/config.json.
-    opus:   { model: 'anthropic/claude-opus-4-7' },
-    sonnet: { model: 'anthropic/claude-sonnet-4-6' },
-    haiku:  { model: 'anthropic/claude-haiku-4-5' },
-  },
-};
-
-const RUNTIMES_WITH_REASONING_EFFORT = new Set(['codex']);
-
-/**
- * Tier enum allowed under `model_profile_overrides[runtime][tier]`. Mirrors the
- * regex in `config-schema.cjs` (DYNAMIC_KEY_PATTERNS) so loadConfig surfaces the
- * same constraint at read time, not only at config-set time (review finding #10).
- */
 const RUNTIME_OVERRIDE_TIERS = new Set(['opus', 'sonnet', 'haiku']);
-
-/**
- * Allowlist of runtime names the install pipeline currently knows how to emit
- * native model IDs for. Synced with `getDirName` in `bin/install.js` and the
- * runtime list in `docs/CONFIGURATION.md`. Free-string runtimes outside this
- * set are still accepted (#2517 deliberately leaves the runtime field open) —
- * a warning fires once at loadConfig so a typo like `runtime: "codx"` does not
- * silently fall back to Claude defaults (review findings #10, #13).
- */
-const KNOWN_RUNTIMES = new Set([
-  'claude', 'codex', 'opencode', 'kilo', 'gemini', 'qwen',
-  'copilot', 'cursor', 'windsurf', 'augment', 'trae', 'codebuddy',
-  'antigravity', 'cline', 'hermes',
-]);
-
 const _warnedConfigKeys = new Set();
-/**
- * Emit a one-time stderr warning for unknown runtime/tier keys in a parsed
- * config blob. Idempotent across calls — the same (file, key) pair only warns
- * once per process so loadConfig can be called repeatedly without spamming.
- *
- * Does NOT reject — preserves back-compat for users on a runtime not yet in the
- * allowlist (the new-runtime case must always be possible without code changes).
- */
+
 function _warnUnknownProfileOverrides(parsed, configLabel) {
   if (!parsed || typeof parsed !== 'object') return;
 
@@ -1587,7 +1482,12 @@ function resolveModelInternal(cwd, agentType) {
   }
 
   // 5. Profile lookup (Claude-native default).
-  if (!agentModels) return 'sonnet';
+  if (!agentModels) {
+    return profile === 'quality' ? 'opus'
+      : profile === 'budget' ? 'haiku'
+      : profile === 'inherit' ? 'inherit'
+      : 'sonnet';
+  }
   // Gate on tier (not profile) so a valid phase-type override beats
   // profile=inherit (#3030 CR Major).
   if (tier === 'inherit') return 'inherit';
@@ -1895,10 +1795,62 @@ function getMilestoneInfo(cwd) {
  * to the current milestone based on ROADMAP.md phase headings.
  * If no ROADMAP exists or no phases are listed, returns a pass-all filter.
  */
-function getMilestonePhaseFilter(cwd) {
+function getMilestonePhaseFilter(cwd, versionOverride) {
   const milestonePhaseNums = new Set();
+  let missingExplicitVersion = false;
   try {
-    const roadmap = extractCurrentMilestone(fs.readFileSync(path.join(planningDir(cwd), 'ROADMAP.md'), 'utf-8'), cwd);
+    const roadmapPath = path.join(planningDir(cwd), 'ROADMAP.md');
+    const roadmapContent = fs.readFileSync(roadmapPath, 'utf-8');
+    let roadmap = extractCurrentMilestone(roadmapContent, cwd);
+
+    if (versionOverride) {
+      const escapedVersion = escapeRegex(versionOverride);
+      const sectionPattern = new RegExp(`(^#{1,3}\\s+.*${escapedVersion}[^\\n]*)`, 'mi');
+      const sectionMatch = roadmapContent.match(sectionPattern);
+      if (!sectionMatch) {
+        // Only treat this as an error case when the roadmap is milestone-versioned.
+        // Older/flat roadmap formats without vX.Y milestone headings should keep
+        // legacy pass-through behavior for milestone.complete.
+        const hasVersionedMilestones = /^#{1,3}\s+.*v\d+\.\d+/mi.test(roadmapContent);
+        if (hasVersionedMilestones) {
+          roadmap = '';
+          missingExplicitVersion = true;
+        }
+      } else {
+        const sectionStart = sectionMatch.index;
+        const headingLevel = sectionMatch[1].match(/^(#{1,3})\s/)[1].length;
+        const restContent = roadmapContent.slice(sectionStart + sectionMatch[0].length);
+        const nextMilestonePattern = new RegExp(`^#{1,${headingLevel}}\\s+(?!Phase\\s+\\S)(?:.*v\\d+\\.\\d+|✅|📋|🚧)`, 'i');
+
+        let sectionEnd = roadmapContent.length;
+        let fenceChar = null;
+        let fenceLen = 0;
+        let charOffset = 0;
+        for (const line of restContent.split('\n')) {
+          const fenceMatch = line.match(/^\s{0,3}((?:`{3,}|~{3,}))(.*)/);
+          if (fenceMatch) {
+            const char = fenceMatch[1][0];
+            const len = fenceMatch[1].length;
+            const trailing = fenceMatch[2] || '';
+            if (!fenceChar) {
+              fenceChar = char;
+              fenceLen = len;
+            } else if (char === fenceChar && len >= fenceLen && /^\s*$/.test(trailing)) {
+              fenceChar = null;
+              fenceLen = 0;
+            }
+          } else if (!fenceChar && nextMilestonePattern.test(line)) {
+            sectionEnd = sectionStart + sectionMatch[0].length + charOffset;
+            break;
+          }
+          charOffset += line.length + 1;
+        }
+
+        const currentSection = roadmapContent.slice(sectionStart, sectionEnd);
+        roadmap = currentSection;
+      }
+    }
+
     // Match both numeric phases (Phase 1:) and custom IDs (Phase PROJ-42:)
     const phasePattern = /#{2,4}\s*Phase\s+([\w][\w.-]*)\s*:/gi;
     let m;
@@ -1910,6 +1862,7 @@ function getMilestonePhaseFilter(cwd) {
   if (milestonePhaseNums.size === 0) {
     const passAll = () => true;
     passAll.phaseCount = 0;
+    passAll.missingExplicitVersion = missingExplicitVersion;
     return passAll;
   }
 
@@ -1927,6 +1880,7 @@ function getMilestonePhaseFilter(cwd) {
     return false;
   }
   isDirInMilestone.phaseCount = milestonePhaseNums.size;
+  isDirInMilestone.missingExplicitVersion = missingExplicitVersion;
   return isDirInMilestone;
 }
 

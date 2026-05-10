@@ -11,7 +11,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 </purpose>
 
 <required_reading>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/references/continuation-format.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/continuation-format.md
 </required_reading>
 
 <process>
@@ -225,9 +225,11 @@ Wait for user selection.
 </step>
 
 <step name="route_to_workflow">
-Based on user selection, route to appropriate workflow:
+Based on user selection, route to appropriate workflow.
 
-- **Execute plan** → Show command for user to run after clearing:
+Resume-specific exception: do **not** emit `/clear then:` here. Resume is already a session-entry flow, so the next command should be shown directly.
+
+- **Execute plan** → Show direct next command:
   ```
   ---
 
@@ -235,21 +237,17 @@ Based on user selection, route to appropriate workflow:
 
   **{phase}-{plan}: [Plan Name]** — [objective from PLAN.md]
 
-  `/clear` then:
-
   `/gsd-execute-phase {phase} ${GSD_WS}`
 
   ---
   ```
-- **Plan phase** → Show command for user to run after clearing:
+- **Plan phase** → Show direct next command:
   ```
   ---
 
   ## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
 
   **Phase [N]: [Name]** — [Goal from ROADMAP.md]
-
-  `/clear` then:
 
   `/gsd-plan-phase [phase-number] ${GSD_WS}`
 

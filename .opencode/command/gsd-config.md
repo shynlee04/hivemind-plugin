@@ -30,9 +30,9 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/settings.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/settings-advanced.md
-@/Users/apple/Documents/coding-projects/hivemind-plugin-1/.opencode/get-shit-done/workflows/settings-integrations.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/settings.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/settings-advanced.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/settings-integrations.md
 </execution_context>
 
 <context>
