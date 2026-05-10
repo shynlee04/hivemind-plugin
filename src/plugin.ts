@@ -34,6 +34,7 @@ import { createHivemindPressureTool } from "./tools/hivemind/hivemind-pressure.j
 import { createHivemindAgentWorkCreateTool, createHivemindAgentWorkExportTool } from "./tools/hivemind/hivemind-agent-work.js"
 import { createHivemindSdkSupervisorTool } from "./tools/hivemind/hivemind-sdk-supervisor.js"
 import { createHivemindCommandEngineTool } from "./tools/hivemind/hivemind-command-engine.js"
+import { createSessionTrackerTool } from "./tools/hivemind/session-tracker.js"
 import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
@@ -177,6 +178,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "hivemind-pressure": createHivemindPressureTool(projectDirectory),
       "hivemind-sdk-supervisor": createHivemindSdkSupervisorTool(),
       "hivemind-command-engine": createHivemindCommandEngineTool(projectDirectory),
+      "session-tracker": createSessionTrackerTool(projectDirectory),
       "hivemind-agent-work-create": createHivemindAgentWorkCreateTool(projectDirectory),
       "hivemind-agent-work-export": createHivemindAgentWorkExportTool(projectDirectory),
       "configure-primitive": createConfigurePrimitiveTool(),
