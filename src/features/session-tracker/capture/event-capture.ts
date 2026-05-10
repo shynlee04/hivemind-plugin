@@ -17,6 +17,7 @@
 import type { OpenCodeClient } from "../../../shared/session-api.js"
 import { getSession } from "../../../shared/session-api.js"
 import type { SessionWriter } from "../persistence/session-writer.js"
+import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 
 // ---------------------------------------------------------------------------
@@ -67,6 +68,33 @@ export class EventCapture {
     try {
       if (!event?.sessionID || !isValidSessionID(event.sessionID)) {
         return
+      }
+
+      // Validate sessionID matches its own sanitized form — reject any
+      // sessionID that would be altered by sanitization (path traversal guard).
+      if (event.sessionID !== sanitizeSessionID(event.sessionID)) {
+        console.warn(
+          `[Harness] Session tracker: sessionID contains unsafe characters: "${event.sessionID}"`,
+        )
+        return
+      }
+
+      // Validate eventType is a recognized session lifecycle type.
+      const validEventTypes = [
+        "session.created",
+        "session.idle",
+        "session.deleted",
+        "session.error",
+        "session.status",
+        "session.compacted",
+        "session.updated",
+      ]
+      if (!validEventTypes.includes(event.eventType)) {
+        console.warn(
+          `[Harness] Session tracker: unexpected event type "${event.eventType}", expected one of: ${validEventTypes.join(", ")}`,
+        )
+        // Continue for unrecognized types — they may carry unknown but harmless events.
+        // Don't return; log is sufficient for observability.
       }
 
       switch (event.eventType) {

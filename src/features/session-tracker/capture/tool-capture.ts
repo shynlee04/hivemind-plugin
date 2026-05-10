@@ -90,7 +90,20 @@ export class ToolCapture {
       if (!input?.sessionID || !isValidSessionID(input.sessionID)) {
         return
       }
-      if (!input.tool) return
+      if (!input.tool || typeof input.tool !== "string") {
+        return
+      }
+
+      // Validate input.args is a non-null, non-array object (or undefined).
+      if (
+        input.args !== undefined &&
+        (input.args === null || Array.isArray(input.args) || typeof input.args !== "object")
+      ) {
+        console.warn(
+          `[Harness] Session tracker: invalid args shape for tool "${input.tool}" — skipping`,
+        )
+        return
+      }
 
       switch (input.tool) {
         case "skill":

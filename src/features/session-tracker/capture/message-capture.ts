@@ -103,6 +103,23 @@ export class MessageCapture {
         return
       }
 
+      // Validate parts is an array before processing — malformed hook payload guard.
+      if (!Array.isArray(output.parts)) {
+        console.warn(
+          "[Harness] Session tracker: chat.message output.parts is not an array — skipping",
+        )
+        return
+      }
+
+      // Validate role is a recognized value.
+      const validRoles = ["user", "assistant"]
+      if (!validRoles.includes(output.message.role)) {
+        console.warn(
+          `[Harness] Session tracker: unexpected message role "${output.message.role}" — skipping`,
+        )
+        return
+      }
+
       const role = output.message.role
 
       if (role === "user") {

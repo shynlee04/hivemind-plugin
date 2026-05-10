@@ -209,4 +209,66 @@ describe("safeSessionPath", () => {
       ),
     ).toThrow()
   })
+
+  it("rejects session IDs containing backslash path separators", () => {
+    expect(() =>
+      safeSessionPath(
+        "C:\\Users\\project",
+        "ses_backslash\\test",
+        "file.md",
+      ),
+    ).toThrow()
+  })
+
+  it("rejects filename containing path traversal", () => {
+    expect(() =>
+      safeSessionPath("/my/project", "ses_valid123456789", "../escaped.md"),
+    ).toThrow()
+  })
+
+  it("rejects empty sessionID", () => {
+    expect(() =>
+      safeSessionPath("/my/project", "", "file.md"),
+    ).toThrow(/Invalid session ID/)
+  })
+
+  it("rejects single character sessionID", () => {
+    expect(() =>
+      safeSessionPath("/my/project", "x", "file.md"),
+    ).toThrow(/Invalid session ID/)
+  })
+
+  it("accepts very long sessionIDs (up to 256 chars)", () => {
+    const longID = "ses_" + "a".repeat(247) // total 251 chars, within typical limits
+    const result = safeSessionPath("/my/project", longID, "file.md")
+    expect(result).toContain(longID)
+    expect(result.startsWith("/my/project/.hivemind/session-tracker")).toBe(true)
+  })
+
+  it("sanitizes unicode characters from sessionID", () => {
+    const result = safeSessionPath("/my/project", "ses_ünicode★test", "file.md")
+    // Unicode characters stripped by sanitizeSessionID, leaving only alphanumeric
+    expect(result).not.toContain("ü")
+    expect(result).not.toContain("★")
+    expect(result).toContain("ses_nicodetest") // alphanumeric chars preserved
+  })
+
+  it("rejects sessionIDs that sanitize to fewer than 3 characters", () => {
+    // "★★" would sanitize to "" (stripped of non-alphanumeric)
+    expect(() =>
+      safeSessionPath("/my/project", "★☆", "file.md"),
+    ).toThrow(/Invalid session ID/)
+  })
+
+  it("ensures resolved path stays within tracker root even with tricky inputs", () => {
+    // After sanitization strips special chars, the path should still be within root
+    const result = safeSessionPath(
+      "/my/project",
+      "ses_tricky_input_12345",
+      "file.md",
+    )
+    expect(result).toBe(
+      require("node:path").resolve("/my/project/.hivemind/session-tracker/ses_tricky_input_12345/file.md"),
+    )
+  })
 })
