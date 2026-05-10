@@ -5,7 +5,8 @@ metadata:
   layer: "3"
   role: "reference"
   pattern: P2
-  version: "1.0.0"
+  version: "1.1.0"
+  constitutional_override: true
 allowed-tools:
   - Read
   - Grep
@@ -16,13 +17,45 @@ allowed-tools:
 
 Complete OpenCode platform documentation covering agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, and models. Use when building plugin integrations, configuring agents, defining tools, or understanding platform architecture. Contains reference files for all platform capabilities.
 
-## Source Freshness Gate
+## Constitutional Live-Fetch Compliance
 
-OpenCode platform behavior is version-sensitive. Before making a platform claim, prefer the current official docs or the bundled reference file if it has been refreshed within the project's freshness window.
+### Source Freshness Gate (ENFORCED)
+
+OpenCode platform behavior is version-sensitive. Before making ANY platform claim used in production code, you **MUST** verify against at least ONE live verification source. Bundled reference files are supplementary — they MUST NOT be the sole authority for production decisions.
 
 **Repomix source:** `anomalyco/opencode` v1.14.44 (active). Previously sourced from ARCHIVED `sst/opencode` v1.14.28. Both repomix files were refreshed 2026-05-10. Focus: `packages/plugin/src/**`, `packages/sdk/js/src/**`, `packages/opencode/src/acp/**`.
 
 Official docs for agents, commands, config, and rules were last fetched on 2026-04-25 and used to update the scope matrix below.
+
+### Two-Tier Trust Model
+
+| Tier | Authority | Sources | Usage |
+|------|-----------|---------|-------|
+| **Validation (PRIMARY)** | Live verification | Context7, DeepWiki, GitHub API, Repomix remote pack | MUST be consulted before any pattern is used in production code |
+| **Reference (SUPPLEMENTARY)** | Bundled assets | `references/` repomix files, local cached docs | Orientation, discovery, cross-referencing — NEVER sole authority |
+
+**Constitutional Gate Rule:** Before any bundled pattern is used in production code, at least ONE live verification source MUST confirm it. No exceptions.
+
+### Staleness Severity Scale
+
+| Severity | Threshold | Action |
+|----------|-----------|--------|
+| **CRITICAL** | >24 hours for SDK signatures, hook APIs, tool schemas | MUST live-verify immediately. Bundled reference is INVALID. |
+| **HIGH** | >7 days for platform behavioral claims (permissions, config merge) | MUST live-verify before use. Bundled reference is UNTRUSTED. |
+| **STANDARD** | >30 days for structural docs (agent format, command syntax) | SHOULD live-verify. Bundled reference is acceptable with disclaimer. |
+| **LOW** | >90 days for conceptual documentation | Bundled reference is acceptable. Flag for refresh at next cycle. |
+
+### MCP Tool Integration — Live Verification Tools
+
+You MUST use these tools for live verification before trusting any bundled pattern in production code:
+
+| MCP Tool | Purpose | When to Use |
+|----------|---------|-------------|
+| `context7_resolve_library_id` → `context7_query_docs` | SDK API docs, plugin interface signatures | Verifying tool(), hook() signatures, session API methods |
+| `deepwiki_ask_question` | Platform architecture, behavioral semantics | Understanding agent lifecycle, permission cascading, skill loading |
+| `gitmcp_search_github_com_code` | Source code search across anomalyco/opencode | Finding specific implementations, verifying behavioral claims |
+| `github_get_file_contents` | Read specific files from anomalyco/opencode | Checking exact source for plugin SDK, agent definitions, config schema |
+| `repomix_pack_remote_repository` | Full remote repo analysis | When deep cross-file verification is needed across the OpenCode codebase |
 
 ## Reference Files
 
@@ -119,17 +152,21 @@ Commands with subtask:true create SubtaskPart → child session → inherits tar
 | Anti-Pattern | Detection | Correction |
 |-------------|-----------|------------|
 | **The Memorizer** | Tries to memorize all reference files | Use progressive disclosure. Read only the reference needed for the current task. |
-| **The Outdated Citer** | Cites reference content as current runtime truth | References describe platform capabilities, not current project state. Verify against actual config. |
+| **The Outdated Citer** | Cites reference content as current runtime truth | References describe platform capabilities, not current project state. MUST verify against live source before claiming platform behavior in production. |
 | **The Over-Loader** | Loads all references at once | Load only the specific reference file needed. See Loading Decision Table. SKILL.md is the index, not the content. |
-| **The Assumer** | Assumes platform behavior from training knowledge | Always verify via `context7` or live platform inspection before claiming platform behavior. |
+| **The Assumer** | Assumes platform behavior from training knowledge | MUST verify via `context7` or live platform inspection before claiming platform behavior. No exceptions. |
+| **The Bundled-Only Truster** | Trusts bundled method signatures without live verification | MUST run at least ONE live verification (Context7, DeepWiki, GitHub) before using any SDK signature in production code. |
+| **The Repomix-Is-Current Fallacy** | Assumes patterns from repomix-packed source are current | Repomix packs are snapshots. MUST check staleness against severity scale and live-verify for CRITICAL/HIGH items. |
+| **The Version-Blind Citer** | Uses version-specific behavioral claims without version check | MUST verify the target OpenCode version matches the bundled reference version before citing behavioral claims. |
+| **The Freshness-Skipper** | Skips freshness gate because "the repomix was just packed" | Freshness is measured from the source repo's latest commit, not the pack date. MUST check source freshness regardless of local pack recency. |
 
 ## Self-Correction
 
 ### When the Task Keeps Failing
 
-[Detection] If platform claims in code are not matching actual behavior, the reference files may be outdated — check the Source Freshness Gate date and re-verify against live OpenCode behavior using `context7` or official docs. If a specific reference file doesn't contain the needed information, try the repomix OpenCode source pack (`references/repomix-opencode.xml`) for deeper implementation details. If neither official docs nor the repomix pack answer the question, flag it as a documentation gap and suggest a platform inquiry.
+[Detection] If platform claims in code are not matching actual behavior, the reference files may be outdated — check the Staleness Severity Scale and re-verify against live OpenCode behavior using `context7`, `deepwiki`, or GitHub source inspection FIRST. Only after live verification fails should you fall back to the repomix OpenCode source pack (`references/repomix-opencode.xml`) for deeper implementation details. If neither live sources nor the repomix pack answer the question, flag it as a documentation gap and suggest a platform inquiry.
 
-[Recovery] Re-run freshness verification by checking official OpenCode docs for updates. Use `context7` or `deepwiki` tools to query the latest platform behavior. Mark any claim that cannot be verified as "unverified" with date.
+[Recovery] Re-run freshness verification by checking official OpenCode docs for updates. MUST use `context7_resolve_library_id` → `context7_query_docs` or `deepwiki_ask_question` to query the latest platform behavior BEFORE consulting bundled references. Mark any claim that cannot be live-verified as "unverified" with date and staleness severity.
 
 ### When Unsure About the Next Step
 
@@ -147,7 +184,7 @@ Commands with subtask:true create SubtaskPart → child session → inherits tar
 
 [Detection] If the project uses a non-standard OpenCode configuration (e.g., custom `OPENCODE_CONFIG_DIR`, non-standard file locations), the reference files may not accurately describe the project's actual configuration. Inspect the project's actual `opencode.json` and file structure before making claims. If the project has no `.opencode/` directory, check global and config override locations. If a reference file is missing or corrupted, fall back to the repomix XML pack or live platform inspection.
 
-[Recovery] Verify actual project state through OpenCode discovery locations before reporting configuration truth. For missing references, use repomix source pack as fallback. For version mismatches, flag all claims as version-dependent.
+[Recovery] Verify actual project state through OpenCode discovery locations before reporting configuration truth. For missing references, MUST attempt live verification (Context7, DeepWiki, GitHub) before falling back to repomix source pack. For version mismatches, flag all claims as version-dependent and MUST live-verify CRITICAL/HIGH severity items.
 
 ## Cross-References
 
