@@ -38,10 +38,14 @@ import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
 import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-loop.js"
+// Legacy event-tracker code preserved at src/task-management/journal/event-tracker/ (REQ-ST-13).
+// Deprecated: event-tracker wiring is kept for backward compatibility with existing tests.
+// New capture goes through SessionTracker → .hivemind/session-tracker/.
 import {
   createEventTrackerArtifactsFromHook,
   shouldTrackEventTrackerEvent,
 } from "./task-management/journal/event-tracker/index.js"
+import { SessionTracker } from "./features/session-tracker/index.js"
 
 import { getConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
@@ -64,6 +68,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // for sessions that belong to the first instance, causing a hang.
   void delegationManager.recoverPending()
 
+  // Session tracker: typed owning module for session knowledge capture.
+  // Wired via deps injection (D-01) — matches DelegationManager instantiation pattern.
+  const sessionTracker = new SessionTracker({ client, projectRoot: projectDirectory })
+
   const lifecycleManager = createHarnessLifecycleManager({
     client,
     pollTimeoutMs: WATCH_TIMEOUT_MS,
@@ -81,6 +89,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // exist before the lifecycle manager because the latter takes the former
   // as an arg).
   delegationManager.setCompletionDetector(lifecycleManager.getCompletionDetector())
+
+  // Initialize session tracker (reads project-continuity.json, creates writers).
+  // Fire-and-forget: must not block plugin init.
+  void sessionTracker.initialize()
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
 
@@ -105,6 +117,9 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       delegationManager.handleSessionDeleted(fact.sessionId)
     }
   }
+  // Replaced: session tracker now handles capture via SessionTracker module.
+  // Old event-tracker wiring kept for backward compatibility (REQ-ST-13).
+  // Deprecated — will be removed after session-tracker integration tests are updated.
   const consumeJourneyFact = async ({ event }: { event?: unknown }) => {
     try {
       const fact = await sessionJourneyEventObserver({ event })
@@ -115,16 +130,40 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       // Best-effort audit projection: never block canonical OpenCode event handling.
     }
   }
+  const consumeSessionTrackerFact = async ({ event }: { event?: unknown }) => {
+    try {
+      const ev = event as Record<string, unknown> | undefined
+      const eventType = (ev?.type as string) || (ev?.eventType as string) || "unknown"
+      const sessionID = (ev?.sessionID as string) || ""
+      if (sessionID) {
+        await sessionTracker.handleSessionEvent({ eventType, sessionID, event: ev })
+      }
+    } catch (err) {
+      console.warn("[Harness] Session tracker event observer failed:", err)
+    }
+  }
 
   const toolGuardHooks = createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy })
 
   return {
     ...createCoreHooks({
       ...deps,
-      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeJourneyFact, consumeSessionEntryFact],
+      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeJourneyFact, consumeSessionTrackerFact, consumeSessionEntryFact],
     }),
     ...sessionReadHooks,
     ...toolGuardHooks,
+    // chat.message: session tracker captures user/assistant messages.
+    // Best-effort — never blocks the OpenCode runtime.
+    "chat.message": async (input, output) => {
+      try {
+        await sessionTracker.handleChatMessage(
+          input as Parameters<typeof sessionTracker.handleChatMessage>[0],
+          output as Parameters<typeof sessionTracker.handleChatMessage>[1],
+        )
+      } catch (err) {
+        console.warn("[Harness] Session tracker chat.message failed:", err)
+      }
+    },
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
       "delegation-status": createDelegationStatusTool(delegationManager),
@@ -155,12 +194,24 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         toolGuardAfterHook: toolGuardHooks["tool.execute.after"],
         summarizeOutput: summarizePluginToolOutput,
       })(input, _output)
+      void fact // consumed by guard hooks above; session tracker uses raw input
+      // Deprecated: old event-tracker wiring kept for backward compatibility.
       try {
         if (fact.kind === "tool-execute-after" && shouldTrackEventTrackerEvent(fact.event)) {
           createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event: fact.event, source: fact.source } })
         }
       } catch {
         // Best-effort audit projection: never fail the tool call result.
+      }
+      try {
+        // Session tracker: capture tool metadata (skill, read, task, etc.)
+        // Uses raw hook input/output for accurate metadata, not the projected fact.
+        await sessionTracker.handleToolExecuteAfter(
+          input as Parameters<typeof sessionTracker.handleToolExecuteAfter>[0],
+          (_output ?? {}) as Parameters<typeof sessionTracker.handleToolExecuteAfter>[1],
+        )
+      } catch {
+        // Best-effort: never fail the tool call.
       }
 
       if (input.tool !== "configure-primitive") return

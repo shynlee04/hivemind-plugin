@@ -38,6 +38,15 @@ export type { ReconsumptionResult, SessionContext } from "./recovery/session-rec
 // NOTE: OpenCodeClient type is imported from shared/session-api.
 // We use a lightweight import to avoid circular dependencies.
 import type { OpenCodeClient } from "../../shared/session-api.js"
+import { EventCapture } from "./capture/event-capture.js"
+import { MessageCapture } from "./capture/message-capture.js"
+import { ToolCapture } from "./capture/tool-capture.js"
+import { SessionWriter } from "./persistence/session-writer.js"
+import { ChildWriter } from "./persistence/child-writer.js"
+import { SessionIndexWriter } from "./persistence/session-index-writer.js"
+import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
+import { AgentTransform } from "./transform/agent-transform.js"
+import { SessionRecovery } from "./recovery/session-recovery.js"
 
 /**
  * Central session tracker class.
@@ -59,6 +68,23 @@ export class SessionTracker {
   private client: OpenCodeClient
   private projectRoot: string
 
+  // Capture handlers — initialized in initialize()
+  private eventCapture!: EventCapture
+  private messageCapture!: MessageCapture
+  private toolCapture!: ToolCapture
+
+  // Persistence writers
+  private sessionWriter!: SessionWriter
+  private childWriter!: ChildWriter
+  private sessionIndexWriter!: SessionIndexWriter
+  private projectIndexWriter!: ProjectIndexWriter
+
+  // Recovery
+  private recovery!: SessionRecovery
+
+  // Transform
+  private agentTransform!: AgentTransform
+
   /**
    * Creates a new SessionTracker instance.
    *
@@ -69,9 +95,6 @@ export class SessionTracker {
   constructor(deps: { client: OpenCodeClient; projectRoot: string }) {
     this.client = deps.client
     this.projectRoot = deps.projectRoot
-    // Consumed by handler methods in subsequent plans (CP-ST-01-plan-02+).
-    void this.client
-    void this.projectRoot
   }
 
   /**
@@ -87,50 +110,66 @@ export class SessionTracker {
    * - `session.deleted` — marks session status as "deleted"
    * - `session.error` — marks session status as "error"
    */
-  async handleSessionEvent(_event: {
+  async handleSessionEvent(event: {
     eventType: string
     sessionID: string
     event: unknown
   }): Promise<void> {
-    // TODO(CP-ST-01-plan-02): Implement session lifecycle event handling.
-    // Will use client.session.get() to distinguish root vs child sessions.
-    // Root sessions → create .hivemind/session-tracker/{sessionID}/ directory + .md file.
-    // Child sessions → no new subdirectory; file written under parent's subdir.
+    try {
+      if (this.eventCapture) {
+        await this.eventCapture.handleSessionEvent(event)
+      }
+    } catch (err) {
+      console.warn(
+        "[Harness] Session tracker: event handler failed:",
+        err,
+      )
+    }
   }
 
   /**
    * Handles chat message events from the OpenCode `chat.message` hook.
    *
-   * @param _input - The hook input containing sessionID, agent, model, messageID, variant.
-   * @param _output - The hook output containing the message and parts.
+   * @param input - The hook input containing sessionID, agent, model, messageID, variant.
+   * @param output - The hook output containing the message and parts.
    * @returns Promise that resolves when the message has been captured.
    *
    * @remarks
    * User messages are captured as `## USER (turn N)` sections.
    * Assistant messages are transformed into `main_l0_agent` blocks
    * with name, model, and thinking_duration metadata.
+   * Thinking blocks are filtered out.
    */
   async handleChatMessage(
-    _input: {
+    input: {
       sessionID: string
       agent?: string
       model?: { providerID: string; modelID: string }
       messageID?: string
       variant?: string
     },
-    _output: { message: unknown; parts: unknown[] },
+    output: { message: unknown; parts: unknown[] },
   ): Promise<void> {
-    // TODO(CP-ST-01-plan-03): Implement chat message capture.
-    // User messages → append ## USER (turn N) to main session .md.
-    // Assistant messages → transform to main_l0_agent block.
-    // Skip thinking blocks.
+    try {
+      if (this.messageCapture) {
+        await this.messageCapture.handleChatMessage(
+          input as Parameters<MessageCapture["handleChatMessage"]>[0],
+          output as Parameters<MessageCapture["handleChatMessage"]>[1],
+        )
+      }
+    } catch (err) {
+      console.warn(
+        "[Harness] Session tracker: chat.message handler failed:",
+        err,
+      )
+    }
   }
 
   /**
    * Handles tool execution events from the OpenCode `tool.execute.after` hook.
    *
-   * @param _input - The hook input containing tool name, sessionID, callID, and args.
-   * @param _output - The hook output containing title, output, and metadata.
+   * @param input - The hook input containing tool name, sessionID, callID, and args.
+   * @param output - The hook output containing title, output, and metadata.
    * @returns Promise that resolves when the tool invocation has been captured.
    *
    * @remarks
@@ -141,36 +180,134 @@ export class SessionTracker {
    * - other tools → input metadata only
    */
   async handleToolExecuteAfter(
-    _input: { tool: string; sessionID: string; callID: string; args: unknown },
-    _output: { title: string; output: unknown; metadata: unknown },
+    input: { tool: string; sessionID: string; callID: string; args: unknown },
+    output: { title: string; output: unknown; metadata: unknown },
   ): Promise<void> {
-    // TODO(CP-ST-01-plan-04): Implement tool capture.
-    // Apply pruning rules per SPEC.md Section 5.1 capture rules table.
-    // Task tool: extract task_id from output, trigger child .json creation
-    //   via child-writer.ts.
+    try {
+      if (this.toolCapture) {
+        await this.toolCapture.handleToolExecuteAfter(
+          input as Parameters<ToolCapture["handleToolExecuteAfter"]>[0],
+          output as Parameters<ToolCapture["handleToolExecuteAfter"]>[1],
+        )
+      }
+    } catch (err) {
+      console.warn(
+        "[Harness] Session tracker: tool.execute.after handler failed:",
+        err,
+      )
+    }
   }
 
   /**
    * Initializes the session tracker module.
    *
-   * Called once during plugin startup. Reads `project-continuity.json`
-   * to build an in-memory session map for recovery purposes.
+   * Called once during plugin startup. Creates all persistence writers,
+   * capture handlers, and recovery infrastructure. Reads
+   * `project-continuity.json` to build an in-memory session map.
    *
    * @returns Promise that resolves when initialization is complete.
    */
   async initialize(): Promise<void> {
-    // TODO(CP-ST-01-plan-02): Read project-continuity.json to build session map.
-    // This is initialization, not recovery (per D-05).
+    try {
+      // Create persistence writers
+      this.sessionWriter = new SessionWriter({ projectRoot: this.projectRoot })
+      this.childWriter = new ChildWriter({ projectRoot: this.projectRoot })
+      this.sessionIndexWriter = new SessionIndexWriter({ projectRoot: this.projectRoot })
+      this.projectIndexWriter = new ProjectIndexWriter({ projectRoot: this.projectRoot })
+
+      // Create transform utility
+      this.agentTransform = new AgentTransform()
+
+      // Create capture handlers
+      this.eventCapture = new EventCapture({
+        client: this.client,
+        sessionWriter: this.sessionWriter,
+      })
+      this.messageCapture = new MessageCapture({
+        sessionWriter: this.sessionWriter,
+        agentTransform: this.agentTransform,
+      })
+      this.toolCapture = new ToolCapture({
+        sessionWriter: this.sessionWriter,
+        childWriter: this.childWriter,
+        sessionIndexWriter: this.sessionIndexWriter,
+        projectIndexWriter: this.projectIndexWriter,
+      })
+
+      // Initialize recovery (reads project-continuity.json per D-05)
+      this.recovery = new SessionRecovery({
+        client: this.client,
+        projectRoot: this.projectRoot,
+      })
+      await this.recovery.initialize()
+
+      // Initialize project-level index if needed
+      await this.projectIndexWriter.initializeIndex()
+
+      console.log("[Harness] Session tracker: initialized")
+    } catch (err) {
+      console.warn(
+        "[Harness] Session tracker: initialization failed:",
+        err,
+      )
+    }
   }
 
   /**
-   * Performs cleanup when the plugin is shutting down.
+   * Performs cleanup when the plugin is shutting down or on module init.
    *
-   * Ensures any in-flight writes are completed and resources are released.
+   * Removes contaminated `.json` and `.md` files from the legacy
+   * `.hivemind/event-tracker/` directory (REQ-ST-13). Preserves the
+   * source code at `src/task-management/journal/event-tracker/`.
    *
    * @returns Promise that resolves when cleanup is complete.
    */
   async cleanup(): Promise<void> {
-    // TODO(CP-ST-01-plan-02): Ensure in-flight write queues are drained.
+    try {
+      // Legacy cleanup: remove contaminated event-tracker state files (REQ-ST-13)
+      await this.removeLegacyStateFiles()
+    } catch (err) {
+      console.warn(
+        "[Harness] Session tracker: cleanup failed:",
+        err,
+      )
+    }
+  }
+
+  /**
+   * Removes contaminated legacy state files from `.hivemind/event-tracker/`.
+   *
+   * Per REQ-ST-13: removes only `.json` and `.md` files, never `.gitkeep` or
+   * the source code directory at `src/task-management/journal/event-tracker/`.
+   */
+  private async removeLegacyStateFiles(): Promise<void> {
+    try {
+      const { readdir, unlink } = await import("node:fs/promises")
+      const { resolve } = await import("node:path")
+      const legacyDir = resolve(this.projectRoot, ".hivemind", "event-tracker")
+
+      try {
+        const entries = await readdir(legacyDir, { withFileTypes: true })
+        for (const entry of entries) {
+          if (!entry.isFile()) continue
+          if (entry.name === ".gitkeep") continue
+          if (entry.name.endsWith(".json") || entry.name.endsWith(".md")) {
+            const filePath = resolve(legacyDir, entry.name)
+            try {
+              await unlink(filePath)
+            } catch {
+              // Best-effort: skip files that can't be removed
+            }
+          }
+        }
+      } catch {
+        // Legacy directory may not exist — that's fine
+      }
+    } catch (err) {
+      console.warn(
+        "[Harness] Session tracker: legacy cleanup failed:",
+        err,
+      )
+    }
   }
 }
