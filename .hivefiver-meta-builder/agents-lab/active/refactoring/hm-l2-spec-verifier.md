@@ -5,6 +5,7 @@ mode: subagent
 depth: L2
 lineage: hm
 temperature: 0.1
+domain: Quality Audit
 instruction:
   - .opencode/rules/anti-patterns.md
   - .opencode/rules/skill-activation.md
@@ -24,6 +25,8 @@ permission:
     npx *: allow
   task:
     '*': ask
+  delegate-task: allow
+  delegation-status: allow
   skill:
     '*': ask
     hm-l2-*: allow

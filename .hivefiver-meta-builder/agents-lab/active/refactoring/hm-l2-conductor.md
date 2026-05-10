@@ -5,6 +5,7 @@ mode: primary
 depth: L2
 lineage: hm
 temperature: 0.3
+domain: Phase Lifecycle
 steps: 80
 permission:
   edit: ask
@@ -17,6 +18,7 @@ permission:
   task:
     '*': ask
   delegate-task: allow
+  delegation-status: allow
   run-background-command: allow
   skill:
     '*': ask

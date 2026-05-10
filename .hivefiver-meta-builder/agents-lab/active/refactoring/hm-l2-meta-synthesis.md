@@ -4,7 +4,15 @@ description: 'Synthesizes and improves meta-concepts (agents, skills, commands, 
 mode: subagent
 depth: L2
 lineage: hm
+temperature: 0.1
+domain: Meta
 permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash: ask
+  glob: allow
+  grep: allow
   skill:
     '*': ask
     hm-l2-*: allow

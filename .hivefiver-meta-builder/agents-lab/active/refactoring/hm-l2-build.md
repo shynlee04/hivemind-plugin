@@ -4,6 +4,8 @@ description: The default primary agent with all tools enabled for development wo
 mode: primary
 depth: L2
 lineage: hm
+temperature: 0.15
+domain: Build
 permission:
   read: allow
   edit: allow
@@ -11,6 +13,7 @@ permission:
   bash: allow
   task:
     '*': ask
+  delegation-status: allow
   skill:
     '*': ask
     hm-l2-*: allow

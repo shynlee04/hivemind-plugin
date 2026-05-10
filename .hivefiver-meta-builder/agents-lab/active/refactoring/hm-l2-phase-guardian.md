@@ -5,6 +5,7 @@ mode: subagent
 depth: L2
 lineage: hm
 temperature: 0.25
+domain: Phase Lifecycle
 instruction:
   - .opencode/rules/anti-patterns.md
   - .opencode/rules/execution-loop.md
@@ -21,6 +22,7 @@ permission:
   task:
     '*': ask
   delegate-task: ask
+  delegation-status: allow
   skill:
     '*': ask
     hm-l2-*: allow

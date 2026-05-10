@@ -5,6 +5,7 @@ mode: subagent
 depth: L2
 lineage: hm
 temperature: 0.2
+domain: Meta
 permission:
   read: allow
   edit: allow
@@ -12,6 +13,8 @@ permission:
   bash: allow
   glob: allow
   grep: allow
+  task:
+    '*': ask
   skill:
     '*': ask
     hm-l2-*: allow

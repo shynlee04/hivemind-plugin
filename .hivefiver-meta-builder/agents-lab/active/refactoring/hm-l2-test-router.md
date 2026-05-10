@@ -4,9 +4,15 @@ description: Test agent for natural language command routing. Has access to nl-r
 mode: primary
 depth: L2
 lineage: hm
+temperature: 0.1
+domain: Test
 permission:
   read: allow
   bash: allow
+  edit: ask
+  write: ask
+  glob: allow
+  grep: allow
   task:
     '*': ask
   skill:
