@@ -5,7 +5,7 @@ mode: subagent
 depth: L2
 lineage: hm
 temperature: 0.05
-instructions:
+instruction:
   - .opencode/rules/anti-patterns.md
   - opencode/rules/execution-loop.md
   - .opencode/rules/skill-activation.md
