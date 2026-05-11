@@ -13,6 +13,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 // Mock config-subscriber BEFORE importing resolution module
 vi.mock("../../../src/config/subscriber.js", () => ({
   getConfig: vi.fn(),
+  getFreshConfig: vi.fn(),
 }))
 
 // Mock profile-resolver
@@ -20,7 +21,7 @@ vi.mock("../../../src/routing/session-entry/profile-resolver.js", () => ({
   resolveProfile: vi.fn(),
 }))
 
-import { getConfig } from "../../../src/config/subscriber.js"
+import { getConfig, getFreshConfig } from "../../../src/config/subscriber.js"
 import { resolveProfile } from "../../../src/routing/session-entry/profile-resolver.js"
 import { BehavioralProfiles } from "../../../src/routing/behavioral-profile/profiles.js"
 import {
@@ -39,7 +40,7 @@ import type {
 // Test helpers
 // ---------------------------------------------------------------------------
 
-const mockGetConfig = vi.mocked(getConfig)
+const mockGetFreshConfig = vi.mocked(getFreshConfig)
 const mockResolveProfile = vi.mocked(resolveProfile)
 
 /** Creates a minimal mock config with sensible defaults. */
@@ -162,7 +163,7 @@ describe("mapLevelToExpertise", () => {
 describe("resolveBehavioralProfile", () => {
   beforeEach(() => {
     clearAllBehavioralProfiles()
-    mockGetConfig.mockReset()
+    mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
@@ -171,7 +172,7 @@ describe("resolveBehavioralProfile", () => {
   })
 
   it("resolves a complete profile for expert-advisor mode", () => {
-    mockGetConfig.mockReturnValue(createMockConfig())
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     const result = resolveBehavioralProfile("sess-1", "/project")
@@ -186,7 +187,7 @@ describe("resolveBehavioralProfile", () => {
   })
 
   it("resolves correct profile for hivemind-powered mode", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({ mode: "hivemind-powered" }),
     )
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
@@ -199,7 +200,7 @@ describe("resolveBehavioralProfile", () => {
   })
 
   it("resolves correct profile for free-style mode", () => {
-    mockGetConfig.mockReturnValue(createMockConfig({ mode: "free-style" }))
+    mockGetFreshConfig.mockReturnValue(createMockConfig({ mode: "free-style" }))
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     const result = resolveBehavioralProfile("sess-3", "/project")
@@ -210,7 +211,7 @@ describe("resolveBehavioralProfile", () => {
   })
 
   it("applies config-first merge: user_expert_level overrides runtime expertise", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({ user_expert_level: "architecture-driven" }),
     )
     mockResolveProfile.mockReturnValue(
@@ -230,7 +231,7 @@ describe("resolveBehavioralProfile", () => {
       expertise: "senior",
       matchConfidence: 0.68,
     })
-    mockGetConfig.mockReturnValue(createMockConfig())
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(runtimeData)
 
     const result = resolveBehavioralProfile("sess-5", "/project")
@@ -241,7 +242,7 @@ describe("resolveBehavioralProfile", () => {
   })
 
   it("passes session context through to resolveProfile", () => {
-    mockGetConfig.mockReturnValue(createMockConfig())
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     const ctx = { messageLength: 250, technicalTerms: ["tdd", "cqrs"] }
@@ -251,7 +252,7 @@ describe("resolveBehavioralProfile", () => {
   })
 
   it("preserves non-English language config", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({
         conversation_language: "vi",
         documents_and_artifacts_language: "ja",
@@ -273,7 +274,7 @@ describe("resolveBehavioralProfile", () => {
 describe("caching behavior", () => {
   beforeEach(() => {
     clearAllBehavioralProfiles()
-    mockGetConfig.mockReset()
+    mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
@@ -281,52 +282,53 @@ describe("caching behavior", () => {
     clearAllBehavioralProfiles()
   })
 
-  it("caches by sessionId — second call does not read config", () => {
-    mockGetConfig.mockReturnValue(createMockConfig())
+  it("always reads fresh config — each call produces a new profile", () => {
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     const first = resolveBehavioralProfile("sess-c1", "/project")
     const second = resolveBehavioralProfile("sess-c1", "/project")
 
-    expect(first).toBe(second) // Same reference
-    expect(mockGetConfig).toHaveBeenCalledTimes(1)
+    // No longer cached — each call reads fresh config and produces new object
+    expect(first).not.toBe(second)
+    expect(mockGetFreshConfig).toHaveBeenCalledTimes(2)
   })
 
-  it("different sessionIds produce independent cache entries", () => {
-    mockGetConfig.mockReturnValue(createMockConfig())
+  it("different sessionIds each trigger fresh config reads", () => {
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     resolveBehavioralProfile("sess-c2a", "/project")
     resolveBehavioralProfile("sess-c2b", "/project")
 
-    expect(mockGetConfig).toHaveBeenCalledTimes(2)
+    expect(mockGetFreshConfig).toHaveBeenCalledTimes(2)
   })
 
-  it("invalidateBehavioralProfile clears a specific session", () => {
-    mockGetConfig.mockReturnValue(createMockConfig())
+  it("invalidateBehavioralProfile is a no-op — always reads fresh config", () => {
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     resolveBehavioralProfile("sess-c3", "/project")
-    expect(mockGetConfig).toHaveBeenCalledTimes(1)
+    expect(mockGetFreshConfig).toHaveBeenCalledTimes(1)
 
     invalidateBehavioralProfile("sess-c3")
     resolveBehavioralProfile("sess-c3", "/project")
-    expect(mockGetConfig).toHaveBeenCalledTimes(2)
+    expect(mockGetFreshConfig).toHaveBeenCalledTimes(2)
   })
 
   it("clearAllBehavioralProfiles resets entire cache", () => {
-    mockGetConfig.mockReturnValue(createMockConfig())
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     resolveBehavioralProfile("sess-c4a", "/project")
     resolveBehavioralProfile("sess-c4b", "/project")
-    expect(mockGetConfig).toHaveBeenCalledTimes(2)
+    expect(mockGetFreshConfig).toHaveBeenCalledTimes(2)
 
     clearAllBehavioralProfiles()
 
     resolveBehavioralProfile("sess-c4a", "/project")
     resolveBehavioralProfile("sess-c4b", "/project")
-    expect(mockGetConfig).toHaveBeenCalledTimes(4)
+    expect(mockGetFreshConfig).toHaveBeenCalledTimes(4)
   })
 })
 
@@ -346,7 +348,7 @@ describe("type shape contracts", () => {
   })
 
   it("ResolvedBehavioralProfile satisfies full shape", () => {
-    mockGetConfig.mockReturnValue(createMockConfig())
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
 
     const result: ResolvedBehavioralProfile = resolveBehavioralProfile(
@@ -390,7 +392,7 @@ describe("type shape contracts", () => {
 describe("language pipeline feature evaluation", () => {
   beforeEach(() => {
     clearAllBehavioralProfiles()
-    mockGetConfig.mockReset()
+    mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
   })
@@ -403,7 +405,7 @@ describe("language pipeline feature evaluation", () => {
 
   for (const lang of supportedLanguages) {
     it(`resolves conversation_language: "${lang}" correctly`, () => {
-      mockGetConfig.mockReturnValue(
+      mockGetFreshConfig.mockReturnValue(
         createMockConfig({ conversation_language: lang }),
       )
 
@@ -414,7 +416,7 @@ describe("language pipeline feature evaluation", () => {
 
   for (const lang of supportedLanguages) {
     it(`resolves documents_and_artifacts_language: "${lang}" correctly`, () => {
-      mockGetConfig.mockReturnValue(
+      mockGetFreshConfig.mockReturnValue(
         createMockConfig({ documents_and_artifacts_language: lang }),
       )
 
@@ -424,7 +426,7 @@ describe("language pipeline feature evaluation", () => {
   }
 
   it("resolves mixed language pair (vi/en) matching real user config", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({
         conversation_language: "vi",
         documents_and_artifacts_language: "en",
@@ -440,7 +442,7 @@ describe("language pipeline feature evaluation", () => {
   })
 
   it("resolves CJK language pair (ja/zh)", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({
         conversation_language: "ja",
         documents_and_artifacts_language: "zh",
@@ -464,7 +466,7 @@ describe("language pipeline feature evaluation", () => {
 describe("multi-level expertise merge feature evaluation", () => {
   beforeEach(() => {
     clearAllBehavioralProfiles()
-    mockGetConfig.mockReset()
+    mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
@@ -473,7 +475,7 @@ describe("multi-level expertise merge feature evaluation", () => {
   })
 
   it("clumsy-vibecoder maps to junior, overriding runtime senior", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({ user_expert_level: "clumsy-vibecoder" }),
     )
     mockResolveProfile.mockReturnValue(
@@ -485,7 +487,7 @@ describe("multi-level expertise merge feature evaluation", () => {
   })
 
   it("beginner-friendly maps to junior, overriding runtime mid", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({ user_expert_level: "beginner-friendly" }),
     )
     mockResolveProfile.mockReturnValue(
@@ -497,7 +499,7 @@ describe("multi-level expertise merge feature evaluation", () => {
   })
 
   it("absolute-expert maps to senior, overriding runtime junior", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({ user_expert_level: "absolute-expert" }),
     )
     mockResolveProfile.mockReturnValue(
@@ -520,7 +522,7 @@ describe("multi-level expertise merge feature evaluation", () => {
 describe("real-life config scenario (CA-01→CA-02 integration)", () => {
   beforeEach(() => {
     clearAllBehavioralProfiles()
-    mockGetConfig.mockReset()
+    mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
@@ -529,7 +531,7 @@ describe("real-life config scenario (CA-01→CA-02 integration)", () => {
   })
 
   it("produces correct resolved profile for actual configs.json values", () => {
-    mockGetConfig.mockReturnValue(
+    mockGetFreshConfig.mockReturnValue(
       createMockConfig({
         conversation_language: "vi",
         documents_and_artifacts_language: "en",

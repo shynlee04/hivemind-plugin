@@ -1,10 +1,12 @@
 /**
- * Behavioral profile resolution with lazy caching.
+ * Behavioral profile resolution.
  *
  * @module behavioral-profile/resolve-behavioral-profile
  * @description Resolves a unified ResolvedBehavioralProfile for a session by
  * merging static config values, mode lookup, and runtime profile detection.
- * Results are cached per sessionId for the session lifetime.
+ *
+ * Always reads fresh config from disk so language/governance changes
+ * take effect immediately without a plugin restart.
  *
  * Merge strategy: config-first with runtime fallback (D-06).
  *
@@ -14,12 +16,9 @@
 import type { UserExpertLevel } from "../../schema-kernel/hivemind-configs.schema.js"
 import type { Expertise } from "../session-entry/profile-resolver.js"
 import type { ResolvedBehavioralProfile } from "./types.js"
-import { getConfig } from "../../config/subscriber.js"
+import { getFreshConfig } from "../../config/subscriber.js"
 import { resolveProfile } from "../session-entry/profile-resolver.js"
 import { BehavioralProfiles } from "./profiles.js"
-
-/** Module-level cache: sessionId → resolved profile. */
-const profileCache = new Map<string, ResolvedBehavioralProfile>()
 
 /**
  * Maps a UserExpertLevel config value to a profile Expertise level.
@@ -27,12 +26,6 @@ const profileCache = new Map<string, ResolvedBehavioralProfile>()
  *
  * @param level - The user_expert_level from configs.json
  * @returns Mapped expertise level, or undefined for fallback
- *
- * @example
- * ```typescript
- * mapLevelToExpertise("architecture-driven") // "senior"
- * mapLevelToExpertise("clumsy-vibecoder")    // "junior"
- * ```
  */
 export function mapLevelToExpertise(level: UserExpertLevel): Expertise | undefined {
   switch (level) {
@@ -50,36 +43,23 @@ export function mapLevelToExpertise(level: UserExpertLevel): Expertise | undefin
 }
 
 /**
- * Resolves the behavioral profile for a session. Lazy — computes on first
- * call, caches by sessionId for session lifetime.
+ * Resolves the behavioral profile for a session.
  *
- * @param sessionId - Unique session identifier for cache key
+ * Always reads fresh config from disk so language/governance changes
+ * take effect immediately without a plugin restart.
+ *
+ * @param sessionId - Unique session identifier
  * @param projectRoot - Absolute path to project root (for config read)
  * @param sessionContext - Optional session context for runtime profile detection
- * @returns The unified resolved behavioral profile
- *
- * @example
- * ```typescript
- * const profile = resolveBehavioralProfile("sess-1", "/project")
- * console.log(profile.mode)                      // "expert-advisor"
- * console.log(profile.behavioralProfile.guardrailLevel) // "moderate"
- * console.log(profile.merged.expertise)           // "mid"
- * ```
- *
- * @see D-06 Config-first merge strategy
- * @see D-08 Lazy-cache resolution pattern
+ * @returns The unified resolved behavioral profile with current config values
  */
 export function resolveBehavioralProfile(
-  sessionId: string,
+  _sessionId: string,
   projectRoot: string,
   sessionContext?: Record<string, unknown>,
 ): ResolvedBehavioralProfile {
-  const cached = profileCache.get(sessionId)
-  if (cached) {
-    return cached
-  }
-
-  const config = getConfig(projectRoot)
+  // Always use fresh config — picks up language/governance changes without restart.
+  const config = getFreshConfig(projectRoot)
   const mode = config.mode as keyof typeof BehavioralProfiles
   const behavioralProfile = BehavioralProfiles[mode]
   const runtimeProfile = resolveProfile(sessionContext)
@@ -87,7 +67,7 @@ export function resolveBehavioralProfile(
   // Config-first merge: mapLevelToExpertise wins if defined, else runtime
   const configExpertise = mapLevelToExpertise(config.user_expert_level)
 
-  const resolved: ResolvedBehavioralProfile = {
+  return {
     mode,
     behavioralProfile,
     language: {
@@ -103,34 +83,21 @@ export function resolveBehavioralProfile(
       decisionSpeed: runtimeProfile.decisionSpeed,
     },
   }
-
-  profileCache.set(sessionId, resolved)
-  return resolved
 }
 
 /**
- * Invalidates the cached behavioral profile for a session.
- * Call on session teardown to prevent memory leaks.
- *
- * @param sessionId - Session to invalidate
- *
- * @example
- * ```typescript
- * invalidateBehavioralProfile("sess-1")
- * ```
+ * @deprecated The behavioral profile no longer caches per-session results.
+ *             Each resolution reads fresh config from disk. This function
+ *             is a no-op, kept for backward compatibility.
  */
-export function invalidateBehavioralProfile(sessionId: string): void {
-  profileCache.delete(sessionId)
+export function invalidateBehavioralProfile(_sessionId: string): void {
+  // no-op — profile no longer cached
 }
 
 /**
- * Clears all cached behavioral profiles. For testing only.
- *
- * @example
- * ```typescript
- * clearAllBehavioralProfiles() // resets entire cache
- * ```
+ * @deprecated The behavioral profile no longer caches results.
+ *             This function is a no-op, kept for backward compatibility.
  */
 export function clearAllBehavioralProfiles(): void {
-  profileCache.clear()
+  // no-op — profile no longer cached
 }
