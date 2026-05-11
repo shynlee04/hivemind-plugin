@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: Hivemind Core
 current_phase: 11 — Governance Reconciliation
 status: active
-last_updated: "2026-05-11T15:58:58.764Z"
+last_updated: "2026-05-11T16:21:54.000Z"
 progress:
   total_phases: 31
   completed_phases: 2
   total_plans: 28
-  completed_plans: 13
-  percent: 46
+  completed_plans: 14
+  percent: 50
 ---
 
 # Hivemind — State
@@ -82,10 +82,9 @@ Cycle 3 (Routing Foundation) pending governance reconciliation and CP-PTY-01 com
 
 ## GOV-01 Progress
 
-**Plans completed:** 4 of 5 (11-01 STATE.md rewrite, 11-02 STATE.md numeric refresh, 11-03 PROJECT.md + REQUIREMENTS.md reconciliation, 11-05 CONTEXT.md + 11-TRUTH-MATRIX.md creation).  
-**In progress:** Plan 04 (ROADMAP.md reconciliation).  
-**Remaining:** 7 sector AGENTS.md audits against live evidence (completed as 11-05).  
-**Truth baseline:** All numeric claims cross-referenced against live filesystem evidence via 11-TRUTH-MATRIX.md (27 claims across 13 governance files). Stale corrections applied: plugin LOC 447→242, test count 1767→1978, test files 125→149, skill dirs 123→125, .hivemind dirs 19→11, AGENTS.md files 9→7, progress percent 90→43.
+**Plans completed:** 5 of 5 (11-01 STATE.md rewrite, 11-02 STATE.md numeric refresh, 11-03 PROJECT.md + REQUIREMENTS.md reconciliation, 11-04 ROADMAP.md reconciliation, 11-05 7 sector AGENTS.md audits).  
+**Status:** All 5 GOV-01 plans complete. Governance reconciliation phase finished.  
+**Truth baseline:** All numeric claims cross-referenced against live filesystem evidence via 11-TRUTH-MATRIX.md (27 claims across 13 governance files). Stale corrections applied: plugin LOC 447→242, test count 1767→1978, test files 125→149, skill dirs 123→125, .hivemind dirs 19→11, AGENTS.md files 9→7, progress percent 90→50.
 
 ## Archived Content
 
@@ -148,6 +147,6 @@ Git history preserves the pre-rewrite STATE.md. All numeric claims verified agai
 
 ---
 
-*State updated 2026-05-11 for Phase 11 governance reconciliation (GOV-01, Plan 02). Historical STATE.md sections archived to `.planning/archive/state-history/` (6 date-stamped files). All numeric claims cross-referenced against 11-TRUTH-MATRIX.md — 19 stale corrections applied, 6 confirmed accurate. Git history preserves the pre-rewrite STATE.md (216 lines, 13 sections → runway-focused form).
+*State updated 2026-05-11 for Phase 11 governance reconciliation (GOV-01, Plan 04 completion). All 5 GOV-01 plans complete. ROADMAP.md fully audited: GOV-01/CP-ST-02 entries added, stale numeric claims corrected, dependency chains verified, [UNVERIFIED] markers added where evidence missing.
 
-Next update: GOV-01 Plan 04 completion (ROADMAP.md reconciliation — GOV-01/CP-ST-02 rows, stale phase counts, dependency chain verification).*
+Next: Phase completion — CP-PTY-01 execution or next authorized workstream.*
