@@ -125,12 +125,14 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
 | CP-ST-01 | Session Tracker Revamp | 🔵 PLANNED | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: hook wiring tests, file format validation, migration verification |
+| CP-ST-02 | Session Tracker Remediation | ⬜ NOT PLANNED | CP-ST-01 completion, GOV-01 completion | L2-L3: fix 12 catalogued flaws (F1-F12) from audit register, re-verify hook wiring, migration validation |
 
 **Plans:**
 - [ ] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)
 - [ ] CP-ST-01-02-PLAN.md — Capture Handlers + Index Writers (Wave 2)
 - [ ] CP-ST-01-03-PLAN.md — Integration + Recovery + Tool (Wave 3)
 - [ ] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
+- [ ] CP-ST-02-01-PLAN.md — Flaw Remediation + Re-Verification (to be planned)
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
@@ -321,6 +323,30 @@ src/
 
 ---
 
+## Active Workstream: Governance Reconciliation (WS-GOV)
+
+| Phase | Title | Status | Depends On | Evidence Required |
+|-------|-------|--------|------------|-------------------|
+| GOV-01 | Governance Reconciliation — Update All Core Artifacts | 🔵 IN PROGRESS | Phase 0 governance baseline, SR-10 completion, BOOT-07 E2E proof | L5: 11-TRUTH-MATRIX.md, updated STATE.md/PROJECT.md/REQUIREMENTS.md/ROADMAP.md, 7 audited AGENTS.md files |
+
+### GOV-01 Scope: Full Governance Artifact Reconciliation
+
+Reconcile all core governance artifacts to reflect current project reality per decisions D-01 through D-15. Update STATE.md as anchor (~175 lines runway-focused), ripple corrections outward through PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and 7 sector AGENTS.md files.
+
+**Deliverables:**
+- `11-TRUTH-MATRIX.md` — committed truth baseline cross-referencing 50+ claims across 13 files
+- Updated `.planning/STATE.md` — runway-focused (150-210 lines)
+- Updated `.planning/PROJECT.md` — all numeric claims verified
+- Updated `.planning/REQUIREMENTS.md` — statuses cross-checked against phase evidence
+- Updated `.planning/ROADMAP.md` — GOV-01 and CP-ST-02 entries added, stale statuses fixed
+- Audited `AGENTS.md` (root) + `src/AGENTS.md` + `.opencode/AGENTS.md` + `.planning/AGENTS.md` + `.hivemind/AGENTS.md` + `.hivefiver-meta-builder/AGENTS.md` + `tests/AGENTS.md`
+- `.planning/archive/state-history/` — 6 historical files extracted from STATE.md
+
+**In scope:** Documentation verification and correction only. No runtime code changes.  
+**Out of scope:** Creating new AGENTS.md files (D-15), runtime readiness proof, sidecar integration.
+
+---
+
 ## Deliverables & Timeline
 
 | Wave | What | Blocks |
@@ -333,6 +359,7 @@ src/
 | **Wave 3.6** | CP-PTY-02 SDK Session Delegation Integration | Depends on CP-PTY-01 + BOOT-08 |
 | **Wave 3.7** | CP-PTY-03 Agent/Subagent Background Task Coordination | Depends on CP-PTY-02 + BOOT-08 |
 | **Wave 3.8** | CP-PTY-04 Cross-Cutting Shell Integration | Depends on CP-PTY-03 + MCM-03 |
+| **Wave 3.9** | GOV-01 Governance Reconciliation | Depends on Phase 0 + SR-10 + BOOT-07 |
 | **Wave 4** | MCM-01 Agent Migration + MCM-02 Skill Migration | Depends on Phase 0 + BOOT-04 (symlinks exist) |
 | **Wave 5** | MCM-03 Config Integration + MCM-04 Customization | Depends on Phase 0 + Wave 4 + BOOT-06 |
 | **Wave 6** | f-04 Auto-commands + Workflow Router | Depends on Phase 0 + BOOT + MCM; also depends on CP-PTY-00..04 if router invokes command/session lanes |
@@ -356,6 +383,7 @@ Rules:
 - Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01..04 or routing expansion.
 - MCM continuation pending BOOT-04 symlinks.
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
+  - CP-ST-02 will follow CP-ST-01 after GOV-01 provides reconciled evidence baseline.
 
 ---
 *Last updated: 2026-05-11 — Phase 11 governance reconciliation. GOV-01 and CP-ST-02 entries added (see Phase 11 and Phase 12 sections below). All phase statuses audited against phase directory evidence. Numeric claims verified against 11-TRUTH-MATRIX.md.*
