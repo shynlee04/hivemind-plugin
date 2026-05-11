@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { createCoreHooks } from "../../src/hooks/lifecycle/core-hooks.js"
+import { createSessionIsMainObserver } from "../../src/hooks/observers/event-observers.js"
 import type { HookDependencies } from "../../src/hooks/types.js"
 import type { ResolvedBehavioralProfile } from "../../src/routing/behavioral-profile/types.js"
 import type { IntakeResult } from "../../src/routing/session-entry/intake-gate.js"
@@ -823,7 +824,7 @@ describe("createCoreHooks", () => {
         lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
         getIntake: () => createFakeIntake(),
         getBehavioralProfile: () => createFakeBehavioralProfile(),
-        hivemindConfig: options.hivemindConfig ?? createLangHivemindConfig(),
+        hivemindConfig: "hivemindConfig" in options ? options.hivemindConfig : createLangHivemindConfig(),
         ...(addIsMain ? { isMainSession: () => options.isMain! } : {}),
       }
     }
@@ -935,6 +936,66 @@ describe("createCoreHooks", () => {
       await hooks["system.transform"]({ sessionID: "ses_lang_no_is_main" }, output)
       const system = output.system as string[]
       expect(system.every((s) => !s.includes("--- Language Governance ---"))).toBe(true)
+    })
+
+    // -----------------------------------------------------------------------
+    // Integration: isMainSession factory used through createCoreHooks pipeline
+    // Mirrors how plugin.ts wires the factory (D-04, D-02).
+    // -----------------------------------------------------------------------
+
+    it("Test 12: real isMainSession factory — main session gets language block through createCoreHooks", async () => {
+      const factory = createSessionIsMainObserver()
+      const config = createLangHivemindConfig()
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig: config,
+        isMainSession: factory.isMainSession,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      // Simulate session.created event to populate the cache (D-02).
+      // The event must use the nested properties.info format for session-api helpers.
+      await factory.observer({
+        event: {
+          type: "session.created",
+          properties: { info: { id: "ses_integ_main", title: "t", version: "1", time: { created: 1, updated: 1 } } },
+        },
+      })
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_integ_main" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Language Governance ---")
+    })
+
+    it("Test 13: real isMainSession factory — child session with parentID gets NO language block", async () => {
+      const factory = createSessionIsMainObserver()
+      const config = createLangHivemindConfig()
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig: config,
+        isMainSession: factory.isMainSession,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      // Simulate a child session — has parentID in the nested info structure (D-03).
+      // getEventParentID reads from event.properties.info.parentID.
+      await factory.observer({
+        event: {
+          type: "session.created",
+          properties: { info: { id: "ses_integ_child", parentID: "ses_parent", title: "t", version: "1", time: { created: 1, updated: 1 } } },
+        },
+      })
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_integ_child" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Governance ---")
+      expect(system[0]).not.toContain("--- Language Governance ---")
     })
   })
 })
