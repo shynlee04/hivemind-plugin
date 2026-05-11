@@ -38,6 +38,7 @@ export type { ReconsumptionResult, SessionContext } from "./recovery/session-rec
 // NOTE: OpenCodeClient type is imported from shared/session-api.
 // We use a lightweight import to avoid circular dependencies.
 import type { OpenCodeClient } from "../../shared/session-api.js"
+import { getSession } from "../../shared/session-api.js"
 import { EventCapture } from "./capture/event-capture.js"
 import { MessageCapture } from "./capture/message-capture.js"
 import { ToolCapture } from "./capture/tool-capture.js"
@@ -47,7 +48,9 @@ import { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
+import { readFile } from "node:fs/promises"
 import { isValidSessionID } from "./types.js"
+import { safeSessionPath } from "./persistence/atomic-write.js"
 
 /**
  * Central session tracker class.
@@ -172,11 +175,105 @@ export class SessionTracker {
       if (this.eventCapture) {
         await this.eventCapture.handleSessionEvent(event)
       }
+
+      // Fork handling: when a new main session is created from a checkpoint,
+      // reference-copy child delegation records from the parent session.
+      // This ensures the forked session shares the same child .json files
+      // without duplicating data (reference-copy, not deep-copy — IN-02).
+      if (
+        event.eventType === "session.created" &&
+        this.projectIndexWriter &&
+        this.sessionIndexWriter
+      ) {
+        try {
+          const session = await this.getSessionSafely(event.sessionID)
+          const parentID =
+            session && typeof session === "object" && "parentID" in session
+              ? (session as { parentID?: string }).parentID
+              : undefined
+          if (parentID) {
+            await this.copyForkedChildren(event.sessionID, parentID)
+          }
+        } catch {
+          // Parent index may not exist — that's fine, fork proceeds without children
+        }
+      }
     } catch (err) {
       console.warn(
         "[Harness] Session tracker: event handler failed:",
         err,
       )
+    }
+  }
+
+  /**
+   * Reference-copies child delegation records from a parent session to
+   * a newly-forked session. Both sessions share the same child .json files
+   * (reference-copy, not deep-copy) to prevent split-brain data divergence
+   * (IN-02, T-12-11).
+   *
+   * @param newSessionID - The newly created forked session ID.
+   * @param parentID - The parent session ID to inherit children from.
+   */
+  private async copyForkedChildren(
+    newSessionID: string,
+    parentID: string,
+  ): Promise<void> {
+    if (!isValidSessionID(parentID)) return
+
+    const parentIndexPath = safeSessionPath(
+      this.projectRoot,
+      parentID,
+      "session-continuity.json",
+    )
+
+    let parentIndex: Record<string, unknown> | null = null
+    try {
+      const raw = await readFile(parentIndexPath, "utf-8")
+      parentIndex = JSON.parse(raw) as Record<string, unknown>
+    } catch {
+      // Parent index doesn't exist or is unreadable — nothing to copy
+      return
+    }
+
+    const hierarchy = parentIndex?.hierarchy as
+      | { children?: Record<string, { file?: string; depth?: number; delegatedBy?: string }> }
+      | undefined
+    const parentChildren = hierarchy?.children
+    if (!parentChildren || Object.keys(parentChildren).length === 0) {
+      return
+    }
+
+    // Reference-copy children into the new session's index
+    for (const [childId, childEntry] of Object.entries(parentChildren)) {
+      try {
+        await this.sessionIndexWriter.addChild(
+          newSessionID,
+          childId,
+          childEntry.file || `${childId}.json`,
+          childEntry.depth || 1,
+          childEntry.delegatedBy || "forked",
+        )
+      } catch {
+        // Best-effort per child — one failure shouldn't block others
+      }
+    }
+  }
+
+  /**
+   * Safely retrieves a session via the SDK client without throwing.
+   *
+   * @param sessionID - The session identifier to look up.
+   * @returns The session object, or `undefined` if not found.
+   */
+  private async getSessionSafely(
+    sessionID: string,
+  ): Promise<unknown> {
+    if (!isValidSessionID(sessionID)) return undefined
+    try {
+      return await getSession(this.client, sessionID)
+    } catch {
+      return undefined
     }
   }
 
