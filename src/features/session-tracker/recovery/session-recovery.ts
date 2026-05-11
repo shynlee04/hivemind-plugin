@@ -15,7 +15,8 @@
 
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
-import { sessionTrackerRoot } from "../persistence/atomic-write.js"
+import { sessionTrackerRoot, safeSessionPath } from "../persistence/atomic-write.js"
+import { isValidSessionID } from "../types.js"
 import { getSessionMessages } from "../../../shared/session-api.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
 import type { ProjectContinuityIndex, ProjectSessionEntry } from "../types.js"
@@ -256,15 +257,23 @@ export class SessionRecovery {
   }
 
   /**
-   * Reads the persisted session `.md` file content.
+   * Reads the persisted session `.md` file content using safe path construction.
+   *
+   * Applies path safety via `safeSessionPath()` and input validation via
+   * `isValidSessionID()` before ANY path operations (CR-01).
    *
    * @param sessionID - The session identifier.
    * @returns The file content, or `null` if the file is missing.
    */
   private async readSessionFile(sessionID: string): Promise<string | null> {
     try {
-      const trackerRoot = sessionTrackerRoot(this.projectRoot)
-      const filePath = resolve(trackerRoot, sessionID, `${sessionID}.md`)
+      if (!isValidSessionID(sessionID)) {
+        console.warn(
+          `[Harness] Session recovery: invalid sessionID rejected: "${sessionID}"`,
+        )
+        return null
+      }
+      const filePath = safeSessionPath(this.projectRoot, sessionID, `${sessionID}.md`)
       const content = await readFile(filePath, "utf-8")
       return content
     } catch {

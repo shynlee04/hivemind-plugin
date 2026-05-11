@@ -125,6 +125,9 @@ export class EventCapture {
         case "session.error":
           await this.handleSessionError(event.sessionID)
           break
+        case "session.compacted":
+          await this.handleSessionCompacted(event.sessionID, event.event as Record<string, unknown>)
+          break
         default:
           console.warn(
             `[Harness] Session tracker: unknown event type "${event.eventType}"`,
@@ -257,6 +260,31 @@ export class EventCapture {
     } catch (err) {
       console.warn(
         `[Harness] Session tracker: failed to handle session.error for "${sessionID}":`,
+        err,
+      )
+    }
+  }
+
+  /**
+   * Handles `session.compacted` — writes a compaction block to the session .md file (D-10).
+   *
+   * Records the compaction timestamp and references session-continuity.json
+   * for active delegations and pending work at time of compaction.
+   */
+  private async handleSessionCompacted(
+    sessionID: string,
+    _event: Record<string, unknown> | undefined,
+  ): Promise<void> {
+    try {
+      const now = new Date().toISOString()
+      const section =
+        `## COMPACTED (${now})\n\n` +
+        `**Pre-compaction state preserved.** See \`session-continuity.json\` for ` +
+        `active delegations and pending work at time of compaction.\n`
+      await this.sessionWriter.appendCompactionBlock(sessionID, section)
+    } catch (err) {
+      console.warn(
+        `[Harness] Session tracker: compaction capture failed for "${sessionID}":`,
         err,
       )
     }

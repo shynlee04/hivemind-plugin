@@ -165,6 +165,21 @@ export class SessionWriter {
   }
 
   /**
+   * Appends a compaction block to the session `.md` file (D-10).
+   *
+   * Captures the timestamp and references session-continuity.json for
+   * post-compaction context recovery.
+   *
+   * @param sessionID - The session identifier.
+   * @param block - The compaction block markdown content.
+   * @returns Promise that resolves when the block is appended.
+   */
+  async appendCompactionBlock(sessionID: string, block: string): Promise<void> {
+    const filePath = this.getSessionFilePath(sessionID)
+    await atomicAppendMarkdown(filePath, block)
+  }
+
+  /**
    * Reads, merges, and atomically writes updated frontmatter.
    *
    * Parses existing YAML frontmatter via `gray-matter`, merges the provided

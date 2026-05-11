@@ -94,7 +94,11 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
   // Initialize session tracker (reads project-continuity.json, creates writers).
   // Fire-and-forget: must not block plugin init.
-  void sessionTracker.initialize()
+  void sessionTracker.initialize().then(() => {
+    return sessionTracker.cleanup()
+  }).catch((err) => {
+    console.warn("[Harness] Session tracker: init+cleanup failed:", err)
+  })
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
 
