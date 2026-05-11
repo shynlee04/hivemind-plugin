@@ -204,19 +204,16 @@ describe("migrateKeys", () => {
       documentsLanguage: "vi",
       userExpertLevel: "absolute-expert",
       delegationSystems: { native_task: true },
-      documentPaths: [".docs/"],
     }
     migrateKeys(raw)
     expect(raw.conversation_language).toBe("en")
     expect(raw.documents_and_artifacts_language).toBe("vi")
     expect(raw.user_expert_level).toBe("absolute-expert")
     expect(raw.delegation_systems).toEqual({ native_task: true })
-    expect(raw.document_paths).toEqual([".docs/"])
     // Old keys removed
     expect("conversationLanguage" in raw).toBe(false)
     expect("documentsLanguage" in raw).toBe(false)
     expect("userExpertLevel" in raw).toBe(false)
-    expect("documentPaths" in raw).toBe(false)
   })
 
   it("does not overwrite existing snake_case keys", () => {
@@ -299,43 +296,6 @@ describe("HivemindConfigsSchema", () => {
     }
   })
 
-  it("document_paths defaults to [.hivemind/planning/] when not provided", () => {
-    const result = sp(HivemindConfigsSchema, {})
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.document_paths).toEqual([".hivemind/planning/"])
-    }
-  })
-
-  it("document_paths accepts custom paths", () => {
-    const result = sp(HivemindConfigsSchema, { document_paths: [".docs/"] })
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.document_paths).toEqual([".docs/"])
-    }
-  })
-
-  it("documentPaths camelCase is migrated to document_paths via LEGACY_KEY_MAP", () => {
-    const raw: Record<string, unknown> = { documentPaths: [".custom/"] }
-    migrateKeys(raw)
-    expect(raw.document_paths).toEqual([".custom/"])
-    expect("documentPaths" in raw).toBe(false)
-  })
-
-  it("document_paths accepts multiple paths", () => {
-    const result = sp(HivemindConfigsSchema, {
-      document_paths: [".hivemind/planning/", ".docs/", ".notes/"],
-    })
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.document_paths).toEqual([".hivemind/planning/", ".docs/", ".notes/"])
-    }
-  })
-
-  it("document_paths rejects non-string array elements", () => {
-    expect(sp(HivemindConfigsSchema, { document_paths: [42] }).success).toBe(false)
-  })
-
   it("rejects invalid mode", () => {
     expect(sp(HivemindConfigsSchema, { mode: "invalid" }).success).toBe(false)
   })
@@ -410,7 +370,6 @@ describe("getDefaultConfigs", () => {
     expect(defaults.parallelization).toBe(true)
     expect(defaults.atomic_commit).toBe(true)
     expect(defaults.commit_docs).toBe(true)
-    expect(defaults.document_paths).toEqual([".hivemind/planning/"])
     expect(defaults.workflow.research).toBe(true)
     expect(defaults.workflow.discuss_mode).toBe("sufficient-phase-discussion")
   })
