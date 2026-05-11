@@ -37,6 +37,18 @@ export class ProjectIndexWriter {
   private projectRoot: string
 
   /**
+   * Timestamp of the last successful write (epoch ms).
+   * Initialized to now so the queue is immediately "healthy."
+   */
+  private lastWriteTime: number = Date.now()
+
+  /**
+   * Duration of write inactivity before the queue is detected as stale
+   * and auto-recovered (5 minutes).
+   */
+  private static readonly STALE_QUEUE_MS = 300_000
+
+  /**
    * Promise-based serial queue. Each write chains after the previous one.
    * Initialized to a resolved promise to allow the first write to proceed.
    */
@@ -222,22 +234,65 @@ export class ProjectIndexWriter {
   }
 
   /**
+   * Checks if the write queue has been idle beyond the stale threshold.
+   *
+   * If `lastWriteTime` is older than `STALE_QUEUE_MS`, logs a warning
+   * and resets the queue so subsequent writes are not blocked by a stuck
+   * preceding promise (DEFECT-02).
+   */
+  private detectStaleQueue(): void {
+    if (Date.now() - this.lastWriteTime > ProjectIndexWriter.STALE_QUEUE_MS) {
+      console.warn(
+        `[Harness] Session tracker: project index write queue appears STALE ` +
+          `— last successful write was more than 5 minutes ago. Resetting queue.`,
+      )
+      this.writeQueue = Promise.resolve()
+    }
+  }
+
+  /**
+   * Returns the current health of the serial write queue.
+   *
+   * @returns Object with `lastWriteTime` as an ISO string and `stalled`
+   *   boolean indicating whether the queue has exceeded the stale threshold.
+   */
+  async getQueueHealth(): Promise<{ lastWriteTime: string; stalled: boolean }> {
+    return {
+      lastWriteTime: new Date(this.lastWriteTime).toISOString(),
+      stalled:
+        Date.now() - this.lastWriteTime > ProjectIndexWriter.STALE_QUEUE_MS,
+    }
+  }
+
+  /**
    * Enqueues a write operation into the serial queue.
    *
-   * Chains the provided function onto the end of `writeQueue` so that
-   * only one write is in-flight at a time. Errors are caught and logged
-   * to prevent a failed write from breaking the queue entirely.
+   * Stale-queue detection runs FIRST to auto-recover from a frozen pipeline.
+   * Chains the provided function onto the end of `writeQueue` so that only
+   * one write is in-flight at a time. Records `lastWriteTime` on success.
+   * Errors are caught and logged to prevent a failed write from breaking the
+   * queue entirely. A final `.then()` ensures the promise chain always resolves
+   * to void (DEFECT-02).
    *
    * @param fn - The write operation to enqueue.
    * @returns Promise that resolves when the enqueued write completes.
    */
   private async enqueueWrite(fn: () => Promise<void>): Promise<void> {
-    this.writeQueue = this.writeQueue.then(fn).catch((err) => {
-      console.warn(
-        "[Harness] Session tracker: project index write failed:",
-        err,
-      )
-    })
+    this.detectStaleQueue()
+
+    this.writeQueue = this.writeQueue
+      .then(async () => {
+        await fn()
+        this.lastWriteTime = Date.now()
+      })
+      .catch((err) => {
+        console.warn(
+          "[Harness] Session tracker: project index write failed:",
+          err,
+        )
+      })
+      .then(() => {})
+
     return this.writeQueue
   }
 }
