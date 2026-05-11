@@ -7,8 +7,6 @@ import type { HookDependencies } from "../../src/hooks/types.js"
 
 describe("HookDependencies — isMainSession", () => {
   it("includes isMainSession optional function type", () => {
-    // RED phase: isMainSession not yet on HookDependencies → @ts-expect-error needed
-    // @ts-expect-error — isMainSession not yet part of HookDependencies interface
     const deps: HookDependencies = {
       lifecycleManager: {} as any,
       client: {} as any,

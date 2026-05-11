@@ -42,4 +42,12 @@ export interface HookDependencies {
    * @see D-09, D-10 in CA-02-CONTEXT.md
    */
   getBehavioralProfile?: (sessionId: string) => ResolvedBehavioralProfile
+
+  /**
+   * Checks whether a session ID belongs to a main (level-0, non-delegated) session.
+   * Populated by `createSessionIsMainObserver()` from `session.created` events.
+   * Main sessions have no `parentID` in OpenCode's session records.
+   * @see D-01, D-02, D-03 in BOOT-09-CONTEXT.md
+   */
+  isMainSession?: (sessionId: string) => boolean
 }
