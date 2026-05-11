@@ -15,6 +15,7 @@ import { asString, getNestedValue, isObject, makeToolSignature } from "../../sha
 import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../../shared/runtime-policy.js"
 import type { RuntimePolicy } from "../../shared/types.js"
 import type { HarnessLifecycleManager } from "../../task-management/lifecycle/index.js"
+import type { HivemindConfigs } from "../../schema-kernel/hivemind-configs.schema.js"
 import type { TaskStateManager } from "../../shared/state.js"
 import { getDelegationMeta } from "../../shared/state.js"
 import { classifyHookEffect } from "../composition/cqrs-boundary.js"
@@ -27,6 +28,7 @@ export interface ToolGuardDependencies {
   stateManager: TaskStateManager
   lifecycleManager?: HarnessLifecycleManager
   runtimePolicy?: RuntimePolicy
+  hivemindConfig?: HivemindConfigs
 }
 
 // ---------------------------------------------------------------------------
@@ -105,6 +107,52 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
         throw new Error(
           `[Harness] Circuit breaker tripped for session ${sessionID} on repeated ${toolName} calls.`,
         )
+      }
+
+      // BOOT-09: Document Language Tool Guard (Layer 2 — D-11)
+      // Pre-execution language reminder for Write/Edit/apply_patch at document_paths.
+      // Per D-12: this is NOT content validation — it's a pre-execution instruction reminder.
+      const depsHivemindConfig = deps.hivemindConfig as HivemindConfigs | undefined
+      if (depsHivemindConfig?.documents_and_artifacts_language && depsHivemindConfig.document_paths) {
+        const docLang = depsHivemindConfig.documents_and_artifacts_language
+        const docPaths = depsHivemindConfig.document_paths
+        const args = getNestedValue(output, ["args"]) as Record<string, unknown> | undefined
+        let filePath: string | undefined
+
+        if (toolName === "write" || toolName === "edit") {
+          filePath = asString(getNestedValue(args, ["filePath"]))
+        } else if (toolName === "apply_patch") {
+          // apply_patch has no filePath field — inject generic reminder for MVP
+          // Per RESEARCH.md Pitfall 3 + Open Question 1: skip path-specific detection
+          const argsObj = args as Record<string, unknown> | undefined
+          const patchText = argsObj?.patchText
+          if (typeof patchText === "string") {
+            argsObj!["_languageReminder"] =
+              `REMINDER: All .md files in this patch MUST be written in ${docLang}.`
+          }
+        }
+
+        if (filePath) {
+          const isUnderDocPath = docPaths.some((p: string) => filePath!.includes(p))
+          if (isUnderDocPath && filePath.endsWith(".md")) {
+            // Prepend language instruction to content/newString
+            const reminder =
+              `[LANGUAGE: Write this file in ${docLang} per Language Governance.]`
+            if (
+              toolName === "write" &&
+              typeof (args as Record<string, unknown>)?.content === "string"
+            ) {
+              ;(args as Record<string, unknown>).content =
+                `${reminder}\n${(args as Record<string, unknown>).content}`
+            } else if (
+              toolName === "edit" &&
+              typeof (args as Record<string, unknown>)?.newString === "string"
+            ) {
+              ;(args as Record<string, unknown>).newString =
+                `${reminder}\n${(args as Record<string, unknown>).newString}`
+            }
+          }
+        }
       }
 
       lifecycleManager?.noteObservedActivity(sessionID, "tool.execute.before")
