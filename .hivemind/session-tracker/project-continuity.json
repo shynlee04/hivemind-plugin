@@ -1,0 +1,75 @@
+{
+  "version": "2.0",
+  "projectRoot": "/Users/apple/hivemind-plugin-private",
+  "lastUpdated": "2026-05-11T22:23:45.187Z",
+  "sessions": {
+    "ses_1e6f252acffeSn4b5jn312rNHu": {
+      "dir": "ses_1e6f252acffeSn4b5jn312rNHu/",
+      "mainFile": "ses_1e6f252acffeSn4b5jn312rNHu.md",
+      "continuityIndex": "ses_1e6f252acffeSn4b5jn312rNHu/session-continuity.json",
+      "created": "2026-05-11T21:59:47.555Z",
+      "updated": "2026-05-11T21:59:47.555Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1e6f2332bffeFmnWoEGz0hCuJ2": {
+      "dir": "ses_1e6f2332bffeFmnWoEGz0hCuJ2/",
+      "mainFile": "ses_1e6f2332bffeFmnWoEGz0hCuJ2.md",
+      "continuityIndex": "ses_1e6f2332bffeFmnWoEGz0hCuJ2/session-continuity.json",
+      "created": "2026-05-11T21:59:55.616Z",
+      "updated": "2026-05-11T21:59:55.616Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1e6ff88f4ffeRtk94qECvennWM": {
+      "dir": "ses_1e6ff88f4ffeRtk94qECvennWM/",
+      "mainFile": "ses_1e6ff88f4ffeRtk94qECvennWM.md",
+      "continuityIndex": "ses_1e6ff88f4ffeRtk94qECvennWM/session-continuity.json",
+      "created": "2026-05-11T22:23:45.187Z",
+      "updated": "2026-05-11T22:23:45.187Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1e6ee99acffeTOTq7yyOTl7EYK": {
+      "dir": "ses_1e6ee99acffeTOTq7yyOTl7EYK/",
+      "mainFile": "ses_1e6ee99acffeTOTq7yyOTl7EYK.md",
+      "continuityIndex": "ses_1e6ee99acffeTOTq7yyOTl7EYK/session-continuity.json",
+      "created": "2026-05-11T22:03:51.362Z",
+      "updated": "2026-05-11T22:03:51.362Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1e6ee7858ffeFMinl4eXN7wP26": {
+      "dir": "ses_1e6ee7858ffeFMinl4eXN7wP26/",
+      "mainFile": "ses_1e6ee7858ffeFMinl4eXN7wP26.md",
+      "continuityIndex": "ses_1e6ee7858ffeFMinl4eXN7wP26/session-continuity.json",
+      "created": "2026-05-11T22:03:59.822Z",
+      "updated": "2026-05-11T22:03:59.822Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1e6e0c166ffeTmH9g2Z02jo2mb": {
+      "dir": "ses_1e6e0c166ffeTmH9g2Z02jo2mb/",
+      "mainFile": "ses_1e6e0c166ffeTmH9g2Z02jo2mb.md",
+      "continuityIndex": "ses_1e6e0c166ffeTmH9g2Z02jo2mb/session-continuity.json",
+      "created": "2026-05-11T22:18:58.630Z",
+      "updated": "2026-05-11T22:18:58.630Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    }
+  },
+  "chronologicalOrder": [
+    "ses_1e6f252acffeSn4b5jn312rNHu",
+    "ses_1e6f2332bffeFmnWoEGz0hCuJ2",
+    "ses_1e6ff88f4ffeRtk94qECvennWM",
+    "ses_1e6ee99acffeTOTq7yyOTl7EYK",
+    "ses_1e6ee7858ffeFMinl4eXN7wP26",
+    "ses_1e6e0c166ffeTmH9g2Z02jo2mb"
+  ]
+}

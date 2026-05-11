@@ -11,7 +11,7 @@
       "description": "Relative path to the shipped Hivemind config JSON Schema."
     },
     "conversation_language": {
-      "default": "en",
+      "default": "vi",
       "type": "string",
       "enum": [
         "en",
@@ -27,7 +27,7 @@
       ]
     },
     "documents_and_artifacts_language": {
-      "default": "en",
+      "default": "vi",
       "type": "string",
       "enum": [
         "en",
@@ -42,6 +42,15 @@
         "id"
       ]
     },
+    "document_paths": {
+      "default": [
+        ".hivemind/planning/"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "mode": {
       "default": "expert-advisor",
       "type": "string",
@@ -52,7 +61,7 @@
       ]
     },
     "user_expert_level": {
-      "default": "intermediate-high-level",
+      "default": "clumsy-vibecoder",
       "type": "string",
       "enum": [
         "clumsy-vibecoder",

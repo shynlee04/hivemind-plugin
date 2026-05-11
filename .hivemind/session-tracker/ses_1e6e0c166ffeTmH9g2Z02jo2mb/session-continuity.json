@@ -1,0 +1,17 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e6e0c166ffeTmH9g2Z02jo2mb",
+  "lastUpdated": "2026-05-11T22:22:31.584Z",
+  "hierarchy": {
+    "root": "ses_1e6e0c166ffeTmH9g2Z02jo2mb",
+    "children": {}
+  },
+  "turnCount": 0,
+  "toolSummary": {
+    "skill": 1,
+    "session-tracker": 5,
+    "read": 12,
+    "glob": 3,
+    "bash": 7
+  }
+}

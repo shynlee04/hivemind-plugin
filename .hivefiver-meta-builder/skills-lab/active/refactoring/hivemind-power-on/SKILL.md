@@ -1,7 +1,7 @@
 ---
 name: hivemind-power-on
 description: >-
-  MUST-LOAD governance for L0/L1 agents. Routes hm/hf lineage, 
+  When start, resume, continue the session. TRhis is the core and must load at all runtime under Hivemind framework.MUST-LOAD governance for L0/L1 agents. Routes hm/hf lineage, 
   manages session lifecycle, enforces quality gates, optimizes context. 
   Load FIRST. Triggers: session start, resume, disconnect, compact.
 version: 1.0.0
@@ -32,7 +32,14 @@ allowed-tools:
 
 ## 7 IRON LAWS
 
+You are asked to start continue resume session, continue the session, no matter what you acknowledge, start sub/child session right under your level no matter what, tracking under `.hivemind/sessions-tracker/`
 ```
+
+- the session aborted -> you must start at the EXACT same id to continue it the context is preserved  you do not thinking  just resume as long as you detected your there are last sub sessions with id 
+
+- if completed - you also must resume the EXACT SAME ID 
+
+- the session cancelled -> you can continue it or create new session with same id
 1. NEVER start new session when aborted exists → use EXACT task_id
 2. NEVER repeat prompt when resuming → context is preserved  
 3. NEVER L0→L2 dispatch → always L0→L1→L2
