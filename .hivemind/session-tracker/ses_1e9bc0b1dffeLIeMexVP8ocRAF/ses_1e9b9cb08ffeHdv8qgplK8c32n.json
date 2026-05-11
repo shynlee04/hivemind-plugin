@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e9b9cb08ffeHdv8qgplK8c32n",
+  "parentSessionID": "ses_1e9bc0b1dffeLIeMexVP8ocRAF",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Audit governance artifact staleness",
+    "subagentType": "hm-l2-scout"
+  },
+  "created": "2026-05-11T09:08:13.882Z",
+  "updated": "2026-05-11T09:08:13.882Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-scout",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

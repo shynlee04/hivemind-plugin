@@ -358,4 +358,4 @@ Rules:
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
 ---
-*Last updated: 2026-05-08 after SR-04 through SR-10 remediation completion*
+*Last updated: 2026-05-11 — GOV-01 (Phase 11) + CP-ST-02 (Phase 12) added for governance reconciliation and CP-ST-01 remediation*

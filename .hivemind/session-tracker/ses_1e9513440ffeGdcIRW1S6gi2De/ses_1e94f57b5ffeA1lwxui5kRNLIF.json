@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e94f57b5ffeA1lwxui5kRNLIF",
+  "parentSessionID": "ses_1e9513440ffeGdcIRW1S6gi2De",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Rewrite hm-l2-validator profile",
+    "subagentType": "general"
+  },
+  "created": "2026-05-11T11:01:26.314Z",
+  "updated": "2026-05-11T11:01:26.314Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

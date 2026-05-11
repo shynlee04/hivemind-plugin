@@ -93,16 +93,33 @@ export class ProjectIndexWriter {
    * Initializes the project-level continuity index file.
    *
    * Creates the session-tracker root directory and writes the default
-   * index atomically.
+   * index atomically. Uses the serial queue to prevent concurrent write
+   * corruption with hook-triggered writes.
+   *
+   * Only writes if the file does not already exist — preserves any
+   * lazily-bootstrapped session entries written before initialization
+   * completes.
    *
    * @returns Promise that resolves when the index is written.
    */
   async initializeIndex(): Promise<void> {
-    const rootDir = sessionTrackerRoot(this.projectRoot)
-    await ensureDirectory(rootDir)
-    const filePath = this.getIndexPath()
-    const index = this.createDefault()
-    await atomicWriteJson(filePath, index)
+    await this.enqueueWrite(async () => {
+      const rootDir = sessionTrackerRoot(this.projectRoot)
+      await ensureDirectory(rootDir)
+      const filePath = this.getIndexPath()
+
+      // Only create if file doesn't exist — prevents overwriting populated index
+      try {
+        await readFile(filePath, "utf-8")
+        // File exists — skip initialization to preserve existing data
+        return
+      } catch {
+        // File doesn't exist — write the default
+      }
+
+      const index = this.createDefault()
+      await atomicWriteJson(filePath, index)
+    })
   }
 
   /**

@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1ebd373b1ffeDa7AJ7KJIPShVE",
+  "parentSessionID": "ses_1ebe832c5ffeeYuFbS1kqleZnD",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Audit CP-ST-01 source modules",
+    "subagentType": "hm-l2-scout"
+  },
+  "created": "2026-05-10T23:18:47.826Z",
+  "updated": "2026-05-10T23:18:47.826Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-scout",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

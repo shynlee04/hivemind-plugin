@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e949a01dffeEV6M8qSGjeQnKD",
+  "parentSessionID": "ses_1e9513440ffeGdcIRW1S6gi2De",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Rewrite hm-l2-planner profile",
+    "subagentType": "general"
+  },
+  "created": "2026-05-11T11:07:59.952Z",
+  "updated": "2026-05-11T11:07:59.952Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

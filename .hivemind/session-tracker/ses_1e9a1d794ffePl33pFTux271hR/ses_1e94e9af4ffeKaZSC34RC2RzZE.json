@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e94e9af4ffeKaZSC34RC2RzZE",
+  "parentSessionID": "ses_1e9a1d794ffePl33pFTux271hR",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Verify Phase 11 plans",
+    "subagentType": "gsd-plan-checker"
+  },
+  "created": "2026-05-11T11:06:45.437Z",
+  "updated": "2026-05-11T11:06:45.437Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-plan-checker",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

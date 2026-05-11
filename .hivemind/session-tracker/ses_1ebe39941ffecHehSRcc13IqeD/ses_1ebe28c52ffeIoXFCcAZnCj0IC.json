@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1ebe28c52ffeIoXFCcAZnCj0IC",
+  "parentSessionID": "ses_1ebe39941ffecHehSRcc13IqeD",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Debug cp-st-01 session tracker",
+    "subagentType": "gsd-debugger"
+  },
+  "created": "2026-05-10T23:14:48.054Z",
+  "updated": "2026-05-10T23:14:48.054Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-debugger",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

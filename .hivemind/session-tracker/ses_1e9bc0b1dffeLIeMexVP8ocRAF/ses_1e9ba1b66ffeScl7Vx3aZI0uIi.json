@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e9ba1b66ffeScl7Vx3aZI0uIi",
+  "parentSessionID": "ses_1e9bc0b1dffeLIeMexVP8ocRAF",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Audit codebase SDK API drift",
+    "subagentType": "hm-l2-scout"
+  },
+  "created": "2026-05-11T09:07:54.002Z",
+  "updated": "2026-05-11T09:07:54.002Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-scout",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

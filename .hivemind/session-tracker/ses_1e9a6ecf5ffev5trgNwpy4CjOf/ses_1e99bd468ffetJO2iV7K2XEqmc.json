@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e99bd468ffetJO2iV7K2XEqmc",
+  "parentSessionID": "ses_1e9a6ecf5ffev5trgNwpy4CjOf",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Update research/synthesis skills IRON CLAW",
+    "subagentType": "hm-l2-executor"
+  },
+  "created": "2026-05-11T09:38:57.760Z",
+  "updated": "2026-05-11T09:38:57.760Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-executor",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

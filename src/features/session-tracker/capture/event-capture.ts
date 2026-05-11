@@ -17,6 +17,7 @@
 import type { OpenCodeClient } from "../../../shared/session-api.js"
 import { getSession } from "../../../shared/session-api.js"
 import type { SessionWriter } from "../persistence/session-writer.js"
+import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 
@@ -33,18 +34,22 @@ import { isValidSessionID } from "../types.js"
 export class EventCapture {
   private client: OpenCodeClient
   private sessionWriter: SessionWriter
+  private projectIndexWriter: ProjectIndexWriter | undefined
 
   /**
    * @param deps - Injected dependencies.
    * @param deps.client - The OpenCode SDK client for session queries.
    * @param deps.sessionWriter - The session writer for persistence.
+   * @param deps.projectIndexWriter - Optional project index writer for session registration.
    */
   constructor(deps: {
     client: OpenCodeClient
     sessionWriter: SessionWriter
+    projectIndexWriter?: ProjectIndexWriter
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
+    this.projectIndexWriter = deps.projectIndexWriter
   }
 
   /**
@@ -146,6 +151,15 @@ export class EventCapture {
           delegationDepth: 0,
           status: "active",
         })
+
+        // Register the session in the project-level continuity index
+        if (this.projectIndexWriter) {
+          await this.projectIndexWriter.addSession(
+            sessionID,
+            `${sessionID}/`,
+            `${sessionID}.md`,
+          )
+        }
       }
       // Child sessions are handled by tool-capture when task tool fires
     } catch (err) {

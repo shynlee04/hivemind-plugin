@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e94c8cf6ffekIbS6xGn63TkwD",
+  "parentSessionID": "ses_1e9513440ffeGdcIRW1S6gi2De",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Rewrite hm-l2-assessor profile",
+    "subagentType": "general"
+  },
+  "created": "2026-05-11T11:04:48.277Z",
+  "updated": "2026-05-11T11:04:48.277Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

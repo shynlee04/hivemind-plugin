@@ -1,0 +1,68 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e9513440ffeGdcIRW1S6gi2De",
+  "lastUpdated": "2026-05-11T11:16:09.951Z",
+  "hierarchy": {
+    "root": "ses_1e9513440ffeGdcIRW1S6gi2De",
+    "children": {
+      "ses_1e94f57b5ffeA1lwxui5kRNLIF": {
+        "file": "ses_1e94f57b5ffeA1lwxui5kRNLIF.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e94f8146ffe80wUs9wUrGWYbO": {
+        "file": "ses_1e94f8146ffe80wUs9wUrGWYbO.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e94c8cf6ffekIbS6xGn63TkwD": {
+        "file": "ses_1e94c8cf6ffekIbS6xGn63TkwD.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e949a01dffeEV6M8qSGjeQnKD": {
+        "file": "ses_1e949a01dffeEV6M8qSGjeQnKD.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e9497244ffe4z2ymtQC2Qt7Ru": {
+        "file": "ses_1e9497244ffe4z2ymtQC2Qt7Ru.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e9465271ffeRxMIs8Vz8QsVQU": {
+        "file": "ses_1e9465271ffeRxMIs8Vz8QsVQU.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e9467c5affecaZ6r6wzvSTqO8": {
+        "file": "ses_1e9467c5affecaZ6r6wzvSTqO8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e942e8d4ffe97LaJCsxn2ApXO": {
+        "file": "ses_1e942e8d4ffe97LaJCsxn2ApXO.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 8,
+  "toolSummary": {}
+}

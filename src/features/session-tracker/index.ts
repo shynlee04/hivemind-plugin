@@ -47,6 +47,7 @@ import { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
+import { isValidSessionID } from "./types.js"
 
 /**
  * Central session tracker class.
@@ -86,6 +87,12 @@ export class SessionTracker {
   private agentTransform!: AgentTransform
 
   /**
+   * Tracks sessions that have been lazy-bootstrapped (dir + .md file created).
+   * Avoids redundant work on subsequent events for the same session.
+   */
+  private bootstrappedSessions: Set<string> = new Set()
+
+  /**
    * Creates a new SessionTracker instance.
    *
    * @param deps - Injected dependencies.
@@ -95,6 +102,50 @@ export class SessionTracker {
   constructor(deps: { client: OpenCodeClient; projectRoot: string }) {
     this.client = deps.client
     this.projectRoot = deps.projectRoot
+  }
+
+  /**
+   * Lazy-bootstraps a session that was created before the harness loaded.
+   *
+   * When the plugin loads into an already-running session, `session.created`
+   * has already fired without us. This method creates the session directory,
+   * initializes the `.md` file, and registers the session in the project index
+   * on the first observed event (chat message or tool execution).
+   *
+   * Idempotent — skips if the session has already been bootstrapped.
+   *
+   * @param sessionID - The session identifier to bootstrap.
+   * @returns Promise that resolves when bootstrap is complete.
+   */
+  private async ensureSessionReady(sessionID: string): Promise<void> {
+    // Guard: if initialize() hasn't completed yet, skip (best-effort)
+    if (!this.sessionWriter || !this.projectIndexWriter) return
+    if (this.bootstrappedSessions.has(sessionID)) return
+    if (!isValidSessionID(sessionID)) return
+
+    this.bootstrappedSessions.add(sessionID)
+
+    try {
+      await this.sessionWriter.createSessionDir(sessionID)
+      await this.sessionWriter.initializeSessionFile(sessionID, {
+        sessionID,
+        parentSessionID: null,
+        delegationDepth: 0,
+        status: "active",
+      })
+      await this.projectIndexWriter.addSession(
+        sessionID,
+        `${sessionID}/`,
+        `${sessionID}.md`,
+      )
+    } catch (err) {
+      // If any step fails, remove from bootstrapped set so retry is possible
+      this.bootstrappedSessions.delete(sessionID)
+      console.warn(
+        `[Harness] Session tracker: lazy bootstrap failed for "${sessionID}":`,
+        err,
+      )
+    }
   }
 
   /**
@@ -151,6 +202,8 @@ export class SessionTracker {
     output: { message: unknown; parts: unknown[] },
   ): Promise<void> {
     try {
+      // Lazy bootstrap: ensure session directory + index exist (cold-start)
+      await this.ensureSessionReady(input.sessionID)
       if (this.messageCapture) {
         await this.messageCapture.handleChatMessage(
           input as Parameters<MessageCapture["handleChatMessage"]>[0],
@@ -184,6 +237,8 @@ export class SessionTracker {
     output: { title: string; output: unknown; metadata: unknown },
   ): Promise<void> {
     try {
+      // Lazy bootstrap: ensure session directory + index exist (cold-start)
+      await this.ensureSessionReady(input.sessionID)
       if (this.toolCapture) {
         await this.toolCapture.handleToolExecuteAfter(
           input as Parameters<ToolCapture["handleToolExecuteAfter"]>[0],
@@ -222,6 +277,7 @@ export class SessionTracker {
       this.eventCapture = new EventCapture({
         client: this.client,
         sessionWriter: this.sessionWriter,
+        projectIndexWriter: this.projectIndexWriter,
       })
       this.messageCapture = new MessageCapture({
         sessionWriter: this.sessionWriter,
@@ -243,6 +299,9 @@ export class SessionTracker {
 
       // Initialize project-level index if needed
       await this.projectIndexWriter.initializeIndex()
+
+      // Clean up orphaned .tmp.* files from interrupted writes
+      await this.cleanupOrphanedTmpFiles()
 
       console.log("[Harness] Session tracker: initialized")
     } catch (err) {
@@ -271,6 +330,37 @@ export class SessionTracker {
         "[Harness] Session tracker: cleanup failed:",
         err,
       )
+    }
+  }
+
+  /**
+   * Removes orphaned `*.tmp.*` files from the session-tracker root.
+   *
+   * These accumulate when writes are interrupted (process killed between
+   * writeFile and rename in atomicWriteJson/atomicAppendMarkdown).
+   * Safe to remove — they're atomic-write intermediates, never the
+   * authoritative file.
+   */
+  private async cleanupOrphanedTmpFiles(): Promise<void> {
+    try {
+      const { readdir, unlink } = await import("node:fs/promises")
+      const { resolve } = await import("node:path")
+      const trackerRoot = resolve(this.projectRoot, ".hivemind", "session-tracker")
+
+      const entries = await readdir(trackerRoot, { withFileTypes: true })
+      for (const entry of entries) {
+        if (!entry.isFile()) continue
+        if (entry.name.includes(".tmp.")) {
+          const filePath = resolve(trackerRoot, entry.name)
+          try {
+            await unlink(filePath)
+          } catch {
+            // Best-effort: skip files that can't be removed
+          }
+        }
+      }
+    } catch {
+      // Best-effort: directory may not exist or be inaccessible
     }
   }
 

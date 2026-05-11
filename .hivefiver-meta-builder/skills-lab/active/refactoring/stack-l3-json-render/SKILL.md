@@ -146,6 +146,73 @@ Dev inspector? → @json-render/devtools-react (null in prod)
 | Dashboard in Next.js sidecar | `stack-nextjs` | Server components, route handlers for state reads |
 | Schema validation for AI specs | `stack-zod` | Spec validation with validateSpec + autoFixSpec |
 
+## 🔨 IRON CLAW: Tech-Stack References & Assets Consumption Governance
+
+> **ABSOLUTE RULE:** No bundled reference, cached asset, or stale pattern from this skill shall be consumed for tech-stack API interface decisions without MCP-verified validation against the project's ACTUAL versions (package.json + lockfile), canonical source mappings (`.hivemind/STACKS-REFERENCES.md`), AND a raw codebase context scan of the current implementation state.
+
+### Rationale
+
+Skills bundle references and assets as ORIENTATION tools — they help you understand WHAT exists and WHERE to look. But every bundled reference is a SNAPSHOT, frozen at the moment of ingestion. Stacks evolve: packages release breaking changes, APIs shift, SDKs deprecate surfaces. Using stale bundled signatures as implementation authority produces silent runtime errors.
+
+### Mandatory 5-Step Validation Chain
+
+Before ANY tech-stack API interface from this skill's references/assets is used for implementation, code generation, or quality gate decisions:
+
+```
+STEP 1 — CONSUME .hivemind/STACKS-REFERENCES.md
+ ├─ Read the canonical stack→repo→version mapping table
+ ├─ Identify the correct GitHub repo for each dependency
+ └─ Confirm the repo is active (not archived), version is current
+
+STEP 2 — READ package.json + lockfile
+ ├─ Extract the ACTUAL installed version (npm ls / grep lockfile)
+ ├─ Cross-reference repo URL from STACKS-REFERENCES.md against npm registry
+ └─ Flag any discrepancy between bundled version and installed version
+
+STEP 3 — RAW CODEBASE CONTEXT SCAN
+ ├─ grep/glob the actual src/ directory structure for current implementation
+ ├─ Read current implementation files — not stale docs or bundled references
+ ├─ Verify the claimed API signatures match current codebase reality
+ └─ Check import paths, type definitions, and function signatures exist in actual code
+
+STEP 4 — MCP LIVE VALIDATION (minimum 2 tools)
+ ├─ Context7: resolve-library-id → query-docs (API signatures at installed version)
+ ├─ DeepWiki: ask-question (architecture patterns, behavioral semantics)
+ ├─ Repomix: pack-remote-repository (full repo analysis at correct version tag)
+ ├─ Exa: web-search (latest docs, tutorials, migration guides)
+ ├─ Tavily: search + extract (version-specific migration info)
+ ├─ GitHub: get-file-contents (exact source verification at correct version)
+ └─ GitMCP: search-code (source-level pattern matching)
+
+STEP 5 — VERIFICATION RECORD
+ ├─ Source URL + version confirmed to match package.json
+ ├─ MCP tool(s) used + fetch timestamp
+ ├─ Codebase scan paths + findings
+ ├─ Version match status (MATCHED / MISMATCHED / UNVERIFIED)
+ └─ Flag as BLOCKING if version mismatch or critical staleness detected
+```
+
+### Consumption Rules
+
+| Action | Rule |
+|--------|------|
+| **Orientation** (understanding WHAT exists, WHERE to look) | ✅ Reference-tier allowed from bundled assets without live validation |
+| **API signature lookup** for implementation | 🚫 BLOCKED without live MCP validation (Step 4) + codebase scan (Step 3) |
+| **Interface verification** for quality gates | 🚫 BLOCKED without live MCP validation (Step 4) + version match (Step 2) |
+| **Version-sensitive behavioral claims** | 🚫 BLOCKED without live MCP validation (Step 4) |
+| **Architecture pattern understanding** | ✅ Reference-tier allowed, but recommend live verification for production decisions |
+| **Generating code from bundled patterns** | 🚫 BLOCKED — route to live MCP tools for current API surface |
+
+### Integrated Enforcement Points
+
+| Workflow Phase | IRON CLAW Trigger | Required Validation |
+|---------------|-------------------|---------------------|
+| Implementation | Before using any API from bundled refs | Steps 2-4 minimum |
+| Code review | When verifying API usage against docs | Steps 2-4 minimum |
+| Quality gate | Before PASS verdict on interface claims | Steps 1-5 full |
+| Research | When synthesizing findings from cached assets | Steps 4-5 minimum |
+| Audit | When reporting version-based findings | Steps 1-5 full |
+
 ## Cross-Stack Integration
 
 - [Integration Guide](./references/integration.md) — Next.js App Router, Vercel AI SDK chat, error boundaries, Vitest testing, code export, debugging workflow, catalog design methodology

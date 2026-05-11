@@ -8,7 +8,7 @@
  */
 
 import { mkdir, rename, writeFile, readFile } from "node:fs/promises"
-import { resolve } from "node:path"
+import { dirname, resolve } from "node:path"
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -36,6 +36,7 @@ export async function atomicWriteJson(
 ): Promise<void> {
   const tmpPath = `${filePath}.tmp.${Date.now()}`
   const content = JSON.stringify(data, null, 2)
+  await ensureDirectory(dirname(filePath))
   await writeFile(tmpPath, content, "utf-8")
   await rename(tmpPath, filePath)
 }
@@ -70,6 +71,7 @@ export async function atomicAppendMarkdown(
   }
 
   const merged = existing ? `${existing}\n${content}` : content
+  await ensureDirectory(dirname(filePath))
   await writeFile(tmpPath, merged, "utf-8")
   await rename(tmpPath, filePath)
 }
