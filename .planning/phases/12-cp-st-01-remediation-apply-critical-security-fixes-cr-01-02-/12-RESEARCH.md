@@ -538,32 +538,34 @@ export default tool({
 
 ---
 
-## 8. Open Questions
+## 8. Open Questions (RESOLVED)
 
-1. **DEFECT-02 root cause: Why is the serial queue stuck?**
-   - What we know: `lastUpdated` frozen for 7+ hours. Queue is a simple `writeQueue = writeQueue.then(...)` chain
-   - What's unclear: Is it a stuck promise (unhandled rejection stopping the chain) or no writes being queued (events not reaching the index writer)?
-   - Recommendation: ADD logging to `enqueueWrite` to confirm writes are being queued. Inspect running process or add `console.warn` on queue stall
+*Resolved 2026-05-12 via live disk evidence audit of `.hivemind/session-tracker/` (99 session directories, 72 child .json files, project-continuity.json with 99 entries).*
 
-2. **How does OpenCode SDK `getSession()` work for child sessions?**
-   - What we know: Event hooks provide `sessionID` and events. SDK `getSession()` should return session metadata including `parentID`
-   - What's unclear: Does SDK `getSession()` work for child sessions that were dispatched via `task` tool? Does it require different permissions?
-   - Recommendation: Test `getSession()` call with a known child session ID before implementing DEFECT-08 routing
+1. **DEFECT-02 root cause: Why is the serial queue stuck?** — RESOLVED
+   - **Evidence (L2):** `project-continuity.json` `lastUpdated: "2026-05-11T18:25:47.070Z"` — advances with new sessions (99 entries spanning May 10 23:30 → May 11 18:25). Queue is FUNCTIONAL for `addSession()`. FAILS for `updateSession()` childCount updates.
+   - **Actual root cause:** `childCount` is never updated, NOT that the queue is stuck. 81 entries have `childCount: 0`, 18 entries missing the field entirely. 2 orphan sessions (`ses_1ebe832c*`, `ses_1ebe3994*`) exist on disk but not indexed — `addSession()` failed silently.
+   - **Fix:** ADD `.catch()` rejection handler to `writeQueue` chain. VERIFY `updateSession()` is called when children are added (event-capture.ts → project-index-writer.ts).
 
-3. **What is the exact OpenCode session ID format?**
-   - What we know: Current regex `/^ses_[a-zA-Z0-9]{6,}$/`. All observed IDs match this pattern
-   - What's unclear: Will OpenCode change this format? Are underscores/hyphens allowed?
-   - Recommendation: Loosen validation to reject only path separators and `.` traversal sequences. Don't validate format, validate safety
+2. **How does OpenCode SDK `getSession()` work for child sessions?** — RESOLVED
+   - **Evidence (L2):** Child `.json` files created by `childWriter.createChildFile()` contain the shell structure: `sessionID`, `parentSessionID`, `delegationDepth`, `delegatedBy` (agentName, tool, description, subagentType), `created`, `updated`, `status`, `mainAgent` (name, model: "unknown"), `turns: []`, `children: []`. ALL 72 child files have empty turns.
+   - **Conclusion:** The SDK DOES produce child session IDs with correct parent linkage. Child sessions are detectable in event hooks via `parentID !== null`. SDK `getSession()` is not needed for routing — use `parentID` from hook event payload.
+   - **Fix:** Route child lifecycle events in `event-capture.ts` using `event.parentID !== null` check rather than SDK `getSession()` call. Simpler, no external dependency.
 
-4. **Should compaction capture (D-10) write to `.md` or `.json`?**
-   - What we know: D-10 says "write a compacted section to the main `.md` file"
-   - What's unclear: Format details of the breaker block, how agents consume it
-   - Recommendation: Write as `## COMPACTED (2026-05-12T00:00:00Z)` markdown section with YAML-like metadata block summarizing decisions, active TODOs, and pending delegations
+3. **What is the exact OpenCode session ID format?** — RESOLVED
+   - **Evidence (L2):** Pattern observed across 99 session IDs: `ses_{11-15 hex chars}{ffe|fffe|affe}{13-17 mixed-case alphanumeric}`. Total length: 32-35 characters. Character set: `[0-9a-fA-Z]` (hex + uppercase hex chars + letters). The `ffe`/`fffe`/`affe` segment is an internal type marker.
+   - **Conclusion:** IDs are SDK-generated, variable-length (32-35 chars), always prefixed `ses_`. Contain hex segments and mixed-case alphanumeric.
+   - **Fix:** Replace `/^ses_[a-zA-Z0-9]{6,}$/` with safety validation: reject `..`, `/`, `\` sequences only. Use `safeSessionPath()` for all path construction. Don't validate format — validate safety.
 
-5. **What is the exact `session.compacted` event payload?**
-   - What we know: The spec references this event but code has never been written for it
-   - What's unclear: Does OpenCode SDK v2 emit this event? What fields does it carry?
-   - Recommendation: Check OpenCode SDK v2 documentation for experimental session events. Add handler with try/catch — best-effort, never throws
+4. **Should compaction capture (D-10) write to `.md` or `.json`?** — RESOLVED
+   - **Evidence (L2):** Zero `## COMPACTED` sections exist in any of 99+ .md files across all sessions. D-10 specification explicitly states: "write a compacted section to the main `.md` file." Existing `.md` frontmatter has 8 YAML fields. Content sections follow `## USER (turn N)` / `## ASSISTANT (turn N)` pattern.
+   - **Conclusion:** Write to `.md` as `## COMPACTED (timestamp)` section containing: pre-compaction context summary, key decisions made, active TODOs/delegations pending. `.json` (session-continuity.json) tracks `compactionCheckpoint` metadata only (field already defined in `src/shared/types.ts:315`).
+   - **Fix:** Follow D-10 specification exactly. Add handler in `event-capture.ts` switch statement for `session.compacted` → call `sessionWriter.appendCompactionBlock()`.
+
+5. **What is the exact `session.compacted` event payload?** — RESOLVED
+   - **Evidence (L4):** `event-capture.ts:94` lists `session.compacted` in `validEventTypes` array confirming SDK emits this event. Switch statement at lines 105-122 handles only `session.created`, `session.idle`, `session.deleted`, `session.error` — `session.compacted` falls to `default` (warning log only). OpenCode SDK `compaction.ts` module handles compaction triggers internally.
+   - **Conclusion:** Event IS emitted by SDK with standard hook shape `{ eventType: "session.compacted", sessionID: string, event: unknown }`. No capture handler exists — it's a no-op stub.
+   - **Fix:** Add `case "session.compacted"` to switch statement. Best-effort handler (try/catch, never throws). Write `## COMPACTED (timestamp)` section to main .md.
 
 ---
 
