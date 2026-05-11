@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: Hivemind Core
 current_phase: 11 — Governance Reconciliation
 status: active
-last_updated: "2026-05-11T15:27:34.000Z"
+last_updated: "2026-05-11T15:58:58.764Z"
 progress:
   total_phases: 31
   completed_phases: 2
   total_plans: 28
-  completed_plans: 12
-  percent: 43
+  completed_plans: 13
+  percent: 46
 ---
 
 # Hivemind — State
@@ -52,7 +52,6 @@ Cycle 3 (Routing Foundation) pending governance reconciliation and CP-PTY-01 com
 
 ## What's Broken / Missing
 
-
 (Numbers derived from 11-TRUTH-MATRIX.md live evidence. All stale claims corrected. Previous claims about dead code files and `src/lib/` directory stale modules have been removed — both categories confirmed deleted/restructured per live filesystem verification. See S-07, P-04 in truth matrix.)
 
 | Issue | Severity | Action |
@@ -83,9 +82,9 @@ Cycle 3 (Routing Foundation) pending governance reconciliation and CP-PTY-01 com
 
 ## GOV-01 Progress
 
-**Plans completed:** 3 of 5 (11-01 STATE.md rewrite, 11-02 STATE.md numeric refresh, 11-05 11-CONTEXT.md + 11-TRUTH-MATRIX.md creation).  
-**In progress:** Plans 03 and 04 (PROJECT.md, REQUIREMENTS.md, and ROADMAP.md reconciliation).  
-**Remaining:** 7 sector AGENTS.md audits against live evidence.  
+**Plans completed:** 4 of 5 (11-01 STATE.md rewrite, 11-02 STATE.md numeric refresh, 11-03 PROJECT.md + REQUIREMENTS.md reconciliation, 11-05 CONTEXT.md + 11-TRUTH-MATRIX.md creation).  
+**In progress:** Plan 04 (ROADMAP.md reconciliation).  
+**Remaining:** 7 sector AGENTS.md audits against live evidence (completed as 11-05).  
 **Truth baseline:** All numeric claims cross-referenced against live filesystem evidence via 11-TRUTH-MATRIX.md (27 claims across 13 governance files). Stale corrections applied: plugin LOC 447→242, test count 1767→1978, test files 125→149, skill dirs 123→125, .hivemind dirs 19→11, AGENTS.md files 9→7, progress percent 90→43.
 
 ## Archived Content
@@ -121,19 +120,21 @@ Git history preserves the pre-rewrite STATE.md. All numeric claims verified agai
 
 ## Key Artifacts Index
 
-
 **Architecture baselines:**
+
 - `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` — Naming contract: hm-* (product-dev, STRICT), hf-* (meta-builder, FLEXIBLE), gate-* (quality, INTERNAL), stack-* (reference). L0-L3 delegation hierarchy.
 - `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` — Surface ownership model: 9-surface authority table, Phase 0 mutation gates, target source planes.
 - `.planning/codebase/ARCHITECTURE.md` — CQRS model (tools = write-side, hooks = read-side), component dependency graph, module size caps (500 LOC max).
 - `.planning/codebase/STRUCTURE.md` — File tree conventions: kebab-case directories, feature-module pattern, colocated tests, barrel exports.
 
 **Control artifacts:**
+
 - `.planning/roadmap/managed-autonomous-loop-2026-05-07.md` — Autonomous loop governance: phase-gated execution with entry/exit criteria.
 - `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md` — CP-PTY phase route: 5-phase dependency chain with gate criteria.
 - `.planning/lifecycle/lifecycle-overview-2026-05-07.md` — Session lifecycle phases with transition gates and event wiring map.
 
 **Phase evidence (completion proof):**
+
 - BOOT-07: `.planning/phases/BOOT-07-end-to-end-proof/` — E2E bootstrap proof (init + doctor + validate-restart)
 - BOOT-08: `.planning/phases/BOOT-08-agent-skill-integration/` — Integration constitution (lineage, permission, routing)
 - CP-PTY-00: `.planning/phases/CP-PTY-00-shell-pty-control-plane-spike/` — Docs/spec spike
@@ -142,10 +143,11 @@ Git history preserves the pre-rewrite STATE.md. All numeric claims verified agai
 - SR-10: `.planning/phases/SR-10-cleanup-agents-md-updates/` — SR restructuring completion marker
 
 **Truth baseline:**
+
 - `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md` — 27 claims verified across 13 governance files via live evidence inspection; 19 stale, 6 confirmed, 1 false, 1 unverified.
 
 ---
 
 *State updated 2026-05-11 for Phase 11 governance reconciliation (GOV-01, Plan 02). Historical STATE.md sections archived to `.planning/archive/state-history/` (6 date-stamped files). All numeric claims cross-referenced against 11-TRUTH-MATRIX.md — 19 stale corrections applied, 6 confirmed accurate. Git history preserves the pre-rewrite STATE.md (216 lines, 13 sections → runway-focused form).
 
-Next update: GOV-01 completion when all remaining core artifacts (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, 7 sector AGENTS.md) are reconciled against live evidence.*
+Next update: GOV-01 Plan 04 completion (ROADMAP.md reconciliation — GOV-01/CP-ST-02 rows, stale phase counts, dependency chain verification).*
