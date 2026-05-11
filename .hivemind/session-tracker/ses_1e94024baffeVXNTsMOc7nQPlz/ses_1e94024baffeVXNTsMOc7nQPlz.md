@@ -1322,3 +1322,1274 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
 }
 ```
 
+
+---
+sessionID: ses_1e94024baffeVXNTsMOc7nQPlz
+created: 2026-05-11T13:17:09.791Z
+updated: 2026-05-11T13:17:09.791Z
+parentSessionID: null
+delegationDepth: 0
+children: []
+continuityIndex: session-continuity.json
+status: active
+---
+
+## USER (turn 1)
+
+# Hivemind Power-On — Session Governance
+
+## 7 IRON LAWS
+
+```
+1. NEVER start new session when aborted exists → use EXACT task_id
+2. NEVER repeat prompt when resuming → context is preserved  
+3. NEVER L0→L2 dispatch → always L0→L1→L2
+4. NEVER skip quality gate triad → lifecycle→spec→evidence in order
+5. NEVER load >3 skills at once → context budget is shared
+6. NEVER read full files when grep/offset works → line-aware reading
+7. ALWAYS use session-tracker to find aborted sessions before starting fresh
+```
+
+## ROUTING TABLE
+
+| Signal | Route To | Depth |
+|--------|----------|-------|
+| `/hf-create`, `/hf-audit`, `/hf-stack`, agent/skill/command creation | → hf-lineage, `hf-l1-coordinator` | [ref-01 §2] |
+| `/plan`, `/ultrawork`, `/gsd-*`, feature/bug/architecture work | → hm-lineage, `hm-l1-coordinator` | [ref-01 §3] |
+| Disconnect recovery, session resume | → RESUME protocol | [ref-02 §1] |
+| Context compact/purge recovery | → SURVIVAL protocol | [ref-03 §1] |
+| L0→L1→L2 delegation chain dispatch | → DELEGATION protocol | [ref-04 §1] |
+| Quality gate needed on child output | → GATE TRIAD | [ref-05 §1] |
+| Ambiguous hm-vs-hf lineage | → `hm-l2-user-intent-interactive-loop` | [ref-01 §4] |
+
+## QUICK REFERENCE — Session-Tracker Cheat Sheet
+
+```
+find all sessions:     session-tracker({action:"list-sessions"})
+export one session:    session-tracker({action:"export-session", sessionId:"ses_xxx"})
+search aborts:         session-tracker({action:"search-sessions", query:"aborted|cancelled"})
+read hierarchy:        read(".hivemind/session-tracker/<id>/session-continuity.json")
+read project index:    read(".hivemind/session-tracker/project-continuity.json")
+grep last user turn:   grep(pattern:"## USER \\(turn", path:".hivemind/session-tracker/<id>/")
+```
+
+Full tool API reference: [ref-06 §1]
+
+## REFERENCE MAP
+
+```
+references/01-lineage-routing.md        — hm vs hf decision tree, command routing, cross-lineage rules, domain maps
+references/02-session-resume-protocol.md — disconnect recovery, resume cascade, health dashboard, worked example
+references/03-compact-survival.md       — context purge recovery, optimization rules, state reconstruction
+references/04-delegation-chain.md       — L0→L1→L2 dispatch, task_id tracking, depth limits, anti-patterns
+references/05-quality-gates.md          — lifecycle→spec→evidence triad, enforcement, HMQUAL compliance
+references/06-session-tracker-manual.md — .hivemind/ structure, JSON schemas, navigation patterns, tool API
+```
+
+## ASSET BUNDLES
+
+| Agent Type | Load | Why |
+|------------|------|-----|
+| **L0 (orchestrator)** | ref-01 + ref-02 + ref-04 + ref-06 | route + resume + delegate + track |
+| **L1 (coordinator)** | ref-04 + ref-05 + ref-06 | delegate + gates + track |
+| **L2/L3 (specialist)** | ref-05 only | gates only (coordinator handles routing) |
+| **Post-disconnect (any)** | ref-02 + ref-06 | resume + track |
+| **Post-compact (any)** | ref-03 + ref-06 | survive + track |
+| **Lineage ambiguous** | ref-01 | routing decision tree |
+
+## ESCALATION RULES
+
+```
+- 3 consecutive gate failures → escalate to user with full gap report
+- Ambiguous hm-vs-hf → load hm-l2-user-intent-interactive-loop
+- session-tracker not responding → direct read .hivemind/session-tracker/project-continuity.json
+- task_id expired (session not found) → export .md, extract prompt, create NEW dispatch with same params
+```
+
+## LIFECYCLE SUMMARY
+
+```
+POWER-ON → classify lineage → load lineage router → domain work → quality gates → report
+DISCONNECT → RESUME protocol [ref-02] → resume deepest active child → continue
+COMPACT → SURVIVAL protocol [ref-03] → reconstruct from disk → confirm with user
+L2/L3 SPECIALIST → load ref-05 (gates only) → complete work → return to coordinator
+```
+
+## CRITICAL LOADING ORDER
+
+```
+hivemind-power-on (FIRST — this skill) → lineage router → domain skill (max 3 total loaded)
+```
+
+> **L2/L3 specialists:** Do NOT load this skill. Your coordinator loaded it for you.
+> **Context budget:** Every line of this file costs context. See [ref-03 §2] for optimization rules.
+
+
+continue from the above I got disconnected
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_RnuzlzZVs33m9sAw5azB1006"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_fBydZ8rcl9OHRRQxfdNv5408"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_3cDYH7aM6mpYLVratqA02417"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_03_S7DXtTqQUeDrj9xmiCEV8929"
+}
+```
+
+
+---
+sessionID: ses_1e94024baffeVXNTsMOc7nQPlz
+created: 2026-05-11T13:20:04.480Z
+updated: 2026-05-11T13:20:04.480Z
+parentSessionID: null
+delegationDepth: 0
+children: []
+continuityIndex: session-continuity.json
+status: active
+---
+
+## USER (turn 1)
+
+# Hivemind Power-On — Session Governance
+
+## 7 IRON LAWS
+
+```
+1. NEVER start new session when aborted exists → use EXACT task_id
+2. NEVER repeat prompt when resuming → context is preserved  
+3. NEVER L0→L2 dispatch → always L0→L1→L2
+4. NEVER skip quality gate triad → lifecycle→spec→evidence in order
+5. NEVER load >3 skills at once → context budget is shared
+6. NEVER read full files when grep/offset works → line-aware reading
+7. ALWAYS use session-tracker to find aborted sessions before starting fresh
+```
+
+## ROUTING TABLE
+
+| Signal | Route To | Depth |
+|--------|----------|-------|
+| `/hf-create`, `/hf-audit`, `/hf-stack`, agent/skill/command creation | → hf-lineage, `hf-l1-coordinator` | [ref-01 §2] |
+| `/plan`, `/ultrawork`, `/gsd-*`, feature/bug/architecture work | → hm-lineage, `hm-l1-coordinator` | [ref-01 §3] |
+| Disconnect recovery, session resume | → RESUME protocol | [ref-02 §1] |
+| Context compact/purge recovery | → SURVIVAL protocol | [ref-03 §1] |
+| L0→L1→L2 delegation chain dispatch | → DELEGATION protocol | [ref-04 §1] |
+| Quality gate needed on child output | → GATE TRIAD | [ref-05 §1] |
+| Ambiguous hm-vs-hf lineage | → `hm-l2-user-intent-interactive-loop` | [ref-01 §4] |
+
+## QUICK REFERENCE — Session-Tracker Cheat Sheet
+
+```
+find all sessions:     session-tracker({action:"list-sessions"})
+export one session:    session-tracker({action:"export-session", sessionId:"ses_xxx"})
+search aborts:         session-tracker({action:"search-sessions", query:"aborted|cancelled"})
+read hierarchy:        read(".hivemind/session-tracker/<id>/session-continuity.json")
+read project index:    read(".hivemind/session-tracker/project-continuity.json")
+grep last user turn:   grep(pattern:"## USER \\(turn", path:".hivemind/session-tracker/<id>/")
+```
+
+Full tool API reference: [ref-06 §1]
+
+## REFERENCE MAP
+
+```
+references/01-lineage-routing.md        — hm vs hf decision tree, command routing, cross-lineage rules, domain maps
+references/02-session-resume-protocol.md — disconnect recovery, resume cascade, health dashboard, worked example
+references/03-compact-survival.md       — context purge recovery, optimization rules, state reconstruction
+references/04-delegation-chain.md       — L0→L1→L2 dispatch, task_id tracking, depth limits, anti-patterns
+references/05-quality-gates.md          — lifecycle→spec→evidence triad, enforcement, HMQUAL compliance
+references/06-session-tracker-manual.md — .hivemind/ structure, JSON schemas, navigation patterns, tool API
+```
+
+## ASSET BUNDLES
+
+| Agent Type | Load | Why |
+|------------|------|-----|
+| **L0 (orchestrator)** | ref-01 + ref-02 + ref-04 + ref-06 | route + resume + delegate + track |
+| **L1 (coordinator)** | ref-04 + ref-05 + ref-06 | delegate + gates + track |
+| **L2/L3 (specialist)** | ref-05 only | gates only (coordinator handles routing) |
+| **Post-disconnect (any)** | ref-02 + ref-06 | resume + track |
+| **Post-compact (any)** | ref-03 + ref-06 | survive + track |
+| **Lineage ambiguous** | ref-01 | routing decision tree |
+
+## ESCALATION RULES
+
+```
+- 3 consecutive gate failures → escalate to user with full gap report
+- Ambiguous hm-vs-hf → load hm-l2-user-intent-interactive-loop
+- session-tracker not responding → direct read .hivemind/session-tracker/project-continuity.json
+- task_id expired (session not found) → export .md, extract prompt, create NEW dispatch with same params
+```
+
+## LIFECYCLE SUMMARY
+
+```
+POWER-ON → classify lineage → load lineage router → domain work → quality gates → report
+DISCONNECT → RESUME protocol [ref-02] → resume deepest active child → continue
+COMPACT → SURVIVAL protocol [ref-03] → reconstruct from disk → confirm with user
+L2/L3 SPECIALIST → load ref-05 (gates only) → complete work → return to coordinator
+```
+
+## CRITICAL LOADING ORDER
+
+```
+hivemind-power-on (FIRST — this skill) → lineage router → domain skill (max 3 total loaded)
+```
+
+> **L2/L3 specialists:** Do NOT load this skill. Your coordinator loaded it for you.
+> **Context budget:** Every line of this file costs context. See [ref-03 §2] for optimization rules.
+
+
+continue from the above I got disconnected
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_00_OGE9t1a9peIvYeZnk5p64964"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_RegOGLJE660sbAJPDIqY6343"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_TzyyioQ2Of8lBOA5JFMT9334"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_EqUlqPrjsaFogbdOioz07825"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_uET2Bc8ooDlwCxhIpIGT6544"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_ME5LkrpsNDr2L6kWRihW6356"
+}
+```
+
+
+## USER (turn 2)
+
+# Hivemind Power-On — Session Governance
+
+## 7 IRON LAWS
+
+```
+1. NEVER start new session when aborted exists → use EXACT task_id
+2. NEVER repeat prompt when resuming → context is preserved  
+3. NEVER L0→L2 dispatch → always L0→L1→L2
+4. NEVER skip quality gate triad → lifecycle→spec→evidence in order
+5. NEVER load >3 skills at once → context budget is shared
+6. NEVER read full files when grep/offset works → line-aware reading
+7. ALWAYS use session-tracker to find aborted sessions before starting fresh
+```
+
+## ROUTING TABLE
+
+| Signal | Route To | Depth |
+|--------|----------|-------|
+| `/hf-create`, `/hf-audit`, `/hf-stack`, agent/skill/command creation | → hf-lineage, `hf-l1-coordinator` | [ref-01 §2] |
+| `/plan`, `/ultrawork`, `/gsd-*`, feature/bug/architecture work | → hm-lineage, `hm-l1-coordinator` | [ref-01 §3] |
+| Disconnect recovery, session resume | → RESUME protocol | [ref-02 §1] |
+| Context compact/purge recovery | → SURVIVAL protocol | [ref-03 §1] |
+| L0→L1→L2 delegation chain dispatch | → DELEGATION protocol | [ref-04 §1] |
+| Quality gate needed on child output | → GATE TRIAD | [ref-05 §1] |
+| Ambiguous hm-vs-hf lineage | → `hm-l2-user-intent-interactive-loop` | [ref-01 §4] |
+
+## QUICK REFERENCE — Session-Tracker Cheat Sheet
+
+```
+find all sessions:     session-tracker({action:"list-sessions"})
+export one session:    session-tracker({action:"export-session", sessionId:"ses_xxx"})
+search aborts:         session-tracker({action:"search-sessions", query:"aborted|cancelled"})
+read hierarchy:        read(".hivemind/session-tracker/<id>/session-continuity.json")
+read project index:    read(".hivemind/session-tracker/project-continuity.json")
+grep last user turn:   grep(pattern:"## USER \\(turn", path:".hivemind/session-tracker/<id>/")
+```
+
+Full tool API reference: [ref-06 §1]
+
+## REFERENCE MAP
+
+```
+references/01-lineage-routing.md        — hm vs hf decision tree, command routing, cross-lineage rules, domain maps
+references/02-session-resume-protocol.md — disconnect recovery, resume cascade, health dashboard, worked example
+references/03-compact-survival.md       — context purge recovery, optimization rules, state reconstruction
+references/04-delegation-chain.md       — L0→L1→L2 dispatch, task_id tracking, depth limits, anti-patterns
+references/05-quality-gates.md          — lifecycle→spec→evidence triad, enforcement, HMQUAL compliance
+references/06-session-tracker-manual.md — .hivemind/ structure, JSON schemas, navigation patterns, tool API
+```
+
+## ASSET BUNDLES
+
+| Agent Type | Load | Why |
+|------------|------|-----|
+| **L0 (orchestrator)** | ref-01 + ref-02 + ref-04 + ref-06 | route + resume + delegate + track |
+| **L1 (coordinator)** | ref-04 + ref-05 + ref-06 | delegate + gates + track |
+| **L2/L3 (specialist)** | ref-05 only | gates only (coordinator handles routing) |
+| **Post-disconnect (any)** | ref-02 + ref-06 | resume + track |
+| **Post-compact (any)** | ref-03 + ref-06 | survive + track |
+| **Lineage ambiguous** | ref-01 | routing decision tree |
+
+## ESCALATION RULES
+
+```
+- 3 consecutive gate failures → escalate to user with full gap report
+- Ambiguous hm-vs-hf → load hm-l2-user-intent-interactive-loop
+- session-tracker not responding → direct read .hivemind/session-tracker/project-continuity.json
+- task_id expired (session not found) → export .md, extract prompt, create NEW dispatch with same params
+```
+
+## LIFECYCLE SUMMARY
+
+```
+POWER-ON → classify lineage → load lineage router → domain work → quality gates → report
+DISCONNECT → RESUME protocol [ref-02] → resume deepest active child → continue
+COMPACT → SURVIVAL protocol [ref-03] → reconstruct from disk → confirm with user
+L2/L3 SPECIALIST → load ref-05 (gates only) → complete work → return to coordinator
+```
+
+## CRITICAL LOADING ORDER
+
+```
+hivemind-power-on (FIRST — this skill) → lineage router → domain skill (max 3 total loaded)
+```
+
+> **L2/L3 specialists:** Do NOT load this skill. Your coordinator loaded it for you.
+> **Context budget:** Every line of this file costs context. See [ref-03 §2] for optimization rules.
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_00_YkbyE7m3DTuCGhSWXbvt7342"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_QmSp2sUAEQxvtjHbcFQx3694"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute plan 11-01 archive infrastructure + truth matrix",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1e8cbcfe4ffe7XcTNaAZczyLvj"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e8cbcfe4ffe7XcTNaAZczyLvj
+```
+
+
+## USER (turn 3)
+
+trace id and resume exactly everything preserved context live written 
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_00_0nMtKu18Dv973WrEcLzJ9682"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_uxLlXKKvd5MeojxinSGD1495"
+}
+```
+
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_00_RbDZ1irlRiOe3OlLtGjs7600"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/state/delegations.json"
+}
+```
+
+**Error:**
+```
+<path>/Users/apple/hivemind-plugin-private/.hivemind/state/delegations.json</path>
+<type>file</type>
+<content>
+1: [
+2:   {
+3:     "id": "48da362c-e105-4601-8613-29406ad1d41c",
+4:     "parentSessionId": "ses_concurrent",
+5:     "childSessionId": "fake-ses-1",
+6:     "agent": "builder",
+7:     "status": "error",
+8:     "createdAt": 1778494122790,
+9:     "safetyCeilingMs": 1800000,
+10:     "lastMessageCount": 0,
+11:     "stablePollCount": 0,
+12:     "lastMessageCountChangeAt": 1778494122790,
+13:     "nestingDepth": 1,
+14:     "executionMode": "sdk",
+15:     "workingDirectory": "/Users/apple/hivemind-plugin-private",
+16:     "queueKey": "agent:builder",
+17:     "surface": "agent-delegation",
+18:     "recoveryGuarantee": "resumable",
+19:     "explicitCancellation": false,
+20:     "completedAt": 1778494122792,
+21:     "error": "Failed to send prompt to child session",
+22:     "gracePeriodExpiresAt": 1778494722794
+23:   },
+24:   {
+25:     "id": "1b8a7c7e-f6fc-4ed2-b464-6ffc20055546",
+26:     "parentSessionId": "ses_concurrent",
+27:     "childSessionId": "fake-ses-2",
+28:     "agent": "researcher",
+29:     "status": "error",
+30:     "createdAt": 1778494122796,
+31:     "safetyCeilingMs": 1800000,
+32:     "lastMessageCount": 0,
+33:     "stablePollCount": 0,
+34:     "lastMessageCountChangeAt": 1778494122796,
+35:     "nestingDepth": 1,
+36:     "executionMode": "sdk",
+37:     "workingDirectory": "/Users/apple/hivemind-plugin-private",
+38:     "queueKey": "agent:researcher",
+39:     "surface": "agent-delegation",
+40:     "recoveryGuarantee": "resumable",
+41:     "explicitCancellation": false,
+42:     "completedAt": 1778494122799,
+43:     "error": "Failed to send prompt to child session",
+44:     "gracePeriodExpiresAt": 1778494722800
+45:   }
+46: ]
+
+(End of file - total 46 lines)
+</content>
+
+<system-reminder>
+Instructions from: /Users/apple/hivemind-plugin-private/.hivemind/AGENTS.md
+# Internal State Sector Guidance
+
+**Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
+
+## 1. Sector purpose and lifecycle role
+
+`.hivemind/` is the Internal State sector and canonical Q6 state root for Hivemind runtime persistence: session continuity, delegation records, config workflow state, event tracker artifacts, session journals, execution lineage, and recovery artifacts. Source evidence: `.planning/codebase/ARCHITECTURE.md:247-255`, `.planning/codebase/ARCHITECTURE.md:405-411`, `.planning/codebase/STRUCTURE.md:130-134`.
+
+## 2. Allowed mutation authority
+
+- Typed runtime owners in `src/task-management/`, `src/coordination/`, and `src/features/` may write their assigned state files through approved persistence modules. Evidence: `.planning/codebase/ARCHITECTURE.md:311-315`, `.planning/codebase/ARCHITECTURE.md:405-411`.
+- Tools may trigger state mutations through library owners when the tool contract permits mutation. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- Event tracker artifacts may be best-effort hook-driven outputs only when routed through library/event-tracker owners; they must not block canonical handling. Evidence: `.planning/codebase/ARCHITECTURE.md:302-315`, `.planning/codebase/ARCHITECTURE.md:388-392`.
+
+## 3. Forbidden mutations / explicit no-go boundaries
+
+- Hooks SHALL NOT directly write durable state into `.hivemind/`; hook effects must stay observation/response-shaping/guard-decision. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- `.hivemind/` state SHALL NOT be moved back into `.opencode/`; `.opencode/state/` is legacy migration-only. Evidence: `.planning/codebase/ARCHITECTURE.md:351-353`, `.planning/codebase/STRUCTURE.md:295-299`.
+- Do not fabricate missing state subdirectories or ownership modules from documentation-only work; bootstrap/state ownership remains an active gap. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not edit runtime state artifacts manually unless a recovery workflow explicitly authorizes it.
+
+## 4. Actors and consumers
+
+| Actor / consumer | Uses this sector for | Boundary |
+|---|---|---|
+| `src/task-management/continuity/` | Owns session continuity JSON persistence | Must deep-clone/normalize/quarantine through code owners |
+| `src/task-management/continuity/delegation-persistence.ts` | Owns delegation record I/O | Tools/managers call the owner, not raw edits |
+| Event tracker/session journal/lineage modules | Produce audit and timeline artifacts | Best-effort artifacts are not completion proof by themselves |
+| Sidecar/planning readers | May read canonical artifacts | Read-only consumers must not mutate state |
+| Recovery workflows | Assess and repair state under authorization | Must preserve evidence and avoid manual drift |
+
+## 5. Naming and placement conventions
+
+- Current known state folders include `.hivemind/state/`, `.hivemind/event-tracker/`, and `.hivemind/poor-prompts/`. Evidence: `.planning/codebase/STRUCTURE.md:40-43`, `.planning/codebase/STRUCTURE.md:130-134`.
+- State files should be owned by typed modules before being treated as runtime-contract surfaces. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not use `.opencode/` for new internal state naming or placement. Evidence: `.planning/codebase/ARCHITECTURE.md:247-255`.
+
+## 6. Quality gates and evidence expectations
+
+- State-sector changes require proof of the owning module, migration behavior, and recovery/quarantine behavior when applicable.
+- Unit tests alone do not prove restart recovery; runtime recovery claims need integration or live restart evidence.
+- Docs-only edits remain L5 evidence and must not unblock CA-04 bootstrap/state ownership readiness. Evidence: `.planning/ROADMAP.md:29-49`.
+
+</system-reminder>
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/state/session-continuity.json"
+}
+```
+
+**Error:**
+```
+<path>/Users/apple/hivemind-plugin-private/.hivemind/state/session-continuity.json</path>
+<type>file</type>
+<content>
+1: {
+2:   "version": 1,
+3:   "updatedAt": 1778446132343,
+4:   "sessions": {
+5:     "ses-parent-tool": {
+6:       "sessionID": "ses-parent-tool",
+7:       "promptParams": {},
+8:       "metadata": {
+9:         "status": "running",
+10:         "description": "Recovered parent session notification queue",
+11:         "delegation": null,
+12:         "constraints": [],
+13:         "pendingNotifications": [
+14:           {
+15:             "sessionID": "pty:pty-delete-on-terminate",
+16:             "description": "Delegation: command-runner",
+17:             "agent": "command-runner",
+18:             "status": "failed",
+19:             "error": "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+20:             "resultPreview": "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+21:             "briefSummary": "Delegated work finished with terminal state non-resumable-after-restart after 29ms. Summary preview: [Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+22:             "outputLink": "session://pty:pty-delete-on-terminate",
+23:             "duration": 29,
+24:             "metadata": {
+25:               "delegationId": "90632060-2283-4880-8b6c-fec96f7cc923",
+26:               "terminalState": "error",
+27:               "recoveryGuarantee": "best-effort",
+28:               "summaryPreview": "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts"
+29:             },
+30:             "createdAt": 1778446132342,
+31:             "delivered": false
+32:           }
+33:         ],
+34:         "updatedAt": 1778446132342
+35:       }
+36:     }
+37:   },
+38:   "governance": {
+39:     "rules": [],
+40:     "violations": [],
+41:     "updatedAt": 1778446132303
+42:   }
+43: }
+
+(End of file - total 43 lines)
+</content>
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-01-PLAN.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-05-PLAN.md"
+}
+```
+
+
+## USER (turn 4)
+
+follow the skill
+
+## USER (turn 5)
+
+# Hivemind Power-On — Session Governance
+
+## 7 IRON LAWS
+
+```
+1. NEVER start new session when aborted exists → use EXACT task_id
+2. NEVER repeat prompt when resuming → context is preserved  
+3. NEVER L0→L2 dispatch → always L0→L1→L2
+4. NEVER skip quality gate triad → lifecycle→spec→evidence in order
+5. NEVER load >3 skills at once → context budget is shared
+6. NEVER read full files when grep/offset works → line-aware reading
+7. ALWAYS use session-tracker to find aborted sessions before starting fresh
+```
+
+## ROUTING TABLE
+
+| Signal | Route To | Depth |
+|--------|----------|-------|
+| `/hf-create`, `/hf-audit`, `/hf-stack`, agent/skill/command creation | → hf-lineage, `hf-l1-coordinator` | [ref-01 §2] |
+| `/plan`, `/ultrawork`, `/gsd-*`, feature/bug/architecture work | → hm-lineage, `hm-l1-coordinator` | [ref-01 §3] |
+| Disconnect recovery, session resume | → RESUME protocol | [ref-02 §1] |
+| Context compact/purge recovery | → SURVIVAL protocol | [ref-03 §1] |
+| L0→L1→L2 delegation chain dispatch | → DELEGATION protocol | [ref-04 §1] |
+| Quality gate needed on child output | → GATE TRIAD | [ref-05 §1] |
+| Ambiguous hm-vs-hf lineage | → `hm-l2-user-intent-interactive-loop` | [ref-01 §4] |
+
+## QUICK REFERENCE — Session-Tracker Cheat Sheet
+
+```
+find all sessions:     session-tracker({action:"list-sessions"})
+export one session:    session-tracker({action:"export-session", sessionId:"ses_xxx"})
+search aborts:         session-tracker({action:"search-sessions", query:"aborted|cancelled"})
+read hierarchy:        read(".hivemind/session-tracker/<id>/session-continuity.json")
+read project index:    read(".hivemind/session-tracker/project-continuity.json")
+grep last user turn:   grep(pattern:"## USER \\(turn", path:".hivemind/session-tracker/<id>/")
+```
+
+Full tool API reference: [ref-06 §1]
+
+## REFERENCE MAP
+
+```
+references/01-lineage-routing.md        — hm vs hf decision tree, command routing, cross-lineage rules, domain maps
+references/02-session-resume-protocol.md — disconnect recovery, resume cascade, health dashboard, worked example
+references/03-compact-survival.md       — context purge recovery, optimization rules, state reconstruction
+references/04-delegation-chain.md       — L0→L1→L2 dispatch, task_id tracking, depth limits, anti-patterns
+references/05-quality-gates.md          — lifecycle→spec→evidence triad, enforcement, HMQUAL compliance
+references/06-session-tracker-manual.md — .hivemind/ structure, JSON schemas, navigation patterns, tool API
+```
+
+## ASSET BUNDLES
+
+| Agent Type | Load | Why |
+|------------|------|-----|
+| **L0 (orchestrator)** | ref-01 + ref-02 + ref-04 + ref-06 | route + resume + delegate + track |
+| **L1 (coordinator)** | ref-04 + ref-05 + ref-06 | delegate + gates + track |
+| **L2/L3 (specialist)** | ref-05 only | gates only (coordinator handles routing) |
+| **Post-disconnect (any)** | ref-02 + ref-06 | resume + track |
+| **Post-compact (any)** | ref-03 + ref-06 | survive + track |
+| **Lineage ambiguous** | ref-01 | routing decision tree |
+
+## ESCALATION RULES
+
+```
+- 3 consecutive gate failures → escalate to user with full gap report
+- Ambiguous hm-vs-hf → load hm-l2-user-intent-interactive-loop
+- session-tracker not responding → direct read .hivemind/session-tracker/project-continuity.json
+- task_id expired (session not found) → export .md, extract prompt, create NEW dispatch with same params
+```
+
+## LIFECYCLE SUMMARY
+
+```
+POWER-ON → classify lineage → load lineage router → domain work → quality gates → report
+DISCONNECT → RESUME protocol [ref-02] → resume deepest active child → continue
+COMPACT → SURVIVAL protocol [ref-03] → reconstruct from disk → confirm with user
+L2/L3 SPECIALIST → load ref-05 (gates only) → complete work → return to coordinator
+```
+
+## CRITICAL LOADING ORDER
+
+```
+hivemind-power-on (FIRST — this skill) → lineage router → domain skill (max 3 total loaded)
+```
+
+> **L2/L3 specialists:** Do NOT load this skill. Your coordinator loaded it for you.
+> **Context budget:** Every line of this file costs context. See [ref-03 §2] for optimization rules.
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_5b1HIenOP3gZ6KZNkyAI5744"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_wKB6buquV3bOM2qlR43Y7449"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_gmQ7IZE0oCU7U1AWyNNC5461"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_03_dVquTCQJEfr5QtZZxdp14835"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute plan 11-01: Archive infrastructure + truth matrix",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1e8c91c4fffeX2qab4st6W1vXX"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e8c91c4fffeX2qab4st6W1vXX
+```
+
+
+---
+sessionID: ses_1e94024baffeVXNTsMOc7nQPlz
+created: 2026-05-11T13:59:22.785Z
+updated: 2026-05-11T13:59:22.785Z
+parentSessionID: null
+delegationDepth: 0
+children: []
+continuityIndex: session-continuity.json
+status: active
+---
+
+## USER (turn 1)
+
+use skill to continue the above
+
+### Tool: skill
+
+**Input:**
+```json
+{
+  "name": "gsd-execute-phase"
+}
+```
+
+**Output:** (pruned)
+```
+# Skill: gsd-execute-phase
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_HyZ8gzHcX44CIOzDmIid4994"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_vFLOYxOpDPJpU9f4Xpwg3551"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_iloN31jCt692urTTlI0J3823"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_t295RjGCyKR9Dc5hPPp26867"
+}
+```
+
+
+### Tool: glob
+
+**Input:**
+```json
+{
+  "callID": "call_00_tkxDqNRclF8FVLEebk5G3143"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-01-PLAN.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-05-PLAN.md"
+}
+```
+
+
+---
+sessionID: ses_1e94024baffeVXNTsMOc7nQPlz
+created: 2026-05-11T14:05:14.154Z
+updated: 2026-05-11T14:05:14.154Z
+parentSessionID: null
+delegationDepth: 0
+children: []
+continuityIndex: session-continuity.json
+status: active
+---
+
+## USER (turn 1)
+
+use skill to continue the above
+
+## USER (turn 2)
+
+use skill to continue the above
+
+### Tool: skill
+
+**Input:**
+```json
+{
+  "name": "hivemind-power-on"
+}
+```
+
+**Output:** (pruned)
+```
+# Skill: hivemind-power-on
+```
+
+
+### Tool: skill
+
+**Input:**
+```json
+{
+  "name": "gsd-resume-work"
+}
+```
+
+**Output:** (pruned)
+```
+# Skill: gsd-resume-work
+```
+
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_00_ORZXmxws0tEwXztri2jd7911"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_SrIz7rE16F6G34FQI6TN8524"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_wDvAULYFEowXvwEpV9F85220"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_R4VtKCDCoxwlVFsp2ID26554"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute plan 11-01: Archive + truth matrix",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1e8a2a61cffe3ZeCBCldtLDZXl"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e8a2a61cffe3ZeCBCldtLDZXl
+```
+
+
+## USER (turn 3)
+
+resume on session id aborted or what do as skills say
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_00_5hxBWnK2fRrUEgwJPxcM2278"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_TdpeogD64dFjdmIpMv5S0744"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_jdFW9ghbdpvC0XjCwKOl5773"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_49etljjT5WYI9PBehqbE7112"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_D1I33bcP38C8idxIVN2t1305"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/02-session-resume-protocol.md"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_K2M6EvvjxrkSPCVoI0Lx0537"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_BMQrozl7rQ3lJO5mpQ2a4616"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_ODmUidSrAXrn20vECO9w9893"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_zYYJeu6fzpaVX2IF35SV0244"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_L5T3m388fbqg53Dz5ok98251"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_elN7AYYHQKGlX0bpXJWU8926"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_eYxENqRvCKxOlObzp4k76121"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_D8pFKpLzOTWhDXvggNnD2303"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_tabAS452yucblOHBX5lq4101"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_idLDhPFnqa2gEtdCMtGF0656"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "resume",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1e8a2a61cffe3ZeCBCldtLDZXl"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e8a2a61cffe3ZeCBCldtLDZXl
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute plan 11-05: AGENTS.md sector audit",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1e88f011bffe3I6hxHpmPerPLi"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e88f011bffe3I6hxHpmPerPLi
+```
+
+
+## USER (turn 4)
+
+I was disconnected please resume from the above
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_gpdqzJuciIA7AeG1XRzY8538"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_C1Gd32C5bF3azjwT2gNL5980"
+}
+```
+
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_02_r35GVB0JRUk5LiAKEUaC7745"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "resume",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1e88f011bffe3I6hxHpmPerPLi"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e88f011bffe3I6hxHpmPerPLi
+```
+

@@ -1,0 +1,40 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e8c038b4ffevGsLbvtVMotKT1",
+  "lastUpdated": "2026-05-11T13:58:29.807Z",
+  "hierarchy": {
+    "root": "ses_1e8c038b4ffevGsLbvtVMotKT1",
+    "children": {
+      "ses_1e8be1b78ffe34PhsMQ2ABJjJL": {
+        "file": "ses_1e8be1b78ffe34PhsMQ2ABJjJL.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e8be30f2ffetBYH7aCqNu2qXk": {
+        "file": "ses_1e8be30f2ffetBYH7aCqNu2qXk.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e8b9d596ffejIzGCmPEPmYhIC": {
+        "file": "ses_1e8b9d596ffejIzGCmPEPmYhIC.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e8ba0f34ffe3IW9xBFRcgYALs": {
+        "file": "ses_1e8ba0f34ffe3IW9xBFRcgYALs.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 4,
+  "toolSummary": {}
+}

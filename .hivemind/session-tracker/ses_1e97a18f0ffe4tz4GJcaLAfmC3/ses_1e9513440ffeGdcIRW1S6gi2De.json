@@ -5,11 +5,11 @@
   "delegatedBy": {
     "agentName": "main_l0_agent",
     "tool": "task",
-    "description": "BATCH2b+3: Quality+Planning profiles",
+    "description": "Resume aborted BATCH2b+3 session",
     "subagentType": "hm-l1-coordinator"
   },
-  "created": "2026-05-11T11:20:01.060Z",
-  "updated": "2026-05-11T11:20:01.060Z",
+  "created": "2026-05-11T13:34:54.297Z",
+  "updated": "2026-05-11T13:34:54.297Z",
   "status": "active",
   "mainAgent": {
     "name": "hm-l1-coordinator",

@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e8c789e0ffe4dagMYIvrHnaaC",
+  "parentSessionID": "ses_1e97a18f0ffe4tz4GJcaLAfmC3",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Resume BATCH4+5 Execution profiles",
+    "subagentType": "hm-l1-coordinator"
+  },
+  "created": "2026-05-11T13:30:10.880Z",
+  "updated": "2026-05-11T13:30:10.880Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

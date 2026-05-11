@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e8be30f2ffetBYH7aCqNu2qXk",
+  "parentSessionID": "ses_1e8c038b4ffevGsLbvtVMotKT1",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Improve hm-l2-executor profile",
+    "subagentType": "general"
+  },
+  "created": "2026-05-11T13:41:40.164Z",
+  "updated": "2026-05-11T13:41:40.164Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e8744c03ffef7qSYUdfiUGKOd",
+  "parentSessionID": "ses_1e8826b7fffe6rpXbScJR18btU",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Rewrite hm-l2-context-mapper",
+    "subagentType": "hm-l2-general"
+  },
+  "created": "2026-05-11T15:04:08.450Z",
+  "updated": "2026-05-11T15:04:08.450Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-general",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

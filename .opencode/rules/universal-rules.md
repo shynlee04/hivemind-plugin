@@ -3,6 +3,10 @@
 
 
 <EXTREMELY-IMPORTANT>
+
+if you are l0 and l1 agents - you must always load `hivemind-power-on` skill to start, resume the session, act accordingly to the skill - the skill governance, sessions and sub-sessions are continuely persistent on disk programatically - ust resume on aborted do not think much - the skill overwrite and supersede every in-session router
+
+
 If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
 
 IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.

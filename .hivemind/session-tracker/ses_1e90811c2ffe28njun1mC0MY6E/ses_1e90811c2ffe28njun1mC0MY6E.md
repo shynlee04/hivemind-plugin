@@ -1969,3 +1969,1785 @@ fix it thin SKILL.md, routing domains and depth rich of references, inlnk jumps 
 task_id: ses_1e8f5fe2fffeaOjWuQ8dOk7Z8i
 ```
 
+
+## USER (turn 4)
+
+register this as the shipped-with skill - core and governance 
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Thin hivemind-power-on SKILL.md drastically",
+  "subagent_type": "hf-l2-skill-builder",
+  "task_id": "ses_1e8e89cf3ffeuq87qQGNdZcyDa"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e8e89cf3ffeuq87qQGNdZcyDa
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_n5nxdhA9Evy1raoh3WbE6686"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_YN5qRrUCtX4QqrzrIcsH4509"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_rhpQn26eEbktcV6Ajarh4192"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_01_n6WMBYdx68AsJZIEa7sT2853"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.hivefiver-meta-builder/skills-lab/hivemind-power-on/SKILL.md"
+}
+```
+
+**Error:**
+```
+<path>/Users/apple/hivemind-plugin-private/.hivefiver-meta-builder/skills-lab/hivemind-power-on/SKILL.md</path>
+<type>file</type>
+<content>
+1: ---
+2: name: hivemind-power-on
+3: description: >-
+4:   MUST-LOAD governance for L0/L1 agents. Routes hm/hf lineage, 
+5:   manages session lifecycle, enforces quality gates, optimizes context. 
+6:   Load FIRST. Triggers: session start, resume, disconnect, compact.
+7: version: 1.0.0
+8: lineage: hivemind
+9: load_priority: 1
+10: consumed-by:
+11:   - hm-l0-orchestrator
+12:   - hf-l0-orchestrator
+13:   - hm-l1-coordinator
+14:   - hf-l1-coordinator
+15:   - hm-l2-conductor
+16:   - hf-l2-meta-builder
+17: allowed-tools:
+18:   - skill
+19:   - read
+20:   - grep
+21:   - glob
+22:   - bash
+23:   - task
+24:   - todowrite
+25:   - session-tracker
+26:   - prompt-skim
+27:   - prompt-analyze
+28:   - hivemind-doc
+29: ---
+30: 
+31: # Hivemind Power-On — Session Governance
+32: 
+33: ## 7 IRON LAWS
+34: 
+35: ```
+36: 1. NEVER start new session when aborted exists → use EXACT task_id
+37: 2. NEVER repeat prompt when resuming → context is preserved  
+38: 3. NEVER L0→L2 dispatch → always L0→L1→L2
+39: 4. NEVER skip quality gate triad → lifecycle→spec→evidence in order
+40: 5. NEVER load >3 skills at once → context budget is shared
+41: 6. NEVER read full files when grep/offset works → line-aware reading
+42: 7. ALWAYS use session-tracker to find aborted sessions before starting fresh
+43: ```
+44: 
+45: ## ROUTING TABLE
+46: 
+47: | Signal | Route To | Depth |
+48: |--------|----------|-------|
+49: | `/hf-create`, `/hf-audit`, `/hf-stack`, agent/skill/command creation | → hf-lineage, `hf-l1-coordinator` | [ref-01 §2] |
+50: | `/plan`, `/ultrawork`, `/gsd-*`, feature/bug/architecture work | → hm-lineage, `hm-l1-coordinator` | [ref-01 §3] |
+51: | Disconnect recovery, session resume | → RESUME protocol | [ref-02 §1] |
+52: | Context compact/purge recovery | → SURVIVAL protocol | [ref-03 §1] |
+53: | L0→L1→L2 delegation chain dispatch | → DELEGATION protocol | [ref-04 §1] |
+54: | Quality gate needed on child output | → GATE TRIAD | [ref-05 §1] |
+55: | Ambiguous hm-vs-hf lineage | → `hm-l2-user-intent-interactive-loop` | [ref-01 §4] |
+56: 
+57: ## QUICK REFERENCE — Session-Tracker Cheat Sheet
+58: 
+59: ```
+60: find all sessions:     session-tracker({action:"list-sessions"})
+61: export one session:    session-tracker({action:"export-session", sessionId:"ses_xxx"})
+62: search aborts:         session-tracker({action:"search-sessions", query:"aborted|cancelled"})
+63: read hierarchy:        read(".hivemind/session-tracker/<id>/session-continuity.json")
+64: read project index:    read(".hivemind/session-tracker/project-continuity.json")
+65: grep last user turn:   grep(pattern:"## USER \\(turn", path:".hivemind/session-tracker/<id>/")
+66: ```
+67: 
+68: Full tool API reference: [ref-06 §1]
+69: 
+70: ## REFERENCE MAP
+71: 
+72: ```
+73: references/01-lineage-routing.md        — hm vs hf decision tree, command routing, cross-lineage rules, domain maps
+74: references/02-session-resume-protocol.md — disconnect recovery, resume cascade, health dashboard, worked example
+75: references/03-compact-survival.md       — context purge recovery, optimization rules, state reconstruction
+76: references/04-delegation-chain.md       — L0→L1→L2 dispatch, task_id tracking, depth limits, anti-patterns
+77: references/05-quality-gates.md          — lifecycle→spec→evidence triad, enforcement, HMQUAL compliance
+78: references/06-session-tracker-manual.md — .hivemind/ structure, JSON schemas, navigation patterns, tool API
+79: ```
+80: 
+81: ## ASSET BUNDLES
+82: 
+83: | Agent Type | Load | Why |
+84: |------------|------|-----|
+85: | **L0 (orchestrator)** | ref-01 + ref-02 + ref-04 + ref-06 | route + resume + delegate + track |
+86: | **L1 (coordinator)** | ref-04 + ref-05 + ref-06 | delegate + gates + track |
+87: | **L2/L3 (specialist)** | ref-05 only | gates only (coordinator handles routing) |
+88: | **Post-disconnect (any)** | ref-02 + ref-06 | resume + track |
+89: | **Post-compact (any)** | ref-03 + ref-06 | survive + track |
+90: | **Lineage ambiguous** | ref-01 | routing decision tree |
+91: 
+92: ## ESCALATION RULES
+93: 
+94: ```
+95: - 3 consecutive gate failures → escalate to user with full gap report
+96: - Ambiguous hm-vs-hf → load hm-l2-user-intent-interactive-loop
+97: - session-tracker not responding → direct read .hivemind/session-tracker/project-continuity.json
+98: - task_id expired (session not found) → export .md, extract prompt, create NEW dispatch with same params
+99: ```
+100: 
+101: ## LIFECYCLE SUMMARY
+102: 
+103: ```
+104: POWER-ON → classify lineage → load lineage router → domain work → quality gates → report
+105: DISCONNECT → RESUME protocol [ref-02] → resume deepest active child → continue
+106: COMPACT → SURVIVAL protocol [ref-03] → reconstruct from disk → confirm with user
+107: L2/L3 SPECIALIST → load ref-05 (gates only) → complete work → return to coordinator
+108: ```
+109: 
+110: ## CRITICAL LOADING ORDER
+111: 
+112: ```
+113: hivemind-power-on (FIRST — this skill) → lineage router → domain skill (max 3 total loaded)
+114: ```
+115: 
+116: > **L2/L3 specialists:** Do NOT load this skill. Your coordinator loaded it for you.
+117: > **Context budget:** Every line of this file costs context. See [ref-03 §2] for optimization rules.
+
+(End of file - total 117 lines)
+</content>
+
+<system-reminder>
+Instructions from: /Users/apple/hivemind-plugin-private/.hivefiver-meta-builder/AGENTS.md
+# AGENTS.md — Hivefiver Meta-Builder Module
+
+## Project Overview
+
+Hivefiver is the **hm-meta-builder module** of the HiveMind Framework. It creates, audits, stacks, and extends OpenCode soft concepts: skills, agents, commands, tools, workflows, and references.
+
+**This is NOT a project-builder.** That's Hiveminder's domain. Hivefiver builds the building blocks.
+
+### The Three Entities
+
+| Entity | Role | Boundary |
+|--------|------|----------|
+| **OpenCode** | Agent coding harness CLI — the platform/OS | Native capabilities: agents, commands, skills, tools, plugins |
+| **HiveMind** | Parent framework wrapping OpenCode | Houses both Hivefiver + Hiveminder |
+| **Hivefiver** | Meta-builder module | Creates/audits/stacks OpenCode concepts. Tests in labs, ships as TS runtime |
+| **Hiveminder** | Project-builder agent lineage | Handles "let's build a NextJS app" — DO NOT TOUCH |
+
+### What Hivefiver Delivers
+
+- **Agent definitions** (`.md` files with YAML frontmatter, permissions, execution flows)
+- **Command definitions** (thin shells referencing workflow files)
+- **Skill packages** (SKILL.md + references/ + scripts/ + templates/)
+- **Workflow files** (procedural logic executed by agents)
+- **Reference files** (platform docs, patterns, best practices)
+
+### Testing → Shipping Pipeline
+
+```
+.hivefiver-meta-builder/**-lab/  ← Source of truth (edit here)
+        ↓ symlinks
+.opencode/{agents,commands,skills}/  ← Live testing (OpenCode reads here)
+        ↓ when validated
+TS runtime builder (opencode-harness npm package)  ← Final shipping format
+```
+
+---
+
+## Lab Structure
+
+```
+.hivefiver-meta-builder/
+├── agents-lab/active/refactoring/     ← Agent definitions (source of truth)
+├── commands-lab/active/refactoring/   ← Command definitions (source of truth)
+├── skills-lab/active/refactoring/     ← Skill packages (source of truth)
+├── workflows-lab/active/refactoring/  ← Workflow files (procedural logic)
+├── references-lab/active/refactoring/ ← Reference docs (platform patterns)
+├── plans/                             ← Implementation plans
+└── orchestrator/                      ← Coordinator definitions
+```
+
+### Lab → `.opencode/` Sync
+
+The `.opencode/` directories (`agents/`, `commands/`, `skills/`) are **standalone directories** — they contain real files, not symlinks. Changes in labs must be copied/synced to `.opencode/` for live testing.
+
+| `.opencode/` path | Source in lab |
+|---|---|
+| `.opencode/agents/` | `.hivefiver-meta-builder/agents-lab/active/refactoring/` |
+| `.opencode/commands/` | `.hivefiver-meta-builder/commands-lab/active/refactoring/` |
+| `.opencode/skills/` | `.hivefiver-meta-builder/skills-lab/active/refactoring/` |
+
+**Edit in labs → sync to `.opencode/` for live testing.**
+
+---
+
+## Agent Team
+
+### Tier 1: Primary Agents (user interacts directly via Tab key)
+
+| Agent | File | Role |
+|-------|------|------|
+| **hf-l0-orchestrator** | `.opencode/agents/hf-l0-orchestrator.md` | Meta-builder routing brain. Receives requests → classifies intent → delegates to specialists → two-stage review → reports. |
+| **hf-l1-coordinator** | `.opencode/agents/hf-l1-coordinator.md` | Interactive orchestrator. Task management, delegation, parallel execution. |
+| **hm-l2-conductor** | `.opencode/agents/hm-l2-conductor.md` | Command execution workhorse. Intent classification, wisdom system, delegate-task routing. |
+
+### Tier 2: Specialist Subagents (dispatched by primaries)
+
+| Agent | File | Role |
+|-------|------|------|
+| **hf-l2-skill-builder** | `.opencode/agents/hf-l2-skill-builder.md` | Creates/audits/repairs skills. Enforces agentskills.io principles. |
+| **hf-l2-agent-builder** | `.opencode/agents/hf-l2-agent-builder.md` | Creates/audits/repairs agent definitions. Explicit permissions, execution flows. |
+| **hf-l2-command-builder** | `.opencode/agents/hf-l2-command-builder.md` | Creates/audits/repairs commands. Non-interactive shell safety, $ARGUMENTS, !bash. |
+| **hm-l2-executor** | `.opencode/agents/hm-l2-executor.md` | Atomic code implementation. Reads before writes, follows patterns. |
+| **hm-l2-critic** | `.opencode/agents/hm-l2-critic.md` | Quality verification. Ruthless review, correctness validation. |
+| **hm-l2-researcher** | `.opencode/agents/hm-l2-researcher.md` | Deep investigation. Evidence collection, pattern discovery. |
+
+### Tier 3: Fast Subagents
+
+| Agent | File | Role |
+|-------|------|------|
+| **explore** | ⚠️ MISSING from filesystem | Fast codebase scan. Lightweight, high-throughput. **Note:** No `explore.md` exists in `.opencode/agents/`. May need to be created or this row removed. |
+
+### Tier 4: Prompt-Enhance Lane Agents
+
+| Agent | File | Role |
+|-------|------|------|
+| **hm-l2-prompt-skimmer** | `.opencode/agents/hm-l2-prompt-skimmer.md` | Phase 0 skim for prompt-enhancement routing. |
+| **hm-l2-prompt-analyzer** | `.opencode/agents/hm-l2-prompt-analyzer.md` | Deep text-quality lane for prompts. |
+| **hm-l2-context-mapper** | `.opencode/agents/hm-l2-context-mapper.md` | Grounds prompt references in repo reality. |
+| **hm-l2-risk-assessor** | `.opencode/agents/hm-l2-risk-assessor.md` | Flags destructive, security, and scope risks. |
+| **hm-l2-context-purifier** | `.opencode/agents/hm-l2-context-purifier.md` | Distills noisy prompts without changing intent. |
+| **hm-l2-prompt-repackager** | `.opencode/agents/hm-l2-prompt-repackager.md` | Produces the final YAML+XML enhanced prompt payload. |
+
+---
+
+## Command Set
+
+### Hivefiver Commands (hf-*)
+
+| Command | Agent | Purpose |
+|---------|-------|---------|
+| `/hf-create` | hf-l0-orchestrator | Create skill/agent/command/tool via specialist routing |
+| `/hf-audit` | hf-l0-orchestrator | Audit meta-concepts for quality, overlaps, dead refs |
+| `/hf-stack` | hf-l0-orchestrator | Stack 2-3 skills with loading order validation |
+| `/hf-prompt-enhance` | hf-l0-orchestrator | Enhance, audit, or repack prompts via skim → bridge → lanes → assembly |
+
+### Existing Commands (updated)
+
+| Command | Agent | Status |
+|---------|-------|--------|
+| `/start-work` | hm-l2-conductor | Updated with $ARGUMENTS, bash injection, skill loading |
+| `/plan` | hm-l1-coordinator | Updated with $ARGUMENTS, bash injection |
+| `/ultrawork` | hm-l2-conductor | Updated with bash injection, skill loading |
+| `/deep-init` | hm-l1-coordinator | Keep as-is |
+| `/harness-doctor` | hm-l1-coordinator | Keep as-is |
+
+---
+
+## Delegation Protocol
+
+### The Dispatch Envelope
+
+```
+Task tool (<specialist>):
+  description: "Task N: [name]"
+  prompt: |
+    You are [role]. Your task: [FULL TASK TEXT]
+
+    ## Context
+    [Scene-setting — where this fits, why it matters]
+
+    ## Scope
+    - Include: [specific files/paths]
+    - Exclude: [what NOT to touch]
+
+    ## Output Format
+    - Status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
+    - [Specific output requirements]
+```
+
+**NEVER pass session history to subagents. Construct exact context.**
+
+### Status Protocol
+
+| Status | Meaning | Action |
+|--------|---------|--------|
+| DONE | Complete, verified | Proceed |
+| DONE_WITH_CONCERNS | Complete but doubts | Read concerns → address if correctness, note if observation |
+| NEEDS_CONTEXT | Knowledge gap | Provide context → re-dispatch |
+| BLOCKED | Cannot proceed | Assess: context? model? size? plan? → escalate if needed |
+
+### Two-Stage Review
+
+1. **Stage 1: Spec Compliance** — Does output match requirements? Nothing extra? Nothing missing?
+2. **Stage 2: Code Quality** — Well-built? Clean? Following patterns?
+
+**Stage 1 MUST pass before Stage 2.**
+
+---
+
+## Iron Laws
+
+1. **NO DIRECT CREATION WITHOUT DELEGATION** — Route to specialists. Never create skills/agents/commands directly.
+2. **NO STACK WITHOUT A REASON** — Max 3 skills per stack. Explain why each is needed.
+3. **NO SUBAGENT WITHOUT CONSTRUCTED CONTEXT** — Full task text, scene-setting, scope. Never session history.
+4. **NO SKILL WITHOUT TRIGGER PHRASES** — Description is the only thing agents see. Must contain specific user phrases.
+5. **EVERY COMMAND SURVIVES CI=true** — No TTY-dependent operations. Non-interactive shell safety.
+
+---
+
+## Anti-Patterns
+
+| Anti-Pattern | Detection | Correction |
+|-------------|-----------|------------|
+| **The Executor** — creating directly | Writing SKILL.md or agent files yourself | STOP. Delegate to specialist. |
+| **The Hoarder** — loading 4+ skills | Context blown, skills ignored | Max 3. Explain why each is needed. |
+| **The Improviser** — ignoring routing table | Routed wrong, task failed | Trust the table. Fix the table if wrong. |
+| **The Context Polluter** — passing session history | Subagent prompt includes "earlier in conversation" | Construct fresh context: task text + scene-setting + scope |
+| **The File Referrer** — "read the plan file" | Subagent told to read file path | Paste full task text into the prompt. Always. |
+| **The Hallucinator** — inventing architecture | Making assumptions without evidence | Ground in lineage. Read session exports. Verify with grep. |
+
+---
+
+## Worktree Strategy
+
+| Worktree | Branch | Purpose |
+|----------|--------|---------|
+| `harness-experiment` | `harness-experiment` | Main development worktree. Labs + symlinks live here. |
+| `hivefiver-v2` | `feature/hivefiver-agent-command-v2` | Agent+command package development. |
+| `hivefiver-packs` | `feature/hivefiver-agent-command-packs` | Alternative package worktree. |
+
+**Each worktree can have its own lab state.** Symlinks point to local labs within that worktree.
+
+---
+
+## Testing Workflow
+
+1. **Edit in labs** — `.hivefiver-meta-builder/**-lab/active/refactoring/`
+2. **Test via sync** — `.opencode/` directories contain live copies
+3. **Validate** — Run OpenCode commands, verify agents load, check skill triggers
+4. **Commit** — Changes in labs are committed to git
+5. **Ship** — When validated, pack into TS runtime builder
+
+---
+
+## Session Recovery
+
+If interrupted:
+1. `git worktree list` — find your worktrees
+2. `cd` to the right worktree
+3. `git status` — see what was in progress
+4. `git log --oneline -5` — see recent commits
+5. Read `.hivefiver-meta-builder/plans/` for current plans
+6. Resume from where you left off
+
+</system-reminder>
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_iDiBzf2TVJhgpsKlg9hD2765"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_00_9kUPis1fUSLyOWtk95jJ6551"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/AGENTS.md"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_DLDUTW4CZvJPpNMOpzi74613"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_hSGDydpFp5IoR9gWWPbh8797"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_2QWhNrfLMCces5d8ALPs0624"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_7WKcxO6jcP18DKm4NN7X1116"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_01_57E2sxTHui6lip8UK3gW2777"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_SQfU7X79doG8DHR6CzoQ7142"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_2wRw5SFnf0iVB2CrSX836326"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_jptRZhbBvpRuU6MHy1M17914"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_wfoXV3Bl7lWEgahaNPrN1582"
+}
+```
+
+
+---
+sessionID: ses_1e90811c2ffe28njun1mC0MY6E
+created: 2026-05-11T13:29:18.439Z
+updated: 2026-05-11T13:29:18.439Z
+parentSessionID: null
+delegationDepth: 0
+children: []
+continuityIndex: session-continuity.json
+status: active
+---
+
+## USER (turn 1)
+
+still incorrect way to continue agent still start new task they must follow the procedure of start exact id do not check anything just resume onace it trace with correct agent id meta data research please ```## Drafting for the core-governance-skill - hivcemind-power-on skill
+- Delegation to hf linage to coordinate with skill development agent and loading skills related to skill development, creator, skill judge, skill review, skill authoring
+
+-knowldege need to load as context for the successful development of this skill: this is the governance of context, the router of workflows, linage, classifications of the task toward theand session OpenCode platforms and Hivemind utilizing engines of OpenCode SDK and other libs toruntime managements of delegation, tasks management, developments of the agentic workforce powered complex project to session  starting, continuing, coordinating, of 2 linage hm and hf, prevnting context loss, context disintegration and rot
+
+-SINCE THIS IS THE CORE SKILL That route and govern the workflow of the Hivemind to both the horizontal, vertical complex depth of matrix of delegations and tasks management (both innate OpenCode and the Hivemind types), project hierarchical of stages, states and plan-first, research-first, hierarchical spec-driven and test-driven workflows of the project for both linages, and practicing the PHILOSOPHIES of 5 pillars and collaboration with the user when using Hivemind under OpenCode platform runtime >>>> decide on the patterns combination of pattern 1 for high-level toward, pattern 2 domain-specific routing, pattern 3 conditional routing branches - practicing the progressive disclosure design and playing the strategic soft-nonbreaking layer that firming up the purposes of this skill 
+
+## Specifications drafting
+
+- This is a must load at runtime of granularity (that mean when starting the session a new, resuming mid-session as user disconnected and prompt continue from above , continuing a very long haul session that suffers from **COMPACT CONTEXT PRUNE**, across the span of sessions) for both user-facing l0 agents, and l1 agents, and possibly loaded by l2 and l3 agents to when they execute the tasks being delegated to them -> the SKILL.md and firt load context must be concise and comprehensively strict governance with routing and coordination and continuity without regreession AND MOST IMPORTANTLY context optimization to land the agent-and-workflow-and-coordination-specific to the references, bundled assets that they can utilize and consume on conditions rightaway with prestine precise non-conflict or overlapping of instruction, guidance
+
+- There are layers and domains router but let's count from starting of the life cycle >>> the user with his/her prompting, attaching as links, attachments, system instructions prompting, project state context of AGENTS.md or other governance artifacts are the innitial loaded context the invoke to l0 agents with/or without slash commands and workflows parsing >>>> from then it is classified to ward which hm or hf l0 agent; the session is started a new or resume (from disconnectin) or after the longhaul the the l0 agent will have to sort out the dependencies of sessions and the previous aborted delegation task down to 3-level depth etc
+
+- but as I said above about the SKILL is the must load, and there are 2 linanges ->  their profiles of agents of l0 and l1 needs to directly (concise thin instructed to constitute them to load this for start, resume, longhaul context retrival to survive compacts and dependencies awareness of sessions) >>> you can form your own interpretation first for the frame and skeletons with other non-focusing sections left thin TBD but my focus is the midsession disconnection vs l0 continuity utilizing the newly made "session-tracker" >>>> first consume and understand this system very carefully 
+
+```
+ /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/.gitkeep
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-CONTEXT.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-DISCUSSION-LOG.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-RESEARCH.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-SPEC.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-04-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-REVIEW.md
+````
+
+From the sample below see look at thesse
+- the mnain project-continuity.json - main across sessions
+- the the session-continuity.json nested in each subdir - those with project-continuity.json are the main sessions that the user and front-facing l0 agent
+
+### Addressing the very specific issue user disconnected and resume the aborted session  - both l0 and l1 have no idea how to utilize and dumbly commit these very pitfalls if there is not specific and thorough guidance of how to resume strategically utilizing the tools I mentioned below
+
+- agents l0 never now to resume it start new wrong agent name, start new -> NOT ALLOW must retrive all subsession -> filter own aborted/cancelled sub l1, l2, sessions from the session-track of the session - the completed sessions are not the one to resume **BUT THE ABORTED ONE and DO NOT START NEW SESSION without id- Start new session with exact aborted ID
+
+- But do not repeat prompting, all the aborted downstream are context preserved 
+
+- the l0 must bring down the concise instruction enforcing l1 of practicing the same correct agent meta naming, exact task_id as session id and not repeating prompt either
+
+- also the instruction how to first line aware then quick grep, glob from root toward subdir as the session - handle at json files to track toward the dot md files with correct jumping toward the portion of the context  because the dot md is not structured very well yet and they are context consuming if not having a strategy to retrive the correct portions and coverage enough linked sub-sessions meta and context
+
+
+
+```
+.hivemind/session-tracker
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e9a1d794ffePl33pFTux271hR.md
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e94e9af4ffeKaZSC34RC2RzZE.json
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e9800d25ffelHwiHHL46jVFJA.json
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e9442519ffeu92Cq5yHlplIoO.json
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/session-continuity.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e9a6ecf5ffev5trgNwpy4CjOf.md
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99ac4e3ffeSa0QV5dg96628Q.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99b6d51ffePAxZJNXXFiOv24.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99b195affetbGfs42YyehaEO.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99bd468ffetJO2iV7K2XEqmc.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99c28bbffek55k6UCs0G7d4N.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/session-continuity.json
+.hivemind/session-tracker/ses_1e9b9cb08ffeHdv8qgplK8c32n
+.hivemind/session-tracker/ses_1e9b9cb08ffeHdv8qgplK8c32n/ses_1e9b9cb08ffeHdv8qgplK8c32n.md
+.hivemind/session-tracker/ses_1e9ba1b66ffeScl7Vx3aZI0uIi
+.hivemind/session-tracker/ses_1e9ba1b66ffeScl7Vx3aZI0uIi/ses_1e9ba1b66ffeScl7Vx3aZI0uIi.md
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/ses_1e9b9cb08ffeHdv8qgplK8c32n.json
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/ses_1e9ba1b66ffeScl7Vx3aZI0uIi.json
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/ses_1e9bc0b1dffeLIeMexVP8ocRAF.md
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/session-continuity.json
+.hivemind/session-tracker/ses_1e9cb63e1ffeJrujKyck8il4jn
+.hivemind/session-tracker/ses_1e9cb63e1ffeJrujKyck8il4jn/ses_1e9cb63e1ffeJrujKyck8il4jn.md
+.hivemind/session-tracker/ses_1e93a7d0cffe5E0G7faQfUo4mq
+.hivemind/session-tracker/ses_1e93a7d0cffe5E0G7faQfUo4mq/ses_1e93a7d0cffe5E0G7faQfUo4mq.md
+.hivemind/session-tracker/ses_1e93dab07fferISBMHC5T02Hxp
+.hivemind/session-tracker/ses_1e93de7c9ffedmL3wMooG4g4Ai
+.hivemind/session-tracker/ses_1e94c8cf6ffekIbS6xGn63TkwD
+.hivemind/session-tracker/ses_1e94e9af4ffeKaZSC34RC2RzZE
+.hivemind/session-tracker/ses_1e94f57b5ffeA1lwxui5kRNLIF
+.hivemind/session-tracker/ses_1e94f8146ffe80wUs9wUrGWYbO
+.hivemind/session-tracker/ses_1e96ce433ffer2T3aNcOKIEJxs
+.hivemind/session-tracker/ses_1e96d391affeh3u28bax2rTY1M
+.hivemind/session-tracker/ses_1e97a18f0ffe4tz4GJcaLAfmC3
+.hivemind/session-tracker/ses_1e97f2b71ffekeC96spZzG8CJ3
+.hivemind/session-tracker/ses_1e98d82dcffefzTttpLHcEMF5a
+.hivemind/session-tracker/ses_1e99ac4e3ffeSa0QV5dg96628Q
+.hivemind/session-tracker/ses_1e99b6d51ffePAxZJNXXFiOv24
+.hivemind/session-tracker/ses_1e99b195affetbGfs42YyehaEO
+.hivemind/session-tracker/ses_1e99bd468ffetJO2iV7K2XEqmc
+.hivemind/session-tracker/ses_1e99c28bbffek55k6UCs0G7d4N
+.hivemind/session-tracker/ses_1e942e8d4ffe97LaJCsxn2ApXO
+.hivemind/session-tracker/ses_1e949a01dffeEV6M8qSGjeQnKD
+.hivemind/session-tracker/ses_1e970d701ffe8vLOukfuuK31xo
+.hivemind/session-tracker/ses_1e974ef7effeAqNql6h7ZC8oQ0
+.hivemind/session-tracker/ses_1e9467c5affecaZ6r6wzvSTqO8
+.hivemind/session-tracker/ses_1e9800d25ffelHwiHHL46jVFJA
+.hivemind/session-tracker/ses_1e94024baffeVXNTsMOc7nQPlz
+.hivemind/session-tracker/ses_1e96915e3ffeS2ppeUZyyHcogl
+.hivemind/session-tracker/ses_1e97113d3ffeLo40kFMcG0T8ay
+.hivemind/session-tracker/ses_1e9442519ffeu92Cq5yHlplIoO
+.hivemind/session-tracker/ses_1e9465271ffeRxMIs8Vz8QsVQU
+.hivemind/session-tracker/ses_1e9497244ffe4z2ymtQC2Qt7Ru
+.hivemind/session-tracker/ses_1e9513440ffeGdcIRW1S6gi2De
+.hivemind/session-tracker/ses_1e9734971ffewoLT5pzVTcvXJk
+.hivemind/session-tracker/ses_1ebc4ae10ffexMyoJGEqD9S3kW
+.hivemind/session-tracker/ses_1ebc4ae10ffexMyoJGEqD9S3kW/ses_1ebc4ae10ffexMyoJGEqD9S3kW.md
+.hivemind/session-tracker/ses_1ebc4ccf2ffeiMfXjMfXiO8mma
+.hivemind/session-tracker/ses_1ebc4ccf2ffeiMfXjMfXiO8mma/ses_1ebc4ccf2ffeiMfXjMfXiO8mma.md
+.hivemind/session-tracker/ses_1ebc5d7b3ffesswQph1WbYR866
+.hivemind/session-tracker/ses_1ebc5d7b3ffesswQph1WbYR866/ses_1ebc5d7b3ffesswQph1WbYR866.md
+.hivemind/session-tracker/ses_1ebc46e73ffek1nxhr2zx0QDHn
+.hivemind/session-tracker/ses_1ebc46e73ffek1nxhr2zx0QDHn/ses_1ebc46e73ffek1nxhr2zx0QDHn.md
+.hivemind/session-tracker/ses_1ebc494a4ffe28VByY8t3Bfa9o
+.hivemind/session-tracker/ses_1ebc494a4ffe28VByY8t3Bfa9o/ses_1ebc494a4ffe28VByY8t3Bfa9o.md
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/ses_1ebd373b1ffeDa7AJ7KJIPShVE.json
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/ses_1ebe832c5ffeeYuFbS1kqleZnD.md
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/ses_1ebe39941ffecHehSRcc13IqeD.json
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/session-continuity.json
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD/ses_1ebe28c52ffeIoXFCcAZnCj0IC.json
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD/ses_1ebe39941ffecHehSRcc13IqeD.md
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD/session-continuity.json
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF/ses_1e97f2b71ffekeC96spZzG8CJ3.json
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF/ses_1f09ebfa5ffe7eMXBiUh9oAhvF.md
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF/session-continuity.json
+.hivemind/session-tracker/project-continuity.json
+```
+
+MUST CONSUME ALL AND ACROSS these documents (crawl and scrap them) https://opencode.ai/docs - toward the knowledge of tools, sessions, message, agents, files, paths, project sdk (particularly focusing on task tools for delegation, go to repo at `STACK-REFERENCES.md` of this codebase to look at the task tool to delegation specifically to know about the `agent_type` `task_id` `prompt` these meta and parameters of the task tool to retrival of `task_id` as session-id and the name of agents, subagents for session resume WITHOUT repeating the prompt and NOT STarting new session id as the current agents way of doing, and the awareness of l0 when resume to l1 agent they must bring down the instruction of the downstream l2 and l3 agent workflows resumption that are ongoing of the sub sessions managed by l1) - secondly are the tools and utilities groups of quick search, look up, jump across meta, line awareness, tracing, grep, glob, offset with line awareness because as you can see above the "auto session-tracker hierarchy of directories, subdirectories json and dot md are intricate but trackable with correct method ) ```
+
+### Tool: skill
+
+**Input:**
+```json
+{
+  "name": "hm-l3-deep-research"
+}
+```
+
+**Output:** (pruned)
+```
+# Skill: hm-l3-deep-research
+```
+
+
+### Tool: fetch_fetch
+
+**Input:**
+```json
+{
+  "callID": "call_00_Eq9Yuiuku9aCU71wMQkx4860"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/STACKS-REFERENCES.md"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_MR8vmTuGPI9GECppKfeI5058"
+}
+```
+
+
+### Tool: context7_resolve-library-id
+
+**Input:**
+```json
+{
+  "callID": "call_02_PangOioE0bOpNcxidI5L0511"
+}
+```
+
+
+### Tool: fetch_fetch
+
+**Input:**
+```json
+{
+  "callID": "call_00_ePsCIVKVLNGSHFNz5AGz5181"
+}
+```
+
+
+### Tool: deepwiki_ask_question
+
+**Input:**
+```json
+{
+  "callID": "call_01_XSy4Cl40Nc8BnQDMba682553"
+}
+```
+
+
+### Tool: webfetch
+
+**Input:**
+```json
+{
+  "callID": "call_01_dINvaObOYCTdOQBDmqyg8333"
+}
+```
+
+
+### Tool: zread_read_file
+
+**Input:**
+```json
+{
+  "callID": "call_00_oAHvRDrJDBA1U4Kxb4jB0601"
+}
+```
+
+
+## USER (turn 2)
+
+still incorrect way to continue agent still start new task they must follow the procedure of start exact id do not check anything just resume onace it trace with correct agent id meta data research please ```## Drafting for the core-governance-skill - hivcemind-power-on skill
+- Delegation to hf linage to coordinate with skill development agent and loading skills related to skill development, creator, skill judge, skill review, skill authoring
+
+-knowldege need to load as context for the successful development of this skill: this is the governance of context, the router of workflows, linage, classifications of the task toward theand session OpenCode platforms and Hivemind utilizing engines of OpenCode SDK and other libs toruntime managements of delegation, tasks management, developments of the agentic workforce powered complex project to session  starting, continuing, coordinating, of 2 linage hm and hf, prevnting context loss, context disintegration and rot
+
+-SINCE THIS IS THE CORE SKILL That route and govern the workflow of the Hivemind to both the horizontal, vertical complex depth of matrix of delegations and tasks management (both innate OpenCode and the Hivemind types), project hierarchical of stages, states and plan-first, research-first, hierarchical spec-driven and test-driven workflows of the project for both linages, and practicing the PHILOSOPHIES of 5 pillars and collaboration with the user when using Hivemind under OpenCode platform runtime >>>> decide on the patterns combination of pattern 1 for high-level toward, pattern 2 domain-specific routing, pattern 3 conditional routing branches - practicing the progressive disclosure design and playing the strategic soft-nonbreaking layer that firming up the purposes of this skill 
+
+## Specifications drafting
+
+- This is a must load at runtime of granularity (that mean when starting the session a new, resuming mid-session as user disconnected and prompt continue from above , continuing a very long haul session that suffers from **COMPACT CONTEXT PRUNE**, across the span of sessions) for both user-facing l0 agents, and l1 agents, and possibly loaded by l2 and l3 agents to when they execute the tasks being delegated to them -> the SKILL.md and firt load context must be concise and comprehensively strict governance with routing and coordination and continuity without regreession AND MOST IMPORTANTLY context optimization to land the agent-and-workflow-and-coordination-specific to the references, bundled assets that they can utilize and consume on conditions rightaway with prestine precise non-conflict or overlapping of instruction, guidance
+
+- There are layers and domains router but let's count from starting of the life cycle >>> the user with his/her prompting, attaching as links, attachments, system instructions prompting, project state context of AGENTS.md or other governance artifacts are the innitial loaded context the invoke to l0 agents with/or without slash commands and workflows parsing >>>> from then it is classified to ward which hm or hf l0 agent; the session is started a new or resume (from disconnectin) or after the longhaul the the l0 agent will have to sort out the dependencies of sessions and the previous aborted delegation task down to 3-level depth etc
+
+- but as I said above about the SKILL is the must load, and there are 2 linanges ->  their profiles of agents of l0 and l1 needs to directly (concise thin instructed to constitute them to load this for start, resume, longhaul context retrival to survive compacts and dependencies awareness of sessions) >>> you can form your own interpretation first for the frame and skeletons with other non-focusing sections left thin TBD but my focus is the midsession disconnection vs l0 continuity utilizing the newly made "session-tracker" >>>> first consume and understand this system very carefully 
+
+```
+ /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/.gitkeep
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-CONTEXT.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-DISCUSSION-LOG.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-RESEARCH.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-SPEC.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-04-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-REVIEW.md
+````
+
+From the sample below see look at thesse
+- the mnain project-continuity.json - main across sessions
+- the the session-continuity.json nested in each subdir - those with project-continuity.json are the main sessions that the user and front-facing l0 agent
+
+### Addressing the very specific issue user disconnected and resume the aborted session  - both l0 and l1 have no idea how to utilize and dumbly commit these very pitfalls if there is not specific and thorough guidance of how to resume strategically utilizing the tools I mentioned below
+
+- agents l0 never now to resume it start new wrong agent name, start new -> NOT ALLOW must retrive all subsession -> filter own aborted/cancelled sub l1, l2, sessions from the session-track of the session - the completed sessions are not the one to resume **BUT THE ABORTED ONE and DO NOT START NEW SESSION without id- Start new session with exact aborted ID
+
+- But do not repeat prompting, all the aborted downstream are context preserved 
+
+- the l0 must bring down the concise instruction enforcing l1 of practicing the same correct agent meta naming, exact task_id as session id and not repeating prompt either
+
+- also the instruction how to first line aware then quick grep, glob from root toward subdir as the session - handle at json files to track toward the dot md files with correct jumping toward the portion of the context  because the dot md is not structured very well yet and they are context consuming if not having a strategy to retrive the correct portions and coverage enough linked sub-sessions meta and context
+
+
+
+```
+.hivemind/session-tracker
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e9a1d794ffePl33pFTux271hR.md
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e94e9af4ffeKaZSC34RC2RzZE.json
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e9800d25ffelHwiHHL46jVFJA.json
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/ses_1e9442519ffeu92Cq5yHlplIoO.json
+.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR/session-continuity.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e9a6ecf5ffev5trgNwpy4CjOf.md
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99ac4e3ffeSa0QV5dg96628Q.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99b6d51ffePAxZJNXXFiOv24.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99b195affetbGfs42YyehaEO.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99bd468ffetJO2iV7K2XEqmc.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/ses_1e99c28bbffek55k6UCs0G7d4N.json
+.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf/session-continuity.json
+.hivemind/session-tracker/ses_1e9b9cb08ffeHdv8qgplK8c32n
+.hivemind/session-tracker/ses_1e9b9cb08ffeHdv8qgplK8c32n/ses_1e9b9cb08ffeHdv8qgplK8c32n.md
+.hivemind/session-tracker/ses_1e9ba1b66ffeScl7Vx3aZI0uIi
+.hivemind/session-tracker/ses_1e9ba1b66ffeScl7Vx3aZI0uIi/ses_1e9ba1b66ffeScl7Vx3aZI0uIi.md
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/ses_1e9b9cb08ffeHdv8qgplK8c32n.json
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/ses_1e9ba1b66ffeScl7Vx3aZI0uIi.json
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/ses_1e9bc0b1dffeLIeMexVP8ocRAF.md
+.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF/session-continuity.json
+.hivemind/session-tracker/ses_1e9cb63e1ffeJrujKyck8il4jn
+.hivemind/session-tracker/ses_1e9cb63e1ffeJrujKyck8il4jn/ses_1e9cb63e1ffeJrujKyck8il4jn.md
+.hivemind/session-tracker/ses_1e93a7d0cffe5E0G7faQfUo4mq
+.hivemind/session-tracker/ses_1e93a7d0cffe5E0G7faQfUo4mq/ses_1e93a7d0cffe5E0G7faQfUo4mq.md
+.hivemind/session-tracker/ses_1e93dab07fferISBMHC5T02Hxp
+.hivemind/session-tracker/ses_1e93de7c9ffedmL3wMooG4g4Ai
+.hivemind/session-tracker/ses_1e94c8cf6ffekIbS6xGn63TkwD
+.hivemind/session-tracker/ses_1e94e9af4ffeKaZSC34RC2RzZE
+.hivemind/session-tracker/ses_1e94f57b5ffeA1lwxui5kRNLIF
+.hivemind/session-tracker/ses_1e94f8146ffe80wUs9wUrGWYbO
+.hivemind/session-tracker/ses_1e96ce433ffer2T3aNcOKIEJxs
+.hivemind/session-tracker/ses_1e96d391affeh3u28bax2rTY1M
+.hivemind/session-tracker/ses_1e97a18f0ffe4tz4GJcaLAfmC3
+.hivemind/session-tracker/ses_1e97f2b71ffekeC96spZzG8CJ3
+.hivemind/session-tracker/ses_1e98d82dcffefzTttpLHcEMF5a
+.hivemind/session-tracker/ses_1e99ac4e3ffeSa0QV5dg96628Q
+.hivemind/session-tracker/ses_1e99b6d51ffePAxZJNXXFiOv24
+.hivemind/session-tracker/ses_1e99b195affetbGfs42YyehaEO
+.hivemind/session-tracker/ses_1e99bd468ffetJO2iV7K2XEqmc
+.hivemind/session-tracker/ses_1e99c28bbffek55k6UCs0G7d4N
+.hivemind/session-tracker/ses_1e942e8d4ffe97LaJCsxn2ApXO
+.hivemind/session-tracker/ses_1e949a01dffeEV6M8qSGjeQnKD
+.hivemind/session-tracker/ses_1e970d701ffe8vLOukfuuK31xo
+.hivemind/session-tracker/ses_1e974ef7effeAqNql6h7ZC8oQ0
+.hivemind/session-tracker/ses_1e9467c5affecaZ6r6wzvSTqO8
+.hivemind/session-tracker/ses_1e9800d25ffelHwiHHL46jVFJA
+.hivemind/session-tracker/ses_1e94024baffeVXNTsMOc7nQPlz
+.hivemind/session-tracker/ses_1e96915e3ffeS2ppeUZyyHcogl
+.hivemind/session-tracker/ses_1e97113d3ffeLo40kFMcG0T8ay
+.hivemind/session-tracker/ses_1e9442519ffeu92Cq5yHlplIoO
+.hivemind/session-tracker/ses_1e9465271ffeRxMIs8Vz8QsVQU
+.hivemind/session-tracker/ses_1e9497244ffe4z2ymtQC2Qt7Ru
+.hivemind/session-tracker/ses_1e9513440ffeGdcIRW1S6gi2De
+.hivemind/session-tracker/ses_1e9734971ffewoLT5pzVTcvXJk
+.hivemind/session-tracker/ses_1ebc4ae10ffexMyoJGEqD9S3kW
+.hivemind/session-tracker/ses_1ebc4ae10ffexMyoJGEqD9S3kW/ses_1ebc4ae10ffexMyoJGEqD9S3kW.md
+.hivemind/session-tracker/ses_1ebc4ccf2ffeiMfXjMfXiO8mma
+.hivemind/session-tracker/ses_1ebc4ccf2ffeiMfXjMfXiO8mma/ses_1ebc4ccf2ffeiMfXjMfXiO8mma.md
+.hivemind/session-tracker/ses_1ebc5d7b3ffesswQph1WbYR866
+.hivemind/session-tracker/ses_1ebc5d7b3ffesswQph1WbYR866/ses_1ebc5d7b3ffesswQph1WbYR866.md
+.hivemind/session-tracker/ses_1ebc46e73ffek1nxhr2zx0QDHn
+.hivemind/session-tracker/ses_1ebc46e73ffek1nxhr2zx0QDHn/ses_1ebc46e73ffek1nxhr2zx0QDHn.md
+.hivemind/session-tracker/ses_1ebc494a4ffe28VByY8t3Bfa9o
+.hivemind/session-tracker/ses_1ebc494a4ffe28VByY8t3Bfa9o/ses_1ebc494a4ffe28VByY8t3Bfa9o.md
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/ses_1ebd373b1ffeDa7AJ7KJIPShVE.json
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/ses_1ebe832c5ffeeYuFbS1kqleZnD.md
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/ses_1ebe39941ffecHehSRcc13IqeD.json
+.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/session-continuity.json
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD/ses_1ebe28c52ffeIoXFCcAZnCj0IC.json
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD/ses_1ebe39941ffecHehSRcc13IqeD.md
+.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD/session-continuity.json
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF/ses_1e97f2b71ffekeC96spZzG8CJ3.json
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF/ses_1f09ebfa5ffe7eMXBiUh9oAhvF.md
+.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF/session-continuity.json
+.hivemind/session-tracker/project-continuity.json
+```
+
+MUST CONSUME ALL AND ACROSS these documents (crawl and scrap them) https://opencode.ai/docs - toward the knowledge of tools, sessions, message, agents, files, paths, project sdk (particularly focusing on task tools for delegation, go to repo at `STACK-REFERENCES.md` of this codebase to look at the task tool to delegation specifically to know about the `agent_type` `task_id` `prompt` these meta and parameters of the task tool to retrival of `task_id` as session-id and the name of agents, subagents for session resume WITHOUT repeating the prompt and NOT STarting new session id as the current agents way of doing, and the awareness of l0 when resume to l1 agent they must bring down the instruction of the downstream l2 and l3 agent workflows resumption that are ongoing of the sub sessions managed by l1) - secondly are the tools and utilities groups of quick search, look up, jump across meta, line awareness, tracing, grep, glob, offset with line awareness because as you can see above the "auto session-tracker hierarchy of directories, subdirectories json and dot md are intricate but trackable with correct method ) ```>>>>> THE CORE THING IS SOME FUCKING DUMB AGENT SUC AS DEEPSEEK V4 when they see the session as aborted they dont know it was THE ONE AND MUST USE THIS ID  - They always think it was the user abortion but NO it is because the disconnection and yet they must resume from the aborted session id of task it is correct and preserved on disk do not think much 
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/02-session-resume-protocol.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/02-session-resume-protocol.md"
+}
+```
+
+**Error:**
+```
+<path>/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/02-session-resume-protocol.md</path>
+<type>file</type>
+<content>
+1: # Reference 02: Session Resume Protocol
+2: 
+3: > **Jump targets:** [ref-02 §1]–[ref-02 §7]
+4: 
+5: ## §1 — RESUME PROTOCOL (Critical 7-Step)
+6: 
+7: This is the #1 session-recovery fix. Follow EXACTLY. Do not skip steps. This applies whenever you detect a disconnect or see that the session was interrupted.
+8: 
+9: **Trigger words:** disconnect recovery, resume session, recover from disconnect, continue work after disconnect.
+10: 
+11: ```
+12: STEP 1 — FIND ACTIVE SESSIONS
+13:   Read project-continuity.json:
+14:     read(".hivemind/session-tracker/project-continuity.json")
+15:   Filter: sessions with status === "active", sorted by updated descending.
+16:   If none → FRESH START (§2).
+17: 
+18: STEP 2 — FIND ABORTED DELEGATIONS
+19:   For EACH active session (starting with most recently updated):
+20:     Read its session-continuity.json:
+21:       read(".hivemind/session-tracker/<sessionId>/session-continuity.json")
+22:     Check hierarchy.children → find any child with status === "active".
+23: 
+24: STEP 3 — IDENTIFY DEEPEST ACTIVE DELEGATION
+25:   Among all active children across all active sessions:
+26:     Pick the child with the HIGHEST depth value.
+27:     If multiple at same depth → pick the most recently updated.
+28: 
+29:   Record:
+30:     - rootSessionId: the parent session ID
+31:     - targetChildId: the aborted delegation child ID (task_id)
+32:     - agentType: the delegatedBy field from child metadata
+33: 
+34: STEP 4 — EXPORT THE ROOT SESSION
+35:   session-tracker(action: "export-session", sessionId: "<rootSessionId>")
+36:   This returns the full .md capture file with all turns, tool calls, and context.
+37: 
+38: STEP 5 — RECOVER LAST USER INTENT
+39:   grep(pattern: "## USER \\(turn", include: "*.md") on the exported content,
+40:     OR read with offset to find the most recent user turn.
+41:   Read the last ## USER turn to understand what was requested.
+42: 
+43: STEP 6 — RESUME WITH EXACT task_id
+44:   The child's session ID IS the task_id. Resume using:
+45:     task(description="resume", subagent_type="<SAME agent_type>",
+46:          task_id="<targetChildId>")
+47: 
+48: STEP 7 — CASCADE TO CHILD
+49:   When the resumed L1 agent spawns, it checks ITS session-continuity.json
+50:   for aborted L2 children and resumes them with EXACT task_id too.
+51: 
+52: CRITICAL:
+53:   - DO NOT create a new session ID.
+54:   - DO NOT repeat the original prompt — context is preserved.
+55:   - The resumed agent sees its prior conversation state.
+56: ```
+57: 
+58: ## §2 — Fresh Start Protocol
+59: 
+60: When you KNOW no prior sessions exist (first ever start; user explicitly says "new session"):
+61: 
+62: ```
+63: 1. Announce: "[Agent] powered on. Classifying workflow…"
+64: 2. Run lineage classification → [ref-01 §1]
+65: 3. Load the lineage router for the classified lineage
+66: 4. Proceed with domain work
+67: ```
+68: 
+69: ## §3 — Task Tool Resume Mechanics
+70: 
+71: ### The Golden Rule
+72: 
+73: ```
+74: task_id IS session_id. When you resume with task_id, the agent continues from where it left off.
+75: Context is preserved. Do NOT repeat the prompt.
+76: ```
+77: 
+78: ### OpenCode Task Tool Parameters
+79: 
+80: The `task` tool dispatches subagents. When resuming, use:
+81: 
+82: ```json
+83: {
+84:   "description": "resume",
+85:   "subagent_type": "<SAME agent type as original dispatch>",
+86:   "task_id": "<EXACT session ID of aborted child>"
+87: }
+88: ```
+89: 
+90: | Parameter | Required | Value |
+91: |-----------|----------|-------|
+92: | `description` | Yes | `"resume"` (or brief 3-5 word description) |
+93: | `subagent_type` | Yes | **EXACT SAME** agent type from `delegatedBy` field in session-continuity.json |
+94: | `task_id` | Yes | The child's session ID (24-char hex) |
+95: | `prompt` | **OMIT or MINIMAL** | Do NOT repeat the original prompt — context is preserved |
+96: 
+97: ### Why prompt is omitted/minimal
+98: 
+99: When you resume with `task_id`, OpenCode restores the subagent's entire conversation state — including the original prompt, all turns, all tool calls. Repeating the prompt would:
+100: 1. Waste context budget (the agent already has it)
+101: 2. Cause the agent to restart work instead of continuing
+102: 3. Confuse the agent about whether this is new or resumed
+103: 
+104: ### Minimal prompt (if required by platform)
+105: 
+106: If the platform demands a non-empty prompt string: `"Resume session."` Never include more than that.
+107: 
+108: ### Finding the Correct agent_type
+109: 
+110: The `delegatedBy` field in session-continuity.json records the original agent type:
+111: 
+112: ```json
+113: {
+114:   "ses_1ebe39941ffecHehSRcc13IqeD": {
+115:     "depth": 1, "status": "active",
+116:     "delegatedBy": "hm-l2-auditor",
+117:     "children": {}
+118:   }
+119: }
+120: ```
+121: 
+122: → Use `"hm-l2-auditor"` as the `subagent_type` for resume.
+123: 
+124: ### How Session-Tracker Captures task_id
+125: 
+126: When a task is dispatched, the session-tracker hook (`tool.execute.after`) captures:
+127: - `tool`: `"task"`
+128: - `sessionID`: the child session ID → stored as task_id
+129: - `args.subagent_type`: the agent type → stored as delegatedBy
+130: - `args.description`: task description
+131: 
+132: ### Resume Invocation Example
+133: 
+134: ```
+135: task(
+136:   description="resume",
+137:   subagent_type="hm-l2-auditor",
+138:   task_id="ses_1ebe39941ffecHehSRcc13IqeD"
+139: )
+140: ```
+141: 
+142: ### What Happens on Resume
+143: 
+144: 1. OpenCode looks up the session ID in its session store
+145: 2. Restores the subagent with all prior conversation state
+146: 3. The agent sees its last turn and continues from there
+147: 4. The agent has access to all files it previously read
+148: 5. The agent knows what it was doing and what's pending
+149: 
+150: ## §4 — Multi-Level Recovery Cascade
+151: 
+152: ### Cascade Protocol for L0 Orchestrators
+153: 
+154: ```
+155: 1. ON POWER-ON:
+156:    Read project-continuity.json
+157:    Filter: sessions with status="active" AND (childCount > 0 OR totalDelegationDepth > 0)
+158: 
+159: 2. IF active sessions found:
+160:    For each (starting with most recently updated):
+161:      a. Read session-continuity.json
+162:      b. Find deepest active child (highest depth with status="active")
+163:      c. Record: rootSessionId, targetChildId, delegatedBy
+164: 
+165: 3. RESUME THE PARENT:
+166:    task(description="resume", subagent_type="<your agent type>",
+167:         task_id="<rootSessionId>")
+168: 
+169: 4. INSTRUCT THE PARENT:
+170:    "You are resuming. Check session-continuity.json for aborted children.
+171:     Resume them with EXACT task_id. DO NOT create new children."
+172: 
+173: 5. PARENT (L1) then resumes its children:
+174:    task(description="resume", subagent_type="<delegatedBy>",
+175:         task_id="<childSessionId>")
+176: ```
+177: 
+178: ### Cascade Protocol for L1 Coordinators
+179: 
+180: ```
+181: 1. ON RESUME:
+182:    Read YOUR session-continuity.json
+183: 
+184: 2. Check hierarchy.children:
+185:    For each child with status="active":
+186:      a. Record: childSessionId, depth, delegatedBy
+187:      b. Check if child has grandchildren with status="active"
+188: 
+189: 3. IF grandchildren exist (depth=2):
+190:    Resume the child first → child resumes its grandchildren
+191: 
+192: 4. IF no grandchildren:
+193:    Resume child directly
+194: 
+195: 5. IF multiple active children (parallel dispatch):
+196:    Resume them SEQUENTIALLY (one at a time)
+197:    Do NOT re-parallelize on resume
+198: ```
+199: 
+200: ### Delegation Depth Levels
+201: 
+202: ```
+203: LEVEL 0 (L0 Orchestrator)
+204:   ├── Disconnected while L1 was running? → RESUME L0 → L0 resumes L1
+205:   └── Disconnected while L2 was running? → RESUME L0 → L0 resumes L1 → L1 resumes L2
+206: 
+207: LEVEL 1 (L1 Coordinator)
+208:   ├── Disconnected while L2 was running? → RESUME L1 → L1 resumes L2
+209:   └── Disconnected while multiple L2s were running? → RESUME L1 → resume each sequentially
+210: 
+211: LEVEL 2 (L2 Specialist)
+212:   └── L2 does NOT spawn further delegations. Completes or returns errors.
+213: ```
+214: 
+215: ### L0→L1 Cascade Resume Pattern
+216: 
+217: When L0 resumes an L1 coordinator, the coordinator must:
+218: 
+219: ```
+220: 1. On spawn, L1 coordinator checks its OWN session-continuity.json
+221: 2. Finds active L2 children: hierarchy.children.<childId>.status === "active"
+222: 3. Resumes each active child with EXACT task_id
+223: 4. NEVER creates new child sessions when aborted ones exist
+224: ```
+225: 
+226: ## §5 — Session Health Dashboard (L0 Only)
+227: 
+228: L0 agents should run this on power-on to get an overview:
+229: 
+230: ```
+231: 1. List all sessions:
+232:    session-tracker(action: "list-sessions", limit: 50)
+233: 
+234: 2. Count:
+235:    - Active sessions (status === "active")
+236:    - Sessions with active children (childCount > 0)
+237:    - Sessions with totalDelegationDepth > 0
+238: 
+239: 3. Warn if:
+240:    - >5 active sessions exist (leakage)
+241:    - Any session has depth >= 3 (max delegation depth)
+242:    - Any session has been active >24h (stale lock)
+243: ```
+244: 
+245: ## §6 — Worked Example: Disconnect Recovery
+246: 
+247: **Scenario:** L0-orchestrator was deep in a multi-child delegation when the user disconnected. Session `ses_1ebe832c5ffeeYuFbS1kqleZnD` has active children.
+248: 
+249: **Recovery:**
+250: 
+251: ```
+252: 1. read(".hivemind/session-tracker/project-continuity.json")
+253:    → Found ses_1ebe832c5ffeeYuFbS1kqleZnD: status=active
+254: 
+255: 2. read(".hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/session-continuity.json")
+256:    → hierarchy.children.ses_1ebe39941ffecHehSRcc13IqeD: depth=1, status=active
+257:    → hierarchy.children.ses_1ebd373b1ffeDa7AJ7KJIPShVE: depth=1, status=active
+258: 
+259: 3. Both at depth=1. Pick most recently updated child.
+260: 
+261: 4. session-tracker(action: "export-session", sessionId: "ses_1ebe832c5ffeeYuFbS1kqleZnD")
+262:    → .md content returned
+263: 
+264: 5. grep "## USER (turn" on exported content → found last user intent
+265:    "audit the session-tracker module and report all flaws"
+266: 
+267: 6. task(description="resume", subagent_type="hm-l2-auditor",
+268:         task_id="ses_1ebe39941ffecHehSRcc13IqeD")
+269: 
+270: → Resumed L2 auditor continues from where it left off.
+271: → NO new session created. NO prompt repeated.
+272: ```
+273: 
+274: ### Real-World Cascade Example
+275: 
+276: ```
+277: Session tree:
+278:   ses_A (L0 orchestrator, status=active)
+279:     └── ses_B (L1 coordinator, status=active)
+280:           └── ses_C (L2 specialist, status=active, depth=2)
+281: 
+282: Recovery sequence (5 turns total):
+283:   TURN 1: L0 reads project-continuity → finds ses_A active, depth=2
+284:            L0 resumes ses_A: task(task_id="ses_A")
+285:   TURN 2: L0 (resumed) instructs L1 to check for aborted children
+286:   TURN 3: L1 reads ses_B's continuity → finds ses_C active, depth=2
+287:            L1 resumes ses_B: task(task_id="ses_B")
+288:   TURN 4: L1 (resumed) resumes L2: task(task_id="ses_C")
+289:   TURN 5: L2 continues from where it left off, completes work
+290: 
+291: → NO new sessions created. NO prompts repeated.
+292: ```
+293: 
+294: ### Multi-Child Recovery Example
+295: 
+296: ```
+297: Session: ses_1ebe832c5ffeeYuFbS1kqleZnD
+298:   children:
+299:     ses_1ebe39941ffecHehSRcc13IqeD: depth=1, active, delegatedBy=main_l0_agent
+300:     ses_1ebd373b1ffeDa7AJ7KJIPShVE: depth=1, active, delegatedBy=main_l0_agent
+301: 
+302: Recovery:
+303:   1. L0 resumes ses_1ebe832c5ffeeYuFbS1kqleZnD
+304:   2. L0 resumes first child with task_id
+305:   3. Child completes → L0 accepts with gates
+306:   4. L0 resumes second child with task_id
+307:   5. Child completes → L0 accepts with gates
+308: 
+309: → Sequential resume of parallel children. Both completed.
+310: ```
+311: 
+312: ## §7 — Resume Failure Modes
+313: 
+314: | Failure | Detection | Resolution |
+315: |---------|-----------|------------|
+316: | task_id expired | `task()` returns "session not found" | Export session .md, extract original prompt, create NEW dispatch with same prompt and agent type |
+317: | Child session has no .json | session-continuity.json missing or empty | Search for child's .md file; if missing, treat as lost — re-dispatch |
+318: | Double-resume | Child returns immediately with status "already completed" | Accept the result. Do not re-dispatch. |
+319: | delegatedBy is "main_l0_agent" (ambiguous) | Can't determine exact agent type | Read parent .md → find task dispatch → subagent_type field |
+320: | Deep tree (depth=2 with grandchild) | Multiple levels of active children | Resume parent → parent resumes child → child resumes grandchild. Always bottom-up. |
+321: 
+322: ### Common Mistakes
+323: 
+324: | Mistake | Why Wrong | Correct |
+325: |---------|-----------|---------|
+326: | `task(description="audit X", prompt="<repeated>", ...)` | Prompt repeated — context wasted, agent restarts | `task(description="resume", task_id="<id>")` |
+327: | Wrong agent type in subagent_type | delegatedBy said "hm-l2-auditor" but used "hm-l2-researcher" | Use EXACT `delegatedBy` value |
+328: | New session created instead of resume | task_id is new instead of existing child ID | Use EXISTING child session ID |
+329: | Missing subagent_type | task_id given without agent type | Include `subagent_type` from `delegatedBy` |
+330: 
+331: ### Resume Verification Checklist
+332: 
+333: After a successful resume chain, verify:
+334: - [ ] All active children transitioned to "completed" or "error"
+335: - [ ] No new session IDs were created during resume
+336: - [ ] Each child's depth matches its position in the hierarchy tree
+337: - [ ] Quality gate triad was run on each child output
+338: - [ ] User was informed of recovery state on return
+
+(End of file - total 338 lines)
+</content>
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/SKILL.md"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_5oYdsZIqwLdtGzfSf3Nz9899"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_00_QLVxnwPEJOg50WBUsreP0899"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_vBX3KVKFQvwI0gVQneCw2945"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_5XGlM1UPsNYTvVEefwvF8022"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_01_iJ6tOW0wmmBwPWksHuYg9323"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_gsQuKffXQzTkJDlQ2M7b2677"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/SKILL.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/02-session-resume-protocol.md"
+}
+```
+
+
+---
+sessionID: ses_1e90811c2ffe28njun1mC0MY6E
+created: 2026-05-11T14:28:59.941Z
+updated: 2026-05-11T14:28:59.941Z
+parentSessionID: null
+delegationDepth: 0
+children: []
+continuityIndex: session-continuity.json
+status: active
+---
+
+## USER (turn 1)
+
+still the next batch of improvement for this smae skill (delegate to `hf-l2-skill-builder` - improvement of these points 1) the same "overthinking"  models found child sessions completion without abortion or without status - just enforce stronger resume on next-in-line sub sessions because argument is they are just few lines context, and the sessions context always preserved on disk no matter what if the downstream sessions are truly completed they will return the result upstream there are no harms to start on the exact same sub session id . Second improvement is about sometimes the tools that come with this faeture `session-tracker` is not working as expected or it use the wrong tools to or tools that extract too much context prune - and some edge cases resolutions as when maybe the session is forked or has been indexed incorrectly and the awareness of how how tools are utilize for utilizing bash, tools for grep, regex, quick search etc considering including script as helper and aware of the opencode infrastructure to utilize the tools, more effectively which has initially addressed in @.hivemind/planning/skill-development/Hivemind-power-on-ideating.md  Called the Read tool with the following input: {"filePath":"/Users/apple/hivemind-plugin-private/.hivemind/planning/skill-development/Hivemind-power-on-ideating.md"}<path>/Users/apple/hivemind-plugin-private/.hivemind/planning/skill-development/Hivemind-power-on-ideating.md</path>
+<type>file</type>
+<content>
+1: ## Drafting for the core-governance-skill - hivcemind-power-on skill
+2: - Delegation to hf linage to coordinate with skill development agent and loading skills related to skill development, creator, skill judge, skill review, skill authoring
+3: 
+4: -knowldege need to load as context for the successful development of this skill: this is the governance of context, the router of workflows, linage, classifications of the task toward theand session OpenCode platforms and Hivemind utilizing engines of OpenCode SDK and other libs toruntime managements of delegation, tasks management, developments of the agentic workforce powered complex project to session  starting, continuing, coordinating, of 2 linage hm and hf, prevnting context loss, context disintegration and rot
+5: 
+6: -SINCE THIS IS THE CORE SKILL That route and govern the workflow of the Hivemind to both the horizontal, vertical complex depth of matrix of delegations and tasks management (both innate OpenCode and the Hivemind types), project hierarchical of stages, states and plan-first, research-first, hierarchical spec-driven and test-driven workflows of the project for both linages, and practicing the PHILOSOPHIES of 5 pillars and collaboration with the user when using Hivemind under OpenCode platform runtime >>>> decide on the patterns combination of pattern 1 for high-level toward, pattern 2 domain-specific routing, pattern 3 conditional routing branches - practicing the progressive disclosure design and playing the strategic soft-nonbreaking layer that firming up the purposes of this skill 
+7: 
+8: ## Specifications drafting
+9: 
+10: - This is a must load at runtime of granularity (that mean when starting the session a new, resuming mid-session as user disconnected and prompt continue from above , continuing a very long haul session that suffers from **COMPACT CONTEXT PRUNE**, across the span of sessions) for both user-facing l0 agents, and l1 agents, and possibly loaded by l2 and l3 agents to when they execute the tasks being delegated to them -> the SKILL.md and firt load context must be concise and comprehensively strict governance with routing and coordination and continuity without regreession AND MOST IMPORTANTLY context optimization to land the agent-and-workflow-and-coordination-specific to the references, bundled assets that they can utilize and consume on conditions rightaway with prestine precise non-conflict or overlapping of instruction, guidance
+11: 
+12: - There are layers and domains router but let's count from starting of the life cycle >>> the user with his/her prompting, attaching as links, attachments, system instructions prompting, project state context of AGENTS.md or other governance artifacts are the innitial loaded context the invoke to l0 agents with/or without slash commands and workflows parsing >>>> from then it is classified to ward which hm or hf l0 agent; the session is started a new or resume (from disconnectin) or after the longhaul the the l0 agent will have to sort out the dependencies of sessions and the previous aborted delegation task down to 3-level depth etc
+13: 
+14: - but as I said above about the SKILL is the must load, and there are 2 linanges ->  their profiles of agents of l0 and l1 needs to directly (concise thin instructed to constitute them to load this for start, resume, longhaul context retrival to survive compacts and dependencies awareness of sessions) >>> you can form your own interpretation first for the frame and skeletons with other non-focusing sections left thin TBD but my focus is the midsession disconnection vs l0 continuity utilizing the newly made "session-tracker" >>>> first consume and understand this system very carefully 
+15: 
+16: ```
+17:  /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp
+18: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/.gitkeep
+19: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-CONTEXT.md
+20: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-DISCUSSION-LOG.md
+21: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-RESEARCH.md
+22: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-SPEC.md
+23: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-PLAN.md
+24: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-SUMMARY.md
+25: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-PLAN.md
+26: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-SUMMARY.md
+27: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-PLAN.md
+28: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-SUMMARY.md
+29: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-04-PLAN.md
+30: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-REVIEW.md
+31: ````
+32: 
+33: From the sample below see look at thesse
+34: - the mnain project-continuity.json - main across sessions
+35: - the the session-continuity.json nested in each subdir - those with project-continuity.json are the main sessions that the user and front-facing l0 agent
+36: 
+37: ### Addressing the very specific issue user disconnected and resume the aborted session  - both l0 and l1 have no idea how to utilize and dumbly commit these very pitfalls if there is not specific and thorough guidance of how to resume strategically utilizing the tools I mentioned below
+38: 
+39: - agents l0 never now to resume it start new wrong agent name, start new -> NOT ALLOW must retrive all subsession -> filter own aborted/cancelled sub l1, l2, sessions from the session-track of the session - the completed sessions are not the one to resume **BUT THE ABORTED ONE and DO NOT START NEW SESSION without id- Start new session with exact aborted ID
+40: 
+41: - But do not repeat prompting, all the aborted downstream are context preserved 
+42: 
+43: - the l0 must bring down the concise instruction enforcing l1 of practicing the same correct agent meta naming, exact task_id as session id and not repeating prompt either
+44: 
+45: - also the instruction how to first line aware then quick grep, glob from root toward subdir as the session - handle at json files to track toward the dot md files with correct jumping toward the portion of the context  because the dot md is not structured very well yet and they are context consuming if not having a strategy to retrive the correct portions and coverage enough linked sub-sessions meta and context
+46: 
+47: 
+48: 
+49: ```
+50: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker
+51: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8a2a61cffe3ZeCBCldtLDZXl
+52: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8b9d596ffejIzGCmPEPmYhIC
+53: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8ba0f34ffe3IW9xBFRcgYALs
+54: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8be1b78ffe34PhsMQ2ABJjJL
+55: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8be30f2ffetBYH7aCqNu2qXk
+56: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8c038b4ffevGsLbvtVMotKT1
+57: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8c91c4fffeX2qab4st6W1vXX
+58: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8c789e0ffe4dagMYIvrHnaaC
+59: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8cbcfe4ffe7XcTNaAZczyLvj
+60: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8e89cf3ffeuq87qQGNdZcyDa
+61: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8f5fe2fffeaOjWuQ8dOk7Z8i
+62: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8f31a7fffe6P1ZQqeglI8Ool
+63: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR
+64: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf
+65: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9b9cb08ffeHdv8qgplK8c32n
+66: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9ba1b66ffeScl7Vx3aZI0uIi
+67: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF
+68: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9cb63e1ffeJrujKyck8il4jn
+69: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e93a7d0cffe5E0G7faQfUo4mq
+70: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e93dab07fferISBMHC5T02Hxp
+71: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e93de7c9ffedmL3wMooG4g4Ai
+72: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94c8cf6ffekIbS6xGn63TkwD
+73: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94e9af4ffeKaZSC34RC2RzZE
+74: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94f57b5ffeA1lwxui5kRNLIF
+75: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94f8146ffe80wUs9wUrGWYbO
+76: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e96ce433ffer2T3aNcOKIEJxs
+77: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e96d391affeh3u28bax2rTY1M
+78: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e97a18f0ffe4tz4GJcaLAfmC3
+79: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e97f2b71ffekeC96spZzG8CJ3
+80: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e98d82dcffefzTttpLHcEMF5a
+81: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99ac4e3ffeSa0QV5dg96628Q
+82: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99b6d51ffePAxZJNXXFiOv24
+83: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99b195affetbGfs42YyehaEO
+84: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99bd468ffetJO2iV7K2XEqmc
+85: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99c28bbffek55k6UCs0G7d4N
+86: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e903ee6effet2MD0kFjZUNzug
+87: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e942e8d4ffe97LaJCsxn2ApXO
+88: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e949a01dffeEV6M8qSGjeQnKD
+89: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e970d701ffe8vLOukfuuK31xo
+90: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e974ef7effeAqNql6h7ZC8oQ0
+91: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9467c5affecaZ6r6wzvSTqO8
+92: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9800d25ffelHwiHHL46jVFJA
+93: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e90811c2ffe28njun1mC0MY6E
+94: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94024baffeVXNTsMOc7nQPlz
+95: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e96915e3ffeS2ppeUZyyHcogl
+96: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e97113d3ffeLo40kFMcG0T8ay
+97: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9003236ffev3y1EYxe3AdHM7
+98: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9442519ffeu92Cq5yHlplIoO
+99: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9465271ffeRxMIs8Vz8QsVQU
+100: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9497244ffe4z2ymtQC2Qt7Ru
+101: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9513440ffeGdcIRW1S6gi2De
+102: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9734971ffewoLT5pzVTcvXJk
+103: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc4ae10ffexMyoJGEqD9S3kW
+104: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc4ccf2ffeiMfXjMfXiO8mma
+105: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc5d7b3ffesswQph1WbYR866
+106: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc46e73ffek1nxhr2zx0QDHn
+107: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc494a4ffe28VByY8t3Bfa9o
+108: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD
+109: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD
+110: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF
+111: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/project-continuity.json
+112: ```
+113: 
+114: MUST CONSUME ALL AND ACROSS these documents (crawl and scrap them) https://opencode.ai/docs - toward the knowledge of tools, sessions, message, agents, files, paths, project sdk (particularly focusing on task tools for delegation, go to repo at `STACK-REFERENCES.md` of this codebase to look at the task tool to delegation specifically to know about the `agent_type` `task_id` `prompt` these meta and parameters of the task tool to retrival of `task_id` as session-id and the name of agents, subagents for session resume WITHOUT repeating the prompt and NOT STarting new session id as the current agents way of doing, and the awareness of l0 when resume to l1 agent they must bring down the instruction of the downstream l2 and l3 agent workflows resumption that are ongoing of the sub sessions managed by l1) - secondly are the tools and utilities groups of quick search, look up, jump across meta, line awareness, tracing, grep, glob, offset with line awareness because as you can see above the "auto session-tracker hierarchy of directories, subdirectories json and dot md are intricate but trackable with correct method )
+
+(End of file - total 114 lines)
+</content>
+
+<system-reminder>
+Instructions from: /Users/apple/hivemind-plugin-private/.hivemind/AGENTS.md
+# Internal State Sector Guidance
+
+**Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
+
+## 1. Sector purpose and lifecycle role
+
+`.hivemind/` is the Internal State sector and canonical Q6 state root for Hivemind runtime persistence: session continuity, delegation records, config workflow state, event tracker artifacts, session journals, execution lineage, and recovery artifacts. Source evidence: `.planning/codebase/ARCHITECTURE.md:247-255`, `.planning/codebase/ARCHITECTURE.md:405-411`, `.planning/codebase/STRUCTURE.md:130-134`.
+
+## 2. Allowed mutation authority
+
+- Typed runtime owners in `src/task-management/`, `src/coordination/`, and `src/features/` may write their assigned state files through approved persistence modules. Evidence: `.planning/codebase/ARCHITECTURE.md:311-315`, `.planning/codebase/ARCHITECTURE.md:405-411`.
+- Tools may trigger state mutations through library owners when the tool contract permits mutation. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- Event tracker artifacts may be best-effort hook-driven outputs only when routed through library/event-tracker owners; they must not block canonical handling. Evidence: `.planning/codebase/ARCHITECTURE.md:302-315`, `.planning/codebase/ARCHITECTURE.md:388-392`.
+
+## 3. Forbidden mutations / explicit no-go boundaries
+
+- Hooks SHALL NOT directly write durable state into `.hivemind/`; hook effects must stay observation/response-shaping/guard-decision. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- `.hivemind/` state SHALL NOT be moved back into `.opencode/`; `.opencode/state/` is legacy migration-only. Evidence: `.planning/codebase/ARCHITECTURE.md:351-353`, `.planning/codebase/STRUCTURE.md:295-299`.
+- Do not fabricate missing state subdirectories or ownership modules from documentation-only work; bootstrap/state ownership remains an active gap. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not edit runtime state artifacts manually unless a recovery workflow explicitly authorizes it.
+
+## 4. Actors and consumers
+
+| Actor / consumer | Uses this sector for | Boundary |
+|---|---|---|
+| `src/task-management/continuity/` | Owns session continuity JSON persistence | Must deep-clone/normalize/quarantine through code owners |
+| `src/task-management/continuity/delegation-persistence.ts` | Owns delegation record I/O | Tools/managers call the owner, not raw edits |
+| Event tracker/session journal/lineage modules | Produce audit and timeline artifacts | Best-effort artifacts are not completion proof by themselves |
+| Sidecar/planning readers | May read canonical artifacts | Read-only consumers must not mutate state |
+| Recovery workflows | Assess and repair state under authorization | Must preserve evidence and avoid manual drift |
+
+## 5. Naming and placement conventions
+
+- Current known state folders include `.hivemind/state/`, `.hivemind/event-tracker/`, and `.hivemind/poor-prompts/`. Evidence: `.planning/codebase/STRUCTURE.md:40-43`, `.planning/codebase/STRUCTURE.md:130-134`.
+- State files should be owned by typed modules before being treated as runtime-contract surfaces. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not use `.opencode/` for new internal state naming or placement. Evidence: `.planning/codebase/ARCHITECTURE.md:247-255`.
+
+## 6. Quality gates and evidence expectations
+
+- State-sector changes require proof of the owning module, migration behavior, and recovery/quarantine behavior when applicable.
+- Unit tests alone do not prove restart recovery; runtime recovery claims need integration or live restart evidence.
+- Docs-only edits remain L5 evidence and must not unblock CA-04 bootstrap/state ownership readiness. Evidence: `.planning/ROADMAP.md:29-49`.
+
+</system-reminder>
+
+## USER (turn 2)
+
+still the next batch of improvement for this smae skill (delegate to `hf-l2-skill-builder` - improvement of these points 1) the same "overthinking"  models found child sessions completion without abortion or without status - just enforce stronger resume on next-in-line sub sessions because argument is they are just few lines context, and the sessions context always preserved on disk no matter what if the downstream sessions are truly completed they will return the result upstream there are no harms to start on the exact same sub session id . Second improvement is about sometimes the tools that come with this faeture `session-tracker` is not working as expected or it use the wrong tools to or tools that extract too much context prune - and some edge cases resolutions as when maybe the session is forked or has been indexed incorrectly and the awareness of how how tools are utilize for utilizing bash, tools for grep, regex, quick search etc considering including script as helper and aware of the opencode infrastructure to utilize the tools, more effectively which has initially addressed in @.hivemind/planning/skill-development/Hivemind-power-on-ideating.md  Called the Read tool with the following input: {"filePath":"/Users/apple/hivemind-plugin-private/.hivemind/planning/skill-development/Hivemind-power-on-ideating.md"}<path>/Users/apple/hivemind-plugin-private/.hivemind/planning/skill-development/Hivemind-power-on-ideating.md</path>
+<type>file</type>
+<content>
+1: ## Drafting for the core-governance-skill - hivcemind-power-on skill
+2: - Delegation to hf linage to coordinate with skill development agent and loading skills related to skill development, creator, skill judge, skill review, skill authoring
+3: 
+4: -knowldege need to load as context for the successful development of this skill: this is the governance of context, the router of workflows, linage, classifications of the task toward theand session OpenCode platforms and Hivemind utilizing engines of OpenCode SDK and other libs toruntime managements of delegation, tasks management, developments of the agentic workforce powered complex project to session  starting, continuing, coordinating, of 2 linage hm and hf, prevnting context loss, context disintegration and rot
+5: 
+6: -SINCE THIS IS THE CORE SKILL That route and govern the workflow of the Hivemind to both the horizontal, vertical complex depth of matrix of delegations and tasks management (both innate OpenCode and the Hivemind types), project hierarchical of stages, states and plan-first, research-first, hierarchical spec-driven and test-driven workflows of the project for both linages, and practicing the PHILOSOPHIES of 5 pillars and collaboration with the user when using Hivemind under OpenCode platform runtime >>>> decide on the patterns combination of pattern 1 for high-level toward, pattern 2 domain-specific routing, pattern 3 conditional routing branches - practicing the progressive disclosure design and playing the strategic soft-nonbreaking layer that firming up the purposes of this skill 
+7: 
+8: ## Specifications drafting
+9: 
+10: - This is a must load at runtime of granularity (that mean when starting the session a new, resuming mid-session as user disconnected and prompt continue from above , continuing a very long haul session that suffers from **COMPACT CONTEXT PRUNE**, across the span of sessions) for both user-facing l0 agents, and l1 agents, and possibly loaded by l2 and l3 agents to when they execute the tasks being delegated to them -> the SKILL.md and firt load context must be concise and comprehensively strict governance with routing and coordination and continuity without regreession AND MOST IMPORTANTLY context optimization to land the agent-and-workflow-and-coordination-specific to the references, bundled assets that they can utilize and consume on conditions rightaway with prestine precise non-conflict or overlapping of instruction, guidance
+11: 
+12: - There are layers and domains router but let's count from starting of the life cycle >>> the user with his/her prompting, attaching as links, attachments, system instructions prompting, project state context of AGENTS.md or other governance artifacts are the innitial loaded context the invoke to l0 agents with/or without slash commands and workflows parsing >>>> from then it is classified to ward which hm or hf l0 agent; the session is started a new or resume (from disconnectin) or after the longhaul the the l0 agent will have to sort out the dependencies of sessions and the previous aborted delegation task down to 3-level depth etc
+13: 
+14: - but as I said above about the SKILL is the must load, and there are 2 linanges ->  their profiles of agents of l0 and l1 needs to directly (concise thin instructed to constitute them to load this for start, resume, longhaul context retrival to survive compacts and dependencies awareness of sessions) >>> you can form your own interpretation first for the frame and skeletons with other non-focusing sections left thin TBD but my focus is the midsession disconnection vs l0 continuity utilizing the newly made "session-tracker" >>>> first consume and understand this system very carefully 
+15: 
+16: ```
+17:  /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp
+18: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/.gitkeep
+19: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-CONTEXT.md
+20: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-DISCUSSION-LOG.md
+21: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-RESEARCH.md
+22: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/01-SPEC.md
+23: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-PLAN.md
+24: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-01-SUMMARY.md
+25: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-PLAN.md
+26: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-02-SUMMARY.md
+27: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-PLAN.md
+28: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-03-SUMMARY.md
+29: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-04-PLAN.md
+30: /Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-01-session-tracker-revamp/CP-ST-01-REVIEW.md
+31: ````
+32: 
+33: From the sample below see look at thesse
+34: - the mnain project-continuity.json - main across sessions
+35: - the the session-continuity.json nested in each subdir - those with project-continuity.json are the main sessions that the user and front-facing l0 agent
+36: 
+37: ### Addressing the very specific issue user disconnected and resume the aborted session  - both l0 and l1 have no idea how to utilize and dumbly commit these very pitfalls if there is not specific and thorough guidance of how to resume strategically utilizing the tools I mentioned below
+38: 
+39: - agents l0 never now to resume it start new wrong agent name, start new -> NOT ALLOW must retrive all subsession -> filter own aborted/cancelled sub l1, l2, sessions from the session-track of the session - the completed sessions are not the one to resume **BUT THE ABORTED ONE and DO NOT START NEW SESSION without id- Start new session with exact aborted ID
+40: 
+41: - But do not repeat prompting, all the aborted downstream are context preserved 
+42: 
+43: - the l0 must bring down the concise instruction enforcing l1 of practicing the same correct agent meta naming, exact task_id as session id and not repeating prompt either
+44: 
+45: - also the instruction how to first line aware then quick grep, glob from root toward subdir as the session - handle at json files to track toward the dot md files with correct jumping toward the portion of the context  because the dot md is not structured very well yet and they are context consuming if not having a strategy to retrive the correct portions and coverage enough linked sub-sessions meta and context
+46: 
+47: 
+48: 
+49: ```
+50: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker
+51: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8a2a61cffe3ZeCBCldtLDZXl
+52: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8b9d596ffejIzGCmPEPmYhIC
+53: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8ba0f34ffe3IW9xBFRcgYALs
+54: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8be1b78ffe34PhsMQ2ABJjJL
+55: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8be30f2ffetBYH7aCqNu2qXk
+56: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8c038b4ffevGsLbvtVMotKT1
+57: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8c91c4fffeX2qab4st6W1vXX
+58: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8c789e0ffe4dagMYIvrHnaaC
+59: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8cbcfe4ffe7XcTNaAZczyLvj
+60: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8e89cf3ffeuq87qQGNdZcyDa
+61: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8f5fe2fffeaOjWuQ8dOk7Z8i
+62: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e8f31a7fffe6P1ZQqeglI8Ool
+63: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9a1d794ffePl33pFTux271hR
+64: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9a6ecf5ffev5trgNwpy4CjOf
+65: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9b9cb08ffeHdv8qgplK8c32n
+66: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9ba1b66ffeScl7Vx3aZI0uIi
+67: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9bc0b1dffeLIeMexVP8ocRAF
+68: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9cb63e1ffeJrujKyck8il4jn
+69: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e93a7d0cffe5E0G7faQfUo4mq
+70: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e93dab07fferISBMHC5T02Hxp
+71: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e93de7c9ffedmL3wMooG4g4Ai
+72: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94c8cf6ffekIbS6xGn63TkwD
+73: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94e9af4ffeKaZSC34RC2RzZE
+74: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94f57b5ffeA1lwxui5kRNLIF
+75: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94f8146ffe80wUs9wUrGWYbO
+76: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e96ce433ffer2T3aNcOKIEJxs
+77: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e96d391affeh3u28bax2rTY1M
+78: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e97a18f0ffe4tz4GJcaLAfmC3
+79: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e97f2b71ffekeC96spZzG8CJ3
+80: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e98d82dcffefzTttpLHcEMF5a
+81: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99ac4e3ffeSa0QV5dg96628Q
+82: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99b6d51ffePAxZJNXXFiOv24
+83: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99b195affetbGfs42YyehaEO
+84: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99bd468ffetJO2iV7K2XEqmc
+85: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e99c28bbffek55k6UCs0G7d4N
+86: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e903ee6effet2MD0kFjZUNzug
+87: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e942e8d4ffe97LaJCsxn2ApXO
+88: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e949a01dffeEV6M8qSGjeQnKD
+89: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e970d701ffe8vLOukfuuK31xo
+90: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e974ef7effeAqNql6h7ZC8oQ0
+91: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9467c5affecaZ6r6wzvSTqO8
+92: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9800d25ffelHwiHHL46jVFJA
+93: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e90811c2ffe28njun1mC0MY6E
+94: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e94024baffeVXNTsMOc7nQPlz
+95: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e96915e3ffeS2ppeUZyyHcogl
+96: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e97113d3ffeLo40kFMcG0T8ay
+97: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9003236ffev3y1EYxe3AdHM7
+98: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9442519ffeu92Cq5yHlplIoO
+99: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9465271ffeRxMIs8Vz8QsVQU
+100: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9497244ffe4z2ymtQC2Qt7Ru
+101: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9513440ffeGdcIRW1S6gi2De
+102: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1e9734971ffewoLT5pzVTcvXJk
+103: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc4ae10ffexMyoJGEqD9S3kW
+104: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc4ccf2ffeiMfXjMfXiO8mma
+105: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc5d7b3ffesswQph1WbYR866
+106: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc46e73ffek1nxhr2zx0QDHn
+107: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebc494a4ffe28VByY8t3Bfa9o
+108: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD
+109: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1ebe39941ffecHehSRcc13IqeD
+110: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1f09ebfa5ffe7eMXBiUh9oAhvF
+111: /Users/apple/hivemind-plugin-private/.hivemind/session-tracker/project-continuity.json
+112: ```
+113: 
+114: MUST CONSUME ALL AND ACROSS these documents (crawl and scrap them) https://opencode.ai/docs - toward the knowledge of tools, sessions, message, agents, files, paths, project sdk (particularly focusing on task tools for delegation, go to repo at `STACK-REFERENCES.md` of this codebase to look at the task tool to delegation specifically to know about the `agent_type` `task_id` `prompt` these meta and parameters of the task tool to retrival of `task_id` as session-id and the name of agents, subagents for session resume WITHOUT repeating the prompt and NOT STarting new session id as the current agents way of doing, and the awareness of l0 when resume to l1 agent they must bring down the instruction of the downstream l2 and l3 agent workflows resumption that are ongoing of the sub sessions managed by l1) - secondly are the tools and utilities groups of quick search, look up, jump across meta, line awareness, tracing, grep, glob, offset with line awareness because as you can see above the "auto session-tracker hierarchy of directories, subdirectories json and dot md are intricate but trackable with correct method )
+
+(End of file - total 114 lines)
+</content>
+
+<system-reminder>
+Instructions from: /Users/apple/hivemind-plugin-private/.hivemind/AGENTS.md
+# Internal State Sector Guidance
+
+**Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
+
+## 1. Sector purpose and lifecycle role
+
+`.hivemind/` is the Internal State sector and canonical Q6 state root for Hivemind runtime persistence: session continuity, delegation records, config workflow state, event tracker artifacts, session journals, execution lineage, and recovery artifacts. Source evidence: `.planning/codebase/ARCHITECTURE.md:247-255`, `.planning/codebase/ARCHITECTURE.md:405-411`, `.planning/codebase/STRUCTURE.md:130-134`.
+
+## 2. Allowed mutation authority
+
+- Typed runtime owners in `src/task-management/`, `src/coordination/`, and `src/features/` may write their assigned state files through approved persistence modules. Evidence: `.planning/codebase/ARCHITECTURE.md:311-315`, `.planning/codebase/ARCHITECTURE.md:405-411`.
+- Tools may trigger state mutations through library owners when the tool contract permits mutation. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- Event tracker artifacts may be best-effort hook-driven outputs only when routed through library/event-tracker owners; they must not block canonical handling. Evidence: `.planning/codebase/ARCHITECTURE.md:302-315`, `.planning/codebase/ARCHITECTURE.md:388-392`.
+
+## 3. Forbidden mutations / explicit no-go boundaries
+
+- Hooks SHALL NOT directly write durable state into `.hivemind/`; hook effects must stay observation/response-shaping/guard-decision. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- `.hivemind/` state SHALL NOT be moved back into `.opencode/`; `.opencode/state/` is legacy migration-only. Evidence: `.planning/codebase/ARCHITECTURE.md:351-353`, `.planning/codebase/STRUCTURE.md:295-299`.
+- Do not fabricate missing state subdirectories or ownership modules from documentation-only work; bootstrap/state ownership remains an active gap. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not edit runtime state artifacts manually unless a recovery workflow explicitly authorizes it.
+
+## 4. Actors and consumers
+
+| Actor / consumer | Uses this sector for | Boundary |
+|---|---|---|
+| `src/task-management/continuity/` | Owns session continuity JSON persistence | Must deep-clone/normalize/quarantine through code owners |
+| `src/task-management/continuity/delegation-persistence.ts` | Owns delegation record I/O | Tools/managers call the owner, not raw edits |
+| Event tracker/session journal/lineage modules | Produce audit and timeline artifacts | Best-effort artifacts are not completion proof by themselves |
+| Sidecar/planning readers | May read canonical artifacts | Read-only consumers must not mutate state |
+| Recovery workflows | Assess and repair state under authorization | Must preserve evidence and avoid manual drift |
+
+## 5. Naming and placement conventions
+
+- Current known state folders include `.hivemind/state/`, `.hivemind/event-tracker/`, and `.hivemind/poor-prompts/`. Evidence: `.planning/codebase/STRUCTURE.md:40-43`, `.planning/codebase/STRUCTURE.md:130-134`.
+- State files should be owned by typed modules before being treated as runtime-contract surfaces. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not use `.opencode/` for new internal state naming or placement. Evidence: `.planning/codebase/ARCHITECTURE.md:247-255`.
+
+## 6. Quality gates and evidence expectations
+
+- State-sector changes require proof of the owning module, migration behavior, and recovery/quarantine behavior when applicable.
+- Unit tests alone do not prove restart recovery; runtime recovery claims need integration or live restart evidence.
+- Docs-only edits remain L5 evidence and must not unblock CA-04 bootstrap/state ownership readiness. Evidence: `.planning/ROADMAP.md:29-49`.
+
+</system-reminder>
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/planning/skill-development/Hivemind-power-on-ideating.md"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Improve resume protocol + tool fallbacks",
+  "subagent_type": "hf-l2-skill-builder",
+  "task_id": "ses_1e88bdd17ffewyX543XRi2bmzy"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e88bdd17ffewyX543XRi2bmzy
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_00_tNpD36PZ3lh33rnNtH9I2861"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_kwayzb1nN0Rh2IHVmd676936"
+}
+```
+

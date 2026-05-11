@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e8c91c4fffeX2qab4st6W1vXX",
+  "parentSessionID": "ses_1e94024baffeVXNTsMOc7nQPlz",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Execute plan 11-01: Archive infrastructure + truth matrix",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-11T13:27:38.888Z",
+  "updated": "2026-05-11T13:27:38.888Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}
