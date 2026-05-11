@@ -106,15 +106,14 @@ export class AgentTransform {
   }
 
   /**
-   * Computes a rough thinking duration string based on the presence of
-   * thinking parts. This is a heuristic — the actual duration can only
-   * be accurately determined with timing instrumentation.
+   * Returns undefined — honest about not having timing data.
    *
-   * @returns A duration string like "present" indicating thinking occurred.
-   * @remarks
-   * Duration format is descriptive until wall-clock timing is integrated.
+   * Timing data is not available from hook metadata. Returning undefined
+   * prevents fake data from being persisted in session knowledge files.
+   *
+   * @returns `undefined` — callers should handle missing thinking duration.
    */
-  private computeThinkingDuration(): string {
-    return "present"
+  private computeThinkingDuration(): undefined {
+    return undefined
   }
 }

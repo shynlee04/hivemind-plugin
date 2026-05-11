@@ -251,8 +251,11 @@ export interface ProjectContinuityIndex {
 
 /**
  * Validates whether a value is a well-formed session ID string.
- * Session IDs must start with "ses_", contain only alphanumeric characters
- * and underscores, and be at least 10 characters long.
+ *
+ * Session IDs must not contain path traversal characters ("/", "\\", "..").
+ * Path safety is enforced by sanitizeSessionID and safeSessionPath in
+ * atomic-write.ts. This validation rejects only path-injection characters
+ * (DEFECT-14).
  *
  * @param id - The value to check.
  * @returns `true` if `id` is a valid session ID string.
@@ -260,14 +263,17 @@ export interface ProjectContinuityIndex {
  * @example
  * ```typescript
  * isValidSessionID("ses_1ed9df1adffe2hbJudz3sK60y3") // true
- * isValidSessionID("bad")  // false
+ * isValidSessionID("../etc/passwd")   // false
  * isValidSessionID(null)   // false
  * ```
  */
 export function isValidSessionID(id: unknown): id is string {
   if (typeof id !== "string") return false
-  if (id.length < 10) return false
-  return /^ses_[a-zA-Z0-9]{6,}$/.test(id)
+  if (id.length === 0) return false
+  if (id.includes("/")) return false   // No path separators
+  if (id.includes("..")) return false   // No traversal sequences
+  if (id.includes("\\")) return false   // No Windows separators
+  return true
 }
 
 /**

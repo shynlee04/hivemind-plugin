@@ -27,7 +27,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 describe("isValidSessionID", () => {
-  it("returns true for valid session IDs starting with ses_", () => {
+  it("returns true for valid session IDs", () => {
     expect(isValidSessionID("ses_1ed9df1adffe2hbJudz3sK60y3")).toBe(true)
     expect(isValidSessionID("ses_abc123")).toBe(true)
     expect(isValidSessionID("ses_1ed9c5c20ffePWOXce5JQpS5Yk")).toBe(true)
@@ -42,16 +42,19 @@ describe("isValidSessionID", () => {
     expect(isValidSessionID(true)).toBe(false)
   })
 
-  it("returns false for strings that don't start with ses_", () => {
-    expect(isValidSessionID("abc123")).toBe(false)
+  it("returns false for empty string", () => {
     expect(isValidSessionID("")).toBe(false)
-    expect(isValidSessionID("ses-123")).toBe(false) // hyphen not underscore
-    expect(isValidSessionID("SES_123")).toBe(false) // case sensitive
   })
 
-  it("returns false for strings shorter than 10 characters", () => {
-    expect(isValidSessionID("ses_12345")).toBe(false) // 9 chars, under minimum
-    expect(isValidSessionID("ses_a")).toBe(false)
+  it("returns false for strings with path separators", () => {
+    expect(isValidSessionID("../etc/passwd")).toBe(false)
+    expect(isValidSessionID("foo/bar")).toBe(false)
+    expect(isValidSessionID("foo\\bar")).toBe(false)
+  })
+
+  it("returns false for strings with traversal sequences", () => {
+    expect(isValidSessionID("..")).toBe(false)
+    expect(isValidSessionID("ses_..hidden")).toBe(false) // directory traversal
   })
 })
 
@@ -76,7 +79,7 @@ describe("isValidHookPayload", () => {
   })
 
   it("returns false for objects with invalid sessionID format", () => {
-    expect(isValidHookPayload({ sessionID: "bad" })).toBe(false)
+    expect(isValidHookPayload({ sessionID: "../etc/passwd" })).toBe(false)
     expect(isValidHookPayload({ sessionID: "" })).toBe(false)
   })
 

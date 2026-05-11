@@ -291,12 +291,12 @@ describe("Session tracker E2E verification (all 13 REQs)", () => {
           callID: "call_read_err",
           args: { filePath: "/nonexistent/file.ts" },
         },
-        { title: "Read File", output: "Error: File not found", metadata: {} },
+        { title: "Read File", output: "actual file content would be here", metadata: { error: "ENOENT", status: "error" } },
       )
 
       const content = await readFile(join(sessionDir(testRoot, sid), `${sid}.md`), "utf-8")
       expect(content).toContain("/nonexistent/file.ts")
-      expect(content).toContain("Error: File not found")
+      expect(content).toContain("File read failed")
     })
   })
 

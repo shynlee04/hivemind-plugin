@@ -286,6 +286,7 @@ export class SessionTracker {
       this.messageCapture = new MessageCapture({
         sessionWriter: this.sessionWriter,
         agentTransform: this.agentTransform,
+        projectRoot: this.projectRoot,
       })
       this.toolCapture = new ToolCapture({
         sessionWriter: this.sessionWriter,

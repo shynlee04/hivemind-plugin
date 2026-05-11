@@ -15,6 +15,8 @@
 import type { SessionWriter } from "../persistence/session-writer.js"
 import type { AgentTransform } from "../transform/agent-transform.js"
 import { isValidSessionID } from "../types.js"
+import { safeSessionPath } from "../persistence/atomic-write.js"
+import { readFile } from "node:fs/promises"
 
 // ---------------------------------------------------------------------------
 // Hook input/output shapes
@@ -57,6 +59,7 @@ interface ChatMessageOutput {
 export class MessageCapture {
   private sessionWriter: SessionWriter
   private agentTransform: AgentTransform
+  private projectRoot: string
 
   /**
    * Per-session turn counters. Keyed by sessionID, values are the next
@@ -68,13 +71,16 @@ export class MessageCapture {
    * @param deps - Injected dependencies.
    * @param deps.sessionWriter - The session writer for persistence.
    * @param deps.agentTransform - The agent metadata transform utility.
+   * @param deps.projectRoot - Absolute path to the project root for file reads.
    */
   constructor(deps: {
     sessionWriter: SessionWriter
     agentTransform: AgentTransform
+    projectRoot: string
   }) {
     this.sessionWriter = deps.sessionWriter
     this.agentTransform = deps.agentTransform
+    this.projectRoot = deps.projectRoot
   }
 
   /**
@@ -192,6 +198,30 @@ export class MessageCapture {
     const next = current + 1
     this.turnCounters.set(sessionID, next)
     return next
+  }
+
+  /**
+   * Seeds in-memory turn counters from existing session .md file content.
+   *
+   * Prevents duplicate turn numbers on plugin restart by reading the
+   * number of `## USER (turn N)` sections already present in the session file.
+   * Call during SessionTracker.initialize() for each known active session.
+   *
+   * @param sessionID - The session identifier to seed.
+   * @returns Promise that resolves when seeding is complete.
+   */
+  async seedTurnCounters(sessionID: string): Promise<void> {
+    try {
+      const filePath = safeSessionPath(this.projectRoot, sessionID, `${sessionID}.md`)
+      const raw = await readFile(filePath, "utf-8")
+      const matches = raw.match(/## USER \(turn (\d+)\)/g)
+      if (matches && matches.length > 0) {
+        const lastTurn = matches.length
+        this.turnCounters.set(sessionID, lastTurn)
+      }
+    } catch {
+      // File may not exist — start at 0
+    }
   }
 
   /**
