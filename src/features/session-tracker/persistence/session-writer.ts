@@ -11,6 +11,8 @@
 
 import matter from "gray-matter"
 import { stringify as yamlStringify } from "yaml"
+import { readFile, writeFile, rename } from "node:fs/promises"
+import { dirname } from "node:path"
 import { ensureDirectory, atomicAppendMarkdown, safeSessionPath } from "./atomic-write.js"
 import type { SessionRecord } from "../types.js"
 
@@ -176,7 +178,6 @@ export class SessionWriter {
     sessionID: string,
     updates: Partial<SessionRecord>,
   ): Promise<void> {
-    const { readFile } = await import("node:fs/promises")
     const filePath = this.getSessionFilePath(sessionID)
     const raw = await readFile(filePath, "utf-8")
 
@@ -186,6 +187,10 @@ export class SessionWriter {
     const yamlStr = yamlStringify(merged)
     const content = `---\n${yamlStr}---\n${parsed.content.trim() ? parsed.content : ""}`
 
-    await atomicAppendMarkdown(filePath, content)
+    // Direct atomic write — no re-read via atomicAppendMarkdown (DEFECT-06)
+    const tmpPath = `${filePath}.tmp.${Date.now()}`
+    await ensureDirectory(dirname(filePath))
+    await writeFile(tmpPath, content, "utf-8")
+    await rename(tmpPath, filePath)
   }
 }

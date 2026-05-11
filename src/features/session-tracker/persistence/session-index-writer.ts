@@ -134,7 +134,6 @@ export class SessionIndexWriter {
     }
 
     index.hierarchy.children[childSessionID] = entry
-    index.turnCount++
 
     const filePath = this.getIndexPath(sessionID)
     await atomicWriteJson(filePath, index)
