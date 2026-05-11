@@ -2649,3 +2649,173 @@ The output should answer: "What does the researcher need to investigate? What ch
 }
 ```
 
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_00_tBulcNpG4TeZRriEDiu60684"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_01_kA9UrI9GYa8jMCdcb0bk4081"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_02_IFcPvTtBxYMf9oEVeCl41341"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_03_jwLHHRr956n4madJigt39770"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_04_TVrIrWeXrFGtFu7YZHJ86804"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_05_XIXB4bkNNuvMWUchTVAd1211"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_06_RGaYl8lnodBv4ctNgwZ77492"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_60xEixPrMklyzBRfUkR22540"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_MmQGLdxu7pkshLJbkCfj1671"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_sZDMJubsHCATrEh1MtBG2871"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_dLFAvtYoIM70VIlH3XfX2162"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_4Mrl8Y2Of8QGbJdZxdEB0085"
+}
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "call_00_Qg5gsbd7GTR5AhINcq1C7595"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_VZAOOVpBf6nUtWSOacI28993"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_kw3jlh7w8xSi9spq2KH23022"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_03_6Q09l6eZgZpAlzRVtT4l2250"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_yu5BtdDldfvmCLbsniYN6551"
+}
+```
+

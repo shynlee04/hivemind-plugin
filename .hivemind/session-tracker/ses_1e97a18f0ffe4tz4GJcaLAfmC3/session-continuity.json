@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1e97a18f0ffe4tz4GJcaLAfmC3",
-  "lastUpdated": "2026-05-11T10:34:50.397Z",
+  "lastUpdated": "2026-05-11T11:24:39.541Z",
   "hierarchy": {
     "root": "ses_1e97a18f0ffe4tz4GJcaLAfmC3",
     "children": {
@@ -18,9 +18,23 @@
         "status": "active",
         "delegatedBy": "main_l0_agent",
         "children": {}
+      },
+      "ses_1e9513440ffeGdcIRW1S6gi2De": {
+        "file": "ses_1e9513440ffeGdcIRW1S6gi2De.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e93a7d0cffe5E0G7faQfUo4mq": {
+        "file": "ses_1e93a7d0cffe5E0G7faQfUo4mq.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
       }
     }
   },
-  "turnCount": 2,
+  "turnCount": 4,
   "toolSummary": {}
 }

@@ -116,7 +116,7 @@ This override default system prompt behavior, but **user instructions always tak
 
 
 
-HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm package (`opencode-harness`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. The project has progressed through 31 phases covering runtime architecture, delegation revamp, skills quality, and planning documentation refresh. Phase 26 completed the quality synthesis that established HMQUAL-01 through HMQUAL-08 as the project-level quality contract for all `hm-*` skills.
+Hivemind is a **runtime composition engine** for OpenCode. It is an npm package (`hivemind`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. The project has progressed through 31 phases covering runtime architecture, delegation revamp, skills quality, and planning documentation refresh. Phase 26 completed the quality synthesis that established HMQUAL-01 through HMQUAL-08 as the project-level quality contract for all `hm-*` skills.
 
 **This is NOT a skill-pack project.** Skills are one component. The product is the harness: a TypeScript plugin that wires tools + hooks into OpenCode with zero business logic in the plugin layer.
 
@@ -236,8 +236,8 @@ tests/tools/                   # Tool-focused unit tests
 
 - Build: `npm run build` — compiles `src/` → `dist/` with declarations + source maps
 - Package entrypoints:
-  - `opencode-harness` → `./dist/index.js`
-  - `opencode-harness/plugin` → `./dist/plugin.js`
+  - `hivemind` → `./dist/index.js`
+  - `hivemind/plugin` → `./dist/plugin.js`
 - Prepack runs build automatically: `npm pack` / `npm publish`
 - Runtime state path: `.hivemind/state/` (canonical per Q6; legacy `.opencode/state/opencode-harness/` supported via compatibility bridge during migration)
 
@@ -248,9 +248,9 @@ tests/tools/                   # Tool-focused unit tests
 - Plugin loaded via `.opencode/plugins/harness-control-plane.ts` (thin wrapper re-exporting `dist/`)
 - Config: `opencode.json` at repo root — references `AGENTS.md` as instructions
 - 89 agents in `.opencode/agents/`: 33 GSD specialist agents (internal project build tools — NOT shipped) + 45 hm-* agents (harness module specialists + core/internal agents: analyst, architect, assessor, auditor, brainstormer, build, conductor, connector, context-mapper, context-purifier, coordinator, critic, curator, debugger, ecologist, executor, finisher, general, guardian, integrator, intent-loop, investigator, mentor, meta-synthesis, operator, optimizer, orchestrator, persistor, phase-guardian, planner, prompt-analyzer, prompt-repackager, prompt-skimmer, researcher, reviewer, risk-assessor, router, scout, spec-verifier, strategist, synthesizer, technician, test-router, validator, writer) + 11 hf-* agents (hf-prompter, hf-l2-agent-builder, hf-l2-command-builder, hf-l0-hm-l0-orchestrator, hf-l2-skill-builder, hf-l2-tool-builder, hf-l2-meta-builder + 4 additional). Note: explore agent is MISSING from the filesystem.
-- 59 skills in `.opencode/skills/`: 35 hm-* (product dev: brainstorm, requirements-analysis, feature-ecosystem, product-validation, coordinating-loop, user-intent-interactive-loop, cross-cutting-change, spec-driven-authoring, test-driven-execution, debug, refactor, deep-research, detective, synthesis, research-chain, completion-looping, phase-loop, phase-execution, planning-persistence, subagent-delegation-patterns, production-readiness, roadmap-maintainability, tech-context-compliance, tech-stack-ingest, omo-reference, opencode-platform-reference, opencode-non-interactive-shell, opencode-project-audit, gate-orchestrator, lineage-router, brainstorm, skill-router, hivemind-engine-contracts, hivemind-state-reference, integration-contracts) + 13 hf-* (meta-builder: agent-composition, agents-and-subagents-dev, agents-md-sync, command-dev, command-parser, context-absorb, custom-tools-dev, delegation-gates, meta-builder, skill-synthesis, use-authoring-skills) + 3 gate-* (internal quality gate triad: evidence-truth, lifecycle-integration, spec-compliance — THIS PROJECT ONLY, not shipped) + 6 stack-* (reference: bun-pty, json-render, nextjs, opencode, vitest, zod) + 1 unprefixed (opencode-config-workflow) + 1 disabled (`donotusethis-hm-planning-with-files`). Note: `hm-planning-with-files` is disabled (directory renamed to `donotusethis-hm-planning-with-files`).
+- 58 skills in `.opencode/skills/`: 35 hm-* (product dev: brainstorm, requirements-analysis, feature-ecosystem, product-validation, coordinating-loop, user-intent-interactive-loop, cross-cutting-change, spec-driven-authoring, test-driven-execution, debug, refactor, deep-research, detective, synthesis, research-chain, completion-looping, phase-loop, phase-execution, planning-persistence, subagent-delegation-patterns, production-readiness, roadmap-maintainability, tech-context-compliance, tech-stack-ingest, omo-reference, opencode-platform-reference, opencode-non-interactive-shell, opencode-project-audit, gate-orchestrator, lineage-router, brainstorm, skill-router, hivemind-engine-contracts, hivemind-state-reference, integration-contracts) + 13 hf-* (meta-builder: agent-composition, agents-and-subagents-dev, agents-md-sync, command-dev, command-parser, context-absorb, custom-tools-dev, delegation-gates, meta-builder, skill-synthesis, use-authoring-skills) + 3 gate-* (internal quality gate triad: evidence-truth, lifecycle-integration, spec-compliance — THIS PROJECT ONLY, not shipped) + 6 stack-* (reference: bun-pty, json-render, nextjs, opencode, vitest, zod) + 1 unprefixed (opencode-config-workflow). Note: the previously disabled `hm-planning-with-files` skill has been removed.
 - Note: 65 gsd-* skills and 33 gsd-* agents exist in `.opencode/` as developer tooling (GSD framework used to build this project). They are NOT shipped primitives. Any synthesis from gsd-* must be transformed to hm-*/hf-* conventions.
-- 18 commands in `.opencode/commands/`: 7 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, harness-audit, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack) + 1 sync (sync-agents-md) + 3 test (test-echo, test-list, test-status)
+- 19 commands in `.opencode/commands/`: 7 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, harness-audit, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack) + 1 sync (sync-agents-md) + 4 test (test-echo, test-list, test-spike-execute, test-status)
 
 ### `.opencode/` = Soft Meta-Concepts ONLY — NEVER Development Assets
 
@@ -364,4 +364,11 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 - **Learning:** Provide code and architectural details for independent assessment. Ask targeted questions rather than offering walkthroughs. When the developer explores a new domain, offer concise references and let them direct the learning pace.
 <!-- GSD:profile-end -->
 
-<!-- Last synced: 2026-05-05 — HER-0 ecosystem audit verification: skill/agent counts synced to reality (59 active skills, 89 agents, 35 hm-* skills) -->
+<!-- Last synced: 2026-05-11 — Phase 11 audit: skill count corrected to 58 (disabled removed), commands 18→19, package name `hivemind` per P0-ID -->
+
+## Current Phase Context
+
+**Active phase (2026-05-11):** Phase 11 — Governance Reconciliation (GOV-01). All core artifacts (STATE.md, PROJECT.md, REQUIREMENTS.md, ROADMAP.md, 7 sector AGENTS.md) being reconciled against live evidence.  
+**Evidence baseline:** `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md`  
+**What this means for this file:** All numeric claims (test counts, file counts, LOC) have been verified and corrected. Path references updated for post-SR restructuring (src/lib/ has been removed; migrated to new planes). Section added per Phase 11 D-11.  
+**Next phase:** GOV-01 completion → CP-PTY-01 (Background Shell Control-Plane MVP) and CP-ST-01 (Session Tracker Revamp).

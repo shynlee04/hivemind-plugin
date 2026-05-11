@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e903ee6effet2MD0kFjZUNzug",
+  "parentSessionID": "ses_1e90811c2ffe28njun1mC0MY6E",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Create hivemind-power-on governance skill draft",
+    "subagentType": "hf-l1-coordinator"
+  },
+  "created": "2026-05-11T12:33:58.886Z",
+  "updated": "2026-05-11T12:33:58.886Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hf-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

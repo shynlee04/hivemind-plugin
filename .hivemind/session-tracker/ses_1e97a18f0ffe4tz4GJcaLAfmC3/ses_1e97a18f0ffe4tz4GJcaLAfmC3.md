@@ -1318,3 +1318,47 @@ I was disconnected leading to downstream disconnection you can glob, list, grep 
 }
 ```
 
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "BATCH2b+3: Quality+Planning profiles",
+  "subagent_type": "hm-l1-coordinator",
+  "task_id": "ses_1e9513440ffeGdcIRW1S6gi2De"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e9513440ffeGdcIRW1S6gi2De
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_JWDuAneknmF7CnbMCXcf5988"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "BATCH4+5: Execution+Context profiles",
+  "subagent_type": "hm-l1-coordinator",
+  "task_id": "ses_1e93a7d0cffe5E0G7faQfUo4mq"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e93a7d0cffe5E0G7faQfUo4mq
+```
+

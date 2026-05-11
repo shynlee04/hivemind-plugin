@@ -16,7 +16,7 @@ permission:
   edit: ask
   write: ask
   bash:
-    '*': ask
+    '*': allow
     git *: allow
     node *: allow
     npx *: allow

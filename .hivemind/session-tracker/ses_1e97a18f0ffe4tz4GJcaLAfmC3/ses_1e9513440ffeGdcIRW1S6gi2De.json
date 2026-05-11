@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e9513440ffeGdcIRW1S6gi2De",
+  "parentSessionID": "ses_1e97a18f0ffe4tz4GJcaLAfmC3",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "BATCH2b+3: Quality+Planning profiles",
+    "subagentType": "hm-l1-coordinator"
+  },
+  "created": "2026-05-11T11:20:01.060Z",
+  "updated": "2026-05-11T11:20:01.060Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}
