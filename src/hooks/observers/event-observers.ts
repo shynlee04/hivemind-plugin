@@ -1,5 +1,5 @@
 import { asString, getNestedValue } from "../../shared/helpers.js"
-import { getEventSessionID } from "../../shared/session-api.js"
+import { getEventParentID, getEventSessionID } from "../../shared/session-api.js"
 import type { IntakeResult } from "../../routing/session-entry/intake-gate.js"
 import { resolveIntake } from "../../routing/session-entry/intake-gate.js"
 
@@ -90,4 +90,43 @@ export function createSessionEntryEventObserver(): {
   }
 
   return { observer, getIntake: (sessionId: string) => intakeCache.get(sessionId) }
+}
+
+/**
+ * Creates an event observer that caches whether a session is a main (level-0) session.
+ *
+ * Uses OpenCode's native `parentID` field on session records (D-01).
+ * Main sessions have `parentID === undefined`; child/delegated sessions have a
+ * `parentID` string set by the `task` tool (D-03).
+ *
+ * The cached boolean is read by the `system.transform` hook via HookDependencies (D-04).
+ *
+ * @returns An observer function and an `isMainSession` lookup function.
+ */
+export function createSessionIsMainObserver(): {
+  observer: (input: { event?: unknown }) => Promise<void>
+  isMainSession: (sessionId: string) => boolean
+} {
+  const mainSessionSet = new Set<string>()
+
+  const observer = async ({ event }: { event?: unknown }): Promise<void> => {
+    const eventType = asString(getNestedValue(event, ["type"]))
+    const sessionId = getEventSessionID(event)
+
+    if (eventType !== "session.created" || !sessionId) {
+      return
+    }
+
+    const parentID = getEventParentID(event)
+    // Main sessions have NO parentID (property absent / undefined / null)
+    // Child/delegated sessions have parentID set by the task tool
+    if (!parentID) {
+      mainSessionSet.add(sessionId)
+    }
+  }
+
+  return {
+    observer,
+    isMainSession: (sessionId: string) => mainSessionSet.has(sessionId),
+  }
 }

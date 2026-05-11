@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest"
-// @ts-expect-error — createSessionIsMainObserver not yet exported from event-observers.ts (RED)
 import { createSessionIsMainObserver } from "../../../src/hooks/observers/event-observers.js"
 
 // ===========================================================================
