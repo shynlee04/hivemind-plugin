@@ -148,6 +148,8 @@ export class ToolCapture {
     const skillName = args.name as string | undefined
     const firstHeader = this.extractFirstHeader(output.output)
 
+    await this.sessionIndexWriter.updateToolSummary(input.sessionID, "skill")
+
     await this.sessionWriter.appendToolBlock(
       input.sessionID,
       "skill",
@@ -173,16 +175,21 @@ export class ToolCapture {
   ): Promise<void> {
     const args = (input.args || {}) as Record<string, unknown>
     const filePath = args.filePath as string | undefined
-    const outputStr = this.asString(output.output)
-    const isError = outputStr?.toLowerCase().includes("error") ||
-      outputStr?.toLowerCase().includes("not found")
+
+    // Check structured metadata for errors — NEVER inspect file content (DEFECT-04, CR-03)
+    const outputMeta = output.metadata as Record<string, unknown> | undefined
+    const isError =
+      outputMeta?.error !== undefined || outputMeta?.status === "error"
+    const errorMessage = isError ? "File read failed" : undefined
+
+    await this.sessionIndexWriter.updateToolSummary(input.sessionID, "read")
 
     await this.sessionWriter.appendToolBlock(
       input.sessionID,
       "read",
       { filePath },
       undefined,
-      isError ? outputStr : undefined,
+      errorMessage, // Fixed string ONLY — never passes file content
     )
   }
 
@@ -209,6 +216,8 @@ export class ToolCapture {
       const now = new Date().toISOString()
       const childFile = `${childSessionID}.json`
       const depth = 1
+
+      await this.sessionIndexWriter.updateToolSummary(input.sessionID, "task")
 
       // Create child session record
       const childMetadata: ChildSessionRecord = {
@@ -249,9 +258,8 @@ export class ToolCapture {
       )
 
       // Update project-level index
-      await this.projectIndexWriter.updateSession(input.sessionID, {
-        childCount: undefined, // Let the writer handle incremental or passed value
-      })
+      // childCount is tracked by project-index-writer internally
+      await this.projectIndexWriter.updateSession(input.sessionID, {})
 
       // Also append the task tool block to the main session .md
       await this.sessionWriter.appendToolBlock(
@@ -282,6 +290,8 @@ export class ToolCapture {
    * @param input - The hook input.
    */
   private async handleOther(input: ToolInput): Promise<void> {
+    await this.sessionIndexWriter.updateToolSummary(input.sessionID, input.tool)
+
     await this.sessionWriter.appendToolBlock(
       input.sessionID,
       input.tool,

@@ -176,7 +176,7 @@ describe("ToolCapture", () => {
       expect(JSON.stringify(callArgs)).not.toContain("actual file content")
     })
 
-    it("should capture read error", async () => {
+    it("should capture read error via metadata (not file content)", async () => {
       await toolCapture.handleToolExecuteAfter(
         {
           tool: "read",
@@ -186,8 +186,8 @@ describe("ToolCapture", () => {
         },
         {
           title: "Read failed",
-          output: "File not found",
-          metadata: {},
+          output: "actual file content would be here",
+          metadata: { error: "ENOENT: no such file or directory", status: "error" },
         },
       )
 
@@ -196,7 +196,7 @@ describe("ToolCapture", () => {
         "read",
         { filePath: "/nonexistent/file.ts" },
         undefined,
-        "File not found",
+        "File read failed", // Fixed string — never passes file content
       )
     })
   })
