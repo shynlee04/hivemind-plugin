@@ -1,15 +1,15 @@
 [
   {
-    "id": "0b77f642-c7dd-4eea-a4a9-5aff4e429312",
+    "id": "c8ee1409-6664-446d-930a-8a33aad83d60",
     "parentSessionId": "ses_concurrent",
     "childSessionId": "fake-ses-1",
     "agent": "researcher",
     "status": "error",
-    "createdAt": 1778530596320,
+    "createdAt": 1778536228953,
     "safetyCeilingMs": 1800000,
     "lastMessageCount": 0,
     "stablePollCount": 0,
-    "lastMessageCountChangeAt": 1778530596320,
+    "lastMessageCountChangeAt": 1778536228953,
     "nestingDepth": 1,
     "executionMode": "sdk",
     "workingDirectory": "/Users/apple/hivemind-plugin-private",
@@ -17,21 +17,21 @@
     "surface": "agent-delegation",
     "recoveryGuarantee": "resumable",
     "explicitCancellation": false,
-    "completedAt": 1778530596324,
+    "completedAt": 1778536228954,
     "error": "Failed to send prompt to child session",
-    "gracePeriodExpiresAt": 1778531196326
+    "gracePeriodExpiresAt": 1778536828955
   },
   {
-    "id": "2de7c880-9ad0-45f7-9f4f-0a35b92de9fd",
+    "id": "3cd33a96-0111-48e1-a30e-f30e0cd9d5fb",
     "parentSessionId": "ses_concurrent",
     "childSessionId": "fake-ses-2",
     "agent": "builder",
     "status": "error",
-    "createdAt": 1778530596330,
+    "createdAt": 1778536228956,
     "safetyCeilingMs": 1800000,
     "lastMessageCount": 0,
     "stablePollCount": 0,
-    "lastMessageCountChangeAt": 1778530596330,
+    "lastMessageCountChangeAt": 1778536228956,
     "nestingDepth": 1,
     "executionMode": "sdk",
     "workingDirectory": "/Users/apple/hivemind-plugin-private",
@@ -39,8 +39,8 @@
     "surface": "agent-delegation",
     "recoveryGuarantee": "resumable",
     "explicitCancellation": false,
-    "completedAt": 1778530596332,
+    "completedAt": 1778536228958,
     "error": "Failed to send prompt to child session",
-    "gracePeriodExpiresAt": 1778531196336
+    "gracePeriodExpiresAt": 1778536828959
   }
 ]
