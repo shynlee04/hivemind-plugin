@@ -2,15 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Hivemind Core
-current_phase: 11 — Governance Reconciliation
 status: active
-last_updated: "2026-05-11T16:21:54.000Z"
+last_updated: "2026-05-12T00:20:00.000Z"
 progress:
   total_phases: 31
   completed_phases: 2
-  total_plans: 28
+  total_plans: 15
   completed_plans: 14
-  percent: 50
+  percent: 93
 ---
 
 # Hivemind — State
@@ -23,7 +22,7 @@ progress:
 
 ## Current Status
 
-**Active phase:** 11 — Governance Reconciliation (GOV-01). Reconcile STATE.md, PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and 7 sector AGENTS.md files against live evidence.  
+**Active phase:** 12 — CP-ST-01 Remediation. Fix 20+ writer engine defects, redesign tool surface per CUSTOM-TOOLS-CRITERIA, address all 14 review findings from CP-ST-01-REVIEW.md.  
 **Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 1978 tests (2 failures). Vitest hoist warnings remain non-fatal.
 
 Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized under 8 top-level src/ directories. BOOT-01 through BOOT-08 complete — bootstrap/init CLI proven E2E. MCM-01/MCM-02 complete — 89 agents and 125 skill directories migrated. CP-PTY-00 complete — shell/PTY control-plane spike delivered (docs/spec). Node 9.0.0 / Python 3.9.6.
@@ -74,7 +73,8 @@ Cycle 3 (Routing Foundation) pending governance reconciliation and CP-PTY-01 com
 | CP-PTY-02 | SDK Session Delegation Integration | ⬜ NOT PLANNED | CP-PTY-01, BOOT-08 | Async/sync child-session dispatch, context injection |
 | CP-PTY-03 | Agent/Subagent Background Task Coordination | ⬜ NOT PLANNED | CP-PTY-02, BOOT-08 | Wave dispatch, completion-looping, queue dedup |
 | CP-PTY-04 | Cross-Cutting Shell Integration | ⬜ NOT PLANNED | CP-PTY-03, MCM-03 | Wires background commands to session/task/journal/hooks |
-| CP-ST-01 | Session Tracker Revamp | 🔵 PLANNED | SR-10, BOOT-07 | Hook wiring, file format validation, session capture |
+| CP-ST-01 | Session Tracker Revamp | 🟢 COMPLETE | SR-10, BOOT-07 | 163 tests, 20+ defects found — see Phase 12 |
+| Phase 12 | CP-ST-01 Remediation | 🔵 IN PROGRESS | CP-ST-01 completion | Fix 20+ defects, toolset redesign, review findings |
 | SC-PTY-01 | Read-Only Terminal Projection | ⬜ DEFERRED | CP-PTY-01, Q2 confirmation | Read-only projection only; blocked on sidecar decision |
 | f-04 | Auto-commands + Workflow Router | ⬜ PENDING | Phase 0, BOOT, MCM | HIGHEST GAP — no intent classification exists |
 | MCM-03 | Config Plane Integration | ⬜ PENDING | MCM-01, MCM-02, BOOT-06 | Doctor agent/skill counts, config integration |
