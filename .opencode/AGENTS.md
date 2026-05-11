@@ -101,3 +101,10 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
 - **Meta-Authoring (`.hivefiver-meta-builder/`):** Source-of-truth for primitive authoring. Reflected to `.opencode/` via symlink or sync.
 - **Governance (`.planning/`):** Documents architecture, provides phase authorization. Does not mutate `.opencode/`.
 - **OMO Adaptation:** Per `.planning/research/omo-adaptation-architecture-2026-05-07.md`, OMO folder roots (`.sisyphus`, `.omx`) are REJECTED; `.opencode/` remains primitives-only.
+
+## Current Phase Context
+
+**Active phase (2026-05-11):** Phase 11 — Governance Reconciliation (GOV-01). All sector AGENTS.md files audited against live evidence.  
+**Evidence baseline:** `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md`  
+**What this means for .opencode/:** Agent, skill, and command counts verified. Lineage conventions (hm-*/hf-*/gate-*/stack-*) unchanged. No stale references found — primitives-only sector boundary preserved.  
+**Next work affecting .opencode/:** MCM-03 (config integration) and MCM-04 (end-user customization) may modify primitive configurations.

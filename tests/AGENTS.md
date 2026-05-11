@@ -37,5 +37,12 @@
 ## 6. Quality gates and evidence expectations
 
 - Standard commands: `npm test`, `npm run test:coverage`, single-file `npx vitest run tests/...`, and name-filtered `npx vitest run -t "<test name>"`. Evidence: `.planning/codebase/TESTING.md:41-48`.
-- Current testing baseline and failures must be reported honestly; as of the source map, 1,765/1,767 tests pass with 2 known session-journal taxonomy failures. Evidence: `.planning/codebase/TESTING.md:70-75`.
+- Current testing baseline and failures must be reported honestly; live evidence at 149 test files, 1979 test cases (2 known failures/skips). Evidence: `.planning/codebase/TESTING.md:70-75`.
 - Runtime readiness requires L1-L3 evidence beyond docs-only or mocked unit proof; tests alone must be classified by level and scope.
+
+## Current Phase Context
+
+**Active phase (2026-05-11):** Phase 11 — Governance Reconciliation (GOV-01). All sector AGENTS.md files audited against live evidence.  
+**Evidence baseline:** `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md`  
+**What this means for tests/:** Test counts verified at 149 test files, 2010 tests (2008 pass + 2 skip). Vitest + TypeScript strict mode unchanged.  
+**Next work affecting tests/:** CP-PTY-01 and CP-ST-01 will add new test files for shell/PTY and session tracker features.

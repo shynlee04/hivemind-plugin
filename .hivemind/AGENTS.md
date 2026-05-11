@@ -40,3 +40,10 @@
 - State-sector changes require proof of the owning module, migration behavior, and recovery/quarantine behavior when applicable.
 - Unit tests alone do not prove restart recovery; runtime recovery claims need integration or live restart evidence.
 - Docs-only edits remain L5 evidence and must not unblock CA-04 bootstrap/state ownership readiness. Evidence: `.planning/ROADMAP.md:29-49`.
+
+## Current Phase Context
+
+**Active phase (2026-05-11):** Phase 11 — Governance Reconciliation (GOV-01). All sector AGENTS.md files audited against live evidence.  
+**Evidence baseline:** `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md`  
+**What this means for .hivemind/:** Directory count verified at 11 subdirectories. Q6 canonical state root boundary unchanged.  
+**Next work affecting .hivemind/:** CP-ST-01 (Session Tracker Revamp) will add `.hivemind/session-tracker/` as a new persistence root.
