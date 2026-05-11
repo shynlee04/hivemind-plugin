@@ -213,6 +213,7 @@ export type DelegationSystems = z.infer<typeof DelegationSystemsSchema>
 export const LEGACY_KEY_MAP: Record<string, string> = {
   conversationLanguage: "conversation_language",
   documentsLanguage: "documents_and_artifacts_language",
+  documentPaths: "document_paths",
   userExpertLevel: "user_expert_level",
   delegationSystems: "delegation_systems",
 } as const
@@ -266,6 +267,13 @@ export const HivemindConfigsSchema = z
   .object({
     conversation_language: SupportedLanguageSchema.default("en"),
     documents_and_artifacts_language: SupportedLanguageSchema.default("en"),
+    /**
+     * Configurable document path prefixes for language enforcement.
+     * Flat array of strings, each relative to project root.
+     * Default: [".hivemind/planning/"] — supports recursive subdirectory globbing.
+     * @see D-08, D-09, D-10 in BOOT-09-CONTEXT.md
+     */
+    document_paths: z.array(z.string()).default([".hivemind/planning/"]),
     mode: HivemindModeSchema.default("expert-advisor"),
     user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
     delegation_systems: DelegationSystemsSchema,

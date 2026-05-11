@@ -359,7 +359,6 @@ describe("document_paths", () => {
     const result = sp(HivemindConfigsSchema, {})
     expect(result.success).toBe(true)
     if (result.success) {
-      // @ts-expect-error - document_paths not yet in schema type
       expect(result.data.document_paths).toEqual([".hivemind/planning/"])
     }
   })
@@ -368,18 +367,15 @@ describe("document_paths", () => {
     const result = sp(HivemindConfigsSchema, { document_paths: [".docs/", "./custom-docs/"] })
     expect(result.success).toBe(true)
     if (result.success) {
-      // @ts-expect-error - document_paths not yet in schema type
       expect(result.data.document_paths).toEqual([".docs/", "./custom-docs/"])
     }
   })
 
-  it("is stripped when not configured (lenient parse, no default injected)", () => {
+  it("gets default when not explicitly configured", () => {
     const result = sp(HivemindConfigsSchema, { conversation_language: "en" })
     expect(result.success).toBe(true)
     if (result.success) {
-      // Currently document_paths is stripped by .strip() since it's unknown
-      // @ts-expect-error - document_paths not yet in schema type
-      expect(result.data.document_paths).toBeUndefined()
+      expect(result.data.document_paths).toEqual([".hivemind/planning/"])
     }
   })
 })
