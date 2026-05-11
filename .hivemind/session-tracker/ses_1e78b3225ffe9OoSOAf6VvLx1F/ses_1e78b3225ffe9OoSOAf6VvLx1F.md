@@ -1,7 +1,7 @@
 ---
-sessionID: ses_1e7ac8179ffeQoIrBOS2YhB4We
-created: 2026-05-11T18:36:29.858Z
-updated: 2026-05-11T18:36:29.858Z
+sessionID: ses_1e78b3225ffe9OoSOAf6VvLx1F
+created: 2026-05-11T19:14:29.108Z
+updated: 2026-05-11T19:14:29.108Z
 parentSessionID: null
 delegationDepth: 0
 children: []
@@ -10,6 +10,142 @@ status: active
 ---
 
 ## USER (turn 1)
+
+you have not done the work correctly  though I have changed the languages they are not consumed and even what  you say as consumption bring very shallow implementation mmaking no real changs to the agent behaviour and routers use execute-command to execute /gsd-spec-phase with subagent to collect and synthesize evidences to generate specs  after you have collected the real depth of what must be the SPECS of this phase
+
+### Tool: glob
+
+**Input:**
+```json
+{
+  "callID": "call_00_5aWDL8b6P46ayY948SMF4332"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_vnlnI2umJtV8mIBIAoTs6522"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_6nX2inWBKIQrvWhyWI8x2498"
+}
+```
+
+
+### Tool: execute-command
+
+**Input:**
+```json
+{
+  "callID": "call_00_H4F7SSklpEI9Rz47prr12902"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Audit governance-block enforcement",
+  "subagent_type": "hm-l2-auditor",
+  "task_id": "ses_1e788acdeffen1XuTgJxoo8rbA"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e788acdeffen1XuTgJxoo8rbA
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Investigate config plane depth",
+  "subagent_type": "hm-l2-investigator",
+  "task_id": "ses_1e788ccafffeoHugoCLLPrMs6q"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e788ccafffeoHugoCLLPrMs6q
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "call_00_PgwbBWk2mbqZiKQIXe210817"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_00_wGyVco5wESoHddRHVByA8854"
+}
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "call_00_U4FmhZOYiwEhVd9xPRlv3728"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_yCuXeiM2XSi7q3x9ZAf84653"
+}
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "call_00_1XBsvh5msqXeC21JwAME0519"
+}
+```
+
+
+## USER (turn 2)
+
+as I meantioned above the first 4 MVP but complete 
+
+## USER (turn 3)
+
+as I meantioned above the first 4 MVP but complete end2end actor consumer mechanism which interfaces? implementation hooks? functions? downstream? runtime ? if mechanism is programatic they must be injections then what persist what not , how to make sure agents behave exactly 100% time and each field and value bring different behaviour ect run command gsd-spec-phase to execute the correct gsd workflow do not randomly generate fucking trash
+
+## USER (turn 4)
 
 <objective>
 Clarify phase requirements through structured Socratic questioning with quantitative ambiguity scoring.
@@ -37,7 +173,7 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </runtime_note>
 
 <context>
-Phase number: <by inspecting and learning over the current flaws of this configf plane implementation surface your assumptions over the WHAT and WHAT Wrong before, and knowing the life cycles of these schema fields are controlling toward the downstream consumers, through which mechanism, and the user pipeline toward how these contribute to which features etc to then form the correct questions over the spec>  (required)
+Phase number: 9 (required)
 
 **Flags:**
 - `--auto` — Skip interactive questions; the agent selects recommended defaults and writes SPEC.md
@@ -1104,766 +1240,3 @@ The output should answer: "What does the researcher need to investigate? What ch
 </guidelines>
 
 </system-reminder>
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_00_sq8I9IpoJqEHX4aB5OMb9413"
-}
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_01_W6RKZOB1fFKArcWU2nrp6577"
-}
-```
-
-
-### Tool: glob
-
-**Input:**
-```json
-{
-  "callID": "call_00_TFfkrY5cu60K23geS5oO1460"
-}
-```
-
-
-### Tool: glob
-
-**Input:**
-```json
-{
-  "callID": "call_01_kKTiCHYMU5E5ON44QCP41172"
-}
-```
-
-
-### Tool: glob
-
-**Input:**
-```json
-{
-  "callID": "call_02_Fk092COg9MWgWpiUSlyz6061"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/hivemind-configs.schema.ts"
-}
-```
-
-**Error:**
-```
-<path>/Users/apple/hivemind-plugin-private/src/schema-kernel/hivemind-configs.schema.ts</path>
-<type>file</type>
-<content>
-1: import { z } from "zod"
-2: 
-3: export const HIVEMIND_CONFIGS_SCHEMA_VERSION = "2.0.0"
-4: 
-5: // ---------------------------------------------------------------------------
-6: // 1. Supported languages — shared enum for conversation and document output
-7: // ---------------------------------------------------------------------------
-8: 
-9: /**
-10:  * Supported language codes for agent conversation output and artifact generation.
-11:  *
-12:  * @example
-13:  * ```typescript
-14:  * const result = SupportedLanguageSchema.safeParse("en")
-15:  * // result.success === true
-16:  * ```
-17:  */
-18: export const SupportedLanguageSchema = z.enum([
-19:   "en",
-20:   "vi",
-21:   "zh",
-22:   "fr",
-23:   "ja",
-24:   "ko",
-25:   "de",
-26:   "es",
-27:   "th",
-28:   "id",
-29: ])
-30: 
-31: export type SupportedLanguage = z.infer<typeof SupportedLanguageSchema>
-32: 
-33: // ---------------------------------------------------------------------------
-34: // 2. Mode — guardrail intensity level
-35: // ---------------------------------------------------------------------------
-36: 
-37: /**
-38:  * Hivemind operation mode controlling guardrail intensity.
-39:  *
-40:  * - `expert-advisor`: Agent-led with TDD, spec-driven, research-first, systematic planning.
-41:  * - `hivemind-powered`: Stricter guardrails, hierarchical tracking, cross-context persistence.
-42:  * - `free-style`: Features only available if child control-panes are active or explicitly requested.
-43:  *
-44:  * @example
-45:  * ```typescript
-46:  * const result = HivemindModeSchema.safeParse("expert-advisor")
-47:  * // result.success === true
-48:  * ```
-49:  */
-50: export const HivemindModeSchema = z.enum([
-51:   "expert-advisor",
-52:   "hivemind-powered",
-53:   "free-style",
-54: ])
-55: 
-56: export type HivemindMode = z.infer<typeof HivemindModeSchema>
-57: 
-58: // ---------------------------------------------------------------------------
-59: // 3. User expert level — output style adaptation
-60: // ---------------------------------------------------------------------------
-61: 
-62: /**
-63:  * User proficiency level affecting agent output style, jargon level, and elaboration depth.
-64:  *
-65:  * @example
-66:  * ```typescript
-67:  * const result = UserExpertLevelSchema.safeParse("architecture-driven")
-68:  * // result.success === true
-69:  * ```
-70:  */
-71: export const UserExpertLevelSchema = z.enum([
-72:   "clumsy-vibecoder",
-73:   "beginner-friendly",
-74:   "intermediate-high-level",
-75:   "architecture-driven",
-76:   "absolute-expert",
-77: ])
-78: 
-79: export type UserExpertLevel = z.infer<typeof UserExpertLevelSchema>
-80: 
-81: // ---------------------------------------------------------------------------
-82: // 4. Discuss mode — GSD discuss-phase mode selection
-83: // ---------------------------------------------------------------------------
-84: 
-85: /**
-86:  * Phase discussion intensity controlling how the discuss-phase skill operates.
-87:  *
-88:  * - `sufficient-phase-discussion`: Gather enough context, then move on.
-89:  * - `intensive-phase-discussion`: Deep exploration before planning.
-90:  * - `skip-phase-discussion`: Skip discussion, go straight to planning.
-91:  *
-92:  * @example
-93:  * ```typescript
-94:  * const result = DiscussModeSchema.safeParse("sufficient-phase-discussion")
-95:  * // result.success === true
-96:  * ```
-97:  */
-98: export const DiscussModeSchema = z.enum([
-99:   "sufficient-phase-discussion",
-100:   "intensive-phase-discussion",
-101:   "skip-phase-discussion",
-102: ])
-103: 
-104: export type DiscussMode = z.infer<typeof DiscussModeSchema>
-105: 
-106: // ---------------------------------------------------------------------------
-107: // 5. Workflow config — runtime feature toggles
-108: // ---------------------------------------------------------------------------
-109: 
-110: /**
-111:  * Workflow configuration controlling runtime feature toggles.
-112:  * Each toggle controls a separate runtime feature — implemented as OpenCode primitives,
-113:  * custom tools, engines, or event-hook injections.
-114:  *
-115:  * @example
-116:  * ```typescript
-117:  * const result = WorkflowConfigSchema.safeParse({
-118:  *   research: true,
-119:  *   plan_check: true,
-120:  *   discuss_mode: "sufficient-phase-discussion",
-121:  * })
-122:  * // result.success === true
-123:  * ```
-124:  */
-125: /**
-126:  * Internal workflow config object schema (without outer default).
-127:  * Used to generate a fully-resolved default value for the outer schema.
-128:  *
-129:  * @internal
-130:  */
-131: const WorkflowConfigInnerSchema = z.object({
-132:   research: z.boolean().default(true),
-133:   /** @future-consumer lifecycle-manager.ts — CA-04 */
-134:   cross_session_tasks_dependencies_validation: z.boolean().default(false),
-135:   /** @future-consumer hivemind-trajectory tool — CA-04 */
-136:   trajectory_control: z.boolean().default(false),
-137:   /** @future-consumer continuity.ts — CA-04 */
-138:   advanced_continuity_validation: z.boolean().default(false),
-139:   /** @future-consumer task-status.ts — CA-04 */
-140:   task_plus_enabled: z.boolean().default(false),
-141:   plan_check: z.boolean().default(true),
-142:   verifier: z.boolean().default(true),
-143:   /** @future-consumer sidecar UI (WS-2/WS-8) — Future */
-144:   ui_phase: z.boolean().default(false),
-145:   /** @future-consumer sidecar UI (WS-2/WS-8) — Future */
-146:   ui_safety_gate: z.boolean().default(false),
-147:   /** @future-consumer WS-4 workstream — Future */
-148:   ai_integration_phase: z.boolean().default(false),
-149:   research_before_questions: z.boolean().default(true),
-150:   discuss_mode: DiscussModeSchema.default("sufficient-phase-discussion"),
-151:   use_worktrees: z.boolean().default(false),
-152: })
-153: 
-154: /**
-155:  * Workflow config schema with a factory default that produces
-156:  * fully-resolved values (satisfies Zod v4 `.default()` type requirements).
-157:  */
-158: export const WorkflowConfigSchema = WorkflowConfigInnerSchema.default(
-159:   () => WorkflowConfigInnerSchema.parse({}),
-160: )
-161: 
-162: export type WorkflowConfig = z.infer<typeof WorkflowConfigSchema>
-163: 
-164: // ---------------------------------------------------------------------------
-165: // 6. Delegation systems — enabled delegation modes
-166: // ---------------------------------------------------------------------------
-167: 
-168: /**
-169:  * Toggles for available delegation mechanisms.
-170:  *
-171:  * - `native_task`: OpenCode innate task tool (always available).
-172:  * - `delegate_task`: Custom delegation via harness (f-06).
-173:  * - `background_delegation`: Background/async delegation (f-06 advanced).
-174:  *
-175:  * @example
-176:  * ```typescript
-177:  * const result = DelegationSystemsSchema.safeParse({
-178:  *   native_task: true,
-179:  *   delegate_task: true,
-180:  *   background_delegation: false,
-181:  * })
-182:  * // result.success === true
-183:  * ```
-184:  */
-185: export const DelegationSystemsSchema = z
-186:   .object({
-187:     native_task: z.boolean().default(true),
-188:     delegate_task: z.boolean().default(true),
-189:     background_delegation: z.boolean().default(true),
-190:   })
-191:   .default({
-192:     native_task: true,
-193:     delegate_task: true,
-194:     background_delegation: true,
-195:   })
-196: 
-197: export type DelegationSystems = z.infer<typeof DelegationSystemsSchema>
-198: 
-199: // ---------------------------------------------------------------------------
-200: // 7. Legacy key migration — camelCase → snake_case
-201: // ---------------------------------------------------------------------------
-202: 
-203: /**
-204:  * Maps legacy camelCase JSON keys to canonical snake_case keys.
-205:  * Applied during `readConfigs()` to support backward-compatible config files.
-206:  *
-207:  * @example
-208:  * ```typescript
-209:  * // Input: { "conversationLanguage": "en" }
-210:  * // After migration: { "conversation_language": "en" }
-211:  * ```
-212:  */
-213: export const LEGACY_KEY_MAP: Record<string, string> = {
-214:   conversationLanguage: "conversation_language",
-215:   documentsLanguage: "documents_and_artifacts_language",
-216:   userExpertLevel: "user_expert_level",
-217:   delegationSystems: "delegation_systems",
-218: } as const
-219: 
-220: /**
-221:  * Applies legacy camelCase → snake_case key migration to a raw config object.
-222:  * Mutates the input object in-place for efficiency.
-223:  *
-224:  * @param raw - The raw parsed JSON object from configs.json.
-225:  * @returns The same object with legacy keys renamed to snake_case.
-226:  */
-227: export function migrateKeys(raw: Record<string, unknown>): Record<string, unknown> {
-228:   for (const [oldKey, newKey] of Object.entries(LEGACY_KEY_MAP)) {
-229:     if (oldKey in raw && !(newKey in raw)) {
-230:       raw[newKey] = raw[oldKey]
-231:       delete raw[oldKey]
-232:     }
-233:   }
-234:   return raw
-235: }
-236: 
-237: // ---------------------------------------------------------------------------
-238: // 8. Hivemind configs — top-level .hivemind/configs.json schema
-239: // ---------------------------------------------------------------------------
-240: 
-241: /**
-242:  * Schema for `.hivemind/configs.json` — the full skeleton v2 §9.1 runtime configuration.
-243:  * Loaded at every front-facing session start and reloaded after each user prompt.
-244:  *
-245:  * Unknown fields are stripped (lenient parsing) to support forward-compatible
-246:  * configs from future versions without rejecting the entire file.
-247:  *
-248:  * @see SKELETON-INTEGRATED-SYSTEMATIC-APPROACH-v2 §9.1 for the full schema specification.
-249:  *
-250:  * @example
-251:  * ```typescript
-252:  * import { HivemindConfigsSchema, readConfigs } from "./configs.js"
-253:  *
-254:  * // Validate a config object
-255:  * const result = HivemindConfigsSchema.safeParse({
-256:  *   conversation_language: "en",
-257:  *   mode: "expert-advisor",
-258:  *   workflow: { research: true, plan_check: true },
-259:  * })
-260:  *
-261:  * // Read from disk
-262:  * const configs = readConfigs("/path/to/project")
-263:  * ```
-264:  */
-265: export const HivemindConfigsSchema = z
-266:   .object({
-267:     conversation_language: SupportedLanguageSchema.default("en"),
-268:     documents_and_artifacts_language: SupportedLanguageSchema.default("en"),
-269:     mode: HivemindModeSchema.default("expert-advisor"),
-270:     user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
-271:     delegation_systems: DelegationSystemsSchema,
-272:     parallelization: z.boolean().default(true),
-273:     atomic_commit: z.boolean().default(true),
-274:     commit_docs: z.boolean().default(true),
-275:     workflow: WorkflowConfigSchema,
-276:   })
-277:   .strip()
-278: 
-279: export type HivemindConfigs = z.infer<typeof HivemindConfigsSchema>
-280: 
-281: // ---------------------------------------------------------------------------
-282: // 9. Defaults helper
-283: // ---------------------------------------------------------------------------
-284: 
-285: /**
-286:  * Returns the default Hivemind configuration object.
-287:  * Equivalent to `HivemindConfigsSchema.parse({})`.
-288:  *
-289:  * @returns Default configuration with all fields set to their default values.
-290:  *
-291:  * @example
-292:  * ```typescript
-293:  * const defaults = getDefaultConfigs()
-294:  * // defaults.conversationLanguage === "en"
-295:  * // defaults.mode === "expert-advisor"
-296:  * ```
-297:  */
-298: export function getDefaultConfigs(): HivemindConfigs {
-299:   return HivemindConfigsSchema.parse({})
-300: }
-301: 
-302: // ---------------------------------------------------------------------------
-303: // 10. Read/write helpers
-304: // ---------------------------------------------------------------------------
-305: 
-306: import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
-307: import { dirname, resolve } from "node:path"
-308: 
-309: /**
-310:  * Resolves the canonical path to `.hivemind/configs.json` for a given project root.
-311:  *
-312:  * @param projectRoot - Absolute path to the project root directory.
-313:  * @returns Absolute path to `.hivemind/configs.json`.
-314:  */
-315: export function getConfigsPath(projectRoot: string): string {
-316:   return resolve(projectRoot, ".hivemind", "configs.json")
-317: }
-318: 
-319: /**
-320:  * Reads and validates `.hivemind/configs.json` from disk. Returns defaults if
-321:  * the file is missing or contains invalid JSON. Unknown fields are silently
-322:  * stripped.
-323:  *
-324:  * @param projectRoot - Absolute path to the project root directory.
-325:  * @returns Validated Hivemind configuration object.
-326:  *
-327:  * @example
-328:  * ```typescript
-329:  * const configs = readConfigs("/path/to/project")
-330:  * console.log(configs.mode) // "expert-advisor"
-331:  * ```
-332:  */
-333: export function readConfigs(projectRoot: string): HivemindConfigs {
-334:   const configPath = getConfigsPath(projectRoot)
-335: 
-336:   if (!existsSync(configPath)) {
-337:     return getDefaultConfigs()
-338:   }
-339: 
-340:   try {
-341:     const raw = readFileSync(configPath, "utf8")
-342:     const parsed = JSON.parse(raw) as Record<string, unknown>
-343: 
-344:     // Apply legacy camelCase → snake_case key migration
-345:     migrateKeys(parsed)
-346: 
-347:     const result = HivemindConfigsSchema.safeParse(parsed)
-348: 
-349:     if (result.success) {
-350:       return result.data
-351:     }
-352: 
-353:     // Invalid schema — return defaults rather than crashing
-354:     return getDefaultConfigs()
-355:   } catch {
-356:     // Corrupt JSON or read error — return defaults
-357:     return getDefaultConfigs()
-358:   }
-359: }
-360: 
-361: export type ConfigFileValidationResult =
-362:   | { success: true; data: HivemindConfigs }
-363:   | { success: false; error: string }
-364: 
-365: /**
-366:  * Validate `.hivemind/configs.json` without silently falling back to defaults.
-367:  *
-368:  * This helper is intended for diagnostics such as `hivemind doctor`, where the
-369:  * caller needs a precise success/failure result instead of the lenient runtime
-370:  * fallback behavior used by {@link readConfigs}.
-371:  *
-372:  * @param projectRoot - Absolute path to the project root directory.
-373:  * @returns Explicit validation success or a human-readable failure message.
-374:  *
-375:  * @example
-376:  * ```typescript
-377:  * const result = validateConfigsFile("/path/to/project")
-378:  * if (!result.success) console.error(result.error)
-379:  * ```
-380:  */
-381: export function validateConfigsFile(projectRoot: string): ConfigFileValidationResult {
-382:   const configPath = getConfigsPath(projectRoot)
-383: 
-384:   if (!existsSync(configPath)) {
-385:     return { success: false, error: `Missing ${configPath}` }
-386:   }
-387: 
-388:   try {
-389:     const raw = readFileSync(configPath, "utf8")
-390:     const parsed = JSON.parse(raw) as Record<string, unknown>
-391:     migrateKeys(parsed)
-392:     const result = HivemindConfigsSchema.safeParse(parsed)
-393:     if (!result.success) {
-394:       return {
-395:         success: false,
-396:         error: result.error.issues
-397:           .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
-398:           .join("; "),
-399:       }
-400:     }
-401:     return { success: true, data: result.data }
-402:   } catch (cause) {
-403:     return { success: false, error: cause instanceof Error ? cause.message : String(cause) }
-404:   }
-405: }
-406: 
-407: /**
-408:  * Validates and writes a Hivemind configuration object to `.hivemind/configs.json`.
-409:  * Creates the parent directory if it does not exist.
-410:  *
-411:  * @param projectRoot - Absolute path to the project root directory.
-412:  * @param config - Configuration object to validate and persist.
-413:  * @returns The validated configuration that was written.
-414:  * @throws {Error} If the config object fails Zod validation.
-415:  *
-416:  * @example
-417:  * ```typescript
-418:  * const written = writeConfigs("/path/to/project", {
-419:  *   conversationLanguage: "vi",
-420:  *   documentsLanguage: "en",
-421:  *   mode: "hivemind-powered",
-422:  *   userExpertLevel: "architecture-driven",
-423:  *   delegationSystems: {
-424:  *     native_task: true,
-425:  *     delegate_task: true,
-426:  *     background_delegation: true,
-427:  *   },
-428:  * })
-429:  * ```
-430:  */
-431: export function writeConfigs(projectRoot: string, config: HivemindConfigs): HivemindConfigs {
-432:   const validated = HivemindConfigsSchema.parse(config)
-433:   const configPath = getConfigsPath(projectRoot)
-434:   mkdirSync(dirname(configPath), { recursive: true })
-435:   // Always write canonical snake_case JSON keys (schema already uses snake_case)
-436:   writeFileSync(configPath, `${JSON.stringify(validated, null, 2)}\n`, "utf8")
-437:   return validated
-438: }
-
-(End of file - total 438 lines)
-</content>
-
-<system-reminder>
-Instructions from: /Users/apple/hivemind-plugin-private/src/schema-kernel/AGENTS.md
-# Schema Kernel Sector Guidance
-
-**Parent sector:** `src/AGENTS.md` | **Architecture:** `.planning/codebase/ARCHITECTURE.md` | **Classification:** Hard Harness — validation-leaf (Zod v4 contracts, no durable writes)
-
-**Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
-
-## 1. Sector purpose and lifecycle role
-
-`src/schema-kernel/` is the Hard Harness validation-contract sector. It owns Zod v4 schemas for OpenCode meta-concepts, permissions, MCP servers, prompt enhancement, config precedence, agent work contracts, runtime pressure, SDK supervision, command engine, doc intelligence, and trajectory surfaces. Source evidence: `.planning/codebase/ARCHITECTURE.md:195-200`, `.planning/codebase/STRUCTURE.md:114-118`.
-
-## 2. Allowed mutation authority
-
-- Schema files may define and export validation contracts, typed parse results, fallback validation helpers, and barrel exports.
-- Schema changes may support tools, config workflow, validation/restart checks, and primitive configuration when paired with consumers. Evidence: `.planning/codebase/ARCHITECTURE.md:195-200`, `.planning/REQUIREMENTS.md:42-56`.
-- Schema changes may reject, strip, or warn on invalid structures according to the owning tool or config workflow contract. Evidence: `.planning/codebase/ARCHITECTURE.md:397-401`.
-
-## 3. Forbidden mutations / explicit no-go boundaries
-
-- Schemas SHALL NOT perform durable writes, SDK calls, filesystem state mutation, or command execution.
-- Schemas SHALL NOT become hidden runtime feature implementations; they define contracts consumed by tools/lib modules.
-- Schemas SHALL NOT introduce `any` on new code or bypass TypeScript strictness. Evidence: `.planning/codebase/CONVENTIONS.md:70-75`.
-- Schemas SHALL NOT claim registry/config completeness when consumers are partial or missing. Evidence: `.planning/REQUIREMENTS.md:42-56`.
-
-## 4. Actors and consumers
-
-| Actor / consumer | Uses this sector for | Boundary |
-|---|---|---|
-| `src/tools/configure-primitive.ts` and `validate-restart` | Validate primitive and restart contracts | Must handle schema errors through tool responses |
-| Config workflow and runtime policy modules | Parse and validate workspace/config contracts | Must own side effects outside the schema |
-| Tests | Validate accepted/rejected shapes | Schema tests do not prove runtime integration |
-| `.opencode/` primitives | Are validated by schemas where supported | Schema existence is not registry enforcement by itself |
-
-## 5. Naming and placement conventions
-
-- Schema files use `kebab-case.schema.ts`; barrel exports live in `src/schema-kernel/index.ts`. Evidence: `.planning/codebase/STRUCTURE.md:186-195`, `.planning/codebase/STRUCTURE.md:237-240`.
-- Tests live under `tests/schema-kernel/` and validate real Zod behavior. Evidence: `.planning/codebase/TESTING.md:52-64`, `.planning/codebase/TESTING.md:208-213`.
-- Use named exports and ESM `.js` import conventions where imports are needed. Evidence: `.planning/codebase/CONVENTIONS.md:80-98`, `.planning/codebase/CONVENTIONS.md:169-181`.
-
-## 6. Quality gates and evidence expectations
-
-- Schema changes require `npm run typecheck` and scoped `npx vitest run tests/schema-kernel/...` evidence.
-- If a schema change claims runtime enforcement, provide consumer evidence from the owning tool/lib module; schema-only proof is insufficient.
-- Docs-only edits remain L5 evidence and must not alter readiness status. Evidence: `.planning/ROADMAP.md:47-49`.
-
-
-Instructions from: /Users/apple/hivemind-plugin-private/src/AGENTS.md
-# Hard Harness Sector Guidance
-
-**Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
-
-## 1. Sector purpose and lifecycle role
-
-`src/` is the Hard Harness npm package source for the OpenCode runtime composition engine: `src/plugin.ts` assembles dependencies, tools expose write-side commands, hooks observe read-side events, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/` own runtime logic, `src/schema-kernel/` owns validation contracts, and `src/shared/` owns leaf tool utilities. Source evidence: `.planning/codebase/ARCHITECTURE.md:38-45`, `.planning/codebase/ARCHITECTURE.md:48-68`, `.planning/codebase/STRUCTURE.md:88-118`. Source-plane ownership model: `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` — defines the split between Hard Harness (`src/`), Soft Meta-Concepts (`.opencode/`), and Internal State (`.hivemind/`).
-
-## 2. Allowed mutation authority
-
-- `src/plugin.ts` may wire runtime dependencies, instantiate hooks, register tools, and load runtime policy; keep business logic in `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, tools, hooks, or schemas. Evidence: `.planning/codebase/ARCHITECTURE.md:48-50`, `.planning/codebase/ARCHITECTURE.md:70-82`.
-- `src/tools/` owns write-side tool entrypoints and may call `src/task-management/`, `src/coordination/`, `src/features/`, `src/schema-kernel/`, and `src/shared/` to perform validated mutations. Evidence: `.planning/codebase/ARCHITECTURE.md:87-113`.
-- `src/hooks/` owns read-side observers, response shaping, and guard decisions, subject to the CQRS hook boundary. Evidence: `.planning/codebase/ARCHITECTURE.md:115-134`, `.planning/codebase/ARCHITECTURE.md:339-353`.
-- `src/task-management/` owns continuity, journal, event tracker, recovery, trajectory, and lifecycle modules.
-- `src/coordination/` owns delegation, completion, concurrency, SDK/command delegation, and spawner modules.
-- `src/features/` owns standalone runtime features: bootstrap, PTY/background command, doc intelligence, prompt packets, pressure, SDK supervisor, and work contracts.
-- `src/config/` owns config subscriber, compiler, and workflow modules.
-- `src/routing/` owns session entry, behavioral profile, and command engine modules.
-Evidence: `.planning/codebase/ARCHITECTURE.md:136-183`.
-- `src/schema-kernel/` owns Zod validation schemas; `src/shared/` owns leaf utility surfaces used by tools. Evidence: `.planning/codebase/ARCHITECTURE.md:188-200`.
-
-## 3. Forbidden mutations / explicit no-go boundaries
-
-- Do not store internal runtime state in `.opencode/`; `.hivemind/` is canonical state root. Evidence: `.planning/codebase/ARCHITECTURE.md:247-255`, `.planning/codebase/ARCHITECTURE.md:351-353`.
-- Do not authorize hooks to perform durable writes; only tools have CQRS mutation authority. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
-- Do not move business logic into `src/plugin.ts`; it is a thin composition root. Evidence: `.planning/codebase/ARCHITECTURE.md:70-82`.
-- Do not create `src/plugin/`, `src/config/`, or broad `src/features/` folders without a separate, source-backed architecture decision. `src/config/` and `src/features/` are authorized by `.planning/architecture/sr-remediation-architecture-decision-2026-05-08.md`; `src/plugin.ts` remains the plugin authority and `src/plugin/` is still not authorized.
-- Do not exceed the 500 LOC module cap or introduce circular imports. Evidence: `.planning/codebase/ARCHITECTURE.md:345-353`, `.planning/codebase/CONVENTIONS.md:19-28`.
-
-## 4. Actors and consumers
-
-| Actor / consumer | Uses this sector for | Boundary |
-|---|---|---|
-| OpenCode runtime | Loads the plugin, tools, hooks, and SDK-facing wrappers | Must consume compiled/package entrypoints, not planning artifacts |
-| Harness tools | Execute mutation commands through validated inputs | Must use schemas and shared response envelopes |
-| Harness hooks | Observe events and shape/guard responses | Must not perform durable writes |
-| Tests and gates | Verify runtime behavior, type safety, and integration boundaries | Docs-only changes remain L5 evidence |
-| `.opencode/` primitives | Configure agents/commands/skills that call harness tools | Must not become internal state owners |
-
-## 5. Naming and placement conventions
-
-- TypeScript source files use `kebab-case.ts`; schemas use `kebab-case.schema.ts`; tests mirror source with `.test.ts`. Evidence: `.planning/codebase/STRUCTURE.md:186-195`.
-- Tool implementations live in `src/tools/{tool-name}.ts` or `src/tools/{tool-name}/index.ts`; schemas live in `src/schema-kernel/{tool-name}.schema.ts`; tests live under `tests/`. Evidence: `.planning/codebase/STRUCTURE.md:218-261`.
-- Empty reserved folders must be registered with `.gitkeep`; do not create unregistered broad folders. Evidence: `.planning/codebase/STRUCTURE.md:268-278`.
-- TypeScript remains strict ESM with `.js` import extensions and `import type` for type-only imports. Evidence: `.planning/codebase/CONVENTIONS.md:5-18`, `.planning/codebase/CONVENTIONS.md:80-98`.
-
-## 6. Quality gates and evidence expectations
-
-- For runtime code changes, minimum local evidence is `npm run typecheck`, relevant `npx vitest run ...`, and `npm test` or scoped justification; docs-only changes may use diff/path inspection only. Evidence: `.planning/codebase/TESTING.md:41-48`.
-- Integration readiness cannot be claimed from unit tests or docs-only evidence; O3 docs artifacts are L5 until authorized runtime proof exists. Evidence: `.planning/ROADMAP.md:29-49`, `.planning/architecture/sector-agents-docs-implementation-plan-2026-05-07.md:1-8`.
-- Completion claims must preserve CQRS, state-root, lineage, naming, and module-size constraints. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`, `.planning/codebase/CONVENTIONS.md:19-28`.
-
-## 7. Cross-sector alignment
-
-`.opencode/` is the Soft Meta-Concepts sector — NEVER treated as development assets or implementation source. Skills, agents, and commands in `.opencode/` CONFIGURE runtime behavior from outside the npm package. They contain no business logic, no state persistence, and no compiled code.
-
-- **OMO Adaptation:** Per `.planning/research/omo-adaptation-architecture-2026-05-07.md`, factory injection patterns, CQRS boundaries, and staged initialization are ADAPTED from OMO where they align with Hivemind surfaces. OMO folder roots (`.sisyphus`, `.omx`) are REJECTED.
-- **State root:** `.hivemind/` is the canonical deep module persistence root per `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md`. No internal runtime state may be stored in `.opencode/` or `src/` without going through `.hivemind/` authority surfaces.
-- **Hard Harness = `src/`:** This sector contains compiled TypeScript that ships in the npm package. Soft Meta-Concepts = `.opencode/`: user-configurable primitives. Internal State = `.hivemind/`: runtime journals, delegation records, event tracker, lineage.
-
-</system-reminder>
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/src/config/subscriber.ts"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/configs.json"
-}
-```
-
-
-### Tool: glob
-
-**Input:**
-```json
-{
-  "callID": "call_00_JfoYQVitt4ZdPriNvSso2818"
-}
-```
-
-
-### Tool: glob
-
-**Input:**
-```json
-{
-  "callID": "call_01_t48qVGwWp0LtM0oIWOvl9846"
-}
-```
-
-
-### Tool: glob
-
-**Input:**
-```json
-{
-  "callID": "call_02_Fuxo77UApvZhv1ZQsGX90145"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/behavioral-profile/resolve-behavioral-profile.ts"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/session-entry/profile-resolver.ts"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.planning/config/config-traceability-2026-05-07.md"
-}
-```
-
-
-### Tool: grep
-
-**Input:**
-```json
-{
-  "callID": "call_00_eTDQNJQLjGalMpHAn0v56475"
-}
-```
-
-
-### Tool: glob
-
-**Input:**
-```json
-{
-  "callID": "call_01_wBl3v9p79bp6fO3MaTmX1913"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.planning/config/config-traceability-2026-05-07.md"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/governance-block.ts"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/behavioral-profile/profiles.ts"
-}
-```
-
-
-### Tool: skill
-
-**Input:**
-```json
-{
-  "name": "hm-l3-detective"
-}
-```
-
-**Output:** (pruned)
-```
-# Skill: hm-l3-detective
-```
-

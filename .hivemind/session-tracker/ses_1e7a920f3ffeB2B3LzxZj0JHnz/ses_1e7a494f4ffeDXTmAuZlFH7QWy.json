@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e7a494f4ffeDXTmAuZlFH7QWy",
+  "parentSessionID": "ses_1e7a920f3ffeB2B3LzxZj0JHnz",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Build execute-command custom tool spike",
+    "subagentType": "hm-l2-executor"
+  },
+  "created": "2026-05-11T18:49:41.327Z",
+  "updated": "2026-05-11T18:49:41.327Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-executor",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

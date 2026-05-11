@@ -1,9 +1,10 @@
 /**
- * Zod schema for the session-tracker tool.
+ * Zod schemas for the session-tracker, session-hierarchy, and session-context tools.
  *
- * Defines the input contract for agent-initiated session tracker queries.
- * Actions: export-session, list-sessions, search-sessions.
- * All operations are read-only (CQRS read-side).
+ * Defines input contracts for agent-initiated session knowledge queries.
+ * All operations are read-only (CQRS read-side). Every sessionId field is
+ * validated with a Zod `.refine()` that rejects path separators and
+ * traversal sequences before the handler ever sees the value (GAP-05).
  *
  * @module schema-kernel/session-tracker-schema
  */
@@ -11,48 +12,109 @@
 import { z } from "zod"
 
 /**
- * Valid actions for the session-tracker tool.
+ * Reusable session ID refinement that rejects path separators and traversal
+ * sequences at the Zod boundary. This is the first line of defense before
+ * `safeSessionPath()` applies a second guard in each handler (defense in depth).
  */
-export const SessionTrackerActionSchema = z.enum([
-  "export-session",
-  "list-sessions",
-  "search-sessions",
-])
+const safeSessionId = z
+  .string()
+  .min(1)
+  .refine(
+    (id) => !id.includes("/") && !id.includes("..") && !id.includes("\\"),
+    { message: "sessionId must not contain path separators or traversal sequences" },
+  )
+
+// ---------------------------------------------------------------------------
+// Session-tracker tool schemas
+// ---------------------------------------------------------------------------
 
 /**
  * Input schema for the session-tracker tool.
  *
- * @example
- * ```typescript
- * // Export a session
- * SessionTrackerInputSchema.parse({
- *   action: "export-session",
- *   sessionId: "ses_abc123",
- * })
- *
- * // List all sessions
- * SessionTrackerInputSchema.parse({
- *   action: "list-sessions",
- *   limit: 20,
- * })
- *
- * // Search sessions
- * SessionTrackerInputSchema.parse({
- *   action: "search-sessions",
- *   query: "investigator",
- * })
- * ```
+ * Five actions: export-session, get-status, get-summary, list-sessions, search-sessions.
+ * Backward-compatible with existing action names.
  */
-export const SessionTrackerInputSchema = z.object({
-  /** The action to perform. */
-  action: SessionTrackerActionSchema,
-  /** Session ID (required for export-session). */
-  sessionId: z.string().optional(),
-  /** Search query string (required for search-sessions). */
-  query: z.string().optional(),
-  /** Maximum number of results (default: 20, max: 100). */
-  limit: z.number().min(1).max(100).default(20).optional(),
-})
+export const SessionTrackerInputSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("export-session"),
+    sessionId: safeSessionId,
+    format: z.enum(["markdown", "json"]).optional().default("markdown"),
+  }),
+  z.object({
+    action: z.literal("get-status"),
+    sessionId: safeSessionId,
+  }),
+  z.object({
+    action: z.literal("get-summary"),
+    sessionId: safeSessionId,
+  }),
+  z.object({
+    action: z.literal("list-sessions"),
+    limit: z.number().min(1).max(100).optional().default(20),
+  }),
+  z.object({
+    action: z.literal("search-sessions"),
+    query: z.string().min(1),
+    limit: z.number().min(1).max(100).optional().default(20),
+  }),
+])
 
 /** Inferred type for session-tracker tool input. */
 export type SessionTrackerInput = z.infer<typeof SessionTrackerInputSchema>
+
+// ---------------------------------------------------------------------------
+// Session-hierarchy tool schemas
+// ---------------------------------------------------------------------------
+
+/**
+ * Input schema for the session-hierarchy tool.
+ *
+ * Three actions: get-children, get-parent-chain, get-delegation-depth.
+ */
+export const SessionHierarchyInputSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("get-children"),
+    sessionId: safeSessionId,
+    includeStatus: z.boolean().optional().default(true),
+  }),
+  z.object({
+    action: z.literal("get-parent-chain"),
+    sessionId: safeSessionId,
+  }),
+  z.object({
+    action: z.literal("get-delegation-depth"),
+    sessionId: safeSessionId,
+  }),
+])
+
+/** Inferred type for session-hierarchy tool input. */
+export type SessionHierarchyInput = z.infer<typeof SessionHierarchyInputSchema>
+
+// ---------------------------------------------------------------------------
+// Session-context tool schemas
+// ---------------------------------------------------------------------------
+
+/**
+ * Input schema for the session-context tool.
+ *
+ * Three actions: find-related, cross-reference, synthesize-context.
+ */
+export const SessionContextInputSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("find-related"),
+    sessionId: safeSessionId,
+    maxRelated: z.number().min(1).max(50).optional().default(10),
+  }),
+  z.object({
+    action: z.literal("cross-reference"),
+    sessionId: safeSessionId,
+    query: z.string().min(1).optional(),
+  }),
+  z.object({
+    action: z.literal("synthesize-context"),
+    sessionId: safeSessionId,
+  }),
+])
+
+/** Inferred type for session-context tool input. */
+export type SessionContextInput = z.infer<typeof SessionContextInputSchema>

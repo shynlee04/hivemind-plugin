@@ -92,6 +92,7 @@ permission:
     hm-l2-*: allow
     hm-l3-*: allow
   session-journal-export: allow
+  execute-command: allow
   prompt-skim: allow
   prompt-analyze: allow
   session-patch: ask

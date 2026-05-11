@@ -2985,3 +2985,43 @@ task_id: ses_1e7b63fd5ffeITUoweQVsr73Ew
 }
 ```
 
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_YiTtQ5TUi7tfybeiMX4H3108"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_YLeysBXg52siXeL6lwY98999"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_00_iXdlNgNzQg42mR5paeb52524"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_YXW60S91EPvcfVs09Ll08182"
+}
+```
+
