@@ -215,6 +215,7 @@ export const LEGACY_KEY_MAP: Record<string, string> = {
   documentsLanguage: "documents_and_artifacts_language",
   userExpertLevel: "user_expert_level",
   delegationSystems: "delegation_systems",
+  documentPaths: "document_paths",
 } as const
 
 /**
@@ -266,6 +267,8 @@ export const HivemindConfigsSchema = z
   .object({
     conversation_language: SupportedLanguageSchema.default("en"),
     documents_and_artifacts_language: SupportedLanguageSchema.default("en"),
+    /** List of project-relative paths for document language enforcement. */
+    document_paths: z.array(z.string()).default([".hivemind/planning/"]),
     mode: HivemindModeSchema.default("expert-advisor"),
     user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
     delegation_systems: DelegationSystemsSchema,
