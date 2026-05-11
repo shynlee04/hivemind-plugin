@@ -49,3 +49,14 @@
 - `CP-PTY-04-cross-cutting-shell-integration` wires everything to session/task/journal/hooks/permissions.
 - `SC-PTY-01-read-only-terminal-projection` remains DEFERRED until CP-PTY-01 and Q2 sidecar confirmation.
 - Any routing or sidecar plan that invokes background command, PTY, headless shell, or terminal projection behavior must depend on the CP-PTY artifacts and preserve read-only projection boundaries unless a later phase changes them.
+
+## Current Phase Context
+
+**Active phase (2026-05-11):** Phase 11 — Governance Reconciliation (GOV-01). This phase audits and corrects all .planning/ artifacts to reflect current project reality.  
+**Evidence baseline:** `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md`  
+**What this means for .planning/:** STATE.md has been rewritten to runway-focused structure (~216 lines). PROJECT.md, REQUIREMENTS.md, and ROADMAP.md have been reconciled against live evidence. Historical STATE.md content archived to `.planning/archive/state-history/`.  
+**Key governance baseline files:**
+- `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` — Naming + lineage contracts
+- `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` — Surface ownership
+- `.planning/codebase/ARCHITECTURE.md` — CQRS, 9-surface authority
+- `.planning/codebase/STRUCTURE.md` — File tree conventions
