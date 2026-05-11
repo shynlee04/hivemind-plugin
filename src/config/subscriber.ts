@@ -64,6 +64,25 @@ export function getCachedConfig(): HivemindConfigs {
 }
 
 /**
+ * Reads configs directly from disk, bypassing the in-memory cache.
+ *
+ * Used by hooks that need the current config snapshot (e.g., system prompt
+ * injection on every request) rather than the startup-cached value.
+ *
+ * @param projectRoot - Absolute path to the project root directory.
+ * @returns The parsed Hivemind config from the current disk state.
+ *
+ * @example
+ * ```typescript
+ * // Always reads from disk — picks up config changes without restart.
+ * const fresh = getFreshConfig("/path/to/project")
+ * ```
+ */
+export function getFreshConfig(projectRoot: string): HivemindConfigs {
+  return readConfigs(projectRoot)
+}
+
+/**
  * Invalidates the in-memory config cache. Next `getConfig()` reads from disk.
  *
  * @example

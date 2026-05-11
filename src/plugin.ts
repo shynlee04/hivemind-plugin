@@ -51,7 +51,7 @@ import {
 } from "./task-management/journal/event-tracker/index.js"
 import { SessionTracker } from "./features/session-tracker/index.js"
 
-import { getConfig } from "./config/subscriber.js"
+import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 
@@ -112,7 +112,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
   const sessionIsMainObserverFactory = createSessionIsMainObserver()
 
-  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig, getBehavioralProfile: (sessionId: string) => resolveBehavioralProfile(sessionId, projectDirectory), isMainSession: sessionIsMainObserverFactory.isMainSession }
+  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig, getFreshHivemindConfig: () => getFreshConfig(projectDirectory), getBehavioralProfile: (sessionId: string) => resolveBehavioralProfile(sessionId, projectDirectory), isMainSession: sessionIsMainObserverFactory.isMainSession }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()

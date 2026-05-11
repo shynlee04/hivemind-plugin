@@ -37,6 +37,14 @@ export interface HookDependencies {
   /** Hivemind runtime config — loaded once at plugin init, cached for session lifetime. */
   hivemindConfig?: HivemindConfigs
   /**
+   * Reads fresh Hivemind config from disk on every call.
+   *
+   * Used by system.transform to pick up language/config changes without
+   * requiring a plugin restart. Falls back to `hivemindConfig` (cached)
+   * when not provided in the dependency bundle.
+   */
+  getFreshHivemindConfig?: () => HivemindConfigs
+  /**
    * Resolves the behavioral profile for a session.
    * Lazy — computes on first call, caches for session lifetime.
    * @see D-09, D-10 in CA-02-CONTEXT.md
