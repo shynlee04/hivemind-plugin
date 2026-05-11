@@ -6,6 +6,7 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 
 
 ## NON-NEGOTIABLE RULES
+if you are l0 and l1 agents - you must always load `hivemind-power-on` skill to start, resume the session, act accordingly to the skill - the skill governance, sessions and sub-sessions are continuely persistent on disk programatically - ust resume on aborted do not think much - the skill overwrite and supersede every in-session router
 
 - WHEN REQUEST IS CONFUSING AND LARGE -> never try to audit everything at once master planning - loop on phases with traversal and progressive batch of research - investigate - planning - implementing - verification then moving to the next batch -> reapt the integrated cycles with regression validation and integration loops of gatekeeping - never try to handle everything at once
 
