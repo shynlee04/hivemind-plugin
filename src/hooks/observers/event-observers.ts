@@ -101,13 +101,22 @@ export function createSessionEntryEventObserver(): {
  *
  * The cached boolean is read by the `system.transform` hook via HookDependencies (D-04).
  *
+ * **Timing edge case:** `system.transform` may fire before the `session.created` event
+ * observer has populated the cache. To prevent silent language-injection failure,
+ * `isMainSession` defaults to `true` for uncached sessions. Once the observer processes
+ * the session event, the correct status is stored and subsequent lookups return
+ * the accurate value.
+ *
  * @returns An observer function and an `isMainSession` lookup function.
  */
 export function createSessionIsMainObserver(): {
   observer: (input: { event?: unknown }) => Promise<void>
   isMainSession: (sessionId: string) => boolean
 } {
-  const mainSessionSet = new Set<string>()
+  // Map<sessionId, isMain>. Empty until observer processes session.created events.
+  // Uncached sessions default to true (main) to avoid blocking language injection
+  // when system.transform fires before the event observer runs.
+  const mainSessionCache = new Map<string, boolean>()
 
   const observer = async ({ event }: { event?: unknown }): Promise<void> => {
     const eventType = asString(getNestedValue(event, ["type"]))
@@ -120,13 +129,19 @@ export function createSessionIsMainObserver(): {
     const parentID = getEventParentID(event)
     // Main sessions have NO parentID (property absent / undefined / null)
     // Child/delegated sessions have parentID set by the task tool
-    if (!parentID) {
-      mainSessionSet.add(sessionId)
-    }
+    mainSessionCache.set(sessionId, !parentID)
   }
 
   return {
     observer,
-    isMainSession: (sessionId: string) => mainSessionSet.has(sessionId),
+    isMainSession: (sessionId: string): boolean => {
+      // If the cache has been populated for this session, use the stored value.
+      // Otherwise default to true (main) — handles the timing edge case where
+      // system.transform fires before the session.created event observer runs.
+      if (mainSessionCache.has(sessionId)) {
+        return mainSessionCache.get(sessionId)!
+      }
+      return true // uncached → assume main (enables language injection)
+    },
   }
 }

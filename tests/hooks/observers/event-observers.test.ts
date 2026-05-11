@@ -47,9 +47,13 @@ describe("createSessionIsMainObserver", () => {
     expect(isMainSession("ses_child")).toBe(false)
   })
 
-  it("isMainSession returns false for non-cached session ID", () => {
+  it("isMainSession returns true for uncached session ID (default-to-main)", () => {
     const { isMainSession } = createSessionIsMainObserver()
-    expect(isMainSession("ses_unknown")).toBe(false)
+    // Before ANY events fire, system.transform may call isMainSession.
+    // Must return true to enable language injection (safe default).
+    // Once the observer processes the session.created event, the cache
+    // will have the correct value.
+    expect(isMainSession("ses_unknown")).toBe(true)
   })
 
   it("handles null parentID as main session", async () => {
@@ -60,7 +64,7 @@ describe("createSessionIsMainObserver", () => {
     expect(isMainSession("ses_null_parent")).toBe(true)
   })
 
-  it("ignores non-session.created event types", async () => {
+  it("ignores non-session.created event types — session NOT cached, defaults to true", async () => {
     const { observer, isMainSession } = createSessionIsMainObserver()
     const event = {
       type: "session.deleted",
@@ -69,10 +73,13 @@ describe("createSessionIsMainObserver", () => {
       },
     }
     await observer({ event })
-    expect(isMainSession("ses_other")).toBe(false)
+    // Session was NOT cached (non-session.created event ignored).
+    // Uncached sessions default to true to avoid blocking language injection
+    // when system.transform fires before the event observer runs.
+    expect(isMainSession("ses_other")).toBe(true)
   })
 
-  it("ignores events with no sessionId", async () => {
+  it("ignores events with no sessionId — no cache entry, defaults to true", async () => {
     const { observer, isMainSession } = createSessionIsMainObserver()
     const event = {
       type: "session.created",
@@ -81,7 +88,15 @@ describe("createSessionIsMainObserver", () => {
       },
     }
     await observer({ event })
-    // No sessions should be cached since we couldn't extract an ID
-    expect(isMainSession("")).toBe(false)
+    // No session cached (couldn't extract ID).
+    // Uncached sessions default to true.
+    expect(isMainSession("")).toBe(true)
+  })
+
+  it("returns true for uncached session before any event is processed", () => {
+    const { isMainSession } = createSessionIsMainObserver()
+    // Before ANY events fire, system.transform may call isMainSession.
+    // Must return true to enable language injection (safe default).
+    expect(isMainSession("ses_fresh")).toBe(true)
   })
 })
