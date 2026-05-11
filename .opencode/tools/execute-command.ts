@@ -2,9 +2,15 @@ import { tool } from "@opencode-ai/plugin"
 import { createOpencodeClient } from "@opencode-ai/sdk"
 
 /**
- * Helper to unwrap SDK response objects handling both "fields" and "data" response styles.
- * The SDK default response style wraps data in { data: T, error, request, response }.
- * This extracts the inner data, or returns the value as-is if already unwrapped.
+ * Unwraps SDK response objects in "fields" mode.
+ *
+ * The OpenCode SDK returns `{ data: T, error?, request?, response? }` by default.
+ * This helper extracts the inner `data` field, or returns the value as-is if
+ * it is already an unwrapped shape (e.g. contains an `id` property from a model).
+ *
+ * @template T - The expected data shape inside the wrapper.
+ * @param response - The raw SDK response.
+ * @returns The unwrapped data payload.
  */
 function unwrapData<T>(response: unknown): T {
   if (
@@ -19,165 +25,173 @@ function unwrapData<T>(response: unknown): T {
 }
 
 /**
- * Custom tool for executing OpenCode commands and prompts on child sessions.
- *
- * The core problem this solves: calling `client.session.command()` on the **current**
- * (parent) session queues the command because the session is busy processing this tool.
- * This tool instead creates a CHILD session (linked via parentID), which is idle,
- * so dispatch runs immediately.
+ * Executes a slash command or prompt on an OpenCode session.
  *
  * Two modes:
- * - `dispatch` (default): Runs a command synchronously on a child session and returns
- *   the result. Requires `command` + optional `arguments`.
- * - `fire-and-forget`: Sends a prompt to a child session via `promptAsync` with
- *   `noReply: true` and returns immediately. Uses `prompt` or `command` + `arguments`.
+ * - `dispatch` (sync): runs a command via `client.session.command()` and
+ *   returns the result. Pre-checks session status and returns a clear error
+ *   if the target session is busy.
+ * - `fire-and-forget` (async): sends a prompt via `client.session.promptAsync()`
+ *   with `noReply: true` and returns immediately.
  *
- * When `agent` is omitted, the tool lists all available agents for selection.
+ * When `agent` is omitted, the tool calls `client.app.agents()` and returns the
+ * list of available agents for the caller to select from — no command is
+ * dispatched.
  */
 export default tool({
   description:
-    "Execute a command or prompt on a child session (not the current busy session). " +
-    "Supports two modes: 'dispatch' (sync command execution on child session) and " +
-    "'fire-and-forget' (async prompt dispatch to child session, returns immediately). " +
+    "Execute a slash command or prompt on an OpenCode session. " +
+    "Supports 'dispatch' (sync, runs a command and returns the result) and " +
+    "'fire-and-forget' (async, sends a prompt and returns immediately). " +
     "When no agent is specified, lists available agents for selection.",
+
   args: {
+    command: tool.schema
+      .string()
+      .optional()
+      .describe(
+        "Slash command name to execute (e.g. 'plan', 'gsd'). " +
+          "Do not include a leading slash. Required for dispatch mode.",
+      ),
+
+    arguments: tool.schema
+      .string()
+      .optional()
+      .default("")
+      .describe("Optional arguments to pass to the command."),
+
+    agent: tool.schema
+      .string()
+      .optional()
+      .describe(
+        "Target agent name (e.g. 'hm-l2-executor', 'gsd-planner'). " +
+          "If omitted, the tool lists available agents for selection.",
+      ),
+
     mode: tool.schema
       .enum(["dispatch", "fire-and-forget"])
       .optional()
       .default("dispatch")
       .describe(
-        "Execution mode: 'dispatch' runs a command synchronously on a child session, " +
-          "'fire-and-forget' sends an async prompt and returns immediately",
+        "Execution mode: 'dispatch' runs a command synchronously " +
+          "(requires 'command'), 'fire-and-forget' sends an async prompt " +
+          "and returns immediately.",
       ),
-    command: tool.schema
+
+    sessionId: tool.schema
       .string()
       .optional()
       .describe(
-        "The command name to execute (e.g., 'plan', 'gsd', 'hf-create'). " +
-          "Do not include leading slash. Required for dispatch mode.",
+        "Target session ID. Defaults to the current session. " +
+          "Useful for dispatching to a specific child session.",
       ),
-    arguments: tool.schema
-      .string()
-      .optional()
-      .default("")
-      .describe("Optional arguments to pass to the command (e.g., '--help' or 'build-feature-x')."),
-    prompt: tool.schema
-      .string()
-      .optional()
-      .describe("Text prompt to send (alternative to command, preferred for fire-and-forget mode)."),
-    agent: tool.schema
-      .string()
-      .optional()
-      .describe(
-        "Target agent name (e.g., 'hm-l2-executor', 'gsd-planner'). " +
-          "If omitted, lists available agents for selection.",
-      ),
-    title: tool.schema
-      .string()
-      .optional()
-      .describe("Optional title for the child session (auto-generated if omitted)."),
   },
+
   async execute(
     args: {
-      mode: "dispatch" | "fire-and-forget"
       command?: string
       arguments?: string
-      prompt?: string
       agent?: string
-      title?: string
+      mode: "dispatch" | "fire-and-forget"
+      sessionId?: string
     },
-    context: { sessionID: string; messageID: string; agent: string; directory: string; worktree: string },
+    context: {
+      sessionID: string
+      messageID: string
+      agent: string
+      directory: string
+      worktree: string
+    },
   ): Promise<string> {
     try {
-      // --- Validation ---
-      if (!args.command && !args.prompt) {
-        return JSON.stringify({
-          success: false,
-          error: "Either 'command' or 'prompt' must be provided",
-        })
-      }
+      const client = createOpencodeClient({
+        baseUrl: "http://localhost:4096",
+        directory: context.directory,
+      })
+      const targetSession = args.sessionId ?? context.sessionID
 
-      if (args.mode === "dispatch" && !args.command) {
-        return JSON.stringify({
-          success: false,
-          error: "Command is required for dispatch mode. Use 'prompt' with fire-and-forget mode instead.",
-        })
-      }
-
-      // Create SDK client connected to the local OpenCode server
-      const client = createOpencodeClient()
-
-      // --- Agent selection (when agent is omitted) ---
+      // --- Agent listing (when agent is omitted) ---
       if (!args.agent) {
         const response = await client.app.agents()
-        const agents = unwrapData<Array<{ name: string; description?: string; mode: string }>>(response)
+        const agents = unwrapData<
+          Array<{ name: string; description?: string; mode: string }>
+        >(response)
 
         if (!Array.isArray(agents)) {
           return JSON.stringify({
             success: false,
-            error: "Failed to retrieve agent list",
+            error: "Failed to retrieve agent list — unexpected response shape",
           })
         }
-
-        const agentList = agents.map((a) => ({
-          name: a.name,
-          description: a.description ?? null,
-          mode: a.mode,
-        }))
 
         return JSON.stringify({
           success: false,
           needsAgentSelection: true,
-          agents: agentList,
+          agents: agents.map((a) => ({
+            name: a.name,
+            description: a.description ?? null,
+            mode: a.mode,
+          })),
         })
       }
 
-      // --- Create child session ---
-      const sessionResponse = await client.session.create({
-        body: {
-          parentID: context.sessionID,
-          title:
-            args.title ??
-            `execute-${args.command ?? "prompt"}-${args.mode === "fire-and-forget" ? "async" : "sync"}`,
-        },
-      })
-
-      const childSession = unwrapData<{ id: string }>(sessionResponse)
-      const childSessionId = childSession?.id
-
-      if (!childSessionId) {
+      // --- Validation ---
+      if (args.mode === "dispatch" && !args.command) {
         return JSON.stringify({
           success: false,
-          error: "Failed to create child session — no session ID returned",
+          error: "'command' is required for dispatch mode.",
         })
       }
 
-      // --- Fire-and-forget mode ---
+      if (args.mode === "fire-and-forget" && !args.command && !args.arguments) {
+        return JSON.stringify({
+          success: false,
+          error:
+            "Either 'command' or 'arguments' must be provided for fire-and-forget mode.",
+        })
+      }
+
+      // --- Fire-and-forget (async) ---
       if (args.mode === "fire-and-forget") {
-        const text =
-          args.prompt ??
-          `/${args.command ?? ""} ${args.arguments ?? ""}`.trim()
+        const text = args.command
+          ? `/${args.command} ${args.arguments ?? ""}`.trim()
+          : (args.arguments ?? "")
 
         await client.session.promptAsync({
-          path: { id: childSessionId },
+          path: { id: targetSession },
           body: {
+            parts: [{ type: "text", text }],
             agent: args.agent,
             noReply: true,
-            parts: [{ type: "text", text }],
           },
         })
 
         return JSON.stringify({
           success: true,
           mode: "fire-and-forget",
-          childSessionId,
+          sessionId: targetSession,
           status: "dispatched",
         })
       }
 
-      // --- Dispatch mode (sync command) ---
+      // --- Dispatch (sync) with busy check ---
+      const statusResponse = await client.session.status()
+      const statusData = unwrapData<Record<string, { type: string }>>(
+        statusResponse,
+      )
+      const sessionStatus = statusData?.[targetSession]
+
+      if (sessionStatus?.type === "busy") {
+        return JSON.stringify({
+          success: false,
+          error: `Session "${targetSession}" is currently busy.` +
+            " Wait for it to become idle, or use a different session.",
+          sessionStatus: sessionStatus.type,
+        })
+      }
+
       const commandResponse = await client.session.command({
-        path: { id: childSessionId },
+        path: { id: targetSession },
         body: {
           command: args.command!,
           arguments: args.arguments ?? "",
@@ -186,19 +200,26 @@ export default tool({
       })
 
       const commandResult = unwrapData<{
-        info: { id: string; role: string; modelID: string; providerID: string }
+        info: {
+          id: string
+          role: string
+          modelID: string
+          providerID: string
+        }
         parts: Array<unknown>
       }>(commandResponse)
 
       return JSON.stringify({
         success: true,
         mode: "dispatch",
-        childSessionId,
+        sessionId: targetSession,
         command: args.command,
         arguments: args.arguments ?? "",
         result: {
           info: commandResult?.info ?? null,
-          partCount: Array.isArray(commandResult?.parts) ? commandResult.parts.length : 0,
+          partCount: Array.isArray(commandResult?.parts)
+            ? commandResult.parts.length
+            : 0,
         },
       })
     } catch (error) {
