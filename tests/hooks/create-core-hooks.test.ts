@@ -793,4 +793,148 @@ describe("createCoreHooks", () => {
       expect(system.every((s) => !s.includes("Session intake context:"))).toBe(true)
     })
   })
+
+  // -----------------------------------------------------------------------
+  // BOOT-09: Language Governance Block Injection (D-05, D-07, REQ-01, REQ-02)
+  //
+  // Language block injected at output.system[0] for main sessions only.
+  // Block format: header, CRITICAL:, MUST, override, document paths.
+  // -----------------------------------------------------------------------
+
+  describe("language governance block injection", () => {
+    function createLangHivemindConfig(overrides?: Record<string, unknown>) {
+      return HivemindConfigsSchema.parse({
+        mode: "expert-advisor",
+        user_expert_level: "intermediate-high-level",
+        conversation_language: "en",
+        documents_and_artifacts_language: "en",
+        ...overrides,
+      })
+    }
+
+    function buildDepsWithLang(
+      options: {
+        isMain?: boolean
+        hivemindConfig?: ReturnType<typeof HivemindConfigsSchema.parse>
+      } = {},
+    ): Partial<HookDependencies> {
+      const addIsMain = options.isMain !== undefined
+      return {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig: options.hivemindConfig ?? createLangHivemindConfig(),
+        ...(addIsMain ? { isMainSession: () => options.isMain! } : {}),
+      }
+    }
+
+    it("Test 1: injects language governance block at output.system[0] for main sessions", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_main" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Language Governance ---")
+    })
+
+    it("Test 2: does NOT inject language governance block for child sessions (isMainSession: false)", async () => {
+      const deps = buildDepsWithLang({ isMain: false })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_child" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Governance ---")
+      expect(system[0]).not.toContain("--- Language Governance ---")
+    })
+
+    it("Test 3: language block contains --- Language Governance --- header", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_hdr" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Language Governance ---")
+    })
+
+    it("Test 4: language block contains CRITICAL: prefix", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_crit" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("CRITICAL:")
+    })
+
+    it("Test 5: language block contains MUST respond in en", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_must" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("MUST respond in en")
+    })
+
+    it("Test 6: language block contains Even if the user writes in another language", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_override" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("Even if the user writes in another language")
+    })
+
+    it("Test 7: language block contains document language instruction with paths", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_doc" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("MUST write in")
+      expect(system[0]).toContain(".hivemind/planning/")
+    })
+
+    it("Test 8: changing conversation_language from en to vi changes the injected text", async () => {
+      const config = createLangHivemindConfig({ conversation_language: "vi" })
+      const deps = buildDepsWithLang({ isMain: true, hivemindConfig: config })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_vi" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("MUST respond in vi")
+      expect(system[0]).not.toContain("MUST respond in en")
+    })
+
+    it("Test 9: existing governance block, intake, and behavioral profile are at [1], [2], [3]", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_order" }, output)
+      const system = output.system as string[]
+      expect(system.length).toBe(4) // lang + gov + intake + behavioral
+      expect(system[0]).toContain("--- Language Governance ---")
+      expect(system[1]).toContain("--- Governance ---")
+      expect(system[2]).toContain("Session intake context:")
+      expect(system[3]).toContain("Behavioral profile context:")
+    })
+
+    it("Test 10: no language block when hivemindConfig is undefined", async () => {
+      const deps = buildDepsWithLang({ isMain: true, hivemindConfig: undefined })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_no_config" }, output)
+      const system = output.system as string[]
+      expect(system.every((s) => !s.includes("--- Language Governance ---"))).toBe(true)
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(true)
+      expect(system.some((s) => s.includes("Behavioral profile context:"))).toBe(true)
+    })
+
+    it("Test 11: no language block when isMainSession is undefined (defensive)", async () => {
+      const deps = buildDepsWithLang({}) // no isMainSession
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_no_is_main" }, output)
+      const system = output.system as string[]
+      expect(system.every((s) => !s.includes("--- Language Governance ---"))).toBe(true)
+    })
+  })
 })
