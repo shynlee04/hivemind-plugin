@@ -13,7 +13,7 @@ import { taskState } from "./shared/state.js"
 import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
 import { createSessionHooks } from "./hooks/lifecycle/session-hooks.js"
 import { createToolGuardHooks } from "./hooks/guards/tool-guard-hooks.js"
-import { createDelegationEventObserver, createSessionEntryEventObserver, createSessionJourneyEventObserver } from "./hooks/observers/event-observers.js"
+import { createDelegationEventObserver, createSessionEntryEventObserver, createSessionJourneyEventObserver, createSessionIsMainObserver } from "./hooks/observers/event-observers.js"
 import { createToolExecuteAfterHook } from "./hooks/transforms/tool-after-composer.js"
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
@@ -110,8 +110,9 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   })
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
+  const sessionIsMainObserverFactory = createSessionIsMainObserver()
 
-  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig, getBehavioralProfile: (sessionId: string) => resolveBehavioralProfile(sessionId, projectDirectory) }
+  const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig, getBehavioralProfile: (sessionId: string) => resolveBehavioralProfile(sessionId, projectDirectory), isMainSession: sessionIsMainObserverFactory.isMainSession }
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()
@@ -121,6 +122,13 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       await sessionEntryObserverFactory.observer({ event })
     } catch {
       // Best-effort intake classification: never block canonical event handling.
+    }
+  }
+  const consumeIsMainSessionFact = async ({ event }: { event?: unknown }) => {
+    try {
+      await sessionIsMainObserverFactory.observer({ event })
+    } catch {
+      // Best-effort isMainSession caching: never block canonical event handling.
     }
   }
   const consumeDelegationFact = async ({ event }: { event?: unknown }) => {
@@ -165,12 +173,12 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     }
   }
 
-  const toolGuardHooks = createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy })
+  const toolGuardHooks = createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy, hivemindConfig })
 
   return {
     ...createCoreHooks({
       ...deps,
-      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeJourneyFact, consumeSessionTrackerFact, consumeSessionEntryFact],
+      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeJourneyFact, consumeSessionTrackerFact, consumeSessionEntryFact, consumeIsMainSessionFact],
     }),
     ...sessionReadHooks,
     ...toolGuardHooks,
