@@ -54,7 +54,7 @@ describe("EventCapture", () => {
     } as unknown as SessionIndexWriter
 
     eventCapture = new EventCapture({
-      client: {} as any,
+      client: { app: { log: vi.fn() } } as any,
       sessionWriter,
       childWriter,
       sessionIndexWriter,
@@ -198,7 +198,7 @@ describe("EventCapture", () => {
     })
 
     it("should log warning on unknown event type", async () => {
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+      const client = (eventCapture as any).client
 
       await eventCapture.handleSessionEvent({
         eventType: "session.unknown_type",
@@ -206,8 +206,7 @@ describe("EventCapture", () => {
         event: {},
       })
 
-      expect(warnSpy).toHaveBeenCalled()
-      warnSpy.mockRestore()
+      expect(client.app.log).toHaveBeenCalled()
     })
   })
 })

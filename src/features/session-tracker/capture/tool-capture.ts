@@ -20,6 +20,7 @@ import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { ChildSessionRecord } from "../types.js"
 import { isValidSessionID } from "../types.js"
+import type { OpenCodeClient } from "../../../shared/session-api.js"
 
 // ---------------------------------------------------------------------------
 // Hook input/output shapes
@@ -51,6 +52,7 @@ interface ToolOutput {
  * and avoid capturing sensitive or excessive data.
  */
 export class ToolCapture {
+  private client: OpenCodeClient
   private sessionWriter: SessionWriter
   private childWriter: ChildWriter
   private sessionIndexWriter: SessionIndexWriter
@@ -58,17 +60,20 @@ export class ToolCapture {
 
   /**
    * @param deps - Injected dependencies.
+   * @param deps.client - The OpenCode SDK client for logging.
    * @param deps.sessionWriter - The main session writer for .md output.
    * @param deps.childWriter - The child session writer for .json delegation files.
    * @param deps.sessionIndexWriter - The session-local index writer.
    * @param deps.projectIndexWriter - The project-level index writer.
    */
   constructor(deps: {
+    client: OpenCodeClient
     sessionWriter: SessionWriter
     childWriter: ChildWriter
     sessionIndexWriter: SessionIndexWriter
     projectIndexWriter: ProjectIndexWriter
   }) {
+    this.client = deps.client
     this.sessionWriter = deps.sessionWriter
     this.childWriter = deps.childWriter
     this.sessionIndexWriter = deps.sessionIndexWriter
@@ -99,9 +104,13 @@ export class ToolCapture {
         input.args !== undefined &&
         (input.args === null || Array.isArray(input.args) || typeof input.args !== "object")
       ) {
-        console.warn(
-          `[Harness] Session tracker: invalid args shape for tool "${input.tool}" — skipping`,
-        )
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: invalid args shape for tool "${input.tool}" — skipping`,
+          },
+        })
         return
       }
 
@@ -120,10 +129,14 @@ export class ToolCapture {
           break
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: tool.execute.after handler failed:",
-        err,
-      )
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: tool.execute.after handler failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 

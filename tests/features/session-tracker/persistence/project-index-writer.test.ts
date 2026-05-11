@@ -44,7 +44,7 @@ describe("ProjectIndexWriter", () => {
     tmpDir = resolve(tmpdir(), `hivemind-test-${randomUUID()}`)
     await mkdir(tmpDir, { recursive: true })
 
-    writer = new ProjectIndexWriter({ projectRoot: tmpDir })
+    writer = new ProjectIndexWriter({ projectRoot: tmpDir, client: { app: { log: vi.fn() } } as any })
   })
 
   afterEach(async () => {

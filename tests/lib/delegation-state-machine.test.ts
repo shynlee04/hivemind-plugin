@@ -51,7 +51,7 @@ function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
 function makeStateMachine(
   overrides: { clearExternalTimers?: (id: string) => void } = {},
 ): DelegationStateMachine {
-  const client = {} as any
+  const client = { app: { log: vi.fn() } } as any
   return new DelegationStateMachine({
     client,
     clearExternalTimers: overrides.clearExternalTimers,
@@ -425,14 +425,16 @@ describe("DelegationStateMachine", () => {
     })
 
     it("should log the transition to stderr", () => {
-      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
       sm.registerDelegation(makeDelegation({ status: "running" }), false)
       sm.transitionToTerminal("del_1", "completed")
 
-      expect(errorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("[Harness] Delegation del_1 transitioned: running → completed"),
+      expect((sm as any).client.app.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            message: expect.stringContaining("[Harness] Delegation del_1 transitioned: running → completed"),
+          }),
+        }),
       )
-      errorSpy.mockRestore()
     })
   })
 

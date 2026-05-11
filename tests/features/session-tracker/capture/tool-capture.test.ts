@@ -65,6 +65,7 @@ describe("ToolCapture", () => {
     } as unknown as ProjectIndexWriter
 
     toolCapture = new ToolCapture({
+      client: { app: { log: vi.fn() } } as any,
       sessionWriter,
       childWriter,
       sessionIndexWriter,

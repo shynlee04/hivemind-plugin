@@ -43,7 +43,7 @@ describe("MessageCapture", () => {
       transformChildUserMessage: vi.fn(),
     } as unknown as AgentTransform
 
-    messageCapture = new MessageCapture({ sessionWriter, agentTransform })
+    messageCapture = new MessageCapture({ sessionWriter, agentTransform, client: { app: { log: vi.fn() } } as any, projectRoot: "/tmp" })
   })
 
   describe("user messages", () => {

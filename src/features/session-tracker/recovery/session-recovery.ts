@@ -99,10 +99,14 @@ export class SessionRecovery {
         map.set(sessionID, entry as ProjectSessionEntry)
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session recovery: failed to initialize session map:",
-        err,
-      )
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session recovery: failed to initialize session map",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
 
     return map
@@ -152,16 +156,24 @@ export class SessionRecovery {
           }
         } catch {
           // SDK call may fail if session doesn't exist or client is unavailable
-          console.warn(
-            `[Harness] Session recovery: SDK messages unavailable for "${sessionID}"`,
-          )
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session recovery: SDK messages unavailable for "${sessionID}"`,
+            },
+          })
         }
       }
     } catch (err) {
-      console.warn(
-        `[Harness] Session recovery: reconsumption failed for "${sessionID}":`,
-        err,
-      )
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session recovery: reconsumption failed for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
 
     return result
@@ -191,16 +203,24 @@ export class SessionRecovery {
             context.messages = messages
           }
         } catch {
-          console.warn(
-            `[Harness] Session recovery: SDK messages unavailable for "${sessionID}"`,
-          )
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session recovery: SDK messages unavailable for "${sessionID}"`,
+            },
+          })
         }
       }
     } catch (err) {
-      console.warn(
-        `[Harness] Session recovery: rebuild failed for "${sessionID}":`,
-        err,
-      )
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session recovery: rebuild failed for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
 
     return context
@@ -268,9 +288,13 @@ export class SessionRecovery {
   private async readSessionFile(sessionID: string): Promise<string | null> {
     try {
       if (!isValidSessionID(sessionID)) {
-        console.warn(
-          `[Harness] Session recovery: invalid sessionID rejected: "${sessionID}"`,
-        )
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session recovery: invalid sessionID rejected: "${sessionID}"`,
+          },
+        })
         return null
       }
       const filePath = safeSessionPath(this.projectRoot, sessionID, `${sessionID}.md`)

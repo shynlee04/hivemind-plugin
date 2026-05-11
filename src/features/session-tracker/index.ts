@@ -144,7 +144,7 @@ export class SessionTracker {
     } catch (err) {
       // If any step fails, remove from bootstrapped set so retry is possible
       this.bootstrappedSessions.delete(sessionID)
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -203,7 +203,7 @@ export class SessionTracker {
         }
       }
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -318,7 +318,7 @@ export class SessionTracker {
         )
       }
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -357,7 +357,7 @@ export class SessionTracker {
         )
       }
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -383,7 +383,7 @@ export class SessionTracker {
       this.sessionWriter = new SessionWriter({ projectRoot: this.projectRoot })
       this.childWriter = new ChildWriter({ projectRoot: this.projectRoot })
       this.sessionIndexWriter = new SessionIndexWriter({ projectRoot: this.projectRoot })
-      this.projectIndexWriter = new ProjectIndexWriter({ projectRoot: this.projectRoot })
+      this.projectIndexWriter = new ProjectIndexWriter({ client: this.client, projectRoot: this.projectRoot })
 
       // Create transform utility
       this.agentTransform = new AgentTransform()
@@ -397,11 +397,13 @@ export class SessionTracker {
         projectIndexWriter: this.projectIndexWriter,
       })
       this.messageCapture = new MessageCapture({
+        client: this.client,
         sessionWriter: this.sessionWriter,
         agentTransform: this.agentTransform,
         projectRoot: this.projectRoot,
       })
       this.toolCapture = new ToolCapture({
+        client: this.client,
         sessionWriter: this.sessionWriter,
         childWriter: this.childWriter,
         sessionIndexWriter: this.sessionIndexWriter,
@@ -421,7 +423,7 @@ export class SessionTracker {
       // Clean up orphaned .tmp.* files from interrupted writes
       await this.cleanupOrphanedTmpFiles()
 
-      void this.client.tui.showToast({
+      void this.client.tui?.showToast?.({
         body: {
           title: "Session Tracker",
           message: "Session tracker initialized",
@@ -429,7 +431,7 @@ export class SessionTracker {
         },
       })
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -454,7 +456,7 @@ export class SessionTracker {
       // Legacy cleanup: remove contaminated event-tracker state files (REQ-ST-13)
       await this.removeLegacyStateFiles()
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -526,7 +528,7 @@ export class SessionTracker {
         // Legacy directory may not exist — that's fine
       }
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",

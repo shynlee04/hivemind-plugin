@@ -44,7 +44,7 @@ describe("ProjectIndexWriter recovery (DEFECT-02)", () => {
     tmpDir = resolve(tmpdir(), `hivemind-test-${randomUUID()}`)
     await mkdir(tmpDir, { recursive: true })
 
-    writer = new ProjectIndexWriter({ projectRoot: tmpDir })
+    writer = new ProjectIndexWriter({ projectRoot: tmpDir, client: { app: { log: vi.fn() } } as any })
   })
 
   afterEach(async () => {
@@ -53,9 +53,8 @@ describe("ProjectIndexWriter recovery (DEFECT-02)", () => {
 
   describe("stale queue auto-recovery", () => {
     it("should log warning and reset queue when writes are stalled >5 minutes", async () => {
-      const consoleWarnSpy = vi
-        .spyOn(console, "warn")
-        .mockImplementation(() => {})
+      const clientLogSpy = vi.fn()
+      ;(writer as any).client.app.log = clientLogSpy
 
       // Initialize normally and verify first write succeeds
       await writer.initializeIndex()
@@ -76,9 +75,9 @@ describe("ProjectIndexWriter recovery (DEFECT-02)", () => {
         "ses_test12345abcdefg0.md",
       )
 
-      // Verify the stale warning was logged
-      const staleWarnings = consoleWarnSpy.mock.calls.filter((call) =>
-        call[0].includes("STALE"),
+      // Verify the stale warning was logged via client
+      const staleWarnings = clientLogSpy.mock.calls.filter((call: any) =>
+        call[0].body.message.includes("STALE"),
       )
       expect(staleWarnings.length).toBeGreaterThanOrEqual(1)
 
@@ -90,8 +89,6 @@ describe("ProjectIndexWriter recovery (DEFECT-02)", () => {
       // Verify queue is healthy again
       const healthAfter = await writer.getQueueHealth()
       expect(healthAfter.stalled).toBe(false)
-
-      consoleWarnSpy.mockRestore()
     })
 
     it("should report queue health correctly when writes are recent", async () => {
@@ -104,9 +101,8 @@ describe("ProjectIndexWriter recovery (DEFECT-02)", () => {
     })
 
     it("should allow writes after stale recovery without further warnings", async () => {
-      const consoleWarnSpy = vi
-        .spyOn(console, "warn")
-        .mockImplementation(() => {})
+      const clientLogSpy = vi.fn()
+      ;(writer as any).client.app.log = clientLogSpy
 
       // Artificially age the queue
       ;(writer as any).lastWriteTime = Date.now() - 10 * 60 * 1000
@@ -119,15 +115,13 @@ describe("ProjectIndexWriter recovery (DEFECT-02)", () => {
       await writer.addSession("ses_bbb", "ses_bbb/", "ses_bbb.md")
 
       // Count only STALE warnings after first write
-      const staleWarnings = consoleWarnSpy.mock.calls.filter(
-        (call) => call[0].includes("STALE"),
+      const staleWarnings = clientLogSpy.mock.calls.filter((call: any) =>
+        call[0].body.message.includes("STALE"),
       )
 
       // The stale warning should fire exactly once (during the first write)
       // The second write should proceed normally
       expect(mockAtomicWriteJson).toHaveBeenCalledTimes(1)
-
-      consoleWarnSpy.mockRestore()
     })
   })
 

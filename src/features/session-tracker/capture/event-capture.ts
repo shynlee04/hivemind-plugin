@@ -88,7 +88,7 @@ export class EventCapture {
       // Validate sessionID matches its own sanitized form — reject any
       // sessionID that would be altered by sanitization (path traversal guard).
       if (event.sessionID !== sanitizeSessionID(event.sessionID)) {
-        void this.client.app.log({
+        void this.client.app?.log?.({
           body: {
             service: "session-tracker",
             level: "warn",
@@ -109,7 +109,7 @@ export class EventCapture {
         "session.updated",
       ]
       if (!validEventTypes.includes(event.eventType)) {
-        void this.client.app.log({
+        void this.client.app?.log?.({
           body: {
             service: "session-tracker",
             level: "warn",
@@ -137,7 +137,7 @@ export class EventCapture {
           await this.handleSessionCompacted(event.sessionID, event.event as Record<string, unknown>)
           break
         default:
-          void this.client.app.log({
+          void this.client.app?.log?.({
             body: {
               service: "session-tracker",
               level: "warn",
@@ -146,7 +146,7 @@ export class EventCapture {
           })
       }
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -192,7 +192,7 @@ export class EventCapture {
       }
       // Child sessions are handled by tool-capture when task tool fires
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -224,7 +224,7 @@ export class EventCapture {
         status: "idle",
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -255,7 +255,7 @@ export class EventCapture {
         status: "completed",
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -286,7 +286,7 @@ export class EventCapture {
         status: "error",
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
-      void this.client.app.log({
+      void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -315,10 +315,14 @@ export class EventCapture {
         `active delegations and pending work at time of compaction.\n`
       await this.sessionWriter.appendCompactionBlock(sessionID, section)
     } catch (err) {
-      console.warn(
-        `[Harness] Session tracker: compaction capture failed for "${sessionID}":`,
-        err,
-      )
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: compaction capture failed for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 }

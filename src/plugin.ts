@@ -99,7 +99,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   void sessionTracker.initialize().then(() => {
     return sessionTracker.cleanup()
   }).catch((err) => {
-    void client.app.log({
+    void client.app?.log?.({
       body: {
         service: "session-tracker",
         level: "warn",
@@ -154,7 +154,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         await sessionTracker.handleSessionEvent({ eventType, sessionID, event: ev })
       }
     } catch (err) {
-      void client.app.log({
+      void client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -183,7 +183,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           output as Parameters<typeof sessionTracker.handleChatMessage>[1],
         )
       } catch (err) {
-        void client.app.log({
+        void client.app?.log?.({
           body: {
             service: "session-tracker",
             level: "warn",

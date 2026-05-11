@@ -21,6 +21,7 @@ import type {
   ProjectContinuityIndex,
   ProjectSessionEntry,
 } from "../types.js"
+import type { OpenCodeClient } from "../../../shared/session-api.js"
 
 // ---------------------------------------------------------------------------
 // ProjectIndexWriter class
@@ -34,6 +35,7 @@ import type {
  * when up to 6 concurrent sessions write to the same index file.
  */
 export class ProjectIndexWriter {
+  private client: OpenCodeClient
   private projectRoot: string
 
   /**
@@ -56,9 +58,11 @@ export class ProjectIndexWriter {
 
   /**
    * @param deps - Injected dependencies.
+   * @param deps.client - The OpenCode SDK client for logging.
    * @param deps.projectRoot - Absolute path to the project root.
    */
-  constructor(deps: { projectRoot: string }) {
+  constructor(deps: { client: OpenCodeClient; projectRoot: string }) {
+    this.client = deps.client
     this.projectRoot = deps.projectRoot
   }
 
@@ -242,10 +246,15 @@ export class ProjectIndexWriter {
    */
   private detectStaleQueue(): void {
     if (Date.now() - this.lastWriteTime > ProjectIndexWriter.STALE_QUEUE_MS) {
-      console.warn(
-        `[Harness] Session tracker: project index write queue appears STALE ` +
-          `— last successful write was more than 5 minutes ago. Resetting queue.`,
-      )
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message:
+            "[Harness] Session tracker: project index write queue appears STALE " +
+            "— last successful write was more than 5 minutes ago. Resetting queue.",
+        },
+      })
       this.writeQueue = Promise.resolve()
     }
   }
@@ -286,10 +295,14 @@ export class ProjectIndexWriter {
         this.lastWriteTime = Date.now()
       })
       .catch((err) => {
-        console.warn(
-          "[Harness] Session tracker: project index write failed:",
-          err,
-        )
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: "[Harness] Session tracker: project index write failed",
+            extra: { error: err instanceof Error ? err.message : String(err) },
+          },
+        })
       })
       .then(() => {})
 

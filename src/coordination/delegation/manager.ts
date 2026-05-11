@@ -436,9 +436,13 @@ export class DelegationManager {
       // unvalidated agent acceptance rather than blocking all delegation.
       const message = error instanceof Error ? error.message : String(error)
       if (message.includes("expected string, received undefined")) {
-        console.warn(
-          `[Harness] Agent list validation skipped — server returned agents with missing fields. Proceeding with unvalidated agent "${agent}".`,
-        )
+        void this.client.app?.log?.({
+          body: {
+            service: "delegation",
+            level: "warn",
+            message: `[Harness] Agent list validation skipped — server returned agents with missing fields. Proceeding with unvalidated agent "${agent}".`,
+          },
+        })
         return enrichAgentFromPrimitives({ name: agent }, projectRoot)
       }
       throw error

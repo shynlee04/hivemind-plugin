@@ -17,6 +17,7 @@ import type { AgentTransform } from "../transform/agent-transform.js"
 import { isValidSessionID } from "../types.js"
 import { safeSessionPath } from "../persistence/atomic-write.js"
 import { readFile } from "node:fs/promises"
+import type { OpenCodeClient } from "../../../shared/session-api.js"
 
 // ---------------------------------------------------------------------------
 // Hook input/output shapes
@@ -57,6 +58,7 @@ interface ChatMessageOutput {
  * for persistence and {@link AgentTransform} for metadata extraction.
  */
 export class MessageCapture {
+  private client: OpenCodeClient
   private sessionWriter: SessionWriter
   private agentTransform: AgentTransform
   private projectRoot: string
@@ -69,15 +71,18 @@ export class MessageCapture {
 
   /**
    * @param deps - Injected dependencies.
+   * @param deps.client - The OpenCode SDK client for logging.
    * @param deps.sessionWriter - The session writer for persistence.
    * @param deps.agentTransform - The agent metadata transform utility.
    * @param deps.projectRoot - Absolute path to the project root for file reads.
    */
   constructor(deps: {
+    client: OpenCodeClient
     sessionWriter: SessionWriter
     agentTransform: AgentTransform
     projectRoot: string
   }) {
+    this.client = deps.client
     this.sessionWriter = deps.sessionWriter
     this.agentTransform = deps.agentTransform
     this.projectRoot = deps.projectRoot
@@ -111,18 +116,26 @@ export class MessageCapture {
 
       // Validate parts is an array before processing — malformed hook payload guard.
       if (!Array.isArray(output.parts)) {
-        console.warn(
-          "[Harness] Session tracker: chat.message output.parts is not an array — skipping",
-        )
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: "[Harness] Session tracker: chat.message output.parts is not an array — skipping",
+          },
+        })
         return
       }
 
       // Validate role is a recognized value.
       const validRoles = ["user", "assistant"]
       if (!validRoles.includes(output.message.role)) {
-        console.warn(
-          `[Harness] Session tracker: unexpected message role "${output.message.role}" — skipping`,
-        )
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: unexpected message role "${output.message.role}" — skipping`,
+          },
+        })
         return
       }
 
@@ -134,10 +147,14 @@ export class MessageCapture {
         await this.handleAssistantMessage(input, output.parts)
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: chat.message handler failed:",
-        err,
-      )
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: chat.message handler failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 

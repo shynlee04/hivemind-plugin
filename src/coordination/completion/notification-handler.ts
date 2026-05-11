@@ -229,9 +229,13 @@ export async function notifyDelegationTerminal(
     await sendPrompt(client, delegation.parentSessionId, { noReply: true, parts: [{ type: "text", text: message }] })
   } catch (error) {
     queuePendingNotification(delegation.parentSessionId, task)
-    console.error(
-      `[Harness] Failed to notify parent session ${delegation.parentSessionId} of delegation ${delegation.id} terminal state: ${error instanceof Error ? error.message : String(error)}`
-    )
+    void client.app?.log?.({
+      body: {
+        service: "delegation",
+        level: "error",
+        message: `[Harness] Failed to notify parent session ${delegation.parentSessionId} of delegation ${delegation.id} terminal state: ${error instanceof Error ? error.message : String(error)}`,
+      },
+    })
   }
 }
 

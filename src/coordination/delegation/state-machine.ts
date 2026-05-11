@@ -279,7 +279,13 @@ export class DelegationStateMachine {
     this.cleanupTracking(delegationId, delegation.childSessionId)
 
     // R-OBS-01: Log state transitions with [Harness] prefix
-    console.error(`[Harness] Delegation ${delegationId} transitioned: ${previousStatus} → ${newState}${error ? ` (error: ${error})` : ""}`)
+    void this.client.app?.log?.({
+      body: {
+        service: "delegation",
+        level: "info",
+        message: `[Harness] Delegation ${delegationId} transitioned: ${previousStatus} → ${newState}${error ? ` (error: ${error})` : ""}`,
+      },
+    })
 
     // R-LC-01: Schedule grace period cleanup for terminal delegations
     this.scheduleGracePeriodCleanup(delegationId)
