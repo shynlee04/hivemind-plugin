@@ -17,6 +17,8 @@
 import type { OpenCodeClient } from "../../../shared/session-api.js"
 import { getSession } from "../../../shared/session-api.js"
 import type { SessionWriter } from "../persistence/session-writer.js"
+import type { ChildWriter } from "../persistence/child-writer.js"
+import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
@@ -34,21 +36,29 @@ import { isValidSessionID } from "../types.js"
 export class EventCapture {
   private client: OpenCodeClient
   private sessionWriter: SessionWriter
+  private childWriter: ChildWriter
+  private sessionIndexWriter: SessionIndexWriter
   private projectIndexWriter: ProjectIndexWriter | undefined
 
   /**
    * @param deps - Injected dependencies.
    * @param deps.client - The OpenCode SDK client for session queries.
    * @param deps.sessionWriter - The session writer for persistence.
+   * @param deps.childWriter - The child writer for child session .json updates (DEFECT-08).
+   * @param deps.sessionIndexWriter - The session index writer for hierarchy updates (DEFECT-08).
    * @param deps.projectIndexWriter - Optional project index writer for session registration.
    */
   constructor(deps: {
     client: OpenCodeClient
     sessionWriter: SessionWriter
+    childWriter: ChildWriter
+    sessionIndexWriter: SessionIndexWriter
     projectIndexWriter?: ProjectIndexWriter
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
+    this.childWriter = deps.childWriter
+    this.sessionIndexWriter = deps.sessionIndexWriter
     this.projectIndexWriter = deps.projectIndexWriter
   }
 
@@ -172,9 +182,21 @@ export class EventCapture {
 
   /**
    * Handles `session.idle` — updates the session status to "idle".
+   * Child sessions are routed through childWriter + sessionIndexWriter (DEFECT-08).
    */
   private async handleSessionIdle(sessionID: string): Promise<void> {
     try {
+      // Check if this is a child session
+      const session = await getSession(this.client, sessionID)
+      const parentID = session.parentID as string | null | undefined
+      if (parentID !== null && parentID !== undefined) {
+        // Child session — update .json via childWriter
+        await this.childWriter.updateChildStatus(parentID, sessionID, "idle")
+        // Also update session-local index hierarchy
+        await this.sessionIndexWriter.updateChildStatus(parentID, sessionID, "idle")
+        return
+      }
+      // Main session — existing behavior
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "idle",
       } as Partial<import("../types.js").SessionRecord>)
@@ -188,9 +210,20 @@ export class EventCapture {
 
   /**
    * Handles `session.deleted` — marks the session status as "completed".
+   * Child sessions are routed through childWriter + sessionIndexWriter (DEFECT-08).
    */
   private async handleSessionDeleted(sessionID: string): Promise<void> {
     try {
+      // Check if this is a child session
+      const session = await getSession(this.client, sessionID)
+      const parentID = session.parentID as string | null | undefined
+      if (parentID !== null && parentID !== undefined) {
+        // Child session — update .json via childWriter
+        await this.childWriter.updateChildStatus(parentID, sessionID, "completed")
+        await this.sessionIndexWriter.updateChildStatus(parentID, sessionID, "completed")
+        return
+      }
+      // Main session — existing behavior
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "completed",
       } as Partial<import("../types.js").SessionRecord>)
@@ -204,9 +237,20 @@ export class EventCapture {
 
   /**
    * Handles `session.error` — marks the session status as "error".
+   * Child sessions are routed through childWriter + sessionIndexWriter (DEFECT-08).
    */
   private async handleSessionError(sessionID: string): Promise<void> {
     try {
+      // Check if this is a child session
+      const session = await getSession(this.client, sessionID)
+      const parentID = session.parentID as string | null | undefined
+      if (parentID !== null && parentID !== undefined) {
+        // Child session — update .json via childWriter
+        await this.childWriter.updateChildStatus(parentID, sessionID, "error")
+        await this.sessionIndexWriter.updateChildStatus(parentID, sessionID, "error")
+        return
+      }
+      // Main session — existing behavior
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "error",
       } as Partial<import("../types.js").SessionRecord>)

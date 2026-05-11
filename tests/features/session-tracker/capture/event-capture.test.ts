@@ -7,6 +7,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { EventCapture } from "../../../../src/features/session-tracker/capture/event-capture.js"
 import { SessionWriter } from "../../../../src/features/session-tracker/persistence/session-writer.js"
+import { ChildWriter } from "../../../../src/features/session-tracker/persistence/child-writer.js"
+import { SessionIndexWriter } from "../../../../src/features/session-tracker/persistence/session-index-writer.js"
 
 // Mock the session-api module
 vi.mock("../../../../src/shared/session-api.js", () => ({
@@ -19,9 +21,12 @@ const mockGetSession = vi.mocked(getSession)
 describe("EventCapture", () => {
   let eventCapture: EventCapture
   let sessionWriter: SessionWriter
+  let childWriter: ChildWriter
+  let sessionIndexWriter: SessionIndexWriter
   let mockCreateSessionDir: ReturnType<typeof vi.fn>
   let mockInitializeSessionFile: ReturnType<typeof vi.fn>
   let mockUpdateFrontmatter: ReturnType<typeof vi.fn>
+  let mockUpdateChildStatus: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -29,6 +34,7 @@ describe("EventCapture", () => {
     mockCreateSessionDir = vi.fn().mockResolvedValue("/fake/path")
     mockInitializeSessionFile = vi.fn().mockResolvedValue(undefined)
     mockUpdateFrontmatter = vi.fn().mockResolvedValue(undefined)
+    mockUpdateChildStatus = vi.fn().mockResolvedValue(undefined)
 
     sessionWriter = {
       createSessionDir: mockCreateSessionDir,
@@ -39,9 +45,19 @@ describe("EventCapture", () => {
       appendToolBlock: vi.fn(),
     } as unknown as SessionWriter
 
+    childWriter = {
+      updateChildStatus: mockUpdateChildStatus,
+    } as unknown as ChildWriter
+
+    sessionIndexWriter = {
+      updateChildStatus: mockUpdateChildStatus,
+    } as unknown as SessionIndexWriter
+
     eventCapture = new EventCapture({
       client: {} as any,
       sessionWriter,
+      childWriter,
+      sessionIndexWriter,
     })
   })
 
@@ -92,7 +108,14 @@ describe("EventCapture", () => {
   })
 
   describe("session.idle", () => {
-    it("should update session status to idle", async () => {
+    it("should update session status to idle for main session", async () => {
+      mockGetSession.mockResolvedValue({
+        id: "ses_test12345abcdefg0",
+        parentID: null,
+        title: "Test Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+
       await eventCapture.handleSessionEvent({
         eventType: "session.idle",
         sessionID: "ses_test12345abcdefg0",
@@ -107,7 +130,14 @@ describe("EventCapture", () => {
   })
 
   describe("session.deleted", () => {
-    it("should mark session status as completed", async () => {
+    it("should mark session status as completed for main session", async () => {
+      mockGetSession.mockResolvedValue({
+        id: "ses_test12345abcdefg0",
+        parentID: null,
+        title: "Test Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+
       await eventCapture.handleSessionEvent({
         eventType: "session.deleted",
         sessionID: "ses_test12345abcdefg0",
@@ -122,7 +152,14 @@ describe("EventCapture", () => {
   })
 
   describe("session.error", () => {
-    it("should mark session status as error", async () => {
+    it("should mark session status as error for main session", async () => {
+      mockGetSession.mockResolvedValue({
+        id: "ses_test12345abcdefg0",
+        parentID: null,
+        title: "Test Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+
       await eventCapture.handleSessionEvent({
         eventType: "session.error",
         sessionID: "ses_test12345abcdefg0",

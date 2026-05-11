@@ -167,6 +167,8 @@ export class SessionTracker {
     event: unknown
   }): Promise<void> {
     try {
+      // Lazy bootstrap: ensure session directory + index exist before handling events (DEFECT-09)
+      await this.ensureSessionReady(event.sessionID)
       if (this.eventCapture) {
         await this.eventCapture.handleSessionEvent(event)
       }
@@ -277,6 +279,8 @@ export class SessionTracker {
       this.eventCapture = new EventCapture({
         client: this.client,
         sessionWriter: this.sessionWriter,
+        childWriter: this.childWriter,
+        sessionIndexWriter: this.sessionIndexWriter,
         projectIndexWriter: this.projectIndexWriter,
       })
       this.messageCapture = new MessageCapture({

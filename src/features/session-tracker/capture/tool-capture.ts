@@ -248,6 +248,18 @@ export class ToolCapture {
         childMetadata,
       )
 
+      // Record initial delegation_spawn turn (DEFECT-03)
+      await this.childWriter.appendChildTurn(
+        input.sessionID,
+        childSessionID,
+        {
+          turn: 0,
+          actor: subagentType || "unknown",
+          content: description || "Task delegation initiated",
+          tools: [],
+        },
+      )
+
       // Update session-local index
       await this.sessionIndexWriter.addChild(
         input.sessionID,
