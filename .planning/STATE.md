@@ -2,33 +2,33 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: SR-10 complete — source planes remediated and verified after aborted SR-4 retry
-status: unknown
-last_updated: "2026-05-11T09:58:00.151Z"
+current_phase: Phase 12 — CP-ST-01 Remediation (planned — 3 plans across 3 waves)
+status: planned
+last_updated: "2026-05-12T00:00:00.000Z"
 progress:
   total_phases: 31
   completed_phases: 1
-  total_plans: 10
+  total_plans: 13
   completed_plans: 9
-  percent: 90
+  percent: 69
 ---
 
 <!-- generated-by: gsd-doc-writer -->
 
 # Hivemind — State
 
-**Last updated:** 2026-05-08
-**Last trigger:** SR remediation completed — corrected source-plane restructuring
+**Last updated:** 2026-05-12
+**Last trigger:** Phase 12 planning complete — 3 PLAN.md files created for CP-ST-01 remediation (13 tasks, 3 waves, 14 source defects addressed)
 
 ---
 
 ## Current Status
 
-**Active workstreams:** Structure Restructuring (WS-SR) complete + Shell/PTY Control-Plane Runway (CP-PTY-00 complete) + Meta-Concept Migration (WS-MCM — MCM-01/MCM-02 complete)
-**Current phase:** SR-10 complete — source planes remediated and verified after aborted SR-4 retry
-**Blocked:** No for WS-SR — corrected architecture decision accepted; CP-PTY/MCM downstream work can resume from roadmap gates
-**Health:** 🟢 SR-04 through SR-10 completed with `npm run typecheck`, `npm test`, and `npm run build` passing; known Vitest hoist warnings remain non-fatal
-**Control mode:** Managed autonomous loop — WS-SR exit evidence recorded; next work should return to CP-PTY/MCM/f-04 dependency order
+**Active phase:** 12 — CP-ST-01 Remediation. Fix 20+ writer engine defects, redesign tool surface per CUSTOM-TOOLS-CRITERIA, address all 14 review findings from CP-ST-01-REVIEW.md.
+**Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 1978 tests (2 failures). Vitest hoist warnings remain non-fatal.
+**Phase 12 status:** 🔵 PLANNED — 3 plans, 13 tasks, 3 waves. RESEARCH.md resolved with L2 disk evidence. Ready for execution.
+
+Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
 
 ## Project Reference
 
