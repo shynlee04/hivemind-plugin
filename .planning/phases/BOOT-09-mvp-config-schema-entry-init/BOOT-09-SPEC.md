@@ -55,20 +55,21 @@ No new hook registration is needed — only logic changes within existing hooks.
 The `conversation_language` config field must produce an enforceable language instruction in the `system.transform` hook output, injected BEFORE the user prompt, affecting both the thinking block and the response. The instruction must ONLY be injected into main (non-delegated) sessions.
 
 - **Current:** `language.conversation` value appears as decorative metadata text in the behavioral profile block. No enforcement. Hook fires on all sessions including child/delegated.
-- **Target:** `system.transform` hook (core-hooks.ts:69) injects a language governance block into `output.system[]` for main sessions only. The block contains an imperative instruction: "You MUST respond in LANGUAGE. Even if the user writes in another language, you MUST respond in LANGUAGE." Child/delegated sessions skip this injection entirely.
+- **Target:** `system.transform` hook (core-hooks.ts:69) injects a language governance block at `output.system[0]` (BEFORE the existing governance block) for main sessions only. The block contains an imperative instruction with strong framing. Child/delegated sessions skip this injection entirely. Child session detection uses OpenCode's native `parentID` field on session records (cached at session entry), NOT Hivemind's DelegationManager.
 - **Acceptance:**
-  1. `system.transform` output.system contains language governance block when sessionID has no parent delegation
-  2. `system.transform` output.system does NOT contain language governance block when sessionID has a parent delegation record (child session)
+  1. `system.transform` output.system[0] contains language governance block for main sessions (no parentID)
+  2. `system.transform` output.system does NOT contain language governance block for child/delegated sessions (has parentID)
   3. Changing config from `conversation_language: "en"` to `conversation_language: "vi"` changes the injected instruction text
-  4. Instruction uses imperative tone ("MUST respond in"), not advisory ("consider using")
-  5. All existing governance block, intake context, and behavioral profile injections remain unchanged
+  4. Instruction uses imperative tone with header ("--- Language Governance ---"), "CRITICAL:" prefix, and "MUST respond in" language
+  5. Instruction includes override behavior explicitly ("Even if the user writes in another language...")
+  6. All existing governance block, intake context, and behavioral profile injections remain unchanged
 
 ### Requirement 2: conversation_language overrides user's writing language
 
 The language enforcement must instruct the agent to override the user's writing language. If the user writes in English but config says Vietnamese, the agent must respond in Vietnamese.
 
 - **Current:** No language override exists — agent responds in whatever language the user writes in.
-- **Target:** The `system.transform` language block includes explicit override instruction: "even if the user writes in a different language, you MUST respond in LANGUAGE."
+- **Target:** The `system.transform` language block includes explicit override instruction with strong framing: a `--- Language Governance ---` header, `CRITICAL:` urgency prefix, and explicit override: "You MUST respond in LANGUAGE. Even if the user writes in another language, you MUST override and respond in LANGUAGE."
 - **Acceptance:**
   1. Instruction explicitly states override behavior ("even if the user writes in [other language], you MUST respond in LANGUAGE")
   2. Instruction is injected into output.system at position 0 (before user messages) — currently governance-block.ts injects at position 0, so language must be part of or adjacent to governance block
@@ -80,24 +81,29 @@ Output `.md` files must be written in the configured `documents_and_artifacts_la
 
 - **Current:** No document language enforcement exists. `.md` files are written in whatever language the agent chooses.
 - **Target:**
-  1. A `document_paths` field is added to `HivemindConfigsSchema` (or an existing field is configured) containing an array of base paths relative to `.hivemind/planning/`
-  2. Each path supports recursive subdirectory globbing
-  3. When the agent writes `.md` files at configured paths, the language instruction is included in system context
+  1. A `document_paths` field is added to `HivemindConfigsSchema` as a flat array of strings with default `[".hivemind/planning/"]`
+  2. Each path supports recursive subdirectory globbing; paths are resolved relative to project root
+  3. **Two-layer enforcement:**
+     - Layer 1: System prompt injection — combined Language Governance block includes document language instruction referencing configured paths
+     - Layer 2: Tool guard — `tool.execute.before` hook injects a path-specific language reminder when Write/Edit/apply_patch tools target `.md` files under `document_paths`
   4. Paths are freely configurable via `configs.json` — validated by Zod schema
 - **Acceptance:**
-  1. `document_paths` (or equivalent field) exists in schema as array of strings
+  1. `document_paths` field exists in schema as `z.array(z.string()).default([".hivemind/planning/"])`
   2. Default paths include `.hivemind/planning/` with recursive subdirectories
   3. Language instruction appears in system context for sessions where document writing tools are relevant
-  4. The language can be overridden per-path or per-document (deferred — must at minimum have global enforcement)
+  4. `tool.execute.before` injects language reminder when Write/Edit/apply_patch targets a path under `document_paths`
+  5. The language can be overridden per-path or per-document (deferred — must at minimum have global enforcement)
 
 ## Boundaries
 
 **In scope:**
 - `conversation_language` → imperative instruction injected via `system.transform` hook — main sessions only
-- `documents_and_artifacts_language` → language instruction for document writing at configured paths
-- `document_paths` schema field for configurable output paths
-- Child session exclusion logic in `system.transform` handler
-- Integration with existing governance block injection point
+- `documents_and_artifacts_language` → language instruction for document writing at configured paths (system prompt + tool guard)
+- `document_paths` schema field (`z.array(z.string()).default([".hivemind/planning/"])`) in HivemindConfigsSchema
+- Child session exclusion logic via OpenCode native `parentID` (cached at session entry) — NOT via DelegationManager
+- Language block injected at `output.system[0]` before governance block
+- Tool guard layer: `tool.execute.before` language reminder for Write/Edit/apply_patch at `document_paths`
+- Integration with existing `system.transform` handler and `tool.execute.before` hook
 
 **Out of scope:**
 - Mode enforcement (`delegationMode`, `guardrailLevel`, `toolAccessPattern`, `skillFilter`) — deferred to WS-4
@@ -113,6 +119,7 @@ Output `.md` files must be written in the configured `documents_and_artifacts_la
 - Must use existing `system.transform` hook — no new hook registration in plugin.ts
 - Must NOT modify the governance block format (downstream tests rely on exact string matching)
 - Must NOT inject language instructions into child/delegated sessions (automated work should be language-agnostic)
+- Child session detection uses OpenCode native `parentID` field (cached). NOT Hivemind's DelegationManager — native `task` tool sessions are managed by OpenCode runtime, not DelegationManager
 - Config schema remains backward-compatible with v2.0.0
 - No new npm dependencies
 - All existing tests must pass
@@ -124,10 +131,11 @@ Output `.md` files must be written in the configured `documents_and_artifacts_la
 - [ ] Language instruction uses imperative tone ("MUST respond in LANGUAGE")
 - [ ] Language instruction includes override behavior ("even if user writes in other language")
 - [ ] Changing `conversation_language` in config changes injected instruction text
-- [ ] `document_paths` field added to HivemindConfigsSchema (array of strings with defaults)
-- [ ] Documents language instruction appears in system prompt for sessions at configured paths
+- [ ] `document_paths` field added to HivemindConfigsSchema as `z.array(z.string()).default([".hivemind/planning/"])`
+- [ ] Documents language instruction appears in system prompt for main sessions (combined in Language Governance block)
+- [ ] `tool.execute.before` injects language reminder when Write/Edit/apply_patch targets `.md` file under `document_paths`
 - [ ] `npm run typecheck` passes
-- [ ] All existing tests pass (governance-block, behavioral-profile, core-hooks test suites)
+- [ ] All existing tests pass (governance-block, behavioral-profile, core-hooks, tool-guard test suites)
 
 ## Ambiguity Report
 
