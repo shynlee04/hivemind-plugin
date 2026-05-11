@@ -632,3 +632,358 @@ Nothing works I have run build and nolanguage injection though it must consume a
 }
 ```
 
+
+---
+sessionID: ses_1e6ff88f4ffeRtk94qECvennWM
+created: 2026-05-11T23:18:51.176Z
+updated: 2026-05-11T23:18:51.176Z
+parentSessionID: null
+delegationDepth: 0
+children: []
+continuityIndex: session-continuity.json
+status: active
+---
+
+## USER (turn 1)
+
+why my language input is vi but output as zh
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/governance-block.ts"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_00_6PUPBS8p82paIjp1O1GT5902"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/behavioral-profile/resolve-behavioral-profile.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/behavioral-profile/profiles.ts"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_00_A2VIG9BSZcwpAHgwMSj30940"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/session-entry/language-resolution.ts"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_jTzsdeiMII6qEktaOB1n6130"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_ribveh5c8VCKm1L0PDtp0490"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_nSPLYsIvGE84V16FLcej9755"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/behavioral-profile/resolve-behavioral-profile.ts"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_t0UVCzqP3cSuJ7VeDuTu1306"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_mqMMog4qBiuY4AkXt2vZ7938"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_LtocXzANezA652nCUfaY6944"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/routing/behavioral-profile/resolve-behavioral-profile.ts"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_00_pZCxuoTZzoESN2H8DviU9259"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_ZTB1rvScSvG4vfrAYmzs3794"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_pKvGjy8kXt2SY8WY56jY4745"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_5cXLzMgVK82CPQjGEJVu9956"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_JK8r2LJcxHVlEsV8CRVx3887"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_UYJ9UHOJYEzMrXNX46p84312"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/behavioral-profile/resolve-behavioral-profile.test.ts"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_DCe0Mmxw2KtaVSzc541d3732"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_00_aDZnHR2LKz9zmcKU7v183581"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_8WUEtoMVUAP1pJ4P5kLW8420"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_AHvcbk43zJyxfCV6Sg2Y1608"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_4M0xugBmHETJXIJ3jD3r3502"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "call_00_d1MKFarqWKo9mOPCMJaE7682"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_HcXgl4mqlWC86dStAuRx8654"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/behavioral-profile/resolve-behavioral-profile.test.ts"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_89QUuoPdDAVfuhMGPBEw5007"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/behavioral-profile/resolve-behavioral-profile.test.ts"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_bNPjr7lcil9aJRAm8XmS8679"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_hZ6VWp5yvs4gtBfjMCE68473"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_sqGuZCT6eDtKKyOx65Sq3093"
+}
+```
+

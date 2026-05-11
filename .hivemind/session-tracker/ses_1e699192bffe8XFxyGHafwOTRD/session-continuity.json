@@ -1,0 +1,38 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e699192bffe8XFxyGHafwOTRD",
+  "lastUpdated": "2026-05-11T23:41:47.900Z",
+  "hierarchy": {
+    "root": "ses_1e699192bffe8XFxyGHafwOTRD",
+    "children": {
+      "ses_1e6982267ffevj4eGbJAuvvBB5": {
+        "file": "ses_1e6982267ffevj4eGbJAuvvBB5.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e697f76affeKzV47aMNvVmnsu": {
+        "file": "ses_1e697f76affeKzV47aMNvVmnsu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e697c7e5ffeTFya4PzOcmS8yl": {
+        "file": "ses_1e697c7e5ffeTFya4PzOcmS8yl.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 0,
+  "toolSummary": {
+    "skill": 3,
+    "session-tracker": 1,
+    "read": 1,
+    "task": 3
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "sessionID": "ses_1e6982267ffevj4eGbJAuvvBB5",
+  "parentSessionID": "ses_1e699192bffe8XFxyGHafwOTRD",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Đọc tài liệu CP-ST-01 SPEC",
+    "subagentType": "hm-l2-scout"
+  },
+  "created": "2026-05-11T23:41:29.593Z",
+  "updated": "2026-05-11T23:41:29.765Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-scout",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-scout",
+      "content": "Đọc tài liệu CP-ST-01 SPEC",
+      "tools": []
+    }
+  ],
+  "children": []
+}

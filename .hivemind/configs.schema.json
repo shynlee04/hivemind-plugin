@@ -61,7 +61,7 @@
       ]
     },
     "user_expert_level": {
-      "default": "clumsy-vibecoder",
+      "default": "intermediate-high-level",
       "type": "string",
       "enum": [
         "clumsy-vibecoder",

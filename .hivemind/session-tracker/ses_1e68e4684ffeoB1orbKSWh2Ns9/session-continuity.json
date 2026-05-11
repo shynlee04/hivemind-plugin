@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e68e4684ffeoB1orbKSWh2Ns9",
+  "lastUpdated": "2026-05-11T23:57:11.447Z",
+  "hierarchy": {
+    "root": "ses_1e68e4684ffeoB1orbKSWh2Ns9",
+    "children": {
+      "ses_1e68af2fcffeSdlsgnVaIP2Wd3": {
+        "file": "ses_1e68af2fcffeSdlsgnVaIP2Wd3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 0,
+  "toolSummary": {
+    "skill": 6,
+    "session-tracker": 1,
+    "hivemind-trajectory": 1,
+    "hivemind-pressure": 1,
+    "question": 3,
+    "glob": 2,
+    "read": 10,
+    "task": 1
+  }
+}
