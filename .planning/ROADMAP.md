@@ -62,7 +62,7 @@ Original "CRUD Ownership Modules + Lifecycle Verification" was premature — bui
 | CA-04.1 | **Bootstrap CLI + Primitives Recovery** | D-CRUD-01: `npx hivemind init` creates `.hivemind/` + `.opencode/` structure. Postinstall restores primitives. Legacy alias: `npx opencode-harness init`. Fixes the "delete and lose everything" gap. |
 | CA-04.2 | **Config Consumer Runtime Wiring** | D-BIND-03: Config fields must have verified consumers. `conversation_language` is traced as wired in L5 config traceability; `delegation_systems` remains without a verified runtime consumer. Fix or explicitly defer the remaining config → behavior gaps. |
 | CA-04.3 | **State Directory Ownership Modules** | D-CRUD-05: Each `.hivemind/` subdirectory gets typed module. Tiered by mutation need (7 CRUD, 7 append, 6 read-only). Only AFTER bootstrap exists and tools write state. |
-| CA-04.4 | **Lifecycle Audit + Gate Criteria Synthesis** | Synthesize gate-l3-lifecycle-integration references/ from ARCHITECTURE.md. Audit all 34 src/lib modules. Fix only CA-04 CRUD-owner violations. |
+| CA-04.4 | **Lifecycle Audit + Gate Criteria Synthesis** | Synthesize gate-l3-lifecycle-integration references/ from ARCHITECTURE.md. Audit all src/ modules (post-SR restructuring planes). Fix only CA-04 CRUD-owner violations. |
 
 ### Option 3 — Sector Governance Foundation (Docs-Only Route)
 
@@ -272,17 +272,19 @@ OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries
 
 | Phase | Title | Status | Depends On | Key Improvements |
 |-------|-------|--------|------------|------------------|
-| SR-0 | Preparation (safety net) | ✅ COMPLETE | — | Baseline branch and safety checks completed before restructuring |
-| SR-1 | Leaf Modules → `src/shared/` | ✅ COMPLETE | SR-0 | Leaf modules moved to `src/shared/`; import compatibility verified |
-| SR-2 | Persistence/Journal → `src/task-management/` | ✅ COMPLETE | SR-1 | Persistence, journal, recovery, trajectory, and lifecycle surfaces moved |
-| SR-3 | Delegation/Concurrency → `src/coordination/` | ✅ COMPLETE | SR-1 | Delegation, completion, command delegation, SDK delegation, concurrency, and spawner surfaces moved |
-| SR-4 | Features → `src/features/` | ✅ COMPLETE | SR-2, SR-3 | Corrected mapping: standalone features only; command engine and config workflow excluded |
-| SR-5 | Config → `src/config/` | ✅ COMPLETE | SR-1 | Config subscriber/compiler/workflow moved to config realm |
-| SR-6 | Routing → `src/routing/` | ✅ COMPLETE | SR-1 | Session entry, behavioral profile, and command engine moved to routing plane |
-| SR-7 | Hooks Reorganization | ✅ COMPLETE | SR-4 | Hooks reorganized by lifecycle, guards, observers, transforms, and composition |
-| SR-8 | Tools Reorganization | ✅ COMPLETE | SR-4 | Tools categorized by delegation, session, config, hivemind, and prompt domains |
-| SR-9 | Plugin Composition Root Update | ✅ COMPLETE | SR-7, SR-8 | `src/plugin.ts` imports updated; `src/plugin/` intentionally not created by SR remediation decision |
-| SR-10 | Cleanup + AGENTS.md Updates | ✅ COMPLETE | SR-9 | `src/lib/` removed; sector/module AGENTS.md added; typecheck/tests/build passed |
+| SR-0 | Preparation (safety net) | ✅ COMPLETE [UNVERIFIED] | — | Baseline branch and safety checks completed before restructuring |
+| SR-1 | Leaf Modules → `src/shared/` | ✅ COMPLETE [UNVERIFIED] | SR-0 | Leaf modules moved to `src/shared/`; import compatibility verified |
+| SR-2 | Persistence/Journal → `src/task-management/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Persistence, journal, recovery, trajectory, and lifecycle surfaces moved |
+| SR-3 | Delegation/Concurrency → `src/coordination/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Delegation, completion, command delegation, SDK delegation, concurrency, and spawner surfaces moved |
+| SR-4 | Features → `src/features/` | ✅ COMPLETE [UNVERIFIED] | SR-2, SR-3 | Corrected mapping: standalone features only; command engine and config workflow excluded |
+| SR-5 | Config → `src/config/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Config subscriber/compiler/workflow moved to config realm |
+| SR-6 | Routing → `src/routing/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Session entry, behavioral profile, and command engine moved to routing plane |
+| SR-7 | Hooks Reorganization | ✅ COMPLETE [UNVERIFIED] | SR-4 | Hooks reorganized by lifecycle, guards, observers, transforms, and composition |
+| SR-8 | Tools Reorganization | ✅ COMPLETE [UNVERIFIED] | SR-4 | Tools categorized by delegation, session, config, hivemind, and prompt domains |
+| SR-9 | Plugin Composition Root Update | ✅ COMPLETE [UNVERIFIED] | SR-7, SR-8 | `src/plugin.ts` imports updated; `src/plugin/` intentionally not created by SR remediation decision |
+| SR-10 | Cleanup + AGENTS.md Updates | ✅ COMPLETE [UNVERIFIED] | SR-9 | `src/lib/` removed; sector/module AGENTS.md added; typecheck/tests/build passed |
+
+**[UNVERIFIED] note:** SR phases lack SUMMARY.md evidence in their phase directories (per 11-TRUTH-MATRIX.md Phase Evidence Audit). Structural work confirmed complete via git history and typecheck/build/test passes. SUMMARY.md documentation for SR phases is deferred.
 
 ### Target Structure
 
