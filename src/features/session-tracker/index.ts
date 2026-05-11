@@ -144,10 +144,14 @@ export class SessionTracker {
     } catch (err) {
       // If any step fails, remove from bootstrapped set so retry is possible
       this.bootstrappedSessions.delete(sessionID)
-      console.warn(
-        `[Harness] Session tracker: lazy bootstrap failed for "${sessionID}":`,
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: lazy bootstrap failed for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -199,10 +203,14 @@ export class SessionTracker {
         }
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: event handler failed:",
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: event handler failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -310,10 +318,14 @@ export class SessionTracker {
         )
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: chat.message handler failed:",
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: chat.message handler failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -345,10 +357,14 @@ export class SessionTracker {
         )
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: tool.execute.after handler failed:",
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: tool.execute.after handler failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -405,12 +421,22 @@ export class SessionTracker {
       // Clean up orphaned .tmp.* files from interrupted writes
       await this.cleanupOrphanedTmpFiles()
 
-      console.log("[Harness] Session tracker: initialized")
+      void this.client.tui.showToast({
+        body: {
+          title: "Session Tracker",
+          message: "Session tracker initialized",
+          variant: "info",
+        },
+      })
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: initialization failed:",
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: initialization failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -428,10 +454,14 @@ export class SessionTracker {
       // Legacy cleanup: remove contaminated event-tracker state files (REQ-ST-13)
       await this.removeLegacyStateFiles()
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: cleanup failed:",
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: cleanup failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -496,10 +526,14 @@ export class SessionTracker {
         // Legacy directory may not exist — that's fine
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: legacy cleanup failed:",
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: legacy cleanup failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 }

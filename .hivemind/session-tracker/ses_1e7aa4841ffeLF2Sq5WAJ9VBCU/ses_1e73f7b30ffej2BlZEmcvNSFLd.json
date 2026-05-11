@@ -1,0 +1,27 @@
+{
+  "sessionID": "ses_1e73f7b30ffej2BlZEmcvNSFLd",
+  "parentSessionID": "ses_1e7aa4841ffeLF2Sq5WAJ9VBCU",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Debug session tui-harness-leak",
+    "subagentType": "gsd-debug-session-manager"
+  },
+  "created": "2026-05-11T20:57:40.017Z",
+  "updated": "2026-05-11T20:57:40.028Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-debug-session-manager",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-debug-session-manager",
+      "content": "Debug session tui-harness-leak",
+      "tools": []
+    }
+  ],
+  "children": []
+}

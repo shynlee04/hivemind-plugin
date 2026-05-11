@@ -88,9 +88,13 @@ export class EventCapture {
       // Validate sessionID matches its own sanitized form — reject any
       // sessionID that would be altered by sanitization (path traversal guard).
       if (event.sessionID !== sanitizeSessionID(event.sessionID)) {
-        console.warn(
-          `[Harness] Session tracker: sessionID contains unsafe characters: "${event.sessionID}"`,
-        )
+        void this.client.app.log({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: sessionID contains unsafe characters: "${event.sessionID}"`,
+          },
+        })
         return
       }
 
@@ -105,9 +109,13 @@ export class EventCapture {
         "session.updated",
       ]
       if (!validEventTypes.includes(event.eventType)) {
-        console.warn(
-          `[Harness] Session tracker: unexpected event type "${event.eventType}", expected one of: ${validEventTypes.join(", ")}`,
-        )
+        void this.client.app.log({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: unexpected event type "${event.eventType}", expected one of: ${validEventTypes.join(", ")}`,
+          },
+        })
         // Continue for unrecognized types — they may carry unknown but harmless events.
         // Don't return; log is sufficient for observability.
       }
@@ -129,15 +137,23 @@ export class EventCapture {
           await this.handleSessionCompacted(event.sessionID, event.event as Record<string, unknown>)
           break
         default:
-          console.warn(
-            `[Harness] Session tracker: unknown event type "${event.eventType}"`,
-          )
+          void this.client.app.log({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: unknown event type "${event.eventType}"`,
+            },
+          })
       }
     } catch (err) {
-      console.warn(
-        "[Harness] Session tracker: event handler failed:",
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: event handler failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -176,10 +192,14 @@ export class EventCapture {
       }
       // Child sessions are handled by tool-capture when task tool fires
     } catch (err) {
-      console.warn(
-        `[Harness] Session tracker: failed to handle session.created for "${sessionID}":`,
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: failed to handle session.created for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -204,10 +224,14 @@ export class EventCapture {
         status: "idle",
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
-      console.warn(
-        `[Harness] Session tracker: failed to handle session.idle for "${sessionID}":`,
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: failed to handle session.idle for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -231,10 +255,14 @@ export class EventCapture {
         status: "completed",
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
-      console.warn(
-        `[Harness] Session tracker: failed to handle session.deleted for "${sessionID}":`,
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: failed to handle session.deleted for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -258,10 +286,14 @@ export class EventCapture {
         status: "error",
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
-      console.warn(
-        `[Harness] Session tracker: failed to handle session.error for "${sessionID}":`,
-        err,
-      )
+      void this.client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: failed to handle session.error for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 

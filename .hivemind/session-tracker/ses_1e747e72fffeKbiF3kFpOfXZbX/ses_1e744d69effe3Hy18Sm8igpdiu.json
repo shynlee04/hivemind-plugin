@@ -1,0 +1,27 @@
+{
+  "sessionID": "ses_1e744d69effe3Hy18Sm8igpdiu",
+  "parentSessionID": "ses_1e747e72fffeKbiF3kFpOfXZbX",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Research config consumers across lineages",
+    "subagentType": "hm-l2-investigator"
+  },
+  "created": "2026-05-11T20:33:08.142Z",
+  "updated": "2026-05-11T20:33:08.157Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-investigator",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-investigator",
+      "content": "Research config consumers across lineages",
+      "tools": []
+    }
+  ],
+  "children": []
+}

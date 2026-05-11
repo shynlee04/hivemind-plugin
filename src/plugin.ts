@@ -99,7 +99,14 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   void sessionTracker.initialize().then(() => {
     return sessionTracker.cleanup()
   }).catch((err) => {
-    console.warn("[Harness] Session tracker: init+cleanup failed:", err)
+    void client.app.log({
+      body: {
+        service: "session-tracker",
+        level: "warn",
+        message: "[Harness] Session tracker: init+cleanup failed",
+        extra: { error: err instanceof Error ? err.message : String(err) },
+      },
+    })
   })
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
@@ -147,7 +154,14 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         await sessionTracker.handleSessionEvent({ eventType, sessionID, event: ev })
       }
     } catch (err) {
-      console.warn("[Harness] Session tracker event observer failed:", err)
+      void client.app.log({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker event observer failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 
@@ -169,7 +183,14 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           output as Parameters<typeof sessionTracker.handleChatMessage>[1],
         )
       } catch (err) {
-        console.warn("[Harness] Session tracker chat.message failed:", err)
+        void client.app.log({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: "[Harness] Session tracker chat.message failed",
+            extra: { error: err instanceof Error ? err.message : String(err) },
+          },
+        })
       }
     },
     tool: {

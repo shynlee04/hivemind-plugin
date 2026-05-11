@@ -1,0 +1,27 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e7260f6cffetka5v1qoZZ1xFC",
+  "lastUpdated": "2026-05-11T21:28:34.606Z",
+  "hierarchy": {
+    "root": "ses_1e7260f6cffetka5v1qoZZ1xFC",
+    "children": {}
+  },
+  "turnCount": 0,
+  "toolSummary": {
+    "session-tracker": 1,
+    "skill": 3,
+    "glob": 15,
+    "read": 32,
+    "grep": 5,
+    "question": 16,
+    "context7_resolve-library-id": 1,
+    "deepwiki_ask_question": 4,
+    "context7_query-docs": 2,
+    "gitmcp_search_github_com_code": 3,
+    "deepwiki_read_wiki_structure": 1,
+    "edit": 9,
+    "write": 2,
+    "bash": 2,
+    "todowrite": 3
+  }
+}

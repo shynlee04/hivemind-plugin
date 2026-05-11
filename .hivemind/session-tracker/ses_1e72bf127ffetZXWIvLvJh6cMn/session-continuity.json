@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e72bf127ffetZXWIvLvJh6cMn",
+  "lastUpdated": "2026-05-11T20:58:31.526Z",
+  "hierarchy": {
+    "root": "ses_1e72bf127ffetZXWIvLvJh6cMn",
+    "children": {}
+  },
+  "turnCount": 0,
+  "toolSummary": {
+    "skill": 3,
+    "glob": 5,
+    "read": 14,
+    "grep": 6
+  }
+}

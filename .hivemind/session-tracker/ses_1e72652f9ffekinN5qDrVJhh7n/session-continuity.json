@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e72652f9ffekinN5qDrVJhh7n",
+  "lastUpdated": "2026-05-11T21:25:17.299Z",
+  "hierarchy": {
+    "root": "ses_1e72652f9ffekinN5qDrVJhh7n",
+    "children": {}
+  },
+  "turnCount": 0,
+  "toolSummary": {
+    "read": 29,
+    "deepwiki_read_wiki_structure": 1,
+    "deepwiki_ask_question": 4,
+    "grep": 13,
+    "zread_search_doc": 1,
+    "zread_read_file": 1,
+    "session-patch": 1,
+    "edit": 27,
+    "bash": 10,
+    "write": 2
+  }
+}

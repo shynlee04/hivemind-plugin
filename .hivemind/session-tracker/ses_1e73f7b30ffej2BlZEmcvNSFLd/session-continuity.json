@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e73f7b30ffej2BlZEmcvNSFLd",
+  "lastUpdated": "2026-05-11T20:57:40.010Z",
+  "hierarchy": {
+    "root": "ses_1e73f7b30ffej2BlZEmcvNSFLd",
+    "children": {
+      "ses_1e73ec639ffe4khW3a0qVQqB9T": {
+        "file": "ses_1e73ec639ffe4khW3a0qVQqB9T.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 0,
+  "toolSummary": {
+    "bash": 1,
+    "read": 1,
+    "task": 1
+  }
+}
