@@ -30,17 +30,22 @@ allowed-tools:
 
 # Hivemind Power-On — Session Governance
 
-## 7 IRON LAWS
+## IRON LAWS — READ BEFORE YOU THINK
+
+**ABORTED ≠ CANCELLED. ABORTED = DISCONNECTED. CONTEXT IS INTACT ON DISK. RESUME WITH EXACT ID.**
 
 ```
-1. NEVER start new session when aborted exists → use EXACT task_id
-2. NEVER repeat prompt when resuming → context is preserved  
+1. IF session-tracker shows ANY active/aborted child delegation → RESUME IT.
+   DO NOT THINK. DO NOT DECIDE. DO NOT CREATE NEW. task(task_id="<EXISTING ID>")
+2. NEVER repeat prompt when resuming → context is preserved on disk
 3. NEVER L0→L2 dispatch → always L0→L1→L2
 4. NEVER skip quality gate triad → lifecycle→spec→evidence in order
 5. NEVER load >3 skills at once → context budget is shared
 6. NEVER read full files when grep/offset works → line-aware reading
-7. ALWAYS use session-tracker to find aborted sessions before starting fresh
+7. L0 resumes L1 → L1 resumes L2 → L2 continues. Cascade ALWAYS flows down.
 ```
+
+**The session-tracker IS the authority. If it says a delegation exists, the delegation exists. Its ID is the ONLY valid task_id.**
 
 ## ROUTING TABLE
 
@@ -48,7 +53,7 @@ allowed-tools:
 |--------|----------|-------|
 | `/hf-create`, `/hf-audit`, `/hf-stack`, agent/skill/command creation | → hf-lineage, `hf-l1-coordinator` | [ref-01 §2] |
 | `/plan`, `/ultrawork`, `/gsd-*`, feature/bug/architecture work | → hm-lineage, `hm-l1-coordinator` | [ref-01 §3] |
-| Disconnect recovery, session resume | → RESUME protocol | [ref-02 §1] |
+| Disconnect recovery, session resume (ABORTED ≠ CANCELLED) | → MECHANICAL RESUME — no thinking, just execute | [ref-02 §1] |
 | Context compact/purge recovery | → SURVIVAL protocol | [ref-03 §1] |
 | L0→L1→L2 delegation chain dispatch | → DELEGATION protocol | [ref-04 §1] |
 | Quality gate needed on child output | → GATE TRIAD | [ref-05 §1] |
