@@ -2991,3 +2991,63 @@ The output should answer: "What does the researcher need to investigate? What ch
 }
 ```
 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_yEJY2Aa9sYAYJ8Z5Chvz8530"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_vlpnufDVlY6DCDOgQVqt0976"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_ET_8hc8ry2Aeac9qmx2JhRb3920"
+}
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "call_00_nGIAWAYjwdbzPZk8I6Wz4637"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_2TA8sWe8fmTdIJoZH88k3928"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_1wlztkeBgKJhPOsgVNe09187"
+}
+```
+

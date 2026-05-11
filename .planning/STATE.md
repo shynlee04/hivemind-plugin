@@ -142,7 +142,7 @@ These archives preserve the full history. Git history also preserves the pre-rew
 
 **Progress:** Plan 01 (truth matrix generation) — COMPLETE. Plan 02 (STATE.md rewrite) — IN PROGRESS.  
 **Verified in this plan:** All STATE.md numeric claims matched against 11-TRUTH-MATRIX.md live evidence. Stale numbers corrected: plugin LOC 447→242, test count 1767→1978, test files 125→149, skill dirs 123→125, .hivemind dirs 19→11, AGENTS.md files 9→7, progress percent 73→32.  
-**Removed claims:** `messages-transform.ts` dead code (confirmed DELETED per S-07), `src/lib/` directory (confirmed removed per P-04), "12 stale modules" (unverifiable), component delivery table (replaced with paragraph per D-10).  
+**Removed claims:** Dead code file claims (confirmed deleted per S-07), `src/lib/` directory (confirmed removed per P-04), "12 stale modules" (unverifiable), component delivery table (replaced with paragraph per D-10).  
 **Remaining work:** PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and 7 sector AGENTS.md audits against live evidence — to be completed in Phase 11 Plans 03 through 06.
 
 

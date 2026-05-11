@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e8826b7fffe6rpXbScJR18btU",
+  "parentSessionID": "ses_1e97a18f0ffe4tz4GJcaLAfmC3",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "BATCH4+5: Execution+Context profiles",
+    "subagentType": "hm-l1-coordinator"
+  },
+  "created": "2026-05-11T15:06:31.309Z",
+  "updated": "2026-05-11T15:06:31.309Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

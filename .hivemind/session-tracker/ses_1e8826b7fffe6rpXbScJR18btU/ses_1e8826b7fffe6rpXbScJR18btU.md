@@ -1745,3 +1745,20 @@ task_id: ses_1e87c15e1ffevNJSYw6ys0t1Iv
 task_id: ses_1e8744c03ffef7qSYUdfiUGKOd
 ```
 
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Rewrite hm-l2-analyst agent",
+  "subagent_type": "hm-l2-general",
+  "task_id": "ses_1e874979effeZClm2OM1CKyf68"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e874979effeZClm2OM1CKyf68
+```
+

@@ -1621,3 +1621,20 @@ please resume from the session above I got disconnected
 }
 ```
 
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "BATCH4+5: Execution+Context profiles",
+  "subagent_type": "hm-l1-coordinator",
+  "task_id": "ses_1e8826b7fffe6rpXbScJR18btU"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1e8826b7fffe6rpXbScJR18btU
+```
+
