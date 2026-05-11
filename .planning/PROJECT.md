@@ -20,10 +20,10 @@ Hivemind is a **runtime composition engine** for OpenCode — an npm package (`h
 - ✓ 16 custom tools registered in plugin.ts with Zod schemas (CQRS write-side)
 - ✓ 6 hook types registered (session.created, system.transform, messages.transform, shell.env, tool.execute.after, chat.system.transform)
 - ✓ Dual-layer state: continuity.ts (durable JSON) + state.ts (in-memory Maps)
-- ✓ 125 test files, 1767 tests, 90%+ coverage — gate-enforced
+- ✓ 149 test files, 1978 test cases — gate-enforced
 - ✓ Delegation hierarchy: L0 → L1 → L2 → L3 agent chain with CQRS boundaries
 - ✓ Q6 state root: `.hivemind/` canonical, `.opencode/` primitives-only
-- ✓ 89 agents, 123 active skill directories, 19 commands tracked in the current primitive inventory (source in `.hivefiver-meta-builder/`)
+- ✓ 89 agents, 125 active skill directories, 19 commands tracked in the current primitive inventory (source in `.hivefiver-meta-builder/`)
 - ✓ 3 config modes: expert-advisor, hivemind-powered, free-style
 - ✓ Behavioral profile system with mode dispatch
 - ✓ 14 workflow toggles in configs.json (6 wired, 4 with @future-consumer, 4 deferred)
@@ -32,13 +32,13 @@ Hivemind is a **runtime composition engine** for OpenCode — an npm package (`h
 
 - [ ] **Bootstrap/recovery**: `.opencode/` and `.hivemind/` must be restorable (postinstall script or CLI init)
 - [ ] **Config consumer wiring**: Phase 0 config contract requires every active config field to have named consumers or explicit deferred/dead status
-- [ ] **Dead code removal**: `messages-transform.ts` (67 LOC, confirmed dead in Phase 35)
-- [ ] **Plugin.ts LOC reduction**: 447 LOC vs 100 LOC target — extract into dedicated hook/tool modules
+- [✓] **Dead code removal**: `messages-transform.ts` deleted (SR-10); `src/lib/` removed
+- [ ] **Plugin.ts LOC reduction**: 242 LOC vs 100 LOC target — extract into dedicated hook/tool modules
 - [ ] **12 stale modules**: document or wire (toggle-gates.ts, runtime-detection/, etc.)
 - [ ] **f-04 auto-routing engine**: intent classification, command parsing, workflow routing (MISSING)
-- [ ] **E2E tests**: all 1767 tests are unit — zero integration/E2E
+- [ ] **E2E tests**: all 1978 tests are unit — zero integration/E2E
 - [ ] **Delegation hierarchy enforcement**: L0→L1→L2 depth not runtime-validated
-- [ ] **`.hivemind/` state modules**: 19 subdirectories, only 2 have typed CRUD owners (continuity.ts, delegation-persistence.ts)
+- [ ] **`.hivemind/` state modules**: 11 subdirectories, only 2 have typed CRUD owners (continuity.ts, delegation-persistence.ts)
 - [ ] **Lifecycle audit**: gate-l3-lifecycle-integration SKILL.md references/ directory is empty — criteria docs missing
 - [ ] **Naming validation CI**: no automated check for hm-*/hf-*/gate-*/stack-* conventions
 
@@ -53,11 +53,11 @@ Hivemind is a **runtime composition engine** for OpenCode — an npm package (`h
 
 ## Context
 
-**Technical environment:** Node.js >= 20, TypeScript ^5.0 strict, ES2022 target, ESM, Zod v4 for schema validation, @opencode-ai/sdk ^1.14.28, @opencode-ai/plugin ^1.14.28 (peer), Bun optional for PTY. Vitest for testing with V8 coverage, thresholds enforced (85/72/85/85).
+**Technical environment:** Node.js >= 20, TypeScript ^5.0 strict, ES2022 target, ESM, Zod v4 for schema validation, @opencode-ai/sdk ^1.14.41, @opencode-ai/plugin ^1.14.41 (peer), Bun optional for PTY. Vitest for testing with V8 coverage, thresholds enforced (85/72/85/85).
 
-**Architecture:** CQRS pattern (tools = write-side, hooks = read-side). Plugin composition root at `plugin.ts`. 34 Lib modules, 6 hook files, 8 tool files, 16 schema-kernel files, 5 sidecar files. Max module: 500 LOC. No circular deps. `types.ts` is leaf — all modules depend outward.
+**Architecture:** CQRS pattern (tools = write-side, hooks = read-side). Plugin composition root at `plugin.ts`. src/lib/ removed (SR-10). Source planes: shared/, task-management/, coordination/, features/, config/, routing/, hooks/, tools/. 6 hook files, 8 tool files, 16 schema-kernel files. Max module: 500 LOC. No circular deps. `types.ts` is leaf — all modules depend outward.
 
-**Prior work:** Project originated from oh-my-openagent (OMO) architecture study + harneess-experiment worktree. 71 milestone phases delivered core features (concurrency, delegation revamp, completion detection, PTY integration, session journal, lifecycle manager). WS-1 Restructuring consolidated into 3 themed workstreams (Core Architecture, Agent Workflows, User Experience). Core Architecture (CA-01 through CA-03) delivered configs schema, behavioral profiles, and toggle gate binding. Skill-ecosystem (SE-1 through SE-14) delivered 48/51 hm-* skills at ≥6/8 RICH-8 quality. Agent-synthesis (AS-0 through AS-11) delivered 89 agents with lineage classification.
+**Prior work:** Project originated from oh-my-openagent (OMO) architecture study + harneess-experiment worktree. 31 phase directories (completed and in-progress) track core feature delivery (concurrency, delegation revamp, completion detection, PTY integration, session journal, lifecycle manager). WS-1 Restructuring consolidated into 3 themed workstreams (Core Architecture, Agent Workflows, User Experience). Core Architecture (CA-01 through CA-03) delivered configs schema, behavioral profiles, and toggle gate binding. Skill-ecosystem (SE-1 through SE-14) delivered 48/51 hm-* skills at ≥6/8 RICH-8 quality. Agent-synthesis (AS-0 through AS-11) delivered 89 agents with lineage classification.
 
 **Known issues:** STATE.md claimed Phase 70-71 COMPLETE with no git evidence. 14 archived milestone phases still on disk. 2 empty workstreams (primitive-registry, bootstrap-cli-onboarding). `asString` duplicated in helpers.ts and continuity.ts. `storeCache` singleton prevents isolated testing in continuity.ts. `.hivemind/` git-track vs gitignore contradiction.
 
@@ -88,8 +88,10 @@ Hivemind is a **runtime composition engine** for OpenCode — an npm package (`h
 | D-CONF-05: configs.json loaded every session | Missing → defaults, invalid → warn, unknown → strip | ✓ Locked |
 | D-BIND-03: every active config field must have consumer | Phase 0 config contract maps field consumers/status; unresolved fields must be wired or explicitly deferred | ⚠️ Revisit |
 | P0-ID: Hivemind identity contract | Product Hivemind; package/bin `hivemind`; harness is project type; OpenCode is platform | ✓ Locked |
-| D-CRUD-05: each `.hivemind/` dir has typed owner | Only 2/19 dirs have owners | ⚠️ Revisit |
+| D-CRUD-05: each `.hivemind/` dir has typed owner | Only 2/11 dirs have owners | ⚠️ Revisit |
 | D-WS-01: 5→3 themed workstreams | Core Architecture → Agent Workflows → User Experience | ✓ Good |
 
 ---
-*Last updated: 2026-05-07 after Phase 0 governance baseline*
+*Last updated: 2026-05-11 — Phase 11 governance reconciliation. All numeric claims verified against 11-TRUTH-MATRIX.md.*
+
+**Evidence baseline:** .planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md
