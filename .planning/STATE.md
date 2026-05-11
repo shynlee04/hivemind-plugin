@@ -2,15 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: Phase 12 — CP-ST-01 Remediation (planned — 3 plans across 3 waves)
 status: planned
-last_updated: "2026-05-12T00:00:00.000Z"
+last_updated: "2026-05-11T18:40:38.552Z"
 progress:
-  total_phases: 31
-  completed_phases: 1
-  total_plans: 13
-  completed_plans: 9
-  percent: 69
+  total_phases: 32
+  completed_phases: 2
+  total_plans: 18
+  completed_plans: 14
+  percent: 78
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -34,7 +33,7 @@ Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/`
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Post-restructuring continuation — `src/lib/` has been removed and source planes now live under shared, task-management, coordination, features, config, routing, hooks, and tools. CP-PTY-01..04 can resume from their gates.
+**Current focus:** Phase 12 — cp-st-01-remediation-apply-critical-security-fixes-cr-01-02-
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
