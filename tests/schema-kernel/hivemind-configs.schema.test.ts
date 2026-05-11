@@ -351,6 +351,52 @@ describe("HivemindConfigsSchema", () => {
 })
 
 // ===========================================================================
+// document_paths schema field (BOOT-09-01-T1)
+// ===========================================================================
+
+describe("document_paths", () => {
+  it("defaults to ['.hivemind/planning/'] when omitted", () => {
+    const result = sp(HivemindConfigsSchema, {})
+    expect(result.success).toBe(true)
+    if (result.success) {
+      // @ts-expect-error - document_paths not yet in schema type
+      expect(result.data.document_paths).toEqual([".hivemind/planning/"])
+    }
+  })
+
+  it("accepts custom document_paths array", () => {
+    const result = sp(HivemindConfigsSchema, { document_paths: [".docs/", "./custom-docs/"] })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      // @ts-expect-error - document_paths not yet in schema type
+      expect(result.data.document_paths).toEqual([".docs/", "./custom-docs/"])
+    }
+  })
+
+  it("is stripped when not configured (lenient parse, no default injected)", () => {
+    const result = sp(HivemindConfigsSchema, { conversation_language: "en" })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      // Currently document_paths is stripped by .strip() since it's unknown
+      // @ts-expect-error - document_paths not yet in schema type
+      expect(result.data.document_paths).toBeUndefined()
+    }
+  })
+})
+
+describe("LEGACY_KEY_MAP — documentPaths", () => {
+  it("migrates documentPaths camelCase to document_paths", () => {
+    const raw: Record<string, unknown> = {
+      documentPaths: [".docs/", "./notes/"],
+    }
+    migrateKeys(raw)
+    // After migration, document_paths should exist and documentPaths removed
+    expect(raw.document_paths).toEqual([".docs/", "./notes/"])
+    expect("documentPaths" in raw).toBe(false)
+  })
+})
+
+// ===========================================================================
 // getDefaultConfigs
 // ===========================================================================
 
