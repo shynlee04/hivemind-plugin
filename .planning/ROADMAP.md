@@ -104,7 +104,7 @@ The Bootstrap CLI is a proper CLI toolbelt — not just `mkdir` + symlink. It pr
 | BOOT-06 | Validation + Health Check | ✅ COMPLETE | BOOT-03, BOOT-04, BOOT-05 | L2-L3: built `hivemind doctor` reports ALL CHECKS PASS |
 | BOOT-07 | End-to-End Proof | ✅ COMPLETE | BOOT-06 | L1-L3: clean temp project init/recover/doctor passed |
 | BOOT-08 | Agent + Skill Integration | ✅ COMPLETE | BOOT-07 | L5: constitution + routing contracts |
-| BOOT-09 | MVP Config Schema + Entry Init Verification | 🔵 READY — context gathered | BOOT-08 | L2-L3: system.transform language injection + tool guard enforcement tests |
+| BOOT-09 | MVP Config Schema + Entry Init Verification | 🟡 IN PROGRESS — 2/3 plans complete (01, 03 done; 02 pending) | BOOT-08 | L2-L3: system.transform language injection + tool guard enforcement tests |
 
 ### Shell / PTY Control-Plane Runway
 
