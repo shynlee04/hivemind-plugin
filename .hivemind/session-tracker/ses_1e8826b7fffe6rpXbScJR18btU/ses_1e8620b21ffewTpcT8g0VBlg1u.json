@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e8620b21ffewTpcT8g0VBlg1u",
+  "parentSessionID": "ses_1e8826b7fffe6rpXbScJR18btU",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Rewrite hm-l2-context-purifier",
+    "subagentType": "hm-l2-general"
+  },
+  "created": "2026-05-11T15:20:06.690Z",
+  "updated": "2026-05-11T15:20:06.690Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-general",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

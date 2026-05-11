@@ -1,0 +1,26 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e81fec47ffe0aYozoUcX89Wqp",
+  "lastUpdated": "2026-05-11T16:58:57.324Z",
+  "hierarchy": {
+    "root": "ses_1e81fec47ffe0aYozoUcX89Wqp",
+    "children": {
+      "ses_1e81e05bcffeapmHqdn80AwdLG": {
+        "file": "ses_1e81e05bcffeapmHqdn80AwdLG.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e81d7883ffeJNhJKH5epcwqUm": {
+        "file": "ses_1e81d7883ffeJNhJKH5epcwqUm.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {}
+}

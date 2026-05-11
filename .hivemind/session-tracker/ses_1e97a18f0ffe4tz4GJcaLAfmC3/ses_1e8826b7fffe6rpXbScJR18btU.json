@@ -5,11 +5,11 @@
   "delegatedBy": {
     "agentName": "main_l0_agent",
     "tool": "task",
-    "description": "BATCH4+5: Execution+Context profiles",
+    "description": "Resume BATCH4+5 execution",
     "subagentType": "hm-l1-coordinator"
   },
-  "created": "2026-05-11T15:06:31.309Z",
-  "updated": "2026-05-11T15:06:31.309Z",
+  "created": "2026-05-11T15:32:42.348Z",
+  "updated": "2026-05-11T15:32:42.348Z",
   "status": "active",
   "mainAgent": {
     "name": "hm-l1-coordinator",

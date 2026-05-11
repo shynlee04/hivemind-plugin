@@ -62,7 +62,7 @@ Original "CRUD Ownership Modules + Lifecycle Verification" was premature — bui
 | CA-04.1 | **Bootstrap CLI + Primitives Recovery** | D-CRUD-01: `npx hivemind init` creates `.hivemind/` + `.opencode/` structure. Postinstall restores primitives. Legacy alias: `npx opencode-harness init`. Fixes the "delete and lose everything" gap. |
 | CA-04.2 | **Config Consumer Runtime Wiring** | D-BIND-03: Config fields must have verified consumers. `conversation_language` is traced as wired in L5 config traceability; `delegation_systems` remains without a verified runtime consumer. Fix or explicitly defer the remaining config → behavior gaps. |
 | CA-04.3 | **State Directory Ownership Modules** | D-CRUD-05: Each `.hivemind/` subdirectory gets typed module. Tiered by mutation need (7 CRUD, 7 append, 6 read-only). Only AFTER bootstrap exists and tools write state. |
-| CA-04.4 | **Lifecycle Audit + Gate Criteria Synthesis** | Synthesize gate-l3-lifecycle-integration references/ from ARCHITECTURE.md. Audit all src/ modules (post-SR restructuring planes). Fix only CA-04 CRUD-owner violations. |
+| CA-04.4 | **Lifecycle Audit + Gate Criteria Synthesis** | Synthesize gate-l3-lifecycle-integration references/ from ARCHITECTURE.md. Audit all 34 src/lib modules. Fix only CA-04 CRUD-owner violations. |
 
 ### Option 3 — Sector Governance Foundation (Docs-Only Route)
 
@@ -125,14 +125,12 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
 | CP-ST-01 | Session Tracker Revamp | 🔵 PLANNED | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: hook wiring tests, file format validation, migration verification |
-| CP-ST-02 | Session Tracker Remediation | ⬜ NOT PLANNED | CP-ST-01 completion, GOV-01 completion | L2-L3: fix 12 catalogued flaws (F1-F12) from audit register, re-verify hook wiring, migration validation |
 
 **Plans:**
 - [ ] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)
 - [ ] CP-ST-01-02-PLAN.md — Capture Handlers + Index Writers (Wave 2)
 - [ ] CP-ST-01-03-PLAN.md — Integration + Recovery + Tool (Wave 3)
 - [ ] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
-- [ ] CP-ST-02-01-PLAN.md — Flaw Remediation + Re-Verification (to be planned)
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
@@ -154,7 +152,7 @@ Before writing code:
 ### BOOT-03 Scope: State Initialization
 
 - `npx hivemind init` creates canonical `.hivemind/` directory tree
-- 11 subdirectories with `.gitkeep` registration
+- 19 subdirectories with `.gitkeep` registration
 - Typed CRUD modules per `.hivemind/` subdirectory (7 CRUD, 7 append, 6 read-only)
 - Fixes D-CRUD-05 gap
 
@@ -178,7 +176,7 @@ Before writing code:
 
 ### BOOT-07 Scope: End-to-End Proof
 
-- Nuke `.hivemind/` → run `init` → verify: (a) structure created, (b) symlinks restored, (c) configs initialized, (d) doctor returns PASS, (e) typecheck passes, (f) 1978 tests pass
+- Nuke `.hivemind/` → run `init` → verify: (a) structure created, (b) symlinks restored, (c) configs initialized, (d) doctor returns PASS, (e) typecheck passes, (f) 1767 tests pass
 - This is L1 runtime evidence — closes the docs-only gate
 
 ### Checkpoints
@@ -209,8 +207,8 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ### Source inventory
 
-- **Agents lab:** `.hivefiver-meta-builder/agents-lab/active/refactoring/` — current active inventory has 89 agent definitions (verified per 11-TRUTH-MATRIX.md P-06). MCM doctor must classify shipped vs dev-only before migration.
-- **Skills lab:** `.hivefiver-meta-builder/skills-lab/active/refactoring/` — current active inventory has 125 skill directories (verified per 11-TRUTH-MATRIX.md P-07), excluding `.gitkeep`. MCM doctor must classify shipped vs dev-only before migration.
+- **Agents lab:** `.hivefiver-meta-builder/agents-lab/active/refactoring/` — current active inventory has 89 agent definitions. MCM doctor must classify shipped vs dev-only before migration.
+- **Skills lab:** `.hivefiver-meta-builder/skills-lab/active/refactoring/` — current active inventory has 123 skill directories, excluding `.gitkeep`. MCM doctor must classify shipped vs dev-only before migration.
 - **Total source:** `.hivefiver-meta-builder/` includes active labs plus commands-lab, plans, references-lab, research, and rules subdirectories. Exact file counts are MCM doctor evidence, not Phase 0 evidence.
 
 | Phase | Title | Status | Depends On | Evidence Required |
@@ -272,19 +270,17 @@ OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries
 
 | Phase | Title | Status | Depends On | Key Improvements |
 |-------|-------|--------|------------|------------------|
-| SR-0 | Preparation (safety net) | ✅ COMPLETE [UNVERIFIED] | — | Baseline branch and safety checks completed before restructuring |
-| SR-1 | Leaf Modules → `src/shared/` | ✅ COMPLETE [UNVERIFIED] | SR-0 | Leaf modules moved to `src/shared/`; import compatibility verified |
-| SR-2 | Persistence/Journal → `src/task-management/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Persistence, journal, recovery, trajectory, and lifecycle surfaces moved |
-| SR-3 | Delegation/Concurrency → `src/coordination/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Delegation, completion, command delegation, SDK delegation, concurrency, and spawner surfaces moved |
-| SR-4 | Features → `src/features/` | ✅ COMPLETE [UNVERIFIED] | SR-2, SR-3 | Corrected mapping: standalone features only; command engine and config workflow excluded |
-| SR-5 | Config → `src/config/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Config subscriber/compiler/workflow moved to config realm |
-| SR-6 | Routing → `src/routing/` | ✅ COMPLETE [UNVERIFIED] | SR-1 | Session entry, behavioral profile, and command engine moved to routing plane |
-| SR-7 | Hooks Reorganization | ✅ COMPLETE [UNVERIFIED] | SR-4 | Hooks reorganized by lifecycle, guards, observers, transforms, and composition |
-| SR-8 | Tools Reorganization | ✅ COMPLETE [UNVERIFIED] | SR-4 | Tools categorized by delegation, session, config, hivemind, and prompt domains |
-| SR-9 | Plugin Composition Root Update | ✅ COMPLETE [UNVERIFIED] | SR-7, SR-8 | `src/plugin.ts` imports updated; `src/plugin/` intentionally not created by SR remediation decision |
-| SR-10 | Cleanup + AGENTS.md Updates | ✅ COMPLETE [UNVERIFIED] | SR-9 | `src/lib/` removed; sector/module AGENTS.md added; typecheck/tests/build passed |
-
-**[UNVERIFIED] note:** SR phases lack SUMMARY.md evidence in their phase directories (per 11-TRUTH-MATRIX.md Phase Evidence Audit). Structural work confirmed complete via git history and typecheck/build/test passes. SUMMARY.md documentation for SR phases is deferred.
+| SR-0 | Preparation (safety net) | ✅ COMPLETE | — | Baseline branch and safety checks completed before restructuring |
+| SR-1 | Leaf Modules → `src/shared/` | ✅ COMPLETE | SR-0 | Leaf modules moved to `src/shared/`; import compatibility verified |
+| SR-2 | Persistence/Journal → `src/task-management/` | ✅ COMPLETE | SR-1 | Persistence, journal, recovery, trajectory, and lifecycle surfaces moved |
+| SR-3 | Delegation/Concurrency → `src/coordination/` | ✅ COMPLETE | SR-1 | Delegation, completion, command delegation, SDK delegation, concurrency, and spawner surfaces moved |
+| SR-4 | Features → `src/features/` | ✅ COMPLETE | SR-2, SR-3 | Corrected mapping: standalone features only; command engine and config workflow excluded |
+| SR-5 | Config → `src/config/` | ✅ COMPLETE | SR-1 | Config subscriber/compiler/workflow moved to config realm |
+| SR-6 | Routing → `src/routing/` | ✅ COMPLETE | SR-1 | Session entry, behavioral profile, and command engine moved to routing plane |
+| SR-7 | Hooks Reorganization | ✅ COMPLETE | SR-4 | Hooks reorganized by lifecycle, guards, observers, transforms, and composition |
+| SR-8 | Tools Reorganization | ✅ COMPLETE | SR-4 | Tools categorized by delegation, session, config, hivemind, and prompt domains |
+| SR-9 | Plugin Composition Root Update | ✅ COMPLETE | SR-7, SR-8 | `src/plugin.ts` imports updated; `src/plugin/` intentionally not created by SR remediation decision |
+| SR-10 | Cleanup + AGENTS.md Updates | ✅ COMPLETE | SR-9 | `src/lib/` removed; sector/module AGENTS.md added; typecheck/tests/build passed |
 
 ### Target Structure
 
@@ -325,30 +321,6 @@ src/
 
 ---
 
-## Active Workstream: Governance Reconciliation (WS-GOV)
-
-| Phase | Title | Status | Depends On | Evidence Required |
-|-------|-------|--------|------------|-------------------|
-| GOV-01 | Governance Reconciliation — Update All Core Artifacts | 🔵 IN PROGRESS | Phase 0 governance baseline, SR-10 completion, BOOT-07 E2E proof | L5: 11-TRUTH-MATRIX.md, updated STATE.md/PROJECT.md/REQUIREMENTS.md/ROADMAP.md, 7 audited AGENTS.md files |
-
-### GOV-01 Scope: Full Governance Artifact Reconciliation
-
-Reconcile all core governance artifacts to reflect current project reality per decisions D-01 through D-15. Update STATE.md as anchor (~175 lines runway-focused), ripple corrections outward through PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and 7 sector AGENTS.md files.
-
-**Deliverables:**
-- `11-TRUTH-MATRIX.md` — committed truth baseline cross-referencing 50+ claims across 13 files
-- Updated `.planning/STATE.md` — runway-focused (150-210 lines)
-- Updated `.planning/PROJECT.md` — all numeric claims verified
-- Updated `.planning/REQUIREMENTS.md` — statuses cross-checked against phase evidence
-- Updated `.planning/ROADMAP.md` — GOV-01 and CP-ST-02 entries added, stale statuses fixed
-- Audited `AGENTS.md` (root) + `src/AGENTS.md` + `.opencode/AGENTS.md` + `.planning/AGENTS.md` + `.hivemind/AGENTS.md` + `.hivefiver-meta-builder/AGENTS.md` + `tests/AGENTS.md`
-- `.planning/archive/state-history/` — 6 historical files extracted from STATE.md
-
-**In scope:** Documentation verification and correction only. No runtime code changes.  
-**Out of scope:** Creating new AGENTS.md files (D-15), runtime readiness proof, sidecar integration.
-
----
-
 ## Deliverables & Timeline
 
 | Wave | What | Blocks |
@@ -361,7 +333,6 @@ Reconcile all core governance artifacts to reflect current project reality per d
 | **Wave 3.6** | CP-PTY-02 SDK Session Delegation Integration | Depends on CP-PTY-01 + BOOT-08 |
 | **Wave 3.7** | CP-PTY-03 Agent/Subagent Background Task Coordination | Depends on CP-PTY-02 + BOOT-08 |
 | **Wave 3.8** | CP-PTY-04 Cross-Cutting Shell Integration | Depends on CP-PTY-03 + MCM-03 |
-| **Wave 3.9** | GOV-01 Governance Reconciliation | Depends on Phase 0 + SR-10 + BOOT-07 |
 | **Wave 4** | MCM-01 Agent Migration + MCM-02 Skill Migration | Depends on Phase 0 + BOOT-04 (symlinks exist) |
 | **Wave 5** | MCM-03 Config Integration + MCM-04 Customization | Depends on Phase 0 + Wave 4 + BOOT-06 |
 | **Wave 6** | f-04 Auto-commands + Workflow Router | Depends on Phase 0 + BOOT + MCM; also depends on CP-PTY-00..04 if router invokes command/session lanes |
@@ -385,7 +356,6 @@ Rules:
 - Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01..04 or routing expansion.
 - MCM continuation pending BOOT-04 symlinks.
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
-  - CP-ST-02 will follow CP-ST-01 after GOV-01 provides reconciled evidence baseline.
 
 ---
-*Last updated: 2026-05-11 — Phase 11 governance reconciliation. GOV-01 and CP-ST-02 entries added (see Phase 11 and Phase 12 sections below). All phase statuses audited against phase directory evidence. Numeric claims verified against 11-TRUTH-MATRIX.md.*
+*Last updated: 2026-05-11 — GOV-01 (Phase 11) + CP-ST-02 (Phase 12) added for governance reconciliation and CP-ST-01 remediation*

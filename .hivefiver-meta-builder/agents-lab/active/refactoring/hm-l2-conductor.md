@@ -11,23 +11,23 @@ permission:
   edit: ask
   write: ask
   bash:
-    '*': allow
+    '*': ask
     git *: allow
     node *: allow
     npx *: allow
   task:
-    '*': allow
+    '*': ask
   delegate-task: allow
   delegation-status: allow
   run-background-command: allow
   skill:
-    '*': allow
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
   read:
-    '*': allow
+    '*': ask
     '*.md': allow
     '*.json': allow
   glob: allow

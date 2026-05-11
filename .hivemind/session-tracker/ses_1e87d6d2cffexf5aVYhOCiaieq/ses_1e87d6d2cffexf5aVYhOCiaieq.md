@@ -3051,3 +3051,233 @@ The output should answer: "What does the researcher need to investigate? What ch
 }
 ```
 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_gf1dojMDU2REKWhkvb4a8221"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_Y8c9gTxBwsOlhDwgfhAh5321"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_HFmVkH9Hx3NET61dkb4m1926"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_4uXdPfRjMTchMIDoDWY44996"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_npkR5vzcQTwakk3dtJbM7884"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_pa8KPCyHbDYlgD9xOjQe5609"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_DwAAoHXTonFZZOsR3ijQ8830"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_0SPCj8IJTwQLcS6LFP5K5483"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_D0Eyo0WpTCZJ6lx4p5xU7022"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_AGqDTVIc7J3TLCKSQ4xr6877"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_F5RifSoe6pxEMmXMssFB3258"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_L5rt8Iww9xAQ5nrnA2l43368"
+}
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "call_00_LUG048UIxWEDI1VDz5ct7292"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_ZC3RvNspJ7VX4zJCFKdK7144"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_00_ASBawI6p0rklic9gsmc34619"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_jx87JXce29vfgJeXC4oL8051"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_71m0HvXvfKKO6nWVOu352199"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_I57XJxMbIN3RBPfuCStc5843"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_gEFNHXPJMUwTwauabxXI6742"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_UcurSrwTZsMelaHAFoKs9234"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_cKdbXurXEIuxbZKueYZL4725"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_Y1jgDXwwbSNN82y5dI895184"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_l5iPmzy88N1viysJ8FMw3003"
+}
+```
+

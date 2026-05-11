@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e853d316ffeAKivzoh50AQrSd",
+  "parentSessionID": "ses_1e97a18f0ffe4tz4GJcaLAfmC3",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "BATCH6-8: Routing+Phase+Prompt profiles",
+    "subagentType": "hm-l1-coordinator"
+  },
+  "created": "2026-05-11T15:48:43.165Z",
+  "updated": "2026-05-11T15:48:43.165Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

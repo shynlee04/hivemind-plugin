@@ -1,182 +1,338 @@
 # Reference 02: Session Resume Protocol
 
-> **Jump targets:** [ref-02 §1]–[ref-02 §5]
+> **Jump targets:** [ref-02 §1]–[ref-02 §7]
 
-## ⚠️ STOP. READ THIS BEFORE ANYTHING ELSE.
+## §1 — RESUME PROTOCOL (Critical 7-Step)
 
-**"Aborted" status in session-tracker DOES NOT mean the user cancelled the task. It means the CONNECTION was lost. The subagent's ENTIRE state — prompt, turns, tool calls, files — is PRESERVED on disk. The task_id IS the session ID. Resuming with task_id restores EVERYTHING. There is NO scenario where you "start fresh" when an active/aborted delegation exists.**
+This is the #1 session-recovery fix. Follow EXACTLY. Do not skip steps. This applies whenever you detect a disconnect or see that the session was interrupted.
 
-If you see "aborted" and your first thought is "start a new task," you are WRONG.
-The session-tracker data is the TRUTH. The .json says the session exists → you resume it. Period.
-
-## §1 — MECHANICAL RESUME (No decisions. No thinking. Execute.)
-
-**Trigger:** You see a session-tracker child with ANY status. Or the user just reconnected.
+**Trigger words:** disconnect recovery, resume session, recover from disconnect, continue work after disconnect.
 
 ```
-STEP 0 — READ THE INDEX
-  read(".hivemind/session-tracker/project-continuity.json")
-  → Find the most recently updated session.
-  → If no sessions exist at all → go to §2 (fresh start).
-  → If sessions exist, proceed to STEP 1 regardless of status.
+STEP 1 — FIND ACTIVE SESSIONS
+  Read project-continuity.json:
+    read(".hivemind/session-tracker/project-continuity.json")
+  Filter: sessions with status === "active", sorted by updated descending.
+  If none → FRESH START (§2).
 
-STEP 1 — READ THE HIERARCHY  
-  read(".hivemind/session-tracker/<sessionId>/session-continuity.json")
-  → Look at hierarchy.children
-  → Find ALL children. Do NOT filter by status. Resume every child.
-  → For each child:
-    - Record: childId = that child's key
-    - Record: delegatedBy = that child's delegatedBy field
-  → If a child is truly completed, task(task_id) returns immediately (no harm).
-  → If a child is in any other state, it continues from where it left off.
-  → The agent CANNOT determine completion from JSON — only the runtime.
+STEP 2 — FIND ABORTED DELEGATIONS
+  For EACH active session (starting with most recently updated):
+    Read its session-continuity.json:
+      read(".hivemind/session-tracker/<sessionId>/session-continuity.json")
+    Check hierarchy.children → find any child with status === "active".
 
-STEP 2 — RESUME (the ONLY valid action)
-  For EACH child found in STEP 1:
-    task(
-      description = "resume",
-      subagent_type = "<EXACT delegatedBy value>",
-      task_id = "<childId>"
-    )
-    That's it. No other parameters. No "prompt" field. No thinking.
-  Resume sequentially (NOT parallel): complete first child, then next.
+STEP 3 — IDENTIFY DEEPEST ACTIVE DELEGATION
+  Among all active children across all active sessions:
+    Pick the child with the HIGHEST depth value.
+    If multiple at same depth → pick the most recently updated.
+
+  Record:
+    - rootSessionId: the parent session ID
+    - targetChildId: the aborted delegation child ID (task_id)
+    - agentType: the delegatedBy field from child metadata
+
+STEP 4 — EXPORT THE ROOT SESSION
+  session-tracker(action: "export-session", sessionId: "<rootSessionId>")
+  This returns the full .md capture file with all turns, tool calls, and context.
+
+STEP 5 — RECOVER LAST USER INTENT
+  grep(pattern: "## USER \\(turn", include: "*.md") on the exported content,
+    OR read with offset to find the most recent user turn.
+  Read the last ## USER turn to understand what was requested.
+
+STEP 6 — RESUME WITH EXACT task_id
+  The child's session ID IS the task_id. Resume using:
+    task(description="resume", subagent_type="<SAME agent_type>",
+         task_id="<targetChildId>")
+
+STEP 7 — CASCADE TO CHILD
+  When the resumed L1 agent spawns, it checks ITS session-continuity.json
+  for aborted L2 children and resumes them with EXACT task_id too.
+
+CRITICAL:
+  - DO NOT create a new session ID.
+  - DO NOT repeat the original prompt — context is preserved.
+  - The resumed agent sees its prior conversation state.
 ```
 
-**If you create a NEW task(task_id="<new>") instead of the above, you have FAILED the protocol.**
+## §2 — Fresh Start Protocol
 
-## §2 — THE TASK TOOL: EXACT PARAMETERS
-
-The `task` tool resumes an existing session when `task_id` matches. The agent SEES its prior conversation. NO prompt needed.
+When you KNOW no prior sessions exist (first ever start; user explicitly says "new session"):
 
 ```
-task(
-  description = "resume",          // REQUIRED. Use "resume" literally.
-  subagent_type = "<delegatedBy>",  // REQUIRED. Copy exactly from session-continuity.json.
-  task_id = "<sessionId>"           // REQUIRED. The child's session ID from the .json key.
-)
+1. Announce: "[Agent] powered on. Classifying workflow…"
+2. Run lineage classification → [ref-01 §1]
+3. Load the lineage router for the classified lineage
+4. Proceed with domain work
 ```
 
-**DO NOT include `prompt`. DO NOT include "args". DO NOT include anything else.**
+## §3 — Task Tool Resume Mechanics
 
-If the platform forces a non-empty prompt: use the literal string `"Resume session."` — nothing more.
+### The Golden Rule
 
-### Where to find delegatedBy
+```
+task_id IS session_id. When you resume with task_id, the agent continues from where it left off.
+Context is preserved. Do NOT repeat the prompt.
+```
 
-Read the child entry in `session-continuity.json`:
+### OpenCode Task Tool Parameters
+
+The `task` tool dispatches subagents. When resuming, use:
 
 ```json
 {
-  "hierarchy": {
-    "children": {
-      "ses_1ebe39941ffecHehSRcc13IqeD": {
-        "file": "ses_1ebe39941ffecHehSRcc13IqeD.json",
-        "depth": 1,
-        "status": "active",
-        "delegatedBy": "hm-l2-auditor",
-        "children": {}
-      }
-    }
+  "description": "resume",
+  "subagent_type": "<SAME agent type as original dispatch>",
+  "task_id": "<EXACT session ID of aborted child>"
+}
+```
+
+| Parameter | Required | Value |
+|-----------|----------|-------|
+| `description` | Yes | `"resume"` (or brief 3-5 word description) |
+| `subagent_type` | Yes | **EXACT SAME** agent type from `delegatedBy` field in session-continuity.json |
+| `task_id` | Yes | The child's session ID (24-char hex) |
+| `prompt` | **OMIT or MINIMAL** | Do NOT repeat the original prompt — context is preserved |
+
+### Why prompt is omitted/minimal
+
+When you resume with `task_id`, OpenCode restores the subagent's entire conversation state — including the original prompt, all turns, all tool calls. Repeating the prompt would:
+1. Waste context budget (the agent already has it)
+2. Cause the agent to restart work instead of continuing
+3. Confuse the agent about whether this is new or resumed
+
+### Minimal prompt (if required by platform)
+
+If the platform demands a non-empty prompt string: `"Resume session."` Never include more than that.
+
+### Finding the Correct agent_type
+
+The `delegatedBy` field in session-continuity.json records the original agent type:
+
+```json
+{
+  "ses_1ebe39941ffecHehSRcc13IqeD": {
+    "depth": 1, "status": "active",
+    "delegatedBy": "hm-l2-auditor",
+    "children": {}
   }
 }
 ```
 
-→ `subagent_type = "hm-l2-auditor"` (the exact string from delegatedBy)
-→ `task_id = "ses_1ebe39941ffecHehSRcc13IqeD"` (the child's session ID key)
+→ Use `"hm-l2-auditor"` as the `subagent_type` for resume.
 
-If `delegatedBy` is `"main_l0_agent"` (ambiguous), read the child's `.json` file to find `delegated_by.agent_name` or `delegated_by.subagent_type`.
+### How Session-Tracker Captures task_id
 
-## §3 — THE CASCADE: L0→L1→L2 MUST FLOW
+When a task is dispatched, the session-tracker hook (`tool.execute.after`) captures:
+- `tool`: `"task"`
+- `sessionID`: the child session ID → stored as task_id
+- `args.subagent_type`: the agent type → stored as delegatedBy
+- `args.description`: task description
 
-When you resume a parent session, you MUST also instruct it to resume ITS children.
-
-### L0 orchestrator power-on sequence:
-
-```
-1. Read project-continuity.json → find your session
-2. Read your session-continuity.json → find active L1 child
-3. Resume L1: task(task_id="<L1_childId>", subagent_type="<delegatedBy>")
-4. IN YOUR RESUME PROMPT to L1, include this exact instruction:
-
-   "You are resuming as L1 coordinator. On spawn:
-    1. Read YOUR session-continuity.json at 
-       .hivemind/session-tracker/<your-session-id>/session-continuity.json
-    2. Find ALL children (do NOT filter by status — resume every child).
-       Completed ones return instantly. Others continue.
-       The agent CANNOT determine completion from JSON — only the runtime.
-    3. Resume each with EXACT task_id:
-       task(description='resume', subagent_type='<delegatedBy>', task_id='<childId>')
-    4. DO NOT create new delegations for work already dispatched."
-```
-
-### L1 coordinator resume sequence:
+### Resume Invocation Example
 
 ```
-1. Read your session-continuity.json
-2. Find ALL children (do NOT filter by status — resume EVERY child)
-3. For each, extract: { sessionId, delegatedBy }
-4. Resume sequentially (NOT parallel):
-   task(description="resume", subagent_type="<delegatedBy>", task_id="<sessionId>")
-5. Collect results from each
-6. Run quality gates on each result
-7. Return consolidated results to L0
+task(
+  description="resume",
+  subagent_type="hm-l2-auditor",
+  task_id="ses_1ebe39941ffecHehSRcc13IqeD"
+)
 ```
 
-### REAL cascade with REAL IDs:
+### What Happens on Resume
+
+1. OpenCode looks up the session ID in its session store
+2. Restores the subagent with all prior conversation state
+3. The agent sees its last turn and continues from there
+4. The agent has access to all files it previously read
+5. The agent knows what it was doing and what's pending
+
+## §4 — Multi-Level Recovery Cascade
+
+### Cascade Protocol for L0 Orchestrators
 
 ```
-Session tree on disk:
-  ses_1ebe832c5ffeeYuFbS1kqleZnD (L0 orchestrator, active)
-    ├── ses_1ebe39941ffecHehSRcc13IqeD (L1, depth=1, active, delegatedBy=main_l0_agent)
-    │     └── ses_1ebe28c52ffeIoXFCcAZnCj0IC (L2, depth=2, active)
-    └── ses_1ebd373b1ffeDa7AJ7KJIPShVE (L1, depth=1, active, delegatedBy=main_l0_agent)
+1. ON POWER-ON:
+   Read project-continuity.json
+   Filter: sessions with status="active" AND (childCount > 0 OR totalDelegationDepth > 0)
 
-Execution (5 turns):
-  T1: L0 resumes ses_1ebe39941ffecHehSRcc13IqeD with instruction cascade
-  T2: L1 spawns, reads its session-continuity → finds ses_1ebe28c52ffeIoXFCcAZnCj0IC active
-  T3: L1 resumes ses_1ebe28c52ffeIoXFCcAZnCj0IC (L2)
-  T4: L2 completes work → returns to L1
-  T5: L1 resumes ses_1ebd373b1ffeDa7AJ7KJIPShVE (second child) → completes → returns to L0
+2. IF active sessions found:
+   For each (starting with most recently updated):
+     a. Read session-continuity.json
+     b. Find deepest active child (highest depth with status="active")
+     c. Record: rootSessionId, targetChildId, delegatedBy
+
+3. RESUME THE PARENT:
+   task(description="resume", subagent_type="<your agent type>",
+        task_id="<rootSessionId>")
+
+4. INSTRUCT THE PARENT:
+   "You are resuming. Check session-continuity.json for aborted children.
+    Resume them with EXACT task_id. DO NOT create new children."
+
+5. PARENT (L1) then resumes its children:
+   task(description="resume", subagent_type="<delegatedBy>",
+        task_id="<childSessionId>")
 ```
 
-**NO new session IS EVER created. NO prompt IS EVER repeated.**
-
-## §4 — VERIFICATION: DID YOU DO IT RIGHT?
-
-After resume, verify:
-
-| Check | How | Pass If |
-|-------|-----|---------|
-| No new sessions created | Compare session-count before/after | Same count as before resume |
-| Correct agent type used | Check delegatedBy → subagent_type | Exact match |
-| Prompt NOT repeated | Check task args for "prompt" field | Absent or "Resume session." |
-| Correct task_id used | Check task_id matches child session ID | Exact match |
-| Cascade flowed | L1 resumed its L2 children too | All children completed |
-
-## §5 — FAILURE: WHAT TO DO IF RESUME FAILS
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| task() returns "session not found" | task_id expired from OpenCode's session store | Export the session .md via session-tracker → extract original prompt → create NEW dispatch with SAME agent type and SAME prompt |
-| delegatedBy is "main_l0_agent" | Auto-captured value, not actual agent type | Read child's .json file → delegated_by.subagent_type or delegated_by.agent_name |
-| Child already "completed" | Previous resume already succeeded | ACCEPT the result. Do not re-dispatch. |
-| session-continuity.json missing | Session directory was never created | Read project-continuity.json to find the session dir → read child .json directly |
-| Multiple active at same depth | Parallel dispatch was running | Resume sequentially. First complete, then next. Never re-parallelize. |
-
-### CRITICAL: task_id expired fallback
-
-Only if `task_id` is genuinely expired (session store purged):
+### Cascade Protocol for L1 Coordinators
 
 ```
-1. session-tracker({action:"export-session", sessionId: "<parentId>"})
-2. grep "## USER (turn" on the result → find the original user intent
-3. Read the original task dispatch (Tool: task block) to get:
-   - Original subagent_type
-   - Original description
-   - Original arguments
-4. Create NEW dispatch with the SAME subagent_type + SAME prompt
-   task(description="<original desc>", subagent_type="<original>", 
-        prompt="<original prompt from .md>")
-5. Document: "task_id expired, re-dispatched from session-tracker evidence"
+1. ON RESUME:
+   Read YOUR session-continuity.json
+
+2. Check hierarchy.children:
+   For each child with status="active":
+     a. Record: childSessionId, depth, delegatedBy
+     b. Check if child has grandchildren with status="active"
+
+3. IF grandchildren exist (depth=2):
+   Resume the child first → child resumes its grandchildren
+
+4. IF no grandchildren:
+   Resume child directly
+
+5. IF multiple active children (parallel dispatch):
+   Resume them SEQUENTIALLY (one at a time)
+   Do NOT re-parallelize on resume
 ```
 
-**This is the ONLY case where you create a new task_id. Any other case = protocol violation.**
+### Delegation Depth Levels
+
+```
+LEVEL 0 (L0 Orchestrator)
+  ├── Disconnected while L1 was running? → RESUME L0 → L0 resumes L1
+  └── Disconnected while L2 was running? → RESUME L0 → L0 resumes L1 → L1 resumes L2
+
+LEVEL 1 (L1 Coordinator)
+  ├── Disconnected while L2 was running? → RESUME L1 → L1 resumes L2
+  └── Disconnected while multiple L2s were running? → RESUME L1 → resume each sequentially
+
+LEVEL 2 (L2 Specialist)
+  └── L2 does NOT spawn further delegations. Completes or returns errors.
+```
+
+### L0→L1 Cascade Resume Pattern
+
+When L0 resumes an L1 coordinator, the coordinator must:
+
+```
+1. On spawn, L1 coordinator checks its OWN session-continuity.json
+2. Finds active L2 children: hierarchy.children.<childId>.status === "active"
+3. Resumes each active child with EXACT task_id
+4. NEVER creates new child sessions when aborted ones exist
+```
+
+## §5 — Session Health Dashboard (L0 Only)
+
+L0 agents should run this on power-on to get an overview:
+
+```
+1. List all sessions:
+   session-tracker(action: "list-sessions", limit: 50)
+
+2. Count:
+   - Active sessions (status === "active")
+   - Sessions with active children (childCount > 0)
+   - Sessions with totalDelegationDepth > 0
+
+3. Warn if:
+   - >5 active sessions exist (leakage)
+   - Any session has depth >= 3 (max delegation depth)
+   - Any session has been active >24h (stale lock)
+```
+
+## §6 — Worked Example: Disconnect Recovery
+
+**Scenario:** L0-orchestrator was deep in a multi-child delegation when the user disconnected. Session `ses_1ebe832c5ffeeYuFbS1kqleZnD` has active children.
+
+**Recovery:**
+
+```
+1. read(".hivemind/session-tracker/project-continuity.json")
+   → Found ses_1ebe832c5ffeeYuFbS1kqleZnD: status=active
+
+2. read(".hivemind/session-tracker/ses_1ebe832c5ffeeYuFbS1kqleZnD/session-continuity.json")
+   → hierarchy.children.ses_1ebe39941ffecHehSRcc13IqeD: depth=1, status=active
+   → hierarchy.children.ses_1ebd373b1ffeDa7AJ7KJIPShVE: depth=1, status=active
+
+3. Both at depth=1. Pick most recently updated child.
+
+4. session-tracker(action: "export-session", sessionId: "ses_1ebe832c5ffeeYuFbS1kqleZnD")
+   → .md content returned
+
+5. grep "## USER (turn" on exported content → found last user intent
+   "audit the session-tracker module and report all flaws"
+
+6. task(description="resume", subagent_type="hm-l2-auditor",
+        task_id="ses_1ebe39941ffecHehSRcc13IqeD")
+
+→ Resumed L2 auditor continues from where it left off.
+→ NO new session created. NO prompt repeated.
+```
+
+### Real-World Cascade Example
+
+```
+Session tree:
+  ses_A (L0 orchestrator, status=active)
+    └── ses_B (L1 coordinator, status=active)
+          └── ses_C (L2 specialist, status=active, depth=2)
+
+Recovery sequence (5 turns total):
+  TURN 1: L0 reads project-continuity → finds ses_A active, depth=2
+           L0 resumes ses_A: task(task_id="ses_A")
+  TURN 2: L0 (resumed) instructs L1 to check for aborted children
+  TURN 3: L1 reads ses_B's continuity → finds ses_C active, depth=2
+           L1 resumes ses_B: task(task_id="ses_B")
+  TURN 4: L1 (resumed) resumes L2: task(task_id="ses_C")
+  TURN 5: L2 continues from where it left off, completes work
+
+→ NO new sessions created. NO prompts repeated.
+```
+
+### Multi-Child Recovery Example
+
+```
+Session: ses_1ebe832c5ffeeYuFbS1kqleZnD
+  children:
+    ses_1ebe39941ffecHehSRcc13IqeD: depth=1, active, delegatedBy=main_l0_agent
+    ses_1ebd373b1ffeDa7AJ7KJIPShVE: depth=1, active, delegatedBy=main_l0_agent
+
+Recovery:
+  1. L0 resumes ses_1ebe832c5ffeeYuFbS1kqleZnD
+  2. L0 resumes first child with task_id
+  3. Child completes → L0 accepts with gates
+  4. L0 resumes second child with task_id
+  5. Child completes → L0 accepts with gates
+
+→ Sequential resume of parallel children. Both completed.
+```
+
+## §7 — Resume Failure Modes
+
+| Failure | Detection | Resolution |
+|---------|-----------|------------|
+| task_id expired | `task()` returns "session not found" | Export session .md, extract original prompt, create NEW dispatch with same prompt and agent type |
+| Child session has no .json | session-continuity.json missing or empty | Search for child's .md file; if missing, treat as lost — re-dispatch |
+| Double-resume | Child returns immediately with status "already completed" | Accept the result. Do not re-dispatch. |
+| delegatedBy is "main_l0_agent" (ambiguous) | Can't determine exact agent type | Read parent .md → find task dispatch → subagent_type field |
+| Deep tree (depth=2 with grandchild) | Multiple levels of active children | Resume parent → parent resumes child → child resumes grandchild. Always bottom-up. |
+
+### Common Mistakes
+
+| Mistake | Why Wrong | Correct |
+|---------|-----------|---------|
+| `task(description="audit X", prompt="<repeated>", ...)` | Prompt repeated — context wasted, agent restarts | `task(description="resume", task_id="<id>")` |
+| Wrong agent type in subagent_type | delegatedBy said "hm-l2-auditor" but used "hm-l2-researcher" | Use EXACT `delegatedBy` value |
+| New session created instead of resume | task_id is new instead of existing child ID | Use EXISTING child session ID |
+| Missing subagent_type | task_id given without agent type | Include `subagent_type` from `delegatedBy` |
+
+### Resume Verification Checklist
+
+After a successful resume chain, verify:
+- [ ] All active children transitioned to "completed" or "error"
+- [ ] No new session IDs were created during resume
+- [ ] Each child's depth matches its position in the hierarchy tree
+- [ ] Quality gate triad was run on each child output
+- [ ] User was informed of recovery state on return

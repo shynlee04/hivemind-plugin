@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e824db27ffeElYDbcCbTrVthz",
+  "parentSessionID": "ses_1e94024baffeVXNTsMOc7nQPlz",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Verify phase 11 completion",
+    "subagentType": "gsd-verifier"
+  },
+  "created": "2026-05-11T16:28:44.272Z",
+  "updated": "2026-05-11T16:28:44.272Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-verifier",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

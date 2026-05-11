@@ -12,7 +12,7 @@ instruction:
 steps: 50
 permission:
   read:
-    '*': allow
+    '*': ask
     '*.md': allow
     '*.json': allow
     '*.ts': allow
@@ -21,16 +21,16 @@ permission:
   edit: ask
   write: ask
   bash:
-    '*': allow
+    '*': ask
     git *: allow
     node *: allow
     npx *: allow
   task:
-    '*': allow
+    '*': ask
   delegate-task: allow
   delegation-status: allow
   skill:
-    '*': allow
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

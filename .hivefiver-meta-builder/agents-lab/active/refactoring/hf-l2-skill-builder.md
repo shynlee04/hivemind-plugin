@@ -23,7 +23,7 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': allow
+    '*': ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -31,7 +31,7 @@ permission:
   prompt-analyze: ask
   session-patch: ask
   skill:
-    '*': allow
+    '*': ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow

@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e7db6f75ffeKAgQ0I0QkjDWr5",
+  "parentSessionID": "ses_1e7df6e7dffeuoHMHJggIuqMry",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Research Phase 12 CP-ST-01",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-11T17:54:26.821Z",
+  "updated": "2026-05-11T17:54:26.821Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

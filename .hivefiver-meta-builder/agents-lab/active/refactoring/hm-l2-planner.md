@@ -20,14 +20,14 @@ permission:
   edit: ask
   write: ask
   bash:
-    '*': allow
+    '*': ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': allow
+    '*': ask
     hm-l2-architect: allow
     hm-l2-strategist: allow
   delegate-task: ask
@@ -37,7 +37,7 @@ permission:
   prompt-analyze: ask
   session-patch: ask
   skill:
-    '*': allow
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

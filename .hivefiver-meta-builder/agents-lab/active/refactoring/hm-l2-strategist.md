@@ -19,14 +19,14 @@ permission:
   edit: ask
   write: ask
   bash:
-    '*': allow
+    '*': ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': allow
+    '*': ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -35,7 +35,7 @@ permission:
   session-patch: ask
   webfetch: allow
   skill:
-    '*': allow
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
@@ -393,7 +393,7 @@ FeatureE (independent — no inbound/outbound hard edges)
   Terminal L2 specialist. Never delegates.
   - Receives tasks from L1 coordinator only
   - Returns structured results to L1 coordinator only
-  - Has no delegation capabilities (task: '*': allow — TEMPORARY DEBT, see .hivemind/planning/tech-debt/L2-L3-ASTERISK-PERMISSION-DEBT-2026-05-12.md)
+  - Has no delegation capabilities (task: '*': ask only)
   - All roadmap design and analysis performed directly
 
   **Escalates to L1 when:**

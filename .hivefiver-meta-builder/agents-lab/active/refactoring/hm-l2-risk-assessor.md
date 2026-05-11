@@ -15,9 +15,9 @@ permission:
   grep: allow
   glob: allow
   task:
-    '*': allow
+    '*': ask
   skill:
-    '*': allow
+    '*': ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

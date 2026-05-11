@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e839d4bdffeRWYFKcNOGfqIOS",
+  "parentSessionID": "ses_1e94024baffeVXNTsMOc7nQPlz",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "resume",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-11T16:24:43.401Z",
+  "updated": "2026-05-11T16:24:43.401Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

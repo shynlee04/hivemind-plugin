@@ -221,10 +221,3 @@ If interrupted:
 4. `git log --oneline -5` — see recent commits
 5. Read `.hivefiver-meta-builder/plans/` for current plans
 6. Resume from where you left off
-
-## Current Phase Context
-
-**Active phase (2026-05-11):** Phase 11 — Governance Reconciliation (GOV-01). All sector AGENTS.md files audited against live evidence.  
-**Evidence baseline:** `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md`  
-**What this means for .hivefiver-meta-builder/:** Source-of-truth for primitive authoring. MCM-01 and MCM-02 verified agent/skill migration complete. Symlink reflection from `.hivefiver-meta-builder/` to `.opencode/` operational via BOOT-04.  
-**Next work affecting .hivefiver-meta-builder/:** MCM-03 (config integration) and MCM-04 (end-user customization).

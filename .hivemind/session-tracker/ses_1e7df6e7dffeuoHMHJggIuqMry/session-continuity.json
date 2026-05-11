@@ -1,0 +1,40 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e7df6e7dffeuoHMHJggIuqMry",
+  "lastUpdated": "2026-05-11T18:34:05.229Z",
+  "hierarchy": {
+    "root": "ses_1e7df6e7dffeuoHMHJggIuqMry",
+    "children": {
+      "ses_1e7db6f75ffeKAgQ0I0QkjDWr5": {
+        "file": "ses_1e7db6f75ffeKAgQ0I0QkjDWr5.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e7cf8b01ffewEF7vgrcyG5SoF": {
+        "file": "ses_1e7cf8b01ffewEF7vgrcyG5SoF.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e7bddda3ffe7s0o4F5gT24YU2": {
+        "file": "ses_1e7bddda3ffe7s0o4F5gT24YU2.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e7b63fd5ffeITUoweQVsr73Ew": {
+        "file": "ses_1e7b63fd5ffeITUoweQVsr73Ew.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 4,
+  "toolSummary": {}
+}

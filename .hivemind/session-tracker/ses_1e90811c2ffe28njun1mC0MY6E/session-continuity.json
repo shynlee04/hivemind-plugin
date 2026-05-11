@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1e90811c2ffe28njun1mC0MY6E",
-  "lastUpdated": "2026-05-11T14:39:34.380Z",
+  "lastUpdated": "2026-05-11T13:08:38.680Z",
   "hierarchy": {
     "root": "ses_1e90811c2ffe28njun1mC0MY6E",
     "children": {
@@ -25,16 +25,9 @@
         "status": "active",
         "delegatedBy": "main_l0_agent",
         "children": {}
-      },
-      "ses_1e88bdd17ffewyX543XRi2bmzy": {
-        "file": "ses_1e88bdd17ffewyX543XRi2bmzy.json",
-        "depth": 1,
-        "status": "active",
-        "delegatedBy": "main_l0_agent",
-        "children": {}
       }
     }
   },
-  "turnCount": 4,
+  "turnCount": 3,
   "toolSummary": {}
 }

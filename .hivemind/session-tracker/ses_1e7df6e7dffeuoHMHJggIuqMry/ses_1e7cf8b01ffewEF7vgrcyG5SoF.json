@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e7cf8b01ffewEF7vgrcyG5SoF",
+  "parentSessionID": "ses_1e7df6e7dffeuoHMHJggIuqMry",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Plan Phase 12 CP-ST-01 Remediation",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-05-11T18:15:33.613Z",
+  "updated": "2026-05-11T18:15:33.613Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

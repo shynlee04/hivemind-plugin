@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e7ec6ad2ffeBQ5Hs8YazfaWjd",
+  "parentSessionID": "ses_1e822ce40ffeEe709ARUN0fgLq",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Synthesize OpenCode context research",
+    "subagentType": "hm-l1-coordinator"
+  },
+  "created": "2026-05-11T17:31:54.633Z",
+  "updated": "2026-05-11T17:31:54.633Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

@@ -1,6 +1,6 @@
 # Reference 06: Session-Tracker Manual
 
-> **Jump targets:** [ref-06 §1]–[ref-06 §8]
+> **Jump targets:** [ref-06 §1]–[ref-06 §7]
 
 ## §1 — Tool API Reference
 
@@ -267,47 +267,3 @@ status: "active"
 **NEVER:** `read(".hivemind/session-tracker/ses_xxx/ses_xxx.md")` (could be 7000+ lines)
 
 **ALWAYS:** Use grep to find the line number, then read with offset and limit.
-
-## §8 — Tool Fallback Strategies
-
-> **When:** session-tracker tool fails, returns wrong data, or extracts too much context.
-
-### FALLBACK 1: Direct bash navigation
-```
-  List sessions:   bash("ls .hivemind/session-tracker/")
-  Read index:      bash("cat .hivemind/session-tracker/project-continuity.json")
-  Read hierarchy:  bash("cat .hivemind/session-tracker/<id>/session-continuity.json")
-  Search JSON:     grep(pattern: '"status"\\s*:\\s*"active"', path: ".hivemind/session-tracker/", include: "*.json")
-  List children:   glob(pattern: "*.json", path: ".hivemind/session-tracker/<id>/")
-```
-
-### FALLBACK 2: Grep-based search
-```
-  Find active:    grep(pattern: "status.*active|cancelled|aborted", include: "session-continuity.json", path: ".hivemind/session-tracker/")
-  Find user turns: grep(pattern: "## USER \\\\(turn", include: "*.md", path: ".hivemind/session-tracker/<id>/")
-  Find task_ids:   grep(pattern: "task_id:", include: "*.md", path: ".hivemind/session-tracker/<id>/")
-```
-
-### FALLBACK 3: Efficient reading (when export is too heavy)
-```
-  NEVER read full .md files — use offset/limit:
-    read(filePath, offset=1, limit=30) — frontmatter only
-    grep for "## USER" → get line number → read(filePath, offset=N, limit=30)
-  JSON files are small (~20-50 lines): read(filePath) — full JSON is fine, MD is not
-```
-
-### FALLBACK 4: Node.js one-liner (for complex JSON filtering)
-```
-  Filter sessions:  bash("node -e \"const j=require('./.hivemind/session-tracker/project-continuity.json'); Object.entries(j.sessions).forEach(([k,v])=>console.log(k, v.status))\"")
-  List children:    bash("node -e \"const j=require('./.hivemind/session-tracker/<id>/session-continuity.json'); Object.entries(j.hierarchy.children||{}).forEach(([k,v])=>console.log(k, v.status, v.depth))\"")
-```
-
-### Edge Cases Covered
-
-| Problem | Symptom | Fix |
-|---------|---------|-----|
-| **Forked sessions** | session ID ≠ directory name | Use `ls` to verify directory exists before reading |
-| **Stale index entries** | project-continuity.json has non-existent directories | Verify: `bash("test -d .hivemind/session-tracker/<id> && echo EXISTS")` |
-| **Missing session-continuity.json** | Directory exists but no index file | Read child `.json` files directly: `glob(".hivemind/session-tracker/<id>/*.json")` |
-| **Wrong tool extracting too much** | session-tracker export returns huge .md | Use grep to find line numbers, then `read(offset=N, limit=30)` instead |
-| **JSON parse errors** | Corrupted JSON file | Use bash `cat` to inspect raw content, then grep for specific fields |

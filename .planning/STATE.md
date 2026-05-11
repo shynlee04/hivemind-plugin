@@ -1,152 +1,216 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: Hivemind Core
-status: active
-last_updated: "2026-05-12T00:20:00.000Z"
+milestone_name: milestone
+current_phase: SR-10 complete — source planes remediated and verified after aborted SR-4 retry
+status: unknown
+last_updated: "2026-05-11T09:58:00.151Z"
 progress:
   total_phases: 31
-  completed_phases: 2
-  total_plans: 15
-  completed_plans: 14
-  percent: 93
+  completed_phases: 1
+  total_plans: 10
+  completed_plans: 9
+  percent: 90
 ---
+
+<!-- generated-by: gsd-doc-writer -->
 
 # Hivemind — State
 
-**Last updated:** 2026-05-11
-**Last trigger:** Phase 11 governance reconciliation — all core artifacts audited against live evidence
-**Evidence baseline:** `11-TRUTH-MATRIX.md` — 19 stale claims found, 6 confirmed accurate
+**Last updated:** 2026-05-08
+**Last trigger:** SR remediation completed — corrected source-plane restructuring
 
 ---
 
 ## Current Status
 
-**Active phase:** 12 — CP-ST-01 Remediation. Fix 20+ writer engine defects, redesign tool surface per CUSTOM-TOOLS-CRITERIA, address all 14 review findings from CP-ST-01-REVIEW.md.  
-**Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 1978 tests (2 failures). Vitest hoist warnings remain non-fatal.
-
-Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized under 8 top-level src/ directories. BOOT-01 through BOOT-08 complete — bootstrap/init CLI proven E2E. MCM-01/MCM-02 complete — 89 agents and 125 skill directories migrated. CP-PTY-00 complete — shell/PTY control-plane spike delivered (docs/spec). Node 9.0.0 / Python 3.9.6.
-
-**Blocked:** No — all entry gates for CP-PTY-01 satisfied.  
-**Control mode:** Phase-gated autonomous. Cycle 2 (Bootstrap Recovery) complete.  
-Cycle 3 (Routing Foundation) pending governance reconciliation and CP-PTY-01 completion.  
-**Next immediate work:** Complete GOV-01 Plans 03-05 (PROJECT.md, REQUIREMENTS.md, ROADMAP.md reconciliation, plus 7 sector AGENTS.md audits). Then advance CP-PTY-01 from READY to execution.
+**Active workstreams:** Structure Restructuring (WS-SR) complete + Shell/PTY Control-Plane Runway (CP-PTY-00 complete) + Meta-Concept Migration (WS-MCM — MCM-01/MCM-02 complete)
+**Current phase:** SR-10 complete — source planes remediated and verified after aborted SR-4 retry
+**Blocked:** No for WS-SR — corrected architecture decision accepted; CP-PTY/MCM downstream work can resume from roadmap gates
+**Health:** 🟢 SR-04 through SR-10 completed with `npm run typecheck`, `npm test`, and `npm run build` passing; known Vitest hoist warnings remain non-fatal
+**Control mode:** Managed autonomous loop — WS-SR exit evidence recorded; next work should return to CP-PTY/MCM/f-04 dependency order
 
 ## Project Reference
 
-**Product:** Hivemind | **Package/bin:** `hivemind` | **Type:** harness | **Platform:** OpenCode  
-**Legacy aliases:** `opencode-harness`, `hivemind-tools` (explicitly labeled legacy only)  
-**Package:** `package.json` names package as `hivemind`. SDK: `@opencode-ai/plugin` ^1.14.41, `@opencode-ai/sdk` ^1.14.41.  
-**Core value:** Agents build on each other's work across sessions.
+See: .planning/PROJECT.md (updated 2026-05-07)  
+**Core value:** Agents build on each other's work across sessions  
+**Current focus:** Post-restructuring continuation — `src/lib/` has been removed and source planes now live under shared, task-management, coordination, features, config, routing, hooks, and tools. CP-PTY-01..04 can resume from their gates.
+
+**Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
+
+**Package naming:** `package.json` names package/bin as `hivemind`. `opencode-harness` and `hivemind-tools` are legacy aliases only unless explicitly labeled.
+
+**Canonical identity:** Product Hivemind; package/bin `hivemind`; project type harness; current platform OpenCode; GSD is internal workflow tooling, not product identity.
+
+---
 
 ## What's Delivered
 
-**Harness core:** 16 custom tools registered via `plugin.ts` — all Zod-schematized on the CQRS write-side. Tools cover delegation dispatch (`delegate-task`, `delegation-status`), session management (`session-tracker`, `session-journal-export`, `session-patch`), config query (`configure-primitive`), prompt analysis (`prompt-skim`, `prompt-analyze`), bootstrap (`bootstrap-init`, `bootstrap-recover`), document intelligence (`hivemind-doc`), trajectory tracking (`hivemind-trajectory`), pressure classification (`hivemind-pressure`), background command execution (`run-background-command`), and agent work contracts (`hivemind-agent-work-create`, `hivemind-agent-work-export`). 6 hook types registered: 3 lifecycle observers (`session.created`, `session.entry`, `session.journey`), 2 message transforms (`system.transform`, `chat.system.transform`), and 1 tool guard (`tool.execute.after`). configs.json schema with 29 fields served through a lazy-cached subscriber. Behavioral profile system dispatching 3 modes (expert-advisor, hivemind-powered, free-style) with mode-aware delegation routing. Toggle gate infrastructure — 6 toggles wired at runtime, 4 annotated as `@future-consumer`, 4 fully deferred.
+| Component | Status | Details |
+|-----------|--------|---------|
+| Build system | ✅ | tsc clean, typecheck passes, dist/ produces correctly |
+| Test suite | ✅ | 125 test files, 1767 tests, 2 failures (README heading assertions) |
+| 16 custom tools | ✅ | Registered in plugin.ts, Zod schemas, CQRS write-side |
+| 6 hook types | ✅ | Event observers, system/messages transforms, tool guards |
+| configs.json schema | ✅ | 29 fields, readConfigs()/writeConfigs(), lazy-cached subscriber |
+| Behavioral profiles | ✅ | 3 modes → profile mapping, wired into hooks/delegation/gates |
+| Toggle gates | ✅ | 6 toggles wired, 4 @future-consumer annotated, 4 deferred |
+| Delegation engine | ✅ | WaiterModel dispatch, dual-signal completion, PTY/SDK lanes |
+| Continuity persistence | ✅ | Deep-clone-on-read, session journal, Q6 state root migration |
+| 89 agents | ✅ | L0/L1/L2/L3 hierarchy, hm-* + hf-* lineages |
+| 123 active skill directories | ✅ | Current primitive inventory excludes `.gitkeep`; lineage counts require MCM doctor proof before shipping claims |
+| 19 commands | ✅ | start-work, plan, deep-init, ultrawork, harness-doctor, etc. |
+| Agent/skill integration constitution | ✅ | BOOT-08: lineage, permissions, hierarchy, routing contracts (L5 governance) |
+| Agent migration verification | ✅ | MCM-01: 56 shipped agents (45 hm-* + 11 hf-*) classified and discoverable |
+| Skill migration verification | ✅ | MCM-02: 48 shipped skills (35 hm-* + 13 hf-*) classified and discoverable |
 
-**Delegation and persistence:** WaiterModel delegation engine with dual-signal completion detection across PTY and SDK lanes — supports always-background dispatch, status polling, and result retrieval. Continuity persistence layer with deep-clone-on-read integrity, session journal as append-only event timeline, and Q6 state root migration (`.hivemind/` canonical, `.opencode/` primitives-only). Delegation records persisted via `delegation-persistence.ts`, journal exported via `session-journal-export` tool. Bootstrap/init CLI proven E2E — `npx hivemind init` installs project primitives with project-scope fallback, `npx hivemind doctor` validates health and discoverability. Circuit breaker thresholds and tool-call budget policies enforced at the plugin composition root.
-
-**Primitive inventory:** 89 agents across hm-* (product-dev, STRICT) and hf-* (meta-builder, FLEXIBLE) lineages, organized in L0→L1→L2→L3 hierarchy (56 shipped product agents + 33 gsd-* internal developer tooling). 125 active skill directories under `.opencode/skills/` (57 shipped: 35 hm-*, 13 hf-*, 3 gate-*, 6 stack-*, plus opencode-config-workflow and hivemind-power-on). 19 commands across 7 core, 7 extended, 1 sync, and 4 test families. 7 sector AGENTS.md files across all governance layers.
-
-**Structural integrity:** `src/lib/` has been removed. Source planes now live under `src/shared/`, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, `src/hooks/`, and `src/tools/`. `plugin.ts` at 242 LOC (target: 100). 149 test files containing 1978 test cases (all unit; zero integration/E2E).
+---
 
 ## What's Broken / Missing
 
-(Numbers derived from 11-TRUTH-MATRIX.md live evidence. All stale claims corrected. Previous claims about dead code files and `src/lib/` directory stale modules have been removed — both categories confirmed deleted/restructured per live filesystem verification. See S-07, P-04 in truth matrix.)
-
 | Issue | Severity | Action |
 |-------|----------|--------|
-| **Config consumer gap** — `delegation_systems` config field has no runtime consumer | 🔴 CRITICAL | CA-04.2: wire or explicitly defer |
+| **Bootstrap/recovery E2E proof complete** — BOOT-02 through BOOT-07 passed local clean-state proof | 🟢 RESOLVED | Maintain regression coverage |
+| **Config consumer gap remains** — `conversation_language` is traced as wired in config traceability, but `delegation_systems` has no runtime consumer | 🔴 CRITICAL | Phase 0 config contract + CA-04.2: wire or explicitly defer dead config fields |
+| **Shell/PTY command lane fully scoped** — CP-PTY-00 spike complete, CP-PTY-01..04 phases defined covering command-process, SDK session, coordination, and cross-cutting integration | 🟡 HIGH | CP-PTY-01 ready to execute; 02-04 planned |
+| **`messages-transform.ts` dead code** — 67 LOC, zero imports, confirmed dead Phase 35 | 🟡 HIGH | Delete file |
+| **plugin.ts at 447 LOC** — 100 LOC target, needs split | 🟡 HIGH | Extract hook/tool registration modules |
+| **12 stale modules** — exist but no consumers | 🟡 HIGH | Document or wire (see SRC-MODULE-AUDIT) |
 | **f-04 auto-routing MISSING** — no intent classification, no workflow router | 🔴 CRITICAL | Wave 3: design from skeleton §5.2 |
-| **E2E tests MISSING** — all 1978 tests are unit; zero integration/E2E | 🟡 HIGH | Add delegation smoke test |
-| **Lifecycle gate criteria MISSING** — `references/` empty in gate-l3-lifecycle-integration | 🟡 HIGH | CA-04.4: synthesize from ARCHITECTURE.md |
-| **`.hivemind/` ownership gap** — 11 subdirectories, only 2 have typed CRUD modules | 🟡 HIGH | CA-04.3: after bootstrap |
-| **plugin.ts LOC** — 242 LOC vs 100 target | 🟡 MEDIUM | Extract hook/tool registration modules |
+| **E2E tests MISSING** — 1767 unit tests, zero integration | 🟡 HIGH | Add at least delegation smoke test |
+| **Lifecycle gate criteria MISSING** — references/ empty | 🟡 HIGH | CA-04.4: synthesize from ARCHITECTURE.md |
+| **`.hivemind/` ownership gap** — 17/19 dirs no typed module | 🟡 MEDIUM | CA-04.3: after bootstrap |
 | **`asString` duplicated** — helpers.ts + continuity.ts | 🟢 LOW | Consolidate |
 | **storeCache singleton** — prevents isolated testing | 🟢 LOW | Refactor continuity.ts |
 
-## Active Phase Runway
+---
 
-| Phase | Title | Status | Depends On | Notes |
-|-------|-------|--------|------------|-------|
-| **GOV-01** | Governance Reconciliation (THIS PHASE) | 🔵 IN PROGRESS | — | Updating all core artifacts |
-| CP-PTY-01 | Background Shell Control-Plane MVP | 🔵 READY | BOOT-07, CP-PTY-00 | Permission-gated command lifecycle; PTY + headless fallback |
-| CP-PTY-02 | SDK Session Delegation Integration | ⬜ NOT PLANNED | CP-PTY-01, BOOT-08 | Async/sync child-session dispatch, context injection |
-| CP-PTY-03 | Agent/Subagent Background Task Coordination | ⬜ NOT PLANNED | CP-PTY-02, BOOT-08 | Wave dispatch, completion-looping, queue dedup |
-| CP-PTY-04 | Cross-Cutting Shell Integration | ⬜ NOT PLANNED | CP-PTY-03, MCM-03 | Wires background commands to session/task/journal/hooks |
-| CP-ST-01 | Session Tracker Revamp | 🟢 COMPLETE | SR-10, BOOT-07 | 163 tests, 20+ defects found — see Phase 12 |
-| Phase 12 | CP-ST-01 Remediation | 🔵 IN PROGRESS | CP-ST-01 completion | Fix 20+ defects, toolset redesign, review findings |
-| SC-PTY-01 | Read-Only Terminal Projection | ⬜ DEFERRED | CP-PTY-01, Q2 confirmation | Read-only projection only; blocked on sidecar decision |
-| f-04 | Auto-commands + Workflow Router | ⬜ PENDING | Phase 0, BOOT, MCM | HIGHEST GAP — no intent classification exists |
-| MCM-03 | Config Plane Integration | ⬜ PENDING | MCM-01, MCM-02, BOOT-06 | Doctor agent/skill counts, config integration |
-| MCM-04 | End-User Customization | ⬜ PENDING | MCM-03 | User-project customization surface |
-
-## GOV-01 Progress
-
-**Plans completed:** 5 of 5 (11-01 STATE.md rewrite, 11-02 STATE.md numeric refresh, 11-03 PROJECT.md + REQUIREMENTS.md reconciliation, 11-04 ROADMAP.md reconciliation, 11-05 7 sector AGENTS.md audits).  
-**Status:** All 5 GOV-01 plans complete. Governance reconciliation phase finished.  
-**Truth baseline:** All numeric claims cross-referenced against live filesystem evidence via 11-TRUTH-MATRIX.md (27 claims across 13 governance files). Stale corrections applied: plugin LOC 447→242, test count 1767→1978, test files 125→149, skill dirs 123→125, .hivemind dirs 19→11, AGENTS.md files 9→7, progress percent 90→50.
-
-## Archived Content
-
-Historical detail previously in STATE.md has been moved to `.planning/archive/state-history/` (6 date-stamped files extracted 2026-05-11):
-
-- `01-boot-task-list-2026-05-11.md` — BOOT-02 task table (T01–T13)
-- `02-phase-0-governance-progress-2026-05-11.md` — Phase 0 artifact checklist
-- `03-sr-decisions-2026-05-11.md` — SR restructuring decisions (D-01 through D-07)
-- `04-accumulated-context-2026-05-11.md` — Roadmap evolution history
-- `05-next-actions-2026-05-11.md` — Next actions from prior STATE.md
-- `06-delivered-components-2026-05-11.md` — Component status table (replaced by paragraph summary above)
-
-Git history preserves the pre-rewrite STATE.md. All numeric claims verified against 11-TRUTH-MATRIX.md live evidence. See `.planning/archive/state-history/` for full historical context from the pre-GOV-01 STATE.md.
-
-## Recent Decisions
+## Decisions Record
 
 | ID | Decision | Status |
 |----|----------|--------|
 | Q1-Q6 | Validation decisions 2026-04-25 | Locked |
 | D-CONF-01..05 | configs.json schema and loading | Locked |
-| D-BIND-01..03 | Schema-to-runtime binding | Locked (BIND-03: `conversation_language` wired, `delegation_systems` unresolved) |
+| D-BIND-01..03 | Schema-to-runtime binding | Locked (BIND-03 still requires consumer proof; `conversation_language` traced as wired, `delegation_systems` unresolved) |
+| D-CRUD-01..05 | CRUD lifecycle | Locked (CRUD-01 MISSING, CRUD-05 partial) |
+| D-LIFECYCLE-01..02 | Lifecycle integration requirements | Locked |
 | D-WS-01..03 | Workstream consolidation (5→3) | Locked |
-| P0-ID | Product Hivemind; package/bin `hivemind`; `opencode-harness` legacy | Locked |
-| CA-04 RESTRUCTURE | Split into 4 sub-phases with dependency order | NEW — 2026-05-07 |
-| O3-DOCS-FOUNDATION | Option 3 is docs-only L5, not runtime | NEW — 2026-05-07 |
-| WS-MCM | Meta-Concept Migration workstream (MCM-01..04) | NEW — 2026-05-07 |
-| D-MCM-01 | gsd-* agents/skills NEVER shipped | Locked |
-| BOOT-02R | BOOT-02 summaries reconciled before BOOT-03 | COMPLETE |
-| CP-PTY-00 | Shell/PTY spike docs/spec only | COMPLETE |
-| SR-D-01..07 | SR restructuring decisions (archived: `.planning/archive/state-history/03-sr-decisions-2026-05-11.md`) | COMPLETE |
-| GOV-01 | Phase 11 governance reconciliation (D-01 through D-15) | IN PROGRESS |
-
-## Key Artifacts Index
-
-**Architecture baselines:**
-
-- `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` — Naming contract: hm-* (product-dev, STRICT), hf-* (meta-builder, FLEXIBLE), gate-* (quality, INTERNAL), stack-* (reference). L0-L3 delegation hierarchy.
-- `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` — Surface ownership model: 9-surface authority table, Phase 0 mutation gates, target source planes.
-- `.planning/codebase/ARCHITECTURE.md` — CQRS model (tools = write-side, hooks = read-side), component dependency graph, module size caps (500 LOC max).
-- `.planning/codebase/STRUCTURE.md` — File tree conventions: kebab-case directories, feature-module pattern, colocated tests, barrel exports.
-
-**Control artifacts:**
-
-- `.planning/roadmap/managed-autonomous-loop-2026-05-07.md` — Autonomous loop governance: phase-gated execution with entry/exit criteria.
-- `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md` — CP-PTY phase route: 5-phase dependency chain with gate criteria.
-- `.planning/lifecycle/lifecycle-overview-2026-05-07.md` — Session lifecycle phases with transition gates and event wiring map.
-
-**Phase evidence (completion proof):**
-
-- BOOT-07: `.planning/phases/BOOT-07-end-to-end-proof/` — E2E bootstrap proof (init + doctor + validate-restart)
-- BOOT-08: `.planning/phases/BOOT-08-agent-skill-integration/` — Integration constitution (lineage, permission, routing)
-- CP-PTY-00: `.planning/phases/CP-PTY-00-shell-pty-control-plane-spike/` — Docs/spec spike
-- MCM-01: `.planning/phases/MCM-01-agent-migration/` — 56 shipped agents verified discoverable
-- MCM-02: `.planning/phases/MCM-02-skill-migration/` — 48 shipped skills verified discoverable
-- SR-10: `.planning/phases/SR-10-cleanup-agents-md-updates/` — SR restructuring completion marker
-
-**Truth baseline:**
-
-- `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md` — 27 claims verified across 13 governance files via live evidence inspection; 19 stale, 6 confirmed, 1 false, 1 unverified.
+| CA-04 RESTRUCTURE | Split into 4 sub-phases with correct dependency order | NEW — 2026-05-07 |
+| O3-DOCS-FOUNDATION | Option 3 Sector Governance Foundation is docs-only L5 evidence layered onto CA-04, not a runtime implementation claim | NEW — 2026-05-07 |
+| WS-MCM | Meta-Concept Migration workstream added — 4 phases (MCM-01 through MCM-04) for agent/skill migration, config integration, and end-user customization | NEW — 2026-05-07 |
+| D-MCM-01 | gsd-* agents/skills are NEVER shipped — dev tooling boundary enforced | NEW — 2026-05-07 |
+| P0-GOV | Phase 0 Governance Baseline blocks BOOT/MCM/f-04 until identity, source-plane, config, meta-authoring, and route gates pass | NEW — 2026-05-07 |
+| P0-ID | Product is Hivemind; package/bin are `hivemind`; harness is project type; OpenCode is platform; `opencode-harness` and `hivemind-tools` are legacy aliases only | NEW — 2026-05-07 |
+| BOOT-02R | BOOT-02 implementation summaries were reconciled before BOOT-03 automation resumed | COMPLETE — 2026-05-08 |
+| CP-PTY-00 | Shell/PTY/background command control-plane spike is docs/spec only and may run parallel with BOOT continuation | NEW — 2026-05-08 |
+| CP-PTY-01 | Runtime shell/PTY control-plane implementation is blocked on BOOT-07 unless explicitly authorized earlier | NEW — 2026-05-08 |
+| CP-PTY-02 | SDK session delegation integration — async/sync child-session dispatch, context injection, completion detection | NEW — 2026-05-08 |
+| CP-PTY-03 | Agent/subagent background task coordination — wave dispatch, completion-looping, queue dedup, lifecycle cascade | NEW — 2026-05-08 |
+| CP-PTY-04 | Cross-cutting shell integration — wires background commands to session/task/journal/hooks/permissions | NEW — 2026-05-08 |
 
 ---
 
-*State updated 2026-05-11 for Phase 11 governance reconciliation (GOV-01, Plan 04 completion). All 5 GOV-01 plans complete. ROADMAP.md fully audited: GOV-01/CP-ST-02 entries added, stale numeric claims corrected, dependency chains verified, [UNVERIFIED] markers added where evidence missing.
+## Phase 0 Governance Baseline Progress
 
-Next: Phase completion — CP-PTY-01 execution or next authorized workstream.*
+| Artifact | Status | Evidence level |
+|---|---|---|
+| `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/config/hivemind-config-contract-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/checklists/phase-0-governance-gate-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/roadmap/phase-0-gsd-route-2026-05-07.md` | ✅ COMPLETE | L5 docs/governance |
+| `.planning/ROADMAP.md` update | ✅ COMPLETE | L5 docs/governance |
+| `.planning/STATE.md` update | ✅ COMPLETE | L5 docs/governance |
+
+Runtime readiness remains blocked until later L1-L3 proof exists. Phase 0 governance gate PASSED.
+
+---
+
+## BOOT-02 / BOOT-02R Progress (Phase 0 Gate Passed — Authorized)
+
+| Task | Status | File | LOC |
+|------|--------|------|-----|
+| T01 | ✅ COMPLETE | `src/lib/bootstrap-structure.ts` | 124 |
+| T02 | ✅ COMPLETE | `src/tools/bootstrap-init.ts` | Summary evidence |
+| T03 | ✅ COMPLETE | `src/tools/bootstrap-recover.ts` | Summary evidence |
+| T04 | ✅ COMPLETE | `src/cli/commands/init.ts` | Summary evidence |
+| T05 | ✅ COMPLETE | `src/cli/commands/doctor.ts` | Summary evidence |
+| T06 | ✅ COMPLETE | `src/cli/commands/recover.ts` | Summary evidence |
+| T07 | ✅ COMPLETE | `src/cli/commands/version.ts` | Summary evidence |
+| T08 | ✅ COMPLETE | `src/cli/index.ts` (MODIFY) | Summary evidence |
+| T09–T13 | ✅ COMPLETE | `tests/cli/commands/*.test.ts` | Summary evidence |
+
+BOOT-02 phase-local summaries report implementation and verification evidence in the working tree. BOOT-02R reconciled the active governance truth; BOOT-03 is now the next BOOT phase.
+
+## CP-PTY Runway Progress
+
+| Phase | Status | Evidence level | Notes |
+|---|---|---|---|
+| CP-PTY-00 | ✅ COMPLETE | L5 docs/spec | Context, research, requirements, spec, verification all passed |
+| CP-PTY-01 | 🔵 READY | L2-L3 required | BOOT-07 complete, entry gate satisfied |
+| CP-PTY-02 | ⬜ NOT PLANNED | L2-L3 required | SDK child-session delegation integration |
+| CP-PTY-03 | ⬜ NOT PLANNED | L2-L3 required | Agent/subagent background task coordination |
+| CP-PTY-04 | ⬜ NOT PLANNED | L2-L3 required | Cross-cutting shell integration (wires everything) |
+| SC-PTY-01 | ⬜ DEFERRED | L2-L3 required | Read-only projection only after CP-PTY-01 and Q2 sidecar confirmation |
+
+---
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- **2026-05-08** — SR-00 through SR-10 phase directories created: 11 directories with `.gitkeep` registration under `.planning/phases/SR-*/`
+- **2026-05-08** — WS-SR ROADMAP.md updated: improved phase descriptions with OMO kebab-case conventions, feature-module pattern (index.ts + types.ts + AGENTS.md per module), colocated tests, barrel exports, hierarchical AGENTS.md guidance, 500 LOC cap enforcement, verification commands per phase
+- **2026-05-08** — STATE.md updated: current phase set to SR-0, health green, control mode set to managed autonomous loop, SR directories registered
+- **2026-05-08** — Restructuring plan refined: `.planning/architecture/structure-restructuring-plan-2026-05-08.md` contains complete file mapping (current → target), 10-phase migration plan with risk assessment, rollback strategy, circular dependency resolution, verification commands
+
+### Key Restructuring Decisions
+
+| ID | Decision |
+|----|----------|
+| SR-D-01 | kebab-case everywhere — directories and files follow OMO naming conventions |
+| SR-D-02 | Feature-module pattern — each module has `index.ts` (barrel), `types.ts`, `AGENTS.md` |
+| SR-D-03 | Colocated tests — `manager.ts` + `manager.test.ts` in same directory (not separate `tests/`) |
+| SR-D-04 | 500 LOC cap — modules exceeding 500 LOC (continuity.ts: 465, plugin.ts: 447, delegation-manager.ts: ~500) must be split |
+| SR-D-05 | AGENTS.md at every level — hierarchical guidance from `src/AGENTS.md` down to individual module `AGENTS.md` |
+| SR-D-06 | Circular dependency resolution — `primitive-scanners.ts ↔ primitive-registry.ts` and `runtime-validator.ts ↔ cross-primitive-validator.ts` resolved by extracting shared types |
+| SR-D-07 | Rollback strategy — per-phase atomic commits; full rollback via `git checkout main && git branch -D refactor/structure-restructuring` |
+
+---
+
+## Next Actions
+
+1. **Commit SR remediation** — include source-plane moves, test updates, architecture decision, and summary artifacts; exclude incidental `.hivemind/state/**` runtime-state drift.
+2. **Return to CP-PTY-01** — background shell control-plane MVP is ready after WS-SR completion.
+3. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
+
+## Option 3 Foundation Artifacts
+
+- `.planning/research/omo-adaptation-architecture-2026-05-07.md`
+- `.planning/architecture/hivemind-sector-agents-target-2026-05-07.md`
+- `.planning/architecture/hivemind-command-workflow-session-map-2026-05-07.md`
+- `.planning/architecture/sector-agents-docs-implementation-plan-2026-05-07.md`
+- `.planning/checklists/pre-phase-omo-adaptation-2026-05-07.md`
+
+Runtime readiness: FAIL/BLOCK until L1-L3 runtime proof exists
+
+## Phase 0 Governance Artifacts
+
+- `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md`
+- `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md`
+- `.planning/config/hivemind-config-contract-2026-05-07.md`
+- `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md`
+- `.planning/checklists/phase-0-governance-gate-2026-05-07.md`
+- `.planning/roadmap/phase-0-gsd-route-2026-05-07.md`
+
+All Phase 0 artifacts are L5 documentation/governance evidence only.
+
+## Current Control Artifacts
+
+- `.planning/roadmap/managed-autonomous-loop-2026-05-07.md`
+- `.planning/lifecycle/lifecycle-overview-2026-05-07.md`
+- `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md`
+
+---
+*State updated: 2026-05-08 for SR remediation completion*

@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e800ac02ffe7d22q0zNs1l1PV",
+  "parentSessionID": "ses_1e805f353ffe5Zzu87jpihyCH4",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Phase 12: CP-ST-01 full evidence audit",
+    "subagentType": "gsd-debug-session-manager"
+  },
+  "created": "2026-05-11T17:18:20.233Z",
+  "updated": "2026-05-11T17:18:20.233Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-debug-session-manager",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}

@@ -1,0 +1,20 @@
+{
+  "sessionID": "ses_1e81d7883ffeJNhJKH5epcwqUm",
+  "parentSessionID": "ses_1e81fec47ffe0aYozoUcX89Wqp",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "tool": "task",
+    "description": "Research ecosystem context patterns",
+    "subagentType": "hm-l2-researcher"
+  },
+  "created": "2026-05-11T16:58:57.322Z",
+  "updated": "2026-05-11T16:58:57.322Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-researcher",
+    "model": "unknown"
+  },
+  "turns": [],
+  "children": []
+}
