@@ -11,29 +11,35 @@ The session-tracker data is the TRUTH. The .json says the session exists → you
 
 ## §1 — MECHANICAL RESUME (No decisions. No thinking. Execute.)
 
-**Trigger:** You see a session-tracker child with `status: "active"`. Or the user just reconnected.
+**Trigger:** You see a session-tracker child with ANY status. Or the user just reconnected.
 
 ```
 STEP 0 — READ THE INDEX
   read(".hivemind/session-tracker/project-continuity.json")
   → Find the most recently updated session.
-  → If none with status "active" → go to §2 (fresh start).
+  → If no sessions exist at all → go to §2 (fresh start).
+  → If sessions exist, proceed to STEP 1 regardless of status.
 
 STEP 1 — READ THE HIERARCHY  
   read(".hivemind/session-tracker/<sessionId>/session-continuity.json")
   → Look at hierarchy.children
-  → Find child with status: "active"
-  → Record: childId = that child's key
-  → Record: delegatedBy = that child's delegatedBy field
+  → Find ALL children. Do NOT filter by status. Resume every child.
+  → For each child:
+    - Record: childId = that child's key
+    - Record: delegatedBy = that child's delegatedBy field
+  → If a child is truly completed, task(task_id) returns immediately (no harm).
+  → If a child is in any other state, it continues from where it left off.
+  → The agent CANNOT determine completion from JSON — only the runtime.
 
 STEP 2 — RESUME (the ONLY valid action)
-  task(
-    description = "resume",
-    subagent_type = "<EXACT delegatedBy value>",
-    task_id = "<childId>"
-  )
-  
-  That's it. No other parameters. No "prompt" field. No thinking.
+  For EACH child found in STEP 1:
+    task(
+      description = "resume",
+      subagent_type = "<EXACT delegatedBy value>",
+      task_id = "<childId>"
+    )
+    That's it. No other parameters. No "prompt" field. No thinking.
+  Resume sequentially (NOT parallel): complete first child, then next.
 ```
 
 **If you create a NEW task(task_id="<new>") instead of the above, you have FAILED the protocol.**
@@ -94,7 +100,9 @@ When you resume a parent session, you MUST also instruct it to resume ITS childr
    "You are resuming as L1 coordinator. On spawn:
     1. Read YOUR session-continuity.json at 
        .hivemind/session-tracker/<your-session-id>/session-continuity.json
-    2. Find ALL children with status='active'
+    2. Find ALL children (do NOT filter by status — resume every child).
+       Completed ones return instantly. Others continue.
+       The agent CANNOT determine completion from JSON — only the runtime.
     3. Resume each with EXACT task_id:
        task(description='resume', subagent_type='<delegatedBy>', task_id='<childId>')
     4. DO NOT create new delegations for work already dispatched."
@@ -104,7 +112,7 @@ When you resume a parent session, you MUST also instruct it to resume ITS childr
 
 ```
 1. Read your session-continuity.json
-2. Find ALL children with status="active"
+2. Find ALL children (do NOT filter by status — resume EVERY child)
 3. For each, extract: { sessionId, delegatedBy }
 4. Resume sequentially (NOT parallel):
    task(description="resume", subagent_type="<delegatedBy>", task_id="<sessionId>")

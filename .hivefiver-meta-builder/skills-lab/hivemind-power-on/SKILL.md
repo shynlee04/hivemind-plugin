@@ -35,7 +35,8 @@ allowed-tools:
 **ABORTED ≠ CANCELLED. ABORTED = DISCONNECTED. CONTEXT IS INTACT ON DISK. RESUME WITH EXACT ID.**
 
 ```
-1. IF session-tracker shows ANY active/aborted child delegation → RESUME IT.
+1. IF session-tracker shows ANY child delegation → RESUME IT. Do NOT filter by status.
+   Completed ones return instantly. Others continue. Agent CANNOT determine from JSON.
    DO NOT THINK. DO NOT DECIDE. DO NOT CREATE NEW. task(task_id="<EXISTING ID>")
 2. NEVER repeat prompt when resuming → context is preserved on disk
 3. NEVER L0→L2 dispatch → always L0→L1→L2
@@ -53,7 +54,7 @@ allowed-tools:
 |--------|----------|-------|
 | `/hf-create`, `/hf-audit`, `/hf-stack`, agent/skill/command creation | → hf-lineage, `hf-l1-coordinator` | [ref-01 §2] |
 | `/plan`, `/ultrawork`, `/gsd-*`, feature/bug/architecture work | → hm-lineage, `hm-l1-coordinator` | [ref-01 §3] |
-| Disconnect recovery, session resume (ABORTED ≠ CANCELLED) | → MECHANICAL RESUME — no thinking, just execute | [ref-02 §1] |
+| Disconnect recovery, session resume (ABORTED ≠ CANCELLED) | → MECHANICAL RESUME — no filter, no thinking, all children | [ref-02 §1] |
 | Context compact/purge recovery | → SURVIVAL protocol | [ref-03 §1] |
 | L0→L1→L2 delegation chain dispatch | → DELEGATION protocol | [ref-04 §1] |
 | Quality gate needed on child output | → GATE TRIAD | [ref-05 §1] |
@@ -71,6 +72,15 @@ grep last user turn:   grep(pattern:"## USER \\(turn", path:".hivemind/session-t
 ```
 
 Full tool API reference: [ref-06 §1]
+Fallback strategies (when tool fails): [ref-06 §8]
+
+FALLBACK (when session-tracker tool fails):
+```
+  list sessions:          bash("ls .hivemind/session-tracker/")
+  read index:             read(".hivemind/session-tracker/project-continuity.json")
+  find children:          grep(pattern: '"status"', path: ".hivemind/session-tracker/<id>/", include: "session-continuity.json")
+  list with node:         bash("node -e \"const j=require('./.hivemind/session-tracker/<id>/session-continuity.json'); Object.entries(j.hierarchy.children||{}).forEach(([k,v])=>console.log(k, v.status, v.depth))\"")
+```
 
 ## REFERENCE MAP
 
@@ -99,7 +109,7 @@ references/06-session-tracker-manual.md — .hivemind/ structure, JSON schemas, 
 ```
 - 3 consecutive gate failures → escalate to user with full gap report
 - Ambiguous hm-vs-hf → load hm-l2-user-intent-interactive-loop
-- session-tracker not responding → direct read .hivemind/session-tracker/project-continuity.json
+- session-tracker not responding → use FALLBACK strategies below or [ref-06 §8]
 - task_id expired (session not found) → export .md, extract prompt, create NEW dispatch with same params
 ```
 
@@ -107,7 +117,7 @@ references/06-session-tracker-manual.md — .hivemind/ structure, JSON schemas, 
 
 ```
 POWER-ON → classify lineage → load lineage router → domain work → quality gates → report
-DISCONNECT → RESUME protocol [ref-02] → resume deepest active child → continue
+DISCONNECT → RESUME protocol [ref-02] → resume all children (no status filter) → continue
 COMPACT → SURVIVAL protocol [ref-03] → reconstruct from disk → confirm with user
 L2/L3 SPECIALIST → load ref-05 (gates only) → complete work → return to coordinator
 ```
