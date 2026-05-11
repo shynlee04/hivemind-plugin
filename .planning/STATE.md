@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-11T19:56:57.258Z"
+last_updated: "2026-05-11T20:24:28.362Z"
 progress:
   total_phases: 32
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 18
-  completed_plans: 16
-  percent: 89
+  completed_plans: 17
+  percent: 94
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,15 +17,15 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-12
-**Last trigger:** Phase 12 planning complete — 3 PLAN.md files created for CP-ST-01 remediation (13 tasks, 3 waves, 14 source defects addressed)
+**Last trigger:** Phase 12 complete — all 3 plans executed, 247 session-tracker+tools tests pass, 14 review findings resolved, fork handling implemented
 
 ---
 
 ## Current Status
 
 **Active phase:** 12 — CP-ST-01 Remediation. Fix 20+ writer engine defects, redesign tool surface per CUSTOM-TOOLS-CRITERIA, address all 14 review findings from CP-ST-01-REVIEW.md.
-**Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 1978 tests (2 failures). Vitest hoist warnings remain non-fatal.
-**Phase 12 status:** 🔵 PLANNED — 3 plans, 13 tasks, 3 waves. RESEARCH.md resolved with L2 disk evidence. Ready for execution.
+**Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 2071 tests (2 pre-existing failures). Session tracker pipeline verified.
+**Phase 12 status:** 🟢 COMPLETE — 3 plans, 3 summaries, 14 review findings resolved, fork handling implemented, 247 session-tracker+tools tests (0 failures).
 
 Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
 
@@ -106,6 +106,8 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | CP-PTY-02 | SDK session delegation integration — async/sync child-session dispatch, context injection, completion detection | NEW — 2026-05-08 |
 | CP-PTY-03 | Agent/subagent background task coordination — wave dispatch, completion-looping, queue dedup, lifecycle cascade | NEW — 2026-05-08 |
 | CP-PTY-04 | Cross-cutting shell integration — wires background commands to session/task/journal/hooks/permissions | NEW — 2026-05-08 |
+| DA-IN-02 | Fork handling uses reference-copy (not deep-copy) for child delegations — both sessions share same child .json files; T-12-11 mitigated; copyForkedChildren() in SessionTracker | NEW — 2026-05-12 |
+| D-PHASE12-COMPLETE | All 14 CP-ST-01-REVIEW.md findings resolved with verifiable evidence across 3 waves; pipeline verified end-to-end | NEW — 2026-05-12 |
 
 ---
 
