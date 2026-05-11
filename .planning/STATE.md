@@ -17,13 +17,13 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-12
-**Last trigger:** Phase 12 complete — all 3 plans executed, 247 session-tracker+tools tests pass, 14 review findings resolved, fork handling implemented
+**Last trigger:** BOOT-09 context gathered — 4 areas discussed (child detection via parentID, language block at pos 0, document schema, tool guard enforcement); SPEC.md updated
 
 ---
 
 ## Current Status
 
-**Active phase:** 12 — CP-ST-01 Remediation. Fix 20+ writer engine defects, redesign tool surface per CUSTOM-TOOLS-CRITERIA, address all 14 review findings from CP-ST-01-REVIEW.md.
+**Active phase:** BOOT-09 — MVP Config Schema + Entry Init Verification. Implementation decisions gathered — ready for planning.
 **Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 2071 tests (2 pre-existing failures). Session tracker pipeline verified.
 **Phase 12 status:** 🟢 COMPLETE — 3 plans, 3 summaries, 14 review findings resolved, fork handling implemented, 247 session-tracker+tools tests (0 failures).
 
