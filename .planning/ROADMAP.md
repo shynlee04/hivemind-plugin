@@ -152,7 +152,7 @@ Before writing code:
 ### BOOT-03 Scope: State Initialization
 
 - `npx hivemind init` creates canonical `.hivemind/` directory tree
-- 19 subdirectories with `.gitkeep` registration
+- 11 subdirectories with `.gitkeep` registration
 - Typed CRUD modules per `.hivemind/` subdirectory (7 CRUD, 7 append, 6 read-only)
 - Fixes D-CRUD-05 gap
 
@@ -176,7 +176,7 @@ Before writing code:
 
 ### BOOT-07 Scope: End-to-End Proof
 
-- Nuke `.hivemind/` → run `init` → verify: (a) structure created, (b) symlinks restored, (c) configs initialized, (d) doctor returns PASS, (e) typecheck passes, (f) 1767 tests pass
+- Nuke `.hivemind/` → run `init` → verify: (a) structure created, (b) symlinks restored, (c) configs initialized, (d) doctor returns PASS, (e) typecheck passes, (f) 1978 tests pass
 - This is L1 runtime evidence — closes the docs-only gate
 
 ### Checkpoints
@@ -207,8 +207,8 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ### Source inventory
 
-- **Agents lab:** `.hivefiver-meta-builder/agents-lab/active/refactoring/` — current active inventory has 89 agent definitions. MCM doctor must classify shipped vs dev-only before migration.
-- **Skills lab:** `.hivefiver-meta-builder/skills-lab/active/refactoring/` — current active inventory has 123 skill directories, excluding `.gitkeep`. MCM doctor must classify shipped vs dev-only before migration.
+- **Agents lab:** `.hivefiver-meta-builder/agents-lab/active/refactoring/` — current active inventory has 89 agent definitions (verified per 11-TRUTH-MATRIX.md P-06). MCM doctor must classify shipped vs dev-only before migration.
+- **Skills lab:** `.hivefiver-meta-builder/skills-lab/active/refactoring/` — current active inventory has 125 skill directories (verified per 11-TRUTH-MATRIX.md P-07), excluding `.gitkeep`. MCM doctor must classify shipped vs dev-only before migration.
 - **Total source:** `.hivefiver-meta-builder/` includes active labs plus commands-lab, plans, references-lab, research, and rules subdirectories. Exact file counts are MCM doctor evidence, not Phase 0 evidence.
 
 | Phase | Title | Status | Depends On | Evidence Required |
@@ -358,4 +358,4 @@ Rules:
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
 ---
-*Last updated: 2026-05-11 — GOV-01 (Phase 11) + CP-ST-02 (Phase 12) added for governance reconciliation and CP-ST-01 remediation*
+*Last updated: 2026-05-11 — Phase 11 governance reconciliation. GOV-01 and CP-ST-02 entries added (see Phase 11 and Phase 12 sections below). All phase statuses audited against phase directory evidence. Numeric claims verified against 11-TRUTH-MATRIX.md.*
