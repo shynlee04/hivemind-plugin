@@ -76,6 +76,27 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       // Ensure output.system is an array for all injection blocks
       output.system = Array.isArray(output.system) ? output.system : []
 
+      // BOOT-09: Language Governance block (position 0 — BEFORE governance block)
+      // Per D-05: language block injected at output.system[0] before governance block.
+      // Per D-06: governance block format is LOCKED — do NOT modify buildGovernanceBlock().
+      // Per D-07: strong framing with header, CRITICAL:, MUST imperative, override.
+      if (deps.isMainSession?.(sessionID) && deps.hivemindConfig) {
+        const convLang = deps.hivemindConfig.conversation_language
+        const docLang = deps.hivemindConfig.documents_and_artifacts_language
+        const docPaths = deps.hivemindConfig.document_paths?.join(", ") ?? ".hivemind/planning/"
+
+        if (convLang) {
+          const lines = [
+            "--- Language Governance ---",
+            `CRITICAL: You MUST respond in ${convLang}.`,
+            `Even if the user writes in another language, you MUST override and respond in ${convLang}.`,
+            "",
+            `When writing .md files under configured document paths (e.g., ${docPaths}), you MUST write in ${docLang}.`,
+          ]
+          ;(output.system as string[]).unshift(lines.join("\n"))
+        }
+      }
+
       // CA-03: Governance block — always active, non-negotiable (D-07)
       // Injected BEFORE intake and behavioral blocks so it frames all other context.
       if (deps.hivemindConfig) {
