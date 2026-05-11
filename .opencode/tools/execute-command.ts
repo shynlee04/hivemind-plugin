@@ -34,16 +34,25 @@ function unwrapData<T>(response: unknown): T {
  * - `fire-and-forget` (async): sends a prompt via `client.session.promptAsync()`
  *   with `noReply: true` and returns immediately.
  *
- * When `agent` is omitted, the tool calls `client.app.agents()` and returns the
- * list of available agents for the caller to select from — no command is
- * dispatched.
+ * Discovery modes (no execution):
+ * - When both `agent` and `command` are omitted: lists available agents AND
+ *   commands for selection (full discovery).
+ * - When `agent` is provided but `command` is omitted: lists available commands
+ *   for the context (command discovery).
+ * - When `agent` is omitted but `command` is provided: lists available agents
+ *   for selection (agent discovery, existing behavior).
+ *
+ * Scope control:
+ * - The `scope` argument controls whether discovery looks at project-level or
+ *   global-level items. Defaults to `"project"`.
  */
 export default tool({
   description:
     "Execute a slash command or prompt on an OpenCode session. " +
     "Supports 'dispatch' (sync, runs a command and returns the result) and " +
     "'fire-and-forget' (async, sends a prompt and returns immediately). " +
-    "When no agent is specified, lists available agents for selection.",
+    "When both agent and command are omitted, lists available agents and commands. " +
+    "When agent is provided but command is omitted, lists available commands.",
 
   args: {
     command: tool.schema
@@ -65,7 +74,8 @@ export default tool({
       .optional()
       .describe(
         "Target agent name (e.g. 'hm-l2-executor', 'gsd-planner'). " +
-          "If omitted, the tool lists available agents for selection.",
+          "If omitted together with command, lists agents and commands. " +
+          "If provided but command is omitted, lists commands.",
       ),
 
     mode: tool.schema
@@ -85,6 +95,15 @@ export default tool({
         "Target session ID. Defaults to the current session. " +
           "Useful for dispatching to a specific child session.",
       ),
+
+    scope: tool.schema
+      .enum(["project", "global"])
+      .optional()
+      .default("project")
+      .describe(
+        "Discovery scope: 'project' for project-level commands/agents, " +
+          "'global' for global-level commands/agents.",
+      ),
   },
 
   async execute(
@@ -94,6 +113,7 @@ export default tool({
       agent?: string
       mode: "dispatch" | "fire-and-forget"
       sessionId?: string
+      scope: "project" | "global"
     },
     context: {
       sessionID: string
@@ -104,13 +124,52 @@ export default tool({
     },
   ): Promise<string> {
     try {
-      const client = createOpencodeClient({
+      const clientConfig: { baseUrl: string; directory?: string } = {
         baseUrl: "http://localhost:4096",
-        directory: context.directory,
-      })
+      }
+      if (args.scope !== "global") {
+        clientConfig.directory = context.directory
+      }
+      const client = createOpencodeClient(clientConfig)
       const targetSession = args.sessionId ?? context.sessionID
 
-      // --- Agent listing (when agent is omitted) ---
+      // --- Full discovery (agent + command both omitted) ---
+      if (!args.agent && !args.command) {
+        const [agentsResponse, commandsResponse] = await Promise.all([
+          client.app.agents(),
+          client.command.list(),
+        ])
+
+        const agents = unwrapData<
+          Array<{ name: string; description?: string; mode: string }>
+        >(agentsResponse)
+
+        const commands = unwrapData<
+          Array<{ name: string; description?: string; agent?: string; subtask?: boolean }>
+        >(commandsResponse)
+
+        return JSON.stringify({
+          success: false,
+          needsSelection: true,
+          agents: Array.isArray(agents)
+            ? agents.map((a) => ({
+                name: a.name,
+                description: a.description ?? null,
+                mode: a.mode,
+              }))
+            : [],
+          commands: Array.isArray(commands)
+            ? commands.map((c) => ({
+                name: c.name,
+                description: c.description ?? null,
+                agent: c.agent ?? null,
+                subtask: c.subtask ?? false,
+              }))
+            : [],
+        })
+      }
+
+      // --- Agent listing (agent omitted) ---
       if (!args.agent) {
         const response = await client.app.agents()
         const agents = unwrapData<
@@ -131,6 +190,33 @@ export default tool({
             name: a.name,
             description: a.description ?? null,
             mode: a.mode,
+          })),
+        })
+      }
+
+      // --- Command listing (agent provided, command omitted) ---
+      if (!args.command) {
+        const response = await client.command.list()
+        const commands = unwrapData<
+          Array<{ name: string; description?: string; agent?: string; subtask?: boolean }>
+        >(response)
+
+        if (!Array.isArray(commands)) {
+          return JSON.stringify({
+            success: false,
+            error: "Failed to retrieve command list — unexpected response shape",
+          })
+        }
+
+        return JSON.stringify({
+          success: false,
+          needsCommandSelection: true,
+          agent: args.agent,
+          commands: commands.map((c) => ({
+            name: c.name,
+            description: c.description ?? null,
+            agent: c.agent ?? null,
+            subtask: c.subtask ?? false,
           })),
         })
       }
@@ -184,7 +270,8 @@ export default tool({
       if (sessionStatus?.type === "busy") {
         return JSON.stringify({
           success: false,
-          error: `Session "${targetSession}" is currently busy.` +
+          error:
+            `Session "${targetSession}" is currently busy.` +
             " Wait for it to become idle, or use a different session.",
           sessionStatus: sessionStatus.type,
         })
