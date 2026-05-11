@@ -11,14 +11,8 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { readFile, readdir, access } from "node:fs/promises"
 import matter from "gray-matter"
-import {
-  SessionTrackerInputSchema,
-  type SessionTrackerInput,
-} from "../../schema-kernel/session-tracker.schema.js"
-import {
-  sessionTrackerRoot,
-  safeSessionPath,
-} from "../../features/session-tracker/persistence/atomic-write.js"
+import { SessionTrackerInputSchema, type SessionTrackerInput } from "../../schema-kernel/session-tracker.schema.js"
+import { sessionTrackerRoot, safeSessionPath } from "../../features/session-tracker/persistence/atomic-write.js"
 import { isValidSessionID } from "../../features/session-tracker/types.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
@@ -41,11 +35,11 @@ export function createSessionTrackerTool(projectRoot: string): ReturnType<typeof
       try {
         const input = SessionTrackerInputSchema.parse(rawArgs) as SessionTrackerInput
         switch (input.action) {
-          case "export-session": return handleExportSession(projectRoot, input)
-          case "get-status": return handleGetStatus(projectRoot, input)
-          case "get-summary": return handleGetSummary(projectRoot, input)
-          case "list-sessions": return handleListSessions(projectRoot, input)
-          case "search-sessions": return handleSearchSessions(projectRoot, input)
+          case "export-session": return handleExportSession(projectRoot, input.sessionId, input.format)
+          case "get-status": return handleGetStatus(projectRoot, input.sessionId)
+          case "get-summary": return handleGetSummary(projectRoot, input.sessionId)
+          case "list-sessions": return handleListSessions(projectRoot, input.limit)
+          case "search-sessions": return handleSearchSessions(projectRoot, input.query, input.limit)
           default: return renderToolResult(error(`Unknown action`))
         }
       } catch (caughtError) {
@@ -70,27 +64,35 @@ function resolvePaths(
   }
 }
 
-async function handleExportSession(projectRoot: string, input: SessionTrackerInput) {
-  const paths = resolvePaths(projectRoot, input.sessionId)
+async function handleExportSession(projectRoot: string, sessionId: string, format?: "markdown" | "json") {
+  if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
+  const paths = resolvePaths(projectRoot, sessionId)
   if (typeof paths === "string") return paths
   try {
     const content = await readFile(paths.safeMd, "utf-8")
-    return renderToolResult(success(`Session export: ${input.sessionId}`, {
-      sessionId: input.sessionId, content, filePath: paths.safeMd,
+    if (format === "json") {
+      const { data: frontmatter } = matter(content)
+      return renderToolResult(success(`Session export (JSON): ${sessionId}`, {
+        sessionId, frontmatter, filePath: paths.safeMd,
+      }))
+    }
+    return renderToolResult(success(`Session export: ${sessionId}`, {
+      sessionId, content, filePath: paths.safeMd,
     }))
   } catch {
-    return renderToolResult(error(`Session not found: ${input.sessionId}`))
+    return renderToolResult(error(`Session not found: ${sessionId}`))
   }
 }
 
-async function handleGetStatus(projectRoot: string, input: SessionTrackerInput) {
-  const paths = resolvePaths(projectRoot, input.sessionId)
+async function handleGetStatus(projectRoot: string, sessionId: string) {
+  if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
+  const paths = resolvePaths(projectRoot, sessionId)
   if (typeof paths === "string") return paths
   try {
     const raw = await readFile(paths.safeJson, "utf-8")
     const json = JSON.parse(raw) as Record<string, unknown>
-    return renderToolResult(success(`Session status for ${input.sessionId}`, {
-      sessionId: input.sessionId,
+    return renderToolResult(success(`Session status for ${sessionId}`, {
+      sessionId,
       status: json.status ?? "unknown",
       lastUpdated: json.lastUpdated ?? null,
       turnCount: json.turnCount ?? 0,
@@ -98,27 +100,26 @@ async function handleGetStatus(projectRoot: string, input: SessionTrackerInput) 
       toolSummary: json.toolSummary ?? {},
     }))
   } catch {
-    return renderToolResult(error(`Session status not found: ${input.sessionId}`))
+    return renderToolResult(error(`Session status not found: ${sessionId}`))
   }
 }
 
-async function handleGetSummary(projectRoot: string, input: SessionTrackerInput) {
-  const paths = resolvePaths(projectRoot, input.sessionId)
+async function handleGetSummary(projectRoot: string, sessionId: string) {
+  if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
+  const paths = resolvePaths(projectRoot, sessionId)
   if (typeof paths === "string") return paths
   try {
     const raw = await readFile(paths.safeMd, "utf-8")
     const { data: frontmatter } = matter(raw)
-    return renderToolResult(success(`Session summary for ${input.sessionId}`, {
-      sessionId: input.sessionId, frontmatter,
+    return renderToolResult(success(`Session summary for ${sessionId}`, {
+      sessionId, frontmatter,
     }))
   } catch {
-    return renderToolResult(error(`Session summary not found: ${input.sessionId}`))
+    return renderToolResult(error(`Session summary not found: ${sessionId}`))
   }
 }
 
-async function handleListSessions(projectRoot: string, input: SessionTrackerInput) {
-  const limit = input.limit as number
-
+async function handleListSessions(projectRoot: string, limit: number) {
   // Try project-continuity.json index first
   try {
     const indexPath = safeSessionPath(projectRoot, "project-continuity", "project-continuity.json")
@@ -159,7 +160,7 @@ async function handleListSessions(projectRoot: string, input: SessionTrackerInpu
   }
 }
 
-async function handleSearchSessions(projectRoot: string, input: SessionTrackerInput) {
+async function handleSearchSessions(projectRoot: string, query: string, limit: number) {
   const trackerRoot = sessionTrackerRoot(projectRoot)
   const matches: Array<{ sessionId: string; file: string; snippet: string; matchLine: number }> = []
   try {
@@ -174,7 +175,7 @@ async function handleSearchSessions(projectRoot: string, input: SessionTrackerIn
         const content = await readFile(mdPath, "utf-8")
         if (content.length > MAX_SEARCH_CHUNK_BYTES) continue
         const lines = content.split("\n")
-        const queryLower = (input.query as string).toLowerCase()
+        const queryLower = query.toLowerCase()
         for (let i = 0; i < lines.length; i++) {
           if (lines[i].toLowerCase().includes(queryLower)) {
             const start = Math.max(0, i - 2)
@@ -191,7 +192,6 @@ async function handleSearchSessions(projectRoot: string, input: SessionTrackerIn
   } catch {
     return renderToolResult(error("Unable to scan session directory."))
   }
-  const limit = input.limit as number
   const paginated = matches.slice(0, limit)
   return renderToolResult(success(`Found ${matches.length} matches across sessions`, {
     totalMatches: matches.length, sessions: paginated, hasMore: matches.length > limit,
