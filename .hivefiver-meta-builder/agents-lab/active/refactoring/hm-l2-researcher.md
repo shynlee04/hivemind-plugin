@@ -22,14 +22,14 @@ permission:
   edit: ask
   write: ask
   bash:
-    '*': ask
+    '*': allow
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    '*': allow
     hm-l2-synthesizer: allow
   delegate-task: ask
   delegation-status: ask
@@ -40,7 +40,7 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    '*': allow
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

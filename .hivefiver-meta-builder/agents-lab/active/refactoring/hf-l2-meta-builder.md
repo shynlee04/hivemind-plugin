@@ -18,14 +18,14 @@ permission:
   edit: ask
   write: ask
   bash:
-    '*': ask
+    '*': allow
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    '*': allow
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -35,7 +35,7 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    '*': allow
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow

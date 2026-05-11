@@ -19,13 +19,13 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': ask
+    '*': allow
   delegate-task: ask
   delegation-status: allow
   run-background-command: allow
   webfetch: allow
   skill:
-    '*': ask
+    '*': allow
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
