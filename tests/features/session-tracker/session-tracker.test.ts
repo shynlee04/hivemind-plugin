@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { SessionTracker } from "../../../src/features/session-tracker/index.js"
+import type { MessageCapture } from "../../../src/features/session-tracker/capture/message-capture.js"
 
 // Mock the session-api module — getSession is the SDK call used by ensureSessionReady
 vi.mock("../../../src/shared/session-api.js", () => ({
@@ -19,6 +20,9 @@ const mockGetSession = vi.mocked(getSession)
 vi.mock("node:fs/promises", () => ({
   readFile: vi.fn().mockRejectedValue(new Error("ENOENT: no such file")),
 }))
+
+import { readFile } from "node:fs/promises"
+const mockReadFile = vi.mocked(readFile)
 
 describe("SessionTracker — ensureSessionReady parentID gate (F-01)", () => {
   let tracker: SessionTracker
@@ -326,6 +330,81 @@ describe("SessionTracker — ensureSessionReady parentID gate (F-01)", () => {
       // Assert: falls back to messageCapture, not childWriter
       expect(mockHandleChatMessage).toHaveBeenCalled()
       expect(mockAppendChildTurn).not.toHaveBeenCalled()
+    })
+  })
+
+  // F-06: seedTurnCounters wiring in initialize()
+  describe("F-06 — seedTurnCounters in initialize()", () => {
+    let mockSessionWriterAppendUserTurn: ReturnType<typeof vi.fn>
+
+    beforeEach(async () => {
+      vi.clearAllMocks()
+
+      mockCreateSessionDir = vi.fn().mockResolvedValue("/fake/path/ses_test12345abcdefg0")
+      mockInitializeSessionFile = vi.fn().mockResolvedValue(undefined)
+      mockAddSession = vi.fn().mockResolvedValue(undefined)
+      mockAppLog = vi.fn()
+      mockSessionWriterAppendUserTurn = vi.fn().mockResolvedValue(undefined)
+
+      // Mock readFile to return project-continuity with 1 session
+      mockReadFile.mockImplementation(async (path: string) => {
+        const pathStr = String(path)
+        if (pathStr.includes("project-continuity.json")) {
+          return JSON.stringify({
+            version: "2.0",
+            projectRoot: "/fake/project",
+            lastUpdated: new Date().toISOString(),
+            sessions: {
+              ses_test12345abcdefg0: {
+                dir: "ses_test12345abcdefg0/",
+                mainFile: "ses_test12345abcdefg0.md",
+                status: "active",
+                childCount: 0,
+                created: new Date().toISOString(),
+                updated: new Date().toISOString(),
+              },
+            },
+            chronologicalOrder: ["ses_test12345abcdefg0"],
+          })
+        }
+        // .md files with 5 USER turns
+        if (pathStr.includes(".md")) {
+          return "---\n## USER (turn 1)\ncontent\n## USER (turn 2)\ncontent\n## USER (turn 3)\ncontent\n## USER (turn 4)\ncontent\n## USER (turn 5)\ncontent\n"
+        }
+        throw Object.assign(new Error("ENOENT"), { code: "ENOENT" })
+      })
+
+      tracker = new SessionTracker({
+        client: {
+          app: { log: mockAppLog },
+          session: { get: mockGetSession },
+        } as any,
+        projectRoot: "/fake/project",
+      })
+    })
+
+    it("should seed turn counter from existing .md file with 5 USER turns", async () => {
+      // Arrange: SDK returns main session
+      mockGetSession.mockResolvedValue({
+        id: "ses_test12345abcdefg0",
+        parentID: null,
+        title: "Main Session",
+      })
+
+      // Act: initialize seeds turn counters
+      await tracker.initialize()
+
+      // Assert: messageCapture turnCounter should be seeded to 5
+      // (5 USER turns in .md → nextTurnNumber should return 6)
+      const messageCapture = (tracker as any).messageCapture as MessageCapture | undefined
+      expect(messageCapture).toBeDefined()
+
+      // After seeding, calling nextTurnNumber should give us 6
+      // (seed sets counter to 5, nextTurnNumber returns counter+1)
+      // This FAILS because initialize() doesn't call seedTurnCounters yet
+      // — counter stays at 0, so nextTurnNumber returns 1
+      const turnCounters = (messageCapture as any).turnCounters as Map<string, number>
+      expect(turnCounters.get("ses_test12345abcdefg0")).toBe(5)
     })
   })
 })

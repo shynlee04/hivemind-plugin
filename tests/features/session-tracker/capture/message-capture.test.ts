@@ -10,6 +10,13 @@ import { SessionWriter } from "../../../../src/features/session-tracker/persiste
 import { AgentTransform } from "../../../../src/features/session-tracker/transform/agent-transform.js"
 import type { SessionIndexWriter } from "../../../../src/features/session-tracker/persistence/session-index-writer.js"
 
+// Mock node:fs/promises for seedTurnCounters tests
+vi.mock("node:fs/promises", () => ({
+  readFile: vi.fn(),
+}))
+import { readFile } from "node:fs/promises"
+const mockReadFile = vi.mocked(readFile)
+
 describe("MessageCapture", () => {
   let messageCapture: MessageCapture
   let sessionWriter: SessionWriter
@@ -336,6 +343,81 @@ describe("MessageCapture", () => {
       )
 
       expect(mockIncrementTurnCount).not.toHaveBeenCalled()
+    })
+  })
+
+  // F-06: seedTurnCounters wiring
+  describe("seedTurnCounters — turn counter restoration on restart", () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it("should seed turn counter from existing .md file with 3 USER turns", async () => {
+      // Arrange: .md file has 3 USER turn headers
+      mockReadFile.mockResolvedValue(
+        "---\n## USER (turn 1)\ncontent\n## USER (turn 2)\ncontent\n## USER (turn 3)\ncontent\n",
+      )
+
+      await messageCapture.seedTurnCounters("ses_test12345abcdefg0")
+
+      // After seeding, next turn should be 4 (counter = 3)
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "text", text: "Next message" }],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+        4, // seeded to 3 + 1 = 4
+        "Next message",
+      )
+    })
+
+    it("should start at turn 1 when .md file has no USER turns (new session)", async () => {
+      // Arrange: .md file has no USER turn headers
+      mockReadFile.mockResolvedValue("---\ntitle: Test\n---\n\nNo turns yet\n")
+
+      await messageCapture.seedTurnCounters("ses_new1234567890z")
+
+      // After seeding, next turn should be 1
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_new1234567890z" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "text", text: "First message" }],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_new1234567890z",
+        1, // seeded to 0 + 1 = 1
+        "First message",
+      )
+    })
+
+    it("should start at turn 1 when .md file doesn't exist (ENOENT)", async () => {
+      // Arrange: readFile throws ENOENT
+      mockReadFile.mockRejectedValue(Object.assign(new Error("ENOENT: no such file"), { code: "ENOENT" }))
+
+      await messageCapture.seedTurnCounters("ses_nofile876543210x")
+
+      // After seeding (graceful fallback), next turn should be 1
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_nofile876543210x" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "text", text: "First message" }],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_nofile876543210x",
+        1,
+        "First message",
+      )
     })
   })
 })
