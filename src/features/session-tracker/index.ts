@@ -136,19 +136,31 @@ export class SessionTracker {
     // F-01: Query SDK to check if this is a child session.
     // Child sessions must NOT get their own directory or project index entry —
     // they belong under their parent's directory (REQ-ST-01).
-    try {
-      const session = await getSession(this.client, sessionID)
-      const parentID = (session as { parentID?: string } | undefined)?.parentID
-      if (parentID) {
-        // This is a child session — skip directory creation and index registration.
-        // Mark as bootstrapped so we don't re-check every event.
-        this.bootstrappedSessions.add(sessionID)
-        return
+    //
+    // Retry logic: the SDK might not report parentID on the first call if the
+    // child session was JUST created (race with the task tool completion).
+    // Try twice with a short delay between attempts.
+    let parentID: string | undefined
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const session = await getSession(this.client, sessionID)
+        parentID = (session as { parentID?: string } | undefined)?.parentID
+        if (parentID) break
+        // If parentID is null/undefined on first attempt, wait and retry
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 100))
+        }
+      } catch {
+        // SDK call failed — fall through to hierarchy index check.
+        break
       }
-    } catch {
-      // SDK call failed — cannot determine parentID. Fall through to
-      // hierarchy index check below (don't log warning yet — the index
-      // is the second gate).
+    }
+
+    if (parentID) {
+      // This is a child session — skip directory creation and index registration.
+      // Mark as bootstrapped so we don't re-check every event.
+      this.bootstrappedSessions.add(sessionID)
+      return
     }
 
     // F-01.1: Second gate — check the global hierarchy index.
@@ -434,7 +446,40 @@ export class SessionTracker {
     output: { title: string; output: unknown; metadata: unknown },
   ): Promise<void> {
     try {
-      // Lazy bootstrap: ensure session directory + index exist (cold-start)
+      // Detect child session BEFORE lazy bootstrap to prevent orphan directories.
+      // Same dual-gate pattern as handleChatMessage (SDK parentID + hierarchy index).
+      let parentID: string | undefined
+      try {
+        const session = await this.getSessionSafely(input.sessionID)
+        parentID = (session as { parentID?: string } | undefined)?.parentID
+      } catch {
+        // SDK call failed — proceed to hierarchy index fallback
+      }
+
+      if (!parentID && this.hierarchyIndex) {
+        const hierarchyParent = this.hierarchyIndex.getParent(input.sessionID)
+        if (hierarchyParent) {
+          parentID = hierarchyParent
+        }
+      }
+
+      if (parentID) {
+        // Child session — skip directory creation entirely.
+        // Mark as bootstrapped to prevent ensureSessionReady from creating a dir.
+        this.bootstrappedSessions.add(input.sessionID)
+        // Still capture the tool event in the child's .json if it's a non-task tool.
+        // Task tool events for child sessions are the child dispatching its OWN
+        // sub-tasks, which tool-capture handles normally.
+        if (this.toolCapture) {
+          await this.toolCapture.handleToolExecuteAfter(
+            input as Parameters<ToolCapture["handleToolExecuteAfter"]>[0],
+            output as Parameters<ToolCapture["handleToolExecuteAfter"]>[1],
+          )
+        }
+        return
+      }
+
+      // Main session — lazy bootstrap + capture
       await this.ensureSessionReady(input.sessionID)
       if (this.toolCapture) {
         await this.toolCapture.handleToolExecuteAfter(

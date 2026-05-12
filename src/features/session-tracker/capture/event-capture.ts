@@ -172,8 +172,28 @@ export class EventCapture {
    */
   private async handleSessionCreated(sessionID: string): Promise<void> {
     try {
-      const session = await getSession(this.client, sessionID)
-      const parentID = session.parentID as string | null | undefined
+      // Retry logic: the SDK might not report parentID on the first call
+      // if the child session was JUST created (race with task tool completion).
+      let parentID: string | null | undefined
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const session = await getSession(this.client, sessionID)
+          parentID = session.parentID as string | null | undefined
+          if (parentID) break
+          // If parentID is null/undefined on first attempt, wait and retry
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 100))
+          }
+        } catch {
+          // SDK call failed — fall through to hierarchy index check.
+          break
+        }
+      }
+
+      if (parentID) {
+        // Child session — skip directory creation (handled by tool-capture)
+        return
+      }
 
       if (parentID === null || parentID === undefined) {
         // Gate 2: Check hierarchy index before treating as root.
