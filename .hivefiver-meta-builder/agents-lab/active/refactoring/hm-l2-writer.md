@@ -1,8 +1,33 @@
 ---
 name: hm-l2-writer
-description: 'Documentation specialist for spec-driven authoring. Produces specs, reports, and documentation from verified requirements. Spawned by L1 coordinators. Cannot delegate.'
+description: Documentation specialist for spec-driven authoring. Produces specs, reports, and documentation from verified requirements. Spawned by L1 coordinators. Cannot delegate.
 mode: subagent
 temperature: 0.1
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Documentation
@@ -11,31 +36,6 @@ skills:
   - hm-l3-synthesis
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-writer

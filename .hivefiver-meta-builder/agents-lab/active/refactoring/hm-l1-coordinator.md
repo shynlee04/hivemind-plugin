@@ -1,8 +1,37 @@
 ---
 name: hm-l1-coordinator
-description: 'Delegation coordinator for wave-based L2 specialist execution. Dispatches parallel tasks, manages checkpoint gates, collects structured results, and runs inline quality validation. Spawned by L0 hm-orchestrator. Never implements directly.'
+description: Delegation coordinator for wave-based L2 specialist execution. Dispatches parallel tasks, manages checkpoint gates, collects structured results, and runs inline quality validation. Spawned by L0 hm-orchestrator. Never implements directly.
 mode: subagent
 temperature: 0.15
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+    hm-l2-*: allow
+  delegate-task: allow
+  delegation-status: allow
+  run-background-command: allow
+  session-journal-export: allow
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  webfetch: allow
+  websearch: allow
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L1
 lineage: hm
 domain: Phase Lifecycle
@@ -16,35 +45,6 @@ skills:
   - gate-l3-spec-compliance
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-    hm-l2-*: allow
-  delegate-task: allow
-  delegation-status: allow
-  run-background-command: allow
-  session-journal-export: allow
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  webfetch: allow
-  websearch: allow
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-coordinator

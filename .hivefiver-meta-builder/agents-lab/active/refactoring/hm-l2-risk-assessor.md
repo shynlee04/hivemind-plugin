@@ -1,27 +1,27 @@
 ---
 name: hm-l2-risk-assessor
-description: 'Safety lane for prompt enhancement. Flags destructive, security, and scope-creep risks.'
+description: Safety lane for prompt enhancement. Flags destructive, security, and scope-creep risks.
 mode: subagent
-depth: L2
-lineage: hm
-domain: Risk
 temperature: 0.1
-instruction:
-  - .opencode/rules/anti-patterns.md
-  - .opencode/rules/skill-activation.md
 permission:
   edit: ask
   write: ask
   grep: allow
   glob: allow
   task:
-    '*': ask
+    "*": ask
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Risk
+instruction:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/skill-activation.md
 ---
 
 # Risk Assessor

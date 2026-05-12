@@ -1,10 +1,37 @@
 ---
 name: hm-l2-planner
-description: 'Planning specialist for creating executable phase plans with task breakdown, dependency analysis, milestone sizing, and goal-backward validation. Uses functional decomposition and falsifiable plan contracts. Spawned by L1 coordinators for planning-domain tasks. Never implements.'
+description: Planning specialist for creating executable phase plans with task breakdown, dependency analysis, milestone sizing, and goal-backward validation. Uses functional decomposition and falsifiable plan contracts. Spawned by L1 coordinators for planning-domain tasks. Never implements.
 mode: subagent
 temperature: 0.1
 steps: 40
-color: '#3498DB'
+color: "#3498DB"
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+    hm-l2-architect: allow
+    hm-l2-strategist: allow
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Planning
@@ -15,33 +42,6 @@ skills:
 instruction:
   - AGENTS.md
   - .opencode/rules/universal-rules.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-    hm-l2-architect: allow
-    hm-l2-strategist: allow
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-l2-planner

@@ -1,8 +1,36 @@
 ---
 name: hf-l2-prompter
-description: 'Expert prompt engineering and validation specialist for creating, optimizing, and testing high-quality prompts through multi-agent workflows. Spawned by hf-coordinator for prompt engineering tasks. Cannot delegate.'
+description: Expert prompt engineering and validation specialist for creating, optimizing, and testing high-quality prompts through multi-agent workflows. Spawned by hf-coordinator for prompt engineering tasks. Cannot delegate.
 mode: subagent
 temperature: 0.2
+permission:
+  read: allow
+  edit: allow
+  write: allow
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  webfetch: allow
+  todowrite: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hf
 domain: Prompt Engineering
@@ -15,34 +43,6 @@ skills:
   - hm-l3-opencode-non-interactive-shell
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: allow
-  write: allow
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  webfetch: allow
-  todowrite: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hf-prompter

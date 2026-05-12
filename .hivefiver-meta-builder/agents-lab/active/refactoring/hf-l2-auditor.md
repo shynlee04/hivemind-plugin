@@ -1,8 +1,34 @@
 ---
 name: hf-l2-auditor
-description: 'Audits OpenCode primitives (agents, skills, commands, tools) for quality compliance, drift detection, anti-pattern discovery, and structural integrity. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-gate-orchestrator for quality gate orchestration.'
+description: Audits OpenCode primitives (agents, skills, commands, tools) for quality compliance, drift detection, anti-pattern discovery, and structural integrity. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-gate-orchestrator for quality gate orchestration.
 mode: subagent
 temperature: 0.05
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hf
 domain: Primitive Auditing
@@ -11,32 +37,6 @@ skills:
   - hf-l2-agents-md-sync
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hf-auditor

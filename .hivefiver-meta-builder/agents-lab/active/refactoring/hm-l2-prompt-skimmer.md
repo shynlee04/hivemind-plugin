@@ -2,13 +2,7 @@
 name: hm-l2-prompt-skimmer
 description: Phase 0 skim agent for prompt enhancement. Use when you need a fast scan before deeper analysis.
 mode: subagent
-depth: L2
-lineage: hm
-domain: Context & Memory
 temperature: 0.1
-instruction:
-  - .opencode/rules/anti-patterns.md
-  - .opencode/rules/skill-activation.md
 permission:
   edit: ask
   write: ask
@@ -16,13 +10,19 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Context & Memory
+instruction:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/skill-activation.md
 ---
 
 # Prompt Skimmer

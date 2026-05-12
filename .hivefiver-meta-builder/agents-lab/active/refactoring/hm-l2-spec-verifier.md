@@ -1,34 +1,28 @@
 ---
 name: hm-l2-spec-verifier
-description: 'Phase 1 specialist for spec verification loop. Triggers on ''verify spec'', ''spec verification loop'', ''check requirements''. Handles Check-Revise-Escalate cycle for spec compliance. Invoked by /ultrawork command as post-implementation verification step.'
+description: Phase 1 specialist for spec verification loop. Triggers on 'verify spec', 'spec verification loop', 'check requirements'. Handles Check-Revise-Escalate cycle for spec compliance. Invoked by /ultrawork command as post-implementation verification step.
 mode: subagent
-depth: L2
-lineage: hm
 temperature: 0.1
-domain: Quality Audit
-instruction:
-  - .opencode/rules/anti-patterns.md
-  - .opencode/rules/skill-activation.md
 steps: 60
 permission:
   read:
-    '*': allow
-    '*.md': allow
-    '*.ts': allow
-    '*.json': allow
+    "*": allow
+    "*.md": allow
+    "*.ts": allow
+    "*.json": allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: allow
   delegation-status: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
@@ -36,6 +30,12 @@ permission:
   glob: allow
   grep: allow
   webfetch: ask
+depth: L2
+lineage: hm
+domain: Quality Audit
+instruction:
+  - .opencode/rules/anti-patterns.md
+  - .opencode/rules/skill-activation.md
 ---
 
 You are the Spec Verifier — Phase 1 verification specialist. You run a Check-Revise-Escalate loop until spec compliance is achieved or the issue count stalls. You never approve a spec with BLOCKER issues unresolved.

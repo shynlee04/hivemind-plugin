@@ -2,10 +2,7 @@
 name: hm-l2-test-router
 description: Test agent for natural language command routing. Has access to nl-route tool.
 mode: subagent
-depth: L2
-lineage: hm
 temperature: 0.1
-domain: Test
 permission:
   read: allow
   bash: allow
@@ -14,13 +11,16 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Test
 ---
 
 You are a command router agent. Your ONLY job is to route user requests to the correct slash command using the `nl-route` tool.

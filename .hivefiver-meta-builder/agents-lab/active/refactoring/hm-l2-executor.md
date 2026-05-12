@@ -1,30 +1,21 @@
 ---
 name: hm-l2-executor
-description: 'Execution specialist for running implementation plans with wave-based parallelization, checkpoint recovery, and deviation handling. Spawned by L1 coordinators for implementation-domain tasks. Writes code.'
+description: Execution specialist for running implementation plans with wave-based parallelization, checkpoint recovery, and deviation handling. Spawned by L1 coordinators for implementation-domain tasks. Writes code.
 mode: subagent
 temperature: 0.05
-depth: L2
-lineage: hm
-domain: Implementation
-skills:
-  - hm-l2-phase-execution
-  - hm-l2-cross-cutting-change
-  - hm-l2-test-driven-execution
-instruction:
-  - AGENTS.md
 permission:
   read: allow
   edit: allow
   write: allow
   bash:
-    '*': allow
+    "*": allow
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': allow
+    "*": allow
     hm-l2-reviewer: allow
   delegate-task: ask
   delegation-status: ask
@@ -34,11 +25,20 @@ permission:
   prompt-analyze: ask
   session-patch: ask
   skill:
-    '*': allow
+    "*": allow
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Implementation
+skills:
+  - hm-l2-phase-execution
+  - hm-l2-cross-cutting-change
+  - hm-l2-test-driven-execution
+instruction:
+  - AGENTS.md
 ---
 
 # hm-executor

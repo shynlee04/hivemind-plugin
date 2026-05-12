@@ -1,28 +1,21 @@
 ---
 name: hf-l2-tool-builder
-description: 'Creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for stack validation.'
+description: Creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for stack validation.
 mode: subagent
 temperature: 0.1
-depth: L2
-lineage: hf
-domain: Tool Building
-skills:
-  - hf-l2-custom-tools-dev
-instruction:
-  - AGENTS.md
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -30,12 +23,19 @@ permission:
   prompt-analyze: ask
   session-patch: ask
   skill:
-    '*': ask
+    "*": ask
     hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hf
+domain: Tool Building
+skills:
+  - hf-l2-custom-tools-dev
+instruction:
+  - AGENTS.md
 ---
 
 # hf-tool-builder

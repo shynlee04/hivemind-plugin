@@ -1,8 +1,33 @@
 ---
 name: hm-l2-persistor
-description: 'State persistence specialist. Manages task_plan.md, findings.md, and progress.md state files using hm-planning-persistence and hm-completion-looping. Spawned by L1 coordinators. Cannot delegate.'
+description: State persistence specialist. Manages task_plan.md, findings.md, and progress.md state files using hm-planning-persistence and hm-completion-looping. Spawned by L1 coordinators. Cannot delegate.
 mode: subagent
 temperature: 0.05
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Phase Lifecycle
@@ -11,31 +36,6 @@ skills:
   - hm-l2-completion-looping
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-persistor

@@ -1,38 +1,38 @@
 ---
 name: hm-l2-conductor
-description: 'Delegation routing specialist. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly.'
+description: Delegation routing specialist. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly.
 mode: subagent
-depth: L2
-lineage: hm
 temperature: 0.3
-domain: Phase Lifecycle
 steps: 80
 permission:
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: allow
   delegation-status: allow
   run-background-command: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
   read:
-    '*': ask
-    '*.md': allow
-    '*.json': allow
+    "*": ask
+    "*.md": allow
+    "*.json": allow
   glob: allow
   grep: allow
   webfetch: ask
+depth: L2
+lineage: hm
+domain: Phase Lifecycle
 ---
 <!-- Hierarchy: This agent is a DELEGATION ROUTING SPECIALIST under coordinator.md. It is NOT a primary orchestrator. -->
 

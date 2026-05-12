@@ -1,32 +1,23 @@
 ---
 name: hm-l2-assessor
-description: 'Risk assessment specialist for evaluating production risk, requirements quality, and deployment safety. Spawned by L1 coordinators for risk-domain tasks. Produces quantified risk reports with mitigation strategies. Read-only — never mutates files or delegates.'
+description: Risk assessment specialist for evaluating production risk, requirements quality, and deployment safety. Spawned by L1 coordinators for risk-domain tasks. Produces quantified risk reports with mitigation strategies. Read-only — never mutates files or delegates.
 mode: subagent
 temperature: 0.05
 steps: 40
-color: '#8E44AD'
-depth: L2
-lineage: hm
-domain: Risk
-skills:
-  - hm-l2-production-readiness
-  - hm-l2-requirements-analysis
-instruction:
-  - AGENTS.md
-  - .opencode/rules/universal-rules.md
+color: "#8E44AD"
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -36,11 +27,20 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Risk
+skills:
+  - hm-l2-production-readiness
+  - hm-l2-requirements-analysis
+instruction:
+  - AGENTS.md
+  - .opencode/rules/universal-rules.md
 ---
 
 # hm-l2-assessor

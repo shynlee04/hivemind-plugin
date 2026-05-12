@@ -1,29 +1,21 @@
 ---
 name: hm-l2-operator
-description: 'Phase execution operator for managing plan execution, monitoring task completion, and coordinating wave-based parallelization. Spawned by L1 coordinators for execution-domain tasks. Execution monitoring authority.'
+description: Phase execution operator for managing plan execution, monitoring task completion, and coordinating wave-based parallelization. Spawned by L1 coordinators for execution-domain tasks. Execution monitoring authority.
 mode: subagent
 temperature: 0.1
-depth: L2
-lineage: hm
-domain: Execution
-skills:
-  - hm-l2-phase-execution
-  - hm-l2-phase-loop
-instruction:
-  - AGENTS.md
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -33,11 +25,19 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Execution
+skills:
+  - hm-l2-phase-execution
+  - hm-l2-phase-loop
+instruction:
+  - AGENTS.md
 ---
 
 # hm-operator

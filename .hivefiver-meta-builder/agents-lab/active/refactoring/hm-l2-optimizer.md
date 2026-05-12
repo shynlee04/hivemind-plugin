@@ -1,8 +1,33 @@
 ---
 name: hm-l2-optimizer
-description: 'Performance optimization specialist for the hm-* lineage. Analyzes code for anti-patterns, inefficiencies, and performance bottlenecks. Applies refactoring and cross-cutting changes. Spawned by L1 coordinators. Cannot delegate.'
+description: Performance optimization specialist for the hm-* lineage. Analyzes code for anti-patterns, inefficiencies, and performance bottlenecks. Applies refactoring and cross-cutting changes. Spawned by L1 coordinators. Cannot delegate.
 mode: subagent
 temperature: 0.05
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Implementation
@@ -11,31 +36,6 @@ skills:
   - hm-l2-cross-cutting-change
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-optimizer

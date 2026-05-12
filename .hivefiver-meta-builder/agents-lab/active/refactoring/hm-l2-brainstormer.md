@@ -1,10 +1,37 @@
 ---
 name: hm-l2-brainstormer
-description: 'Ideation specialist for exploring user intent, requirements gathering, and structured ideation before specification. Uses divergent→convergent methodology with falsifiability guard to surface requirements, constraints, and alternatives. Spawned by L1 coordinators for planning-domain brainstorming tasks. Read-only.'
+description: Ideation specialist for exploring user intent, requirements gathering, and structured ideation before specification. Uses divergent→convergent methodology with falsifiability guard to surface requirements, constraints, and alternatives. Spawned by L1 coordinators for planning-domain brainstorming tasks. Read-only.
 mode: subagent
 temperature: 0.15
 steps: 40
-color: '#F1C40F'
+color: "#F1C40F"
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
+  webfetch: allow
+  websearch: allow
 depth: L2
 lineage: hm
 domain: Planning
@@ -13,33 +40,6 @@ skills:
 instruction:
   - AGENTS.md
   - .opencode/rules/universal-rules.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
-  webfetch: allow
-  websearch: allow
 ---
 
 # hm-l2-brainstormer

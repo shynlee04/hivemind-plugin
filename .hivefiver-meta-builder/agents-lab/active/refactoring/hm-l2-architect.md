@@ -1,10 +1,35 @@
 ---
 name: hm-l2-architect
-description: 'Architecture specialist for evaluating refactoring opportunities, maintainability scoring, and structural improvement decisions. Spawned by L1 coordinators for planning-domain architecture tasks. Read-only.'
+description: Architecture specialist for evaluating refactoring opportunities, maintainability scoring, and structural improvement decisions. Spawned by L1 coordinators for planning-domain architecture tasks. Read-only.
 mode: subagent
 temperature: 0.1
 steps: 40
-color: '#9B59B6'
+color: "#9B59B6"
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Planning
@@ -14,31 +39,6 @@ skills:
 instruction:
   - AGENTS.md
   - .opencode/rules/universal-rules.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-l2-architect

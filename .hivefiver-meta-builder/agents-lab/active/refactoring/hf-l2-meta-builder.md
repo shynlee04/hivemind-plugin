@@ -1,8 +1,36 @@
 ---
 name: hf-l2-meta-builder
-description: 'Meta-concept workflow specialist for the hf-* lineage. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts (skills, agents, commands). Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation.'
+description: Meta-concept workflow specialist for the hf-* lineage. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts (skills, agents, commands). Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation.
 mode: subagent
 temperature: 0.15
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  webfetch: allow
+  websearch: allow
+  skill:
+    "*": ask
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hf
 domain: Meta-Building
@@ -13,34 +41,6 @@ skills:
   - hm-l2-planning-persistence
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  webfetch: allow
-  websearch: allow
-  skill:
-    '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hf-meta-builder

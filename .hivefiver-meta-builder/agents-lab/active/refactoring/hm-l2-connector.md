@@ -1,29 +1,21 @@
 ---
 name: hm-l2-connector
-description: 'Cross-workflow connector for bridging multiple workflows, managing cross-cutting changes, and coordinating multi-domain task execution. Spawned by L1 coordinators for integration-domain tasks. Coordination authority across workflow boundaries.'
+description: Cross-workflow connector for bridging multiple workflows, managing cross-cutting changes, and coordinating multi-domain task execution. Spawned by L1 coordinators for integration-domain tasks. Coordination authority across workflow boundaries.
 mode: subagent
 temperature: 0.1
-depth: L2
-lineage: hm
-domain: Integration
-skills:
-  - hm-l2-cross-cutting-change
-  - hm-l2-coordinating-loop
-instruction:
-  - AGENTS.md
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -33,11 +25,19 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Integration
+skills:
+  - hm-l2-cross-cutting-change
+  - hm-l2-coordinating-loop
+instruction:
+  - AGENTS.md
 ---
 
 # hm-connector

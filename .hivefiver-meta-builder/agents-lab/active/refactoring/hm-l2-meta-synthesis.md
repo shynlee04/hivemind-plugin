@@ -1,11 +1,8 @@
 ---
 name: hm-l2-meta-synthesis
-description: 'Synthesizes and improves meta-concepts (agents, skills, commands, tools) by understanding UNDERLYING CONSTRUCTION PATTERNS, not mechanical templates. Use when analyzing existing skills for efficiency, synthesizing new meta-concepts, improving construction patterns, or understanding how agents/tools/skills/commands should be built. Triggers on "synthesize", "improve construction", "how to build an agent", "mechanical skill", "inefficient pattern". Invoked by /hf-audit command as meta-concept analysis lane.'
+description: Synthesizes and improves meta-concepts (agents, skills, commands, tools) by understanding UNDERLYING CONSTRUCTION PATTERNS, not mechanical templates. Use when analyzing existing skills for efficiency, synthesizing new meta-concepts, improving construction patterns, or understanding how agents/tools/skills/commands should be built. Triggers on "synthesize", "improve construction", "how to build an agent", "mechanical skill", "inefficient pattern". Invoked by /hf-audit command as meta-concept analysis lane.
 mode: subagent
-depth: L2
-lineage: hm
 temperature: 0.1
-domain: Meta
 permission:
   read: allow
   edit: ask
@@ -14,11 +11,14 @@ permission:
   glob: allow
   grep: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Meta
 ---
 
 <role>

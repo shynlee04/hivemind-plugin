@@ -1,8 +1,33 @@
 ---
 name: hm-l2-mentor
-description: 'Onboarding specialist for guiding new users through brainstorming, requirements discovery, and product validation. Spawned by L1 coordinators for discovery-domain tasks. Interactive analysis with structured guidance.'
+description: Onboarding specialist for guiding new users through brainstorming, requirements discovery, and product validation. Spawned by L1 coordinators for discovery-domain tasks. Interactive analysis with structured guidance.
 mode: subagent
 temperature: 0.15
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Discovery
@@ -11,31 +36,6 @@ skills:
   - hm-l2-requirements-analysis
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-mentor

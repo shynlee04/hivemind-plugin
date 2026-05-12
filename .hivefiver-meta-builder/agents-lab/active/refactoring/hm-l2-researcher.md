@@ -1,10 +1,38 @@
 ---
 name: hm-l2-researcher
-description: 'Deep research specialist for multi-source investigation, evidence gathering, and structured reporting. Spawned by L1 coordinators for research-domain tasks. Read-only — never mutates files or delegates.'
+description: Deep research specialist for multi-source investigation, evidence gathering, and structured reporting. Spawned by L1 coordinators for research-domain tasks. Read-only — never mutates files or delegates.
 mode: subagent
 temperature: 0.05
 steps: 40
-color: '#4A90D9'
+color: "#4A90D9"
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+    hm-l2-synthesizer: allow
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  webfetch: allow
+  websearch: allow
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Research
@@ -17,34 +45,6 @@ skills:
 instruction:
   - AGENTS.md
   - .opencode/rules/universal-rules.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-    hm-l2-synthesizer: allow
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  webfetch: allow
-  websearch: allow
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-l2-researcher

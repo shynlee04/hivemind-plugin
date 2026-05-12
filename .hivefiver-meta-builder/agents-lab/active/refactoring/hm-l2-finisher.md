@@ -3,27 +3,19 @@ name: hm-l2-finisher
 description: Completion specialist for ensuring tasks are truly done through completion-looping guardrails and test-driven verification. Spawned by L1 coordinators for closure-domain tasks. Verifies completion claims with fresh evidence.
 mode: subagent
 temperature: 0.05
-depth: L2
-lineage: hm
-domain: Execution
-skills:
-  - hm-l2-completion-looping
-  - hm-l2-test-driven-execution
-instruction:
-  - AGENTS.md
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -33,11 +25,19 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Execution
+skills:
+  - hm-l2-completion-looping
+  - hm-l2-test-driven-execution
+instruction:
+  - AGENTS.md
 ---
 
 # hm-finisher

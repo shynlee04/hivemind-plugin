@@ -1,32 +1,23 @@
 ---
 name: hm-l2-reviewer
-description: 'Code review specialist for security, performance, bug, and quality analysis against specifications. Spawned by L1 coordinators for quality-domain review tasks. Read-only. Uses adversarial stance with CRITICAL/HIGH/MEDIUM/LOW/INFO severity classification and L1-L5 evidence hierarchy.'
+description: Code review specialist for security, performance, bug, and quality analysis against specifications. Spawned by L1 coordinators for quality-domain review tasks. Read-only. Uses adversarial stance with CRITICAL/HIGH/MEDIUM/LOW/INFO severity classification and L1-L5 evidence hierarchy.
 mode: subagent
 temperature: 0.05
-depth: L2
-lineage: hm
-domain: Quality
 steps: 40
-color: '#E74C3C'
-skills:
-  - hm-l2-test-driven-execution
-  - gate-l3-spec-compliance
-instruction:
-  - AGENTS.md
-  - .opencode/rules/universal-rules.md
+color: "#E74C3C"
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
     hm-l2-validator: allow
   delegate-task: ask
   delegation-status: ask
@@ -36,11 +27,20 @@ permission:
   session-patch: ask
   webfetch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Quality
+skills:
+  - hm-l2-test-driven-execution
+  - gate-l3-spec-compliance
+instruction:
+  - AGENTS.md
+  - .opencode/rules/universal-rules.md
 ---
 
 # hm-l2-reviewer

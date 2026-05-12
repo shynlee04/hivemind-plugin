@@ -1,29 +1,21 @@
 ---
 name: hm-l2-guardian
-description: 'Phase loop specialist for managing iterative phase execution, enforcing entry/exit criteria, and preventing regressions through completion-looping guardrails. Spawned by L1 coordinators for phase-management tasks. Execution authority within phase boundaries.'
+description: Phase loop specialist for managing iterative phase execution, enforcing entry/exit criteria, and preventing regressions through completion-looping guardrails. Spawned by L1 coordinators for phase-management tasks. Execution authority within phase boundaries.
 mode: subagent
 temperature: 0.05
-depth: L2
-lineage: hm
-domain: Execution
-skills:
-  - hm-l2-phase-loop
-  - hm-l2-completion-looping
-instruction:
-  - AGENTS.md
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -33,11 +25,19 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Execution
+skills:
+  - hm-l2-phase-loop
+  - hm-l2-completion-looping
+instruction:
+  - AGENTS.md
 ---
 
 # hm-guardian

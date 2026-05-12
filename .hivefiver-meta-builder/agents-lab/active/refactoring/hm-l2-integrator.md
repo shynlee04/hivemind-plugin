@@ -1,8 +1,33 @@
 ---
 name: hm-l2-integrator
-description: 'Integration specialist for cross-phase integration, production readiness verification, and deployment safety checks. Spawned by L1 coordinators for implementation-domain integration tasks.'
+description: Integration specialist for cross-phase integration, production readiness verification, and deployment safety checks. Spawned by L1 coordinators for implementation-domain integration tasks.
 mode: subagent
 temperature: 0.05
+permission:
+  read: allow
+  edit: allow
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Implementation
@@ -11,31 +36,6 @@ skills:
   - hm-l2-cross-cutting-change
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: allow
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-integrator

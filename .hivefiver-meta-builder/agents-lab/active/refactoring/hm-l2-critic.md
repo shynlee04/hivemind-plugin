@@ -1,26 +1,15 @@
 ---
 name: hm-l2-critic
-description: 'Quality verification agent. Ruthless adversarial code review, correctness validation, and compliance checking. Read-only with bash for test execution. Spawned by L1 coordinators for gate-passing verification tasks.'
+description: Quality verification agent. Ruthless adversarial code review, correctness validation, and compliance checking. Read-only with bash for test execution. Spawned by L1 coordinators for gate-passing verification tasks.
 mode: subagent
 temperature: 0.05
-depth: L2
-lineage: hm
-domain: Quality
 steps: 40
-skills:
-  - hm-l2-test-driven-execution
-  - gate-l3-lifecycle-integration
-  - gate-l3-spec-compliance
-  - gate-l3-evidence-truth
-instruction:
-  - AGENTS.md
-  - .opencode/rules/universal-rules.md
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
@@ -28,7 +17,7 @@ permission:
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -37,11 +26,22 @@ permission:
   session-patch: ask
   webfetch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Quality
+skills:
+  - hm-l2-test-driven-execution
+  - gate-l3-lifecycle-integration
+  - gate-l3-spec-compliance
+  - gate-l3-evidence-truth
+instruction:
+  - AGENTS.md
+  - .opencode/rules/universal-rules.md
 ---
 
 # hm-l2-critic

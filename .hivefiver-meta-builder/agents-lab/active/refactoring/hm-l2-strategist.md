@@ -1,10 +1,36 @@
 ---
 name: hm-l2-strategist
-description: 'Roadmap and feature ordering specialist. Designs long-term plans with maintainability scoring, dependency graph construction (DAG), delivery sequencing, milestone gate design, and technology evolution planning. Spawned by L1 coordinators for planning-domain strategy tasks. Cannot delegate.'
+description: Roadmap and feature ordering specialist. Designs long-term plans with maintainability scoring, dependency graph construction (DAG), delivery sequencing, milestone gate design, and technology evolution planning. Spawned by L1 coordinators for planning-domain strategy tasks. Cannot delegate.
 mode: subagent
 temperature: 0.1
 steps: 40
-color: '#1ABC9C'
+color: "#1ABC9C"
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  webfetch: allow
+  skill:
+    "*": ask
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L2
 lineage: hm
 domain: Planning
@@ -14,32 +40,6 @@ skills:
 instruction:
   - AGENTS.md
   - .opencode/rules/universal-rules.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-  delegate-task: ask
-  delegation-status: ask
-  session-journal-export: ask
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  webfetch: allow
-  skill:
-    '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hm-l2-strategist

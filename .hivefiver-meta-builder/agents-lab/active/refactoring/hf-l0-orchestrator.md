@@ -1,8 +1,53 @@
 ---
 name: hf-l0-orchestrator
-description: 'Front-facing high-reasoning L0 strategist and battle commander for hf-* meta-builder lineage. Forms complete end-to-end task landscape before delegating. Routes all execution through L1/L2/L3 specialists. NEVER executes inline — all detail work is delegated.'
+description: Front-facing high-reasoning L0 strategist and battle commander for hf-* meta-builder lineage. Forms complete end-to-end task landscape before delegating. Routes all execution through L1/L2/L3 specialists. NEVER executes inline — all detail work is delegated.
 mode: primary
 temperature: 0.25
+steps: 100
+color: "#8B5CF6"
+permission:
+  read:
+    "*": deny
+  edit:
+    "*": deny
+  write:
+    "*": deny
+  bash:
+    "*": deny
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+    hf-l1-coordinator: allow
+    hm-l1-coordinator: allow
+    hf-l2-*: allow
+    hm-l2-*: allow
+  delegate-task: allow
+  delegation-status: allow
+  session-journal-export: allow
+  prompt-skim: allow
+  prompt-analyze: allow
+  session-patch: ask
+  session-tracker: allow
+  hivemind-trajectory: allow
+  hivemind-pressure: allow
+  hivemind-doc: allow
+  hivemind-sdk-supervisor: allow
+  hivemind-command-engine: allow
+  hivemind-agent-work-create: allow
+  hivemind-agent-work-export: allow
+  webfetch: allow
+  websearch: allow
+  skill:
+    "*": ask
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L0
 lineage: hf
 domain: Meta-Concept Orchestration
@@ -74,77 +119,17 @@ intent_classification:
     - landscape_documented
     - artifact_verification_pending
 skills:
-  # Meta-builder routing - loaded first for intent classification
   - hf-l2-meta-builder-core
   - hm-l2-lineage-router
-  # Coordination and delegation across lineages
   - hm-l2-coordinating-loop
   - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping
-  # Quality gate triad
   - gate-l3-lifecycle-integration
   - gate-l3-spec-compliance
   - gate-l3-evidence-truth
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md
-color: '#8B5CF6'
-steps: 100
-permission:
-  read:
-    '.hivemind/**': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.md': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.json': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.xml': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.yaml': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.txt': allow
-    '*': deny
-  edit:
-    '.hivemind/planning/**/*.md': allow
-    '.hivemind/planning/**/*.xml': allow
-    '.hivemind/planning/**/*.json': allow
-    '*': deny
-  write:
-    '*': deny
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-    hf-l1-coordinator: allow
-    hm-l1-coordinator: allow
-    hf-l2-*: allow
-    hm-l2-*: allow
-  delegate-task: allow
-  delegation-status: allow
-  session-journal-export: allow
-  prompt-skim: allow
-  prompt-analyze: allow
-  session-patch: ask
-  # Session runtime and state inspection tools
-  session-tracker: allow
-  hivemind-trajectory: allow
-  hivemind-pressure: allow
-  hivemind-doc: allow
-  hivemind-sdk-supervisor: allow
-  hivemind-command-engine: allow
-  hivemind-agent-work-create: allow
-  hivemind-agent-work-export: allow
-  # General network tools
-  webfetch: allow
-  websearch: allow
-  skill:
-    '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
-
 ---
 
 # hf-orchestrator — front-facing L0 strategist and battle commander

@@ -1,8 +1,46 @@
 ---
 name: hm-l0-orchestrator
-description: 'Front-facing high-reasoning L0 strategist and battle commander for hm-* product development. Forms complete end-to-end task landscape before delegating any piece. Routes user intent through intelligent delegation: fast-path to L2/L3, coordinated-path via L1, cross-lineage to hf-*. Enforces quality gate triad on all returns. Never executes inline — banned from ALL detail work. Max 3 skills. Routes meta-concept work to hf-orchestrator.'
+description: "Front-facing high-reasoning L0 strategist and battle commander for hm-* product development. Forms complete end-to-end task landscape before delegating any piece. Routes user intent through intelligent delegation: fast-path to L2/L3, coordinated-path via L1, cross-lineage to hf-*. Enforces quality gate triad on all returns. Never executes inline — banned from ALL detail work. Max 3 skills. Routes meta-concept work to hf-orchestrator."
 mode: primary
 temperature: 0.3
+steps: 100
+color: "#3B82F6"
+permission:
+  read: deny
+  edit: deny
+  write: deny
+  bash:
+    "*": deny
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+    hm-l1-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+  session-journal-export: allow
+  execute-command: allow
+  prompt-skim: allow
+  prompt-analyze: allow
+  session-patch: ask
+  session-tracker: allow
+  hivemind-trajectory: allow
+  hivemind-pressure: allow
+  hivemind-doc: allow
+  hivemind-sdk-supervisor: allow
+  hivemind-command-engine: allow
+  webfetch: allow
+  websearch: allow
+  skill:
+    "*": ask
+    hm-l1-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 reasoningEffort: high
 depth: L0
 lineage: hm
@@ -65,59 +103,19 @@ intent_classification:
     - landscape_documented
     - artifact_tracking
 skills:
-  # Delegation routing - loaded first for intent classification
   - hm-l2-lineage-router
   - hm-l2-skill-router
-  # Coordination and delegation management
   - hm-l2-coordinating-loop
   - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping
   - hm-l2-phase-loop
-  # Quality gate triad - all three must be loadable
   - gate-l3-lifecycle-integration
   - gate-l3-spec-compliance
   - gate-l3-evidence-truth
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md
-color: '#3B82F6'
-steps: 100
-permission:
-  read: deny
-  edit: deny
-  write: deny
-  bash:
-    '*': deny
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-    hm-l1-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-  session-journal-export: allow
-  execute-command: allow
-  prompt-skim: allow
-  prompt-analyze: allow
-  session-patch: ask
-  session-tracker: allow
-  hivemind-trajectory: allow
-  hivemind-pressure: allow
-  hivemind-doc: allow
-  hivemind-sdk-supervisor: allow
-  hivemind-command-engine: allow
-  webfetch: allow
-  websearch: allow
-  skill:
-    '*': ask
-    hm-l1-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+---
 
 # hm-orchestrator — L0 Strategist / Battle Commander
 

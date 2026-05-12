@@ -1,32 +1,23 @@
 ---
 name: hm-l2-auditor
-description: 'Quality audit specialist for scoring production readiness, maintainability metrics, and deployment safety. Spawned by L1 coordinators for audit-domain tasks. Produces scored reports with quantified quality metrics. Read-only — never mutates files or delegates.'
+description: Quality audit specialist for scoring production readiness, maintainability metrics, and deployment safety. Spawned by L1 coordinators for audit-domain tasks. Produces scored reports with quantified quality metrics. Read-only — never mutates files or delegates.
 mode: subagent
 temperature: 0.05
 steps: 40
-color: '#E67E22'
-depth: L2
-lineage: hm
-domain: Audit
-skills:
-  - hm-l2-production-readiness
-  - hm-l2-roadmap-maintainability
-instruction:
-  - AGENTS.md
-  - .opencode/rules/universal-rules.md
+color: "#E67E22"
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -36,11 +27,20 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Audit
+skills:
+  - hm-l2-production-readiness
+  - hm-l2-roadmap-maintainability
+instruction:
+  - AGENTS.md
+  - .opencode/rules/universal-rules.md
 ---
 
 # hm-l2-auditor

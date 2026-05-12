@@ -1,29 +1,21 @@
 ---
 name: hm-l2-technician
-description: 'Technology stack specialist for validating library compatibility, ingesting tech stack docs, and verifying dependency compliance against project standards. Spawned by L1 coordinators for tech-domain tasks. Read-only analysis.'
+description: Technology stack specialist for validating library compatibility, ingesting tech stack docs, and verifying dependency compliance against project standards. Spawned by L1 coordinators for tech-domain tasks. Read-only analysis.
 mode: subagent
 temperature: 0.1
-depth: L2
-lineage: hm
-domain: Technology
-skills:
-  - hm-l3-tech-context-compliance
-  - hm-l3-tech-stack-ingest
-instruction:
-  - AGENTS.md
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -33,11 +25,19 @@ permission:
   webfetch: allow
   websearch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Technology
+skills:
+  - hm-l3-tech-context-compliance
+  - hm-l3-tech-stack-ingest
+instruction:
+  - AGENTS.md
 ---
 
 # hm-technician

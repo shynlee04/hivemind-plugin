@@ -2,24 +2,24 @@
 name: hm-l2-build
 description: The default primary agent with all tools enabled for development work requiring full access to file operations and system commands. MANDATORY_COMPLIANCE_REQUIRED.
 mode: subagent
-depth: L2
-lineage: hm
 temperature: 0.15
-domain: Build
 permission:
   read: allow
   edit: allow
   write: allow
   bash: allow
   task:
-    '*': ask
+    "*": ask
   delegation-status: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Build
 skill: allow
 ---
 

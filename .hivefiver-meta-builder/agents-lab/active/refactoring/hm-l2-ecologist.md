@@ -1,31 +1,23 @@
 ---
 name: hm-l2-ecologist
-description: 'Feature ecosystem specialist for mapping cross-dependencies between features, ordering delivery sequences, and tracing feature impact. Spawned by L1 coordinators for ecosystem-design tasks. Read-only analysis.'
+description: Feature ecosystem specialist for mapping cross-dependencies between features, ordering delivery sequences, and tracing feature impact. Spawned by L1 coordinators for ecosystem-design tasks. Read-only analysis.
 mode: subagent
 temperature: 0.1
 steps: 40
-color: '#2ECC71'
-depth: L2
-lineage: hm
-domain: Ecosystem
-skills:
-  - hm-l2-feature-ecosystem
-instruction:
-  - AGENTS.md
-  - .opencode/rules/universal-rules.md
+color: "#2ECC71"
 permission:
   read: allow
   edit: ask
   write: ask
   bash:
-    '*': ask
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
   glob: allow
   grep: allow
   task:
-    '*': ask
+    "*": ask
   delegate-task: ask
   delegation-status: ask
   session-journal-export: ask
@@ -34,11 +26,19 @@ permission:
   session-patch: ask
   webfetch: allow
   skill:
-    '*': ask
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
+depth: L2
+lineage: hm
+domain: Ecosystem
+skills:
+  - hm-l2-feature-ecosystem
+instruction:
+  - AGENTS.md
+  - .opencode/rules/universal-rules.md
 ---
 
 # hm-l2-ecologist

@@ -1,8 +1,38 @@
 ---
 name: hf-l1-coordinator
-description: 'Meta-builder category coordinator for hf-* lineage. Dispatches L2 meta-concept specialists (agent builders, skill authors, tool builders), manages creation waves, validates AQUAL compliance, and returns consolidated results. Spawned by L0 hf-orchestrator. FLEXIBLE cross-lineage access.'
+description: Meta-builder category coordinator for hf-* lineage. Dispatches L2 meta-concept specialists (agent builders, skill authors, tool builders), manages creation waves, validates AQUAL compliance, and returns consolidated results. Spawned by L0 hf-orchestrator. FLEXIBLE cross-lineage access.
 mode: subagent
 temperature: 0.15
+permission:
+  read: allow
+  edit: ask
+  write: ask
+  bash:
+    "*": ask
+    git *: allow
+    node *: allow
+    npx *: allow
+  glob: allow
+  grep: allow
+  task:
+    "*": ask
+    hf-l2-*: allow
+    hm-l2-*: allow
+  delegate-task: allow
+  delegation-status: allow
+  session-journal-export: allow
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
+  webfetch: allow
+  websearch: allow
+  skill:
+    "*": ask
+    hf-l2-*: allow
+    hm-l2-*: allow
+    hm-l3-*: allow
+    gate-l3-*: allow
+    stack-l3-*: allow
 depth: L1
 lineage: hf
 domain: Orchestration
@@ -16,36 +46,6 @@ skills:
   - gate-l3-spec-compliance
 instruction:
   - AGENTS.md
-permission:
-  read: allow
-  edit: ask
-  write: ask
-  bash:
-    '*': ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
-  task:
-    '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-  delegate-task: allow
-  delegation-status: allow
-  session-journal-export: allow
-  prompt-skim: ask
-  prompt-analyze: ask
-  session-patch: ask
-  webfetch: allow
-  websearch: allow
-  skill:
-    '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
 ---
 
 # hf-coordinator
