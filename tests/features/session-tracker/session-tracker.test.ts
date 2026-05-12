@@ -111,21 +111,47 @@ describe("SessionTracker — ensureSessionReady parentID gate (F-01)", () => {
     })
   })
 
-  describe("parentID gate — main (root) sessions", () => {
-    it("should create directory for main sessions (parentID null)", async () => {
-      // Arrange: SDK returns a root session (parentID is null)
+  // F-02: handleSessionEvent no longer calls ensureSessionReady — the eventCapture
+  // handles session.created directory creation. Bootstrap now happens through
+  // handleChatMessage (lazy) or handleToolExecuteAfter (lazy).
+  describe("F-02 — handleSessionEvent delegates to eventCapture only", () => {
+    it("should call eventCapture.handleSessionEvent but NOT create dirs (dedup)", async () => {
+      // Arrange: SDK returns a root session
       mockGetSession.mockResolvedValue({
         id: "ses_main1234567890ab",
         parentID: null,
         title: "Main Session",
       })
 
-      // Act
+      // Act: session.created event
       await tracker.handleSessionEvent({
         eventType: "session.created",
         sessionID: "ses_main1234567890ab",
         event: {},
       })
+
+      // Assert: eventCapture called, but NO ensureSessionReady side effects
+      expect(mockHandleSessionEvent).toHaveBeenCalled()
+      expect(mockCreateSessionDir).not.toHaveBeenCalled()
+      expect(mockInitializeSessionFile).not.toHaveBeenCalled()
+      expect(mockAddSession).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("F-02 — lazy bootstrap via handleChatMessage", () => {
+    it("should create directory for main sessions via lazy bootstrap (parentID null)", async () => {
+      // Arrange: SDK returns a root session
+      mockGetSession.mockResolvedValue({
+        id: "ses_main1234567890ab",
+        parentID: null,
+        title: "Main Session",
+      })
+
+      // Act: chat message triggers lazy bootstrap
+      await tracker.handleChatMessage(
+        { sessionID: "ses_main1234567890ab", agent: "test", model: { providerID: "test", modelID: "test" }, messageID: "msg1", variant: "user" },
+        { message: { role: "user", content: "hello" }, parts: [] },
+      )
 
       // Assert: must create dir, init file, register
       expect(mockCreateSessionDir).toHaveBeenCalledWith("ses_main1234567890ab")
@@ -133,47 +159,46 @@ describe("SessionTracker — ensureSessionReady parentID gate (F-01)", () => {
       expect(mockAddSession).toHaveBeenCalled()
     })
 
-    it("should create directory for main sessions (parentID undefined)", async () => {
-      // Arrange: SDK returns a root session with undefined parentID
+    it("should NOT create directory for child sessions via lazy bootstrap", async () => {
+      // Arrange: SDK returns a child session
       mockGetSession.mockResolvedValue({
-        id: "ses_main2345678901bc",
-        title: "Main Session",
+        id: "ses_child1234567890a",
+        parentID: "ses_parent9876543210b",
+        title: "Child Session",
       })
 
-      // Act
-      await tracker.handleSessionEvent({
-        eventType: "session.created",
-        sessionID: "ses_main2345678901bc",
-        event: {},
-      })
+      // Act: chat message triggers lazy bootstrap
+      await tracker.handleChatMessage(
+        { sessionID: "ses_child1234567890a", agent: "test", model: { providerID: "test", modelID: "test" }, messageID: "msg1", variant: "user" },
+        { message: { role: "user", content: "hello" }, parts: [] },
+      )
 
-      // Assert: must create dir, init file, register
-      expect(mockCreateSessionDir).toHaveBeenCalledWith("ses_main2345678901bc")
-      expect(mockInitializeSessionFile).toHaveBeenCalled()
-      expect(mockAddSession).toHaveBeenCalled()
+      // Assert: child sessions skipped
+      expect(mockCreateSessionDir).not.toHaveBeenCalled()
+      expect(mockInitializeSessionFile).not.toHaveBeenCalled()
+      expect(mockAddSession).not.toHaveBeenCalled()
     })
   })
 
-  describe("parentID gate — SDK failure fallback", () => {
+  describe("parentID gate — SDK failure fallback (via handleChatMessage)", () => {
     it("should treat session as main when SDK call fails (conservative fallback)", async () => {
-      // Arrange: SDK throws — we can't determine parentID, so treat as main
+      // Arrange: SDK throws
       mockGetSession.mockRejectedValue(new Error("SDK unavailable"))
 
-      // Act
-      await tracker.handleSessionEvent({
-        eventType: "session.created",
-        sessionID: "ses_fallback3456789012c",
-        event: {},
-      })
+      // Act: via lazy bootstrap path
+      await tracker.handleChatMessage(
+        { sessionID: "ses_fallback3456789012c", agent: "test", model: { providerID: "test", modelID: "test" }, messageID: "msg2", variant: "user" },
+        { message: { role: "user", content: "hello" }, parts: [] },
+      )
 
-      // Assert: fallback to main-session bootstrap (creates dir, init, register)
+      // Assert: fallback to main-session bootstrap
       expect(mockCreateSessionDir).toHaveBeenCalledWith("ses_fallback3456789012c")
       expect(mockInitializeSessionFile).toHaveBeenCalled()
       expect(mockAddSession).toHaveBeenCalled()
     })
   })
 
-  describe("idempotency", () => {
+  describe("idempotency (via handleChatMessage lazy bootstrap)", () => {
     it("should not bootstrap the same session twice", async () => {
       // Arrange
       mockGetSession.mockResolvedValue({
@@ -182,17 +207,15 @@ describe("SessionTracker — ensureSessionReady parentID gate (F-01)", () => {
         title: "Test",
       })
 
-      // Act: call twice
-      await tracker.handleSessionEvent({
-        eventType: "session.created",
-        sessionID: "ses_once1234567890def",
-        event: {},
-      })
-      await tracker.handleSessionEvent({
-        eventType: "chat.message",
-        sessionID: "ses_once1234567890def",
-        event: {},
-      })
+      // Act: call handleChatMessage twice
+      await tracker.handleChatMessage(
+        { sessionID: "ses_once1234567890def", agent: "test", model: { providerID: "test", modelID: "test" }, messageID: "msg1", variant: "user" },
+        { message: { role: "user", content: "hello" }, parts: [] },
+      )
+      await tracker.handleChatMessage(
+        { sessionID: "ses_once1234567890def", agent: "test", model: { providerID: "test", modelID: "test" }, messageID: "msg2", variant: "user" },
+        { message: { role: "user", content: "world" }, parts: [] },
+      )
 
       // Assert: only bootstrapped once
       expect(mockCreateSessionDir).toHaveBeenCalledTimes(1)
