@@ -297,13 +297,6 @@ export class ToolCapture {
         subagentType || "unknown",
       )
 
-      // Update global hierarchy index (in-memory, O(1) lookup).
-      // NOTE: registerChild() was already called above for depth computation.
-      // This is a no-op (Map.set is idempotent for same key/value).
-      // Kept for clarity — ensures ensureSessionReady() and handleChatMessage()
-      // can classify this child session correctly even when the SDK doesn't
-      // report parentID.
-
       // Update project-level index
       // childCount is tracked by project-index-writer internally
       await this.projectIndexWriter.incrementChildCount(input.sessionID, depth)
