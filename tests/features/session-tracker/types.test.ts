@@ -46,15 +46,30 @@ describe("isValidSessionID", () => {
     expect(isValidSessionID("")).toBe(false)
   })
 
-  it("returns false for strings with path separators", () => {
-    expect(isValidSessionID("../etc/passwd")).toBe(false)
-    expect(isValidSessionID("foo/bar")).toBe(false)
-    expect(isValidSessionID("foo\\bar")).toBe(false)
+  // F-11: Embedded path separators no longer rejected — only absolute
+  // paths (/...) and traversal (..) are blocked. safeSessionPath() handles
+  // filesystem safety at the persistence boundary.
+  it("returns false for traversal and absolute-path strings", () => {
+    expect(isValidSessionID("../etc/passwd")).toBe(false) // traversal
+    expect(isValidSessionID("/absolute/path")).toBe(false) // absolute path
   })
 
   it("returns false for strings with traversal sequences", () => {
     expect(isValidSessionID("..")).toBe(false)
     expect(isValidSessionID("ses_..hidden")).toBe(false) // directory traversal
+  })
+
+  // F-11: Loosened regex — embedded path separators no longer rejected.
+  // safeSessionPath() provides filesystem safety at the persistence boundary.
+  it("accepts IDs with embedded path separators (not absolute/traversal)", () => {
+    expect(isValidSessionID("valid/id/with/slashes")).toBe(true)
+    expect(isValidSessionID("id_with_slash/and_more")).toBe(true)
+    expect(isValidSessionID("ses_1e6ff88f4ffeRtk94qECvennWM")).toBe(true)
+  })
+
+  it("rejects absolute paths (starts with / or \\)", () => {
+    expect(isValidSessionID("/absolute/path")).toBe(false)
+    expect(isValidSessionID("\\windows\\absolute")).toBe(false)
   })
 })
 
