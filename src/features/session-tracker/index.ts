@@ -126,6 +126,30 @@ export class SessionTracker {
     if (this.bootstrappedSessions.has(sessionID)) return
     if (!isValidSessionID(sessionID)) return
 
+    // F-01: Query SDK to check if this is a child session.
+    // Child sessions must NOT get their own directory or project index entry —
+    // they belong under their parent's directory (REQ-ST-01).
+    try {
+      const session = await getSession(this.client, sessionID)
+      const parentID = (session as { parentID?: string } | undefined)?.parentID
+      if (parentID) {
+        // This is a child session — skip directory creation and index registration.
+        // Mark as bootstrapped so we don't re-check every event.
+        this.bootstrappedSessions.add(sessionID)
+        return
+      }
+    } catch {
+      // SDK call failed — cannot determine parentID. Treat conservatively
+      // as a main session (create directory rather than risk data loss).
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: cannot determine parentID for "${sessionID}" — treating as main session (conservative fallback)`,
+        },
+      })
+    }
+
     this.bootstrappedSessions.add(sessionID)
 
     try {
