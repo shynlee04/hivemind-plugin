@@ -20,10 +20,12 @@ describe("Tool safety — path traversal rejection", () => {
       expect(isValidSessionID("../../../../etc/passwd")).toBe(false)
     })
 
-    it("should reject sessionId with '/' (path separator)", () => {
-      expect(isValidSessionID("ses_test/escape")).toBe(false)
+    // F-11: Embedded path separators are no longer rejected by isValidSessionID.
+    // Only absolute paths (starts with / or \) and traversal (..) are blocked.
+    // safeSessionPath() provides the actual filesystem safety at the persistence boundary.
+    it("should reject absolute-path sessionId (starts with / or \\)", () => {
       expect(isValidSessionID("/ses_test")).toBe(false)
-      expect(isValidSessionID("ses_test/")).toBe(false)
+      expect(isValidSessionID("\\ses_test")).toBe(false)
     })
 
     it("should reject empty sessionId", () => {
@@ -41,9 +43,10 @@ describe("Tool safety — path traversal rejection", () => {
       expect(isValidSessionID("ses_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6")).toBe(true)
     })
 
-    it("should reject sessionId with backslash '\\' (Windows path separator)", () => {
-      expect(isValidSessionID("ses_test\\escape")).toBe(false)
-      expect(isValidSessionID("\\ses_test")).toBe(false)
+    // F-11: Embedded backslashes are no longer rejected — only absolute
+    // Windows paths (starts with \) are blocked.
+    it("should accept sessionId with embedded backslash (not absolute)", () => {
+      expect(isValidSessionID("ses_test\\escape")).toBe(true)
     })
   })
 
