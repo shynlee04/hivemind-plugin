@@ -198,8 +198,10 @@ export class SessionTracker {
     event: unknown
   }): Promise<void> {
     try {
-      // Lazy bootstrap: ensure session directory + index exist before handling events (DEFECT-09)
-      await this.ensureSessionReady(event.sessionID)
+      // F-02: session.created directory creation is now owned exclusively by
+      // eventCapture.handleSessionCreated (which checks parentID before creating dirs).
+      // ensureSessionReady is no longer called here — it runs only in the lazy-bootstrap
+      // paths (handleChatMessage, handleToolExecuteAfter) for cold-start sessions.
       if (this.eventCapture) {
         await this.eventCapture.handleSessionEvent(event)
       }
