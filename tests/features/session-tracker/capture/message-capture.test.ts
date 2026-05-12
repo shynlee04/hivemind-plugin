@@ -207,6 +207,7 @@ describe("MessageCapture", () => {
         "Hm-L0-Orchestrator",
         "DeepSeek V4 Pro",
         "19.7s",
+        "I will investigate.", // P-01: assistant text content MUST be captured
       )
     })
 

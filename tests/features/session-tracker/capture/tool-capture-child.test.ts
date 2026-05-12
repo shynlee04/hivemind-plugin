@@ -160,5 +160,32 @@ describe("ToolCapture — child session (DEFECT-03)", () => {
       // appendChildTurn adds the delegation_spawn turn after createChildFile
       expect(mockAppendChildTurn).toHaveBeenCalled()
     })
+
+    // P-03: delegatedBy SHALL contain agent name AND model
+    it("P-03: delegatedBy should contain agentName and model (not just 'main_l0_agent' string)", async () => {
+      const childID4 = "ses_child5555555555zz"
+      await toolCapture.handleToolExecuteAfter(
+        {
+          tool: "task",
+          sessionID: "ses_main3333333333xx",
+          callID: "call_jkl012",
+          args: {
+            description: "Build component W",
+            subagent_type: "hm-l2-build",
+          },
+        },
+        {
+          title: "Task dispatched",
+          output: `task_id: ${childID4}`,
+        },
+      )
+
+      expect(mockCreateChildFile).toHaveBeenCalled()
+      const metadata = mockCreateChildFile.mock.calls[0][2]
+      expect(metadata.delegatedBy).toBeDefined()
+      // P-03: delegatedBy SHALL have model field (not just agentName)
+      expect(metadata.delegatedBy.model).toBeDefined()
+      expect(metadata.delegatedBy.agentName).toBeTruthy()
+    })
   })
 })
