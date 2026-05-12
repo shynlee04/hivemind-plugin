@@ -18,6 +18,7 @@ import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
 
 const MAX_SEARCH_CHUNK_BYTES = 50000
+const MAX_QUERY_LENGTH = 1000
 type ToolContext = { sessionID?: string }
 
 export function createSessionTrackerTool(projectRoot: string): ReturnType<typeof tool> {
@@ -161,6 +162,9 @@ async function handleListSessions(projectRoot: string, limit: number) {
 }
 
 async function handleSearchSessions(projectRoot: string, query: string, limit: number) {
+  if (!query || query.length > MAX_QUERY_LENGTH) {
+    return renderToolResult(error("Query must be between 1 and 1000 characters."))
+  }
   const trackerRoot = sessionTrackerRoot(projectRoot)
   const matches: Array<{ sessionId: string; file: string; snippet: string; matchLine: number }> = []
   try {
