@@ -49,8 +49,9 @@ import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { readFile } from "node:fs/promises"
+import { resolve } from "node:path"
 import { isValidSessionID } from "./types.js"
-import { safeSessionPath } from "./persistence/atomic-write.js"
+import { safeSessionPath, sessionTrackerRoot } from "./persistence/atomic-write.js"
 
 /**
  * Central session tracker class.
@@ -476,7 +477,7 @@ export class SessionTracker {
       // Seed turn counters from existing .md files (prevent reset-to-zero on restart)
       if (this.messageCapture) {
         try {
-          const indexPath = safeSessionPath(this.projectRoot, "project-continuity", "project-continuity.json")
+          const indexPath = resolve(sessionTrackerRoot(this.projectRoot), "project-continuity.json")
           try {
             const raw = await readFile(indexPath, "utf-8")
             const index = JSON.parse(raw) as { sessions?: Record<string, { dir?: string }>; chronologicalOrder?: string[] }

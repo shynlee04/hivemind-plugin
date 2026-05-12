@@ -360,11 +360,11 @@ export class ToolCapture {
     if (!str) return null
 
     // Try "task_id: ses_..." format first
-    const match = str.match(/task_id:\s*(ses_[a-zA-Z0-9]+)/)
+    const match = str.match(/task_id:\s*(ses_[a-zA-Z0-9_]+)/)
     if (match) return match[1]
 
     // Try standalone ses_ ID in the output
-    const sesMatch = str.match(/(ses_[a-zA-Z0-9]{6,})/)
+    const sesMatch = str.match(/(ses_[a-zA-Z0-9_]{6,})/)
     if (sesMatch) return sesMatch[1]
 
     return null
