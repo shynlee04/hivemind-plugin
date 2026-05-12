@@ -27,7 +27,8 @@ describe("AgentTransform", () => {
 
       expect(result.name).toBe("Hm-L0-Orchestrator")
       expect(result.model).toBe("DeepSeek V4 Pro")
-      // thinkingDuration is undefined — timing data not available from hook metadata (DEFECT-11)
+      // F-10: thinkingDuration is undefined — timing data not available from hook metadata
+      expect(result.thinkingDuration).toBeUndefined()
     })
 
     it("should default to 'unknown' when agent name is missing", () => {
@@ -66,7 +67,22 @@ describe("AgentTransform", () => {
         },
       )
 
-      // thinkingDuration is undefined — timing data not available from hook metadata (DEFECT-11)
+      // DEFECT-11 / F-10: thinkingDuration returns undefined — timing data not
+      // available from hook metadata. computeThinkingDuration() honestly returns
+      // undefined rather than fabricating a value.
+      expect(result.thinkingDuration).toBeUndefined()
+    })
+
+    it("should return undefined thinkingDuration when no thinking parts exist", () => {
+      const result = transform.extractAssistantMetadata(
+        {
+          agent: "TestAgent",
+          model: { providerID: "openai", modelID: "gpt-4" },
+        },
+        { parts: [{ type: "text", text: "Just text, no thinking" }] },
+      )
+
+      expect(result.thinkingDuration).toBeUndefined()
     })
 
     it("should use modelID when available over providerID", () => {
