@@ -223,4 +223,109 @@ describe("SessionTracker — ensureSessionReady parentID gate (F-01)", () => {
       expect(mockAddSession).toHaveBeenCalledTimes(1)
     })
   })
+
+  // F-05: Child session chat.message routing
+  describe("F-05 — handleChatMessage child session routing", () => {
+    let mockAppendChildTurn: ReturnType<typeof vi.fn>
+    let mockHandleChatMessage: ReturnType<typeof vi.fn>
+
+    beforeEach(async () => {
+      // Reset mocks
+      vi.clearAllMocks()
+      mockAppendChildTurn = vi.fn().mockResolvedValue(undefined)
+      mockHandleChatMessage = vi.fn().mockResolvedValue(undefined)
+
+      tracker = new SessionTracker({
+        client: {
+          app: { log: mockAppLog },
+          session: { get: mockGetSession },
+        } as any,
+        projectRoot: "/fake/project",
+      })
+
+      // Set up internal dependencies for handleChatMessage
+      ;(tracker as any).sessionWriter = {
+        createSessionDir: mockCreateSessionDir,
+        initializeSessionFile: mockInitializeSessionFile,
+        updateFrontmatter: vi.fn(),
+        appendUserTurn: vi.fn(),
+        appendAgentBlock: vi.fn(),
+        appendToolBlock: vi.fn(),
+      }
+      ;(tracker as any).projectIndexWriter = {
+        addSession: mockAddSession,
+        initializeIndex: vi.fn(),
+      }
+      ;(tracker as any).sessionIndexWriter = {
+        addChild: vi.fn(),
+      }
+      ;(tracker as any).messageCapture = {
+        handleChatMessage: mockHandleChatMessage,
+      }
+      ;(tracker as any).childWriter = {
+        appendChildTurn: mockAppendChildTurn,
+      }
+    })
+
+    it("should route child session chat messages to childWriter.appendChildTurn", async () => {
+      // Arrange: SDK returns child session with parentID
+      mockGetSession.mockResolvedValue({
+        id: "ses_child1234567890x",
+        parentID: "ses_parent9876543210y",
+        title: "Child Session",
+      })
+
+      // Act: chat.message fires for child session
+      await tracker.handleChatMessage(
+        { sessionID: "ses_child1234567890x", agent: "hm-l2-investigator", model: { providerID: "deepseek", modelID: "v4-pro" }, messageID: "msg1", variant: "user" },
+        { message: { role: "user", content: "Investigate this bug" }, parts: [] },
+      )
+
+      // Assert: child message routed to childWriter
+      expect(mockAppendChildTurn).toHaveBeenCalledWith(
+        "ses_parent9876543210y",
+        "ses_child1234567890x",
+        expect.objectContaining({
+          actor: "hm-l2-investigator",
+          content: expect.any(String),
+        }),
+      )
+      // Assert: NOT routed to main messageCapture
+      expect(mockHandleChatMessage).not.toHaveBeenCalled()
+    })
+
+    it("should route main session chat messages to messageCapture (unchanged)", async () => {
+      // Arrange: SDK returns main session (no parentID)
+      mockGetSession.mockResolvedValue({
+        id: "ses_main1234567890ab",
+        parentID: null,
+        title: "Main Session",
+      })
+
+      // Act: chat.message fires for main session
+      await tracker.handleChatMessage(
+        { sessionID: "ses_main1234567890ab", agent: "test", model: { providerID: "test", modelID: "test" }, messageID: "msg1", variant: "user" },
+        { message: { role: "user", content: "hello" }, parts: [] },
+      )
+
+      // Assert: routed to messageCapture (existing behavior)
+      expect(mockHandleChatMessage).toHaveBeenCalled()
+      expect(mockAppendChildTurn).not.toHaveBeenCalled()
+    })
+
+    it("should fallback to main session when SDK call fails (conservative)", async () => {
+      // Arrange: SDK call fails
+      mockGetSession.mockRejectedValue(new Error("SDK unavailable"))
+
+      // Act
+      await tracker.handleChatMessage(
+        { sessionID: "ses_fallback3456789012c", agent: "test", model: { providerID: "test", modelID: "test" }, messageID: "msg2", variant: "user" },
+        { message: { role: "user", content: "hello" }, parts: [] },
+      )
+
+      // Assert: falls back to messageCapture, not childWriter
+      expect(mockHandleChatMessage).toHaveBeenCalled()
+      expect(mockAppendChildTurn).not.toHaveBeenCalled()
+    })
+  })
 })
