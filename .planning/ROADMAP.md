@@ -363,7 +363,7 @@ Rules:
 **Goal:** Repair all session-tracker pipeline defects (11 root causes, 12 fixes) to achieve FULL compliance with CP-ST-01 SPEC (13 REQs) using disk-truth-first validation.
 **Requirements:** REQ-ST-01 through REQ-ST-13 (from CP-ST-01-session-tracker-revamp/01-SPEC.md)
 **Depends on:** Phase 12
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 13-01-PLAN.md — Fix Session Initialization (F-01, F-02) — Wave 1 (BLOCKING)
@@ -371,7 +371,7 @@ Plans:
 - [x] 13-03-PLAN.md — Fix Data Flow + Pinned Reqs (F-04..F-06, P-01/P-03/P-04) — Wave 3 (CRITICAL)
 - [x] 13-04-PLAN.md — Add Serial Queues (F-07, F-08) — Wave 3 (HIGH)
 - [x] 13-05-PLAN.md — Cleanup + Tool Fixes (F-09..F-12) — Wave 1 (MEDIUM)
-- [ ] 13-06-PLAN.md — Integration Tests — Wave 4 (VERIFICATION)
+- [x] 13-06-PLAN.md — Integration Tests — Wave 4 (VERIFICATION)
 
 ---
 *Last updated: 2026-05-11 — GOV-01 (Phase 11) + CP-ST-02 (Phase 12) added for governance reconciliation and CP-ST-01 remediation*
