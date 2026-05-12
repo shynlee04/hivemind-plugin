@@ -473,6 +473,25 @@ export class SessionTracker {
       // Initialize project-level index if needed
       await this.projectIndexWriter.initializeIndex()
 
+      // Seed turn counters from existing .md files (prevent reset-to-zero on restart)
+      if (this.messageCapture) {
+        try {
+          const indexPath = safeSessionPath(this.projectRoot, "project-continuity", "project-continuity.json")
+          try {
+            const raw = await readFile(indexPath, "utf-8")
+            const index = JSON.parse(raw) as { sessions?: Record<string, { dir?: string }>; chronologicalOrder?: string[] }
+            const sessionIds = index.chronologicalOrder ?? Object.keys(index.sessions ?? {})
+            for (const sessionID of sessionIds) {
+              await this.messageCapture.seedTurnCounters(sessionID)
+            }
+          } catch {
+            // Index may not exist yet — no sessions to seed
+          }
+        } catch {
+          // Best-effort: if seeding fails, turn counters start fresh
+        }
+      }
+
       // Clean up orphaned .tmp.* files from interrupted writes
       await this.cleanupOrphanedTmpFiles()
 
