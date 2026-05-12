@@ -75,7 +75,11 @@ describe("ToolCapture", () => {
       childWriter,
       sessionIndexWriter,
       projectIndexWriter,
-      hierarchyIndex: { registerChild: mockRegisterChild } as unknown as HierarchyIndex,
+      hierarchyIndex: {
+        registerChild: mockRegisterChild,
+        getDepth: vi.fn().mockReturnValue(1),
+        isChild: vi.fn().mockReturnValue(false),
+      } as unknown as HierarchyIndex,
     })
   })
 
@@ -251,9 +255,10 @@ describe("ToolCapture", () => {
         expect.any(String),
       )
 
-      // Should update project index via incrementChildCount
+      // Should update project index via incrementChildCount (with depth)
       expect(mockIncrementChildCount).toHaveBeenCalledWith(
         "ses_parent12345abcdef",
+        1,
       )
 
       // Should update global hierarchy index

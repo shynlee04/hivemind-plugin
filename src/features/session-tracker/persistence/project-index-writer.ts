@@ -215,18 +215,25 @@ export class ProjectIndexWriter {
   /**
    * Atomically increments the childCount for a session in the project index.
    *
+   * If `depth` is provided and exceeds the current `totalDelegationDepth`,
+   * updates it to reflect the deepest delegation seen (AC-10).
+   *
    * Serialized via the write queue to prevent concurrent update corruption.
    *
    * @param sessionID - The parent session identifier.
+   * @param depth - Optional delegation depth of the new child.
    * @returns Promise that resolves when the index is updated.
    */
-  async incrementChildCount(sessionID: string): Promise<void> {
+  async incrementChildCount(sessionID: string, depth?: number): Promise<void> {
     await this.enqueueWrite(async () => {
       const index = await this.readIndex()
       const now = new Date().toISOString()
       const entry = index.sessions[sessionID]
       if (entry) {
         entry.childCount = (entry.childCount ?? 0) + 1
+        if (depth !== undefined && depth > (entry.totalDelegationDepth ?? 0)) {
+          entry.totalDelegationDepth = depth
+        }
         entry.updated = now
       }
       index.lastUpdated = now

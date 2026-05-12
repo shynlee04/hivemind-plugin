@@ -144,6 +144,28 @@ export class HierarchyIndex {
   }
 
   /**
+   * Computes the delegation depth of a session by walking the parent chain.
+   *
+   * L0 (no parent) = 0, L1 (parent is L0) = 1, L2 (parent is L1) = 2.
+   * Caps at 2 per SPEC §1.2. Includes cycle guard.
+   *
+   * @param sessionID - The session identifier to compute depth for.
+   * @returns The delegation depth (0, 1, or 2).
+   */
+  getDepth(sessionID: string): number {
+    let depth = 0
+    let current = sessionID
+    const visited = new Set<string>()
+    while (this.childToParent.has(current)) {
+      if (visited.has(current)) break // cycle guard
+      visited.add(current)
+      current = this.childToParent.get(current)!
+      depth++
+    }
+    return Math.min(depth, 2) // cap at L2
+  }
+
+  /**
    * Returns the current number of tracked child→parent mappings.
    */
   get size(): number {

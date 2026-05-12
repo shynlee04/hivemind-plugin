@@ -53,6 +53,7 @@ import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-lo
 //   shouldTrackEventTrackerEvent,
 // } from "./task-management/journal/event-tracker/index.js"
 import { SessionTracker } from "./features/session-tracker/index.js"
+import { getEventSessionID } from "./shared/session-api.js"
 
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
@@ -162,7 +163,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     try {
       const ev = event as Record<string, unknown> | undefined
       const eventType = (ev?.type as string) || (ev?.eventType as string) || "unknown"
-      const sessionID = (ev?.sessionID as string) || ""
+      const sessionID = getEventSessionID(ev) || ""
       if (sessionID) {
         await sessionTracker.handleSessionEvent({ eventType, sessionID, event: ev })
       }
@@ -233,7 +234,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     // Auto-persist workflow state after configure-primitive calls with workflow params.
     // Best-effort: failures are silently ignored — does not affect the tool call result.
     "tool.execute.after": async (
-      input: { tool: string; args?: Record<string, unknown> },
+      input: { tool: string; sessionID?: string; callID?: string; args?: Record<string, unknown> },
       _output?: { metadata?: unknown; [key: string]: unknown } | string,
     ): Promise<void> => {
       const fact = await createToolExecuteAfterHook({

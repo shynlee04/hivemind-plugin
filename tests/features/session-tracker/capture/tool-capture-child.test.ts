@@ -17,6 +17,9 @@ import {
 import {
   ProjectIndexWriter,
 } from "../../../../src/features/session-tracker/persistence/project-index-writer.js"
+import {
+  HierarchyIndex,
+} from "../../../../src/features/session-tracker/persistence/hierarchy-index.js"
 
 describe("ToolCapture — child session (DEFECT-03)", () => {
   let toolCapture: ToolCapture
@@ -67,6 +70,7 @@ describe("ToolCapture — child session (DEFECT-03)", () => {
       initializeIndex: vi.fn(),
       addSession: vi.fn(),
       removeSession: vi.fn(),
+      incrementChildCount: vi.fn().mockResolvedValue(undefined),
     } as unknown as ProjectIndexWriter
 
     toolCapture = new ToolCapture({
@@ -75,6 +79,11 @@ describe("ToolCapture — child session (DEFECT-03)", () => {
       childWriter,
       sessionIndexWriter,
       projectIndexWriter,
+      hierarchyIndex: {
+        registerChild: vi.fn(),
+        getDepth: vi.fn().mockReturnValue(1),
+        isChild: vi.fn().mockReturnValue(false),
+      } as unknown as HierarchyIndex,
     })
   })
 

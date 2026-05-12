@@ -371,7 +371,7 @@ describe("Session tracker E2E verification (all 13 REQs)", () => {
 
       expect(child.parentSessionID).toBe(parentID)
       expect(child.delegationDepth).toBe(1)
-      expect(child.delegatedBy.agentName).toBe("main_l0_agent")
+      expect(child.delegatedBy.agentName).toBe("hm-l2-architect")
     })
   })
 

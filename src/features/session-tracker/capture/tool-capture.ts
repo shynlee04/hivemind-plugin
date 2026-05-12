@@ -232,7 +232,17 @@ export class ToolCapture {
     if (childSessionID) {
       const now = new Date().toISOString()
       const childFile = `${childSessionID}.json`
-      const depth = 1
+
+      // Compute depth dynamically by walking the hierarchy index.
+      // After registerChild() below sets childSessionID → input.sessionID,
+      // getDepth() walks the chain. Pre-register first so depth is correct.
+      this.hierarchyIndex.registerChild(input.sessionID, childSessionID)
+      let depth = this.hierarchyIndex.getDepth(childSessionID)
+      // Fallback: if hierarchy index doesn't know the parent, infer from
+      // whether the parent is itself a child (L2) or not (L1).
+      if (depth === 0) {
+        depth = this.hierarchyIndex.isChild(input.sessionID) ? 2 : 1
+      }
 
       await this.sessionIndexWriter.updateToolSummary(input.sessionID, "task")
 
@@ -242,7 +252,7 @@ export class ToolCapture {
         parentSessionID: input.sessionID,
         delegationDepth: depth,
         delegatedBy: {
-          agentName: "main_l0_agent",
+          agentName: subagentType || "unknown",
           model: "unknown",
           tool: "task",
           description,
@@ -284,18 +294,26 @@ export class ToolCapture {
         childSessionID,
         childFile,
         depth,
-        "main_l0_agent",
+        subagentType || "unknown",
       )
 
       // Update global hierarchy index (in-memory, O(1) lookup).
-      // This ensures ensureSessionReady() and handleChatMessage() can
-      // classify this child session correctly even when the SDK doesn't
+      // NOTE: registerChild() was already called above for depth computation.
+      // This is a no-op (Map.set is idempotent for same key/value).
+      // Kept for clarity — ensures ensureSessionReady() and handleChatMessage()
+      // can classify this child session correctly even when the SDK doesn't
       // report parentID.
-      this.hierarchyIndex.registerChild(input.sessionID, childSessionID)
 
       // Update project-level index
       // childCount is tracked by project-index-writer internally
-      await this.projectIndexWriter.incrementChildCount(input.sessionID)
+      await this.projectIndexWriter.incrementChildCount(input.sessionID, depth)
+
+      // Register child session in project index (AC-04: all sessions represented)
+      await this.projectIndexWriter.addSession(
+        childSessionID,
+        `${input.sessionID}/`,
+        `${childSessionID}.json`,
+      )
 
       // Also append the task tool block to the main session .md
       await this.sessionWriter.appendToolBlock(
