@@ -337,6 +337,32 @@ export class SessionTracker {
     try {
       // Lazy bootstrap: ensure session directory + index exist (cold-start)
       await this.ensureSessionReady(input.sessionID)
+
+      // Detect child session: if this session has a parent, route to child writer
+      let parentID: string | undefined
+      try {
+        const session = await this.getSessionSafely(input.sessionID)
+        parentID = (session as { parentID?: string } | undefined)?.parentID
+      } catch {
+        // SDK call failed — proceed as main session (conservative fallback)
+      }
+
+      if (parentID && this.childWriter) {
+        // Child session: capture chat message in child .json
+        const messageRole = (output.message as Record<string, unknown> | null)?.role
+        await this.childWriter.appendChildTurn(
+          parentID,
+          input.sessionID,
+          {
+            turn: 0, // Computed from current turns count by appendChildTurn
+            actor: input.agent || "unknown",
+            content: typeof messageRole === "string" ? messageRole : "unknown",
+            tools: [],
+          },
+        )
+        return // Child messages go to child .json only, not main .md
+      }
+
       if (this.messageCapture) {
         await this.messageCapture.handleChatMessage(
           input as Parameters<MessageCapture["handleChatMessage"]>[0],
