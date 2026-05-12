@@ -252,7 +252,7 @@ export class ToolCapture {
         parentSessionID: input.sessionID,
         delegationDepth: depth,
         delegatedBy: {
-          agentName: subagentType || "unknown",
+          agentName: "unknown", // Parent-agent name not available in tool.execute.after hook
           model: "unknown",
           tool: "task",
           description,
