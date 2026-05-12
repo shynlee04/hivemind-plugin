@@ -274,10 +274,10 @@ export interface ProjectContinuityIndex {
 export function isValidSessionID(id: unknown): id is string {
   if (typeof id !== "string") return false
   if (id.length === 0) return false
+  if (!id.startsWith("ses")) return false // OpenCode convention — matches assertValidSessionID()
   if (id.includes("..")) return false   // Path traversal — still dangerous
   if (id.startsWith("/")) return false   // Absolute Unix path — dangerous
   if (id.startsWith("\\")) return false  // Absolute Windows path — dangerous
-  // Accept valid session IDs: OpenCode uses IDs like "ses_" prefix.
   // safeSessionPath() provides the actual filesystem safety at the
   // persistence boundary (Phase 13 F-11).
   return true
