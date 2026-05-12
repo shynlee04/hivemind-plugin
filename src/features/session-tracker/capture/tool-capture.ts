@@ -18,6 +18,7 @@ import type { SessionWriter } from "../persistence/session-writer.js"
 import type { ChildWriter } from "../persistence/child-writer.js"
 import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
+import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { ChildSessionRecord } from "../types.js"
 import { isValidSessionID } from "../types.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
@@ -57,6 +58,7 @@ export class ToolCapture {
   private childWriter: ChildWriter
   private sessionIndexWriter: SessionIndexWriter
   private projectIndexWriter: ProjectIndexWriter
+  private hierarchyIndex: HierarchyIndex
 
   /**
    * @param deps - Injected dependencies.
@@ -72,12 +74,14 @@ export class ToolCapture {
     childWriter: ChildWriter
     sessionIndexWriter: SessionIndexWriter
     projectIndexWriter: ProjectIndexWriter
+    hierarchyIndex: HierarchyIndex
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
     this.childWriter = deps.childWriter
     this.sessionIndexWriter = deps.sessionIndexWriter
     this.projectIndexWriter = deps.projectIndexWriter
+    this.hierarchyIndex = deps.hierarchyIndex
   }
 
   /**
@@ -282,6 +286,12 @@ export class ToolCapture {
         depth,
         "main_l0_agent",
       )
+
+      // Update global hierarchy index (in-memory, O(1) lookup).
+      // This ensures ensureSessionReady() and handleChatMessage() can
+      // classify this child session correctly even when the SDK doesn't
+      // report parentID.
+      this.hierarchyIndex.registerChild(input.sessionID, childSessionID)
 
       // Update project-level index
       // childCount is tracked by project-index-writer internally

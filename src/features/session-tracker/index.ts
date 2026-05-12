@@ -46,6 +46,7 @@ import { SessionWriter } from "./persistence/session-writer.js"
 import { ChildWriter } from "./persistence/child-writer.js"
 import { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
+import { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { readFile } from "node:fs/promises"
@@ -83,6 +84,11 @@ export class SessionTracker {
   private childWriter!: ChildWriter
   private sessionIndexWriter!: SessionIndexWriter
   private projectIndexWriter!: ProjectIndexWriter
+
+  // Global hierarchy index (childID → parentID) for session classification
+  // Consulted by ensureSessionReady and handleChatMessage as a SECOND gate
+  // after SDK parentID. Built from disk at init, updated live by handleTask().
+  private hierarchyIndex!: HierarchyIndex
 
   // Recovery
   private recovery!: SessionRecovery
@@ -140,16 +146,34 @@ export class SessionTracker {
         return
       }
     } catch {
-      // SDK call failed — cannot determine parentID. Treat conservatively
-      // as a main session (create directory rather than risk data loss).
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: cannot determine parentID for "${sessionID}" — treating as main session (conservative fallback)`,
-        },
-      })
+      // SDK call failed — cannot determine parentID. Fall through to
+      // hierarchy index check below (don't log warning yet — the index
+      // is the second gate).
     }
+
+    // F-01.1: Second gate — check the global hierarchy index.
+    // If this session ID was registered as a child by a task delegation
+    // (recorded in session-continuity.json hierarchy.children), treat it
+    // as a child regardless of what the SDK reports.
+    //
+    // This fixes the orphan-directory bug: OpenCode child sessions often
+    // fire events BEFORE the SDK records parentID, or the SDK never records
+    // it at all. The hierarchy index (populated by handleTask() at task
+    // delegation time) knows the truth.
+    if (this.hierarchyIndex?.isChild(sessionID)) {
+      this.bootstrappedSessions.add(sessionID)
+      return
+    }
+
+    // Neither SDK parentID nor hierarchy index indicates this is a child.
+    // Treat as a main session — create directory (conservative fallback).
+    void this.client.app?.log?.({
+      body: {
+        service: "session-tracker",
+        level: "warn",
+        message: `[Harness] Session tracker: cannot determine parentID for "${sessionID}" — treating as main session (conservative fallback)`,
+      },
+    })
 
     this.bootstrappedSessions.add(sessionID)
 
@@ -339,13 +363,22 @@ export class SessionTracker {
       // Lazy bootstrap: ensure session directory + index exist (cold-start)
       await this.ensureSessionReady(input.sessionID)
 
-      // Detect child session: if this session has a parent, route to child writer
+      // Detect child session: if this session has a parent, route to child writer.
+      // Gate 1: SDK parentID (fastest path — avoids disk I/O).
+      // Gate 2: Hierarchy index (fallback when SDK doesn't report parentID).
       let parentID: string | undefined
       try {
         const session = await this.getSessionSafely(input.sessionID)
         parentID = (session as { parentID?: string } | undefined)?.parentID
       } catch {
-        // SDK call failed — proceed as main session (conservative fallback)
+        // SDK call failed — proceed to hierarchy index fallback
+      }
+
+      if (!parentID && this.hierarchyIndex) {
+        const hierarchyParent = this.hierarchyIndex.getParent(input.sessionID)
+        if (hierarchyParent) {
+          parentID = hierarchyParent
+        }
       }
 
       if (parentID && this.childWriter) {
@@ -438,6 +471,12 @@ export class SessionTracker {
       this.sessionIndexWriter = new SessionIndexWriter({ projectRoot: this.projectRoot })
       this.projectIndexWriter = new ProjectIndexWriter({ client: this.client, projectRoot: this.projectRoot })
 
+      // Build the global hierarchy index from existing session-continuity.json files.
+      // This ensures sessions created before this harness instance loaded are correctly
+      // classified when their events arrive (cold-start scenario).
+      this.hierarchyIndex = new HierarchyIndex({ projectRoot: this.projectRoot })
+      await this.hierarchyIndex.buildFromDisk()
+
       // Create transform utility
       this.agentTransform = new AgentTransform()
 
@@ -448,6 +487,7 @@ export class SessionTracker {
         childWriter: this.childWriter,
         sessionIndexWriter: this.sessionIndexWriter,
         projectIndexWriter: this.projectIndexWriter,
+        hierarchyIndex: this.hierarchyIndex,
       })
       this.messageCapture = new MessageCapture({
         client: this.client,
@@ -462,6 +502,7 @@ export class SessionTracker {
         childWriter: this.childWriter,
         sessionIndexWriter: this.sessionIndexWriter,
         projectIndexWriter: this.projectIndexWriter,
+        hierarchyIndex: this.hierarchyIndex,
       })
 
       // Initialize recovery (reads project-continuity.json per D-05)

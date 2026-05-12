@@ -1,5 +1,19 @@
 # Reference 06: Delegation Depth Recovery
 
+## The Cascade Principle
+
+When a session disconnects mid-delegation, the recovery cascades naturally through all levels. But the key insight from SKILL.md Section 2 is:
+
+**You don't need to figure out the cascade yourself.** The protocol is:
+1. Find the deepest aborted session via `session-tracker`
+2. Resume its PARENT with the parent's session ID
+3. The parent (L0 or L1) then resumes its children — it has the context
+4. Each level resumes the next, bottom-up
+
+**"No thought must"** — you don't need to trace the full chain. Resume the root, and the cascade unfolds naturally. Context is preserved at every level. Even if wrong, it returns safely.
+
+---
+
 ## Multi-Level Recovery Cascade
 
 When a session disconnects mid-delegation, the recovery cascades through all levels.
@@ -187,5 +201,12 @@ After a successful resume chain, verify:
 - [ ] All active children transitioned to "completed" or "error"
 - [ ] No new session IDs were created during resume
 - [ ] Each child's depth matches its position in the hierarchy tree
-- [ ] Quality gate triad was run on each child output
+- [ ] Quality gate triad was run on each child output (SKILL.md Section 6)
 - [ ] User was informed of recovery state on return
+
+### If anything went wrong during cascade:
+**Remember the safety guarantee:** "even if wrong it returns safely."
+- A wrong resume just returns garbage — no harm
+- Start fresh from the parent level
+- The session-tracker still has everything saved
+- The "no thought must" pattern means you just try again

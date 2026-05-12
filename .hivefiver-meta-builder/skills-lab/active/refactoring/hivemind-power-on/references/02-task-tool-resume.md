@@ -7,6 +7,23 @@ task_id IS session_id. When you resume with task_id, the agent continues from wh
 Context is preserved. Do NOT repeat the prompt.
 ```
 
+## The "No Thought Must" Principle (from SKILL.md Section 2)
+
+**This is the most important thing to internalize about session resume:**
+
+```
+WHEN you see an aborted/active session ID:
+  → task({subagent_type: <same>, task_id: <exact ID>, prompt: "Continue"})
+  → NO reasoning about whether it's the right session
+  → NO checking if context was preserved (it IS — automatically)
+  → NO asking "but what if it completed?" (it returns safely if wrong)
+  → JUST DELEGATE
+```
+
+**Why this works:** Even if you resume the wrong session, the subagent gets the restored context, processes it, and returns with "I don't recognize this" or equivalent. No harm. No data loss. The session-tracker saved everything. You can always start fresh if wrong.
+
+**Repeat:** THERE IS NO RISK IN RESUMING THE WRONG SESSION. The safety is in the tool itself — wrong sessions return safely, right sessions continue perfectly.
+
 ## OpenCode Task Tool Parameters
 
 The `task` tool dispatches subagents. When resuming, use:
@@ -106,6 +123,14 @@ task(
 3. The agent sees its last turn and continues from there
 4. The agent has access to all files it previously read
 5. The agent knows what it was doing and what's pending
+
+### If you resume the wrong session (safety guarantee):
+1. OpenCode restores the wrong session's context
+2. The subagent says "I don't recognize this task" or returns immediately
+3. **No harm. No wasted work.** Start a fresh task with a new ID.
+4. The SKILL.md is explicit: "even if wrong it returns safely"
+
+**This guarantee is what makes the "no thought must" pattern work.** You don't need to worry about choosing wrong. The system handles wrong choices safely.
 
 ## L0→L1 Cascade Resume
 

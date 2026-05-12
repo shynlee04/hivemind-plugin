@@ -1,5 +1,13 @@
 # Reference 03: Lineage Routing Tree
 
+## IMPORTANT: Re-Evaluate Every Turn
+
+SKILL.md Section 3 says: **load this skill at every user turn.** The same applies to lineage routing — re-evaluate every time. A request that was hm-* 5 turns ago may have shifted to hf-*. A session that was active last turn may have completed. Don't cache routing decisions.
+
+**The "no thought must" principle applies to delegation, not routing.** For routing, you DO need to think — the decision tree below helps you classify correctly. But once classified, delegate without overthinking.
+
+---
+
 ## Complete Decision Tree
 
 ```

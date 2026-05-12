@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e403382fffeM091NT5zt5OId4",
+  "parentSessionID": "ses_1e405ffd2ffeDQLBguviVJwhEt",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Improve hf-l0-orchestrator strict governance",
+    "subagentType": "hf-l2-agent-builder"
+  },
+  "created": "2026-05-12T11:45:28.869Z",
+  "updated": "2026-05-12T11:45:28.880Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hf-l2-agent-builder",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hf-l2-agent-builder",
+      "content": "Improve hf-l0-orchestrator strict governance",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Improve hf-l0-orchestrator strict governance"
+}

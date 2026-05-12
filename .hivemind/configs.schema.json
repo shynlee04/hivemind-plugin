@@ -11,7 +11,7 @@
       "description": "Relative path to the shipped Hivemind config JSON Schema."
     },
     "conversation_language": {
-      "default": "vi",
+      "default": "en",
       "type": "string",
       "enum": [
         "en",
@@ -27,7 +27,7 @@
       ]
     },
     "documents_and_artifacts_language": {
-      "default": "vi",
+      "default": "en",
       "type": "string",
       "enum": [
         "en",

@@ -20,6 +20,7 @@ import type { SessionWriter } from "../persistence/session-writer.js"
 import type { ChildWriter } from "../persistence/child-writer.js"
 import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
+import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 
@@ -39,6 +40,7 @@ export class EventCapture {
   private childWriter: ChildWriter
   private sessionIndexWriter: SessionIndexWriter
   private projectIndexWriter: ProjectIndexWriter | undefined
+  private hierarchyIndex: HierarchyIndex | undefined
 
   /**
    * @param deps - Injected dependencies.
@@ -54,12 +56,14 @@ export class EventCapture {
     childWriter: ChildWriter
     sessionIndexWriter: SessionIndexWriter
     projectIndexWriter?: ProjectIndexWriter
+    hierarchyIndex?: HierarchyIndex
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
     this.childWriter = deps.childWriter
     this.sessionIndexWriter = deps.sessionIndexWriter
     this.projectIndexWriter = deps.projectIndexWriter
+    this.hierarchyIndex = deps.hierarchyIndex
   }
 
   /**
@@ -172,6 +176,14 @@ export class EventCapture {
       const parentID = session.parentID as string | null | undefined
 
       if (parentID === null || parentID === undefined) {
+        // Gate 2: Check hierarchy index before treating as root.
+        // If the SDK doesn't report parentID but the hierarchy index knows
+        // this session is a child, skip directory creation.
+        if (this.hierarchyIndex?.isChild(sessionID)) {
+          // Child session — skip directory creation (handled by tool-capture)
+          return
+        }
+
         // Root session — create subdirectory + .md file
         await this.sessionWriter.createSessionDir(sessionID)
         await this.sessionWriter.initializeSessionFile(sessionID, {

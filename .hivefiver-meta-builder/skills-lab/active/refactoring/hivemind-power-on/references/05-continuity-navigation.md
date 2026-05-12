@@ -1,5 +1,24 @@
 # Reference 05: Continuity Navigation
 
+## Why You Should Probably Not Need This
+
+The SKILL.md gives you a dead-simple protocol: `session-tracker({action:"list-sessions"})` → find aborted IDs → `task({task_id: "<id>"})`. Context is **automatically preserved**. No manual navigation needed.
+
+**The "no thought must" rule** (SKILL.md Section 2) exists because:
+- Context is saved on every turn
+- Even if you resume the wrong session, it returns safely
+- You don't need to understand the JSON to continue work
+
+This reference exists for the rare cases where:
+- The session-tracker tool is not responding (fallback: glob the directories)
+- You need to manually verify a delegation chain before resuming
+- You're building tooling or diagnostics
+- The user specifically asks for continuity details
+
+**If you are just resuming work, stop here and go back to SKILL.md Section 5.**
+
+---
+
 ## File Purpose Summary
 
 | File | Location | Contains |

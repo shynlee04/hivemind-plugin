@@ -1,5 +1,19 @@
 # Reference 01: Session-Tracker Anatomy
 
+## Before You Dive In — The "No Thought Must" Context
+
+You are reading this because SKILL.md section 8 says to read it when you need to navigate `.hivemind/session-tracker/` manually. But before you go deep into schemas and paths, remember:
+
+**The session-tracker saves everything.** Every session. Aborted. Completed. Cancelled. Active. All of it. You do NOT need to reason about which session to resume — the SKILL.md gives you a dead-simple protocol:
+
+1. `session-tracker({action:"list-sessions"})` → get all IDs
+2. `task({task_id: "<any aborted ID>"})` → context is auto-preserved
+3. Even if wrong, it returns safely. No harm. No wasted context.
+
+This reference exists for the rare cases where you need to go deeper — when the session-tracker tool isn't responding, when you need to verify a specific delegation chain, or when you're building tooling. **You should not need this for routine session resume.**
+
+But if you ARE here, the full anatomy follows below.
+
 ## Directory Structure
 
 ```
@@ -170,8 +184,15 @@ status: "active"
 | Find specific session child | `read(".hivemind/session-tracker/<id>/session-continuity.json")` |
 | Search across all sessions | `session-tracker(action: "search-sessions", query: "<agent_type>")` |
 
-## Anti-Pattern: Reading Full .md Files
+## Guidance: Reading .md Files Efficiently
 
-**NEVER:** `read(".hivemind/session-tracker/ses_xxx/ses_xxx.md")` (could be 7000+ lines)
+**Rule of thumb:** You usually don't need to read .md files at all. The session-tracker API (`list-sessions`, `search-sessions`) gives you everything you need. SKILL.md section 2 says: "no thought must" — just resume with task_id.
 
-**ALWAYS:** Use grep to find the line number, then read with offset and limit.
+**When you DO need to read them** (e.g., session-tracker not responding, or you need to extract a specific prompt):
+
+```
+grep(pattern: "## USER \\(turn", include: "*.md")     → find last user turn
+read(filePath, offset=<line>, limit=60)                → read just that turn
+```
+
+Don't read the full file — it can be 7000+ lines. But more importantly: **ask yourself if you really need to read it.** If you're just resuming a session, the answer is no. Context is preserved. Just use task_id.

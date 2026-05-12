@@ -81,7 +81,7 @@ QUALITY → DEPLOYMENT:
 
 ANY PHASE → RECOVERY:
   Gate: session-tracker check for aborted delegations
-  Action: RESUME protocol (hivemind-power-on Section 3.2)
+  Action: RESUME protocol (hivemind-power-on Section 2 — "No Thought Must" philosophy; Section 5 — practical workflow)
 ```
 
 ## L0 Orchestrator Routing Logic

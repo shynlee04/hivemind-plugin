@@ -14,6 +14,9 @@ import {
 import {
   ProjectIndexWriter,
 } from "../../../../src/features/session-tracker/persistence/project-index-writer.js"
+import {
+  HierarchyIndex,
+} from "../../../../src/features/session-tracker/persistence/hierarchy-index.js"
 
 describe("ToolCapture", () => {
   let toolCapture: ToolCapture
@@ -25,6 +28,7 @@ describe("ToolCapture", () => {
   let mockCreateChildFile: ReturnType<typeof vi.fn>
   let mockAddChild: ReturnType<typeof vi.fn>
   let mockIncrementChildCount: ReturnType<typeof vi.fn>
+  let mockRegisterChild: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -33,6 +37,7 @@ describe("ToolCapture", () => {
     mockCreateChildFile = vi.fn().mockResolvedValue(undefined)
     mockAddChild = vi.fn().mockResolvedValue(undefined)
     mockIncrementChildCount = vi.fn().mockResolvedValue(undefined)
+    mockRegisterChild = vi.fn()
 
     sessionWriter = {
       appendToolBlock: mockAppendToolBlock,
@@ -70,6 +75,7 @@ describe("ToolCapture", () => {
       childWriter,
       sessionIndexWriter,
       projectIndexWriter,
+      hierarchyIndex: { registerChild: mockRegisterChild } as unknown as HierarchyIndex,
     })
   })
 
@@ -248,6 +254,12 @@ describe("ToolCapture", () => {
       // Should update project index via incrementChildCount
       expect(mockIncrementChildCount).toHaveBeenCalledWith(
         "ses_parent12345abcdef",
+      )
+
+      // Should update global hierarchy index
+      expect(mockRegisterChild).toHaveBeenCalledWith(
+        "ses_parent12345abcdef",
+        "ses_child123456789ab",
       )
     })
 

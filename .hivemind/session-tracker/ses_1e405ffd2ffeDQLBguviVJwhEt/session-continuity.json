@@ -1,0 +1,35 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e405ffd2ffeDQLBguviVJwhEt",
+  "lastUpdated": "2026-05-12T11:52:54.935Z",
+  "hierarchy": {
+    "root": "ses_1e405ffd2ffeDQLBguviVJwhEt",
+    "children": {
+      "ses_1e402c451ffeaSQsqA4ezTWchc": {
+        "file": "ses_1e402c451ffeaSQsqA4ezTWchc.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e403382fffeM091NT5zt5OId4": {
+        "file": "ses_1e403382fffeM091NT5zt5OId4.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 5,
+  "toolSummary": {
+    "skill": 4,
+    "read": 10,
+    "glob": 8,
+    "todowrite": 4,
+    "task": 2,
+    "bash": 15,
+    "grep": 7,
+    "edit": 14
+  }
+}
