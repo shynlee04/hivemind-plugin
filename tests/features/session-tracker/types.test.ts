@@ -62,8 +62,8 @@ describe("isValidSessionID", () => {
   // F-11: Loosened regex — embedded path separators no longer rejected.
   // safeSessionPath() provides filesystem safety at the persistence boundary.
   it("accepts IDs with embedded path separators (not absolute/traversal)", () => {
-    expect(isValidSessionID("valid/id/with/slashes")).toBe(true)
-    expect(isValidSessionID("id_with_slash/and_more")).toBe(true)
+    expect(isValidSessionID("ses_valid/id/with/slashes")).toBe(true)
+    expect(isValidSessionID("ses_id_with_slash/and_more")).toBe(true)
     expect(isValidSessionID("ses_1e6ff88f4ffeRtk94qECvennWM")).toBe(true)
   })
 
