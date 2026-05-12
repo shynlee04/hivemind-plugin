@@ -274,3 +274,85 @@ describe("appendChildTurn", () => {
     expect(parsed.turns[0].tools[1].status).toBe("success")
   })
 })
+
+// ---------------------------------------------------------------------------
+// F-08: Concurrency tests — serial write queue
+// ---------------------------------------------------------------------------
+
+describe("concurrent writes — serial write queue (F-08)", () => {
+  const concParentID = "ses_conc_parent12345"
+  const concChildID = "ses_conc_child12345"
+
+  let concWriter: ChildWriter
+  let concProjectRoot: string
+
+  beforeEach(async () => {
+    concProjectRoot = mkdtempSync(join(tmpdir(), "st-child-conc-"))
+    concWriter = new ChildWriter({ projectRoot: concProjectRoot })
+    await concWriter.createChildFile(concParentID, concChildID, {
+      ...baseMetadata,
+      sessionID: concChildID,
+      parentSessionID: concParentID,
+    })
+  })
+
+  afterEach(() => {
+    const fs2 = require("node:fs")
+    fs2.rmSync(concProjectRoot, { recursive: true, force: true })
+  })
+
+  function readChildJson(): Record<string, unknown> {
+    const filePath = join(
+      concProjectRoot,
+      ".hivemind",
+      "session-tracker",
+      concParentID,
+      `${concChildID}.json`,
+    )
+    return JSON.parse(readFileSync(filePath, "utf-8"))
+  }
+
+  it("should not lose turns under 10 concurrent appendChildTurn calls", async () => {
+    // Fire 10 concurrent appendChildTurn calls
+    await Promise.all(
+      Array.from({ length: 10 }, (_, i) => {
+        const turn: Turn = {
+          turn: i + 1,
+          actor: "main_l0_agent",
+          content: `Concurrent turn ${i + 1}`,
+          tools: [],
+        }
+        return concWriter.appendChildTurn(concParentID, concChildID, turn)
+      }),
+    )
+
+    const record = readChildJson()
+    const turns = (record as any).turns as Turn[]
+    // Without a serial queue, some turns will be lost
+    expect(turns).toHaveLength(10)
+    for (let i = 0; i < 10; i++) {
+      expect(turns[i].content).toBe(`Concurrent turn ${i + 1}`)
+    }
+  })
+
+  it("should not lose status update when concurrent with appendChildTurn", async () => {
+    // Fire updateChildStatus and appendChildTurn concurrently
+    const turn: Turn = {
+      turn: 1,
+      actor: "main_l0_agent",
+      content: "Status-race turn",
+      tools: [],
+    }
+
+    await Promise.all([
+      concWriter.updateChildStatus(concParentID, concChildID, "completed"),
+      concWriter.appendChildTurn(concParentID, concChildID, turn),
+    ])
+
+    const record = readChildJson()
+    // Both updates should be visible — no lost writes
+    expect(record.status).toBe("completed")
+    expect((record as any).turns).toHaveLength(1)
+    expect((record as any).turns[0].content).toBe("Status-race turn")
+  })
+})
