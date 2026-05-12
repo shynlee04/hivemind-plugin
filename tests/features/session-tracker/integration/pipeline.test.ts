@@ -601,6 +601,141 @@ describe("Session Tracker Pipeline (Integration)", () => {
   })
 
   // =====================================================================
+  // TASK 3: F-07 & F-08 — Concurrent write safety
+  // =====================================================================
+
+  describe("F-07/F-08: Concurrent write safety", () => {
+    it("should persist all concurrent writes to session index and child writer", async () => {
+      // Arrange: create main session
+      await createTrackerAndInit({
+        id: "ses_f07_001",
+        parentID: null,
+        title: "Main Session",
+      })
+
+      await tracker.handleSessionEvent({
+        eventType: "session.created",
+        sessionID: "ses_f07_001",
+        event: {},
+      })
+      await drainWrites(200)
+
+      // Manually create a child .json file for concurrent append tests
+      const { writeFile } = await import("node:fs/promises")
+      const childJsonPath = join(sessionTrackerDir, "ses_f07_001", "ses_concurrent_child.json")
+      const initialChildRecord = {
+        sessionID: "ses_concurrent_child",
+        parentSessionID: "ses_f07_001",
+        delegationDepth: 1,
+        delegatedBy: {
+          agentName: "main_l0_agent",
+          model: "unknown",
+          tool: "task",
+          description: "Concurrent test",
+          subagentType: "hm-l2-test",
+        },
+        created: new Date().toISOString(),
+        updated: new Date().toISOString(),
+        status: "active",
+        mainAgent: { name: "hm-l2-test", model: "unknown" },
+        turns: [],
+        children: [],
+      }
+      await writeFile(childJsonPath, JSON.stringify(initialChildRecord, null, 2), "utf-8")
+
+      // Access internal writers for direct concurrent testing
+      const sessionIndexWriter = (tracker as any).sessionIndexWriter as {
+        addChild: (sessionID: string, childID: string, file: string, depth: number, delegatedBy: string) => Promise<void>
+      }
+      const childWriter = (tracker as any).childWriter as {
+        appendChildTurn: (parentID: string, childID: string, turn: Record<string, unknown>) => Promise<void>
+      }
+
+      // Act: 10 concurrent addChild calls (different child IDs)
+      const addChildPromises = Array.from({ length: 10 }, (_, i) =>
+        sessionIndexWriter.addChild(
+          "ses_f07_001",
+          `ses_child_c${i}`,
+          `ses_child_c${i}.json`,
+          1,
+          "main_l0_agent",
+        ),
+      )
+
+      // Act: 10 concurrent appendChildTurn calls (same child, different turns)
+      const appendPromises = Array.from({ length: 10 }, (_, i) =>
+        childWriter.appendChildTurn(
+          "ses_f07_001",
+          "ses_concurrent_child",
+          {
+            turn: i,
+            actor: `agent_${i}`,
+            content: `Concurrent turn ${i}`,
+            tools: [],
+          },
+        ),
+      )
+
+      // Run all concurrently
+      await Promise.all([...addChildPromises, ...appendPromises])
+      await drainWrites(500)
+
+      // Assert: session-continuity.json has all 10 children
+      const sessionIndex = await readSessionIndex("ses_f07_001")
+      const hierarchy = sessionIndex.hierarchy as { children: Record<string, unknown> }
+      const childKeys = Object.keys(hierarchy.children)
+      // ses_concurrent_child was created manually, so we expect 11 total (10 new + 1 existing)
+      // But addChild() with concurrent writes — all 10 should be there
+      const newChildren = childKeys.filter((k) => k.startsWith("ses_child_c"))
+      expect(newChildren.length).toBe(10)
+
+      // Assert: child .json has all 10 turns (plus 0 from initial)
+      const raw = await readFile(childJsonPath, "utf-8")
+      const childRecord = JSON.parse(raw) as { turns: unknown[] }
+      expect(childRecord.turns.length).toBe(10)
+    })
+
+    it("should handle concurrent addChild calls without data loss", async () => {
+      // Simpler test: just verify serial queue prevents data loss
+      await createTrackerAndInit({
+        id: "ses_f07_002",
+        parentID: null,
+        title: "Main Session",
+      })
+
+      await tracker.handleSessionEvent({
+        eventType: "session.created",
+        sessionID: "ses_f07_002",
+        event: {},
+      })
+      await drainWrites(200)
+
+      const sessionIndexWriter = (tracker as any).sessionIndexWriter as {
+        addChild: (sessionID: string, childID: string, file: string, depth: number, delegatedBy: string) => Promise<void>
+      }
+
+      // 5 concurrent addChild calls
+      await Promise.all(
+        Array.from({ length: 5 }, (_, i) =>
+          sessionIndexWriter.addChild(
+            "ses_f07_002",
+            `ses_conc_${i}`,
+            `ses_conc_${i}.json`,
+            1,
+            "test",
+          ),
+        ),
+      )
+      await drainWrites(300)
+
+      const sessionIndex = await readSessionIndex("ses_f07_002")
+      const hierarchy = sessionIndex.hierarchy as { children: Record<string, unknown> }
+      const children = Object.keys(hierarchy.children)
+      expect(children.length).toBe(5)
+    })
+  })
+
+  // =====================================================================
   // Helpers
   // =====================================================================
 
