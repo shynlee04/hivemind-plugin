@@ -27,6 +27,23 @@ export class ChildWriter {
   private projectRoot: string
 
   /**
+   * Per-child serial write queues (key: `parentID/childID`).
+   * Prevents concurrent read-modify-write corruption on child .json files.
+   */
+  private writeQueues: Map<string, Promise<void>> = new Map()
+
+  /**
+   * Per-child last write timestamps for stale queue detection.
+   */
+  private lastWriteTimes: Map<string, number> = new Map()
+
+  /**
+   * Threshold (in milliseconds) before a per-child queue is considered
+   * stale and auto-reset.
+   */
+  private static readonly STALE_QUEUE_MS = 5 * 60 * 1000
+
+  /**
    * @param deps - Injected dependencies.
    * @param deps.projectRoot - Absolute path to the project root.
    */
@@ -50,6 +67,57 @@ export class ChildWriter {
       parentSessionID,
       `${childSessionID}.json`,
     )
+  }
+
+  /**
+   * Detects and resets a stale write queue for a given child.
+   *
+   * If no write has completed for this child file within `STALE_QUEUE_MS`,
+   * the queue is replaced with a fresh resolved promise so subsequent
+   * writes are not blocked by a stuck preceding promise.
+   *
+   * @param queueKey - The queue key (`parentID/childID`).
+   */
+  private detectStaleQueue(queueKey: string): void {
+    const lastTime = this.lastWriteTimes.get(queueKey)
+    // No write has completed for this child yet — nothing to reset
+    if (lastTime === undefined) return
+    if (Date.now() - lastTime > ChildWriter.STALE_QUEUE_MS) {
+      this.writeQueues.set(queueKey, Promise.resolve())
+    }
+  }
+
+  /**
+   * Enqueues a write operation into the per-child serial queue.
+   *
+   * Stale-queue detection runs first to auto-recover from a frozen pipeline.
+   * Chains the provided function onto the end of the child's write queue
+   * so that only one write per child file is in-flight at a time. Records
+   * `lastWriteTime` on success. Errors are caught silently to prevent a
+   * failed write from breaking the queue entirely. A final `.then()` ensures
+   * the promise chain always resolves to void.
+   *
+   * @param queueKey - The queue key (`parentID/childID`).
+   * @param fn - The write operation to enqueue.
+   * @returns Promise that resolves when the enqueued write completes.
+   */
+  private enqueueWrite(
+    queueKey: string,
+    fn: () => Promise<void>,
+  ): Promise<void> {
+    this.detectStaleQueue(queueKey)
+    const current = this.writeQueues.get(queueKey) ?? Promise.resolve()
+    const next = current
+      .then(async () => {
+        await fn()
+        this.lastWriteTimes.set(queueKey, Date.now())
+      })
+      .catch(() => {
+        // Best-effort: swallow errors to keep queue alive
+      })
+      .then(() => {})
+    this.writeQueues.set(queueKey, next)
+    return next
   }
 
   /**
@@ -108,12 +176,17 @@ export class ChildWriter {
     childSessionID: string,
     status: string,
   ): Promise<void> {
-    const record = await this.readChildFile(parentSessionID, childSessionID)
-    record.status = status
-    record.updated = new Date().toISOString()
+    return this.enqueueWrite(
+      `${parentSessionID}/${childSessionID}`,
+      async () => {
+        const record = await this.readChildFile(parentSessionID, childSessionID)
+        record.status = status
+        record.updated = new Date().toISOString()
 
-    const filePath = this.getChildFilePath(parentSessionID, childSessionID)
-    await atomicWriteJson(filePath, record)
+        const filePath = this.getChildFilePath(parentSessionID, childSessionID)
+        await atomicWriteJson(filePath, record)
+      },
+    )
   }
 
   /**
@@ -131,18 +204,24 @@ export class ChildWriter {
     childSessionID: string,
     turn: Turn,
   ): Promise<void> {
-    const record = await this.readChildFile(parentSessionID, childSessionID)
-    record.turns.push(turn)
-    record.updated = new Date().toISOString()
+    return this.enqueueWrite(
+      `${parentSessionID}/${childSessionID}`,
+      async () => {
+        const record = await this.readChildFile(parentSessionID, childSessionID)
+        record.turns.push(turn)
+        record.updated = new Date().toISOString()
 
-    // P-04: Track last assistant message for resumption context
-    if (turn.actor !== "user" && turn.content) {
-      record.lastMessage = turn.content.length > 200
-        ? turn.content.slice(0, 200)
-        : turn.content
-    }
+        // P-04: Track last assistant message for resumption context
+        if (turn.actor !== "user" && turn.content) {
+          record.lastMessage =
+            turn.content.length > 200
+              ? turn.content.slice(0, 200)
+              : turn.content
+        }
 
-    const filePath = this.getChildFilePath(parentSessionID, childSessionID)
-    await atomicWriteJson(filePath, record)
+        const filePath = this.getChildFilePath(parentSessionID, childSessionID)
+        await atomicWriteJson(filePath, record)
+      },
+    )
   }
 }
