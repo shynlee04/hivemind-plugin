@@ -213,6 +213,29 @@ export class ProjectIndexWriter {
   }
 
   /**
+   * Atomically increments the childCount for a session in the project index.
+   *
+   * Serialized via the write queue to prevent concurrent update corruption.
+   *
+   * @param sessionID - The parent session identifier.
+   * @returns Promise that resolves when the index is updated.
+   */
+  async incrementChildCount(sessionID: string): Promise<void> {
+    await this.enqueueWrite(async () => {
+      const index = await this.readIndex()
+      const now = new Date().toISOString()
+      const entry = index.sessions[sessionID]
+      if (entry) {
+        entry.childCount = (entry.childCount ?? 0) + 1
+        entry.updated = now
+      }
+      index.lastUpdated = now
+      const filePath = this.getIndexPath()
+      await atomicWriteJson(filePath, index)
+    })
+  }
+
+  /**
    * Removes a session from the project index.
    *
    * Serialized via the write queue. Removes the session entry and

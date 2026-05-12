@@ -284,7 +284,7 @@ export class ToolCapture {
 
       // Update project-level index
       // childCount is tracked by project-index-writer internally
-      await this.projectIndexWriter.updateSession(input.sessionID, {})
+      await this.projectIndexWriter.incrementChildCount(input.sessionID)
 
       // Also append the task tool block to the main session .md
       await this.sessionWriter.appendToolBlock(
