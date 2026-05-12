@@ -238,8 +238,9 @@ export class ToolCapture {
       // getDepth() walks the chain. Pre-register first so depth is correct.
       this.hierarchyIndex.registerChild(input.sessionID, childSessionID)
       let depth = this.hierarchyIndex.getDepth(childSessionID)
-      // Fallback: if hierarchy index doesn't know the parent, infer from
-      // whether the parent is itself a child (L2) or not (L1).
+      // Fallback: if hierarchy index doesn't know this child yet,
+      // infer depth from parent's status. Depth is capped at 2 per SPEC §1.2.
+      // parent-is-child → depth=2 (cap), parent-is-main → depth=1
       if (depth === 0) {
         depth = this.hierarchyIndex.isChild(input.sessionID) ? 2 : 1
       }
