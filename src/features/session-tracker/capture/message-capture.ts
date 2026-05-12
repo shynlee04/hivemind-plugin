@@ -14,6 +14,7 @@
 
 import type { SessionWriter } from "../persistence/session-writer.js"
 import type { AgentTransform } from "../transform/agent-transform.js"
+import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import { isValidSessionID } from "../types.js"
 import { safeSessionPath } from "../persistence/atomic-write.js"
 import { readFile } from "node:fs/promises"
@@ -62,6 +63,7 @@ export class MessageCapture {
   private sessionWriter: SessionWriter
   private agentTransform: AgentTransform
   private projectRoot: string
+  private sessionIndexWriter: SessionIndexWriter
 
   /**
    * Per-session turn counters. Keyed by sessionID, values are the next
@@ -75,17 +77,20 @@ export class MessageCapture {
    * @param deps.sessionWriter - The session writer for persistence.
    * @param deps.agentTransform - The agent metadata transform utility.
    * @param deps.projectRoot - Absolute path to the project root for file reads.
+   * @param deps.sessionIndexWriter - The session index writer for turn count persistence.
    */
   constructor(deps: {
     client: OpenCodeClient
     sessionWriter: SessionWriter
     agentTransform: AgentTransform
     projectRoot: string
+    sessionIndexWriter: SessionIndexWriter
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
     this.agentTransform = deps.agentTransform
     this.projectRoot = deps.projectRoot
+    this.sessionIndexWriter = deps.sessionIndexWriter
   }
 
   /**

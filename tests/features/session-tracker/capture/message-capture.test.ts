@@ -8,20 +8,24 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { MessageCapture } from "../../../../src/features/session-tracker/capture/message-capture.js"
 import { SessionWriter } from "../../../../src/features/session-tracker/persistence/session-writer.js"
 import { AgentTransform } from "../../../../src/features/session-tracker/transform/agent-transform.js"
+import type { SessionIndexWriter } from "../../../../src/features/session-tracker/persistence/session-index-writer.js"
 
 describe("MessageCapture", () => {
   let messageCapture: MessageCapture
   let sessionWriter: SessionWriter
   let agentTransform: AgentTransform
+  let sessionIndexWriter: SessionIndexWriter
   let mockAppendUserTurn: ReturnType<typeof vi.fn>
   let mockAppendAgentBlock: ReturnType<typeof vi.fn>
   let mockExtractAssistantMetadata: ReturnType<typeof vi.fn>
+  let mockIncrementTurnCount: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     mockAppendUserTurn = vi.fn().mockResolvedValue(undefined)
     mockAppendAgentBlock = vi.fn().mockResolvedValue(undefined)
+    mockIncrementTurnCount = vi.fn().mockResolvedValue(undefined)
 
     sessionWriter = {
       appendUserTurn: mockAppendUserTurn,
@@ -31,6 +35,10 @@ describe("MessageCapture", () => {
       appendToolBlock: vi.fn(),
       updateFrontmatter: vi.fn(),
     } as unknown as SessionWriter
+
+    sessionIndexWriter = {
+      incrementTurnCount: mockIncrementTurnCount,
+    } as unknown as SessionIndexWriter
 
     mockExtractAssistantMetadata = vi.fn().mockReturnValue({
       name: "Hm-L0-Orchestrator",
@@ -43,7 +51,13 @@ describe("MessageCapture", () => {
       transformChildUserMessage: vi.fn(),
     } as unknown as AgentTransform
 
-    messageCapture = new MessageCapture({ sessionWriter, agentTransform, client: { app: { log: vi.fn() } } as any, projectRoot: "/tmp" })
+    messageCapture = new MessageCapture({
+      sessionWriter,
+      agentTransform,
+      client: { app: { log: vi.fn() } } as any,
+      projectRoot: "/tmp",
+      sessionIndexWriter,
+    })
   })
 
   describe("user messages", () => {
@@ -269,6 +283,59 @@ describe("MessageCapture", () => {
           },
         ),
       ).resolves.toBeUndefined()
+    })
+  })
+
+  describe("turn count persistence", () => {
+    it("should increment turnCount via sessionIndexWriter when user message is captured", async () => {
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "text", text: "Hello" }],
+        },
+      )
+
+      expect(mockIncrementTurnCount).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+      )
+      expect(mockIncrementTurnCount).toHaveBeenCalledTimes(1)
+    })
+
+    it("should call incrementTurnCount for every user message (turn count tracks messages)", async () => {
+      const sessionID = "ses_count123456789ab"
+
+      await messageCapture.handleChatMessage(
+        { sessionID },
+        { message: { role: "user" }, parts: [{ type: "text", text: "Msg 1" }] },
+      )
+      await messageCapture.handleChatMessage(
+        { sessionID },
+        { message: { role: "user" }, parts: [{ type: "text", text: "Msg 2" }] },
+      )
+      await messageCapture.handleChatMessage(
+        { sessionID },
+        { message: { role: "user" }, parts: [{ type: "text", text: "Msg 3" }] },
+      )
+
+      expect(mockIncrementTurnCount).toHaveBeenCalledWith(sessionID)
+      expect(mockIncrementTurnCount).toHaveBeenCalledTimes(3)
+    })
+
+    it("should NOT call incrementTurnCount for assistant messages", async () => {
+      await messageCapture.handleChatMessage(
+        {
+          sessionID: "ses_test12345abcdefg0",
+          agent: "Hm-L0-Orchestrator",
+          model: { providerID: "deepseek", modelID: "DeepSeek V4 Pro" },
+        },
+        {
+          message: { role: "assistant" },
+          parts: [{ type: "text", text: "Response" }],
+        },
+      )
+
+      expect(mockIncrementTurnCount).not.toHaveBeenCalled()
     })
   })
 })
