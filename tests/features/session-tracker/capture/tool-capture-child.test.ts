@@ -194,7 +194,7 @@ describe("ToolCapture — child session (DEFECT-03)", () => {
       expect(metadata.delegatedBy).toBeDefined()
       // P-03: delegatedBy SHALL have model field (not just agentName)
       expect(metadata.delegatedBy.model).toBeDefined()
-      expect(metadata.delegatedBy.agentName).toBeTruthy()
+      expect(metadata.delegatedBy.agentName).toBe("unknown")
     })
   })
 })
