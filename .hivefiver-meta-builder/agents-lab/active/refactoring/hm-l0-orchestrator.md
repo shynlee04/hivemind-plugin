@@ -83,22 +83,11 @@ instruction:
 color: '#3B82F6'
 steps: 100
 permission:
-  read:
-    '.hivemind/**': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.md': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.json': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.xml': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.yaml': allow
-    '(\.)?(docs?|plans?|plannings?)/**/*.txt': allow
-    '*': deny
-  edit:
-    '.hivemind/planning/**/*.md': allow
-    '.hivemind/planning/**/*.xml': allow
-    '.hivemind/planning/**/*.json': allow
-    '*': deny
+  read: deny
+  edit: deny
   write: deny
   bash:
-    '*': ask
+    '*': deny
     git *: allow
     node *: allow
     npx *: allow
