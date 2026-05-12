@@ -166,8 +166,9 @@ export class MessageCapture {
   /**
    * Captures a user message as `## USER (turn N)`.
    *
-   * Increments the turn counter for the given session, then appends
-   * the user's text content to the main session `.md` file.
+   * Increments the turn counter for the given session, appends
+   * the user's text content to the main session `.md` file, and
+   * persists the updated turn count to `session-continuity.json`.
    */
   private async handleUserMessage(
     sessionID: string,
@@ -180,6 +181,7 @@ export class MessageCapture {
       turnNumber,
       textContent,
     )
+    await this.sessionIndexWriter.incrementTurnCount(sessionID)
   }
 
   /**
