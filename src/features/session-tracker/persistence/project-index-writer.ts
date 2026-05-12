@@ -158,15 +158,27 @@ export class ProjectIndexWriter {
       const now = new Date().toISOString()
 
       index.lastUpdated = now
-      index.sessions[sessionID] = {
-        dir: sessionDir,
-        mainFile,
-        continuityIndex: `${sessionDir}session-continuity.json`,
-        created: now,
-        updated: now,
-        status: "active",
-        childCount: 0,
-        totalDelegationDepth: 0,
+
+      const existing = index.sessions[sessionID]
+      if (existing) {
+        // Session already registered — only update non-path metadata.
+        // Preserve dir, mainFile, continuityIndex, created, childCount,
+        // and totalDelegationDepth to prevent data loss on concurrent writes.
+        existing.updated = now
+        if (existing.status !== "error" && existing.status !== "deleted") {
+          existing.status = "active"
+        }
+      } else {
+        index.sessions[sessionID] = {
+          dir: sessionDir,
+          mainFile,
+          continuityIndex: `${sessionDir}session-continuity.json`,
+          created: now,
+          updated: now,
+          status: "active",
+          childCount: 0,
+          totalDelegationDepth: 0,
+        }
       }
 
       if (!index.chronologicalOrder.includes(sessionID)) {
