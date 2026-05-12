@@ -404,7 +404,7 @@ export class ToolCapture {
     try {
       return JSON.stringify(value)
     } catch {
-      return String(value)
+      return `[unserializable: ${typeof value}]`
     }
   }
 }
