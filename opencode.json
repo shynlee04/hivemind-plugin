@@ -33,30 +33,6 @@
   },
   "model": "opencode-go/deepseek-v4-pro",
   "small_model": "opencode-go/deepseek-v4-flash",
-  "permission": {
-    "read": "allow",
-    "edit": "allow",
-    "bash": {
-      "*": "allow",
-      "git status*": "allow",
-      "git log*": "allow",
-      "git diff*": "allow",
-      "git branch*": "allow"
-    },
-    "task": "allow",
-    "skill": "allow",
-    "glob": "allow",
-    "grep": "allow",
-    "lsp": "allow",
-    "mcp": "allow",
-    "doom_loop": "allow",
-    "question": "allow",
-    "apply_patch": "allow",
-    "todowrite": "allow",
-    "webfetch": "allow",
-    "websearch": "allow",
-    "execute-slash-command": "allow"
-  },
   "compaction": {
     "auto": true,
     "prune": false,
