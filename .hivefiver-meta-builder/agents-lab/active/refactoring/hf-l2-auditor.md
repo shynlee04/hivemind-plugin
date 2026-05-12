@@ -270,7 +270,7 @@ EVERY FINDING MUST HAVE FILE:LINE EVIDENCE. NO SUBJECTIVE JUDGMENT WITHOUT CODE 
   <step name="detect_drift" priority="normal">
   If drift detection in scope:
   1. Read AGENTS.md for claimed counts and inventory
-  2. Glob `.opencode/agents/` for actual file list
+  2. Glob `.hivefiver-meta-builder/agents-lab/active/refactoring/` for actual source-of-truth file list
   3. Compare claim vs actual: count mismatches, missing files, extra files
   4. Flag each discrepancy with file:line in AGENTS.md
   </step>

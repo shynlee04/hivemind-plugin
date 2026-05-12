@@ -71,7 +71,7 @@ hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for command developmen
 1. Receive structured task packet from hf-coordinator: command name, agent target, argument schema, bash commands, task type (create/audit).
 2. Load hf-command-dev for command structure patterns and non-interactive shell safety.
 3. Load hf-command-parser for `$ARGUMENTS` parsing and propositional command syntax.
-4. Investigate existing command patterns in `.opencode/commands/` for consistency.
+4. Investigate existing command patterns in `.hivefiver-meta-builder/commands-lab/active/refactoring/` for consistency.
 5. Draft YAML frontmatter: name, description with trigger phrases, agent assignment, $ARGUMENTS schema.
 6. Draft command body with: argument extraction logic, bash injection patterns, non-interactive flags for all shell commands.
 7. Validate shell safety: every bash command must survive `CI=true` (no TTY-dependent operations).
@@ -212,7 +212,7 @@ EVERY COMMAND SURVIVES CI=TRUE. NO TTY-DEPENDENT OPERATIONS. COMMANDS ARE THIN S
 
   <step name="investigate_patterns" priority="normal">
   If creating a new command:
-  1. Scan `.opencode/commands/` for similar commands
+  1. Scan `.hivefiver-meta-builder/commands-lab/active/refactoring/` for similar commands
   2. Extract patterns: frontmatter structure, argument handling, agent routing
   3. Document pattern findings for creation
   </step>

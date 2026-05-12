@@ -70,7 +70,7 @@ hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for skill authoring pa
 <task>
 1. Receive structured task packet from hf-coordinator: skill name, domain, purpose, trigger phrases, scope boundaries, quality requirements.
 2. Load hf-use-authoring-skills for skill authoring standards and quality criteria.
-3. Investigate existing skill patterns in `.opencode/skills/` using hm-detective (cross-lineage, justified).
+3. Investigate existing skill patterns in `.hivefiver-meta-builder/skills-lab/active/refactoring/` using hm-detective (cross-lineage, justified).
 4. Determine skill structure: standalone SKILL.md or package with references/ subdirectory.
 5. Draft SKILL.md with: YAML frontmatter (name, description with trigger phrases), body content following progressive disclosure, reference section linking to relevant docs.
 6. If package structure needed: create `references/` directory with summary.md, project-structure.md, files.md as applicable.
@@ -218,7 +218,7 @@ EVERY SKILL MUST HAVE SPECIFIC TRIGGER PHRASES IN DESCRIPTION. PROGRESSIVE DISCL
   <step name="investigate_patterns" priority="normal">
   If creating a new skill:
   1. Load hm-detective (cross-lineage, justified: "investigating existing skill patterns for consistency")
-  2. Scan `.opencode/skills/` for skills with matching domain/lineage
+  2. Scan `.hivefiver-meta-builder/skills-lab/active/refactoring/` for skills with matching domain/lineage
   3. Extract common patterns: frontmatter structure, body organization, reference usage
   4. Document pattern findings as context for creation
   </step>

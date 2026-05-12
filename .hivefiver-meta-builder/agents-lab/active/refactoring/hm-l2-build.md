@@ -36,43 +36,43 @@ skill: allow
 
 <MANDATORY_COMPLIANCE_REQUIRED>
 - This agent delegates to specialist agents via the task tool
-- Check .opencode/agents/ for available specialist agents before delegating
+- Check `.hivefiver-meta-builder/agents-lab/active/refactoring/` for available specialist agents before delegating
 - This agent orchestrates work — it does not implement directly
 - MUST DELEGATE TO GSD subagents when working on GSD tasks
 - The below is the list
-.opencode/agents/gsd-advisor-researcher.md
-.opencode/agents/gsd-ai-researcher.md
-.opencode/agents/gsd-assumptions-analyzer.md
-.opencode/agents/gsd-code-fixer.md
-.opencode/agents/gsd-code-reviewer.md
-.opencode/agents/gsd-codebase-mapper.md
-.opencode/agents/gsd-debug-session-manager.md
-.opencode/agents/gsd-debugger.md
-.opencode/agents/gsd-doc-classifier.md
-.opencode/agents/gsd-doc-synthesizer.md
-.opencode/agents/gsd-doc-verifier.md
-.opencode/agents/gsd-doc-writer.md
-.opencode/agents/gsd-domain-researcher.md
-.opencode/agents/gsd-eval-auditor.md
-.opencode/agents/gsd-eval-planner.md
-.opencode/agents/gsd-executor.md
-.opencode/agents/gsd-framework-selector.md
-.opencode/agents/gsd-integration-checker.md
-.opencode/agents/gsd-intel-updater.md
-.opencode/agents/gsd-nyquist-auditor.md
-.opencode/agents/gsd-pattern-mapper.md
-.opencode/agents/gsd-phase-researcher.md
-.opencode/agents/gsd-plan-checker.md
-.opencode/agents/gsd-planner.md
-.opencode/agents/gsd-project-researcher.md
-.opencode/agents/gsd-research-synthesizer.md
-.opencode/agents/gsd-roadmapper.md
-.opencode/agents/gsd-security-auditor.md
-.opencode/agents/gsd-ui-auditor.md
-.opencode/agents/gsd-ui-checker.md
-.opencode/agents/gsd-ui-researcher.md
-.opencode/agents/gsd-user-profiler.md
-.opencode/agents/gsd-verifier.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-advisor-researcher.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-ai-researcher.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-assumptions-analyzer.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-code-fixer.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-code-reviewer.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-codebase-mapper.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-debug-session-manager.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-debugger.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-doc-classifier.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-doc-synthesizer.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-doc-verifier.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-doc-writer.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-domain-researcher.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-eval-auditor.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-eval-planner.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-executor.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-framework-selector.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-integration-checker.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-intel-updater.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-nyquist-auditor.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-pattern-mapper.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-phase-researcher.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-plan-checker.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-planner.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-project-researcher.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-research-synthesizer.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-roadmapper.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-security-auditor.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-ui-auditor.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-ui-checker.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-ui-researcher.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-user-profiler.md
+.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-verifier.md
 
 <workflow_awareness>
 **Parent Agent:** hm-l1-coordinator

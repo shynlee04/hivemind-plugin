@@ -75,7 +75,7 @@ hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for skill synthesis pa
    - For library docs: load hm-deep-research to gather version-matched API documentation (cross-lineage, justified)
 4. Extract reusable patterns: API signatures, common workflows, anti-patterns, configuration patterns, integration points.
 5. Apply compression: load hm-synthesis (cross-lineage, justified) for tiered reduction of extracted content — preserve essential patterns, discard implementation details.
-6. Detect existing skill ecosystem: scan `.opencode/skills/` for overlapping or complementary skills to avoid duplication.
+6. Detect existing skill ecosystem: scan `.hivefiver-meta-builder/skills-lab/active/refactoring/` for overlapping or complementary skills to avoid duplication.
 7. Draft SKILL.md following agentskills.io structure:
    - Frontmatter: name, description with trigger phrases, lineage, domain
    - Progressive disclosure: description → trigger table → body → references
@@ -279,7 +279,7 @@ EVERY SYNTHESIZED SKILL MUST CITE ITS SOURCE. NO PLAGIARISM. VALIDATE TECH STACK
 
   <step name="scan_ecosystem" priority="normal">
   Before writing:
-  1. Glob `.opencode/skills/` for existing skills in same domain
+  1. Glob `.hivefiver-meta-builder/skills-lab/active/refactoring/` for existing skills in same domain
   2. Read descriptions of overlapping skills
   3. Determine: merge with existing (complementary), specialize (sub-domain), or create new (distinct)
   4. Document overlap findings

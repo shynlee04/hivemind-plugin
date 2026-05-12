@@ -70,7 +70,7 @@ hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for agent creation pat
 <task>
 1. Receive structured task packet from hf-coordinator: agent type, domain, depth, lineage, required skills, scope boundaries, AQUAL requirements.
 2. Load hf-agents-and-subagents-dev skill for agent creation patterns and best practices.
-3. If creating a new agent: investigate existing agent patterns in `.opencode/agents/` using hm-detective (cross-lineage, justified).
+3. If creating a new agent: investigate existing agent patterns in `.hivefiver-meta-builder/agents-lab/active/refactoring/` using hm-detective (cross-lineage, justified).
 4. Draft YAML frontmatter following the schema: name, description (10-200 chars), mode, temperature (depth-bound), depth, lineage, domain, skills, instruction, permission (ask-all + explicit allow).
 5. Draft XML body with 10 required tags: role, depth, lineage, task, scope, context, expected_output, verification, iron_law, output_contract.
 6. Add applicable optional tags: behavioral_contract, anti_patterns, execution_flow, delegation_boundary, skill_loading, session_continuity.
@@ -218,7 +218,7 @@ EVERY AGENT MUST PASS AQUAL VALIDATION. NO HARDCODED PATHS. JUSTIFY ALL CROSS-LI
   <step name="investigate_patterns" priority="normal">
   If creating a new agent:
   1. Load hm-detective (cross-lineage, justified: "investigating existing agent patterns for consistency")
-  2. Scan `.opencode/agents/` for agents with matching domain/lineage/depth
+  2. Scan `.hivefiver-meta-builder/agents-lab/active/refactoring/` for agents with matching domain/lineage/depth
   3. Extract common patterns: frontmatter fields, permission scope, XML structure
   4. Document pattern findings as context for creation
   </step>

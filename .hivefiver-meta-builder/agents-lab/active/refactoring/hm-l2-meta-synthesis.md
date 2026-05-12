@@ -180,9 +180,9 @@ Identify PRINCIPLED patterns by:
 ## Step 1: Inventory Meta-Concepts
 
 Scan the project for:
-- `.opencode/agents/*.md` — agents
-- `.opencode/skills/*/SKILL.md` — skills
-- `.opencode/commands/*.md` — commands
+- `.hivefiver-meta-builder/agents-lab/active/refactoring/*.md` — agents (source-of-truth; also reflected to `.opencode/agents/`)
+- `.hivefiver-meta-builder/skills-lab/active/refactoring/*/SKILL.md` — skills (source-of-truth; also reflected to `.opencode/skills/`)
+- `.hivefiver-meta-builder/commands-lab/active/refactoring/*.md` — commands (source-of-truth; also reflected to `.opencode/commands/`)
 - `.opencode/tools/*.ts` — custom tools
 - `.opencode/rules/*.md` — rules
 

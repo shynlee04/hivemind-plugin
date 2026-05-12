@@ -68,37 +68,37 @@ The `.opencode/` directories (`agents/`, `commands/`, `skills/`) are **standalon
 
 | Agent | File | Role |
 |-------|------|------|
-| **hf-l0-orchestrator** | `.opencode/agents/hf-l0-orchestrator.md` | Meta-builder routing brain. Receives requests → classifies intent → delegates to specialists → two-stage review → reports. |
-| **hf-l1-coordinator** | `.opencode/agents/hf-l1-coordinator.md` | Interactive orchestrator. Task management, delegation, parallel execution. |
-| **hm-l2-conductor** | `.opencode/agents/hm-l2-conductor.md` | Command execution workhorse. Intent classification, wisdom system, delegate-task routing. |
+| **hf-l0-orchestrator** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hf-l0-orchestrator.md` | Meta-builder routing brain. Receives requests → classifies intent → delegates to specialists → two-stage review → reports. |
+| **hf-l1-coordinator** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hf-l1-coordinator.md` | Interactive orchestrator. Task management, delegation, parallel execution. |
+| **hm-l2-conductor** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-conductor.md` | Command execution workhorse. Intent classification, wisdom system, delegate-task routing. |
 
 ### Tier 2: Specialist Subagents (dispatched by primaries)
 
 | Agent | File | Role |
 |-------|------|------|
-| **hf-l2-skill-builder** | `.opencode/agents/hf-l2-skill-builder.md` | Creates/audits/repairs skills. Enforces agentskills.io principles. |
-| **hf-l2-agent-builder** | `.opencode/agents/hf-l2-agent-builder.md` | Creates/audits/repairs agent definitions. Explicit permissions, execution flows. |
-| **hf-l2-command-builder** | `.opencode/agents/hf-l2-command-builder.md` | Creates/audits/repairs commands. Non-interactive shell safety, $ARGUMENTS, !bash. |
-| **hm-l2-executor** | `.opencode/agents/hm-l2-executor.md` | Atomic code implementation. Reads before writes, follows patterns. |
-| **hm-l2-critic** | `.opencode/agents/hm-l2-critic.md` | Quality verification. Ruthless review, correctness validation. |
-| **hm-l2-researcher** | `.opencode/agents/hm-l2-researcher.md` | Deep investigation. Evidence collection, pattern discovery. |
+| **hf-l2-skill-builder** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hf-l2-skill-builder.md` | Creates/audits/repairs skills. Enforces agentskills.io principles. |
+| **hf-l2-agent-builder** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hf-l2-agent-builder.md` | Creates/audits/repairs agent definitions. Explicit permissions, execution flows. |
+| **hf-l2-command-builder** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hf-l2-command-builder.md` | Creates/audits/repairs commands. Non-interactive shell safety, $ARGUMENTS, !bash. |
+| **hm-l2-executor** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-executor.md` | Atomic code implementation. Reads before writes, follows patterns. |
+| **hm-l2-critic** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-critic.md` | Quality verification. Ruthless review, correctness validation. |
+| **hm-l2-researcher** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-researcher.md` | Deep investigation. Evidence collection, pattern discovery. |
 
 ### Tier 3: Fast Subagents
 
 | Agent | File | Role |
 |-------|------|------|
-| **explore** | ⚠️ MISSING from filesystem | Fast codebase scan. Lightweight, high-throughput. **Note:** No `explore.md` exists in `.opencode/agents/`. May need to be created or this row removed. |
+| **explore** | ⚠️ MISSING from filesystem | Fast codebase scan. Lightweight, high-throughput. **Note:** No `explore.md` exists in `.hivefiver-meta-builder/agents-lab/active/refactoring/`. May need to be created or this row removed. |
 
 ### Tier 4: Prompt-Enhance Lane Agents
 
 | Agent | File | Role |
 |-------|------|------|
-| **hm-l2-prompt-skimmer** | `.opencode/agents/hm-l2-prompt-skimmer.md` | Phase 0 skim for prompt-enhancement routing. |
-| **hm-l2-prompt-analyzer** | `.opencode/agents/hm-l2-prompt-analyzer.md` | Deep text-quality lane for prompts. |
-| **hm-l2-context-mapper** | `.opencode/agents/hm-l2-context-mapper.md` | Grounds prompt references in repo reality. |
-| **hm-l2-risk-assessor** | `.opencode/agents/hm-l2-risk-assessor.md` | Flags destructive, security, and scope risks. |
-| **hm-l2-context-purifier** | `.opencode/agents/hm-l2-context-purifier.md` | Distills noisy prompts without changing intent. |
-| **hm-l2-prompt-repackager** | `.opencode/agents/hm-l2-prompt-repackager.md` | Produces the final YAML+XML enhanced prompt payload. |
+| **hm-l2-prompt-skimmer** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-prompt-skimmer.md` | Phase 0 skim for prompt-enhancement routing. |
+| **hm-l2-prompt-analyzer** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-prompt-analyzer.md` | Deep text-quality lane for prompts. |
+| **hm-l2-context-mapper** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-context-mapper.md` | Grounds prompt references in repo reality. |
+| **hm-l2-risk-assessor** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-risk-assessor.md` | Flags destructive, security, and scope risks. |
+| **hm-l2-context-purifier** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-context-purifier.md` | Distills noisy prompts without changing intent. |
+| **hm-l2-prompt-repackager** | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-prompt-repackager.md` | Produces the final YAML+XML enhanced prompt payload. |
 
 ---
 

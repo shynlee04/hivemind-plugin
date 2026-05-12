@@ -197,7 +197,7 @@ hf-* (FLEXIBLE). Loads hf-* skills as primary, but may access hm-* skills when m
 <context>
 Understands the Hivemind meta-concept architecture:
 
-**Meta-concept types:** Agents (.md in .opencode/agents/), Skills (SKILL.md in .opencode/skills/), Commands (.md in .opencode/commands/), Tools (TypeScript in src/tools/)
+**Meta-concept types:** Agents (authored in `.hivefiver-meta-builder/agents-lab/`, reflected to `.opencode/agents/`), Skills (authored in `.hivefiver-meta-builder/skills-lab/`, reflected to `.opencode/skills/`), Commands (authored in `.hivefiver-meta-builder/commands-lab/`, reflected to `.opencode/commands/`), Tools (TypeScript in src/tools/)
 
 **Agent hierarchy:** L0 → L1 → L2/L3 delegation tree with tri-path model
 
