@@ -32,6 +32,25 @@ export class SessionIndexWriter {
   private projectRoot: string
 
   /**
+   * Per-session serial write queues to prevent concurrent read-modify-write
+   * corruption. Each session gets its own queue because SessionIndexWriter
+   * writes to DIFFERENT files per session.
+   */
+  private writeQueues: Map<string, Promise<void>> = new Map()
+
+  /**
+   * Timestamp of the last successful write per session, used for stale
+   * queue detection.
+   */
+  private lastWriteTimes: Map<string, number> = new Map()
+
+  /**
+   * Threshold (in milliseconds) before a per-session queue is considered
+   * stale and auto-reset.
+   */
+  private static readonly STALE_QUEUE_MS = 5 * 60 * 1000
+
+  /**
    * @param deps - Injected dependencies.
    * @param deps.projectRoot - Absolute path to the project root.
    */
@@ -51,6 +70,57 @@ export class SessionIndexWriter {
       sessionID,
       "session-continuity.json",
     )
+  }
+
+  /**
+   * Detects and resets a stale write queue for a given session.
+   *
+   * If no write has completed for this session within `STALE_QUEUE_MS`,
+   * the queue is replaced with a fresh resolved promise so subsequent
+   * writes are not blocked by a stuck preceding promise.
+   *
+   * @param sessionID - The session identifier.
+   */
+  private detectStaleQueue(sessionID: string): void {
+    const lastTime = this.lastWriteTimes.get(sessionID)
+    // No write has completed for this session yet — nothing to reset
+    if (lastTime === undefined) return
+    if (Date.now() - lastTime > SessionIndexWriter.STALE_QUEUE_MS) {
+      this.writeQueues.set(sessionID, Promise.resolve())
+    }
+  }
+
+  /**
+   * Enqueues a write operation into the per-session serial queue.
+   *
+   * Stale-queue detection runs first to auto-recover from a frozen pipeline.
+   * Chains the provided function onto the end of the session's write queue
+   * so that only one write per session is in-flight at a time. Records
+   * `lastWriteTime` on success. Errors are caught silently to prevent a
+   * failed write from breaking the queue entirely. A final `.then()` ensures
+   * the promise chain always resolves to void.
+   *
+   * @param sessionID - The session identifier (queue key).
+   * @param fn - The write operation to enqueue.
+   * @returns Promise that resolves when the enqueued write completes.
+   */
+  private enqueueWrite(
+    sessionID: string,
+    fn: () => Promise<void>,
+  ): Promise<void> {
+    this.detectStaleQueue(sessionID)
+    const current = this.writeQueues.get(sessionID) ?? Promise.resolve()
+    const next = current
+      .then(async () => {
+        await fn()
+        this.lastWriteTimes.set(sessionID, Date.now())
+      })
+      .catch(() => {
+        // Best-effort: swallow errors to keep queue alive
+      })
+      .then(() => {})
+    this.writeQueues.set(sessionID, next)
+    return next
   }
 
   /**
@@ -122,21 +192,23 @@ export class SessionIndexWriter {
     depth: number,
     delegatedBy: string,
   ): Promise<void> {
-    const index = await this.readIndex(sessionID)
-    index.lastUpdated = new Date().toISOString()
+    return this.enqueueWrite(sessionID, async () => {
+      const index = await this.readIndex(sessionID)
+      index.lastUpdated = new Date().toISOString()
 
-    const entry: ChildHierarchyEntry = {
-      file: childFile,
-      depth,
-      status: "active",
-      delegatedBy,
-      children: {},
-    }
+      const entry: ChildHierarchyEntry = {
+        file: childFile,
+        depth,
+        status: "active",
+        delegatedBy,
+        children: {},
+      }
 
-    index.hierarchy.children[childSessionID] = entry
+      index.hierarchy.children[childSessionID] = entry
 
-    const filePath = this.getIndexPath(sessionID)
-    await atomicWriteJson(filePath, index)
+      const filePath = this.getIndexPath(sessionID)
+      await atomicWriteJson(filePath, index)
+    })
   }
 
   /**
@@ -152,16 +224,18 @@ export class SessionIndexWriter {
     childSessionID: string,
     status: string,
   ): Promise<void> {
-    const index = await this.readIndex(sessionID)
-    index.lastUpdated = new Date().toISOString()
+    return this.enqueueWrite(sessionID, async () => {
+      const index = await this.readIndex(sessionID)
+      index.lastUpdated = new Date().toISOString()
 
-    const child = index.hierarchy.children[childSessionID]
-    if (child) {
-      child.status = status
-    }
+      const child = index.hierarchy.children[childSessionID]
+      if (child) {
+        child.status = status
+      }
 
-    const filePath = this.getIndexPath(sessionID)
-    await atomicWriteJson(filePath, index)
+      const filePath = this.getIndexPath(sessionID)
+      await atomicWriteJson(filePath, index)
+    })
   }
 
   /**
@@ -171,12 +245,14 @@ export class SessionIndexWriter {
    * @returns Promise that resolves when the index is updated.
    */
   async incrementTurnCount(sessionID: string): Promise<void> {
-    const index = await this.readIndex(sessionID)
-    index.lastUpdated = new Date().toISOString()
-    index.turnCount++
+    return this.enqueueWrite(sessionID, async () => {
+      const index = await this.readIndex(sessionID)
+      index.lastUpdated = new Date().toISOString()
+      index.turnCount++
 
-    const filePath = this.getIndexPath(sessionID)
-    await atomicWriteJson(filePath, index)
+      const filePath = this.getIndexPath(sessionID)
+      await atomicWriteJson(filePath, index)
+    })
   }
 
   /**
@@ -190,13 +266,15 @@ export class SessionIndexWriter {
     sessionID: string,
     toolName: string,
   ): Promise<void> {
-    const index = await this.readIndex(sessionID)
-    index.lastUpdated = new Date().toISOString()
+    return this.enqueueWrite(sessionID, async () => {
+      const index = await this.readIndex(sessionID)
+      index.lastUpdated = new Date().toISOString()
 
-    const current = index.toolSummary[toolName] ?? 0
-    index.toolSummary[toolName] = current + 1
+      const current = index.toolSummary[toolName] ?? 0
+      index.toolSummary[toolName] = current + 1
 
-    const filePath = this.getIndexPath(sessionID)
-    await atomicWriteJson(filePath, index)
+      const filePath = this.getIndexPath(sessionID)
+      await atomicWriteJson(filePath, index)
+    })
   }
 }
