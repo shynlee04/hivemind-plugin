@@ -11,9 +11,12 @@ permission:
   write: deny
   bash:
     "*": deny
-    git *: allow
-    node *: allow
-    npx *: allow
+    "git *": allow
+    "node * ": allow
+    "npx *": allow
+    "mkdir *": allow
+    "echo *": allow
+    "ls *": allow
   glob: allow
   grep: allow
   task:

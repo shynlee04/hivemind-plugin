@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e2c59d22ffeusIEkKZp2t3YXO",
+  "parentSessionID": "ses_1e2c8a285ffeiAV13cdZhZF887",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research OpenCode SDK task lifecycle",
+    "subagentType": "hm-l2-researcher"
+  },
+  "created": "2026-05-12T17:35:08.258Z",
+  "updated": "2026-05-12T17:35:08.271Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-researcher",
+      "content": "Research OpenCode SDK task lifecycle",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Research OpenCode SDK task lifecycle"
+}

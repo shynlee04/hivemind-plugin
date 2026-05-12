@@ -1,0 +1,41 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e6332a93ffeGKEUaIEpmHJJPz",
+  "lastUpdated": "2026-05-12T15:59:09.511Z",
+  "hierarchy": {
+    "root": "ses_1e6332a93ffeGKEUaIEpmHJJPz",
+    "children": {
+      "ses_1e3a8f243ffelROn8suj6s6f7g": {
+        "file": "ses_1e3a8f243ffelROn8suj6s6f7g.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e39d2a36ffeghuIScWRi5CeWl": {
+        "file": "ses_1e39d2a36ffeghuIScWRi5CeWl.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e39a5762ffewhHoJIU4SAincl": {
+        "file": "ses_1e39a5762ffewhHoJIU4SAincl.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 9,
+  "toolSummary": {
+    "bash": 3,
+    "edit": 5,
+    "read": 2,
+    "task": 3,
+    "deepwiki_ask_question": 1,
+    "write": 1,
+    "glob": 1
+  }
+}

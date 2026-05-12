@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e2c51d58ffeg6To340CQBHwxz",
+  "parentSessionID": "ses_1e2c8a285ffeiAV13cdZhZF887",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Map session-tracker code and event flow",
+    "subagentType": "hm-l2-scout"
+  },
+  "created": "2026-05-12T17:35:32.035Z",
+  "updated": "2026-05-12T17:35:32.037Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-scout",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-scout",
+      "content": "Map session-tracker code and event flow",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Map session-tracker code and event flow"
+}

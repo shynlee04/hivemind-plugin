@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e29d3f21ffe81yilvnRrkE1vd",
+  "parentSessionID": "ses_1e2c8a285ffeiAV13cdZhZF887",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Synthesize RESEARCH SPEC CONTEXT docs",
+    "subagentType": "hm-l2-synthesizer"
+  },
+  "created": "2026-05-12T18:14:38.620Z",
+  "updated": "2026-05-12T18:14:38.622Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-synthesizer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-synthesizer",
+      "content": "Synthesize RESEARCH SPEC CONTEXT docs",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Synthesize RESEARCH SPEC CONTEXT docs"
+}

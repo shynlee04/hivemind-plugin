@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e2ea55baffe8eQ9lH3vUDBzpk",
+  "parentSessionID": "ses_1e2fad834ffepaqLaeiBID5AMy",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Doc handler permissions batch",
+    "subagentType": "hm-l2-executor"
+  },
+  "created": "2026-05-12T16:50:14.385Z",
+  "updated": "2026-05-12T16:50:14.388Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-executor",
+      "content": "Doc handler permissions batch",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Doc handler permissions batch"
+}

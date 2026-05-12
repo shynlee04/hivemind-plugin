@@ -35,7 +35,7 @@
   "small_model": "opencode-go/deepseek-v4-flash",
   "compaction": {
     "auto": true,
-    "prune": false,
-    "reserved": 10000
+    "prune": true,
+    "reserved": 15000
   }
 }

@@ -1,5 +1,5 @@
 ---
-status: awaiting_human_verify
+status: investigating
 trigger: "Session tracker parentID detection fundamentally flawed — child task-tool sessions get orphan top-level directories because SDK parentID unavailable at creation time and #USER metadata identical between parent/child"
 created: 2026-05-12T16:30:00Z
 updated: 2026-05-12T17:50:00Z
@@ -51,13 +51,45 @@ None — silent misclassification. No errors thrown, just wrong data.
 
 ## Current Focus
 
-**Status:** AWAITING HUMAN VERIFICATION — fix implemented, code verified, needs live testing.
+**Status:** INVESTIGATING — fix applied but STILL FLAWED. New orphan found after fix deployment + 2 additional bugs.
 
-**Root cause confirmed:** `ensureSessionReady()` had a single-gate classification (SDK parentID only). The hierarchy index (correctly populated by `handleTask()`) was never consulted.
+**Why HierarchyIndex fix was insufficient:** Index relies on `handleTask()` updating BEFORE child session events arrive. Race condition: session.created fires async ahead of tool.execute.after. If ensureSessionReady fires first → creates orphan directory.
 
-**Fix applied:** Three classification sites now check the hierarchy index as a second gate. `handleTask()` updates the index in real-time.
+**User-specified STRICT 3-LEVEL HIERARCHY (must implement precisely):**
 
-**Verification results:** Typecheck passes, 256/256 session-tracker tests pass, full suite passes (pre-existing failures only).
+### Level Structure (NOT flat — hierarchical)
+- **L0 (Main):** User's session. turnCount == 1 = session starter. Only ONE per user. Has own directory + .md + session-continuity.json.
+- **L1 (Delegation from Main):** Task tool sessions created FROM L0. Always children of main. Registered under main's hierarchy. NEVER create top-level project-continuity entry. Has .json file under main's directory.
+- **L2 (Delegation from L1):** Task tool sessions created FROM L1. Children of L1, NOT of main. Registered under L1's hierarchy. NEVER create top-level entry. Has .json file under L1's directory.
+
+### Critical Rules
+1. **L1 and L2 are NOT same level** — must be distinct in hierarchy tracking
+2. **Task tool session ID lookup:** When any session ID arrives, lookup parent chain. If ID was created by a task tool delegation from known parent → mark as child at correct depth. If no parent found → new main (turnCount must be 1).
+3. **L1 sessions NEVER make new entry in project-continuity.json** — they're registered as children under their parent only
+4. **L2 sessions registered as children of L1, not of main** — hierarchy depth preserved
+5. **Resume detection:** turnCount > 1 = user returned to existing main session (not new session)
+
+### Additional bugs (need deep code investigation, not surface fix)
+- **Bug 2:** Last assistant message NOT written to main .md or child .json files
+- **Bug 3:** Turn counters and tool counters inaccurate
+
+**Total bugs: 5 (expanded scope)**
+
+1. **Session parent misclassification** — task-tool sessions get orphan top-level dirs because ensureSessionReady doesn't use correct taxonomy
+2. **Missing assistant messages** — assistant output not written to main .md or child .json files
+3. **Inaccurate counters** — turn counts and tool counts incorrect
+4. **L1/L2 depth flattening** — L1 and L2 sessions treated as same level, hierarchy lost
+5. **Session resume detection broken** — resumed sessions mistaken as new main sessions
+
+**Deep research required (DO NOT jump to conclusions):**
+- OpenCode SDK interfaces: `client.session.get()`, `client.session.create()`, hook event shapes
+- OpenCode plugin hooks: PreToolUse, PostToolUse, event observer signatures
+- Hivemind internal schemas: session-continuity.json, project-continuity.json, child .json structure
+- All src/features/session-tracker/ files + src/plugin.ts
+- Complex I/O rules: atomic writes, concurrency queues, directory creation order
+- Task tool session ID creation: how OpenCode generates session IDs for subagent dispatch
+
+**Next:** Deep investigation of ALL related files. OpenCode SDK interfaces. Plugin hooks. Internal schemas. Do NOT apply surface fixes — must understand full pipeline first.
 
 ## Evidence
 
@@ -72,6 +104,13 @@ None — silent misclassification. No errors thrown, just wrong data.
 - timestamp: 2026-05-12T17:40:00Z — LIVE EVIDENCE: ses_1e458e33/session-continuity.json shows hierarchy.root = "ses_1e458e33" (treats itself as main), children: {ses_1e452cc4..., ses_1e453358...}
 - timestamp: 2026-05-12T17:40:00Z — LIVE EVIDENCE: ses_1e452cc4 and ses_1e453358 both have own top-level dirs AND child .json files under ses_1e458e33
 - timestamp: 2026-05-12T17:40:00Z — CONFIRMED GAP: ensureSessionReady() NEVER consults any hierarchy index for child detection. Only SDK parentID is used (index.ts line 135-141). The session-continuity.json hierarchy.children data is never read during classification.
+
+## New Evidence (Round 2 — fix applied but still flawed)
+
+- timestamp: 2026-05-12T18:05:00Z — NEW orphan: `ses_1e3be93f0ffeVu9H8JWzT26X18` — turnCount: 0, only tool calls (skill, glob, read, bash, todowrite), has own top-level dir, hierarchy.root=self. No user messages ever. Should be child.
+- timestamp: 2026-05-12T18:05:00Z — User specifies STRICT SCHEMA: main session = turnCount EXACTLY 1 (single user prompt starts session); resumed session = turnCount > 1 (user returned to existing); ALL task-tool-created session IDs = ALWAYS children of main, regardless of status
+- timestamp: 2026-05-12T18:05:00Z — Bug 2: Last assistant message NOT recorded/written to .md (main sessions) or .json (child sessions)
+- timestamp: 2026-05-12T18:05:00Z — Bug 3: Turn counters and tool counters are inaccurate
 
 ## Eliminated
 

@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e2d164f7ffeS9NWlVllw7lk4C",
+  "parentSessionID": "ses_1e2d300d3ffeAhOGz9v6b75Gwh",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Analyze session exports and debug artifacts",
+    "subagentType": "explore"
+  },
+  "created": "2026-05-12T17:14:20.878Z",
+  "updated": "2026-05-12T17:14:20.880Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "explore",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "explore",
+      "content": "Analyze session exports and debug artifacts",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Analyze session exports and debug artifacts"
+}

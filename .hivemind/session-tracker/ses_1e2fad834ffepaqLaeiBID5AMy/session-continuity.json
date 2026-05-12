@@ -1,0 +1,69 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e2fad834ffepaqLaeiBID5AMy",
+  "lastUpdated": "2026-05-12T17:18:57.510Z",
+  "hierarchy": {
+    "root": "ses_1e2fad834ffepaqLaeiBID5AMy",
+    "children": {
+      "ses_1e2f23f76ffe8XKoz0AUUjdNZM": {
+        "file": "ses_1e2f23f76ffe8XKoz0AUUjdNZM.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e2f1bbfbffeCLMVDsn2sxxMn1": {
+        "file": "ses_1e2f1bbfbffeCLMVDsn2sxxMn1.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e2ea55baffe8eQ9lH3vUDBzpk": {
+        "file": "ses_1e2ea55baffe8eQ9lH3vUDBzpk.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e2e9c0e2ffe9ZcHVV1k3Z4nh0": {
+        "file": "ses_1e2e9c0e2ffe9ZcHVV1k3Z4nh0.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e2e54addffes3El7Urb4pkBQF": {
+        "file": "ses_1e2e54addffes3El7Urb4pkBQF.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e2e51025ffef0ZNveYdBcMb5B": {
+        "file": "ses_1e2e51025ffef0ZNveYdBcMb5B.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e2e25d7bffeGMB0h27U213lYA": {
+        "file": "ses_1e2e25d7bffeGMB0h27U213lYA.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "skill": 2,
+    "session-tracker": 1,
+    "glob": 4,
+    "read": 5,
+    "question": 1,
+    "task": 7,
+    "bash": 3
+  }
+}

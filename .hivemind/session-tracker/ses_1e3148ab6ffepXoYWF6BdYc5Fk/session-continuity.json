@@ -1,0 +1,35 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e3148ab6ffepXoYWF6BdYc5Fk",
+  "lastUpdated": "2026-05-12T17:12:05.655Z",
+  "hierarchy": {
+    "root": "ses_1e3148ab6ffepXoYWF6BdYc5Fk",
+    "children": {
+      "ses_1e30ac548ffeM2BdO4feP4vyKK": {
+        "file": "ses_1e30ac548ffeM2BdO4feP4vyKK.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      },
+      "ses_1e2d47f72ffeJ9zwSCdpfJHj6P": {
+        "file": "ses_1e2d47f72ffeJ9zwSCdpfJHj6P.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "session-tracker": 7,
+    "skill": 2,
+    "hivemind-trajectory": 1,
+    "hivemind-pressure": 1,
+    "glob": 6,
+    "hivemind-doc": 8,
+    "bash": 1,
+    "task": 2
+  }
+}

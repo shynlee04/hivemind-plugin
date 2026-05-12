@@ -9,11 +9,12 @@ permission:
   write: ask
   bash:
     "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
-  glob: allow
-  grep: allow
+    "git *": allow
+    "node * ": allow
+    "npx *": allow
+    "mkdir *": allow
+    "echo *": allow
+    "ls *": allow
   task:
     "*": ask
     hm-l2-*: allow

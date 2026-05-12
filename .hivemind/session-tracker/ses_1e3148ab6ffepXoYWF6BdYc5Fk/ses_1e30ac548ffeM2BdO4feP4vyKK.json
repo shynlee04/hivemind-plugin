@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e30ac548ffeM2BdO4feP4vyKK",
+  "parentSessionID": "ses_1e3148ab6ffepXoYWF6BdYc5Fk",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Wave 0: Deep Research session-tracker",
+    "subagentType": "hm-l1-coordinator"
+  },
+  "created": "2026-05-12T16:22:46.946Z",
+  "updated": "2026-05-12T16:22:46.948Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l1-coordinator",
+      "content": "Wave 0: Deep Research session-tracker",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Wave 0: Deep Research session-tracker"
+}

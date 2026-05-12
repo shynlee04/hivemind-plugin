@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e2e51025ffef0ZNveYdBcMb5B",
+  "parentSessionID": "ses_1e2fad834ffepaqLaeiBID5AMy",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Batch 2: Fix AGENTS.md truth paths",
+    "subagentType": "hm-l2-writer"
+  },
+  "created": "2026-05-12T16:54:25.202Z",
+  "updated": "2026-05-12T16:54:25.204Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-writer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-writer",
+      "content": "Batch 2: Fix AGENTS.md truth paths",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Batch 2: Fix AGENTS.md truth paths"
+}

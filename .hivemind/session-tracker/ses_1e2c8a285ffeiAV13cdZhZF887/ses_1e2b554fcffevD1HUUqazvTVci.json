@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e2b554fcffevD1HUUqazvTVci",
+  "parentSessionID": "ses_1e2c8a285ffeiAV13cdZhZF887",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Analyze sessions and .hivemind state",
+    "subagentType": "hm-l2-investigator"
+  },
+  "created": "2026-05-12T17:54:12.787Z",
+  "updated": "2026-05-12T17:54:12.800Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-investigator",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-investigator",
+      "content": "Analyze sessions and .hivemind state",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Analyze sessions and .hivemind state"
+}

@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e39a5762ffewhHoJIU4SAincl",
+  "parentSessionID": "ses_1e6332a93ffeGKEUaIEpmHJJPz",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Debug 5 session-tracker bugs - use task tool",
+    "subagentType": "gsd-debug-session-manager"
+  },
+  "created": "2026-05-12T13:40:13.752Z",
+  "updated": "2026-05-12T13:40:13.763Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-debug-session-manager",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-debug-session-manager",
+      "content": "Debug 5 session-tracker bugs - use task tool",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Debug 5 session-tracker bugs - use task tool"
+}

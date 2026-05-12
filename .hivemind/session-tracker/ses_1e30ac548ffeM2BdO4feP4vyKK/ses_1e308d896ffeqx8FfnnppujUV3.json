@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e308d896ffeqx8FfnnppujUV3",
+  "parentSessionID": "ses_1e30ac548ffeM2BdO4feP4vyKK",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "0a SDK session lifecycle research",
+    "subagentType": "hm-l2-researcher"
+  },
+  "created": "2026-05-12T16:22:47.053Z",
+  "updated": "2026-05-12T16:22:47.055Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-researcher",
+      "content": "0a SDK session lifecycle research",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "0a SDK session lifecycle research"
+}

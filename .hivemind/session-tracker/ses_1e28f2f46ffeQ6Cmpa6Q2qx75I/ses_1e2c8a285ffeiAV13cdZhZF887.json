@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e2c8a285ffeiAV13cdZhZF887",
+  "parentSessionID": "ses_1e28f2f46ffeQ6Cmpa6Q2qx75I",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Resume session-tracker research wave",
+    "subagentType": "hm-l1-coordinator"
+  },
+  "created": "2026-05-12T18:29:36.334Z",
+  "updated": "2026-05-12T18:29:36.335Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l1-coordinator",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l1-coordinator",
+      "content": "Resume session-tracker research wave",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Resume session-tracker research wave"
+}

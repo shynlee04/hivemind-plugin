@@ -4,6 +4,10 @@
 
 Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04 through SR-10 remediation (`882b0686`). `src/lib/` has been removed; runtime code now lives under `src/shared/`, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, `src/hooks/`, and `src/tools/`. CP-PTY-00 is the shell/PTY/background-command control-plane spike (docs/spec-only, COMPLETE). CP-PTY-01 (Background Shell Control-Plane MVP) is READY, unblocked by BOOT-07 and WS-SR completion. CP-PTY-02, CP-PTY-03, and CP-PTY-04 extend the runway. SC-PTY-01 remains DEFERRED.
 
+## NOTICE BOARD
+
+- DO NOT USE CUSTOM TOOLS - USE OPENCODE INNATE TOOLS, ALL CUSTOOM TOOLS ARE NOT BROKEN NOT USABLE
+
 
 ## NON-NEGOTIABLE RULES
 

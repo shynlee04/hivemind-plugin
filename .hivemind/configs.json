@@ -6,8 +6,8 @@
   "user_expert_level": "clumsy-vibecoder",
   "delegation_systems": {
     "native_task": true,
-    "delegate_task": true,
-    "background_delegation": true
+    "delegate_task": false,
+    "background_delegation": false
   },
   "parallelization": true,
   "atomic_commit": true,
