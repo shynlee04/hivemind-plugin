@@ -242,17 +242,6 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         summarizeOutput: summarizePluginToolOutput,
       })(input, _output)
       void fact // consumed by guard hooks above; session tracker uses raw input
-      // DEPRECATED (Phase 13 F-09): Legacy event-tracker double-capture removed.
-      // Old wiring kept as safety net per REQ-ST-13.
-      /*
-      try {
-        if (fact.kind === "tool-execute-after" && shouldTrackEventTrackerEvent(fact.event)) {
-          createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event: fact.event, source: fact.source } })
-        }
-      } catch {
-        // Best-effort audit projection: never fail the tool call result.
-      }
-      */
       try {
         // Session tracker: capture tool metadata (skill, read, task, etc.)
         // Uses raw hook input/output for accurate metadata, not the projected fact.
