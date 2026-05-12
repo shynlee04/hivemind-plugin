@@ -165,6 +165,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-08** — WS-SR ROADMAP.md updated: improved phase descriptions with OMO kebab-case conventions, feature-module pattern (index.ts + types.ts + AGENTS.md per module), colocated tests, barrel exports, hierarchical AGENTS.md guidance, 500 LOC cap enforcement, verification commands per phase
 - **2026-05-08** — STATE.md updated: current phase set to SR-0, health green, control mode set to managed autonomous loop, SR directories registered
 - **2026-05-08** — Restructuring plan refined: `.planning/architecture/structure-restructuring-plan-2026-05-08.md` contains complete file mapping (current → target), 10-phase migration plan with risk assessment, rollback strategy, circular dependency resolution, verification commands
+- **2026-05-12** — Phase 13 added: Fix all session-tracker defects with gatekeeping TDD SPEC-driven honest validation and regression prevention
 
 ### Key Restructuring Decisions
 

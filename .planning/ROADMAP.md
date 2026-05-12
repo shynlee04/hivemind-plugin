@@ -358,5 +358,15 @@ Rules:
 - MCM continuation pending BOOT-04 symlinks.
 - Next recommended cycle: **Cycle 3 — Routing Foundation**.
 
+### Phase 13: Fix all session-tracker defects with gatekeeping TDD SPEC-driven honest validation and regression prevention
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 12
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 13 to break down)
+
 ---
 *Last updated: 2026-05-11 — GOV-01 (Phase 11) + CP-ST-02 (Phase 12) added for governance reconciliation and CP-ST-01 remediation*
