@@ -7,13 +7,28 @@ steps: 40
 color: "#F1C40F"
 permission:
   read: allow
-  edit: ask
-  write: ask
-  bash:
+  edit:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
     "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
+  write:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  bash:
+    "mkdir *": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "*": ask
   glob: allow
   grep: allow
   task:
@@ -30,8 +45,6 @@ permission:
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
-  webfetch: allow
-  websearch: allow
 depth: L2
 lineage: hm
 domain: Planning

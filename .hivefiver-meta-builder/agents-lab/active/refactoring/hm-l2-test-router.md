@@ -5,13 +5,38 @@ mode: subagent
 temperature: 0.1
 permission:
   read: allow
-  bash: allow
-  edit: ask
-  write: ask
+  edit:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  write:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  bash:
+    "mkdir *": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "*": ask
   glob: allow
   grep: allow
   task:
     "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
     "*": ask
     hm-l2-*: allow

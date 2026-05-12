@@ -6,20 +6,18 @@ temperature: 0.05
 permission:
   read: allow
   edit: allow
-  write: ask
+  write: allow
   bash:
-    "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
+    "*": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
   glob: allow
   grep: allow
   task:
     "*": ask
-    hm-l2-investigator: allow
   delegate-task: ask
-  delegation-status: ask
-  run-background-command: allow
+  delegation-status: allow
   session-journal-export: ask
   prompt-skim: ask
   prompt-analyze: ask

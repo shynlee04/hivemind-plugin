@@ -7,10 +7,21 @@ permission:
   read: allow
   edit: allow
   write: allow
-  bash: allow
+  bash:
+    "*": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+  glob: allow
+  grep: allow
   task:
     "*": ask
+  delegate-task: ask
   delegation-status: allow
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
     "*": ask
     hm-l2-*: allow

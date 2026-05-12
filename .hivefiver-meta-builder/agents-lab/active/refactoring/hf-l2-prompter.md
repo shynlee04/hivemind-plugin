@@ -5,17 +5,30 @@ mode: subagent
 temperature: 0.2
 permission:
   read: allow
-  edit: allow
-  write: allow
-  bash:
+  edit:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
     "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
+  write:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  bash:
+    "mkdir *": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "*": ask
   glob: allow
   grep: allow
-  webfetch: allow
-  todowrite: allow
   task:
     "*": ask
   delegate-task: ask
@@ -26,7 +39,6 @@ permission:
   session-patch: ask
   skill:
     "*": ask
-    hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

@@ -5,31 +5,45 @@ mode: subagent
 temperature: 0.3
 steps: 80
 permission:
-  edit: ask
-  write: ask
-  bash:
+  read: allow
+  edit:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
     "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
+  write:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  bash:
+    "mkdir *": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "*": ask
+  glob: allow
+  grep: allow
   task:
     "*": ask
-  delegate-task: allow
-  delegation-status: allow
-  run-background-command: allow
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
     "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
-  read:
-    "*": ask
-    "*.md": allow
-    "*.json": allow
-  glob: allow
-  grep: allow
-  webfetch: ask
 depth: L2
 lineage: hm
 domain: Phase Lifecycle

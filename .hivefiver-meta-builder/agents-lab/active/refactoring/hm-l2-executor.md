@@ -9,23 +9,21 @@ permission:
   write: allow
   bash:
     "*": allow
-    git *: allow
-    node *: allow
-    npx *: allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
   glob: allow
   grep: allow
   task:
-    "*": allow
-    hm-l2-reviewer: allow
+    "*": ask
   delegate-task: ask
-  delegation-status: ask
-  run-background-command: allow
+  delegation-status: allow
   session-journal-export: ask
   prompt-skim: ask
   prompt-analyze: ask
   session-patch: ask
   skill:
-    "*": allow
+    "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

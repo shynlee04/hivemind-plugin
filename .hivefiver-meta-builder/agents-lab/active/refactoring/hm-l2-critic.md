@@ -6,14 +6,28 @@ temperature: 0.05
 steps: 40
 permission:
   read: allow
-  edit: ask
-  write: ask
-  bash:
+  edit:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
     "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
-    npm *: allow
+  write:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  bash:
+    "mkdir *": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "*": ask
   glob: allow
   grep: allow
   task:
@@ -24,7 +38,6 @@ permission:
   prompt-skim: ask
   prompt-analyze: ask
   session-patch: ask
-  webfetch: allow
   skill:
     "*": ask
     hm-l2-*: allow

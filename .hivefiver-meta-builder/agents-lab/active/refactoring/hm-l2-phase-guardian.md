@@ -6,26 +6,44 @@ temperature: 0.25
 steps: 60
 permission:
   read: allow
-  edit: ask
-  write: ask
-  bash:
+  edit:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
     "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
+  write:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  bash:
+    "mkdir *": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "*": ask
+  glob: allow
+  grep: allow
   task:
     "*": ask
   delegate-task: ask
-  delegation-status: allow
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
     "*": ask
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow
     stack-l3-*: allow
-  glob: allow
-  grep: allow
-  webfetch: ask
 depth: L2
 lineage: hm
 domain: Phase Lifecycle

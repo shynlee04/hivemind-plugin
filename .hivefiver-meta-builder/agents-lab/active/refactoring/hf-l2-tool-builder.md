@@ -5,26 +5,25 @@ mode: subagent
 temperature: 0.1
 permission:
   read: allow
-  edit: ask
-  write: ask
+  edit: allow
+  write: allow
   bash:
-    "*": ask
-    git *: allow
-    node *: allow
-    npx *: allow
+    "*": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
   glob: allow
   grep: allow
   task:
     "*": ask
   delegate-task: ask
-  delegation-status: ask
+  delegation-status: allow
   session-journal-export: ask
   prompt-skim: ask
   prompt-analyze: ask
   session-patch: ask
   skill:
     "*": ask
-    hf-l2-*: allow
     hm-l2-*: allow
     hm-l3-*: allow
     gate-l3-*: allow

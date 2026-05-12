@@ -4,13 +4,39 @@ description: Ground prompt references against the current repository and report 
 mode: subagent
 temperature: 0.1
 permission:
-  edit: ask
-  write: ask
-  bash: allow
+  read: allow
+  edit:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  write:
+    "*.md": allow
+    "*.json": allow
+    "*.txt": allow
+    "*.xml": allow
+    "*.yaml": allow
+    "*.yml": allow
+    "*": ask
+  bash:
+    "mkdir *": allow
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "*": ask
   glob: allow
   grep: allow
   task:
     "*": ask
+  delegate-task: ask
+  delegation-status: ask
+  session-journal-export: ask
+  prompt-skim: ask
+  prompt-analyze: ask
+  session-patch: ask
   skill:
     "*": ask
     hm-l2-*: allow
