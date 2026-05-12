@@ -396,13 +396,18 @@ export class SessionTracker {
       if (parentID && this.childWriter) {
         // Child session: capture chat message in child .json
         const messageRole = (output.message as Record<string, unknown> | null)?.role
+        const parts = output.parts as Array<{ type: string; text?: string }>
+        const content = parts
+          .filter((p) => p.type === "text" && typeof p.text === "string")
+          .map((p) => p.text!)
+          .join("\n") || (typeof messageRole === "string" ? `[${messageRole} message]` : "unknown")
         await this.childWriter.appendChildTurn(
           parentID,
           input.sessionID,
           {
             turn: 0, // Computed from current turns count by appendChildTurn
             actor: input.agent || "unknown",
-            content: typeof messageRole === "string" ? messageRole : "unknown",
+            content,
             tools: [],
           },
         )
