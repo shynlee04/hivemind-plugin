@@ -239,6 +239,7 @@ export class ToolCapture {
         delegationDepth: depth,
         delegatedBy: {
           agentName: "main_l0_agent",
+          model: "unknown",
           tool: "task",
           description,
           subagentType,

@@ -203,11 +203,15 @@ export class MessageCapture {
       parts: nonThinkingParts,
     })
 
+    // P-01: Extract assistant text content from non-thinking parts
+    const content = this.extractTextContent(nonThinkingParts)
+
     await this.sessionWriter.appendAgentBlock(
       input.sessionID,
       metadata.name,
       metadata.model,
       metadata.thinkingDuration,
+      content || undefined,
     )
   }
 

@@ -71,6 +71,8 @@ export interface SessionRecord {
 export interface DelegatedBy {
   /** Name of the delegating agent (e.g. "Hm-L0-Orchestrator"). */
   agentName: string
+  /** Model identifier of the delegating agent (e.g. "DeepSeek V4 Pro"). */
+  model: string
   /** Tool used to delegate (typically "task"). */
   tool: string
   /** Description of the delegated task. */
@@ -159,6 +161,8 @@ export interface ChildSessionRecord {
   turns: Turn[]
   /** Nested child sessions of this child (grandchildren). */
   children: string[]
+  /** Last assistant message summary (first 200 chars), for resumption context. */
+  lastMessage?: string
 }
 
 // ---------------------------------------------------------------------------

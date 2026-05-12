@@ -135,6 +135,13 @@ export class ChildWriter {
     record.turns.push(turn)
     record.updated = new Date().toISOString()
 
+    // P-04: Track last assistant message for resumption context
+    if (turn.actor !== "user" && turn.content) {
+      record.lastMessage = turn.content.length > 200
+        ? turn.content.slice(0, 200)
+        : turn.content
+    }
+
     const filePath = this.getChildFilePath(parentSessionID, childSessionID)
     await atomicWriteJson(filePath, record)
   }

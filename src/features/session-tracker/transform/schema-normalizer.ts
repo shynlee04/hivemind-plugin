@@ -137,6 +137,7 @@ export function normalizeChildRecord(
     delegationDepth: (normalized.delegationDepth as number) ?? 1,
     delegatedBy: {
       agentName: (delegatedBy.agentName as string) || "unknown",
+      model: (delegatedBy.model as string) || "unknown",
       tool: (delegatedBy.tool as string) || "task",
       description: (delegatedBy.description as string) || "",
       subagentType: (delegatedBy.subagentType as string) || "",

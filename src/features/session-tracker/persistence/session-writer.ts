@@ -115,6 +115,7 @@ export class SessionWriter {
    * @param agentName - The agent's display name.
    * @param model - The model identifier.
    * @param thinkingDuration - Optional thinking duration string (e.g. "19.7s").
+   * @param content - Optional assistant response text content to capture.
    * @returns Promise that resolves when the section is appended.
    */
   async appendAgentBlock(
@@ -122,11 +123,15 @@ export class SessionWriter {
     agentName: string,
     model: string,
     thinkingDuration?: string,
+    content?: string,
   ): Promise<void> {
     const filePath = this.getSessionFilePath(sessionID)
     let section = `## main_l0_agent\n\n**name:** ${agentName}\n**model:** ${model}\n`
     if (thinkingDuration) {
       section += `**thinking_duration:** ${thinkingDuration}\n`
+    }
+    if (content) {
+      section += `\n${content}\n`
     }
     section += "\n"
     await atomicAppendMarkdown(filePath, section)

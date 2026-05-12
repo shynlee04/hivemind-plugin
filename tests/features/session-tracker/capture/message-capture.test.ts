@@ -253,6 +253,7 @@ describe("MessageCapture", () => {
         "unknown",
         "unknown",
         undefined,
+        "Response", // P-01: content captured even with unknown agent
       )
     })
   })
