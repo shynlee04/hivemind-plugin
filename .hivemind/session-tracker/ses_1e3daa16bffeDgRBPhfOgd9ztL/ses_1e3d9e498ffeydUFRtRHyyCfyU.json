@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1e3d9e498ffeydUFRtRHyyCfyU",
+  "parentSessionID": "ses_1e3daa16bffeDgRBPhfOgd9ztL",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "main_l0_agent",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Investigate L0 permission read deny",
+    "subagentType": "hm-l2-investigator"
+  },
+  "created": "2026-05-12T12:31:53.452Z",
+  "updated": "2026-05-12T12:31:53.463Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "hm-l2-investigator",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "hm-l2-investigator",
+      "content": "Investigate L0 permission read deny",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Investigate L0 permission read deny"
+}

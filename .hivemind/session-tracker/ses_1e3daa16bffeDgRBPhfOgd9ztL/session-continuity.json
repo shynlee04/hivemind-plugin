@@ -1,0 +1,26 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1e3daa16bffeDgRBPhfOgd9ztL",
+  "lastUpdated": "2026-05-12T12:38:45.967Z",
+  "hierarchy": {
+    "root": "ses_1e3daa16bffeDgRBPhfOgd9ztL",
+    "children": {
+      "ses_1e3d9e498ffeydUFRtRHyyCfyU": {
+        "file": "ses_1e3d9e498ffeydUFRtRHyyCfyU.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "main_l0_agent",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "task": 1,
+    "read": 5,
+    "glob": 7,
+    "bash": 10,
+    "question": 1,
+    "edit": 3
+  }
+}
