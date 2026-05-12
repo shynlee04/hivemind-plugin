@@ -143,6 +143,61 @@ describe("ProjectIndexWriter", () => {
     })
   })
 
+  describe("incrementChildCount", () => {
+    it("should increment childCount from 0 to 1 on first call", async () => {
+      await writer.initializeIndex()
+      await writer.addSession("ses_test12345abcdefg0", "ses_test12345abcdefg0/", "ses_test12345abcdefg0.md")
+      mockAtomicWriteJson.mockClear()
+
+      await writer.incrementChildCount("ses_test12345abcdefg0")
+
+      expect(mockAtomicWriteJson).toHaveBeenCalledTimes(1)
+      const [, data] = mockAtomicWriteJson.mock.calls[0]
+      const session = (data as any).sessions["ses_test12345abcdefg0"]
+      expect(session.childCount).toBe(1)
+    })
+
+    it("should increment childCount from 1 to 2 on second call", async () => {
+      await writer.initializeIndex()
+      await writer.addSession("ses_test12345abcdefg0", "ses_test12345abcdefg0/", "ses_test12345abcdefg0.md")
+      mockAtomicWriteJson.mockClear()
+
+      await writer.incrementChildCount("ses_test12345abcdefg0")
+      expect((mockAtomicWriteJson.mock.calls[0][1] as any).sessions["ses_test12345abcdefg0"].childCount).toBe(1)
+
+      await writer.incrementChildCount("ses_test12345abcdefg0")
+      expect((mockAtomicWriteJson.mock.calls[1][1] as any).sessions["ses_test12345abcdefg0"].childCount).toBe(2)
+    })
+
+    it("should serialize via writeQueue (REQ-ST-09)", async () => {
+      await writer.initializeIndex()
+      await writer.addSession("ses_test12345abcdefg0", "ses_test12345abcdefg0/", "ses_test12345abcdefg0.md")
+      mockAtomicWriteJson.mockClear()
+
+      // Fire 5 concurrent child count increments
+      await Promise.all(
+        Array.from({ length: 5 }, () =>
+          writer.incrementChildCount("ses_test12345abcdefg0"),
+        ),
+      )
+
+      expect(mockAtomicWriteJson).toHaveBeenCalledTimes(5)
+      const [, finalData] = mockAtomicWriteJson.mock.calls[4]
+      expect((finalData as any).sessions["ses_test12345abcdefg0"].childCount).toBe(5)
+    })
+
+    it("should be a no-op for non-existent session", async () => {
+      await writer.initializeIndex()
+      mockAtomicWriteJson.mockClear()
+
+      await writer.incrementChildCount("ses_nonexistent")
+
+      expect(mockAtomicWriteJson).toHaveBeenCalledTimes(1)
+      const [, data] = mockAtomicWriteJson.mock.calls[0]
+      expect((data as any).sessions["ses_nonexistent"]).toBeUndefined()
+    })
+  })
+
   describe("serial queue (REQ-ST-09)", () => {
     it("should serialize concurrent writes without corruption", async () => {
       await writer.initializeIndex()

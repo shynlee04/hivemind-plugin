@@ -24,7 +24,7 @@ describe("ToolCapture", () => {
   let mockAppendToolBlock: ReturnType<typeof vi.fn>
   let mockCreateChildFile: ReturnType<typeof vi.fn>
   let mockAddChild: ReturnType<typeof vi.fn>
-  let mockUpdateSession: ReturnType<typeof vi.fn>
+  let mockIncrementChildCount: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -32,7 +32,7 @@ describe("ToolCapture", () => {
     mockAppendToolBlock = vi.fn().mockResolvedValue(undefined)
     mockCreateChildFile = vi.fn().mockResolvedValue(undefined)
     mockAddChild = vi.fn().mockResolvedValue(undefined)
-    mockUpdateSession = vi.fn().mockResolvedValue(undefined)
+    mockIncrementChildCount = vi.fn().mockResolvedValue(undefined)
 
     sessionWriter = {
       appendToolBlock: mockAppendToolBlock,
@@ -58,7 +58,7 @@ describe("ToolCapture", () => {
     } as unknown as SessionIndexWriter
 
     projectIndexWriter = {
-      updateSession: mockUpdateSession,
+      incrementChildCount: mockIncrementChildCount,
       initializeIndex: vi.fn(),
       addSession: vi.fn(),
       removeSession: vi.fn(),
@@ -245,8 +245,10 @@ describe("ToolCapture", () => {
         expect.any(String),
       )
 
-      // Should update project index
-      expect(mockUpdateSession).toHaveBeenCalled()
+      // Should update project index via incrementChildCount
+      expect(mockIncrementChildCount).toHaveBeenCalledWith(
+        "ses_parent12345abcdef",
+      )
     })
 
     it("should handle task with no task_id in output", async () => {
