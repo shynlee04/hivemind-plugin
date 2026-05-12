@@ -4,8 +4,8 @@
  * @module tests/features/session-tracker/persistence/session-index-writer
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { mkdir, rm } from "node:fs/promises"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { mkdir, rm, readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { tmpdir } from "node:os"
 import { randomUUID } from "node:crypto"
@@ -200,6 +200,119 @@ describe("SessionIndexWriter", () => {
 
       // All writes should complete
       expect(mockAtomicWriteJson).toHaveBeenCalledTimes(3)
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // F-07: Concurrency tests — serial write queue
+  // ---------------------------------------------------------------------------
+
+  describe("concurrent writes — serial write queue (F-07)", () => {
+    let concurrencyTmpDir: string
+    let concurrencyWriter: SessionIndexWriter
+
+    beforeEach(async () => {
+      concurrencyTmpDir = resolve(tmpdir(), `hivemind-conc-${randomUUID()}`)
+      await mkdir(concurrencyTmpDir, { recursive: true })
+      concurrencyWriter = new SessionIndexWriter({ projectRoot: concurrencyTmpDir })
+    })
+
+    afterEach(async () => {
+      await rm(concurrencyTmpDir, { recursive: true, force: true }).catch(() => {})
+    })
+
+    /**
+     * Helper to read the session-continuity.json on disk.
+     */
+    async function readIndexOnDisk(sessionID: string): Promise<Record<string, unknown>> {
+      const filePath = safeSessionPath(concurrencyTmpDir, sessionID, "session-continuity.json")
+      const raw = await readFile(filePath, "utf-8")
+      return JSON.parse(raw) as Record<string, unknown>
+    }
+
+    it("should not lose children under 10 concurrent addChild calls", async () => {
+      const sessionID = "ses_conc_test12345678"
+      await concurrencyWriter.initializeIndex(sessionID)
+
+      // Fire 10 concurrent addChild calls
+      await Promise.all(
+        Array.from({ length: 10 }, (_, i) =>
+          concurrencyWriter.addChild(
+            sessionID,
+            `child_${i}`,
+            `child_${i}.json`,
+            1,
+            `Agent${i}`,
+          ),
+        ),
+      )
+
+      // Read the final index from disk
+      const index = await readIndexOnDisk(sessionID)
+      const children = (index as any).hierarchy?.children ?? {}
+
+      // All 10 children must be present — no lost writes
+      expect(Object.keys(children)).toHaveLength(10)
+      for (let i = 0; i < 10; i++) {
+        expect(children[`child_${i}`]).toBeDefined()
+        expect(children[`child_${i}`].file).toBe(`child_${i}.json`)
+      }
+    })
+
+    it("should produce correct turnCount after 10 concurrent incrementTurnCount calls", async () => {
+      const sessionID = "ses_conc_turns1234567"
+      await concurrencyWriter.initializeIndex(sessionID)
+
+      // Fire 10 concurrent incrementTurnCount calls
+      await Promise.all(
+        Array.from({ length: 10 }, () =>
+          concurrencyWriter.incrementTurnCount(sessionID),
+        ),
+      )
+
+      // Read the final index from disk
+      const index = await readIndexOnDisk(sessionID)
+      // Without a serial queue, turnCount will be < 10 due to interleaved reads
+      expect(index.turnCount).toBe(10)
+    })
+
+    it("should not lose tool summary updates under 10 concurrent calls", async () => {
+      const sessionID = "ses_conc_tools1234567"
+      await concurrencyWriter.initializeIndex(sessionID)
+
+      // Fire 10 concurrent updateToolSummary calls for the same tool
+      await Promise.all(
+        Array.from({ length: 10 }, () =>
+          concurrencyWriter.updateToolSummary(sessionID, "read"),
+        ),
+      )
+
+      const index = await readIndexOnDisk(sessionID)
+      // Without a queue, the count will be less than 10
+      expect((index as any).toolSummary?.read).toBe(10)
+    })
+
+    it("should auto-reset a stale write queue after 5 minutes of inactivity", async () => {
+      const sessionID = "ses_stale_test1234567"
+      await concurrencyWriter.initializeIndex(sessionID)
+
+      // Do one write to establish lastWriteTime
+      await concurrencyWriter.addChild(sessionID, "child_1", "child_1.json", 1, "AgentA")
+
+      // Advance time past the stale threshold (5 minutes)
+      vi.useFakeTimers()
+      vi.advanceTimersByTime(6 * 60 * 1000) // 6 minutes
+
+      // This write should succeed despite the stale timer (queue auto-resets)
+      await concurrencyWriter.addChild(sessionID, "child_2", "child_2.json", 1, "AgentB")
+
+      vi.useRealTimers()
+
+      // Both children should exist on disk
+      const index = await readIndexOnDisk(sessionID)
+      const children = (index as any).hierarchy?.children ?? {}
+      expect(children["child_1"]).toBeDefined()
+      expect(children["child_2"]).toBeDefined()
     })
   })
 })
