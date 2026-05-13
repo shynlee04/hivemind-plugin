@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1de0a5f76ffeXkrua1vGyZLRQ2",
+  "parentSessionID": "ses_1de0b6f9bffe3yEdBXNhPzlJQh",
+  "delegationDepth": 2,
+  "delegatedBy": {
+    "agentName": "general",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Read hm-l2-lineage-router skill",
+    "subagentType": "general"
+  },
+  "created": "2026-05-13T15:31:19.564Z",
+  "updated": "2026-05-13T15:31:20.578Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "general",
+      "content": "Read hm-l2-lineage-router skill",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Read hm-l2-lineage-router skill"
+}

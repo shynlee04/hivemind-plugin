@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1de05bb81ffeV4azvOGKtBiDNa",
+  "parentSessionID": "ses_1de0606d5ffeIcOLVKWN7RYB9x",
+  "delegationDepth": 2,
+  "delegatedBy": {
+    "agentName": "general",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Read hm-l1-coordinator",
+    "subagentType": "general"
+  },
+  "created": "2026-05-13T15:35:22.810Z",
+  "updated": "2026-05-13T15:35:22.824Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "general",
+      "content": "Read hm-l1-coordinator",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Read hm-l1-coordinator"
+}

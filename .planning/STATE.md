@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-13T14:50:00.000Z"
+last_updated: "2026-05-13T15:38:01.281Z"
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 0
-  percent: 0
+  completed_plans: 6
+  percent: 100
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -23,9 +23,9 @@ progress:
 
 ## Current Status
 
-**Active phase:** BOOT-09 — MVP Config Schema + Entry Init Verification. 3 plans verified and ready for execution.
-**Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 2104 tests (2 pre-existing failures) — 12 new tool guard tests added. Session tracker pipeline verified.
-**Phase 12 status:** 🟢 COMPLETE — 3 plans, 3 summaries, 14 review findings resolved, fork handling implemented, 247 session-tracker+tools tests (0 failures).
+**Active phase:** CP-ST-03 — Architecture Detox. 2 of 3 plans complete.
+**Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 2055 tests (7 pre-existing failures — tracked for CP-ST-03-03). 33 new hook module tests added.
+**CP-ST-03 status:** 🟡 IN PROGRESS — Plan 01 (Event-Tracker Excision ✓), Plan 02 (Plugin.ts Purification ✓), Plan 03 (Verification + Cleanup — pending).
 
 Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
 

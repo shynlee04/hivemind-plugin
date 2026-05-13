@@ -1,0 +1,86 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1ded410beffe5nabRgB0H1m4ft",
+  "lastUpdated": "2026-05-13T15:07:06.079Z",
+  "hierarchy": {
+    "root": "ses_1ded410beffe5nabRgB0H1m4ft",
+    "children": {
+      "ses_1dec9ffe2ffe93W0qHqu8ywDEQ": {
+        "file": "ses_1dec9ffe2ffe93W0qHqu8ywDEQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1debe071affei8CbrMIStKxFAe": {
+        "file": "ses_1debe071affei8CbrMIStKxFAe.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1dead266fffe2CV4BlojIECSoP": {
+        "file": "ses_1dead266fffe2CV4BlojIECSoP.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1de9c6bf0ffeDvS7rrgFEyPke7": {
+        "file": "ses_1de9c6bf0ffeDvS7rrgFEyPke7.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1de8a82edffe3kY5oph4J4nnP4": {
+        "file": "ses_1de8a82edffe3kY5oph4J4nnP4.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1de7e752bffe7IcgROXtYEb9av": {
+        "file": "ses_1de7e752bffe7IcgROXtYEb9av.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1de692b4effe2Aqd39n9ByKhIz": {
+        "file": "ses_1de692b4effe2Aqd39n9ByKhIz.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1de56a590ffebON5ULQ8LaF43Y": {
+        "file": "ses_1de56a590ffebON5ULQ8LaF43Y.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1de4acc8effeYiJw8O31ktt877": {
+        "file": "ses_1de4acc8effeYiJw8O31ktt877.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 12,
+  "toolSummary": {
+    "skill": 8,
+    "session-tracker": 1,
+    "read": 28,
+    "glob": 6,
+    "bash": 29,
+    "grep": 8,
+    "question": 3,
+    "write": 5,
+    "edit": 6,
+    "task": 2
+  }
+}

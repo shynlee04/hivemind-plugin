@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1de8a82edffe3kY5oph4J4nnP4",
+  "parentSessionID": "ses_1ded410beffe5nabRgB0H1m4ft",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "unknown",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Execute plan CP-ST-02-02",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-13T13:22:42.559Z",
+  "updated": "2026-05-13T13:22:42.575Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-executor",
+      "content": "Execute plan CP-ST-02-02",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Execute plan CP-ST-02-02"
+}

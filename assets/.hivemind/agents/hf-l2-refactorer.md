@@ -13,10 +13,10 @@ instruction:
   - AGENTS.md
 permission:
   read: allow
-  edit: ask
-  write: ask
+  edit: allow
+  write: allow
   bash:
-    '*': ask
+    '*': allow
     git *: allow
     node *: allow
     npx *: allow

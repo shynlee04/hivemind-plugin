@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1debe071affei8CbrMIStKxFAe",
+  "parentSessionID": "ses_1ded410beffe5nabRgB0H1m4ft",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "unknown",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research session-tracker SDK API",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-13T12:25:06.407Z",
+  "updated": "2026-05-13T12:25:06.424Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-phase-researcher",
+      "content": "Research session-tracker SDK API",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Research session-tracker SDK API"
+}

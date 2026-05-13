@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1de05b2bbffef9Wgwy6LTN6mQm",
+  "parentSessionID": "ses_1de0606d5ffeIcOLVKWN7RYB9x",
+  "delegationDepth": 2,
+  "delegatedBy": {
+    "agentName": "general",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Read hf-meta-builder-core",
+    "subagentType": "general"
+  },
+  "created": "2026-05-13T15:35:33.007Z",
+  "updated": "2026-05-13T15:35:33.025Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "general",
+      "content": "Read hf-meta-builder-core",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Read hf-meta-builder-core"
+}
