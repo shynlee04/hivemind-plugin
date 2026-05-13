@@ -756,6 +756,15 @@ export class SessionTracker {
       // Clean up orphaned .tmp.* files from interrupted writes
       await this.cleanupOrphanedTmpFiles()
 
+      // Clean up orphan child session directories (CP-ST-02, D-06).
+      // This fixes the live bug where L1 child sessions have their own
+      // directories instead of existing only as .json files under the parent.
+      await this.cleanupOrphanDirectories()
+
+      // Ensure project-continuity.json contains ALL sessions (main + children).
+      // Fills any gaps from before CP-ST-02 fix (AC-08).
+      await this.ensureProjectContinuityCompleteness()
+
       void this.client.tui?.showToast?.({
         body: {
           title: "Session Tracker",
@@ -828,6 +837,142 @@ export class SessionTracker {
       }
     } catch {
       // Best-effort: directory may not exist or be inaccessible
+    }
+  }
+
+  /**
+   * Removes orphan child session directories from `.hivemind/session-tracker/`.
+   *
+   * An orphan is a directory that contains session files but whose session ID
+   * is registered as an L1/L2 child in another directory's session-continuity.json.
+   * These directories were created by the race condition CP-ST-02 fixes.
+   *
+   * Only removes directories for sessions classified as children under a parent's
+   * hierarchy index. Preserves child .json files that already exist under the parent.
+   *
+   * Best-effort: individual failures are silently skipped.
+   */
+  private async cleanupOrphanDirectories(): Promise<void> {
+    const { readdir, rm } = await import("node:fs/promises")
+    const trackerRoot = sessionTrackerRoot(this.projectRoot)
+
+    let entries: { name: string; isDirectory(): boolean }[]
+    try {
+      entries = (await readdir(trackerRoot, { withFileTypes: true })) as unknown as {
+        name: string
+        isDirectory(): boolean
+      }[]
+    } catch {
+      // Root directory doesn't exist yet — nothing to clean
+      return
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const sessionID = entry.name
+
+      // Skip non-session directories (e.g., .gitkeep-created dirs)
+      if (!isValidSessionID(sessionID)) continue
+
+      // Check if this session is a CHILD of any known parent.
+      // If the hierarchy index classifies it as a child, the directory
+      // is an orphan — the child should only exist as a .json file.
+      if (this.hierarchyIndex?.isChild(sessionID)) {
+        const { resolve } = await import("node:path")
+        const dirPath = resolve(trackerRoot, sessionID)
+        try {
+          await rm(dirPath, { recursive: true, force: true })
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "info",
+              message: `[Harness] Session tracker: removed orphan child directory "${sessionID}"`,
+            },
+          })
+        } catch {
+          // Best-effort: skip directories that can't be removed (permissions, etc.)
+        }
+      }
+    }
+  }
+
+  /**
+   * Ensures project-continuity.json contains ALL known sessions.
+   *
+   * Walks the session-tracker directory tree and checks that every session
+   * (main .md files AND child .json files) is registered in the project index.
+   * Missing entries are added. This fixes CP-ST-02's AC-08 requirement.
+   *
+   * Best-effort: individual failures are silently skipped.
+   */
+  private async ensureProjectContinuityCompleteness(): Promise<void> {
+    if (!this.projectIndexWriter) return
+
+    const { readdir } = await import("node:fs/promises")
+    const trackerRoot = sessionTrackerRoot(this.projectRoot)
+
+    let entries: { name: string; isDirectory(): boolean; isFile(): boolean }[]
+    try {
+      entries = (await readdir(trackerRoot, { withFileTypes: true })) as unknown as {
+        name: string
+        isDirectory(): boolean
+        isFile(): boolean
+      }[]
+    } catch {
+      return
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const parentID = entry.name
+      if (!isValidSessionID(parentID)) continue
+
+      const { resolve } = await import("node:path")
+      const parentDir = resolve(trackerRoot, parentID)
+
+      // Register the main session if not already in the index
+      try {
+        await this.projectIndexWriter.addSession(
+          parentID,
+          `${parentID}/`,
+          `${parentID}.md`,
+        )
+      } catch {
+        // Already registered or can't register — skip
+      }
+
+      // Scan for child .json files under this directory
+      let childEntries: { name: string; isFile(): boolean }[]
+      try {
+        childEntries = (await readdir(parentDir, { withFileTypes: true })) as unknown as {
+          name: string
+          isFile(): boolean
+        }[]
+      } catch {
+        continue
+      }
+
+      for (const child of childEntries) {
+        if (!child.isFile()) continue
+        if (!child.name.endsWith(".json")) continue
+        // Skip session-continuity.json (internal index file, not a child session)
+        if (child.name === "session-continuity.json") continue
+
+        // Extract child session ID from filename (e.g., "ses_abc123.json" → "ses_abc123")
+        const childID = child.name.slice(0, -5) // remove ".json" suffix
+        if (!isValidSessionID(childID)) continue
+
+        // Register child session in project index
+        try {
+          await this.projectIndexWriter.addSession(
+            childID,
+            `${parentID}/`,
+            `${childID}.json`,
+          )
+        } catch {
+          // Already registered or can't register — skip
+        }
+      }
     }
   }
 

@@ -371,7 +371,8 @@ describe("Session tracker E2E verification (all 13 REQs)", () => {
 
       expect(child.parentSessionID).toBe(parentID)
       expect(child.delegationDepth).toBe(1)
-      expect(child.delegatedBy.agentName).toBe("unknown")
+      // CP-ST-02-03: agentName now resolved from subagent_type (was hardcoded "unknown")
+      expect(child.delegatedBy.agentName).toBe("hm-l2-architect")
     })
   })
 
