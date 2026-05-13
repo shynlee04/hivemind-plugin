@@ -164,46 +164,69 @@ export async function loadPrimitive(
 // Scanners
 // ---------------------------------------------------------------------------
 
+/**
+ * Collect all candidate directories for a primitive type.
+ *
+ * OpenCode accepts both singular and plural directory names
+ * (e.g. both .opencode/command/ and .opencode/commands/).
+ * We scan both and merge results (first-wins on name collision).
+ *
+ * @param root - Project root path.
+ * @param dirNames - Array of directory names to scan (e.g., ["agents", "agent"]).
+ * @returns Array of existing directory paths.
+ */
+function resolvePrimitiveDirs(root: string, dirNames: string[]): string[] {
+  return dirNames
+    .map((name) => path.join(root, ".opencode", name))
+    .filter((dir) => existsSync(dir))
+}
+
 async function scanAgents(root: string, result: LoadResult): Promise<void> {
-  const agentsDir = path.join(root, ".opencode", "agents")
-  if (!existsSync(agentsDir)) return
+  const dirs = resolvePrimitiveDirs(root, ["agents", "agent"])
+  for (const agentsDir of dirs) {
+    const files = await fs.readdir(agentsDir)
+    for (const file of files) {
+      if (!file.endsWith(".md")) continue
+      const filePath = path.join(agentsDir, file)
+      const stat = await statIfPresent(filePath)
+      if (!stat) continue
+      if (!stat.isFile()) continue
 
-  const files = await fs.readdir(agentsDir)
-  for (const file of files) {
-    if (!file.endsWith(".md")) continue
-    const filePath = path.join(agentsDir, file)
-    const stat = await statIfPresent(filePath)
-    if (!stat) continue
-    if (!stat.isFile()) continue
-
-    const loadResult = await loadPrimitive(filePath, "agent")
-    if (loadResult.success) {
       const name = file.replace(/\.md$/, "")
-      result.agents.set(name, loadResult.data as AgentFile)
-    } else {
-      result.warnings.push(`Invalid agent frontmatter in ${filePath}: ${loadResult.error}`)
+      // First-wins: skip if already discovered from a prior directory
+      if (result.agents.has(name)) continue
+
+      const loadResult = await loadPrimitive(filePath, "agent")
+      if (loadResult.success) {
+        result.agents.set(name, loadResult.data as AgentFile)
+      } else {
+        result.warnings.push(`Invalid agent frontmatter in ${filePath}: ${loadResult.error}`)
+      }
     }
   }
 }
 
 async function scanCommands(root: string, result: LoadResult): Promise<void> {
-  const commandsDir = path.join(root, ".opencode", "commands")
-  if (!existsSync(commandsDir)) return
+  const dirs = resolvePrimitiveDirs(root, ["commands", "command"])
+  for (const commandsDir of dirs) {
+    const files = await fs.readdir(commandsDir)
+    for (const file of files) {
+      if (!file.endsWith(".md")) continue
+      const filePath = path.join(commandsDir, file)
+      const stat = await statIfPresent(filePath)
+      if (!stat) continue
+      if (!stat.isFile()) continue
 
-  const files = await fs.readdir(commandsDir)
-  for (const file of files) {
-    if (!file.endsWith(".md")) continue
-    const filePath = path.join(commandsDir, file)
-    const stat = await statIfPresent(filePath)
-    if (!stat) continue
-    if (!stat.isFile()) continue
-
-    const loadResult = await loadPrimitive(filePath, "command")
-    if (loadResult.success) {
       const name = file.replace(/\.md$/, "")
-      result.commands.set(name, loadResult.data as CommandFile)
-    } else {
-      result.warnings.push(`Invalid command frontmatter in ${filePath}: ${loadResult.error}`)
+      // First-wins: skip if already discovered from a prior directory
+      if (result.commands.has(name)) continue
+
+      const loadResult = await loadPrimitive(filePath, "command")
+      if (loadResult.success) {
+        result.commands.set(name, loadResult.data as CommandFile)
+      } else {
+        result.warnings.push(`Invalid command frontmatter in ${filePath}: ${loadResult.error}`)
+      }
     }
   }
 }
@@ -222,20 +245,23 @@ function isNodeError(errorValue: unknown): errorValue is NodeJS.ErrnoException {
 }
 
 async function scanSkills(root: string, result: LoadResult): Promise<void> {
-  const skillsDir = path.join(root, ".opencode", "skills")
-  if (!existsSync(skillsDir)) return
+  const dirs = resolvePrimitiveDirs(root, ["skills", "skill"])
+  for (const skillsDir of dirs) {
+    const entries = await fs.readdir(skillsDir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const skillPath = path.join(skillsDir, entry.name, "SKILL.md")
+      if (!existsSync(skillPath)) continue
 
-  const entries = await fs.readdir(skillsDir, { withFileTypes: true })
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue
-    const skillPath = path.join(skillsDir, entry.name, "SKILL.md")
-    if (!existsSync(skillPath)) continue
+      // First-wins: skip if already discovered from a prior directory
+      if (result.skills.has(entry.name)) continue
 
-    const loadResult = await loadPrimitive(skillPath, "skill")
-    if (loadResult.success) {
-      result.skills.set(entry.name, loadResult.data as SkillFile)
-    } else {
-      result.warnings.push(`Invalid skill frontmatter in ${skillPath}: ${loadResult.error}`)
+      const loadResult = await loadPrimitive(skillPath, "skill")
+      if (loadResult.success) {
+        result.skills.set(entry.name, loadResult.data as SkillFile)
+      } else {
+        result.warnings.push(`Invalid skill frontmatter in ${skillPath}: ${loadResult.error}`)
+      }
     }
   }
 }
