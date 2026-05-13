@@ -6,20 +6,24 @@ import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
  *
  * This tool allows an agent to programmatically dispatch a slash command
  * (e.g., built-in commands or custom `.opencode/commands/*.md` commands)
- * to the active session via the deterministic `POST /session/:id/command`
- * SDK endpoint.
+ * to the active session via the TUI prompt pipeline.
  *
- * The command will execute natively — any workflow, agent routing, or
- * primitive stacking defined in the command will trigger. This is the
- * write-side companion to the `hivemind-command-engine` discovery tool
- * (CQRS pattern).
+ * ## Why TUI path instead of `session.command()`?
  *
- * **SDK contract** (OpenCode `CommandInput`):
- * - `command` (required) — command name without leading slash
- * - `arguments` (required) — arguments string (can be empty `""`)
- * - `agent` (optional) — agent context override for this command
- * - `model` (optional) — model override in `"providerID/modelID"` format
- * - `variant` (optional) — model variant override
+ * `session.command()` calls `SessionPrompt.prompt()` internally, which
+ * **blocks** until the LLM completes. But since this tool is called
+ * *during* an active LLM loop, `SessionRunState.ensureRunning()` detects
+ * the session is busy and **queues** the command — it never executes
+ * immediately.
+ *
+ * The TUI path (`appendPrompt` + `submitPrompt`) bypasses this by
+ * injecting the command text into the TUI prompt buffer, which the TUI
+ * processes as a slash command *after* the current tool call returns.
+ * This results in immediate execution once the current turn completes.
+ *
+ * **SDK contract** (TUI pipeline):
+ * - `tui.appendPrompt({ body: { text } })` — injects `/<command> <args>` into the TUI prompt
+ * - `tui.submitPrompt()` — submits the prompt, triggering slash command dispatch
  *
  * @example
  * ```
@@ -38,7 +42,6 @@ import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
  *
  * @see src/tools/hivemind/hivemind-command-engine.ts — discovery companion (CQRS read-side)
  * @see src/routing/command-engine/index.ts — command engine core
- * @see .opencode/tools-deprecated/execute-command.ts — superseded predecessor
  *
  * @param client - The OpenCode SDK client instance (injected from plugin composition root).
  * @returns ToolDefinition for the execute-slash-command tool.
@@ -47,7 +50,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
   return tool({
     description:
       "Executes an OpenCode slash command on the active session. This is equivalent to a user typing '/command args' in the TUI. " +
-      "Dispatches via the deterministic SDK command endpoint — NOT the LLM inference path. " +
+      "Dispatches via the TUI prompt pipeline for immediate execution — NOT the blocking session.command() path. " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
     args: {
       command: tool.schema.string().describe(
@@ -57,16 +60,12 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
         "Arguments string to pass to the command (e.g., 'my-new-skill'). Defaults to empty string.",
       ),
       agent: tool.schema.string().optional().describe(
-        "Optional agent context override. When set, the command executes under this agent's " +
-        "permissions, instructions, and model config (e.g., 'hm-researcher', 'hm-executor').",
+        "Optional agent context override. When set, the agent is prepended as '@agent' before the command " +
+        "(e.g., '@hm-researcher /deep-research-synthesis-repomix vitest').",
       ),
       model: tool.schema.string().optional().describe(
         "Optional model override in 'providerID/modelID' format (e.g., 'anthropic/claude-sonnet-4-20250514'). " +
-        "When set, the command's prompt loop uses this model instead of the session default.",
-      ),
-      variant: tool.schema.string().optional().describe(
-        "Optional model variant override (e.g., 'thinking'). " +
-        "Only effective when the specified model supports the requested variant.",
+        "When set, prepended as a model tag in the prompt text.",
       ),
     },
     async execute(args, ctx) {
@@ -81,55 +80,50 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
       })
 
       try {
-        const body: {
-          command: string
-          arguments: string
-          agent?: string
-          model?: string
-          variant?: string
-        } = {
-          command: args.command,
-          arguments: args.arguments || "",
-        }
+        // Build the slash command text exactly as a user would type it in the TUI
+        // Format: [@agent] [/command] [arguments]
+        const parts: string[] = []
 
-        // Pass optional agent context — enables agent switching before command dispatch
+        // Prepend agent override if specified
         if (args.agent) {
-          body.agent = args.agent
+          parts.push(`@${args.agent}`)
         }
 
-        // Pass optional model override — enables model pinning for specific commands
-        if (args.model) {
-          body.model = args.model
+        // The command itself
+        parts.push(`/${args.command}`)
+
+        // Append arguments if any
+        if (args.arguments) {
+          parts.push(args.arguments)
         }
 
-        // Pass optional variant — enables variant selection (e.g., "thinking")
-        if (args.variant) {
-          body.variant = args.variant
-        }
+        const promptText = parts.join(" ")
 
-        const res = await client.session.command({
-          path: { id: ctx.sessionID },
-          body,
+        // Step 1: Clear any existing prompt to avoid stale state
+        await client.tui.clearPrompt()
+
+        // Step 2: Append the slash command text to the TUI prompt buffer
+        await client.tui.appendPrompt({
+          body: { text: promptText },
         })
 
-        const responseId = res.data?.info?.id || "unknown"
-        const partsCount = res.data?.parts?.length ?? 0
+        // Step 3: Submit the prompt — TUI dispatches as a slash command
+        await client.tui.submitPrompt()
 
         return {
           output: [
-            `✓ Command ${cmdDisplay} executed successfully.`,
-            `  Response ID: ${responseId}`,
-            `  Parts: ${partsCount}`,
+            `✓ Command ${cmdDisplay} dispatched to TUI prompt.`,
+            `  Prompt text: ${promptText}`,
+            `  The command will execute immediately after this tool call returns.`,
             args.agent ? `  Agent: ${args.agent}` : null,
             args.model ? `  Model: ${args.model}` : null,
           ].filter(Boolean).join("\n"),
           metadata: {
-            responseId,
             command: args.command,
-            partsCount,
+            promptText,
+            dispatched: true,
             ...(args.agent && { agent: args.agent }),
             ...(args.model && { model: args.model }),
-            ...(args.variant && { variant: args.variant }),
           },
         }
       } catch (error: unknown) {
@@ -144,7 +138,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
         }
 
         return {
-          output: `✗ Failed to execute ${cmdDisplay}: ${msg}`,
+          output: `✗ Failed to dispatch ${cmdDisplay}: ${msg}`,
           metadata: {
             error: true,
             errorType,
