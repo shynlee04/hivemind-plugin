@@ -5,66 +5,49 @@ type: execute
 wave: 1
 depends_on: []
 files_modified:
+  - src/features/session-tracker/persistence/pending-dispatch-registry.ts
   - src/features/session-tracker/index.ts
   - src/features/session-tracker/capture/event-capture.ts
-  - src/features/session-tracker/capture/tool-capture.ts
-  - src/plugin.ts
-  - tests/features/session-tracker/session-tracker.test.ts
-  - tests/features/session-tracker/integration/hook-wiring.test.ts
 autonomous: true
 requirements:
-  - AC-11
-  - D-01
-  - D-03
-  - D-05
-
+  - AC-02
+  - AC-05
 must_haves:
   truths:
-    - "`tool.execute.before` hook fires in plugin.ts and routes task tool events to SessionTracker"
-    - "Child sessions are registered in HierarchyIndex at `session.created` time (before PostToolUse fires)"
-    - "Delegator agentName reads from `subagent_type` arg instead of hardcoded 'unknown'"
-    - "Aborted task tool sessions are still registered in HierarchyIndex (no orphan directories)"
-    - "Existing 256+ tests continue to pass"
+    - "PendingDispatchRegistry exists as an in-memory Map with add/remove/has/cleanupStale methods"
+    - "ensureSessionReady checks Gate 3 (pending registry) before creating a directory"
+    - "handleSessionCreated checks Gate 3 (pending registry) before creating a directory"
+    - "Stale entries (>30s) are auto-purged on classification check"
   artifacts:
+    - path: "src/features/session-tracker/persistence/pending-dispatch-registry.ts"
+      provides: "In-memory registry for sessions pending child discovery"
+      exports: ["PendingDispatchRegistry", "PendingDispatchEntry"]
     - path: "src/features/session-tracker/index.ts"
-      provides: "SessionTracker.handleToolExecuteBefore() public method"
-      contains: "handleToolExecuteBefore"
-    - path: "src/plugin.ts"
-      provides: "tool.execute.before hook wiring"
-      contains: "tool.execute.before"
-      exports: ["tool.execute.before"]
+      provides: "Gate 3 integration in ensureSessionReady"
+      contains: "pendingRegistry.has"
     - path: "src/features/session-tracker/capture/event-capture.ts"
-      provides: "HierarchyIndex registration for child sessions at session.created time"
-      contains: "registerChild"
-    - path: "src/features/session-tracker/capture/tool-capture.ts"
-      provides: "Delegator attribution from subagent_type arg"
-      contains: 'agentName: subagentType || "unknown"'
-    - path: "tests/features/session-tracker/session-tracker.test.ts"
-      provides: "Unit tests for handleToolExecuteBefore"
-      contains: "handleToolExecuteBefore"
-    - path: "tests/features/session-tracker/integration/hook-wiring.test.ts"
-      provides: "Integration tests for PreToolUse hook wiring"
-      contains: "tool.execute.before"
+      provides: "Gate 3 integration in handleSessionCreated"
+      contains: "pendingRegistry?.has"
   key_links:
-    - from: "src/plugin.ts (tool.execute.before hook)"
-      to: "src/features/session-tracker/index.ts (SessionTracker.handleToolExecuteBefore)"
-      via: "sessionTracker.handleToolExecuteBefore() call"
-      pattern: "sessionTracker\.handleToolExecuteBefore"
-    - from: "src/features/session-tracker/capture/event-capture.ts (handleSessionCreated)"
-      to: "src/features/session-tracker/persistence/hierarchy-index.ts (HierarchyIndex)"
-      via: "registerChild() call when parentID detected"
-      pattern: "hierarchyIndex\?\.registerChild"
-    - from: "src/features/session-tracker/capture/tool-capture.ts (handleTask)"
-      to: "subagent_type arg"
-      via: "subagentType variable for delegatedBy.agentName"
-      pattern: 'agentName: subagentType \|\| "unknown"'
+    - from: "src/features/session-tracker/index.ts ensureSessionReady"
+      to: "PendingDispatchRegistry.has()"
+      via: "this.pendingRegistry?.has(sessionID)"
+      pattern: "pendingRegistry\\.has"
+    - from: "src/features/session-tracker/capture/event-capture.ts handleSessionCreated"
+      to: "PendingDispatchRegistry.has()"
+      via: "this.pendingRegistry?.has(sessionID)"
+      pattern: "pendingRegistry\\.has"
 ---
 
 <objective>
-Wire `tool.execute.before` hook in `src/plugin.ts` to detect task tool dispatch at PreToolUse time. Route through new `SessionTracker.handleToolExecuteBefore()` method. Ensure child sessions are registered in the HierarchyIndex before PostToolUse fires, preventing orphan directories when task tools are aborted. Fix D-03 delegator attribution.
+Create the PendingDispatchRegistry class and upgrade session classification from dual-gate to three-gate, adding Gate 3 fallback for sessions that were recently dispatched as tasks but whose child session ID is not yet known to the SDK or HierarchyIndex.
 
-Purpose: Eliminate the remaining orphan-session gap — aborted task tools that never reach PostToolUse still produce child sessions that must be tracked.
-Output: Working PreToolUse hook wiring, HierarchyIndex-populated-at-session.created, correct delegator agent names.
+Purpose: Close the race condition window where `session.created` fires during `TaskTool.execute()` and neither Gate 1 (SDK parentID) nor Gate 2 (HierarchyIndex) knows the session is a child. Gate 3 uses the fact that a dispatch was recently observed to classify the session as a child before directories get created.
+
+Output:
+- New file: `src/features/session-tracker/persistence/pending-dispatch-registry.ts`
+- Modified: `src/features/session-tracker/index.ts` — `ensureSessionReady()` upgraded to three-gate
+- Modified: `src/features/session-tracker/capture/event-capture.ts` — `handleSessionCreated()` upgraded to three-gate
 </objective>
 
 <execution_context>
@@ -73,470 +56,412 @@ Output: Working PreToolUse hook wiring, HierarchyIndex-populated-at-session.crea
 </execution_context>
 
 <context>
-@.planning/ROADMAP.md
-@.planning/STATE.md
+@.planning/phases/CP-ST-02-session-tracker-deep-fix-remaining/CP-ST-02-SPEC.md
 @.planning/phases/CP-ST-02-session-tracker-deep-fix-remaining/CP-ST-02-CONTEXT.md
-@.planning/phases/CP-ST-02-session-tracker-deep-fix-remaining/CP-ST-02-SPEC.md (§1-3, AC-11)
-@.planning/phases/CP-ST-02-session-tracker-deep-fix-remaining/CP-ST-02-RESEARCH.md (§2 Plugin Hook Signatures, §3 Complete Event Flow, §4.6 GAP #6)
+@.planning/phases/CP-ST-02-session-tracker-deep-fix-remaining/CP-ST-02-RESEARCH.md
+@.planning/codebase/ARCHITECTURE.md
 
 <interfaces>
-<!-- Key types and contracts the executor needs. -->
-
-From src/shared/session-api.ts:
-```typescript
-export async function getSession(client: OpenCodeClient, sessionID: string): Promise<SessionRecord>;
-export function getEventSessionID(event: unknown): string | undefined;
-export function getParentID(session: unknown): string | undefined;
-```
+<!-- Key types the executor needs. Extracted from codebase. -->
 
 From src/features/session-tracker/persistence/hierarchy-index.ts:
 ```typescript
 export class HierarchyIndex {
-  registerChild(parentID: string, childID: string): void;
-  isChild(sessionID: string): boolean;
-  getParent(childID: string): string | null;
-  getDepth(sessionID: string): number;
+  constructor(deps: { projectRoot: string })
+  isChild(sessionID: string): boolean
+  registerChild(parentID: string, childID: string): void
+  getParent(childID: string): string | null
+  getDepth(sessionID: string): number
+  get size(): number
 }
 ```
 
-From src/plugin.ts (existing tool.execute.after hook shape):
+From src/features/session-tracker/index.ts (SessionTracker internal fields):
 ```typescript
-"tool.execute.after": async (
-  input: { tool: string; sessionID?: string; callID?: string; args?: Record<string, unknown> },
-  _output?: { metadata?: unknown; [key: string]: unknown } | string,
-): Promise<void>
+private hierarchyIndex!: HierarchyIndex
+private bootstrappedSessions: Set<string> = new Set()
+private sessionWriter!: SessionWriter
+private projectIndexWriter!: ProjectIndexWriter
 ```
 
-SDK tool.execute.before hook signature (from RESEARCH.md §2.1):
+From src/features/session-tracker/capture/event-capture.ts:
 ```typescript
-"tool.execute.before"?: (
-  input: { tool: string; sessionID: string; callID: string },
-  output: { args: any },
-) => Promise<void>
-```
-
-From tool-capture.ts — where delegatedBy.agentName is hardcoded (line 256):
-```typescript
-delegatedBy: {
-  agentName: "unknown", // ← MUST become subagentType || "unknown" per D-03
+export class EventCapture {
+  private hierarchyIndex: HierarchyIndex | undefined
+  // constructor receives hierarchyIndex via deps injection
+  // handleSessionCreated(sessionID) uses dual-gate (SDK + hierarchyIndex)
 }
 ```
 
-From event-capture.ts — handleSessionCreated detects child via SDK parentID but does NOT register in HierarchyIndex (line 193-195):
+From src/shared/session-api.ts:
 ```typescript
-if (parentID) {
-  // Child session — skip directory creation (handled by tool-capture)
-  return  // ← MISSING: hierarchyIndex?.registerChild(parentID, sessionID)
-}
+export type OpenCodeClient = ReturnType<typeof createOpencodeClient>
+export async function getSession(client: OpenCodeClient, sessionID: string): Promise<SessionRecord>
 ```
 </interfaces>
 </context>
 
 <tasks>
 
-<!-- ────────────────────────────────────────────────────────────────────── -->
-<!-- TASK 1: Core implementation — SessionTracker method + event-capture    -->
-<!-- ────────────────────────────────────────────────────────────────────── -->
-<task type="auto" tdd="true">
-  <name>Task 1: Add handleToolExecuteBefore to SessionTracker + register child at session.created</name>
-  <files>
-    src/features/session-tracker/index.ts
-    src/features/session-tracker/capture/event-capture.ts
-  </files>
+<task type="auto">
+  <name>Task 1: Create PendingDispatchRegistry class</name>
+  <files>src/features/session-tracker/persistence/pending-dispatch-registry.ts</files>
 
   <read_first>
-    src/features/session-tracker/index.ts (lines 73-180, 435-505, 516-607)
-    src/features/session-tracker/capture/event-capture.ts (lines 164-236)
-    src/features/session-tracker/persistence/hierarchy-index.ts (lines 114-174)
-    src/shared/session-api.ts (lines 54-57)
+Read before implementing:
+- SPEC §2.2 (PendingDispatchRegistry lifecycle: add at PreToolUse, remove at PostToolUse, 30s auto-purge)
+- SPEC §2.3 (Gate activation timing table)
+- CONTEXT §D-01 (three-gate classification decision)
+- `src/features/session-tracker/persistence/hierarchy-index.ts` (pattern: same constructor shape, same export style)
+- `src/features/session-tracker/types.ts` (existing type conventions)
   </read_first>
 
-  <behavior>
-    - Test 1: handleToolExecuteBefore detects task tool dispatch, stores pending delegation info
-    - Test 2: handleToolExecuteBefore skips non-task tools silently (no-op)
-    - Test 3: handleToolExecuteBefore handles resume scenario (task_id in args) — no crash
-    - Test 4: event-capture.handleSessionCreated registers child in HierarchyIndex when SDK returns parentID
-  </behavior>
-
   <action>
-**Part A: Add `handleToolExecuteBefore()` to SessionTracker class (src/features/session-tracker/index.ts)**
-
-Add a new public method AFTER `handleToolExecuteAfter()` (after line 505) and BEFORE `initialize()` (before line 516):
+Create `src/features/session-tracker/persistence/pending-dispatch-registry.ts` with:
 
 ```typescript
 /**
- * Handles tool execution PRE-dispatch events from the OpenCode `tool.execute.before` hook.
- *
- * Purpose: detect task tool dispatch at PreToolUse time, before OpenCode creates
- * the child session. This provides the earliest possible hook point for:
- * 1. Capturing delegator agent name from `subagent_type` arg (D-03 fix)
- * 2. Detecting resume vs. new dispatch (task_id present → resume)
- *
- * The actual HierarchyIndex registration happens in two paths:
- * - Path A (happy): PostToolUse fires → handleTask() calls registerChild() (existing)
- * - Path B (abort-safe): session.created fires → handleSessionCreated() calls registerChild()
- *   when SDK parentID is found (NEW — added in Part B below)
- *
- * Best-effort: never throws to the OpenCode runtime.
- *
- * @param input - Hook input: { tool, sessionID, callID, args? }
- * @param output - Hook output: { args }
+ * Pending dispatch entry stored when PreToolUse detects a task tool dispatch.
+ * Lives in-memory only — never persisted to disk.
  */
-async handleToolExecuteBefore(
-  input: { tool: string; sessionID: string; callID: string; args?: Record<string, unknown> },
-  output: { args: unknown },
-): Promise<void> {
-  try {
-    if (!input?.sessionID || !isValidSessionID(input.sessionID)) return
-    if (input.tool !== "task") return
+export interface PendingDispatchEntry {
+  parentSessionID: string
+  callID: string
+  subagentType: string
+  timestamp: number  // Date.now() at registration time
+}
 
-    const args = (input.args ?? {}) as Record<string, unknown>
-    const taskId = args.task_id as string | undefined
-    const subagentType = args.subagent_type as string | undefined
+/**
+ * In-memory registry for sessions that have been dispatched as tasks
+ * but whose child session ID is not yet known.
+ *
+ * Provides Gate 3 classification: if a session.created event fires for
+ * a session whose parent recently dispatched a task, we can infer it's
+ * a child even before the SDK or HierarchyIndex confirms it.
+ *
+ * Lifecycle:
+ * 1. PreToolUse (tool.execute.before with tool="task") → add()
+ * 2. PostToolUse (tool.execute.after with metadata.sessionId) → remove()
+ * 3. Auto-purge: stale entries (>30s) removed on classification check
+ *
+ * All methods are synchronous (Map operations, no I/O).
+ * Thread safety: single-threaded Node.js event loop (sync Map ops).
+ *
+ * @module session-tracker/persistence/pending-dispatch-registry
+ */
+export class PendingDispatchRegistry {
+  /** childID → PendingDispatchEntry map for O(1) has() lookup */
+  private dispatches: Map<string, PendingDispatchEntry> = new Map()
 
-    // Resume scenario (task_id provided): ensure child session is registered
-    // in the hierarchy so ensureSessionReady skips directory creation.
-    if (taskId && isValidSessionID(taskId)) {
-      if (!this.hierarchyIndex?.isChild(taskId)) {
-        // Query SDK to verify the session exists and resolve parent
-        const session = await this.getSessionSafely(taskId)
-        if (session) {
-          const parentID = (session as { parentID?: string }).parentID
-          if (parentID && this.hierarchyIndex) {
-            this.hierarchyIndex.registerChild(parentID, taskId)
+  /** callID → childID reverse index for cleanup at PostToolUse */
+  private callIDToChild: Map<string, string> = new Map()
+
+  /** Maximum age (ms) before an entry is considered stale and auto-purged */
+  static readonly STALE_THRESHOLD_MS = 30_000
+
+  /**
+   * Registers a pending dispatch for a parent session.
+   * Called by handleToolExecuteBefore when tool === "task" and task_id is absent (new dispatch, not resume).
+   *
+   * Note: at PreToolUse time, the child session ID is NOT yet known.
+   * The child will be discovered later via polling or PostToolUse metadata.
+   * For the initial registration, we use callID as a temporary key
+   * (replaced later with the real child session ID when discovered).
+   */
+  add(entry: PendingDispatchEntry): void {
+    // Use callID as temporary key until child session ID is discovered.
+    // When the child session ID becomes known (via polling or PostToolUse),
+    // updateEntry removes the callID key and re-adds with child session ID.
+    this.dispatches.set(`call:${entry.callID}`, entry)
+  }
+
+  /**
+   * Updates a pending dispatch entry with the actual child session ID.
+   * Called when the child session is discovered (via polling or PostToolUse).
+   *
+   * Removes the callID-based temporary entry and re-adds with the real
+   * child session ID, enabling Gate 3 has() lookups.
+   */
+  updateWithChildID(callID: string, childSessionID: string): void {
+    const callKey = `call:${callID}`
+    const entry = this.dispatches.get(callKey)
+    if (!entry) return
+    this.dispatches.delete(callKey)
+    this.dispatches.set(childSessionID, entry)
+    this.callIDToChild.set(callID, childSessionID)
+  }
+
+  /**
+   * Checks whether a session ID has a pending dispatch entry.
+   * Used by Gate 3 classification in ensureSessionReady and handleSessionCreated.
+   *
+   * Checks both direct childID keys AND callID-based temporary keys.
+   * Auto-purges stale entries before checking.
+   */
+  has(sessionID: string): boolean {
+    this.cleanupStale()
+    return this.dispatches.has(sessionID) || this.dispatches.has(`call:${sessionID}`)
+  }
+
+  /**
+   * Retrieves the pending dispatch entry for a session ID, if any.
+   * Returns undefined if not found or entry is stale.
+   */
+  get(sessionID: string): PendingDispatchEntry | undefined {
+    this.cleanupStale()
+    const entry = this.dispatches.get(sessionID) ?? this.dispatches.get(`call:${sessionID}`)
+    if (entry && Date.now() - entry.timestamp > PendingDispatchRegistry.STALE_THRESHOLD_MS) {
+      this.dispatches.delete(sessionID)
+      this.dispatches.delete(`call:${sessionID}`)
+      return undefined
+    }
+    return entry
+  }
+
+  /**
+   * Gets the subagentType for a pending dispatch, if any.
+   * Used for delegator attribution in tool-capture.handleTask.
+   */
+  getSubagentType(sessionID: string): string | undefined {
+    return this.get(sessionID)?.subagentType
+  }
+
+  /**
+   * Removes a pending dispatch entry by callID (PostToolUse cleanup).
+   */
+  removeByCallID(callID: string): void {
+    const callKey = `call:${callID}`
+    const childID = this.callIDToChild.get(callID)
+    this.dispatches.delete(callKey)
+    if (childID) {
+      this.dispatches.delete(childID)
+      this.callIDToChild.delete(callID)
+    }
+  }
+
+  /**
+   * Removes a pending dispatch entry by child session ID.
+   */
+  remove(sessionID: string): void {
+    this.dispatches.delete(sessionID)
+  }
+
+  /**
+   * Removes ALL pending dispatch entries whose timestamp exceeds
+   * STALE_THRESHOLD_MS. Called automatically by has() and get().
+   *
+   * Per SPEC §2.2: stale entries (>30s) auto-purged on next classification check.
+   */
+  cleanupStale(): void {
+    const now = Date.now()
+    const threshold = PendingDispatchRegistry.STALE_THRESHOLD_MS
+    for (const [key, entry] of this.dispatches) {
+      if (now - entry.timestamp > threshold) {
+        this.dispatches.delete(key)
+        // Clean up callIDToChild if this was a childID entry
+        for (const [callId, childId] of this.callIDToChild) {
+          if (childId === key) {
+            this.callIDToChild.delete(callId)
+            break
           }
         }
       }
-      this.bootstrappedSessions.add(taskId)
-      return
     }
+  }
 
-    // New dispatch (no task_id): OpenCode will create child session internally.
-    // The child session ID is NOT available at PreToolUse time.
-    // We rely on:
-    //   - session.created event → handleSessionCreated registers in HierarchyIndex (Part B)
-    //   - tool.execute.after → handleTask() already registers in HierarchyIndex (existing)
-    // Subagent type is available here; PostToolUse's handleTask() will read it
-    // directly from args (D-03 fix in Task 2).
-    //
-    // No HierarchyIndex mutation here — hook boundary rule (CQRS).
-  } catch (err) {
-    // Best-effort: log and continue. Never block tool execution.
-    void this.client.app?.log?.({
-      body: {
-        service: "session-tracker",
-        level: "warn",
-        message: "[Harness] Session tracker: tool.execute.before handler failed",
-        extra: { error: err instanceof Error ? err.message : String(err) },
-      },
-    })
+  /**
+   * Returns the number of active (non-stale) pending dispatch entries.
+   */
+  get size(): number {
+    this.cleanupStale()
+    return this.dispatches.size
+  }
+
+  /**
+   * Clears all entries. Used in tests.
+   */
+  clear(): void {
+    this.dispatches.clear()
+    this.callIDToChild.clear()
   }
 }
 ```
 
-**Part B: Register child in HierarchyIndex at session.created time (src/features/session-tracker/capture/event-capture.ts)**
-
-In `handleSessionCreated()`, after the SDK parentID check confirms this is a child session (line 193-195), add HierarchyIndex registration BEFORE returning:
-
-Location: `src/features/session-tracker/capture/event-capture.ts`, line 193-195.
-
-**FROM:**
-```typescript
-      if (parentID) {
-        // Child session — skip directory creation (handled by tool-capture)
-        return
-      }
-```
-
-**TO:**
-```typescript
-      if (parentID) {
-        // Child session — skip directory creation (handled by tool-capture).
-        // REGISTER in HierarchyIndex so the dual-gate (ensureSessionReady,
-        // handleChatMessage, handleToolExecuteAfter) correctly classifies
-        // this child — even if PostToolUse never fires (abort-safe per AC-11).
-        // registerChild is idempotent (Map.set) — safe to call even if
-        // handleTask() later calls it again.
-        this.hierarchyIndex?.registerChild(parentID, sessionID)
-        return
-      }
-```
-
-This is the critical orphan-prevention fix: the HierarchyIndex now gets populated at `session.created` time (which fires during task dispatch), not just at PostToolUse time (which may never fire if aborted).
+Key design decisions:
+- **callID as temporary key**: Because the child session ID is unknown at PreToolUse time, entries are stored with `call:` prefix. When the child ID is discovered, `updateWithChildID()` re-keys the entry with the real session ID.
+- **Synchronous Map operations**: No async I/O — the registry is purely in-memory. All methods return synchronously.
+- **30s auto-purge**: Stale entries are removed on every `has()`/`get()` call via `cleanupStale()`. If a dispatch never completes (tool abort, crash), the entry auto-expires and won't cause false CHILD classification.
+- **subagentType storage**: The agent name is captured in the entry at registration time and retrieved later by tool-capture for delegator attribution.
   </action>
 
   <verify>
-    <automated>npx vitest run tests/features/session-tracker/session-tracker.test.ts</automated>
+    <automated>npx vitest run tests/features/session-tracker/pending-dispatch-registry.test.ts --reporter=verbose</automated>
   </verify>
 
-  <done>
-    - `SessionTracker.handleToolExecuteBefore()` method exists and compiles
-    - `event-capture.ts` registers child sessions in HierarchyIndex when SDK parentID is found
-    - Event-capture test `tests/features/session-tracker/capture/event-capture.test.ts` passes (verify HierarchyIndex registration)
-  </done>
+  <acceptance_criteria>
+- [ ] `PendingDispatchRegistry` class exists in `src/features/session-tracker/persistence/pending-dispatch-registry.ts`
+- [ ] `add()` stores entry with `call:` prefix key
+- [ ] `updateWithChildID()` re-keys entry from callID to real child session ID
+- [ ] `has()` returns true for both callID-prefixed keys and childID keys
+- [ ] `cleanupStale()` removes entries older than 30s
+- [ ] `getSubagentType()` returns the subagentType string or undefined
+- [ ] `removeByCallID()` removes both callID and childID entries
+- [ ] TypeScript compiles: `npx tsc --noEmit` passing for this file
+- [ ] Module exports: `PendingDispatchRegistry`, `PendingDispatchEntry`
+  </acceptance_criteria>
+
+  <done>PendingDispatchRegistry class created with add/has/get/remove/cleanupStale methods, 30s stale threshold, and callID-based temporary keying for the pre-discovery window.</done>
 </task>
 
-<!-- ────────────────────────────────────────────────────────────────────── -->
-<!-- TASK 2: Plugin.ts wire-up + D-03 attribution fix in tool-capture      -->
-<!-- ────────────────────────────────────────────────────────────────────── -->
-<task type="auto" tdd="true">
-  <name>Task 2: Wire tool.execute.before in plugin.ts + fix D-03 delegator attribution</name>
-  <files>
-    src/plugin.ts
-    src/features/session-tracker/capture/tool-capture.ts
-  </files>
+<task type="auto">
+  <name>Task 2: Wire PendingDispatchRegistry into SessionTracker and add Gate 3</name>
+  <files>src/features/session-tracker/index.ts, src/features/session-tracker/capture/event-capture.ts</files>
 
   <read_first>
-    src/plugin.ts (lines 184-260)
-    src/features/session-tracker/capture/tool-capture.ts (lines 223-330)
-    src/hooks/guards/tool-guard-hooks.ts (lines 68-110) — existing tool.execute.before pattern
+Read before implementing:
+- `src/features/session-tracker/index.ts` (full file — especially `ensureSessionReady()` lines 130-217, `initialize()` lines 516-607, constructor lines 112-115, field declarations lines 74-103)
+- `src/features/session-tracker/capture/event-capture.ts` (full file — especially `handleSessionCreated()` lines 173-236, constructor lines 53-67)
+- SPEC §2.1 (three-gate order), §2.2 (PendingDispatchRegistry lifecycle)
+- CONTEXT §D-01 (Gate order: SDK → HierarchyIndex → PendingDispatchRegistry)
   </read_first>
 
-  <behavior>
-    - Test 1: plugin.ts tool.execute.before hook fires and routes task tools to SessionTracker
-    - Test 2: plugin.ts tool.execute.before hook is best-effort (session-tracker failure does not block tool)
-    - Test 3: handleTask delegatedBy.agentName uses subagent_type arg value instead of "unknown"
-  </behavior>
-
   <action>
-**Part A: Add `tool.execute.before` hook in plugin.ts**
 
-Location: `src/plugin.ts`, add a new hook entry in the return object. Place it BEFORE the existing `"tool.execute.after"` hook (before line 236). The hook fires in this order: `tool.execute.before` → OpenCode dispatches → `tool.execute.after`.
+**Step A: Add PendingDispatchRegistry to SessionTracker (src/features/session-tracker/index.ts)**
 
-Add this entry to the return object spread (after `...toolGuardHooks,` on line 190, or as a standalone key alongside the existing hooks):
-
+1. Add import at top (after existing imports, line ~55):
 ```typescript
-// PreToolUse: detect task tool dispatch for session-tracker child registration.
-// Fires BEFORE OpenCode dispatches the task tool. At this point, the child
-// session ID does NOT exist yet, but we can capture delegator attribution
-// data and detect resume vs. new dispatch (task_id presence in args).
-//
-// Best-effort — never blocks tool execution (D-01).
-"tool.execute.before": async (
-  input: { tool: string; sessionID: string; callID: string; args?: Record<string, unknown> },
-  output: { args: unknown },
-): Promise<void> => {
-  try {
-    await sessionTracker.handleToolExecuteBefore(
-      input as Parameters<typeof sessionTracker.handleToolExecuteBefore>[0],
-      output as Parameters<typeof sessionTracker.handleToolExecuteBefore>[1],
-    )
-  } catch {
-    // Best-effort: session tracker failures must never block tool dispatch.
-  }
-},
+import { PendingDispatchRegistry, type PendingDispatchEntry } from "./persistence/pending-dispatch-registry.js"
 ```
 
-Insert this immediately before the existing `"tool.execute.after"` entry (which is at line 236).
-
-**Part B: Fix D-03 — Delegator attribution in handleTask (tool-capture.ts)**
-
-Location: `src/features/session-tracker/capture/tool-capture.ts`, line 256.
-
-The `subagentType` variable is already extracted from args at line 229:
+2. Add field declaration after `hierarchyIndex` (after line ~91):
 ```typescript
-const subagentType = (args.subagent_type as string) || ""
+  /**
+   * In-memory registry for sessions that had task tool dispatch detected
+   * at PreToolUse time but whose child session ID is not yet known.
+   * Provides Gate 3 (fallback) classification. Never persisted to disk.
+   */
+  private pendingRegistry!: PendingDispatchRegistry
 ```
 
-But it is NOT used for `delegatedBy.agentName` at line 256. **FROM:**
+3. Add initialization in `initialize()` (after `this.hierarchyIndex` init, after line ~529):
 ```typescript
-delegatedBy: {
-  agentName: "unknown", // Parent-agent name not available in tool.execute.after hook
+      // Create pending dispatch registry (Gate 3 classification fallback).
+      // Populated at tool.execute.before time by handleToolExecuteBefore(),
+      // consumed by ensureSessionReady() and handleSessionCreated().
+      this.pendingRegistry = new PendingDispatchRegistry()
 ```
 
-**TO:**
+4. Add Gate 3 check in `ensureSessionReady()` — insert AFTER the HierarchyIndex check (after line 178, before line 180's "Neither SDK parentID nor hierarchy index indicates..." comment):
 ```typescript
-delegatedBy: {
-  agentName: subagentType || "unknown", // per D-03: captured from task tool subagent_type arg
-```
-
-This is the D-03 fix: `delegatedBy.agentName` now reflects the actual `subagent_type` parameter from the task tool invocation (e.g., `"hm-l1-coordinator"`, `"gsd-executor"`). Falls back to `"unknown"` only when `subagent_type` is not provided.
-  </action>
-
-  <verify>
-    <automated>npx vitest run tests/features/session-tracker/capture/tool-capture.test.ts</automated>
-  </verify>
-
-  <done>
-    - `tool.execute.before` key exists in plugin.ts return object
-    - Hook routes to `sessionTracker.handleToolExecuteBefore()` 
-    - `delegatedBy.agentName` reads from `subagentType` instead of hardcoded "unknown"
-    - All existing tool-capture tests pass
-  </done>
-</task>
-
-<!-- ────────────────────────────────────────────────────────────────────── -->
-<!-- TASK 3: Tests — PreToolUse handler, HierarchyIndex registration,      -->
-<!--          D-03 attribution, hook wiring integration                    -->
-<!-- ────────────────────────────────────────────────────────────────────── -->
-<task type="auto" tdd="true">
-  <name>Task 3: Add tests for PreToolUse handler, HierarchyIndex registration, and D-03 attribution</name>
-  <files>
-    tests/features/session-tracker/session-tracker.test.ts
-    tests/features/session-tracker/capture/tool-capture.test.ts
-    tests/features/session-tracker/integration/hook-wiring.test.ts
-  </files>
-
-  <read_first>
-    tests/features/session-tracker/session-tracker.test.ts (lines 1-80 — mock setup pattern)
-    tests/features/session-tracker/capture/tool-capture.test.ts (lines 1-50 — mock setup pattern)
-    tests/features/session-tracker/integration/hook-wiring.test.ts (lines 1-100 — hook wiring test patterns)
-  </read_first>
-
-  <behavior>
-    - Test 1: handleToolExecuteBefore detects task tool, calls through without error
-    - Test 2: handleToolExecuteBefore skips non-task tools (skill, read, etc.) — no-op
-    - Test 3: handleToolExecuteBefore handles resume (task_id in args) — registers in hierarchy
-    - Test 4: handleToolExecuteBefore handles new dispatch (no task_id) — no crash, best-effort
-    - Test 5: handleTask delegatedBy.agentName reads from subagent_type arg
-    - Test 6: event-capture registers child in HierarchyIndex when SDK returns parentID
-    - Test 7: Integration: tool.execute.before → session.created → HierarchyIndex populated
-    - Test 8: All 256+ existing tests still pass (full suite regression)
-  </behavior>
-
-  <action>
-**Part A: Add tests to session-tracker.test.ts**
-
-Append a new `describe` block before the file's end. Follow the existing mock pattern (vi.mock for getSession, mock client).
-
-```typescript
-describe("SessionTracker — handleToolExecuteBefore (PreToolUse)", () => {
-  it("detects task tool dispatch without throwing", async () => {
-    // SETUP: tracker with initialized mocks, hierarchyIndex present
-    const tracker = new SessionTracker({ client: mockClient as never, projectRoot: "/fake/project" })
-    ;(tracker as any).hierarchyIndex = { registerChild: vi.fn(), isChild: vi.fn().mockReturnValue(false) }
-    
-    await expect(
-      tracker.handleToolExecuteBefore(
-        { tool: "task", sessionID: "ses_parent1234567890a", callID: "call_1", args: { subagent_type: "hm-l1-coordinator", description: "Test task" } },
-        { args: { subagent_type: "hm-l1-coordinator", description: "Test task" } }
-      )
-    ).resolves.toBeUndefined()
-  })
-
-  it("skips non-task tools silently", async () => {
-    const tracker = new SessionTracker({ client: mockClient as never, projectRoot: "/fake/project" })
-    ;(tracker as any).hierarchyIndex = { registerChild: vi.fn(), isChild: vi.fn() }
-    
-    await expect(
-      tracker.handleToolExecuteBefore(
-        { tool: "skill", sessionID: "ses_test1234567890a", callID: "call_2", args: { name: "test-skill" } },
-        { args: { name: "test-skill" } }
-      )
-    ).resolves.toBeUndefined()
-    // verify hierarchyIndex was never touched for non-task tools
-    expect((tracker as any).hierarchyIndex.registerChild).not.toHaveBeenCalled()
-  })
-
-  it("handles resume scenario (task_id in args)", async () => {
-    const mockRegisterChild = vi.fn()
-    const mockIsChild = vi.fn().mockReturnValue(false)
-    mockGetSession.mockResolvedValue({ id: "ses_child9876543210b", parentID: "ses_parent1234567890a" })
-    
-    const tracker = new SessionTracker({ client: mockClient as never, projectRoot: "/fake/project" })
-    ;(tracker as any).hierarchyIndex = { registerChild: mockRegisterChild, isChild: mockIsChild }
-    ;(tracker as any).getSessionSafely = tracker["getSessionSafely"]
-    
-    await tracker.handleToolExecuteBefore(
-      { tool: "task", sessionID: "ses_parent1234567890a", callID: "call_3", args: { task_id: "ses_child9876543210b", subagent_type: "gsd-executor" } },
-      { args: { task_id: "ses_child9876543210b", subagent_type: "gsd-executor" } }
-    )
-    
-    expect(mockRegisterChild).toHaveBeenCalledWith("ses_parent1234567890a", "ses_child9876543210b")
-  })
-
-  it("gracefully handles errors (best-effort)", async () => {
-    const tracker = new SessionTracker({ client: mockClient as never, projectRoot: "/fake/project" })
-    ;(tracker as any).hierarchyIndex = { 
-      isChild: vi.fn().mockImplementation(() => { throw new Error("Boom") }) 
+    // Gate 3: Check pending dispatch registry.
+    // If a parent session recently dispatched a task tool (detected at
+    // PreToolUse time), the resulting child session is tracked here even
+    // before the SDK reports parentID or the hierarchy index is populated.
+    // This closes the race condition where session.created fires during
+    // TaskTool.execute(), before tool.execute.after populates HierarchyIndex.
+    if (this.pendingRegistry?.has(sessionID)) {
+      this.bootstrappedSessions.add(sessionID)
+      return
     }
-    
-    // Must NOT throw — best-effort
-    await expect(
-      tracker.handleToolExecuteBefore(
-        { tool: "task", sessionID: "ses_test1234567890a", callID: "call_4", args: { task_id: "ses_child9876543210b" } },
-        { args: { task_id: "ses_child9876543210b" } }
-      )
-    ).resolves.toBeUndefined()
-  })
-})
 ```
 
-**Part B: Add/update tests in tool-capture.test.ts**
-
-Add a test for D-03 delegator attribution:
-
+5. Update the `EventCapture` constructor call in `initialize()` to pass `pendingRegistry` (around line ~534):
 ```typescript
-it("uses subagent_type from args for delegatedBy.agentName (D-03)", async () => {
-  // Verify that handleTask sets delegatedBy.agentName to the actual subagent_type value
-  // rather than hardcoded "unknown"
-  const marshal = await createToolCaptureMarshal({ projectRoot: testRoot })
-  const input = {
-    tool: "task",
-    sessionID: "ses_parent1234567890a",
-    callID: "call_d03",
-    args: { subagent_type: "hm-l1-coordinator", description: "Coordinating work" },
-  }
-  const output = { output: "task_id: ses_child1234567890b" }
-
-  await marshal.capture.handleToolExecuteAfter(input, output)
-
-  // Verify the child JSON was written with correct agentName
-  const childPath = resolve(marshal.root, "ses_parent1234567890a", "ses_child1234567890b.json")
-  const childRaw = await readFile(childPath, "utf-8")
-  const child = JSON.parse(childRaw)
-  expect(child.delegatedBy.agentName).toBe("hm-l1-coordinator")
-})
+      this.eventCapture = new EventCapture({
+        client: this.client,
+        sessionWriter: this.sessionWriter,
+        childWriter: this.childWriter,
+        sessionIndexWriter: this.sessionIndexWriter,
+        projectIndexWriter: this.projectIndexWriter,
+        hierarchyIndex: this.hierarchyIndex,
+        pendingRegistry: this.pendingRegistry,
+      })
 ```
 
-**Part C: Add integration test to hook-wiring.test.ts**
-
-Add a test for the PreToolUse → session.created → HierarchyIndex flow:
-
+6. Update the `ToolCapture` constructor call in `initialize()` to pass `pendingRegistry` (around line ~549):
 ```typescript
-describe("tool.execute.before → HierarchyIndex registration (AC-11)", () => {
-  it("registers child in HierarchyIndex at session.created time", async () => {
-    const mockGetSession = vi.mocked(getSession)
-    mockGetSession.mockResolvedValue({
-      id: "ses_child1234567890c",
-      parentID: "ses_parent1234567890a",  // ← SDK reports parentID
-      title: "Child",
-      time: { created: Date.now(), updated: Date.now() },
-    })
-
-    tracker = new SessionTracker({ client: mockClient as never, projectRoot: testRoot })
-    await tracker.initialize()
-
-    // Simulate session.created for a child session
-    await tracker.handleSessionEvent({
-      eventType: "session.created",
-      sessionID: "ses_child1234567890c",
-      event: {},
-    })
-
-    // Verify HierarchyIndex now knows this child
-    const hierarchyIndex = (tracker as any).hierarchyIndex
-    expect(hierarchyIndex.isChild("ses_child1234567890c")).toBe(true)
-    expect(hierarchyIndex.getParent("ses_child1234567890c")).toBe("ses_parent1234567890a")
-  })
-})
+      this.toolCapture = new ToolCapture({
+        client: this.client,
+        sessionWriter: this.sessionWriter,
+        childWriter: this.childWriter,
+        sessionIndexWriter: this.sessionIndexWriter,
+        projectIndexWriter: this.projectIndexWriter,
+        hierarchyIndex: this.hierarchyIndex,
+        pendingRegistry: this.pendingRegistry,
+      })
 ```
 
-**Part D: Full test suite regression run**
+**Step B: Add Gate 3 to EventCapture (src/features/session-tracker/capture/event-capture.ts)**
 
-After all changes, run the full test suite to verify no regressions:
+7. Add import at top (after existing imports, around line ~24):
+```typescript
+import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
+```
+
+8. Add field in EventCapture class (after `hierarchyIndex`, around line ~43):
+```typescript
+  private pendingRegistry: PendingDispatchRegistry | undefined
+```
+
+9. Update constructor destructuring to accept `pendingRegistry` (after `hierarchyIndex` param, around line ~59):
+```typescript
+    pendingRegistry?: PendingDispatchRegistry
+```
+And add assignment in constructor body (after `this.hierarchyIndex = deps.hierarchyIndex`, around line ~66):
+```typescript
+    this.pendingRegistry = deps.pendingRegistry
+```
+
+10. Add Gate 3 check in `handleSessionCreated()` — insert AFTER the HierarchyIndex Gate 2 check (after line 205, before line 207's "// Root session — create subdirectory"):
+```typescript
+        // Gate 3: Check pending dispatch registry.
+        // If a parent session recently dispatched a task, the resulting
+        // child session is tracked here even before the SDK or hierarchy
+        // index knows about it.
+        if (this.pendingRegistry?.has(sessionID)) {
+          // Child session — skip directory creation (handled by tool-capture)
+          return
+        }
+```
+
+11. Update `isChild()` usages in the other handler methods (`handleSessionIdle`, `handleSessionDeleted`, `handleSessionError`) — these also need Gate 3. Change the `parentID` check pattern to include Gate 3. In each of these three methods (lines ~246, ~277, ~309), add after the `if (parentID !== null ...)` check:
+```typescript
+      const parentID = session.parentID as string | null | undefined
+      // Gate 3 fallback: check pending dispatch registry
+      const isChild = (parentID !== null && parentID !== undefined) || this.pendingRegistry?.has(sessionID)
+      if (isChild) {
+```
+And remove the original `if (parentID !== null ...)` block, replacing with `if (isChild)`. Keep the main session fallback as-is.
+
+**Step C: Update ToolCapture constructor**
+
+12. Update `src/features/session-tracker/capture/tool-capture.ts` to accept `pendingRegistry` in its constructor:
+- Add import: `import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"`
+- Add field: `private pendingRegistry: PendingDispatchRegistry | undefined`
+- Add param in constructor deps and assign
+
+Note: The actual use of `pendingRegistry` in handleTask for delegator attribution happens in Plan 02-03. In this plan, we only wire the dependency injection plumbing.
   </action>
 
   <verify>
-    <automated>npm test 2>&1 | tail -20</automated>
+    <automated>npm run typecheck && npx vitest run tests/features/session-tracker/ --reporter=verbose 2>&1 | tail -20</automated>
   </verify>
 
-  <done>
-    - All new tests pass: handleToolExecuteBefore detection, skip, resume, error handling
-    - tool-capture test verifies D-03: delegatedBy.agentName uses subagent_type value
-    - Integration test verifies HierarchyIndex populated at session.created time
-    - Full test suite: 256+ tests pass (no regressions)
-  </done>
+  <acceptance_criteria>
+- [ ] `SessionTracker` has `private pendingRegistry: PendingDispatchRegistry` field
+- [ ] `initialize()` creates `new PendingDispatchRegistry()` and passes to EventCapture and ToolCapture
+- [ ] `ensureSessionReady()` checks `this.pendingRegistry?.has(sessionID)` as Gate 3
+- [ ] `EventCapture.handleSessionCreated()` checks `this.pendingRegistry?.has(sessionID)` as Gate 3
+- [ ] `EventCapture` constructor accepts `pendingRegistry?: PendingDispatchRegistry`
+- [ ] `ToolCapture` constructor accepts `pendingRegistry?: PendingDispatchRegistry` (plumbing only)
+- [ ] Gate order is strictly: SDK → HierarchyIndex → PendingDispatchRegistry → fallback MAIN
+- [ ] `npx vitest run tests/features/session-tracker/` — all existing tests continue to pass (≥256)
+- [ ] grep confirms: `grep -n "pendingRegistry" src/features/session-tracker/index.ts` shows gate 3 usage
+- [ ] grep confirms: `grep -n "pendingRegistry" src/features/session-tracker/capture/event-capture.ts` shows gate 3 usage
+  </acceptance_criteria>
+
+  <done>Three-gate classification is wired: SessionTracker.ensureSessionReady and EventCapture.handleSessionCreated both check PendingDispatchRegistry as Gate 3 before creating directories. EventCapture idle/deleted/error handlers also use Gate 3. ToolCapture plumbing is ready for Plan 02-03.</done>
 </task>
 
 </tasks>
@@ -546,50 +471,39 @@ After all changes, run the full test suite to verify no regressions:
 
 | Boundary | Description |
 |----------|-------------|
-| OpenCode runtime → `tool.execute.before` hook | Untrusted input: `args.subagent_type`, `args.task_id`, `args.description` from task tool parameters |
-| Hook handler → HierachyIndex | In-memory state mutation from hook observations (read-side) |
-| `session.created` event → HierarchyIndex | SDK-reported parentID edges registered in hierarchy |
+| Memory → Memory | PendingDispatchRegistry is in-memory only; no persistence means no file-based tampering |
+| Plugin init → Registry | Registry created at plugin init; only SessionTracker methods access it |
 
 ## STRIDE Threat Register
 
 | Threat ID | Category | Component | Disposition | Mitigation Plan |
 |-----------|----------|-----------|-------------|-----------------|
-| T-02-01 | Tampering | `handleToolExecuteBefore` args extraction | mitigate | Validate `isValidSessionID(task_id)` before registering; use safe property access on args |
-| T-02-02 | Denial of Service | `handleToolExecuteBefore` blocking tool execution | mitigate | Best-effort try/catch — never throw to runtime; failures silently logged |
-| T-02-03 | Information Disclosure | `subagent_type` stored in `delegatedBy.agentName` | accept | Agent name is metadata, not PII; stored in `.hivemind/session-tracker/` which is gitignored |
-| T-02-04 | Elevation of Privilege | Hook CQRS boundary — hooks must not perform durable writes | mitigate | `handleToolExecuteBefore` only mutates in-memory `HierarchyIndex` (Map.set) and `bootstrappedSessions` (Set); no file I/O |
+| T-02-01 | Spoofing | PendingDispatchRegistry.add() | mitigate | Only SessionTracker internal methods call add(); no external accessor exposed. callID is validated as string before registry entry. |
+| T-02-02 | Tampering | PendingDispatchRegistry entries | mitigate | In-memory Map with single-threaded access (Node.js event loop). No disk persistence means no file-based tampering. |
+| T-02-03 | Denial of Service | Stale entry accumulation | mitigate | `cleanupStale()` auto-purges entries >30s on every `has()`/`get()` call. Max stale window is 30s with O(n) cleanup. |
+| T-02-04 | Information Disclosure | subagentType storage | accept | subagentType is an agent name string (not secret). In-memory only, cleared on PostToolUse. |
 </threat_model>
 
 <verification>
-## Full Regression
 ```bash
-npm test
-```
-Expected: all 256+ tests pass. No regressions from existing session-tracker tests.
-
-## Targeted Tests
-```bash
-npx vitest run tests/features/session-tracker/session-tracker.test.ts
-npx vitest run tests/features/session-tracker/capture/tool-capture.test.ts
-npx vitest run tests/features/session-tracker/integration/hook-wiring.test.ts
-```
-Expected: new PreToolUse and D-03 tests pass, existing tests unchanged.
-
-## Type Safety
-```bash
+# Full type check
 npm run typecheck
+
+# Scoped tests for session-tracker
+npx vitest run tests/features/session-tracker/
+
+# Verify Gate 3 presence in source
+grep -n "pendingRegistry" src/features/session-tracker/index.ts
+grep -n "pendingRegistry" src/features/session-tracker/capture/event-capture.ts
 ```
-Expected: zero type errors.
 </verification>
 
 <success_criteria>
-1. `tool.execute.before` hook exists in `src/plugin.ts` return object and compiles
-2. `SessionTracker.handleToolExecuteBefore()` method exists, handles task tool detection
-3. `event-capture.ts` registers child sessions in `HierarchyIndex` when SDK parentID is found (orphan prevention)
-4. `tool-capture.ts` `handleTask()` uses `subagentType || "unknown"` for `delegatedBy.agentName` (D-03)
-5. All new tests pass (handleToolExecuteBefore, hierarchy registration, D-03 attribution)
-6. Full test suite passes with zero regressions (256+ tests)
-7. Typecheck passes with zero errors
+1. `PendingDispatchRegistry` class exists with add/has/get/remove/cleanupStale methods
+2. `SessionTracker.ensureSessionReady()` checks Gate 3 before directory creation
+3. `EventCapture.handleSessionCreated()` checks Gate 3 before directory creation
+4. All 256+ existing tests continue to pass
+5. TypeScript compiles cleanly (`npm run typecheck`)
 </success_criteria>
 
 <output>

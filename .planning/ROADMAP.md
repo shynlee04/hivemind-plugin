@@ -134,10 +134,10 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 - [x] CP-ST-01-03-PLAN.md — Integration + Recovery + Tool (Wave 3)
 - [x] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
 
-**Plans (CP-ST-02):**
-- [ ] CP-ST-02-01-PLAN.md — PreToolUse Hook + Abort-Safe Registration (Wave 1)
-- [ ] CP-ST-02-02-PLAN.md — Server API Integration (Wave 2)
-- [ ] CP-ST-02-03-PLAN.md — Delegator Attribution + Hardening (Wave 3)
+**Plans (CP-ST-02):** 3 plans in 3 waves
+- [ ] CP-ST-02-01-PLAN.md — PendingDispatchRegistry + Three-Gate Classification (Wave 1) — requirements: AC-02, AC-05
+- [ ] CP-ST-02-02-PLAN.md — PreToolUse Hook + Server API Polling (Wave 2) — requirements: AC-10
+- [ ] CP-ST-02-03-PLAN.md — Delegator Attribution + Cleanup (Wave 3) — requirements: AC-01, AC-03, AC-06, AC-08, AC-09
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
