@@ -187,7 +187,52 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       eventObservers: [consumeDelegationFact, sessionEventObserver, consumeSessionTrackerFact, consumeSessionEntryFact, consumeIsMainSessionFact],
     }),
     ...sessionReadHooks,
-    ...toolGuardHooks,
+    // tool.execute.before: combined guard + session-tracker detection.
+    // Detects task tool dispatch for proactive child session discovery (CP-ST-02).
+    // Runs circuit breaker + budget guard first, then registers pending entry
+    // and starts fire-and-forget polling. Best-effort — never blocks tool execution.
+    "tool.execute.before": async (input, output) => {
+      // Run existing tool guard logic first (circuit breaker, budget, governance)
+      await toolGuardHooks["tool.execute.before"](input, output)
+
+      // Session tracker: detect task dispatch for proactive child discovery
+      try {
+        const toolName = (input as Record<string, unknown>)?.tool
+        if (toolName === "task") {
+          const inputRecord = input as Record<string, unknown>
+          const sessionID = (inputRecord.sessionID as string) || ""
+          const callID = (inputRecord.callID as string) || ""
+
+          // Extract args from output (PreToolUse output contains the tool's arguments)
+          const outputRecord = output as Record<string, unknown> | undefined
+          const args = (outputRecord?.args ?? {}) as Record<string, unknown>
+
+          const subagentType = (args.subagent_type as string) || ""
+          const description = (args.description as string) || ""
+          const taskId = (args.task_id as string) || undefined
+
+          if (sessionID && callID) {
+            await sessionTracker.handleToolExecuteBefore({
+              sessionID,
+              callID,
+              subagentType,
+              description,
+              taskId,
+            })
+          }
+        }
+      } catch (err) {
+        // Best-effort: never block tool execution or throw to runtime
+        void client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: "[Harness] Session tracker: tool.execute.before hook failed",
+            extra: { error: err instanceof Error ? err.message : String(err) },
+          },
+        })
+      }
+    },
     // chat.message: session tracker captures user/assistant messages.
     // Best-effort — never blocks the OpenCode runtime.
     "chat.message": async (input, output) => {
