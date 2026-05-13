@@ -134,10 +134,30 @@ export type CommandRoutePreview = {
   transform: CommandMessageTransformResult
 }
 
+/** Compact command summary returned by `list_commands`. */
+export type CommandListEntry = {
+  /** Command name (without leading slash). */
+  name: string
+  /** Human-readable command description. */
+  description: string
+  /** Optional agent hint from frontmatter. */
+  agent?: string
+  /** True when the command body contains `$ARGUMENTS`. */
+  acceptsArguments: boolean
+}
+
+/** Result of listing available commands. */
+export type CommandListResult = {
+  /** Available commands sorted by name. */
+  commands: CommandListEntry[]
+  /** Total command count. */
+  total: number
+}
+
 /** Tool/library action input for the command engine. */
 export type CommandEngineActionInput = {
   /** Command-engine action selector. */
-  action: "discover" | "analyze_contract" | "render_context" | "transform_messages" | "route_preview"
+  action: "discover" | "analyze_contract" | "render_context" | "transform_messages" | "route_preview" | "list_commands"
   /** Optional command name for command-specific actions. */
   commandName?: string
   /** Optional command arguments. */

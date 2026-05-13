@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-12T01:30:40.940Z"
+last_updated: "2026-05-13T14:50:00.000Z"
 progress:
   total_phases: 1
   completed_phases: 0
@@ -16,8 +16,8 @@ progress:
 
 # Hivemind — State
 
-**Last updated:** 2026-05-12
-**Last trigger:** BOOT-09-03 complete — document language tool guard implemented (TDD RED→GREEN)
+**Last updated:** 2026-05-13
+**Last trigger:** CP-CMD-01 complete — command architecture classified, deprecated tools removed from .opencode/, slash command tool enhanced, list_commands action added
 
 ---
 
@@ -108,6 +108,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | CP-PTY-04 | Cross-cutting shell integration — wires background commands to session/task/journal/hooks/permissions | NEW — 2026-05-08 |
 | DA-IN-02 | Fork handling uses reference-copy (not deep-copy) for child delegations — both sessions share same child .json files; T-12-11 mitigated; copyForkedChildren() in SessionTracker | NEW — 2026-05-12 |
 | D-PHASE12-COMPLETE | All 14 CP-ST-01-REVIEW.md findings resolved with verifiable evidence across 3 waves; pipeline verified end-to-end | NEW — 2026-05-12 |
+| CP-CMD-01 | Command architecture classified: CQRS pattern (read: hivemind-command-engine, write: execute-slash-command), deprecated tools removed from `.opencode/` (violates soft meta-concepts-only rule), `list_commands` action added | NEW — 2026-05-13 |
 
 ---
 
@@ -153,6 +154,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 | CP-PTY-02 | ⬜ NOT PLANNED | L2-L3 required | SDK child-session delegation integration |
 | CP-PTY-03 | ⬜ NOT PLANNED | L2-L3 required | Agent/subagent background task coordination |
 | CP-PTY-04 | ⬜ NOT PLANNED | L2-L3 required | Cross-cutting shell integration (wires everything) |
+| CP-CMD-01 | ✅ COMPLETE | L3 source | Command architecture classification, deprecated tools removed from .opencode/, slash command tool enhanced, list_commands action added |
 | SC-PTY-01 | ⬜ DEFERRED | L2-L3 required | Read-only projection only after CP-PTY-01 and Q2 sidecar confirmation |
 
 ---
@@ -183,7 +185,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **Commit SR remediation** — include source-plane moves, test updates, architecture decision, and summary artifacts; exclude incidental `.hivemind/state/**` runtime-state drift.
+1. **CP-CMD-01 delivered** — command architecture classified, deprecated tools relocated, slash command tool enhanced.
 2. **Return to CP-PTY-01** — background shell control-plane MVP is ready after WS-SR completion.
 3. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
 

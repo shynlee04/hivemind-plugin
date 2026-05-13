@@ -7,6 +7,7 @@ export const CommandEngineActionSchema = z.enum([
   "render_context",
   "transform_messages",
   "route_preview",
+  "list_commands",
 ])
 
 /** Zod schema for command-engine message roles. */

@@ -7,6 +7,7 @@ import type {
   CommandContractAnalysis,
   CommandDiscoveryResult,
   CommandEngineActionInput,
+  CommandListResult,
   CommandMessageTransformInput,
   CommandMessageTransformResult,
   CommandRoutePreview,
@@ -129,10 +130,12 @@ export async function routeCommandPreview(input: CommandRoutePreviewInput): Prom
 export async function executeCommandEngineAction(
   projectRoot: string,
   input: CommandEngineActionInput,
-): Promise<CommandDiscoveryResult | CommandContractAnalysis | CommandContextRenderResult | CommandMessageTransformResult | CommandRoutePreview> {
+): Promise<CommandDiscoveryResult | CommandContractAnalysis | CommandContextRenderResult | CommandMessageTransformResult | CommandRoutePreview | CommandListResult> {
   switch (input.action) {
     case "discover":
       return discoverCommandBundles({ projectRoot })
+    case "list_commands":
+      return listCommands({ projectRoot })
     case "analyze_contract": {
       const command = await requireCommand(projectRoot, input.commandName)
       return analyzeCommandContract(command)
@@ -153,6 +156,27 @@ export async function executeCommandEngineAction(
       if (!input.commandName) throw new Error("[Harness] commandName is required for route_preview")
       return routeCommandPreview({ projectRoot, ...input, commandName: input.commandName })
   }
+}
+
+/**
+ * List available commands in a compact, agent-friendly format.
+ *
+ * Unlike `discover` which returns full command bundles with raw bodies,
+ * this returns a minimal summary optimized for agent decision-making:
+ * name, description, agent hint, and whether arguments are accepted.
+ *
+ * @param options - Project root containing `.opencode/commands`.
+ * @returns Compact command listing with total count.
+ */
+export async function listCommands(options: { projectRoot: string }): Promise<CommandListResult> {
+  const discovery = await discoverCommandBundles(options)
+  const commands = discovery.commands.map((cmd) => ({
+    name: cmd.name,
+    description: cmd.description,
+    ...(cmd.agent && { agent: cmd.agent }),
+    acceptsArguments: cmd.body.includes("$ARGUMENTS"),
+  }))
+  return { commands, total: commands.length }
 }
 
 /**
