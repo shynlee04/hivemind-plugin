@@ -131,7 +131,7 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 | CP-ST-03 | Architecture Detox — Plugin Purification + Event-Tracker Excision | 🔴 READY — PLANNED | CP-ST-02 (COMPLETE) | L2-L3: plugin.ts → pure composition (≤250 LOC per D-01), event-tracker fully removed, docs synced |
 
 **Plans (CP-ST-03):** 2 plans in 2 waves
-- [ ] CP-ST-03-01-PLAN.md — Event-Tracker Excision + Documentation Sync (Wave 1) — requirements: AC-01..AC-13
+- [x] CP-ST-03-01-PLAN.md — Event-Tracker Excision + Documentation Sync (Wave 1) — requirements: AC-01..AC-13
 - [ ] CP-ST-03-02-PLAN.md — Plugin.ts Composition Purification (Wave 2) — requirements: AC-14..AC-29
 
 **Plans (CP-ST-01):**
