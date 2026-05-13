@@ -499,6 +499,10 @@ export class SessionTracker {
             input as Parameters<ToolCapture["handleToolExecuteAfter"]>[0],
             output as Parameters<ToolCapture["handleToolExecuteAfter"]>[1],
           )
+          // Clean up pending dispatch registry (AC-05: entry removed at PostToolUse)
+          if (this.pendingRegistry && input.callID) {
+            this.pendingRegistry.removeByCallID(input.callID)
+          }
         }
         return
       }
@@ -510,6 +514,10 @@ export class SessionTracker {
           input as Parameters<ToolCapture["handleToolExecuteAfter"]>[0],
           output as Parameters<ToolCapture["handleToolExecuteAfter"]>[1],
         )
+        // Clean up pending dispatch registry (AC-05: entry removed at PostToolUse)
+        if (this.pendingRegistry && input.callID) {
+          this.pendingRegistry.removeByCallID(input.callID)
+        }
       }
     } catch (err) {
       void this.client.app?.log?.({
@@ -521,6 +529,141 @@ export class SessionTracker {
         },
       })
     }
+  }
+
+  /**
+   * Handles the tool.execute.before hook — proactive child session discovery.
+   *
+   * Called synchronously from the plugin.ts tool.execute.before hook.
+   * Must NOT block tool execution — fire-and-forget polling only.
+   *
+   * Per D-02 (CONTEXT.md):
+   * - Detects task tool dispatch (tool === "task")
+   * - Stores pending entry in PendingDispatchRegistry
+   * - Fire-and-forget polls client.session.children() for new child sessions
+   * - On child discovery: registers in HierarchyIndex, removes from pending registry
+   * - Resume detection: if task_id is present, skip registration (AC-10)
+   *
+   * @param params - Hook input parameters.
+   * @param params.sessionID - The parent session ID (tool executor's session).
+   * @param params.callID - The tool call identifier.
+   * @param params.subagentType - The subagent_type from task tool args (e.g., "hm-l2-researcher").
+   * @param params.description - The task description.
+   * @param params.taskId - If present, this is a resume (existing session) — skip registration.
+   */
+  async handleToolExecuteBefore(params: {
+    sessionID: string
+    callID: string
+    subagentType: string
+    description: string
+    taskId?: string
+  }): Promise<void> {
+    try {
+      if (!isValidSessionID(params.sessionID)) return
+
+      // Resume detection (AC-10): if task_id is present, this is a resume dispatch.
+      // The child session already exists — no need to register a pending entry.
+      if (params.taskId) {
+        return
+      }
+
+      // Ensure pendingRegistry is initialized (may not be during plugin startup race)
+      if (!this.pendingRegistry) return
+
+      // Register pending dispatch entry for Gate 3 classification
+      this.pendingRegistry.add({
+        parentSessionID: params.sessionID,
+        callID: params.callID,
+        subagentType: params.subagentType || "unknown",
+        timestamp: Date.now(),
+      })
+
+      // Fire-and-forget polling: discover child session via Server API.
+      // The task tool creates the child during execution — poll to catch it
+      // before session.created fires.
+      // IMPORTANT: do NOT await here — would block tool execution.
+      void this.pollForChildSessions(params.sessionID, params.callID)
+    } catch (err) {
+      // Best-effort: never throw to the OpenCode runtime
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: "[Harness] Session tracker: handleToolExecuteBefore failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  }
+
+  /**
+   * Fire-and-forget polling loop to discover child sessions after task dispatch.
+   *
+   * Per SPEC §3.3: polls client.session.children() every 200ms for up to 5 attempts.
+   * On discovery: registers child in HierarchyIndex and updates pending registry.
+   * Never throws — all errors caught silently (best-effort).
+   *
+   * @param parentID - The parent session ID to check children for.
+   * @param callID - The tool call ID for pending registry cleanup.
+   */
+  private async pollForChildSessions(
+    parentID: string,
+    callID: string,
+  ): Promise<void> {
+    const MAX_ATTEMPTS = 5
+    const POLL_INTERVAL_MS = 200
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      try {
+        const client = this.client as OpenCodeClient & {
+          session: {
+            children(params: { path: { id: string } }): Promise<{
+              data?: Array<{ id: string; parentID?: string }>
+            }>
+          }
+        }
+        const result = await client.session.children({ path: { id: parentID } })
+        const entries = result.data ?? []
+
+        // Filter for children: (a) not already in hierarchy index, (b) valid session IDs
+        const newChildren = entries.filter(
+          (c) => c.id && isValidSessionID(c.id) && !this.hierarchyIndex?.isChild(c.id),
+        )
+
+        if (newChildren.length > 0) {
+          for (const child of newChildren) {
+            // Register in hierarchy index (Gate 2 cache)
+            if (child.id) {
+              this.hierarchyIndex?.registerChild(parentID, child.id)
+            }
+            // Update pending registry with real child ID (Gate 3 cache)
+            if (child.id) {
+              this.pendingRegistry?.updateWithChildID(callID, child.id)
+            }
+          }
+          // Success: children discovered, exit polling loop
+          return
+        }
+      } catch {
+        // Server API may not be ready — retry after interval
+      }
+
+      // Wait before next attempt (don't sleep on final attempt)
+      if (attempt < MAX_ATTEMPTS - 1) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
+      }
+    }
+
+    // Max attempts exhausted without discovery — child may appear later via
+    // tool.execute.after handleTask(). Pending registry entry serves as
+    // Gate 3 fallback for up to 30s (STALE_THRESHOLD_MS).
+    void this.client.app?.log?.({
+      body: {
+        service: "session-tracker",
+        level: "warn",
+        message: `[Harness] Session tracker: polling exhausted for parent "${parentID}" — relying on PostToolUse registration`,
+      },
+    })
   }
 
   /**
