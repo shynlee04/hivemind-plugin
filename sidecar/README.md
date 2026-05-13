@@ -6,7 +6,7 @@ the V3 Q2 architectural decision (Next.js + `@json-render/react`).
 ## What ships in this foundation PR
 
 **SIDECAR-03 only** — read-only enforcement against canonical harness
-state (`.hivemind/state/`, `.hivemind/event-tracker/`, `.planning/`).
+state (`.hivemind/state/`, `.planning/`). `.hivemind/event-tracker/` removed in CP-ST-03.
 
 The actual enforcement library lives at
 `../src/sidecar/readonly-state.ts` because it must be importable by
@@ -39,7 +39,7 @@ contract is enforced by three exports of `readonly-state.ts`:
 
 | Export | Purpose |
 |--------|---------|
-| `isCanonicalStatePath(p, opts)` | Tests whether a path is inside `.hivemind/state/`, `.hivemind/event-tracker/`, or `.planning/` relative to the project root. |
+| `isCanonicalStatePath(p, opts)` | Tests whether a path is inside `.hivemind/state/` or `.planning/` relative to the project root. |
 | `readCanonicalState(p, opts)` | Reads a file under a canonical surface. Throws `[Harness]` SIDECAR-03 for any path outside the canonical surface. |
 | `refuseCanonicalWrite(p, opts)` | Always throws `[Harness]` SIDECAR-03. Use as a guard at any call site that should be unreachable in a read-only sidecar. |
 

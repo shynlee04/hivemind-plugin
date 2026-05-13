@@ -16,7 +16,7 @@
 
 ## 3. Forbidden mutations / explicit no-go boundaries
 
-- SessionTracker SHALL NOT write to `.hivemind/event-tracker/` or any legacy paths.
+- SessionTracker SHALL NOT write to deprecated paths. `.hivemind/event-tracker/` was removed in CP-ST-03.
 - SessionTracker SHALL NOT store runtime state in `.opencode/`. Source evidence: `.planning/codebase/ARCHITECTURE.md:247-255`.
 - SessionTracker SHALL NOT exceed the 500 LOC module cap. Source evidence: `.planning/codebase/CONVENTIONS.md:19-28`.
 - SessionTracker SHALL NOT write files directly from hook callbacks (CQRS compliance per REQ-ST-11).

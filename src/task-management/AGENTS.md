@@ -10,7 +10,7 @@
 
 - ContinuityStoreFile may persist session state, delegation records, and lineage to `.hivemind/state/` durable JSON files. Evidence: `.planning/codebase/ARCHITECTURE.md:76`, `.planning/codebase/ARCHITECTURE.md:181`.
 - HarnessLifecycleManager may transition session lifecycle phases with validated state machine transitions. Evidence: `.planning/codebase/ARCHITECTURE.md:192-193`.
-- Journal and EventTracker may append events to append-only timelines and project audit events to `.hivemind/event-tracker/`. Evidence: `.planning/codebase/ARCHITECTURE.md:288`.
+- Journal may append events to append-only timelines. EventTracker removed in CP-ST-03; session-tracker is canonical.
 - Trajectory may record execution lineage (session parent/child trees). Evidence: `.planning/codebase/ARCHITECTURE.md:288`.
 - Recovery modules may reconstruct session state from durable continuity files at startup.
 

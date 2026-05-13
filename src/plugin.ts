@@ -6,6 +6,8 @@
  * individual hook factory modules and tool implementations.
  */
 import type { Plugin } from "@opencode-ai/plugin"
+import { existsSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
 
 import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"
 import { DelegationManager } from "./coordination/delegation/manager.js"
@@ -103,6 +105,37 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       },
     })
   })
+
+  // One-shot migration: remove legacy .hivemind/event-tracker/ (CP-ST-03 D-03)
+  void (async () => {
+    const sentinelPath = join(projectDirectory, ".hivemind", "state", "event-tracker-migration-done")
+    const legacyDir = join(projectDirectory, ".hivemind", "event-tracker")
+    try {
+      if (existsSync(sentinelPath)) return
+      if (existsSync(legacyDir)) {
+        rmSync(legacyDir, { recursive: true, force: true })
+        const stateDir = join(projectDirectory, ".hivemind", "state")
+        if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true })
+        writeFileSync(sentinelPath, new Date().toISOString(), "utf-8")
+        void client.app?.log?.({
+          body: {
+            service: "migration",
+            level: "info",
+            message: "[Harness] CP-ST-03: removed legacy .hivemind/event-tracker/",
+          },
+        })
+      }
+    } catch (err) {
+      void client.app?.log?.({
+        body: {
+          service: "migration",
+          level: "warn",
+          message: "[Harness] CP-ST-03: legacy event-tracker migration failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  })()
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
   const sessionIsMainObserverFactory = createSessionIsMainObserver()

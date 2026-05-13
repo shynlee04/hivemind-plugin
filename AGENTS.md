@@ -90,7 +90,7 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 
 ## IMPORTANT UPDATE TO ALL AGENTS
 
-- when lost -> access real-time eventracker at `/.hivemind/event-tracker/*.md , *.json - list/glob first - then look for the correct session id -use hm-detective skill to investigate the sessions
+- when lost -> access real-time eventracker at `/.hivemind/session-tracker/*` - list/glob first - then look for the correct session id -use hm-detective skill to investigate the sessions
 
 - **important tracking path for delegation:**
 .hivemind/state/session-continuity.json
