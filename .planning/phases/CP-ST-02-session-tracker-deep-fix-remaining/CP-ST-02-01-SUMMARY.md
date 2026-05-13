@@ -126,6 +126,17 @@ Each task was committed atomically:
 - ToolCapture has pendingRegistry plumbing ready for delegator attribution (Plan 02-03)
 - SessionTracker three-gate classification is complete — child sessions discovered during race window will be correctly classified as CHILD
 
+## Known Stubs
+- `src/features/session-tracker/capture/tool-capture.ts:261` — `agentName: "unknown"` in handleTask(). This is a pre-existing stub for delegator attribution. Plan 02-03 will resolve it using the pendingRegistry plumbing added in this plan.
+
+## Self-Check: PASSED
+- SUMMARY.md file exists on disk ✅
+- All 3 commits (9b05edd7, 0ef5f95f, 485d3d8d) present in git log ✅
+- Created file `pending-dispatch-registry.ts` exists ✅
+- TypeScript compiles cleanly (`npm run typecheck` passes) ✅
+- All 256 existing session-tracker tests pass (0 regressions) ✅
+- Gate 3 grep confirmed in all 3 target files ✅
+
 ---
 *Phase: CP-ST-02-session-tracker-deep-fix-remaining*
 *Completed: 2026-05-13*
