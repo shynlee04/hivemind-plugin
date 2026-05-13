@@ -30,7 +30,7 @@ export interface ToolAfterWorkflowInput {
  * @returns An async function that receives (input, _output) for workflow persistence.
  */
 export function createToolAfterWorkflow(
-  deps: ToolAfterWorkflowDeps,
+  _deps: ToolAfterWorkflowDeps,
 ): (input: ToolAfterWorkflowInput, _output?: unknown) => Promise<void> {
   return async (input, _output) => {
     if (input.tool !== "configure-primitive") return

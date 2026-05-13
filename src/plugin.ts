@@ -18,6 +18,13 @@ import { createToolGuardHooks } from "./hooks/guards/tool-guard-hooks.js"
 import { createDelegationEventObserver, createSessionEntryEventObserver, createSessionIsMainObserver } from "./hooks/observers/event-observers.js"
 // createSessionJourneyEventObserver — REMOVED in CP-ST-03; session-tracker is canonical.
 import { createToolExecuteAfterHook } from "./hooks/transforms/tool-after-composer.js"
+import { createToolBeforeGuard } from "./hooks/transforms/tool-before-guard.js"
+import { createChatMessageCapture } from "./hooks/transforms/chat-message-capture.js"
+import { createToolAfterWorkflow } from "./hooks/transforms/tool-after-workflow.js"
+import { createSessionEntryConsumer } from "./hooks/observers/session-entry-consumer.js"
+import { createSessionMainConsumer } from "./hooks/observers/session-main-consumer.js"
+import { createDelegationConsumer } from "./hooks/observers/delegation-consumer.js"
+import { createSessionTrackerConsumer } from "./hooks/observers/session-tracker-consumer.js"
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
@@ -46,8 +53,6 @@ import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
 import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-loop.js"
 import { SessionTracker } from "./features/session-tracker/index.js"
-import { getEventSessionID } from "./shared/session-api.js"
-
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
@@ -144,48 +149,28 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()
-  const consumeSessionEntryFact = async ({ event }: { event?: unknown }) => {
-    try {
-      await sessionEntryObserverFactory.observer({ event })
-    } catch {
-      // Best-effort intake classification: never block canonical event handling.
-    }
-  }
-  const consumeIsMainSessionFact = async ({ event }: { event?: unknown }) => {
-    try {
-      await sessionIsMainObserverFactory.observer({ event })
-    } catch {
-      // Best-effort isMainSession caching: never block canonical event handling.
-    }
-  }
-  const consumeDelegationFact = async ({ event }: { event?: unknown }) => {
-    const fact = await delegationEventObserver({ event })
-    if (fact.kind === "delegation-session-idle") {
-      delegationManager.handleSessionIdle(fact.sessionId)
-    }
-    if (fact.kind === "delegation-session-deleted") {
-      delegationManager.handleSessionDeleted(fact.sessionId)
-    }
-  }
-  const consumeSessionTrackerFact = async ({ event }: { event?: unknown }) => {
-    try {
-      const ev = event as Record<string, unknown> | undefined
-      const eventType = (ev?.type as string) || (ev?.eventType as string) || "unknown"
-      const sessionID = getEventSessionID(ev) || ""
-      if (sessionID) {
-        await sessionTracker.handleSessionEvent({ eventType, sessionID, event: ev })
-      }
-    } catch (err) {
+  // Observer consumers: pass-through wrappers extracted to dedicated hook modules (CP-ST-03-02).
+  // Each factory receives its dependencies via injection — zero business logic in plugin.ts.
+  const consumeSessionEntryFact = createSessionEntryConsumer(sessionEntryObserverFactory.observer)
+  const consumeIsMainSessionFact = createSessionMainConsumer(sessionIsMainObserverFactory.observer)
+  const consumeDelegationFact = createDelegationConsumer({
+    observer: delegationEventObserver,
+    handleSessionIdle: delegationManager.handleSessionIdle.bind(delegationManager),
+    handleSessionDeleted: delegationManager.handleSessionDeleted.bind(delegationManager),
+  })
+  const consumeSessionTrackerFact = createSessionTrackerConsumer({
+    sessionTracker,
+    logWarn: (msg: string, err: unknown) => {
       void client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker event observer failed",
+          message: msg,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
-    }
-  }
+    },
+  })
 
   const toolGuardHooks = createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy, hivemindConfig })
 
@@ -199,67 +184,35 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     // Detects task tool dispatch for proactive child session discovery (CP-ST-02).
     // Runs circuit breaker + budget guard first, then registers pending entry
     // and starts fire-and-forget polling. Best-effort — never blocks tool execution.
-    "tool.execute.before": async (input, output) => {
-      // Run existing tool guard logic first (circuit breaker, budget, governance)
-      await toolGuardHooks["tool.execute.before"](input, output)
-
-      // Session tracker: detect task dispatch for proactive child discovery
-      try {
-        const toolName = (input as Record<string, unknown>)?.tool
-        if (toolName === "task") {
-          const inputRecord = input as Record<string, unknown>
-          const sessionID = (inputRecord.sessionID as string) || ""
-          const callID = (inputRecord.callID as string) || ""
-
-          // Extract args from output (PreToolUse output contains the tool's arguments)
-          const outputRecord = output as Record<string, unknown> | undefined
-          const args = (outputRecord?.args ?? {}) as Record<string, unknown>
-
-          const subagentType = (args.subagent_type as string) || ""
-          const description = (args.description as string) || ""
-          const taskId = (args.task_id as string) || undefined
-
-          if (sessionID && callID) {
-            await sessionTracker.handleToolExecuteBefore({
-              sessionID,
-              callID,
-              subagentType,
-              description,
-              taskId,
-            })
-          }
-        }
-      } catch (err) {
-        // Best-effort: never block tool execution or throw to runtime
+    "tool.execute.before": createToolBeforeGuard({
+      toolGuardHook: toolGuardHooks["tool.execute.before"] as (input: unknown, output: unknown) => Promise<void>,
+      sessionTracker,
+      logWarn: (msg: string, err: unknown) => {
         void client.app?.log?.({
           body: {
             service: "session-tracker",
             level: "warn",
-            message: "[Harness] Session tracker: tool.execute.before hook failed",
+            message: msg,
             extra: { error: err instanceof Error ? err.message : String(err) },
           },
         })
-      }
-    },
+      },
+    }),
     // chat.message: session tracker captures user/assistant messages.
     // Best-effort — never blocks the OpenCode runtime.
-    "chat.message": async (input, output) => {
-      try {
-        await sessionTracker.handleChatMessage(
-          input as Parameters<typeof sessionTracker.handleChatMessage>[0],
-          output as Parameters<typeof sessionTracker.handleChatMessage>[1],
-        )
-      } catch (err) {
+    "chat.message": createChatMessageCapture({
+      sessionTracker,
+      logWarn: (msg: string, err: unknown) => {
         void client.app?.log?.({
           body: {
             service: "session-tracker",
             level: "warn",
-            message: "[Harness] Session tracker chat.message failed",
+            message: msg,
             extra: { error: err instanceof Error ? err.message : String(err) },
           },
         })
-      }
-    },
+      },
+    }),
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
       "delegation-status": createDelegationStatusTool(delegationManager),
@@ -306,23 +259,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         // Best-effort: never fail the tool call.
       }
 
-      if (input.tool !== "configure-primitive") return
-      const args = input.args
-      if (!args || typeof args.workflowId !== "string" || typeof args.workflowTurn !== "number") return
-
-      try {
-        const { readWorkflow, persistWorkflow, advanceTurn, completeCurrentTurn } =
-          await import("./config/workflow/index.js")
-        const workflow = readWorkflow(args.workflowId)
-        if (!workflow) return
-
-        const advanced = advanceTurn(workflow, args.workflowTurn as number)
-        const output = typeof _output === "string" ? _output.substring(0, 500) : "completed"
-        const completed = completeCurrentTurn(advanced, { toolOutput: output })
-        persistWorkflow(completed)
-      } catch {
-        // Best-effort persistence — never fail the tool call
-      }
+      await createToolAfterWorkflow({})(input, _output)
     },
   }
 }
