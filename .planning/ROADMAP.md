@@ -125,13 +125,19 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| CP-ST-01 | Session Tracker Revamp | 🔵 PLANNED | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: hook wiring tests, file format validation, migration verification |
+| CP-ST-01 | Session Tracker Revamp | ✅ COMPLETE | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: 256 tests pass, dual-gate, depth computation, fork inheritance |
+| CP-ST-02 | Session Tracker Deep Fix — Remaining | 🔵 READY | CP-ST-01 (COMPLETE) | L2-L3: PreToolUse hook, Server API integration, delegator attribution |
 
-**Plans:**
-- [ ] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)
-- [ ] CP-ST-01-02-PLAN.md — Capture Handlers + Index Writers (Wave 2)
-- [ ] CP-ST-01-03-PLAN.md — Integration + Recovery + Tool (Wave 3)
-- [ ] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
+**Plans (CP-ST-01):**
+- [x] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)
+- [x] CP-ST-01-02-PLAN.md — Capture Handlers + Index Writers (Wave 2)
+- [x] CP-ST-01-03-PLAN.md — Integration + Recovery + Tool (Wave 3)
+- [x] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
+
+**Plans (CP-ST-02):**
+- [ ] CP-ST-02-01-PLAN.md — PreToolUse Hook + Abort-Safe Registration (Wave 1)
+- [ ] CP-ST-02-02-PLAN.md — Server API Integration (Wave 2)
+- [ ] CP-ST-02-03-PLAN.md — Delegator Attribution + Hardening (Wave 3)
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
