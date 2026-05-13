@@ -8,10 +8,6 @@ export type DelegationEventFact =
   | { kind: "delegation-session-deleted"; sessionId: string }
   | { kind: "ignored" }
 
-export type SessionJourneyEventFact =
-  | { kind: "session-journey-event"; event: unknown; source: "plugin.event" }
-  | { kind: "ignored" }
-
 /**
  * Extracts delegation lifecycle facts from OpenCode events without performing writes.
  *
@@ -36,19 +32,6 @@ export function createDelegationEventObserver(): (input: { event?: unknown }) =>
   }
 }
 
-/**
- * Extracts session journey projection facts from OpenCode events without writing artifacts.
- *
- * @param shouldTrack - Predicate that classifies event-tracker-admitted events.
- * @returns A facts-only session journey event observer.
- */
-export function createSessionJourneyEventObserver(
-  shouldTrack: (event: unknown) => boolean,
-): (input: { event?: unknown }) => Promise<SessionJourneyEventFact> {
-  return async ({ event }) => shouldTrack(event)
-    ? { kind: "session-journey-event", event, source: "plugin.event" }
-    : { kind: "ignored" }
-}
 
 /** Fact emitted by the session-entry event observer. */
 export type SessionEntryEventFact =

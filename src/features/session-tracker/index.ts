@@ -787,16 +787,14 @@ export class SessionTracker {
   /**
    * Performs cleanup when the plugin is shutting down or on module init.
    *
-   * Removes contaminated `.json` and `.md` files from the legacy
-   * `.hivemind/event-tracker/` directory (REQ-ST-13). Preserves the
-   * source code at `src/task-management/journal/event-tracker/`.
+   * Legacy event-tracker cleanup removed in CP-ST-03; one-shot migration
+   * in plugin.ts handles `.hivemind/event-tracker/` removal.
    *
    * @returns Promise that resolves when cleanup is complete.
    */
   async cleanup(): Promise<void> {
     try {
-      // Legacy cleanup: remove contaminated event-tracker state files (REQ-ST-13)
-      await this.removeLegacyStateFiles()
+      // Legacy event-tracker cleanup removed (CP-ST-03); migration in plugin.ts
     } catch (err) {
       void this.client.app?.log?.({
         body: {
@@ -973,47 +971,6 @@ export class SessionTracker {
           // Already registered or can't register — skip
         }
       }
-    }
-  }
-
-  /**
-   * Removes contaminated legacy state files from `.hivemind/event-tracker/`.
-   *
-   * Per REQ-ST-13: removes only `.json` and `.md` files, never `.gitkeep` or
-   * the source code directory at `src/task-management/journal/event-tracker/`.
-   */
-  private async removeLegacyStateFiles(): Promise<void> {
-    try {
-      const { readdir, unlink } = await import("node:fs/promises")
-      const { resolve } = await import("node:path")
-      const legacyDir = resolve(this.projectRoot, ".hivemind", "event-tracker")
-
-      try {
-        const entries = await readdir(legacyDir, { withFileTypes: true })
-        for (const entry of entries) {
-          if (!entry.isFile()) continue
-          if (entry.name === ".gitkeep") continue
-          if (entry.name.endsWith(".json") || entry.name.endsWith(".md")) {
-            const filePath = resolve(legacyDir, entry.name)
-            try {
-              await unlink(filePath)
-            } catch {
-              // Best-effort: skip files that can't be removed
-            }
-          }
-        }
-      } catch {
-        // Legacy directory may not exist — that's fine
-      }
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: "[Harness] Session tracker: legacy cleanup failed",
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
     }
   }
 }

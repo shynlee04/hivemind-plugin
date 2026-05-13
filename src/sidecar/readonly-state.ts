@@ -7,7 +7,7 @@ import { isAbsolute, relative, resolve } from "node:path"
  * The sidecar Next.js app rendered by Phase 42 follow-up phases must
  * never write to the harness's canonical state. This module provides
  * the contract surface and the enforcement guards: any sidecar code
- * that needs to access `.hivemind/state/`, `.hivemind/event-tracker/`,
+ * that needs to access `.hivemind/state/`
  * or `.planning/` goes through the read helpers below; any accidental
  * write attempt is intercepted by `refuseCanonicalWrite()` and
  * surfaces immediately as a `[Harness]` error.
@@ -31,7 +31,7 @@ export type ReadOnlyStateOptions = {
  * not under one of these directories (relative to `projectRoot`) is
  * rejected by the read guards.
  */
-const CANONICAL_PREFIXES = [".hivemind/state", ".hivemind/event-tracker", ".planning"]
+const CANONICAL_PREFIXES = [".hivemind/state", ".planning"]
 
 /**
  * Returns true if `absolutePath` lies inside one of the canonical

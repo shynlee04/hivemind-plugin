@@ -55,7 +55,6 @@ export const GITKEEP_FILE = ".gitkeep" as const
 export const TIER_1_DIRECTORIES = [
   "state",
   "delegation",
-  "event-tracker",
   "journal",
   "lineage",
   "daily-notes",

@@ -14,7 +14,7 @@ import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
 import { createSessionHooks } from "./hooks/lifecycle/session-hooks.js"
 import { createToolGuardHooks } from "./hooks/guards/tool-guard-hooks.js"
 import { createDelegationEventObserver, createSessionEntryEventObserver, createSessionIsMainObserver } from "./hooks/observers/event-observers.js"
-// createSessionJourneyEventObserver — DEPRECATED: removed in Phase 13 (F-09); was only used by consumeJourneyFact
+// createSessionJourneyEventObserver — REMOVED in CP-ST-03; session-tracker is canonical.
 import { createToolExecuteAfterHook } from "./hooks/transforms/tool-after-composer.js"
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
@@ -43,15 +43,6 @@ import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
 import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-loop.js"
-// Legacy event-tracker code preserved at src/task-management/journal/event-tracker/ (REQ-ST-13).
-// Deprecated: event-tracker wiring is kept for backward compatibility with existing tests.
-// New capture goes through SessionTracker → .hivemind/session-tracker/.
-// DEPRECATED (Phase 13 F-09): Legacy event-tracker imports — consumeJourneyFact removed from eventObservers.
-// Kept as commented safety net per REQ-ST-13.
-// import {
-//   createEventTrackerArtifactsFromHook,
-//   shouldTrackEventTrackerEvent,
-// } from "./task-management/journal/event-tracker/index.js"
 import { SessionTracker } from "./features/session-tracker/index.js"
 import { getEventSessionID } from "./shared/session-api.js"
 
@@ -120,8 +111,6 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const sessionHooks = createSessionHooks(deps)
   const { event: sessionEventObserver, ...sessionReadHooks } = sessionHooks
   const delegationEventObserver = createDelegationEventObserver()
-  // DEPRECATED: sessionJourneyEventObserver was only used by consumeJourneyFact (removed in Phase 13 F-09)
-  // const sessionJourneyEventObserver = createSessionJourneyEventObserver(shouldTrackEventTrackerEvent)
   const consumeSessionEntryFact = async ({ event }: { event?: unknown }) => {
     try {
       await sessionEntryObserverFactory.observer({ event })
@@ -145,20 +134,6 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       delegationManager.handleSessionDeleted(fact.sessionId)
     }
   }
-  // DEPRECATED: Legacy event-tracker double-capture removed in Phase 13 (F-09).
-  // Kept as safety net per REQ-ST-13. No longer registered in eventObservers.
-  /*
-  const consumeJourneyFact = async ({ event }: { event?: unknown }) => {
-    try {
-      const fact = await sessionJourneyEventObserver({ event })
-      if (fact.kind === "session-journey-event") {
-        createEventTrackerArtifactsFromHook({ projectRoot: projectDirectory, hook: { event: fact.event, source: fact.source } })
-      }
-    } catch {
-      // Best-effort audit projection: never block canonical OpenCode event handling.
-    }
-  }
-  */
   const consumeSessionTrackerFact = async ({ event }: { event?: unknown }) => {
     try {
       const ev = event as Record<string, unknown> | undefined
