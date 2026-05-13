@@ -219,6 +219,17 @@ export class PendingDispatchRegistry {
    * @param sessionID - The session identifier to remove.
    */
   remove(sessionID: string): void {
+    // D-04: Clean byParent index when removing by session ID
+    const entry = this.dispatches.get(sessionID)
+    if (entry) {
+      const parentSet = this.byParent.get(entry.parentSessionID)
+      if (parentSet) {
+        parentSet.delete(entry.callID)
+        if (parentSet.size === 0) {
+          this.byParent.delete(entry.parentSessionID)
+        }
+      }
+    }
     this.dispatches.delete(sessionID)
   }
 

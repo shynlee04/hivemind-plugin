@@ -391,12 +391,14 @@ export class SessionTracker {
     output: { message: unknown; parts: unknown[] },
   ): Promise<void> {
     try {
-      // Lazy bootstrap: ensure session directory + index exist (cold-start)
-      await this.ensureSessionReady(input.sessionID)
-
-      // Detect child session: if this session has a parent, route to child writer.
-      // Gate 1: SDK parentID (fastest path — avoids disk I/O).
+      // ── D-05: Classify FIRST before any I/O ──────────────────────────
+      // Child sessions must NEVER get their own directory. Classification
+      // must happen BEFORE ensureSessionReady (which may call mkdir).
+      //
+      // Gate 1: SDK parentID (fastest — avoids disk I/O).
       // Gate 2: Hierarchy index (fallback when SDK doesn't report parentID).
+      // Gate 3: Pending dispatch registry (race condition guard).
+
       let parentID: string | undefined
       try {
         const session = await this.getSessionSafely(input.sessionID)
@@ -412,8 +414,23 @@ export class SessionTracker {
         }
       }
 
+      // Gate 3: Check pending dispatch registry (D-04 fix).
+      // If a parent recently dispatched a task tool, and the registry
+      // still has entries, the resulting session is a child even if
+      // the exact parentID isn't resolved by Gates 1/2.
+      if (!parentID && this.pendingRegistry?.has(input.sessionID)) {
+        const pendingEntry = this.pendingRegistry.get(input.sessionID)
+        if (pendingEntry) {
+          parentID = pendingEntry.parentSessionID
+        }
+      }
+
       if (parentID && this.childWriter) {
-        // Child session: capture chat message in child .json
+        // STEP 2: CHILD session — skip ensureSessionReady entirely.
+        // No directory creation — child .json only (D-03, D-05).
+        this.bootstrappedSessions.add(input.sessionID)
+
+        // Capture chat message to child .json under ROOT main (D-03)
         const messageRole = (output.message as Record<string, unknown> | null)?.role
         const parts = output.parts as Array<{ type: string; text?: string }>
         const content = parts
@@ -433,6 +450,10 @@ export class SessionTracker {
         return // Child messages go to child .json only, not main .md
       }
 
+      // STEP 3: MAIN session — now it's safe to create directory.
+      await this.ensureSessionReady(input.sessionID)
+
+      // STEP 4: Capture to main .md (existing messageCapture path)
       if (this.messageCapture) {
         await this.messageCapture.handleChatMessage(
           input as Parameters<MessageCapture["handleChatMessage"]>[0],
