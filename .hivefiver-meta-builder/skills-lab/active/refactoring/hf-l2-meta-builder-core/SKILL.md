@@ -224,6 +224,20 @@ grep -r '"task"' .opencode/agents/*.md
 
 **Why it matters:** When meta-builder routes to `use-authoring-skills`, it calls `skill({ name: "use-authoring-skills" })`. This is progressive disclosure in action.
 
+### `execute-slash-command` — Dispatch Commands Deterministically
+
+**What it does:** Executes an OpenCode slash command via POST /session/:id/command
+
+**Why it matters:** Commands force action without reasoning overhead
+
+**When to use:** Running /hf-create, /hf-audit, /hf-stack, or any registered command
+
+### `hivemind-command-engine` — Discover and Analyze Commands
+
+**What it does:** CQRS read-side for command management. Actions: discover, list_commands, analyze_contract, render_context, transform_messages, route_preview
+
+**Why it matters:** Don't hardcode command names — discover available commands dynamically before executing.
+
 ### `webfetch` + `websearch` — External Knowledge
 
 **What they do:** `webfetch` retrieves content from a specific URL. `websearch` searches the web via Exa AI.
@@ -251,6 +265,9 @@ grep -r '"task"' .opencode/agents/*.md
 | `bash` | Run validation scripts (`validate-skill.sh`) | `allow` |
 | `edit` | Modify skill/agent/command files | `ask` |
 | `write` | Create new skill/agent/command files | `ask` |
+
+| `execute-slash-command` | Dispatch deterministic commands | `allow` |
+| `hivemind-command-engine` | Discover and analyze commands before execution | `allow` |
 
 ## 5-Step Workflow
 

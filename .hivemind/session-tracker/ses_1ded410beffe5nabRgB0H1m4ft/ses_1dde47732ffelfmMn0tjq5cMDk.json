@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1dde47732ffelfmMn0tjq5cMDk",
+  "parentSessionID": "ses_1ded410beffe5nabRgB0H1m4ft",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research session-tracker gate bug",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-13T16:21:28.214Z",
+  "updated": "2026-05-13T16:21:28.230Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-phase-researcher",
+      "content": "Research session-tracker gate bug",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Research session-tracker gate bug"
+}

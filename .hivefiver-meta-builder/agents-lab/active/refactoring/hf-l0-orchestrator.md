@@ -37,6 +37,7 @@ permission:
   hivemind-doc: allow
   hivemind-sdk-supervisor: allow
   hivemind-command-engine: allow
+  execute-slash-command: allow
   hivemind-agent-work-create: allow
   hivemind-agent-work-export: allow
   webfetch: allow
@@ -235,6 +236,7 @@ Debug (bug tracing, root cause analysis)
 **Routing skills:** hf-l2-meta-builder-core for meta-concept routing + hm-l2-lineage-router
 
 **Runtime tools:** session-tracker, hivemind-trajectory, hivemind-pressure, hivemind-command-engine
+**CP-CMD-01 command architecture:** 3 tiers — slash commands (execute-slash-command, deterministic TUI commands), shell commands (run-background-command, PTY/headless processes), agent delegation (delegate-task, WaiterModel). CQRS pattern: hivemind-command-engine (read-side discovery) → execute-slash-command (write-side execution).
 
 **Temperature discipline:** L0 = 0.2–0.3 (currently 0.25) for routing flexibility
 </context>
@@ -437,7 +439,7 @@ If a delegation returns without file-based artifacts, the gate FAILS automatical
   </step>
 
   <step name="assess_session_runtime" priority="normal">
-  Check session runtime context: read session continuity for interrupted sessions, use `session-tracker` for active context, `hivemind-trajectory` for delegation depth, `hivemind-pressure` for runtime pressure tier. Check: delegation depth (max 3), current pressure tier, pending notifications, command routing.
+  Check session runtime context: read session continuity for interrupted sessions, use `session-tracker` for active context, `hivemind-trajectory` for delegation depth, `hivemind-pressure` for runtime pressure tier. Check: delegation depth (max 3), current pressure tier, pending notifications, command routing. Commands can be dispatched programmatically via execute-slash-command following the CQRS pattern (hivemind-command-engine for discovery → execute-slash-command for execution).
   </step>
 
   <step name="form_landscape" priority="high">

@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1ddd833bdffeDidKQ43P3nzrzT",
+  "parentSessionID": "ses_1ded410beffe5nabRgB0H1m4ft",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Plan CP-ST-04 phase",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-05-13T16:38:14.967Z",
+  "updated": "2026-05-13T16:38:14.986Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-planner",
+      "content": "Plan CP-ST-04 phase",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Plan CP-ST-04 phase"
+}

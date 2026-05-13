@@ -24,6 +24,8 @@ permission:
   prompt-skim: ask
   prompt-analyze: ask
   session-patch: ask
+  execute-slash-command: ask
+  hivemind-command-engine: allow
   webfetch: allow
   websearch: allow
   skill:
@@ -104,6 +106,7 @@ Understands the Hivemind meta-concept creation model:
 - **Temperature by depth:** L0 (0.2-0.3), L1 (0.1-0.2), L2 (0.0-0.15)
 - **Cross-lineage access:** hf FLEXIBLE binding allows hm-* skill access with justification
 - **Quality gates:** gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth
+CP-CMD-01 command tiers: execute-slash-command (slash commands, deterministic), run-background-command (shell/PTY), delegate-task (agent delegation). CQRS pattern: hivemind-command-engine for command discovery → execute-slash-command for execution.
 </context>
 
 <expected_output>

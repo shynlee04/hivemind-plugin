@@ -1,9 +1,9 @@
 {
   "version": "2.0",
-  "sessionID": "ses_1ded410beffe5nabRgB0H1m4ft",
-  "lastUpdated": "2026-05-13T16:40:33.911Z",
+  "sessionID": "ses_1ddc9966effeF3yQeVHKctuRDe",
+  "lastUpdated": "2026-05-13T16:41:43.310Z",
   "hierarchy": {
-    "root": "ses_1ded410beffe5nabRgB0H1m4ft",
+    "root": "ses_1ddc9966effeF3yQeVHKctuRDe",
     "children": {
       "ses_1dde55216ffe14HvZ48i0as4e5": {
         "file": "ses_1dde55216ffe14HvZ48i0as4e5.json",
@@ -28,17 +28,9 @@
       }
     }
   },
-  "turnCount": 10,
+  "turnCount": 0,
   "toolSummary": {
-    "grep": 1,
-    "edit": 2,
-    "bash": 6,
-    "read": 1,
-    "skill": 1,
-    "task": 2,
-    "write": 1,
-    "hivemind-command-engine": 1,
-    "execute-slash-command": 1,
-    "todowrite": 1
+    "bash": 3,
+    "read": 5
   }
 }

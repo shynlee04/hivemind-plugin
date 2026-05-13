@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1de20803effeCuzfid0EbDnXuJ",
+  "lastUpdated": "2026-05-13T16:17:24.721Z",
+  "hierarchy": {
+    "root": "ses_1de20803effeCuzfid0EbDnXuJ",
+    "children": {
+      "ses_1de0b6f9bffe3yEdBXNhPzlJQh": {
+        "file": "ses_1de0b6f9bffe3yEdBXNhPzlJQh.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hf-l2-meta-builder",
+        "children": {}
+      },
+      "ses_1ddfa9a25ffecXYvRcKNL2nfo6": {
+        "file": "ses_1ddfa9a25ffecXYvRcKNL2nfo6.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hf-l2-refactorer",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 5,
+  "toolSummary": {
+    "session-tracker": 2,
+    "glob": 3,
+    "task": 3,
+    "hivemind-doc": 1,
+    "todowrite": 2,
+    "grep": 2
+  }
+}

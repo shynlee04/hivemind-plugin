@@ -25,6 +25,8 @@ permission:
   prompt-skim: ask
   prompt-analyze: ask
   session-patch: ask
+  execute-slash-command: ask
+  hivemind-command-engine: allow
   webfetch: allow
   websearch: allow
   skill:
@@ -101,6 +103,7 @@ Understands the Hivemind harness delegation model:
 - **Result structure:** Every L2 specialist returns structured output with file:line evidence
 - **Completion detection:** hm-completion-looping prevents premature completion claims
 - **Temperature discipline:** L1 = 0.1–0.2 for structured workflow management
+3-tier command model: execute-slash-command (Tier 1 — deterministic slash commands), run-background-command (Tier 2 — shell/PTY processes), delegate-task (Tier 3 — agent delegation). CQRS: hivemind-command-engine for discovery → execute-slash-command for execution.
 </context>
 
 <expected_output>

@@ -93,6 +93,11 @@ Multiple tasks?
   └─ Yes
         │
         ▼
+   Is there a command available for this task?
+   ├─ Yes, known command → Route to execute-slash-command via CQRS: hivemind-command-engine→list_commands → select → execute-slash-command
+   └─ No → Continue to subagent delegation
+        │
+        ▼
    Any tasks share files or mutable state?
    ├─ Yes → Sequential. Go to DISPATCH.
    └─ No
@@ -144,6 +149,14 @@ resume_pointer: "<where to continue after interruption>"
 bash scripts/coordination-check.sh <session> --pre-dispatch
 # Must exit 0. If it exits 1, fix the reported issues before dispatching.
 ```
+
+### Alternative: Command Dispatch
+
+For tasks with a matching OpenCode command (deterministic, known operation):
+1. Discover: hivemind-command-engine({action:"list_commands"})
+2. Analyze: hivemind-command-engine({action:"analyze_contract", commandName:"..."}) 
+3. Execute: execute-slash-command({command:"name", arguments:"..."})
+4. Verify: Check return { responseId, partsCount, errorType }
 
 ### Step 4: MONITOR — Check at Gates, Not Continuously
 

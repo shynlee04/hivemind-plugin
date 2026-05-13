@@ -35,7 +35,7 @@ Every task has a lineage. Route to the bundle that matches the task's category. 
 
 Given a task intent, determine which hm-* skills should be loaded. This skill maps task categories to skill loading bundles. It does NOT execute skills — it only determines which skills to load and in what order.
 
-**Six task categories, six skill bundles:**
+**Seven task categories, seven skill bundles:**
 
 | Category | Skills | Max |
 |----------|--------|-----|
@@ -45,6 +45,7 @@ Given a task intent, determine which hm-* skills should be loaded. This skill ma
 | Quality | hm-test-driven-execution + hm-gate-orchestrator | 2 |
 | Debug | hm-debug + hm-completion-looping | 2 |
 | Review | hm-production-readiness + hm-gate-orchestrator | 2 |
+| Command Routing | hivemind-command-engine + execute-slash-command | 2 |
 
 ## On Load
 
@@ -61,6 +62,11 @@ Given a task intent, determine which hm-* skills should be loaded. This skill ma
 - "skill bundle for task" / "load skills for"
 - "skill loading order" / "determine skill lineage"
 - "map task to skills" / "skill selection for workflow"
+
+- "execute command" / "command dispatch"
+- "slash command" / "command routing"
+- "list commands" / "run command"
+- "discover commands"
 
 ## Routing Map
 
@@ -130,6 +136,19 @@ Given a task intent, determine which hm-* skills should be loaded. This skill ma
 | 2 | `hm-gate-orchestrator` | Quality gate triad for final approval |
 
 **Loading order:** hm-production-readiness (evidence collection) → hm-gate-orchestrator (gate verification)
+
+### Category 7: Command Routing & Execution
+
+**Intent signals:** "execute command", "command dispatch", "slash command", "command routing", "list commands", "run command", "discover commands"
+
+| Priority | Skill | Role |
+|----------|-------|------|
+| 1 | `hivemind-command-engine` | CQRS read-side — discover and analyze commands |
+| 2 | `execute-slash-command` | Deterministic command execution (SDK POST /session/:id/command) |
+
+**Loading order:** hivemind-command-engine first (list_commands for discovery), then execute-slash-command for selected command
+
+**Notes:** Uses CQRS pattern — read-side (hivemind-command-engine) before write-side (execute-slash-command). Max 2 skills.
 
 ## Loading Rules
 
