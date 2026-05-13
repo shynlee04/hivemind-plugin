@@ -10,7 +10,6 @@ import {
   getContinuityStoragePath,
 } from "../../src/task-management/continuity/index.js"
 import { getDelegationsFilePath } from "../../src/task-management/continuity/delegation-persistence.js"
-import { getEventTrackerArtifactPaths } from "../../src/task-management/journal/event-tracker/writer.js"
 
 const PROJECT_ROOT = process.cwd()
 
@@ -50,15 +49,6 @@ describe("Q6 State Root Migration", () => {
 
       // Both should share the same parent directory
       expect(dirname(delegationsPath)).toBe(dirname(continuityPath))
-    })
-
-    it("event-tracker writes to .hivemind/event-tracker/", () => {
-      const paths = getEventTrackerArtifactPaths(PROJECT_ROOT, "ses_test")
-      expect(paths.dir).toContain(".hivemind")
-      expect(paths.dir).toContain("event-tracker")
-      expect(paths.dir).not.toContain(".opencode")
-      expect(paths.jsonPath).toMatch(/\.hivemind[\/\\]event-tracker[\/\\]ses_test\.json$/)
-      expect(paths.markdownPath).toMatch(/\.hivemind[\/\\]event-tracker[\/\\]ses_test\.md$/)
     })
   })
 
@@ -103,11 +93,6 @@ describe("Q6 State Root Migration", () => {
     it(".hivemind/state/ is in .gitignore", () => {
       const gitignore = readFileSync(resolve(PROJECT_ROOT, ".gitignore"), "utf-8")
       expect(gitignore).toContain(".hivemind/state/")
-    })
-
-    it(".hivemind/event-tracker/ artifacts are in .gitignore", () => {
-      const gitignore = readFileSync(resolve(PROJECT_ROOT, ".gitignore"), "utf-8")
-      expect(gitignore).toContain(".hivemind/event-tracker")
     })
 
     it(".hivemind/journal/ artifacts are in .gitignore", () => {

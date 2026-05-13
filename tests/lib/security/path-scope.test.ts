@@ -23,11 +23,9 @@ describe("path scope", () => {
     expect(resolveScopedPath(root, "session.md")).toBe(resolve(root, "session.md"))
   })
 
-  it("allows canonical .hivemind state and event-tracker paths", () => {
+  it("allows canonical .hivemind state paths", () => {
     expect(assertPathWithinRoot(root, ".hivemind/state/session-continuity.json", "runtime state"))
       .toBe(resolve(root, ".hivemind/state/session-continuity.json"))
-    expect(assertPathWithinRoot(root, ".hivemind/event-tracker/ses_test.json", "event tracker"))
-      .toBe(resolve(root, ".hivemind/event-tracker/ses_test.json"))
   })
 
   it("rejects traversal outside the allowed root", () => {

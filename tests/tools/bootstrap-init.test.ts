@@ -9,7 +9,6 @@ import { bootstrapInit } from "../../src/tools/config/bootstrap-init.js"
 const CANONICAL_HIVEMIND_DIRECTORIES = [
   "state",
   "delegation",
-  "event-tracker",
   "journal",
   "lineage",
   "daily-notes",

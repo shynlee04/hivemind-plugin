@@ -53,12 +53,12 @@ describe("hivemind-pressure tool", () => {
       summary: "runtime pressure detected",
       tier: 6,
       toolName: "session-patch",
-      evidenceRef: "event-tracker:ses_root",
+      evidenceRef: "session-tracker:ses_root",
     } as never, mockCtx)
     const result = parseResult(raw)
 
     expect(result.kind).toBe("success")
-    expect(result.data).toMatchObject({ event: { eventType: "runtime-pressure", evidenceRefs: ["event-tracker:ses_root"] } })
+    expect(result.data).toMatchObject({ event: { eventType: "runtime-pressure", evidenceRefs: ["session-tracker:ses_root"] } })
     expect(existsSync(join(root, ".hivemind", "state", "trajectory-ledger.json"))).toBe(true)
     expect(existsSync(join(root, ".hivemind", "state", "delegations.json"))).toBe(false)
     expect(existsSync(join(root, ".hivemind", "state", "session-continuity.json"))).toBe(false)

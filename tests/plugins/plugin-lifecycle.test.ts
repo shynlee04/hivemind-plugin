@@ -74,69 +74,7 @@ describe("plugin lifecycle wiring", () => {
     expect(plugin.tool["hivemind-agent-work-export"]).toBeDefined()
   })
 
-  it("automatically writes event-tracker artifacts for canonical OpenCode lifecycle events", async () => {
-    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-"))
-
-    try {
-      const plugin = await HarnessControlPlane({
-        client: createPluginClient(),
-        directory: projectRoot,
-      } as never)
-
-      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_2b7a" } } } })
-
-      expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_2b7a.json"))).toBe(true)
-      expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_2b7a.md"))).toBe(true)
-    } finally {
-      rmSync(projectRoot, { recursive: true, force: true })
-    }
-  })
-
-  it("automatically routes parent-linked sub-session lifecycle events to the parent event-tracker artifact", async () => {
-    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-root-"))
-
-    try {
-      const plugin = await HarnessControlPlane({
-        client: createPluginClient(),
-        directory: projectRoot,
-      } as never)
-
-      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } } })
-      await plugin.event({ event: { type: "session.updated", properties: { info: { id: "ses_bgr5", parentID: "ses_23a0root" } } } })
-
-      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
-      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
-      const document = JSON.parse(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")) as { sessionId?: string; events?: Array<{ sessionId?: string }> }
-      expect(document.sessionId).toBe("ses_23a0root")
-      expect(document.events).toEqual(expect.arrayContaining([expect.objectContaining({ sessionId: "ses_bgr5" })]))
-    } finally {
-      rmSync(projectRoot, { recursive: true, force: true })
-    }
-  })
-
-  it("does not write event-tracker artifacts for message firehose plugin events", async () => {
-    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-filter-"))
-
-    try {
-      const plugin = await HarnessControlPlane({
-        client: createPluginClient(),
-        directory: projectRoot,
-      } as never)
-
-      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } } })
-      await plugin.event({ event: { type: "message.updated", properties: { info: { id: "msg_should_not_be_root" }, sessionID: "ses_23a0root" } } })
-      await plugin.event({ event: { type: "message.part.delta", properties: { info: { id: "ses_23a0child", parentID: "ses_23a0root" } } } })
-
-      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
-      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
-      expect(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")).not.toContain("message.part.delta")
-      expect(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")).not.toContain("msg_should_not_be_root")
-    } finally {
-      rmSync(projectRoot, { recursive: true, force: true })
-    }
-  })
-
-  it("keeps lifecycle notification replay independent from event-tracker admission", async () => {
+  it("verifies lifecycle notification replay functions independently", async () => {
     const projectRoot = mkdtempSync(join(tmpdir(), "plugin-lifecycle-observers-"))
     const client = createPluginClient()
 
@@ -182,44 +120,12 @@ describe("plugin lifecycle wiring", () => {
 
       expect(client.session.prompt).toHaveBeenCalledTimes(1)
       expect(getSessionContinuity("ses_23a0root")?.metadata.pendingNotifications).toEqual([])
-
-      const artifactDir = join(projectRoot, ".hivemind", "event-tracker")
-      expect(readdirSync(artifactDir).sort()).toEqual(["ses_23a0.json", "ses_23a0.md"])
-      expect(readFileSync(join(artifactDir, "ses_23a0.json"), "utf-8")).not.toContain("msg_not_a_root")
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
   })
 
-  it("records plugin tool completion as concise contextual metadata when a root session is attachable", async () => {
-    const projectRoot = mkdtempSync(join(tmpdir(), "plugin-event-tracker-tool-"))
-    const rawOutput = `FULL_TOOL_OUTPUT_${"x".repeat(2_000)}`
-
-    try {
-      const plugin = await HarnessControlPlane({
-        client: createPluginClient(),
-        directory: projectRoot,
-      } as never)
-
-      await plugin.event({ event: { type: "session.created", properties: { info: { id: "ses_23a0root" } } } })
-      await plugin["tool.execute.after"]?.({
-        tool: "bash",
-        args: { sessionID: "ses_23a0root", command: "git status --short" },
-      }, rawOutput)
-
-      const artifactPath = join(projectRoot, ".hivemind", "event-tracker", "ses_23a0.json")
-      const document = JSON.parse(readFileSync(artifactPath, "utf-8")) as {
-        toolsUsed?: Array<{ toolName?: string; summary?: string }>
-      }
-      expect(document.toolsUsed).toEqual([expect.objectContaining({ toolName: "bash" })])
-      expect(document.toolsUsed?.[0]?.summary?.length).toBeLessThanOrEqual(240)
-      expect(readFileSync(artifactPath, "utf-8")).not.toContain(rawOutput)
-    } finally {
-      rmSync(projectRoot, { recursive: true, force: true })
-    }
-  })
-
-  it("composes tool-guard metadata injection with plugin event-tracker after-hook work", async () => {
+  it("composes tool-guard metadata injection with plugin after-hook work", async () => {
     const projectRoot = mkdtempSync(join(tmpdir(), "plugin-composed-tool-after-"))
     const output: { metadata?: unknown } = {}
 
@@ -236,7 +142,6 @@ describe("plugin lifecycle wiring", () => {
       expect(output.metadata).toEqual(expect.objectContaining({
         _harness: expect.objectContaining({ totalToolCalls: 1 }),
       }))
-      expect(existsSync(join(projectRoot, ".hivemind", "event-tracker", "ses_23a0.json"))).toBe(true)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }

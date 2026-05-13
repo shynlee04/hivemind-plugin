@@ -15,7 +15,6 @@ let projectRoot = ""
 beforeEach(() => {
   projectRoot = mkdtempSync(join(tmpdir(), "sidecar-readonly-"))
   mkdirSync(join(projectRoot, ".hivemind", "state"), { recursive: true })
-  mkdirSync(join(projectRoot, ".hivemind", "event-tracker"), { recursive: true })
   mkdirSync(join(projectRoot, ".planning"), { recursive: true })
   mkdirSync(join(projectRoot, "src"), { recursive: true })
 })
@@ -30,11 +29,6 @@ describe("sidecar readonly-state — SIDECAR-03 enforcement", () => {
   describe("isCanonicalStatePath", () => {
     it("recognizes paths under .hivemind/state/", () => {
       const target = join(projectRoot, ".hivemind", "state", "delegations.json")
-      expect(isCanonicalStatePath(target, { projectRoot })).toBe(true)
-    })
-
-    it("recognizes paths under .hivemind/event-tracker/", () => {
-      const target = join(projectRoot, ".hivemind", "event-tracker", "today.md")
       expect(isCanonicalStatePath(target, { projectRoot })).toBe(true)
     })
 
