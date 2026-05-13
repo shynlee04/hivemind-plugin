@@ -79,3 +79,27 @@ describe("CP-ST-03-01: Event-Tracker Excision (RED — MUST FAIL)", () => {
     )
   })
 })
+
+describe("Task 2: Test file cleanup (RED — MUST FAIL)", () => {
+  const testFiles = [
+    "tests/plugins/plugin-lifecycle.test.ts",
+    "tests/plugin/bootstrap-tools-registration.test.ts",
+    "tests/lib/state-root-migration.test.ts",
+    "tests/lib/security/path-scope.test.ts",
+    "tests/features/session-tracker/integration/e2e-verification.test.ts",
+    "tests/tools/bootstrap-init.test.ts",
+    "tests/tools/hivemind-pressure.test.ts",
+    "tests/sidecar/readonly-state.test.ts",
+  ]
+
+  for (const relPath of testFiles) {
+    it(`AC-10/AC-11: ${relPath} has no event-tracker references`, () => {
+      const { readFileSync } = require("node:fs")
+      const content = readFileSync(
+        join(PROJECT_ROOT, ...relPath.split("/")),
+        "utf-8"
+      )
+      expect(content).not.toMatch(/event-tracker|eventTracker/)
+    })
+  }
+})
