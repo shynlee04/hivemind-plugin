@@ -128,11 +128,12 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 |-------|-------|--------|------------|-------------------|
 | CP-ST-01 | Session Tracker Revamp | ✅ COMPLETE | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: 256 tests pass, dual-gate, depth computation, fork inheritance |
 | CP-ST-02 | Session Tracker Deep Fix — Remaining | ✅ COMPLETE | CP-ST-01 (COMPLETE) | 3/3 plans, 12 commits — PendingDispatchRegistry + Three-Gate + PreToolUse + Delegator Attribution + Orphan Cleanup |
-| CP-ST-03 | Architecture Detox — Plugin Purification + Event-Tracker Excision | 🔴 READY — PLANNED | CP-ST-02 (COMPLETE) | L2-L3: plugin.ts → pure composition (≤250 LOC per D-01), event-tracker fully removed, docs synced |
+| CP-ST-03 | Architecture Detox — Plugin Purification + Event-Tracker Excision | 🟡 IN PROGRESS — 2/3 PLANS COMPLETE | CP-ST-02 (COMPLETE) | L2-L3: plugin.ts → pure composition (267 LOC, zero inline closures), event-tracker fully removed, docs synced |
 
-**Plans (CP-ST-03):** 2 plans in 2 waves
+**Plans (CP-ST-03):** 3 plans in 3 waves
 - [x] CP-ST-03-01-PLAN.md — Event-Tracker Excision + Documentation Sync (Wave 1) — requirements: AC-01..AC-13
-- [ ] CP-ST-03-02-PLAN.md — Plugin.ts Composition Purification (Wave 2) — requirements: AC-14..AC-29
+- [x] CP-ST-03-02-PLAN.md — Plugin.ts Composition Purification (Wave 2) — requirements: AC-14..AC-29
+- [ ] CP-ST-03-03-PLAN.md — Verification + Migration Cleanup (Wave 3)
 
 **Plans (CP-ST-01):**
 - [x] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)

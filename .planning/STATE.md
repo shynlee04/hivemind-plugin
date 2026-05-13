@@ -168,6 +168,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-08** — STATE.md updated: current phase set to SR-0, health green, control mode set to managed autonomous loop, SR directories registered
 - **2026-05-08** — Restructuring plan refined: `.planning/architecture/structure-restructuring-plan-2026-05-08.md` contains complete file mapping (current → target), 10-phase migration plan with risk assessment, rollback strategy, circular dependency resolution, verification commands
 - **2026-05-12** — Phase 13 added: Fix all session-tracker defects with gatekeeping TDD SPEC-driven honest validation and regression prevention
+- **2026-05-13** — CP-ST-03 phase created: Architecture Detox (event-tracker excision + plugin.ts purification). Plan 01 (Event-Tracker Excision) complete — 22 files deleted, 7 docs synced, EXCISION.md test (13 assertions) passes. Plan 02 (Plugin.ts Purification) complete — 7 inline closures extracted to 14 files, plugin.ts 330→267 LOC (19% reduction), 33 new unit tests all pass.
 
 ### Key Restructuring Decisions
 
