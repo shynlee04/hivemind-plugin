@@ -126,7 +126,7 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
 | CP-ST-01 | Session Tracker Revamp | ✅ COMPLETE | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: 256 tests pass, dual-gate, depth computation, fork inheritance |
-| CP-ST-02 | Session Tracker Deep Fix — Remaining | 🔵 READY | CP-ST-01 (COMPLETE) | L2-L3: PreToolUse hook, Server API integration, delegator attribution |
+| CP-ST-02 | Session Tracker Deep Fix — Remaining | ✅ COMPLETE | CP-ST-01 (COMPLETE) | 3/3 plans, 12 commits — PendingDispatchRegistry + Three-Gate + PreToolUse + Delegator Attribution + Orphan Cleanup |
 
 **Plans (CP-ST-01):**
 - [x] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)
@@ -135,9 +135,9 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 - [x] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
 
 **Plans (CP-ST-02):** 3 plans in 3 waves
-- [ ] CP-ST-02-01-PLAN.md — PendingDispatchRegistry + Three-Gate Classification (Wave 1) — requirements: AC-02, AC-05
-- [ ] CP-ST-02-02-PLAN.md — PreToolUse Hook + Server API Polling (Wave 2) — requirements: AC-10
-- [ ] CP-ST-02-03-PLAN.md — Delegator Attribution + Cleanup (Wave 3) — requirements: AC-01, AC-03, AC-06, AC-08, AC-09
+- [x] CP-ST-02-01-PLAN.md — PendingDispatchRegistry + Three-Gate Classification (Wave 1) — requirements: AC-02, AC-05 ✅
+- [x] CP-ST-02-02-PLAN.md — PreToolUse Hook + Server API Polling (Wave 2) — requirements: AC-10 ✅
+- [x] CP-ST-02-03-PLAN.md — Delegator Attribution + Cleanup (Wave 3) — requirements: AC-01, AC-03, AC-06, AC-08, AC-09 ✅
 
 ### BOOT-01 Scope: Research & Architecture Decision
 
@@ -380,4 +380,4 @@ Plans:
 - [x] 13-06-PLAN.md — Integration Tests — Wave 4 (VERIFICATION)
 
 ---
-*Last updated: 2026-05-11 — GOV-01 (Phase 11) + CP-ST-02 (Phase 12) added for governance reconciliation and CP-ST-01 remediation*
+*Last updated: 2026-05-13 — CP-ST-02 COMPLETE (3 waves, 12 commits, 276 session-tracker tests). Pre-existing failures: 3 test files (steering-engine, bootstrap-tools-registration, plugin-lifecycle) — not CP-ST-02 regressions*
