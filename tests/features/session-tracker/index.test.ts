@@ -316,3 +316,196 @@ describe("handleToolExecuteBefore()", () => {
     )
   })
 })
+
+// ── handleChatMessage classification-first (D-05) ─────────────────────────
+
+describe("handleChatMessage() — classify BEFORE ensureSessionReady (D-05)", () => {
+  let tracker: SessionTracker
+  let mockCreateSessionDir: ReturnType<typeof vi.fn>
+  let mockInitializeSessionFile: ReturnType<typeof vi.fn>
+  let mockAppendChildTurn: ReturnType<typeof vi.fn>
+  let mockMessageCaptureHandler: ReturnType<typeof vi.fn>
+  let mockAppLog: ReturnType<typeof vi.fn>
+  let mockGetParent: ReturnType<typeof vi.fn>
+  let mockIsChild: ReturnType<typeof vi.fn>
+  let mockPendingHas: ReturnType<typeof vi.fn>
+  let mockPendingGet: ReturnType<typeof vi.fn>
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+
+    mockCreateSessionDir = vi.fn().mockResolvedValue(undefined)
+    mockInitializeSessionFile = vi.fn().mockResolvedValue(undefined)
+    mockAppendChildTurn = vi.fn().mockResolvedValue(undefined)
+    mockMessageCaptureHandler = vi.fn().mockResolvedValue(undefined)
+    mockAppLog = vi.fn()
+    mockGetParent = vi.fn().mockReturnValue(undefined)
+    mockIsChild = vi.fn().mockReturnValue(false)
+    mockPendingHas = vi.fn().mockReturnValue(false)
+    mockPendingGet = vi.fn().mockReturnValue(undefined)
+
+    // Reset getSession mock behavior
+    mockGetSession.mockReset()
+    mockGetSession.mockResolvedValue({ id: "ses_test", parentID: undefined })
+
+    tracker = new SessionTracker({
+      client: {
+        app: { log: mockAppLog },
+        session: {
+          get: mockGetSession,
+          children: vi.fn().mockResolvedValue({ data: [] }),
+        },
+      } as any,
+      projectRoot: "/fake/project",
+    })
+
+    // Wire internals for test verification
+    ;(tracker as any).sessionWriter = {
+      createSessionDir: mockCreateSessionDir,
+      initializeSessionFile: mockInitializeSessionFile,
+    }
+    ;(tracker as any).childWriter = {
+      appendChildTurn: mockAppendChildTurn,
+    }
+    ;(tracker as any).messageCapture = {
+      handleChatMessage: mockMessageCaptureHandler,
+    }
+    ;(tracker as any).hierarchyIndex = {
+      getParent: mockGetParent,
+      isChild: mockIsChild,
+    }
+    ;(tracker as any).pendingRegistry = {
+      has: mockPendingHas,
+      get: mockPendingGet,
+    }
+    ;(tracker as any).projectIndexWriter = {
+      addSession: vi.fn().mockResolvedValue(undefined),
+    }
+  })
+
+  const chatInput = {
+    sessionID: "ses_child_abc",
+    agent: "hm-l2-researcher",
+    model: { providerID: "anthropic", modelID: "claude-sonnet-4-20250514" },
+    messageID: "msg_001",
+    variant: "default",
+  }
+
+  const chatOutput = {
+    message: { role: "assistant" },
+    parts: [
+      { type: "text", text: "I found the issue: the key is wrong." },
+      { type: "thinking", text: "Let me think about this..." },
+    ],
+  }
+
+  // ── Test 1: Child via SDK parentID → skip ensureSessionReady ──────────
+
+  it("should NOT call ensureSessionReady when SDK reports parentID (Gate 1 child)", async () => {
+    mockGetSession.mockResolvedValue({
+      id: "ses_child_abc",
+      parentID: "ses_parent_xyz",
+    })
+
+    await tracker.handleChatMessage(chatInput, chatOutput)
+
+    // ensureSessionReady's side effect: createSessionDir must NOT be called
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    // Child should be routed to childWriter
+    expect(mockAppendChildTurn).toHaveBeenCalledWith(
+      "ses_parent_xyz",
+      "ses_child_abc",
+      expect.objectContaining({
+        actor: "hm-l2-researcher",
+        content: "I found the issue: the key is wrong.",
+        tools: [],
+      }),
+    )
+    // messageCapture must NOT be used for child sessions
+    expect(mockMessageCaptureHandler).not.toHaveBeenCalled()
+  })
+
+  // ── Test 2: Child via HierarchyIndex → skip ensureSessionReady ────────
+
+  it("should NOT call ensureSessionReady when HierarchyIndex detects child (Gate 2)", async () => {
+    // SDK reports no parent
+    mockGetSession.mockResolvedValue({ id: "ses_child_abc", parentID: undefined })
+    // But HierarchyIndex knows the parent
+    mockGetParent.mockReturnValue("ses_parent_from_index")
+
+    await tracker.handleChatMessage(chatInput, chatOutput)
+
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    expect(mockAppendChildTurn).toHaveBeenCalledWith(
+      "ses_parent_from_index",
+      "ses_child_abc",
+      expect.any(Object),
+    )
+    expect(mockMessageCaptureHandler).not.toHaveBeenCalled()
+  })
+
+  // ── Test 3: Child via PendingDispatchRegistry → skip ensureSessionReady ─
+
+  it("should NOT call ensureSessionReady when PendingDispatchRegistry detects child (Gate 3)", async () => {
+    // SDK and HierarchyIndex both miss
+    mockGetSession.mockResolvedValue({ id: "ses_child_abc", parentID: undefined })
+    mockGetParent.mockReturnValue(undefined)
+    // But pendingRegistry has an entry for this session's parent
+    mockPendingHas.mockReturnValue(true)
+    mockPendingGet.mockReturnValue({
+      parentSessionID: "ses_parent_from_pending",
+      callID: "call_xyz",
+      subagentType: "hm-l2-researcher",
+      timestamp: Date.now(),
+    })
+
+    await tracker.handleChatMessage(chatInput, chatOutput)
+
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    expect(mockAppendChildTurn).toHaveBeenCalledWith(
+      "ses_parent_from_pending",
+      "ses_child_abc",
+      expect.any(Object),
+    )
+    expect(mockMessageCaptureHandler).not.toHaveBeenCalled()
+  })
+
+  // ── Test 4: Main session → ensureSessionReady IS called ──────────────
+
+  it("should call ensureSessionReady for main sessions (no parent, no hierarchy, no pending)", async () => {
+    mockGetSession.mockResolvedValue({ id: "ses_main_123", parentID: undefined })
+    mockGetParent.mockReturnValue(undefined)
+    mockPendingHas.mockReturnValue(false)
+
+    // Must use the same sessionID as in ensureSessionReady flow
+    const mainInput = { ...chatInput, sessionID: "ses_main_123" }
+
+    await tracker.handleChatMessage(mainInput, chatOutput)
+
+    // ensureSessionReady's side effect: createSessionDir MUST be called
+    expect(mockCreateSessionDir).toHaveBeenCalledWith("ses_main_123")
+    // messageCapture should be called
+    expect(mockMessageCaptureHandler).toHaveBeenCalled()
+    // childWriter must NOT be used
+    expect(mockAppendChildTurn).not.toHaveBeenCalled()
+  })
+
+  // ── Test 5: Error handling — never throws ────────────────────────────
+
+  it("should catch errors internally and never throw (best-effort)", async () => {
+    // Trigger an error in the main path
+    mockMessageCaptureHandler.mockRejectedValue(new Error("Disk full"))
+
+    // Should not throw
+    await expect(
+      tracker.handleChatMessage({ ...chatInput, sessionID: "ses_error_test" }, chatOutput),
+    ).resolves.toBeUndefined()
+
+    // Should log the error
+    const errorCalls = mockAppLog.mock.calls.filter(
+      (call: any) =>
+        call[0]?.body?.message?.includes("chat.message handler failed"),
+    )
+    expect(errorCalls.length).toBeGreaterThanOrEqual(1)
+  })
+})
