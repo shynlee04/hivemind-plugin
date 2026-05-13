@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-13T15:38:01.281Z"
+last_updated: "2026-05-13T16:53:14.000Z"
 progress:
   total_phases: 1
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_plans: 9
+  completed_plans: 7
+  percent: 78
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -23,9 +23,9 @@ progress:
 
 ## Current Status
 
-**Active phase:** CP-ST-03 — Architecture Detox. 2 of 3 plans complete.
-**Health:** 🟢 Build passes (`npm run build`), typecheck clean (`npm run typecheck`), 2055 tests (7 pre-existing failures — tracked for CP-ST-03-03). 33 new hook module tests added.
-**CP-ST-03 status:** 🟡 IN PROGRESS — Plan 01 (Event-Tracker Excision ✓), Plan 02 (Plugin.ts Purification ✓), Plan 03 (Verification + Cleanup — pending).
+**Active phase:** CP-ST-04 — Session-Tracker Architecture Fix. 1 of 3 plans complete.
+**Health:** 🟢 Build passes, typecheck clean on changed files, 288/290 session-tracker tests pass (2 pre-existing cleanup.test.ts failures unrelated). PendingDispatchRegistry byParent index + handleChatMessage classification-first ordering delivered.
+**CP-ST-04 status:** 🟡 IN PROGRESS — Plan 01 (PendingDispatchRegistry + Classification Fix ✓), Plan 02 (pending), Plan 03 (pending).
 
 Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
 
@@ -98,6 +98,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | O3-DOCS-FOUNDATION | Option 3 Sector Governance Foundation is docs-only L5 evidence layered onto CA-04, not a runtime implementation claim | NEW — 2026-05-07 |
 | WS-MCM | Meta-Concept Migration workstream added — 4 phases (MCM-01 through MCM-04) for agent/skill migration, config integration, and end-user customization | NEW — 2026-05-07 |
 | D-MCM-01 | gsd-* agents/skills are NEVER shipped — dev tooling boundary enforced | NEW — 2026-05-07 |
+| D-CP-ST-04-01 | PendingDispatchRegistry byParent reverse index (D-04) + handleChatMessage classification-first (D-05) delivered; 4 atomic commits, 37 new tests, 0 regressions | NEW — 2026-05-13 |
 | P0-GOV | Phase 0 Governance Baseline blocks BOOT/MCM/f-04 until identity, source-plane, config, meta-authoring, and route gates pass | NEW — 2026-05-07 |
 | P0-ID | Product is Hivemind; package/bin are `hivemind`; harness is project type; OpenCode is platform; `opencode-harness` and `hivemind-tools` are legacy aliases only | NEW — 2026-05-07 |
 | BOOT-02R | BOOT-02 implementation summaries were reconciled before BOOT-03 automation resumed | COMPLETE — 2026-05-08 |
