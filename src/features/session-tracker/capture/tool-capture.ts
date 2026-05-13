@@ -19,6 +19,7 @@ import type { ChildWriter } from "../persistence/child-writer.js"
 import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
+import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { ChildSessionRecord } from "../types.js"
 import { isValidSessionID } from "../types.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
@@ -59,6 +60,8 @@ export class ToolCapture {
   private sessionIndexWriter: SessionIndexWriter
   private projectIndexWriter: ProjectIndexWriter
   private hierarchyIndex: HierarchyIndex
+  // @ts-ignore TS6133 — plumbing for Plan 02-03 delegator attribution
+  private pendingRegistry: PendingDispatchRegistry | undefined
 
   /**
    * @param deps - Injected dependencies.
@@ -75,6 +78,7 @@ export class ToolCapture {
     sessionIndexWriter: SessionIndexWriter
     projectIndexWriter: ProjectIndexWriter
     hierarchyIndex: HierarchyIndex
+    pendingRegistry?: PendingDispatchRegistry
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
@@ -82,6 +86,7 @@ export class ToolCapture {
     this.sessionIndexWriter = deps.sessionIndexWriter
     this.projectIndexWriter = deps.projectIndexWriter
     this.hierarchyIndex = deps.hierarchyIndex
+    this.pendingRegistry = deps.pendingRegistry
   }
 
   /**

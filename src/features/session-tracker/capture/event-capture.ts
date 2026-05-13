@@ -21,6 +21,7 @@ import type { ChildWriter } from "../persistence/child-writer.js"
 import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
+import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 
@@ -41,6 +42,7 @@ export class EventCapture {
   private sessionIndexWriter: SessionIndexWriter
   private projectIndexWriter: ProjectIndexWriter | undefined
   private hierarchyIndex: HierarchyIndex | undefined
+  private pendingRegistry: PendingDispatchRegistry | undefined
 
   /**
    * @param deps - Injected dependencies.
@@ -57,6 +59,7 @@ export class EventCapture {
     sessionIndexWriter: SessionIndexWriter
     projectIndexWriter?: ProjectIndexWriter
     hierarchyIndex?: HierarchyIndex
+    pendingRegistry?: PendingDispatchRegistry
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
@@ -64,6 +67,7 @@ export class EventCapture {
     this.sessionIndexWriter = deps.sessionIndexWriter
     this.projectIndexWriter = deps.projectIndexWriter
     this.hierarchyIndex = deps.hierarchyIndex
+    this.pendingRegistry = deps.pendingRegistry
   }
 
   /**
@@ -204,6 +208,15 @@ export class EventCapture {
           return
         }
 
+        // Gate 3: Check pending dispatch registry.
+        // If a parent session recently dispatched a task, the resulting
+        // child session is tracked here even before the SDK or hierarchy
+        // index knows about it.
+        if (this.pendingRegistry?.has(sessionID)) {
+          // Child session — skip directory creation (handled by tool-capture)
+          return
+        }
+
         // Root session — create subdirectory + .md file
         await this.sessionWriter.createSessionDir(sessionID)
         await this.sessionWriter.initializeSessionFile(sessionID, {
@@ -244,11 +257,16 @@ export class EventCapture {
       // Check if this is a child session
       const session = await getSession(this.client, sessionID)
       const parentID = session.parentID as string | null | undefined
-      if (parentID !== null && parentID !== undefined) {
+      // Gate 3 fallback: check pending dispatch registry
+      const isChild = (parentID !== null && parentID !== undefined) || this.pendingRegistry?.has(sessionID)
+      if (isChild) {
+        // Resolve effective parentID: prefer SDK, fall back to pendingRegistry
+        const effectiveParentID = parentID ?? this.pendingRegistry?.get(sessionID)?.parentSessionID
+        if (!effectiveParentID) return
         // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(parentID, sessionID, "idle")
+        await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "idle")
         // Also update session-local index hierarchy
-        await this.sessionIndexWriter.updateChildStatus(parentID, sessionID, "idle")
+        await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "idle")
         return
       }
       // Main session — existing behavior
@@ -276,10 +294,15 @@ export class EventCapture {
       // Check if this is a child session
       const session = await getSession(this.client, sessionID)
       const parentID = session.parentID as string | null | undefined
-      if (parentID !== null && parentID !== undefined) {
+      // Gate 3 fallback: check pending dispatch registry
+      const isChild = (parentID !== null && parentID !== undefined) || this.pendingRegistry?.has(sessionID)
+      if (isChild) {
+        // Resolve effective parentID: prefer SDK, fall back to pendingRegistry
+        const effectiveParentID = parentID ?? this.pendingRegistry?.get(sessionID)?.parentSessionID
+        if (!effectiveParentID) return
         // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(parentID, sessionID, "completed")
-        await this.sessionIndexWriter.updateChildStatus(parentID, sessionID, "completed")
+        await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "completed")
+        await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "completed")
         return
       }
       // Main session — existing behavior
@@ -307,10 +330,15 @@ export class EventCapture {
       // Check if this is a child session
       const session = await getSession(this.client, sessionID)
       const parentID = session.parentID as string | null | undefined
-      if (parentID !== null && parentID !== undefined) {
+      // Gate 3 fallback: check pending dispatch registry
+      const isChild = (parentID !== null && parentID !== undefined) || this.pendingRegistry?.has(sessionID)
+      if (isChild) {
+        // Resolve effective parentID: prefer SDK, fall back to pendingRegistry
+        const effectiveParentID = parentID ?? this.pendingRegistry?.get(sessionID)?.parentSessionID
+        if (!effectiveParentID) return
         // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(parentID, sessionID, "error")
-        await this.sessionIndexWriter.updateChildStatus(parentID, sessionID, "error")
+        await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "error")
+        await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "error")
         return
       }
       // Main session — existing behavior

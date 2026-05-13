@@ -47,6 +47,7 @@ import { ChildWriter } from "./persistence/child-writer.js"
 import { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { HierarchyIndex } from "./persistence/hierarchy-index.js"
+import { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { readFile } from "node:fs/promises"
@@ -89,6 +90,13 @@ export class SessionTracker {
   // Consulted by ensureSessionReady and handleChatMessage as a SECOND gate
   // after SDK parentID. Built from disk at init, updated live by handleTask().
   private hierarchyIndex!: HierarchyIndex
+
+  /**
+   * In-memory registry for sessions that had task tool dispatch detected
+   * at PreToolUse time but whose child session ID is not yet known.
+   * Provides Gate 3 (fallback) classification. Never persisted to disk.
+   */
+  private pendingRegistry!: PendingDispatchRegistry
 
   // Recovery
   private recovery!: SessionRecovery
@@ -173,6 +181,17 @@ export class SessionTracker {
     // it at all. The hierarchy index (populated by handleTask() at task
     // delegation time) knows the truth.
     if (this.hierarchyIndex?.isChild(sessionID)) {
+      this.bootstrappedSessions.add(sessionID)
+      return
+    }
+
+    // Gate 3: Check pending dispatch registry.
+    // If a parent session recently dispatched a task tool (detected at
+    // PreToolUse time), the resulting child session is tracked here even
+    // before the SDK reports parentID or the hierarchy index is populated.
+    // This closes the race condition where session.created fires during
+    // TaskTool.execute(), before tool.execute.after populates HierarchyIndex.
+    if (this.pendingRegistry?.has(sessionID)) {
       this.bootstrappedSessions.add(sessionID)
       return
     }
@@ -527,6 +546,11 @@ export class SessionTracker {
       this.hierarchyIndex = new HierarchyIndex({ projectRoot: this.projectRoot })
       await this.hierarchyIndex.buildFromDisk()
 
+      // Create pending dispatch registry (Gate 3 classification fallback).
+      // Populated at tool.execute.before time by handleToolExecuteBefore(),
+      // consumed by ensureSessionReady() and handleSessionCreated().
+      this.pendingRegistry = new PendingDispatchRegistry()
+
       // Create transform utility
       this.agentTransform = new AgentTransform()
 
@@ -538,6 +562,7 @@ export class SessionTracker {
         sessionIndexWriter: this.sessionIndexWriter,
         projectIndexWriter: this.projectIndexWriter,
         hierarchyIndex: this.hierarchyIndex,
+        pendingRegistry: this.pendingRegistry,
       })
       this.messageCapture = new MessageCapture({
         client: this.client,
@@ -553,6 +578,7 @@ export class SessionTracker {
         sessionIndexWriter: this.sessionIndexWriter,
         projectIndexWriter: this.projectIndexWriter,
         hierarchyIndex: this.hierarchyIndex,
+        pendingRegistry: this.pendingRegistry,
       })
 
       // Initialize recovery (reads project-continuity.json per D-05)
