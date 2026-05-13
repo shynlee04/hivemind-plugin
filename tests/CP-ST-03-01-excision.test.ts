@@ -68,14 +68,16 @@ describe("CP-ST-03-01: Event-Tracker Excision (RED — MUST FAIL)", () => {
     expect(content).not.toMatch(/removeLegacyStateFiles/)
   })
 
-  it("AC-03/AC-13: plugin.ts has no event-tracker/dead code references", () => {
+  it("AC-03/AC-13: plugin.ts has no dead event-tracker code (migration code excluded)", () => {
     const { readFileSync } = require("node:fs")
     const content = readFileSync(
       join(PROJECT_ROOT, "src", "plugin.ts"),
       "utf-8"
     )
+    // Dead commented patterns must be absent. Migration code (CP-ST-03 D-03)
+    // legitimately references "event-tracker" for path construction — exclude it.
     expect(content).not.toMatch(
-      /event-tracker|consumeJourneyFact|sessionJourneyEventObserver|createEventTrackerArtifactsFromHook|shouldTrackEventTrackerEvent/
+      /consumeJourneyFact|sessionJourneyEventObserver|createEventTrackerArtifactsFromHook|shouldTrackEventTrackerEvent/
     )
   })
 })

@@ -6,7 +6,7 @@ const TOOL_OUTPUT_SUMMARY_LIMIT = 240
  * Builds a redacted, single-line summary for plugin tool completion metadata.
  *
  * @param output - Raw tool output value returned by OpenCode.
- * @returns A redacted summary capped to the plugin event-tracker limit.
+ * @returns A redacted summary capped to the plugin metadata limit.
  *
  * @example
  * ```typescript
