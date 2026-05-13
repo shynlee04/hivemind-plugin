@@ -72,6 +72,19 @@ export class PendingDispatchRegistry {
   /** callID → childID reverse index for cleanup at PostToolUse */
   private callIDToChild: Map<string, string> = new Map()
 
+  /**
+   * Parent-indexed reverse lookup (D-04).
+   *
+   * Maps `parentSessionID → Set<callID>` so that `has(childSessionID)` can
+   * conservatively return `true` when ANY parent has pending dispatches,
+   * even when the child session ID is unknown at `add()` time.
+   *
+   * False positives are safe: child incorrectly classified as child skips
+   * directory creation. False negatives create orphan directories (the bug).
+   * Window bounded by STALE_THRESHOLD_MS (30s).
+   */
+  private byParent: Map<string, Set<string>> = new Map()
+
   /** Maximum age (ms) before an entry is considered stale and auto-purged */
   static readonly STALE_THRESHOLD_MS = 30_000
 
@@ -92,6 +105,14 @@ export class PendingDispatchRegistry {
     // When the child session ID becomes known (via polling or PostToolUse),
     // updateWithChildID removes the callID key and re-adds with child session ID.
     this.dispatches.set(`call:${entry.callID}`, entry)
+
+    // D-04: Index by parent session ID for reverse-lookup in has().
+    // When a child session ID appears (Gate 3 classification), we need to
+    // know that ANY pending dispatch means a child session may exist.
+    if (!this.byParent.has(entry.parentSessionID)) {
+      this.byParent.set(entry.parentSessionID, new Set())
+    }
+    this.byParent.get(entry.parentSessionID)!.add(entry.callID)
   }
 
   /**
@@ -125,7 +146,14 @@ export class PendingDispatchRegistry {
    */
   has(sessionID: string): boolean {
     this.cleanupStale()
-    return this.dispatches.has(sessionID) || this.dispatches.has(`call:${sessionID}`)
+    if (this.dispatches.has(sessionID)) return true
+    if (this.dispatches.has(`call:${sessionID}`)) return true
+    // D-04: Reverse lookup — if ANY parent has pending dispatches,
+    // conservatively return true. False positives are safe (child
+    // incorrectly classified as child skips directory creation).
+    // False negatives create orphan directories (the bug we're fixing).
+    if (this.byParent.size > 0) return true
+    return false
   }
 
   /**
@@ -164,6 +192,19 @@ export class PendingDispatchRegistry {
    */
   removeByCallID(callID: string): void {
     const callKey = `call:${callID}`
+    const entry = this.dispatches.get(callKey)
+
+    // D-04: Clean byParent index when removing by callID
+    if (entry) {
+      const parentSet = this.byParent.get(entry.parentSessionID)
+      if (parentSet) {
+        parentSet.delete(callID)
+        if (parentSet.size === 0) {
+          this.byParent.delete(entry.parentSessionID)
+        }
+      }
+    }
+
     const childID = this.callIDToChild.get(callID)
     this.dispatches.delete(callKey)
     if (childID) {
@@ -193,6 +234,16 @@ export class PendingDispatchRegistry {
     for (const [key, entry] of this.dispatches) {
       if (now - entry.timestamp > threshold) {
         this.dispatches.delete(key)
+
+        // D-04: Clean byParent index for stale entries
+        const parentSet = this.byParent.get(entry.parentSessionID)
+        if (parentSet) {
+          parentSet.delete(entry.callID)
+          if (parentSet.size === 0) {
+            this.byParent.delete(entry.parentSessionID)
+          }
+        }
+
         // Clean up callIDToChild if this was a childID entry
         for (const [callId, childId] of this.callIDToChild) {
           if (childId === key) {
@@ -218,5 +269,6 @@ export class PendingDispatchRegistry {
   clear(): void {
     this.dispatches.clear()
     this.callIDToChild.clear()
+    this.byParent.clear()
   }
 }
