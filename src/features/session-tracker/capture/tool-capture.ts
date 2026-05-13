@@ -60,7 +60,6 @@ export class ToolCapture {
   private sessionIndexWriter: SessionIndexWriter
   private projectIndexWriter: ProjectIndexWriter
   private hierarchyIndex: HierarchyIndex
-  // @ts-ignore TS6133 — plumbing for Plan 02-03 delegator attribution
   private pendingRegistry: PendingDispatchRegistry | undefined
 
   /**
@@ -252,13 +251,29 @@ export class ToolCapture {
 
       await this.sessionIndexWriter.updateToolSummary(input.sessionID, "task")
 
+      // Resolve delegator agentName — priority order per D-04:
+      // 1. PendingDispatchRegistry (captured at PreToolUse time, most accurate)
+      // 2. args.subagent_type from tool.execute.after (fallback)
+      // 3. "unknown" (no attribution available)
+      let delegatorAgentName = "unknown"
+      if (this.pendingRegistry) {
+        const registryName = this.pendingRegistry.getSubagentType(childSessionID)
+        if (registryName) {
+          delegatorAgentName = registryName
+        }
+      }
+      // Fallback: use args.subagent_type if registry didn't have it
+      if (delegatorAgentName === "unknown" && subagentType) {
+        delegatorAgentName = subagentType
+      }
+
       // Create child session record
       const childMetadata: ChildSessionRecord = {
         sessionID: childSessionID,
         parentSessionID: input.sessionID,
         delegationDepth: depth,
         delegatedBy: {
-          agentName: "unknown", // Parent-agent name not available in tool.execute.after hook
+          agentName: delegatorAgentName,
           model: "unknown",
           tool: "task",
           description,
@@ -313,6 +328,12 @@ export class ToolCapture {
         `${input.sessionID}/`,
         `${childSessionID}.json`,
       )
+
+      // Clean up pending dispatch registry entry (AC-05: entry removed at PostToolUse).
+      // Ensures Gate 3 doesn't hold stale entries for already-registered children.
+      if (this.pendingRegistry) {
+        this.pendingRegistry.remove(childSessionID)
+      }
 
       // Also append the task tool block to the main session .md
       await this.sessionWriter.appendToolBlock(
