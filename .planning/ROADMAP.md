@@ -128,7 +128,7 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 |-------|-------|--------|------------|-------------------|
 | CP-ST-01 | Session Tracker Revamp | ✅ COMPLETE | SR-10 (COMPLETE), BOOT-07 (COMPLETE) | L2-L3: 256 tests pass, dual-gate, depth computation, fork inheritance |
 | CP-ST-02 | Session Tracker Deep Fix — Remaining | ✅ COMPLETE | CP-ST-01 (COMPLETE) | 3/3 plans, 12 commits — PendingDispatchRegistry + Three-Gate + PreToolUse + Delegator Attribution + Orphan Cleanup |
-| CP-ST-03 | Architecture Detox — Plugin Purification + Event-Tracker Excision | 🟡 IN PROGRESS — 2/3 PLANS COMPLETE | CP-ST-02 (COMPLETE) | L2-L3: plugin.ts → pure composition (267 LOC, zero inline closures), event-tracker fully removed, docs synced |
+| CP-ST-03 | Architecture Detox — Plugin Purification + Event-Tracker Excision | ✅ COMPLETE | CP-ST-02 (COMPLETE) | 2/2 plans, 14 commits — plugin.ts 267 LOC (pure assembly), event-tracker excised (22 files deleted), 33 new unit tests |
 
 **Plans (CP-ST-03):** 3 plans in 3 waves
 - [x] CP-ST-03-01-PLAN.md — Event-Tracker Excision + Documentation Sync (Wave 1) — requirements: AC-01..AC-13
