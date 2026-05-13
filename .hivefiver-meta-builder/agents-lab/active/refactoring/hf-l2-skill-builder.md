@@ -12,7 +12,7 @@ permission:
     "*.xml": allow
     "*.yaml": allow
     "*.yml": allow
-    "*": ask
+    "*": allow
   write:
     "*.md": allow
     "*.json": allow
@@ -20,13 +20,13 @@ permission:
     "*.xml": allow
     "*.yaml": allow
     "*.yml": allow
-    "*": ask
+    "*": allow
   bash:
     "mkdir *": allow
     "git *": allow
     "node *": allow
     "npx *": allow
-    "*": ask
+    "*": allow
   glob: allow
   grep: allow
   task:
