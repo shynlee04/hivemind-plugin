@@ -38,7 +38,6 @@ export type { ReconsumptionResult, SessionContext } from "./recovery/session-rec
 // NOTE: OpenCodeClient type is imported from shared/session-api.
 // We use a lightweight import to avoid circular dependencies.
 import type { OpenCodeClient } from "../../shared/session-api.js"
-import { getSession } from "../../shared/session-api.js"
 import { EventCapture } from "./capture/event-capture.js"
 import { MessageCapture } from "./capture/message-capture.js"
 import { ToolCapture } from "./capture/tool-capture.js"
@@ -51,6 +50,7 @@ import { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry
 import { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
+import { SessionBootstrap } from "./bootstrap.js"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { isValidSessionID } from "./types.js"
@@ -108,6 +108,9 @@ export class SessionTracker {
   // Transform
   private agentTransform!: AgentTransform
 
+  // Bootstrap (extracted from index.ts — CP-ST-05-03)
+  private bootstrap!: SessionBootstrap
+
   /**
    * Tracks sessions that have been lazy-bootstrapped (dir + .md file created).
    * Avoids redundant work on subsequent events for the same session.
@@ -140,45 +143,7 @@ export class SessionTracker {
    * @returns Promise that resolves when bootstrap is complete.
    */
   private async ensureSessionReady(sessionID: string): Promise<void> {
-    // Guard: if initialize() hasn't completed yet, skip (best-effort)
-    if (!this.sessionWriter || !this.projectIndexWriter) return
-    if (this.bootstrappedSessions.has(sessionID)) return
-    if (!isValidSessionID(sessionID)) return
-
-    // CP-ST-05-02: Classification logic removed from ensureSessionReady.
-    // Callers (handleChatMessage, handleToolExecuteAfter, handleSessionCreated)
-    // are responsible for classifying sessions before calling this method.
-    // ensureSessionReady ONLY bootstraps root main sessions — it creates
-    // the directory, initializes the .md file, and registers in project index.
-    // Child sessions must NEVER reach this point.
-
-    this.bootstrappedSessions.add(sessionID)
-
-    try {
-      await this.sessionWriter.createSessionDir(sessionID)
-      await this.sessionWriter.initializeSessionFile(sessionID, {
-        sessionID,
-        parentSessionID: null,
-        delegationDepth: 0,
-        status: "active",
-      })
-      await this.projectIndexWriter.addSession(
-        sessionID,
-        `${sessionID}/`,
-        `${sessionID}.md`,
-      )
-    } catch (err) {
-      // If any step fails, remove from bootstrapped set so retry is possible
-      this.bootstrappedSessions.delete(sessionID)
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: lazy bootstrap failed for "${sessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
+    await this.bootstrap.ensureSessionReady(sessionID, this.bootstrappedSessions)
   }
 
   /**
@@ -255,45 +220,7 @@ export class SessionTracker {
     newSessionID: string,
     parentID: string,
   ): Promise<void> {
-    if (!isValidSessionID(parentID)) return
-
-    const parentIndexPath = safeSessionPath(
-      this.projectRoot,
-      parentID,
-      "session-continuity.json",
-    )
-
-    let parentIndex: Record<string, unknown> | null = null
-    try {
-      const raw = await readFile(parentIndexPath, "utf-8")
-      parentIndex = JSON.parse(raw) as Record<string, unknown>
-    } catch {
-      // Parent index doesn't exist or is unreadable — nothing to copy
-      return
-    }
-
-    const hierarchy = parentIndex?.hierarchy as
-      | { children?: Record<string, { file?: string; depth?: number; delegatedBy?: string }> }
-      | undefined
-    const parentChildren = hierarchy?.children
-    if (!parentChildren || Object.keys(parentChildren).length === 0) {
-      return
-    }
-
-    // Reference-copy children into the new session's index
-    for (const [childId, childEntry] of Object.entries(parentChildren)) {
-      try {
-        await this.sessionIndexWriter.addChild(
-          newSessionID,
-          childId,
-          childEntry.file || `${childId}.json`,
-          childEntry.depth || 1,
-          childEntry.delegatedBy || "forked",
-        )
-      } catch {
-        // Best-effort per child — one failure shouldn't block others
-      }
-    }
+    await this.bootstrap.copyForkedChildren(newSessionID, parentID)
   }
 
   /**
@@ -305,12 +232,7 @@ export class SessionTracker {
   private async getSessionSafely(
     sessionID: string,
   ): Promise<unknown> {
-    if (!isValidSessionID(sessionID)) return undefined
-    try {
-      return await getSession(this.client, sessionID)
-    } catch {
-      return undefined
-    }
+    return this.bootstrap.getSessionSafely(sessionID)
   }
 
   /**
@@ -649,6 +571,15 @@ export class SessionTracker {
       this.childWriter = new ChildWriter({ projectRoot: this.projectRoot, hierarchyIndex: this.hierarchyIndex })
       this.sessionIndexWriter = new SessionIndexWriter({ projectRoot: this.projectRoot })
       this.projectIndexWriter = new ProjectIndexWriter({ client: this.client, projectRoot: this.projectRoot })
+
+      // Create bootstrap helper (CP-ST-05-03)
+      this.bootstrap = new SessionBootstrap({
+        client: this.client,
+        projectRoot: this.projectRoot,
+        sessionWriter: this.sessionWriter,
+        projectIndexWriter: this.projectIndexWriter,
+        sessionIndexWriter: this.sessionIndexWriter,
+      })
 
       // Build the global hierarchy index from existing session-continuity.json files.
       // This ensures sessions created before this harness instance loaded are correctly
