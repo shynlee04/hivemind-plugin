@@ -14,7 +14,7 @@ import { stringify as yamlStringify } from "yaml"
 import { readFile, writeFile, rename } from "node:fs/promises"
 import { dirname } from "node:path"
 import { ensureDirectory, atomicAppendMarkdown, safeSessionPath } from "./atomic-write.js"
-import type { SessionRecord } from "../types.js"
+import type { SessionRecord, JourneyEntry } from "../types.js"
 
 // ---------------------------------------------------------------------------
 // SessionWriter class
@@ -212,5 +212,30 @@ export class SessionWriter {
     await ensureDirectory(dirname(filePath))
     await writeFile(tmpPath, content, "utf-8")
     await rename(tmpPath, filePath)
+  }
+
+  /**
+   * Appends a journey entry section to the session `.md` file.
+   *
+   * Journey entries record tool calls, results, and assistant messages
+   * for audit and recovery purposes (CP-ST-05-02).
+   *
+   * @param sessionID - The session identifier.
+   * @param entry - The journey entry to append.
+   * @returns Promise that resolves when the entry is appended.
+   */
+  async appendJourneyEntry(
+    sessionID: string,
+    entry: JourneyEntry,
+  ): Promise<void> {
+    const filePath = this.getSessionFilePath(sessionID)
+    const metadataStr = entry.metadata
+      ? `\n**metadata:** ${JSON.stringify(entry.metadata)}`
+      : ""
+    const section =
+      `## JOURNEY (${entry.timestamp})\n\n` +
+      `**type:** ${entry.type}\n` +
+      `**content:** ${entry.content}${metadataStr}\n\n`
+    await atomicAppendMarkdown(filePath, section)
   }
 }

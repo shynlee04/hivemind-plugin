@@ -23,6 +23,7 @@ import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "../persistence/hierarchy-manifest.js"
+import type { JourneyEntry } from "../types.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 
@@ -523,6 +524,53 @@ export class EventCapture {
           service: "session-tracker",
           level: "warn",
           message: `[Harness] Session tracker: compaction capture failed for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  }
+
+  /**
+   * Records a journey entry for either a main or child session.
+   *
+   * Routes to `childWriter.appendJourneyEntry` for child sessions (non-null
+   * parentID) or `sessionWriter.appendJourneyEntry` for main sessions.
+   *
+   * Best-effort: errors are logged but never thrown.
+   *
+   * @param sessionID - The session identifier.
+   * @param entry - The journey entry to record.
+   * @returns Promise that resolves when the entry is recorded.
+   */
+  async recordJourneyEntry(
+    sessionID: string,
+    entry: JourneyEntry,
+  ): Promise<void> {
+    try {
+      if (!isValidSessionID(sessionID)) return
+
+      let parentID: string | null | undefined
+      try {
+        const session = await getSession(this.client, sessionID)
+        parentID = session.parentID as string | null | undefined
+      } catch {
+        // SDK call failed — fall back to main session routing
+        parentID = null
+      }
+
+      if (parentID) {
+        // Child session — append to .json journey array
+        await this.childWriter.appendJourneyEntry(parentID, sessionID, entry)
+      } else {
+        // Main session — append to .md file
+        await this.sessionWriter.appendJourneyEntry(sessionID, entry)
+      }
+    } catch (err) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: journey recording failed for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
