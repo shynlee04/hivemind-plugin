@@ -22,6 +22,7 @@ import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
+import type { HierarchyManifestWriter } from "../persistence/hierarchy-manifest.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 
@@ -43,6 +44,7 @@ export class EventCapture {
   private projectIndexWriter: ProjectIndexWriter | undefined
   private hierarchyIndex: HierarchyIndex | undefined
   private pendingRegistry: PendingDispatchRegistry | undefined
+  private manifestWriter: HierarchyManifestWriter | undefined
 
   /**
    * @param deps - Injected dependencies.
@@ -60,6 +62,7 @@ export class EventCapture {
     projectIndexWriter?: ProjectIndexWriter
     hierarchyIndex?: HierarchyIndex
     pendingRegistry?: PendingDispatchRegistry
+    manifestWriter?: HierarchyManifestWriter
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
@@ -68,6 +71,7 @@ export class EventCapture {
     this.projectIndexWriter = deps.projectIndexWriter
     this.hierarchyIndex = deps.hierarchyIndex
     this.pendingRegistry = deps.pendingRegistry
+    this.manifestWriter = deps.manifestWriter
   }
 
   /**
@@ -195,16 +199,22 @@ export class EventCapture {
       }
 
       if (parentID) {
-        // Child session — skip directory creation (handled by tool-capture)
+        // D-06: Child session — write child .json IMMEDIATELY
+        // (not deferred to PostToolUse handleTask)
+        await this.writeImmediateChildFile(sessionID, parentID)
         return
       }
 
       if (parentID === null || parentID === undefined) {
         // Gate 2: Check hierarchy index before treating as root.
         // If the SDK doesn't report parentID but the hierarchy index knows
-        // this session is a child, skip directory creation.
+        // this session is a child, write child .json immediately.
         if (this.hierarchyIndex?.isChild(sessionID)) {
-          // Child session — skip directory creation (handled by tool-capture)
+          // D-06: Child session via hierarchy index — resolve parent
+          const resolvedParent = this.hierarchyIndex.getParent(sessionID)
+          if (resolvedParent) {
+            await this.writeImmediateChildFile(sessionID, resolvedParent)
+          }
           return
         }
 
@@ -213,7 +223,12 @@ export class EventCapture {
         // child session is tracked here even before the SDK or hierarchy
         // index knows about it.
         if (this.pendingRegistry?.has(sessionID)) {
-          // Child session — skip directory creation (handled by tool-capture)
+          // D-06: Child session via pending registry — resolve parent
+          const pendingEntry = this.pendingRegistry.get(sessionID)
+          const effectiveParent = pendingEntry?.parentSessionID
+          if (effectiveParent) {
+            await this.writeImmediateChildFile(sessionID, effectiveParent, pendingEntry?.subagentType)
+          }
           return
         }
 
@@ -277,6 +292,13 @@ export class EventCapture {
         await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "idle")
         // Also update session-local index hierarchy
         await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "idle")
+        // D-07: update hierarchy-manifest.json
+        if (this.manifestWriter && this.hierarchyIndex) {
+          const rootMain = this.hierarchyIndex.getRootMain(sessionID)
+          if (rootMain) {
+            await this.manifestWriter.updateChildStatus(rootMain, sessionID, "idle")
+          }
+        }
         return
       }
       // Main session — existing behavior
@@ -313,6 +335,13 @@ export class EventCapture {
         // Child session — update .json via childWriter
         await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "completed")
         await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "completed")
+        // D-07: update hierarchy-manifest.json
+        if (this.manifestWriter && this.hierarchyIndex) {
+          const rootMain = this.hierarchyIndex.getRootMain(sessionID)
+          if (rootMain) {
+            await this.manifestWriter.updateChildStatus(rootMain, sessionID, "completed")
+          }
+        }
         return
       }
       // Main session — existing behavior
@@ -349,6 +378,13 @@ export class EventCapture {
         // Child session — update .json via childWriter
         await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "error")
         await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "error")
+        // D-07: update hierarchy-manifest.json
+        if (this.manifestWriter && this.hierarchyIndex) {
+          const rootMain = this.hierarchyIndex.getRootMain(sessionID)
+          if (rootMain) {
+            await this.manifestWriter.updateChildStatus(rootMain, sessionID, "error")
+          }
+        }
         return
       }
       // Main session — existing behavior
@@ -362,6 +398,82 @@ export class EventCapture {
           level: "warn",
           message: `[Harness] Session tracker: failed to handle session.error for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  }
+
+  /**
+   * Writes the child .json file IMMEDIATELY at session.created (D-06).
+   *
+   * This closes the race window where child data was lost between
+   * session.created and PostToolUse. The child .json is written under
+   * the root main session directory (via childWriter.resolveWriteParent,
+   * per CP-ST-04-02). The hierarchy manifest is also updated (D-07).
+   *
+   * Best-effort: errors are logged but never thrown — a failed immediate
+   * write does not block the session lifecycle.
+   *
+   * @param sessionID - The child session ID.
+   * @param parentID - The immediate parent session ID.
+   * @param explicitSubagentType - Subagent type from PendingDispatchRegistry,
+   *   if available. Falls back to "unknown".
+   */
+  private async writeImmediateChildFile(
+    sessionID: string,
+    parentID: string,
+    explicitSubagentType?: string,
+  ): Promise<void> {
+    if (!this.childWriter) return
+
+    try {
+      const now = new Date().toISOString()
+      const pendingEntry = this.pendingRegistry?.get(sessionID)
+      const subagentType = explicitSubagentType ?? pendingEntry?.subagentType ?? "unknown"
+
+      // Write child .json under the root main session directory
+      // (childWriter.resolveWriteParent resolves to root main per CP-ST-04-02)
+      await this.childWriter.createChildFile(parentID, sessionID, {
+        sessionID,
+        parentSessionID: parentID,
+        delegationDepth: 1, // Refined by PostToolUse if deeper
+        delegatedBy: {
+          agentName: subagentType,
+          model: "",
+          tool: "task",
+          description: "",
+          subagentType,
+        },
+        created: now,
+        updated: now,
+        status: "active",
+        mainAgent: { name: "pending", model: "" },
+        turns: [],
+        children: [],
+      })
+
+      // D-07: update hierarchy-manifest.json
+      if (this.hierarchyIndex && this.manifestWriter) {
+        const rootMain = this.hierarchyIndex.getRootMain(sessionID)
+        if (rootMain) {
+          await this.manifestWriter.addChild({
+            rootMainSessionID: rootMain,
+            childSessionID: sessionID,
+            parentSessionID: parentID,
+            delegationDepth: 1,
+            delegatedBy: subagentType,
+            subagentType,
+            childFile: `${sessionID}.json`,
+          })
+        }
+      }
+    } catch {
+      // Best-effort: child .json creation failure is non-fatal
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: immediate child .json write failed for "${sessionID}"`,
         },
       })
     }

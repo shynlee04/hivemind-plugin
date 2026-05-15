@@ -48,6 +48,7 @@ import { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
+import { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { readFile } from "node:fs/promises"
@@ -97,6 +98,9 @@ export class SessionTracker {
    * Provides Gate 3 (fallback) classification. Never persisted to disk.
    */
   private pendingRegistry!: PendingDispatchRegistry
+
+  // Hierarchy manifest writer (D-07)
+  private manifestWriter!: HierarchyManifestWriter
 
   // Recovery
   private recovery!: SessionRecovery
@@ -710,6 +714,12 @@ export class SessionTracker {
       // consumed by ensureSessionReady() and handleSessionCreated().
       this.pendingRegistry = new PendingDispatchRegistry()
 
+      // Create hierarchy manifest writer (D-07).
+      // Writes hierarchy-manifest.json in each root main session directory.
+      this.manifestWriter = new HierarchyManifestWriter({
+        projectRoot: this.projectRoot,
+      })
+
       // Create transform utility
       this.agentTransform = new AgentTransform()
 
@@ -722,6 +732,7 @@ export class SessionTracker {
         projectIndexWriter: this.projectIndexWriter,
         hierarchyIndex: this.hierarchyIndex,
         pendingRegistry: this.pendingRegistry,
+        manifestWriter: this.manifestWriter, // D-07
       })
       this.messageCapture = new MessageCapture({
         client: this.client,

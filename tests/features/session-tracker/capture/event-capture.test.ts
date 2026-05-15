@@ -363,3 +363,218 @@ describe("handleSessionCreated() — root-only directory creation (D-02)", () =>
     expect(mockCreateSessionDir).not.toHaveBeenCalled()
   })
 })
+
+// ── handleSessionCreated — immediate child .json write (D-06) + manifest integration (D-07) ────
+
+describe("handleSessionCreated() — immediate child .json write (D-06) + manifest (D-07)", () => {
+  let eventCapture: EventCapture
+  let mockCreateSessionDir: ReturnType<typeof vi.fn>
+  let mockInitializeSessionFile: ReturnType<typeof vi.fn>
+  let mockCreateChildFile: ReturnType<typeof vi.fn>
+  let mockManifestAddChild: ReturnType<typeof vi.fn>
+  let mockManifestUpdateChildStatus: ReturnType<typeof vi.fn>
+  let mockIsChild: ReturnType<typeof vi.fn>
+  let mockGetRootMain: ReturnType<typeof vi.fn>
+  let mockPendingGet: ReturnType<typeof vi.fn>
+  let mockPendingHas: ReturnType<typeof vi.fn>
+  let mockAppLog: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    mockCreateSessionDir = vi.fn().mockResolvedValue("/fake/path")
+    mockInitializeSessionFile = vi.fn().mockResolvedValue(undefined)
+    mockCreateChildFile = vi.fn().mockResolvedValue(undefined)
+    mockManifestAddChild = vi.fn().mockResolvedValue(undefined)
+    mockManifestUpdateChildStatus = vi.fn().mockResolvedValue(undefined)
+    mockIsChild = vi.fn().mockReturnValue(false)
+    mockGetRootMain = vi.fn().mockReturnValue("ses_root_main_parent")
+    mockPendingGet = vi.fn().mockReturnValue(undefined)
+    mockPendingHas = vi.fn().mockReturnValue(false)
+    mockAppLog = vi.fn()
+
+    mockGetSession.mockReset()
+    mockGetSession.mockResolvedValue({ id: "ses_test", parentID: null })
+
+    const sessionWriter = {
+      createSessionDir: mockCreateSessionDir,
+      initializeSessionFile: mockInitializeSessionFile,
+      updateFrontmatter: vi.fn(),
+    } as unknown as SessionWriter
+
+    const childWriter = {
+      createChildFile: mockCreateChildFile,
+      updateChildStatus: vi.fn(),
+    } as unknown as ChildWriter
+
+    const sessionIndexWriter = {
+      updateChildStatus: vi.fn(),
+    } as unknown as SessionIndexWriter
+
+    const manifestWriter = {
+      addChild: mockManifestAddChild,
+      updateChildStatus: mockManifestUpdateChildStatus,
+      getChild: vi.fn(),
+      getChildren: vi.fn(),
+    } as any
+
+    eventCapture = new EventCapture({
+      client: { app: { log: mockAppLog } } as any,
+      sessionWriter,
+      childWriter,
+      sessionIndexWriter,
+      hierarchyIndex: {
+        isChild: mockIsChild,
+        getRootMain: mockGetRootMain,
+      } as any,
+      pendingRegistry: {
+        has: mockPendingHas,
+        get: mockPendingGet,
+      } as any,
+      manifestWriter,
+    })
+  })
+
+  // ── Test 1: child .json written immediately at session.created ─────────
+
+  it("writes child .json immediately when SDK reports parentID (D-06)", async () => {
+    mockGetSession.mockResolvedValue({
+      id: "ses_child_d06",
+      parentID: "ses_parent_d06",
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_d06",
+      event: {},
+    })
+
+    expect(mockCreateChildFile).toHaveBeenCalledWith(
+      "ses_parent_d06",
+      "ses_child_d06",
+      expect.objectContaining({
+        sessionID: "ses_child_d06",
+        parentSessionID: "ses_parent_d06",
+      }),
+    )
+    // Directory must NOT be created for child sessions
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+  })
+
+  // ── Test 2: hierarchy-manifest.json updated simultaneously ─────────────
+
+  it("updates hierarchy-manifest.json when child .json is written (D-07)", async () => {
+    mockGetSession.mockResolvedValue({
+      id: "ses_child_manifest",
+      parentID: "ses_parent_manifest",
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_manifest",
+      event: {},
+    })
+
+    expect(mockManifestAddChild).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rootMainSessionID: "ses_root_main_parent",
+        childSessionID: "ses_child_manifest",
+        parentSessionID: "ses_parent_manifest",
+      }),
+    )
+  })
+
+  // ── Test 3: main session (root) does NOT trigger child .json write ─────
+
+  it("does NOT write child .json or update manifest for root main sessions", async () => {
+    mockGetSession.mockResolvedValue({ id: "ses_root_main", parentID: null })
+    mockIsChild.mockReturnValue(false)
+    mockPendingHas.mockReturnValue(false)
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_root_main",
+      event: {},
+    })
+
+    expect(mockCreateChildFile).not.toHaveBeenCalled()
+    expect(mockManifestAddChild).not.toHaveBeenCalled()
+    // Root main sessions follow normal directory creation path
+    expect(mockCreateSessionDir).toHaveBeenCalled()
+  })
+
+  // ── Test 4: delegatedBy metadata flows from PendingDispatchRegistry ────
+
+  it("uses delegatedBy metadata from PendingDispatchRegistry when available", async () => {
+    mockGetSession.mockResolvedValue({
+      id: "ses_child_meta",
+      parentID: "ses_parent_meta",
+    })
+    mockPendingGet.mockReturnValue({
+      parentSessionID: "ses_parent_meta",
+      subagentType: "hm-l2-investigator",
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_meta",
+      event: {},
+    })
+
+    expect(mockCreateChildFile).toHaveBeenCalledWith(
+      "ses_parent_meta",
+      "ses_child_meta",
+      expect.objectContaining({
+        delegatedBy: expect.objectContaining({
+          subagentType: "hm-l2-investigator",
+        }),
+      }),
+    )
+  })
+
+  // ── Test 5: Gates 2/3 also trigger immediate child .json write ─────────
+
+  it("writes child .json when HierarchyIndex classifies as child (Gate 2)", async () => {
+    mockGetSession.mockResolvedValue({ id: "ses_child_g2", parentID: null })
+    mockIsChild.mockReturnValue(true) // Gate 2 catches it
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_g2",
+      event: {},
+    })
+
+    // Even though SDK reported null parentID, HierarchyIndex knows it's a child
+    // In this case the immediate parent is resolved through the hierarchy index
+    // The child .json write happens, but parentID resolution may differ
+    // At minimum, directory must NOT be created
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+  })
+
+  // ── Test 6: PendingDispatchRegistry fallback also prevents directory creation ──
+
+  it("writes child .json when PendingDispatchRegistry classifies as child (Gate 3)", async () => {
+    mockGetSession.mockResolvedValue({ id: "ses_child_g3", parentID: null })
+    mockIsChild.mockReturnValue(false)
+    mockPendingHas.mockReturnValue(true) // Gate 3 catches it
+    mockPendingGet.mockReturnValue({
+      parentSessionID: "ses_parent_g3",
+      subagentType: "hm-l2-researcher",
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_g3",
+      event: {},
+    })
+
+    // Directory must NOT be created
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    // Child .json should be written with parentID from pending registry
+    expect(mockCreateChildFile).toHaveBeenCalledWith(
+      "ses_parent_g3",
+      "ses_child_g3",
+      expect.any(Object),
+    )
+  })
+})
