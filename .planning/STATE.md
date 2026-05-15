@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-15T19:49:00.000Z"
+last_updated: "2026-05-15T13:17:58.238Z"
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 7
-  completed_plans: 8
+  total_phases: 1
+  completed_phases: 1
+  total_plans: 6
+  completed_plans: 7
   percent: 100
 ---
 
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-15
-**Last trigger:** CP-ST-05-01 complete — BEFORE-THE-FACT Classification + Immediate .json Write
+**Last trigger:** CP-ST-05-02 complete — Single Classification Authority + Journey Recording
 
 ---
 
@@ -27,7 +27,7 @@ progress:
 **Health:** 🟢 Build passes, typecheck clean, 338/340 session-tracker tests pass (2 pre-existing cleanup.test.ts failures unrelated). Hierarchy manifest writer + immediate child .json write + hardened orphan cleanup delivered.
 **CP-ST-04 status:** ✅ COMPLETE — Plan 01 (PendingDispatchRegistry + Classification Fix ✓), Plan 02 (Directory Architecture Fix ✓), Plan 03 (Hierarchy Manifest + Immediate I/O + Cleanup ✓).
 
-**CP-ST-05 status:** 🟡 Plan 01 (BEFORE-THE-FACT Classification + Immediate .json Write) ✅ COMPLETE. PreToolUse hook intercepts Task dispatches, Gate 0 bypasses race conditions in handleSessionCreated, ChildSessionRecord extended with journey array. 30/30 tests pass. R-CP05-03 (journey population) deferred to future plan.
+**CP-ST-05 status:** 🟢 Plan 01 (BEFORE-THE-FACT Classification + Immediate .json Write) ✅ COMPLETE. Plan 02 (Single Classification Authority + Journey Recording) ✅ COMPLETE. Gates 1-3 removed from ensureSessionReady, journey recording unified via EventCapture.recordJourneyEntry for both main and child sessions. 362/364 tests pass (2 pre-known failures).
 
 Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
 
