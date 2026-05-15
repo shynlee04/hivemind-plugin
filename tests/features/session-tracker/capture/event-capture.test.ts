@@ -210,3 +210,156 @@ describe("EventCapture", () => {
     })
   })
 })
+
+// ── handleSessionCreated — root-only directory creation (D-02, D-05) ────
+
+describe("handleSessionCreated() — root-only directory creation (D-02)", () => {
+  let eventCapture: EventCapture
+  let mockCreateSessionDir: ReturnType<typeof vi.fn>
+  let mockInitializeSessionFile: ReturnType<typeof vi.fn>
+  let mockAppLog: ReturnType<typeof vi.fn>
+  let mockIsChild: ReturnType<typeof vi.fn>
+  let mockPendingHas: ReturnType<typeof vi.fn>
+  let mockAddSession: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    mockCreateSessionDir = vi.fn().mockResolvedValue("/fake/path")
+    mockInitializeSessionFile = vi.fn().mockResolvedValue(undefined)
+    mockAppLog = vi.fn()
+    mockIsChild = vi.fn().mockReturnValue(false)
+    mockPendingHas = vi.fn().mockReturnValue(false)
+    mockAddSession = vi.fn().mockResolvedValue(undefined)
+
+    mockGetSession.mockReset()
+    mockGetSession.mockResolvedValue({ id: "ses_test", parentID: null })
+
+    const sessionWriter = {
+      createSessionDir: mockCreateSessionDir,
+      initializeSessionFile: mockInitializeSessionFile,
+      updateFrontmatter: vi.fn(),
+    } as unknown as SessionWriter
+
+    const childWriter = {
+      updateChildStatus: vi.fn(),
+    } as unknown as ChildWriter
+
+    const sessionIndexWriter = {
+      updateChildStatus: vi.fn(),
+    } as unknown as SessionIndexWriter
+
+    const projectIndexWriter = {
+      addSession: mockAddSession,
+    } as unknown as any
+
+    eventCapture = new EventCapture({
+      client: { app: { log: mockAppLog } } as any,
+      sessionWriter,
+      childWriter,
+      sessionIndexWriter,
+      projectIndexWriter,
+      hierarchyIndex: {
+        isChild: mockIsChild,
+        getParent: vi.fn().mockReturnValue(undefined),
+      } as any,
+      pendingRegistry: {
+        has: mockPendingHas,
+        get: vi.fn().mockReturnValue(undefined),
+      } as any,
+    })
+  })
+
+  // ── Test 1: SDK parentID → skip directory ─────────────────────────────
+
+  it("should skip directory creation when SDK reports parentID (Gate 1)", async () => {
+    mockGetSession.mockResolvedValue({
+      id: "ses_child_001",
+      parentID: "ses_parent_001",
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_001",
+      event: {},
+    })
+
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    expect(mockInitializeSessionFile).not.toHaveBeenCalled()
+  })
+
+  // ── Test 2: HierarchyIndex isChild → skip directory ───────────────────
+
+  it("should skip directory creation when HierarchyIndex.isChild() returns true (Gate 2)", async () => {
+    mockGetSession.mockResolvedValue({ id: "ses_child_002", parentID: null })
+    mockIsChild.mockReturnValue(true)
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_002",
+      event: {},
+    })
+
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    expect(mockInitializeSessionFile).not.toHaveBeenCalled()
+  })
+
+  // ── Test 3: PendingDispatchRegistry has() → skip directory ────────────
+
+  it("should skip directory creation when PendingDispatchRegistry.has() returns true (Gate 3)", async () => {
+    mockGetSession.mockResolvedValue({ id: "ses_child_003", parentID: null })
+    mockIsChild.mockReturnValue(false)
+    mockPendingHas.mockReturnValue(true)
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_003",
+      event: {},
+    })
+
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    expect(mockInitializeSessionFile).not.toHaveBeenCalled()
+  })
+
+  // ── Test 4: All three gates pass → root main → directory created ──────
+
+  it("should create directory when all three gates classify as root main", async () => {
+    mockGetSession.mockResolvedValue({ id: "ses_root_001", parentID: null })
+    mockIsChild.mockReturnValue(false)
+    mockPendingHas.mockReturnValue(false)
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_root_001",
+      event: {},
+    })
+
+    // This is the ONLY path that creates directories (D-02)
+    expect(mockCreateSessionDir).toHaveBeenCalledWith("ses_root_001")
+    expect(mockInitializeSessionFile).toHaveBeenCalledWith(
+      "ses_root_001",
+      expect.objectContaining({
+        sessionID: "ses_root_001",
+        parentSessionID: null,
+        delegationDepth: 0,
+        status: "active",
+      }),
+    )
+  })
+
+  // ── Test 5: SDK call failure → HierarchyIndex fallback works ──────────
+
+  it("should fall back to HierarchyIndex when SDK call fails (error resilience)", async () => {
+    mockGetSession.mockRejectedValue(new Error("Server unreachable"))
+    mockIsChild.mockReturnValue(true) // hierarchy index catches the child
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: "ses_child_fallback",
+      event: {},
+    })
+
+    // Directory NOT created because fallback gate catches it
+    expect(mockCreateSessionDir).not.toHaveBeenCalled()
+  })
+})
