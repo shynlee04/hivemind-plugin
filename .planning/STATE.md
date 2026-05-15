@@ -3,29 +3,29 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-13T16:53:14.000Z"
+last_updated: "2026-05-15T11:36:34.614Z"
 progress:
   total_phases: 1
   completed_phases: 1
-  total_plans: 9
+  total_plans: 6
   completed_plans: 7
-  percent: 78
+  percent: 100
 ---
 
 <!-- generated-by: gsd-doc-writer -->
 
 # Hivemind — State
 
-**Last updated:** 2026-05-13
-**Last trigger:** CP-CMD-01 complete — command architecture classified, deprecated tools removed from .opencode/, slash command tool enhanced, list_commands action added
+**Last updated:** 2026-05-15
+**Last trigger:** CP-ST-04-02 complete — Directory Architecture Fix: HierarchyIndex root main tracking + root-only directory creation + ChildWriter root main routing
 
 ---
 
 ## Current Status
 
-**Active phase:** CP-ST-04 — Session-Tracker Architecture Fix. 1 of 3 plans complete.
-**Health:** 🟢 Build passes, typecheck clean on changed files, 288/290 session-tracker tests pass (2 pre-existing cleanup.test.ts failures unrelated). PendingDispatchRegistry byParent index + handleChatMessage classification-first ordering delivered.
-**CP-ST-04 status:** 🟡 IN PROGRESS — Plan 01 (PendingDispatchRegistry + Classification Fix ✓), Plan 02 (pending), Plan 03 (pending).
+**Active phase:** CP-ST-04 — Session-Tracker Architecture Fix. 2 of 3 plans complete.
+**Health:** 🟢 Build passes, typecheck clean, 318/320 session-tracker tests pass (2 pre-existing cleanup.test.ts failures unrelated). HierarchyIndex root main tracking + root-only directory creation + ChildWriter root main routing delivered.
+**CP-ST-04 status:** 🟡 IN PROGRESS — Plan 01 (PendingDispatchRegistry + Classification Fix ✓), Plan 02 (Directory Architecture Fix ✓), Plan 03 (pending).
 
 Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
 
@@ -99,6 +99,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | WS-MCM | Meta-Concept Migration workstream added — 4 phases (MCM-01 through MCM-04) for agent/skill migration, config integration, and end-user customization | NEW — 2026-05-07 |
 | D-MCM-01 | gsd-* agents/skills are NEVER shipped — dev tooling boundary enforced | NEW — 2026-05-07 |
 | D-CP-ST-04-01 | PendingDispatchRegistry byParent reverse index (D-04) + handleChatMessage classification-first (D-05) delivered; 4 atomic commits, 37 new tests, 0 regressions | NEW — 2026-05-13 |
+| D-CP-ST-04-02 | Directory Architecture Fix: HierarchyIndex root main tracking (D-03, D-08) + root-only directory creation (D-02) + ChildWriter root main routing (D-03); 6 atomic TDD commits, 25 new tests, 318/320 pass | NEW — 2026-05-15 |
 | P0-GOV | Phase 0 Governance Baseline blocks BOOT/MCM/f-04 until identity, source-plane, config, meta-authoring, and route gates pass | NEW — 2026-05-07 |
 | P0-ID | Product is Hivemind; package/bin are `hivemind`; harness is project type; OpenCode is platform; `opencode-harness` and `hivemind-tools` are legacy aliases only | NEW — 2026-05-07 |
 | BOOT-02R | BOOT-02 implementation summaries were reconciled before BOOT-03 automation resumed | COMPLETE — 2026-05-08 |

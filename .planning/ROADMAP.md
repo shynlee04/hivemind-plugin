@@ -132,8 +132,8 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 | CP-ST-04 | Session-Tracker Architecture Fix — Root-Cause Gate Fix | 🟡 IN PROGRESS — 3/3 plans created | CP-ST-02 (COMPLETE), CP-ST-03 (COMPLETE) | PendingDispatchRegistry key mismatch fix, BEFORE-THE-FACT classification, strict hierarchy manifest, turn-1-only dir creation |
 
 **Plans (CP-ST-04):** 3 plans in 3 waves
-- [ ] CP-ST-04-01-PLAN.md — Fix PendingDispatchRegistry + handleChatMessage Classification Order (Wave 1) — requirements: D-01, D-04, D-05
-- [ ] CP-ST-04-02-PLAN.md — Directory Architecture Fix — Root-Only Dirs + HierarchyIndex Root Tracking (Wave 2) — requirements: D-02, D-03, D-05, D-08
+- [x] CP-ST-04-01-PLAN.md — Fix PendingDispatchRegistry + handleChatMessage Classification Order (Wave 1) — requirements: D-01, D-04, D-05
+- [x] CP-ST-04-02-PLAN.md — Directory Architecture Fix — Root-Only Dirs + HierarchyIndex Root Tracking (Wave 2) — requirements: D-02, D-03, D-05, D-08
 - [ ] CP-ST-04-03-PLAN.md — Hierarchy Manifest + Immediate I/O + Cleanup (Wave 3) — requirements: D-06, D-07, D-08
 
 **Plans (CP-ST-03):** 3 plans in 3 waves
@@ -393,4 +393,4 @@ Plans:
 - [x] 13-06-PLAN.md — Integration Tests — Wave 4 (VERIFICATION)
 
 ---
-*Last updated: 2026-05-13 — CP-ST-04 PLANNED (3 plans, 8 tasks, 3 waves). CP-ST-02 COMPLETE (3 waves, 12 commits, 276 session-tracker tests). Pre-existing failures: 3 test files (steering-engine, bootstrap-tools-registration, plugin-lifecycle) — not CP-ST-02 regressions*
+*Last updated: 2026-05-15 — CP-ST-04 IN PROGRESS (2/3 plans complete, 6 tasks delivered). CP-ST-02 COMPLETE (3 waves, 12 commits, 276 session-tracker tests). CP-ST-04-02 COMPLETE (3 TDD tasks, 25 new tests, root-only dir creation + HierarchyIndex root tracking + ChildWriter root main routing). Pre-existing failures: 2 test cases (cleanup.test.ts)*
