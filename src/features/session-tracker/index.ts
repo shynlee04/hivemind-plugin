@@ -145,65 +145,12 @@ export class SessionTracker {
     if (this.bootstrappedSessions.has(sessionID)) return
     if (!isValidSessionID(sessionID)) return
 
-    // F-01: Query SDK to check if this is a child session.
-    // Child sessions must NOT get their own directory or project index entry —
-    // they belong under their parent's directory (REQ-ST-01).
-    //
-    // Retry logic: the SDK might not report parentID on the first call if the
-    // child session was JUST created (race with the task tool completion).
-    // Try twice with a short delay between attempts.
-    let parentID: string | undefined
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const session = await getSession(this.client, sessionID)
-        parentID = (session as { parentID?: string } | undefined)?.parentID
-        if (parentID) break
-        // If parentID is null/undefined on first attempt, wait and retry
-        if (attempt === 0) {
-          await new Promise((r) => setTimeout(r, 100))
-        }
-      } catch {
-        // SDK call failed — fall through to hierarchy index check.
-        break
-      }
-    }
-
-    if (parentID) {
-      // This is a child session — skip directory creation and index registration.
-      // Mark as bootstrapped so we don't re-check every event.
-      this.bootstrappedSessions.add(sessionID)
-      return
-    }
-
-    // F-01.1: Second gate — check the global hierarchy index.
-    // If this session ID was registered as a child by a task delegation
-    // (recorded in session-continuity.json hierarchy.children), treat it
-    // as a child regardless of what the SDK reports.
-    //
-    // This fixes the orphan-directory bug: OpenCode child sessions often
-    // fire events BEFORE the SDK records parentID, or the SDK never records
-    // it at all. The hierarchy index (populated by handleTask() at task
-    // delegation time) knows the truth.
-    if (this.hierarchyIndex?.isChild(sessionID)) {
-      this.bootstrappedSessions.add(sessionID)
-      return
-    }
-
-    // Gate 3: Check pending dispatch registry.
-    // If a parent session recently dispatched a task tool (detected at
-    // PreToolUse time), the resulting child session is tracked here even
-    // before the SDK reports parentID or the hierarchy index is populated.
-    // This closes the race condition where session.created fires during
-    // TaskTool.execute(), before tool.execute.after populates HierarchyIndex.
-    if (this.pendingRegistry?.has(sessionID)) {
-      this.bootstrappedSessions.add(sessionID)
-      return
-    }
-
-    // All three gates failed (SDK parentID, hierarchyIndex, pendingRegistry).
-    // This is a root main session — create directory (D-02).
-    // Child sessions are NEVER allowed to reach this point.
-    // This is the ONLY path that creates directories.
+    // CP-ST-05-02: Classification logic removed from ensureSessionReady.
+    // Callers (handleChatMessage, handleToolExecuteAfter, handleSessionCreated)
+    // are responsible for classifying sessions before calling this method.
+    // ensureSessionReady ONLY bootstraps root main sessions — it creates
+    // the directory, initializes the .md file, and registers in project index.
+    // Child sessions must NEVER reach this point.
 
     this.bootstrappedSessions.add(sessionID)
 

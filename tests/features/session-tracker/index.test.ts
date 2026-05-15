@@ -610,13 +610,13 @@ describe("ensureSessionReady() — root-only directory creation (D-02)", () => {
     expect(mockCreateSessionDir).not.toHaveBeenCalled()
   })
 
-  // ── Test 3: Child via hierarchyIndex.isChild() → NO directory ─────────
+  // ── Test 3: Child via hierarchyIndex.getParent() → NO directory ─────────
 
-  it("should NOT create directory when HierarchyIndex.isChild() returns true (Gate 2)", async () => {
+  it("should NOT create directory when HierarchyIndex.getParent() returns a parent (Gate 2)", async () => {
     // SDK says no parentID
     mockGetSession.mockResolvedValue({ id: "ses_child_from_index", parentID: undefined })
-    // But hierarchy index confirms it's a child
-    mockIsChild.mockReturnValue(true)
+    // But hierarchy index resolves a parent
+    ;(tracker as any).hierarchyIndex.getParent.mockReturnValue("ses_parent_from_index")
 
     // Go through the handleChatMessage path which consults all 3 gates
     await tracker.handleChatMessage(
@@ -633,8 +633,11 @@ describe("ensureSessionReady() — root-only directory creation (D-02)", () => {
   it("should NOT create directory when PendingDispatchRegistry.has() returns true (Gate 3)", async () => {
     mockGetSession.mockResolvedValue({ id: "ses_child_pending", parentID: undefined })
     mockIsChild.mockReturnValue(false)
-    // But pendingRegistry detects the dispatch
+    // But pendingRegistry detects the dispatch — must return entry with parentSessionID
     mockPendingHas.mockReturnValue(true)
+    ;(tracker as any).pendingRegistry.get.mockReturnValue({
+      parentSessionID: "ses_parent_pending",
+    })
 
     await tracker.handleChatMessage(
       { sessionID: "ses_child_pending" },

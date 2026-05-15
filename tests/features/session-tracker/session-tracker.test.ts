@@ -71,6 +71,21 @@ describe("SessionTracker — ensureSessionReady parentID gate (F-01)", () => {
     ;(tracker as any).eventCapture = {
       handleSessionEvent: mockHandleSessionEvent,
     }
+    ;(tracker as any).childWriter = {
+      appendChildTurn: vi.fn().mockResolvedValue(undefined),
+    }
+    ;(tracker as any).messageCapture = {
+      handleChatMessage: vi.fn().mockResolvedValue(undefined),
+    }
+    ;(tracker as any).hierarchyIndex = {
+      isChild: vi.fn().mockReturnValue(false),
+      getParent: vi.fn().mockReturnValue(undefined),
+      getRootMain: vi.fn(),
+    }
+    ;(tracker as any).pendingRegistry = {
+      has: vi.fn().mockReturnValue(false),
+      get: vi.fn().mockReturnValue(undefined),
+    }
   })
 
   describe("parentID gate — child sessions", () => {
