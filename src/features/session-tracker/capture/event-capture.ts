@@ -453,7 +453,9 @@ export class EventCapture {
       })
 
       // D-07: update hierarchy-manifest.json
+      // Register child in hierarchy index first so getRootMain works
       if (this.hierarchyIndex && this.manifestWriter) {
+        this.hierarchyIndex.registerChild(parentID, sessionID)
         const rootMain = this.hierarchyIndex.getRootMain(sessionID)
         if (rootMain) {
           await this.manifestWriter.addChild({

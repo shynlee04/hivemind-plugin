@@ -426,6 +426,8 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
       hierarchyIndex: {
         isChild: mockIsChild,
         getRootMain: mockGetRootMain,
+        registerChild: vi.fn(), // D-07: needed for manifest update during immediate write
+        getParent: vi.fn().mockReturnValue(null),
       } as any,
       pendingRegistry: {
         has: mockPendingHas,

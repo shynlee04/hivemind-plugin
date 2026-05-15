@@ -586,4 +586,164 @@ describe("Session tracker E2E verification (all 13 REQs)", () => {
       expect(content).not.toMatch(/"mainAgent"/)
     })
   })
+
+  // =====================================================================
+  // D-06/D-07/D-08: Immediate child .json write + hierarchy manifest + orphan cleanup
+  // =====================================================================
+
+  describe("D-06/D-07/D-08: Immediate child write, manifest, orphan cleanup", () => {
+    it("writes child .json immediately at session.created (no directory)", async () => {
+      const tracker = new SessionTracker({
+        client: { session: { get: vi.fn(), messages: vi.fn(), list: vi.fn() } } as never,
+        projectRoot: testRoot,
+      })
+      await tracker.initialize()
+
+      const parentID = testSid("d06parent")
+      const childID = testSid("d06child")
+
+      // Create parent session first
+      vi.mocked(getSession).mockResolvedValue({ id: parentID, parentID: null } as never)
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: parentID, event: {},
+      })
+
+      // Now session.created for the child — should write .json immediately (D-06)
+      vi.mocked(getSession).mockResolvedValue({ id: childID, parentID } as never)
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: childID, event: {},
+      })
+
+      // Child .json should exist under parent directory
+      const childJsonPath = join(sessionDir(testRoot, parentID), `${childID}.json`)
+      expect(existsSync(childJsonPath)).toBe(true)
+
+      // Child should NOT have its own directory
+      const childDirPath = sessionDir(testRoot, childID)
+      expect(existsSync(childDirPath)).toBe(false)
+    })
+
+    it("writes hierarchy-manifest.json in root main directory", async () => {
+      const tracker = new SessionTracker({
+        client: { session: { get: vi.fn(), messages: vi.fn(), list: vi.fn() } } as never,
+        projectRoot: testRoot,
+      })
+      await tracker.initialize()
+
+      const parentID = testSid("d07parentMan")
+      const childID = testSid("d07childMan")
+
+      // Create parent session
+      vi.mocked(getSession).mockResolvedValue({ id: parentID, parentID: null } as never)
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: parentID, event: {},
+      })
+
+      // Create child — should update hierarchy-manifest.json (D-07)
+      vi.mocked(getSession).mockResolvedValue({ id: childID, parentID } as never)
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: childID, event: {},
+      })
+
+      // hierarchy-manifest.json should exist in parent directory
+      const manifestPath = join(sessionDir(testRoot, parentID), "hierarchy-manifest.json")
+      expect(existsSync(manifestPath)).toBe(true)
+
+      // Verify manifest content
+      const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"))
+      expect(manifest.version).toBe("1.0")
+      expect(manifest.rootMainSessionID).toBe(parentID)
+      expect(manifest.children).toHaveProperty(childID)
+      expect(manifest.children[childID].sessionID).toBe(childID)
+      expect(manifest.children[childID].status).toBe("active")
+      expect(manifest.totalChildren).toBeGreaterThanOrEqual(1)
+    })
+
+    it("cleans up orphan directories on re-initialization", async () => {
+      // Create a child session directory manually (simulating old bug)
+      const orphanID = testSid("orphanChild")
+      const orphanDir = sessionDir(testRoot, orphanID)
+      await mkdir(orphanDir, { recursive: true })
+
+      // Also need to register this in a parent's session-continuity.json
+      // to make the hierarchy index classify it as a child
+      const parentID = testSid("orphanParent")
+      const parentDir = sessionDir(testRoot, parentID)
+      await mkdir(parentDir, { recursive: true })
+      await writeFile(
+        join(parentDir, "session-continuity.json"),
+        JSON.stringify({
+          version: "2.0",
+          sessionID: parentID,
+          lastUpdated: new Date().toISOString(),
+          hierarchy: {
+            root: parentID,
+            children: {
+              [orphanID]: {
+                file: `${orphanID}.json`,
+                depth: 1,
+                status: "completed",
+                delegatedBy: "test-agent",
+                children: {},
+              },
+            },
+          },
+          turnCount: 0,
+          toolSummary: {},
+        }),
+      )
+
+      // Now initialize the tracker — cleanupOrphanDirectories should remove orphanID dir
+      const tracker = new SessionTracker({
+        client: { session: { get: vi.fn(), messages: vi.fn(), list: vi.fn() } } as never,
+        projectRoot: testRoot,
+      })
+      await tracker.initialize()
+
+      // The orphan directory should be cleaned up
+      // Note: cleanup runs best-effort — it may have removed it or not
+      // depending on if the hierarchy index detected it
+      const orphanStillExists = existsSync(orphanDir)
+      // The hierarchy index should classify orphanID as a child
+      expect(orphanStillExists).toBe(false)
+    })
+
+    it("all 3 children .json files stored under root main directory", async () => {
+      const tracker = new SessionTracker({
+        client: { session: { get: vi.fn(), messages: vi.fn(), list: vi.fn() } } as never,
+        projectRoot: testRoot,
+      })
+      await tracker.initialize()
+
+      const parentID = testSid("d06threePar")
+      const child1 = testSid("d06threeC1")
+      const child2 = testSid("d06threeC2")
+      const child3 = testSid("d06threeC3")
+
+      // Create parent session
+      vi.mocked(getSession).mockResolvedValue({ id: parentID, parentID: null } as never)
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: parentID, event: {},
+      })
+
+      // Create three children
+      for (const childID of [child1, child2, child3]) {
+        vi.mocked(getSession).mockResolvedValue({ id: childID, parentID } as never)
+        await tracker.handleSessionEvent({
+          eventType: "session.created", sessionID: childID, event: {},
+        })
+      }
+
+      // All 3 .json files should be under the parent directory
+      for (const childID of [child1, child2, child3]) {
+        const childJsonPath = join(sessionDir(testRoot, parentID), `${childID}.json`)
+        expect(existsSync(childJsonPath)).toBe(true)
+      }
+
+      // None should have their own directories
+      for (const childID of [child1, child2, child3]) {
+        expect(existsSync(sessionDir(testRoot, childID))).toBe(false)
+      }
+    })
+  })
 })

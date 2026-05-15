@@ -872,13 +872,18 @@ export class SessionTracker {
    * is registered as an L1/L2 child in another directory's session-continuity.json.
    * These directories were created by the race condition CP-ST-02 fixes.
    *
+   * Enhanced checks (D-08):
+   * - HierarchyIndex.isChild() check (primary)
+   * - Missing session-continuity.json + classified as child (secondary fallback)
+   * - Audit logging with reason for each removal
+   *
    * Only removes directories for sessions classified as children under a parent's
    * hierarchy index. Preserves child .json files that already exist under the parent.
    *
    * Best-effort: individual failures are silently skipped.
    */
   private async cleanupOrphanDirectories(): Promise<void> {
-    const { readdir, rm } = await import("node:fs/promises")
+    const { readdir, rm, access } = await import("node:fs/promises")
     const trackerRoot = sessionTrackerRoot(this.projectRoot)
 
     let entries: { name: string; isDirectory(): boolean }[]
@@ -899,10 +904,37 @@ export class SessionTracker {
       // Skip non-session directories (e.g., .gitkeep-created dirs)
       if (!isValidSessionID(sessionID)) continue
 
-      // Check if this session is a CHILD of any known parent.
-      // If the hierarchy index classifies it as a child, the directory
-      // is an orphan — the child should only exist as a .json file.
+      let isOrphan = false
+      let reason = ""
+
+      // Check 1: hierarchyIndex classifies as child
       if (this.hierarchyIndex?.isChild(sessionID)) {
+        isOrphan = true
+        reason = "classified as child by HierarchyIndex"
+      }
+
+      // Check 2: No session-continuity.json in directory (indicates
+      // it was created by the race condition, not a real main session)
+      if (!isOrphan) {
+        const indexPath = safeSessionPath(
+          this.projectRoot,
+          sessionID,
+          "session-continuity.json",
+        )
+        try {
+          await access(indexPath)
+          // Has session-continuity.json — might be a legitimate main session
+        } catch {
+          // No session-continuity.json — likely orphan from race condition
+          // Only remove if the session ID appears as a child in another directory
+          if (this.hierarchyIndex?.isChild(sessionID)) {
+            isOrphan = true
+            reason = "no session-continuity.json + classified as child"
+          }
+        }
+      }
+
+      if (isOrphan) {
         const { resolve } = await import("node:path")
         const dirPath = resolve(trackerRoot, sessionID)
         try {
@@ -911,7 +943,7 @@ export class SessionTracker {
             body: {
               service: "session-tracker",
               level: "info",
-              message: `[Harness] Session tracker: removed orphan child directory "${sessionID}"`,
+              message: `[Harness] Session tracker: removed orphan directory "${sessionID}" (${reason})`,
             },
           })
         } catch {
