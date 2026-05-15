@@ -6,7 +6,7 @@
  * All writes use atomic rename for crash safety.
  */
 
-import { mkdtempSync, readFileSync, existsSync } from "node:fs"
+import { mkdtempSync, readFileSync, existsSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { ChildWriter } from "../../../../src/features/session-tracker/persistence/child-writer.js"
@@ -356,5 +356,151 @@ describe("concurrent writes — serial write queue (F-08)", () => {
     expect(record.status).toBe("completed")
     expect((record as any).turns).toHaveLength(1)
     expect((record as any).turns[0].content).toBe("Status-race turn")
+  })
+})
+
+// ── Root main routing (D-03) ────────────────────────────────────────────
+
+import { HierarchyIndex } from "../../../../src/features/session-tracker/persistence/hierarchy-index.js"
+
+describe("ChildWriter — root main session routing (D-03)", () => {
+  let writer: ChildWriter
+  let hierarchyIndex: HierarchyIndex
+  let projectRoot: string
+  let tmpDir: string
+
+  const ROOT_SESSION = "ses_root_main_001"
+  const L1_CHILD = "ses_child_l1_001"
+  const L2_GRANDCHILD = "ses_grandchild_l2_001"
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "st-childwriter-root-"))
+    projectRoot = join(tmpDir, "project")
+
+    // Create hierarchy index with the root→L1→L2 chain
+    hierarchyIndex = new HierarchyIndex({ projectRoot })
+    hierarchyIndex.registerChild(ROOT_SESSION, L1_CHILD)
+    hierarchyIndex.registerChild(L1_CHILD, L2_GRANDCHILD)
+
+    writer = new ChildWriter({ projectRoot, hierarchyIndex })
+  })
+
+  afterEach(() => {
+    try {
+      rmSync(tmpDir, { recursive: true, force: true })
+    } catch { /* cleanup best-effort */ }
+  })
+
+  const baseMetadata = (parentID: string, childID: string, depth: number): ChildSessionRecord => ({
+    sessionID: childID,
+    parentSessionID: parentID,
+    delegationDepth: depth,
+    delegatedBy: {
+      agentName: "test",
+      tool: "task",
+      description: "test delegation",
+      subagentType: "test-agent",
+      model: "unknown",
+    },
+    created: "2026-01-01T00:00:00Z",
+    updated: "2026-01-01T00:00:00Z",
+    status: "active",
+    mainAgent: { name: "test-agent", model: "unknown" },
+    turns: [],
+    children: [],
+  })
+
+  // ── Test 1: createChildFile writes under ROOT main, not immediate parent
+
+  it("should write child .json under ROOT main for L1 child", async () => {
+    await writer.createChildFile(
+      ROOT_SESSION,
+      L1_CHILD,
+      baseMetadata(ROOT_SESSION, L1_CHILD, 1),
+    )
+
+    // File should be at: .hivemind/session-tracker/ROOT_SESSION/L1_CHILD.json
+    const rootPath = join(projectRoot, ".hivemind", "session-tracker", ROOT_SESSION, `${L1_CHILD}.json`)
+    expect(existsSync(rootPath)).toBe(true)
+
+    // File should NOT be at immediate parent level outside root
+    const wrongPath = join(projectRoot, ".hivemind", "session-tracker", L1_CHILD, `${L1_CHILD}.json`)
+    expect(existsSync(wrongPath)).toBe(false)
+  })
+
+  // ── Test 2: L2 grandchild resolves through L1 to ROOT main ──────────
+
+  it("should write L2 grandchild .json under ROOT main (through L1 chain)", async () => {
+    await writer.createChildFile(
+      L1_CHILD,        // immediate parent is L1
+      L2_GRANDCHILD,   // but root main is ROOT_SESSION
+      baseMetadata(L1_CHILD, L2_GRANDCHILD, 2),
+    )
+
+    // File must be at ROOT main directory, not L1 child directory
+    const rootPath = join(projectRoot, ".hivemind", "session-tracker", ROOT_SESSION, `${L2_GRANDCHILD}.json`)
+    expect(existsSync(rootPath)).toBe(true)
+
+    // Should NOT be under the L1 child's directory
+    const l1Path = join(projectRoot, ".hivemind", "session-tracker", L1_CHILD, `${L2_GRANDCHILD}.json`)
+    expect(existsSync(l1Path)).toBe(false)
+  })
+
+  // ── Test 3: appendChildTurn writes under ROOT main ───────────────────
+
+  it("should append turn data to .json under ROOT main directory", async () => {
+    // Create the file first
+    await writer.createChildFile(
+      ROOT_SESSION,
+      L1_CHILD,
+      baseMetadata(ROOT_SESSION, L1_CHILD, 1),
+    )
+
+    const turn: Turn = {
+      turn: 1,
+      actor: "test-agent",
+      content: "Test turn content",
+      tools: [],
+    }
+
+    await writer.appendChildTurn(ROOT_SESSION, L1_CHILD, turn)
+
+    // Read back from root main directory
+    const rootPath = join(projectRoot, ".hivemind", "session-tracker", ROOT_SESSION, `${L1_CHILD}.json`)
+    const record = JSON.parse(readFileSync(rootPath, "utf-8"))
+    expect(record.turns).toHaveLength(1)
+    expect(record.turns[0].content).toBe("Test turn content")
+  })
+
+  // ── Test 4: Fallback when hierarchyIndex not provided ────────────────
+
+  it("should fall back to immediate parent when hierarchyIndex not available", async () => {
+    const fallbackWriter = new ChildWriter({ projectRoot })
+
+    await fallbackWriter.createChildFile(
+      ROOT_SESSION,
+      L1_CHILD,
+      baseMetadata(ROOT_SESSION, L1_CHILD, 1),
+    )
+
+    // Without hierarchyIndex, writes go to immediate parent (ROOT_SESSION is the immediate parent here)
+    const rootPath = join(projectRoot, ".hivemind", "session-tracker", ROOT_SESSION, `${L1_CHILD}.json`)
+    expect(existsSync(rootPath)).toBe(true)
+  })
+
+  // ── Test 5: updateChildStatus writes under ROOT main ─────────────────
+
+  it("should update child status under ROOT main directory", async () => {
+    await writer.createChildFile(
+      ROOT_SESSION,
+      L1_CHILD,
+      baseMetadata(ROOT_SESSION, L1_CHILD, 1),
+    )
+
+    await writer.updateChildStatus(ROOT_SESSION, L1_CHILD, "completed")
+
+    const rootPath = join(projectRoot, ".hivemind", "session-tracker", ROOT_SESSION, `${L1_CHILD}.json`)
+    const record = JSON.parse(readFileSync(rootPath, "utf-8"))
+    expect(record.status).toBe("completed")
   })
 })
