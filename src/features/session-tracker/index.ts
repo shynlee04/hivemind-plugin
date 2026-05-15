@@ -695,7 +695,7 @@ export class SessionTracker {
     try {
       // Create persistence writers
       this.sessionWriter = new SessionWriter({ projectRoot: this.projectRoot })
-      this.childWriter = new ChildWriter({ projectRoot: this.projectRoot })
+      this.childWriter = new ChildWriter({ projectRoot: this.projectRoot, hierarchyIndex: this.hierarchyIndex })
       this.sessionIndexWriter = new SessionIndexWriter({ projectRoot: this.projectRoot })
       this.projectIndexWriter = new ProjectIndexWriter({ client: this.client, projectRoot: this.projectRoot })
 

@@ -13,6 +13,7 @@
 import { readFile } from "node:fs/promises"
 import { atomicWriteJson, ensureDirectory, safeSessionPath } from "./atomic-write.js"
 import type { ChildSessionRecord, Turn } from "../types.js"
+import type { HierarchyIndex } from "./hierarchy-index.js"
 
 // ---------------------------------------------------------------------------
 // ChildWriter class
@@ -25,6 +26,13 @@ import type { ChildSessionRecord, Turn } from "../types.js"
  */
 export class ChildWriter {
   private projectRoot: string
+
+  /**
+   * Optional hierarchy index for resolving the root main session directory.
+   * When present, all child .json writes are routed to the root main's
+   * directory instead of the immediate parent (D-03).
+   */
+  private hierarchyIndex: HierarchyIndex | undefined
 
   /**
    * Per-child serial write queues (key: `parentID/childID`).
@@ -46,9 +54,11 @@ export class ChildWriter {
   /**
    * @param deps - Injected dependencies.
    * @param deps.projectRoot - Absolute path to the project root.
+   * @param deps.hierarchyIndex - Optional hierarchy index for root main resolution (D-03).
    */
-  constructor(deps: { projectRoot: string }) {
+  constructor(deps: { projectRoot: string; hierarchyIndex?: HierarchyIndex }) {
     this.projectRoot = deps.projectRoot
+    this.hierarchyIndex = deps.hierarchyIndex
   }
 
   /**
@@ -67,6 +77,26 @@ export class ChildWriter {
       parentSessionID,
       `${childSessionID}.json`,
     )
+  }
+
+  /**
+   * Resolves the correct parent directory for a child .json file.
+   *
+   * Per D-03: all children are stored under the ROOT main session directory,
+   * not the immediate parent. If hierarchyIndex is available, the root main
+   * session is resolved; otherwise falls back to the immediate parent.
+   *
+   * @param childID - The child session identifier.
+   * @param immediateParentID - The immediate parent session identifier.
+   * @returns The session ID whose directory should contain the child .json.
+   */
+  private resolveWriteParent(childID: string, immediateParentID: string): string {
+    if (this.hierarchyIndex) {
+      const rootMain = this.hierarchyIndex.getRootMain(childID)
+      if (rootMain) return rootMain
+    }
+    // Fallback: if root main not resolved, use immediate parent
+    return immediateParentID
   }
 
   /**
@@ -153,11 +183,14 @@ export class ChildWriter {
     childSessionID: string,
     metadata: ChildSessionRecord,
   ): Promise<void> {
+    // Resolve the correct parent directory (root main per D-03)
+    const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
+
     // Ensure the parent session subdirectory exists
-    const parentDir = safeSessionPath(this.projectRoot, parentSessionID, "")
+    const parentDir = safeSessionPath(this.projectRoot, writeParent, "")
     await ensureDirectory(parentDir)
 
-    const filePath = this.getChildFilePath(parentSessionID, childSessionID)
+    const filePath = this.getChildFilePath(writeParent, childSessionID)
     await atomicWriteJson(filePath, metadata)
   }
 
@@ -176,14 +209,15 @@ export class ChildWriter {
     childSessionID: string,
     status: string,
   ): Promise<void> {
+    const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
     return this.enqueueWrite(
-      `${parentSessionID}/${childSessionID}`,
+      `${writeParent}/${childSessionID}`,
       async () => {
-        const record = await this.readChildFile(parentSessionID, childSessionID)
+        const record = await this.readChildFile(writeParent, childSessionID)
         record.status = status
         record.updated = new Date().toISOString()
 
-        const filePath = this.getChildFilePath(parentSessionID, childSessionID)
+        const filePath = this.getChildFilePath(writeParent, childSessionID)
         await atomicWriteJson(filePath, record)
       },
     )
@@ -204,10 +238,11 @@ export class ChildWriter {
     childSessionID: string,
     turn: Turn,
   ): Promise<void> {
+    const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
     return this.enqueueWrite(
-      `${parentSessionID}/${childSessionID}`,
+      `${writeParent}/${childSessionID}`,
       async () => {
-        const record = await this.readChildFile(parentSessionID, childSessionID)
+        const record = await this.readChildFile(writeParent, childSessionID)
         record.turns.push(turn)
         record.updated = new Date().toISOString()
 
@@ -219,7 +254,7 @@ export class ChildWriter {
               : turn.content
         }
 
-        const filePath = this.getChildFilePath(parentSessionID, childSessionID)
+        const filePath = this.getChildFilePath(writeParent, childSessionID)
         await atomicWriteJson(filePath, record)
       },
     )
