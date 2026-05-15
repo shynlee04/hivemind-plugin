@@ -217,6 +217,16 @@ export class EventCapture {
           return
         }
 
+        // All three gates passed — root main session (D-02).
+        // This is the ONLY path that creates directories for session.created.
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "info",
+            message: `[Harness] Session tracker: creating root main session directory for "${sessionID}"`,
+          },
+        })
+
         // Root session — create subdirectory + .md file
         await this.sessionWriter.createSessionDir(sessionID)
         await this.sessionWriter.initializeSessionFile(sessionID, {

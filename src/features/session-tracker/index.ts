@@ -196,15 +196,10 @@ export class SessionTracker {
       return
     }
 
-    // Neither SDK parentID nor hierarchy index indicates this is a child.
-    // Treat as a main session — create directory (conservative fallback).
-    void this.client.app?.log?.({
-      body: {
-        service: "session-tracker",
-        level: "warn",
-        message: `[Harness] Session tracker: cannot determine parentID for "${sessionID}" — treating as main session (conservative fallback)`,
-      },
-    })
+    // All three gates failed (SDK parentID, hierarchyIndex, pendingRegistry).
+    // This is a root main session — create directory (D-02).
+    // Child sessions are NEVER allowed to reach this point.
+    // This is the ONLY path that creates directories.
 
     this.bootstrappedSessions.add(sessionID)
 
