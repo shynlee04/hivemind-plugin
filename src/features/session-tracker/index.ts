@@ -52,10 +52,12 @@ import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { SessionBootstrap } from "./bootstrap.js"
 import { SessionClassifier } from "./classification.js"
+import { OrphanCleanup } from "./orphan-cleanup.js"
+import { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { isValidSessionID } from "./types.js"
-import { safeSessionPath, sessionTrackerRoot } from "./persistence/atomic-write.js"
+import { sessionTrackerRoot } from "./persistence/atomic-write.js"
 
 /**
  * Central session tracker class.
@@ -114,6 +116,10 @@ export class SessionTracker {
 
   // Classification (extracted from index.ts — CP-ST-05-03)
   private classifier!: SessionClassifier
+
+  // Orphan cleanup (extracted from index.ts — CP-ST-05-03)
+  private orphanCleanup!: OrphanCleanup
+  private quarantine!: OrphanQuarantine
 
   /**
    * Tracks sessions that have been lazy-bootstrapped (dir + .md file created).
@@ -559,6 +565,16 @@ export class SessionTracker {
         pendingRegistry: this.pendingRegistry,
       })
 
+      // Create orphan quarantine and cleanup (CP-ST-05-03)
+      const trackerRoot = resolve(this.projectRoot, ".hivemind", "session-tracker")
+      this.quarantine = new OrphanQuarantine({ trackerRoot })
+      this.orphanCleanup = new OrphanCleanup({
+        client: this.client,
+        projectRoot: this.projectRoot,
+        hierarchyIndex: this.hierarchyIndex,
+        quarantine: this.quarantine,
+      })
+
       // Build the global hierarchy index from existing session-continuity.json files.
       // This ensures sessions created before this harness instance loaded are correctly
       // classified when their events arrive (cold-start scenario).
@@ -693,120 +709,20 @@ export class SessionTracker {
   /**
    * Removes orphaned `*.tmp.*` files from the session-tracker root.
    *
-   * These accumulate when writes are interrupted (process killed between
-   * writeFile and rename in atomicWriteJson/atomicAppendMarkdown).
-   * Safe to remove — they're atomic-write intermediates, never the
-   * authoritative file.
+   * Delegated to OrphanCleanup module (CP-ST-05-03).
    */
   private async cleanupOrphanedTmpFiles(): Promise<void> {
-    try {
-      const { readdir, unlink } = await import("node:fs/promises")
-      const { resolve } = await import("node:path")
-      const trackerRoot = resolve(this.projectRoot, ".hivemind", "session-tracker")
-
-      const entries = await readdir(trackerRoot, { withFileTypes: true })
-      for (const entry of entries) {
-        if (!entry.isFile()) continue
-        if (entry.name.includes(".tmp.")) {
-          const filePath = resolve(trackerRoot, entry.name)
-          try {
-            await unlink(filePath)
-          } catch {
-            // Best-effort: skip files that can't be removed
-          }
-        }
-      }
-    } catch {
-      // Best-effort: directory may not exist or be inaccessible
-    }
+    await this.orphanCleanup.cleanupOrphanedTmpFiles()
   }
 
   /**
    * Removes orphan child session directories from `.hivemind/session-tracker/`.
    *
-   * An orphan is a directory that contains session files but whose session ID
-   * is registered as an L1/L2 child in another directory's session-continuity.json.
-   * These directories were created by the race condition CP-ST-02 fixes.
-   *
-   * Enhanced checks (D-08):
-   * - HierarchyIndex.isChild() check (primary)
-   * - Missing session-continuity.json + classified as child (secondary fallback)
-   * - Audit logging with reason for each removal
-   *
-   * Only removes directories for sessions classified as children under a parent's
-   * hierarchy index. Preserves child .json files that already exist under the parent.
-   *
-   * Best-effort: individual failures are silently skipped.
+   * Delegated to OrphanCleanup module which uses quarantine protocol
+   * instead of direct deletion (CP-ST-05-03).
    */
   private async cleanupOrphanDirectories(): Promise<void> {
-    const { readdir, rm, access } = await import("node:fs/promises")
-    const trackerRoot = sessionTrackerRoot(this.projectRoot)
-
-    let entries: { name: string; isDirectory(): boolean }[]
-    try {
-      entries = (await readdir(trackerRoot, { withFileTypes: true })) as unknown as {
-        name: string
-        isDirectory(): boolean
-      }[]
-    } catch {
-      // Root directory doesn't exist yet — nothing to clean
-      return
-    }
-
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue
-      const sessionID = entry.name
-
-      // Skip non-session directories (e.g., .gitkeep-created dirs)
-      if (!isValidSessionID(sessionID)) continue
-
-      let isOrphan = false
-      let reason = ""
-
-      // Check 1: hierarchyIndex classifies as child
-      if (this.hierarchyIndex?.isChild(sessionID)) {
-        isOrphan = true
-        reason = "classified as child by HierarchyIndex"
-      }
-
-      // Check 2: No session-continuity.json in directory (indicates
-      // it was created by the race condition, not a real main session)
-      if (!isOrphan) {
-        const indexPath = safeSessionPath(
-          this.projectRoot,
-          sessionID,
-          "session-continuity.json",
-        )
-        try {
-          await access(indexPath)
-          // Has session-continuity.json — might be a legitimate main session
-        } catch {
-          // No session-continuity.json — likely orphan from race condition
-          // Only remove if the session ID appears as a child in another directory
-          if (this.hierarchyIndex?.isChild(sessionID)) {
-            isOrphan = true
-            reason = "no session-continuity.json + classified as child"
-          }
-        }
-      }
-
-      if (isOrphan) {
-        const { resolve } = await import("node:path")
-        const dirPath = resolve(trackerRoot, sessionID)
-        try {
-          await rm(dirPath, { recursive: true, force: true })
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "info",
-              message: `[Harness] Session tracker: removed orphan directory "${sessionID}" (${reason})`,
-            },
-          })
-        } catch {
-          // Best-effort: skip directories that can't be removed (permissions, etc.)
-        }
-      }
-    }
+    await this.orphanCleanup.cleanupOrphanDirectories()
   }
 
   /**
