@@ -180,6 +180,23 @@ export class EventCapture {
    */
   private async handleSessionCreated(sessionID: string): Promise<void> {
     try {
+      // Gate 0 (CP-ST-05-01): BEFORE-THE-FACT classification.
+      // Check if ANY task dispatch was recently recorded via PreToolUse hook.
+      // If so, this session is almost certainly a child — write .json immediately
+      // without waiting for SDK parentID or creating a directory.
+      const anyPending = this.pendingRegistry?.getAnyActiveEntry()
+      if (anyPending) {
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "info",
+            message: `[Harness] Session tracker: Gate 0 classification — pending dispatch detected for "${sessionID}"`,
+          },
+        })
+        await this.writeImmediateChildFile(sessionID, anyPending.parentSessionID, anyPending.subagentType, anyPending.delegationDepth)
+        return
+      }
+
       // Retry logic: the SDK might not report parentID on the first call
       // if the child session was JUST created (race with task tool completion).
       let parentID: string | null | undefined
@@ -423,6 +440,7 @@ export class EventCapture {
     sessionID: string,
     parentID: string,
     explicitSubagentType?: string,
+    explicitDelegationDepth?: number,
   ): Promise<void> {
     if (!this.childWriter) return
 
@@ -436,7 +454,7 @@ export class EventCapture {
       await this.childWriter.createChildFile(parentID, sessionID, {
         sessionID,
         parentSessionID: parentID,
-        delegationDepth: 1, // Refined by PostToolUse if deeper
+        delegationDepth: explicitDelegationDepth ?? 1,
         delegatedBy: {
           agentName: subagentType,
           model: "",
@@ -450,6 +468,7 @@ export class EventCapture {
         mainAgent: { name: "pending", model: "" },
         turns: [],
         children: [],
+        journey: [],
       })
 
       // D-07: update hierarchy-manifest.json

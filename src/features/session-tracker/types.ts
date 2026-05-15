@@ -224,6 +224,24 @@ export interface ChildSessionRecord {
   children: string[]
   /** Last assistant message summary (first 200 chars), for resumption context. */
   lastMessage?: string
+  /** Journey array — records tool calls, results, and assistant messages. CP-ST-05-01. */
+  journey?: JourneyEntry[]
+}
+
+/**
+ * A single entry in the session journey log.
+ * Records tool calls, results, and assistant messages for audit and recovery.
+ * CP-ST-05-01 addition.
+ */
+export interface JourneyEntry {
+  /** ISO 8601 timestamp of the event. */
+  timestamp: string
+  /** Type of journey entry: tool_call, tool_result, assistant_message. */
+  type: "tool_call" | "tool_result" | "assistant_message"
+  /** Content or description of the event. */
+  content: string
+  /** Optional metadata (tool name, status, etc.). */
+  metadata?: Record<string, unknown>
 }
 
 // ---------------------------------------------------------------------------

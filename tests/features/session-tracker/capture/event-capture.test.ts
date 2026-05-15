@@ -266,6 +266,7 @@ describe("handleSessionCreated() — root-only directory creation (D-02)", () =>
       pendingRegistry: {
         has: mockPendingHas,
         get: vi.fn().mockReturnValue(undefined),
+        getAnyActiveEntry: vi.fn().mockReturnValue(undefined),
       } as any,
     })
   })
@@ -432,6 +433,7 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
       pendingRegistry: {
         has: mockPendingHas,
         get: mockPendingGet,
+        getAnyActiveEntry: vi.fn().mockReturnValue(undefined),
       } as any,
       manifestWriter,
     })

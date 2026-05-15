@@ -36,6 +36,10 @@ export interface PendingDispatchEntry {
   subagentType: string
   /** `Date.now()` at registration time, for stale detection. */
   timestamp: number
+  /** Delegation depth (1 = L1, 2 = L2). CP-ST-05-01 addition. */
+  delegationDepth?: number
+  /** Task description from the dispatch. CP-ST-05-01 addition. */
+  description?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -281,5 +285,37 @@ export class PendingDispatchRegistry {
     this.dispatches.clear()
     this.callIDToChild.clear()
     this.byParent.clear()
+  }
+
+  /**
+   * Returns all active (non-stale) pending dispatch entries.
+   * Used for testing and debugging.
+   */
+  getAll(): PendingDispatchEntry[] {
+    this.cleanupStale()
+    return Array.from(this.dispatches.values())
+  }
+
+  /**
+   * Gets any active pending dispatch entry when the child session ID is
+   * not yet known but `byParent` indicates recent task dispatches.
+   *
+   * Used by Gate 0 in handleSessionCreated: when `byParent.size > 0`,
+   * a task was recently dispatched and the resulting session is likely
+   * a child even though we don't know its ID yet.
+   *
+   * @returns The first active pending entry, or `undefined`.
+   */
+  getAnyActiveEntry(): PendingDispatchEntry | undefined {
+    this.cleanupStale()
+    if (this.byParent.size === 0) return undefined
+    // Return the first entry from byParent
+    for (const callIds of this.byParent.values()) {
+      for (const callId of callIds) {
+        const entry = this.dispatches.get(`call:${callId}`)
+        if (entry) return entry
+      }
+    }
+    return undefined
   }
 }
