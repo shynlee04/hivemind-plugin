@@ -89,6 +89,67 @@ export interface MainAgent {
   model: string
 }
 
+// ---------------------------------------------------------------------------
+// Hierarchy Manifest (D-07)
+// ---------------------------------------------------------------------------
+
+/**
+ * A single child entry in the hierarchy manifest (D-07).
+ *
+ * Each entry tracks a delegated child session and its current status.
+ * The hierarchy-manifest.json is the authoritative source for the session
+ * delegation tree, replacing ad-hoc gate decisions.
+ */
+export interface HierarchyManifestChild {
+  /** Child session ID. */
+  sessionID: string
+  /** Immediate parent session ID. */
+  parentSessionID: string
+  /** Root main session ID (the directory owner). */
+  rootMainSessionID: string
+  /** Delegation depth (1 = L1, 2 = L2, etc.). */
+  delegationDepth: number
+  /** Who delegated this child (agent name). */
+  delegatedBy: string
+  /** Subagent type dispatched (e.g. "hm-l2-researcher"). */
+  subagentType: string
+  /** ISO 8601 timestamp of child session creation. */
+  createdAt: string
+  /** ISO 8601 timestamp of last update. */
+  updatedAt: string
+  /** Session status: active | idle | completed | error | aborted | cancelled. */
+  status: string
+  /** Turn count for this child session. */
+  turnCount: number
+  /** Filename of the child .json file. */
+  childFile: string
+}
+
+/**
+ * Hierarchy manifest — authoritative source for the session tree (D-07).
+ *
+ * Written as `hierarchy-manifest.json` in each root main session directory.
+ * Provides a flattened, quickly-lookup-able list of all children for that
+ * root main session. Coexists with session-continuity.json (which tracks
+ * the hierarchical tree structure).
+ */
+export interface HierarchyManifest {
+  /** Schema version. */
+  version: string
+  /** Root main session ID that owns this manifest. */
+  rootMainSessionID: string
+  /** ISO 8601 timestamp of last manifest update. */
+  lastUpdated: string
+  /** Flattened map of all children (L1, L2, ...) keyed by sessionID. */
+  children: Record<string, HierarchyManifestChild>
+  /** Total number of child sessions. */
+  totalChildren: number
+  /** Maximum delegation depth observed. */
+  maxDepth: number
+}
+
+// ---------------------------------------------------------------------------
+
 /** A single tool invocation record within a turn. */
 export interface ToolRecord {
   /** Name of the tool invoked (e.g. "skill", "read", "task"). */
