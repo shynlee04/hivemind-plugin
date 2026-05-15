@@ -12,7 +12,7 @@
 
 import { readFile } from "node:fs/promises"
 import { atomicWriteJson, ensureDirectory, safeSessionPath } from "./atomic-write.js"
-import type { ChildSessionRecord, Turn } from "../types.js"
+import type { ChildSessionRecord, Turn, JourneyEntry } from "../types.js"
 import type { HierarchyIndex } from "./hierarchy-index.js"
 
 // ---------------------------------------------------------------------------
@@ -253,6 +253,41 @@ export class ChildWriter {
               ? turn.content.slice(0, 200)
               : turn.content
         }
+
+        const filePath = this.getChildFilePath(writeParent, childSessionID)
+        await atomicWriteJson(filePath, record)
+      },
+    )
+  }
+
+  /**
+   * Appends a journey entry to the `journey` array of a child session `.json` file.
+   *
+   * Journey entries record tool calls, results, and assistant messages for
+   * audit and recovery purposes (CP-ST-05-02).
+   *
+   * @param parentSessionID - The parent session identifier.
+   * @param childSessionID - The child session identifier.
+   * @param entry - The journey entry to append.
+   * @returns Promise that resolves when the entry is appended.
+   *
+   * @throws If the child file does not exist.
+   */
+  async appendJourneyEntry(
+    parentSessionID: string,
+    childSessionID: string,
+    entry: JourneyEntry,
+  ): Promise<void> {
+    const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
+    return this.enqueueWrite(
+      `${writeParent}/${childSessionID}`,
+      async () => {
+        const record = await this.readChildFile(writeParent, childSessionID)
+        if (!record.journey) {
+          record.journey = []
+        }
+        record.journey.push(entry)
+        record.updated = new Date().toISOString()
 
         const filePath = this.getChildFilePath(writeParent, childSessionID)
         await atomicWriteJson(filePath, record)
