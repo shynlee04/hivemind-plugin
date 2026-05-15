@@ -55,6 +55,15 @@ export class HierarchyIndex {
   private childToParent: Map<string, string> = new Map()
 
   /**
+   * childID → rootMainSessionID map.
+   * Tracks the root main session (delegation depth 0) whose directory
+   * owns all child .json files for this child (D-03, D-08).
+   *
+   * Populated by registerChild() and buildFromDisk().
+   */
+  private childToRootMain: Map<string, string> = new Map()
+
+  /**
    * @param deps - Injected dependencies.
    * @param deps.projectRoot - Absolute path to the project root.
    */
@@ -109,6 +118,17 @@ export class HierarchyIndex {
         // Best-effort: skip directories without a readable index
       }
     }
+
+    // Second pass: resolve root main for each registered child (D-03, D-08).
+    // After all child→parent relationships are loaded, walk each chain
+    // to determine the root main session ID. This handles reverse-order
+    // registration (e.g., L1→L2 registered before root→L1).
+    for (const [childID] of this.childToParent) {
+      if (!this.childToRootMain.has(childID)) {
+        const root = this.resolveRootMain(childID)
+        if (root) this.childToRootMain.set(childID, root)
+      }
+    }
   }
 
   /**
@@ -121,6 +141,15 @@ export class HierarchyIndex {
    */
   registerChild(parentID: string, childID: string): void {
     this.childToParent.set(childID, parentID)
+
+    // Resolve root main (D-03, D-08):
+    // If parent already has a rootMain assigned, propagate it.
+    // If parent is NOT in childToParent, parent IS the root main.
+    const parentRootMain = this.childToRootMain.get(parentID)
+    const rootMain = parentRootMain ?? (this.childToParent.has(parentID) ? undefined : parentID)
+    if (rootMain) {
+      this.childToRootMain.set(childID, rootMain)
+    }
   }
 
   /**
@@ -131,6 +160,43 @@ export class HierarchyIndex {
    */
   getParent(childID: string): string | null {
     return this.childToParent.get(childID) ?? null
+  }
+
+  /**
+   * Returns the root main session ID for a child session.
+   *
+   * Traverses the child→parent chain to find the session with delegationDepth 0
+   * or the outermost parent (which owns the directory).
+   *
+   * Returns undefined if the root main session is not known (e.g., registered
+   * before the parent chain was fully established).
+   *
+   * @param childID - The child session identifier.
+   * @returns The root main session ID, or `undefined` if not resolved.
+   */
+  getRootMain(childID: string): string | undefined {
+    return this.childToRootMain.get(childID)
+  }
+
+  /**
+   * Resolves the root main session ID by walking the child→parent chain.
+   *
+   * Walks up through childToParent until it finds a session that is NOT
+   * itself a child (i.e., the root main). Includes cycle detection via a
+   * `visited` Set to prevent infinite loops (T-04-05).
+   *
+   * @param childID - The child session identifier to resolve from.
+   * @returns The root main session ID, or `undefined` if chain is incomplete.
+   */
+  private resolveRootMain(childID: string): string | undefined {
+    let current = childID
+    const visited = new Set<string>()
+    while (this.childToParent.has(current) && !visited.has(current)) {
+      visited.add(current)
+      current = this.childToParent.get(current)!
+    }
+    // current is now the outermost node — if it's NOT in childToParent, it's a root
+    return this.childToParent.has(current) ? undefined : current
   }
 
   /**
