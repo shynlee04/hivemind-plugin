@@ -1,280 +1,194 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-05-12
+**Analysis Date:** 2026-05-15
 
 ## Naming Patterns
 
 **Files:**
-- Kebab-case for all source files: `kebab-case.ts` — e.g., `tool-response.ts`, `delegation-persistence.ts`, `session-api.ts`
-- Schema files: `kebab-case.schema.ts` — e.g., `hivemind-configs.schema.ts`, `prompt-enhance.schema.ts`
-- Test files: `<module-name>.test.ts` — e.g., `helpers.test.ts`, `delegation-manager.test.ts`
-- Barrel exports: `index.ts` for subdirectory modules
-- Tool files: `src/tools/{tool-name}.ts` single file, or `src/tools/{tool-name}/index.ts` for multi-file tools
-- Feature files: `src/features/{feature-name}/index.ts` barrel + `{feature-name}/types.ts` for contracts
-- Hivemind tools prefixed: `hivemind-doc.ts`, `hivemind-trajectory.ts`, etc.
-- Exception: `run-background-command.ts` (no hivemind- prefix)
-
-**Classes:**
-- PascalCase: `TaskStateManager` (`src/shared/state.ts:8`), `DelegationManager` (`src/coordination/delegation/manager.ts:73`), `CompletionDetector`, `SdkDelegationHandler`
-- Factory functions use `create*` prefix: `createCoreHooks`, `createDelegateTaskTool`, `createHivemindDocTool`
+- Source files use `kebab-case.ts` (e.g., `delegate-task.ts`, `session-entry-consumer.ts`)
+- Schema files use `kebab-case.schema.ts` (e.g., `prompt-enhance.schema.ts`, `trajectory.schema.ts`)
+- Type-only files use `kebab-case.types.ts` (e.g., `behavioral-profile/types.ts`, `runtime-pressure/types.ts`)
+- Test files mirror source with `.test.ts` suffix (e.g., `helpers.test.ts`, `delegation-manager.test.ts`)
+- Index files use `index.ts` for barrel exports within feature/tool directories
 
 **Functions:**
-- camelCase: `isObject`, `getNestedValue`, `stableStringify`, `makeToolSignature`, `describeError` (all in `src/shared/helpers.ts`)
-- Private module-level functions are camelCase: `extractSdkErrorMessage`, `buildDelegationPromptTools`, `resolveAcquireArgs`
+- camelCase for all functions (e.g., `extractAssistantText`, `createDelegateTaskTool`, `resolveWorkspaceRuntimePolicy`)
+- Factory functions use `create` prefix (e.g., `createCoreHooks`, `createPtyManagerIfSupported`, `createSessionTrackerTool`)
+- Type guards use `is`/`has` prefix (e.g., `isObject`, `isValidSessionID`, `hasAssistantWorkEvidence`)
+- Action verbs for mutations (e.g., `reserveDescendant`, `registerSubagent`, `forgetSession`)
 
 **Variables:**
-- camelCase: `runtimePolicy`, `projectDirectory`, `stateDir`, `ptyManager`
-- Constants: UPPER_SNAKE_CASE — `DEFAULT_MAX_CHARACTERS` (`src/features/doc-intelligence/chunker.ts:4`), `WATCH_TIMEOUT_MS` (`src/plugin.ts:56`), `VALID_TASK_STATUSES` (`src/shared/task-status.ts:3`)
-- Boolean flags: `isObject`, `requireEvidence` pattern
+- camelCase for variables and parameters (e.g., `sessionTracker`, `runtimePolicy`, `projectDirectory`)
+- UPPER_SNAKE_CASE for constants (e.g., `MAX_DESCENDANTS_PER_ROOT`, `WATCH_TIMEOUT_MS`, `TRAJECTORY_LEDGER_VERSION`)
+- PascalCase for types, interfaces, and classes (e.g., `DelegationManager`, `SessionTracker`, `ToolResponse`)
 
 **Types:**
-- PascalCase for interfaces and type aliases: `TaskStatus`, `ToolResponse<T>`, `PermissionRule`, `DelegationPacket`, `SessionContinuityRecord`
-- Type params use single capital letter: `T` in `ToolResponse<T>`
-- Inline types for small results: `type QueueContext = { ... }` (`src/coordination/delegation/manager.ts:32`)
-- Type-only imports use `import type` syntax throughout
+- PascalCase for interfaces and type aliases (e.g., `SessionContinuityRecord`, `RuntimePolicy`, `HarnessStatus`)
+- `type` preferred over `interface` for unions and mapped types; `interface` for object shapes with extension needs
+- Suffix `-Schema` for Zod schema types (e.g., `HivemindConfigs`, `TrajectoryToolInput`)
 
 ## Code Style
 
-**TypeScript Config** (`tsconfig.json`):
-- `strict: true` — full strict mode enabled
-- `noUnusedLocals: true`, `noUnusedParameters: true`, `noImplicitReturns: true`, `noFallthroughCasesInSwitch: true`
-- `verbatimModuleSyntax: true` — requires `import type` for type-only imports
-- `target: "ES2022"`, `module: "NodeNext"`, `moduleResolution: "NodeNext"`
-- `declaration: true`, `declarationMap: true`, `sourceMap: true`
-- No `any` types on new code
-
 **Formatting:**
-- No Prettier or Biome detected — relies on TypeScript compiler and manual formatting discipline
-- 2-space indentation observed throughout
-- Semicolons required
-- Trailing commas in multiline objects and arrays
+- No external formatter configured (no ESLint, Prettier, or Biome found)
+- TypeScript compiler (`tsc`) enforces strict mode as the primary style gate
+- 2-space indentation observed throughout codebase
+- Line length: ~100-120 characters typical, no hard limit enforced
 
 **Linting:**
-- No ESLint detected — type checking via `tsc` is the primary lint mechanism
-- No Biome detected
-- Run `npm run typecheck` (`tsc --noEmit`) for validation
+- TypeScript strict mode is the lint authority:
+  - `strict: true`
+  - `noUnusedLocals: true`
+  - `noUnusedParameters: true`
+  - `noImplicitReturns: true`
+  - `noFallthroughCasesInSwitch: true`
+  - `verbatimModuleSyntax: true`
 
-**JSDoc/TSDoc:**
-- Required on all exported functions and classes
-- Uses `@param`, `@returns`, `@example` tags
-- Module-level description with `@module` tag for barrel files
-- Multi-line JSDoc with `/** ... */` style
-
-```typescript
-// From src/shared/tool-response.ts
-/**
- * Create a success response.
- * @param message - Human-readable status message
- * @param data - Optional payload data
- * @param metadata - Optional diagnostic metadata
- */
-export function success<T>(
-  message: string,
-  data?: T,
-  metadata?: Record<string, unknown>,
-): ToolResponse<T> {
-  return { kind: "success", message, data, metadata }
-}
-```
+**Module size constraint:**
+- Max 500 LOC per module (enforced by architecture rules in AGENTS.md)
+- Large modules are split (e.g., `src/shared/types.ts` re-exports from `../coordination/delegation/types.js` to stay under limit)
 
 ## Import Organization
 
 **Order:**
-1. External/third-party imports (e.g., `@opencode-ai/plugin`, `node:fs`, `vitest`)
-2. Internal project imports from `../../src/...` paths
-3. Relative imports from sibling files
+1. External packages / SDK imports (e.g., `@opencode-ai/plugin`, `@opencode-ai/sdk`, `node:fs`)
+2. Internal relative imports (e.g., `../../shared/types.js`, `../coordination/delegation/manager.js`)
 
 **Path Aliases:**
-- No path aliases/barrels — all imports use relative ESM paths with `.js` extensions
+- No path aliases configured — all internal imports use relative paths
+- ESM `.js` extensions required on all relative imports (e.g., `import { foo } from "./bar.js"`)
+- `import type` used for all type-only imports (enforced by `verbatimModuleSyntax: true`)
 
-**Patterns:**
-- Type-only imports use `import type`:
+**Import style examples:**
 ```typescript
+// Type-only import (verbatimModuleSyntax enforced)
 import type { Plugin } from "@opencode-ai/plugin"
-import type { PermissionRule } from "./types.js"
-```
-- Value imports use regular `import`:
-```typescript
-import { DelegationManager } from "./manager.js"
-import { vi } from "vitest"
-```
-- Wildcard imports for module-spying in tests:
-```typescript
-import * as configSubscriber from "../../src/config/subscriber.js"
-```
+import type { DelegationManager } from "../../coordination/delegation/manager.js"
 
-**ESM imports:**
-- All local imports include `.js` extension: `from "./helpers.js"`, not `from "./helpers"`
-- Required by `verbatimModuleSyntax` + `NodeNext` module resolution
+// Value import with .js extension
+import { existsSync, rmSync } from "node:fs"
+import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
+
+// Re-export for backward compatibility
+export type { DelegationStatus } from "../coordination/delegation/types.js"
+```
 
 ## Error Handling
 
-**Pattern:**
-1. **Tool-level try/catch**: Tools wrap `execute()` in try/catch, return error via `ToolResponse` envelope
+**Patterns:**
+- All thrown errors use `[Harness]` prefix: `throw new Error("[Harness] <message>")`
+- Error messages include context: `"[Harness] Invalid agent: \"not-real\". Available: [researcher, builder, critic]"`
+- Recovery errors include error codes: `"[Harness] recovery REC-04: sessionId must be a non-empty string"`
+- SDK errors are unwrapped via `unwrapData()` helper in `src/shared/helpers.js` — throws `[Harness]` prefixed messages
+- `describeError()` helper in `src/shared/helpers.js` converts unknown errors to strings
+- Best-effort pattern: fire-and-forget async operations wrap in `void` with `.catch()` for non-critical paths (e.g., session tracker init, migration cleanup)
+
+**Error handling example:**
 ```typescript
-// From src/tools/hivemind/hivemind-doc.ts
-async execute(rawArgs, _context): Promise<string> {
-  try {
-    const args = DocIntelligenceInputSchema.parse(rawArgs)
-    return renderToolResult(success("Done", executeDocIntelligenceAction(args)))
-  } catch (caughtError) {
-    const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-    return renderToolResult(error(message))
+// Standard error with [Harness] prefix
+throw new Error("[Harness] Canonical delegation queue-key drift detected.")
+
+// SDK error unwrapping
+function unwrapData<T = unknown>(response: unknown): T {
+  if (isObject(response) && "error" in response && response.error) {
+    const message = extractSdkErrorMessage(response.error)
+    throw new Error(`[Harness] ${message}`)
   }
+  // ...
 }
-```
 
-2. **`[Harness]` prefix**: All thrown errors from harness code use `[Harness]` prefix
-```typescript
-// From src/shared/helpers.ts
-throw new Error(`[Harness] ${message}`)
-```
-
-3. **`describeError` helper**: Uniform error→string conversion
-```typescript
-// From src/shared/helpers.ts
-export function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
+// Best-effort (never fail the tool call)
+try {
+  await sessionTracker.handleToolExecuteAfter(input, output)
+} catch {
+  // Best-effort: never fail the tool call.
 }
-```
-
-4. **Standardized ToolResponse**: Tools communicate results via shared envelope
-```typescript
-// From src/shared/tool-response.ts
-export type ToolResponse<T = unknown> = {
-  kind: "success" | "error" | "pending"
-  message: string
-  data?: T
-  metadata?: Record<string, unknown>
-}
-```
-
-5. **Zod validation errors**: Schema parsing before tool execution, caught and returned as user-facing error messages
-
-6. **Graceful fallback**: Config loading falls back to defaults on parse failure (`src/config/subscriber.ts`):
-```typescript
-// Missing or invalid config files return defaults (never crashes).
 ```
 
 ## Logging
 
-**Framework:** No structured logging library detected — uses `console` in some modules, but primary feedback is via `ToolResponse` message field.
+**Framework:** OpenCode SDK `client.app.log` via structured body objects
 
 **Patterns:**
-- Tool outputs rendered via `renderToolResult()` from `src/shared/tool-helpers.ts`
-- Some modules use inline comments for debug documentation
-- Runtime pressure tracking uses structured scoring, not logging
+- Service tag identifies the subsystem: `service: "session-tracker"`
+- Log levels: `info`, `warn`, `error`
+- All log messages use `[Harness]` prefix for consistency
+- Error details passed via `extra: { error: err.message }` pattern
+- `void` prefix on log calls — logging never blocks execution
+
+**Logging example:**
+```typescript
+void client.app?.log?.({
+  body: {
+    service: "session-tracker",
+    level: "warn",
+    message: "[Harness] Session tracker: init+cleanup failed",
+    extra: { error: err instanceof Error ? err.message : String(err) },
+  },
+})
+```
 
 ## Comments
 
 **When to Comment:**
-- JSDoc on all exported functions and classes
-- `//` section dividers using `// ----` comment blocks:
-```typescript
-// ---------------------------------------------------------------------------
-// TaskStateManager — encapsulates all in-process session/budget state.
-// ---------------------------------------------------------------------------
-```
-- Inline comments for non-obvious logic, error shape patterns, design decisions
-- Comments on config values with audit trail information (phase numbers, dates):
-```typescript
-// Phase 48.4.1 (audit 2026-04-30): added 'json-summary' so CI and
-// future automation can parse coverage without scraping text output.
-```
+- JSDoc blocks (`/** ... */`) on all public functions, classes, and exported types
+- Inline section separators using `// ---` or `// ----` with descriptive labels
+- Inline comments explain WHY, not WHAT (especially for non-obvious patterns)
+- Phase/audit references in comments for traceability (e.g., `// Phase 48.4.1 (audit 2026-04-30)`)
 
 **JSDoc/TSDoc:**
-- JSDoc on all public exports
-- `@param` with types described after hyphen: `@param projectRoot - Absolute path to the project root directory.`
-- `@returns` with description
-- `@example` with TypeScript code block for usage
-- `@module` tag on barrel/index files
-- File header comment explaining module purpose
+- Extensive JSDoc usage — 1,524+ JSDoc blocks across `src/`
+- Standard format: description, `@param`, `@returns`
+- Cross-references via `{@link}` syntax
+- Example from `src/shared/helpers.ts`:
+```typescript
+/**
+ * Extract the text content of the last assistant message from an array of
+ * session messages.
+ *
+ * Searches backward from the end of the array...
+ * Returns `""` when no assistant message is found...
+ */
+export function extractAssistantText(messages: unknown[]): string { ... }
+```
 
 ## Function Design
 
-**Size:** No hard limit specified beyond module-level 500 LOC cap. Functions typically handle one responsibility.
+**Size:**
+- Target: under 500 LOC per module (architecture constraint)
+- Functions are typically 10-50 lines; complex handlers up to ~100 lines
+- Large functions split into named sub-functions with descriptive names
 
 **Parameters:**
-- Named parameters via destructured objects for 3+ params or config bundles:
-```typescript
-export function buildPromptText(args: {
-  description: string
-  prompt: string
-  category?: string
-  scope?: string
-  // ...
-}): string
-```
-- 1-2 positional params for simple cases:
-```typescript
-export function stableStringify(value: unknown): string
-```
+- Named object parameters for 3+ arguments (e.g., `buildPromptText(args: { description, prompt, category?, ... })`)
+- Single positional parameters for simple functions
+- Optional parameters use `?` with defaults at call site
 
 **Return Values:**
-- Synchronous functions for pure computation
-- `async` functions for I/O, SDK calls, or tool execution
-- Discriminated union return types (`ToolResponse.kind` as discriminator)
-- `Promise<T>` for async operations
-- `| undefined` return for nullable results (never `null`)
+- Explicit return types on all functions (TypeScript `noImplicitReturns`)
+- `ToolResponse<T>` envelope for tool outputs (kind: success | error | pending)
+- `undefined` for optional/missing values (not `null`)
+- Discriminated unions where appropriate (e.g., `HarnessStatus`)
 
 ## Module Design
 
 **Exports:**
-- Named exports exclusively — no default exports in source files
-- Barrel re-exports via `export { ... } from "./module.js"` or `export * from "./module.js"`
-- Default export only for the plugin entry point: `export { HarnessControlPlane as default } from "./plugin.js"` (`src/index.ts:2`)
+- Named exports preferred (no default exports except `plugin.ts`)
+- Barrel files (`index.ts`) for feature directories re-export types and implementations
+- `export type` for type-only re-exports
+- Factory pattern: `createXxxTool()`, `createXxxHooks()` for plugin composition
 
 **Barrel Files:**
-- `index.ts` in each subdirectory re-exports public API
-- Used for multi-file tools: `src/tools/prompt/prompt-skim/index.ts`
-- Used for features: `src/features/doc-intelligence/index.ts`
+- Used in `src/schema-kernel/index.ts`, `src/routing/session-entry/index.ts`, `src/features/*/index.ts`
+- Re-export types and implementations for clean consumer imports
+- `src/index.ts` re-exports public API surfaces
 
-**Module Size:**
-- Max 500 LOC per module (hard constraint from project rules)
-- `src/coordination/delegation/manager.ts` at ~500 LOC is the reference upper bound
-- `src/shared/helpers.ts` at 295 LOC, `plugin.ts` at 242 LOC
-
-**Dependency Rules:**
-- No circular imports
-- `src/shared/` is leaf-like — never imports from tools, hooks, or deep modules
-- Tools call features/delegation/state owners — never the reverse
-- Hooks are read-only, never write state
-
-## Tool Design Patterns
-
-**Factory functions:**
-```typescript
-export function createHivemindDocTool(projectRoot: string): ReturnType<typeof tool> {
-  // ...
-  return tool({
-    description: "...",
-    args: { ... },
-    async execute(rawArgs, context): Promise<string> {
-      // schema parse → execute → render
-    },
-  })
-}
-```
-- Tools import Zod schema from `src/schema-kernel/`
-- Tools call feature/delegation modules — never duplicate deep logic
-- Tools use `renderToolResult()` + `success()`/`error()` from `src/shared/`
-
-## Test Conventions
-
-**Setup/Teardown:**
-- `beforeEach` for test setup (env vars, temp dirs, mock resets)
-- `afterEach` for cleanup (mock restoration, temp dir removal, env var cleanup)
-- `vi.resetModules()` / `vi.unmock()` for module isolation (`tests/lib/continuity.test.ts`)
-- `vi.restoreAllMocks()` in `afterEach` for tool tests
-
-**Assertions:**
-- `expect()` from Vitest
-- `.toBe()` for primitives, `.toEqual()` for objects/arrays
-- `.resolves`/`.rejects` for async expectations
-- `.toThrow()` with regex pattern for error messages: `toThrow(/^\[Harness\]/)`
-- `expect.objectContaining()` for partial object matching
-- `.toBeUndefined()`, `.toBe(true/false)`, `.toContain()`
+**Architecture patterns:**
+- CQRS: hooks (read-side) vs tools (write-side) — strictly separated
+- Dependency injection: factories receive deps objects, not globals
+- Plugin composition: `src/plugin.ts` is thin — wires factories, no business logic
+- Leaf constraint: `src/shared/` imports from nothing deeper than itself
 
 ---
 
-*Convention analysis: 2026-05-12*
+*Convention analysis: 2026-05-15*

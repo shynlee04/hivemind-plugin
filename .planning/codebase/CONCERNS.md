@@ -1,215 +1,327 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-05-12
+**Analysis Date:** 2026-05-15
 
 ## Tech Debt
 
-### plugin.ts Composition Root Bloat
+### Session Tracker Module Size Violation (Critical)
 
-- **Issue:** `src/plugin.ts` is 242 LOC against a documented target of 100 LOC. The composition root has accumulated business logic responsibilities beyond its "thin" charter — including inline error handling, session observer wiring, and legacy event-tracker bridge code.
-- **Files:** `src/plugin.ts`
-- **Impact:** Violates ARCHITECTURE.md directive ("plugin.ts is a thin composition root — no business logic"). Makes the bootstrap surface harder to reason about and test. Every new tool/hook requires a new import and registration line here.
-- **Fix approach:** Extract session observer wiring into `src/hooks/observers/`, extract the event-tracker bridge into a dedicated compatibility module, and keep only tool registration and dep instantiation in plugin.ts. Target: ~100 LOC.
+**Issue:** `src/features/session-tracker/index.ts` is 1,035 lines — more than double the 500 LOC cap enforced by project convention. `src/features/session-tracker/capture/event-capture.ts` is 512 lines — also exceeds the cap.
 
-### Steering Engine — Empty Shell
+**Files:** `src/features/session-tracker/index.ts` (1,035 LOC), `src/features/session-tracker/capture/event-capture.ts` (512 LOC)
 
-- **Issue:** The steering engine feature has only 3 source files (`types.ts`, `steering-state.ts`, `schema/steering-policy.schema.ts`) with empty `conditions/` and `templates/` directories. The actual evaluation engine (policy evaluator, condition evaluator, injection builder, template renderer) has never been implemented. The test `tests/features/steering-engine/injection-builder.test.ts` fails because the source module `injection-builder.js` does not exist.
-- **Files:** `src/features/steering-engine/steering-state.ts`, `src/features/steering-engine/types.ts`, `src/features/steering-engine/schema/steering-policy.schema.ts`, `src/features/steering-engine/conditions/`, `src/features/steering-engine/templates/`, `tests/features/steering-engine/injection-builder.test.ts`
-- **Impact:** The steering engine is non-functional. Policy definitions can be parsed but never evaluated. Sessions receive no steering injections regardless of configuration. The empty directories give a false impression of completeness.
-- **Fix approach:** Either implement the policy evaluator, condition matchers (hierarchy, depth, lineage, turns_since, phase, compaction, task_boundary), injection builder, and template renderer; or remove the entire steering engine feature and mark it as deferred.
+**Impact:** Violates the project's own architectural constraint (`.planning/codebase/CONVENTIONS.md`). Makes the module harder to review, test, and maintain. New contributors cannot grasp the module in a single context window.
 
-### delegation_systems Config — Partial Runtime Consumer
+**Fix approach:** Extract bootstrap logic (lines 140-210), child-session polling (lines 540-700), and orphan cleanup (lines 800-960) into separate modules: `bootstrap.ts`, `child-session-poller.ts`, `orphan-cleanup.ts`. Each should be <300 LOC.
 
-- **Issue:** The `delegation_systems` config field in `.hivemind/configs.json` has a Zod schema and tests but incomplete runtime consumers. Only `background_delegation` is consumed (by `run-background-command.ts:160`). The `delegate_task` and `native_task` flags have no runtime consumer — delegation is always-on regardless of their values.
-- **Files:** `src/schema-kernel/hivemind-configs.schema.ts` (schema with 3 sub-fields), `src/tools/hivemind/run-background-command.ts:160` (only consumer), `src/coordination/delegation/manager.ts` (no config check)
-- **Impact:** Users who set `native_task: false` or `delegate_task: false` expecting restricted delegation will not get the expected behavior. This is a documented 🔴 CRITICAL issue in STATE.md. CP-PTY-04 has planned fixes but not yet implemented.
-- **Fix approach:** Wire `delegation_systems.delegate_task` into `DelegationManager.dispatch()` and `native_task` into the spawner/task dispatch paths. See CP-PTY-04 PLAN.md.
+### Delegation Manager at Cap Boundary
 
-### Schema-Kernel Barrel File Size
+**Issue:** `src/coordination/delegation/manager.ts` is 504 LOC — at the exact boundary of the 500 LOC cap. Any addition will violate the convention.
 
-- **Issue:** `src/schema-kernel/index.ts` is 377 LOC — a barrel file that re-exports everything from every schema module. When any tool imports from this barrel, it forces the entire schema tree to be loaded. This increases cold-start time and module graph size.
-- **Files:** `src/schema-kernel/index.ts`
-- **Impact:** Unnecessary import-time cost for consumers that need only one or two schemas. The large barrel also makes it harder to identify circular dependencies.
-- **Fix approach:** Convert barrel to direct-path imports at consumer sites. Either keep index.ts as a convenience barrel but migrate tools to direct imports, or remove barrel and add per-schema entrypoints to `package.json` exports.
+**Files:** `src/coordination/delegation/manager.ts` (504 LOC)
 
-### Stale `state/` Directory at Project Root
+**Impact:** The reference module for the project's size constraint is itself in violation. Sets a poor precedent.
 
-- **Issue:** The project root contains a `state/` directory with `question-count.json` (empty counters) and `intent.json` (empty fields). These appear to be orphaned artifacts from an earlier session-tracking approach and are not part of the `.hivemind/` canonical state root.
-- **Files:** `state/question-count.json`, `state/intent.json`
-- **Impact:** Violates the Q6 architectural decision that `.hivemind/` is the only internal state root. Creates confusion about where state is stored. The files themselves are empty/unused.
-- **Fix approach:** Remove `state/` directory and ensure any state writing now goes through `.hivemind/` authorities. Add `state/` to `.gitignore` if not already present, or delete entirely since content is stale.
+**Fix approach:** Extract `resolveAcquireArgs()` and related policy resolution helpers into `policy-resolver.ts`. Extract category gate evaluation into a separate module.
+
+### Extensive Backward-Compatibility Code
+
+**Issue:** 84 references to legacy/deprecated/removed/backward-compat patterns across the codebase. The continuity store (`src/task-management/continuity/index.ts`) still checks legacy `.opencode/state/hivemind/` paths alongside canonical `.hivemind/state/`. The behavioral profile module has deprecated no-op functions (`invalidateBehavioralProfile`, `clearAllBehavioralProfiles`). Agent frontmatter schema retains deprecated `tools` and `maxSteps` fields.
+
+**Files:** `src/task-management/continuity/index.ts:251-255`, `src/routing/behavioral-profile/resolve-behavioral-profile.ts:89-101`, `src/schema-kernel/agent-frontmatter.schema.ts:100-131`, `src/shared/types.ts:195-197`
+
+**Impact:** Every legacy path adds cognitive load and runtime cost. The Q6 migration (`.hivemind/` as canonical state root) is incomplete if legacy paths are still checked.
+
+**Fix approach:** Create a migration gate: after a grace period, remove legacy path fallbacks. Remove deprecated no-op functions. Remove deprecated schema fields with a breaking version bump.
+
+### Sync Filesystem I/O on Hot Paths
+
+**Issue:** 165+ synchronous `fs` calls (`readFileSync`, `writeFileSync`, `mkdirSync`, `existsSync`, `readdirSync`) across the codebase. These block the Node.js event loop. While acceptable for CLI commands and startup, some are on tool execution paths that run during agent sessions.
+
+**Files:** `src/tools/config/bootstrap-init.ts` (30+ sync calls), `src/tools/config/bootstrap-recover.ts` (15+ sync calls), `src/tools/config/configure-primitive.ts` (10+ sync calls), `src/task-management/continuity/index.ts`, `src/task-management/continuity/delegation-persistence.ts`
+
+**Impact:** During active agent sessions, sync I/O can cause perceptible latency spikes, especially when processing multiple files (e.g., bootstrap-recover scanning entire `.opencode/` tree).
+
+**Fix approach:** Audit which sync calls are on hot paths (tool execution, hook callbacks) vs cold paths (CLI, startup). Migrate hot-path calls to `fs/promises` async equivalents. Keep sync calls only in CLI substrate and initialization.
 
 ## Known Bugs
 
-### Failing Test: injection-builder.test.ts
+### Race Condition in Session Bootstrap
 
-- **Symptoms:** `tests/features/steering-engine/injection-builder.test.ts` fails with `Cannot find module '../../../src/features/steering-engine/injection-builder.js'`. The source file `injection-builder.ts` does not exist in `src/features/steering-engine/`.
-- **Files:** `tests/features/steering-engine/injection-builder.test.ts`, `src/features/steering-engine/`
-- **Trigger:** Running `npm test` or `npm run test:coverage`.
-- **Impact:** 1 failed suite out of 152. The test file itself is still counted in "files passed" metrics, masking the failure. No tests actually run from this file (0 tests reported).
-- **Workaround:** Either implement the injection builder module, or delete the test file and mark the feature deferred.
+**Issue:** `src/features/session-tracker/index.ts` uses a retry loop with `setTimeout(r, 100)` to work around SDK not reporting `parentID` immediately after child session creation. This is a band-aid for an SDK timing issue. If the SDK takes >100ms, the bootstrap falls through to the hierarchy index and pending registry gates — which may also not be populated yet.
 
-### Vitest Mock Hoist Warnings
+**Files:** `src/features/session-tracker/index.ts:156-169`
 
-- **Symptoms:** Vitest v4.1.x emits deprecation warnings: `A vi.unmock("node:fs") call in "tests/lib/continuity.test.ts" is not at the top level of the module. Although it appears nested, it will be hoisted... This will become an error in a future version.`
-- **Files:** `tests/lib/continuity.test.ts`, `tests/lib/delegation-persistence.test.ts`
-- **Trigger:** Running any test suite that includes these files.
-- **Impact:** Currently warnings only, but will become hard errors in a future Vitest version. The mocked modules (`node:fs`) may not behave as expected due to hoisting reordering.
-- **Fix approach:** Move the `vi.unmock("node:fs")` calls to the top level of each test file, outside any `describe` or `beforeEach` blocks.
+**Symptoms:** Orphan session directories created for child sessions that should have been skipped.
 
-### eval/ Tests Not Integrated Into Main Suite
+**Trigger:** Fast delegation dispatch where `session.created` event fires before SDK records `parentID`.
 
-- **Symptoms:** The `eval/` directory contains 3 test files (`stability.test.ts`, `coherence.test.ts`, `correctness.test.ts`) that test config compiler behavior under stress, but these are NOT under the `tests/` directory. They may or may not be picked up by the vitest config depending on include patterns.
-- **Files:** `eval/stability.test.ts`, `eval/coherence.test.ts`, `eval/correctness.test.ts`
-- **Impact:** These tests exist in a non-standard location and may not run as part of `npm test`. Their results are invisible to the standard test reporting.
-- **Fix approach:** Either move eval tests into `tests/` or configure vitest to include the `eval/` directory. Ensure they appear in `npm test` output.
+**Workaround:** Three-gate fallback (SDK → hierarchyIndex → pendingRegistry) reduces but does not eliminate the race.
+
+**Fix approach:** Subscribe to SDK session lifecycle events rather than polling. Or use a longer retry window with exponential backoff.
+
+### Fire-and-Forgot Recovery at Startup
+
+**Issue:** `void delegationManager.recoverPending()` and `void sessionTracker.initialize()` in `src/plugin.ts` fire recovery and initialization asynchronously without any error handling. If recovery fails, the harness starts in a potentially inconsistent state with no visible indication.
+
+**Files:** `src/plugin.ts:75`, `src/plugin.ts:101`
+
+**Symptoms:** Pending delegations lost after restart. Session tracker not initialized.
+
+**Trigger:** Any error during recovery (corrupted state file, permission issue, SDK unavailable).
+
+**Fix approach:** Add error logging to the void promises. Consider a startup health check that reports recovery status.
 
 ## Security Considerations
 
-### Direct console.error in Production Code
+### Path Traversal via Environment Variables
 
-- **Risk:** `state-machine.ts` uses `console.error()` directly (line 282) instead of using a structured logging approach or sanitized output. This could leak internal delegation state (delegation IDs, error messages) into stdout/stderr in a non-structurable way.
-- **Files:** `src/coordination/delegation/state-machine.ts:282`, `src/coordination/completion/notification-handler.ts:232`
-- **Current mitigation:** The error messages are prefixed with `[Harness]` for identification. No sensitive data (tokens, keys) appears in the logged values.
-- **Recommendations:** Replace `console.error` with a structured logging approach that allows consumers to control output verbosity and routing. At minimum, wrap in a conditional that respects a debug/log level setting.
+**Issue:** `process.env.HOME` is used as a fallback for config directory paths. If `HOME` is unset or manipulated, paths resolve to `/tmp/.config/opencode` which is world-readable.
 
-### Heavy console.warn Usage in Session Tracker
+**Files:** `src/tools/config/configure-primitive-paths.ts:23`, `src/tools/config/bootstrap-init.ts:197`, `src/tools/config/bootstrap-recover.ts:134`
 
-- **Risk:** `src/features/session-tracker/` has 25+ `console.warn()` calls across its capture, recovery, and persistence modules. These are in hot paths (capture every tool call, every event) meaning stdout pollution is significant. Some messages include session IDs and file paths that could aid reconnaissance.
-- **Files:** `src/features/session-tracker/capture/event-capture.ts` (8 calls), `src/features/session-tracker/capture/tool-capture.ts` (2 calls), `src/features/session-tracker/capture/message-capture.ts` (3 calls), `src/features/session-tracker/index.ts` (8 calls), `src/features/session-tracker/recovery/session-recovery.ts` (5 calls), `src/features/session-tracker/persistence/project-index-writer.ts` (1 call)
-- **Current mitigation:** Messages are prefixed and avoid credentials/tokens.
-- **Recommendations:** Implement a structured logger that can be silenced in production. Most `console.warn` calls in capture paths should be `console.debug` or behind a verbose flag. This is also a performance concern (see below).
+**Risk:** Config files written to `/tmp` may be read by other users on shared systems.
+
+**Current mitigation:** None — `/tmp` is used as a silent fallback.
+
+**Recommendations:** Fail explicitly when `HOME` is unavailable rather than falling back to `/tmp`. Log a warning when the fallback is used.
+
+### No Input Sanitization on Session IDs in Recovery
+
+**Issue:** `src/task-management/recovery/create-checkpoint.ts` validates session IDs against path separators and `..`, but other recovery modules (`repair-state.ts`, `assess-state.ts`) do not perform the same validation before using session IDs in file paths.
+
+**Files:** `src/task-management/recovery/create-checkpoint.ts:102` (validated), `src/task-management/recovery/repair-state.ts:63-98` (not validated), `src/task-management/recovery/assess-state.ts` (not validated)
+
+**Risk:** Malformed session IDs could cause path traversal in recovery operations.
+
+**Recommendations:** Apply the same `assertSafeSessionId()` validation to all recovery modules that construct file paths from session IDs.
+
+### Secrets in Filesystem (Env Files Present)
+
+**Issue:** `.env` files are present in the repository (noted in `.gitignore`). While contents are not read during analysis, the presence of env files indicates secrets management relies on filesystem-level protection.
+
+**Files:** `.env*` (existence only)
+
+**Risk:** If `.gitignore` rules are misconfigured or env files are accidentally committed, secrets leak to version control.
+
+**Recommendations:** Use a secrets manager or encrypted env solution for production deployments. Add pre-commit hooks to prevent `.env` commits.
 
 ## Performance Bottlenecks
 
-### Session Tracker Capture — Excessive Logging on Hot Path
+### Polling-Based Child Session Detection
 
-- **Problem:** Every tool call, message, and session event triggers multiple `console.warn` calls in the capture pipeline. For a typical delegation session with dozens of tool calls, this produces 100+ log lines for warn-level messages that are not actionable (mostly "event type not handled" or "session not found for event" noise).
-- **Files:** `src/features/session-tracker/capture/event-capture.ts`, `src/features/session-tracker/capture/tool-capture.ts`, `src/features/session-tracker/capture/message-capture.ts`
-- **Cause:** Defensive coding — many `catch` blocks and "expected" boundary conditions are logged at `warn` level instead of `debug`.
-- **Improvement path:** Audit each `console.warn` call. If the condition is an expected edge case, demote to `console.debug`. If it indicates a real problem, add structured fields. Target: reduce per-tool-call log output by 80%.
+**Issue:** `src/features/session-tracker/index.ts` implements a polling loop (`pollForChildSessions`) with `setTimeout` at `POLL_INTERVAL_MS` intervals. This runs for up to 30 minutes (`WATCH_TIMEOUT_MS`) per session.
 
-### Schema-Kernel Barrel File
+**Files:** `src/features/session-tracker/index.ts:558-680`, `src/plugin.ts:60`
 
-- **Problem:** `src/schema-kernel/index.ts` re-exports all 18+ schema modules. Importing from this barrel loads every schema definition, including heavy Zod schemas for configs, contracts, and command definitions.
-- **Files:** `src/schema-kernel/index.ts`
-- **Cause:** Barrel export pattern without tree-shakable import paths.
-- **Improvement path:** Add per-schema entrypoints in `package.json` exports field, or migrate consumers to direct imports.
+**Cause:** No event-driven mechanism available from the SDK to detect child session creation. Polling is the only option.
+
+**Impact:** Each root session spawns a long-running timer. With many concurrent sessions, this creates significant timer overhead and memory pressure.
+
+**Improvement path:** If the SDK adds session lifecycle events, replace polling with event subscription. Until then, consider a shared pollinger rather than per-session timers.
+
+### Synchronous JSON Parse on Large State Files
+
+**Issue:** `src/task-management/continuity/index.ts` reads and parses the entire continuity store file synchronously on every access. As the store grows (many sessions, delegations, notifications), this becomes increasingly expensive.
+
+**Files:** `src/task-management/continuity/index.ts:259-262`
+
+**Cause:** No streaming or incremental parsing. Entire file loaded into memory and parsed at once.
+
+**Improvement path:** Implement lazy loading or chunked parsing for large continuity stores. Consider a lightweight database (SQLite) for session-level records.
+
+### No Promise.all for Parallel I/O
+
+**Issue:** File operations that could run in parallel are executed sequentially. For example, `bootstrap-recover.ts` iterates over primitives one-by-one with sync calls.
+
+**Files:** `src/tools/config/bootstrap-recover.ts:166-175`, `src/tools/config/bootstrap-init.ts:267-275`
+
+**Cause:** Sequential `for...of` loops with sync I/O instead of `Promise.all` with async I/O.
+
+**Improvement path:** Batch independent I/O operations with `Promise.all`. This is especially impactful for bootstrap-recover which scans multiple directories.
 
 ## Fragile Areas
 
-### DelegationManager (~500 LOC)
+### Session Tracker Bootstrap Logic (1,035 LOC Monolith)
 
-- **Files:** `src/coordination/delegation/manager.ts`
-- **Why fragile:** At exactly 500 LOC, this is at the hard cap. It orchestrates delegation dispatch, recovery, completion detector wiring, command delegation, SDK delegation, and concurrency acquisition. Any change to one flow risks breaking another. The `dispatchCommand` and `dispatch` methods share internal state but have different error handling paths.
-- **Safe modification:** Add scoped tests before touching. Keep additions under 500 LOC total. Extract sub-responsibilities (recovery, command dispatch shaping) into helper modules.
-- **Test coverage:** No direct unit tests exist for `DelegationManager`. Tests cover sub-components (state machine, category gates) but not the manager orchestration layer.
+**Files:** `src/features/session-tracker/index.ts`
 
-### DelegationStateMachine (~426 LOC)
+**Why fragile:** The bootstrap logic has three gates (SDK parentID → hierarchyIndex → pendingRegistry), each with its own failure mode. The fallback chain is complex and hard to test exhaustively. Any change to one gate can break the entire session classification.
 
-- **Files:** `src/coordination/delegation/state-machine.ts`
-- **Why fragile:** Complex state transitions with status validation, timer management, and reverse session-ID lookups. Uses `console.error` on error transitions which is non-structurable. The state machine has growing responsibility (SDK sessions, command sessions, safety timers, grace periods).
-- **Safe modification:** Each new status must be registered in the validTransitions map AND the lifecycle hooks. Tests for state-machine transitions exist but may not cover all combinations.
-- **Test coverage:** `tests/lib/coordination/delegation/` tests exist but the state machine is tested indirectly through delegation manager tests that don't exist.
+**Safe modification:** Add new gates at the end of the chain, not in the middle. Write integration tests for each gate's failure mode.
 
-### Session Tracker Capture Layer
+**Test coverage:** Good unit coverage exists (`tests/features/session-tracker/`), but integration tests for race conditions are limited.
 
-- **Files:** `src/features/session-tracker/capture/event-capture.ts`, `src/features/session-tracker/capture/tool-capture.ts`, `src/features/session-tracker/capture/message-capture.ts`
-- **Why fragile:** Three separate capture modules with overlapping concerns. Each has 6-8 `console.warn` catch-all handlers. The architecture splits capture across event, tool, and message boundaries but the boundaries are not clean — tool captures trigger event captures which trigger message captures. CP-ST-01 remediation found critical defects in this layer (project index frozen, child records write-once-only, child lifecycle events lost).
-- **Safe modification:** Implement the CP-ST-01 planned fixes before adding new capture features. Add integration tests that verify end-to-end capture → persistence flow.
-- **Test coverage:** Unit tests exist for individual capture functions, but no integration test proves a full capture → write → read cycle.
+### Delegation Manager (504 LOC, 21 Imports)
 
-### Cross-Primitive Validator (~373 LOC)
+**Files:** `src/coordination/delegation/manager.ts`
 
-- **Files:** `src/features/bootstrap/cross-primitive-validator.ts`
-- **Why fragile:** Validates references across agents, skills, commands, MCP servers, and permissions. Has deep nesting for cross-reference resolution. A change in one primitive type's schema can cascade validation failures here.
-- **Safe modification:** Add per-type validation test before changing schema shapes.
-- **Test coverage:** `tests/lib/cross-primitive-validator.test.ts` exists but may not cover all 5-primitive-type combinations.
+**Why fragile:** Imports from 8 different modules (`command-delegation`, `concurrency`, `completion`, `sdk-delegation`, `spawner`, `category-gates`, `session-api`, `runtime-policy`). Any change to one dependency can break the manager.
+
+**Safe modification:** Use dependency injection for all external dependencies. The constructor pattern is already correct — maintain it.
+
+**Test coverage:** `tests/lib/delegation-manager.test.ts` exists but may not cover all SDK vs command delegation paths.
+
+### Plugin Composition Root
+
+**Files:** `src/plugin.ts` (267 LOC)
+
+**Why fragile:** Single point of failure for the entire harness. All tools, hooks, and features are wired here. A single error during initialization crashes the plugin.
+
+**Safe modification:** Add try/catch around each tool registration and hook composition. Use feature flags to disable individual features at runtime.
+
+**Test coverage:** `tests/plugins/plugin-lifecycle.test.ts` exists but limited scope.
+
+### CLI Substrate
+
+**Files:** `src/cli/` (5 commands: `doctor`, `init`, `recover`, `version`, `help`)
+
+**Why fragile:** CLI commands perform filesystem mutations (symlink creation, directory creation, file writes) without transactional rollback on failure. Partial state can be left behind.
+
+**Safe modification:** Implement a rollback mechanism for CLI commands that mutate the filesystem. Or use a dry-run mode to preview changes.
+
+**Test coverage:** `tests/cli/` has tests for all commands but they use mocked filesystem operations.
 
 ## Scaling Limits
 
-### Zero Integration or E2E Tests
+### In-Memory State Maps
 
-- **Current capacity:** 2008 tests, all unit-level.
-- **Limit:** No test verifies that tools register correctly, that hooks fire in the right order, that delegation dispatch → completion detection → persistence forms a working pipeline. All tests use mocked SDK clients and isolated modules.
-- **Scaling path:** Add at minimum 1 smoke integration test that starts a real plugin lifecycle with a fake/lightweight OpenCode client. Add 1 E2E test for the delegation → completion → persistence pipeline. Target: 3-5 integration tests as a gate for future changes.
+**Issue:** `src/shared/state.ts` uses in-memory Maps for session state, delegation metadata, and subagent tracking. These maps grow unbounded for the lifetime of the plugin process.
 
-### No Coverage Enforcement
+**Files:** `src/shared/state.ts`
 
-- **Current capacity:** `npm run test:coverage` runs but there is no coverage threshold in vitest config. Coverage is viewed manually (or not at all).
-- **Limit:** Modules can fall to 0% coverage without CI noticing. The session tracker capture layer, for example, has complex error paths that are likely uncovered.
-- **Scaling path:** Add a `coverage.threshold` in vitest config, starting at a realistic baseline (e.g., 60% branch coverage for src/).
+**Current capacity:** Limited only by available memory.
+
+**Limit:** With thousands of sessions over a long-running plugin process, memory usage will grow linearly.
+
+**Scaling path:** Implement periodic cleanup of completed/expired session entries. Add a configurable max-size with LRU eviction.
+
+### Concurrency Queue
+
+**Issue:** `src/coordination/concurrency/queue.ts` uses a single global queue for all delegation concurrency gating. No per-tenant or per-workspace isolation.
+
+**Files:** `src/coordination/concurrency/queue.ts`
+
+**Current capacity:** Configurable via `concurrencyLimit` env var (default: 3).
+
+**Limit:** All sessions share the same queue. A burst of delegations from one session can starve others.
+
+**Scaling path:** Implement per-session or per-workspace concurrency queues with fair scheduling.
 
 ## Dependencies at Risk
 
-### @json-render/* and React Stack in Main Package
+### bun-pty Optional Dependency
 
-- **Risk:** `@json-render/core`, `@json-render/ink`, `@json-render/next`, `@json-render/react`, `ink`, `react` are listed as dependencies of the main `hivemind` npm package. These packages are only used by the sidecar dashboard (`sidecar/`), which has its own `package.json` and is a separate Next.js project. They are never imported from `src/`.
-- **Impact:** Adds ~20MB+ of unnecessary dependencies to `npm install hivemind`, increasing install time and disk usage. The `ink` (terminal React) + `react` (UI React) combination is particularly heavy.
-- **Migration plan:** Remove `@json-render/*`, `ink`, `react`, and `react-dom` from the main `package.json`. Sidecar manages its own dependencies.
+**Issue:** `bun-pty` is listed as a regular dependency but is only functional on Bun runtime. On Node.js, it will fail to load. The fallback to `node:child_process` is graceful but untested in CI.
 
-### commander — Unused Dependency
+**Files:** `package.json:50` (`"bun-pty": "^0.4.8"`), `src/features/background-command/pty/pty-runtime.ts`
 
-- **Risk:** `commander` is listed in `package.json` dependencies but is never imported in any `src/` module (only mentioned in a comment in `src/cli/router.ts:6`). The CLI uses a custom router built on top of `CliCommand[]` and `CliCommandContext`.
-- **Impact:** Adds unnecessary install weight.
-- **Migration plan:** Remove `commander` from `package.json` dependencies.
+**Risk:** If `bun-pty` introduces a breaking change or fails to install on Node, the background command feature degrades silently.
 
-### @opencode-ai/sdk vs @opencode-ai/plugin
+**Migration plan:** Move `bun-pty` to `optionalDependencies`. Add a CI matrix that tests on Node.js to verify the fallback path.
 
-- **Risk:** `@opencode-ai/sdk` is a runtime dependency while `@opencode-ai/plugin` is a peer dependency. Both provide OpenCode client types. The SDK is imported in `src/coordination/sdk-delegation/handler.ts` and `src/shared/session-api.ts`. The plugin is imported in all tool files via `tool()` factory. Version mismatches between the two could cause type incompatibilities.
-- **Impact:** If `@opencode-ai/sdk` and `@opencode-ai/plugin` diverge in OpenCodeClient type, the SDK delegation handler could receive incompatible client objects.
-- **Migration plan:** Either use `@opencode-ai/plugin` types exclusively (it re-exports the SDK types), or add a peer dependency constraint on `@opencode-ai/sdk` matching the plugin version.
+### @ast-grep/napi Native Module
 
-### bun-pty + bun-types + node-pty (Triple PTY)
+**Issue:** `@ast-grep/napi` and `@ast-grep/cli` are native modules that require compilation. They may fail to install on platforms without build tools.
 
-- **Risk:** The project includes `bun-pty` (optional Bun-specific PTY), `bun-types` (Bun type definitions), and `node-pty` (cross-platform PTY). `bun-pty` is only importable in Bun runtime. `node-pty` requires native compilation (node-gyp). Both are always attempted at runtime via `createPtyManagerIfSupported()` which has a try-catch fallback chain.
-- **Impact:** `npm install` runs `node-pty` native compilation on every install. If the build fails, the entire install may fail (depending on npm configuration). `bun-types` is not needed for compilation (it's a types-only package consumed as a dependency, not devDependency).
-- **Migration plan:** Move `bun-types` to `devDependencies`. Document that `node-pty` and `bun-pty` are optional and failure is handled gracefully. Consider making both optional peer dependencies.
+**Files:** `package.json:40-41`
+
+**Risk:** Installation failures on Windows or systems without native build toolchains.
+
+**Migration plan:** Verify that the project works correctly when `@ast-grep` fails to install. Add it to `optionalDependencies` if it's not critical.
+
+### React as Runtime Dependency
+
+**Issue:** React 19 is a runtime dependency (not devDependency) due to `@json-render/react` and `ink` usage. This pulls in the entire React runtime for a backend plugin.
+
+**Files:** `package.json:61` (`"react": "^19.2.6"`)
+
+**Risk:** Bundle size inflation. React is not needed for core harness functionality — only for the sidecar/CLI rendering.
+
+**Migration plan:** Move React-dependent packages to optional dependencies. Lazy-load the rendering pipeline only when the CLI is invoked.
 
 ## Missing Critical Features
 
-### f-04 Auto-Routing (CRITICAL)
+### No Structured Error Types
 
-- **Problem:** The auto-intent/workflow router (f-04) has never been implemented. There is no intent classification layer, no workflow routing, and no automatic skill selection based on user intent. The `category-gates.ts` specifically documents `checkSkillFilterAdvisory()` as "intentionally NOT called from any hook or tool yet — the WS-4 phase will wire it."
-- **Files:** `src/routing/behavioral-profile/` (profile resolution only, no routing), `src/coordination/delegation/category-gates.ts:67-69`
-- **Blocks:** Skill loading cannot be automatically scoped. Category gates cannot be wired. Behavioral profile resolution exists but has no consumer in the skill loading or delegation paths.
-- **Priority:** 🔴 CRITICAL (per STATE.md)
+**Issue:** All 81 error throws use `new Error('[Harness] ...')` with string messages. There are no custom error classes (e.g., `HarnessValidationError`, `HarnessNotFoundError`). Callers cannot catch specific error types — they must parse error messages.
 
-### Steering Engine Injection Builder
+**Files:** Throughout `src/` (81 throw sites)
 
-- **Problem:** The steering engine spec (REQ-01 through REQ-07) defines a complete policy evaluation and injection pipeline. Only the state tracking and schema validation exist. The condition evaluator, policy matcher, injection builder, and template renderer are unimplemented.
-- **Blocks:** Steering policies cannot be evaluated. Agents never receive contextual injection content.
-- **Priority:** Medium — only blocks steering feature, not core delegation/continuity.
+**Problem:** Error handling is string-matching, which is brittle and breaks on message changes.
 
-### E2E Tests (HIGH)
+**Fix approach:** Define a small set of error classes: `HarnessValidationError`, `HarnessNotFoundError`, `HarnessPermissionError`, `HarnessRuntimeError`. Update throw sites to use appropriate classes.
 
-- **Problem:** Zero end-to-end tests exist. All 2008 tests are unit tests with mocked dependencies. There is no proof that the plugin loads, tools register, hooks compose, or delegation flows work in a real OpenCode environment.
-- **Blocks:** Cannot ship with confidence. Integration bugs are discovered only at runtime.
-- **Priority:** HIGH (per STATE.md)
+### No Request/Operation Tracing
+
+**Issue:** No correlation IDs or request tracing across tool calls, hook executions, and delegation dispatch. When something goes wrong, there is no way to trace a single operation across the system.
+
+**Problem:** Debugging production issues requires correlating timestamps across multiple log entries.
+
+**Fix approach:** Add a correlation ID to each tool invocation. Propagate it through delegation packets and hook callbacks. Include it in all log output.
+
+### No Rate Limiting on Tool Calls
+
+**Issue:** The circuit breaker (`CIRCUIT_BREAKER_THRESHOLD`) tracks repeated signatures but does not implement rate limiting. A misbehaving agent can call tools at maximum frequency.
+
+**Files:** `src/plugin.ts` (circuit breaker config), `src/hooks/guards/tool-guard-hooks.ts`
+
+**Problem:** No protection against tool call storms or rapid-fire delegation.
+
+**Fix approach:** Implement a token bucket or sliding window rate limiter per session. Configure via runtime policy.
 
 ## Test Coverage Gaps
 
-### Coordination Module — Untested Core
+### Steering Engine Feature
 
-- **What's not tested:** `DelegationManager` (`manager.ts`), `DelegationStateMachine` state transition orchestration, `CompletionDetector`, `CommandDelegationHandler`, spawner modules (`ralph-loop.ts`, `auto-loop.ts`, `session-creator.ts`, `agent-primitive-policy.ts`).
-- **Files:** `src/coordination/delegation/manager.ts`, `src/coordination/delegation/state-machine.ts`, `src/coordination/completion/detector.ts`, `src/coordination/completion/notification-handler.ts`, `src/coordination/command-delegation/handler.ts`, `src/coordination/spawner/*`
-- **Risk:** Core delegation logic (dispatch, completion, recovery) has no direct test coverage. Changes risk breaking the entire delegation pipeline without detection.
-- **Priority:** 🔴 CRITICAL
+**What's not tested:** `src/features/steering-engine/` has source files (`steering-state.ts`, `types.ts`, schema, conditions, templates) but only one test file (`tests/features/steering-engine/injection-builder.test.ts`). The `conditions/` and `templates/` directories are empty in source but have test subdirectories.
 
-### Tool Implementations — Untested Core
+**Files:** `src/features/steering-engine/steering-state.ts` (222 LOC), `src/features/steering-engine/types.ts` (3,784 bytes)
 
-- **What's not tested:** All delegate-task, delegation-status, session-journal-export, execute-slash-command tools. The tool test files that exist (`tests/tools/`) test Zod schema validation and error cases but not the actual business logic of the tool handlers.
-- **Files:** `src/tools/delegation/delegate-task.ts`, `src/tools/delegation/delegation-status.ts`, `src/tools/session/execute-slash-command.ts`, `src/tools/session/session-journal-export.ts`, `src/tools/session/session-patch/`
-- **Risk:** Tool handlers can regress silently. Response shapes and error handling paths are untested.
-- **Priority:** HIGH
+**Risk:** The steering engine is a new feature with minimal test coverage. Changes to steering state logic or injection conditions can break silently.
 
-### Zero Integration Tests
+**Priority:** High — incomplete feature with source code but no functional tests.
 
-- **What's not tested:** Plugin lifecycle, hook registration → firing order, tool → feature → schema → response pipeline, delegation → completion → persistence flow, config → compiler → subscriber flow.
-- **Files:** System-level across `src/plugin.ts`, `src/hooks/`, `src/tools/`
-- **Risk:** Integration bugs are invisible until runtime. Module-level unit tests pass but the composed system fails.
-- **Priority:** 🔴 CRITICAL
+### Sidecar Module
+
+**What's not tested:** `src/sidecar/readonly-state.ts` has one test file (`tests/sidecar/readonly-state.test.ts`) but the sidecar is a critical contract surface between the harness and the GUI.
+
+**Files:** `src/sidecar/readonly-state.ts`
+
+**Risk:** The sidecar's read-only contract is enforced by code, not tests. Changes to the contract can break the GUI silently.
+
+**Priority:** Medium — sidecar is read-only but critical for the GUI sidecar dashboard.
+
+### Hook Observer Integration
+
+**What's not tested:** The integration between hook observers (`src/hooks/observers/`) and their consumer modules. Individual observer tests exist but the full pipeline (event → observer → consumer → action) is not tested end-to-end.
+
+**Files:** `src/hooks/observers/event-observers.ts`, `src/hooks/observers/session-tracker-consumer.ts`, `src/hooks/observers/delegation-consumer.ts`
+
+**Risk:** Observer-consumer wiring errors are not caught by unit tests.
+
+**Priority:** Medium — hook wiring is validated at plugin init but not tested independently.
+
+### Schema Kernel Completeness
+
+**What's not tested:** Not all schemas in `src/schema-kernel/` have dedicated test files. The `trajectory.schema.ts`, `session-tracker.schema.ts`, `tool-definition.schema.ts`, `mcp-server.schema.ts`, `doc-intelligence.schema.ts`, `bootstrap.schema.ts`, `command-frontmatter.schema.ts`, `command-engine.schema.ts`, `permission.schema.ts`, `skill-metadata.schema.ts`, `sdk-supervisor.schema.ts`, `runtime-pressure.schema.ts`, `config-precedence.schema.ts`, `agent-work-contract.schema.ts` schemas lack dedicated test files.
+
+**Files:** 14 schema files in `src/schema-kernel/` without dedicated tests
+
+**Risk:** Schema changes are not validated by tests. Invalid data can pass through unvalidated schemas.
+
+**Priority:** Low — schemas are validated at runtime by Zod, but dedicated tests would catch regressions faster.
+
+### PTY Integration on Node.js
+
+**What's not tested:** PTY tests (`tests/lib/pty/`) run in an environment where `bun-pty` is available. The Node.js fallback path (`node:child_process`) is not tested.
+
+**Files:** `src/features/background-command/pty/pty-runtime.ts:19` (null return when bun-pty unavailable)
+
+**Risk:** The fallback path is untested and may have subtle bugs.
+
+**Priority:** Medium — affects users running the harness on Node.js (the peer dependency requirement).
 
 ---
 
-*Concerns audit: 2026-05-12*
+*Concerns audit: 2026-05-15*
