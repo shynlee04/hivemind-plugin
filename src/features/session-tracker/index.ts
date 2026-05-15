@@ -51,6 +51,7 @@ import { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { SessionBootstrap } from "./bootstrap.js"
+import { SessionClassifier } from "./classification.js"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { isValidSessionID } from "./types.js"
@@ -110,6 +111,9 @@ export class SessionTracker {
 
   // Bootstrap (extracted from index.ts — CP-ST-05-03)
   private bootstrap!: SessionBootstrap
+
+  // Classification (extracted from index.ts — CP-ST-05-03)
+  private classifier!: SessionClassifier
 
   /**
    * Tracks sessions that have been lazy-bootstrapped (dir + .md file created).
@@ -262,36 +266,12 @@ export class SessionTracker {
       // ── D-05: Classify FIRST before any I/O ──────────────────────────
       // Child sessions must NEVER get their own directory. Classification
       // must happen BEFORE ensureSessionReady (which may call mkdir).
-      //
-      // Gate 1: SDK parentID (fastest — avoids disk I/O).
-      // Gate 2: Hierarchy index (fallback when SDK doesn't report parentID).
-      // Gate 3: Pending dispatch registry (race condition guard).
-
-      let parentID: string | undefined
-      try {
-        const session = await this.getSessionSafely(input.sessionID)
-        parentID = (session as { parentID?: string } | undefined)?.parentID
-      } catch {
-        // SDK call failed — proceed to hierarchy index fallback
-      }
-
-      if (!parentID && this.hierarchyIndex) {
-        const hierarchyParent = this.hierarchyIndex.getParent(input.sessionID)
-        if (hierarchyParent) {
-          parentID = hierarchyParent
-        }
-      }
-
-      // Gate 3: Check pending dispatch registry (D-04 fix).
-      // If a parent recently dispatched a task tool, and the registry
-      // still has entries, the resulting session is a child even if
-      // the exact parentID isn't resolved by Gates 1/2.
-      if (!parentID && this.pendingRegistry?.has(input.sessionID)) {
-        const pendingEntry = this.pendingRegistry.get(input.sessionID)
-        if (pendingEntry) {
-          parentID = pendingEntry.parentSessionID
-        }
-      }
+      // Three-gate fallback: SDK parentID → hierarchy index → pending registry.
+      const classification = await this.classifier.classify(
+        input.sessionID,
+        (id) => this.getSessionSafely(id),
+      )
+      const parentID = classification.parentID
 
       if (parentID && this.childWriter) {
         // STEP 2: CHILD session — skip ensureSessionReady entirely.
@@ -360,21 +340,12 @@ export class SessionTracker {
   ): Promise<void> {
     try {
       // Detect child session BEFORE lazy bootstrap to prevent orphan directories.
-      // Same dual-gate pattern as handleChatMessage (SDK parentID + hierarchy index).
-      let parentID: string | undefined
-      try {
-        const session = await this.getSessionSafely(input.sessionID)
-        parentID = (session as { parentID?: string } | undefined)?.parentID
-      } catch {
-        // SDK call failed — proceed to hierarchy index fallback
-      }
-
-      if (!parentID && this.hierarchyIndex) {
-        const hierarchyParent = this.hierarchyIndex.getParent(input.sessionID)
-        if (hierarchyParent) {
-          parentID = hierarchyParent
-        }
-      }
+      // Same three-gate pattern as handleChatMessage.
+      const classification = await this.classifier.classify(
+        input.sessionID,
+        (id) => this.getSessionSafely(id),
+      )
+      const parentID = classification.parentID
 
       if (parentID) {
         // Child session — skip directory creation entirely.
@@ -516,18 +487,18 @@ export class SessionTracker {
 
         // Filter for children: (a) not already in hierarchy index, (b) valid session IDs
         const newChildren = entries.filter(
-          (c) => c.id && isValidSessionID(c.id) && !this.hierarchyIndex?.isChild(c.id),
+          (c) => c.id && isValidSessionID(c.id) && !this.classifier.isChildRegistered(c.id),
         )
 
         if (newChildren.length > 0) {
           for (const child of newChildren) {
             // Register in hierarchy index (Gate 2 cache)
             if (child.id) {
-              this.hierarchyIndex?.registerChild(parentID, child.id)
+              this.classifier.registerChild(parentID, child.id)
             }
             // Update pending registry with real child ID (Gate 3 cache)
             if (child.id) {
-              this.pendingRegistry?.updateWithChildID(callID, child.id)
+              this.classifier.updatePendingWithChildID(callID, child.id)
             }
           }
           // Success: children discovered, exit polling loop
@@ -579,6 +550,13 @@ export class SessionTracker {
         sessionWriter: this.sessionWriter,
         projectIndexWriter: this.projectIndexWriter,
         sessionIndexWriter: this.sessionIndexWriter,
+      })
+
+      // Create session classifier (CP-ST-05-03)
+      this.classifier = new SessionClassifier({
+        client: this.client,
+        hierarchyIndex: this.hierarchyIndex,
+        pendingRegistry: this.pendingRegistry,
       })
 
       // Build the global hierarchy index from existing session-continuity.json files.
