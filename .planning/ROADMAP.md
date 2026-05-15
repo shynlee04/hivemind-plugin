@@ -130,6 +130,7 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 | CP-ST-02 | Session Tracker Deep Fix — Remaining | ✅ COMPLETE | CP-ST-01 (COMPLETE) | 3/3 plans, 12 commits — PendingDispatchRegistry + Three-Gate + PreToolUse + Delegator Attribution + Orphan Cleanup |
 | CP-ST-03 | Architecture Detox — Plugin Purification + Event-Tracker Excision | ✅ COMPLETE | CP-ST-02 (COMPLETE) | 2/2 plans, 14 commits — plugin.ts 267 LOC (pure assembly), event-tracker excised (22 files deleted), 33 new unit tests |
 | CP-ST-04 | Session-Tracker Architecture Fix — Root-Cause Gate Fix | ✅ COMPLETE | CP-ST-02 (COMPLETE), CP-ST-03 (COMPLETE) | 3/3 plans, 15 commits — key mismatch fix, root-only dirs, hierarchy manifest, 338/340 tests pass |
+| CP-ST-05 | Session Data Loss Prevention — Quarantine Protocol + Monolith Refactor | 🔴 READY | CP-ST-04 (COMPLETE) | CONCERNS.md violations: 1,035 LOC monolith, orphan cleanup data loss, sync I/O hot paths, race conditions |
 
 **Plans (CP-ST-04):** 3 plans in 3 waves
 - [x] CP-ST-04-01-PLAN.md — Fix PendingDispatchRegistry + handleChatMessage Classification Order (Wave 1) — requirements: D-01, D-04, D-05
@@ -393,4 +394,4 @@ Plans:
 - [x] 13-06-PLAN.md — Integration Tests — Wave 4 (VERIFICATION)
 
 ---
-*Last updated: 2026-05-15 — CP-ST-04 IN PROGRESS (2/3 plans complete, 6 tasks delivered). CP-ST-02 COMPLETE (3 waves, 12 commits, 276 session-tracker tests). CP-ST-04-02 COMPLETE (3 TDD tasks, 25 new tests, root-only dir creation + HierarchyIndex root tracking + ChildWriter root main routing). Pre-existing failures: 2 test cases (cleanup.test.ts)*
+*Last updated: 2026-05-15 — CP-ST-04 COMPLETE (3/3 plans, 15 commits, 338/340 tests). CP-ST-05 READY: Session data loss investigation — orphan cleanup deletes .md files with session journeys, CONCERNS.md violations (1,035 LOC monolith, race conditions, sync I/O hot paths). CP-ST-02 COMPLETE (3 waves, 12 commits, 276 tests). CP-ST-03 COMPLETE (14 commits, event-tracker excised). Pre-existing failures: 2 test cases (cleanup.test.ts)*
