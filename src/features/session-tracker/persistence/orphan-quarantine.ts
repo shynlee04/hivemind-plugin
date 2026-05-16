@@ -132,8 +132,12 @@ export class OrphanQuarantine {
 
         if (now - quarantinedAt > cutoffMs) {
           const dirPath = join(this.quarantineDir, entry.name)
-          await rm(dirPath, { recursive: true, force: true })
-          removed.push(entry.name)
+          try {
+            await rm(dirPath, { recursive: true, force: true })
+            removed.push(entry.name)
+          } catch {
+            // Permission error, EBUSY, or other filesystem error — skip and continue
+          }
         }
       } catch {
         // No timestamp file — skip for safety
