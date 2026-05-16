@@ -130,22 +130,27 @@ export class SessionBootstrap {
     let parentIndex: Record<string, unknown> | null = null
     try {
       const raw = await readFile(parentIndexPath, "utf-8")
-      parentIndex = JSON.parse(raw) as Record<string, unknown>
+      const parsed = JSON.parse(raw)
+      // WR-04: Runtime type guard — ensure parsed JSON is an object
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return
+      parentIndex = parsed as Record<string, unknown>
     } catch {
       // Parent index doesn't exist or is unreadable — nothing to copy
       return
     }
 
-    const hierarchy = parentIndex?.hierarchy as
-      | { children?: Record<string, { file?: string; depth?: number; delegatedBy?: string }> }
-      | undefined
-    const parentChildren = hierarchy?.children
-    if (!parentChildren || Object.keys(parentChildren).length === 0) {
+    // WR-04: Runtime type guard for hierarchy structure
+    const hierarchy = parentIndex?.hierarchy
+    if (!hierarchy || typeof hierarchy !== "object" || Array.isArray(hierarchy)) return
+    const parentChildren = (hierarchy as Record<string, unknown>).children
+    if (!parentChildren || typeof parentChildren !== "object" || Array.isArray(parentChildren)) return
+    const children = parentChildren as Record<string, { file?: string; depth?: number; delegatedBy?: string }>
+    if (Object.keys(children).length === 0) {
       return
     }
 
     // Reference-copy children into the new session's index
-    for (const [childId, childEntry] of Object.entries(parentChildren)) {
+    for (const [childId, childEntry] of Object.entries(children)) {
       try {
         await this.sessionIndexWriter.addChild(
           newSessionID,
