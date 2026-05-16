@@ -53,6 +53,7 @@ import { SessionRecovery } from "./recovery/session-recovery.js"
 import { SessionBootstrap } from "./bootstrap.js"
 import { SessionClassifier } from "./classification.js"
 import { SessionRouter } from "./session-router.js"
+import { ChildRecorder } from "./child-recorder.js"
 import { OrphanCleanup } from "./orphan-cleanup.js"
 import { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
 import { readFile } from "node:fs/promises"
@@ -120,6 +121,8 @@ export class SessionTracker {
   private classifier!: SessionClassifier
   /** Session router — classify-before-I/O routing (CP-ST-06-02). */
   private sessionRouter!: SessionRouter
+  /** Child recorder — child delegation message capture (CP-ST-06-02). */
+  private childRecorder!: ChildRecorder
 
   // Orphan cleanup (extracted from index.ts — CP-ST-05-03)
   private orphanCleanup!: OrphanCleanup
@@ -280,41 +283,13 @@ export class SessionTracker {
       const decision = await this.sessionRouter.route(input.sessionID)
 
       if (decision.route === "child" && this.childWriter) {
-        const childParentID = decision.parentID
-        // STEP 2: CHILD session — skip ensureSessionReady entirely.
-        // No directory creation — child .json only (D-03, D-05).
-        this.bootstrappedSessions.add(input.sessionID)
-        await this.ensureChildRoute(childParentID, input.sessionID)
-
-        // Capture chat message to child .json under ROOT main (D-03)
-        const messageRole = (output.message as Record<string, unknown> | null)?.role
-        const parts = output.parts as Array<{ type: string; text?: string }>
-        const content = parts
-          .filter((p) => p.type === "text" && typeof p.text === "string")
-          .map((p) => p.text!)
-          .join("\n") || (typeof messageRole === "string" ? `[${messageRole} message]` : "unknown")
-        await this.childWriter.appendChildTurn(
-          childParentID,
+        // STEP 2: CHILD session — delegate to child recorder (D-03, D-05).
+        await this.childRecorder.recordChildMessage(
+          decision.parentID,
           input.sessionID,
-          {
-            turn: 0, // Computed from current turns count by appendChildTurn
-            actor: input.agent || "unknown",
-            content,
-            tools: [],
-          },
+          { sessionID: input.sessionID, agent: input.agent, model: input.model, messageID: input.messageID },
+          { message: output.message, parts: output.parts },
         )
-        if (messageRole === "assistant") {
-          await this.childWriter.appendJourneyEntry(childParentID, input.sessionID, {
-            timestamp: new Date().toISOString(),
-            type: "assistant_message",
-            content,
-            metadata: {
-              actor: input.agent || "unknown",
-              model: input.model,
-              messageID: input.messageID,
-            },
-          })
-        }
         return // Child messages go to child .json only, not main .md
       }
 
@@ -791,6 +766,13 @@ export class SessionTracker {
       this.childWriter = new ChildWriter({ projectRoot: this.projectRoot, hierarchyIndex: this.hierarchyIndex })
       this.sessionIndexWriter = new SessionIndexWriter({ projectRoot: this.projectRoot })
       this.projectIndexWriter = new ProjectIndexWriter({ client: this.client, projectRoot: this.projectRoot })
+
+      // Create child recorder — child delegation message capture (CP-ST-06-02)
+      this.childRecorder = new ChildRecorder({
+        childWriter: this.childWriter,
+        bootstrappedSessions: this.bootstrappedSessions,
+        ensureChildRoute: (parentID, childSessionID) => this.ensureChildRoute(parentID, childSessionID),
+      })
 
       // Create bootstrap helper (CP-ST-05-03)
       this.bootstrap = new SessionBootstrap({
