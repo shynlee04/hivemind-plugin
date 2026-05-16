@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-16T14:08:39.037Z"
+last_updated: "2026-05-16T15:51:53Z"
 progress:
   total_phases: 2
   completed_phases: 1
@@ -17,17 +17,19 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-15
-**Last trigger:** CP-ST-05-02 complete — Single Classification Authority + Journey Recording
+**Last trigger:** CP-ST-06-01 complete — Test Audit + TDD RED Tests for session-tracker
 
 ---
 
 ## Current Status
 
-**Active phase:** CP-ST-04 — Session-Tracker Architecture Fix. 3 of 3 plans complete. ✅
-**Health:** 🟢 Build passes, typecheck clean, 338/340 session-tracker tests pass (2 pre-existing cleanup.test.ts failures unrelated). Hierarchy manifest writer + immediate child .json write + hardened orphan cleanup delivered.
+**Active phase:** CP-ST-06 — Session-Tracker Root Cause Rewrite. Plan 01 of 4 complete.
+**Health:** 🟢 Build passes, typecheck clean. 384/409 session-tracker tests pass (25 failures: 8 TDD RED retry-queue + 17 pre-existing from earlier phases).
 **CP-ST-04 status:** ✅ COMPLETE — Plan 01 (PendingDispatchRegistry + Classification Fix ✓), Plan 02 (Directory Architecture Fix ✓), Plan 03 (Hierarchy Manifest + Immediate I/O + Cleanup ✓).
 
-**CP-ST-05 status:** 🟢 Plan 01 (BEFORE-THE-FACT Classification + Immediate .json Write) ✅ COMPLETE. Plan 02 (Single Classification Authority + Journey Recording) ✅ COMPLETE. Gates 1-3 removed from ensureSessionReady, journey recording unified via EventCapture.recordJourneyEntry for both main and child sessions. 362/364 tests pass (2 pre-known failures).
+**CP-ST-05 status:** ✅ COMPLETE — Plan 01 (BEFORE-THE-FACT Classification + Immediate .json Write) ✓. Plan 02 (Single Classification Authority + Journey Recording) ✓.
+
+**CP-ST-06 status:** 🟡 IN PROGRESS — Plan 01 (Test Audit + TDD RED Tests) ✅ COMPLETE. Plan 02 (Root Cause Extraction) pending. Plan 03 (Retry Queue Implementation) pending. Plan 04 (Integration) pending. 58-row audit delivered, 22 new tests written (8 TDD RED for retry-queue).
 
 Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
 
@@ -116,6 +118,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | DA-IN-02 | Fork handling uses reference-copy (not deep-copy) for child delegations — both sessions share same child .json files; T-12-11 mitigated; copyForkedChildren() in SessionTracker | NEW — 2026-05-12 |
 | D-PHASE12-COMPLETE | All 14 CP-ST-01-REVIEW.md findings resolved with verifiable evidence across 3 waves; pipeline verified end-to-end | NEW — 2026-05-12 |
 | CP-CMD-01 | Command architecture classified: CQRS pattern (read: hivemind-command-engine, write: execute-slash-command), deprecated tools removed from `.opencode/` (violates soft meta-concepts-only rule), `list_commands` action added | NEW — 2026-05-13 |
+| D-CP-ST-06-01 | Test audit complete: 25 failing tests all classified as 'rewrite' (0 keep, 0 delete); RC-3 (API mismatch) accounts for 19/25 root causes; 22 new integration tests across 4 files; 8 TDD RED tests for RetryQueue awaiting CP-ST-06-03 implementation | NEW — 2026-05-16 |
 
 ---
 
