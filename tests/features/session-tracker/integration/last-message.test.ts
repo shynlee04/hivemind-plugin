@@ -36,7 +36,13 @@ function makeChildRecord(overrides: Partial<ChildSessionRecord> & { sessionID: s
   return {
     parentSessionID: PARENT,
     delegationDepth: 1,
-    delegatedBy: { type: "task", callID: `call_${overrides.sessionID}` },
+    delegatedBy: {
+      agentName: "test-agent",
+      model: "test-model",
+      tool: "task",
+      description: "test delegation",
+      subagentType: "test-agent",
+    },
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     status: "active",

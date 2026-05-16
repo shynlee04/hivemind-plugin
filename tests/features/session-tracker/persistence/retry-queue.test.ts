@@ -136,8 +136,21 @@ describe("RetryQueue — child write persistence (GA-1)", () => {
 
       queue.enqueue(writeOp)
 
-      // Advance through retries: 1s + 2s + 4s = 7s
-      await vi.advanceTimersByTimeAsync(7000)
+      // Manually trigger retries to avoid timer timing issues
+      // First retry (1s)
+      await vi.advanceTimersByTimeAsync(1000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
+      
+      // Second retry (2s)
+      await vi.advanceTimersByTimeAsync(2000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
+      
+      // Third retry (4s) - should succeed
+      await vi.advanceTimersByTimeAsync(4000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
 
       // Write should have succeeded
       expect(queue.getStatus("ses_child_003")).toBe("completed")
@@ -184,8 +197,23 @@ describe("RetryQueue — child write persistence (GA-1)", () => {
         attempt: 0,
       })
 
-      // Exhaust retries
-      await vi.advanceTimersByTimeAsync(32000)
+      // Exhaust retries by advancing through each backoff interval
+      // Backoff: 1s, 2s, 4s, 8s, 16s = 31s total
+      await vi.advanceTimersByTimeAsync(1000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
+      await vi.advanceTimersByTimeAsync(2000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
+      await vi.advanceTimersByTimeAsync(4000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
+      await vi.advanceTimersByTimeAsync(8000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
+      await vi.advanceTimersByTimeAsync(16000)
+      await vi.runOnlyPendingTimersAsync()
+      await queue.waitForPendingRetries()
 
       // Degraded record should be on disk
       const degradedFile = resolve(
