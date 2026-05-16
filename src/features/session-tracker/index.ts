@@ -41,26 +41,24 @@ import type { OpenCodeClient } from "../../shared/session-api.js"
 import { EventCapture } from "./capture/event-capture.js"
 import { MessageCapture } from "./capture/message-capture.js"
 import { ToolCapture } from "./capture/tool-capture.js"
-import { SessionWriter } from "./persistence/session-writer.js"
 import { ChildWriter } from "./persistence/child-writer.js"
 import { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 import { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
-import { AgentTransform } from "./transform/agent-transform.js"
+import { OrphanCleanup } from "./orphan-cleanup.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { SessionBootstrap } from "./bootstrap.js"
 import { SessionClassifier } from "./classification.js"
 import { SessionRouter } from "./session-router.js"
 import { ChildRecorder } from "./child-recorder.js"
-import { OrphanCleanup } from "./orphan-cleanup.js"
-import { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
+import { constructDependencies, sessionTrackerRoot } from "./initialization.js"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { isValidSessionID } from "./types.js"
 import type { ChildSessionRecord } from "./types.js"
-import { sessionTrackerRoot } from "./persistence/atomic-write.js"
+
 
 /**
  * Central session tracker class.
@@ -88,7 +86,6 @@ export class SessionTracker {
   private toolCapture!: ToolCapture
 
   // Persistence writers
-  private sessionWriter!: SessionWriter
   private childWriter!: ChildWriter
   private sessionIndexWriter!: SessionIndexWriter
   private projectIndexWriter!: ProjectIndexWriter
@@ -111,9 +108,6 @@ export class SessionTracker {
   // Recovery
   private recovery!: SessionRecovery
 
-  // Transform
-  private agentTransform!: AgentTransform
-
   // Bootstrap (extracted from index.ts — CP-ST-05-03)
   private bootstrap!: SessionBootstrap
 
@@ -126,7 +120,6 @@ export class SessionTracker {
 
   // Orphan cleanup (extracted from index.ts — CP-ST-05-03)
   private orphanCleanup!: OrphanCleanup
-  private quarantine!: OrphanQuarantine
 
   /**
    * Tracks sessions that have been lazy-bootstrapped (dir + .md file created).
@@ -752,101 +745,24 @@ export class SessionTracker {
    */
   async initialize(): Promise<void> {
     try {
-      // Build dependency authorities before constructing consumers.
-      // ChildWriter, SessionClassifier, EventCapture, ToolCapture, and
-      // OrphanCleanup all need the SAME hierarchy index instance so child
-      // writes resolve to the root main directory instead of falling back to
-      // immediate child parents.
-      this.hierarchyIndex = new HierarchyIndex({ projectRoot: this.projectRoot })
-      await this.hierarchyIndex.buildFromDisk()
-      this.pendingRegistry = new PendingDispatchRegistry()
+      // Construct all dependencies via initialization module (CP-ST-06-02)
+      await this.hierarchyIndex?.buildFromDisk?.()
+      const deps = constructDependencies(
+        this.client,
+        this.projectRoot,
+        {
+          getSessionSafely: (id) => this.getSessionSafely(id),
+          ensureChildRoute: (parentID, childSessionID) => this.ensureChildRoute(parentID, childSessionID),
+          bootstrappedSessions: this.bootstrappedSessions,
+        },
+      )
+      // Build hierarchy index from disk (shared authority)
+      await deps.hierarchyIndex.buildFromDisk()
 
-      // Create persistence writers
-      this.sessionWriter = new SessionWriter({ projectRoot: this.projectRoot })
-      this.childWriter = new ChildWriter({ projectRoot: this.projectRoot, hierarchyIndex: this.hierarchyIndex })
-      this.sessionIndexWriter = new SessionIndexWriter({ projectRoot: this.projectRoot })
-      this.projectIndexWriter = new ProjectIndexWriter({ client: this.client, projectRoot: this.projectRoot })
-
-      // Create child recorder — child delegation message capture (CP-ST-06-02)
-      this.childRecorder = new ChildRecorder({
-        childWriter: this.childWriter,
-        bootstrappedSessions: this.bootstrappedSessions,
-        ensureChildRoute: (parentID, childSessionID) => this.ensureChildRoute(parentID, childSessionID),
-      })
-
-      // Create bootstrap helper (CP-ST-05-03)
-      this.bootstrap = new SessionBootstrap({
-        client: this.client,
-        projectRoot: this.projectRoot,
-        sessionWriter: this.sessionWriter,
-        projectIndexWriter: this.projectIndexWriter,
-        sessionIndexWriter: this.sessionIndexWriter,
-      })
-
-      // Create session classifier (CP-ST-05-03)
-      this.classifier = new SessionClassifier({
-        hierarchyIndex: this.hierarchyIndex,
-        pendingRegistry: this.pendingRegistry,
-      })
-
-      // Create session router — classify-before-I/O (CP-ST-06-02)
-      this.sessionRouter = new SessionRouter({
-        classifier: this.classifier,
-        getSessionSafely: (id) => this.getSessionSafely(id),
-      })
-
-      // Create orphan quarantine and cleanup (CP-ST-05-03)
-      const trackerRoot = resolve(this.projectRoot, ".hivemind", "session-tracker")
-      this.quarantine = new OrphanQuarantine({ trackerRoot })
-      this.orphanCleanup = new OrphanCleanup({
-        client: this.client,
-        projectRoot: this.projectRoot,
-        hierarchyIndex: this.hierarchyIndex,
-        quarantine: this.quarantine,
-      })
-
-      // Create hierarchy manifest writer (D-07).
-      // Writes hierarchy-manifest.json in each root main session directory.
-      this.manifestWriter = new HierarchyManifestWriter({
-        projectRoot: this.projectRoot,
-      })
-
-      // Create transform utility
-      this.agentTransform = new AgentTransform()
-
-      // Create capture handlers
-      this.eventCapture = new EventCapture({
-        client: this.client,
-        sessionWriter: this.sessionWriter,
-        childWriter: this.childWriter,
-        sessionIndexWriter: this.sessionIndexWriter,
-        projectIndexWriter: this.projectIndexWriter,
-        hierarchyIndex: this.hierarchyIndex,
-        pendingRegistry: this.pendingRegistry,
-        manifestWriter: this.manifestWriter, // D-07
-      })
-      this.messageCapture = new MessageCapture({
-        client: this.client,
-        sessionWriter: this.sessionWriter,
-        agentTransform: this.agentTransform,
-        projectRoot: this.projectRoot,
-        sessionIndexWriter: this.sessionIndexWriter,
-      })
-      this.toolCapture = new ToolCapture({
-        client: this.client,
-        sessionWriter: this.sessionWriter,
-        childWriter: this.childWriter,
-        sessionIndexWriter: this.sessionIndexWriter,
-        projectIndexWriter: this.projectIndexWriter,
-        hierarchyIndex: this.hierarchyIndex,
-        pendingRegistry: this.pendingRegistry,
-      })
+      // Assign all constructed dependencies to instance fields
+      Object.assign(this, deps)
 
       // Initialize recovery (reads project-continuity.json per D-05)
-      this.recovery = new SessionRecovery({
-        client: this.client,
-        projectRoot: this.projectRoot,
-      })
       await this.recovery.initialize()
 
       // Initialize project-level index if needed
