@@ -692,7 +692,9 @@ export class SessionTracker {
    */
   async cleanup(): Promise<void> {
     try {
-      // Legacy event-tracker cleanup removed (CP-ST-03); migration in plugin.ts
+      // TODO: implement cleanup — legacy event-tracker cleanup removed (CP-ST-03);
+      // one-shot migration in plugin.ts handles `.hivemind/event-tracker/` removal.
+      // Future: add orphan quarantine cleanup, stale session removal, etc.
     } catch (err) {
       void this.client.app?.log?.({
         body: {
