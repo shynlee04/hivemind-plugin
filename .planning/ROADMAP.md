@@ -393,5 +393,15 @@ Plans:
 - [x] 13-05-PLAN.md — Cleanup + Tool Fixes (F-09..F-12) — Wave 1 (MEDIUM)
 - [x] 13-06-PLAN.md — Integration Tests — Wave 4 (VERIFICATION)
 
+### Phase CP-ST-06: Session Tracker Root Cause Rewrite
+
+**Goal:** Triệt để rewrite session-tracker logic — không patch. Fix 6 root causes: (1) delete-on-idle clears child .json data khi sub complete, (2) lastMessage prune thay vì full content cho L0/L1/L2, (3) real-user-turn authority: chỉ exactly 1 real user turn = main session dir, (4) continuous turn counting cho resume/revert/fork, (5) 3-tier parallel hierarchy với upper-level idle, (6) default-to-sub khi không xác định được real user turn. Xóa 30 stale mock tests. Rewrite sạch.
+**Requirements**: 6 root causes, 30 stale tests, 5 unfixed bugs from CP-ST-05
+**Depends on:** CP-ST-05
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase CP-ST-06 to break down)
+
 ---
 *Last updated: 2026-05-15 — CP-ST-05 COMPLETE (3/3 waves, 12 commits, 362/364 tests). Gate 0 BEFORE-THE-FACT classification eliminates race conditions. Quarantine protocol prevents data loss. index.ts 982→807 LOC. CP-ST-04 COMPLETE (15 commits, 338/340 tests). Pre-existing failures: 2 test cases (cleanup.test.ts)*
