@@ -398,10 +398,14 @@ Plans:
 **Goal:** Triệt để rewrite session-tracker logic — không patch. Fix 6 root causes: (1) delete-on-idle clears child .json data khi sub complete, (2) lastMessage prune thay vì full content cho L0/L1/L2, (3) real-user-turn authority: chỉ exactly 1 real user turn = main session dir, (4) continuous turn counting cho resume/revert/fork, (5) 3-tier parallel hierarchy với upper-level idle, (6) default-to-sub khi không xác định được real user turn. Xóa 30 stale mock tests. Rewrite sạch.
 **Requirements**: 6 root causes, 30 stale tests, 5 unfixed bugs from CP-ST-05
 **Depends on:** CP-ST-05
-**Plans:** 0 plans
+**Plans:** 5 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase CP-ST-06 to break down)
+- [ ] CP-ST-06-01-PLAN.md — Test Audit + RED Root-Cause Coverage (Wave 1) — requirements: RC-1..RC-6, GA-1, GA-2, GA-3, GA-5
+- [ ] CP-ST-06-02-PLAN.md — Router Extraction + Default-to-Sub Authority + index.ts LOC Gate (Wave 2) — requirements: RC-3, RC-6, GA-3, GA-4
+- [ ] CP-ST-06-03-PLAN.md — Hierarchy Root + Nested Status Persistence (Wave 2) — requirements: RC-1, RC-2, GA-2
+- [ ] CP-ST-06-04-PLAN.md — Retry Queue + Full lastMessage Persistence (Wave 3) — requirements: RC-4, RC-5, GA-1
+- [ ] CP-ST-06-05-PLAN.md — Stale Test Rewrite + Parallel Integration + Final Verification (Wave 4) — requirements: RC-1..RC-6, GA-3, GA-5
 
 ---
 *Last updated: 2026-05-15 — CP-ST-05 COMPLETE (3/3 waves, 12 commits, 362/364 tests). Gate 0 BEFORE-THE-FACT classification eliminates race conditions. Quarantine protocol prevents data loss. index.ts 982→807 LOC. CP-ST-04 COMPLETE (15 commits, 338/340 tests). Pre-existing failures: 2 test cases (cleanup.test.ts)*
