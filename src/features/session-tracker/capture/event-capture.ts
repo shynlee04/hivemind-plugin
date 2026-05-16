@@ -216,23 +216,21 @@ export class EventCapture {
         }
       }
 
-      if (parentID) {
+      if (parentID != null) {
         // D-06: Child session — write child .json IMMEDIATELY
         // (not deferred to PostToolUse handleTask)
         await this.writeImmediateChildFile(sessionID, parentID)
         return
       }
 
-      if (parentID === null || parentID === undefined) {
-        // Gate 2: Check hierarchy index before treating as root.
-        // If the SDK doesn't report parentID but the hierarchy index knows
-        // this session is a child, write child .json immediately.
-        if (this.hierarchyIndex?.isChild(sessionID)) {
-          // D-06: Child session via hierarchy index — resolve parent
-          const resolvedParent = this.hierarchyIndex.getParent(sessionID)
-          if (resolvedParent) {
-            await this.writeImmediateChildFile(sessionID, resolvedParent)
-          }
+      // Gate 2: Check hierarchy index before treating as root.
+      // If the SDK doesn't report parentID but the hierarchy index knows
+      // this session is a child, write child .json immediately.
+      if (this.hierarchyIndex?.isChild(sessionID)) {
+        // D-06: Child session via hierarchy index — resolve parent
+        const resolvedParent = this.hierarchyIndex.getParent(sessionID)
+        if (resolvedParent) {
+          await this.writeImmediateChildFile(sessionID, resolvedParent)
           return
         }
 
