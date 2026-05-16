@@ -188,15 +188,18 @@ describe("HierarchyIndex — root main session tracking (D-03, D-08)", () => {
     })
   })
 
-  describe("getDepth()", () => {
-    it("should preserve L3 delegation depth without capping at L2", () => {
+  describe("getDepth() — GA-2 max depth L2", () => {
+    it("should cap delegation depth at L2 per GA-2 (max depth = L2)", () => {
+      // GA-2: Max depth = L2 (3 tiers: L0+L1+L2).
+      // Any session beyond L2 must return 2, not its actual depth.
       index.registerChild("ses_root", "ses_l1")
       index.registerChild("ses_l1", "ses_l2")
       index.registerChild("ses_l2", "ses_l3")
 
       expect(index.getDepth("ses_l1")).toBe(1)
       expect(index.getDepth("ses_l2")).toBe(2)
-      expect(index.getDepth("ses_l3")).toBe(3)
+      // L3 is capped at L2 per GA-2 — must NOT return 3
+      expect(index.getDepth("ses_l3")).toBe(2)
     })
   })
 

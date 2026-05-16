@@ -55,6 +55,13 @@ export class HierarchyIndex {
   private childToParent: Map<string, string> = new Map()
 
   /**
+   * parentID → Set of childIDs.
+   * Reverse index used to propagate rootMain changes to descendants
+   * when a parent's rootMain is updated after reverse-order registration.
+   */
+  private parentToChildren: Map<string, Set<string>> = new Map()
+
+  /**
    * childID → rootMainSessionID map.
    * Tracks the root main session (delegation depth 0) whose directory
    * owns all child .json files for this child (D-03, D-08).
@@ -145,6 +152,15 @@ export class HierarchyIndex {
   ): void {
     for (const [childID, child] of Object.entries(children)) {
       this.childToParent.set(childID, parentID)
+
+      // Maintain reverse index for descendant propagation
+      let siblings = this.parentToChildren.get(parentID)
+      if (!siblings) {
+        siblings = new Set()
+        this.parentToChildren.set(parentID, siblings)
+      }
+      siblings.add(childID)
+
       if (child.children) {
         this.registerChildrenFromTree(childID, child.children)
       }
@@ -156,11 +172,23 @@ export class HierarchyIndex {
    *
    * Called by tool-capture.handleTask() when a task delegation fires.
    *
+   * When a parent's rootMain changes (e.g., reverse-order registration where
+   * L1→L2 is registered before root→L1), this method propagates the new
+   * rootMain to all descendants to maintain consistency (RC-1).
+   *
    * @param parentID - The parent session identifier.
    * @param childID - The child session identifier.
    */
   registerChild(parentID: string, childID: string): void {
     this.childToParent.set(childID, parentID)
+
+    // Maintain reverse index for descendant propagation
+    let siblings = this.parentToChildren.get(parentID)
+    if (!siblings) {
+      siblings = new Set()
+      this.parentToChildren.set(parentID, siblings)
+    }
+    siblings.add(childID)
 
     // Resolve root main (D-03, D-08):
     // If parent already has a rootMain assigned, propagate it.
@@ -168,7 +196,27 @@ export class HierarchyIndex {
     const parentRootMain = this.childToRootMain.get(parentID)
     const rootMain = parentRootMain ?? (this.childToParent.has(parentID) ? undefined : parentID)
     if (rootMain) {
-      this.childToRootMain.set(childID, rootMain)
+      this.propagateRootMain(childID, rootMain)
+    }
+  }
+
+  /**
+   * Propagates a rootMain value to a child and all its descendants.
+   *
+   * Used when a parent's rootMain is resolved or changes (e.g., reverse-order
+   * registration). Walks the parentToChildren reverse index to update every
+   * descendant's childToRootMain entry.
+   *
+   * @param childID - The child session identifier.
+   * @param rootMain - The root main session ID to propagate.
+   */
+  private propagateRootMain(childID: string, rootMain: string): void {
+    this.childToRootMain.set(childID, rootMain)
+    const children = this.parentToChildren.get(childID)
+    if (children) {
+      for (const desc of children) {
+        this.propagateRootMain(desc, rootMain)
+      }
     }
   }
 
@@ -233,7 +281,7 @@ export class HierarchyIndex {
    * Computes the delegation depth of a session by walking the parent chain.
    *
    * L0 (no parent) = 0, L1 (parent is L0) = 1, L2 (parent is L1) = 2.
-   * Caps at 2 per SPEC §1.2. Includes cycle guard.
+   * Caps at 2 per locked decision GA-2 (max depth = L2). Includes cycle guard.
    *
    * @param sessionID - The session identifier to compute depth for.
    * @returns The delegation depth (0, 1, or 2).
