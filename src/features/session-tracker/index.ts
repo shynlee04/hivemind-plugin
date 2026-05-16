@@ -133,8 +133,17 @@ export class SessionTracker {
           if (parentID) {
             await this.copyForkedChildren(event.sessionID, parentID)
           }
-        } catch {
-          // Parent index may not exist — fork proceeds without children
+        } catch (err) {
+          // Parent index may not exist — fork proceeds without children,
+          // but the error must be logged for observability (GA-1).
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: "[Harness] Session tracker: fork child-copy failed, proceeding without children",
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
         }
       }
     } catch (err) {
