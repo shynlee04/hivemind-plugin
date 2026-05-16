@@ -201,12 +201,12 @@ describe("updateChildStatus", () => {
     expect(parsed.mainAgent.name).toBe("Hm-L2-Investigator")
   })
 
-  it("handles non-existent child file gracefully (queue swallows errors)", async () => {
-    // With the serial write queue, individual write errors are swallowed
-    // to keep the queue alive. The promise resolves instead of rejecting.
+  it("propagates errors for non-existent child file (RC-5)", async () => {
+    // RC-5: Write errors are no longer swallowed — they propagate to callers
+    // and are enqueued to the retry queue for automatic retry.
     await expect(
       writer.updateChildStatus(parentSessionID, "ses_nonexistent12345", "completed"),
-    ).resolves.toBeUndefined()
+    ).rejects.toThrow(/ENOENT/)
   })
 })
 
