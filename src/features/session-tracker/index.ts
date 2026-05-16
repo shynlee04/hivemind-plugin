@@ -52,6 +52,7 @@ import { AgentTransform } from "./transform/agent-transform.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 import { SessionBootstrap } from "./bootstrap.js"
 import { SessionClassifier } from "./classification.js"
+import { SessionRouter } from "./session-router.js"
 import { OrphanCleanup } from "./orphan-cleanup.js"
 import { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
 import { readFile } from "node:fs/promises"
@@ -117,6 +118,8 @@ export class SessionTracker {
 
   // Classification (extracted from index.ts — CP-ST-05-03)
   private classifier!: SessionClassifier
+  /** Session router — classify-before-I/O routing (CP-ST-06-02). */
+  private sessionRouter!: SessionRouter
 
   // Orphan cleanup (extracted from index.ts — CP-ST-05-03)
   private orphanCleanup!: OrphanCleanup
@@ -274,17 +277,14 @@ export class SessionTracker {
       // Child sessions must NEVER get their own directory. Classification
       // must happen BEFORE ensureSessionReady (which may call mkdir).
       // Three-gate fallback: SDK parentID → hierarchy index → pending registry.
-      const classification = await this.classifier.classify(
-        input.sessionID,
-        (id) => this.getSessionSafely(id),
-      )
-      const parentID = classification.kind === "child" ? classification.parentID : undefined
+      const decision = await this.sessionRouter.route(input.sessionID)
 
-      if (parentID && this.childWriter) {
+      if (decision.route === "child" && this.childWriter) {
+        const childParentID = decision.parentID
         // STEP 2: CHILD session — skip ensureSessionReady entirely.
         // No directory creation — child .json only (D-03, D-05).
         this.bootstrappedSessions.add(input.sessionID)
-        await this.ensureChildRoute(parentID, input.sessionID)
+        await this.ensureChildRoute(childParentID, input.sessionID)
 
         // Capture chat message to child .json under ROOT main (D-03)
         const messageRole = (output.message as Record<string, unknown> | null)?.role
@@ -294,7 +294,7 @@ export class SessionTracker {
           .map((p) => p.text!)
           .join("\n") || (typeof messageRole === "string" ? `[${messageRole} message]` : "unknown")
         await this.childWriter.appendChildTurn(
-          parentID,
+          childParentID,
           input.sessionID,
           {
             turn: 0, // Computed from current turns count by appendChildTurn
@@ -304,7 +304,7 @@ export class SessionTracker {
           },
         )
         if (messageRole === "assistant") {
-          await this.childWriter.appendJourneyEntry(parentID, input.sessionID, {
+          await this.childWriter.appendJourneyEntry(childParentID, input.sessionID, {
             timestamp: new Date().toISOString(),
             type: "assistant_message",
             content,
@@ -318,7 +318,9 @@ export class SessionTracker {
         return // Child messages go to child .json only, not main .md
       }
 
-      // STEP 3: MAIN session — now it's safe to create directory.
+      // STEP 3: MAIN or unknownSub session — now it's safe to create directory.
+      // RC-3: unknownSub is treated as child/default-sub in the router,
+      // but if we reach here, it falls through to main session handling.
       await this.ensureSessionReady(input.sessionID)
 
       // STEP 4: Capture to main .md (existing messageCapture path)
@@ -803,6 +805,12 @@ export class SessionTracker {
       this.classifier = new SessionClassifier({
         hierarchyIndex: this.hierarchyIndex,
         pendingRegistry: this.pendingRegistry,
+      })
+
+      // Create session router — classify-before-I/O (CP-ST-06-02)
+      this.sessionRouter = new SessionRouter({
+        classifier: this.classifier,
+        getSessionSafely: (id) => this.getSessionSafely(id),
       })
 
       // Create orphan quarantine and cleanup (CP-ST-05-03)
