@@ -32,7 +32,7 @@
 
 import { readdir, readFile } from "node:fs/promises"
 import { sessionTrackerRoot, safeSessionPath } from "./atomic-write.js"
-import type { SessionContinuityIndex } from "../types.js"
+import type { ChildHierarchyEntry, SessionContinuityIndex } from "../types.js"
 
 // ---------------------------------------------------------------------------
 // HierarchyIndex class
@@ -110,9 +110,7 @@ export class HierarchyIndex {
 
         const children = index.hierarchy?.children
         if (children) {
-          for (const childID of Object.keys(children)) {
-            this.childToParent.set(childID, parentID)
-          }
+          this.registerChildrenFromTree(parentID, children)
         }
       } catch {
         // Best-effort: skip directories without a readable index
@@ -127,6 +125,28 @@ export class HierarchyIndex {
       if (!this.childToRootMain.has(childID)) {
         const root = this.resolveRootMain(childID)
         if (root) this.childToRootMain.set(childID, root)
+      }
+    }
+  }
+
+  /**
+   * Recursively registers child hierarchy entries from session-continuity.json.
+   *
+   * Root session-continuity may store L2 entries nested under their L1 parent
+   * after orphan cleanup has rehydrated a bad child directory. Rebuilding the
+   * hierarchy index must preserve that nested parent chain.
+   *
+   * @param parentID - Parent session ID for the provided children map.
+   * @param children - Child hierarchy entries keyed by child session ID.
+   */
+  private registerChildrenFromTree(
+    parentID: string,
+    children: Record<string, ChildHierarchyEntry>,
+  ): void {
+    for (const [childID, child] of Object.entries(children)) {
+      this.childToParent.set(childID, parentID)
+      if (child.children) {
+        this.registerChildrenFromTree(childID, child.children)
       }
     }
   }

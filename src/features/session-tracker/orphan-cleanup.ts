@@ -12,8 +12,9 @@ import type { OpenCodeClient } from "../../shared/session-api.js"
 import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import type { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
 import { isValidSessionID } from "./types.js"
-import { safeSessionPath, sessionTrackerRoot } from "./persistence/atomic-write.js"
-import { readdir, access } from "node:fs/promises"
+import type { ChildHierarchyEntry, SessionContinuityIndex, HierarchyManifest } from "./types.js"
+import { safeSessionPath, sessionTrackerRoot, atomicWriteJson } from "./persistence/atomic-write.js"
+import { readdir, access, readFile, rename } from "node:fs/promises"
 import { resolve } from "node:path"
 
 /**
@@ -134,6 +135,7 @@ export class OrphanCleanup {
       if (isOrphan) {
         // Quarantine instead of delete (CP-ST-05-03)
         try {
+          await this.preserveOrphanHierarchy(sessionID)
           await this.quarantine.quarantineOrphan(sessionID)
           result.quarantined.push(sessionID)
           void this.client.app?.log?.({
@@ -154,6 +156,157 @@ export class OrphanCleanup {
     }
 
     return result
+  }
+
+  /**
+   * Preserves nested child records from an orphan child directory before it is
+   * moved to quarantine.
+   *
+   * If an L1 child incorrectly has its own `session-continuity.json`, its L2
+   * child records are merged into the root main session hierarchy and manifest.
+   * Any child `.json` files found in the orphan directory are moved into the
+   * root main directory. This prevents cleanup from erasing delegated-session
+   * history that should have lived under the root main session all along.
+   *
+   * @param orphanSessionID - Child session directory being quarantined.
+   */
+  private async preserveOrphanHierarchy(orphanSessionID: string): Promise<void> {
+    const rootMainSessionID = this.hierarchyIndex?.getRootMain(orphanSessionID)
+    if (!rootMainSessionID) return
+
+    const orphanIndex = await this.readJson<SessionContinuityIndex>(
+      safeSessionPath(this.projectRoot, orphanSessionID, "session-continuity.json"),
+    )
+    if (!orphanIndex?.hierarchy?.children) return
+
+    const rootIndexPath = safeSessionPath(this.projectRoot, rootMainSessionID, "session-continuity.json")
+    const rootIndex =
+      (await this.readJson<SessionContinuityIndex>(rootIndexPath)) ??
+      this.createDefaultIndex(rootMainSessionID)
+
+    const manifestPath = safeSessionPath(this.projectRoot, rootMainSessionID, "hierarchy-manifest.json")
+    const manifest =
+      (await this.readJson<HierarchyManifest>(manifestPath)) ??
+      this.createDefaultManifest(rootMainSessionID)
+
+    const orphanEntry = rootIndex.hierarchy.children[orphanSessionID]
+    if (!orphanEntry) return
+
+    for (const [childID, childEntry] of Object.entries(orphanIndex.hierarchy.children)) {
+      const normalizedEntry: ChildHierarchyEntry = {
+        ...childEntry,
+        depth: Math.max(2, childEntry.depth + 1),
+        children: childEntry.children ?? {},
+      }
+
+      await this.moveChildJsonToRoot(
+        orphanSessionID,
+        rootMainSessionID,
+        normalizedEntry.file,
+      )
+
+      orphanEntry.children[childID] = normalizedEntry
+      manifest.children[childID] = {
+        sessionID: childID,
+        parentSessionID: orphanSessionID,
+        rootMainSessionID,
+        delegationDepth: normalizedEntry.depth,
+        delegatedBy: normalizedEntry.delegatedBy,
+        subagentType: normalizedEntry.delegatedBy,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: normalizedEntry.status,
+        turnCount: 0,
+        childFile: normalizedEntry.file,
+      }
+    }
+
+    const now = new Date().toISOString()
+    rootIndex.lastUpdated = now
+    manifest.lastUpdated = now
+    manifest.totalChildren = Object.keys(manifest.children).length
+    manifest.maxDepth = Math.max(
+      0,
+      ...Object.values(manifest.children).map((child) => child.delegationDepth),
+    )
+
+    await atomicWriteJson(rootIndexPath, rootIndex)
+    await atomicWriteJson(manifestPath, manifest)
+  }
+
+  /**
+   * Moves a child JSON record from an orphan child directory into root main.
+   * Existing root records are preserved and never overwritten.
+   *
+   * @param orphanSessionID - Orphan directory session ID.
+   * @param rootMainSessionID - Root main directory owner.
+   * @param childFile - Child JSON filename.
+   */
+  private async moveChildJsonToRoot(
+    orphanSessionID: string,
+    rootMainSessionID: string,
+    childFile: string,
+  ): Promise<void> {
+    if (!childFile.endsWith(".json")) return
+    const sourcePath = safeSessionPath(this.projectRoot, orphanSessionID, childFile)
+    const targetPath = safeSessionPath(this.projectRoot, rootMainSessionID, childFile)
+    try {
+      await access(targetPath)
+      return
+    } catch {
+      // Target missing — move from orphan if present.
+    }
+
+    try {
+      await rename(sourcePath, targetPath)
+    } catch {
+      // Source may not exist; hierarchy merge still preserves the reference.
+    }
+  }
+
+  /**
+   * Reads and parses a JSON file, returning undefined on any error.
+   *
+   * @param filePath - JSON file path.
+   */
+  private async readJson<T>(filePath: string): Promise<T | undefined> {
+    try {
+      return JSON.parse(await readFile(filePath, "utf-8")) as T
+    } catch {
+      return undefined
+    }
+  }
+
+  /**
+   * Creates a default root session continuity index.
+   *
+   * @param sessionID - Root main session ID.
+   */
+  private createDefaultIndex(sessionID: string): SessionContinuityIndex {
+    return {
+      version: "2.0",
+      sessionID,
+      lastUpdated: new Date().toISOString(),
+      hierarchy: { root: sessionID, children: {} },
+      turnCount: 0,
+      toolSummary: {},
+    }
+  }
+
+  /**
+   * Creates a default root hierarchy manifest.
+   *
+   * @param rootMainSessionID - Root main session ID.
+   */
+  private createDefaultManifest(rootMainSessionID: string): HierarchyManifest {
+    return {
+      version: "1.0",
+      rootMainSessionID,
+      lastUpdated: new Date().toISOString(),
+      children: {},
+      totalChildren: 0,
+      maxDepth: 0,
+    }
   }
 
   /**

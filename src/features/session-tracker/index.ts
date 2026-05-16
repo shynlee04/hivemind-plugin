@@ -57,6 +57,7 @@ import { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { isValidSessionID } from "./types.js"
+import type { ChildSessionRecord } from "./types.js"
 import { sessionTrackerRoot } from "./persistence/atomic-write.js"
 
 /**
@@ -283,6 +284,7 @@ export class SessionTracker {
         // STEP 2: CHILD session — skip ensureSessionReady entirely.
         // No directory creation — child .json only (D-03, D-05).
         this.bootstrappedSessions.add(input.sessionID)
+        await this.ensureChildRoute(parentID, input.sessionID)
 
         // Capture chat message to child .json under ROOT main (D-03)
         const messageRole = (output.message as Record<string, unknown> | null)?.role
@@ -301,6 +303,18 @@ export class SessionTracker {
             tools: [],
           },
         )
+        if (messageRole === "assistant") {
+          await this.childWriter.appendJourneyEntry(parentID, input.sessionID, {
+            timestamp: new Date().toISOString(),
+            type: "assistant_message",
+            content,
+            metadata: {
+              actor: input.agent || "unknown",
+              model: input.model,
+              messageID: input.messageID,
+            },
+          })
+        }
         return // Child messages go to child .json only, not main .md
       }
 
@@ -357,18 +371,13 @@ export class SessionTracker {
         // Child session — skip directory creation entirely.
         // Mark as bootstrapped to prevent ensureSessionReady from creating a dir.
         this.bootstrappedSessions.add(input.sessionID)
-        // Still capture the tool event in the child's .json if it's a non-task tool.
-        // Task tool events for child sessions are the child dispatching its OWN
-        // sub-tasks, which tool-capture handles normally.
-        if (this.toolCapture) {
-          await this.toolCapture.handleToolExecuteAfter(
-            input as Parameters<ToolCapture["handleToolExecuteAfter"]>[0],
-            output as Parameters<ToolCapture["handleToolExecuteAfter"]>[1],
-          )
-          // Clean up pending dispatch registry (AC-05: entry removed at PostToolUse)
-          if (this.pendingRegistry && input.callID) {
-            this.pendingRegistry.removeByCallID(input.callID)
-          }
+        await this.recordChildToolJourney(parentID, input, output)
+        if (input.tool === "task") {
+          await this.recordChildTaskDelegation(parentID, input, output)
+        }
+        // Clean up pending dispatch registry (AC-05: entry removed at PostToolUse)
+        if (this.pendingRegistry && input.callID) {
+          this.pendingRegistry.removeByCallID(input.callID)
         }
         return
       }
@@ -395,6 +404,229 @@ export class SessionTracker {
         },
       })
     }
+  }
+
+  /**
+   * Records a child-session tool event to the child `.json` journey array.
+   *
+   * Child sessions must never be routed through {@link ToolCapture} for normal
+   * tool metadata capture because ToolCapture writes main-session `.md` blocks
+   * via SessionWriter. This method preserves equivalent pruned metadata in the
+   * child JSON file without creating a child subdirectory.
+   *
+   * @param parentID - Immediate parent session ID for the child session.
+   * @param input - Tool execution hook input.
+   * @param output - Tool execution hook output.
+   */
+  private async recordChildToolJourney(
+    parentID: string,
+    input: { tool: string; sessionID: string; callID: string; args: unknown },
+    output: { title: string; output: unknown; metadata: unknown },
+  ): Promise<void> {
+    await this.ensureChildRoute(parentID, input.sessionID)
+    await this.childWriter.appendJourneyEntry(parentID, input.sessionID, {
+      timestamp: new Date().toISOString(),
+      type: "tool_call",
+      content: `Tool: ${input.tool}`,
+      metadata: {
+        tool: input.tool,
+        callID: input.callID,
+        input: this.pruneToolInput(input.tool, input.args),
+        output: this.pruneToolOutput(input.tool, output.output, output.metadata),
+      },
+    })
+  }
+
+  /**
+   * Ensures a child write can resolve to the root main directory.
+   *
+   * SDK-based classification can discover an L2 child before the local
+   * hierarchy index has seen its L1 parent. Hydrating ancestors first prevents
+   * child writes from falling back to the immediate L1 directory.
+   *
+   * @param parentID - Immediate parent session ID.
+   * @param childID - Child session ID being written.
+   */
+  private async ensureChildRoute(parentID: string, childID: string): Promise<void> {
+    await this.ensureAncestorRoute(parentID, new Set<string>())
+    if (!this.hierarchyIndex.isChild(childID)) {
+      this.hierarchyIndex.registerChild(parentID, childID)
+    }
+  }
+
+  /**
+   * Recursively registers a parent session's own parent chain from SDK data.
+   *
+   * @param sessionID - Session whose ancestors should be registered.
+   * @param seen - Cycle guard for defensive SDK data handling.
+   */
+  private async ensureAncestorRoute(sessionID: string, seen: Set<string>): Promise<void> {
+    if (seen.has(sessionID)) return
+    seen.add(sessionID)
+    const session = await this.getSessionSafely(sessionID)
+    const parentID =
+      session && typeof session === "object" && "parentID" in session
+        ? (session as { parentID?: string }).parentID
+        : undefined
+    if (!parentID) return
+    await this.ensureAncestorRoute(parentID, seen)
+    if (!this.hierarchyIndex.isChild(sessionID)) {
+      this.hierarchyIndex.registerChild(parentID, sessionID)
+    }
+  }
+
+  /**
+   * Records a child-session task delegation as an L2 child JSON record.
+   *
+   * @param parentID - Immediate parent session ID for the L1 session.
+   * @param input - Task tool execution hook input from the child session.
+   * @param output - Task tool execution hook output containing `task_id`.
+   */
+  private async recordChildTaskDelegation(
+    parentID: string,
+    input: { tool: string; sessionID: string; callID: string; args: unknown },
+    output: { title: string; output: unknown; metadata: unknown },
+  ): Promise<void> {
+    const childSessionID = this.extractTaskID(output.output)
+    if (!childSessionID) return
+
+    const args = this.asRecord(input.args)
+    const description = typeof args.description === "string" ? args.description : ""
+    const subagentType = typeof args.subagent_type === "string" ? args.subagent_type : "unknown"
+
+    if (!this.hierarchyIndex.isChild(input.sessionID)) {
+      this.hierarchyIndex.registerChild(parentID, input.sessionID)
+    }
+    const rootMain = this.hierarchyIndex.getRootMain(input.sessionID) ?? parentID
+    this.hierarchyIndex.registerChild(input.sessionID, childSessionID)
+    const depth = this.hierarchyIndex.getDepth(childSessionID)
+    const now = new Date().toISOString()
+    const childMetadata: ChildSessionRecord = {
+      sessionID: childSessionID,
+      parentSessionID: input.sessionID,
+      delegationDepth: depth,
+      delegatedBy: {
+        agentName: subagentType,
+        model: "unknown",
+        tool: "task",
+        description,
+        subagentType,
+      },
+      created: now,
+      updated: now,
+      status: "active",
+      mainAgent: {
+        name: subagentType,
+        model: "unknown",
+      },
+      turns: [],
+      children: [],
+      journey: [],
+    }
+
+    await this.childWriter.createChildFile(input.sessionID, childSessionID, childMetadata)
+    await this.childWriter.appendChildTurn(input.sessionID, childSessionID, {
+      turn: 0,
+      actor: subagentType,
+      content: description || "Task delegation initiated",
+      tools: [],
+    })
+    await this.sessionIndexWriter.addChild(
+      rootMain,
+      childSessionID,
+      `${childSessionID}.json`,
+      depth,
+      subagentType,
+    )
+    await this.projectIndexWriter.incrementChildCount(rootMain, depth)
+    await this.projectIndexWriter.addSession(
+      childSessionID,
+      `${rootMain}/`,
+      `${childSessionID}.json`,
+    )
+    await this.manifestWriter.addChild({
+      rootMainSessionID: rootMain,
+      childSessionID,
+      parentSessionID: input.sessionID,
+      delegationDepth: depth,
+      delegatedBy: subagentType,
+      subagentType,
+      childFile: `${childSessionID}.json`,
+    })
+  }
+
+  /**
+   * Returns safe, pruned tool input metadata for child-session JSON journeys.
+   *
+   * @param tool - Tool name.
+   * @param args - Raw tool args.
+   * @returns Pruned metadata matching the main-session markdown capture policy.
+   */
+  private pruneToolInput(tool: string, args: unknown): Record<string, unknown> {
+    const record = this.asRecord(args)
+    if (tool === "read") {
+      return { filePath: record.filePath }
+    }
+    if (tool === "skill") {
+      return { name: record.name }
+    }
+    if (tool === "task") {
+      return {
+        description: record.description,
+        subagent_type: record.subagent_type,
+        task_id: this.extractTaskID(record.task_id),
+      }
+    }
+    return { callID: record.callID }
+  }
+
+  /**
+   * Returns safe, pruned output metadata for child-session JSON journeys.
+   *
+   * @param tool - Tool name.
+   * @param output - Raw tool output.
+   * @param metadata - Raw tool metadata.
+   * @returns Pruned output metadata.
+   */
+  private pruneToolOutput(
+    tool: string,
+    output: unknown,
+    metadata: unknown,
+  ): Record<string, unknown> {
+    const meta = this.asRecord(metadata)
+    const result: Record<string, unknown> = {}
+    if (tool === "task") {
+      result.task_id = this.extractTaskID(output)
+    }
+    if (meta.status === "error" || meta.error !== undefined) {
+      result.status = "error"
+    }
+    return result
+  }
+
+  /**
+   * Extracts a task session ID from task tool output or direct values.
+   *
+   * @param value - Raw output or task ID value.
+   * @returns Extracted session ID, or undefined.
+   */
+  private extractTaskID(value: unknown): string | undefined {
+    if (typeof value !== "string") return undefined
+    const direct = value.match(/\bses_[A-Za-z0-9_-]+\b/)
+    return direct?.[0]
+  }
+
+  /**
+   * Safely narrows an unknown value to a record.
+   *
+   * @param value - Unknown value to inspect.
+   * @returns The value as a record, or an empty object.
+   */
+  private asRecord(value: unknown): Record<string, unknown> {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return value as Record<string, unknown>
+    }
+    return {}
   }
 
   /**
@@ -543,6 +775,15 @@ export class SessionTracker {
    */
   async initialize(): Promise<void> {
     try {
+      // Build dependency authorities before constructing consumers.
+      // ChildWriter, SessionClassifier, EventCapture, ToolCapture, and
+      // OrphanCleanup all need the SAME hierarchy index instance so child
+      // writes resolve to the root main directory instead of falling back to
+      // immediate child parents.
+      this.hierarchyIndex = new HierarchyIndex({ projectRoot: this.projectRoot })
+      await this.hierarchyIndex.buildFromDisk()
+      this.pendingRegistry = new PendingDispatchRegistry()
+
       // Create persistence writers
       this.sessionWriter = new SessionWriter({ projectRoot: this.projectRoot })
       this.childWriter = new ChildWriter({ projectRoot: this.projectRoot, hierarchyIndex: this.hierarchyIndex })
@@ -573,17 +814,6 @@ export class SessionTracker {
         hierarchyIndex: this.hierarchyIndex,
         quarantine: this.quarantine,
       })
-
-      // Build the global hierarchy index from existing session-continuity.json files.
-      // This ensures sessions created before this harness instance loaded are correctly
-      // classified when their events arrive (cold-start scenario).
-      this.hierarchyIndex = new HierarchyIndex({ projectRoot: this.projectRoot })
-      await this.hierarchyIndex.buildFromDisk()
-
-      // Create pending dispatch registry (Gate 3 classification fallback).
-      // Populated at tool.execute.before time by handleToolExecuteBefore(),
-      // consumed by ensureSessionReady() and handleSessionCreated().
-      this.pendingRegistry = new PendingDispatchRegistry()
 
       // Create hierarchy manifest writer (D-07).
       // Writes hierarchy-manifest.json in each root main session directory.

@@ -275,6 +275,48 @@ describe("HierarchyIndex — root main session tracking (D-03, D-08)", () => {
       expect(diskIndex.getRootMain("ses_grandchild")).toBe("ses_main")
     })
 
+    it("should resolve nested children stored only under root session-continuity.json", async () => {
+      const mainDir = resolve(tempRoot, ".hivemind", "session-tracker", "ses_main")
+      await mkdir(mainDir, { recursive: true })
+      await writeFile(
+        resolve(mainDir, "session-continuity.json"),
+        JSON.stringify({
+          version: "2.0",
+          sessionID: "ses_main",
+          lastUpdated: new Date().toISOString(),
+          hierarchy: {
+            root: "ses_main",
+            children: {
+              ses_child: {
+                file: "ses_child.json",
+                depth: 1,
+                status: "active",
+                delegatedBy: "unknown",
+                children: {
+                  ses_grandchild: {
+                    file: "ses_grandchild.json",
+                    depth: 2,
+                    status: "active",
+                    delegatedBy: "unknown",
+                    children: {},
+                  },
+                },
+              },
+            },
+          },
+          turnCount: 0,
+          toolSummary: {},
+        }),
+      )
+
+      const diskIndex = new HierarchyIndex({ projectRoot: tempRoot })
+      await diskIndex.buildFromDisk()
+
+      expect(diskIndex.getParent("ses_child")).toBe("ses_main")
+      expect(diskIndex.getParent("ses_grandchild")).toBe("ses_child")
+      expect(diskIndex.getRootMain("ses_grandchild")).toBe("ses_main")
+    })
+
     it("should correctly classify main sessions (not children) as having no rootMain", async () => {
       await createContinuityJson(tempRoot, "ses_main", {
         ses_child: { file: "ses_child.json", depth: 1, delegatedBy: "unknown" },

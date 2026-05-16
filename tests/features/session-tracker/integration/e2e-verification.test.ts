@@ -125,6 +125,187 @@ describe("Session tracker E2E verification (all 13 REQs)", () => {
       const parentFiles = await readdir(sessionDir(testRoot, parentID))
       expect(parentFiles).toContain("ses_childE2E001ab.json")
     })
+
+    it("child session tool events write to child json journey without creating a subdir", async () => {
+      const parentID = testSid("e2e03parent2ab")
+      const childID = "ses_childE2E002ab"
+      vi.mocked(getSession).mockImplementation(async (_client, sessionID) => ({
+        id: sessionID,
+        parentID: sessionID === childID ? parentID : null,
+        title: "Test",
+        time: { created: Date.now(), updated: Date.now() },
+      }) as never)
+
+      const tracker = new SessionTracker({
+        client: { session: { get: vi.fn(), messages: vi.fn(), list: vi.fn() } } as never,
+        projectRoot: testRoot,
+      })
+      await tracker.initialize()
+
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: parentID, event: {},
+      })
+      await tracker.handleToolExecuteAfter(
+        {
+          tool: "task",
+          sessionID: parentID,
+          callID: "call_child_json",
+          args: { description: "Test", subagent_type: "test" },
+        },
+        { title: "Task", output: `task_id: ${childID}`, metadata: {} },
+      )
+
+      await tracker.handleToolExecuteAfter(
+        {
+          tool: "read",
+          sessionID: childID,
+          callID: "call_child_read",
+          args: { filePath: "/tmp/example.ts" },
+        },
+        { title: "Read", output: "ignored content", metadata: {} },
+      )
+
+      expect(existsSync(sessionDir(testRoot, childID))).toBe(false)
+      const childJson = JSON.parse(
+        await readFile(join(sessionDir(testRoot, parentID), `${childID}.json`), "utf-8"),
+      ) as { journey?: Array<{ type: string; metadata?: Record<string, unknown> }> }
+      expect(childJson.journey).toEqual([
+        expect.objectContaining({
+          type: "tool_call",
+          metadata: expect.objectContaining({
+            tool: "read",
+            callID: "call_child_read",
+            input: { filePath: "/tmp/example.ts" },
+          }),
+        }),
+      ])
+    })
+
+    it("L1 task delegation writes L2 json under root main without child subdirs", async () => {
+      const rootID = testSid("e2e03root3abcd")
+      const l1ID = "ses_childE2E003ab"
+      const l2ID = "ses_childE2E004ab"
+      vi.mocked(getSession).mockImplementation(async (_client, sessionID) => ({
+        id: sessionID,
+        parentID: sessionID === l1ID ? rootID : sessionID === l2ID ? l1ID : null,
+        title: "Test",
+        time: { created: Date.now(), updated: Date.now() },
+      }) as never)
+
+      const tracker = new SessionTracker({
+        client: { session: { get: vi.fn(), messages: vi.fn(), list: vi.fn() } } as never,
+        projectRoot: testRoot,
+      })
+      await tracker.initialize()
+
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: rootID, event: {},
+      })
+      await tracker.handleToolExecuteAfter(
+        {
+          tool: "task",
+          sessionID: rootID,
+          callID: "call_l1",
+          args: { description: "Create L1", subagent_type: "test-l1" },
+        },
+        { title: "Task", output: `task_id: ${l1ID}`, metadata: {} },
+      )
+      await tracker.handleToolExecuteAfter(
+        {
+          tool: "task",
+          sessionID: l1ID,
+          callID: "call_l2",
+          args: { description: "Create L2", subagent_type: "test-l2" },
+        },
+        { title: "Task", output: `task_id: ${l2ID}`, metadata: {} },
+      )
+
+      expect(existsSync(sessionDir(testRoot, l1ID))).toBe(false)
+      expect(existsSync(sessionDir(testRoot, l2ID))).toBe(false)
+      const rootFiles = await readdir(sessionDir(testRoot, rootID))
+      expect(rootFiles).toContain(`${l1ID}.json`)
+      expect(rootFiles).toContain(`${l2ID}.json`)
+      const l2Json = JSON.parse(
+        await readFile(join(sessionDir(testRoot, rootID), `${l2ID}.json`), "utf-8"),
+      ) as { parentSessionID: string; delegationDepth: number }
+      expect(l2Json.parentSessionID).toBe(l1ID)
+      expect(l2Json.delegationDepth).toBe(2)
+    })
+
+    it("L2 chat messages append to root-owned child json journey without creating L1 subdir", async () => {
+      const rootID = testSid("e2e03root5abcd")
+      const l1ID = "ses_childE2E005ab"
+      const l2ID = "ses_childE2E006ab"
+      vi.mocked(getSession).mockImplementation(async (_client, sessionID) => ({
+        id: sessionID,
+        parentID: sessionID === l1ID ? rootID : sessionID === l2ID ? l1ID : null,
+        title: "Test",
+        time: { created: Date.now(), updated: Date.now() },
+      }) as never)
+
+      const tracker = new SessionTracker({
+        client: { session: { get: vi.fn(), messages: vi.fn(), list: vi.fn() } } as never,
+        projectRoot: testRoot,
+      })
+      await tracker.initialize()
+
+      await tracker.handleSessionEvent({
+        eventType: "session.created", sessionID: rootID, event: {},
+      })
+      await tracker.handleToolExecuteAfter(
+        {
+          tool: "task",
+          sessionID: rootID,
+          callID: "call_l1_message",
+          args: { description: "Create L1", subagent_type: "test-l1" },
+        },
+        { title: "Task", output: `task_id: ${l1ID}`, metadata: {} },
+      )
+      await tracker.handleToolExecuteAfter(
+        {
+          tool: "task",
+          sessionID: l1ID,
+          callID: "call_l2_message",
+          args: { description: "Create L2", subagent_type: "test-l2" },
+        },
+        { title: "Task", output: `task_id: ${l2ID}`, metadata: {} },
+      )
+
+      await tracker.handleChatMessage(
+        {
+          sessionID: l2ID,
+          agent: "test-l2",
+          model: { providerID: "test", modelID: "model" },
+        },
+        {
+          message: { role: "assistant" },
+          parts: [{ type: "text", text: "L2 completed work" }],
+        },
+      )
+
+      expect(existsSync(sessionDir(testRoot, l1ID))).toBe(false)
+      expect(existsSync(sessionDir(testRoot, l2ID))).toBe(false)
+      const l2Json = JSON.parse(
+        await readFile(join(sessionDir(testRoot, rootID), `${l2ID}.json`), "utf-8"),
+      ) as {
+        turns?: Array<{ actor: string; content: string }>
+        journey?: Array<{ type: string; content: string; metadata?: Record<string, unknown> }>
+      }
+      expect(l2Json.turns).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ actor: "test-l2", content: "L2 completed work" }),
+        ]),
+      )
+      expect(l2Json.journey).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: "assistant_message",
+            content: "L2 completed work",
+            metadata: expect.objectContaining({ actor: "test-l2" }),
+          }),
+        ]),
+      )
+    })
   })
 
   // =====================================================================
