@@ -372,12 +372,13 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 ## Current Phase Context
 
-**Active phase (2026-05-17):** CP-ST-06 — Session Tracker Root Cause Rewrite. Plan 04 COMPLETE (`9410d301`).  
+**Active phase (2026-05-17):** CP-ST-06 — Session Tracker Root Cause Rewrite. Plan 04 COMPLETE (`9410d301`). Plan 05 COMPLETE (`72eaed14`).  
 **What was delivered:**
-- `src/features/session-tracker/persistence/retry-queue.ts` — `ChildWriteRetryQueue` with exponential backoff (1s→2s→4s→8s→16s), max 5 retries, degraded persistence to `retry-degraded.json`, flush-on-init + 30s periodic interval.
-- `src/features/session-tracker/persistence/child-writer.ts` — removed `.catch(() => {})` error swallowing (RC-5), integrated retry queue, errors propagate to caller AND create retry records.
-- `src/features/session-tracker/capture/event-capture.ts` — `writeImmediateChildFile()` uses same retry/error surface, no best-effort swallow.
-- `src/features/session-tracker/types.ts` — removed "first 200 chars" truncation comment; `lastMessage` preserved in full (RC-4).
-- All tests: retry-queue 5/5 pass, child-writer 19/19 pass, typecheck clean. 27 pre-existing failures in unrelated test files verified against baseline.
+- Plan 04: `src/features/session-tracker/persistence/retry-queue.ts` — `ChildWriteRetryQueue` with exponential backoff (1s→2s→4s→8s→16s), max 5 retries, degraded persistence to `retry-degraded.json`, flush-on-init + 30s periodic interval.
+- Plan 04: `src/features/session-tracker/persistence/child-writer.ts` — removed `.catch(() => {})` error swallowing (RC-5), integrated retry queue, errors propagate to caller AND create retry records.
+- Plan 04: `src/features/session-tracker/capture/event-capture.ts` — `writeImmediateChildFile()` uses same retry/error surface, no best-effort swallow.
+- Plan 04: `src/features/session-tracker/types.ts` — removed "first 200 chars" truncation comment; `lastMessage` preserved in full (RC-4).
+- Plan 05: Rewrote 5 test files (294 insertions, 949 deletions) to match SessionRouter/classifier architecture: `ensure-session-ready-classification.test.ts` (6 tests), `index.test.ts` (9 tests), `session-tracker.test.ts` (8 tests), `pipeline.test.ts` (12 integration tests), `cleanup.test.ts` (2 tests).
+- All 397 session-tracker tests pass. Typecheck clean. 5 pre-existing failures in unrelated modules (steering-engine, hooks, plugin, tools).
 
-**Next phase:** CP-ST-06 remaining plans (if any) → CP-PTY-01 (Background Shell Control-Plane MVP).
+**Next phase:** CP-PTY-01 (Background Shell Control-Plane MVP).
