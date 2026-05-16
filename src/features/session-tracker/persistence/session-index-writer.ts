@@ -178,11 +178,15 @@ export class SessionIndexWriter {
   /**
    * Adds a child session to the hierarchy tree and writes the updated index.
    *
+   * When `parentSessionID` is provided, the child is inserted as a nested
+   * entry under the specified parent within the hierarchy tree (RC-2).
+   *
    * @param sessionID - The parent session identifier.
    * @param childSessionID - The child session identifier.
    * @param childFile - The child's `.json` filename.
    * @param depth - The delegation depth of the child.
    * @param delegatedBy - Who delegated this child (agent name).
+   * @param parentSessionID - Optional nested parent session ID for L2+ children.
    * @returns Promise that resolves when the index is updated.
    */
   async addChild(
@@ -191,6 +195,7 @@ export class SessionIndexWriter {
     childFile: string,
     depth: number,
     delegatedBy: string,
+    parentSessionID?: string,
   ): Promise<void> {
     return this.enqueueWrite(sessionID, async () => {
       const index = await this.readIndex(sessionID)
@@ -204,7 +209,20 @@ export class SessionIndexWriter {
         children: {},
       }
 
-      index.hierarchy.children[childSessionID] = entry
+      if (parentSessionID) {
+        // Insert as nested child under the specified parent (RC-2)
+        const parent = this.findChildEntry(index.hierarchy.children, parentSessionID)
+        if (parent) {
+          parent.children[childSessionID] = entry
+        } else {
+          // Fallback: top-level insertion with [Harness] warning
+          throw new Error(
+            `[Harness] SessionIndexWriter: parent "${parentSessionID}" not found in hierarchy for nested child "${childSessionID}"`,
+          )
+        }
+      } else {
+        index.hierarchy.children[childSessionID] = entry
+      }
 
       const filePath = this.getIndexPath(sessionID)
       await atomicWriteJson(filePath, index)
@@ -212,7 +230,35 @@ export class SessionIndexWriter {
   }
 
   /**
+   * Recursively finds a child entry in the hierarchy tree by session ID.
+   *
+   * Walks the nested `children` maps of each `ChildHierarchyEntry` until
+   * the target session ID is found. Returns `undefined` if not found.
+   *
+   * @param children - The current level of children to search.
+   * @param targetID - The session ID to find.
+   * @returns The matching `ChildHierarchyEntry`, or `undefined`.
+   */
+  private findChildEntry(
+    children: Record<string, ChildHierarchyEntry>,
+    targetID: string,
+  ): ChildHierarchyEntry | undefined {
+    if (children[targetID]) return children[targetID]
+    for (const child of Object.values(children)) {
+      if (child.children) {
+        const found = this.findChildEntry(child.children, targetID)
+        if (found) return found
+      }
+    }
+    return undefined
+  }
+
+  /**
    * Updates a child session's status in the index.
+   *
+   * Uses recursive lookup to find nested children (L2+) within the
+   * hierarchy tree. The full tree structure is preserved — no top-level
+   * flattening occurs (RC-2).
    *
    * @param sessionID - The parent session identifier.
    * @param childSessionID - The child session identifier.
@@ -228,7 +274,8 @@ export class SessionIndexWriter {
       const index = await this.readIndex(sessionID)
       index.lastUpdated = new Date().toISOString()
 
-      const child = index.hierarchy.children[childSessionID]
+      // Recursive lookup: search top-level and nested children
+      const child = this.findChildEntry(index.hierarchy.children, childSessionID)
       if (child) {
         child.status = status
       }
