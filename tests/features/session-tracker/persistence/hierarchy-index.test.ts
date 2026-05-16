@@ -183,11 +183,20 @@ describe("HierarchyIndex — root main session tracking (D-03, D-08)", () => {
       // so rootMain = "ses_root" → stored for ses_level1.
       // ses_level2 still has rootMain = "ses_level1".
 
-      // After both registrations:
       expect(index.getRootMain("ses_level1")).toBe("ses_root")
-      // ses_level2 was resolved to "ses_level1" (its direct parent at registration time)
-      // This is the known limitation — buildFromDisk's second pass fixes this
-      expect(index.getRootMain("ses_level2")).toBe("ses_level1")
+      expect(index.getRootMain("ses_level2")).toBe("ses_root")
+    })
+  })
+
+  describe("getDepth()", () => {
+    it("should preserve L3 delegation depth without capping at L2", () => {
+      index.registerChild("ses_root", "ses_l1")
+      index.registerChild("ses_l1", "ses_l2")
+      index.registerChild("ses_l2", "ses_l3")
+
+      expect(index.getDepth("ses_l1")).toBe(1)
+      expect(index.getDepth("ses_l2")).toBe(2)
+      expect(index.getDepth("ses_l3")).toBe(3)
     })
   })
 

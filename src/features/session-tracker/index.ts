@@ -367,7 +367,7 @@ export class SessionTracker {
       )
       const parentID = classification.parentID
 
-      if (parentID) {
+      if (parentID && this.childWriter) {
         // Child session — skip directory creation entirely.
         // Mark as bootstrapped to prevent ensureSessionReady from creating a dir.
         this.bootstrappedSessions.add(input.sessionID)

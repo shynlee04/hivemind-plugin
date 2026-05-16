@@ -122,6 +122,42 @@ describe("createChildFile", () => {
       expect(key).not.toContain("_")
     }
   })
+
+  it("merges repeated child creation without wiping existing turns and journey", async () => {
+    await writer.createChildFile(parentSessionID, childSessionID, {
+      ...baseMetadata,
+      journey: [{ timestamp: "2026-01-01T00:00:01Z", type: "tool_call", content: "Tool: read" }],
+    })
+    await writer.appendChildTurn(parentSessionID, childSessionID, {
+      turn: 1,
+      actor: "hm-l2-investigator",
+      content: "Existing child content must survive lifecycle re-create.",
+      tools: [],
+    })
+
+    await writer.createChildFile(parentSessionID, childSessionID, {
+      ...baseMetadata,
+      status: "idle",
+      mainAgent: { name: "pending", model: "" },
+      turns: [],
+      children: [],
+      journey: [],
+    })
+
+    const filePath = join(
+      projectRoot,
+      ".hivemind",
+      "session-tracker",
+      parentSessionID,
+      `${childSessionID}.json`,
+    )
+    const parsed = JSON.parse(readFileSync(filePath, "utf-8"))
+    expect(parsed.status).toBe("idle")
+    expect(parsed.turns).toHaveLength(1)
+    expect(parsed.turns[0].content).toBe("Existing child content must survive lifecycle re-create.")
+    expect(parsed.journey).toHaveLength(1)
+    expect(parsed.journey[0].content).toBe("Tool: read")
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -238,6 +274,26 @@ describe("appendChildTurn", () => {
     expect(parsed.turns).toHaveLength(2)
     expect(parsed.turns[0].turn).toBe(1)
     expect(parsed.turns[1].turn).toBe(2)
+  })
+
+  it("stores full last assistant message without truncation", async () => {
+    const longContent = "x".repeat(260)
+    await writer.appendChildTurn(parentSessionID, childSessionID, {
+      turn: 1,
+      actor: "hm-l2-reviewer",
+      content: longContent,
+      tools: [],
+    })
+
+    const filePath = join(
+      projectRoot,
+      ".hivemind",
+      "session-tracker",
+      parentSessionID,
+      `${childSessionID}.json`,
+    )
+    const parsed = JSON.parse(readFileSync(filePath, "utf-8"))
+    expect(parsed.lastMessage).toBe(longContent)
   })
 
   it("preserves tool records in appended turns", async () => {

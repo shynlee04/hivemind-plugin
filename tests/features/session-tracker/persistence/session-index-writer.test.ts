@@ -135,6 +135,37 @@ describe("SessionIndexWriter", () => {
       // Should still write (no-op update)
       expect(mockAtomicWriteJson).toHaveBeenCalledTimes(1)
     })
+
+    it("should update nested child status in root-owned hierarchy", async () => {
+      await writer.initializeIndex("ses_root1234567890")
+      await writer.addChild(
+        "ses_root1234567890",
+        "ses_l1child123456",
+        "ses_l1child123456.json",
+        1,
+        "hm-l0-orchestrator",
+      )
+      await writer.addChild(
+        "ses_root1234567890",
+        "ses_l2child123456",
+        "ses_l2child123456.json",
+        2,
+        "hm-l1-coordinator",
+        "ses_l1child123456",
+      )
+      mockAtomicWriteJson.mockClear()
+
+      await writer.updateChildStatus(
+        "ses_root1234567890",
+        "ses_l2child123456",
+        "completed",
+      )
+
+      expect(mockAtomicWriteJson).toHaveBeenCalledTimes(1)
+      const [, data] = mockAtomicWriteJson.mock.calls[0]
+      const l1 = (data as any).hierarchy.children["ses_l1child123456"]
+      expect(l1.children["ses_l2child123456"].status).toBe("completed")
+    })
   })
 
   describe("incrementTurnCount", () => {

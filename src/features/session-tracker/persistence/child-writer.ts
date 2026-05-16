@@ -123,9 +123,8 @@ export class ChildWriter {
    * Stale-queue detection runs first to auto-recover from a frozen pipeline.
    * Chains the provided function onto the end of the child's write queue
    * so that only one write per child file is in-flight at a time. Records
-   * `lastWriteTime` on success. Errors are caught silently to prevent a
-   * failed write from breaking the queue entirely. A final `.then()` ensures
-   * the promise chain always resolves to void.
+    * `lastWriteTime` on success. Failed writes are returned to callers while
+    * the stored queue is kept alive for later writes.
    *
    * @param queueKey - The queue key (`parentID/childID`).
    * @param fn - The write operation to enqueue.
@@ -137,17 +136,59 @@ export class ChildWriter {
   ): Promise<void> {
     this.detectStaleQueue(queueKey)
     const current = this.writeQueues.get(queueKey) ?? Promise.resolve()
-    const next = current
-      .then(async () => {
-        await fn()
-        this.lastWriteTimes.set(queueKey, Date.now())
-      })
-      .catch(() => {
-        // Best-effort: swallow errors to keep queue alive
-      })
-      .then(() => {})
-    this.writeQueues.set(queueKey, next)
+    const next = current.catch(() => {}).then(async () => {
+      await fn()
+      this.lastWriteTimes.set(queueKey, Date.now())
+    })
+    this.writeQueues.set(queueKey, next.catch(() => {}))
     return next
+  }
+
+  /**
+   * Reads an existing child file if it exists.
+   *
+   * @param parentSessionID - The directory-owning parent session ID.
+   * @param childSessionID - The child session identifier.
+   * @returns Existing child record, or `undefined` when no file exists.
+   */
+  private async readExistingChildFile(
+    parentSessionID: string,
+    childSessionID: string,
+  ): Promise<ChildSessionRecord | undefined> {
+    try {
+      return await this.readChildFile(parentSessionID, childSessionID)
+    } catch {
+      return undefined
+    }
+  }
+
+  /**
+   * Merges new child metadata into an existing record without losing live data.
+   *
+   * @param existing - Existing child record from disk, if any.
+   * @param metadata - New metadata to apply.
+   * @returns Merged child record safe to write back to disk.
+   */
+  private mergeChildRecord(
+    existing: ChildSessionRecord | undefined,
+    metadata: ChildSessionRecord,
+  ): ChildSessionRecord {
+    if (!existing) return metadata
+
+    const nextJourney = metadata.journey ?? []
+    const existingJourney = existing.journey ?? []
+
+    return {
+      ...existing,
+      ...metadata,
+      created: existing.created,
+      turns: metadata.turns.length > 0 ? metadata.turns : existing.turns,
+      children: Array.from(new Set([...existing.children, ...metadata.children])),
+      lastMessage: metadata.lastMessage ?? existing.lastMessage,
+      journey: nextJourney.length > 0
+        ? [...existingJourney, ...nextJourney]
+        : existingJourney,
+    }
   }
 
   /**
@@ -186,12 +227,18 @@ export class ChildWriter {
     // Resolve the correct parent directory (root main per D-03)
     const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
 
-    // Ensure the parent session subdirectory exists
-    const parentDir = safeSessionPath(this.projectRoot, writeParent, "")
-    await ensureDirectory(parentDir)
+    return this.enqueueWrite(
+      `${writeParent}/${childSessionID}`,
+      async () => {
+        const parentDir = safeSessionPath(this.projectRoot, writeParent, "")
+        await ensureDirectory(parentDir)
 
-    const filePath = this.getChildFilePath(writeParent, childSessionID)
-    await atomicWriteJson(filePath, metadata)
+        const existing = await this.readExistingChildFile(writeParent, childSessionID)
+        const merged = this.mergeChildRecord(existing, metadata)
+        const filePath = this.getChildFilePath(writeParent, childSessionID)
+        await atomicWriteJson(filePath, merged)
+      },
+    )
   }
 
   /**
@@ -248,10 +295,7 @@ export class ChildWriter {
 
         // P-04: Track last assistant message for resumption context
         if (turn.actor !== "user" && turn.content) {
-          record.lastMessage =
-            turn.content.length > 200
-              ? turn.content.slice(0, 200)
-              : turn.content
+          record.lastMessage = turn.content
         }
 
         const filePath = this.getChildFilePath(writeParent, childSessionID)
