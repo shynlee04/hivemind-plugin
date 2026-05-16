@@ -1,16 +1,16 @@
 {
-  "sessionID": "ses_1dde55216ffe14HvZ48i0as4e5",
+  "sessionID": "ses_1cf03ea7dffe3ocMc97Tbzm9IR",
   "parentSessionID": "ses_1ded410beffe5nabRgB0H1m4ft",
   "delegationDepth": 1,
   "delegatedBy": {
     "agentName": "hm-l2-investigator",
     "model": "unknown",
     "tool": "task",
-    "description": "Investigate session-tracker gate failure",
+    "description": "Audit cleanup update paths",
     "subagentType": "hm-l2-investigator"
   },
-  "created": "2026-05-13T16:10:45.857Z",
-  "updated": "2026-05-13T16:10:45.864Z",
+  "created": "2026-05-16T13:37:32.627Z",
+  "updated": "2026-05-16T13:37:32.641Z",
   "status": "active",
   "mainAgent": {
     "name": "hm-l2-investigator",
@@ -20,10 +20,10 @@
     {
       "turn": 0,
       "actor": "hm-l2-investigator",
-      "content": "Investigate session-tracker gate failure",
+      "content": "Audit cleanup update paths",
       "tools": []
     }
   ],
   "children": [],
-  "lastMessage": "Investigate session-tracker gate failure"
+  "lastMessage": "Audit cleanup update paths"
 }

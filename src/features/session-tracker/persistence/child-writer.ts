@@ -14,6 +14,7 @@ import { readFile } from "node:fs/promises"
 import { atomicWriteJson, ensureDirectory, safeSessionPath } from "./atomic-write.js"
 import type { ChildSessionRecord, Turn, JourneyEntry } from "../types.js"
 import type { HierarchyIndex } from "./hierarchy-index.js"
+import type { ChildWriteRetryQueue } from "./retry-queue.js"
 
 // ---------------------------------------------------------------------------
 // ChildWriter class
@@ -33,6 +34,12 @@ export class ChildWriter {
    * directory instead of the immediate parent (D-03).
    */
   private hierarchyIndex: HierarchyIndex | undefined
+
+  /**
+   * Retry queue for failed child writes (RC-5).
+   * Failed writes are enqueued here for automatic retry with exponential backoff.
+   */
+  private retryQueue: ChildWriteRetryQueue | undefined
 
   /**
    * Per-child serial write queues (key: `parentID/childID`).
@@ -55,10 +62,16 @@ export class ChildWriter {
    * @param deps - Injected dependencies.
    * @param deps.projectRoot - Absolute path to the project root.
    * @param deps.hierarchyIndex - Optional hierarchy index for root main resolution (D-03).
+   * @param deps.retryQueue - Optional retry queue for failed child writes (RC-5).
    */
-  constructor(deps: { projectRoot: string; hierarchyIndex?: HierarchyIndex }) {
+  constructor(deps: {
+    projectRoot: string
+    hierarchyIndex?: HierarchyIndex
+    retryQueue?: ChildWriteRetryQueue
+  }) {
     this.projectRoot = deps.projectRoot
     this.hierarchyIndex = deps.hierarchyIndex
+    this.retryQueue = deps.retryQueue
   }
 
   /**
@@ -123,22 +136,40 @@ export class ChildWriter {
    * Stale-queue detection runs first to auto-recover from a frozen pipeline.
    * Chains the provided function onto the end of the child's write queue
    * so that only one write per child file is in-flight at a time. Records
-    * `lastWriteTime` on success. Failed writes are returned to callers while
-    * the stored queue is kept alive for later writes.
+   * `lastWriteTime` on success. Failed writes are enqueued to the retry
+   * queue (RC-5) and the error is propagated to the caller.
    *
    * @param queueKey - The queue key (`parentID/childID`).
    * @param fn - The write operation to enqueue.
+   * @param retryData - Optional data for retry queue enrollment on failure.
    * @returns Promise that resolves when the enqueued write completes.
    */
   private enqueueWrite(
     queueKey: string,
     fn: () => Promise<void>,
+    retryData?: { sessionID: string; parentID: string; data: Record<string, unknown> },
   ): Promise<void> {
     this.detectStaleQueue(queueKey)
     const current = this.writeQueues.get(queueKey) ?? Promise.resolve()
-    const next = current.catch(() => {}).then(async () => {
+    const next = current.then(async () => {
       await fn()
       this.lastWriteTimes.set(queueKey, Date.now())
+    }).catch(async (err) => {
+      // RC-5: Enqueue failed write to retry queue instead of swallowing
+      if (retryData && this.retryQueue) {
+        this.retryQueue.enqueue({
+          sessionID: retryData.sessionID,
+          parentID: retryData.parentID,
+          data: retryData.data,
+          attempt: 0,
+          writeFn: async () => {
+            await fn()
+            return true
+          },
+        })
+      }
+      // Propagate error to caller
+      throw err
     })
     this.writeQueues.set(queueKey, next.catch(() => {}))
     return next
@@ -237,6 +268,11 @@ export class ChildWriter {
         const merged = this.mergeChildRecord(existing, metadata)
         const filePath = this.getChildFilePath(writeParent, childSessionID)
         await atomicWriteJson(filePath, merged)
+      },
+      {
+        sessionID: childSessionID,
+        parentID: writeParent,
+        data: metadata as unknown as Record<string, unknown>,
       },
     )
   }

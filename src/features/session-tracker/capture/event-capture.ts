@@ -429,8 +429,9 @@ export class EventCapture {
    * the root main session directory (via childWriter.resolveWriteParent,
    * per CP-ST-04-02). The hierarchy manifest is also updated (D-07).
    *
-   * Best-effort: errors are logged but never thrown — a failed immediate
-   * write does not block the session lifecycle.
+   * RC-5: Errors propagate to caller and are enqueued to the retry queue
+   * by childWriter. A failed immediate write does not block the session
+   * lifecycle but is logged for observability.
    *
    * @param sessionID - The child session ID.
    * @param parentID - The immediate parent session ID.
@@ -445,11 +446,11 @@ export class EventCapture {
   ): Promise<void> {
     if (!this.childWriter) return
 
-    try {
-      const now = new Date().toISOString()
-      const pendingEntry = this.pendingRegistry?.get(sessionID)
-      const subagentType = explicitSubagentType ?? pendingEntry?.subagentType ?? "unknown"
+    const now = new Date().toISOString()
+    const pendingEntry = this.pendingRegistry?.get(sessionID)
+    const subagentType = explicitSubagentType ?? pendingEntry?.subagentType ?? "unknown"
 
+    try {
       // Write child .json under the root main session directory
       // (childWriter.resolveWriteParent resolves to root main per CP-ST-04-02)
       await this.childWriter.createChildFile(parentID, sessionID, {
@@ -489,13 +490,14 @@ export class EventCapture {
           })
         }
       }
-    } catch {
-      // Best-effort: child .json creation failure is non-fatal
+    } catch (err) {
+      // RC-5: Log but don't swallow — childWriter already enqueued to retry queue
       void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: immediate child .json write failed for "${sessionID}"`,
+          message: `[Harness] Session tracker: immediate child .json write failed for "${sessionID}" — enqueued to retry queue`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
     }

@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1cf47cea7ffegUeZy2eLKQhrT2",
+  "parentSessionID": "ses_1cf799994ffe6ytkr60GnNCsTh",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-code-reviewer",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Code review iteration 2 for CP-ST-05",
+    "subagentType": "gsd-code-reviewer"
+  },
+  "created": "2026-05-16T12:22:14.629Z",
+  "updated": "2026-05-16T12:22:14.646Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-code-reviewer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-code-reviewer",
+      "content": "Code review iteration 2 for CP-ST-05",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Code review iteration 2 for CP-ST-05"
+}

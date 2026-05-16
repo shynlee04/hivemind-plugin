@@ -1,0 +1,26 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1cf799994ffe6ytkr60GnNCsTh",
+  "lastUpdated": "2026-05-16T12:23:06.022Z",
+  "hierarchy": {
+    "root": "ses_1cf799994ffe6ytkr60GnNCsTh",
+    "children": {
+      "ses_1cf47cea7ffegUeZy2eLKQhrT2": {
+        "file": "ses_1cf47cea7ffegUeZy2eLKQhrT2.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "execute-slash-command": 1,
+    "bash": 6,
+    "read": 4,
+    "todowrite": 2,
+    "task": 1,
+    "edit": 1
+  }
+}

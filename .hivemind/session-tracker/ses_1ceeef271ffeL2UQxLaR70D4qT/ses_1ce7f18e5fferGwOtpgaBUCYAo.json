@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1ce7f18e5fferGwOtpgaBUCYAo",
+  "parentSessionID": "ses_1ceeef271ffeL2UQxLaR70D4qT",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Resume Plan 02 LOC extraction",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-16T18:44:12.350Z",
+  "updated": "2026-05-16T18:44:12.397Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-executor",
+      "content": "Resume Plan 02 LOC extraction",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Resume Plan 02 LOC extraction"
+}

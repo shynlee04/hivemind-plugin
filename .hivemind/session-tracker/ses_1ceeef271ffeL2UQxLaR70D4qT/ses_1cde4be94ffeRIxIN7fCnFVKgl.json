@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1cde4be94ffeRIxIN7fCnFVKgl",
+  "parentSessionID": "ses_1ceeef271ffeL2UQxLaR70D4qT",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Execute CP-ST-06-03 Wave 2b",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-16T18:53:00.530Z",
+  "updated": "2026-05-16T18:53:00.549Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-executor",
+      "content": "Execute CP-ST-06-03 Wave 2b",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Execute CP-ST-06-03 Wave 2b"
+}

@@ -1,0 +1,29 @@
+{
+  "sessionID": "ses_1ce9fa2fbffeKaLfucC8aKtiNH",
+  "parentSessionID": "ses_1ceeef271ffeL2UQxLaR70D4qT",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-plan-checker",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Validate CP-ST-06 plans",
+    "subagentType": "gsd-plan-checker"
+  },
+  "created": "2026-05-16T15:29:33.212Z",
+  "updated": "2026-05-16T15:29:33.229Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-plan-checker",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 0,
+      "actor": "gsd-plan-checker",
+      "content": "Validate CP-ST-06 plans",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "lastMessage": "Validate CP-ST-06 plans"
+}
