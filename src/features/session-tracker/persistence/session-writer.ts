@@ -87,7 +87,11 @@ export class SessionWriter {
     const yamlStr = yamlStringify(frontmatter)
     const content = `---\n${yamlStr}---\n`
 
-    await atomicAppendMarkdown(filePath, content)
+    // Atomic write (overwrite, not append) — WR-03 fix
+    const tmpPath = `${filePath}.tmp.${Date.now()}`
+    await ensureDirectory(dirname(filePath))
+    await writeFile(tmpPath, content, "utf-8")
+    await rename(tmpPath, filePath)
   }
 
   /**
