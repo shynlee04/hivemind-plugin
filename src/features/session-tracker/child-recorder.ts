@@ -101,7 +101,7 @@ export class ChildRecorder {
       parentID,
       sessionID,
       {
-        turn: 0, // Computed from current turns count by appendChildTurn
+        turn: 0, // Placeholder — overwritten by ChildWriter.appendChildTurn from record.turns.length
         actor: input.agent || "unknown",
         content,
         tools: [],

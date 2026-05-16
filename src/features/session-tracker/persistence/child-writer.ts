@@ -326,6 +326,8 @@ export class ChildWriter {
       `${writeParent}/${childSessionID}`,
       async () => {
         const record = await this.readChildFile(writeParent, childSessionID)
+        // Auto-assign one-based turn number from current turns length
+        turn.turn = record.turns.length + 1
         record.turns.push(turn)
         record.updated = new Date().toISOString()
 
