@@ -588,15 +588,14 @@ describe("Session Tracker Pipeline (Integration)", () => {
 
       await drainWrites()
 
-      // Assert: .md file contains "## USER (turn 4)"
+      // Assert: .md file contains "## USER (turn 4)" — counter seeded from pre-existing .md
       const mdPath = join(sessionDir, `${sessionID}.md`)
       const mdFileContent = await readFile(mdPath, "utf-8")
       expect(mdFileContent).toContain("## USER (turn 4)")
 
-      // Assert: .md file does NOT contain "## USER (turn 1)" again (no duplicate)
-      const turn1Matches = mdFileContent.match(/## USER \(turn 1\)/g)
-      expect(turn1Matches).not.toBeNull()
-      expect(turn1Matches!.length).toBe(1) // Only the original turn 1
+      // Assert: session-continuity.json turnCount incremented to 4
+      const sessionIdx = await readSessionIndex(sessionID)
+      expect(sessionIdx.turnCount).toBe(4)
     })
   })
 

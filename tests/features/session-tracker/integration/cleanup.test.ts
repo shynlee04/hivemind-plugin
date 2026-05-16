@@ -2,10 +2,9 @@
  * Integration tests for legacy cleanup (REQ-ST-13) and session-tracker tool.
  *
  * Tests:
- * - Legacy cleanup removes .json and .md files from .hivemind/event-tracker/
- * - Legacy cleanup preserves source code directory
  * - Legacy cleanup handles missing event-tracker directory gracefully
- * - Legacy cleanup does not remove .gitkeep files
+ * - Legacy cleanup does not remove session-tracker source code directory
+ * - Legacy cleanup is a no-op (cleanup logic moved to orphan-quarantine module)
  *
  * @module tests/features/session-tracker/integration/cleanup
  */
@@ -33,63 +32,33 @@ afterAll(async () => {
 })
 
 describe("Legacy cleanup (REQ-ST-13)", () => {
-  it("removes .json and .md files from .hivemind/event-tracker/", async () => {
-    const trackerRoot = resolve(testRoot, ".hivemind", "event-tracker")
-    await mkdir(trackerRoot, { recursive: true })
-    // Create dummy state files
-    await writeFile(resolve(trackerRoot, "ses_test.json"), JSON.stringify({ test: true }), "utf-8")
-    await writeFile(resolve(trackerRoot, "ses_test.md"), "# Test file", "utf-8")
-    await writeFile(resolve(trackerRoot, "another.json"), "{}", "utf-8")
-    // Create .gitkeep (should NOT be removed)
-    await writeFile(resolve(trackerRoot, ".gitkeep"), "", "utf-8")
-
-    const tracker = new SessionTracker({
-      client: null as never,
-      projectRoot: testRoot,
-    })
-    await tracker.cleanup()
-
-    // After cleanup: .json and .md should be gone, .gitkeep should remain
-    expect(existsSync(resolve(trackerRoot, "ses_test.json"))).toBe(false)
-    expect(existsSync(resolve(trackerRoot, "ses_test.md"))).toBe(false)
-    expect(existsSync(resolve(trackerRoot, "another.json"))).toBe(false)
-    expect(existsSync(resolve(trackerRoot, ".gitkeep"))).toBe(true)
-  })
-
-  it("preserves non-contaminated files in event-tracker directory", async () => {
-    const trackerRoot = resolve(testRoot, ".hivemind", "event-tracker-preserve")
-    await mkdir(trackerRoot, { recursive: true })
-    await writeFile(resolve(trackerRoot, ".gitkeep"), "", "utf-8")
-    // A non-json, non-md file
-    await writeFile(resolve(trackerRoot, "important.txt"), "keep me", "utf-8")
-
-    const tracker = new SessionTracker({
-      client: null as never,
-      projectRoot: testRoot,
-    })
-    await tracker.cleanup()
-
-    expect(existsSync(resolve(trackerRoot, ".gitkeep"))).toBe(true)
-    expect(existsSync(resolve(trackerRoot, "important.txt"))).toBe(true)
-  })
-
   it("handles missing event-tracker directory gracefully", async () => {
     // No event-tracker directory exists
     const tracker = new SessionTracker({
       client: null as never,
       projectRoot: testRoot,
     })
-    // Should not throw
+    // Should not throw — cleanup() is a no-op after CP-ST-05 restructuring
     await expect(tracker.cleanup()).resolves.toBeUndefined()
   })
 
-  it("does not remove event-tracker source code directory", async () => {
-    // The source code at src/task-management/journal/event-tracker/ should exist.
+  it("does not remove session-tracker source code directory", async () => {
+    // The source code at src/features/session-tracker/ should exist.
     // This is a code-presence check, not a filesystem cleanup check.
     const sourceExists = existsSync(
-      resolve(process.cwd(), "src", "task-management", "journal", "event-tracker"),
+      resolve(process.cwd(), "src", "features", "session-tracker"),
     )
     expect(sourceExists).toBe(true)
+  })
+
+  it("cleanup() is a no-op after orphan-quarantine migration", async () => {
+    // After CP-ST-05, cleanup() delegates to orphan-quarantine module.
+    // The method itself is a no-op at the SessionTracker level.
+    const tracker = new SessionTracker({
+      client: null as never,
+      projectRoot: testRoot,
+    })
+    await expect(tracker.cleanup()).resolves.toBeUndefined()
   })
 
   it("handles empty event-tracker directory", async () => {
