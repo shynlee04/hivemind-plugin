@@ -471,7 +471,7 @@ describe("Session Tracker Pipeline (Integration)", () => {
 
       // Assert: first turn has delegation details
       const firstTurn = childRecord.turns[0] as Record<string, unknown>
-      expect(firstTurn.turn).toBe(0)
+      expect(firstTurn.turn).toBe(1)
       expect(firstTurn.actor).toBe("hm-l2-investigator")
     })
   })

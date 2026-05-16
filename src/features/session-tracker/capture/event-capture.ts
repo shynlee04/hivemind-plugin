@@ -223,6 +223,8 @@ export class EventCapture {
         return
       }
 
+      // parentID is null/undefined — run gates to classify session.
+
       // Gate 2: Check hierarchy index before treating as root.
       // If the SDK doesn't report parentID but the hierarchy index knows
       // this session is a child, write child .json immediately.
@@ -231,50 +233,51 @@ export class EventCapture {
         const resolvedParent = this.hierarchyIndex.getParent(sessionID)
         if (resolvedParent) {
           await this.writeImmediateChildFile(sessionID, resolvedParent)
-          return
         }
+        // Classified as child — never create root directory
+        return
+      }
 
-        // Gate 3: Check pending dispatch registry.
-        // If a parent session recently dispatched a task, the resulting
-        // child session is tracked here even before the SDK or hierarchy
-        // index knows about it.
-        if (this.pendingRegistry?.has(sessionID)) {
-          // D-06: Child session via pending registry — resolve parent
-          const pendingEntry = this.pendingRegistry.get(sessionID)
-          const effectiveParent = pendingEntry?.parentSessionID
-          if (effectiveParent) {
-            await this.writeImmediateChildFile(sessionID, effectiveParent, pendingEntry?.subagentType)
-          }
-          return
+      // Gate 3: Check pending dispatch registry.
+      // If a parent session recently dispatched a task, the resulting
+      // child session is tracked here even before the SDK or hierarchy
+      // index knows about it.
+      if (this.pendingRegistry?.has(sessionID)) {
+        // D-06: Child session via pending registry — resolve parent
+        const pendingEntry = this.pendingRegistry.get(sessionID)
+        const effectiveParent = pendingEntry?.parentSessionID
+        if (effectiveParent) {
+          await this.writeImmediateChildFile(sessionID, effectiveParent, pendingEntry?.subagentType)
         }
+        return
+      }
 
-        // All three gates passed — root main session (D-02).
-        // This is the ONLY path that creates directories for session.created.
-        void this.client.app?.log?.({
-          body: {
-            service: "session-tracker",
-            level: "info",
-            message: `[Harness] Session tracker: creating root main session directory for "${sessionID}"`,
-          },
-        })
+      // All three gates passed — root main session (D-02).
+      // This is the ONLY path that creates directories for session.created.
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "info",
+          message: `[Harness] Session tracker: creating root main session directory for "${sessionID}"`,
+        },
+      })
 
-        // Root session — create subdirectory + .md file
-        await this.sessionWriter.createSessionDir(sessionID)
-        await this.sessionWriter.initializeSessionFile(sessionID, {
+      // Root session — create subdirectory + .md file
+      await this.sessionWriter.createSessionDir(sessionID)
+      await this.sessionWriter.initializeSessionFile(sessionID, {
+        sessionID,
+        parentSessionID: null,
+        delegationDepth: 0,
+        status: "active",
+      })
+
+      // Register the session in the project-level continuity index
+      if (this.projectIndexWriter) {
+        await this.projectIndexWriter.addSession(
           sessionID,
-          parentSessionID: null,
-          delegationDepth: 0,
-          status: "active",
-        })
-
-        // Register the session in the project-level continuity index
-        if (this.projectIndexWriter) {
-          await this.projectIndexWriter.addSession(
-            sessionID,
-            `${sessionID}/`,
-            `${sessionID}.md`,
-          )
-        }
+          `${sessionID}/`,
+          `${sessionID}.md`,
+        )
       }
       // Child sessions are handled by tool-capture when task tool fires
     } catch (err) {
