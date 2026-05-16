@@ -278,7 +278,7 @@ export class SessionTracker {
         input.sessionID,
         (id) => this.getSessionSafely(id),
       )
-      const parentID = classification.parentID
+      const parentID = classification.kind === "child" ? classification.parentID : undefined
 
       if (parentID && this.childWriter) {
         // STEP 2: CHILD session — skip ensureSessionReady entirely.
@@ -365,7 +365,7 @@ export class SessionTracker {
         input.sessionID,
         (id) => this.getSessionSafely(id),
       )
-      const parentID = classification.parentID
+      const parentID = classification.kind === "child" ? classification.parentID : undefined
 
       if (parentID && this.childWriter) {
         // Child session — skip directory creation entirely.

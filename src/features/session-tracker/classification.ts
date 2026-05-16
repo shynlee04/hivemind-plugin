@@ -12,13 +12,44 @@ import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 
 /**
- * Result of session classification.
+ * Discriminated classification result — impossible to misroute.
+ *
+ * `kind: "root"` — explicit real root/main session (only from known root or SDK root turn).
+ * `kind: "child"` — classified as child with known parent.
+ * `kind: "unknownSub"` — all gates failed; defaults to child/sub treatment, never root.
+ *
+ * RC-3: `gate:"none"` is represented as `kind:"unknownSub"`, never as root/main.
+ * Only an explicit real root/main user turn may create a main session directory.
  */
-export interface ClassificationResult {
+export type ClassificationResult =
+  | { kind: "root"; gate: "sdk" | "hierarchy" | "pending" | "none" }
+  | { kind: "child"; parentID: string; gate: "sdk" | "hierarchy" | "pending" | "none" }
+  | { kind: "unknownSub"; gate: "none" }
+
+/**
+ * Legacy shape for backward compatibility during migration.
+ * Consumers that haven't been updated yet can use this helper.
+ *
+ * @deprecated Use `kind` discriminator instead.
+ */
+export interface LegacyClassificationResult {
   /** Parent session ID if classified as child, undefined if main session. */
   parentID: string | undefined
   /** How the classification was determined. */
   gate: "sdk" | "hierarchy" | "pending" | "none"
+}
+
+/**
+ * Converts a discriminated ClassificationResult to the legacy shape.
+ *
+ * @param result - The new discriminated result.
+ * @returns Legacy shape with parentID and gate.
+ */
+export function toLegacy(result: ClassificationResult): LegacyClassificationResult {
+  if (result.kind === "child") {
+    return { parentID: result.parentID, gate: result.gate }
+  }
+  return { parentID: undefined, gate: result.gate }
 }
 
 /**
@@ -64,14 +95,14 @@ export class SessionClassifier {
     }
 
     if (parentID) {
-      return { parentID, gate: "sdk" }
+      return { kind: "child", parentID, gate: "sdk" }
     }
 
     // Gate 2: Hierarchy index
     if (this.hierarchyIndex) {
       const hierarchyParent = this.hierarchyIndex.getParent(sessionID)
       if (hierarchyParent) {
-        return { parentID: hierarchyParent, gate: "hierarchy" }
+        return { kind: "child", parentID: hierarchyParent, gate: "hierarchy" }
       }
     }
 
@@ -79,11 +110,14 @@ export class SessionClassifier {
     if (this.pendingRegistry?.has(sessionID)) {
       const pendingEntry = this.pendingRegistry.get(sessionID)
       if (pendingEntry) {
-        return { parentID: pendingEntry.parentSessionID, gate: "pending" }
+        return { kind: "child", parentID: pendingEntry.parentSessionID, gate: "pending" }
       }
     }
 
-    return { parentID: undefined, gate: "none" }
+    // RC-3: All gates failed — unknown sessions become default-sub, NOT root.
+    // Only an explicit real root/main user turn may create a main session directory.
+    // This is the root-cause fix: `gate: "none"` maps to `kind: "unknownSub"`, never root.
+    return { kind: "unknownSub", gate: "none" }
   }
 
   /**
