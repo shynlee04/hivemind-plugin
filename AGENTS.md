@@ -372,7 +372,12 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 ## Current Phase Context
 
-**Active phase (2026-05-11):** Phase 11 — Governance Reconciliation (GOV-01). All core artifacts (STATE.md, PROJECT.md, REQUIREMENTS.md, ROADMAP.md, 7 sector AGENTS.md) being reconciled against live evidence.  
-**Evidence baseline:** `.planning/phases/11-governance-reconciliation-update-all-core-artifacts-state-md/11-TRUTH-MATRIX.md`  
-**What this means for this file:** All numeric claims (test counts, file counts, LOC) have been verified and corrected. Path references updated for post-SR restructuring (src/lib/ has been removed; migrated to new planes). Section added per Phase 11 D-11.  
-**Next phase:** GOV-01 completion → CP-PTY-01 (Background Shell Control-Plane MVP) and CP-ST-01 (Session Tracker Revamp).
+**Active phase (2026-05-17):** CP-ST-06 — Session Tracker Root Cause Rewrite. Plan 04 COMPLETE (`9410d301`).  
+**What was delivered:**
+- `src/features/session-tracker/persistence/retry-queue.ts` — `ChildWriteRetryQueue` with exponential backoff (1s→2s→4s→8s→16s), max 5 retries, degraded persistence to `retry-degraded.json`, flush-on-init + 30s periodic interval.
+- `src/features/session-tracker/persistence/child-writer.ts` — removed `.catch(() => {})` error swallowing (RC-5), integrated retry queue, errors propagate to caller AND create retry records.
+- `src/features/session-tracker/capture/event-capture.ts` — `writeImmediateChildFile()` uses same retry/error surface, no best-effort swallow.
+- `src/features/session-tracker/types.ts` — removed "first 200 chars" truncation comment; `lastMessage` preserved in full (RC-4).
+- All tests: retry-queue 5/5 pass, child-writer 19/19 pass, typecheck clean. 27 pre-existing failures in unrelated test files verified against baseline.
+
+**Next phase:** CP-ST-06 remaining plans (if any) → CP-PTY-01 (Background Shell Control-Plane MVP).

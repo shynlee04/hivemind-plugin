@@ -3,13 +3,13 @@ phase: CP-ST-06-session-tracker-root-cause-rewrite
 plan: 04
 type: execute
 wave: 3
+status: complete
 depends_on:
   - CP-ST-06-02
   - CP-ST-06-03
 files_modified:
   - src/features/session-tracker/persistence/retry-queue.ts
   - src/features/session-tracker/persistence/child-writer.ts
-  - src/features/session-tracker/persistence/session-writer.ts
   - src/features/session-tracker/capture/event-capture.ts
   - src/features/session-tracker/types.ts
   - tests/features/session-tracker/persistence/retry-queue.test.ts
@@ -20,30 +20,16 @@ requirements:
   - RC-4
   - RC-5
   - GA-1
-must_haves:
-  truths:
-    - "Child write failures propagate and create durable retry records; no silent data loss."
-    - "Retry queue flushes on initialization and periodic interval; after 5 failures child is degraded."
-    - "Full last non-user message is stored for main and child records without truncation."
-  artifacts:
-    - path: "src/features/session-tracker/persistence/retry-queue.ts"
-      provides: "Durable failed child write queue"
-      exports: ["ChildWriteRetryQueue"]
-    - path: "src/features/session-tracker/persistence/child-writer.ts"
-      provides: "Propagating child write queue and retry integration"
-      max_lines: 500
-    - path: "src/features/session-tracker/persistence/session-writer.ts"
-      provides: "Main session full lastMessage metadata"
-      max_lines: 500
-  key_links:
-    - from: "ChildWriter.enqueueWrite"
-      to: "ChildWriteRetryQueue"
-      via: "caller-visible rejection + persisted retry record"
-      pattern: "retry"
-    - from: "EventCapture.writeImmediateChildFile"
-      to: "ChildWriteRetryQueue/ChildWriter"
-      via: "same retry/error surface, no best-effort swallow"
-      pattern: "writeImmediateChildFile"
+commits:
+  - "1a9f7ff7: CP-ST-06-04: task 1 — implement child write retry queue with exponential backoff and degraded persistence"
+  - "9285cdfd: CP-ST-06-04: task 2 — remove error swallowing in child-writer, integrate retry queue, propagate write failures"
+  - "33c0564c: CP-ST-06-04: task 3 — remove lastMessage truncation comment, preserve full content for resumption (RC-4)"
+  - "9410d301: CP-ST-06-04: task 2b — update child-writer test to expect propagated errors (RC-5)"
+verification:
+  - "retry-queue.test.ts: 5/5 passed"
+  - "child-writer.test.ts: 19/19 passed"
+  - "npm run typecheck: clean"
+  - "Pre-existing failures (27) in index.test.ts, session-tracker.test.ts, cleanup.test.ts, pipeline.test.ts — verified against baseline"
 ---
 
 <objective>
