@@ -8,7 +8,6 @@
  * @module session-tracker/classification
  */
 
-import type { OpenCodeClient } from "../../shared/session-api.js"
 import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 
@@ -33,7 +32,6 @@ export class SessionClassifier {
    * @param deps - Injected dependencies.
    */
   constructor(deps: {
-    client: OpenCodeClient
     hierarchyIndex?: HierarchyIndex
     pendingRegistry?: PendingDispatchRegistry
   }) {

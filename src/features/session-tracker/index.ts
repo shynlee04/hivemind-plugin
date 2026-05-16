@@ -560,7 +560,6 @@ export class SessionTracker {
 
       // Create session classifier (CP-ST-05-03)
       this.classifier = new SessionClassifier({
-        client: this.client,
         hierarchyIndex: this.hierarchyIndex,
         pendingRegistry: this.pendingRegistry,
       })
