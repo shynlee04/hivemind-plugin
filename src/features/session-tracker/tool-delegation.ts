@@ -134,6 +134,13 @@ export class ToolDelegation {
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       try {
+        // Feature-detect session.children() before unsafe cast (WR-02)
+        if (
+          !this.client?.session ||
+          typeof (this.client.session as unknown as Record<string, unknown>).children !== "function"
+        ) {
+          return
+        }
         const client = this.client as OpenCodeClient & {
           session: {
             children(params: { path: { id: string } }): Promise<{
