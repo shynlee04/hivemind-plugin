@@ -8,6 +8,8 @@
  * @module session-tracker/project-continuity
  */
 
+import { readdir } from "node:fs/promises"
+import { resolve } from "node:path"
 import { isValidSessionID } from "./types.js"
 import type { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { sessionTrackerRoot } from "./initialization.js"
@@ -59,7 +61,6 @@ export class ProjectContinuityChecker {
    * Silently skips invalid or unreadable entries.
    */
   async ensureCompleteness(): Promise<void> {
-    const { readdir } = await import("node:fs/promises")
     const trackerRoot = sessionTrackerRoot(this.projectRoot)
 
     let entries: { name: string; isDirectory(): boolean; isFile(): boolean }[]
@@ -78,7 +79,6 @@ export class ProjectContinuityChecker {
       const parentID = entry.name
       if (!isValidSessionID(parentID)) continue
 
-      const { resolve } = await import("node:path")
       const parentDir = resolve(trackerRoot, parentID)
 
       // Register the main session if not already in the index
