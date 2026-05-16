@@ -222,7 +222,7 @@ export interface ChildSessionRecord {
   turns: Turn[]
   /** Nested child sessions of this child (grandchildren). */
   children: string[]
-  /** Last assistant message summary (first 200 chars), for resumption context. */
+  /** Last non-user message content, preserved in full for resumption context (RC-4). */
   lastMessage?: string
   /** Journey array — records tool calls, results, and assistant messages. CP-ST-05-01. */
   journey?: JourneyEntry[]
