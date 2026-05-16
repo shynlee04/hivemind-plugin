@@ -14,7 +14,7 @@
  */
 
 import { mkdir, readFile } from "node:fs/promises"
-import { resolve } from "node:path"
+import { dirname, resolve } from "node:path"
 import { atomicWriteJson, sessionTrackerRoot } from "./atomic-write.js"
 
 // ---------------------------------------------------------------------------
@@ -306,7 +306,7 @@ export class ChildWriteRetryQueue {
       const degradedPath = resolve(trackerRoot, "retry-degraded.json")
 
       // Ensure directory exists
-      await mkdir(degradedPath.replace(/\/[^/]+$/, ""), { recursive: true })
+      await mkdir(dirname(degradedPath), { recursive: true })
 
       // Read existing records
       let existing: RetryRecord[] = []
