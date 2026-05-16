@@ -152,11 +152,6 @@ export class PendingDispatchRegistry {
     this.cleanupStale()
     if (this.dispatches.has(sessionID)) return true
     if (this.dispatches.has(`call:${sessionID}`)) return true
-    // D-04: Reverse lookup — if ANY parent has pending dispatches,
-    // conservatively return true. False positives are safe (child
-    // incorrectly classified as child skips directory creation).
-    // False negatives create orphan directories (the bug we're fixing).
-    if (this.byParent.size > 0) return true
     return false
   }
 

@@ -1,9 +1,9 @@
 /**
  * PendingDispatchRegistry tests — parent-indexed reverse lookup (D-04).
  *
- * Validates that has() returns true for child sessions when ANY parent has
- * pending dispatch entries (broad classification). False positives are safe;
- * false negatives create orphan directories (the bug being fixed).
+ * Validates that has() returns true ONLY for the specific sessionID or
+ * callID key — not for arbitrary sessions. False positives from the old
+ * byParent fallback caused all sessions to be misclassified as children.
  *
  * @module tests/features/session-tracker/persistence/pending-dispatch-registry
  */
@@ -19,7 +19,7 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
   })
 
   describe("add() with parent-indexed byParent map", () => {
-    it("should index entry by parentSessionID in the byParent reverse map", () => {
+    it("should index entry by callID key in the dispatches map", () => {
       const entry = {
         parentSessionID: "ses_parent123",
         callID: "call_abc",
@@ -32,10 +32,14 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
       // Entry should be stored by callID key
       expect(registry.get("call:call_abc")).toEqual(entry)
 
-      // byParent reverse index should exist (exposed via has() behavior)
-      // Since ANY pending entry means has() should return true for all sessions,
-      // we verify via the observable behavior: has() on any session returns true
-      expect(registry.has("ses_any_session")).toBe(true)
+      // has() should return true for the callID key
+      expect(registry.has("call:call_abc")).toBe(true)
+
+      // has() should return false for unrelated session IDs (CR-02 fix)
+      expect(registry.has("ses_any_session")).toBe(false)
+
+      // But size reflects the entry
+      expect(registry.size).toBe(1)
     })
 
     it("should index multiple entries under different parents independently", () => {
@@ -53,13 +57,20 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
         timestamp: Date.now(),
       })
 
-      // Both entries should be present — has() returns true for any session
-      expect(registry.has("ses_child_unknown")).toBe(true)
+      // Each callID key should be findable
+      expect(registry.has("call:call_1")).toBe(true)
+      expect(registry.has("call:call_2")).toBe(true)
+
+      // Unknown session IDs should NOT match (CR-02 fix)
+      expect(registry.has("ses_child_unknown")).toBe(false)
+
+      // Size reflects both entries
+      expect(registry.size).toBe(2)
     })
   })
 
   describe("has() — Gate 3 classification", () => {
-    it("should return true for any childSessionID when ANY pending dispatch exists", () => {
+    it("should return false for unknown childSessionID when only callID entries exist", () => {
       registry.add({
         parentSessionID: "ses_parent_main",
         callID: "call_xyz",
@@ -67,12 +78,14 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
         timestamp: Date.now(),
       })
 
-      // The child session ID is unknown at add() time — that's the whole point.
-      // When session.created fires, we get ses_child_12345 but the registry
-      // was keyed by call:call_xyz. The fixed has() should still return true.
-      expect(registry.has("ses_child_12345")).toBe(true)
-      expect(registry.has("ses_another_child")).toBe(true)
-      expect(registry.has("ses_random_session")).toBe(true)
+      // The child session ID is unknown at add() time.
+      // has() should NOT return true for arbitrary sessions (CR-02 fix).
+      expect(registry.has("ses_child_12345")).toBe(false)
+      expect(registry.has("ses_another_child")).toBe(false)
+      expect(registry.has("ses_random_session")).toBe(false)
+
+      // But the callID key should work
+      expect(registry.has("call:call_xyz")).toBe(true)
     })
 
     it("should return false when no pending dispatches exist (registry empty)", () => {
@@ -90,10 +103,11 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
       registry.add(staleEntry)
 
       // has() auto-cleans stale entries before checking
+      expect(registry.has("call:call_stale")).toBe(false)
       expect(registry.has("ses_any_child")).toBe(false)
     })
 
-    it("should return true when mix of stale and fresh entries exist", () => {
+    it("should return true for callID key when fresh entries exist", () => {
       registry.add({
         parentSessionID: "ses_parent_old",
         callID: "call_stale",
@@ -108,8 +122,12 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
         timestamp: Date.now(),
       })
 
-      // One fresh entry → has() returns true
-      expect(registry.has("ses_child_unknown")).toBe(true)
+      // Fresh callID key should be findable
+      expect(registry.has("call:call_fresh")).toBe(true)
+      // Stale callID key should be cleaned
+      expect(registry.has("call:call_stale")).toBe(false)
+      // Unknown session should NOT match
+      expect(registry.has("ses_child_unknown")).toBe(false)
       // Size should reflect only the fresh entry
       expect(registry.size).toBe(1)
     })
@@ -124,13 +142,15 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
       registry.add(entry)
       registry.updateWithChildID("call_bridge", "ses_child_456")
 
-      // Now has() should work via direct childID lookup too
+      // has() should work via direct childID lookup
       expect(registry.has("ses_child_456")).toBe(true)
+      // callID key is deleted by updateWithChildID (re-keyed to childID)
+      expect(registry.has("call:call_bridge")).toBe(false)
     })
   })
 
   describe("removeByCallID() — byParent cleanup", () => {
-    it("should remove entry from byParent index when callID is removed", () => {
+    it("should remove entry from dispatches when callID is removed", () => {
       registry.add({
         parentSessionID: "ses_parent",
         callID: "call_to_remove",
@@ -145,18 +165,23 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
         timestamp: Date.now(),
       })
 
-      // Before removal: has() returns true (entries exist)
-      expect(registry.has("ses_any")).toBe(true)
+      // Before removal: both callIDs exist
+      expect(registry.has("call:call_to_remove")).toBe(true)
+      expect(registry.has("call:call_keep")).toBe(true)
+      expect(registry.size).toBe(2)
 
       registry.removeByCallID("call_to_remove")
 
-      // After removal: still true (one entry remains)
-      expect(registry.has("ses_any")).toBe(true)
+      // After removal: only one remains
+      expect(registry.has("call:call_to_remove")).toBe(false)
+      expect(registry.has("call:call_keep")).toBe(true)
+      expect(registry.size).toBe(1)
 
       registry.removeByCallID("call_keep")
 
-      // After all removed: false (no entries)
-      expect(registry.has("ses_any")).toBe(false)
+      // After all removed: empty
+      expect(registry.has("call:call_keep")).toBe(false)
+      expect(registry.size).toBe(0)
     })
 
     it("should handle removing a non-existent callID gracefully", () => {
@@ -164,12 +189,12 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
       registry.removeByCallID("call_nonexistent")
 
       // Registry should still be empty
-      expect(registry.has("ses_any")).toBe(false)
+      expect(registry.size).toBe(0)
     })
   })
 
   describe("updateWithChildID() — preserves parent in byParent index", () => {
-    it("should preserve byParent entry after re-keying from callID to childID", () => {
+    it("should preserve entry after re-keying from callID to childID", () => {
       const entry = {
         parentSessionID: "ses_parent_rekey",
         callID: "call_rekey",
@@ -182,13 +207,11 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
 
       // The child session should be directly findable
       expect(registry.has("ses_child_999")).toBe(true)
-
-      // And the child's parent still has pending entries — has() is broad
     })
   })
 
   describe("cleanupStale() — byParent cleanup", () => {
-    it("should remove stale entries from byParent index", () => {
+    it("should remove stale entries from dispatches map", () => {
       registry.add({
         parentSessionID: "ses_parent_stale",
         callID: "call_old1",
@@ -204,7 +227,8 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
       })
 
       // Both entries stale → has() should return false (all cleaned up)
-      expect(registry.has("ses_any")).toBe(false)
+      expect(registry.has("call:call_old1")).toBe(false)
+      expect(registry.has("call:call_old2")).toBe(false)
       expect(registry.size).toBe(0)
     })
   })
@@ -218,12 +242,43 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
         timestamp: Date.now(),
       })
 
-      expect(registry.has("ses_any")).toBe(true)
+      expect(registry.has("call:call_clear")).toBe(true)
+      expect(registry.size).toBe(1)
 
       registry.clear()
 
-      expect(registry.has("ses_any")).toBe(false)
+      expect(registry.has("call:call_clear")).toBe(false)
       expect(registry.size).toBe(0)
+    })
+  })
+
+  describe("getAnyActiveEntry() — byParent-based retrieval", () => {
+    it("should return an active entry when byParent has entries", () => {
+      registry.add({
+        parentSessionID: "ses_parent_active",
+        callID: "call_active",
+        subagentType: "hm-l2-researcher",
+        timestamp: Date.now(),
+      })
+
+      const entry = registry.getAnyActiveEntry()
+      expect(entry).toBeDefined()
+      expect(entry?.subagentType).toBe("hm-l2-researcher")
+    })
+
+    it("should return undefined when byParent is empty", () => {
+      expect(registry.getAnyActiveEntry()).toBeUndefined()
+    })
+
+    it("should return undefined when all entries are stale", () => {
+      registry.add({
+        parentSessionID: "ses_parent_stale",
+        callID: "call_stale_any",
+        subagentType: "hm-l2-researcher",
+        timestamp: Date.now() - 31_000,
+      })
+
+      expect(registry.getAnyActiveEntry()).toBeUndefined()
     })
   })
 })
