@@ -59,7 +59,7 @@ export function createSessionClassificationHook(
 
         deps.pendingRegistry.add({
           parentSessionID: deps.parentSessionID,
-          callID: `pretooluse-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          callID: `pretooluse-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
           subagentType,
           timestamp: Date.now(),
           delegationDepth,
