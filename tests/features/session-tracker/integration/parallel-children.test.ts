@@ -42,7 +42,13 @@ function makeChildRecord(overrides: Partial<ChildSessionRecord> & { sessionID: s
   return {
     parentSessionID: PARENT_SESSION,
     delegationDepth: 1,
-    delegatedBy: { type: "task", callID: `call_${overrides.sessionID}` },
+    delegatedBy: {
+      agentName: "test-agent",
+      model: "test-model",
+      tool: "task",
+      description: `Test delegation for ${overrides.sessionID}`,
+      subagentType: "test-subagent",
+    },
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     status: "active",
@@ -126,10 +132,12 @@ describe("Parallel children safety (GA-5)", () => {
       // Concurrently append turns to each child
       await Promise.all(
         CHILDREN.map((childID, index) =>
-          childWriter.appendChildTurn(PARENT_SESSION, childID, {
-            actor: "assistant",
-            content: `Turn for ${childID} #${index}`,
-          }),
+           childWriter.appendChildTurn(PARENT_SESSION, childID, {
+             turn: index + 1,
+             actor: "assistant",
+             content: `Turn for ${childID} #${index}`,
+             tools: [],
+           }),
         ),
       )
 
