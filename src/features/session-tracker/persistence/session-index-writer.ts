@@ -115,8 +115,12 @@ export class SessionIndexWriter {
         await fn()
         this.lastWriteTimes.set(sessionID, Date.now())
       })
-      .catch(() => {
-        // Best-effort: swallow errors to keep queue alive
+      .catch((err) => {
+        // Best-effort: keep queue alive but log the error for observability (GA-1)
+        console.error(
+          `[Harness] SessionIndexWriter: write queue error for session ${sessionID}`,
+          err instanceof Error ? err.message : String(err),
+        )
       })
       .then(() => {})
     this.writeQueues.set(sessionID, next)
