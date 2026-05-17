@@ -228,3 +228,23 @@ task_id: ses_1ca630c4dffehtNOLgpruA0P3Y
 }
 ```
 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_L7lVUylhlsi01ORdm6aiDENb"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_57Mzmd9783xNNcvET2yc61F3"
+}
+```
+
