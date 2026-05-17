@@ -1,3 +1,5 @@
+import type { DelegationResult, DelegationStatus } from "../delegation/types.js"
+
 export type CompletionSignal = "idle" | "error" | "deleted" | "timeout" | "cancelled"
 
 export type CompletionResult = {
@@ -11,6 +13,13 @@ type Watcher = {
   timeoutId: ReturnType<typeof setTimeout>
 }
 
+type DualSignalWatcher = {
+  callback: (result: DelegationResult) => void
+  fired: boolean
+  gotCompletionEvent: boolean
+  terminalStatus?: DelegationStatus
+}
+
 const TERMINAL_EVENTS: Record<string, CompletionSignal> = {
   "session.idle": "idle",
   "session.error": "error",
@@ -20,6 +29,7 @@ const TERMINAL_EVENTS: Record<string, CompletionSignal> = {
 export class CompletionDetector {
   private watchers = new Map<string, Watcher>()
   private cachedResults = new Map<string, CompletionResult>()
+  private dualSignalWatchers = new Map<string, DualSignalWatcher>()
   private messageCounts = new Map<string, number>()
   private stabilityTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
@@ -69,6 +79,47 @@ export class CompletionDetector {
 
       this.watchers.set(sessionID, { resolve, timeoutId })
     })
+  }
+
+  /**
+   * Watches a WaiterModel delegation until both native completion and terminal status signals arrive.
+   *
+   * @param delegationId - Delegation record identifier used by the coordination layer
+   * @param childSessionId - Child session associated with the delegated native Task execution
+   * @param callback - Callback invoked exactly once after both completion signals are present
+   */
+  watchDualSignal(delegationId: string, _childSessionId: string, callback: (result: DelegationResult) => void): void {
+    this.dualSignalWatchers.set(delegationId, {
+      callback,
+      fired: false,
+      gotCompletionEvent: false,
+    })
+  }
+
+  /** Marks that native Task completion was observed for a delegation. */
+  signalCompletionEvent(delegationId: string): void {
+    const watcher = this.dualSignalWatchers.get(delegationId)
+    if (!watcher) return
+    watcher.gotCompletionEvent = true
+    this.fireDualSignalIfReady(delegationId, watcher)
+  }
+
+  /** Marks the latest lifecycle status for a delegation, completing only for terminal statuses. */
+  signalTerminalStatus(delegationId: string, status: DelegationStatus): void {
+    const watcher = this.dualSignalWatchers.get(delegationId)
+    if (!watcher || !this.isTerminalStatus(status)) return
+    watcher.terminalStatus = status
+    this.fireDualSignalIfReady(delegationId, watcher)
+  }
+
+  /** Clears standard and WaiterModel completion state for the provided watcher key. */
+  unwatch(key: string): void {
+    const watcher = this.watchers.get(key)
+    if (watcher) {
+      clearTimeout(watcher.timeoutId)
+      this.watchers.delete(key)
+    }
+    this.dualSignalWatchers.delete(key)
   }
 
   /**
@@ -153,5 +204,15 @@ export class CompletionDetector {
       this.stabilityTimers.delete(sessionID)
     }
     this.messageCounts.delete(sessionID)
+  }
+
+  private fireDualSignalIfReady(delegationId: string, watcher: DualSignalWatcher): void {
+    if (watcher.fired || !watcher.gotCompletionEvent || !watcher.terminalStatus) return
+    watcher.fired = true
+    watcher.callback({ delegationId, status: watcher.terminalStatus })
+  }
+
+  private isTerminalStatus(status: DelegationStatus): boolean {
+    return status === "completed" || status === "error" || status === "timeout"
   }
 }
