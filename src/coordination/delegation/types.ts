@@ -1,13 +1,3 @@
-// ---------------------------------------------------------------------------
-// Delegation types (Phase 14) — WaiterModel + Dual-Signal Architecture
-// ---------------------------------------------------------------------------
-// Extracted from types.ts to maintain the 500 LOC module limit.
-// Re-exported from types.ts for backward compatibility — existing imports unchanged.
-//
-// Architecture: D-02 (always-background WaiterModel), D-04 (dual-signal completion),
-// D-13 (no fixed timeouts, safety ceiling only), D-14 (separate status tool)
-// ---------------------------------------------------------------------------
-
 export type DelegationStatus =
   | "dispatched"  // Just dispatched, child session created and prompted
   | "running"     // Child session processing, dual-signal monitoring active
@@ -90,11 +80,9 @@ export type DelegationNotificationType = "success" | "failure" | "progress" | "t
 /** Escalation levels used by progressive delegation monitoring. */
 export type EscalationLevel = "WARN" | "NUDGE" | "ALERT" | "TERMINATE"
 
-/** Progressive polling cadence in seconds. */
 export const POLLING_CADENCE = [30, 45, 60, 90, 120, 180] as const
 export type PollingCadence = typeof POLLING_CADENCE
 
-/** Escalation thresholds in seconds. */
 export const ESCALATION_THRESHOLDS = [60, 120, 180, 300] as const
 export type EscalationThresholds = typeof ESCALATION_THRESHOLDS
 
@@ -130,14 +118,8 @@ export type CommandDelegationParams = {
   safetyCeilingMs?: number
 }
 
-/** Safety ceiling — MAX runtime, not a deadline. Tasks may complete faster. */
 export const DEFAULT_SAFETY_CEILING_MS = 30 * 60 * 1000 // 30 minutes
-/** Maximum delegation nesting depth (default: 3, overridable via RuntimePolicy) */
 export const MAX_DELEGATION_DEPTH = 3
-
-// ---------------------------------------------------------------------------
-// Phase 16.2: Grace period, adaptive polling, and nesting depth constants
-// ---------------------------------------------------------------------------
 
 /** Grace period before in-memory cleanup of terminal delegations (10 minutes) */
 export const TASK_CLEANUP_DELAY_MS = 10 * 60 * 1000
@@ -146,24 +128,22 @@ export const MAX_DELEGATIONS_BEFORE_PRUNE = 50
 /** Max age for batch pruning of terminal delegations (30 minutes) */
 export const DEFAULT_PRUNE_MAX_AGE_MS = 30 * 60 * 1000
 
-/** Adaptive polling: interval when child is actively producing messages */
+/** Active child message polling interval. */
 export const POLL_INTERVAL_ACTIVE_MS = 2000
-/** Adaptive polling: interval when child is stable for < 30s */
+/** Base stable child polling interval. */
 export const POLL_INTERVAL_BASE_MS = 5000
-/** Adaptive polling: interval when child is idle for 30s–5min */
+/** Idle child polling interval. */
 export const POLL_INTERVAL_IDLE_MS = 10000
-/** Adaptive polling: interval when child is deeply idle (> 5min) */
+/** Deep-idle child polling interval. */
 export const POLL_INTERVAL_DEEP_IDLE_MS = 30000
 
-/** Minimum time a delegation must run before fast-completion deferral expires */
+/** Minimum runtime before fast-completion deferral expires. */
 export const MIN_IDLE_TIME_MS = 5000
-/** Activity-based stale timeout (45 minutes) — NOT a fixed deadline */
+/** Activity-based stale timeout (45 minutes) — NOT a fixed deadline. */
 export const DEFAULT_STALE_TIMEOUT_MS = 45 * 60 * 1000
-/** Minimum elapsed time since last message change before stability is declared */
+/** Minimum elapsed time since last message change before stability. */
 export const MIN_STABILITY_TIME_MS = 10000
-/** Number of consecutive stable polls required to confirm completion */
+/** Number of stable polls required to confirm completion. */
 export const STABLE_POLLS_REQUIRED = 3
-/** @deprecated Use STABLE_POLLS_REQUIRED instead */
 export const STABILITY_THRESHOLD = STABLE_POLLS_REQUIRED
-/** @deprecated Use adaptive interval calculation instead */
 export const STABILITY_POLL_INTERVAL_MS = POLL_INTERVAL_BASE_MS
