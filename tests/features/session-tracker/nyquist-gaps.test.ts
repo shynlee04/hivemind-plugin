@@ -99,7 +99,7 @@ describe("AC-RC3-02: SessionRouter route decisions", () => {
     await rm(testRoot, { recursive: true, force: true }).catch(() => {})
   })
 
-  it("routes session to 'main' ONLY when SDK parentID is null/undefined AND no other gate triggers", async () => {
+  it("routes session to 'main' when SDK identifies it as root and no child gate triggers", async () => {
     const classifier = new SessionClassifier({
       hierarchyIndex: undefined,
       pendingRegistry: undefined,
@@ -112,10 +112,7 @@ describe("AC-RC3-02: SessionRouter route decisions", () => {
 
     const decision = await router.route("ses_potential_main")
 
-    // With no parentID and no other gates, classifier returns kind:"unknownSub"
-    // Router maps unknownSub → route:"unknownSub", NOT route:"main"
-    // This is the RC-3 root-cause fix
-    expect(decision.route).toBe("unknownSub")
+    expect(decision.route).toBe("main")
   })
 
   it("routes session to 'child' when SDK reports a valid parentID", async () => {

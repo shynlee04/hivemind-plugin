@@ -120,7 +120,7 @@ export class SessionWriter {
     content: string,
   ): Promise<void> {
     const filePath = this.getSessionFilePath(sessionID)
-    const section = `## USER (turn ${turnNumber})\n\n${content}\n`
+    const section = `## USER (turn ${turnNumber})\n\n**source:** real-human\n\n${content}\n`
     await atomicAppendMarkdown(filePath, section)
   }
 

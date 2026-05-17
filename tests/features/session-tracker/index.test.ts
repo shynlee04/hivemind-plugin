@@ -210,7 +210,7 @@ describe("ensureSessionReady() — root-only directory creation (D-02)", () => {
     ;(tracker as any).ensureChildRoute = vi.fn()
   })
 
-  it("should bootstrap main session (all gates fail)", async () => {
+  it("should bootstrap main session when router classifies it as main", async () => {
     mockRoute.mockResolvedValue({ route: "main" })
 
     await tracker.handleChatMessage(

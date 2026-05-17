@@ -91,6 +91,52 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     expect(content).toContain("real compact context")
   })
 
+  it("captures the first real-human prompt when SDK identifies a new root before session.created", async () => {
+    const sessionID = "ses_first_real_human_root"
+    const tracker = new SessionTracker({
+      client: {
+        app: { log: vi.fn() },
+        session: { get: mockGetSession, messages: vi.fn().mockResolvedValue([]), list: vi.fn().mockResolvedValue([]) },
+      } as never,
+      projectRoot,
+    })
+    mockGetSession.mockResolvedValue({ id: sessionID, parentID: null } as never)
+
+    await tracker.initialize()
+    await tracker.handleChatMessage(
+      { sessionID, messageID: "msg_real_human_1", variant: "user" },
+      { message: { role: "user" }, parts: [{ type: "text", text: "real human opening prompt must not disappear" }] },
+    )
+
+    const content = await readFile(
+      join(projectRoot, ".hivemind", "session-tracker", sessionID, `${sessionID}.md`),
+      "utf-8",
+    )
+    expect(content).toContain("## USER (turn 1)")
+    expect(content).toContain("**source:** real-human")
+    expect(content).toContain("real human opening prompt must not disappear")
+  })
+
+  it("does not treat incomplete SDK session objects as root evidence", async () => {
+    const sessionID = "ses_incomplete_sdk_not_root"
+    const tracker = new SessionTracker({
+      client: {
+        app: { log: vi.fn() },
+        session: { get: mockGetSession, messages: vi.fn().mockResolvedValue([]), list: vi.fn().mockResolvedValue([]) },
+      } as never,
+      projectRoot,
+    })
+    mockGetSession.mockResolvedValue({ id: sessionID } as never)
+
+    await tracker.initialize()
+    await tracker.handleChatMessage(
+      { sessionID, messageID: "msg_incomplete_sdk", variant: "user" },
+      { message: { role: "user" }, parts: [{ type: "text", text: "must not bootstrap from incomplete SDK data" }] },
+    )
+
+    expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", sessionID))).toBe(false)
+  })
+
   it("preserves full session.compacted payload in main session markdown", async () => {
     const writer = new SessionWriter({ projectRoot })
     const sessionID = "ses_compact_main_payload"

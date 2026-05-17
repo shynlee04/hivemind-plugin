@@ -2,13 +2,14 @@
  * Integration tests for default→sub (child) session classification.
  *
  * RC-3: Verifies the three-gate classification chain correctly identifies
- * child sessions and falls back to main when no gate triggers.
+ * child sessions, SDK-confirmed roots, and unknown sessions.
  *
- * These tests assert behavior that requires source fixes (TDD RED):
+ * These tests assert the current routing contract:
  * - Gate 1 (SDK parentID) should detect child when SDK reports parentID
  * - Gate 2 (HierarchyIndex) should detect child when registered in hierarchy
  * - Gate 3 (PendingDispatchRegistry) should detect child when pending entry exists
- * - All gates fail → classification result is main (gate: "none")
+ * - SDK root metadata → root (gate: "sdk")
+ * - SDK failure + no gates → unknownSub (gate: "none")
  *
  * @module tests/features/session-tracker/integration/default-sub
  */
@@ -58,7 +59,7 @@ function mockGetSessionFails() {
 }
 
 // ---------------------------------------------------------------------------
-// Tests — TDD RED (expect failures until source is fixed)
+// Tests
 // ---------------------------------------------------------------------------
 
 describe("Default→Sub classification (RC-3)", () => {
@@ -92,7 +93,7 @@ describe("Default→Sub classification (RC-3)", () => {
       expect(result.gate).toBe("sdk")
     })
 
-    it("falls through to next gate when SDK reports null parentID", async () => {
+    it("classifies session as root when SDK reports null parentID and no child gate triggers", async () => {
       const classifier = new SessionClassifier({
         hierarchyIndex: undefined,
         pendingRegistry: undefined,
@@ -103,9 +104,8 @@ describe("Default→Sub classification (RC-3)", () => {
         mockGetSessionSafely(null),
       )
 
-      // No hierarchy or pending → should be "none" (main)
-      expect(result.parentID).toBeUndefined()
-      expect(result.gate).toBe("none")
+      expect(result.kind).toBe("root")
+      expect(result.gate).toBe("sdk")
     })
   })
 
@@ -143,8 +143,8 @@ describe("Default→Sub classification (RC-3)", () => {
         mockGetSessionSafely(null),
       )
 
-      expect(result.parentID).toBeUndefined()
-      expect(result.gate).toBe("none")
+      expect(result.kind).toBe("root")
+      expect(result.gate).toBe("sdk")
     })
   })
 
@@ -175,7 +175,7 @@ describe("Default→Sub classification (RC-3)", () => {
       expect(result.gate).toBe("pending")
     })
 
-    it("returns main when pending registry has entry but no childID yet", async () => {
+    it("returns root when SDK says root and pending registry has no matching childID yet", async () => {
       const pendingRegistry = new PendingDispatchRegistry()
       // Register a call but don't resolve to child yet
       pendingRegistry.add({
@@ -196,8 +196,8 @@ describe("Default→Sub classification (RC-3)", () => {
         mockGetSessionSafely(null),
       )
 
-      expect(result.parentID).toBeUndefined()
-      expect(result.gate).toBe("none")
+      expect(result.kind).toBe("root")
+      expect(result.gate).toBe("sdk")
     })
   })
 
@@ -213,8 +213,7 @@ describe("Default→Sub classification (RC-3)", () => {
         mockGetSessionFails(),
       )
 
-      // Conservative: SDK fail → skip Gate 1 → no other gates → main
-      expect(result.parentID).toBeUndefined()
+      expect(result.kind).toBe("unknownSub")
       expect(result.gate).toBe("none")
     })
 

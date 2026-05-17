@@ -129,6 +129,7 @@ describe("appendUserTurn", () => {
     const content = readFileSync(join(dirPath, mdFile!), "utf-8")
 
     expect(content).toContain("## USER (turn 1)")
+    expect(content).toContain("**source:** real-human")
     expect(content).toContain("Hello, this is a test message.")
   })
 

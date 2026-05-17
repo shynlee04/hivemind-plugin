@@ -14,7 +14,7 @@ import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-reg
 /**
  * Discriminated classification result — impossible to misroute.
  *
- * `kind: "root"` — explicit real root/main session (only from known root or SDK root turn).
+ * `kind: "root"` — explicit real root/main session confirmed by SDK root metadata.
  * `kind: "child"` — classified as child with known parent.
  * `kind: "unknownSub"` — all gates failed; defaults to child/sub treatment, never root.
  *
@@ -22,7 +22,7 @@ import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-reg
  * Only an explicit real root/main user turn may create a main session directory.
  */
 export type ClassificationResult =
-  | { kind: "root"; gate: "sdk" | "hierarchy" | "pending" | "none" }
+  | { kind: "root"; gate: "sdk" }
   | { kind: "child"; parentID: string; gate: "sdk" | "hierarchy" | "pending" | "none" }
   | { kind: "unknownSub"; gate: "none" }
 
@@ -85,11 +85,17 @@ export class SessionClassifier {
     sessionID: string,
     getSessionSafely: (id: string) => Promise<unknown>,
   ): Promise<ClassificationResult> {
-    // Gate 1: SDK parentID
+    // Gate 1: SDK parentID. A fetched session with null/undefined parentID is
+    // a real root candidate, but hierarchy/pending child evidence below may
+    // still override it during SDK race windows.
+    let sdkReportedRoot = false
     let parentID: string | undefined
     try {
       const session = await getSessionSafely(sessionID)
-      parentID = (session as { parentID?: string } | undefined)?.parentID
+      if (session && typeof session === "object" && "parentID" in session) {
+        parentID = (session as { parentID?: string | null }).parentID ?? undefined
+        sdkReportedRoot = parentID === undefined
+      }
     } catch {
       // SDK call failed — proceed to hierarchy index fallback
     }
@@ -112,6 +118,10 @@ export class SessionClassifier {
       if (pendingEntry) {
         return { kind: "child", parentID: pendingEntry.parentSessionID, gate: "pending" }
       }
+    }
+
+    if (sdkReportedRoot) {
+      return { kind: "root", gate: "sdk" }
     }
 
     // RC-3: All gates failed — unknown sessions become default-sub, NOT root.

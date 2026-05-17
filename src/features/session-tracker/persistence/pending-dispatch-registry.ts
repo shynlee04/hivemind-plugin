@@ -79,13 +79,9 @@ export class PendingDispatchRegistry {
   /**
    * Parent-indexed reverse lookup (D-04).
    *
-   * Maps `parentSessionID → Set<callID>` so that `has(childSessionID)` can
-   * conservatively return `true` when ANY parent has pending dispatches,
-   * even when the child session ID is unknown at `add()` time.
-   *
-   * False positives are safe: child incorrectly classified as child skips
-   * directory creation. False negatives create orphan directories (the bug).
-   * Window bounded by STALE_THRESHOLD_MS (30s).
+   * Maps `parentSessionID → Set<callID>` so pending dispatches can be
+   * inspected by parent when a session.created event arrives before a real
+   * child ID is known. Direct `has(sessionID)` remains child/call-key scoped.
    */
   private byParent: Map<string, Set<string>> = new Map()
 
