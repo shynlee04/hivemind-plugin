@@ -26,6 +26,8 @@ import { HierarchyIndex } from "../../../src/features/session-tracker/persistenc
 import { HierarchyManifestWriter } from "../../../src/features/session-tracker/persistence/hierarchy-manifest.js"
 import { SessionRecovery } from "../../../src/features/session-tracker/recovery/session-recovery.js"
 import { ToolCapture } from "../../../src/features/session-tracker/capture/tool-capture.js"
+import { MessageCapture } from "../../../src/features/session-tracker/capture/message-capture.js"
+import { AgentTransform } from "../../../src/features/session-tracker/transform/agent-transform.js"
 
 vi.mock("../../../src/shared/session-api.js", () => ({
   getSession: vi.fn(),
@@ -87,6 +89,142 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     expect(content).toContain("first user turn must survive")
     expect(content).toContain("full assistant message must survive compaction and re-init")
     expect(content).toContain("real compact context")
+  })
+
+  it("preserves full session.compacted payload in main session markdown", async () => {
+    const writer = new SessionWriter({ projectRoot })
+    const sessionID = "ses_compact_main_payload"
+    const compactSummary = "compact summary line 1\ncompact summary line 2\n" + "C".repeat(5000)
+
+    await writer.createSessionDir(sessionID)
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      parentSessionID: null,
+      delegationDepth: 0,
+      status: "active",
+    })
+    mockGetSession.mockResolvedValue({ id: sessionID, parentID: null } as never)
+
+    const eventCapture = new EventCapture({
+      client: { app: { log: vi.fn() }, session: { get: mockGetSession } } as never,
+      sessionWriter: writer,
+      childWriter: new ChildWriter({ projectRoot }),
+      sessionIndexWriter: new SessionIndexWriter({ projectRoot }),
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.compacted",
+      sessionID,
+      event: { summary: compactSummary, reason: "manual-test" },
+    })
+
+    const content = await readFile(
+      join(projectRoot, ".hivemind", "session-tracker", sessionID, `${sessionID}.md`),
+      "utf-8",
+    )
+    expect(content).toContain("## COMPACTED")
+    expect(content).toContain(compactSummary)
+    expect(content).toContain("manual-test")
+  })
+
+  it("preserves L1 and L2 session.compacted payloads in child journey records", async () => {
+    const rootSessionID = "ses_compact_root_payload"
+    const l1SessionID = "ses_compact_l1_payload"
+    const l2SessionID = "ses_compact_l2_payload"
+    const hierarchyIndex = new HierarchyIndex({ projectRoot })
+    hierarchyIndex.registerChild(rootSessionID, l1SessionID)
+    hierarchyIndex.registerChild(l1SessionID, l2SessionID)
+
+    await mkdir(join(projectRoot, ".hivemind", "session-tracker", rootSessionID), { recursive: true })
+    const childWriter = new ChildWriter({ projectRoot, hierarchyIndex })
+    await childWriter.createChildFile(rootSessionID, l1SessionID, {
+      sessionID: l1SessionID,
+      parentSessionID: rootSessionID,
+      delegationDepth: 1,
+      delegatedBy: { agentName: "parent", model: "test", tool: "task", description: "l1", subagentType: "gsd-debugger" },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      status: "active",
+      mainAgent: { name: "gsd-debugger", model: "test" },
+      turns: [],
+      children: [],
+      journey: [],
+    })
+    await childWriter.createChildFile(l1SessionID, l2SessionID, {
+      sessionID: l2SessionID,
+      parentSessionID: l1SessionID,
+      delegationDepth: 2,
+      delegatedBy: { agentName: "l1", model: "test", tool: "task", description: "l2", subagentType: "gsd-debugger" },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      status: "active",
+      mainAgent: { name: "gsd-debugger", model: "test" },
+      turns: [],
+      children: [],
+      journey: [],
+    })
+
+    const eventCapture = new EventCapture({
+      client: { app: { log: vi.fn() }, session: { get: mockGetSession } } as never,
+      sessionWriter: new SessionWriter({ projectRoot }),
+      childWriter,
+      sessionIndexWriter: new SessionIndexWriter({ projectRoot }),
+      hierarchyIndex,
+    })
+
+    mockGetSession.mockImplementation(async (id: string) => {
+      if (id === l1SessionID) return { id, parentID: rootSessionID } as never
+      if (id === l2SessionID) return { id, parentID: l1SessionID } as never
+      return { id, parentID: null } as never
+    })
+
+    const l1Summary = "L1 compact summary\n" + "A".repeat(4000)
+    const l2Summary = "L2 compact summary\n" + "B".repeat(4000)
+    await eventCapture.handleSessionEvent({ eventType: "session.compacted", sessionID: l1SessionID, event: { summary: l1Summary } })
+    await eventCapture.handleSessionEvent({ eventType: "session.compacted", sessionID: l2SessionID, event: { summary: l2Summary } })
+
+    const l1Raw = await readFile(join(projectRoot, ".hivemind", "session-tracker", rootSessionID, `${l1SessionID}.json`), "utf-8")
+    const l2Raw = await readFile(join(projectRoot, ".hivemind", "session-tracker", rootSessionID, `${l2SessionID}.json`), "utf-8")
+    const l1Record = JSON.parse(l1Raw) as { journey: Array<{ type: string; content: string }> }
+    const l2Record = JSON.parse(l2Raw) as { journey: Array<{ type: string; content: string }> }
+
+    expect(l1Record.journey).toContainEqual(expect.objectContaining({ type: "session_compacted", content: expect.stringContaining(l1Summary) }))
+    expect(l2Record.journey).toContainEqual(expect.objectContaining({ type: "session_compacted", content: expect.stringContaining(l2Summary) }))
+  })
+
+  it("preserves readable boundaries for multi-part user and assistant text", async () => {
+    const sessionID = "ses_multipart_messages"
+    const writer = new SessionWriter({ projectRoot })
+    const messageCapture = new MessageCapture({
+      client: { app: { log: vi.fn() } } as never,
+      sessionWriter: writer,
+      agentTransform: new AgentTransform(),
+      projectRoot,
+      sessionIndexWriter: new SessionIndexWriter({ projectRoot }),
+    })
+
+    await writer.createSessionDir(sessionID)
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      parentSessionID: null,
+      delegationDepth: 0,
+      status: "active",
+    })
+
+    await messageCapture.handleChatMessage(
+      { sessionID },
+      { message: { role: "user" }, parts: [{ type: "text", text: "user part one" }, { type: "text", text: "user part two" }] },
+    )
+    await messageCapture.handleChatMessage(
+      { sessionID, agent: "main", model: { providerID: "test", modelID: "model" } },
+      { message: { role: "assistant" }, parts: [{ type: "text", text: "assistant part one" }, { type: "text", text: "assistant part two" }] },
+    )
+
+    const content = await readFile(join(projectRoot, ".hivemind", "session-tracker", sessionID, `${sessionID}.md`), "utf-8")
+    expect(content).toContain("user part one\nuser part two")
+    expect(content).toContain("assistant part one\nassistant part two")
+    expect(content).not.toContain("user part oneuser part two")
+    expect(content).not.toContain("assistant part oneassistant part two")
   })
 
   it("does not bootstrap unknownSub chat messages into main-session capture", async () => {

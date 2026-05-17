@@ -263,6 +263,6 @@ export class MessageCapture {
     return parts
       .filter((p) => p.type === "text" && typeof p.text === "string")
       .map((p) => p.text!)
-      .join("")
+      .join("\n")
   }
 }

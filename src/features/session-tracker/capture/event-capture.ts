@@ -555,14 +555,27 @@ export class EventCapture {
    */
   private async handleSessionCompacted(
     sessionID: string,
-    _event: Record<string, unknown> | undefined,
+    event: Record<string, unknown> | undefined,
   ): Promise<void> {
     try {
       const now = new Date().toISOString()
+      const compactContext = this.renderCompactionContext(event)
       const section =
         `## COMPACTED (${now})\n\n` +
-        `**Pre-compaction state preserved.** See \`session-continuity.json\` for ` +
-        `active delegations and pending work at time of compaction.\n`
+        compactContext +
+        `\n**Continuity index:** See \`session-continuity.json\` for active delegations and pending work at time of compaction.\n`
+
+      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
+      if (childRoute) {
+        await this.childWriter.appendJourneyEntry(childRoute.parentID, sessionID, {
+          timestamp: now,
+          type: "session_compacted",
+          content: compactContext,
+          metadata: { capturedFrom: "session.compacted" },
+        })
+        return
+      }
+
       await this.sessionWriter.appendCompactionBlock(sessionID, section)
     } catch (err) {
       void this.client.app?.log?.({
@@ -573,6 +586,70 @@ export class EventCapture {
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
+    }
+  }
+
+  /**
+   * Renders the compacted session payload without truncation.
+   *
+   * The OpenCode compact event shape can vary across SDK versions. This method
+   * preserves prioritized summary-like fields as readable markdown and also
+   * stores the full raw event JSON when available so no compact context is lost.
+   *
+   * @param event - Raw `session.compacted` event payload.
+   * @returns Markdown content for the compaction section or child journey entry.
+   */
+  private renderCompactionContext(event: Record<string, unknown> | undefined): string {
+    const summary = this.findCompactionText(event)
+    const raw = this.stringifyEvent(event)
+
+    if (summary && raw) {
+      return `**compact_summary:**\n\n${summary}\n\n**raw_event:**\n\n\`\`\`json\n${raw}\n\`\`\`\n`
+    }
+    if (summary) {
+      return `**compact_summary:**\n\n${summary}\n`
+    }
+    if (raw) {
+      return `**raw_event:**\n\n\`\`\`json\n${raw}\n\`\`\`\n`
+    }
+    return "**Pre-compaction state preserved.** Compact event carried no textual payload.\n"
+  }
+
+  /**
+   * Finds the most likely compact summary string in a version-tolerant payload.
+   *
+   * @param value - Raw event value to scan.
+   * @returns The first non-empty summary-like string without trimming content.
+   */
+  private findCompactionText(value: unknown): string | undefined {
+    if (typeof value === "string") return value.trim().length > 0 ? value : undefined
+    if (!value || typeof value !== "object" || Array.isArray(value)) return undefined
+
+    const record = value as Record<string, unknown>
+    const preferredKeys = ["summary", "compactSummary", "compactionSummary", "content", "context", "message", "text"]
+    for (const key of preferredKeys) {
+      const candidate = record[key]
+      if (typeof candidate === "string" && candidate.trim().length > 0) return candidate
+    }
+    for (const key of preferredKeys) {
+      const nested = this.findCompactionText(record[key])
+      if (nested) return nested
+    }
+    return undefined
+  }
+
+  /**
+   * Serializes an event payload for lossless audit context when possible.
+   *
+   * @param event - Raw event payload.
+   * @returns Pretty JSON, or undefined when no serializable payload exists.
+   */
+  private stringifyEvent(event: Record<string, unknown> | undefined): string | undefined {
+    if (!event || Object.keys(event).length === 0) return undefined
+    try {
+      return JSON.stringify(event, null, 2)
+    } catch {
+      return undefined
     }
   }
 
