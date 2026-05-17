@@ -6,7 +6,7 @@ parentSessionID: null
 delegationDepth: 0
 children: []
 continuityIndex: session-continuity.json
-status: active
+status: idle
 ---
 
 ### Tool: skill

@@ -421,3 +421,63 @@ commit và tracking đúng gsd đừng bao giờ ghi là tôi chưa kêu commit 
 }
 ```
 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_6584nZXHeUWyNOimmMGJWCc9"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_DowGYiQRfmKri1gxs9yDXMdR"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_zErUJQ8VQRmtY3ix2in8GmFZ"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_kjfXkjLugeRL6M2pG43vUfNP"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_Y9TXmxpvtRIHfB46MW40JtdN"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_RtXQ7BG0dy4e8ItwsvCj7BMe"
+}
+```
+
