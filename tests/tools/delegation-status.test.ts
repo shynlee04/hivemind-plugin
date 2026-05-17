@@ -496,9 +496,9 @@ describe("delegation-status tool", () => {
     const manager = createManagerStub([])
     const tool = createDelegationStatusTool(manager as never)
 
-    await expect(
-      tool.execute({ delegationId: "" } as never, mockCtx),
-    ).rejects.toHaveProperty("name", "ZodError")
+    const result = parseResult(await tool.execute({ delegationId: "" } as never, mockCtx))
+
+    expect(result.kind).toBe("error")
   })
 
   it("accepts both delegationId and status filter together", async () => {

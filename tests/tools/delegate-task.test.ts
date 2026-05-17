@@ -98,18 +98,20 @@ describe("delegate-task tool", () => {
       parentSessionId: "parent-session",
       agent: "builder",
       prompt: "ship it",
-      title: undefined,
-      safetyCeilingMs: undefined,
-      workingDirectory: process.cwd(),
-      worktree: process.cwd(),
+      currentDepth: 0,
+      queueKey: "agent:builder",
+      safetyCeilingMs: 300_000,
+      surface: "agent-delegation",
     }))
     expect(result.kind).toBe("success")
-    expect(result.data).toEqual({
+    expect(result.data).toMatchObject({
       status: "dispatched",
       delegationId: "delegation-dispatch-123",
       executionMode: "sdk",
       workingDirectory: "/tmp/harness-child",
       queueKey: "provider:anthropic:model:claude-3-5-sonnet",
+      agent: "builder",
+      safetyCeilingMs: 300_000,
     })
   })
 
@@ -153,22 +155,24 @@ describe("delegate-task tool", () => {
 
   it("validates required agent parameter (min 1 char)", async () => {
     const tool = createDelegateTaskTool(createManagerStub() as never)
-    await expect(tool.execute({ prompt: "work" } as never, mockCtx)).rejects.toHaveProperty("name", "ZodError")
+    const result = parseResult(await tool.execute({ prompt: "work" } as never, mockCtx))
+    expect(result.kind).toBe("error")
   })
 
   it("validates required prompt parameter (min 1 char)", async () => {
     const tool = createDelegateTaskTool(createManagerStub() as never)
-    await expect(tool.execute({ agent: "builder" } as never, mockCtx)).rejects.toHaveProperty("name", "ZodError")
+    const result = parseResult(await tool.execute({ agent: "builder" } as never, mockCtx))
+    expect(result.kind).toBe("error")
   })
 
-  it("passes optional title parameter through to dispatch", async () => {
+  it("ignores removed title parameter and dispatches v2 params", async () => {
     const manager = createManagerStub()
     const tool = createDelegateTaskTool(manager as never)
 
     await tool.execute({ agent: "builder", prompt: "work", title: "My Task" } as never, mockCtx)
 
     expect(manager.dispatch).toHaveBeenCalledWith(
-      expect.objectContaining({ title: "My Task" }),
+      expect.objectContaining({ agent: "builder", prompt: "work", queueKey: "agent:builder" }),
     )
   })
 
@@ -183,15 +187,11 @@ describe("delegate-task tool", () => {
     )
   })
 
-  it("validates safetyCeilingMs range — rejects below 60000 and above 3600000", () => {
-    // Below minimum (60000)
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 59_999 })).toThrow()
-    // Above maximum (3600000)
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 3_600_001 })).toThrow()
-    // At minimum boundary — valid
+  it("validates safetyCeilingMs range — positive integer capped at 300000", () => {
+    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 0 })).toThrow()
+    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 300_001 })).toThrow()
     expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 60_000 })).not.toThrow()
-    // At maximum boundary — valid
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 3_600_000 })).not.toThrow()
+    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 300_000 })).not.toThrow()
   })
 
   it("has no async parameter in schema — sync/async split removed", () => {

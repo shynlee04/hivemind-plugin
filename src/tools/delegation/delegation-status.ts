@@ -1,21 +1,30 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
-import type { DelegationManager } from "../../coordination/delegation/manager.js"
 import { readPersistedDelegations } from "../../task-management/continuity/delegation-persistence.js"
 import { redactTextSecrets } from "../../shared/security/redaction.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 import type { Delegation } from "../../shared/types.js"
 
+/** Zod contract for delegation-status control actions. */
+export const DelegationControlSchema = z.object({
+  action: z.enum(["abort", "cancel", "restart", "redirect"]),
+  redirectAgent: z.string().optional(),
+  restartPrompt: z.string().optional(),
+}).refine((value) => value.action !== "redirect" || !!value.redirectAgent, "redirectAgent is required for redirect")
+
 const DelegationStatusInputSchema = z.object({
-  delegationId: z.string().min(1).optional().describe("Specific delegation ID to check"),
-  status: z.string().optional().describe("Filter delegations by status (dispatched, running, completed, error, timeout)"),
+  delegationId: z.string().min(1).optional(),
+  status: z.string().optional(),
+  action: z.enum(["status", "list", "control"]).default("status"),
+  control: DelegationControlSchema.optional(),
 })
 
 type DelegationStatusInput = z.infer<typeof DelegationStatusInputSchema>
-
 type ToolContext = { sessionID?: string }
+type ManagerLike = { canSessionAccessDelegation: (sessionId: string | undefined, delegation: Delegation | undefined) => boolean; getAllDelegations: () => Delegation[]; getStatus: (id: string) => Delegation | undefined }
+type StatusDeps = { coordinator?: { dispatch: (params: Record<string, unknown>) => Promise<Record<string, unknown>> }; getChildMessageCount?: (sessionId: string) => Promise<number | null>; getEscalationLevel?: (id: string) => string | null; lifecycle?: { isTerminal: (status: string) => boolean; markAborted: (id: string) => unknown; markCancelled: (id: string) => unknown }; now?: () => number; readPersisted?: () => Delegation[]; terminateChild?: (sessionId: string) => Promise<unknown> }
 
 /**
  * Converts a delegation record into the public status-tool response shape.
@@ -47,6 +56,18 @@ function renderDelegation(delegation: Delegation): Record<string, unknown> {
   }
 }
 
+function formatElapsed(ms: number): string {
+  return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`
+}
+
+async function renderDelegationV2(delegation: Delegation & { v2?: boolean; prompt?: string }, deps: StatusDeps): Promise<Record<string, unknown>> {
+  const base = renderDelegation(delegation)
+  if (!delegation.v2) return { ...base, prompt: delegation.prompt, elapsedMs: null, elapsedHuman: null, progressPct: null }
+  const elapsedMs = (deps.now?.() ?? Date.now()) - delegation.createdAt
+  const ceiling = delegation.safetyCeilingMs ?? 300_000
+  return { ...base, agent: delegation.agent, childMessageCount: await deps.getChildMessageCount?.(delegation.childSessionId), elapsedHuman: formatElapsed(elapsedMs), elapsedMs, escalationLevel: deps.getEscalationLevel?.(delegation.id) ?? null, progressPct: Math.min(99, Math.floor((elapsedMs / ceiling) * 100)), prompt: delegation.prompt }
+}
+
 /**
  * Merges memory and persisted delegations while keeping memory authoritative.
  *
@@ -66,9 +87,11 @@ function mergeDelegations(activeDelegations: Delegation[], persistedDelegations:
 }
 
 export function createDelegationStatusTool(
-  delegationManager: DelegationManager,
+  delegationManager: ManagerLike,
+  deps: StatusDeps = {},
 ): ReturnType<typeof tool> {
   const s = tool.schema
+  const readPersisted = deps.readPersisted ?? (deps.lifecycle ? () => [] : readPersistedDelegations)
 
   return tool({
     description:
@@ -76,19 +99,24 @@ export function createDelegationStatusTool(
     args: {
       delegationId: s.string().optional().describe("Specific delegation ID to check"),
       status: s.string().optional().describe("Filter by status: dispatched, running, completed, error, timeout"),
+      action: s.string().optional().describe("status, list, or control"),
+      control: s.object({}).optional().describe("Control action payload"),
     },
-    async execute(rawArgs: DelegationStatusInput, context: ToolContext): Promise<string> {
-      const args = DelegationStatusInputSchema.parse(rawArgs)
+    async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
+      const parsed = DelegationStatusInputSchema.safeParse(rawArgs)
+      if (!parsed.success) return renderToolResult(error(`[Harness] Invalid delegation-status input: ${z.prettifyError(parsed.error)}`))
+      const args = parsed.data
 
       try {
         if (!context.sessionID) {
           return renderToolResult(error("[Harness] Missing caller session ID for delegation-status"))
         }
+        if (args.action === "list") return renderList(args, context.sessionID, delegationManager, readPersisted, deps)
+        if (args.action === "control") return await handleControl(args, context.sessionID, delegationManager, readPersisted, deps)
 
-        // Specific delegation lookup
         if (args.delegationId) {
           const delegation = delegationManager.getStatus(args.delegationId)
-            ?? readPersistedDelegations().find((entry) => entry.id === args.delegationId)
+            ?? readPersisted().find((entry) => entry.id === args.delegationId)
 
         if (!delegation) {
           return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
@@ -106,30 +134,36 @@ export function createDelegationStatusTool(
           ? `Delegation ${delegation.id} terminal state: ${terminalLabel}${signalSuffix}`
           : `Delegation ${delegation.id} status: ${delegation.status}`
 
-        return renderToolResult(success(message, renderDelegation(delegation)))
+        return renderToolResult(success(message, await renderDelegationV2(delegation as Delegation & { v2?: boolean }, deps)))
         }
 
-        // List all delegations (optionally filtered)
-        const allDelegations = mergeDelegations(
-          delegationManager.getAllDelegations(),
-          readPersistedDelegations(),
-        ).filter((delegation) => delegationManager.canSessionAccessDelegation(context.sessionID, delegation))
-
-        const filtered = args.status && args.status !== "all"
-          ? allDelegations.filter(d => d.status === args.status)
-          : allDelegations
-
-        return renderToolResult(success(
-          `${filtered.length} delegation(s)${args.status ? ` with status "${args.status}"` : ""}`,
-          filtered.map(renderDelegation),
-          { total: allDelegations.length },
-        ))
+        return renderList(args, context.sessionID, delegationManager, readPersisted, deps)
       } catch (caughtError) {
         const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
         return renderToolResult(error(message))
       }
     },
   })
+}
+
+async function renderList(args: DelegationStatusInput, sessionID: string, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
+  const all = mergeDelegations(manager.getAllDelegations(), readPersisted()).filter((d) => manager.canSessionAccessDelegation(sessionID, d))
+  const filtered = args.status && args.status !== "all" ? all.filter((d) => d.status === args.status) : all
+  return renderToolResult(success(`${filtered.length} delegation(s)${args.status ? ` with status "${args.status}"` : ""}`, await Promise.all(filtered.map((d) => renderDelegationV2(d as Delegation & { v2?: boolean }, deps))), { total: all.length }))
+}
+
+async function handleControl(args: DelegationStatusInput, sessionID: string, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
+  if (!args.delegationId || !args.control) return renderToolResult(error("[Harness] control action requires delegationId and control"))
+  const delegation = (manager.getStatus(args.delegationId) ?? readPersisted().find((d) => d.id === args.delegationId)) as (Delegation & { prompt?: string }) | undefined
+  if (!delegation) return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
+  if (!manager.canSessionAccessDelegation(sessionID, delegation)) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
+  if (deps.lifecycle?.isTerminal(delegation.status)) return renderToolResult(error("[Harness] cannot control terminal delegation"))
+  if (args.control.action === "abort") { deps.lifecycle?.markAborted(delegation.id); await deps.terminateChild?.(delegation.childSessionId); return renderToolResult(success(`Delegation ${delegation.id} aborted`, { delegationId: delegation.id, status: "aborted" })) }
+  if (args.control.action === "cancel") { deps.lifecycle?.markCancelled(delegation.id); return renderToolResult(success(`Delegation ${delegation.id} cancelled`, { delegationId: delegation.id, status: "cancelled" })) }
+  const agent = args.control.action === "redirect" ? args.control.redirectAgent : delegation.agent
+  const prompt = args.control.restartPrompt ?? delegation.prompt ?? ""
+  const result = await deps.coordinator?.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey, safetyCeilingMs: delegation.safetyCeilingMs, surface: delegation.surface ?? "agent-delegation" })
+  return renderToolResult(success(`Delegation ${delegation.id} ${args.control.action}ed`, result))
 }
 
 export { DelegationStatusInputSchema }
