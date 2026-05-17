@@ -13,37 +13,19 @@ export interface DelegationCoordinatorDeps {
   monitor: Pick<DelegationMonitor, "onCompletion" | "start" | "stop">
   notificationRouter: Pick<NotificationRouter, "deregister" | "register" | "route">
   lifecycle: Pick<DelegationLifecycle, "isTerminal" | "markTimeout" | "transition">
-  detector: {
-    unwatch: (delegationId: string) => void
-    watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void
-  }
+  detector: { unwatch: (delegationId: string) => void; watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void }
   retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
 }
 
-type ActiveDelegation = {
-  record: Delegation
-  slotHandle: SlotHandle
-}
+type ActiveDelegation = { record: Delegation; slotHandle: SlotHandle }
 
-/**
- * Wires delegate-task v2 pre-flight, monitoring, completion, notification, and retry seams.
- *
- * @remarks
- * This coordinator intentionally stays SDK-free. It prepares and tracks delegation lifecycle
- * metadata around the native Task execution boundary, while the tool layer remains responsible
- * for actual Task dispatch.
- */
+/** SDK-free delegate-task v2 wire coordinator; the tool layer still owns native Task dispatch. */
 export class DelegationCoordinator {
   private readonly active = new Map<string, ActiveDelegation>()
 
   constructor(private readonly deps: DelegationCoordinatorDeps) {}
 
-  /**
-   * Runs pre-flight checks, creates an in-memory delegation record, starts monitoring, and registers completion watching.
-   *
-   * @param params - Dispatch preparation parameters validated by {@link DelegationDispatcher.preflightCheck}
-   * @returns The prepared delegation result. Native Task dispatch happens outside this class.
-   */
+  /** Runs pre-flight, records metadata, starts monitoring, and registers dual-signal completion. */
   async dispatch(params: DispatchParams): Promise<DelegationResult> {
     const preflight = await this.deps.dispatcher.preflightCheck(params)
     const delegationId = this.createDelegationId()
@@ -60,12 +42,7 @@ export class DelegationCoordinator {
     return { delegationId, queueKey: preflight.queueKey, status: "dispatched" }
   }
 
-  /**
-   * Handles a terminal completion result and performs monitor, lifecycle, notification, slot, and persistence cleanup.
-   *
-   * @param delegationId - Delegation identifier previously returned by {@link dispatch}
-   * @param result - Terminal delegation result emitted by completion detection
-   */
+  /** Handles terminal completion and performs monitor, notification, slot, and persistence cleanup. */
   handleCompletion(delegationId: string, result: DelegationResult): void {
     const status = result.status
     this.deps.monitor.onCompletion()
@@ -74,11 +51,7 @@ export class DelegationCoordinator {
     this.cleanup(delegationId, status, result)
   }
 
-  /**
-   * Marks a delegation timed out and performs the same cleanup path as terminal completion.
-   *
-   * @param delegationId - Delegation identifier to time out
-   */
+  /** Marks a delegation timed out and performs the same cleanup path as terminal completion. */
   handleTimeout(delegationId: string): void {
     const result = this.deps.lifecycle.markTimeout(delegationId)
     this.deps.monitor.onCompletion()
@@ -116,19 +89,9 @@ export class DelegationCoordinator {
 
   private createRecord(delegationId: string, params: DispatchParams, queueKey: string): Delegation {
     return {
-      agent: params.agent,
-      childSessionId: delegationId,
-      createdAt: Date.now(),
-      executionMode: "sdk",
-      id: delegationId,
-      lastMessageCount: 0,
-      nestingDepth: params.currentDepth + 1,
-      parentSessionId: params.parentSessionId,
-      queueKey,
-      stablePollCount: 0,
-      status: "dispatched",
-      surface: params.surface,
-      workingDirectory: process.cwd(),
+      agent: params.agent, childSessionId: delegationId, createdAt: Date.now(), executionMode: "sdk", id: delegationId,
+      lastMessageCount: 0, nestingDepth: params.currentDepth + 1, parentSessionId: params.parentSessionId, queueKey,
+      stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: process.cwd(),
     }
   }
 }
