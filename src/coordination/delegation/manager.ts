@@ -35,12 +35,13 @@ export class DelegationManager {
   private readonly runtime?: RuntimeDelegationManager
 
   constructor(client?: OpenCodeClient, private readonly options: DelegationManagerOptions = {}) {
-    if (!options.coordinator || !options.lifecycle) {
-      if (!client) throw new Error("[Harness] DelegationManager requires a client when v2 modules are not injected.")
+    if (client) {
       this.runtime = new RuntimeDelegationManager(client, {
         ptyManager: options.ptyManager,
         runtimePolicy: options.runtimePolicy,
       })
+    } else if (!options.coordinator || !options.lifecycle) {
+      throw new Error("[Harness] DelegationManager requires a client when v2 modules are not injected.")
     }
   }
 
@@ -115,7 +116,8 @@ export class DelegationManager {
   }
 
   canSessionAccessDelegation(callerSessionId: string | undefined, delegation: Delegation | undefined): boolean {
-    return this.runtime?.canSessionAccessDelegation(callerSessionId, delegation) ?? (!!callerSessionId && !!delegation && delegation.parentSessionId === callerSessionId)
+    const ownsV2Record = !!callerSessionId && !!delegation && delegation.parentSessionId === callerSessionId
+    return ownsV2Record || (this.runtime?.canSessionAccessDelegation(callerSessionId, delegation) ?? false)
   }
 
   getVisibleDelegationsForSession(callerSessionId: string): Delegation[] {

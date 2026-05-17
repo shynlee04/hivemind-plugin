@@ -18,7 +18,7 @@ export interface DelegationCoordinatorDeps {
   dispatcher: Pick<DelegationDispatcher, "preflightCheck">
   monitor: Pick<DelegationMonitor, "onCompletion" | "start" | "stop">
   notificationRouter: Pick<NotificationRouter, "deregister" | "register" | "route">
-  lifecycle: Pick<DelegationLifecycle, "isTerminal" | "markTimeout" | "transition">
+  lifecycle: Pick<DelegationLifecycle, "isTerminal" | "markTimeout" | "transition"> & Partial<Pick<DelegationLifecycle, "register">>
   detector: { unwatch: (delegationId: string) => void; watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void }
   retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
 }
@@ -37,6 +37,7 @@ export class DelegationCoordinator {
     const delegationId = this.createDelegationId()
     const record = this.createRecord(delegationId, params, preflight.queueKey)
     this.active.set(delegationId, { record, slotHandle: preflight.slotHandle })
+    this.deps.lifecycle.register?.(record)
 
     this.deps.lifecycle.transition(delegationId, "dispatched")
     this.deps.notificationRouter.register(delegationId, params.parentSessionId)

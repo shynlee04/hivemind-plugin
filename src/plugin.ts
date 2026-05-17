@@ -10,7 +10,19 @@ import { existsSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
 import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"
+import { CompletionDetector } from "./coordination/completion/detector.js"
+import { AgentResolver } from "./coordination/delegation/agent-resolver.js"
+import { DelegationCoordinator } from "./coordination/delegation/coordinator.js"
+import { DelegationDispatcher } from "./coordination/delegation/dispatcher.js"
+import { DelegationLifecycle } from "./coordination/delegation/lifecycle.js"
 import { DelegationManager } from "./coordination/delegation/manager.js"
+import { DelegationMonitor } from "./coordination/delegation/monitor.js"
+import { NotificationRouter } from "./coordination/delegation/notification-router.js"
+import { DelegationRetryHandler } from "./coordination/delegation/retry-handler.js"
+import { SlotManager } from "./coordination/delegation/slot-manager.js"
+import { recordCategoryGateask } from "./coordination/delegation/category-gate-audit.js"
+import type { Delegation, DelegationStatus } from "./coordination/delegation/types.js"
+import type { OpenCodeClient } from "./shared/session-api.js"
 import { taskState } from "./shared/state.js"
 import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
 import { createSessionHooks } from "./hooks/lifecycle/session-hooks.js"
@@ -56,8 +68,74 @@ import { SessionTracker } from "./features/session-tracker/index.js"
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
+import type { RuntimePolicy } from "./shared/types.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
+
+export interface DelegationModuleSetupOptions {
+  client: OpenCodeClient
+  enableRuntimeAdapter?: boolean
+  persistDelegations?: (delegations: Delegation[]) => void
+  projectDirectory: string
+  recordCategoryGateask?: typeof recordCategoryGateask
+  ptyManager?: Awaited<ReturnType<typeof createPtyManagerIfSupported>>
+  runtimePolicy?: RuntimePolicy
+}
+
+export interface DelegationModuleSetup {
+  coordinator: DelegationCoordinator
+  delegationManager: DelegationManager
+  detector: CompletionDetector
+  lifecycle: DelegationLifecycle
+  notificationRouter: NotificationRouter
+  slotManager: SlotManager
+}
+
+/**
+ * Wires delegate-task v2 modules for the OpenCode plugin composition root.
+ *
+ * @param options - Plugin runtime dependencies and project root.
+ * @returns Delegation modules shared by tools, plugin setup, and integration tests.
+ */
+export function setupDelegationModules(options: DelegationModuleSetupOptions): DelegationModuleSetup {
+  const records = new Map<string, Delegation>()
+  const slotManager = new SlotManager()
+  const agentResolver = new AgentResolver({ client: options.client, projectRoot: options.projectDirectory })
+  const dispatcher = new DelegationDispatcher({ agentResolver, recordCategoryGateask: options.recordCategoryGateask, slotManager })
+  const detector = new CompletionDetector()
+  const notificationRouter = new NotificationRouter()
+  const lifecycle = new DelegationLifecycle({
+    get: (delegationId) => records.get(delegationId),
+    getAll: () => Array.from(records.values()),
+    registerDelegation: (delegation) => { records.set(delegation.id, delegation) },
+    transition: (delegationId, status) => {
+      const record = records.get(delegationId)
+      if (!record || record.status === status) return false
+      record.status = status
+      return true
+    },
+    transitionToTerminal: (delegationId: string, status: DelegationStatus, error?: string) => {
+      const record = records.get(delegationId)
+      if (!record) return
+      record.status = status
+      record.completedAt = Date.now()
+      if (error !== undefined) record.error = error
+    },
+  })
+  const monitor = new DelegationMonitor({
+    getStatus: (delegationId) => lifecycle.getStatus(delegationId)?.status ?? "dispatched",
+    inject: () => { /* parent-session injection is routed by later runtime hook integration */ },
+  })
+  const retryHandler = new DelegationRetryHandler({ persist: options.persistDelegations })
+  const coordinator = new DelegationCoordinator({ dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
+  const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
+    coordinator,
+    lifecycle,
+    ptyManager: options.ptyManager,
+    runtimePolicy: options.runtimePolicy,
+  })
+  return { coordinator, delegationManager, detector, lifecycle, notificationRouter, slotManager }
+}
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const projectDirectory = directory ?? process.cwd()
@@ -68,7 +146,8 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const hivemindConfig: HivemindConfigs = getConfig(projectDirectory)
   const ptyManager = await createPtyManagerIfSupported()
 
-  const delegationManager = new DelegationManager(client, { ptyManager, runtimePolicy })
+  const delegationModules = setupDelegationModules({ client, enableRuntimeAdapter: true, projectDirectory, ptyManager, runtimePolicy })
+  const delegationManager = delegationModules.delegationManager
   // Recovery runs asynchronously — must not block plugin init.
   // If a second OpenCode instance starts, recoverPending() would await SDK calls
   // for sessions that belong to the first instance, causing a hang.
