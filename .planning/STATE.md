@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-16T15:51:53Z"
+last_updated: "2026-05-17T17:05:00Z"
 progress:
   total_phases: 2
   completed_phases: 1
@@ -16,22 +16,37 @@ progress:
 
 # Hivemind — State
 
-**Last updated:** 2026-05-15
-**Last trigger:** CP-ST-06-01 complete — Test Audit + TDD RED Tests for session-tracker
+**Last updated:** 2026-05-17
+**Last trigger:** CP-ST-06 COMPLETE — All 5 plans delivered, 418/418 tests pass, typecheck clean, code review findings fixed
 
 ---
 
 ## Current Status
 
-**Active phase:** CP-ST-06 — Session-Tracker Root Cause Rewrite. Plan 01 of 4 complete.
-**Health:** 🟢 Build passes, typecheck clean. 384/409 session-tracker tests pass (25 failures: 8 TDD RED retry-queue + 17 pre-existing from earlier phases).
-**CP-ST-04 status:** ✅ COMPLETE — Plan 01 (PendingDispatchRegistry + Classification Fix ✓), Plan 02 (Directory Architecture Fix ✓), Plan 03 (Hierarchy Manifest + Immediate I/O + Cleanup ✓).
+**Active phase:** CP-ST-06 — Session-Tracker Root Cause Rewrite. ✅ COMPLETE (5/5 plans).
+**Health:** 🟢 418/418 session-tracker tests pass, typecheck clean, all code review findings (CR-01, CR-02, WR-01..WR-04, IN-01..IN-04) addressed.
+**CP-ST-04 status:** ✅ COMPLETE — 3 plans delivered (PendingDispatchRegistry + Classification, Directory Architecture, Hierarchy Manifest + Immediate I/O + Cleanup).
 
-**CP-ST-05 status:** ✅ COMPLETE — Plan 01 (BEFORE-THE-FACT Classification + Immediate .json Write) ✓. Plan 02 (Single Classification Authority + Journey Recording) ✓.
+**CP-ST-05 status:** ✅ COMPLETE — Investigation phase, root causes identified, decisions D-CP05-01 through D-CP05-06 locked.
 
-**CP-ST-06 status:** 🟡 IN PROGRESS — Plan 01 (Test Audit + TDD RED Tests) ✅ COMPLETE. Plan 02 (Root Cause Extraction) pending. Plan 03 (Retry Queue Implementation) pending. Plan 04 (Integration) pending. 58-row audit delivered, 22 new tests written (8 TDD RED for retry-queue).
+**CP-ST-06 status:** ✅ COMPLETE — All 5 plans delivered:
+- Plan 01: Test Audit + TDD RED Tests ✅
+- Plan 02: Root Cause Extraction (RC-1, RC-2, RC-3) ✅
+- Plan 03: Retry Queue Implementation (RC-5) ✅
+- Plan 04: Fix All Failing Tests (RC-6) ✅
+- Plan 05: Runtime Preservation Fixes + Parent Task Result Capture ✅
+- Runtime Fix: 06-RUNTIME-FAILURE-FIX-2026-05-17 — parent task result parsing, L2 hierarchy registration, unknownSub bootstrap guard, recovery reads child JSON ✅
+- Code Review Fix: 06-REVIEW-FIX — CR-01 (error logging), CR-02 (fork child-copy logging), WR-01..WR-04, IN-01..IN-04 ✅
+- Nyquist Audit: 5 gaps filled, 11 behavioral tests, VALIDATION.md ✅
 
-Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec).
+**Verification evidence:**
+- `npx vitest run tests/features/session-tracker/` → 418/418 pass (44 files)
+- `npx tsc --noEmit` → clean
+- `npm test` → 2221 pass, 5 pre-existing failures (unrelated: steering-engine, hooks, plugin, tools)
+
+**Remaining runtime risk:** Parent task result capture and child `.json` preservation proven in tests, but live compact/resume needs UAT with a real long-haul session to confirm OpenCode task output format matches the parser.
+
+Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/` removed, source planes reorganized. BOOT-01 through BOOT-08 complete. MCM-01/MCM-02 complete. CP-PTY-00 complete (docs/spec). CP-ST-04/05/06 complete (session tracker fully rewritten).
 
 ## Project Reference
 
@@ -66,6 +81,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | Agent/skill integration constitution | ✅ | BOOT-08: lineage, permissions, hierarchy, routing contracts (L5 governance) |
 | Agent migration verification | ✅ | MCM-01: 56 shipped agents (45 hm-* + 11 hf-*) classified and discoverable |
 | Skill migration verification | ✅ | MCM-02: 48 shipped skills (35 hm-* + 13 hf-*) classified and discoverable |
+| Session Tracker Root Cause Rewrite | ✅ | CP-ST-06: 6 root causes fixed, 418/418 tests pass, retry queue, runtime preservation, parent task result capture |
 
 ---
 
@@ -119,6 +135,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-PHASE12-COMPLETE | All 14 CP-ST-01-REVIEW.md findings resolved with verifiable evidence across 3 waves; pipeline verified end-to-end | NEW — 2026-05-12 |
 | CP-CMD-01 | Command architecture classified: CQRS pattern (read: hivemind-command-engine, write: execute-slash-command), deprecated tools removed from `.opencode/` (violates soft meta-concepts-only rule), `list_commands` action added | NEW — 2026-05-13 |
 | D-CP-ST-06-01 | Test audit complete: 25 failing tests all classified as 'rewrite' (0 keep, 0 delete); RC-3 (API mismatch) accounts for 19/25 root causes; 22 new integration tests across 4 files; 8 TDD RED tests for RetryQueue awaiting CP-ST-06-03 implementation | NEW — 2026-05-16 |
+| D-CP-ST-06-COMPLETE | CP-ST-06 fully complete: 5/5 plans, 418/418 tests pass, typecheck clean, all code review findings fixed (CR-01, CR-02, WR-01..04, IN-01..04), Nyquist gaps filled (5 gaps, 11 tests). 6 root causes fixed: RC-1 (hierarchy reverse-order), RC-2 (nested child status), RC-3 (gate:none→unknownSub), RC-4 (lastMessage truncation), RC-5 (error swallowing→retry queue), RC-6 (stale tests). Runtime preservation: parent task result capture, L2 hierarchy registration, unknownSub bootstrap guard, recovery reads child JSON | NEW — 2026-05-17 |
 
 ---
 
@@ -167,6 +184,17 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 | CP-CMD-01 | ✅ COMPLETE | L3 source | Command architecture classification, deprecated tools removed from .opencode/, slash command tool enhanced, list_commands action added |
 | SC-PTY-01 | ⬜ DEFERRED | L2-L3 required | Read-only projection only after CP-PTY-01 and Q2 sidecar confirmation |
 
+## Session Tracker Runway Progress
+
+| Phase | Status | Evidence level | Notes |
+|---|---|---|---|
+| CP-ST-01 | ✅ COMPLETE | L3 source | Session tracker revamp — initial implementation |
+| CP-ST-02 | ✅ COMPLETE | L3 source | Deep fix remaining defects |
+| CP-ST-03 | ✅ COMPLETE | L3 source | Architecture detox — event-tracker excision, plugin.ts purification |
+| CP-ST-04 | ✅ COMPLETE | L3 source | Architecture fix — PendingDispatchRegistry, directory architecture, hierarchy manifest |
+| CP-ST-05 | ✅ COMPLETE | L3 source | Data loss investigation — root cause analysis, 6 decisions locked |
+| CP-ST-06 | ✅ COMPLETE | L3 source + L2 tests | Root cause rewrite — 6 RCs fixed, 418/418 tests, retry queue, runtime preservation |
+
 ---
 
 ## Accumulated Context
@@ -197,12 +225,10 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **CP-ST-04 COMPLETE** — Session-Tracker Architecture Fix: all 3 plans delivered (PendingDispatchRegistry + Classification ✓, Directory Architecture ✓, Hierarchy Manifest + Immediate I/O + Cleanup ✓). 338/340 tests pass.
-2. **CP-CMD-01 delivered** — command architecture classified, deprecated tools relocated, slash command tool enhanced.
-3. **Return to CP-PTY-01** — background shell control-plane MVP is ready after WS-SR completion.
+1. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass, typecheck clean, all review findings fixed. 6 root causes permanently fixed.
+2. **CP-PTY-01 READY** — Background Shell Control-Plane MVP is the next executable phase (BOOT-07 complete, entry gate satisfied).
+3. **Runtime UAT pending** — Live compact/resume needs UAT with real long-haul session to confirm OpenCode task output format matches parser.
 4. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
-2. **Return to CP-PTY-01** — background shell control-plane MVP is ready after WS-SR completion.
-3. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
 
 ## Option 3 Foundation Artifacts
 
