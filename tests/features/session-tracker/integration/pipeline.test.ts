@@ -122,9 +122,13 @@ describe("Session Tracker Pipeline (Integration)", () => {
       const childDir = join(sessionTrackerDir, "ses_child_001")
       expect(existsSync(childDir)).toBe(false)
 
-      // Assert: child NOT in project-continuity.json
+      // Assert: child represented in project-continuity.json without owning a directory
       const indexContent = await readProjectIndex()
-      expect(indexContent.sessions).not.toHaveProperty("ses_child_001")
+      expect(indexContent.sessions).toHaveProperty("ses_child_001")
+      expect(indexContent.sessions["ses_child_001"]).toMatchObject({
+        dir: "ses_parent_001/",
+        mainFile: "ses_child_001.json",
+      })
     })
 
     it("should NOT create directory for child session via lazy bootstrap (chat message)", async () => {

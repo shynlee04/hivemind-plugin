@@ -21,9 +21,11 @@ import { EventCapture } from "../../../src/features/session-tracker/capture/even
 import { SessionWriter } from "../../../src/features/session-tracker/persistence/session-writer.js"
 import { ChildWriter } from "../../../src/features/session-tracker/persistence/child-writer.js"
 import { SessionIndexWriter } from "../../../src/features/session-tracker/persistence/session-index-writer.js"
+import { ProjectIndexWriter } from "../../../src/features/session-tracker/persistence/project-index-writer.js"
 import { HierarchyIndex } from "../../../src/features/session-tracker/persistence/hierarchy-index.js"
 import { HierarchyManifestWriter } from "../../../src/features/session-tracker/persistence/hierarchy-manifest.js"
 import { SessionRecovery } from "../../../src/features/session-tracker/recovery/session-recovery.js"
+import { ToolCapture } from "../../../src/features/session-tracker/capture/tool-capture.js"
 
 vi.mock("../../../src/shared/session-api.js", () => ({
   getSession: vi.fn(),
@@ -135,6 +137,36 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     expect(handleToolExecuteAfter).not.toHaveBeenCalled()
   })
 
+  it("does not bootstrap unknownSub task events into a new root directory", async () => {
+    const tracker = new SessionTracker({
+      client: { app: { log: vi.fn() } } as never,
+      projectRoot,
+    })
+    const ensureSessionReady = vi.fn().mockResolvedValue(undefined)
+    const handleToolExecuteAfter = vi.fn().mockResolvedValue(undefined)
+
+    ;(tracker as unknown as { classifier: unknown }).classifier = {
+      classify: vi.fn().mockResolvedValue({ kind: "unknownSub", gate: "none" }),
+    }
+    ;(tracker as unknown as { bootstrap: unknown }).bootstrap = { ensureSessionReady }
+    ;(tracker as unknown as { toolCapture: unknown }).toolCapture = { handleToolExecuteAfter }
+    ;(tracker as unknown as { pendingRegistry: unknown }).pendingRegistry = { removeByCallID: vi.fn() }
+
+    await tracker.handleToolExecuteAfter(
+      {
+        tool: "task",
+        sessionID: "ses_unknown_sub_task",
+        callID: "call_task_unknown",
+        args: { description: "nested task from unresolved child", subagent_type: "gsd-debugger" },
+      },
+      { title: "Task", output: "task_id: ses_nested_unknown", metadata: {} },
+    )
+
+    expect(ensureSessionReady).not.toHaveBeenCalled()
+    expect(handleToolExecuteAfter).not.toHaveBeenCalled()
+    expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", "ses_unknown_sub_task"))).toBe(false)
+  })
+
   it("writes L2 child session.created files under the root main directory", async () => {
     const rootSessionID = "ses_root_l2_runtime"
     const l1SessionID = "ses_l1_runtime_child"
@@ -162,6 +194,35 @@ describe("CP-ST-06 runtime preservation regressions", () => {
 
     expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", rootSessionID, `${l2SessionID}.json`))).toBe(true)
     expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", l1SessionID))).toBe(false)
+  })
+
+  it("does not assign ambiguous pending session.created events to the wrong parent", async () => {
+    const ambiguousSessionID = "ses_ambiguous_pending_child"
+    const sessionWriter = new SessionWriter({ projectRoot })
+    const childWriter = new ChildWriter({ projectRoot })
+    const eventCapture = new EventCapture({
+      client: { app: { log: vi.fn() }, session: { get: mockGetSession } } as never,
+      sessionWriter,
+      childWriter,
+      sessionIndexWriter: new SessionIndexWriter({ projectRoot }),
+      hierarchyIndex: new HierarchyIndex({ projectRoot }),
+      manifestWriter: new HierarchyManifestWriter({ projectRoot }),
+      pendingRegistry: {
+        size: 2,
+        getAnyActiveEntry: vi.fn(),
+        has: vi.fn().mockReturnValue(false),
+        get: vi.fn(),
+      } as never,
+    })
+    mockGetSession.mockResolvedValue({ id: ambiguousSessionID, parentID: null } as never)
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.created",
+      sessionID: ambiguousSessionID,
+      event: {},
+    })
+
+    expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", ambiguousSessionID))).toBe(false)
   })
 
   it("rebuilds context with root-owned child turns, journey, and lastMessage", async () => {
@@ -216,5 +277,120 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     expect(context.fileContent).toContain("child assistant content")
     expect(context.fileContent).toContain("full child last message must recover")
     expect(context.fileContent).toContain("src/example.ts")
+  })
+
+  it("captures completed task result into child turns, journey, and lastMessage", async () => {
+    const rootSessionID = "ses_task_result_root"
+    const childSessionID = "ses_task_result_child"
+    const hierarchyIndex = new HierarchyIndex({ projectRoot })
+    const childWriter = new ChildWriter({ projectRoot, hierarchyIndex })
+    const toolCapture = new ToolCapture({
+      client: { app: { log: vi.fn() } } as never,
+      sessionWriter: new SessionWriter({ projectRoot }),
+      childWriter,
+      sessionIndexWriter: new SessionIndexWriter({ projectRoot }),
+      projectIndexWriter: new ProjectIndexWriter({
+        client: { app: { log: vi.fn() } } as never,
+        projectRoot,
+      }),
+      hierarchyIndex,
+    })
+
+    await toolCapture.handleToolExecuteAfter(
+      {
+        tool: "task",
+        sessionID: rootSessionID,
+        callID: "call_task_result",
+        args: {
+          description: "capture subagent work",
+          subagent_type: "gsd-debugger",
+        },
+      },
+      {
+        title: "Task completed",
+        output: `task_id: ${childSessionID}\n\n<task_result>\nchild did real work\n</task_result>`,
+        metadata: {},
+      },
+    )
+
+    const raw = await readFile(
+      join(projectRoot, ".hivemind", "session-tracker", rootSessionID, `${childSessionID}.json`),
+      "utf-8",
+    )
+    const childRecord = JSON.parse(raw) as {
+      status: string
+      turns: Array<{ content: string }>
+      journey: Array<{ type: string; content: string; metadata?: Record<string, unknown> }>
+      lastMessage?: string
+    }
+
+    expect(childRecord.status).toBe("completed")
+    expect(childRecord.turns.map((turn) => turn.content)).toEqual([
+      "capture subagent work",
+      "child did real work",
+    ])
+    expect(childRecord.lastMessage).toBe("child did real work")
+    expect(childRecord.journey).toContainEqual(expect.objectContaining({
+      type: "assistant_message",
+      content: "child did real work",
+      metadata: expect.objectContaining({ capturedFrom: "task_tool_result" }),
+    }))
+  })
+
+  it("initializes SessionTracker with a runtime child write retry queue", async () => {
+    const tracker = new SessionTracker({
+      client: { app: { log: vi.fn() }, tui: { showToast: vi.fn() } } as never,
+      projectRoot,
+    })
+
+    await tracker.initialize()
+
+    const childWriter = (tracker as unknown as { childWriter: { retryQueue?: unknown } }).childWriter
+    expect(childWriter.retryQueue).toBeDefined()
+
+    await tracker.cleanup()
+  })
+
+  it("rebuilds context for a child session registered in project continuity", async () => {
+    const rootSessionID = "ses_project_index_root"
+    const childSessionID = "ses_project_index_child"
+    const writer = new SessionWriter({ projectRoot })
+    const childWriter = new ChildWriter({ projectRoot })
+    const projectIndexWriter = new ProjectIndexWriter({
+      client: { app: { log: vi.fn() } } as never,
+      projectRoot,
+    })
+    const recovery = new SessionRecovery({
+      client: { app: { log: vi.fn() }, session: { messages: vi.fn().mockResolvedValue([]) } } as never,
+      projectRoot,
+    })
+
+    await writer.createSessionDir(rootSessionID)
+    await childWriter.createChildFile(rootSessionID, childSessionID, {
+      sessionID: childSessionID,
+      parentSessionID: rootSessionID,
+      delegationDepth: 1,
+      delegatedBy: {
+        agentName: "gsd-debugger",
+        model: "test-model",
+        tool: "task",
+        description: "recover direct child",
+        subagentType: "gsd-debugger",
+      },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      status: "completed",
+      mainAgent: { name: "gsd-debugger", model: "test-model" },
+      turns: [{ turn: 1, actor: "gsd-debugger", content: "child-only recovered content", tools: [] }],
+      children: [],
+      lastMessage: "child-only final message",
+      journey: [],
+    })
+    await projectIndexWriter.addSession(childSessionID, `${rootSessionID}/`, `${childSessionID}.json`)
+
+    const context = await recovery.rebuildSessionContext(childSessionID)
+
+    expect(context.fileContent).toContain("child-only recovered content")
+    expect(context.fileContent).toContain("child-only final message")
   })
 })

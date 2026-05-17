@@ -287,6 +287,7 @@ export class ToolCapture {
           model: "unknown",
         },
         turns: [],
+        journey: [],
         children: [],
       }
 
@@ -308,6 +309,30 @@ export class ToolCapture {
           tools: [],
         },
       )
+
+      const taskResult = this.extractTaskResult(output.output, childSessionID)
+      if (taskResult) {
+        await this.childWriter.appendChildTurn(
+          input.sessionID,
+          childSessionID,
+          {
+            turn: 0,
+            actor: subagentType || "unknown",
+            content: taskResult,
+            tools: [],
+          },
+        )
+        await this.childWriter.appendJourneyEntry(input.sessionID, childSessionID, {
+          timestamp: now,
+          type: "assistant_message",
+          content: taskResult,
+          metadata: {
+            capturedFrom: "task_tool_result",
+            taskID: childSessionID,
+          },
+        })
+        await this.childWriter.updateChildStatus(input.sessionID, childSessionID, "completed")
+      }
 
       // Update session-local index
       await this.sessionIndexWriter.addChild(
@@ -416,6 +441,34 @@ export class ToolCapture {
     if (sesMatch) return sesMatch[1]
 
     return null
+  }
+
+  /**
+   * Extracts the completed child-session result from a task tool output.
+   *
+   * OpenCode only emits hook events for the parent session, so child-session
+   * content is captured from the parent's completed `task` tool result.
+   * Outputs that only contain the task identifier are dispatch-only signals
+   * and intentionally return `undefined`.
+   *
+   * @param output - Raw task tool output.
+   * @param taskID - Child task/session identifier to remove from the payload.
+   * @returns Child result content, or `undefined` when no result is present.
+   */
+  private extractTaskResult(output: unknown, taskID: string): string | undefined {
+    const str = this.asString(output)
+    if (!str) return undefined
+
+    const tagged = str.match(/<task_result>\s*([\s\S]*?)\s*<\/task_result>/)
+    if (tagged?.[1]?.trim()) {
+      return tagged[1].trim()
+    }
+
+    const withoutTaskID = str
+      .replace(new RegExp(`task_id:\\s*${taskID}`, "g"), "")
+      .trim()
+
+    return withoutTaskID.length > 0 ? withoutTaskID : undefined
   }
 
   /**

@@ -12,6 +12,7 @@ import { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 import { SessionWriter } from "./persistence/session-writer.js"
 import { ChildWriter } from "./persistence/child-writer.js"
+import { ChildWriteRetryQueue } from "./persistence/retry-queue.js"
 import { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import { SessionBootstrap } from "./bootstrap.js"
@@ -43,6 +44,7 @@ export interface InitializedDeps {
   pendingRegistry: PendingDispatchRegistry
   sessionWriter: SessionWriter
   childWriter: ChildWriter
+  retryQueue: ChildWriteRetryQueue
   sessionIndexWriter: SessionIndexWriter
   projectIndexWriter: ProjectIndexWriter
   childRecorder: ChildRecorder
@@ -88,10 +90,11 @@ export function constructDependencies(
   // Build shared authorities
   const hierarchyIndex = new HierarchyIndex({ projectRoot })
   const pendingRegistry = new PendingDispatchRegistry()
+  const retryQueue = new ChildWriteRetryQueue({ projectRoot })
 
   // Create persistence writers
   const sessionWriter = new SessionWriter({ projectRoot })
-  const childWriter = new ChildWriter({ projectRoot, hierarchyIndex })
+  const childWriter = new ChildWriter({ projectRoot, hierarchyIndex, retryQueue })
   const sessionIndexWriter = new SessionIndexWriter({ projectRoot })
   const projectIndexWriter = new ProjectIndexWriter({ client, projectRoot })
 
@@ -170,6 +173,7 @@ export function constructDependencies(
     pendingRegistry,
     sessionWriter,
     childWriter,
+    retryQueue,
     sessionIndexWriter,
     projectIndexWriter,
     childRecorder,

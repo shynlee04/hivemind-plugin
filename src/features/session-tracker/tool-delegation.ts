@@ -277,6 +277,7 @@ export class ToolDelegation {
       `${childSessionID}.json`,
       depth,
       subagentType,
+      input.sessionID,
     )
     await this.projectIndexWriter.incrementChildCount(rootMain, depth)
     await this.projectIndexWriter.addSession(
@@ -293,6 +294,28 @@ export class ToolDelegation {
       subagentType,
       childFile: `${childSessionID}.json`,
     })
+
+    const taskResult = extractTaskResult(output.output, childSessionID)
+    if (taskResult) {
+      await this.childWriter.appendChildTurn(input.sessionID, childSessionID, {
+        turn: 0,
+        actor: subagentType,
+        content: taskResult,
+        tools: [],
+      })
+      await this.childWriter.appendJourneyEntry(input.sessionID, childSessionID, {
+        timestamp: now,
+        type: "assistant_message",
+        content: taskResult,
+        metadata: {
+          capturedFrom: "task_tool_result",
+          taskID: childSessionID,
+        },
+      })
+      await this.childWriter.updateChildStatus(input.sessionID, childSessionID, "completed")
+      await this.sessionIndexWriter.updateChildStatus(rootMain, childSessionID, "completed")
+      await this.manifestWriter.updateChildStatus(rootMain, childSessionID, "completed")
+    }
   }
 }
 
@@ -359,6 +382,24 @@ export function extractTaskID(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined
   const direct = value.match(/\bses_[A-Za-z0-9_-]+\b/)
   return direct?.[0]
+}
+
+/**
+ * Extracts completed child-session content from a task tool result.
+ *
+ * @param value - Raw task tool output.
+ * @param taskID - Child task/session identifier to remove from the payload.
+ * @returns Result content, or undefined for dispatch-only output.
+ */
+export function extractTaskResult(value: unknown, taskID: string): string | undefined {
+  if (typeof value !== "string") return undefined
+  const tagged = value.match(/<task_result>\s*([\s\S]*?)\s*<\/task_result>/)
+  if (tagged?.[1]?.trim()) return tagged[1].trim()
+
+  const withoutTaskID = value
+    .replace(new RegExp(`task_id:\\s*${taskID}`, "g"), "")
+    .trim()
+  return withoutTaskID.length > 0 ? withoutTaskID : undefined
 }
 
 /**

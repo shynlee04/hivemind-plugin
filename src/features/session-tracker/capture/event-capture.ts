@@ -185,7 +185,10 @@ export class EventCapture {
       // Check if ANY task dispatch was recently recorded via PreToolUse hook.
       // If so, this session is almost certainly a child — write .json immediately
       // without waiting for SDK parentID or creating a directory.
-      const anyPending = this.pendingRegistry?.getAnyActiveEntry()
+      const pendingCount = this.pendingRegistry?.size ?? 0
+      const anyPending = pendingCount === 1
+        ? this.pendingRegistry?.getAnyActiveEntry()
+        : undefined
       if (anyPending) {
         void this.client.app?.log?.({
           body: {
@@ -195,6 +198,16 @@ export class EventCapture {
           },
         })
         await this.writeImmediateChildFile(sessionID, anyPending.parentSessionID, anyPending.subagentType, anyPending.delegationDepth)
+        return
+      }
+      if (pendingCount > 1) {
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: ambiguous Gate 0 classification for "${sessionID}" — waiting for authoritative task result`,
+          },
+        })
         return
       }
 
@@ -299,24 +312,15 @@ export class EventCapture {
   private async handleSessionIdle(sessionID: string): Promise<void> {
     try {
       // Check if this is a child session
-      const session = await getSession(this.client, sessionID)
-      const parentID = session.parentID as string | null | undefined
-      // Gate 3 fallback: check pending dispatch registry
-      const isChild = (parentID !== null && parentID !== undefined) || this.pendingRegistry?.has(sessionID)
-      if (isChild) {
-        // Resolve effective parentID: prefer SDK, fall back to pendingRegistry
-        const effectiveParentID = parentID ?? this.pendingRegistry?.get(sessionID)?.parentSessionID
-        if (!effectiveParentID) return
+      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
+      if (childRoute) {
         // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "idle")
+        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "idle")
         // Also update session-local index hierarchy
-        await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "idle")
+        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "idle")
         // D-07: update hierarchy-manifest.json
-        if (this.manifestWriter && this.hierarchyIndex) {
-          const rootMain = this.hierarchyIndex.getRootMain(sessionID)
-          if (rootMain) {
-            await this.manifestWriter.updateChildStatus(rootMain, sessionID, "idle")
-          }
+        if (this.manifestWriter) {
+          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "idle")
         }
         return
       }
@@ -343,23 +347,14 @@ export class EventCapture {
   private async handleSessionDeleted(sessionID: string): Promise<void> {
     try {
       // Check if this is a child session
-      const session = await getSession(this.client, sessionID)
-      const parentID = session.parentID as string | null | undefined
-      // Gate 3 fallback: check pending dispatch registry
-      const isChild = (parentID !== null && parentID !== undefined) || this.pendingRegistry?.has(sessionID)
-      if (isChild) {
-        // Resolve effective parentID: prefer SDK, fall back to pendingRegistry
-        const effectiveParentID = parentID ?? this.pendingRegistry?.get(sessionID)?.parentSessionID
-        if (!effectiveParentID) return
+      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
+      if (childRoute) {
         // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "completed")
-        await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "completed")
+        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "completed")
+        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         // D-07: update hierarchy-manifest.json
-        if (this.manifestWriter && this.hierarchyIndex) {
-          const rootMain = this.hierarchyIndex.getRootMain(sessionID)
-          if (rootMain) {
-            await this.manifestWriter.updateChildStatus(rootMain, sessionID, "completed")
-          }
+        if (this.manifestWriter) {
+          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
         return
       }
@@ -386,23 +381,14 @@ export class EventCapture {
   private async handleSessionError(sessionID: string): Promise<void> {
     try {
       // Check if this is a child session
-      const session = await getSession(this.client, sessionID)
-      const parentID = session.parentID as string | null | undefined
-      // Gate 3 fallback: check pending dispatch registry
-      const isChild = (parentID !== null && parentID !== undefined) || this.pendingRegistry?.has(sessionID)
-      if (isChild) {
-        // Resolve effective parentID: prefer SDK, fall back to pendingRegistry
-        const effectiveParentID = parentID ?? this.pendingRegistry?.get(sessionID)?.parentSessionID
-        if (!effectiveParentID) return
+      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
+      if (childRoute) {
         // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(effectiveParentID, sessionID, "error")
-        await this.sessionIndexWriter.updateChildStatus(effectiveParentID, sessionID, "error")
+        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "error")
+        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "error")
         // D-07: update hierarchy-manifest.json
-        if (this.manifestWriter && this.hierarchyIndex) {
-          const rootMain = this.hierarchyIndex.getRootMain(sessionID)
-          if (rootMain) {
-            await this.manifestWriter.updateChildStatus(rootMain, sessionID, "error")
-          }
+        if (this.manifestWriter) {
+          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "error")
         }
         return
       }
@@ -485,6 +471,22 @@ export class EventCapture {
       if (this.hierarchyIndex && this.manifestWriter) {
         const rootMain = this.hierarchyIndex.getRootMain(sessionID)
         if (rootMain) {
+          if (typeof this.sessionIndexWriter.addChild === "function") {
+            await this.sessionIndexWriter.addChild(
+              rootMain,
+              sessionID,
+              `${sessionID}.json`,
+              delegationDepth,
+              subagentType,
+              delegationDepth > 1 ? parentID : undefined,
+            )
+          }
+          await this.projectIndexWriter?.incrementChildCount(rootMain, delegationDepth)
+          await this.projectIndexWriter?.addSession(
+            sessionID,
+            `${rootMain}/`,
+            `${sessionID}.json`,
+          )
           await this.manifestWriter.addChild({
             rootMainSessionID: rootMain,
             childSessionID: sessionID,
@@ -507,6 +509,42 @@ export class EventCapture {
         },
       })
     }
+  }
+
+  /**
+   * Resolves lifecycle status routing for a child session.
+   *
+   * Uses SDK parent metadata first, then the in-memory hierarchy index, then
+   * pending dispatch metadata. Status writes need both immediate parent and
+   * root main because child `.json` paths and session-continuity indexes use
+   * different authorities.
+   *
+   * @param sessionID - Session receiving a lifecycle status event.
+   * @returns Child route data, or `undefined` when the session is main/unknown.
+   */
+  private async resolveChildLifecycleRoute(sessionID: string): Promise<{
+    parentID: string
+    rootMainID: string
+  } | undefined> {
+    let parentID: string | null | undefined
+    try {
+      const session = await getSession(this.client, sessionID)
+      parentID = session.parentID as string | null | undefined
+    } catch {
+      parentID = undefined
+    }
+
+    const indexedParent = this.hierarchyIndex?.getParent(sessionID)
+    const pendingParent = this.pendingRegistry?.get(sessionID)?.parentSessionID
+    const effectiveParentID = parentID ?? indexedParent ?? pendingParent
+    if (!effectiveParentID) return undefined
+
+    if (this.hierarchyIndex && !this.hierarchyIndex.isChild(sessionID)) {
+      this.hierarchyIndex.registerChild(effectiveParentID, sessionID)
+    }
+
+    const rootMainID = this.hierarchyIndex?.getRootMain(sessionID) ?? effectiveParentID
+    return { parentID: effectiveParentID, rootMainID }
   }
 
   /**

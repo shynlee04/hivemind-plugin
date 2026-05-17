@@ -380,6 +380,7 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 - Plan 04: `src/features/session-tracker/capture/event-capture.ts` — `writeImmediateChildFile()` uses same retry/error surface, no best-effort swallow.
 - Plan 04: `src/features/session-tracker/types.ts` — removed "first 200 chars" truncation comment; `lastMessage` preserved in full (RC-4).
 - Plan 05: Rewrote 5 test files (294 insertions, 949 deletions) to match SessionRouter/classifier architecture: `ensure-session-ready-classification.test.ts` (6 tests), `index.test.ts` (9 tests), `session-tracker.test.ts` (8 tests), `pipeline.test.ts` (12 integration tests), `cleanup.test.ts` (2 tests).
-- All 397 session-tracker tests pass. Typecheck clean. 5 pre-existing failures in unrelated modules (steering-engine, hooks, plugin, tools).
+- Runtime preservation follow-up: parent `task` results now preserve child work because OpenCode does not emit hooks for subagent sessions; nested task results, retry queue wiring, child lifecycle status routing, project-continuity child recovery, and unknownSub task guard were synchronized across `session-tracker`.
+- All 418 session-tracker tests pass. Typecheck clean. Full suite remains at 5 pre-existing failures + 1 failed suite in unrelated modules (steering-engine, hooks, plugin, tools).
 
 **Next phase:** CP-PTY-01 (Background Shell Control-Plane MVP).

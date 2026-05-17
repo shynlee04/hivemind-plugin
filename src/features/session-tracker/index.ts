@@ -41,6 +41,7 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { ToolDelegation } from "./tool-delegation.js"
 import { ProjectContinuityChecker } from "./project-continuity.js"
+import { FLUSH_INTERVAL_MS } from "./persistence/retry-queue.js"
 
 /**
  * Central session tracker class.
@@ -75,6 +76,7 @@ export class SessionTracker {
   private pendingRegistry!: Parameters<typeof constructDependencies>[0]["pendingRegistry"]
   private manifestWriter!: Parameters<typeof constructDependencies>[0]["manifestWriter"]
   private recovery!: Parameters<typeof constructDependencies>[0]["recovery"]
+  private retryQueue!: Parameters<typeof constructDependencies>[0]["retryQueue"]
   private bootstrap!: Parameters<typeof constructDependencies>[0]["bootstrap"]
   private classifier!: Parameters<typeof constructDependencies>[0]["classifier"]
   /** Session router — classify-before-I/O routing (CP-ST-06-02). */
@@ -88,6 +90,7 @@ export class SessionTracker {
   private projectContinuityChecker!: ProjectContinuityChecker
   /** Tracks lazy-bootstrapped sessions to avoid redundant mkdir + .md creation. */
   private bootstrappedSessions: Set<string> = new Set()
+  private retryFlushInterval: ReturnType<typeof setInterval> | undefined
 
   /**
    * @param deps - Injected dependencies (client, projectRoot).
@@ -150,7 +153,7 @@ export class SessionTracker {
             session && typeof session === "object" && "parentID" in session
               ? (session as { parentID?: string }).parentID
               : undefined
-          if (parentID) {
+          if (parentID && !this.hierarchyIndex?.isChild(event.sessionID)) {
             await this.copyForkedChildren(event.sessionID, parentID)
           }
         } catch (err) {
@@ -294,16 +297,16 @@ export class SessionTracker {
       }
 
       if (classification.kind === "unknownSub") {
-        if (input.tool !== "task" && !(await this.hasMainSessionFile(input.sessionID))) {
+        const hasMainFile = await this.hasMainSessionFile(input.sessionID)
+        if (!hasMainFile && input.tool === "task" && await this.isSdkRootSession(input.sessionID)) {
+          await this.ensureSessionReady(input.sessionID)
+        } else if (!hasMainFile) {
           return
         }
       } else {
         await this.ensureSessionReady(input.sessionID)
       }
 
-      if (classification.kind === "unknownSub" && input.tool === "task") {
-        await this.ensureSessionReady(input.sessionID)
-      }
       if (this.toolCapture) {
         await this.toolCapture.handleToolExecuteAfter(
           input as Parameters<typeof this.toolCapture.handleToolExecuteAfter>[0],
@@ -340,6 +343,25 @@ export class SessionTracker {
     if (!this.hierarchyIndex.isChild(childID)) {
       this.hierarchyIndex.registerChild(parentID, childID)
     }
+  }
+
+  /**
+   * Confirms a session is an SDK-visible root before allowing lazy task bootstrap.
+   *
+   * This preserves first-tool lazy bootstrap for real main sessions while still
+   * blocking unresolved child/default-sub sessions from creating root dirs.
+   *
+   * @param sessionID - Session to check through the SDK wrapper.
+   * @returns True only when the SDK returns a session with `parentID: null`.
+   */
+  private async isSdkRootSession(sessionID: string): Promise<boolean> {
+    const session = await this.getSessionSafely(sessionID)
+    return Boolean(
+      session &&
+      typeof session === "object" &&
+      "parentID" in session &&
+      (session as { parentID?: string | null }).parentID === null,
+    )
   }
 
   /**
@@ -420,6 +442,8 @@ export class SessionTracker {
       await deps.hierarchyIndex.buildFromDisk()
 
       Object.assign(this, deps)
+      await this.retryQueue.flush()
+      this.startRetryFlushLoop()
 
       // Construct tool delegation handler and project continuity checker (CP-ST-06-02)
       this.toolDelegation = new ToolDelegation({
@@ -489,7 +513,10 @@ export class SessionTracker {
    */
   async cleanup(): Promise<void> {
     try {
-      // Future: add orphan quarantine cleanup, stale session removal.
+      if (this.retryFlushInterval) {
+        clearInterval(this.retryFlushInterval)
+        this.retryFlushInterval = undefined
+      }
     } catch (err) {
       void this.client.app?.log?.({
         body: {
@@ -500,6 +527,15 @@ export class SessionTracker {
         },
       })
     }
+  }
+
+  /** Starts the periodic child-write retry flush loop. */
+  private startRetryFlushLoop(): void {
+    if (this.retryFlushInterval) return
+    this.retryFlushInterval = setInterval(() => {
+      void this.retryQueue.flush()
+    }, FLUSH_INTERVAL_MS)
+    this.retryFlushInterval.unref?.()
   }
 
   /**

@@ -133,8 +133,8 @@ export class SessionRecovery {
     }
 
     try {
-      // Read persisted .md file content
-      const fileContent = await this.readSessionFile(sessionID)
+      // Read persisted main-session markdown or root-owned child JSON context.
+      const fileContent = await this.readPersistedSessionContent(sessionID)
       if (fileContent) {
         result.persistedMessages = fileContent.split("\n").filter(Boolean)
         // Count ## USER turn headers
@@ -194,9 +194,9 @@ export class SessionRecovery {
     }
 
     try {
-      const mainContent = await this.readSessionFile(sessionID)
+      const persistedContent = await this.readPersistedSessionContent(sessionID)
       const childContext = await this.readRootOwnedChildContext(sessionID)
-      context.fileContent = [mainContent, childContext].filter(Boolean).join("\n") || null
+      context.fileContent = [persistedContent, childContext].filter(Boolean).join("\n") || null
 
       if (this.client) {
         try {
@@ -302,6 +302,46 @@ export class SessionRecovery {
       const filePath = safeSessionPath(this.projectRoot, sessionID, `${sessionID}.md`)
       const content = await readFile(filePath, "utf-8")
       return content
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Reads either a main-session markdown file or a root-owned child JSON file.
+   *
+   * Child sessions are registered in project continuity with `mainFile` ending
+   * in `.json` and `dir` pointing at their root main directory. Recovery must
+   * honor that index instead of assuming every session has its own `.md` file.
+   *
+   * @param sessionID - Session identifier to read.
+   * @returns Rendered persisted context, or null when missing.
+   */
+  private async readPersistedSessionContent(sessionID: string): Promise<string | null> {
+    const mainContent = await this.readSessionFile(sessionID)
+    if (mainContent) return mainContent
+    return this.readChildContextFromProjectIndex(sessionID)
+  }
+
+  /**
+   * Reads a child session JSON file using project-continuity path metadata.
+   *
+   * @param sessionID - Child session identifier to read.
+   * @returns Rendered child context, or null when the index has no child entry.
+   */
+  private async readChildContextFromProjectIndex(sessionID: string): Promise<string | null> {
+    try {
+      if (!isValidSessionID(sessionID)) return null
+      const index = await this.readProjectIndex()
+      const entry = index?.sessions?.[sessionID]
+      if (!entry || !entry.mainFile.endsWith(".json")) return null
+
+      const rootSessionID = entry.dir.replace(/\/$/, "")
+      if (!isValidSessionID(rootSessionID)) return null
+      const filePath = safeSessionPath(this.projectRoot, rootSessionID, entry.mainFile)
+      const raw = await readFile(filePath, "utf-8")
+      const record = JSON.parse(raw) as ChildSessionRecord
+      return this.renderChildContext(record)
     } catch {
       return null
     }
