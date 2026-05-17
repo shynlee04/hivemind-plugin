@@ -8,6 +8,7 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 
 - DO NOT USE CUSTOM TOOLS - USE OPENCODE INNATE TOOLS, ALL CUSTOOM TOOLS ARE NOT BROKEN NOT USABLE
 
+- DO NOT ROUTE any hm-* or hf-* commands, workflows nor agents - they are the subjects of developments - **ROUTE everything to gsd-* from commands, agents to workflows** , they are the toolings used for development of this harness project 
 
 ## NON-NEGOTIABLE RULES
 

@@ -103,6 +103,26 @@ export class SessionTracker {
   }
 
   /**
+   * Checks whether a main-session markdown file already exists.
+   *
+   * Unknown sub-sessions must never create a new main directory. Existing main
+   * sessions, however, may continue receiving message/tool captures after the
+   * router reports `unknownSub` because SDK parent metadata can be absent.
+   *
+   * @param sessionID - Session ID to check.
+   * @returns `true` when the main session `.md` file exists on disk.
+   */
+  private async hasMainSessionFile(sessionID: string): Promise<boolean> {
+    try {
+      const filePath = resolve(sessionTrackerRoot(this.projectRoot), sessionID, `${sessionID}.md`)
+      await readFile(filePath, "utf-8")
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Handles session lifecycle events from the OpenCode `event` hook.
    *
    * @param event - The raw hook input containing eventType, sessionID, and event payload.
@@ -213,7 +233,13 @@ export class SessionTracker {
         return
       }
 
-      await this.ensureSessionReady(input.sessionID)
+      if (decision.route === "unknownSub") {
+        if (!(await this.hasMainSessionFile(input.sessionID))) {
+          return
+        }
+      } else {
+        await this.ensureSessionReady(input.sessionID)
+      }
 
       if (this.messageCapture) {
         await this.messageCapture.handleChatMessage(
@@ -267,7 +293,17 @@ export class SessionTracker {
         return
       }
 
-      await this.ensureSessionReady(input.sessionID)
+      if (classification.kind === "unknownSub") {
+        if (input.tool !== "task" && !(await this.hasMainSessionFile(input.sessionID))) {
+          return
+        }
+      } else {
+        await this.ensureSessionReady(input.sessionID)
+      }
+
+      if (classification.kind === "unknownSub" && input.tool === "task") {
+        await this.ensureSessionReady(input.sessionID)
+      }
       if (this.toolCapture) {
         await this.toolCapture.handleToolExecuteAfter(
           input as Parameters<typeof this.toolCapture.handleToolExecuteAfter>[0],

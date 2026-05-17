@@ -450,14 +450,20 @@ export class EventCapture {
     const now = new Date().toISOString()
     const pendingEntry = this.pendingRegistry?.get(sessionID)
     const subagentType = explicitSubagentType ?? pendingEntry?.subagentType ?? "unknown"
+    let delegationDepth = explicitDelegationDepth ?? 1
 
     try {
+      if (this.hierarchyIndex) {
+        this.hierarchyIndex.registerChild(parentID, sessionID)
+        delegationDepth = explicitDelegationDepth ?? this.hierarchyIndex.getDepth?.(sessionID) ?? 1
+      }
+
       // Write child .json under the root main session directory
       // (childWriter.resolveWriteParent resolves to root main per CP-ST-04-02)
       await this.childWriter.createChildFile(parentID, sessionID, {
         sessionID,
         parentSessionID: parentID,
-        delegationDepth: explicitDelegationDepth ?? 1,
+        delegationDepth,
         delegatedBy: {
           agentName: subagentType,
           model: "",
@@ -477,14 +483,13 @@ export class EventCapture {
       // D-07: update hierarchy-manifest.json
       // Register child in hierarchy index first so getRootMain works
       if (this.hierarchyIndex && this.manifestWriter) {
-        this.hierarchyIndex.registerChild(parentID, sessionID)
         const rootMain = this.hierarchyIndex.getRootMain(sessionID)
         if (rootMain) {
           await this.manifestWriter.addChild({
             rootMainSessionID: rootMain,
             childSessionID: sessionID,
             parentSessionID: parentID,
-            delegationDepth: 1,
+            delegationDepth,
             delegatedBy: subagentType,
             subagentType,
             childFile: `${sessionID}.json`,

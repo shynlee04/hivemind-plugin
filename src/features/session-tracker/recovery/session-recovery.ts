@@ -13,13 +13,13 @@
  * @module session-tracker/recovery/session-recovery
  */
 
-import { readFile } from "node:fs/promises"
+import { readdir, readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { sessionTrackerRoot, safeSessionPath } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 import { getSessionMessages } from "../../../shared/session-api.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
-import type { ProjectContinuityIndex, ProjectSessionEntry } from "../types.js"
+import type { ChildSessionRecord, ProjectContinuityIndex, ProjectSessionEntry } from "../types.js"
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -194,7 +194,9 @@ export class SessionRecovery {
     }
 
     try {
-      context.fileContent = await this.readSessionFile(sessionID)
+      const mainContent = await this.readSessionFile(sessionID)
+      const childContext = await this.readRootOwnedChildContext(sessionID)
+      context.fileContent = [mainContent, childContext].filter(Boolean).join("\n") || null
 
       if (this.client) {
         try {
@@ -303,5 +305,71 @@ export class SessionRecovery {
     } catch {
       return null
     }
+  }
+
+  /**
+   * Reads child `.json` records owned by a root main session and renders them
+   * into append-only recovery markdown.
+   *
+   * @param rootSessionID - Root main session whose directory owns child files.
+   * @returns Markdown context for child turns, journeys, and last messages.
+   */
+  private async readRootOwnedChildContext(rootSessionID: string): Promise<string | null> {
+    try {
+      if (!isValidSessionID(rootSessionID)) return null
+      const rootDir = safeSessionPath(this.projectRoot, rootSessionID, "")
+      const entries = await readdir(rootDir, { withFileTypes: true })
+      const childSections: string[] = []
+
+      for (const entry of entries) {
+        if (!entry.isFile() || !entry.name.endsWith(".json")) continue
+        if (entry.name === "session-continuity.json" || entry.name === "hierarchy-manifest.json") continue
+
+        const childID = entry.name.slice(0, -".json".length)
+        if (!isValidSessionID(childID)) continue
+
+        const filePath = safeSessionPath(this.projectRoot, rootSessionID, entry.name)
+        const raw = await readFile(filePath, "utf-8")
+        const record = JSON.parse(raw) as ChildSessionRecord
+        childSections.push(this.renderChildContext(record))
+      }
+
+      return childSections.length > 0 ? childSections.join("\n") : null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Renders a child session record into recovery markdown.
+   *
+   * @param record - Child session record loaded from disk.
+   * @returns Markdown summary preserving full child context fields.
+   */
+  private renderChildContext(record: ChildSessionRecord): string {
+    const lines = [
+      `## CHILD SESSION ${record.sessionID}`,
+      "",
+      `**parentSessionID:** ${record.parentSessionID}`,
+      `**delegationDepth:** ${record.delegationDepth}`,
+      `**status:** ${record.status}`,
+    ]
+
+    if (record.lastMessage) {
+      lines.push("", "### lastMessage", "", record.lastMessage)
+    }
+
+    for (const turn of record.turns) {
+      lines.push("", `### turn ${turn.turn}: ${turn.actor}`, "", turn.content)
+      if (turn.tools.length > 0) {
+        lines.push("", "```json", JSON.stringify(turn.tools, null, 2), "```")
+      }
+    }
+
+    if (record.journey && record.journey.length > 0) {
+      lines.push("", "### journey", "", "```json", JSON.stringify(record.journey, null, 2), "```")
+    }
+
+    return `${lines.join("\n")}\n`
   }
 }

@@ -73,9 +73,21 @@ export class SessionWriter {
     metadata: Partial<SessionRecord>,
   ): Promise<void> {
     const filePath = this.getSessionFilePath(sessionID)
+    let existingBody = ""
+    let existingFrontmatter: Record<string, unknown> = {}
+    try {
+      const raw = await readFile(filePath, "utf-8")
+      const parsed = matter(raw)
+      existingFrontmatter = parsed.data
+      existingBody = parsed.content
+    } catch {
+      // Missing file is the only expected first-run path; initialization below creates it.
+    }
+
     const frontmatter: Record<string, unknown> = {
+      ...existingFrontmatter,
       sessionID: metadata.sessionID ?? sessionID,
-      created: metadata.created ?? new Date().toISOString(),
+      created: existingFrontmatter.created ?? metadata.created ?? new Date().toISOString(),
       updated: metadata.updated ?? new Date().toISOString(),
       parentSessionID: metadata.parentSessionID ?? null,
       delegationDepth: metadata.delegationDepth ?? 0,
@@ -85,9 +97,9 @@ export class SessionWriter {
     }
 
     const yamlStr = yamlStringify(frontmatter)
-    const content = `---\n${yamlStr}---\n`
+    const content = `---\n${yamlStr}---\n${existingBody}`
 
-    // Atomic write (overwrite, not append) — WR-03 fix
+    // Atomic write that preserves existing body content across re-initialization.
     const tmpPath = `${filePath}.tmp.${Date.now()}`
     await ensureDirectory(dirname(filePath))
     await writeFile(tmpPath, content, "utf-8")
