@@ -153,6 +153,42 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 - [x] CP-ST-02-02-PLAN.md — PreToolUse Hook + Server API Polling (Wave 2) — requirements: AC-10 ✅
 - [x] CP-ST-02-03-PLAN.md — Delegator Attribution + Cleanup (Wave 3) — requirements: AC-01, AC-03, AC-06, AC-08, AC-09 ✅
 
+### Delegate-Task Ecosystem Runway (INSERTED)
+
+Toàn diện refactor và revamp delegate-task ecosystem. Phase này cover TẤT CẢ những gì cấu thành nên delegate-task: tools, engines, tracking, completion detection, TUI injection, resume/chaining, agent discovery, permissions inheritance, compact survival. Bao gồm 4 tài liệu cốt lõi: SPEC.md, CONTEXT.md, RESEARCH.md, PATTERN.md.
+
+**Root cause:** delegate-task v1 PROVEN BROKEN — dispatch OK nhưng child sessions freeze sau khi load skills (0 tool calls sau 30 phút). Cần research sâu OpenCode SDK API (sessions, messages, hooks, permissions, agent discovery, primitives loading) và source-code platform architecture trước khi thiết kế v2.
+
+| Phase | Title | Status | Depends On | Evidence Required |
+|-------|-------|--------|------------|-------------------|
+| CP-DT-01 | **Delegate-Task Ecosystem Revamp** | 🔴 NOT PLANNED | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC.md + CONTEXT.md + RESEARCH.md + PATTERN.md → L2-L3: progressive polling, completion detection, TUI injection tests |
+
+#### CP-DT-01 Scope
+
+1. **Research sâu OpenCode SDK:** sessions API, promptAsync, children, status, messages, compact, client-server architecture, tools/commands/instances/files
+2. **Research OpenCode Plugin SDK:** hooks (chat.message, tool.execute.after, event, session.compacting), permissions (regex granularity, main↔sub inheritance, modes all/primary/subagent)
+3. **Research agent discovery:** opencode.json, .opencode/agent(s) (số ít + số nhiều), global primitives, edge cases
+4. **Research OpenCode source-code:** platform architecture cho primitives, custom tools, commands, agent skills, MCP server tools
+5. **Deliverables:**
+   - SPEC.md — yêu cầu hệ thống delegate-task v2 (execution verification, progressive polling, failure detection, completion detection, TUI injection, resume/chaining, abort/cancel/restart, concurrent slots)
+   - CONTEXT.md — bối cảnh hiện tại (broken v1, session-tracker knowledge, OpenCode Task vs delegate-task)
+   - RESEARCH.md — nghiên cứu OpenCode SDK/API/source-code findings
+   - PATTERN.md — patterns thiết kế cho async delegation với controlled monitoring
+
+#### CP-DT-01 Key Requirements
+
+- **Execution verification:** 60s fallback nếu không có first tool call → fail level 1
+- **Progressive polling:** 30s→45s→60s→90s→120s→180s thin-line status injections vào main session context
+- **4-level failure detection:** 60s→120s→180s→300s escalating, sau 300s ngừng injection
+- **Completion detection:** tool activity >1min + assistant last message + file changes (optional)
+- **TUI injection:** success/failure notifications append trực tiếp vào main session message stream
+- **10 concurrent delegation slots** per main session, route notifications đúng session
+- **Abort/cancel/restart/redirect** tools cho delegator agent
+- **Resume existing sessions:** reuse session ID, context preserved, không lặp prompt
+- **Sequential task chaining:** completed task session ID → new task inherits context
+- **Compact survival:** handle context window overflow in delegations
+- **Session-tracker knowledge áp dụng** vào delegation tracking
+
 ### BOOT-01 Scope: Research & Architecture Decision
 
 Before writing code:

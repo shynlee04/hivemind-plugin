@@ -23,8 +23,8 @@ progress:
 
 ## Current Status
 
-**Active phase:** CP-ST-06 — Session-Tracker Root Cause Rewrite. ✅ COMPLETE (5/5 plans).
-**Health:** 🟢 418/418 session-tracker tests pass, typecheck clean, all code review findings (CR-01, CR-02, WR-01..WR-04, IN-01..IN-04) addressed.
+**Active phase:** CP-DT-01 — Delegate-Task Ecosystem Revamp. 🔴 NOT PLANNED (INSERTED — urgent work).
+**Health:** 🟡 Phase directory created, ROADMAP.md updated. Awaiting 4 deliverables: SPEC.md, CONTEXT.md, RESEARCH.md, PATTERN.md.
 **CP-ST-04 status:** ✅ COMPLETE — 3 plans delivered (PendingDispatchRegistry + Classification, Directory Architecture, Hierarchy Manifest + Immediate I/O + Cleanup).
 
 **CP-ST-05 status:** ✅ COMPLETE — Investigation phase, root causes identified, decisions D-CP05-01 through D-CP05-06 locked.
@@ -194,6 +194,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 | CP-ST-04 | ✅ COMPLETE | L3 source | Architecture fix — PendingDispatchRegistry, directory architecture, hierarchy manifest |
 | CP-ST-05 | ✅ COMPLETE | L3 source | Data loss investigation — root cause analysis, 6 decisions locked |
 | CP-ST-06 | ✅ COMPLETE | L3 source + L2 tests | Root cause rewrite — 6 RCs fixed, 418/418 tests, retry queue, runtime preservation |
+| CP-DT-01 | 🔴 NOT PLANNED | L5→L2-L3 | Delegate-Task Ecosystem Revamp — 4 deliverables: SPEC.md, CONTEXT.md, RESEARCH.md, PATTERN.md |
 
 ---
 
@@ -208,6 +209,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-12** — Phase 13 added: Fix all session-tracker defects with gatekeeping TDD SPEC-driven honest validation and regression prevention
 - **2026-05-13** — CP-ST-03 phase created: Architecture Detox (event-tracker excision + plugin.ts purification). Plan 01 (Event-Tracker Excision) complete — 22 files deleted, 7 docs synced, EXCISION.md test (13 assertions) passes. Plan 02 (Plugin.ts Purification) complete — 7 inline closures extracted to 14 files, plugin.ts 330→267 LOC (19% reduction), 33 new unit tests all pass.
 - Phase CP-ST-06 added: Session Tracker Root Cause Rewrite — triệt để rewrite 6 root causes + xóa 30 stale mock tests
+- **2026-05-18** — Phase CP-DT-01 INSERTED after CP-ST-06: Delegate-Task Ecosystem Revamp — toàn diện refactor delegate-task (proven broken: child sessions freeze sau 30 phút, 0 tool calls). 4 deliverables: SPEC.md, CONTEXT.md, RESEARCH.md, PATTERN.md. Research sâu OpenCode SDK + source-code architecture trước khi design v2.
 
 ### Key Restructuring Decisions
 
@@ -226,9 +228,10 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 ## Next Actions
 
 1. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass, typecheck clean, all review findings fixed. 6 root causes permanently fixed.
-2. **CP-PTY-01 READY** — Background Shell Control-Plane MVP is the next executable phase (BOOT-07 complete, entry gate satisfied).
-3. **Runtime UAT pending** — Live compact/resume needs UAT with real long-haul session to confirm OpenCode task output format matches parser.
-4. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
+2. **CP-DT-01 INSERTED** — Delegate-Task Ecosystem Revamp: phase directory created, ROADMAP.md updated, STATE.md updated. Next: create 4 deliverables (SPEC.md, CONTEXT.md, RESEARCH.md, PATTERN.md) via `/gsd-spec-phase CP-DT-01`.
+3. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete, entry gate satisfied). Now AFTER CP-DT-01 in dependency order.
+4. **Runtime UAT pending** — Live compact/resume needs UAT with real long-haul session to confirm OpenCode task output format matches parser.
+5. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-PTY readiness checks.
 
 ## Option 3 Foundation Artifacts
 
