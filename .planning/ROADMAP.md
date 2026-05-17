@@ -161,7 +161,7 @@ Toàn diện refactor và revamp delegate-task ecosystem. Phase này cover TẤT
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| CP-DT-01 | **Delegate-Task Ecosystem Revamp** | 🔴 NOT PLANNED | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC.md + CONTEXT.md + RESEARCH.md + PATTERN.md → L2-L3: progressive polling, completion detection, TUI injection tests |
+| CP-DT-01 | **Delegate-Task Ecosystem Revamp** | 🟡 SPEC COMPLETE — 4/4 deliverables ready | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC.md + CONTEXT.md + RESEARCH.md + PATTERN.md ✅ → L2-L3: progressive polling, completion detection, TUI injection tests |
 
 #### CP-DT-01 Scope
 
