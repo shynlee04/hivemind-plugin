@@ -31,10 +31,12 @@ import { AgentTransform } from "../../../src/features/session-tracker/transform/
 
 vi.mock("../../../src/shared/session-api.js", () => ({
   getSession: vi.fn(),
+  getSessionMessages: vi.fn().mockResolvedValue([]),
 }))
 
-import { getSession } from "../../../src/shared/session-api.js"
+import { getSession, getSessionMessages } from "../../../src/shared/session-api.js"
 const mockGetSession = vi.mocked(getSession)
+const mockGetSessionMessages = vi.mocked(getSessionMessages)
 
 async function tempProjectRoot(prefix: string): Promise<string> {
   const root = resolve(tmpdir(), `${prefix}-${randomBytes(4).toString("hex")}`)
@@ -47,6 +49,7 @@ describe("CP-ST-06 runtime preservation regressions", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
+    mockGetSessionMessages.mockResolvedValue([])
     projectRoot = await tempProjectRoot("st-runtime-preserve")
   })
 
@@ -141,6 +144,43 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     expect(content).toContain("## USER (turn 1)")
     expect(content).toContain("**source:** real-human")
     expect(content).toContain("root prompt when SDK omits parentID")
+  })
+
+  it("backfills a missed initial real-human prompt before the first main-session tool block", async () => {
+    const sessionID = "ses_backfill_initial_prompt"
+    const tracker = new SessionTracker({
+      client: {
+        app: { log: vi.fn() },
+        session: { get: mockGetSession, messages: vi.fn().mockResolvedValue([]), list: vi.fn().mockResolvedValue([]) },
+      } as never,
+      projectRoot,
+    })
+    mockGetSession.mockResolvedValue({ id: sessionID } as never)
+    mockGetSessionMessages.mockResolvedValue([
+      {
+        info: { role: "user" },
+        parts: [
+          { type: "text", text: "real human prompt recovered from SDK messages" },
+          { type: "text", synthetic: true, text: "synthetic command expansion must not become human prompt" },
+        ],
+      },
+    ] as never)
+
+    await tracker.initialize()
+    await tracker.handleToolExecuteAfter(
+      { tool: "read", sessionID, callID: "call_backfill_prompt", args: { filePath: "README.md" } },
+      { title: "read", output: "ok", metadata: {} },
+    )
+
+    const content = await readFile(
+      join(projectRoot, ".hivemind", "session-tracker", sessionID, `${sessionID}.md`),
+      "utf-8",
+    )
+    expect(content).toContain("## USER (turn 1)")
+    expect(content).toContain("**source:** real-human")
+    expect(content).toContain("real human prompt recovered from SDK messages")
+    expect(content).not.toContain("synthetic command expansion must not become human prompt")
+    expect(content.indexOf("## USER (turn 1)")).toBeLessThan(content.indexOf("### Tool: read"))
   })
 
   it("preserves full session.compacted payload in main session markdown", async () => {

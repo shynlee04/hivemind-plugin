@@ -49,7 +49,7 @@ describe("Session routing classification", () => {
 
     // Wire private fields for testing — focus on routing decisions, not bootstrap internals
     ;(tracker as any).bootstrappedSessions = new Set()
-    ;(tracker as any).messageCapture = { handleChatMessage: mockHandleChatMessage }
+    ;(tracker as any).messageCapture = { handleChatMessage: mockHandleChatMessage, backfillUserTurnsFromSdk: vi.fn() }
     ;(tracker as any).toolCapture = { handleToolExecuteAfter: mockHandleToolExecuteAfter }
     ;(tracker as any).sessionRouter = { route: mockRoute }
     ;(tracker as any).classifier = { classify: mockClassify }

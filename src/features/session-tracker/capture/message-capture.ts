@@ -18,7 +18,9 @@ import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import { isValidSessionID } from "../types.js"
 import { safeSessionPath } from "../persistence/atomic-write.js"
 import { readFile } from "node:fs/promises"
+import { asString, getNestedValue } from "../../../shared/helpers.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
+import { getSessionMessages } from "../../../shared/session-api.js"
 
 // ---------------------------------------------------------------------------
 // Hook input/output shapes
@@ -70,6 +72,9 @@ export class MessageCapture {
    * turn number to assign (1-based).
    */
   private turnCounters: Map<string, number> = new Map()
+
+  /** Sessions already backfilled from SDK messages during this process. */
+  private backfilledSessions: Set<string> = new Set()
 
   /**
    * @param deps - Injected dependencies.
@@ -253,6 +258,50 @@ export class MessageCapture {
   }
 
   /**
+   * Backfills missed real-human user messages from OpenCode session history.
+   *
+   * This repairs race windows where tool/event hooks are observed but the
+   * initial `chat.message` hook was missed by the plugin process. Only
+   * non-synthetic text from SDK user messages is persisted as human context.
+   *
+   * @param sessionID - Main session identifier to backfill.
+   * @returns Promise that resolves after any missing real-human turns are appended.
+   */
+  async backfillUserTurnsFromSdk(sessionID: string): Promise<void> {
+    if (this.backfilledSessions.has(sessionID)) return
+    this.backfilledSessions.add(sessionID)
+
+    try {
+      const persistedTurns = await this.readPersistedUserTurnCount(sessionID)
+      const messages = await getSessionMessages(this.client, sessionID)
+      const humanMessages = messages
+        .filter((message) => this.messageRole(message) === "user")
+        .map((message) => this.extractHumanTextFromSdkMessage(message))
+        .filter((content): content is string => Boolean(content))
+
+      const missing = humanMessages.slice(persistedTurns)
+      if (missing.length === 0) return
+
+      let nextTurn = persistedTurns
+      for (const content of missing) {
+        nextTurn += 1
+        await this.sessionWriter.appendUserTurn(sessionID, nextTurn, content)
+        await this.sessionIndexWriter.incrementTurnCount(sessionID)
+      }
+      this.turnCounters.set(sessionID, nextTurn)
+    } catch (err) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: SDK user-message backfill failed for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  }
+
+  /**
    * Extracts the concatenated text content from an array of output parts.
    *
    * @param parts - Array of hook output parts.
@@ -265,4 +314,50 @@ export class MessageCapture {
       .map((p) => p.text!)
       .join("\n")
   }
+
+  /**
+   * Reads how many human user turns are already persisted.
+   *
+   * @param sessionID - Session identifier.
+   * @returns Count of persisted user turn headers.
+   */
+  private async readPersistedUserTurnCount(sessionID: string): Promise<number> {
+    try {
+      const filePath = safeSessionPath(this.projectRoot, sessionID, `${sessionID}.md`)
+      const raw = await readFile(filePath, "utf-8")
+      const matches = raw.match(/## USER \(turn \d+\)/g)
+      return matches?.length ?? 0
+    } catch {
+      return 0
+    }
+  }
+
+  /**
+   * Extracts role from either SDK message shape.
+   *
+   * @param message - Raw SDK message.
+   * @returns Message role, if present.
+   */
+  private messageRole(message: unknown): string | undefined {
+    return asString(getNestedValue(message, ["info", "role"])) ?? asString(getNestedValue(message, ["role"]))
+  }
+
+  /**
+   * Extracts non-synthetic text from a user message.
+   *
+   * @param message - Raw SDK message.
+   * @returns Human-authored text content, or undefined when none exists.
+   */
+  private extractHumanTextFromSdkMessage(message: unknown): string | undefined {
+    const parts = getNestedValue(message, ["parts"])
+    if (!Array.isArray(parts)) return undefined
+    const content = parts
+      .filter((part) => getNestedValue(part, ["type"]) === "text")
+      .filter((part) => getNestedValue(part, ["synthetic"]) !== true)
+      .map((part) => asString(getNestedValue(part, ["text"])) ?? "")
+      .filter((text) => text.length > 0)
+      .join("\n")
+    return content.length > 0 ? content : undefined
+  }
+
 }

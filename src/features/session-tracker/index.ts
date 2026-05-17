@@ -307,6 +307,8 @@ export class SessionTracker {
         await this.ensureSessionReady(input.sessionID)
       }
 
+      await this.messageCapture.backfillUserTurnsFromSdk(input.sessionID)
+
       if (this.toolCapture) {
         await this.toolCapture.handleToolExecuteAfter(
           input as Parameters<typeof this.toolCapture.handleToolExecuteAfter>[0],
