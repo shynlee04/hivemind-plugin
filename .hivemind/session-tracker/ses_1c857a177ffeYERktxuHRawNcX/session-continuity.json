@@ -1,0 +1,66 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+  "lastUpdated": "2026-05-17T21:35:54.418Z",
+  "hierarchy": {
+    "root": "ses_1c857a177ffeYERktxuHRawNcX",
+    "children": {
+      "ses_1c8487354ffeUOsrTU3ThjChi8": {
+        "file": "ses_1c8487354ffeUOsrTU3ThjChi8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_1c8487341ffev04MQUJUkXRzam": {
+        "file": "ses_1c8487341ffev04MQUJUkXRzam.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1c840cceeffePw3f2EAvX3aMcv": {
+        "file": "ses_1c840cceeffePw3f2EAvX3aMcv.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_1c83c3863ffemnoml2QiCn6ma3": {
+        "file": "ses_1c83c3863ffemnoml2QiCn6ma3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_1c8350683ffedKXOfJpQu0Lqn5": {
+        "file": "ses_1c8350683ffedKXOfJpQu0Lqn5.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1c82207e4ffeWJk1tvGElgw3Lu": {
+        "file": "ses_1c82207e4ffeWJk1tvGElgw3Lu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 16,
+  "toolSummary": {
+    "execute-slash-command": 5,
+    "read": 27,
+    "sequential-thinking_sequentialthinking": 6,
+    "bash": 20,
+    "edit": 9,
+    "skill": 2,
+    "grep": 6,
+    "glob": 11,
+    "todowrite": 7,
+    "task": 5,
+    "apply_patch": 1
+  }
+}

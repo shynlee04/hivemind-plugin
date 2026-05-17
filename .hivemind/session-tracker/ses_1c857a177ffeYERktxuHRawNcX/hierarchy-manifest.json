@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+  "lastUpdated": "2026-05-17T21:35:54.433Z",
+  "children": {
+    "ses_1c8487354ffeUOsrTU3ThjChi8": {
+      "sessionID": "ses_1c8487354ffeUOsrTU3ThjChi8",
+      "parentSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "rootMainSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-doc-writer",
+      "subagentType": "gsd-doc-writer",
+      "createdAt": "2026-05-17T20:53:56.600Z",
+      "updatedAt": "2026-05-17T20:57:20.490Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c8487354ffeUOsrTU3ThjChi8.json"
+    },
+    "ses_1c840cceeffePw3f2EAvX3aMcv": {
+      "sessionID": "ses_1c840cceeffePw3f2EAvX3aMcv",
+      "parentSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "rootMainSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-doc-writer",
+      "subagentType": "gsd-doc-writer",
+      "createdAt": "2026-05-17T21:02:17.918Z",
+      "updatedAt": "2026-05-17T21:06:10.106Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c840cceeffePw3f2EAvX3aMcv.json"
+    },
+    "ses_1c83c3863ffemnoml2QiCn6ma3": {
+      "sessionID": "ses_1c83c3863ffemnoml2QiCn6ma3",
+      "parentSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "rootMainSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-doc-writer",
+      "subagentType": "gsd-doc-writer",
+      "createdAt": "2026-05-17T21:07:18.095Z",
+      "updatedAt": "2026-05-17T21:10:47.518Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c83c3863ffemnoml2QiCn6ma3.json"
+    },
+    "ses_1c8350683ffedKXOfJpQu0Lqn5": {
+      "sessionID": "ses_1c8350683ffedKXOfJpQu0Lqn5",
+      "parentSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "rootMainSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-planner",
+      "subagentType": "gsd-planner",
+      "createdAt": "2026-05-17T21:15:09.609Z",
+      "updatedAt": "2026-05-17T21:26:17.446Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c8350683ffedKXOfJpQu0Lqn5.json"
+    },
+    "ses_1c82207e4ffeWJk1tvGElgw3Lu": {
+      "sessionID": "ses_1c82207e4ffeWJk1tvGElgw3Lu",
+      "parentSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "rootMainSessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-17T21:35:54.433Z",
+      "updatedAt": "2026-05-17T21:35:54.433Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_1c82207e4ffeWJk1tvGElgw3Lu.json"
+    }
+  },
+  "totalChildren": 5,
+  "maxDepth": 1
+}

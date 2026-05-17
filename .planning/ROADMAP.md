@@ -161,14 +161,14 @@ Toàn diện refactor và revamp delegate-task ecosystem. Phase này cover TẤT
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| CP-DT-01 | **Delegate-Task Ecosystem Revamp** | 🟡 PLANNED — 5 plans in 5 waves | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC.md + CONTEXT.md + RESEARCH.md + PATTERN.md ✅ → L2-L3: progressive polling, completion detection, TUI injection tests |
+| CP-DT-01 | **Delegate-Task Ecosystem Revamp** | 🟡 PLAN COMPLETE — 5 plans in 5 waves ready for execution | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC.md + CONTEXT.md + RESEARCH.md + PATTERN.md ✅; PLAN.md waves ✅; next L2-L3: strict TDD execution, progressive polling, completion detection, TUI injection tests |
 
 **Plans:**
-- [ ] CP-DT-01-01-PLAN.md — Wave 1: Foundation modules (dispatcher, slot-manager, agent-resolver, monitor, escalation-timer, notification-router, lifecycle, retry-handler)
-- [ ] CP-DT-01-02-PLAN.md — Wave 2: Coordinator wiring + CompletionDetector v2 dual-signal
-- [ ] CP-DT-01-03-PLAN.md — Wave 3: Tool layer rewrite (delegate-task v2 + delegation-status v2 + Zod schemas)
-- [ ] CP-DT-01-04-PLAN.md — Wave 4: manager.ts decomposition + auto-loop + ralph-loop + chaining
-- [ ] CP-DT-01-05-PLAN.md — Wave 5: Plugin wiring + integration tests + regression check + JSDoc audit
+- [x] CP-DT-01-01-PLAN.md — Wave 1: Foundation modules (dispatcher, slot-manager, agent-resolver, monitor, escalation-timer, notification-router, lifecycle, retry-handler) ✅ planned
+- [x] CP-DT-01-02-PLAN.md — Wave 2: Coordinator wiring + CompletionDetector v2 dual-signal ✅ planned
+- [x] CP-DT-01-03-PLAN.md — Wave 3: Tool layer rewrite (delegate-task v2 + delegation-status v2 + Zod schemas) ✅ planned
+- [x] CP-DT-01-04-PLAN.md — Wave 4: manager.ts decomposition + auto-loop + ralph-loop + chaining ✅ planned
+- [x] CP-DT-01-05-PLAN.md — Wave 5: Plugin wiring + integration tests + regression check + JSDoc audit ✅ planned
 
 #### CP-DT-01 Scope
 

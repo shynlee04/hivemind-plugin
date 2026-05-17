@@ -373,14 +373,16 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 ## Current Phase Context
 
-**Active phase (2026-05-17):** CP-ST-06 — Session Tracker Root Cause Rewrite. Plan 04 COMPLETE (`9410d301`). Plan 05 COMPLETE (`72eaed14`).  
-**What was delivered:**
+**Active phase (2026-05-18):** CP-DT-01 — Delegate-Task Ecosystem Revamp. SPEC COMPLETE (`beff7666`). PLAN COMPLETE (`d9fb774f`).  
+**What was delivered before execution:**
 - Plan 04: `src/features/session-tracker/persistence/retry-queue.ts` — `ChildWriteRetryQueue` with exponential backoff (1s→2s→4s→8s→16s), max 5 retries, degraded persistence to `retry-degraded.json`, flush-on-init + 30s periodic interval.
 - Plan 04: `src/features/session-tracker/persistence/child-writer.ts` — removed `.catch(() => {})` error swallowing (RC-5), integrated retry queue, errors propagate to caller AND create retry records.
 - Plan 04: `src/features/session-tracker/capture/event-capture.ts` — `writeImmediateChildFile()` uses same retry/error surface, no best-effort swallow.
 - Plan 04: `src/features/session-tracker/types.ts` — removed "first 200 chars" truncation comment; `lastMessage` preserved in full (RC-4).
 - Plan 05: Rewrote 5 test files (294 insertions, 949 deletions) to match SessionRouter/classifier architecture: `ensure-session-ready-classification.test.ts` (6 tests), `index.test.ts` (9 tests), `session-tracker.test.ts` (8 tests), `pipeline.test.ts` (12 integration tests), `cleanup.test.ts` (2 tests).
 - Runtime preservation follow-up: parent `task` results now preserve child work because OpenCode does not emit hooks for subagent sessions; nested task results, retry queue wiring, child lifecycle status routing, project-continuity child recovery, and unknownSub task guard were synchronized across `session-tracker`.
-- All 418 session-tracker tests pass. Typecheck clean. Full suite remains at 5 pre-existing failures + 1 failed suite in unrelated modules (steering-engine, hooks, plugin, tools).
+- CP-DT-01 planning: 4/4 core deliverables complete (CONTEXT, RESEARCH, PATTERN, SPEC), then 5/5 GSD execution plans created in `.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/`.
+- Execution route: `/gsd-execute-phase CP-DT-01` first, then `/gsd-code-review CP-DT-01`, then `/gsd-validate-phase CP-DT-01`, followed by live smoke/UAT proof where feasible.
+- CP-ST-06 baseline remains: all 418 session-tracker tests pass. Typecheck clean. Full suite remains at 5 pre-existing failures + 1 failed suite in unrelated modules (steering-engine, hooks, plugin, tools).
 
-**Next phase:** CP-PTY-01 (Background Shell Control-Plane MVP).
+**Next phase:** CP-PTY-01 (Background Shell Control-Plane MVP) after CP-DT-01 execution, review, validation, and smoke evidence.

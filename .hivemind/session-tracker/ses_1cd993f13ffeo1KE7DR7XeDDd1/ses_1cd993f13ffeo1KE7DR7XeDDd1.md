@@ -481,3 +481,13 @@ commit và tracking đúng gsd đừng bao giờ ghi là tôi chưa kêu commit 
 }
 ```
 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_JMSW9IbZboY5ylUj6sGJnaGw"
+}
+```
+
