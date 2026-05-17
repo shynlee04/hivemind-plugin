@@ -117,8 +117,8 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     expect(content).toContain("real human opening prompt must not disappear")
   })
 
-  it("does not treat incomplete SDK session objects as root evidence", async () => {
-    const sessionID = "ses_incomplete_sdk_not_root"
+  it("captures the first real-human prompt when SDK root object omits parentID", async () => {
+    const sessionID = "ses_sdk_omits_parent_id"
     const tracker = new SessionTracker({
       client: {
         app: { log: vi.fn() },
@@ -130,11 +130,17 @@ describe("CP-ST-06 runtime preservation regressions", () => {
 
     await tracker.initialize()
     await tracker.handleChatMessage(
-      { sessionID, messageID: "msg_incomplete_sdk", variant: "user" },
-      { message: { role: "user" }, parts: [{ type: "text", text: "must not bootstrap from incomplete SDK data" }] },
+      { sessionID, messageID: "msg_sdk_omits_parent", variant: "user" },
+      { message: { role: "user" }, parts: [{ type: "text", text: "root prompt when SDK omits parentID" }] },
     )
 
-    expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", sessionID))).toBe(false)
+    const content = await readFile(
+      join(projectRoot, ".hivemind", "session-tracker", sessionID, `${sessionID}.md`),
+      "utf-8",
+    )
+    expect(content).toContain("## USER (turn 1)")
+    expect(content).toContain("**source:** real-human")
+    expect(content).toContain("root prompt when SDK omits parentID")
   })
 
   it("preserves full session.compacted payload in main session markdown", async () => {

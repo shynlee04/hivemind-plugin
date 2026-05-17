@@ -92,7 +92,7 @@ export class SessionClassifier {
     let parentID: string | undefined
     try {
       const session = await getSessionSafely(sessionID)
-      if (session && typeof session === "object" && "parentID" in session) {
+      if (session && typeof session === "object") {
         parentID = (session as { parentID?: string | null }).parentID ?? undefined
         sdkReportedRoot = parentID === undefined
       }

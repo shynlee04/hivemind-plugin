@@ -52,6 +52,17 @@ function mockGetSession(parentID: string | null | undefined) {
 }
 
 /**
+ * Mock SDK session fetcher that returns a root-like object without parentID.
+ */
+function mockGetSessionWithoutParentID() {
+  return async (_id: string) => ({
+    id: "ses_mock",
+    title: "Mock Session",
+    time: { created: Date.now(), updated: Date.now() },
+  })
+}
+
+/**
  * Mock SDK that always throws (simulates SDK failure).
  */
 function mockGetSessionFails() {
@@ -157,6 +168,28 @@ describe("AC-RC3-02: SessionRouter route decisions", () => {
     }
   })
 
+  it("never routes omitted-parentID SDK objects to main when hierarchy identifies a child", async () => {
+    const hierarchyIndex = new HierarchyIndex({ projectRoot: testRoot })
+    hierarchyIndex.registerChild("ses_parent_omit_hierarchy", "ses_child_omit_hierarchy")
+
+    const classifier = new SessionClassifier({
+      hierarchyIndex,
+      pendingRegistry: undefined,
+    })
+
+    const router = new SessionRouter({
+      classifier,
+      getSessionSafely: mockGetSessionWithoutParentID(),
+    })
+
+    const decision = await router.route("ses_child_omit_hierarchy")
+
+    expect(decision.route).toBe("child")
+    if (decision.route === "child") {
+      expect(decision.parentID).toBe("ses_parent_omit_hierarchy")
+    }
+  })
+
   it("never routes to 'main' when Gate 3 (pending) identifies a child", async () => {
     const pendingRegistry = new PendingDispatchRegistry()
     pendingRegistry.add({
@@ -182,6 +215,34 @@ describe("AC-RC3-02: SessionRouter route decisions", () => {
     expect(decision.route).toBe("child")
     if (decision.route === "child") {
       expect(decision.parentID).toBe("ses_parent_003")
+    }
+  })
+
+  it("never routes omitted-parentID SDK objects to main when pending identifies a child", async () => {
+    const pendingRegistry = new PendingDispatchRegistry()
+    pendingRegistry.add({
+      parentSessionID: "ses_parent_omit_pending",
+      callID: "call_omit_pending",
+      subagentType: "test-skill",
+      timestamp: Date.now(),
+    })
+    pendingRegistry.updateWithChildID("call_omit_pending", "ses_child_omit_pending")
+
+    const classifier = new SessionClassifier({
+      hierarchyIndex: undefined,
+      pendingRegistry,
+    })
+
+    const router = new SessionRouter({
+      classifier,
+      getSessionSafely: mockGetSessionWithoutParentID(),
+    })
+
+    const decision = await router.route("ses_child_omit_pending")
+
+    expect(decision.route).toBe("child")
+    if (decision.route === "child") {
+      expect(decision.parentID).toBe("ses_parent_omit_pending")
     }
   })
 })
