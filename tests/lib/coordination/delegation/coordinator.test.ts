@@ -1,0 +1,153 @@
+import { vi } from "vitest"
+
+import { DelegationCoordinator } from "../../../../src/coordination/delegation/coordinator.js"
+import type { DelegationResult } from "../../../../src/coordination/delegation/types.js"
+
+const baseDispatchParams = {
+  agent: "gsd-executor",
+  category: "implementation",
+  currentDepth: 1,
+  parentSessionId: "parent-1",
+  queueKey: "agent:gsd-executor:category:implementation",
+  surface: "agent-delegation" as const,
+}
+
+function createDeps() {
+  const slotHandle = {
+    queueKey: baseDispatchParams.queueKey,
+    release: vi.fn(),
+    sessionId: baseDispatchParams.parentSessionId,
+  }
+  const dispatcher = {
+    preflightCheck: vi.fn().mockResolvedValue({
+      queueKey: baseDispatchParams.queueKey,
+      slotHandle,
+      validatedAgent: { name: "gsd-executor", tools: { read: true } },
+    }),
+  }
+  const monitor = {
+    start: vi.fn(),
+    stop: vi.fn(),
+    onCompletion: vi.fn(),
+  }
+  const notificationRouter = {
+    deregister: vi.fn(),
+    register: vi.fn(),
+    route: vi.fn(),
+  }
+  const lifecycle = {
+    isTerminal: vi.fn((status: string) => ["completed", "error", "timeout"].includes(status)),
+    markTimeout: vi.fn((delegationId: string): DelegationResult => ({ delegationId, status: "timeout" })),
+    transition: vi.fn((delegationId: string, status: DelegationResult["status"]): DelegationResult => ({ delegationId, status })),
+  }
+  const detector = {
+    unwatch: vi.fn(),
+    watchDualSignal: vi.fn(),
+  }
+  const retryHandler = {
+    persistWithRetry: vi.fn().mockResolvedValue(true),
+  }
+
+  return { detector, dispatcher, lifecycle, monitor, notificationRouter, retryHandler, slotHandle }
+}
+
+describe("DelegationCoordinator", () => {
+  it("executes preflight, creates a record, starts monitoring, and returns the delegation id", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+
+    const result = await coordinator.dispatch(baseDispatchParams)
+
+    expect(result.delegationId).toMatch(/^dt-\d+-[a-z0-9]+$/)
+    expect(result.status).toBe("dispatched")
+    expect(deps.dispatcher.preflightCheck).toHaveBeenCalledWith(baseDispatchParams)
+    expect(deps.lifecycle.transition).toHaveBeenCalledWith(result.delegationId, "dispatched")
+    expect(deps.notificationRouter.register).toHaveBeenCalledWith(result.delegationId, "parent-1")
+    expect(deps.monitor.start).toHaveBeenCalledWith(result.delegationId, "parent-1")
+    expect(deps.detector.watchDualSignal).toHaveBeenCalledWith(result.delegationId, expect.any(String), expect.any(Function))
+  })
+
+  it("does not create records or start monitoring when preflight rejects the request", async () => {
+    const deps = createDeps()
+    deps.dispatcher.preflightCheck.mockRejectedValueOnce(new Error("[Harness] category denied"))
+    const coordinator = new DelegationCoordinator(deps)
+
+    await expect(coordinator.dispatch(baseDispatchParams)).rejects.toThrow("[Harness] category denied")
+
+    expect(deps.lifecycle.transition).not.toHaveBeenCalled()
+    expect(deps.notificationRouter.register).not.toHaveBeenCalled()
+    expect(deps.monitor.start).not.toHaveBeenCalled()
+  })
+
+  it("dispatches three delegations sequentially and isolates each completion callback", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const completions: Array<(result: DelegationResult) => void> = []
+    deps.detector.watchDualSignal.mockImplementation((_id: string, _session: string, callback: (result: DelegationResult) => void) => {
+      completions.push(callback)
+    })
+
+    const first = await coordinator.dispatch({ ...baseDispatchParams, parentSessionId: "parent-a", queueKey: "key-a" })
+    const second = await coordinator.dispatch({ ...baseDispatchParams, parentSessionId: "parent-b", queueKey: "key-b" })
+    const third = await coordinator.dispatch({ ...baseDispatchParams, parentSessionId: "parent-c", queueKey: "key-c" })
+
+    completions[0]?.({ delegationId: first.delegationId, status: "completed", result: "one" })
+    completions[1]?.({ delegationId: second.delegationId, status: "error", error: "two" })
+    completions[2]?.({ delegationId: third.delegationId, status: "completed", result: "three" })
+
+    expect(deps.monitor.start).toHaveBeenNthCalledWith(1, first.delegationId, "parent-a")
+    expect(deps.monitor.start).toHaveBeenNthCalledWith(2, second.delegationId, "parent-b")
+    expect(deps.monitor.start).toHaveBeenNthCalledWith(3, third.delegationId, "parent-c")
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: first.delegationId, type: "success" }))
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: second.delegationId, type: "failure" }))
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: third.delegationId, type: "success" }))
+  })
+
+  it("routes completion, stops monitoring, deregisters notification routing, and releases the slot", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.handleCompletion(dispatched.delegationId, { delegationId: dispatched.delegationId, status: "completed", result: "done" })
+
+    expect(deps.monitor.onCompletion).toHaveBeenCalledOnce()
+    expect(deps.lifecycle.transition).toHaveBeenCalledWith(dispatched.delegationId, "completed")
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: dispatched.delegationId, type: "success" }))
+    expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
+    expect(deps.slotHandle.release).toHaveBeenCalledOnce()
+    expect(deps.retryHandler.persistWithRetry).toHaveBeenCalled()
+  })
+
+  it("marks timeout, routes timeout notification, deregisters routing, and releases the slot", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.handleTimeout(dispatched.delegationId)
+
+    expect(deps.lifecycle.markTimeout).toHaveBeenCalledWith(dispatched.delegationId)
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: dispatched.delegationId, type: "timeout" }))
+    expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
+    expect(deps.slotHandle.release).toHaveBeenCalledOnce()
+  })
+
+  it("handles concurrent delegations independently without cross-talk", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const callbacks = new Map<string, (result: DelegationResult) => void>()
+    deps.detector.watchDualSignal.mockImplementation((delegationId: string, _session: string, callback: (result: DelegationResult) => void) => {
+      callbacks.set(delegationId, callback)
+    })
+
+    const [left, right] = await Promise.all([
+      coordinator.dispatch({ ...baseDispatchParams, parentSessionId: "parent-left", queueKey: "key-left" }),
+      coordinator.dispatch({ ...baseDispatchParams, parentSessionId: "parent-right", queueKey: "key-right" }),
+    ])
+
+    callbacks.get(right.delegationId)?.({ delegationId: right.delegationId, status: "completed", result: "right" })
+
+    expect(deps.notificationRouter.route).toHaveBeenCalledTimes(1)
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: right.delegationId }))
+    expect(deps.notificationRouter.route).not.toHaveBeenCalledWith(expect.objectContaining({ delegationId: left.delegationId }))
+  })
+})
