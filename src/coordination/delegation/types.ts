@@ -84,6 +84,35 @@ export interface DelegationResult {
   total?: number
 }
 
+/** Notification types emitted by the delegate-task v2 routing layer. */
+export type DelegationNotificationType = "success" | "failure" | "progress" | "timeout"
+
+/** Escalation levels used by progressive delegation monitoring. */
+export type EscalationLevel = "WARN" | "NUDGE" | "ALERT" | "TERMINATE"
+
+/** Progressive polling cadence in seconds. */
+export const POLLING_CADENCE = [30, 45, 60, 90, 120, 180] as const
+export type PollingCadence = typeof POLLING_CADENCE
+
+/** Escalation thresholds in seconds. */
+export const ESCALATION_THRESHOLDS = [60, 120, 180, 300] as const
+export type EscalationThresholds = typeof ESCALATION_THRESHOLDS
+
+/** Compact notification payload routed back to the parent session. */
+export interface DelegationNotification {
+  type: DelegationNotificationType
+  delegationId: string
+  message: string
+  timestamp: number
+}
+
+/** Snapshot of active delegation slots for a parent session. */
+export interface SlotInfo {
+  acquired: number
+  maxSlots: number
+  perKeyUsage: Map<string, number>
+}
+
 export type CommandDelegationParams = {
   parentSessionId: string
   command: string
