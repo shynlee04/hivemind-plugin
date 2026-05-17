@@ -11,7 +11,9 @@ export interface PreflightParams {
   currentDepth: number
   parentSessionId: string
   policy?: CategoryGatePolicy
+  prompt?: string
   queueKey: string
+  safetyCeilingMs?: number
   surface: CategoryGateSurface
   toolProfileMode?: string
 }

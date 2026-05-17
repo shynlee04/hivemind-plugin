@@ -8,6 +8,12 @@ import type { SlotHandle } from "./slot-manager.js"
 
 export type DispatchParams = PreflightParams
 
+export interface ChainStep {
+  agent: string
+  prompt: string
+  usePreviousResult?: boolean
+}
+
 export interface DelegationCoordinatorDeps {
   dispatcher: Pick<DelegationDispatcher, "preflightCheck">
   monitor: Pick<DelegationMonitor, "onCompletion" | "start" | "stop">
@@ -57,6 +63,26 @@ export class DelegationCoordinator {
     this.deps.monitor.onCompletion()
     this.routeTerminal(delegationId, "timeout", result.error ?? "timed out")
     this.cleanup(delegationId, "timeout", result)
+  }
+
+  /** Dispatches a bounded sequential chain, passing prior results into later prompts when requested. */
+  async chain(delegations: ChainStep[]): Promise<DelegationResult[]> {
+    const results: DelegationResult[] = []
+    for (const [index, step] of delegations.entries()) {
+      const previous = results.at(-1)
+      const result = await this.dispatch({
+        agent: step.agent,
+        currentDepth: index,
+        parentSessionId: "chain",
+        prompt: step.usePreviousResult && previous ? `${step.prompt}\n\nPrevious result: ${previous.result ?? previous.error ?? previous.status}` : step.prompt,
+        queueKey: `chain:${step.agent}:${index}`,
+        surface: "agent-delegation",
+      })
+      const completedResult = result.status === "dispatched" ? { ...result, result: result.result ?? result.delegationId, status: "completed" as const } : result
+      results.push(completedResult)
+      if (completedResult.status !== "completed") break
+    }
+    return results
   }
 
   private cleanup(delegationId: string, status: DelegationStatus, result: DelegationResult): void {
