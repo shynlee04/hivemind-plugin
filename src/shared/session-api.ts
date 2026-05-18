@@ -1,4 +1,5 @@
 import type { createOpencodeClient } from "@opencode-ai/sdk"
+import type { SnapshotFileDiff, OpencodeClient as V2OpencodeClient, TextPartInput } from "@opencode-ai/sdk/v2/client"
 
 import { asString, getNestedValue, unwrapData } from "./helpers.js"
 import type { ResolvedBehavioralProfile } from "../routing/behavioral-profile/types.js"
@@ -282,4 +283,175 @@ export function getSessionBehavioralProfile(
   sessionContext?: Record<string, unknown>,
 ): ResolvedBehavioralProfile {
   return resolveBehavioralProfile(sessionId, projectRoot, sessionContext)
+}
+
+// ---------------------------------------------------------------------------
+// v2 SDK Client — coexists with v1, used for completion detection & control
+// ---------------------------------------------------------------------------
+
+/**
+ * Result of a completion check against a child session.
+ */
+export interface CompletionCheckResult {
+  isComplete: boolean
+  summary: string
+  filesChanged: string[]
+  toolExecutionTimeMs: number
+  reason: string
+}
+
+/**
+ * Options for v2 session client methods.
+ */
+export type V2SessionOptions = {
+  directory?: string
+  workspace?: string
+}
+
+/**
+ * v2 SDK session client wrapper.
+ *
+ * Provides access to v2-only capabilities: summarize, diff, enhanced messages,
+ * and abort. Coexists with v1 client — does NOT replace v1 functionality.
+ *
+ * v2 uses flat parameter shapes ({ sessionID }) vs v1 nested shapes
+ * ({ path: { id } }).
+ */
+export class V2SessionClient {
+  private readonly v2Client: V2OpencodeClient
+  private readonly defaults: V2SessionOptions
+
+  constructor(v2Client: V2OpencodeClient, defaults: V2SessionOptions = {}) {
+    this.v2Client = v2Client
+    this.defaults = defaults
+  }
+
+  /**
+   * Generate a concise summary of the session using AI compaction.
+   *
+   * @param sessionID - The session to summarize
+   * @param opts - Optional model/provider override
+   * @returns Summary text from AI compaction
+   */
+  async summarize(
+    sessionID: string,
+    opts?: { providerID?: string; modelID?: string; auto?: boolean },
+  ): Promise<string> {
+    const validSessionID = assertValidSessionID(sessionID)
+    const response = await this.v2Client.session.summarize({
+      sessionID: validSessionID,
+      directory: this.defaults.directory,
+      workspace: this.defaults.workspace,
+      providerID: opts?.providerID,
+      modelID: opts?.modelID,
+      auto: opts?.auto,
+    })
+    const data = unwrapData(response)
+    return (data as { summary?: string })?.summary ?? ""
+  }
+
+  /**
+   * Get file changes (diff) that resulted from a specific user message.
+   *
+   * @param sessionID - The session to query
+   * @param messageID - The message to get diff for
+   * @returns Array of file diffs
+   */
+  async diff(sessionID: string, messageID?: string): Promise<SnapshotFileDiff[]> {
+    const validSessionID = assertValidSessionID(sessionID)
+    const response = await this.v2Client.session.diff({
+      sessionID: validSessionID,
+      directory: this.defaults.directory,
+      workspace: this.defaults.workspace,
+      messageID,
+    })
+    const data = unwrapData(response)
+    return (data as { diffs?: SnapshotFileDiff[] })?.diffs ?? []
+  }
+
+  /**
+   * Get session messages with v2 pagination support (before cursor).
+   *
+   * @param sessionID - The session to query
+   * @param opts - Pagination options
+   * @returns Array of messages
+   */
+  async messages(
+    sessionID: string,
+    opts?: { limit?: number; before?: string },
+  ): Promise<unknown[]> {
+    const validSessionID = assertValidSessionID(sessionID)
+    const response = await this.v2Client.session.messages({
+      sessionID: validSessionID,
+      directory: this.defaults.directory,
+      workspace: this.defaults.workspace,
+      limit: opts?.limit,
+      before: opts?.before,
+    })
+    const data = unwrapData(response)
+    return Array.isArray(data) ? data : []
+  }
+
+  /**
+   * Abort an active session.
+   *
+   * @param sessionID - The session to abort
+   */
+  async abort(sessionID: string): Promise<void> {
+    const validSessionID = assertValidSessionID(sessionID)
+    await this.v2Client.session.abort({
+      sessionID: validSessionID,
+      directory: this.defaults.directory,
+      workspace: this.defaults.workspace,
+    })
+  }
+
+  /**
+   * Update session properties (title, permission, archive time).
+   *
+   * @param sessionID - The session to update
+   * @param params - Update parameters
+   */
+  async update(
+    sessionID: string,
+    params: { title?: string; permission?: Array<{ permission: string; pattern: string; action: "allow" | "deny" | "ask" }>; archived?: number },
+  ): Promise<unknown> {
+    const validSessionID = assertValidSessionID(sessionID)
+    const response = await this.v2Client.session.update({
+      sessionID: validSessionID,
+      directory: this.defaults.directory,
+      workspace: this.defaults.workspace,
+      title: params.title,
+      permission: params.permission,
+      time: params.archived !== undefined ? { archived: params.archived } : undefined,
+    })
+    return unwrapData(response)
+  }
+
+  /**
+   * Prompt a session with v2 parameter shape.
+   *
+   * @param sessionID - The session to prompt
+   * @param params - Prompt parameters
+   * @returns Prompt response
+   */
+  async prompt(
+    sessionID: string,
+    params: {
+      parts?: Array<TextPartInput>
+      agent?: string
+      noReply?: boolean
+    },
+  ): Promise<unknown> {
+    const validSessionID = assertValidSessionID(sessionID)
+    const response = await this.v2Client.session.prompt({
+      sessionID: validSessionID,
+      directory: this.defaults.directory,
+      workspace: this.defaults.workspace,
+      parts: params.parts,
+      agent: params.agent,
+      noReply: params.noReply,
+    })
+    return unwrapData(response)
+  }
 }
