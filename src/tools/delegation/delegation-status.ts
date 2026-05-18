@@ -22,15 +22,17 @@ const DelegationStatusInputSchema = z.object({
 })
 
 type DelegationStatusInput = z.infer<typeof DelegationStatusInputSchema>
-type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
-type ToolContext = { sessionID?: string; task?: NativeTask }
+type ToolContext = { sessionID?: string }
 type ManagerLike = {
   canSessionAccessDelegation: (sessionId: string | undefined, delegation: Delegation | undefined) => boolean
-  controlDelegation?: (request: { action: "abort" | "cancel" | "restart" | "redirect"; delegationId: string; nativeTask?: NativeTask; redirectAgent?: string; restartPrompt?: string }) => Promise<unknown>
+  controlDelegation?: (request: { action: "abort" | "cancel" | "restart" | "redirect"; delegationId: string; redirectAgent?: string; restartPrompt?: string }) => Promise<unknown>
   getAllDelegations: () => Delegation[]
   getStatus: (id: string) => Delegation | undefined
 }
-type StatusDeps = { coordinator?: { dispatch: (params: Record<string, unknown>) => Promise<Record<string, unknown>> }; getChildMessageCount?: (sessionId: string) => Promise<number | null>; getEscalationLevel?: (id: string) => string | null; lifecycle?: { isTerminal: (status: string) => boolean; markAborted: (id: string) => unknown; markCancelled: (id: string) => unknown }; nativeTask?: NativeTask; now?: () => number; readPersisted?: () => Delegation[]; terminateChild?: (sessionId: string) => Promise<unknown> }
+type StatusDeps = { coordinator?: { dispatch: (params: Record<string, unknown>) => Promise<Record<string, unknown>> }; getChildMessageCount?: (sessionId: string) => Promise<number | null>; getEscalationLevel?: (id: string) => string | null; lifecycle?: { isTerminal: (status: string) => boolean; markAborted: (id: string) => unknown; markCancelled: (id: string) => unknown }; now?: () => number; readPersisted?: () => Delegation[]; terminateChild?: (sessionId: string) => Promise<unknown> }
+
+const UNSUPPORTED_REPLACEMENT_MESSAGE =
+  "[Harness] restart/redirect is runtime-blocked: @opencode-ai/plugin ToolContext v1.15.4 does not expose a task field or verified custom-tool API for creating a replacement child session. Abort/cancel existing records remain supported; replacement dispatch requires a future verified SDK/CP-PTY path."
 
 /**
  * Converts a delegation record into the public status-tool response shape.
@@ -165,13 +167,12 @@ async function handleControl(args: DelegationStatusInput, context: ToolContext, 
   if (!manager.canSessionAccessDelegation(context.sessionID, delegation)) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
   if (deps.lifecycle?.isTerminal(delegation.status)) return renderToolResult(error("[Harness] cannot control terminal delegation"))
   if (manager.controlDelegation) {
-    if ((args.control.action === "restart" || args.control.action === "redirect") && !(deps.nativeTask ?? context.task)) {
-      return renderToolResult(error("[Harness] restart/redirect requires native Task execution seam; no replacement delegation was created"))
+    if (args.control.action === "restart" || args.control.action === "redirect") {
+      return renderToolResult(error(UNSUPPORTED_REPLACEMENT_MESSAGE))
     }
     const result = await manager.controlDelegation({
       action: args.control.action,
       delegationId: delegation.id,
-      nativeTask: deps.nativeTask ?? context.task,
       redirectAgent: args.control.redirectAgent,
       restartPrompt: args.control.restartPrompt,
     })
@@ -184,3 +185,4 @@ async function handleControl(args: DelegationStatusInput, context: ToolContext, 
 }
 
 export { DelegationStatusInputSchema }
+export { UNSUPPORTED_REPLACEMENT_MESSAGE }

@@ -15,6 +15,7 @@ export type DelegationTerminalKind =
   | "timeout"
   | "cancelled"
   | "restarted"
+  | "runtime-dispatch-unsupported"
   | "interrupted-by-signal"
   | "non-resumable-after-restart"
 

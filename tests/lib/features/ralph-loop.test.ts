@@ -1,7 +1,7 @@
 import { DelegationCoordinator } from "../../../src/coordination/delegation/coordinator.js"
 import { RalphLoopEngine } from "../../../src/features/ralph-loop/index.js"
 
-function createCoordinator(results: Array<{ status: "completed" | "error"; result?: string; error?: string }>) {
+function createCoordinator(results: Array<{ status: "completed" | "error"; result?: string; error?: string; terminalKind?: "runtime-dispatch-unsupported" }>) {
   return {
     dispatch: vi.fn(async () => {
       const next = results.shift()
@@ -40,6 +40,20 @@ describe("RalphLoopEngine", () => {
     await new RalphLoopEngine(coordinator).run({ agents: ["architect", "reviewer"], initialPrompt: "review", maxCycles: 2 })
 
     expect(coordinator.dispatch.mock.calls[1][0].prompt).toContain("Previous result: architect result")
+  })
+
+  it("preserves per-agent runtime-blocked failure and stops rotation", async () => {
+    const coordinator = createCoordinator([
+      { status: "error", error: "runtime dispatch blocked", terminalKind: "runtime-dispatch-unsupported" },
+      { status: "completed", result: "must not run" },
+    ])
+
+    const result = await new RalphLoopEngine(coordinator).run({ agents: ["architect", "reviewer"], initialPrompt: "review", maxCycles: 2 })
+
+    expect(coordinator.dispatch).toHaveBeenCalledTimes(1)
+    expect(result.status).toBe("failed")
+    expect(result.agentResults.architect?.[0]?.terminalKind).toBe("runtime-dispatch-unsupported")
+    expect(result.agentResults.reviewer).toHaveLength(0)
   })
 })
 
@@ -86,6 +100,22 @@ describe("DelegationCoordinator chaining", () => {
     ])
 
     expect(results).toHaveLength(1)
+    expect(dispatch).toHaveBeenCalledTimes(1)
+  })
+
+  it("stops a chain when dispatch is runtime-blocked", async () => {
+    const deps = createDeps(["error", "completed"])
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatch = vi.spyOn(coordinator, "dispatch")
+      .mockResolvedValueOnce({ delegationId: "dt-a", error: "runtime dispatch blocked", queueKey: "chain:A:0", status: "error", terminalKind: "runtime-dispatch-unsupported" })
+
+    const results = await coordinator.chain([
+      { agent: "A", prompt: "first" },
+      { agent: "B", prompt: "second", usePreviousResult: true },
+    ])
+
+    expect(results).toHaveLength(1)
+    expect(results[0]?.terminalKind).toBe("runtime-dispatch-unsupported")
     expect(dispatch).toHaveBeenCalledTimes(1)
   })
 })

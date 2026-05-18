@@ -1,6 +1,6 @@
 import { AutoLoopEngine } from "../../../src/features/auto-loop/index.js"
 
-function createCoordinator(results: Array<{ status: "completed" | "error" | "timeout"; result?: string; error?: string }>) {
+function createCoordinator(results: Array<{ status: "completed" | "error" | "timeout"; result?: string; error?: string; terminalKind?: "runtime-dispatch-unsupported" }>) {
   return {
     dispatch: vi.fn(async () => {
       const next = results.shift()
@@ -51,5 +51,18 @@ describe("AutoLoopEngine", () => {
 
     expect(coordinator.dispatch).toHaveBeenCalledTimes(2)
     expect(result.status).toBe("failed")
+  })
+
+  it("stops when dispatch is runtime-blocked without fabricating a next iteration", async () => {
+    const coordinator = createCoordinator([
+      { status: "error", error: "runtime dispatch blocked", terminalKind: "runtime-dispatch-unsupported" },
+      { status: "completed", result: "must not run" },
+    ])
+
+    const result = await new AutoLoopEngine(coordinator).run({ agent: "builder", initialPrompt: "build", maxIterations: 2 })
+
+    expect(coordinator.dispatch).toHaveBeenCalledTimes(1)
+    expect(result.status).toBe("failed")
+    expect(result.results[0]?.terminalKind).toBe("runtime-dispatch-unsupported")
   })
 })

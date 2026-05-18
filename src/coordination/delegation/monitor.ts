@@ -1,9 +1,11 @@
-import type { DelegationStatus, PollingCadence } from "./types.js"
+import type { Delegation, DelegationStatus, PollingCadence } from "./types.js"
 import { POLLING_CADENCE } from "./types.js"
 import { EscalationTimer } from "./escalation-timer.js"
 
 export interface MonitorOptions {
   getStatus: (delegationId: string) => DelegationStatus | string
+  /** Returns the current delegation record for semantic escalation guards, or undefined if not tracked. */
+  getDelegationRecord?: (delegationId: string) => Delegation | undefined
   inject: (parentSessionId: string, line: string) => void
   pollingCadence?: PollingCadence | readonly number[]
 }
@@ -17,12 +19,14 @@ type MonitorState = {
 /** Owns progressive polling and escalation timers for one delegation. */
 export class DelegationMonitor {
   private readonly getStatus: MonitorOptions["getStatus"]
+  private readonly getDelegationRecord: MonitorOptions["getDelegationRecord"]
   private readonly inject: MonitorOptions["inject"]
   private readonly pollingCadence: readonly number[]
   private readonly states = new Map<string, MonitorState>()
 
   constructor(options: MonitorOptions) {
     this.getStatus = options.getStatus
+    this.getDelegationRecord = options.getDelegationRecord
     this.inject = options.inject
     this.pollingCadence = options.pollingCadence ?? POLLING_CADENCE
   }
@@ -41,7 +45,9 @@ export class DelegationMonitor {
       }, elapsed * 1000))
     }
     state.escalationTimer.start(delegationId, undefined, (level, elapsed, icon) => {
-      if (!state.completed) this.inject(parentSessionId, `[DT:${delegationId}] ${icon} escalation=${level} elapsed=${elapsed}s`)
+      if (state.completed) return
+      if (level === "WARN" && this.shouldSuppressWarn(delegationId)) return
+      this.inject(parentSessionId, `[DT:${delegationId}] ${icon} escalation=${level} elapsed=${elapsed}s`)
     })
   }
 
@@ -63,6 +69,13 @@ export class DelegationMonitor {
 
   private isTerminal(status: string): boolean {
     return status === "completed" || status === "error" || status === "timeout"
+  }
+
+  /** REQ-MT-04: suppress WARN escalation when the child has made tool calls (is active). */
+  private shouldSuppressWarn(delegationId: string): boolean {
+    if (!this.getDelegationRecord) return false
+    const record = this.getDelegationRecord(delegationId)
+    return record !== undefined && record.lastMessageCount > 0
   }
 
   private stopState(delegationId: string): void {

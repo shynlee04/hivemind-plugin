@@ -1,0 +1,36 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c571efb0ffeIloZPzsnqS0P0y",
+  "lastUpdated": "2026-05-18T10:24:52.563Z",
+  "hierarchy": {
+    "root": "ses_1c571efb0ffeIloZPzsnqS0P0y",
+    "children": {
+      "ses_1c56bddc2ffe3DEHK2jkYCGQAz": {
+        "file": "ses_1c56bddc2ffe3DEHK2jkYCGQAz.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-build",
+        "children": {}
+      },
+      "ses_1c5660edcffeEBRK8DMQIl5VNp": {
+        "file": "ses_1c5660edcffeEBRK8DMQIl5VNp.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-scout",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 7,
+  "toolSummary": {
+    "skill": 4,
+    "delegation-status": 1,
+    "session-tracker": 1,
+    "read": 5,
+    "delegate-task": 2,
+    "task": 2,
+    "grep": 4,
+    "glob": 3,
+    "bash": 8
+  }
+}

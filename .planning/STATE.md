@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-18T15:10:00Z"
+last_updated: "2026-05-18T15:30:00Z"
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 6
-  completed_plans: 6
-  percent: 100
+  completed_plans: 5
+  percent: 83
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,14 +17,14 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-18
-**Last trigger:** CP-DT-01 COMPLETE — Review ITER2: 0 Critical (8/8 resolved), Validation: 18/18 spec requirements DELIVERED, 91/91 tests pass, typecheck clean. Next phase: CP-PTY-01 (Background Shell Control-Plane MVP).
+**Last trigger:** CP-DT-01 RE-OPENED / RUNTIME BLOCKED — forensic report `report-20260518-105705.md` proved plugin `ToolContext` has no `context.task` runtime seam. Next step: execute CP-DT-01 Wave 6 gap closure before CP-PTY-01.
 
 ---
 
 ## Current Status
 
-**Active phase:** CP-DT-01 — Delegate-Task Ecosystem Revamp. ✅ COMPLETE — review ITER2: 0 Critical, 8/8 resolved; validation: 18/18 spec requirements DELIVERED, 91/91 tests pass; live native Task UAT deferred to integration.
-**Health:** 🟢 CP-DT-01 COMPLETE. Waves 1-5 delivered: foundation modules, coordinator + CompletionDetector v2, v2 tool layer, manager decomposition, auto-loop, ralph-loop, chaining, plugin wiring. Review ITER2: 0 Critical, 3 Warning (LOC/type-safety), 1 Info. Validation: 18/18 spec requirements DELIVERED. 91/91 tests pass. Next phase: CP-PTY-01.
+**Active phase:** CP-DT-01 — Delegate-Task Ecosystem Revamp. RE-OPENED / RUNTIME BLOCKED. Waves 1-5 delivered historical implementation artifacts, but runtime proof failed because OpenCode plugin `ToolContext` v1.15.4 has no `context.task` field.
+**Health:** CP-DT-01 blocked until Wave 6 closes runtime-truth gaps. Required sequence: correct docs/spec/gates, reassess Plan 01/02 coordination contracts, rewrite Plan 03 tool contract, adjust Plan 04 loops/chaining, rebuild Plan 05 plugin/runtime-contract tests, then require L1-L3 evidence before any completion claim.
 **CP-ST-04 status:** ✅ COMPLETE — 3 plans delivered (PendingDispatchRegistry + Classification, Directory Architecture, Hierarchy Manifest + Immediate I/O + Cleanup).
 
 **CP-ST-05 status:** ✅ COMPLETE — Investigation phase, root causes identified, decisions D-CP05-01 through D-CP05-06 locked.

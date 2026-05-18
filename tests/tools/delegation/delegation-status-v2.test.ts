@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createDelegationStatusTool, DelegationControlSchema } from "../../../src/tools/delegation/delegation-status.js"
+import { createDelegationStatusTool, DelegationControlSchema, UNSUPPORTED_REPLACEMENT_MESSAGE } from "../../../src/tools/delegation/delegation-status.js"
 
 const now = 1_000_000
 const context = { sessionID: "ses_parent" }
@@ -91,23 +91,27 @@ describe("delegation-status v2 tool", () => {
     expect(terminateChild).not.toHaveBeenCalled()
   })
 
-  it("rejects restart when no manager control API can invoke native Task", async () => {
-    const { coordinator, tool } = createHarness()
+  it("rejects restart as runtime-blocked even when manager control API exists", async () => {
+    const { coordinator, manager, tool } = createHarness()
+    manager.controlDelegation = vi.fn().mockResolvedValue({ delegationId: "dt-new" })
 
     const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "restart" } } as never, context)
 
     expect(parse(raw).kind).toBe("error")
-    expect(parse(raw).message).toContain("coordinator-backed manager control API")
+    expect(parse(raw).message).toBe(UNSUPPORTED_REPLACEMENT_MESSAGE)
+    expect(manager.controlDelegation).not.toHaveBeenCalled()
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
-  it("rejects redirect when no manager control API can invoke native Task", async () => {
-    const { coordinator, tool } = createHarness()
+  it("rejects redirect as runtime-blocked without reading context.task", async () => {
+    const { coordinator, manager, tool } = createHarness()
+    manager.controlDelegation = vi.fn().mockResolvedValue({ delegationId: "dt-new" })
 
-    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "redirect", redirectAgent: "critic" } } as never, context)
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "redirect", redirectAgent: "critic" } } as never, { ...context, task: vi.fn() } as never)
 
     expect(parse(raw).kind).toBe("error")
-    expect(parse(raw).message).toContain("coordinator-backed manager control API")
+    expect(parse(raw).message).toBe(UNSUPPORTED_REPLACEMENT_MESSAGE)
+    expect(manager.controlDelegation).not.toHaveBeenCalled()
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
