@@ -153,6 +153,17 @@ describe("loadPrimitives", () => {
     expect(result.skills.size).toBe(1)
   })
 
+  it("merges project and global OpenCode primitive agent scopes", async () => {
+    const globalRoot = path.join(TEMP_DIR, "global-opencode")
+    writeAgent(TEMP_DIR, "project-agent", { description: "Project agent" })
+    writeAgent(globalRoot, "global-agent", { description: "Global agent" })
+
+    const result = await loadPrimitives({ projectRoot: TEMP_DIR, globalConfigPath: path.join(globalRoot, ".opencode") })
+
+    expect(result.agents.has("project-agent")).toBe(true)
+    expect(result.agents.has("global-agent")).toBe(true)
+  })
+
   it("accepts OpenCode skill metadata values beyond strings", async () => {
     const dir = path.join(TEMP_DIR, ".opencode", "skills", "rich-skill")
     mkdirSync(dir, { recursive: true })

@@ -17,7 +17,7 @@ export const DelegationControlSchema = z.object({
 const DelegationStatusInputSchema = z.object({
   delegationId: z.string().min(1).optional(),
   status: z.string().optional(),
-  action: z.enum(["status", "list", "control"]).default("status"),
+  action: z.enum(["status", "get", "list", "control"]).default("status"),
   control: DelegationControlSchema.optional(),
 })
 
@@ -43,6 +43,7 @@ const UNSUPPORTED_REPLACEMENT_MESSAGE =
 function renderDelegation(delegation: Delegation): Record<string, unknown> {
   return {
     delegationId: delegation.id,
+    childSessionId: delegation.childSessionId,
     status: delegation.status,
     agent: delegation.agent,
     result: delegation.result ? redactTextSecrets(delegation.result) : undefined,
@@ -61,6 +62,14 @@ function renderDelegation(delegation: Delegation): Record<string, unknown> {
     explicitCancellation: delegation.explicitCancellation,
     nestingDepth: delegation.nestingDepth,
     gracePeriodExpiresAt: delegation.gracePeriodExpiresAt,
+    actionCount: delegation.actionCount,
+    evidenceLevel: delegation.evidenceLevel,
+    executionState: delegation.executionState,
+    finalMessageExcerpt: delegation.finalMessageExcerpt ? redactTextSecrets(delegation.finalMessageExcerpt) : undefined,
+    firstActionAt: delegation.firstActionAt,
+    messageCount: delegation.messageCount,
+    signalSource: delegation.signalSource,
+    toolCallCount: delegation.toolCallCount,
   }
 }
 
@@ -73,7 +82,8 @@ async function renderDelegationV2(delegation: Delegation & { v2?: boolean; promp
   if (!delegation.v2) return { ...base, prompt: delegation.prompt, elapsedMs: null, elapsedHuman: null, progressPct: null }
   const elapsedMs = (deps.now?.() ?? Date.now()) - delegation.createdAt
   const ceiling = delegation.safetyCeilingMs ?? 300_000
-  return { ...base, agent: delegation.agent, childMessageCount: await deps.getChildMessageCount?.(delegation.childSessionId), elapsedHuman: formatElapsed(elapsedMs), elapsedMs, escalationLevel: deps.getEscalationLevel?.(delegation.id) ?? null, progressPct: Math.min(99, Math.floor((elapsedMs / ceiling) * 100)), prompt: delegation.prompt }
+  const childMessageCount = await deps.getChildMessageCount?.(delegation.childSessionId)
+  return { ...base, agent: delegation.agent, childMessageCount, elapsedHuman: formatElapsed(elapsedMs), elapsedMs, escalationLevel: deps.getEscalationLevel?.(delegation.id) ?? null, progressPct: Math.min(99, Math.floor((elapsedMs / ceiling) * 100)), prompt: delegation.prompt, signals: { actionCount: delegation.actionCount ?? 0, messageCount: delegation.messageCount ?? childMessageCount ?? 0, toolCallCount: delegation.toolCallCount ?? 0 } }
 }
 
 /**

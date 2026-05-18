@@ -106,7 +106,8 @@ export function withContractDefaults(delegation: Delegation): Delegation {
  */
 export function buildDelegationResult(delegation: Delegation): DelegationResult {
   const hydratedDelegation = withContractDefaults(delegation)
-  return {
+    return {
+    childSessionId: hydratedDelegation.childSessionId,
     status: hydratedDelegation.status,
     result: hydratedDelegation.result,
     resultTruncated: hydratedDelegation.resultTruncated,
@@ -122,6 +123,14 @@ export function buildDelegationResult(delegation: Delegation): DelegationResult 
     terminalKind: hydratedDelegation.terminalKind,
     terminationSignal: hydratedDelegation.terminationSignal,
     explicitCancellation: hydratedDelegation.explicitCancellation,
+    actionCount: hydratedDelegation.actionCount,
+    evidenceLevel: hydratedDelegation.evidenceLevel,
+    executionState: hydratedDelegation.executionState,
+    finalMessageExcerpt: hydratedDelegation.finalMessageExcerpt,
+    firstActionAt: hydratedDelegation.firstActionAt,
+    messageCount: hydratedDelegation.messageCount,
+    signalSource: hydratedDelegation.signalSource,
+    toolCallCount: hydratedDelegation.toolCallCount,
   }
 }
 

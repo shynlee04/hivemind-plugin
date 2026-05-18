@@ -23,7 +23,7 @@ import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-chil
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
 import { recordCategoryGateask } from "./coordination/delegation/category-gate-audit.js"
 import type { Delegation, DelegationStatus } from "./coordination/delegation/types.js"
-import type { OpenCodeClient } from "./shared/session-api.js"
+import { appendTuiPrompt, showTuiToast, type OpenCodeClient } from "./shared/session-api.js"
 import { taskState } from "./shared/state.js"
 import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
 import { createSessionHooks } from "./hooks/lifecycle/session-hooks.js"
@@ -105,6 +105,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const dispatcher = new DelegationDispatcher({ agentResolver, recordCategoryGateask: options.recordCategoryGateask, slotManager })
   const detector = new CompletionDetector()
   const notificationRouter = new NotificationRouter()
+  let coordinatorRef: DelegationCoordinator | undefined
   const lifecycle = new DelegationLifecycle({
     get: (delegationId) => records.get(delegationId),
     getAll: () => Array.from(records.values()),
@@ -126,10 +127,16 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const monitor = new DelegationMonitor({
     getDelegationRecord: (delegationId) => lifecycle.getStatus(delegationId),
     getStatus: (delegationId) => lifecycle.getStatus(delegationId)?.status ?? "dispatched",
-    inject: () => { /* parent-session injection is routed by later runtime hook integration */ },
+    inject: (_parentSessionId, line) => {
+      void appendTuiPrompt(options.client, line)
+        .then(() => showTuiToast(options.client, "Delegation update delivered"))
+        .catch(() => undefined)
+    },
+    onFirstActionDeadline: (delegationId, elapsedSeconds) => coordinatorRef?.markExecutionUnconfirmed(delegationId, elapsedSeconds),
   })
   const retryHandler = new DelegationRetryHandler({ persist: options.persistDelegations })
   const coordinator = new DelegationCoordinator({ childSessionStarter: createSdkChildSessionStarter(options.client), dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
+  coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
     lifecycle,

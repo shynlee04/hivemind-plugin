@@ -13,6 +13,7 @@ const baseDispatchParams = {
 }
 
 function createDeps() {
+  const records = new Map<string, DelegationResult & Record<string, unknown>>()
   const slotHandle = {
     queueKey: baseDispatchParams.queueKey,
     release: vi.fn(),
@@ -36,12 +37,16 @@ function createDeps() {
     route: vi.fn(),
   }
   const lifecycle = {
-    getStatus: vi.fn(() => undefined),
+    getStatus: vi.fn((delegationId: string) => records.get(delegationId)),
     isTerminal: vi.fn((status: string) => ["completed", "error", "timeout"].includes(status)),
-    list: vi.fn(() => []),
+    list: vi.fn(() => Array.from(records.values())),
     markTimeout: vi.fn((delegationId: string): DelegationResult => ({ delegationId, status: "timeout" })),
-    register: vi.fn(),
-    transition: vi.fn((delegationId: string, status: DelegationResult["status"]): DelegationResult => ({ delegationId, status })),
+    register: vi.fn((record: DelegationResult & Record<string, unknown>) => { records.set(record.id as string, record) }),
+    transition: vi.fn((delegationId: string, status: DelegationResult["status"]): DelegationResult => {
+      const record = records.get(delegationId)
+      if (record) record.status = status
+      return { delegationId, status }
+    }),
   }
   const callbacksByDetector = new Map<string, (result: DelegationResult) => void>()
   const detector = {
@@ -75,6 +80,50 @@ describe("DelegationCoordinator", () => {
     expect(deps.notificationRouter.register).toHaveBeenCalledWith(result.delegationId, "parent-1")
     expect(deps.monitor.start).toHaveBeenCalledWith(result.delegationId, "parent-1")
     expect(deps.detector.watchDualSignal).toHaveBeenCalledWith(result.delegationId, expect.any(String), expect.any(Function))
+  })
+
+  it("keeps promptAsync acceptance separate from execution confirmation", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+
+    const result = await coordinator.dispatch(baseDispatchParams)
+    const registered = deps.lifecycle.register.mock.calls[0]?.[0]
+
+    expect(result).toMatchObject({ evidenceLevel: "accepted-only", executionState: "pending" })
+    expect(registered).toMatchObject({ executionState: "pending", actionCount: 0, messageCount: 0, toolCallCount: 0 })
+    expect(registered.firstActionAt).toBeUndefined()
+  })
+
+  it("records the first action signal before marking execution confirmed", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const result = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.recordExecutionSignal(result.delegationId, { source: "tool", observedAt: 123, messageDelta: 2, toolDelta: 1 })
+
+    expect(deps.lifecycle.getStatus(result.delegationId)).toMatchObject({
+      actionCount: 1,
+      executionState: "confirmed",
+      firstActionAt: 123,
+      messageCount: 2,
+      signalSource: "tool",
+      toolCallCount: 1,
+    })
+  })
+
+  it("marks execution unconfirmed when no action signal arrives by deadline", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const result = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.markExecutionUnconfirmed(result.delegationId, 60)
+
+    expect(deps.lifecycle.getStatus(result.delegationId)).toMatchObject({ executionState: "unconfirmed" })
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({
+      delegationId: result.delegationId,
+      message: expect.stringContaining("first action unconfirmed after 60s"),
+      type: "progress",
+    }))
   })
 
   it("does not create records or start monitoring when preflight rejects the request", async () => {
@@ -126,6 +175,32 @@ describe("DelegationCoordinator", () => {
     expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
     expect(deps.slotHandle.release).toHaveBeenCalledOnce()
     expect(deps.retryHandler.persistWithRetry).toHaveBeenCalled()
+  })
+
+  it("extracts completion evidence into the parent-facing result payload", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.handleCompletion(dispatched.delegationId, {
+      childSessionId: "child-final",
+      delegationId: dispatched.delegationId,
+      evidenceLevel: "message-and-tool",
+      finalMessageExcerpt: "implemented the requested behavior",
+      result: "completed summary",
+      signalSource: "message",
+      status: "completed",
+      toolCallCount: 1,
+    })
+
+    expect(deps.lifecycle.getStatus(dispatched.delegationId)).toMatchObject({
+      childSessionId: "child-final",
+      evidenceLevel: "message-and-tool",
+      finalMessageExcerpt: "implemented the requested behavior",
+      result: "completed summary",
+      toolCallCount: 1,
+    })
+    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ message: "completed summary" }))
   })
 
   it("marks timeout, routes timeout notification, deregisters routing, and releases the slot", async () => {

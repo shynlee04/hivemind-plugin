@@ -10,6 +10,8 @@ type SessionRecord = Record<string, unknown>
 type SessionCreateRequest = Parameters<OpenCodeClient["session"]["create"]>[0]
 type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
 type SessionMessagesRequest = Parameters<OpenCodeClient["session"]["messages"]>[0]
+type TuiAppendPromptRequest = Parameters<OpenCodeClient["tui"]["appendPrompt"]>[0]
+type TuiShowToastRequest = Parameters<OpenCodeClient["tui"]["showToast"]>[0]
 
 type CreateSessionOptions = {
   parentID?: string
@@ -190,6 +192,30 @@ export async function sendPromptAsync(
   }
 
   await client.session.promptAsync(request)
+}
+
+/**
+ * Append a bounded parent-facing notification line to the active OpenCode TUI prompt.
+ *
+ * @param client - OpenCode SDK client with the `tui.appendPrompt` surface.
+ * @param text - Text to append to the foreground prompt input.
+ * @returns The unwrapped SDK response when append succeeds.
+ */
+export async function appendTuiPrompt(client: OpenCodeClient, text: string): Promise<unknown> {
+  const request: TuiAppendPromptRequest = { body: { text } } as TuiAppendPromptRequest
+  return unwrapData(await client.tui.appendPrompt(request))
+}
+
+/**
+ * Show a compact delegation toast in the OpenCode TUI when the host exposes it.
+ *
+ * @param client - OpenCode SDK client with the `tui.showToast` surface.
+ * @param message - Toast message to display.
+ * @returns The unwrapped SDK response when the toast succeeds.
+ */
+export async function showTuiToast(client: OpenCodeClient, message: string): Promise<unknown> {
+  const request: TuiShowToastRequest = { body: { message } } as TuiShowToastRequest
+  return unwrapData(await client.tui.showToast(request))
 }
 
 export function getSessionID(session: unknown): string | undefined {

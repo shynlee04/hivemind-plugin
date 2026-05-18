@@ -7,6 +7,7 @@ export interface MonitorOptions {
   /** Returns the current delegation record for semantic escalation guards, or undefined if not tracked. */
   getDelegationRecord?: (delegationId: string) => Delegation | undefined
   inject: (parentSessionId: string, line: string) => void
+  onFirstActionDeadline?: (delegationId: string, elapsedSeconds: number) => void
   pollingCadence?: PollingCadence | readonly number[]
 }
 
@@ -21,6 +22,7 @@ export class DelegationMonitor {
   private readonly getStatus: MonitorOptions["getStatus"]
   private readonly getDelegationRecord: MonitorOptions["getDelegationRecord"]
   private readonly inject: MonitorOptions["inject"]
+  private readonly onFirstActionDeadline: MonitorOptions["onFirstActionDeadline"]
   private readonly pollingCadence: readonly number[]
   private readonly states = new Map<string, MonitorState>()
 
@@ -28,6 +30,7 @@ export class DelegationMonitor {
     this.getStatus = options.getStatus
     this.getDelegationRecord = options.getDelegationRecord
     this.inject = options.inject
+    this.onFirstActionDeadline = options.onFirstActionDeadline
     this.pollingCadence = options.pollingCadence ?? POLLING_CADENCE
   }
 
@@ -41,12 +44,18 @@ export class DelegationMonitor {
         if (state.completed) return
         const status = this.getStatus(delegationId)
         if (this.isTerminal(status)) return
+        if (elapsed >= 60 && this.getDelegationRecord?.(delegationId)?.executionState !== "confirmed") {
+          this.onFirstActionDeadline?.(delegationId, elapsed)
+        }
         this.inject(parentSessionId, `[DT:${delegationId}] status=${status} elapsed=${elapsed}s`)
       }, elapsed * 1000))
     }
     state.escalationTimer.start(delegationId, undefined, (level, elapsed, icon) => {
       if (state.completed) return
       if (level === "WARN" && this.shouldSuppressWarn(delegationId)) return
+      if (elapsed >= 600 && this.getDelegationRecord?.(delegationId)?.executionState !== "confirmed") {
+        this.onFirstActionDeadline?.(delegationId, elapsed)
+      }
       this.inject(parentSessionId, `[DT:${delegationId}] ${icon} escalation=${level} elapsed=${elapsed}s`)
     })
   }

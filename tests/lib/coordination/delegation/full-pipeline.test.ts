@@ -10,6 +10,7 @@ import { NotificationRouter } from "../../../../src/coordination/delegation/noti
 import { DelegationRetryHandler } from "../../../../src/coordination/delegation/retry-handler.js"
 import { SlotManager } from "../../../../src/coordination/delegation/slot-manager.js"
 import type { Delegation, DelegationStatus } from "../../../../src/coordination/delegation/types.js"
+import { ESCALATION_THRESHOLDS } from "../../../../src/coordination/delegation/types.js"
 
 function createPipelineHarness() {
   const records = new Map<string, Delegation>()
@@ -84,6 +85,10 @@ describe("delegation v2 full pipeline", () => {
 
     expect(harness.lifecycle.getStatus(result.delegationId)?.status).toBe("timeout")
     expect(harness.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: result.delegationId, type: "timeout" }))
+  })
+
+  it("uses the 600s terminal-stalled escalation threshold", () => {
+    expect(ESCALATION_THRESHOLDS).toEqual([60, 120, 180, 300, 600])
   })
 
   it("supports abort lifecycle control on an active delegation", async () => {

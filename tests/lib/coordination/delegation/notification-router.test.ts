@@ -52,6 +52,23 @@ describe("NotificationRouter", () => {
     expect(replayed[0]?.message).toBe("n-5")
   })
 
+  it("persists pending notifications with idempotency when immediate delivery is unavailable", () => {
+    const persisted: unknown[] = []
+    const router = new NotificationRouter({
+      deliver: () => false,
+      persistPending: (records) => { persisted.push(records) },
+    })
+    router.register("dt-1", "parent-1")
+
+    router.route({ delegationId: "dt-1", idempotencyKey: "same-key", message: "first", timestamp: 1, type: "progress" })
+    router.route({ delegationId: "dt-1", idempotencyKey: "same-key", message: "first", timestamp: 1, type: "progress" })
+
+    expect(router.replayPending("parent-1")).toHaveLength(1)
+    expect(persisted.at(-1)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ parentSessionId: "parent-1", stateRoot: ".hivemind", notification: expect.objectContaining({ idempotencyKey: "same-key" }) }),
+    ]))
+  })
+
   it("formats the four notification types with their standard icons", () => {
     const router = new NotificationRouter()
 

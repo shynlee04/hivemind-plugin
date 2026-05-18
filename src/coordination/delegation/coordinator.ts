@@ -3,7 +3,7 @@ import type { DelegationLifecycle } from "./lifecycle.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
 import type { DelegationRetryHandler } from "./retry-handler.js"
-import type { Delegation, DelegationNotification, DelegationResult, DelegationStatus } from "./types.js"
+import type { Delegation, DelegationNotification, DelegationResult, DelegationSignalSource, DelegationStatus } from "./types.js"
 import type { SlotHandle } from "./slot-manager.js"
 
 export type DispatchParams = PreflightParams
@@ -42,6 +42,14 @@ export interface ChildSessionStartParams {
 
 export interface ChildSessionStartResult {
   childSessionId: string
+}
+
+export interface ExecutionSignalInput {
+  source: DelegationSignalSource
+  observedAt?: number
+  actionDelta?: number
+  messageDelta?: number
+  toolDelta?: number
 }
 
 type ActiveDelegation = { record: Delegation; slotHandle: SlotHandle }
@@ -86,13 +94,39 @@ export class DelegationCoordinator {
     })
 
     const status = this.deps.lifecycle.getStatus?.(delegationId)?.status ?? "dispatched"
-    return { delegationId, queueKey: preflight.queueKey, status }
+    return { delegationId, evidenceLevel: record.evidenceLevel, executionState: record.executionState, queueKey: preflight.queueKey, status }
+  }
+
+  /** Record the first observable child action/message/tool signal; promptAsync acceptance never calls this. */
+  recordExecutionSignal(delegationId: string, signal: ExecutionSignalInput): void {
+    const record = this.findRecord(delegationId)
+    if (!record) return
+    const observedAt = signal.observedAt ?? Date.now()
+    record.executionState = "confirmed"
+    record.firstActionAt ??= observedAt
+    record.signalSource = signal.source
+    record.actionCount = (record.actionCount ?? 0) + (signal.actionDelta ?? 1)
+    record.messageCount = (record.messageCount ?? 0) + (signal.messageDelta ?? (signal.source === "message" ? 1 : 0))
+    record.toolCallCount = (record.toolCallCount ?? 0) + (signal.toolDelta ?? (signal.source === "tool" ? 1 : 0))
+    record.evidenceLevel = record.toolCallCount > 0 && record.messageCount > 0
+      ? "message-and-tool"
+      : record.toolCallCount > 0 ? "tool" : record.messageCount > 0 ? "message" : "status-only"
+  }
+
+  /** Mark a delegation as unconfirmed when the 60s first-action window expires without signals. */
+  markExecutionUnconfirmed(delegationId: string, elapsedSeconds: number): void {
+    const record = this.findRecord(delegationId)
+    if (!record || record.executionState === "confirmed") return
+    record.executionState = elapsedSeconds >= 600 ? "stalled" : "unconfirmed"
+    record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
+    this.routeTerminal(delegationId, "progress", `first action unconfirmed after ${elapsedSeconds}s`)
   }
 
   /** Handles terminal completion and performs monitor, notification, slot, and persistence cleanup. */
   handleCompletion(delegationId: string, result: DelegationResult): void {
     const status = result.status
     this.deps.monitor.onCompletion(delegationId)
+    this.mergeCompletionResult(delegationId, result)
     this.deps.lifecycle.transition(delegationId, status)
     this.routeTerminal(delegationId, this.notificationTypeFor(status), result.result ?? result.error ?? status)
     this.cleanup(delegationId, status, result)
@@ -189,12 +223,35 @@ export class DelegationCoordinator {
     active.record.completedAt = Date.now()
     active.record.explicitCancellation = result.explicitCancellation
     active.record.terminalKind = result.terminalKind
+    this.mergeCompletionResult(delegationId, result)
     active.slotHandle.release()
     this.deps.detector.unwatch(delegationId)
     this.deps.notificationRouter.deregister(delegationId)
     this.active.delete(delegationId)
     this.delegationByChildSession.delete(active.record.childSessionId)
     void this.deps.retryHandler.persistWithRetry(this.deps.lifecycle.list?.() ?? [...this.active.values()].map((entry) => entry.record))
+  }
+
+  private findRecord(delegationId: string): Delegation | undefined {
+    return this.active.get(delegationId)?.record ?? this.deps.lifecycle.getStatus?.(delegationId)
+  }
+
+  private mergeCompletionResult(delegationId: string, result: DelegationResult): void {
+    const record = this.findRecord(delegationId)
+    if (!record) return
+    if (result.childSessionId) record.childSessionId = result.childSessionId
+    if (result.result) record.result = result.result
+    if (result.error) record.error = result.error
+    record.evidenceLevel = result.evidenceLevel ?? record.evidenceLevel ?? (result.result || result.finalMessageExcerpt ? "message" : "status-only")
+    record.finalMessageExcerpt = result.finalMessageExcerpt ?? record.finalMessageExcerpt
+    record.signalSource = result.signalSource ?? record.signalSource
+    record.actionCount = result.actionCount ?? record.actionCount
+    record.messageCount = result.messageCount ?? record.messageCount
+    record.toolCallCount = result.toolCallCount ?? record.toolCallCount
+    if (record.executionState !== "confirmed" && record.evidenceLevel !== "accepted-only" && record.evidenceLevel !== "status-only") {
+      record.executionState = "confirmed"
+      record.firstActionAt ??= Date.now()
+    }
   }
 
   private handleChildSessionTerminal(childSessionId: string, status: DelegationStatus, errorMessage?: string): void {
@@ -225,8 +282,9 @@ export class DelegationCoordinator {
   private createRecord(delegationId: string, params: DispatchParams, queueKey: string): Delegation {
     return {
       agent: params.agent, childSessionId: delegationId, createdAt: Date.now(), executionMode: "sdk", id: delegationId,
-      lastMessageCount: 0, nestingDepth: params.currentDepth + 1, parentSessionId: params.parentSessionId, queueKey,
+      actionCount: 0, evidenceLevel: "accepted-only", executionState: "pending", lastMessageCount: 0, messageCount: 0, nestingDepth: params.currentDepth + 1, parentSessionId: params.parentSessionId, queueKey,
       prompt: params.prompt, stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: params.workingDirectory ?? process.cwd(),
+      toolCallCount: 0,
     }
   }
 

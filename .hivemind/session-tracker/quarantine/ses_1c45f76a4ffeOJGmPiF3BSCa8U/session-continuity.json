@@ -1,0 +1,19 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c45f76a4ffeOJGmPiF3BSCa8U",
+  "lastUpdated": "2026-05-18T15:07:17.230Z",
+  "hierarchy": {
+    "root": "ses_1c45f76a4ffeOJGmPiF3BSCa8U",
+    "children": {
+      "ses_1c45f7753ffeeQnJ2K1biVM9LG": {
+        "file": "ses_1c45f7753ffeeQnJ2K1biVM9LG.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 0,
+  "toolSummary": {}
+}

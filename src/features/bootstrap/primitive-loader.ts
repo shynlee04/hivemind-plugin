@@ -78,9 +78,9 @@ export async function loadPrimitives(options: LoaderOptions): Promise<LoadResult
   }
 
   // Scan directories
-  await scanAgents(root, result)
-  await scanCommands(root, result)
-  await scanSkills(root, result)
+  await scanAgents(root, result, options.globalConfigPath)
+  await scanCommands(root, result, options.globalConfigPath)
+  await scanSkills(root, result, options.globalConfigPath)
 
   // Read opencode.json
   const configResult = await readOpencodeJson(opencodeJsonPath, result)
@@ -175,14 +175,15 @@ export async function loadPrimitive(
  * @param dirNames - Array of directory names to scan (e.g., ["agents", "agent"]).
  * @returns Array of existing directory paths.
  */
-function resolvePrimitiveDirs(root: string, dirNames: string[]): string[] {
-  return dirNames
-    .map((name) => path.join(root, ".opencode", name))
+function resolvePrimitiveDirs(root: string, dirNames: string[], globalConfigPath?: string): string[] {
+  const configRoots = [path.join(root, ".opencode")]
+  if (globalConfigPath) configRoots.push(path.resolve(globalConfigPath))
+  return configRoots.flatMap((configRoot) => dirNames.map((name) => path.join(configRoot, name)))
     .filter((dir) => existsSync(dir))
 }
 
-async function scanAgents(root: string, result: LoadResult): Promise<void> {
-  const dirs = resolvePrimitiveDirs(root, ["agents", "agent"])
+async function scanAgents(root: string, result: LoadResult, globalConfigPath?: string): Promise<void> {
+  const dirs = resolvePrimitiveDirs(root, ["agents", "agent"], globalConfigPath)
   for (const agentsDir of dirs) {
     const files = await fs.readdir(agentsDir)
     for (const file of files) {
@@ -206,8 +207,8 @@ async function scanAgents(root: string, result: LoadResult): Promise<void> {
   }
 }
 
-async function scanCommands(root: string, result: LoadResult): Promise<void> {
-  const dirs = resolvePrimitiveDirs(root, ["commands", "command"])
+async function scanCommands(root: string, result: LoadResult, globalConfigPath?: string): Promise<void> {
+  const dirs = resolvePrimitiveDirs(root, ["commands", "command"], globalConfigPath)
   for (const commandsDir of dirs) {
     const files = await fs.readdir(commandsDir)
     for (const file of files) {
@@ -244,8 +245,8 @@ function isNodeError(errorValue: unknown): errorValue is NodeJS.ErrnoException {
   return errorValue instanceof Error && "code" in errorValue
 }
 
-async function scanSkills(root: string, result: LoadResult): Promise<void> {
-  const dirs = resolvePrimitiveDirs(root, ["skills", "skill"])
+async function scanSkills(root: string, result: LoadResult, globalConfigPath?: string): Promise<void> {
+  const dirs = resolvePrimitiveDirs(root, ["skills", "skill"], globalConfigPath)
   for (const skillsDir of dirs) {
     const entries = await fs.readdir(skillsDir, { withFileTypes: true })
     for (const entry of entries) {

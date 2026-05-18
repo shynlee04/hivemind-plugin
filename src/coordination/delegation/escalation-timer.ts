@@ -1,8 +1,8 @@
 import type { EscalationLevel } from "./types.js"
 import { ESCALATION_THRESHOLDS } from "./types.js"
 
-export const ESCALATION_ICONS = ["⚠", "⚠", "🔴", "⛔"] as const
-const ESCALATION_LEVELS = ["WARN", "NUDGE", "ALERT", "TERMINATE"] as const
+export const ESCALATION_ICONS = ["⚠", "⚠", "🔴", "⛔", "🛑"] as const
+const ESCALATION_LEVELS = ["WARN", "NUDGE", "ALERT", "TERMINATE", "TERMINATE"] as const
 
 /** Schedules multi-level delegation escalation callbacks. */
 export class EscalationTimer {

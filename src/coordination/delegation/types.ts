@@ -19,6 +19,10 @@ export type DelegationTerminalKind =
   | "interrupted-by-signal"
   | "non-resumable-after-restart"
 
+export type DelegationExecutionState = "pending" | "confirmed" | "unconfirmed" | "stalled"
+export type DelegationSignalSource = "action" | "event" | "message" | "polling" | "tool"
+export type DelegationEvidenceLevel = "accepted-only" | "status-only" | "message" | "tool" | "message-and-tool" | "file-change"
+
 export interface Delegation {
   id: string
   parentSessionId: string
@@ -55,6 +59,14 @@ export interface Delegation {
   explicitCancellation?: boolean
   redirectedFrom?: string
   restartedFrom?: string
+  executionState?: DelegationExecutionState
+  firstActionAt?: number
+  signalSource?: DelegationSignalSource
+  actionCount?: number
+  messageCount?: number
+  toolCallCount?: number
+  evidenceLevel?: DelegationEvidenceLevel
+  finalMessageExcerpt?: string
 }
 
 export interface DelegationResult {
@@ -77,6 +89,15 @@ export interface DelegationResult {
   gracePeriodExpiresAt?: number
   /** Total count of matching delegations (for status tool responses) */
   total?: number
+  childSessionId?: string
+  executionState?: DelegationExecutionState
+  firstActionAt?: number
+  signalSource?: DelegationSignalSource
+  actionCount?: number
+  messageCount?: number
+  toolCallCount?: number
+  evidenceLevel?: DelegationEvidenceLevel
+  finalMessageExcerpt?: string
 }
 
 /** Notification types emitted by the delegate-task v2 routing layer. */
@@ -88,11 +109,12 @@ export type EscalationLevel = "WARN" | "NUDGE" | "ALERT" | "TERMINATE"
 export const POLLING_CADENCE = [30, 45, 60, 90, 120, 180] as const
 export type PollingCadence = typeof POLLING_CADENCE
 
-export const ESCALATION_THRESHOLDS = [60, 120, 180, 300] as const
+export const ESCALATION_THRESHOLDS = [60, 120, 180, 300, 600] as const
 export type EscalationThresholds = typeof ESCALATION_THRESHOLDS
 
 /** Compact notification payload routed back to the parent session. */
 export interface DelegationNotification {
+  idempotencyKey?: string
   type: DelegationNotificationType
   delegationId: string
   message: string

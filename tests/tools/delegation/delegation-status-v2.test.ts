@@ -54,12 +54,41 @@ function createHarness(record = activeRecord()) {
 
 describe("delegation-status v2 tool", () => {
   it("returns full status with progress percent and elapsed time", async () => {
-    const { tool } = createHarness()
+    const { tool } = createHarness(activeRecord({
+      childSessionId: "ses_child",
+      evidenceLevel: "accepted-only",
+      executionState: "pending",
+      finalMessageExcerpt: "waiting for child output",
+      firstActionAt: 999_000,
+      signalSource: "message",
+      toolCallCount: 1,
+    }))
 
     const raw = await tool.execute({ delegationId: "dt-123" } as never, context)
     const data = parse(raw).data as Record<string, unknown>
 
-    expect(data).toMatchObject({ delegationId: "dt-123", progressPct: 50, elapsedMs: 150_000, elapsedHuman: "2m 30s", childMessageCount: 7 })
+    expect(data).toMatchObject({
+      childSessionId: "ses_child",
+      childMessageCount: 7,
+      delegationId: "dt-123",
+      elapsedHuman: "2m 30s",
+      elapsedMs: 150_000,
+      evidenceLevel: "accepted-only",
+      executionState: "pending",
+      finalMessageExcerpt: "waiting for child output",
+      firstActionAt: 999_000,
+      progressPct: 50,
+      signalSource: "message",
+      signals: { messageCount: 7, toolCallCount: 1 },
+    })
+  })
+
+  it("supports get as a backwards-compatible single-status alias", async () => {
+    const { tool } = createHarness()
+
+    const raw = await tool.execute({ action: "get", delegationId: "dt-123" } as never, context)
+
+    expect(parse(raw).data).toMatchObject({ delegationId: "dt-123", status: "running" })
   })
 
   it("lists all delegations for current session", async () => {

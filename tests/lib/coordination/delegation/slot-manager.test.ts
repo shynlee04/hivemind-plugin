@@ -12,6 +12,17 @@ describe("SlotManager", () => {
     for (const handle of handles) manager.release(handle)
   })
 
+  it("keeps 10-slot pools isolated per parent session", async () => {
+    const manager = new SlotManager({ maxSlotsPerSession: 10, perKeyLimit: 10, queueLimit: 20 })
+
+    const parentA = await Promise.all(Array.from({ length: 10 }, (_, index) => manager.acquire("parent-a", `queue-${index}`)))
+    const parentB = await Promise.all(Array.from({ length: 10 }, (_, index) => manager.acquire("parent-b", `queue-${index}`)))
+
+    expect(manager.getSlotInfo("parent-a").acquired).toBe(10)
+    expect(manager.getSlotInfo("parent-b").acquired).toBe(10)
+    for (const handle of [...parentA, ...parentB]) manager.release(handle)
+  })
+
   it("enforces a per-key limit of 2 active delegations", async () => {
     const manager = new SlotManager({ maxSlotsPerSession: 10, perKeyLimit: 2 })
     const first = await manager.acquire("session-1", "agent:builder")
