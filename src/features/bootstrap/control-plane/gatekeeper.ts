@@ -95,7 +95,6 @@ export interface Gatekeeper {
  */
 export const BLOCKING_GATES: string[] = [
   "manual-state-writes",
-  "category-gate",
   "permission-gate",
 ]
 

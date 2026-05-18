@@ -4,12 +4,9 @@ import { z } from "zod"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 
-/** Zod contract for delegate-task v2 input validation and defaults. */
 export const DelegateTaskV2Schema = z.object({
   agent: z.string().min(1, { error: "agent is required" }),
   prompt: z.string().min(1, { error: "prompt is required" }),
-  safetyCeilingMs: z.number().int().positive().max(300_000).default(300_000),
-  category: z.string().optional(),
   context: z.string().optional(),
 })
 
@@ -17,7 +14,6 @@ interface CoordinatorLike {
   dispatch(params: Record<string, unknown>): Promise<unknown>
 }
 
-/** @internal Runtime context injected by the OpenCode plugin framework. */
 type ToolContext = {
   sessionID?: string
   directory?: string
@@ -31,12 +27,6 @@ function isOpenCodeRuntimeAvailable(): boolean {
   return !!(process.env.OPENCODE_SESSION_ID || process.env.OPENCODE_HARNESS_STATE_DIR)
 }
 
-/**
- * Creates the delegate-task v2 OpenCode tool boundary.
- *
- * @param coordinator - Coordination dependency that performs pre-flight dispatch wiring.
- * @returns An OpenCode tool definition that validates input and reports truthful runtime dispatch availability.
- */
 export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType<typeof tool> {
   const s = tool.schema
 
@@ -46,8 +36,6 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType
     args: {
       agent: s.string().describe("Agent name to delegate to (must be valid at runtime)"),
       prompt: s.string().describe("Task prompt to send to the delegated agent"),
-      safetyCeilingMs: s.number().optional().describe("Safety ceiling in milliseconds (max runtime)"),
-      category: s.string().optional().describe("Optional delegation category"),
       context: s.string().optional().describe("Optional context packet"),
     },
     async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
@@ -68,13 +56,10 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType
         const prompt = args.context ? `${args.context}\n\n${args.prompt}` : args.prompt
         const result = await coordinator.dispatch({
           agent: args.agent,
-          category: args.category,
           currentDepth: 0,
           parentSessionId,
           prompt,
           queueKey: `agent:${args.agent}`,
-          safetyCeilingMs: args.safetyCeilingMs,
-          surface: "agent-delegation",
           workingDirectory: context.directory ?? context.worktree,
         })
         const resultRecord = asRecord(result)
@@ -84,7 +69,7 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType
         }
         return renderToolResult(success(
           `[Harness] Delegated task to ${args.agent}`,
-          { ...resultRecord, agent: args.agent, safetyCeilingMs: args.safetyCeilingMs },
+          { ...resultRecord, agent: args.agent },
         ))
       } catch (caughtError) {
         const message = caughtError instanceof Error ? caughtError.message : String(caughtError)

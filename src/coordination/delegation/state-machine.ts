@@ -307,7 +307,7 @@ export class DelegationStateMachine {
 
   /** Arm the safety-ceiling timer for a delegation. */
   scheduleSafetyCeiling(delegation: Delegation): void {
-    const ceiling = delegation.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS
+    const ceiling = DEFAULT_SAFETY_CEILING_MS
     const remaining = Math.max(1, ceiling - (Date.now() - delegation.createdAt))
     const timer = setTimeout(() => { void this.handleSafetyCeiling(delegation.id) }, remaining)
     this.safetyTimers.set(delegation.id, timer)
@@ -435,7 +435,7 @@ export class DelegationStateMachine {
   private async handleSafetyCeiling(delegationId: string): Promise<void> {
     const delegation = this.delegations.get(delegationId)
     if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) return
-    this.transitionToTerminal(delegationId, "timeout", `[Harness] Delegation safety ceiling reached after ${delegation.safetyCeilingMs}ms`)
+    this.transitionToTerminal(delegationId, "timeout", `[Harness] Delegation safety ceiling reached after ${DEFAULT_SAFETY_CEILING_MS}ms`)
     try { await abortSession(this.client, delegation.childSessionId) } catch { /* no-op */ }
   }
 }

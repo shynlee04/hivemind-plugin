@@ -35,8 +35,6 @@ export interface Delegation {
   error?: string
   createdAt: number
   completedAt?: number
-  /** Optional max runtime ceiling — NOT a deadline. Tasks run until dual-signal confirms completion. */
-  safetyCeilingMs?: number
   /** Last known message count from child session (for stability tracking) */
   lastMessageCount: number
   /** Number of consecutive stable polls (message count unchanged) */
@@ -139,10 +137,7 @@ export type CommandDelegationParams = {
     provider?: string
     model?: string
     agent?: string
-    category?: string
   }
-  /** Advisory watchdog threshold only — not a fixed completion timeout. */
-  safetyCeilingMs?: number
 }
 
 export const DEFAULT_SAFETY_CEILING_MS = 30 * 60 * 1000 // 30 minutes

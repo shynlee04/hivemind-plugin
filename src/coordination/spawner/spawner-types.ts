@@ -54,8 +54,6 @@ export interface DelegationSpawnRequest {
   workingDirectory: string
   /** Execution mode: PTY by default, headless as fallback. */
   executionMode: DelegationExecutionMode
-  /** Maximum runtime ceiling in milliseconds (NOT a deadline). */
-  safetyCeilingMs: number
   /** Permission profile controlling the child's tool access. */
   permissionProfile: DelegationPermissionProfile
 }

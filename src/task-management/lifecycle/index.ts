@@ -228,7 +228,6 @@ export class HarnessLifecycleManager {
       agent: args.agent,
       prompt: args.promptText,
       title: args.description,
-      category: args.category,
       model: args.model,
     })
 

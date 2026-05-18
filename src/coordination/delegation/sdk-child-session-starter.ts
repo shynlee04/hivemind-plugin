@@ -30,9 +30,8 @@ export function createSdkChildSessionStarter(client: OpenCodeClient): {
 
       const permissionProfile = resolveDelegationPermissionProfile({
         agent: params.agent,
-        category: params.validatedAgent.category,
         prompt: params.prompt,
-      }, params.validatedAgent)
+      })
 
       await sendPromptAsync(client, childSessionId, {
         agent: params.validatedAgent.name,

@@ -18,7 +18,6 @@ import { resolveParentWorkingDirectory } from "../spawner/parent-directory.js"
 import { spawnDelegatedSession } from "../spawner/session-creator.js"
 import { buildSdkSpawnRequest, type DelegateParams, type ValidatedAgent } from "../spawner/spawn-request-builder.js"
 import {
-  DEFAULT_SAFETY_CEILING_MS,
   type CommandDelegationParams,
   type Delegation,
   type DelegationResult,
@@ -27,7 +26,7 @@ import {
 } from "../../shared/types.js"
 import type { BehavioralOverrides } from "../../routing/behavioral-profile/types.js"
 
-type QueueContext = { provider?: string; model?: string; agent?: string; category?: string }
+type QueueContext = { provider?: string; model?: string; agent?: string }
 
 const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
   ...DEFAULT_RUNTIME_POLICY,
@@ -199,7 +198,6 @@ export class DelegationManager {
         agent: agent.name,
         status: "dispatched",
         createdAt: Date.now(),
-        safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
         lastMessageCount: 0,
         stablePollCount: 0,
         lastMessageCountChangeAt: Date.now(),
@@ -416,7 +414,6 @@ export class DelegationManager {
       name: typeof e.name === "string" ? e.name : "",
       provider: typeof e.provider === "string" ? e.provider : undefined,
       model: typeof e.model === "string" ? e.model : undefined,
-      category: typeof e.category === "string" ? e.category : undefined,
       description: typeof e.description === "string" ? e.description : undefined,
       permission: parsePermissionRecord(e.permission),
       tools: parseToolBooleans(e.tools),
@@ -433,7 +430,6 @@ export class DelegationManager {
       provider: params.provider ?? agent.provider,
       model: params.model ?? agent.model,
       agent: agent.name,
-      category: params.category ?? agent.category,
     }
   }
 
@@ -442,7 +438,6 @@ export class DelegationManager {
       provider: params.queueContext?.provider,
       model: params.queueContext?.model,
       agent: params.queueContext?.agent,
-      category: params.queueContext?.category ?? "command",
     }
   }
 

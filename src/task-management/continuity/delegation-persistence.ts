@@ -140,7 +140,6 @@ function normalizePersistedDelegation(value: unknown): Delegation | null {
     error: normalizedError,
     createdAt: record.createdAt,
     completedAt: typeof record.completedAt === "number" ? record.completedAt : undefined,
-    safetyCeilingMs: typeof record.safetyCeilingMs === "number" ? record.safetyCeilingMs : undefined,
     lastMessageCount: typeof record.lastMessageCount === "number" ? record.lastMessageCount : 0,
     stablePollCount: typeof record.stablePollCount === "number" ? record.stablePollCount : 0,
     lastMessageCountChangeAt:

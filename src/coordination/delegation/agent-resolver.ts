@@ -26,7 +26,7 @@ export class AgentResolver {
   /** Build the prompt-time permission profile for a validated agent. */
   buildPermissionProfile(
     agent: ValidatedAgent,
-    params: Pick<DelegateParams, "agent" | "title" | "prompt" | "category">,
+    params: Pick<DelegateParams, "agent" | "title" | "prompt">,
   ): DelegationPermissionProfile {
     return resolveDelegationPermissionProfile(params, agent)
   }
@@ -42,13 +42,12 @@ function toValidatedAgent(value: unknown): ValidatedAgent {
   const name = typeof record.name === "string" ? record.name : ""
   const provider = typeof record.provider === "string" ? record.provider : undefined
   const model = typeof record.model === "string" ? record.model : undefined
-  const category = typeof record.category === "string" ? record.category : undefined
   const description = typeof record.description === "string" ? record.description : undefined
   const permission = typeof record.permission === "object" && record.permission !== null
     ? record.permission as Record<string, unknown>
     : undefined
   const tools = readBooleanRecord(record.tools)
-  return { name, provider, model, category, description, permission, tools }
+  return { name, provider, model, description, permission, tools }
 }
 
 function readBooleanRecord(value: unknown): Record<string, boolean> | undefined {

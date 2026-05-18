@@ -1,5 +1,4 @@
 import type { DelegationSpawnRequest } from "./spawner-types.js"
-import { DEFAULT_SAFETY_CEILING_MS } from "../../shared/types.js"
 
 type PrimitivePermission = Record<string, unknown>
 
@@ -7,7 +6,6 @@ type ValidatedAgent = {
   name: string
   provider?: string
   model?: string
-  category?: string
   description?: string
   permission?: PrimitivePermission
   tools?: Record<string, boolean>
@@ -18,12 +16,10 @@ type DelegateParams = {
   agent: string
   prompt: string
   title?: string
-  safetyCeilingMs?: number
   workingDirectory?: string
   worktree?: string
   provider?: string
   model?: string
-  category?: string
 }
 
 export type { ValidatedAgent, DelegateParams }
@@ -48,7 +44,6 @@ export function buildSdkSpawnRequest(
     prompt: params.prompt,
     workingDirectory,
     executionMode: "sdk",
-    safetyCeilingMs: params.safetyCeilingMs ?? DEFAULT_SAFETY_CEILING_MS,
     permissionProfile: resolveDelegationPermissionProfile(params, agent),
   }
 }
@@ -68,10 +63,10 @@ export function buildSdkSpawnRequest(
  * ```
  */
 export function resolveDelegationPermissionProfile(
-  params: Pick<DelegateParams, "agent" | "title" | "prompt" | "category">,
-  agent: ValidatedAgent,
+  params: Pick<DelegateParams, "agent" | "title" | "prompt">,
+  agent?: ValidatedAgent,
 ): DelegationSpawnRequest["permissionProfile"] {
-  const explicitTools = toolsFromAgentMetadata(agent)
+  const explicitTools = agent ? toolsFromAgentMetadata(agent) : undefined
   const intentTools = isReviewOnlyTask(params, agent) ? READ_ONLY_TOOLS : undefined
   const tools = explicitTools ?? intentTools ?? READ_ONLY_TOOLS
   const writeCapable = tools.some((toolName) => WRITE_TOOLS.has(toolName))
@@ -125,10 +120,10 @@ function isPermissionDenied(value: unknown): boolean {
 }
 
 function isReviewOnlyTask(
-  params: Pick<DelegateParams, "agent" | "title" | "prompt" | "category">,
-  agent: ValidatedAgent,
+  params: Pick<DelegateParams, "agent" | "title" | "prompt">,
+  agent?: ValidatedAgent,
 ): boolean {
-  const haystack = [params.agent, params.title, params.prompt, params.category, agent.name, agent.category, agent.description]
+  const haystack = [params.agent, params.title, params.prompt, agent?.name, agent?.description]
     .filter((value): value is string => typeof value === "string")
     .join(" ")
     .toLowerCase()

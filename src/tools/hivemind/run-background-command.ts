@@ -177,7 +177,6 @@ export function createRunBackgroundCommandTool(args: {
             title: `Background command: ${parsed.command}`,
             queueContext: {
               agent: undefined,
-              category: "command",
             },
           })
 
