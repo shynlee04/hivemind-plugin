@@ -160,6 +160,18 @@ describe("delegation-status v2 tool", () => {
     expect(lifecycle.markCancelled).not.toHaveBeenCalled()
   })
 
+  it("exposes a terminal-safe resume path for completed child sessions without mutating the record", async () => {
+    const record = activeRecord({ childSessionId: "ses_child_done", completedAt: now, status: "completed" })
+    const { manager, tool } = createHarness(record)
+
+    const raw = await tool.execute({ delegationId: "dt-123" } as never, context)
+    const data = parse(raw).data as Record<string, unknown>
+
+    expect(data.resume).toEqual({ childSessionId: "ses_child_done", mode: "continue-child-session" })
+    expect(manager.controlDelegation).toBeUndefined()
+    expect(record).toMatchObject({ childSessionId: "ses_child_done", status: "completed" })
+  })
+
   it("DelegationControlSchema validates the 4 supported actions", () => {
     for (const action of ["abort", "cancel", "restart", "redirect"] as const) {
       const input = action === "redirect" ? { action, redirectAgent: "critic" } : { action }

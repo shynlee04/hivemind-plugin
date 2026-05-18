@@ -43,7 +43,14 @@ function createPipelineHarness() {
       : { allowed: true, reason: "allowed", audit: { gate: "category" } },
     slotManager,
   })
-  const monitor = new DelegationMonitor({ getStatus: (id) => records.get(id)?.status ?? "missing", inject: (_parent, line) => { injections.push(line) }, pollingCadence: [] })
+  let coordinator: DelegationCoordinator
+  const monitor = new DelegationMonitor({
+    getDelegationRecord: (id) => records.get(id),
+    getStatus: (id) => records.get(id)?.status ?? "missing",
+    inject: (_parent, line) => { injections.push(line) },
+    onFirstActionDeadline: (id, elapsedSeconds) => { coordinator.markExecutionUnconfirmed(id, elapsedSeconds) },
+    pollingCadence: [],
+  })
   const notificationRouter = new NotificationRouter()
   const route = vi.spyOn(notificationRouter, "route").mockImplementation((notification) => {
     notifications.push(notification)
@@ -51,7 +58,7 @@ function createPipelineHarness() {
   })
   const detector = new CompletionDetector(5)
   const retryHandler = new DelegationRetryHandler({ persist: (delegations) => { persisted.push(delegations) }, wait: async () => undefined })
-  const coordinator = new DelegationCoordinator({ dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
+  coordinator = new DelegationCoordinator({ dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
   return { coordinator, detector, lifecycle, notifications, persisted, records, route, slotManager }
 }
 
@@ -87,8 +94,17 @@ describe("delegation v2 full pipeline", () => {
     expect(harness.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: result.delegationId, type: "timeout" }))
   })
 
-  it("uses the 600s terminal-stalled escalation threshold", () => {
+  it("uses the 600s escalation path to terminal-stall, release the slot, and stop monitoring", async () => {
+    vi.useFakeTimers()
+    const harness = createPipelineHarness()
+    const result = await harness.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })
+
+    await vi.advanceTimersByTimeAsync(600_000)
+
     expect(ESCALATION_THRESHOLDS).toEqual([60, 120, 180, 300, 600])
+    expect(harness.lifecycle.getStatus(result.delegationId)).toMatchObject({ executionState: "stalled", status: "timeout" })
+    await expect(harness.slotManager.acquire("parent-1", "agent:builder", { acquireTimeoutMs: 20 })).resolves.toMatchObject({ queueKey: "agent:builder" })
+    vi.useRealTimers()
   })
 
   it("supports abort lifecycle control on an active delegation", async () => {

@@ -24,7 +24,9 @@ import { SlotManager } from "./coordination/delegation/slot-manager.js"
 import { recordCategoryGateask } from "./coordination/delegation/category-gate-audit.js"
 import type { Delegation, DelegationStatus } from "./coordination/delegation/types.js"
 import { appendTuiPrompt, showTuiToast, type OpenCodeClient } from "./shared/session-api.js"
+import { asString, getNestedValue } from "./shared/helpers.js"
 import { taskState } from "./shared/state.js"
+import type { PendingNotification } from "./shared/types.js"
 import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
 import { createSessionHooks } from "./hooks/lifecycle/session-hooks.js"
 import { createToolGuardHooks } from "./hooks/guards/tool-guard-hooks.js"
@@ -68,10 +70,56 @@ import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-lo
 import { SessionTracker } from "./features/session-tracker/index.js"
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
+import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./task-management/continuity/index.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 import type { RuntimePolicy } from "./shared/types.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
+
+function extractHookSessionId(input: unknown): string | undefined {
+  return asString(getNestedValue(input, ["sessionID"]))
+    ?? asString(getNestedValue(input, ["sessionId"]))
+    ?? asString(getNestedValue(input, ["message", "sessionID"]))
+    ?? asString(getNestedValue(input, ["message", "sessionId"]))
+}
+
+function extractAssistantExcerpt(input: unknown, output: unknown): string | undefined {
+  const role = asString(getNestedValue(input, ["message", "role"])) ?? asString(getNestedValue(input, ["role"]))
+  if (role && role !== "assistant") return undefined
+  const text = asString(getNestedValue(output, ["text"]))
+    ?? asString(getNestedValue(input, ["message", "content"]))
+    ?? asString(getNestedValue(input, ["content"]))
+  return text ? text.slice(0, 500) : undefined
+}
+
+function persistPendingDelegationNotifications(records: Array<{ notification: { delegationId: string; message: string; timestamp: number; type: string }; parentSessionId: string }>): void {
+  const byParent = new Map<string, PendingNotification[]>()
+  for (const record of records) {
+    const notification: PendingNotification = {
+      agent: "delegate-task",
+      createdAt: record.notification.timestamp,
+      delivered: false,
+      description: `Delegation ${record.notification.delegationId} ${record.notification.type}`,
+      metadata: { delegationId: record.notification.delegationId, terminalState: record.notification.type === "success" ? "completed" : record.notification.type === "timeout" ? "timeout" : "error", summaryPreview: record.notification.message.slice(0, 500) },
+      resultPreview: record.notification.message,
+      sessionID: record.notification.delegationId,
+      status: record.notification.type === "success" ? "completed" : record.notification.type === "timeout" || record.notification.type === "failure" ? "failed" : "started",
+    }
+    byParent.set(record.parentSessionId, [...(byParent.get(record.parentSessionId) ?? []), notification])
+  }
+  for (const [parentSessionId, pending] of byParent) {
+    const current = getSessionContinuity(parentSessionId)
+    if (current) {
+      patchSessionContinuity(parentSessionId, { pendingNotifications: [...current.metadata.pendingNotifications, ...pending] })
+      continue
+    }
+    recordSessionContinuity({
+      metadata: { constraints: [], delegation: null, description: "Delegation pending notification queue", pendingNotifications: pending, status: "running", updatedAt: Date.now() },
+      promptParams: {},
+      sessionID: parentSessionId,
+    })
+  }
+}
 
 export interface DelegationModuleSetupOptions {
   client: OpenCodeClient
@@ -104,7 +152,15 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const agentResolver = new AgentResolver({ client: options.client, projectRoot: options.projectDirectory })
   const dispatcher = new DelegationDispatcher({ agentResolver, recordCategoryGateask: options.recordCategoryGateask, slotManager })
   const detector = new CompletionDetector()
-  const notificationRouter = new NotificationRouter()
+  const notificationRouter = new NotificationRouter({
+    deliver: async (_parentSessionId, notification) => {
+      const line = notificationRouter.formatNotification(notification.type, notification.delegationId, notification.message)
+      await appendTuiPrompt(options.client, line)
+      await showTuiToast(options.client, notification.type === "progress" ? "Delegation update delivered" : `Delegation ${notification.type} delivered`)
+      return true
+    },
+    persistPending: persistPendingDelegationNotifications,
+  })
   let coordinatorRef: DelegationCoordinator | undefined
   const lifecycle = new DelegationLifecycle({
     get: (delegationId) => records.get(delegationId),
@@ -127,10 +183,9 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const monitor = new DelegationMonitor({
     getDelegationRecord: (delegationId) => lifecycle.getStatus(delegationId),
     getStatus: (delegationId) => lifecycle.getStatus(delegationId)?.status ?? "dispatched",
-    inject: (_parentSessionId, line) => {
-      void appendTuiPrompt(options.client, line)
-        .then(() => showTuiToast(options.client, "Delegation update delivered"))
-        .catch(() => undefined)
+    inject: (_parentSessionId, line, delegationId) => {
+      if (!delegationId) return
+      notificationRouter.route({ delegationId, idempotencyKey: `${delegationId}:progress:${line}`, message: line, timestamp: Date.now(), type: "progress" })
     },
     onFirstActionDeadline: (delegationId, elapsedSeconds) => coordinatorRef?.markExecutionUnconfirmed(delegationId, elapsedSeconds),
   })
@@ -287,21 +342,25 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         })
       },
     }),
-    // chat.message: session tracker captures user/assistant messages.
+    // chat.message: session tracker captures messages and delegation observes child output.
     // Best-effort — never blocks the OpenCode runtime.
-    "chat.message": createChatMessageCapture({
-      sessionTracker,
-      logWarn: (msg: string, err: unknown) => {
-        void client.app?.log?.({
-          body: {
-            service: "session-tracker",
-            level: "warn",
-            message: msg,
-            extra: { error: err instanceof Error ? err.message : String(err) },
-          },
-        })
-      },
-    }),
+    "chat.message": async (input: unknown, output: unknown): Promise<void> => {
+      const childSessionId = extractHookSessionId(input)
+      if (childSessionId) delegationManager.recordChildMessageSignal(childSessionId, extractAssistantExcerpt(input, output))
+      await createChatMessageCapture({
+        sessionTracker,
+        logWarn: (msg: string, err: unknown) => {
+          void client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: msg,
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
+        },
+      })(input, output)
+    },
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager),
       "delegation-status": createDelegationStatusTool(delegationManager),
@@ -337,6 +396,9 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         summarizeOutput: summarizePluginToolOutput,
       })(input, _output)
       void fact // consumed by guard hooks above; session tracker uses raw input
+      const childSessionId = extractHookSessionId(input)
+      if (childSessionId) delegationManager.recordChildToolSignal(childSessionId)
+
       try {
         // Session tracker: capture tool metadata (skill, read, task, etc.)
         // Uses raw hook input/output for accurate metadata, not the projected fact.

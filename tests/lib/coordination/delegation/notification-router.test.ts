@@ -69,6 +69,25 @@ describe("NotificationRouter", () => {
     ]))
   })
 
+  it("persists async delivery failures once and replays pending notifications once", async () => {
+    const persisted: unknown[] = []
+    const router = new NotificationRouter({
+      deliver: async () => { throw new Error("tui unavailable") },
+      persistPending: (records) => { persisted.push(records) },
+    })
+    router.register("dt-1", "parent-1")
+
+    router.route({ delegationId: "dt-1", idempotencyKey: "async-key", message: "deferred", timestamp: 1, type: "success" })
+    await vi.waitFor(() => {
+      expect(persisted).toHaveLength(1)
+    })
+
+    expect(router.replayPending("parent-1").map((notification) => notification.message)).toEqual(["deferred"])
+    expect(router.replayPending("parent-1")).toEqual([])
+    router.route({ delegationId: "dt-1", idempotencyKey: "async-key", message: "deferred", timestamp: 1, type: "success" })
+    expect(router.replayPending("parent-1")).toEqual([])
+  })
+
   it("formats the four notification types with their standard icons", () => {
     const router = new NotificationRouter()
 

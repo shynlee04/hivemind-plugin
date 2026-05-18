@@ -12,7 +12,7 @@ export interface PendingNotificationRecord {
 }
 
 export interface NotificationRouterOptions {
-  deliver?: (parentSessionId: string, notification: DelegationNotification) => boolean
+  deliver?: (parentSessionId: string, notification: DelegationNotification) => boolean | Promise<boolean>
   persistPending?: (records: PendingNotificationRecord[]) => void
 }
 
@@ -48,13 +48,26 @@ export class NotificationRouter {
     if (notification.idempotencyKey && this.deliveredKeys.has(notification.idempotencyKey)) {
       return { parentSessionId: route.parentSessionId, notification }
     }
-    const delivered = this.options.deliver?.(route.parentSessionId, notification) ?? true
-    if (delivered) {
+    const deliveryResult = this.options.deliver?.(route.parentSessionId, notification) ?? true
+    if (typeof (deliveryResult as Promise<boolean>).then === "function") {
+      void (deliveryResult as Promise<boolean>)
+        .then((delivered) => { this.finalizeDelivery(notification.delegationId, notification, delivered) })
+        .catch(() => { this.finalizeDelivery(notification.delegationId, notification, false) })
+    } else if (deliveryResult) {
       if (notification.idempotencyKey) this.deliveredKeys.add(notification.idempotencyKey)
     } else {
       this.queuePending(notification.delegationId, notification)
     }
     return { parentSessionId: route.parentSessionId, notification }
+  }
+
+  /** Complete an async delivery attempt without duplicating pending records. */
+  private finalizeDelivery(delegationId: string, notification: DelegationNotification, delivered: boolean): void {
+    if (delivered) {
+      if (notification.idempotencyKey) this.deliveredKeys.add(notification.idempotencyKey)
+      return
+    }
+    this.queuePending(delegationId, notification)
   }
 
   /** Remove a route after terminal completion. */
@@ -66,6 +79,7 @@ export class NotificationRouter {
   queuePending(delegationId: string, notification: DelegationNotification): void {
     const route = this.routes.get(delegationId)
     if (!route) return
+    if (notification.idempotencyKey && this.deliveredKeys.has(notification.idempotencyKey)) return
     route.notifications.push(notification)
     if (notification.idempotencyKey) this.deliveredKeys.add(notification.idempotencyKey)
     if (route.notifications.length > this.pendingLimit) route.notifications.splice(0, route.notifications.length - this.pendingLimit)

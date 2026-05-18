@@ -41,6 +41,7 @@ const UNSUPPORTED_REPLACEMENT_MESSAGE =
  * @returns Serializable status metadata for tool output.
  */
 function renderDelegation(delegation: Delegation): Record<string, unknown> {
+  const isTerminal = delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout"
   return {
     delegationId: delegation.id,
     childSessionId: delegation.childSessionId,
@@ -68,7 +69,9 @@ function renderDelegation(delegation: Delegation): Record<string, unknown> {
     finalMessageExcerpt: delegation.finalMessageExcerpt ? redactTextSecrets(delegation.finalMessageExcerpt) : undefined,
     firstActionAt: delegation.firstActionAt,
     messageCount: delegation.messageCount,
+    resume: isTerminal ? { childSessionId: delegation.childSessionId, mode: "continue-child-session" } : undefined,
     signalSource: delegation.signalSource,
+    signals: { actionCount: delegation.actionCount ?? 0, messageCount: delegation.messageCount ?? 0, toolCallCount: delegation.toolCallCount ?? 0 },
     toolCallCount: delegation.toolCallCount,
   }
 }

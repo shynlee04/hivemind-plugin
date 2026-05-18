@@ -15,6 +15,7 @@ type Watcher = {
 
 type DualSignalWatcher = {
   callback: (result: DelegationResult) => void
+  completionResult?: DelegationResult
   fired: boolean
   gotCompletionEvent: boolean
   terminalStatus?: DelegationStatus
@@ -97,10 +98,11 @@ export class CompletionDetector {
   }
 
   /** Marks that native Task completion was observed for a delegation. */
-  signalCompletionEvent(delegationId: string): void {
+  signalCompletionEvent(delegationId: string, result?: DelegationResult): void {
     const watcher = this.dualSignalWatchers.get(delegationId)
     if (!watcher) return
     watcher.gotCompletionEvent = true
+    watcher.completionResult = this.mergeCompletionResult(watcher.completionResult, result)
     this.fireDualSignalIfReady(delegationId, watcher)
   }
 
@@ -209,7 +211,13 @@ export class CompletionDetector {
   private fireDualSignalIfReady(delegationId: string, watcher: DualSignalWatcher): void {
     if (watcher.fired || !watcher.gotCompletionEvent || !watcher.terminalStatus) return
     watcher.fired = true
-    watcher.callback({ delegationId, status: watcher.terminalStatus })
+    watcher.callback({ ...watcher.completionResult, delegationId, status: watcher.terminalStatus })
+  }
+
+  private mergeCompletionResult(previous: DelegationResult | undefined, next: DelegationResult | undefined): DelegationResult | undefined {
+    if (!previous) return next
+    if (!next) return previous
+    return { ...previous, ...next }
   }
 
   private isTerminalStatus(status: DelegationStatus): boolean {

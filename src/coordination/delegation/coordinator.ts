@@ -23,7 +23,7 @@ export interface DelegationCoordinatorDeps {
   notificationRouter: Pick<NotificationRouter, "deregister" | "register" | "route">
   lifecycle: Pick<DelegationLifecycle, "isTerminal" | "markTimeout" | "transition"> & Partial<Pick<DelegationLifecycle, "getStatus" | "list" | "register">>
   detector: {
-    signalCompletionEvent: (delegationId: string) => void
+    signalCompletionEvent: (delegationId: string, result?: DelegationResult) => void
     signalTerminalStatus: (delegationId: string, status: DelegationStatus) => void
     unwatch: (delegationId: string) => void
     watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void
@@ -113,10 +113,33 @@ export class DelegationCoordinator {
       : record.toolCallCount > 0 ? "tool" : record.messageCount > 0 ? "message" : "status-only"
   }
 
+  /** Record a runtime message observation for a tracked child session. */
+  recordChildMessageSignal(childSessionId: string, observedAt?: number, finalMessageExcerpt?: string): void {
+    const delegationId = this.delegationByChildSession.get(childSessionId)
+    if (!delegationId) return
+    const record = this.findRecord(delegationId)
+    if (record && finalMessageExcerpt) record.finalMessageExcerpt = finalMessageExcerpt
+    this.recordExecutionSignal(delegationId, { messageDelta: 1, observedAt, source: "message" })
+  }
+
+  /** Record a runtime tool observation for a tracked child session. */
+  recordChildToolSignal(childSessionId: string, observedAt?: number): void {
+    const delegationId = this.delegationByChildSession.get(childSessionId)
+    if (!delegationId) return
+    this.recordExecutionSignal(delegationId, { observedAt, source: "tool", toolDelta: 1 })
+  }
+
   /** Mark a delegation as unconfirmed when the 60s first-action window expires without signals. */
   markExecutionUnconfirmed(delegationId: string, elapsedSeconds: number): void {
     const record = this.findRecord(delegationId)
     if (!record || record.executionState === "confirmed") return
+    if (elapsedSeconds >= 600) {
+      record.executionState = "stalled"
+      record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
+      record.error = `[Harness] Delegation stalled without first action after ${elapsedSeconds}s`
+      this.handleTimeout(delegationId)
+      return
+    }
     record.executionState = elapsedSeconds >= 600 ? "stalled" : "unconfirmed"
     record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
     this.routeTerminal(delegationId, "progress", `first action unconfirmed after ${elapsedSeconds}s`)
@@ -257,7 +280,8 @@ export class DelegationCoordinator {
   private handleChildSessionTerminal(childSessionId: string, status: DelegationStatus, errorMessage?: string): void {
     const delegationId = this.delegationByChildSession.get(childSessionId)
     if (!delegationId) return
-    this.deps.detector.signalCompletionEvent(delegationId)
+    const completionResult = this.buildChildCompletionResult(delegationId, childSessionId, status, errorMessage)
+    this.deps.detector.signalCompletionEvent(delegationId, completionResult)
     this.deps.detector.signalTerminalStatus(delegationId, status)
     if (errorMessage) {
       const record = this.active.get(delegationId)?.record ?? this.deps.lifecycle.getStatus?.(delegationId)
@@ -265,8 +289,31 @@ export class DelegationCoordinator {
     }
   }
 
+  private buildChildCompletionResult(delegationId: string, childSessionId: string, status: DelegationStatus, errorMessage?: string): DelegationResult {
+    const record = this.active.get(delegationId)?.record ?? this.deps.lifecycle.getStatus?.(delegationId)
+    const finalMessageExcerpt = record?.finalMessageExcerpt
+    const result = finalMessageExcerpt
+      ? `Child session ${childSessionId} completed: ${finalMessageExcerpt}`
+      : `Child session ${childSessionId} reached terminal status ${status}`
+    return {
+      actionCount: record?.actionCount,
+      childSessionId,
+      delegationId,
+      error: errorMessage ?? record?.error,
+      evidenceLevel: record?.evidenceLevel ?? (finalMessageExcerpt ? "message" : "status-only"),
+      executionState: record?.executionState,
+      finalMessageExcerpt,
+      firstActionAt: record?.firstActionAt,
+      messageCount: record?.messageCount,
+      result: status === "completed" ? result : undefined,
+      signalSource: record?.signalSource,
+      status,
+      toolCallCount: record?.toolCallCount,
+    }
+  }
+
   private routeTerminal(delegationId: string, type: DelegationNotification["type"], message: string): void {
-    this.deps.notificationRouter.route({ delegationId, message, timestamp: Date.now(), type })
+    this.deps.notificationRouter.route({ delegationId, idempotencyKey: `${delegationId}:${type}:${message}`, message, timestamp: Date.now(), type })
   }
 
   private notificationTypeFor(status: DelegationStatus): DelegationNotification["type"] {

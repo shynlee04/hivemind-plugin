@@ -2,7 +2,7 @@ import { createDelegateTaskTool } from "../../src/tools/delegation/delegate-task
 import { createDelegationStatusTool } from "../../src/tools/delegation/delegation-status.js"
 import { AutoLoopEngine } from "../../src/features/auto-loop/index.js"
 import { RalphLoopEngine } from "../../src/features/ralph-loop/index.js"
-import { setupDelegationModules } from "../../src/plugin.js"
+import { HarnessControlPlane, setupDelegationModules } from "../../src/plugin.js"
 
 function parse(raw: string): Record<string, unknown> {
   return JSON.parse(raw) as Record<string, unknown>
@@ -25,7 +25,13 @@ function createRuntimeClient() {
     },
     session: {
       create: vi.fn(async () => ({ data: { id: "child-integration" } })),
+      messages: vi.fn(async () => ({ data: [] })),
       promptAsync: vi.fn(async () => ({ data: undefined })),
+      status: vi.fn(async () => ({ data: {} })),
+    },
+    tui: {
+      appendPrompt: vi.fn(async () => ({ data: undefined })),
+      showToast: vi.fn(async () => ({ data: undefined })),
     },
   }
 }
@@ -97,6 +103,29 @@ describe("delegation v2 plugin integration", () => {
     const raw = await statusTool.execute({ delegationId: dispatched.delegationId } as never, { sessionID: "parent-1" })
 
     expect(parse(raw).data).toMatchObject({ delegationId: dispatched.delegationId, status: "completed" })
+  })
+
+  it("confirms first action and extracts completion result through plugin message/tool/session hooks", async () => {
+    const client = createRuntimeClient()
+    const plugin = await HarnessControlPlane({ client: client as never, directory: "/tmp/project" } as never)
+    const dispatchRaw = await plugin.tool["delegate-task"].execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
+    const delegationId = (parse(dispatchRaw).data as Record<string, unknown>).delegationId as string
+
+    await plugin["chat.message"]?.({ message: { content: "implemented runtime behavior", role: "assistant" }, sessionID: "child-integration" }, {})
+    await plugin["tool.execute.after"]?.({ args: {}, sessionID: "child-integration", tool: "read" }, {})
+    await plugin.event({ event: { properties: { info: { id: "child-integration" } }, type: "session.idle" } })
+    const statusRaw = await plugin.tool["delegation-status"].execute({ delegationId } as never, { sessionID: "parent-1" })
+    const data = parse(statusRaw).data as Record<string, unknown>
+
+    expect(data).toMatchObject({
+      delegationId,
+      evidenceLevel: "message-and-tool",
+      executionState: "confirmed",
+      finalMessageExcerpt: "implemented runtime behavior",
+      status: "completed",
+    })
+    expect(data.result).toContain("implemented runtime behavior")
+    expect(data.signals).toMatchObject({ messageCount: 1, toolCallCount: 1 })
   })
 
   it("aborts an active delegation through the status tool control action", async () => {

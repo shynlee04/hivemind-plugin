@@ -6,7 +6,7 @@ export interface MonitorOptions {
   getStatus: (delegationId: string) => DelegationStatus | string
   /** Returns the current delegation record for semantic escalation guards, or undefined if not tracked. */
   getDelegationRecord?: (delegationId: string) => Delegation | undefined
-  inject: (parentSessionId: string, line: string) => void
+  inject: (parentSessionId: string, line: string, delegationId?: string) => void
   onFirstActionDeadline?: (delegationId: string, elapsedSeconds: number) => void
   pollingCadence?: PollingCadence | readonly number[]
 }
@@ -47,7 +47,7 @@ export class DelegationMonitor {
         if (elapsed >= 60 && this.getDelegationRecord?.(delegationId)?.executionState !== "confirmed") {
           this.onFirstActionDeadline?.(delegationId, elapsed)
         }
-        this.inject(parentSessionId, `[DT:${delegationId}] status=${status} elapsed=${elapsed}s`)
+        this.inject(parentSessionId, `[DT:${delegationId}] status=${status} elapsed=${elapsed}s`, delegationId)
       }, elapsed * 1000))
     }
     state.escalationTimer.start(delegationId, undefined, (level, elapsed, icon) => {
@@ -56,7 +56,7 @@ export class DelegationMonitor {
       if (elapsed >= 600 && this.getDelegationRecord?.(delegationId)?.executionState !== "confirmed") {
         this.onFirstActionDeadline?.(delegationId, elapsed)
       }
-      this.inject(parentSessionId, `[DT:${delegationId}] ${icon} escalation=${level} elapsed=${elapsed}s`)
+      this.inject(parentSessionId, `[DT:${delegationId}] ${icon} escalation=${level} elapsed=${elapsed}s`, delegationId)
     })
   }
 

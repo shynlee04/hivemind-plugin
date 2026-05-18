@@ -18,7 +18,7 @@ type FacadeLifecycle = {
 }
 
 export type DelegationManagerOptions = {
-  coordinator?: Pick<DelegationCoordinator, "abortDelegation" | "attachChildSession" | "cancelDelegation" | "chain" | "dispatch" | "failDispatch" | "handleSessionDeleted" | "handleSessionError" | "handleSessionIdle">
+  coordinator?: Pick<DelegationCoordinator, "chain" | "dispatch"> & Partial<Pick<DelegationCoordinator, "abortDelegation" | "attachChildSession" | "cancelDelegation" | "failDispatch" | "handleSessionDeleted" | "handleSessionError" | "handleSessionIdle" | "recordChildMessageSignal" | "recordChildToolSignal">>
   lifecycle?: FacadeLifecycle
   ptyManager?: PtyManager | null
   runtimePolicy?: RuntimePolicy
@@ -68,12 +68,12 @@ export class DelegationManager {
 
   /** Attach the real native Task child session ID to a prepared v2 delegation. */
   attachChildSession(delegationId: string, childSessionId: string): void {
-    this.options.coordinator?.attachChildSession(delegationId, childSessionId)
+    this.options.coordinator?.attachChildSession?.(delegationId, childSessionId)
   }
 
   /** Roll back a prepared v2 delegation after native Task dispatch fails. */
   failDispatch(delegationId: string, caughtError: unknown): void {
-    this.options.coordinator?.failDispatch(delegationId, caughtError)
+    this.options.coordinator?.failDispatch?.(delegationId, caughtError)
   }
 
   /** Compatibility alias for callers that use the Plan 04 facade name. */
@@ -90,18 +90,28 @@ export class DelegationManager {
   /** Forward session-idle events to the runtime adapter. */
   handleSessionIdle(sessionId: string): void {
     this.runtime?.handleSessionIdle(sessionId)
-    this.options.coordinator?.handleSessionIdle(sessionId)
+    this.options.coordinator?.handleSessionIdle?.(sessionId)
   }
 
   /** Forward session-error events to the runtime adapter and v2 coordinator. */
   handleSessionError(sessionId: string, error?: unknown): void {
-    this.options.coordinator?.handleSessionError(sessionId, error)
+    this.options.coordinator?.handleSessionError?.(sessionId, error)
   }
 
   /** Forward session-deleted events to the runtime adapter. */
   handleSessionDeleted(sessionId: string): void {
     this.runtime?.handleSessionDeleted(sessionId)
-    this.options.coordinator?.handleSessionDeleted(sessionId)
+    this.options.coordinator?.handleSessionDeleted?.(sessionId)
+  }
+
+  /** Forward child message observations to the v2 coordinator execution collector. */
+  recordChildMessageSignal(sessionId: string, finalMessageExcerpt?: string): void {
+    this.options.coordinator?.recordChildMessageSignal?.(sessionId, Date.now(), finalMessageExcerpt)
+  }
+
+  /** Forward child tool observations to the v2 coordinator execution collector. */
+  recordChildToolSignal(sessionId: string): void {
+    this.options.coordinator?.recordChildToolSignal?.(sessionId, Date.now())
   }
 
   /** Recover pending delegations through the runtime adapter. */
@@ -154,8 +164,8 @@ export class DelegationManager {
     if (!prompt) throw new Error("[Harness] restart/redirect requires a persisted original prompt or restartPrompt")
 
     const original = request.action === "restart"
-      ? this.options.coordinator?.abortDelegation(request.delegationId, "[Harness] Delegation restarted") ?? this.abortDelegation(request.delegationId)
-      : this.options.coordinator?.abortDelegation(request.delegationId, "[Harness] Delegation redirected") ?? this.abortDelegation(request.delegationId)
+      ? this.options.coordinator?.abortDelegation?.(request.delegationId, "[Harness] Delegation restarted") ?? this.abortDelegation(request.delegationId)
+      : this.options.coordinator?.abortDelegation?.(request.delegationId, "[Harness] Delegation redirected") ?? this.abortDelegation(request.delegationId)
     const replacement = this.options.coordinator
       ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey, safetyCeilingMs: delegation.safetyCeilingMs, surface: delegation.surface ?? "agent-delegation" })
       : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt, safetyCeilingMs: delegation.safetyCeilingMs })
