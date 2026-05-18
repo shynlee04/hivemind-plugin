@@ -25,8 +25,17 @@ import {
   MAX_DELEGATION_DEPTH,
 } from "../../shared/types.js"
 import type { BehavioralOverrides } from "../../routing/behavioral-profile/types.js"
+import type { DelegationMonitor } from "./monitor.js"
+import type { NotificationRouter } from "./notification-router.js"
 
 type QueueContext = { provider?: string; model?: string; agent?: string }
+
+interface DelegationManagerOptions {
+  ptyManager?: PtyManager | null
+  runtimePolicy?: RuntimePolicy
+  monitor?: Pick<DelegationMonitor, "start">
+  notificationRouter?: Pick<NotificationRouter, "register">
+}
 
 const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
   ...DEFAULT_RUNTIME_POLICY,
@@ -73,13 +82,17 @@ export class DelegationManager {
   private readonly commandHandler: CommandDelegationHandler
   private readonly sdkHandler: SdkDelegationHandler
   private readonly runtimePolicy: RuntimePolicy
+  private readonly monitor: Pick<DelegationMonitor, "start"> | undefined
+  private readonly notificationRouter: Pick<NotificationRouter, "register"> | undefined
   private completionDetector: CompletionDetector | undefined
 
   constructor(
     private readonly client: OpenCodeClient,
-    options: { ptyManager?: PtyManager | null; runtimePolicy?: RuntimePolicy } = {},
+    options: DelegationManagerOptions = {},
   ) {
     this.runtimePolicy = options.runtimePolicy ?? DEFAULT_MANAGER_RUNTIME_POLICY
+    this.monitor = options.monitor
+    this.notificationRouter = options.notificationRouter
     this.state = new DelegationStateMachine({
       client,
       clearExternalTimers: (id) => {
@@ -208,6 +221,7 @@ export class DelegationManager {
       }
       this.state.registerDelegation(delegation, true)
       this.state.persistAll()
+      this.notificationRouter?.register(delegation.id, params.parentSessionId)
       try {
         const promptBody = {
           parts: [{ type: "text", text: params.prompt }],
@@ -227,6 +241,7 @@ export class DelegationManager {
         // with on-disk policy YAML, but is no longer consulted here.
         await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
         this.state.transition(delegation.id, "running")
+        this.monitor?.start(delegation.id, params.parentSessionId)
       } catch {
         this.state.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
         return buildDelegationResult(this.state.get(delegation.id) ?? delegation)

@@ -5,6 +5,8 @@ import type { CommandDelegationParams, RuntimePolicy } from "../../shared/types.
 import type { DelegateParams } from "../spawner/spawn-request-builder.js"
 import type { DelegationCoordinator, DispatchParams } from "./coordinator.js"
 import { DelegationManager as RuntimeDelegationManager } from "./manager-runtime.js"
+import type { DelegationMonitor } from "./monitor.js"
+import type { NotificationRouter } from "./notification-router.js"
 import type { Delegation, DelegationResult } from "./types.js"
 
 type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
@@ -20,6 +22,8 @@ type FacadeLifecycle = {
 export type DelegationManagerOptions = {
   coordinator?: Pick<DelegationCoordinator, "chain" | "dispatch"> & Partial<Pick<DelegationCoordinator, "abortDelegation" | "attachChildSession" | "cancelDelegation" | "failDispatch" | "handleSessionDeleted" | "handleSessionError" | "handleSessionIdle" | "recordChildMessageSignal" | "recordChildToolSignal">>
   lifecycle?: FacadeLifecycle
+  monitor?: Pick<DelegationMonitor, "start">
+  notificationRouter?: Pick<NotificationRouter, "register">
   ptyManager?: PtyManager | null
   runtimePolicy?: RuntimePolicy
 }
@@ -47,6 +51,8 @@ export class DelegationManager {
   constructor(client?: OpenCodeClient, private readonly options: DelegationManagerOptions = {}) {
     if (client) {
       this.runtime = new RuntimeDelegationManager(client, {
+        monitor: options.monitor,
+        notificationRouter: options.notificationRouter,
         ptyManager: options.ptyManager,
         runtimePolicy: options.runtimePolicy,
       })
