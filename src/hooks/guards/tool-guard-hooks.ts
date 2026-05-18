@@ -182,7 +182,6 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
           delegationDepth: delegation?.depth,
           rootBudgetUsed: delegation?.budgetUsed,
           specialistAgent: delegation?.agent,
-          specialistCategory: delegation?.category,
           specialistModel: delegation?.model,
           concurrencyKey: delegation?.queueKey,
           continuityStatus: continuity?.metadata.status,

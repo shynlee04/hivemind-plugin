@@ -167,8 +167,8 @@ export class DelegationManager {
       ? this.options.coordinator?.abortDelegation?.(request.delegationId, "[Harness] Delegation restarted") ?? this.abortDelegation(request.delegationId)
       : this.options.coordinator?.abortDelegation?.(request.delegationId, "[Harness] Delegation redirected") ?? this.abortDelegation(request.delegationId)
     const replacement = this.options.coordinator
-      ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey, safetyCeilingMs: delegation.safetyCeilingMs, surface: delegation.surface ?? "agent-delegation" })
-      : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt, safetyCeilingMs: delegation.safetyCeilingMs })
+      ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey })
+      : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt })
     const replacementRecord = this.getStatus(replacement.delegationId)
     if (replacementRecord) {
       if (request.action === "restart") replacementRecord.restartedFrom = delegation.id
@@ -224,7 +224,7 @@ export class DelegationManager {
   get safetyTimers(): Map<string, NodeJS.Timeout> { return this.requireRuntime().safetyTimers }
 
   private toDispatchParams(params: DelegateParams): DispatchParams {
-    return { agent: params.agent, category: params.category, currentDepth: 0, parentSessionId: params.parentSessionId, prompt: params.prompt, queueKey: params.agent, safetyCeilingMs: params.safetyCeilingMs, surface: "agent-delegation" }
+    return { agent: params.agent, currentDepth: 0, parentSessionId: params.parentSessionId, prompt: params.prompt, queueKey: params.agent }
   }
 
   private terminalFallback(delegationId: string, error: string): DelegationResult {

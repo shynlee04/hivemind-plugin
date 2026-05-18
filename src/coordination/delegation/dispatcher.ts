@@ -1,21 +1,14 @@
-import { MAX_DELEGATION_DEPTH, type CategoryGatePolicy, type CategoryGateSurface } from "../../shared/types.js"
-import { recordCategoryGateask as defaultRecordCategoryGateask } from "./category-gate-audit.js"
-import { resolveCategoryGateDecision as defaultResolveCategoryGateDecision } from "./category-gates.js"
+import { MAX_DELEGATION_DEPTH } from "../../shared/types.js"
 import type { AgentResolver } from "./agent-resolver.js"
 import type { SlotHandle, SlotManager } from "./slot-manager.js"
 import type { ValidatedAgent } from "../spawner/spawn-request-builder.js"
 
 export interface PreflightParams {
   agent: string
-  category?: string
   currentDepth: number
   parentSessionId: string
-  policy?: CategoryGatePolicy
   prompt?: string
   queueKey: string
-  safetyCeilingMs?: number
-  surface: CategoryGateSurface
-  toolProfileMode?: string
   workingDirectory?: string
 }
 
@@ -27,28 +20,21 @@ export interface PreflightResult {
 
 export interface DelegationDispatcherOptions {
   agentResolver: Pick<AgentResolver, "resolve">
-  recordCategoryGateask?: typeof defaultRecordCategoryGateask
-  resolveCategoryGateDecision?: typeof defaultResolveCategoryGateDecision
   slotManager: Pick<SlotManager, "acquire"> & Partial<Pick<SlotManager, "release">>
 }
 
 /** Runs delegate-task v2 pre-flight checks before native Task execution. */
 export class DelegationDispatcher {
   private readonly agentResolver: Pick<AgentResolver, "resolve">
-  private readonly recordCategoryGateask: typeof defaultRecordCategoryGateask
-  private readonly resolveCategoryGateDecision: typeof defaultResolveCategoryGateDecision
   private readonly slotManager: Pick<SlotManager, "acquire"> & Partial<Pick<SlotManager, "release">>
 
   constructor(options: DelegationDispatcherOptions) {
     this.agentResolver = options.agentResolver
-    this.recordCategoryGateask = options.recordCategoryGateask ?? defaultRecordCategoryGateask
-    this.resolveCategoryGateDecision = options.resolveCategoryGateDecision ?? defaultResolveCategoryGateDecision
     this.slotManager = options.slotManager
   }
 
-  /** Execute category gate, concurrency, depth, and agent validation checks. */
+  /** Execute concurrency, depth, and agent validation checks. */
   async preflightCheck(params: PreflightParams): Promise<PreflightResult> {
-    this.checkCategoryGate(params)
     const slotHandle = await this.slotManager.acquire(params.parentSessionId, params.queueKey, undefined)
     try {
       this.checkDepth(params.currentDepth)
@@ -58,24 +44,6 @@ export class DelegationDispatcher {
       this.releaseSlot(slotHandle)
       throw error
     }
-  }
-
-  private checkCategoryGate(params: PreflightParams): void {
-    const decision = this.resolveCategoryGateDecision({
-      category: params.category,
-      policy: params.policy,
-      surface: params.surface,
-      toolProfileMode: params.toolProfileMode,
-    })
-    if (decision.allowed) return
-    this.recordCategoryGateask({
-      askReason: decision.audit.askReason ?? decision.reason,
-      callerSessionId: params.parentSessionId,
-      requestedAgent: params.agent,
-      requestedCategory: params.category,
-      surface: params.surface,
-    })
-    throw new Error(`[Harness] Category gate denied for agent "${params.agent}" and category "${params.category ?? "<none>"}": ${decision.reason}`)
   }
 
   private checkDepth(currentDepth: number): void {

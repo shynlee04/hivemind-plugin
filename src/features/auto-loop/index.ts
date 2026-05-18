@@ -17,7 +17,6 @@ export class AutoLoopEngine {
         parentSessionId: opts.parentSessionId ?? "auto-loop",
         prompt: previous ? this.buildPrompt(opts, previous, iteration) : opts.initialPrompt,
         queueKey: opts.queueKey ?? `auto-loop:${opts.agent}`,
-        surface: "agent-delegation",
       })
       results.push(result)
       if (this.shouldStop(opts, result)) return { iterations: results.length, results, status: result.status === "completed" ? "completed" : "failed" }

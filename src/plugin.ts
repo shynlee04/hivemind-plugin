@@ -21,7 +21,7 @@ import { NotificationRouter } from "./coordination/delegation/notification-route
 import { DelegationRetryHandler } from "./coordination/delegation/retry-handler.js"
 import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-child-session-starter.js"
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
-import { recordCategoryGateask } from "./coordination/delegation/category-gate-audit.js"
+
 import type { Delegation, DelegationStatus } from "./coordination/delegation/types.js"
 import { appendTuiPrompt, showTuiToast, type OpenCodeClient } from "./shared/session-api.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
@@ -126,7 +126,6 @@ export interface DelegationModuleSetupOptions {
   enableRuntimeAdapter?: boolean
   persistDelegations?: (delegations: Delegation[]) => void
   projectDirectory: string
-  recordCategoryGateask?: typeof recordCategoryGateask
   ptyManager?: Awaited<ReturnType<typeof createPtyManagerIfSupported>>
   runtimePolicy?: RuntimePolicy
 }
@@ -150,7 +149,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const records = new Map<string, Delegation>()
   const slotManager = new SlotManager()
   const agentResolver = new AgentResolver({ client: options.client, projectRoot: options.projectDirectory })
-  const dispatcher = new DelegationDispatcher({ agentResolver, recordCategoryGateask: options.recordCategoryGateask, slotManager })
+  const dispatcher = new DelegationDispatcher({ agentResolver, slotManager })
   const detector = new CompletionDetector()
   const notificationRouter = new NotificationRouter({
     deliver: async (_parentSessionId, notification) => {

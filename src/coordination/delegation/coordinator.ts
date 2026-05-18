@@ -228,7 +228,7 @@ export class DelegationCoordinator {
         parentSessionId: "chain",
         prompt: step.usePreviousResult && previous ? `${step.prompt}\n\nPrevious result: ${previous.result ?? previous.error ?? previous.status}` : step.prompt,
         queueKey: `chain:${step.agent}:${index}`,
-        surface: "agent-delegation",
+
       })
       const completedResult = result.status === "dispatched" ? { ...result, result: result.result ?? result.delegationId, status: "completed" as const } : result
       results.push(completedResult)
@@ -330,7 +330,7 @@ export class DelegationCoordinator {
     return {
       agent: params.agent, childSessionId: delegationId, createdAt: Date.now(), executionMode: "sdk", id: delegationId,
       actionCount: 0, evidenceLevel: "accepted-only", executionState: "pending", lastMessageCount: 0, messageCount: 0, nestingDepth: params.currentDepth + 1, parentSessionId: params.parentSessionId, queueKey,
-      prompt: params.prompt, stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: params.workingDirectory ?? process.cwd(),
+      prompt: params.prompt, stablePollCount: 0, status: "dispatched", workingDirectory: params.workingDirectory ?? process.cwd(),
       toolCallCount: 0,
     }
   }

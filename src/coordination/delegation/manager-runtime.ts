@@ -8,8 +8,6 @@ import {
 } from "./state-machine.js"
 import type { PtyManager } from "../../features/background-command/pty/pty-manager.js"
 import { SdkDelegationHandler } from "../sdk-delegation/handler.js"
-import { resolveCategoryGateDecision } from "./category-gates.js"
-import { recordCategoryGateask } from "./category-gate-audit.js"
 import { getAppAgents } from "../../shared/app-api.js"
 import { sendPromptAsync, type OpenCodeClient } from "../../shared/session-api.js"
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../../shared/runtime-policy.js"
@@ -18,7 +16,7 @@ import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } f
 import { resolveDelegationConcurrencyKey } from "../spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "../spawner/parent-directory.js"
 import { spawnDelegatedSession } from "../spawner/session-creator.js"
-import { buildSdkSpawnRequest, resolveDelegationPermissionProfile, type DelegateParams, type ValidatedAgent } from "../spawner/spawn-request-builder.js"
+import { buildSdkSpawnRequest, type DelegateParams, type ValidatedAgent } from "../spawner/spawn-request-builder.js"
 import {
   DEFAULT_SAFETY_CEILING_MS,
   type CommandDelegationParams,
@@ -178,24 +176,6 @@ export class DelegationManager {
       worktree: params.worktree,
     })
     const agent = await this.validateAgent(params.agent, workingDirectory)
-    const permissionProfile = resolveDelegationPermissionProfile(params, agent)
-    const requestedCategory = params.category ?? agent.category
-    const categoryDecision = resolveCategoryGateDecision({
-      category: requestedCategory,
-      surface: "agent-delegation",
-      toolProfileMode: permissionProfile.mode,
-      policy: this.runtimePolicy.categoryGate,
-    })
-    if (!categoryDecision.allowed) {
-      recordCategoryGateask({
-        callerSessionId: params.parentSessionId,
-        requestedAgent: agent.name,
-        requestedCategory,
-        surface: "agent-delegation",
-        askReason: categoryDecision.reason,
-      })
-      throw new Error(`[Harness] Category gate denied: ${categoryDecision.reason}`)
-    }
     const canonicalContext = this.buildCanonicalQueueContext(agent, params)
     const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
     const spawnQueueKey = resolveDelegationConcurrencyKey(canonicalContext)
@@ -268,22 +248,6 @@ export class DelegationManager {
       )
     }
     const queueContext = this.buildCommandQueueContext(params)
-    const categoryDecision = resolveCategoryGateDecision({
-      category: "command",
-      surface: "command-process",
-      toolProfileMode: "write-capable",
-      policy: this.runtimePolicy.categoryGate,
-    })
-    if (!categoryDecision.allowed) {
-      recordCategoryGateask({
-        callerSessionId: params.parentSessionId,
-        requestedAgent: queueContext.agent,
-        requestedCategory: "command",
-        surface: "command-process",
-        askReason: categoryDecision.reason,
-      })
-      throw new Error(`[Harness] Category gate denied: ${categoryDecision.reason}`)
-    }
     const queueKey = buildDelegationQueueKey(queueContext)
     const concurrency = resolveAcquireArgs(this.runtimePolicy, queueKey)
     const release = await this.semaphore.acquire(queueKey, concurrency.limit, concurrency.acquireTimeoutMs)

@@ -19,7 +19,6 @@ export class RalphLoopEngine {
         parentSessionId: opts.parentSessionId ?? "ralph-loop",
         prompt: previous ? this.buildPrompt(opts, previous, cycle) : opts.initialPrompt,
         queueKey: opts.queueKey ?? `ralph-loop:${agent}`,
-        surface: "agent-delegation",
       })
       results.push(result)
       agentResults[agent]?.push(result)

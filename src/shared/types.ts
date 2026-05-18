@@ -28,17 +28,7 @@ export type PendingNotification = TaskNotification & {
 }
 
 export const MAX_DESCENDANTS_PER_ROOT = 10
-export const VALID_DELEGATION_CATEGORIES = [
-  "research",
-  "implementation",
-  "review",
-  "visual-engineering",
-  "deep",
-  "quick",
-] as const
-
 export type SpecialistAgent = string
-export type DelegationCategory = (typeof VALID_DELEGATION_CATEGORIES)[number]
 export type PermissionAction = "allow" | "ask" | "ask"
 
 export type PermissionRule = {
@@ -93,7 +83,6 @@ export type DelegationMeta = {
   depth: number
   budgetUsed: number
   agent: SpecialistAgent
-  category?: DelegationCategory
   model?: string
   queueKey: string
   /** Per-session runtime-policy override from trusted continuity/delegation metadata. */
@@ -205,29 +194,7 @@ export type RuntimePolicy = {
   concurrency: ConcurrencyPolicy
   budget: BudgetPolicy
   trustedRuntime: TrustedRuntimePolicy
-  categoryGate?: CategoryGatePolicy
-  /** Maximum delegation nesting depth (default: 3) */
   maxDelegationDepth?: number
-}
-
-export type CategoryGateSurface = "agent-delegation" | "command-process"
-
-/** Narrowing-only delegation category gate policy. */
-export type CategoryGatePolicy = {
-  askUnknownCategories: boolean
-  readonlyCategories: readonly string[]
-  commandCategory: string
-}
-
-/** Auditable category gate allow/ask decision. */
-export type CategoryGateDecision = {
-  allowed: boolean
-  reason: string
-  category?: string
-  audit: {
-    gate: "category"
-    askReason?: string
-  }
 }
 
 export type SessionBudgetOverride = Partial<BudgetPolicy>
