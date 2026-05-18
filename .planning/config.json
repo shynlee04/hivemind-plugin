@@ -19,7 +19,8 @@
     "research_before_questions": true,
     "discuss_mode": "discuss",
     "skip_discuss": false,
-    "use_worktrees": true
+    "use_worktrees": true,
+    "tdd_mode": true
   },
   "git": {
     "branching_strategy": "none"
