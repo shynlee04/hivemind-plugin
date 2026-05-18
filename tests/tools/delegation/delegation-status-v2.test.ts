@@ -172,12 +172,28 @@ describe("delegation-status v2 tool", () => {
     expect(record).toMatchObject({ childSessionId: "ses_child_done", status: "completed" })
   })
 
-  it("DelegationControlSchema validates the 4 supported actions", () => {
-    for (const action of ["abort", "cancel", "restart", "redirect"] as const) {
-      const input = action === "redirect" ? { action, redirectAgent: "critic" } : { action }
+  it("DelegationControlSchema validates the 5 D-04 control actions (abort, cancel, restart, resume, chain)", () => {
+    for (const action of ["abort", "cancel", "restart", "resume", "chain"] as const) {
+      const input = { action }
       expect(DelegationControlSchema.safeParse(input).success).toBe(true)
     }
     expect(DelegationControlSchema.safeParse({ action: "pause" }).success).toBe(false)
+    expect(DelegationControlSchema.safeParse({ action: "redirect" }).success).toBe(false)
+  })
+
+  it("DelegationControlSchema requires restartPrompt for restart action", () => {
+    expect(DelegationControlSchema.safeParse({ action: "restart", restartPrompt: "do it better" }).success).toBe(true)
+    expect(DelegationControlSchema.safeParse({ action: "restart" }).success).toBe(false)
+  })
+
+  it("DelegationControlSchema requires restartPrompt for resume action", () => {
+    expect(DelegationControlSchema.safeParse({ action: "resume", restartPrompt: "continue from here" }).success).toBe(true)
+    expect(DelegationControlSchema.safeParse({ action: "resume" }).success).toBe(false)
+  })
+
+  it("DelegationControlSchema requires chainParentSessionId for chain action", () => {
+    expect(DelegationControlSchema.safeParse({ action: "chain", chainParentSessionId: "ses_parent" }).success).toBe(true)
+    expect(DelegationControlSchema.safeParse({ action: "chain" }).success).toBe(false)
   })
 
   it("caps progress calculation at 99 percent", async () => {
