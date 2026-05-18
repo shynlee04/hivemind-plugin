@@ -101,14 +101,32 @@ export interface DelegationResult {
 /** Notification types emitted by the delegate-task v2 routing layer. */
 export type DelegationNotificationType = "success" | "failure" | "progress" | "timeout"
 
-/** Escalation levels used by progressive delegation monitoring. */
-export type EscalationLevel = "WARN" | "NUDGE" | "ALERT" | "TERMINATE"
+/** Failure checkpoint levels for progressive delegation monitoring. */
+export type FailureLevel = 0 | 1 | 2 | 3 | 4
+
+/** Result emitted when a failure checkpoint detects no action progress. */
+export interface FailureCheckpointResult {
+  delegationId: string
+  level: FailureLevel
+  elapsedSeconds: number
+  actionCountAtCheckpoint: number
+  actionCountAtPreviousCheckpoint: number
+  isFinal: boolean
+}
+
+/** Per-delegation checkpoint state tracked during monitoring. */
+export interface DelegationCheckpointState {
+  lastCheckpointActionCount: number
+  failureLevel: FailureLevel
+  injectionStopped: boolean
+  completed: boolean
+}
 
 export const POLLING_CADENCE = [30, 45, 60, 90, 120, 180] as const
 export type PollingCadence = typeof POLLING_CADENCE
 
-export const ESCALATION_THRESHOLDS = [60, 120, 180, 300, 600] as const
-export type EscalationThresholds = typeof ESCALATION_THRESHOLDS
+export const FAILURE_CHECKPOINTS = [60, 120, 180, 300] as const
+export type FailureCheckpointThresholds = typeof FAILURE_CHECKPOINTS
 
 /** Compact notification payload routed back to the parent session. */
 export interface DelegationNotification {

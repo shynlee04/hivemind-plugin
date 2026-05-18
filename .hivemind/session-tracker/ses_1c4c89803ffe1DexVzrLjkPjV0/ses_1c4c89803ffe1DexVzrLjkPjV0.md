@@ -4478,3 +4478,1354 @@ phiên vừa rồi là được cho rằng đã khắc phục các gaps nhưng t
 }
 ```
 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_de4afeb03618427d9996b196"
+}
+```
+
+
+## USER (turn 103)
+
+**source:** real-human
+
+hãy tiếp tục /Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-SURGICAL-REMEDICATION-PLAN-2026-05-19.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-GAPS-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-RESEARCH-CAPABILITIES-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/.gitkeep
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-01-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-01-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-02-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-02-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-03-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-03-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-04-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-04-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-05-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-05-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-06-RUNTIME-GAPS-2026-05-18-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-06-RUNTIME-GAPS-2026-05-18-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-CONTEXT-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-PLAN-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-RESEARCH-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-SPEC-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-CONTEXT.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-GATE-LIFECYCLE.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-GATE-SPEC.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-PATTERN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-RESEARCH.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-REVIEW-FIX.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-REVIEW-ITER2.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-REVIEW.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-SPEC.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-VALIDATION.md 
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-SURGICAL-REMEDICATION-PLAN-2026-05-19.md"
+}
+```
+
+
+## COMPACTED (2026-05-18T18:57:59.485Z)
+
+**raw_event:**
+
+```json
+{
+  "id": "evt_e3c73c0b7001nL05RtB8yxHsKS",
+  "type": "session.compacted",
+  "properties": {
+    "sessionID": "ses_1c4c89803ffe1DexVzrLjkPjV0"
+  }
+}
+```
+
+**Continuity index:** See `session-continuity.json` for active delegations and pending work at time of compaction.
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-GAPS-2026-05-18.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-GAPS-2026-05-18.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-RESEARCH-CAPABILITIES-2026-05-18.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/monitor.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/notification-router.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/shared/helpers.ts"
+}
+```
+
+
+## COMPACTED (2026-05-18T18:59:50.911Z)
+
+**raw_event:**
+
+```json
+{
+  "id": "evt_e3c7573fa001zKbqADwRxdsE5l",
+  "type": "session.compacted",
+  "properties": {
+    "sessionID": "ses_1c4c89803ffe1DexVzrLjkPjV0"
+  }
+}
+```
+
+**Continuity index:** See `session-continuity.json` for active delegations and pending work at time of compaction.
+
+### Tool: glob
+
+**Input:**
+```json
+{
+  "callID": "call_eb2c200d9b8f486992d8318a"
+}
+```
+
+
+### Tool: glob
+
+**Input:**
+```json
+{
+  "callID": "call_7b01d30e359e40de9757f574"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-GAPS-2026-05-18.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/detector.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-SURGICAL-REMEDICATION-PLAN-2026-05-19.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-SURGICAL-REMEDICATION-PLAN-2026-05-19.md"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+}
+```
+
+
+### Tool: sequential-thinking_sequentialthinking
+
+**Input:**
+```json
+{
+  "callID": "call_5fb46007cf8549adb4634d8a"
+}
+```
+
+
+## COMPACTED (2026-05-18T19:01:56.762Z)
+
+**raw_event:**
+
+```json
+{
+  "id": "evt_e3c775f95001Zq5Zfsmnu64PM5",
+  "type": "session.compacted",
+  "properties": {
+    "sessionID": "ses_1c4c89803ffe1DexVzrLjkPjV0"
+  }
+}
+```
+
+**Continuity index:** See `session-continuity.json` for active delegations and pending work at time of compaction.
+
+### Tool: glob
+
+**Input:**
+```json
+{
+  "callID": "call_cf705486fb8d4fab974ee52a"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+}
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "call_03d0ca2d028f43b2bd96c9dd"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Wave B.1 completion detector impl",
+  "subagent_type": "hm-l2-build",
+  "task_id": "ses_1c3874453ffeGRBhy3A7VG9DFa"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1c3874453ffeGRBhy3A7VG9DFa
+```
+
+
+## USER (turn 104)
+
+**source:** real-human
+
+# Todos
+[•] 
+Wave B.1: Create semantic completion detector (src/coordination/delegation/completion-detector.ts) with 3 conditions
+[ ] 
+Wave B.1: Create test file (tests/lib/coordination/delegation/completion-detector.test.ts)
+[ ] 
+Wave B.1: Verify typecheck + new tests pass
+[ ] 
+Wave B.2: Create notification-formatter.ts (TUI thin-line injection)
+[ ] 
+Wave B.3: Progressive escalation thresholds 60→120→180→300→600
+[ ] 
+Wave B.4: Control actions (abort/cancel/restart/resume/chain)
+[ ] 
+Wave C: Fix 13 failing tests + update 30 test files
+[ ] 
+Wave D: Final verify typecheck + all tests + commit hãy tiếp tục phía trên 
+
+## USER (turn 105)
+
+**source:** real-human
+
+# Todos
+[•] 
+Wave B.1: Create semantic completion detector (src/coordination/delegation/completion-detector.ts) with 3 conditions
+[ ] 
+Wave B.1: Create test file (tests/lib/coordination/delegation/completion-detector.test.ts)
+[ ] 
+Wave B.1: Verify typecheck + new tests pass
+[ ] 
+Wave B.2: Create notification-formatter.ts (TUI thin-line injection)
+[ ] 
+Wave B.3: Progressive escalation thresholds 60→120→180→300→600
+[ ] 
+Wave B.4: Control actions (abort/cancel/restart/resume/chain)
+[ ] 
+Wave C: Fix 13 failing tests + update 30 test files
+[ ] 
+Wave D: Final verify typecheck + all tests + commit hãy tiếp tục phía trên 
+
+## USER (turn 106)
+
+**source:** real-human
+
+# Todos
+[•] 
+Wave B.1: Create semantic completion detector (src/coordination/delegation/completion-detector.ts) with 3 conditions
+[ ] 
+Wave B.1: Create test file (tests/lib/coordination/delegation/completion-detector.test.ts)
+[ ] 
+Wave B.1: Verify typecheck + new tests pass
+[ ] 
+Wave B.2: Create notification-formatter.ts (TUI thin-line injection)
+[ ] 
+Wave B.3: Progressive escalation thresholds 60→120→180→300→600
+[ ] 
+Wave B.4: Control actions (abort/cancel/restart/resume/chain)
+[ ] 
+Wave C: Fix 13 failing tests + update 30 test files
+[ ] 
+Wave D: Final verify typecheck + all tests + commit hãy tiếp tục phía trên tôi rbin rớt mạng
+
+## USER (turn 107)
+
+**source:** real-human
+
+# Todos
+[•] 
+Wave B.1: Create semantic completion detector (src/coordination/delegation/completion-detector.ts) with 3 conditions
+[ ] 
+Wave B.1: Create test file (tests/lib/coordination/delegation/completion-detector.test.ts)
+[ ] 
+Wave B.1: Verify typecheck + new tests pass
+[ ] 
+Wave B.2: Create notification-formatter.ts (TUI thin-line injection)
+[ ] 
+Wave B.3: Progressive escalation thresholds 60→120→180→300→600
+[ ] 
+Wave B.4: Control actions (abort/cancel/restart/resume/chain)
+[ ] 
+Wave C: Fix 13 failing tests + update 30 test files
+[ ] 
+Wave D: Final verify typecheck + all tests + commit hãy tiếp tục phía trên tôi rbin rớt mạng hãy resume task id cho session này **Session ID:** ses_1c3874453ffeGRBhy3A7VG9DFa
+
+## USER (turn 108)
+
+**source:** real-human
+
+# Todos
+[•] 
+Wave B.1: Create semantic completion detector (src/coordination/delegation/completion-detector.ts) with 3 conditions
+[ ] 
+Wave B.1: Create test file (tests/lib/coordination/delegation/completion-detector.test.ts)
+[ ] 
+Wave B.1: Verify typecheck + new tests pass
+[ ] 
+Wave B.2: Create notification-formatter.ts (TUI thin-line injection)
+[ ] 
+Wave B.3: Progressive escalation thresholds 60→120→180→300→600
+[ ] 
+Wave B.4: Control actions (abort/cancel/restart/resume/chain)
+[ ] 
+Wave C: Fix 13 failing tests + update 30 test files
+[ ] 
+Wave D: Final verify typecheck + all tests + commit hãy tiếp tục phía trên tôi rbin rớt mạng hãy resume task id cho session này **Session ID:** ses_1c3874453ffeGRBhy3A7VG9DFa
+
+## USER (turn 109)
+
+**source:** real-human
+
+# Todos
+[•] 
+Wave B.1: Create semantic completion detector (src/coordination/delegation/completion-detector.ts) with 3 conditions
+[ ] 
+Wave B.1: Create test file (tests/lib/coordination/delegation/completion-detector.test.ts)
+[ ] 
+Wave B.1: Verify typecheck + new tests pass
+[ ] 
+Wave B.2: Create notification-formatter.ts (TUI thin-line injection)
+[ ] 
+Wave B.3: Progressive escalation thresholds 60→120→180→300→600
+[ ] 
+Wave B.4: Control actions (abort/cancel/restart/resume/chain)
+[ ] 
+Wave C: Fix 13 failing tests + update 30 test files
+[ ] 
+Wave D: Final verify typecheck + all tests + commit hãy tiếp tục phía trên tôi rbin rớt mạng hãy resume task id cho session này **Session ID:** ses_1c3874453ffeGRBhy3A7VG9DFa
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "toolu_a616815e8b4e4a49b600473a"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Wave B.1 completion detector impl",
+  "subagent_type": "hm-l2-build",
+  "task_id": "ses_1c3874453ffeGRBhy3A7VG9DFa"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1c3874453ffeGRBhy3A7VG9DFa
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "toolu_901c03583e334a6495a1ff63"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/notification-router.ts"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Wave B.2 notification formatter impl",
+  "subagent_type": "hm-l2-build",
+  "task_id": "ses_1c374339dffeO8BMpCjbwV7gm7"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1c374339dffeO8BMpCjbwV7gm7
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "toolu_eabe5abf61e74c0f829fcb0c"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/monitor.ts"
+}
+```
+
+
+### Tool: grep
+
+**Input:**
+```json
+{
+  "callID": "toolu_afea8ef6f22d4db9bf14bce7"
+}
+```
+
+
+## USER (turn 110)
+
+**source:** real-human
+
+theo như miêu tả của tôi thì cơ chế thời gian và failure là hoàn toàn sai đọc kỹ và thiết kế lại "- khi xác nhận pha là delegate-task đã chạy thì bộ hẹn giờ và polling phải là theo pha và chủ động (30s - 45s -60s - 90s - 120s - 180s ) các bộ đếm này sẽ ghi lại một thin line session id và delegated agent  với status và bộ đếm tools, bash, skill, actions -nhằm đưa thông tin kịp thời một cách tinh gọn và minimal nhất có thể thông báo cho main agents biết là các sessions vẫn đang chạy → là các injection vào context của session đang diễn ra để nhắc delegator agent poll status và kiểm tra kết quả thật một cách deterministically  → từ đó delegator main agents vẫn có thể rảnh tay để làm các tác vụ khác mà không phải bận tập đưa ra hẹn giờ check lại. Điểm chính của delegate-task là thực hiện async delegation có kiểm soát trong khi vẫn điều phối được luồng hoạt động chính với users và dùng OpenCode innate task tool delegation khi muốn các delegation có hệ thống và kiểm soát trình tự hơn
+    - thêm vào đó các kiến thức từ việc xây dựng session-tracker có thể đưa áp dụng  vào đây cho việc tracking chính xác
+    - ở logic về thời gian ở mức 60s là mức fallback và ghi nhận failure nếu không có action nào xảy ra → tiếp tục ở mức 120s là mức failure thứ 2 nếu so với mức 1 không có action mới nào được ghi nhận → tương tự như vậy ở 180s là hard failure lần 3 nếu so với mức 2 không có action nào mới được ghi nhận → 300s là hard failure lần 4 và là lần cuối cùng (5 phút) sau lần này thì khôg tiếp tục ịnjection thông tin vào context của main session để thông báo cho main agent nữa - tức là nếu tools vẫn ghi nhận và vẫn chạy thì tiếp theo sẽ dựa vào hệ thống ghi nhận kết quả tự động bên dưới
+    - Cơ chế thông báo và gi nhận kết quả delegation: đây cũng là một cơ chế chủ động với 3 logics
+        - session sẽ ghi nhận hoàn thành chỉ khi đủ các điều kiện sau đây
+            - có tools ghi nhận chạy ở phía trên và chạy được trên 1 phút
+            - agents last message output (còn gọi là assistant last message) đây là tổng kết và report thông tin mà agent dùng tools và các công cụ sau phiên delegation được giao, nó tổng hợp lại các kết qả
+            - cuối cùng là phần tuỳ thuộc - tức là đối với các task đòi hỏi tạo file, modify, hay move, mutate files, hay artifact documents gì đó thì phải ghi nhận file changes ra sao
+        - khi thành công thì sẽ đưa một thông báo tóm tăt - ghi nhận là block thông báo kết quả của phiên delegation … task …. tóm tắt ….result… path…. được đọc tại… timestamp - file changes:…. - đây là một message sẽ append trực tiếp vào TUI message và tuỳ vào trạng thái của session lúc đó nếu main session còn live nó sẽ append trực tiếp không qua xếp hàng (nó phải có header thông báo đây là hệ thống nhắc của delegate-task tự động từ system) - còn nếu session đã end stream nó sẽ gởi message đi và resume session
+        - session sẽ ghi nhận status failure với các trường hợp sau
+            - các ngưỡng 4 lần phía trên fail
+            - sau pass ngưỡng 4 tức 300s mà vẫn đang chay và chờ thêm 300s nữa (tức 10 phút) mà vẫn không có trả về kết quả cuối cùng tức ghi nhận assistant last message thì sẽ ghi nhận là fail nhưng với 2 cấp khác nhau
+        - Session fail sẽ ghi nhận theo 2 cấp là đã executed - running và fail vs. fail từ ngưỡng một phần thông báo này sẽ là thông tin để mà agents lựa chọn sử dụng các tools phù hợp phía dưới
+        - delegate-task có thể delegate cùng một lúc cho phép tới 10 phiên - 10 slots này quản lý theo từng main session và khi trả thông báo về nó cũng phải ghi nhận thông báo append TUI message vào đúng session đó để tránh trường hợp users đang vận hành một main session song song không liên quan mà các phiên này lại đi lạc vào
+    - Cần phải nghĩ nhiều hơn nữa về tools các tools thuộc nhóm này phải bao gồm cả các tools hoặc arguments để có thể làm các việc sau
+        - abort/cancel và restart và điều chỉnh prompt, thay đổi agents
+        - đồng thời như trên đối với các session đã có tools ghi nhận chạy rồi và chạy đúng với OpenCode SDK thì không việc gì phải delegate lại một phiên hoàn toàn mới thay vào đó việc resume lại một phiên (miễn là có session id) là hoàn toàn khả thi và với một knowledge là một khi đã xác nhận mức 1 thành công tức session đã chạy → thì mặc định delegator có thể resume với prompt đơn giản và thâm chí thay đổi agent name nhưng các context phía trên nó đều được bảo tồn (điều này delegator agent không nhận biết được nhưng tool cần thiết kế ra cho mục đích như vậy nó ghi nhận session và hướng dẫn delegator agent resume với prompt đơn giản mà không phải lặp lại trừ khi muốn thay đổi điều hướng khác đi
+        - chức năng phía trên cũng có thể mở rộng ra cho việc quản lý delegation tasks - cụ thể hơn là completed delegated tasks - orchestrator, coordinator (tức nhóm l0 và l1, cũng như agent mặc định build)  và delegator hoàn toàn có thể chủ động tạo một task mới nối tiếp các completed task b ằng cách sử dụng lại session id cũ → việc này giúp nhiệm vụ mới có được context của nhiệm vụ cũ mà main agents l0 và l1 không phải diễn dãi ra hoặc hallucinate đưa một thông tin không liên quan tới những gì mà task trước đó tìm kiếm "
+
+## USER (turn 111)
+
+**source:** real-human
+
+các mức 60-120 không phải là tăng dần warning mà là ở bất cứ ngưỡng nào nếu action không thay đổi so với đợt truước đều là fail task buộc agents phải đánh giá và resume 
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Wave B.3 progressive escalation impl",
+  "subagent_type": "hm-l2-build",
+  "task_id": "ses_1c3716198ffeeq7k7N5yuKpMge"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1c3716198ffeeq7k7N5yuKpMge
+```
+
+
+### Tool: todowrite
+
+**Input:**
+```json
+{
+  "callID": "toolu_af48c6b5322f424e92a5065d"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "toolu_e932ae238218402a859a1b39"
+}
+```
+
+
+## USER (turn 112)
+
+**source:** real-human
+
+'/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-SURGICAL-REMEDICATION-PLAN-2026-05-19.md'- hãy chỉnh sửa lại plan cho đúng và thực hiện đúng theo TDD viết red test trước check regressions với toàn bộ ```/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-SURGICAL-REMEDICATION-PLAN-2026-05-19.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-WAVE-B3-REDESIGN-2026-05-19.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-GAPS-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-RESEARCH-CAPABILITIES-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/.gitkeep
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-01-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-01-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-02-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-02-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-03-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-03-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-04-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-04-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-05-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-05-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-06-RUNTIME-GAPS-2026-05-18-PLAN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-06-RUNTIME-GAPS-2026-05-18-SUMMARY.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-CONTEXT-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-PLAN-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-RESEARCH-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-07-RUNTIME-ORCHESTRATION-SPEC-2026-05-18.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-CONTEXT.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-GATE-LIFECYCLE.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-GATE-SPEC.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-PATTERN.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-RESEARCH.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-REVIEW-FIX.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-REVIEW-ITER2.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-REVIEW.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-SPEC.md
+/Users/apple/hivemind-plugin-private/.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/CP-DT-01-VALIDATION.md ``` check compliances @package.json và @.hivemind/STACKS-REFERENCES.md các code vuừa imolement viđã vi phạm chuẩn TDD
+Called the Read tool with the following input: {"filePath":"/Users/apple/hivemind-plugin-private/package.json"}
+<path>/Users/apple/hivemind-plugin-private/package.json</path>
+<type>file</type>
+<content>
+1: {
+2:   "name": "hivemind",
+3:   "version": "0.1.0",
+4:   "description": "HiveMind — Runtime composition engine for multi-agent orchestration, session continuity, and compounding intelligence in OpenCode",
+5:   "type": "module",
+6:   "main": "./dist/index.js",
+7:   "bin": {
+8:     "hivemind": "./bin/hivemind.cjs"
+9:   },
+10:   "files": [
+11:     "dist",
+12:     "bin",
+13:     "assets",
+14:     ".hivemind/configs.schema.json"
+15:   ],
+16:   "exports": {
+17:     ".": {
+18:       "import": "./dist/index.js",
+19:       "types": "./dist/index.d.ts"
+20:     },
+21:     "./plugin": {
+22:       "import": "./dist/plugin.js",
+23:       "types": "./dist/plugin.d.ts"
+24:     },
+25:     "./cli": {
+26:       "import": "./dist/cli/index.js",
+27:       "types": "./dist/cli/index.d.ts"
+28:     }
+29:   },
+30:   "scripts": {
+31:     "clean": "node --eval \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
+32:     "build": "npm run clean && tsc && node dist/schema-kernel/generate-config-json-schema.js",
+33:     "typecheck": "tsc --noEmit",
+34:     "test": "vitest run",
+35:     "test:watch": "vitest",
+36:     "test:coverage": "vitest run --coverage",
+37:     "prepack": "npm run build"
+38:   },
+39:   "dependencies": {
+40:     "@ast-grep/cli": "^0.42.1",
+41:     "@ast-grep/napi": "^0.42.1",
+42:     "@clack/prompts": "^1.3.0",
+43:     "@json-render/core": "^0.18.0",
+44:     "@json-render/ink": "^0.18.0",
+45:     "@json-render/next": "^0.18.0",
+46:     "@json-render/react": "^0.18.0",
+47:     "@json-render/react-pdf": "^0.18.0",
+48:     "@modelcontextprotocol/sdk": "^1.29.0",
+49:     "@opencode-ai/sdk": "^1.15.4",
+50:     "bun-pty": "^0.4.8",
+51:     "bun-types": "^1.3.13",
+52:     "commander": "^14.0.3",
+53:     "diff": "^9.0.0",
+54:     "fast-glob": "^3.3.3",
+55:     "fast-xml-parser": "^5.7.3",
+56:     "gray-matter": "^4.0.3",
+57:     "ink": "^6.8.0",
+58:     "js-yaml": "^4.1.1",
+59:     "jsonc-parser": "^3.3.1",
+60:     "node-pty": "^1.1.0",
+61:     "react": "^19.2.6",
+62:     "tree-sitter-javascript": "^0.25.0",
+63:     "vscode-jsonrpc": "^8.2.1",
+64:     "web-tree-sitter": "^0.26.8",
+65:     "yaml": "^2.8.3",
+66:     "zod": "^4.3.6"
+67:   },
+68:   "peerDependencies": {
+69:     "@opencode-ai/plugin": "^1.15.4"
+70:   },
+71:   "devDependencies": {
+72:     "@opencode-ai/plugin": "^1.15.4",
+73:     "@types/bun": "^1.3.8",
+74:     "@types/node": "^20.0.0",
+75:     "@vitest/coverage-v8": "^4.1.5",
+76:     "typescript": "^5.0.0",
+77:     "vitest": "^4.1.5"
+78:   },
+79:   "license": "MIT",
+80:   "author": "HiveMind Contributors",
+81:   "repository": {
+82:     "type": "git",
+83:     "url": "https://github.com/shynlee04/hivemind-plugin.git"
+84:   },
+85:   "homepage": "https://github.com/shynlee04/hivemind-plugin#readme",
+86:   "bugs": {
+87:     "url": "https://github.com/shynlee04/hivemind-plugin/issues"
+88:   },
+89:   "keywords": [
+90:     "opencode",
+91:     "hivemind",
+92:     "multi-agent",
+93:     "orchestration",
+94:     "delegation",
+95:     "session-continuity",
+96:     "concurrency",
+97:     "guardrails",
+98:     "plugin",
+99:     "ai-coding",
+100:     "agent-framework",
+101:     "typescript"
+102:   ],
+103:   "engines": {
+104:     "node": ">=20.0.0",
+105:     "opencode": ">=1.14.28"
+106:   }
+107: }
+
+(End of file - total 107 lines)
+</content>
+Called the Read tool with the following input: {"filePath":"/Users/apple/hivemind-plugin-private/.hivemind/STACKS-REFERENCES.md"}
+<path>/Users/apple/hivemind-plugin-private/.hivemind/STACKS-REFERENCES.md</path>
+<type>file</type>
+<content>
+1: ## HiveMind `package.json` — Complete Stack Reference
+2: 
+3: **Audit date: 2026-05-10 | Source: npm registry live + GitHub API verification | All repos confirmed active (not archived)**
+4: 
+5: ### CRITICAL: OpenCode Packages
+6: 
+7: These publish **no repository metadata to npm** (`repository: {}`). The legacy `opencode-ai/opencode` GitHub is **archived**. The actual active repo:
+8: 
+9: | Package | pkg.json | npm Latest | Source (NOT on npm) | npm |
+10: |---------|----------|------------|---------------------|-----|
+11: | `@opencode-ai/sdk` | `^1.14.41` | `1.14.44` | [anomalyco/opencode](https://github.com/anomalyco/opencode) | [npm](https://www.npmjs.com/package/@opencode-ai/sdk) |
+12: | `@opencode-ai/plugin` | `^1.14.41` (peer+dev) | `1.14.44` | [anomalyco/opencode](https://github.com/anomalyco/opencode) | [npm](https://www.npmjs.com/package/@opencode-ai/plugin) |
+13: 
+14: > **WARNING:** `opencode-ai/opencode` is archived legacy. Active development: [`anomalyco/opencode`](https://github.com/anomalyco/opencode) by [Anomaly](https://anoma.ly). Website: [opencode.ai](https://opencode.ai), Docs: [opencode.ai/docs](https://opencode.ai/docs)
+15: 
+16: ---
+17: 
+18: ### Dependencies (27 packages)
+19: 
+20: | # | Package | pkg.json Ver | npm Latest | GitHub | npm |
+21: |---|---------|-------------|------------|--------|-----|
+22: | 1 | `@opencode-ai/sdk` | `^1.14.41` | `1.14.44` | [anomalyco/opencode](https://github.com/anomalyco/opencode) | [npm](https://www.npmjs.com/package/@opencode-ai/sdk) |
+23: | 2 | `@ast-grep/cli` | `^0.42.1` | `0.42.1` | [ast-grep/ast-grep](https://github.com/ast-grep/ast-grep) | [npm](https://www.npmjs.com/package/@ast-grep/cli) |
+24: | 3 | `@ast-grep/napi` | `^0.42.1` | `0.42.1` | [ast-grep/ast-grep](https://github.com/ast-grep/ast-grep) | [npm](https://www.npmjs.com/package/@ast-grep/napi) |
+25: | 4 | `@clack/prompts` | `^1.3.0` | `1.3.0` | [bombshell-dev/clack](https://github.com/bombshell-dev/clack) | [npm](https://www.npmjs.com/package/@clack/prompts) |
+26: | 5 | `@json-render/core` | `^0.18.0` | `0.19.0` | [vercel-labs/json-render](https://github.com/vercel-labs/json-render) | [npm](https://www.npmjs.com/package/@json-render/core) |
+27: | 6 | `@json-render/ink` | `^0.18.0` | `0.19.0` | [vercel-labs/json-render](https://github.com/vercel-labs/json-render) | [npm](https://www.npmjs.com/package/@json-render/ink) |
+28: | 7 | `@json-render/next` | `^0.18.0` | `0.19.0` | [vercel-labs/json-render](https://github.com/vercel-labs/json-render) | [npm](https://www.npmjs.com/package/@json-render/next) |
+29: | 8 | `@json-render/react` | `^0.18.0` | `0.19.0` | [vercel-labs/json-render](https://github.com/vercel-labs/json-render) | [npm](https://www.npmjs.com/package/@json-render/react) |
+30: | 9 | `@json-render/react-pdf` | `^0.18.0` | `0.19.0` | [vercel-labs/json-render](https://github.com/vercel-labs/json-render) | [npm](https://www.npmjs.com/package/@json-render/react-pdf) |
+31: | 10 | `@modelcontextprotocol/sdk` | `^1.29.0` | `1.29.0` | [modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) | [npm](https://www.npmjs.com/package/@modelcontextprotocol/sdk) |
+32: | 11 | `bun-pty` | `^0.4.8` | `0.4.8` | [sursaone/bun-pty](https://github.com/sursaone/bun-pty) | [npm](https://www.npmjs.com/package/bun-pty) |
+33: | 12 | `bun-types` | `^1.3.13` | `1.3.13` | [oven-sh/bun](https://github.com/oven-sh/bun) | [npm](https://www.npmjs.com/package/bun-types) |
+34: | 13 | `commander` | `^14.0.3` | `14.0.3` | [tj/commander.js](https://github.com/tj/commander.js) | [npm](https://www.npmjs.com/package/commander) |
+35: | 14 | `diff` | `^9.0.0` | `9.0.0` | [kpdecker/jsdiff](https://github.com/kpdecker/jsdiff) | [npm](https://www.npmjs.com/package/diff) |
+36: | 15 | `fast-glob` | `^3.3.3` | `3.3.3` | [mrmlnc/fast-glob](https://github.com/mrmlnc/fast-glob) | [npm](https://www.npmjs.com/package/fast-glob) |
+37: | 16 | `fast-xml-parser` | `^5.7.3` | `5.7.3` | [NaturalIntelligence/fast-xml-parser](https://github.com/NaturalIntelligence/fast-xml-parser) | [npm](https://www.npmjs.com/package/fast-xml-parser) |
+38: | 17 | `gray-matter` | `^4.0.3` | `4.0.3` | [jonschlinkert/gray-matter](https://github.com/jonschlinkert/gray-matter) | [npm](https://www.npmjs.com/package/gray-matter) |
+39: | 18 | `ink` | `^6.8.0` | `7.0.2` | [vadimdemedes/ink](https://github.com/vadimdemedes/ink) | [npm](https://www.npmjs.com/package/ink) |
+40: | 19 | `js-yaml` | `^4.1.1` | `4.1.1` | [nodeca/js-yaml](https://github.com/nodeca/js-yaml) | [npm](https://www.npmjs.com/package/js-yaml) |
+41: | 20 | `jsonc-parser` | `^3.3.1` | `3.3.1` | [microsoft/node-jsonc-parser](https://github.com/microsoft/node-jsonc-parser) | [npm](https://www.npmjs.com/package/jsonc-parser) |
+42: | 21 | `node-pty` | `^1.1.0` | `1.1.0` | [microsoft/node-pty](https://github.com/microsoft/node-pty) | [npm](https://www.npmjs.com/package/node-pty) |
+43: | 22 | `react` | `^19.2.6` | `19.2.6` | [facebook/react](https://github.com/facebook/react) | [npm](https://www.npmjs.com/package/react) |
+44: | 23 | `tree-sitter-javascript` | `^0.25.0` | `0.25.0` | [tree-sitter/tree-sitter-javascript](https://github.com/tree-sitter/tree-sitter-javascript) | [npm](https://www.npmjs.com/package/tree-sitter-javascript) |
+45: | 24 | `vscode-jsonrpc` | `^8.2.1` | `8.2.1` | [microsoft/vscode-languageserver-node](https://github.com/microsoft/vscode-languageserver-node) | [npm](https://www.npmjs.com/package/vscode-jsonrpc) |
+46: | 25 | `web-tree-sitter` | `^0.26.8` | `0.26.8` | [tree-sitter/tree-sitter](https://github.com/tree-sitter/tree-sitter) | [npm](https://www.npmjs.com/package/web-tree-sitter) |
+47: | 26 | `yaml` | `^2.8.3` | `2.8.4` | [eemeli/yaml](https://github.com/eemeli/yaml) | [npm](https://www.npmjs.com/package/yaml) |
+48: | 27 | `zod` | `^4.3.6` | `4.4.3` | [colinhacks/zod](https://github.com/colinhacks/zod) | [npm](https://www.npmjs.com/package/zod) |
+49: 
+50: ### Peer Dependencies (1)
+51: 
+52: | # | Package | pkg.json Ver | npm Latest | GitHub | npm |
+53: |---|---------|-------------|------------|--------|-----|
+54: | 28 | `@opencode-ai/plugin` | `^1.14.41` | `1.14.44` | [anomalyco/opencode](https://github.com/anomalyco/opencode) | [npm](https://www.npmjs.com/package/@opencode-ai/plugin) |
+55: 
+56: ### Dev Dependencies (5)
+57: 
+58: | # | Package | pkg.json Ver | npm Latest | GitHub | npm |
+59: |---|---------|-------------|------------|--------|-----|
+60: | 29 | `@opencode-ai/plugin` | `^1.14.41` | `1.14.44` | [anomalyco/opencode](https://github.com/anomalyco/opencode) | [npm](https://www.npmjs.com/package/@opencode-ai/plugin) |
+61: | 30 | `@types/bun` | `^1.3.8` | `1.3.13` | [DefinitelyTyped/DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) | [npm](https://www.npmjs.com/package/@types/bun) |
+62: | 31 | `@types/node` | `^20.0.0` | `25.6.2` | [DefinitelyTyped/DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) | [npm](https://www.npmjs.com/package/@types/node) |
+63: | 32 | `@vitest/coverage-v8` | `^4.1.5` | `4.1.5` | [vitest-dev/vitest](https://github.com/vitest-dev/vitest) | [npm](https://www.npmjs.com/package/@vitest/coverage-v8) |
+64: | 33 | `typescript` | `^5.0.0` | `6.0.3` | [microsoft/TypeScript](https://github.com/microsoft/TypeScript) | [npm](https://www.npmjs.com/package/typescript) |
+65: | 34 | `vitest` | `^4.1.5` | `4.1.5` | [vitest-dev/vitest](https://github.com/vitest-dev/vitest) | [npm](https://www.npmjs.com/package/vitest) |
+66: 
+67: ---
+68: 
+69: ### Monorepo Deduplication (unique GitHub repos)
+70: 
+71: | GitHub Repo | Packages |
+72: |-------------|----------|
+73: | [anomalyco/opencode](https://github.com/anomalyco/opencode) | `@opencode-ai/sdk`, `@opencode-ai/plugin` |
+74: | [ast-grep/ast-grep](https://github.com/ast-grep/ast-grep) | `@ast-grep/cli`, `@ast-grep/napi` |
+75: | [vercel-labs/json-render](https://github.com/vercel-labs/json-render) | `@json-render/core`, `ink`, `next`, `react`, `react-pdf` (5 packages) |
+76: | [tree-sitter/tree-sitter](https://github.com/tree-sitter/tree-sitter) | `web-tree-sitter` |
+77: | [tree-sitter/tree-sitter-javascript](https://github.com/tree-sitter/tree-sitter-javascript) | `tree-sitter-javascript` |
+78: | [oven-sh/bun](https://github.com/oven-sh/bun) | `bun-types` |
+79: | [DefinitelyTyped/DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) | `@types/bun`, `@types/node` |
+80: | [vitest-dev/vitest](https://github.com/vitest-dev/vitest) | `vitest`, `@vitest/coverage-v8` |
+81: 
+82: **Unique repos: 22** | **Total package entries: 34** | **All 22 repos GitHub-verified active**
+83: 
+84: ### Key Corrections from Previous Audit
+85: 
+86: | Package | WRONG (before) | CORRECT (now) | Evidence |
+87: |---------|---------------|---------------|----------|
+88: | `@opencode-ai/sdk` | `opencode-ai/opencode` (archived) | **[`anomalyco/opencode`](https://github.com/anomalyco/opencode)** | npm `repository: {}` empty; `gh api` confirms active, 150K stars |
+89: | `@opencode-ai/plugin` | `opencode-ai/opencode` (archived) | **[`anomalyco/opencode`](https://github.com/anomalyco/opencode)** | Same — no repo metadata published to npm at all |
+90: | `@clack/prompts` | `natemoo-re/clack` | **[`bombshell-dev/clack`](https://github.com/bombshell-dev/clack)`** | npm registry `repository.url` points to `bombshell-dev/clack` |
+
+(End of file - total 90 lines)
+</content>
+
+<system-reminder>
+Instructions from: /Users/apple/hivemind-plugin-private/.hivemind/AGENTS.md
+# Internal State Sector Guidance
+
+**Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
+
+## 1. Sector purpose and lifecycle role
+
+`.hivemind/` is the Internal State sector and canonical Q6 state root for Hivemind runtime persistence: session continuity, delegation records, config workflow state, event tracker artifacts, session journals, execution lineage, and recovery artifacts. Source evidence: `.planning/codebase/ARCHITECTURE.md:247-255`, `.planning/codebase/ARCHITECTURE.md:405-411`, `.planning/codebase/STRUCTURE.md:130-134`.
+
+## 2. Allowed mutation authority
+
+- Typed runtime owners in `src/task-management/`, `src/coordination/`, and `src/features/` may write their assigned state files through approved persistence modules. Evidence: `.planning/codebase/ARCHITECTURE.md:311-315`, `.planning/codebase/ARCHITECTURE.md:405-411`.
+- Tools may trigger state mutations through library owners when the tool contract permits mutation. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- Event tracker artifacts may be best-effort hook-driven outputs only when routed through library/event-tracker owners; they must not block canonical handling. Evidence: `.planning/codebase/ARCHITECTURE.md:302-315`, `.planning/codebase/ARCHITECTURE.md:388-392`.
+
+## 3. Forbidden mutations / explicit no-go boundaries
+
+- Hooks SHALL NOT directly write durable state into `.hivemind/`; hook effects must stay observation/response-shaping/guard-decision. Evidence: `.planning/codebase/ARCHITECTURE.md:339-353`.
+- `.hivemind/` state SHALL NOT be moved back into `.opencode/`; `.opencode/state/` is legacy migration-only. Evidence: `.planning/codebase/ARCHITECTURE.md:351-353`, `.planning/codebase/STRUCTURE.md:295-299`.
+- Do not fabricate missing state subdirectories or ownership modules from documentation-only work; bootstrap/state ownership remains an active gap. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not edit runtime state artifacts manually unless a recovery workflow explicitly authorizes it.
+
+## 4. Actors and consumers
+
+| Actor / consumer | Uses this sector for | Boundary |
+|---|---|---|
+| `src/task-management/continuity/` | Owns session continuity JSON persistence | Must deep-clone/normalize/quarantine through code owners |
+| `src/task-management/continuity/delegation-persistence.ts` | Owns delegation record I/O | Tools/managers call the owner, not raw edits |
+| Event tracker/session journal/lineage modules | Produce audit and timeline artifacts | Best-effort artifacts are not completion proof by themselves |
+| Sidecar/planning readers | May read canonical artifacts | Read-only consumers must not mutate state |
+| Recovery workflows | Assess and repair state under authorization | Must preserve evidence and avoid manual drift |
+
+## 5. Naming and placement conventions
+
+- Current known state folders include `.hivemind/state/`, `.hivemind/event-tracker/`, and `.hivemind/poor-prompts/`. Evidence: `.planning/codebase/STRUCTURE.md:40-43`, `.planning/codebase/STRUCTURE.md:130-134`.
+- State files should be owned by typed modules before being treated as runtime-contract surfaces. Evidence: `.planning/PROJECT.md:29-42`, `.planning/REQUIREMENTS.md:46-56`.
+- Do not use `.opencode/` for new internal state naming or placement. Evidence: `.planning/codebase/ARCHITECTURE.md:247-255`.
+
+## 6. Quality gates and evidence expectations
+
+- State-sector changes require proof of the owning module, migration behavior, and recovery/quarantine behavior when applicable.
+- Unit tests alone do not prove restart recovery; runtime recovery claims need integration or live restart evidence.
+- Docs-only edits remain L5 evidence and must not unblock CA-04 bootstrap/state ownership readiness. Evidence: `.planning/ROADMAP.md:29-49`.
+
+</system-reminder>
+
+## USER (turn 113)
+
+**source:** real-human
+
+@AGENTS.md PLEASE COMPLY
+Called the Read tool with the following input: {"filePath":"/Users/apple/hivemind-plugin-private/AGENTS.md"}
+<path>/Users/apple/hivemind-plugin-private/AGENTS.md</path>
+<type>file</type>
+<content>
+1: # AGENTS.md
+2: 
+3: ## Project Overview
+4: 
+5: Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04 through SR-10 remediation (`882b0686`). `src/lib/` has been removed; runtime code now lives under `src/shared/`, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, `src/hooks/`, and `src/tools/`. CP-DT-01 (Delegate-Task Ecosystem Revamp) is COMPLETE — review ITER2: 0 Critical, validation: 18/18 spec requirements DELIVERED, 91/91 tests pass. **CP-DT-01-08 (Surgical Remediation)** is IN PROGRESS — 8-wave incremental plan to remove category/safetyCeiling rác (33 src + 29 test files) and add missing features (completion detector, TUI notification, progressive thresholds 60→120→180→300→600, resume/chain control actions). Plan: `.planning/phases/CP-DT-01-delegate-task-ecosystem-revamp/gaps/CP-DT-01-08-SURGICAL-REMEDICATION-PLAN-2026-05-19.md`. Current test state: 6 files fail, 13 tests fail, typecheck clean. CP-PTY-00 is the shell/PTY/background-command control-plane spike (docs/spec-only, COMPLETE). CP-PTY-01 (Background Shell Control-Plane MVP) is READY, unblocked by BOOT-07 and WS-SR completion. CP-PTY-02, CP-PTY-03, and CP-PTY-04 extend the runway. SC-PTY-01 remains DEFERRED.
+6: 
+7: ## NOTICE BOARD
+8: 
+9: - When execute-slash-command append the slash command directly to the foreground without the parameter of `@agent` the agents are instructed and resolved and if needed will be used through task tool for sequential actions following.
+10: 
+11: - DO NOT ROUTE any hm-* or hf-* commands, workflows nor agents - they are the subjects of developments - **ROUTE everything to gsd-* from commands, agents to workflows** , they are the toolings used for development of this harness project 
+12: 
+13: ## NON-NEGOTIABLE RULES
+14: 
+15: - PRACTICE EXTREMELY STRICT TEST-DRIVEN DEVELOPMENTS, SPEC-DRIVEN, REQRUIREMENTS AND SPEC COMPLIANCES GATE KEEPING WITH STRICT INTEGRATION LOOPS AND VALIDATION. **NO EXCEPTION** 
+16: 
+17: - WHEN REQUEST IS CONFUSING AND LARGE -> never try to audit everything at once master planning - loop on phases with traversal and progressive batch of research - investigate - planning - implementing - verification then moving to the next batch -> reapt the integrated cycles with regression validation and integration loops of gatekeeping - never try to handle everything at once
+18: 
+19: - DO DELEGATION IN BATCH SEQUENTIALLY, DO NOT ALLOW MORE THAN 2 PARALLEL TASK DELEGATION. DO NOT USE ANY CUSTOM TOOLS YET. DO NOT USE INTERACTIVE BASH OR PTY COMMANDS!
+20: 
+21: - Handoff and artifacts between sessions, from research, audit, planning, review, verification, must all commit, written-to-local-disk and referenced as master jump links
+22: 
+23: - all tech, stack, SDK implementation, audit, gatekeeping  must follow deep investigation - stack research ;skills are for references not for interfaces validation; "interfaces, patterns, methods, api, signatures of specs etc" must validate against the correct versions at package.json - **MUST VALIDATE AGAINST ONLINE RESOURCES AS FOR MCP SERVER TOOLS ACTUAL FETCH** - valid and evidences with Context7, Deepwiki, Gitmcp, Github repo, Exa **AND Repomix for accurate specific patterns** etc, official - loading references from skills of stacks are outdated, as so reading code in the codebase can be polluted as many implementations are not functioning and broken. DO NOT MAKE ASSUMPTIONS OF THE STACK REPO LINKs - **EXTREMELY IMPORNTANT:** Uses of Context7, Deepwiki, Gitmcp, Github, Exa, Repomix are enforced when researching, planning, and implementing - these MUST Comply with all the **Github and Npm links that up-to-date with versiosn and NOT A PRODUCT OF MAKING UP LINKS** >  glob, list this to check these links `.hivemind/STACKS-REFERENCES.md`
+24: 
+25: - any thing under .opencode/ are not shipped-with, they are symlinks or project toolings 
+26: 
+27: - all orchestrator, coordinator, conductor agents belonging to l0, and l1 classifications MUST FOCUS ON THE DELEGATIONS - NEVER Implement the tasks yourself - when delegating DO NOT SHOW THE SPECIALIST WHAT AND HOW TO IMPLEMENT - Show HOW TO PROCESS, WHAT TO EXPECT AS RESULTS, SETTING CONSTRAINTS AND BOUNDARIES, INDICATION OF CLEAR SUCCESS METRICS
+28: 
+29: - design patterns and must be obeyed strictly according to the architecture of the project.
+30: 
+31: - atomic git commit for context preservation.
+32: 
+33: - context git commit for both code implementation, docs, planning, researching, gatekeeping, verification artifacts - do not ask if commit needed
+34: 
+35: - AGENTS.md must be routinely updated - after each cycle, each batch of implementation.
+36: 
+37: - AGENTS.md are nested under dirs and subdirs, beware when maintaining them.
+38: 
+39: - files creation and structure must be registered and keep track - we love our codetree systematically structured and we **DO Registered** folders and subfolders with `.gitkeep` 
+40: 
+41: - folders must be created in a way that is easy to navigate and understand, following the best practice of this harness. Folders must be registered with gitkeep files to ensure they are tracked by git. 
+42: 
+43: - code file must JSDOC (Run JSDOC skill) documented with clear descriptions, parameters, return values, and examples. All functions and classes must be documented.
+44: 
+45: - The front facing agents must process high-level workflows, validate dependencies of tasks across sessions through faces
+46: 
+47: - The front facing agents must delegate to suagents of specialist; front facing agents are not allowed to execute any tasks
+48: 
+49: - The front facing agents are ones converse with USERS and must know the high-level tasks flow, following strict validations, gatekeeping, and coordination of the partificating frameworks
+50: 
+51: - When delegating to agents these are the list of agents that must learn and delegate to the correct ones. When delegate to subagents make sure setting up strict guardrails, boundaries, success metrics, making sure they are awared that they are subagents and fulfill the tasked within boundaries and without any deviation ans seriously go through gatekeeping.
+52: 
+53: <!-- NOTE: explore agent is MISSING from the filesystem -->
+54: 
+55: - For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
+56: 
+57: - The front facing agents must keep track, monitor, make sure not a single validation, verification, review steps are skips, planning , audit and verification must following format of the participated framework with honest verification and prevention of regressions. 
+58: 
+59: - **all agents** at every turn (after PER USER's prompt, **even mid-session**, after each turn), entries, shift of workflows there should be matching SKILLS that you must load, load and reload of suitable skills for the task, select ones with framework consistencies. Do not miss loading SKILLS. SKILLS are extremely important
+60: 
+61: 
+62: - - **all agents** : do not confuse between the project as the harness which you are building so that users can run it with OpenCode under their projects VS. your environment of works -> meaning there are assumptions that ARE NOT ALLOWED to interprete as this sole environment but must be as wider scopes, in terms of how different projects' states, tasks types, langues, frameworks and use cases.
+63: 
+64: 
+65: ## SKILLS TO WORKFLOW ROUTER
+66: **Important guidelines**
+67: 
+68: - To load best set of skills agents must know if you are front-facing or being delegated as subagents; knowing your hierarchy of tasks (looking at the meta data marked as `#USER` to confirm it is from the human user, meaning you are front-facing agent, otherwise subagents) 
+69: 
+70: - consider loading new skill(s) (not always but once **intents** of human users and/or **workflows**, **tasks** shifted this order is a **must**)
+71: 
+72: - **subagents** (know your agent **domain** by looking at description; analyze **task** to fetch `specilist` skills) fetch skills belong  `how-to-implement` and/or `specialist` classifications.
+73: 
+74: - **orchestrator/coordinator agents** : loading `how-to-delegate`, `how-to-process/loop/iterative`, `guardrails, gatekeeping, context,`  skills classifications. For complex tasks this group may need to load `outer-cycle-how-to-implement` skills  
+75: 
+76: - **respecting framework `oneness`** : it is if you are using `gsd` skill sets - pick them first - then pick another only when `gsd` skill sets lack the `domain-specific` or `task-specialist` that you find the superior ones. 
+77: 
+78: ### **going from greater cycles to the inner cycles** for skills to coordinate and orchestrate
+79: 
+80: - **brainstorming, user-intent discussion** always make sure to understand, think twice load set helping to get clear user-intent through QA and discussion to prevent regressions or conflicts
+81: 
+82: - **research, investigate, synthesis** do not skip research load `hm-deep-research` - `hm-detectice` (if need to learn about the sector of codebase) and
+83: 
+84: - **write new code:** load `clean-code` skill
+85: 
+86: - **debugging:** load `gsd` debug skills and `systematic-debug` skill
+87: 
+88: - **planning and implementing** must load set of spec-driven and authentic tdd skills
+89: 
+90: - **iterative loop** coordinating skills and gatekeeping at correct set loop til completione
+91: 
+92: - **quality gatekeeping** must go through cycles of code-review, validation, verification, then integration gatekeeping. making sure to trace of regression
+93: 
+94: ## IMPORTANT UPDATE TO ALL AGENTS
+95: 
+96: - when lost -> access real-time eventracker at `/.hivemind/session-tracker/*` - list/glob first - then look for the correct session id -use hm-detective skill to investigate the sessions
+97: 
+98: - **important tracking path for delegation:**
+99: .hivemind/state/session-continuity.json
+100: .hivemind/state/delegations.json 
+101: 
+102: - If the agents recieve GSD command, all they must is to act following it. THE COMMAND SUPERSEDE ALL ASSUMPTIONS AND LOADING SKILLS OTHER, BECAUSE THE COMMAND OF GSD IS THE SKILL
+103: 
+104: - ALL AGENTS MUST ANNOUNCE THIS EVERY TURN DEPENDING ON MAIN-HUMAN-FACING ORCHESTRATOR OR SUBAGENT BEING DELEGATED
+105: 
+106: - IF you are a front-facing -> you will mostly delegate **Everytime Delegation** in the prompt YOU MUST LET the subagent know that IT IS THE SUBAGENT BY ANNOUNCING: *You are the subagent Name:XXX role...., you must do as this prompt instructed and knowing that you are being delegated
+107: 
+108: - As subagent you must anounce your roles so the skills must also match. Say: I am **subagent, I CAN ONLY delegate further if the cycles and my tasks allow, and I must fulfill my work. If need verification, I will return the verification needed in the report handoff
+109: 
+110: 
+111: <EXTREMELY-IMPORTANT>
+112: If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+113: 
+114: IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+115: 
+116: This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+117: </EXTREMELY-IMPORTANT>
+118: 
+119: ## Instruction Priority
+120: 
+121: This override default system prompt behavior, but **user instructions always take precedence**:
+122: 
+123: 
+124: 
+125: 
+126: Hivemind is a **runtime composition engine** for OpenCode. It is an npm package (`hivemind`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. The project has progressed through 31 phases covering runtime architecture, delegation revamp, skills quality, and planning documentation refresh. Phase 26 completed the quality synthesis that established HMQUAL-01 through HMQUAL-08 as the project-level quality contract for all `hm-*` skills.
+127: 
+128: **This is NOT a skill-pack project.** Skills are one component. The product is the harness: a TypeScript plugin that wires tools + hooks into OpenCode with zero business logic in the plugin layer.
+129: 
+130: ### Two Halves (never confuse them)
+131: 
+132: | Half | What | Where | Architecture Reference |
+133: |------|------|-------|----------------------|
+134: | **Hard Harness** (npm package) | Tools (write-side), Hooks (read-side), Plugin (assembly), Shared (leaf), Task-Management (state), Coordination (delegation), Features (runtime), Config, Routing | `src/` | `.planning/codebase/ARCHITECTURE.md` — CQRS, 9-surface model |
+135: | **Soft Meta-Concepts** (user-configurable) | Skills, Agents, Commands, Rules, Permissions — NEVER development implementation, NEVER runtime state | `.opencode/` | `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` — primitives-only |
+136: | **Internal State** (deep module persistence) | Session journals, execution lineage, runtime state, vector/graph memory — NEVER stored in `.opencode/` | `.hivemind/` | `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` — canonical Q6 root |
+137: | **Meta-Authoring** (source-of-truth) | Lab environment for authoring primitives before reflection to `.opencode/` | `.hivefiver-meta-builder/` | `.planning/codebase/ARCHITECTURE.md` — Source-of-Truth layer |
+138: | **Governance** (planning/authorization) | Requirements, roadmaps, architecture maps, phase authorization — never runtime code | `.planning/` | `.planning/AGENTS.md` — Planning/Governance sector |
+139: 
+140: ### Runtime features this project delivers
+141: 
+142: Background agents, auto-loop/ralph-loop, WaiterModel delegation with dual-signal completion, task queuing with queue-key validation, category system, session recovery, PTY integration (Bun-only via the `bun-pty` **optional dependency** — runtime gracefully falls back to headless `node:child_process` on Node and any other host where `bun-pty` is absent or fails to load; recovery of a PTY delegation across a harness restart deliberately surfaces `terminalKind: "non-resumable-after-restart"` because OS PTY processes do not survive parent restart — see Phase 16.2.1). See `docs/draft/architecture-proposal-hivemind-v3.md` for feature-to-code mapping.
+143: 
+144: ---
+145: 
+146: ## Setup Commands
+147: 
+148: ```bash
+149: npm install                    # Install dependencies
+150: npm run build                  # Clean + compile TypeScript to dist/
+151: npm run typecheck              # Type-check without emitting
+152: npm run test                   # Run all tests (vitest)
+153: npm run test:watch             # Watch mode
+154: npm run test:coverage          # Coverage report (src/**/*.ts)
+155: ```
+156: 
+157: - Requires Node.js >= 20.0.0
+158: - Peer dependency: `@opencode-ai/plugin` >= 1.1.0
+159: - No environment variables required for build/test
+160: - Runtime state overrides: `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`
+161: 
+162: ---
+163: 
+164: ## Project Structure
+165: 
+166: ```
+167: src/
+168: ├── plugin.ts                  # Composition root
+169: ├── index.ts                   # Public API re-exports
+170: ├── shared/                    # Leaf utilities, types, SDK wrappers, runtime policy, security
+171: ├── task-management/           # Continuity, journal, event tracker, recovery, trajectory, lifecycle
+172: ├── coordination/              # Delegation, completion, concurrency, SDK/command delegation, spawner
+173: ├── features/                  # Standalone runtime features: bootstrap, PTY/background command, doc intelligence, prompt packets, pressure, SDK supervisor, work contracts
+174: ├── config/                    # Config subscriber/compiler/workflow
+175: ├── routing/                   # Session entry, behavioral profile, command engine
+176: ├── hooks/                     # Lifecycle, guards, observers, transforms, composition
+177: ├── tools/                     # Delegation, session, config, hivemind, prompt tool entrypoints
+178: └── schema-kernel/             # Zod schemas and generated config schema support
+179: 
+180: tests/lib/                     # Legacy test grouping for moved runtime modules
+181: tests/tools/                   # Tool-focused unit tests
+182: .opencode/                 # Soft meta-concepts (skills, agents, commands) — NO state storage
+183: .hivemind/               # Internal deep module state (journals, lineage, runtime state) — canonical per Q6
+184: ```
+185: 
+186: ### Dependency rules (non-negotiable)
+187: 
+188: - `src/shared/types.ts` is leaf-like shared contract authority; avoid adding deep runtime imports without a source-backed decision
+189: - `src/shared/helpers.ts`, `src/coordination/concurrency/queue.ts`, `src/coordination/completion/detector.ts` — leaf or near-leaf
+190: - `src/task-management/lifecycle/index.ts` is the lifecycle manager surface
+191: - No circular dependencies
+192: - Max module size: 500 LOC
+193: - `src/task-management/continuity/delegation-persistence.ts` — delegation record I/O
+194: 
+195: ### Where to find things
+196: 
+197: | Task | File |
+198: |------|------|
+199: | Change session persistence format | `src/task-management/continuity/index.ts` |
+200: | Add a lifecycle phase | `src/shared/types.ts` + `src/task-management/lifecycle/index.ts` |
+201: | Change SDK call patterns | `src/shared/session-api.ts` |
+202: | Change concurrency model | `src/coordination/concurrency/queue.ts` |
+203: | Change delegation behavior | `src/coordination/delegation/manager.ts` — DelegationManager class (WaiterModel dispatch, dual-signal completion) |
+204: | Change delegate-task tool | `src/tools/delegation/delegate-task.ts` — dispatch tool wrapper |
+205: | Check delegation status | `src/tools/delegation/delegation-status.ts` — status polling tool |
+206: | Change completion detection | `src/coordination/completion/detector.ts` |
+207: | Change task status transitions | `src/shared/task-status.ts` |
+208: | Change agent config (temperature, tools) | `src/plugin.ts` — `AGENT_DEFAULTS`, `AGENT_TOOLS` |
+209: | Change circuit breaker / tool budget | `src/plugin.ts` — `CIRCUIT_BREAKER_THRESHOLD`, `MAX_TOOL_CALLS_PER_SESSION` |
+210: | Persist delegation records | `src/task-management/continuity/delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
+211: | Change tool response envelope | `src/shared/tool-response.ts` — standard response wrapper |
+212: | Change prompt-enhance schemas | `src/schema-kernel/prompt-enhance.schema.ts` — Zod schemas for skim/analyze/patch |
+213: 
+214: ---
+215: 
+216: ## Testing Instructions
+217: 
+218: - Run all tests: `npm test`
+219: - Run single test file: `npx vitest run tests/lib/helpers.test.ts`
+220: - Run tests matching pattern: `npx vitest run -t "<test name>"`
+221: - Watch mode: `npm run test:watch`
+222: - Coverage: `npm run test:coverage` — covers `src/**/*.ts`, excludes `src/index.ts`
+223: - Test files live in `tests/lib/` and `tests/tools/` — mirror `src/` modules and `src/tools/`
+224: - Tests use vitest globals (no imports needed for `describe`, `it`, `expect`)
+225: - **Type-check before committing:** `npm run typecheck`
+226: 
+227: ---
+228: 
+229: ## Code Style
+230: 
+231: - TypeScript strict mode (`strict: true`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`)
+232: - ES2022 target, NodeNext module resolution
+233: - `verbatimModuleSyntax: true` — use `import type` for type-only imports
+234: - Deep-clone-on-read in continuity store
+235: - `[Harness]` prefix on all thrown errors
+236: - Dual-layer state: durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`)
+237: - No `any` types on new code
+238: - Max module size: 500 LOC
+239: 
+240: ---
+241: 
+242: ## Build and Deployment
+243: 
+244: - Build: `npm run build` — compiles `src/` → `dist/` with declarations + source maps
+245: - Package entrypoints:
+246:   - `hivemind` → `./dist/index.js`
+247:   - `hivemind/plugin` → `./dist/plugin.js`
+248: - Prepack runs build automatically: `npm pack` / `npm publish`
+249: - Runtime state path: `.hivemind/state/` (canonical per Q6; legacy `.opencode/state/opencode-harness/` supported via compatibility bridge during migration)
+250: 
+251: ---
+252: 
+253: ## OpenCode Integration
+254: 
+255: - Plugin loaded via `.opencode/plugins/harness-control-plane.ts` (thin wrapper re-exporting `dist/`)
+256: - Config: `opencode.json` at repo root — references `AGENTS.md` as instructions
+257: - 89 agents AUTHORED in `.hivefiver-meta-builder/agents-lab/active/refactoring/` and reflected to `.opencode/agents/`: 33 GSD specialist agents (internal project build tools — NOT shipped) + 45 hm-* agents (harness module specialists + core/internal agents: analyst, architect, assessor, auditor, brainstormer, build, conductor, connector, context-mapper, context-purifier, coordinator, critic, curator, debugger, ecologist, executor, finisher, general, guardian, integrator, intent-loop, investigator, mentor, meta-synthesis, operator, optimizer, orchestrator, persistor, phase-guardian, planner, prompt-analyzer, prompt-repackager, prompt-skimmer, researcher, reviewer, risk-assessor, router, scout, spec-verifier, strategist, synthesizer, technician, test-router, validator, writer) + 11 hf-* agents (hf-prompter, hf-l2-agent-builder, hf-l2-command-builder, hf-l0-hm-l0-orchestrator, hf-l2-skill-builder, hf-l2-tool-builder, hf-l2-meta-builder + 4 additional). Note: explore agent is MISSING from the filesystem.
+258: - 59 skills AUTHORED in `.hivefiver-meta-builder/skills-lab/` and reflected to `.opencode/skills/`: 35 hm-* (product dev: brainstorm, requirements-analysis, feature-ecosystem, product-validation, coordinating-loop, user-intent-interactive-loop, cross-cutting-change, spec-driven-authoring, test-driven-execution, debug, refactor, deep-research, detective, synthesis, research-chain, completion-looping, phase-loop, phase-execution, planning-persistence, subagent-delegation-patterns, production-readiness, roadmap-maintainability, tech-context-compliance, tech-stack-ingest, omo-reference, opencode-platform-reference, opencode-non-interactive-shell, opencode-project-audit, gate-orchestrator, lineage-router, brainstorm, skill-router, hivemind-engine-contracts, hivemind-state-reference, integration-contracts) + 13 hf-* (meta-builder: agent-composition, agents-and-subagents-dev, agents-md-sync, command-dev, command-parser, context-absorb, custom-tools-dev, delegation-gates, meta-builder, skill-synthesis, use-authoring-skills) + 3 gate-* (internal quality gate triad: evidence-truth, lifecycle-integration, spec-compliance — THIS PROJECT ONLY, not shipped) + 6 stack-* (reference: bun-pty, json-render, nextjs, opencode, vitest, zod) + 1 unprefixed (opencode-config-workflow) + 1 hivemind-* (governance: hivemind-power-on — cross-lineage session governance, loaded FIRST by all hm-* and hf-* L0/L1 agents). Note: the previously disabled `hm-planning-with-files` skill has been removed.
+259: - Note: 65 gsd-* skills and 33 gsd-* agents are AUTHORED in `.hivefiver-meta-builder/` and reflected to `.opencode/` as developer tooling (GSD framework used to build this project). They are NOT shipped primitives. Any synthesis from gsd-* must be transformed to hm-*/hf-* conventions.
+260: - 19 commands AUTHORED in `.hivefiver-meta-builder/commands-lab/active/refactoring/` and reflected to `.opencode/commands/`: 7 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, harness-audit, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack) + 1 sync (sync-agents-md) + 4 test (test-echo, test-list, test-spike-execute, test-status)
+261: 
+262: ### `.opencode/` = Soft Meta-Concepts ONLY — NEVER Development Assets
+263: 
+264: `.opencode/` is **ONLY** for OpenCode configurable primitives (agents, commands, skills, rules, permissions) that compose runtime behavior from outside the npm package. **No internal runtime state** is stored here. **No development implementation** lives here. **No build artifacts** belong here.
+265: 
+266: This is a critical distinction:
+267: - **`.opencode/` IS:** Agent definitions, skill packages, command files, permission rules, plugin loader wrappers → these CONFIGURE runtime behavior
+268: - **`.opencode/` IS NOT:** Source code, compiled output, business logic, state persistence, development tools, npm package assets → these belong in `src/`, `dist/`, or `.hivemind/`
+269: 
+270: All Hivemind deep module state (journals, lineage, runtime state, graph/vector memory) writes to `.hivemind/` at project root per Q6. This prevents corruption by other plugins or user dependencies.
+271: 
+272: ### Canonical Skill Location
+273: 
+274: `.hivefiver-meta-builder/skills-lab/` is the **ONLY** canonical source-of-truth for project skills. All skill authoring happens there and is reflected to `.opencode/skills/` (runtime copies) via directory-level symlink.
+275: 
+276: IDE-managed directories (`.trae/skills/`, `.windsurf/skills/`, `.codex/skills/`, `.github/skills/`) are **third-party sync artifacts**, not project deliverables. They are gitignored and must never be committed. `.claude/skills/` does not exist in this repository.
+277: 
+278: ---
+279: 
+280: ## Architecture Foundation (Authoritative Docs)
+281: 
+282: ### Must-Have References (current as of 2026-05-10)
+283: 
+284: | Document | Purpose | Authority |
+285: |----------|---------|-----------|
+286: | `.planning/codebase/ARCHITECTURE.md` | CQRS model, 9-surface authority, component graph, dependency rules | Source-backed architecture map |
+287: | `.planning/codebase/STRUCTURE.md` | File tree, placement conventions, naming, folder registration | Source-backed structure map |
+288: | `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` | Surface ownership model, Phase 0 mutation gates, target source planes | Governance baseline |
+289: | `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` | Naming contract, lineage contract (hm/hf/gate/stack/gsd), L0-L3 hierarchy | Governance baseline |
+290: | `.planning/architecture/hivemind-sector-agents-target-2026-05-07.md` | Target sector AGENTS.md shape, deferred implementation | Target architecture |
+291: | `.planning/research/omo-adaptation-architecture-2026-05-07.md` | OMO adapt/reject table, Hivemind surface preservation rules | Research foundation |
+292: | `.hivemind/planning/agents-system-overhaul-2026-05-10/` | Agent/skill/command overhaul: 15 REQs, 12 phases, shipped count = 49 | Overhaul planning |
+293: 
+294: ---
+295: 
+296: ## Locked Validation Decisions (Q1-Q6)
+297: 
+298: Six architectural decisions locked 2026-04-25 as the foundation for Phases 27-30 and all future work. Source: `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`
+299: 
+300: | Decision | Description |
+301: |----------|-------------|
+302: | **Q1** | Hybrid + Spec-Driven Automated Runtime Detection — deep codemap, file watcher, MCP tools, dependency graph; Layer 2 taxonomy |
+303: | **Q2** | Artifact-Focused Sidecar — Next.js 15 + `@json-render/react`, reads `.hivemind/` and `.planning/`, READ-ONLY for canonical state |
+304: | **Q3** | Session Journal as Complement + Time-Machine — append-only event timeline, independent of continuity.ts |
+305: | **Q4** | MVP = 5 of 8 memory categories; Post-MVP = 3 with explicit gates |
+306: | **Q5** | Full RICH gate required — 0 of 25 skills pass today is honest status; no threshold lowering |
+307: | **Q6** | `.hivemind/` is internal state root; `.opencode/` is ONLY for OpenCode primitives — one-way migration |
+308: 
+309: ---
+310: 
+311: ## Architecture Rules (from architecture-proposal-hivemind-v3.md)
+312: 
+313: ### Script rule
+314: A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpers only (exit 0, no governance). No hardcoded paths, no state mutation outside CQRS tools.
+315: 
+316: ### Anti-patterns to avoid
+317: - Static `.md` files acting as agent definitions (they are templates/references only)
+318: - Bash scripts outside `bin/` CLI substrate
+319: - Governance scripts that block progression (facts only)
+320: - Feature bloat: keep modules under 500 LOC, total codebase target ~4,000-5,000 LOC
+321: - Skill proliferation: target ~20 SKILL.md files, not hundreds
+322: 
+323: ### Target architecture (from proposal)
+324: 5 tools (~500 LOC total), hooks (~800 LOC), lifecycle (~400 LOC), delegation (~400 LOC), continuity (~400 LOC), CLI substrate (~500 LOC), control-plane (~400 LOC), shared (~800 LOC).
+325: 
+326: ---
+327: 
+328: ## Git Commit Discipline
+329: 
+330: - Commit message format: `phase: what changed — why it matters`
+331: - Commit after each meaningful change (subagent returns, phase completes, gate passes)
+332: - Never accumulate changes across multiple phases without committing
+333: - Agents may only manage commits for their own work — they do not constrain or override commits from other development activity
+334: 
+335: ---
+336: 
+337: ## Terminology
+338: 
+339: | Use | Not |
+340: |-----|-----|
+341: | Harness | Framework, system |
+342: | Agent (specialist: researcher/builder/critic) | Claude, AI, model |
+343: | Skill | Prompt, instruction |
+344: | Runtime composition | Static definition |
+345: | Delegation packet | Task assignment |
+346: 
+347: <!-- GSD:profile-start -->
+348: ## Developer Profile
+349: 
+350: > Generated by GSD from session_analysis. Run `/gsd-profile-user --refresh` to update.
+351: 
+352: | Dimension | Rating | Confidence |
+353: |-----------|--------|------------|
+354: | Communication | mixed | LOW |
+355: | Decisions | fast-intuitive | LOW |
+356: | Explanations | concise | LOW |
+357: | Debugging | fix-first | UNSCORED |
+358: | UX Philosophy | backend-focused | LOW |
+359: | Vendor Choices | pragmatic-fast | UNSCORED |
+360: | Frustrations | scope-creep | UNSCORED |
+361: | Learning | self-directed | LOW |
+362: 
+363: **Directives:**
+364: - **Communication:** Adapt communication style to context — accept terse directives for execution, provide structured responses when the developer establishes context. When uncertain, match the developer's current message length and formality.
+365: - **Decisions:** Present recommendations directly and proceed quickly when accepted — this developer makes execution decisions fast. If a decision has significant architectural impact, briefly note the stakes before proceeding but do not over-deliberate.
+366: - **Explanations:** Provide brief explanations of approach alongside code. Focus on architectural decisions and their impact. Skip conceptual background unless the developer explicitly asks. When in doubt, ask if more detail is needed.
+367: - **Debugging:** No strong preference detected. Ask the developer when this dimension is relevant.
+368: - **UX Philosophy:** Focus on backend architecture, code quality, and system design. No UI/UX polish needed for current work. If the project shifts to frontend, ask the developer about their UX preferences.
+369: - **Vendor Choices:** No strong preference detected. Ask the developer when this dimension is relevant.
+370: - **Frustrations:** Stay within stated scope and deliver honest assessments. Do not overstate capabilities or add unrequested features. When presenting work, be factual about what was delivered versus what was promised.
+371: - **Learning:** Provide code and architectural details for independent assessment. Ask targeted questions rather than offering walkthroughs. When the developer explores a new domain, offer concise references and let them direct the learning pace.
+372: <!-- GSD:profile-end -->
+373: 
+374: <!-- Last synced: 2026-05-11 — Phase 11 audit: skill count corrected to 58 (disabled removed), commands 18→19, package name `hivemind` per P0-ID -->
+375: 
+376: ## Current Phase Context
+377: 
+378: **Completed phase (2026-05-18):** CP-DT-01 — Delegate-Task Ecosystem Revamp. ✅ COMPLETE.
+379: **Review ITER2:** 0 Critical, 3 Warning (LOC/type-safety), 1 Info. 8/8 prior findings resolved.
+380: **Validation:** 18/18 spec requirements DELIVERED, 91/91 tests pass, `npm run typecheck` → clean.
+381: **Commits:** `c465b310`..`761046b4` (execution), `f4fd36e0` (review ITER2), `1ca16a3a` (validation).
+382: **Artifacts:** SPEC, CONTEXT, RESEARCH, PATTERN, 5 PLAN/SUMMARY pairs, REVIEW, REVIEW-FIX, REVIEW-ITER2, VALIDATION.
+383: **Remaining:** Live native Task UAT deferred to integration phase (L1 runtime proof manual-only).
+384: 
+385: **Next phase:** CP-PTY-01 (Background Shell Control-Plane MVP) — READY, unblocked by BOOT-07 and WS-SR/CP-DT-01 completion.
+
+(End of file - total 385 lines)
+</content>
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Wave B.3 redesign implementation",
+  "subagent_type": "hm-l2-build",
+  "task_id": "ses_1c36a6d52ffemTZhnLH9I5SzjT"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1c36a6d52ffemTZhnLH9I5SzjT
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "toolu_47bf643abb8a427bacfe898a"
+}
+```
+

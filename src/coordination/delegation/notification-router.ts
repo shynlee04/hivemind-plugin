@@ -1,4 +1,5 @@
 import type { DelegationNotification, DelegationNotificationType } from "./types.js"
+import { formatCompactLine, formatDelegationNotification, type NotificationFormatOptions } from "./notification-formatter.js"
 
 export interface RouteResult {
   parentSessionId: string
@@ -110,5 +111,30 @@ export class NotificationRouter {
   /** Format a compact parent-facing notification line. */
   formatNotification(type: DelegationNotificationType, delegationId: string, message: string): string {
     return `${NOTIFICATION_ICONS[type]} [DT:${delegationId}] ${type} — ${message}`
+  }
+
+  /** Format a TUI system notification line for live delegation append. */
+  formatTuiNotification(type: DelegationNotificationType, delegationId: string, agent: string, elapsedMs: number, toolCount?: number): string {
+    const opts: NotificationFormatOptions = {
+      agent,
+      delegationId,
+      elapsedMs,
+      status: type === "success" ? "completed" : type === "failure" ? "error" : type === "timeout" ? "timeout" : "cancelled",
+      toolCount,
+    }
+    return formatCompactLine(opts)
+  }
+
+  /** Format system notification block for session prompt delivery. */
+  formatSystemNotification(type: DelegationNotificationType, delegationId: string, agent: string, elapsedMs: number, toolCount?: number, summary?: string): string {
+    const opts: NotificationFormatOptions = {
+      agent,
+      delegationId,
+      elapsedMs,
+      status: type === "success" ? "completed" : type === "failure" ? "error" : type === "timeout" ? "timeout" : "cancelled",
+      summaryPreview: summary,
+      toolCount,
+    }
+    return formatDelegationNotification(opts)
   }
 }

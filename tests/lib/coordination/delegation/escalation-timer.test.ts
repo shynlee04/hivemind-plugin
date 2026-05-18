@@ -1,90 +1,171 @@
 import { vi } from "vitest"
 
-import { EscalationTimer, ESCALATION_ICONS } from "../../../../src/coordination/delegation/escalation-timer.js"
-import { DelegationMonitor } from "../../../../src/coordination/delegation/monitor.js"
+import { FailureCheckpointTracker } from "../../../../src/coordination/delegation/escalation-timer.js"
 
-describe("EscalationTimer", () => {
+describe("FailureCheckpointTracker", () => {
   beforeEach(() => { vi.useFakeTimers() })
   afterEach(() => { vi.useRealTimers() })
 
-  it("fires WARN, NUDGE, ALERT, and TERMINATE at configured thresholds", () => {
-    const onLevel = vi.fn()
-    const timer = new EscalationTimer()
+  it("initializes state with zero action count and level 0", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
 
-    timer.start("dt-1", [60, 120, 180, 300], onLevel)
-
-    vi.advanceTimersByTime(60_000)
-    expect(onLevel).toHaveBeenLastCalledWith("WARN", 60, "⚠", "dt-1")
-    vi.advanceTimersByTime(60_000)
-    expect(onLevel).toHaveBeenLastCalledWith("NUDGE", 120, "⚠", "dt-1")
-    vi.advanceTimersByTime(60_000)
-    expect(onLevel).toHaveBeenLastCalledWith("ALERT", 180, "🔴", "dt-1")
-    vi.advanceTimersByTime(120_000)
-    expect(onLevel).toHaveBeenLastCalledWith("TERMINATE", 300, "⛔", "dt-1")
-    expect(ESCALATION_ICONS).toEqual(["⚠", "⚠", "🔴", "⛔"])
+    const state = tracker.getState("dt-1")
+    expect(state).toEqual({
+      lastCheckpointActionCount: 0,
+      failureLevel: 0,
+      injectionStopped: false,
+      completed: false,
+    })
   })
 
-  it("clears all pending escalation timers when stopped", () => {
-    const onLevel = vi.fn()
-    const timer = new EscalationTimer()
+  it("detects failure when action count unchanged at checkpoint", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    const onFailure = vi.fn()
 
-    timer.start("dt-1", [60, 120, 180, 300], onLevel)
-    timer.stop()
-    vi.runAllTimers()
+    tracker.check("dt-1", 60, 0, onFailure)
 
-    expect(onLevel).not.toHaveBeenCalled()
-  })
-})
-
-describe("DelegationMonitor", () => {
-  beforeEach(() => { vi.useFakeTimers() })
-  afterEach(() => { vi.useRealTimers() })
-
-  it("creates six progressive polling injections at the expected cadence", () => {
-    const inject = vi.fn()
-    const monitor = new DelegationMonitor({ inject, getStatus: () => "running" })
-
-    monitor.start("dt-1", "parent-1")
-    for (const elapsed of [30, 45, 60, 90, 120, 180]) {
-      vi.advanceTimersByTime(elapsed * 1000)
-    }
-
-    const pollingLines = inject.mock.calls
-      .map((call) => call[1])
-      .filter((line) => line.includes("status=running"))
-
-    expect(pollingLines).toEqual([
-      "[DT:dt-1] status=running elapsed=30s",
-      "[DT:dt-1] status=running elapsed=45s",
-      "[DT:dt-1] status=running elapsed=60s",
-      "[DT:dt-1] status=running elapsed=90s",
-      "[DT:dt-1] status=running elapsed=120s",
-      "[DT:dt-1] status=running elapsed=180s",
-    ])
+    expect(onFailure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        delegationId: "dt-1",
+        level: 1,
+        elapsedSeconds: 60,
+        actionCountAtCheckpoint: 0,
+        actionCountAtPreviousCheckpoint: 0,
+        isFinal: false,
+      }),
+    )
   })
 
-  it("stops polling injections after completion", () => {
-    const inject = vi.fn()
-    const monitor = new DelegationMonitor({ inject, getStatus: () => "running" })
+  it("does not fail when action count increased", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    const onFailure = vi.fn()
 
-    monitor.start("dt-1", "parent-1")
-    vi.advanceTimersByTime(30_000)
-    monitor.onCompletion("dt-1")
-    vi.runAllTimers()
+    tracker.check("dt-1", 60, 5, onFailure)
 
-    expect(inject).toHaveBeenCalledTimes(1)
+    expect(onFailure).not.toHaveBeenCalled()
   })
 
-  it("keeps monitoring active for other delegations when one delegation completes", () => {
-    const inject = vi.fn()
-    const monitor = new DelegationMonitor({ inject, getStatus: () => "running", pollingCadence: [30] })
+  it("compares to previous checkpoint count at level 2", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    const onFailure = vi.fn()
 
-    monitor.start("dt-1", "parent-1")
-    monitor.start("dt-2", "parent-2")
-    monitor.onCompletion("dt-1")
-    vi.advanceTimersByTime(30_000)
+    tracker.check("dt-1", 60, 3, onFailure)
+    tracker.check("dt-1", 120, 3, onFailure)
 
-    expect(inject).toHaveBeenCalledTimes(1)
-    expect(inject).toHaveBeenCalledWith("parent-2", "[DT:dt-2] status=running elapsed=30s")
+    expect(onFailure).toHaveBeenCalledTimes(1)
+    expect(onFailure).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        level: 1,
+        elapsedSeconds: 120,
+        actionCountAtCheckpoint: 3,
+        actionCountAtPreviousCheckpoint: 3,
+      }),
+    )
+  })
+
+  it("reaches level 4 and stops injection at 300s", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    const onFailure = vi.fn()
+
+    tracker.check("dt-1", 60, 0, onFailure)
+    tracker.check("dt-1", 120, 0, onFailure)
+    tracker.check("dt-1", 180, 0, onFailure)
+    tracker.check("dt-1", 300, 0, onFailure)
+
+    expect(onFailure).toHaveBeenCalledTimes(4)
+    expect(onFailure).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        level: 4,
+        elapsedSeconds: 300,
+        isFinal: true,
+      }),
+    )
+    expect(tracker.shouldInject("dt-1")).toBe(false)
+  })
+
+  it("increments failure level when actions stall at non-consecutive checkpoints", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    const onFailure = vi.fn()
+
+    tracker.check("dt-1", 60, 0, onFailure)
+    tracker.check("dt-1", 120, 5, onFailure)
+    tracker.check("dt-1", 180, 5, onFailure)
+
+    expect(onFailure).toHaveBeenCalledTimes(2)
+    expect(onFailure).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ level: 1, elapsedSeconds: 60 }),
+    )
+    expect(onFailure).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ level: 2, elapsedSeconds: 180 }),
+    )
+  })
+
+  it("ignores non-checkpoint elapsed times", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    const onFailure = vi.fn()
+
+    tracker.check("dt-1", 30, 0, onFailure)
+    tracker.check("dt-1", 45, 0, onFailure)
+    tracker.check("dt-1", 90, 0, onFailure)
+
+    expect(onFailure).not.toHaveBeenCalled()
+  })
+
+  it("returns true for shouldInject when not stopped", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+
+    expect(tracker.shouldInject("dt-1")).toBe(true)
+  })
+
+  it("returns true for shouldInject for unknown delegation", () => {
+    const tracker = new FailureCheckpointTracker()
+
+    expect(tracker.shouldInject("unknown")).toBe(true)
+  })
+
+  it("marks delegation completed on stop", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    tracker.stop("dt-1")
+
+    const state = tracker.getState("dt-1")
+    expect(state?.completed).toBe(true)
+  })
+
+  it("does not check after injection stopped", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    const onFailure = vi.fn()
+
+    tracker.check("dt-1", 60, 0, onFailure)
+    tracker.check("dt-1", 120, 0, onFailure)
+    tracker.check("dt-1", 180, 0, onFailure)
+    tracker.check("dt-1", 300, 0, onFailure)
+
+    expect(tracker.shouldInject("dt-1")).toBe(false)
+
+    tracker.check("dt-1", 300, 0, onFailure)
+    expect(onFailure).toHaveBeenCalledTimes(4)
+  })
+
+  it("does not check after completed", () => {
+    const tracker = new FailureCheckpointTracker()
+    tracker.start("dt-1")
+    tracker.stop("dt-1")
+    const onFailure = vi.fn()
+
+    tracker.check("dt-1", 60, 0, onFailure)
+
+    expect(onFailure).not.toHaveBeenCalled()
   })
 })

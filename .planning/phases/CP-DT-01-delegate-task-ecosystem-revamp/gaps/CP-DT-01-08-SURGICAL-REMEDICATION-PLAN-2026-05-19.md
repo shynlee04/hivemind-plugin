@@ -101,7 +101,7 @@ Dọn rác (category/safetyCeiling/classifications) + thêm missing features (co
 - `src/coordination/delegation/notification-router.ts` — thêm TUI system message append:
   - Live delegation → `tui.prompt.append` event
   - Ended delegation → `session.prompt({ noReply: true })`
-
+~~
 **Verify:** New tests pass, typecheck clean
 
 ### Wave B.3: Progressive Escalation Thresholds [HIGH]
@@ -130,7 +130,7 @@ Dọn rác (category/safetyCeiling/classifications) + thêm missing features (co
 
 **Verify:** Control action tests pass, typecheck clean
 
----
+---~~
 
 ## Wave C: Fix tests
 
