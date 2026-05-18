@@ -234,6 +234,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const consumeIsMainSessionFact = createSessionMainConsumer(sessionIsMainObserverFactory.observer)
   const consumeDelegationFact = createDelegationConsumer({
     observer: delegationEventObserver,
+    handleSessionError: delegationManager.handleSessionError.bind(delegationManager),
     handleSessionIdle: delegationManager.handleSessionIdle.bind(delegationManager),
     handleSessionDeleted: delegationManager.handleSessionDeleted.bind(delegationManager),
   })

@@ -91,20 +91,24 @@ describe("delegation-status v2 tool", () => {
     expect(terminateChild).not.toHaveBeenCalled()
   })
 
-  it("restarts active delegation with same agent and prompt", async () => {
+  it("rejects restart when no manager control API can invoke native Task", async () => {
     const { coordinator, tool } = createHarness()
 
-    await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "restart" } } as never, context)
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "restart" } } as never, context)
 
-    expect(coordinator.dispatch).toHaveBeenCalledWith(expect.objectContaining({ agent: "builder", prompt: "build it" }))
+    expect(parse(raw).kind).toBe("error")
+    expect(parse(raw).message).toContain("coordinator-backed manager control API")
+    expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
-  it("redirects active delegation with redirectAgent and same prompt", async () => {
+  it("rejects redirect when no manager control API can invoke native Task", async () => {
     const { coordinator, tool } = createHarness()
 
-    await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "redirect", redirectAgent: "critic" } } as never, context)
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "redirect", redirectAgent: "critic" } } as never, context)
 
-    expect(coordinator.dispatch).toHaveBeenCalledWith(expect.objectContaining({ agent: "critic", prompt: "build it" }))
+    expect(parse(raw).kind).toBe("error")
+    expect(parse(raw).message).toContain("coordinator-backed manager control API")
+    expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
   it("rejects redirect without redirectAgent", async () => {

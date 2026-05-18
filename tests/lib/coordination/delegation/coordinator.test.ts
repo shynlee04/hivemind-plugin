@@ -36,13 +36,23 @@ function createDeps() {
     route: vi.fn(),
   }
   const lifecycle = {
+    getStatus: vi.fn(() => undefined),
     isTerminal: vi.fn((status: string) => ["completed", "error", "timeout"].includes(status)),
+    list: vi.fn(() => []),
     markTimeout: vi.fn((delegationId: string): DelegationResult => ({ delegationId, status: "timeout" })),
+    register: vi.fn(),
     transition: vi.fn((delegationId: string, status: DelegationResult["status"]): DelegationResult => ({ delegationId, status })),
   }
+  const callbacksByDetector = new Map<string, (result: DelegationResult) => void>()
   const detector = {
+    signalCompletionEvent: vi.fn(),
+    signalTerminalStatus: vi.fn((delegationId: string, status: DelegationResult["status"]) => {
+      callbacksByDetector.get(delegationId)?.({ delegationId, status })
+    }),
     unwatch: vi.fn(),
-    watchDualSignal: vi.fn(),
+    watchDualSignal: vi.fn((delegationId: string, _session: string, callback: (result: DelegationResult) => void) => {
+      callbacksByDetector.set(delegationId, callback)
+    }),
   }
   const retryHandler = {
     persistWithRetry: vi.fn().mockResolvedValue(true),
@@ -110,7 +120,7 @@ describe("DelegationCoordinator", () => {
 
     coordinator.handleCompletion(dispatched.delegationId, { delegationId: dispatched.delegationId, status: "completed", result: "done" })
 
-    expect(deps.monitor.onCompletion).toHaveBeenCalledOnce()
+    expect(deps.monitor.onCompletion).toHaveBeenCalledWith(dispatched.delegationId)
     expect(deps.lifecycle.transition).toHaveBeenCalledWith(dispatched.delegationId, "completed")
     expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: dispatched.delegationId, type: "success" }))
     expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
@@ -129,6 +139,44 @@ describe("DelegationCoordinator", () => {
     expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: dispatched.delegationId, type: "timeout" }))
     expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
     expect(deps.slotHandle.release).toHaveBeenCalledOnce()
+  })
+
+  it("cleans up coordinator resources when native Task dispatch fails after registration", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.failDispatch(dispatched.delegationId, new Error("native failed"))
+
+    expect(deps.lifecycle.transition).toHaveBeenCalledWith(dispatched.delegationId, "error")
+    expect(deps.monitor.onCompletion).toHaveBeenCalledWith(dispatched.delegationId)
+    expect(deps.detector.unwatch).toHaveBeenCalledWith(dispatched.delegationId)
+    expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
+    expect(deps.slotHandle.release).toHaveBeenCalledOnce()
+  })
+
+  it("persists all lifecycle records instead of only currently active records", async () => {
+    const deps = createDeps()
+    const existing = { id: "dt-existing", status: "completed" }
+    deps.lifecycle.list.mockReturnValue([existing])
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.handleCompletion(dispatched.delegationId, { delegationId: dispatched.delegationId, status: "completed" })
+
+    expect(deps.retryHandler.persistWithRetry).toHaveBeenCalledWith(expect.arrayContaining([existing]))
+  })
+
+  it("maps hook session events to the matching child delegation", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+    coordinator.attachChildSession(dispatched.delegationId, "child-real")
+
+    coordinator.handleSessionIdle("child-real")
+
+    expect(deps.detector.unwatch).toHaveBeenCalledWith(dispatched.delegationId)
+    expect(deps.lifecycle.transition).toHaveBeenCalledWith(dispatched.delegationId, "completed")
   })
 
   it("handles concurrent delegations independently without cross-talk", async () => {

@@ -7,6 +7,8 @@ import type { DelegationCoordinator, DispatchParams } from "./coordinator.js"
 import { DelegationManager as RuntimeDelegationManager } from "./manager-runtime.js"
 import type { Delegation, DelegationResult } from "./types.js"
 
+type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
+
 type FacadeLifecycle = {
   getChildSessionId: (delegationId: string) => string | undefined
   getStatus: (delegationId: string) => Delegation | undefined
@@ -16,10 +18,18 @@ type FacadeLifecycle = {
 }
 
 export type DelegationManagerOptions = {
-  coordinator?: Pick<DelegationCoordinator, "dispatch" | "chain">
+  coordinator?: Pick<DelegationCoordinator, "abortDelegation" | "attachChildSession" | "cancelDelegation" | "chain" | "dispatch" | "failDispatch" | "handleSessionDeleted" | "handleSessionError" | "handleSessionIdle">
   lifecycle?: FacadeLifecycle
   ptyManager?: PtyManager | null
   runtimePolicy?: RuntimePolicy
+}
+
+export type DelegationControlRequest = {
+  action: "abort" | "cancel" | "restart" | "redirect"
+  delegationId: string
+  nativeTask?: NativeTask
+  redirectAgent?: string
+  restartPrompt?: string
 }
 
 /**
@@ -56,6 +66,16 @@ export class DelegationManager {
     return this.requireRuntime().dispatch(params)
   }
 
+  /** Attach the real native Task child session ID to a prepared v2 delegation. */
+  attachChildSession(delegationId: string, childSessionId: string): void {
+    this.options.coordinator?.attachChildSession(delegationId, childSessionId)
+  }
+
+  /** Roll back a prepared v2 delegation after native Task dispatch fails. */
+  failDispatch(delegationId: string, caughtError: unknown): void {
+    this.options.coordinator?.failDispatch(delegationId, caughtError)
+  }
+
   /** Compatibility alias for callers that use the Plan 04 facade name. */
   async dispatchDelegation(_client: OpenCodeClient | undefined, params: DispatchParams): Promise<DelegationResult> {
     if (!this.options.coordinator) return this.requireRuntime().dispatch(params as DelegateParams)
@@ -70,11 +90,18 @@ export class DelegationManager {
   /** Forward session-idle events to the runtime adapter. */
   handleSessionIdle(sessionId: string): void {
     this.runtime?.handleSessionIdle(sessionId)
+    this.options.coordinator?.handleSessionIdle(sessionId)
+  }
+
+  /** Forward session-error events to the runtime adapter and v2 coordinator. */
+  handleSessionError(sessionId: string, error?: unknown): void {
+    this.options.coordinator?.handleSessionError(sessionId, error)
   }
 
   /** Forward session-deleted events to the runtime adapter. */
   handleSessionDeleted(sessionId: string): void {
     this.runtime?.handleSessionDeleted(sessionId)
+    this.options.coordinator?.handleSessionDeleted(sessionId)
   }
 
   /** Recover pending delegations through the runtime adapter. */
@@ -100,14 +127,50 @@ export class DelegationManager {
 
   /** Mark a delegation aborted via the lifecycle module. */
   abortDelegation(delegationId: string): DelegationResult {
+    if (this.options.coordinator?.abortDelegation) return this.options.coordinator.abortDelegation(delegationId)
     if (this.options.lifecycle) return this.options.lifecycle.markAborted(delegationId)
     return this.terminalFallback(delegationId, "[Harness] Delegation aborted")
   }
 
   /** Mark a delegation cancelled via the lifecycle module. */
   cancelDelegation(delegationId: string): DelegationResult {
+    if (this.options.coordinator?.cancelDelegation) return this.options.coordinator.cancelDelegation(delegationId)
     if (this.options.lifecycle) return this.options.lifecycle.markCancelled(delegationId)
     return this.terminalFallback(delegationId, "[Harness] Delegation cancelled")
+  }
+
+  /** Applies control semantics with coordinator cleanup and optional native replacement dispatch. */
+  async controlDelegation(request: DelegationControlRequest): Promise<DelegationResult> {
+    const delegation = this.getStatus(request.delegationId)
+    if (!delegation) throw new Error(`[Harness] Delegation "${request.delegationId}" not found`)
+    if (delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout") {
+      throw new Error("[Harness] cannot control terminal delegation")
+    }
+    if (request.action === "abort") return this.abortDelegation(request.delegationId)
+    if (request.action === "cancel") return this.cancelDelegation(request.delegationId)
+    if (!request.nativeTask) {
+      throw new Error("[Harness] restart/redirect requires native Task execution seam; no replacement delegation was created")
+    }
+    const agent = request.action === "redirect" ? request.redirectAgent : delegation.agent
+    if (!agent) throw new Error("[Harness] redirect requires target agent")
+    const prompt = request.restartPrompt ?? delegation.prompt
+    if (!prompt) throw new Error("[Harness] restart/redirect requires a persisted original prompt or restartPrompt")
+
+    const original = request.action === "restart"
+      ? this.options.coordinator?.abortDelegation(request.delegationId, "[Harness] Delegation restarted") ?? this.abortDelegation(request.delegationId)
+      : this.options.coordinator?.abortDelegation(request.delegationId, "[Harness] Delegation redirected") ?? this.abortDelegation(request.delegationId)
+    const replacement = this.options.coordinator
+      ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey, safetyCeilingMs: delegation.safetyCeilingMs, surface: delegation.surface ?? "agent-delegation" })
+      : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt, safetyCeilingMs: delegation.safetyCeilingMs })
+    try {
+      const nativeResult = await request.nativeTask({ agent, prompt, disabledTools: ["delegate-task", "task"] })
+      const childSessionId = this.extractNativeTaskSessionId(nativeResult)
+      if (childSessionId) this.options.coordinator?.attachChildSession?.(replacement.delegationId, childSessionId)
+    } catch (caughtError) {
+      this.options.coordinator?.failDispatch?.(replacement.delegationId, caughtError)
+      throw caughtError
+    }
+    return { ...replacement, result: original.terminalKind === "cancelled" ? undefined : original.result }
   }
 
   /** Return the child session id for a delegation when known. */
@@ -151,6 +214,16 @@ export class DelegationManager {
 
   private terminalFallback(delegationId: string, error: string): DelegationResult {
     return { delegationId, error, status: "error" }
+  }
+
+  private extractNativeTaskSessionId(value: unknown): string | undefined {
+    if (!value || typeof value !== "object") return undefined
+    const record = value as Record<string, unknown>
+    for (const key of ["sessionID", "sessionId", "childSessionId", "id"]) {
+      const candidate = record[key]
+      if (typeof candidate === "string" && candidate.length > 0) return candidate
+    }
+    return undefined
   }
 
   private requireRuntime(): RuntimeDelegationManager {

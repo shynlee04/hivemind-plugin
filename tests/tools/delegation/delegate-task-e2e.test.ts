@@ -13,7 +13,7 @@ function createClient() {
 describe("delegate-task e2e tool boundary", () => {
   it("dispatches a valid request through plugin-wired v2 modules", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const tool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => undefined) })
+    const tool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "child-1" })) })
 
     const raw = await tool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
 
@@ -33,7 +33,7 @@ describe("delegate-task e2e tool boundary", () => {
 
   it("supports control actions through delegation-status after dispatch", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const delegateTool = createDelegateTaskTool(modules.delegationManager)
+    const delegateTool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "child-1" })) })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { coordinator: modules.coordinator, lifecycle: modules.lifecycle })
     const dispatched = parse(await delegateTool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })).data as Record<string, string>
 
@@ -45,7 +45,7 @@ describe("delegate-task e2e tool boundary", () => {
 
   it("keeps legacy manager-compatible status listing shape", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const delegateTool = createDelegateTaskTool(modules.delegationManager)
+    const delegateTool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "child-1" })) })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
     await delegateTool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
 

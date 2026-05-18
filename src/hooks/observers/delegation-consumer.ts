@@ -9,6 +9,7 @@ import type { DelegationEventFact } from "./event-observers.js"
  */
 export interface DelegationConsumerDeps {
   observer: (input: { event?: unknown }) => Promise<DelegationEventFact>
+  handleSessionError?: (sessionId: string, error?: string) => void
   handleSessionIdle: (sessionId: string) => void
   handleSessionDeleted: (sessionId: string) => void
 }
@@ -29,6 +30,9 @@ export function createDelegationConsumer(
     const fact = await deps.observer({ event })
     if (fact.kind === "delegation-session-idle") {
       deps.handleSessionIdle(fact.sessionId)
+    }
+    if (fact.kind === "delegation-session-error") {
+      deps.handleSessionError?.(fact.sessionId, fact.error)
     }
     if (fact.kind === "delegation-session-deleted") {
       deps.handleSessionDeleted(fact.sessionId)

@@ -14,6 +14,7 @@ export type DelegationTerminalKind =
   | "error"
   | "timeout"
   | "cancelled"
+  | "restarted"
   | "interrupted-by-signal"
   | "non-resumable-after-restart"
 
@@ -22,6 +23,7 @@ export interface Delegation {
   parentSessionId: string
   childSessionId: string
   agent: string
+  prompt?: string
   status: DelegationStatus
   result?: string
   resultTruncated?: boolean
@@ -50,6 +52,8 @@ export interface Delegation {
   terminalKind?: DelegationTerminalKind
   terminationSignal?: string
   explicitCancellation?: boolean
+  redirectedFrom?: string
+  restartedFrom?: string
 }
 
 export interface DelegationResult {

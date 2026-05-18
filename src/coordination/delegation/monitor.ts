@@ -3,23 +3,25 @@ import { POLLING_CADENCE } from "./types.js"
 import { EscalationTimer } from "./escalation-timer.js"
 
 export interface MonitorOptions {
-  escalationTimer?: EscalationTimer
   getStatus: (delegationId: string) => DelegationStatus | string
   inject: (parentSessionId: string, line: string) => void
   pollingCadence?: PollingCadence | readonly number[]
 }
 
+type MonitorState = {
+  completed: boolean
+  escalationTimer: EscalationTimer
+  pollingTimers: NodeJS.Timeout[]
+}
+
 /** Owns progressive polling and escalation timers for one delegation. */
 export class DelegationMonitor {
-  private readonly escalationTimer: EscalationTimer
   private readonly getStatus: MonitorOptions["getStatus"]
   private readonly inject: MonitorOptions["inject"]
   private readonly pollingCadence: readonly number[]
-  private readonly pollingTimers: NodeJS.Timeout[] = []
-  private completed = false
+  private readonly states = new Map<string, MonitorState>()
 
   constructor(options: MonitorOptions) {
-    this.escalationTimer = options.escalationTimer ?? new EscalationTimer()
     this.getStatus = options.getStatus
     this.inject = options.inject
     this.pollingCadence = options.pollingCadence ?? POLLING_CADENCE
@@ -27,34 +29,47 @@ export class DelegationMonitor {
 
   /** Start progressive polling and escalation for a delegation. */
   start(delegationId: string, parentSessionId: string): void {
-    this.stop()
-    this.completed = false
+    this.stop(delegationId)
+    const state: MonitorState = { completed: false, escalationTimer: new EscalationTimer(), pollingTimers: [] }
+    this.states.set(delegationId, state)
     for (const elapsed of this.pollingCadence) {
-      this.pollingTimers.push(setTimeout(() => {
-        if (this.completed) return
+      state.pollingTimers.push(setTimeout(() => {
+        if (state.completed) return
         const status = this.getStatus(delegationId)
         if (this.isTerminal(status)) return
         this.inject(parentSessionId, `[DT:${delegationId}] status=${status} elapsed=${elapsed}s`)
       }, elapsed * 1000))
     }
-    this.escalationTimer.start(delegationId, undefined, (level, elapsed, icon) => {
-      if (!this.completed) this.inject(parentSessionId, `[DT:${delegationId}] ${icon} escalation=${level} elapsed=${elapsed}s`)
+    state.escalationTimer.start(delegationId, undefined, (level, elapsed, icon) => {
+      if (!state.completed) this.inject(parentSessionId, `[DT:${delegationId}] ${icon} escalation=${level} elapsed=${elapsed}s`)
     })
   }
 
   /** Stop polling and escalation timers. */
-  stop(): void {
-    for (const timer of this.pollingTimers.splice(0)) clearTimeout(timer)
-    this.escalationTimer.stop()
+  stop(delegationId?: string): void {
+    if (delegationId) {
+      this.stopState(delegationId)
+      return
+    }
+    for (const id of Array.from(this.states.keys())) this.stopState(id)
   }
 
   /** Mark the delegation completed and stop all monitoring. */
-  onCompletion(): void {
-    this.completed = true
-    this.stop()
+  onCompletion(delegationId: string): void {
+    const state = this.states.get(delegationId)
+    if (state) state.completed = true
+    this.stop(delegationId)
   }
 
   private isTerminal(status: string): boolean {
     return status === "completed" || status === "error" || status === "timeout"
+  }
+
+  private stopState(delegationId: string): void {
+    const state = this.states.get(delegationId)
+    if (!state) return
+    for (const timer of state.pollingTimers.splice(0)) clearTimeout(timer)
+    state.escalationTimer.stop()
+    this.states.delete(delegationId)
   }
 }

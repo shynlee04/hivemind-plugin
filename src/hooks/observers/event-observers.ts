@@ -5,6 +5,7 @@ import { resolveIntake } from "../../routing/session-entry/intake-gate.js"
 
 export type DelegationEventFact =
   | { kind: "delegation-session-idle"; sessionId: string }
+  | { error?: string; kind: "delegation-session-error"; sessionId: string }
   | { kind: "delegation-session-deleted"; sessionId: string }
   | { kind: "ignored" }
 
@@ -24,6 +25,10 @@ export function createDelegationEventObserver(): (input: { event?: unknown }) =>
     }
     if (eventType === "session.idle") {
       return { kind: "delegation-session-idle", sessionId }
+    }
+    if (eventType === "session.error") {
+      const error = asString(getNestedValue(event, ["error"]))
+      return { error, kind: "delegation-session-error", sessionId }
     }
     if (eventType === "session.deleted") {
       return { kind: "delegation-session-deleted", sessionId }

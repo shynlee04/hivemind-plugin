@@ -18,8 +18,13 @@ export interface DelegationCoordinatorDeps {
   dispatcher: Pick<DelegationDispatcher, "preflightCheck">
   monitor: Pick<DelegationMonitor, "onCompletion" | "start" | "stop">
   notificationRouter: Pick<NotificationRouter, "deregister" | "register" | "route">
-  lifecycle: Pick<DelegationLifecycle, "isTerminal" | "markTimeout" | "transition"> & Partial<Pick<DelegationLifecycle, "register">>
-  detector: { unwatch: (delegationId: string) => void; watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void }
+  lifecycle: Pick<DelegationLifecycle, "isTerminal" | "markTimeout" | "transition"> & Partial<Pick<DelegationLifecycle, "getStatus" | "list" | "register">>
+  detector: {
+    signalCompletionEvent: (delegationId: string) => void
+    signalTerminalStatus: (delegationId: string, status: DelegationStatus) => void
+    unwatch: (delegationId: string) => void
+    watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void
+  }
   retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
 }
 
@@ -28,6 +33,7 @@ type ActiveDelegation = { record: Delegation; slotHandle: SlotHandle }
 /** SDK-free delegate-task v2 wire coordinator; the tool layer still owns native Task dispatch. */
 export class DelegationCoordinator {
   private readonly active = new Map<string, ActiveDelegation>()
+  private readonly delegationByChildSession = new Map<string, string>()
 
   constructor(private readonly deps: DelegationCoordinatorDeps) {}
 
@@ -52,7 +58,7 @@ export class DelegationCoordinator {
   /** Handles terminal completion and performs monitor, notification, slot, and persistence cleanup. */
   handleCompletion(delegationId: string, result: DelegationResult): void {
     const status = result.status
-    this.deps.monitor.onCompletion()
+    this.deps.monitor.onCompletion(delegationId)
     this.deps.lifecycle.transition(delegationId, status)
     this.routeTerminal(delegationId, this.notificationTypeFor(status), result.result ?? result.error ?? status)
     this.cleanup(delegationId, status, result)
@@ -61,9 +67,63 @@ export class DelegationCoordinator {
   /** Marks a delegation timed out and performs the same cleanup path as terminal completion. */
   handleTimeout(delegationId: string): void {
     const result = this.deps.lifecycle.markTimeout(delegationId)
-    this.deps.monitor.onCompletion()
+    this.deps.monitor.onCompletion(delegationId)
     this.routeTerminal(delegationId, "timeout", result.error ?? "timed out")
     this.cleanup(delegationId, "timeout", result)
+  }
+
+  /** Updates the child session mapping once the native Task seam returns a real session ID. */
+  attachChildSession(delegationId: string, childSessionId: string): void {
+    const active = this.active.get(delegationId)
+    if (!active) return
+    this.delegationByChildSession.delete(active.record.childSessionId)
+    active.record.childSessionId = childSessionId
+    this.delegationByChildSession.set(childSessionId, delegationId)
+  }
+
+  /** Converts a native Task dispatch failure into terminal cleanup without leaking active resources. */
+  failDispatch(delegationId: string, caughtError: unknown): void {
+    const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+    this.deps.lifecycle.transition(delegationId, "error")
+    this.deps.monitor.onCompletion(delegationId)
+    this.routeTerminal(delegationId, "failure", `[Harness] Native Task dispatch failed: ${message}`)
+    this.cleanup(delegationId, "error", { delegationId, error: `[Harness] Native Task dispatch failed: ${message}`, status: "error" })
+  }
+
+  /** Aborts an active delegation and releases all coordinator-owned resources. */
+  abortDelegation(delegationId: string, reason = "[Harness] Delegation aborted"): DelegationResult {
+    const result: DelegationResult = { delegationId, error: reason, status: "error", terminalKind: "cancelled", explicitCancellation: true }
+    this.deps.lifecycle.transition(delegationId, "error")
+    this.deps.monitor.onCompletion(delegationId)
+    this.routeTerminal(delegationId, "failure", reason)
+    this.cleanup(delegationId, "error", result)
+    return result
+  }
+
+  /** Cancels tracking for an active delegation without asserting child termination. */
+  cancelDelegation(delegationId: string, reason = "[Harness] Delegation cancelled"): DelegationResult {
+    const result: DelegationResult = { delegationId, error: reason, status: "error", terminalKind: "cancelled", explicitCancellation: true }
+    this.deps.lifecycle.transition(delegationId, "error")
+    this.deps.monitor.onCompletion(delegationId)
+    this.routeTerminal(delegationId, "failure", reason)
+    this.cleanup(delegationId, "error", result)
+    return result
+  }
+
+  /** Routes child session idle hook observations into the v2 completion path. */
+  handleSessionIdle(childSessionId: string): void {
+    this.handleChildSessionTerminal(childSessionId, "completed")
+  }
+
+  /** Routes child session error hook observations into the v2 completion path. */
+  handleSessionError(childSessionId: string, caughtError?: unknown): void {
+    const message = caughtError instanceof Error ? caughtError.message : caughtError === undefined ? undefined : String(caughtError)
+    this.handleChildSessionTerminal(childSessionId, "error", message)
+  }
+
+  /** Routes child session deleted hook observations into the v2 completion path. */
+  handleSessionDeleted(childSessionId: string): void {
+    this.handleChildSessionTerminal(childSessionId, "error", "[Harness] Delegated child session was deleted")
   }
 
   /** Dispatches a bounded sequential chain, passing prior results into later prompts when requested. */
@@ -93,11 +153,25 @@ export class DelegationCoordinator {
     active.record.result = result.result
     active.record.error = result.error
     active.record.completedAt = Date.now()
+    active.record.explicitCancellation = result.explicitCancellation
+    active.record.terminalKind = result.terminalKind
     active.slotHandle.release()
     this.deps.detector.unwatch(delegationId)
     this.deps.notificationRouter.deregister(delegationId)
-    void this.deps.retryHandler.persistWithRetry([...this.active.values()].map((entry) => entry.record))
     this.active.delete(delegationId)
+    this.delegationByChildSession.delete(active.record.childSessionId)
+    void this.deps.retryHandler.persistWithRetry(this.deps.lifecycle.list?.() ?? [...this.active.values()].map((entry) => entry.record))
+  }
+
+  private handleChildSessionTerminal(childSessionId: string, status: DelegationStatus, errorMessage?: string): void {
+    const delegationId = this.delegationByChildSession.get(childSessionId)
+    if (!delegationId) return
+    this.deps.detector.signalCompletionEvent(delegationId)
+    this.deps.detector.signalTerminalStatus(delegationId, status)
+    if (errorMessage) {
+      const record = this.active.get(delegationId)?.record ?? this.deps.lifecycle.getStatus?.(delegationId)
+      if (record) record.error = errorMessage
+    }
   }
 
   private routeTerminal(delegationId: string, type: DelegationNotification["type"], message: string): void {
@@ -118,7 +192,7 @@ export class DelegationCoordinator {
     return {
       agent: params.agent, childSessionId: delegationId, createdAt: Date.now(), executionMode: "sdk", id: delegationId,
       lastMessageCount: 0, nestingDepth: params.currentDepth + 1, parentSessionId: params.parentSessionId, queueKey,
-      stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: process.cwd(),
+      prompt: params.prompt, stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: process.cwd(),
     }
   }
 }

@@ -69,9 +69,22 @@ describe("DelegationMonitor", () => {
 
     monitor.start("dt-1", "parent-1")
     vi.advanceTimersByTime(30_000)
-    monitor.onCompletion()
+    monitor.onCompletion("dt-1")
     vi.runAllTimers()
 
     expect(inject).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps monitoring active for other delegations when one delegation completes", () => {
+    const inject = vi.fn()
+    const monitor = new DelegationMonitor({ inject, getStatus: () => "running", pollingCadence: [30] })
+
+    monitor.start("dt-1", "parent-1")
+    monitor.start("dt-2", "parent-2")
+    monitor.onCompletion("dt-1")
+    vi.advanceTimersByTime(30_000)
+
+    expect(inject).toHaveBeenCalledTimes(1)
+    expect(inject).toHaveBeenCalledWith("parent-2", "[DT:dt-2] status=running elapsed=30s")
   })
 })

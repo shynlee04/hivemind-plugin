@@ -22,9 +22,15 @@ const DelegationStatusInputSchema = z.object({
 })
 
 type DelegationStatusInput = z.infer<typeof DelegationStatusInputSchema>
-type ToolContext = { sessionID?: string }
-type ManagerLike = { canSessionAccessDelegation: (sessionId: string | undefined, delegation: Delegation | undefined) => boolean; getAllDelegations: () => Delegation[]; getStatus: (id: string) => Delegation | undefined }
-type StatusDeps = { coordinator?: { dispatch: (params: Record<string, unknown>) => Promise<Record<string, unknown>> }; getChildMessageCount?: (sessionId: string) => Promise<number | null>; getEscalationLevel?: (id: string) => string | null; lifecycle?: { isTerminal: (status: string) => boolean; markAborted: (id: string) => unknown; markCancelled: (id: string) => unknown }; now?: () => number; readPersisted?: () => Delegation[]; terminateChild?: (sessionId: string) => Promise<unknown> }
+type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
+type ToolContext = { sessionID?: string; task?: NativeTask }
+type ManagerLike = {
+  canSessionAccessDelegation: (sessionId: string | undefined, delegation: Delegation | undefined) => boolean
+  controlDelegation?: (request: { action: "abort" | "cancel" | "restart" | "redirect"; delegationId: string; nativeTask?: NativeTask; redirectAgent?: string; restartPrompt?: string }) => Promise<unknown>
+  getAllDelegations: () => Delegation[]
+  getStatus: (id: string) => Delegation | undefined
+}
+type StatusDeps = { coordinator?: { dispatch: (params: Record<string, unknown>) => Promise<Record<string, unknown>> }; getChildMessageCount?: (sessionId: string) => Promise<number | null>; getEscalationLevel?: (id: string) => string | null; lifecycle?: { isTerminal: (status: string) => boolean; markAborted: (id: string) => unknown; markCancelled: (id: string) => unknown }; nativeTask?: NativeTask; now?: () => number; readPersisted?: () => Delegation[]; terminateChild?: (sessionId: string) => Promise<unknown> }
 
 /**
  * Converts a delegation record into the public status-tool response shape.
@@ -112,7 +118,7 @@ export function createDelegationStatusTool(
           return renderToolResult(error("[Harness] Missing caller session ID for delegation-status"))
         }
         if (args.action === "list") return renderList(args, context.sessionID, delegationManager, readPersisted, deps)
-        if (args.action === "control") return await handleControl(args, context.sessionID, delegationManager, readPersisted, deps)
+        if (args.action === "control") return await handleControl(args, context, delegationManager, readPersisted, deps)
 
         if (args.delegationId) {
           const delegation = delegationManager.getStatus(args.delegationId)
@@ -152,18 +158,29 @@ async function renderList(args: DelegationStatusInput, sessionID: string, manage
   return renderToolResult(success(`${filtered.length} delegation(s)${args.status ? ` with status "${args.status}"` : ""}`, await Promise.all(filtered.map((d) => renderDelegationV2(d as Delegation & { v2?: boolean }, deps))), { total: all.length }))
 }
 
-async function handleControl(args: DelegationStatusInput, sessionID: string, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
+async function handleControl(args: DelegationStatusInput, context: ToolContext, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
   if (!args.delegationId || !args.control) return renderToolResult(error("[Harness] control action requires delegationId and control"))
   const delegation = (manager.getStatus(args.delegationId) ?? readPersisted().find((d) => d.id === args.delegationId)) as (Delegation & { prompt?: string }) | undefined
   if (!delegation) return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
-  if (!manager.canSessionAccessDelegation(sessionID, delegation)) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
+  if (!manager.canSessionAccessDelegation(context.sessionID, delegation)) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
   if (deps.lifecycle?.isTerminal(delegation.status)) return renderToolResult(error("[Harness] cannot control terminal delegation"))
+  if (manager.controlDelegation) {
+    if ((args.control.action === "restart" || args.control.action === "redirect") && !(deps.nativeTask ?? context.task)) {
+      return renderToolResult(error("[Harness] restart/redirect requires native Task execution seam; no replacement delegation was created"))
+    }
+    const result = await manager.controlDelegation({
+      action: args.control.action,
+      delegationId: delegation.id,
+      nativeTask: deps.nativeTask ?? context.task,
+      redirectAgent: args.control.redirectAgent,
+      restartPrompt: args.control.restartPrompt,
+    })
+    if (args.control.action === "abort") await deps.terminateChild?.(delegation.childSessionId)
+    return renderToolResult(success(`Delegation ${delegation.id} ${args.control.action}ed`, result))
+  }
   if (args.control.action === "abort") { deps.lifecycle?.markAborted(delegation.id); await deps.terminateChild?.(delegation.childSessionId); return renderToolResult(success(`Delegation ${delegation.id} aborted`, { delegationId: delegation.id, status: "aborted" })) }
   if (args.control.action === "cancel") { deps.lifecycle?.markCancelled(delegation.id); return renderToolResult(success(`Delegation ${delegation.id} cancelled`, { delegationId: delegation.id, status: "cancelled" })) }
-  const agent = args.control.action === "redirect" ? args.control.redirectAgent : delegation.agent
-  const prompt = args.control.restartPrompt ?? delegation.prompt ?? ""
-  const result = await deps.coordinator?.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey, safetyCeilingMs: delegation.safetyCeilingMs, surface: delegation.surface ?? "agent-delegation" })
-  return renderToolResult(success(`Delegation ${delegation.id} ${args.control.action}ed`, result))
+  return renderToolResult(error("[Harness] restart/redirect requires coordinator-backed manager control API"))
 }
 
 export { DelegationStatusInputSchema }

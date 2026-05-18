@@ -17,10 +17,12 @@ function createClient() {
   }
 }
 
+const nativeTask = vi.fn(async () => ({ sessionID: "child-real" }))
+
 describe("delegation v2 plugin integration", () => {
   it("wires plugin modules through DelegationCoordinator for a delegate-task dispatch", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const nativeTask = vi.fn(async () => undefined)
+    nativeTask.mockResolvedValueOnce({ sessionID: "child-real" })
     const tool = createDelegateTaskTool(modules.delegationManager, { nativeTask })
 
     const raw = await tool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1", task: nativeTask })
@@ -34,7 +36,7 @@ describe("delegation v2 plugin integration", () => {
 
   it("completes three sequential delegations with parent-isolated status visibility", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const tool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => undefined) })
+    const tool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: `child-${Math.random()}` })) })
 
     const outputs = await Promise.all([
       tool.execute({ agent: "builder", prompt: "one" } as never, { sessionID: "parent-a" }),
@@ -51,7 +53,7 @@ describe("delegation v2 plugin integration", () => {
 
   it("denies category-gated dispatch without creating a delegation", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const tool = createDelegateTaskTool(modules.delegationManager)
+    const tool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "blocked-child" })) })
 
     const raw = await tool.execute({ agent: "builder", category: "deny", prompt: "blocked" } as never, { sessionID: "parent-1" })
 
@@ -76,6 +78,18 @@ describe("delegation v2 plugin integration", () => {
     expect(modules.delegationManager.getStatus(result.delegationId)?.status).toBe("timeout")
   })
 
+  it("completes a v2 delegation through plugin-style session idle event routing", async () => {
+    const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+    const delegateTool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "child-hook" })) })
+    const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
+    const dispatched = parse(await delegateTool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })).data as Record<string, string>
+
+    modules.delegationManager.handleSessionIdle("child-hook")
+    const raw = await statusTool.execute({ delegationId: dispatched.delegationId } as never, { sessionID: "parent-1" })
+
+    expect(parse(raw).data).toMatchObject({ delegationId: dispatched.delegationId, status: "completed" })
+  })
+
   it("aborts an active delegation through the status tool control action", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
@@ -89,13 +103,15 @@ describe("delegation v2 plugin integration", () => {
 
   it("redirects an active delegation through the status tool control action", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const statusTool = createDelegationStatusTool(modules.delegationManager, { coordinator: modules.coordinator, lifecycle: modules.lifecycle })
+    const replacementTask = vi.fn(async () => ({ sessionID: "critic-child" }))
+    const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle, nativeTask: replacementTask })
     const dispatched = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
 
     const raw = await statusTool.execute({ action: "control", delegationId: dispatched.delegationId, control: { action: "redirect", redirectAgent: "critic" } } as never, { sessionID: "parent-1" })
 
     expect(parse(raw).kind).toBe("success")
     expect(modules.delegationManager.listDelegations("parent-1").some((d) => d.agent === "critic")).toBe(true)
+    expect(replacementTask).toHaveBeenCalledWith({ agent: "critic", prompt: "build", disabledTools: ["delegate-task", "task"] })
   })
 
   it("runs auto-loop for three context-chained iterations through the plugin coordinator", async () => {

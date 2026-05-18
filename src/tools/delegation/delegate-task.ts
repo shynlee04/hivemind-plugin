@@ -14,7 +14,11 @@ export const DelegateTaskV2Schema = z.object({
 })
 
 type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
-interface CoordinatorLike { dispatch(params: Record<string, unknown>): Promise<unknown> }
+interface CoordinatorLike {
+  attachChildSession?: (delegationId: string, childSessionId: string) => void
+  dispatch(params: Record<string, unknown>): Promise<unknown>
+  failDispatch?: (delegationId: string, caughtError: unknown) => void
+}
 
 /** @internal Runtime context injected by the OpenCode plugin framework. NOT available in non-OpenCode environments. */
 type ToolContext = {
@@ -26,6 +30,24 @@ type ToolContext = {
 
 function isOpenCodeRuntimeAvailable(): boolean {
   return !!(process.env.OPENCODE_SESSION_ID || process.env.OPENCODE_HARNESS_STATE_DIR)
+}
+
+function getStringField(value: unknown, keys: string[]): string | undefined {
+  if (!value || typeof value !== "object") return undefined
+  const record = value as Record<string, unknown>
+  for (const key of keys) {
+    const candidate = record[key]
+    if (typeof candidate === "string" && candidate.length > 0) return candidate
+  }
+  return undefined
+}
+
+function extractNativeTaskSessionId(value: unknown): string | undefined {
+  const direct = getStringField(value, ["sessionID", "sessionId", "childSessionId", "id"])
+  if (direct) return direct
+  if (!value || typeof value !== "object") return undefined
+  const record = value as Record<string, unknown>
+  return getStringField(record.session, ["id", "sessionID", "sessionId"])
 }
 
 /**
@@ -62,6 +84,13 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, options: { 
         return renderToolResult(error(message))
       }
 
+      const nativeTask = options.nativeTask ?? context.task
+      if (!nativeTask) {
+        return renderToolResult(error(
+          "[Harness] delegate-task cannot start native Task: OpenCode native Task seam is unavailable.",
+        ))
+      }
+
       try {
         const queueKey = `agent:${args.agent}`
         const result = await coordinator.dispatch({
@@ -74,8 +103,18 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, options: { 
           safetyCeilingMs: args.safetyCeilingMs,
           surface: "agent-delegation",
         })
-        const nativeTask = options.nativeTask ?? context.task
-        if (nativeTask) await nativeTask({ agent: args.agent, prompt: args.prompt, disabledTools: ["delegate-task", "task"] })
+        const delegationId = typeof result === "object" && result !== null && "delegationId" in result
+          ? String((result as Record<string, unknown>).delegationId)
+          : undefined
+        try {
+          const nativeResult = await nativeTask({ agent: args.agent, prompt: args.prompt, disabledTools: ["delegate-task", "task"] })
+          const childSessionId = extractNativeTaskSessionId(nativeResult)
+          if (delegationId && childSessionId) coordinator.attachChildSession?.(delegationId, childSessionId)
+        } catch (nativeError) {
+          if (delegationId) coordinator.failDispatch?.(delegationId, nativeError)
+          const message = nativeError instanceof Error ? nativeError.message : String(nativeError)
+          return renderToolResult(error(`[Harness] Native Task dispatch failed: ${message}`))
+        }
 
         return renderToolResult(success(`Delegation dispatched to ${args.agent}`, {
           ...(typeof result === "object" && result !== null ? result : {}),

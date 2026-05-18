@@ -57,6 +57,7 @@ export class SlotManager {
       throw new Error(`[Harness] Per-key delegation slot limit reached for session ${sessionId} and queue ${queueKey}: ${this.perKeyLimit}/${this.perKeyLimit} active.`)
     }
 
+    let released = false
     const handle: SlotHandle = { id: `${sessionId}:${++this.nextSlotId}`, sessionId, queueKey, release: () => { /* pending acquire */ } }
     sessionSlots.set(this.handleKey(handle), handle)
     this.activeBySession.set(sessionId, sessionSlots)
@@ -71,16 +72,19 @@ export class SlotManager {
       throw new Error(`[Harness] Delegation slot acquire timed out for session ${sessionId} and queue ${queueKey}: ${message}`)
     }
 
-    handle.release = releaseQueue
+    handle.release = () => {
+      if (released) return
+      released = true
+      sessionSlots.delete(this.handleKey(handle))
+      releaseQueue()
+      if (sessionSlots.size === 0) this.activeBySession.delete(sessionId)
+    }
     return handle
   }
 
   /** Release a previously acquired slot and clean empty tracking maps. */
   release(handle: SlotHandle): void {
-    const sessionSlots = this.activeBySession.get(handle.sessionId)
-    if (!sessionSlots?.delete(this.handleKey(handle))) return
     handle.release()
-    if (sessionSlots.size === 0) this.activeBySession.delete(handle.sessionId)
   }
 
   /** Return an immutable snapshot of current slot usage for a session. */

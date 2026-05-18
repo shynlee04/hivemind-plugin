@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createDelegateTaskTool, DelegateTaskV2Schema } from "../../../src/tools/delegation/delegate-task.js"
 
 const context = { sessionID: "ses_parent", directory: "/tmp/project", worktree: "/tmp/project" }
+const nativeTaskResult = { sessionID: "ses_child" }
 
 function parse(raw: string): Record<string, unknown> {
   return JSON.parse(raw) as Record<string, unknown>
@@ -17,7 +18,7 @@ function createCoordinator() {
 describe("delegate-task v2 tool", () => {
   it("validates valid input, dispatches coordinator, and returns delegation ID immediately", async () => {
     const coordinator = createCoordinator()
-    const nativeTask = vi.fn().mockResolvedValue(undefined)
+    const nativeTask = vi.fn().mockResolvedValue(nativeTaskResult)
     const tool = createDelegateTaskTool(coordinator as never, { nativeTask })
 
     const raw = await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
@@ -65,7 +66,7 @@ describe("delegate-task v2 tool", () => {
 
   it("dispatches without optional category", async () => {
     const coordinator = createCoordinator()
-    const tool = createDelegateTaskTool(coordinator as never)
+    const tool = createDelegateTaskTool(coordinator as never, { nativeTask: vi.fn().mockResolvedValue(nativeTaskResult) })
 
     const raw = await tool.execute({ agent: "critic", prompt: "review" } as never, context)
     const result = parse(raw)
@@ -74,9 +75,34 @@ describe("delegate-task v2 tool", () => {
     expect(coordinator.dispatch).toHaveBeenCalledWith(expect.objectContaining({ category: undefined }))
   })
 
+  it("returns an error response when native Task seam is unavailable without registering a delegation", async () => {
+    const coordinator = createCoordinator()
+    const tool = createDelegateTaskTool(coordinator as never)
+
+    const raw = await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
+    const result = parse(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("native Task")
+    expect(coordinator.dispatch).not.toHaveBeenCalled()
+  })
+
+  it("rolls back coordinator resources when native Task dispatch fails", async () => {
+    const coordinator = { ...createCoordinator(), failDispatch: vi.fn() }
+    const nativeTask = vi.fn().mockRejectedValue(new Error("task seam failed"))
+    const tool = createDelegateTaskTool(coordinator as never, { nativeTask })
+
+    const raw = await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
+    const result = parse(raw)
+
+    expect(result.kind).toBe("error")
+    expect(result.message).toContain("Native Task dispatch failed")
+    expect(coordinator.failDispatch).toHaveBeenCalledWith("dt-123", expect.any(Error))
+  })
+
   it("returns an error response when coordinator preflight fails", async () => {
     const coordinator = { dispatch: vi.fn().mockRejectedValue(new Error("[Harness] category gate denied")) }
-    const tool = createDelegateTaskTool(coordinator as never)
+    const tool = createDelegateTaskTool(coordinator as never, { nativeTask: vi.fn().mockResolvedValue(nativeTaskResult) })
 
     const raw = await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
     const result = parse(raw)
@@ -87,7 +113,7 @@ describe("delegate-task v2 tool", () => {
 
   it("dispatches native Task with agent, prompt, and recursive delegation tools disabled", async () => {
     const coordinator = createCoordinator()
-    const nativeTask = vi.fn().mockResolvedValue(undefined)
+    const nativeTask = vi.fn().mockResolvedValue(nativeTaskResult)
     const tool = createDelegateTaskTool(coordinator as never, { nativeTask })
 
     await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
@@ -107,7 +133,7 @@ describe("delegate-task v2 tool", () => {
 
   it("response data includes delegationId, status, agent, and safetyCeilingMs", async () => {
     const coordinator = createCoordinator()
-    const tool = createDelegateTaskTool(coordinator as never)
+    const tool = createDelegateTaskTool(coordinator as never, { nativeTask: vi.fn().mockResolvedValue(nativeTaskResult) })
 
     const raw = await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
     const data = parse(raw).data as Record<string, unknown>
