@@ -11,14 +11,15 @@ function createClient() {
 }
 
 describe("delegate-task e2e tool boundary", () => {
-  it("dispatches a valid request through plugin-wired v2 modules", async () => {
+  it("returns a runtime-blocked response through plugin-wired v2 modules", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const tool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "child-1" })) })
+    const tool = createDelegateTaskTool(modules.delegationManager)
 
     const raw = await tool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
 
-    expect(parse(raw)).toMatchObject({ kind: "success" })
-    expect(modules.delegationManager.listDelegations("parent-1")).toHaveLength(1)
+    expect(parse(raw)).toMatchObject({ kind: "error" })
+    expect(parse(raw).message).toContain("runtime child-session dispatch is blocked")
+    expect(modules.delegationManager.listDelegations("parent-1")).toHaveLength(0)
   })
 
   it("returns validation error without creating a delegation", async () => {
@@ -31,11 +32,10 @@ describe("delegate-task e2e tool boundary", () => {
     expect(modules.delegationManager.listDelegations("parent-1")).toHaveLength(0)
   })
 
-  it("supports control actions through delegation-status after dispatch", async () => {
+  it("supports cancel control actions for coordinator-tracked delegations", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const delegateTool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "child-1" })) })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { coordinator: modules.coordinator, lifecycle: modules.lifecycle })
-    const dispatched = parse(await delegateTool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })).data as Record<string, string>
+    const dispatched = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
 
     const raw = await statusTool.execute({ action: "control", delegationId: dispatched.delegationId, control: { action: "cancel" } } as never, { sessionID: "parent-1" })
 
@@ -45,9 +45,8 @@ describe("delegate-task e2e tool boundary", () => {
 
   it("keeps legacy manager-compatible status listing shape", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
-    const delegateTool = createDelegateTaskTool(modules.delegationManager, { nativeTask: vi.fn(async () => ({ sessionID: "child-1" })) })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
-    await delegateTool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
+    await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
 
     const raw = await statusTool.execute({ action: "list" } as never, { sessionID: "parent-1" })
 

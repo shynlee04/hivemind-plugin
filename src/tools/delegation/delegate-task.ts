@@ -2,7 +2,7 @@ import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
 import { renderToolResult } from "../../shared/tool-helpers.js"
-import { error, success } from "../../shared/tool-response.js"
+import { error } from "../../shared/tool-response.js"
 
 /** Zod contract for delegate-task v2 input validation and defaults. */
 export const DelegateTaskV2Schema = z.object({
