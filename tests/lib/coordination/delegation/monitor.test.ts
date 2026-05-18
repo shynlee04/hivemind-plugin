@@ -261,4 +261,46 @@ describe("DelegationMonitor", () => {
     expect(failureCalls.length).toBeGreaterThan(0)
     expect(failureCalls[0][1]).toContain("no actions recorded")
   })
+
+  it("triggers 600s auto-abort when no assistant message after final failure", () => {
+    const inject = vi.fn()
+    const onFailure = vi.fn()
+    const monitor = new DelegationMonitor({
+      inject,
+      getStatus: () => "running",
+      getDelegationRecord: () => createMockDelegation({ actionCount: 0 }),
+      getActionCount: () => 0,
+      onComplete: vi.fn(),
+      onFailure,
+    })
+
+    monitor.start("dt-1", "parent-1")
+
+    // Advance through all 4 failure checkpoints (60, 120, 180, 300)
+    vi.advanceTimersByTime(30_000)
+    vi.advanceTimersByTime(30_000) // 60s → level 1
+    vi.advanceTimersByTime(60_000) // 120s → level 2
+    vi.advanceTimersByTime(60_000) // 180s → level 3
+    vi.advanceTimersByTime(120_000) // 300s → level 4 (final)
+
+    expect(onFailure).toHaveBeenCalledTimes(4)
+    expect(onFailure).toHaveBeenLastCalledWith(
+      expect.objectContaining({ level: 4, elapsedSeconds: 300, isFinal: true }),
+    )
+
+    // Advance to 600s — should trigger auto-abort callback
+    vi.advanceTimersByTime(300_000) // 600s total
+
+    const abortCalls = onFailure.mock.calls.filter(
+      (call) => call[1]?.isAutoAbort === true,
+    )
+    expect(abortCalls).toHaveLength(1)
+    expect(abortCalls[0][1]).toEqual(
+      expect.objectContaining({
+        delegationId: "dt-1",
+        elapsedSeconds: 600,
+        isAutoAbort: true,
+      }),
+    )
+  })
 })
