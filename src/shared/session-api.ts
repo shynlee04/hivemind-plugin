@@ -327,6 +327,32 @@ export class V2SessionClient {
   }
 
   /**
+   * Create a child session with v2 parameter shape.
+   *
+   * @param parentID - Parent session ID
+   * @param params - Creation parameters
+   * @returns Created session data
+   */
+  async create(
+    parentID: string,
+    params: {
+      title?: string
+      agent?: string
+      permissions?: Array<{ permission: string; pattern: string; action: "allow" | "deny" | "ask" }>
+    },
+  ): Promise<unknown> {
+    const response = await this.v2Client.session.create({
+      directory: this.defaults.directory,
+      workspace: this.defaults.workspace,
+      parentID: assertValidSessionID(parentID, "parent session ID"),
+      title: params.title,
+      agent: params.agent,
+      permission: params.permissions,
+    })
+    return unwrapData(response)
+  }
+
+  /**
    * Generate a concise summary of the session using AI compaction.
    *
    * @param sessionID - The session to summarize

@@ -19,6 +19,7 @@ import { DelegationManager } from "./coordination/delegation/manager.js"
 import { DelegationMonitor } from "./coordination/delegation/monitor.js"
 import { NotificationRouter } from "./coordination/delegation/notification-router.js"
 import { DelegationRetryHandler } from "./coordination/delegation/retry-handler.js"
+import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-child-session-starter.js"
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
 import { recordCategoryGateask } from "./coordination/delegation/category-gate-audit.js"
 import type { Delegation, DelegationStatus } from "./coordination/delegation/types.js"
@@ -123,11 +124,12 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     },
   })
   const monitor = new DelegationMonitor({
+    getDelegationRecord: (delegationId) => lifecycle.getStatus(delegationId),
     getStatus: (delegationId) => lifecycle.getStatus(delegationId)?.status ?? "dispatched",
     inject: () => { /* parent-session injection is routed by later runtime hook integration */ },
   })
   const retryHandler = new DelegationRetryHandler({ persist: options.persistDelegations })
-  const coordinator = new DelegationCoordinator({ dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
+  const coordinator = new DelegationCoordinator({ childSessionStarter: createSdkChildSessionStarter({ client: options.client }), dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
     lifecycle,
