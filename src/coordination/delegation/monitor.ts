@@ -27,6 +27,7 @@ export interface MonitorOptions {
   onComplete?: (delegationId: string, result?: SemanticCompletionResult) => void
   onFailure?: (delegationId: string, result: FailureCheckpointResult) => void
   onFirstActionDeadline?: (delegationId: string, elapsedSeconds: number) => void
+  onAutoAbort?: (delegationId: string, elapsedSeconds: number) => void
   pollingCadence?: readonly number[]
 }
 
@@ -54,6 +55,7 @@ export class DelegationMonitor {
   private readonly onComplete: MonitorOptions["onComplete"]
   private readonly onFailure: MonitorOptions["onFailure"]
   private readonly onFirstActionDeadline: MonitorOptions["onFirstActionDeadline"]
+  private readonly onAutoAbort: MonitorOptions["onAutoAbort"]
   private readonly pollingCadence: readonly number[]
   private readonly states = new Map<string, MonitorState>()
 
@@ -65,6 +67,7 @@ export class DelegationMonitor {
     this.onComplete = options.onComplete
     this.onFailure = options.onFailure
     this.onFirstActionDeadline = options.onFirstActionDeadline
+    this.onAutoAbort = options.onAutoAbort
     this.pollingCadence = options.pollingCadence ?? POLLING_CADENCE
   }
 
@@ -122,6 +125,24 @@ export class DelegationMonitor {
       }
     }, 300_000)
     state.pollingTimers.push(finalTimer)
+
+    const autoAbortTimer = setTimeout(() => {
+      if (state.completed) return
+      const abortResult: FailureCheckpointResult = {
+        delegationId,
+        level: 4,
+        elapsedSeconds: 600,
+        actionCountAtCheckpoint: this.getActionCount?.(delegationId) ?? 0,
+        actionCountAtPreviousCheckpoint: 0,
+        isFinal: true,
+        isAutoAbort: true,
+      }
+      this.onFailure?.(delegationId, abortResult)
+      this.onAutoAbort?.(delegationId, 600)
+      state.completed = true
+      this.stop(delegationId)
+    }, 600_000)
+    state.pollingTimers.push(autoAbortTimer)
   }
 
   /** Stop all timers and tracking for a delegation. */
@@ -177,9 +198,7 @@ export class DelegationMonitor {
         isExecutedRunning,
       })
       this.inject(parentSessionId, notification, delegationId)
-      const state = this.states.get(delegationId)
-      if (state) state.completed = true
-      this.stop(delegationId)
+      // Do NOT stop timers here — the 600s auto-abort timer handles final cleanup.
     } else {
       const notification = formatFailureNotification({
         delegationId,

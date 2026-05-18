@@ -92,6 +92,8 @@ Dọn rác (category/safetyCeiling/classifications) + thêm missing features (co
 
 ### Wave B.2: Notification Formatter + TUI Append [HIGH]
 
+T
+THIẾT KẾ DƯỚI ĐÂY HOÀN TOÀN SAI
 **Tạo mới:**
 - `src/coordination/delegation/notification-formatter.ts`
   - Format system notification block khi delegate hoàn thành
@@ -102,20 +104,20 @@ Dọn rác (category/safetyCeiling/classifications) + thêm missing features (co
   - Live delegation → `tui.prompt.append` event
   - Ended delegation → `session.prompt({ noReply: true })`
 ~~
-**Verify:** New tests pass, typecheck clean
+**Veri> fy:** New tests pass, typecheck clean
+> 
+> ### Wave B.3: Progressive Escalation Thresholds [HIGH]
+> 
+> **Sửa:**
+> - `src/coordination/delegation/escalation-timer.ts` — sửa thresholds:
+>   - 60s → WARN (inject warning)
+>   - 120s → NUDGE (inject stronger)
+>   - 180s → ALERT (inject alert)
+>   - 300s → TERMINATE (mark failure, stop injection)
+>   - 600s → final fail callback
+> - `src/coordination/delegation/monitor.ts` — tích hợp progressive injection với thresholds đúng
 
-### Wave B.3: Progressive Escalation Thresholds [HIGH]
-
-**Sửa:**
-- `src/coordination/delegation/escalation-timer.ts` — sửa thresholds:
-  - 60s → WARN (inject warning)
-  - 120s → NUDGE (inject stronger)
-  - 180s → ALERT (inject alert)
-  - 300s → TERMINATE (mark failure, stop injection)
-  - 600s → final fail callback
-- `src/coordination/delegation/monitor.ts` — tích hợp progressive injection với thresholds đúng
-
-**Verify:** Escalation tests pass, typecheck clean
+Verify:** Escalation tests pass, typecheck clean
 
 ### Wave B.4: Control Actions + Resume/Chain [HIGH]
 

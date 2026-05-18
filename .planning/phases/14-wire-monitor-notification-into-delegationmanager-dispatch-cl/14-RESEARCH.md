@@ -410,20 +410,13 @@ await showTuiToast(client, "Delegation success delivered")
 |---|-------|---------|---------------|
 | A1 | No OS-registered state matters for this repo-local phase. | Runtime State Inventory | Low: live OpenCode/TUI runner may still have external state, but execution can capture UAT environment. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should Phase 14 restore v2 coordinator-backed manager or complete runtime adapter?**
-   - What we know: Coordinator path already handles slot manager, notification cleanup, recordExecutionSignal, and tests; plugin dirty diff currently stops passing coordinator/lifecycle into facade. [VERIFIED: coordinator.ts + plugin diff]
-   - What's unclear: Whether previous session intentionally abandoned coordinator path due runtime-blocked native Task seam. [VERIFIED: AGENTS.md mentions CP-DT-01-08 in progress, but not final design]
-   - Recommendation: Planner should make Wave 0 decision explicit; do not mix both paths silently.
-2. **How should TUI append route to a specific parent session?**
-   - What we know: `tui.appendPrompt({text})` has no `sessionID`; `NotificationRouter` knows `parentSessionId`. [VERIFIED: SDK d.ts + notification-router.ts]
-   - What's unclear: Whether active TUI prompt always corresponds to parent session at delivery time. [VERIFIED: not proven by code]
-   - Recommendation: Unit-test routing, but require live UAT with multiple sessions before claiming routing correctness.
-3. **Which “category” refs are actually deprecated?**
-   - What we know: grep finds source/test category matches beyond delegation params. [VERIFIED: grep]
-   - What's unclear: Whether all non-delegation category terms should remain. [ASSUMED]
-   - Recommendation: Treat cleanup as semantic refactor with allowlist, not raw regex deletion.
+1. **Should Phase 14 restore v2 coordinator-backed manager or complete runtime adapter?** — **RESOLVED:** Plans 01-03 choose runtime adapter path. `manager.ts` facade passes `monitor`/`notificationRouter` into `RuntimeDelegationManager` (manager-runtime.ts). Coordinator is retained only for slot management and hook signal recording (`recordChildMessageSignal`/`recordChildToolSignal`), not dispatch. [DECISION: CONTEXT.md D-01/D-07, Plan 01 Task 2]
+
+2. **How should TUI append route to a specific parent session?** — **RESOLVED:** `NotificationRouter` routes by `delegationId → parentSessionId`. Unit tests assert parent ID passthrough. Live multi-session routing cannot be proven by mocks — Plan 04 Task 3 includes explicit UAT checklist with fallback: if SDK `tui.appendPrompt` lacks `sessionID`, document limitation and mark L1 routing as not-proven. [DECISION: Plan 02 Task 2, Plan 04 Task 3]
+
+3. **Which "category" refs are actually deprecated?** — **RESOLVED:** Treated as semantic refactor with allowlist. Plan 04 Task 1 creates `14-DEPRECATED-DELEGATION-CLEANUP-AUDIT.md` before any source edits. Deprecated targets: delegation `safetyCeilingMs`, delegation category-gate params, stale `classifications`. Allowed: validation category, language script category, prompt purpose_category, security redaction key. [DECISION: Plan 04 Task 1-2]
 
 ## Environment Availability
 

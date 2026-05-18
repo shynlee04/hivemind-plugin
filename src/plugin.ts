@@ -192,8 +192,8 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const coordinator = new DelegationCoordinator({ childSessionStarter: createSdkChildSessionStarter(options.client), dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
   coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
-    coordinator,
-    lifecycle,
+    monitor,
+    notificationRouter,
     ptyManager: options.ptyManager,
     runtimePolicy: options.runtimePolicy,
   })

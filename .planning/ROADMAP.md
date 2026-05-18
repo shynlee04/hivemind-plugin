@@ -451,5 +451,15 @@ Plans:
 - [ ] CP-ST-06-04-PLAN.md — Retry Queue + Full lastMessage Persistence (Wave 3) — requirements: RC-4, RC-5, GA-1
 - [ ] CP-ST-06-05-PLAN.md — Stale Test Rewrite + Parallel Integration + Final Verification (Wave 4) — requirements: RC-1..RC-6, GA-3, GA-5
 
+### Phase 14: Wire monitor/notification into DelegationManager.dispatch + clean up partial edits
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 13
+**Plans:** 1/4 plans executed
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 14 to break down)
+
 ---
 *Last updated: 2026-05-15 — CP-ST-05 COMPLETE (3/3 waves, 12 commits, 362/364 tests). Gate 0 BEFORE-THE-FACT classification eliminates race conditions. Quarantine protocol prevents data loss. index.ts 982→807 LOC. CP-ST-04 COMPLETE (15 commits, 338/340 tests). Pre-existing failures: 2 test cases (cleanup.test.ts)*

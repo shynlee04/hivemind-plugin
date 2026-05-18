@@ -7,32 +7,6 @@
     "superpowers@git+https://github.com/obra/superpowers.git",
     "./dist/plugin.js"
   ],
-  "provider": {
-    "opencode-go": {
-      "models": {
-        "deepseek-v4-pro": {
-          "options": {
-            "reasoningEffort": "max"
-          }
-        },
-        "small": {
-          "id": "deepseek-v4-flash",
-          "options": {
-            "reasoningEffort": "max"
-          }
-        }
-      }
-    },
-    "zai-codng-plan": {
-      "models": {
-        "large": {
-          "id": "glm-5.1"
-        }
-      }
-    }
-  },
-  "model": "opencode-go/deepseek-v4-pro",
-  "small_model": "opencode-go/deepseek-v4-flash",
   "compaction": {
     "auto": true,
     "prune": true,

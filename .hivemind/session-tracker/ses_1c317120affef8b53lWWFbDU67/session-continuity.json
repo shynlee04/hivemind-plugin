@@ -1,0 +1,46 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c317120affef8b53lWWFbDU67",
+  "lastUpdated": "2026-05-18T21:22:44.404Z",
+  "hierarchy": {
+    "root": "ses_1c317120affef8b53lWWFbDU67",
+    "children": {
+      "ses_1c314d4bcffenMSCYwo45Zk52m": {
+        "file": "ses_1c314d4bcffenMSCYwo45Zk52m.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_1c3112991ffe8Iucr25MKJbttz": {
+        "file": "ses_1c3112991ffe8Iucr25MKJbttz.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1c310665effeXbluoQ0NSm5ZiA": {
+        "file": "ses_1c310665effeXbluoQ0NSm5ZiA.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1c307b9e0ffesj9UyHYbiFZvy3": {
+        "file": "ses_1c307b9e0ffesj9UyHYbiFZvy3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "skill": 1,
+    "read": 5,
+    "bash": 7,
+    "task": 3,
+    "edit": 1
+  }
+}

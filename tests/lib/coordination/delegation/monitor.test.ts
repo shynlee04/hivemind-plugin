@@ -284,18 +284,15 @@ describe("DelegationMonitor", () => {
     vi.advanceTimersByTime(120_000) // 300s → level 4 (final)
 
     expect(onFailure).toHaveBeenCalledTimes(4)
-    expect(onFailure).toHaveBeenLastCalledWith(
+    expect(onFailure.mock.calls[3][1]).toEqual(
       expect.objectContaining({ level: 4, elapsedSeconds: 300, isFinal: true }),
     )
 
     // Advance to 600s — should trigger auto-abort callback
     vi.advanceTimersByTime(300_000) // 600s total
 
-    const abortCalls = onFailure.mock.calls.filter(
-      (call) => call[1]?.isAutoAbort === true,
-    )
-    expect(abortCalls).toHaveLength(1)
-    expect(abortCalls[0][1]).toEqual(
+    expect(onFailure).toHaveBeenCalledTimes(5)
+    expect(onFailure.mock.calls[4][1]).toEqual(
       expect.objectContaining({
         delegationId: "dt-1",
         elapsedSeconds: 600,
