@@ -54,12 +54,12 @@ describe("DelegationMonitor", () => {
       .filter((line) => line.includes("status=running"))
 
     expect(pollingLines).toEqual([
-      "[DT:dt-1] status=running elapsed=30s | tools:0 bash:0 skills:0 files:0",
-      "[DT:dt-1] status=running elapsed=45s | tools:0 bash:0 skills:0 files:0",
-      "[DT:dt-1] status=running elapsed=60s | tools:0 bash:0 skills:0 files:0",
-      "[DT:dt-1] status=running elapsed=90s | tools:0 bash:0 skills:0 files:0",
-      "[DT:dt-1] status=running elapsed=120s | tools:0 bash:0 skills:0 files:0",
-      "[DT:dt-1] status=running elapsed=180s | tools:0 bash:0 skills:0 files:0",
+      "[DT:dt-1] status=running elapsed=30s",
+      "[DT:dt-1] status=running elapsed=45s",
+      "[DT:dt-1] status=running elapsed=60s",
+      "[DT:dt-1] status=running elapsed=90s",
+      "[DT:dt-1] status=running elapsed=120s",
+      "[DT:dt-1] status=running elapsed=180s",
     ])
   })
 
@@ -85,6 +85,6 @@ describe("DelegationMonitor", () => {
     vi.advanceTimersByTime(30_000)
 
     expect(inject).toHaveBeenCalledTimes(1)
-    expect(inject).toHaveBeenCalledWith("parent-2", "[DT:dt-2] status=running elapsed=30s | tools:0 bash:0 skills:0 files:0")
+    expect(inject).toHaveBeenCalledWith("parent-2", "[DT:dt-2] status=running elapsed=30s")
   })
 })

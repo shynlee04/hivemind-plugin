@@ -16,6 +16,7 @@ export interface PreflightParams {
   safetyCeilingMs?: number
   surface: CategoryGateSurface
   toolProfileMode?: string
+  workingDirectory?: string
 }
 
 export interface PreflightResult {

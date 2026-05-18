@@ -1,0 +1,77 @@
+{
+  "sessionID": "ses_1c503c8d1ffezCNx4w6hKmjcF4",
+  "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "unknown",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": "unknown"
+  },
+  "created": "2026-05-18T12:07:48.286Z",
+  "updated": "2026-05-18T12:09:11.803Z",
+  "status": "idle",
+  "mainAgent": {
+    "name": "pending",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-l2-scout",
+      "content": "You are a subagent. Task: List files in tests/ directory. You are being delegated.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-18T12:08:22.793Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_BxKJqW6iDDlXDbVzR9iH1532",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T12:08:31.378Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_dguUcoh2jffeINIbpHQe6612",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T12:08:33.708Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_hZl1YrOMskEHmiO7NxAu0161",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T12:08:46.860Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_inobAfcyQld3Ms5Ttzkp4597",
+        "input": {},
+        "output": {}
+      }
+    }
+  ],
+  "lastMessage": "You are a subagent. Task: List files in tests/ directory. You are being delegated."
+}

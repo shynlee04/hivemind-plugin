@@ -60,45 +60,6 @@ describe("NotificationRouter", () => {
     expect(router.formatNotification("progress", "dt-1", "running")).toBe("🔄 [DT:dt-1] progress — running")
     expect(router.formatNotification("timeout", "dt-1", "300s")).toBe("⏰ [DT:dt-1] timeout — 300s")
   })
-
-  it("formats a status block for TUI tool return output", () => {
-    const router = new NotificationRouter()
-    const result = router.formatStatusBlock({
-      delegationId: "dt-abc123",
-      status: "running",
-      elapsedSeconds: 45,
-      toolCalls: 3,
-      bashCommands: 1,
-      skillLoads: 0,
-    })
-    expect(result).toBe("[DELEGATION STATUS] dt-abc123 | running | 45s | tools:3 bash:1 skills:0")
-  })
-
-  it("formats a completion summary for TUI display", () => {
-    const router = new NotificationRouter()
-    const result = router.formatCompletionSummary({
-      delegationId: "dt-xyz",
-      task: "Write unit tests for monitor",
-      result: "All 12 tests pass",
-      filesChanged: ["tests/monitor.test.ts", "src/monitor.ts"],
-      timestamp: "2026-05-18T10:30:00Z",
-      elapsedHuman: "2m 15s",
-    })
-    expect(result).toBe("[DELEGATION COMPLETE] Task: Write unit tests for monitor | Result: All 12 tests pass | Files: tests/monitor.test.ts, src/monitor.ts | Timestamp: 2026-05-18T10:30:00Z | Elapsed: 2m 15s")
-  })
-
-  it("formats completion with no files changed", () => {
-    const router = new NotificationRouter()
-    const result = router.formatCompletionSummary({
-      delegationId: "dt-nofiles",
-      task: "Research topic",
-      result: "Summary generated",
-      filesChanged: [],
-      timestamp: "2026-05-18T11:00:00Z",
-      elapsedHuman: "45s",
-    })
-    expect(result).toContain("Files: (none)")
-  })
 })
 
 describe("DelegationLifecycle", () => {

@@ -129,7 +129,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     inject: () => { /* parent-session injection is routed by later runtime hook integration */ },
   })
   const retryHandler = new DelegationRetryHandler({ persist: options.persistDelegations })
-  const coordinator = new DelegationCoordinator({ childSessionStarter: createSdkChildSessionStarter({ client: options.client }), dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
+  const coordinator = new DelegationCoordinator({ childSessionStarter: createSdkChildSessionStarter(options.client), dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
     lifecycle,

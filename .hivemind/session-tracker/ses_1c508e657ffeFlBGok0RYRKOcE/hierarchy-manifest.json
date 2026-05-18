@@ -1,0 +1,113 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+  "lastUpdated": "2026-05-18T12:17:40.351Z",
+  "children": {
+    "ses_1c50675eeffe9xvxLse2YETTzR": {
+      "sessionID": "ses_1c50675eeffe9xvxLse2YETTzR",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-18T12:04:52.953Z",
+      "updatedAt": "2026-05-18T12:05:36.916Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c50675eeffe9xvxLse2YETTzR.json"
+    },
+    "ses_1c5062769ffef6KCrI0iAoRX7t": {
+      "sessionID": "ses_1c5062769ffef6KCrI0iAoRX7t",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-18T12:05:13.040Z",
+      "updatedAt": "2026-05-18T12:06:19.176Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c5062769ffef6KCrI0iAoRX7t.json"
+    },
+    "ses_1c505ce4effexM0sOscPJSVWCp": {
+      "sessionID": "ses_1c505ce4effexM0sOscPJSVWCp",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-18T12:05:35.838Z",
+      "updatedAt": "2026-05-18T12:06:36.277Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c505ce4effexM0sOscPJSVWCp.json"
+    },
+    "ses_1c5052d53ffeO3xr2puYZdPaiy": {
+      "sessionID": "ses_1c5052d53ffeO3xr2puYZdPaiy",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-scout",
+      "subagentType": "hm-l2-scout",
+      "createdAt": "2026-05-18T12:06:17.062Z",
+      "updatedAt": "2026-05-18T12:06:29.021Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c5052d53ffeO3xr2puYZdPaiy.json"
+    },
+    "ses_1c5052cbcffeQ8CbvgNJXOEn1K": {
+      "sessionID": "ses_1c5052cbcffeQ8CbvgNJXOEn1K",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-scout",
+      "subagentType": "hm-l2-scout",
+      "createdAt": "2026-05-18T12:06:17.202Z",
+      "updatedAt": "2026-05-18T12:08:08.953Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c5052cbcffeQ8CbvgNJXOEn1K.json"
+    },
+    "ses_1c503c8d1ffezCNx4w6hKmjcF4": {
+      "sessionID": "ses_1c503c8d1ffezCNx4w6hKmjcF4",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-18T12:07:48.321Z",
+      "updatedAt": "2026-05-18T12:09:11.815Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c503c8d1ffezCNx4w6hKmjcF4.json"
+    },
+    "ses_1c5035941ffeSZ5IyTJ47j8FhP": {
+      "sessionID": "ses_1c5035941ffeSZ5IyTJ47j8FhP",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-18T12:08:16.886Z",
+      "updatedAt": "2026-05-18T12:10:22.257Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c5035941ffeSZ5IyTJ47j8FhP.json"
+    },
+    "ses_1c5029163ffeR4ZBz74DrEXPw5": {
+      "sessionID": "ses_1c5029163ffeR4ZBz74DrEXPw5",
+      "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "rootMainSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-18T12:09:08.046Z",
+      "updatedAt": "2026-05-18T12:17:40.351Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c5029163ffeR4ZBz74DrEXPw5.json"
+    }
+  },
+  "totalChildren": 8,
+  "maxDepth": 1
+}

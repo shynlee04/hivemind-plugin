@@ -1,4 +1,4 @@
-import type { DelegationDispatcher, PreflightParams } from "./dispatcher.js"
+import type { DelegationDispatcher, PreflightParams, PreflightResult } from "./dispatcher.js"
 import type { DelegationLifecycle } from "./lifecycle.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
@@ -15,6 +15,9 @@ export interface ChainStep {
 }
 
 export interface DelegationCoordinatorDeps {
+  childSessionStarter?: {
+    start: (params: ChildSessionStartParams) => Promise<ChildSessionStartResult>
+  }
   dispatcher: Pick<DelegationDispatcher, "preflightCheck">
   monitor: Pick<DelegationMonitor, "onCompletion" | "start" | "stop">
   notificationRouter: Pick<NotificationRouter, "deregister" | "register" | "route">
@@ -26,6 +29,19 @@ export interface DelegationCoordinatorDeps {
     watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void
   }
   retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
+}
+
+export interface ChildSessionStartParams {
+  agent: string
+  delegationId: string
+  parentSessionId: string
+  prompt: string
+  validatedAgent: PreflightResult["validatedAgent"]
+  workingDirectory: string
+}
+
+export interface ChildSessionStartResult {
+  childSessionId: string
 }
 
 type ActiveDelegation = { record: Delegation; slotHandle: SlotHandle }
@@ -47,12 +63,30 @@ export class DelegationCoordinator {
 
     this.deps.lifecycle.transition(delegationId, "dispatched")
     this.deps.notificationRouter.register(delegationId, params.parentSessionId)
+    if (this.deps.childSessionStarter) {
+      try {
+        const child = await this.deps.childSessionStarter.start({
+          agent: params.agent,
+          delegationId,
+          parentSessionId: params.parentSessionId,
+          prompt: params.prompt ?? "",
+          validatedAgent: preflight.validatedAgent,
+          workingDirectory: params.workingDirectory ?? process.cwd(),
+        })
+        this.attachChildSession(delegationId, child.childSessionId)
+        this.deps.lifecycle.transition(delegationId, "running")
+      } catch (caughtError) {
+        this.failDispatch(delegationId, caughtError)
+        return this.errorResult(delegationId, caughtError)
+      }
+    }
     this.deps.monitor.start(delegationId, params.parentSessionId)
     this.deps.detector.watchDualSignal(delegationId, record.childSessionId, (result) => {
       this.handleCompletion(delegationId, result)
     })
 
-    return { delegationId, queueKey: preflight.queueKey, status: "dispatched" }
+    const status = this.deps.lifecycle.getStatus?.(delegationId)?.status ?? "dispatched"
+    return { delegationId, queueKey: preflight.queueKey, status }
   }
 
   /** Handles terminal completion and performs monitor, notification, slot, and persistence cleanup. */
@@ -192,7 +226,12 @@ export class DelegationCoordinator {
     return {
       agent: params.agent, childSessionId: delegationId, createdAt: Date.now(), executionMode: "sdk", id: delegationId,
       lastMessageCount: 0, nestingDepth: params.currentDepth + 1, parentSessionId: params.parentSessionId, queueKey,
-      prompt: params.prompt, stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: process.cwd(),
+      prompt: params.prompt, stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: params.workingDirectory ?? process.cwd(),
     }
+  }
+
+  private errorResult(delegationId: string, caughtError: unknown): DelegationResult {
+    const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+    return { delegationId, error: `[Harness] Native Task dispatch failed: ${message}`, status: "error" }
   }
 }

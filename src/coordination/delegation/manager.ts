@@ -148,9 +148,6 @@ export class DelegationManager {
     }
     if (request.action === "abort") return this.abortDelegation(request.delegationId)
     if (request.action === "cancel") return this.cancelDelegation(request.delegationId)
-    if (!request.nativeTask) {
-      throw new Error("[Harness] restart/redirect requires native Task execution seam; no replacement delegation was created")
-    }
     const agent = request.action === "redirect" ? request.redirectAgent : delegation.agent
     if (!agent) throw new Error("[Harness] redirect requires target agent")
     const prompt = request.restartPrompt ?? delegation.prompt
@@ -162,6 +159,14 @@ export class DelegationManager {
     const replacement = this.options.coordinator
       ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey, safetyCeilingMs: delegation.safetyCeilingMs, surface: delegation.surface ?? "agent-delegation" })
       : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt, safetyCeilingMs: delegation.safetyCeilingMs })
+    const replacementRecord = this.getStatus(replacement.delegationId)
+    if (replacementRecord) {
+      if (request.action === "restart") replacementRecord.restartedFrom = delegation.id
+      if (request.action === "redirect") replacementRecord.redirectedFrom = delegation.id
+    }
+    if (!request.nativeTask) {
+      return { ...replacement, result: original.terminalKind === "cancelled" ? undefined : original.result }
+    }
     try {
       const nativeResult = await request.nativeTask({ agent, prompt, disabledTools: ["delegate-task", "task"] })
       const childSessionId = this.extractNativeTaskSessionId(nativeResult)

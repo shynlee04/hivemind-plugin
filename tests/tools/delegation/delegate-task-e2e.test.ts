@@ -10,16 +10,33 @@ function createClient() {
   return { app: { agents: vi.fn(async () => [{ name: "builder", tools: { read: true } }, { name: "critic", tools: { read: true } }]), log: vi.fn(async () => undefined) } }
 }
 
+function createRuntimeClient() {
+  return {
+    app: { agents: vi.fn(async () => [{ name: "builder", tools: { read: true } }, { name: "critic", tools: { read: true } }]), log: vi.fn(async () => undefined) },
+    session: {
+      create: vi.fn(async () => ({ data: { id: "child-e2e" } })),
+      promptAsync: vi.fn(async () => ({ data: undefined })),
+    },
+  }
+}
+
 describe("delegate-task e2e tool boundary", () => {
-  it("returns a runtime-blocked response through plugin-wired v2 modules", async () => {
-    const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+  it("starts a child session and sends an async prompt through plugin-wired v2 modules", async () => {
+    const client = createRuntimeClient()
+    const modules = setupDelegationModules({ client: client as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const tool = createDelegateTaskTool(modules.delegationManager)
 
     const raw = await tool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
 
-    expect(parse(raw)).toMatchObject({ kind: "error" })
-    expect(parse(raw).message).toContain("runtime child-session dispatch is blocked")
-    expect(modules.delegationManager.listDelegations("parent-1")).toHaveLength(0)
+    expect(parse(raw)).toMatchObject({ kind: "success" })
+    expect(client.session.create).toHaveBeenCalledWith(expect.objectContaining({
+      body: expect.objectContaining({ parentID: "parent-1" }),
+    }))
+    expect(client.session.promptAsync).toHaveBeenCalledWith(expect.objectContaining({
+      body: expect.objectContaining({ agent: "builder", parts: [{ type: "text", text: "build" }] }),
+      path: { id: "child-e2e" },
+    }))
+    expect(modules.delegationManager.listDelegations("parent-1")[0]).toMatchObject({ childSessionId: "child-e2e", status: "running" })
   })
 
   it("returns validation error without creating a delegation", async () => {
@@ -33,7 +50,7 @@ describe("delegate-task e2e tool boundary", () => {
   })
 
   it("supports cancel control actions for coordinator-tracked delegations", async () => {
-    const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+    const modules = setupDelegationModules({ client: createRuntimeClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { coordinator: modules.coordinator, lifecycle: modules.lifecycle })
     const dispatched = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
 
@@ -51,6 +68,6 @@ describe("delegate-task e2e tool boundary", () => {
     const raw = await statusTool.execute({ action: "list" } as never, { sessionID: "parent-1" })
 
     const data = parse(raw).data as Array<Record<string, unknown>>
-    expect(data[0]).toMatchObject({ agent: "builder", status: "dispatched" })
+    expect(data[0]).toMatchObject({ agent: "builder", status: "error" })
   })
 })

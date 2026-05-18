@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createDelegationStatusTool, DelegationControlSchema, UNSUPPORTED_REPLACEMENT_MESSAGE } from "../../../src/tools/delegation/delegation-status.js"
+import { createDelegationStatusTool, DelegationControlSchema } from "../../../src/tools/delegation/delegation-status.js"
 
 const now = 1_000_000
 const context = { sessionID: "ses_parent" }
@@ -91,27 +91,25 @@ describe("delegation-status v2 tool", () => {
     expect(terminateChild).not.toHaveBeenCalled()
   })
 
-  it("rejects restart as runtime-blocked even when manager control API exists", async () => {
+  it("routes restart to the manager control API", async () => {
     const { coordinator, manager, tool } = createHarness()
     manager.controlDelegation = vi.fn().mockResolvedValue({ delegationId: "dt-new" })
 
     const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "restart" } } as never, context)
 
-    expect(parse(raw).kind).toBe("error")
-    expect(parse(raw).message).toBe(UNSUPPORTED_REPLACEMENT_MESSAGE)
-    expect(manager.controlDelegation).not.toHaveBeenCalled()
+    expect(parse(raw).kind).toBe("success")
+    expect(manager.controlDelegation).toHaveBeenCalledWith(expect.objectContaining({ action: "restart", delegationId: "dt-123" }))
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
-  it("rejects redirect as runtime-blocked without reading context.task", async () => {
+  it("routes redirect to the manager control API without reading context.task", async () => {
     const { coordinator, manager, tool } = createHarness()
     manager.controlDelegation = vi.fn().mockResolvedValue({ delegationId: "dt-new" })
 
     const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "redirect", redirectAgent: "critic" } } as never, { ...context, task: vi.fn() } as never)
 
-    expect(parse(raw).kind).toBe("error")
-    expect(parse(raw).message).toBe(UNSUPPORTED_REPLACEMENT_MESSAGE)
-    expect(manager.controlDelegation).not.toHaveBeenCalled()
+    expect(parse(raw).kind).toBe("success")
+    expect(manager.controlDelegation).toHaveBeenCalledWith(expect.objectContaining({ action: "redirect", delegationId: "dt-123", redirectAgent: "critic" }))
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 

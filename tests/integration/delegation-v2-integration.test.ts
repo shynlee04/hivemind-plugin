@@ -17,18 +17,32 @@ function createClient() {
   }
 }
 
+function createRuntimeClient() {
+  return {
+    app: {
+      agents: vi.fn(async () => [{ name: "builder", tools: { read: true } }, { name: "critic", tools: { read: true } }]),
+      log: vi.fn(async () => undefined),
+    },
+    session: {
+      create: vi.fn(async () => ({ data: { id: "child-integration" } })),
+      promptAsync: vi.fn(async () => ({ data: undefined })),
+    },
+  }
+}
+
 describe("delegation v2 plugin integration", () => {
-  it("truthfully blocks delegate-task in plugin ToolContext when no verified Task API exists", async () => {
-    const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+  it("starts delegate-task through the SDK child-session starter", async () => {
+    const client = createRuntimeClient()
+    const modules = setupDelegationModules({ client: client as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const tool = createDelegateTaskTool(modules.delegationManager)
 
     const raw = await tool.execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
 
     const result = parse(raw)
-    expect(result.kind).toBe("error")
-    expect(result.message).toContain("ToolContext v1.15.4")
-    expect(result.message).toContain("no task field")
-    expect(modules.delegationManager.listDelegations("parent-1")).toHaveLength(0)
+    expect(result.kind).toBe("success")
+    expect(client.session.create).toHaveBeenCalled()
+    expect(client.session.promptAsync).toHaveBeenCalled()
+    expect(modules.delegationManager.listDelegations("parent-1")[0]).toMatchObject({ childSessionId: "child-integration", status: "running" })
   })
 
   it("keeps coordinator parent isolation as L3 module evidence, not plugin runtime proof", async () => {
@@ -74,7 +88,7 @@ describe("delegation v2 plugin integration", () => {
   })
 
   it("completes a coordinator-tracked delegation through session idle event routing", async () => {
-    const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+    const modules = setupDelegationModules({ client: createRuntimeClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
     const dispatched = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
     modules.coordinator.attachChildSession(dispatched.delegationId, "child-hook")
@@ -86,7 +100,7 @@ describe("delegation v2 plugin integration", () => {
   })
 
   it("aborts an active delegation through the status tool control action", async () => {
-    const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+    const modules = setupDelegationModules({ client: createRuntimeClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
     const dispatched = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })
 
@@ -96,16 +110,15 @@ describe("delegation v2 plugin integration", () => {
     expect(modules.delegationManager.getStatus(dispatched.delegationId)?.error).toContain("aborted")
   })
 
-  it("rejects redirect because replacement child-session dispatch is runtime-blocked", async () => {
-    const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+  it("redirects active delegations through the SDK starter", async () => {
+    const modules = setupDelegationModules({ client: createRuntimeClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
     const dispatched = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
 
     const raw = await statusTool.execute({ action: "control", delegationId: dispatched.delegationId, control: { action: "redirect", redirectAgent: "critic" } } as never, { sessionID: "parent-1" })
 
-    expect(parse(raw).kind).toBe("error")
-    expect(parse(raw).message).toContain("runtime-blocked")
-    expect(modules.delegationManager.listDelegations("parent-1").some((d) => d.agent === "critic")).toBe(false)
+    expect(parse(raw).kind).toBe("success")
+    expect(modules.delegationManager.listDelegations("parent-1").some((d) => d.agent === "critic" && d.redirectedFrom === dispatched.delegationId)).toBe(true)
   })
 
   it("runs auto-loop for three context-chained iterations through the plugin coordinator", async () => {

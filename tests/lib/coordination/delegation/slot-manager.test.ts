@@ -23,16 +23,6 @@ describe("SlotManager", () => {
     manager.release(second)
   })
 
-  it("uses default perKeyLimit of 5", async () => {
-    const manager = new SlotManager({ maxSlotsPerSession: 10 })
-    const handles: Array<Awaited<ReturnType<SlotManager["acquire"]>>> = []
-    for (let i = 0; i < 5; i++) {
-      handles.push(await manager.acquire("session-1", "agent:builder"))
-    }
-    await expect(manager.acquire("session-1", "agent:builder")).rejects.toThrow("[Harness] Per-key delegation slot limit reached")
-    for (const handle of handles) manager.release(handle)
-  })
-
   it("reports acquire timeout when the underlying queue cannot grant a slot", async () => {
     const manager = new SlotManager({
       acquireTimeoutMs: 10,

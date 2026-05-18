@@ -41,7 +41,7 @@ export class SlotManager {
 
   constructor(options: SlotManagerOptions = {}) {
     this.maxSlotsPerSession = options.maxSlotsPerSession ?? 10
-    this.perKeyLimit = options.perKeyLimit ?? 5
+    this.perKeyLimit = options.perKeyLimit ?? 2
     this.acquireTimeoutMs = options.acquireTimeoutMs ?? 5_000
     this.queueLimit = options.queueLimit ?? this.perKeyLimit
     this.queue = options.queue ?? new DelegationConcurrencyQueue(this.queueLimit)

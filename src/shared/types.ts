@@ -81,14 +81,6 @@ export type CapturedResult = {
   partial?: boolean
 }
 
-export interface ActionCounter {
-  toolCalls: number
-  bashCommands: number
-  skillLoads: number
-  fileChanges: number
-  totalActions: number
-}
-
 export type SessionStats = {
   total: number
   byTool: Record<string, number>

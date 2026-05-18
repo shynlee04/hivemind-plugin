@@ -167,9 +167,6 @@ async function handleControl(args: DelegationStatusInput, context: ToolContext, 
   if (!manager.canSessionAccessDelegation(context.sessionID, delegation)) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
   if (deps.lifecycle?.isTerminal(delegation.status)) return renderToolResult(error("[Harness] cannot control terminal delegation"))
   if (manager.controlDelegation) {
-    if (args.control.action === "restart" || args.control.action === "redirect") {
-      return renderToolResult(error(UNSUPPORTED_REPLACEMENT_MESSAGE))
-    }
     const result = await manager.controlDelegation({
       action: args.control.action,
       delegationId: delegation.id,

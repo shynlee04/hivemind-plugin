@@ -2,7 +2,7 @@ import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 
 import { renderToolResult } from "../../shared/tool-helpers.js"
-import { error } from "../../shared/tool-response.js"
+import { error, success } from "../../shared/tool-response.js"
 
 /** Zod contract for delegate-task v2 input validation and defaults. */
 export const DelegateTaskV2Schema = z.object({
@@ -64,12 +64,38 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType
         return renderToolResult(error(message))
       }
 
-      void coordinator
-      void args
-
-      return renderToolResult(error(UNSUPPORTED_NATIVE_TASK_MESSAGE))
+      try {
+        const prompt = args.context ? `${args.context}\n\n${args.prompt}` : args.prompt
+        const result = await coordinator.dispatch({
+          agent: args.agent,
+          category: args.category,
+          currentDepth: 0,
+          parentSessionId,
+          prompt,
+          queueKey: `agent:${args.agent}`,
+          safetyCeilingMs: args.safetyCeilingMs,
+          surface: "agent-delegation",
+          workingDirectory: context.directory ?? context.worktree,
+        })
+        const resultRecord = asRecord(result)
+        if (resultRecord.status === "error" || resultRecord.status === "timeout") {
+          const resultMessage = typeof resultRecord.error === "string" ? resultRecord.error : `[Harness] delegate-task returned ${String(resultRecord.status)}`
+          return renderToolResult(error(resultMessage, resultRecord))
+        }
+        return renderToolResult(success(
+          `[Harness] Delegated task to ${args.agent}`,
+          { ...resultRecord, agent: args.agent, safetyCeilingMs: args.safetyCeilingMs },
+        ))
+      } catch (caughtError) {
+        const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+        return renderToolResult(error(message))
+      }
     },
   })
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? value as Record<string, unknown> : { result: value }
 }
 
 export { DelegateTaskV2Schema as DelegateTaskInputSchema }

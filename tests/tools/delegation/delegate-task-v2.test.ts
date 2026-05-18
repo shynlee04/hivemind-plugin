@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import type { ToolContext } from "@opencode-ai/plugin/tool"
 
-import { createDelegateTaskTool, DelegateTaskV2Schema, UNSUPPORTED_NATIVE_TASK_MESSAGE } from "../../../src/tools/delegation/delegate-task.js"
+import { createDelegateTaskTool, DelegateTaskV2Schema } from "../../../src/tools/delegation/delegate-task.js"
 
 const context = { sessionID: "ses_parent", directory: "/tmp/project", worktree: "/tmp/project" }
 
@@ -16,16 +16,21 @@ function createCoordinator() {
 }
 
 describe("delegate-task v2 tool", () => {
-  it("reports runtime-blocked dispatch without registering a fake delegation", async () => {
+  it("dispatches through the coordinator instead of returning runtime-blocked", async () => {
     const coordinator = createCoordinator()
     const tool = createDelegateTaskTool(coordinator as never)
 
     const raw = await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
     const result = parse(raw)
 
-    expect(result.kind).toBe("error")
-    expect(result.message).toBe(UNSUPPORTED_NATIVE_TASK_MESSAGE)
-    expect(coordinator.dispatch).not.toHaveBeenCalled()
+    expect(result.kind).toBe("success")
+    expect(result.data).toMatchObject({ delegationId: "dt-123", status: "dispatched", agent: "builder" })
+    expect(coordinator.dispatch).toHaveBeenCalledWith(expect.objectContaining({
+      agent: "builder",
+      parentSessionId: "ses_parent",
+      prompt: "build it",
+      queueKey: "agent:builder",
+    }))
   })
 
   it("rejects missing agent before coordinator dispatch", async () => {
@@ -56,28 +61,26 @@ describe("delegate-task v2 tool", () => {
     expect(result.safetyCeilingMs).toBe(300_000)
   })
 
-  it("preserves validated optional category without pretending runtime dispatch is supported", async () => {
+  it("preserves validated optional category during runtime dispatch", async () => {
     const coordinator = createCoordinator()
     const tool = createDelegateTaskTool(coordinator as never)
 
-    const raw = await tool.execute({ agent: "critic", prompt: "review" } as never, context)
+    const raw = await tool.execute({ agent: "critic", category: "review", prompt: "review" } as never, context)
     const result = parse(raw)
 
-    expect(result.kind).toBe("error")
-    expect(result.message).toContain("runtime child-session dispatch is blocked")
-    expect(coordinator.dispatch).not.toHaveBeenCalled()
+    expect(result.kind).toBe("success")
+    expect(coordinator.dispatch).toHaveBeenCalledWith(expect.objectContaining({ category: "review" }))
   })
 
-  it("does not treat injected nativeTask mocks as runtime proof", async () => {
+  it("does not depend on an injected nativeTask mock seam", async () => {
     const coordinator = createCoordinator()
     const tool = createDelegateTaskTool(coordinator as never)
 
     const raw = await tool.execute({ agent: "builder", prompt: "build it" } as never, context)
     const result = parse(raw)
 
-    expect(result.kind).toBe("error")
-    expect(result.message).toContain("mocked nativeTask injection is test-only evidence")
-    expect(coordinator.dispatch).not.toHaveBeenCalled()
+    expect(result.kind).toBe("success")
+    expect(coordinator.dispatch).toHaveBeenCalledTimes(1)
   })
 
   it("parses legacy v1 delegation records without requiring a v2 marker", () => {

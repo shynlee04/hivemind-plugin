@@ -225,7 +225,7 @@ describe("delegate-task tool", () => {
     const client = {
       session: {
         create: vi.fn().mockResolvedValue({ data: { id: "child-real-sdk" } }),
-        prompt: vi.fn().mockResolvedValue(undefined),
+        promptAsync: vi.fn().mockResolvedValue(undefined),
         status: vi.fn().mockResolvedValue({ data: {} }),
         messages: vi.fn().mockResolvedValue({
           data: [{ role: "assistant", parts: [{ type: "text", text: "done" }] }],
@@ -267,7 +267,7 @@ describe("delegate-task tool", () => {
     const client = {
       session: {
         create: vi.fn().mockResolvedValue({ data: { id: "child-real-queue" } }),
-        prompt: vi.fn().mockResolvedValue(undefined),
+        promptAsync: vi.fn().mockResolvedValue(undefined),
         status: vi.fn().mockResolvedValue({ data: {} }),
         messages: vi.fn().mockResolvedValue({
           data: [{ role: "assistant", parts: [{ type: "text", text: "done" }] }],
