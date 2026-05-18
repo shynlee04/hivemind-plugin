@@ -29,10 +29,10 @@ export type DelegationManagerOptions = {
 }
 
 export type DelegationControlRequest = {
-  action: "abort" | "cancel" | "restart" | "redirect"
+  action: "abort" | "cancel" | "restart" | "resume" | "chain"
+  chainParentSessionId?: string
   delegationId: string
   nativeTask?: NativeTask
-  redirectAgent?: string
   restartPrompt?: string
 }
 
@@ -164,21 +164,21 @@ export class DelegationManager {
     }
     if (request.action === "abort") return this.abortDelegation(request.delegationId)
     if (request.action === "cancel") return this.cancelDelegation(request.delegationId)
-    const agent = request.action === "redirect" ? request.redirectAgent : delegation.agent
-    if (!agent) throw new Error("[Harness] redirect requires target agent")
+    const agent = request.action === "resume" || request.action === "restart" ? delegation.agent : delegation.agent
     const prompt = request.restartPrompt ?? delegation.prompt
-    if (!prompt) throw new Error("[Harness] restart/redirect requires a persisted original prompt or restartPrompt")
+    if (!prompt) throw new Error("[Harness] restart/resume requires a persisted original prompt or restartPrompt")
 
-    const original = request.action === "restart"
-      ? this.options.coordinator?.abortDelegation?.(request.delegationId, "[Harness] Delegation restarted") ?? this.abortDelegation(request.delegationId)
-      : this.options.coordinator?.abortDelegation?.(request.delegationId, "[Harness] Delegation redirected") ?? this.abortDelegation(request.delegationId)
+    const original = request.action === "restart" || request.action === "resume"
+      ? this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation ${request.action}d`) ?? this.abortDelegation(request.delegationId)
+      : this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation ${request.action}d`) ?? this.abortDelegation(request.delegationId)
     const replacement = this.options.coordinator
-      ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: delegation.parentSessionId, prompt, queueKey: delegation.queueKey })
+      ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: request.action === "chain" ? request.chainParentSessionId ?? delegation.parentSessionId : delegation.parentSessionId, prompt, queueKey: delegation.queueKey })
       : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt })
     const replacementRecord = this.getStatus(replacement.delegationId)
     if (replacementRecord) {
       if (request.action === "restart") replacementRecord.restartedFrom = delegation.id
-      if (request.action === "redirect") replacementRecord.redirectedFrom = delegation.id
+      if (request.action === "resume") replacementRecord.resumedFrom = delegation.id
+      if (request.action === "chain") replacementRecord.chainedFrom = delegation.id
     }
     if (!request.nativeTask) {
       return { ...replacement, result: original.terminalKind === "cancelled" ? undefined : original.result }

@@ -120,32 +120,52 @@ describe("delegation-status v2 tool", () => {
     expect(terminateChild).not.toHaveBeenCalled()
   })
 
-  it("routes restart to the manager control API", async () => {
+  it("routes restart to the manager control API with restartPrompt", async () => {
     const { coordinator, manager, tool } = createHarness()
     manager.controlDelegation = vi.fn().mockResolvedValue({ delegationId: "dt-new" })
 
-    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "restart" } } as never, context)
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "restart", restartPrompt: "try again" } } as never, context)
 
     expect(parse(raw).kind).toBe("success")
-    expect(manager.controlDelegation).toHaveBeenCalledWith(expect.objectContaining({ action: "restart", delegationId: "dt-123" }))
+    expect(manager.controlDelegation).toHaveBeenCalledWith(expect.objectContaining({ action: "restart", delegationId: "dt-123", restartPrompt: "try again" }))
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
-  it("routes redirect to the manager control API without reading context.task", async () => {
+  it("routes resume to the manager control API with restartPrompt", async () => {
     const { coordinator, manager, tool } = createHarness()
     manager.controlDelegation = vi.fn().mockResolvedValue({ delegationId: "dt-new" })
 
-    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "redirect", redirectAgent: "critic" } } as never, { ...context, task: vi.fn() } as never)
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "resume", restartPrompt: "continue" } } as never, context)
 
     expect(parse(raw).kind).toBe("success")
-    expect(manager.controlDelegation).toHaveBeenCalledWith(expect.objectContaining({ action: "redirect", delegationId: "dt-123", redirectAgent: "critic" }))
+    expect(manager.controlDelegation).toHaveBeenCalledWith(expect.objectContaining({ action: "resume", delegationId: "dt-123", restartPrompt: "continue" }))
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
-  it("rejects redirect without redirectAgent", async () => {
+  it("routes chain to the manager control API with chainParentSessionId", async () => {
+    const { coordinator, manager, tool } = createHarness()
+    manager.controlDelegation = vi.fn().mockResolvedValue({ delegationId: "dt-new" })
+
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "chain", chainParentSessionId: "ses_parent" } } as never, context)
+
+    expect(parse(raw).kind).toBe("success")
+    expect(manager.controlDelegation).toHaveBeenCalledWith(expect.objectContaining({ action: "chain", delegationId: "dt-123", chainParentSessionId: "ses_parent" }))
+    expect(coordinator.dispatch).not.toHaveBeenCalled()
+  })
+
+  it("rejects resume without restartPrompt", async () => {
     const { coordinator, tool } = createHarness()
 
-    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "redirect" } } as never, context)
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "resume" } } as never, context)
+
+    expect(parse(raw).kind).toBe("error")
+    expect(coordinator.dispatch).not.toHaveBeenCalled()
+  })
+
+  it("rejects chain without chainParentSessionId", async () => {
+    const { coordinator, tool } = createHarness()
+
+    const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "chain" } } as never, context)
 
     expect(parse(raw).kind).toBe("error")
     expect(coordinator.dispatch).not.toHaveBeenCalled()
@@ -173,10 +193,12 @@ describe("delegation-status v2 tool", () => {
   })
 
   it("DelegationControlSchema validates the 5 D-04 control actions (abort, cancel, restart, resume, chain)", () => {
-    for (const action of ["abort", "cancel", "restart", "resume", "chain"] as const) {
-      const input = { action }
-      expect(DelegationControlSchema.safeParse(input).success).toBe(true)
+    for (const action of ["abort", "cancel"] as const) {
+      expect(DelegationControlSchema.safeParse({ action }).success).toBe(true)
     }
+    expect(DelegationControlSchema.safeParse({ action: "restart", restartPrompt: "redo" }).success).toBe(true)
+    expect(DelegationControlSchema.safeParse({ action: "resume", restartPrompt: "continue" }).success).toBe(true)
+    expect(DelegationControlSchema.safeParse({ action: "chain", chainParentSessionId: "ses_parent" }).success).toBe(true)
     expect(DelegationControlSchema.safeParse({ action: "pause" }).success).toBe(false)
     expect(DelegationControlSchema.safeParse({ action: "redirect" }).success).toBe(false)
   })

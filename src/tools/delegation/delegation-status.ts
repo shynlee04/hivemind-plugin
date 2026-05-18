@@ -9,10 +9,11 @@ import type { Delegation } from "../../shared/types.js"
 
 /** Zod contract for delegation-status control actions. */
 export const DelegationControlSchema = z.object({
-  action: z.enum(["abort", "cancel", "restart", "redirect"]),
-  redirectAgent: z.string().optional(),
+  action: z.enum(["abort", "cancel", "restart", "resume", "chain"]),
+  chainParentSessionId: z.string().optional(),
   restartPrompt: z.string().optional(),
-}).refine((value) => value.action !== "redirect" || !!value.redirectAgent, "redirectAgent is required for redirect")
+}).refine((value) => (value.action === "restart" || value.action === "resume") ? !!value.restartPrompt : true, "restartPrompt is required for restart and resume")
+  .refine((value) => value.action !== "chain" || !!value.chainParentSessionId, "chainParentSessionId is required for chain")
 
 const DelegationStatusInputSchema = z.object({
   delegationId: z.string().min(1).optional(),
@@ -25,7 +26,7 @@ type DelegationStatusInput = z.infer<typeof DelegationStatusInputSchema>
 type ToolContext = { sessionID?: string }
 type ManagerLike = {
   canSessionAccessDelegation: (sessionId: string | undefined, delegation: Delegation | undefined) => boolean
-  controlDelegation?: (request: { action: "abort" | "cancel" | "restart" | "redirect"; delegationId: string; redirectAgent?: string; restartPrompt?: string }) => Promise<unknown>
+  controlDelegation?: (request: { action: "abort" | "cancel" | "restart" | "resume" | "chain"; delegationId: string; chainParentSessionId?: string; restartPrompt?: string }) => Promise<unknown>
   getAllDelegations: () => Delegation[]
   getStatus: (id: string) => Delegation | undefined
 }
@@ -182,7 +183,7 @@ async function handleControl(args: DelegationStatusInput, context: ToolContext, 
     const result = await manager.controlDelegation({
       action: args.control.action,
       delegationId: delegation.id,
-      redirectAgent: args.control.redirectAgent,
+      chainParentSessionId: args.control.chainParentSessionId,
       restartPrompt: args.control.restartPrompt,
     })
     if (args.control.action === "abort") await deps.terminateChild?.(delegation.childSessionId)

@@ -1526,3 +1526,30 @@ task_id: ses_1c310665effeXbluoQ0NSm5ZiA
 }
 ```
 
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute Phase 14 Plan 02 - Monitor/notification behavior",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1c307b9e0ffesj9UyHYbiFZvy3"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1c307b9e0ffesj9UyHYbiFZvy3
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "toolu_7830e069da0840dea295fe3a"
+}
+```
+
