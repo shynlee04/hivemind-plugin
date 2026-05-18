@@ -47,6 +47,8 @@ type ManagerInternals = {
 }
 
 type ManagerOptions = {
+  monitor?: { start: (...args: unknown[]) => void }
+  notificationRouter?: { register: (...args: unknown[]) => void }
   ptyManager?: {
     isSupported?: () => boolean
     spawn?: (request: unknown) => {
@@ -3346,5 +3348,54 @@ describe("behavioral tests", () => {
     expect(r1.delegationId).toBeDefined()
     expect(r2.delegationId).toBeDefined()
     expect(r1.delegationId).not.toBe(r2.delegationId)
+  })
+
+  // ---------------------------------------------------------------------------
+  // monitor / notification wiring (Phase 14 — D-01, D-07)
+  // ---------------------------------------------------------------------------
+
+  describe("monitor and notification wiring", () => {
+    it("calls notificationRouter.register(delegationId, parentSessionId) after delegation registration — monitor.start after sendPromptAsync success", async () => {
+      const client = createMockClient()
+      const monitorStart = vi.fn()
+      const notificationRegister = vi.fn()
+      const manager = createManager(client, {
+        monitor: { start: monitorStart },
+        notificationRouter: { register: notificationRegister },
+      })
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-monitor-notify",
+        agent: "builder",
+        prompt: "wiring test",
+      })
+
+      expect(result.status).toBe("running")
+      expect(notificationRegister).toHaveBeenCalledWith(result.delegationId, "ses-parent-monitor-notify")
+      expect(monitorStart).toHaveBeenCalledWith(result.delegationId, "ses-parent-monitor-notify")
+      // notificationRouter.register must be called BEFORE monitor.start (dispatch order)
+      expect(notificationRegister.mock.invocationCallOrder[0]).toBeLessThan(monitorStart.mock.invocationCallOrder[0])
+    })
+
+    it("does NOT call monitor.start when sendPromptAsync fails — notificationRouter.register may still have run after record registration", async () => {
+      const client = createMockClient()
+      client.session.create.mockResolvedValue({ data: { id: "child-prompt-fail-monitor" } })
+      client.session.promptAsync.mockRejectedValue(new Error("SDK prompt failed"))
+      const monitorStart = vi.fn()
+      const notificationRegister = vi.fn()
+      const manager = createManager(client, {
+        monitor: { start: monitorStart },
+        notificationRouter: { register: notificationRegister },
+      })
+
+      const result = await manager.dispatch({
+        parentSessionId: "ses-parent-monitor-fail",
+        agent: "builder",
+        prompt: "fail at prompt",
+      })
+
+      expect(result.status).toBe("error")
+      expect(monitorStart).not.toHaveBeenCalled()
+    })
   })
 })
