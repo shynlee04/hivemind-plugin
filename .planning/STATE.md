@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-18T05:15:00Z"
+last_updated: "2026-05-18T15:10:00Z"
 progress:
   total_phases: 2
   completed_phases: 1
@@ -17,14 +17,14 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-18
-**Last trigger:** CP-DT-01 PLAN COMPLETE — 5/5 GSD execution plans created after 4/4 deliverables (CONTEXT, RESEARCH, PATTERN, SPEC). Ready for `/gsd-execute-phase CP-DT-01`.
+**Last trigger:** CP-DT-01 COMPLETE — Review ITER2: 0 Critical (8/8 resolved), Validation: 18/18 spec requirements DELIVERED, 91/91 tests pass, typecheck clean. Next phase: CP-PTY-01 (Background Shell Control-Plane MVP).
 
 ---
 
 ## Current Status
 
-**Active phase:** CP-DT-01 — Delegate-Task Ecosystem Revamp. 🟡 PLAN COMPLETE (5/5 GSD execution plans ready for execution).
-**Health:** 🟢 All 4 L5 deliverables complete: CONTEXT.md (256 dòng), RESEARCH.md (448 dòng, commit `c8cab402`), PATTERN.md (702 dòng), SPEC.md (22 FRs + 6 NFRs). Planning complete via commit `d9fb774f`: CP-DT-01-01 through CP-DT-01-05 plan waves are ready for strict TDD execution.
+**Active phase:** CP-DT-01 — Delegate-Task Ecosystem Revamp. ✅ COMPLETE — review ITER2: 0 Critical, 8/8 resolved; validation: 18/18 spec requirements DELIVERED, 91/91 tests pass; live native Task UAT deferred to integration.
+**Health:** 🟢 CP-DT-01 COMPLETE. Waves 1-5 delivered: foundation modules, coordinator + CompletionDetector v2, v2 tool layer, manager decomposition, auto-loop, ralph-loop, chaining, plugin wiring. Review ITER2: 0 Critical, 3 Warning (LOC/type-safety), 1 Info. Validation: 18/18 spec requirements DELIVERED. 91/91 tests pass. Next phase: CP-PTY-01.
 **CP-ST-04 status:** ✅ COMPLETE — 3 plans delivered (PendingDispatchRegistry + Classification, Directory Architecture, Hierarchy Manifest + Immediate I/O + Cleanup).
 
 **CP-ST-05 status:** ✅ COMPLETE — Investigation phase, root causes identified, decisions D-CP05-01 through D-CP05-06 locked.
@@ -194,7 +194,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 | CP-ST-04 | ✅ COMPLETE | L3 source | Architecture fix — PendingDispatchRegistry, directory architecture, hierarchy manifest |
 | CP-ST-05 | ✅ COMPLETE | L3 source | Data loss investigation — root cause analysis, 6 decisions locked |
 | CP-ST-06 | ✅ COMPLETE | L3 source + L2 tests | Root cause rewrite — 6 RCs fixed, 418/418 tests, retry queue, runtime preservation |
-| CP-DT-01 | 🟡 PLAN COMPLETE | L5→L2-L3 | Delegate-Task Ecosystem Revamp — 4 deliverables complete + 5 execution plans created; next route: `/gsd-execute-phase CP-DT-01` |
+| CP-DT-01 | ✅ EXECUTION COMPLETE | L5→L2-L3 | Delegate-Task Ecosystem Revamp — 5/5 plans executed; Plan 01-05 summaries complete; review/validation/live-smoke gates pending |
 
 ---
 
@@ -228,7 +228,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 ## Next Actions
 
 1. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass, typecheck clean, all review findings fixed. 6 root causes permanently fixed.
-2. **CP-DT-01 PLAN COMPLETE** — Delegate-Task Ecosystem Revamp: 4/4 core deliverables complete and 5/5 GSD execution plans created. Next: `/gsd-execute-phase CP-DT-01` with strict TDD, then code review, validation, integration, and smoke tests.
+2. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 4/4 core deliverables complete, 5/5 plans executed, and latest focused/regression/typecheck gates pass. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`, then live smoke/UAT where feasible.
 3. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete, entry gate satisfied). Now AFTER CP-DT-01 in dependency order.
 4. **Runtime UAT pending** — CP-ST live compact/resume and CP-DT live delegation smoke tests need real long-haul session proof after implementation.
 5. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-DT-01 and CP-PTY readiness checks.
