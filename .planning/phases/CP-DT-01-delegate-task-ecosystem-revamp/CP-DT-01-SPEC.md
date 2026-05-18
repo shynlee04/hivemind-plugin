@@ -218,7 +218,7 @@ delegate-task v1 **PROVEN BROKEN**: dispatch OK (trả về delegation ID ngay l
 
 ## 4. Ràng buộc Thiết kế (Design Constraints)
 
-**DC-01:** The system SHALL sử dụng native Task tool làm execution backbone — KHÔNG dùng `promptAsync` cho primary dispatch.
+**DC-01 (RE-OPENED / RUNTIME BLOCKED 2026-05-18):** The system SHALL sử dụng chỉ một child-session dispatch backbone đã được verify. Native Task tool vẫn là mục tiêu ưu tiên, nhưng plugin custom tool SHALL NOT assume `context.task` hoặc mocked `nativeTask` injection. Cho tới khi có L1-L3 proof cho một API dispatch thật, `delegate-task` SHALL trả blocked/error response trung thực và SHALL NOT register fake delegation completion.
 
 **Pattern ref:** AP-01, RESEARCH.md "Don't Hand-Roll"
 

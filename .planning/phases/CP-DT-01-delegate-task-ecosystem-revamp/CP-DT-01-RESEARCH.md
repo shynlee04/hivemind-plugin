@@ -307,6 +307,12 @@ Agent system prompt (body của markdown file)
 // 6. Metadata cập nhật với sessionId + model của subagent
 ```
 
+### Runtime Truth Correction (2026-05-18)
+
+**Kết luận:** A1 đã bị bác bỏ cho plugin custom tools. Local package `@opencode-ai/plugin` v1.15.4 định nghĩa `ToolContext` chỉ gồm `sessionID`, `messageID`, `agent`, `directory`, `worktree`, `abort`, `metadata()` và `ask()`; không có `task` field và không có API custom-tool trực tiếp để gọi built-in Task tool. DeepWiki upstream check trên `sst/opencode` xác nhận cùng giới hạn: Task tool là built-in runtime tool, không được expose qua plugin `ToolContext`.
+
+**Hệ quả:** Bất kỳ test nào inject `nativeTask` hoặc giả lập `context.task` chỉ là L3/L4 unit seam, không phải L1 runtime proof. CP-DT-01 phải giữ trạng thái **RE-OPENED / RUNTIME BLOCKED** cho tới khi có cơ chế child-session dispatch đã được verify, hoặc một phase CP-PTY/SDK riêng chọn và chứng minh path thay thế.
+
 ## State of the Art
 
 | Cách cũ | Cách hiện tại | Khi thay đổi | Tác động |
@@ -325,7 +331,7 @@ Agent system prompt (body của markdown file)
 
 | # | Khẳng định | Section | Rủi ro nếu sai |
 |---|-----------|---------|----------------|
-| A1 | Native Task tool có thể invoke từ plugin custom tool context | Architecture | Nếu không thể → cần tìm cơ chế khác (tool chaining, hoặc return instruction) |
+| A1 | Native Task tool có thể invoke từ plugin custom tool context | Architecture | **DISPROVEN 2026-05-18:** plugin `ToolContext` v1.15.4 không expose `task`; cần cơ chế khác đã verify trước khi claim completion |
 | A2 | Hook `session.idle` fire khi child session hoàn thành task | Completion | Nếu không fire → cần fallback mechanism |
 | A3 | Native Task tool inherit parent session's directory và worktree | Dispatch | Nếu không inherit → cần explicit pass-through |
 | A4 | Custom tool có thể access native Task tool result metadata | Post-processing | Nếu không thể → cần hook-based result capture |

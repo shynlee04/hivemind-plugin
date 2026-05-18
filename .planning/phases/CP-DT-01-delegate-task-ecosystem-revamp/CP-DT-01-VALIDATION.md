@@ -1,8 +1,8 @@
 ---
 phase: CP-DT-01
 validated: 2026-05-18T08:55:23Z
-status: passed
-score: 18/18 requirements verified
+status: runtime_blocked
+score: 0/1 runtime-critical dispatch proof verified; 18/18 historical implementation checks preserved as L3 evidence only
 overrides_applied: 0
 gaps: []
 ---
@@ -11,8 +11,10 @@ gaps: []
 
 **Phase Goal:** Revamp the delegate-task/delegation-status tool pair and the underlying coordination layer with WaiterModel dual-signal completion, category gates, depth limiting, lifecycle state machines, auto-loop/ralph-loop engines, and a decomposed manager facade.
 **Validated:** 2026-05-18T08:55:23Z
-**Status:** PASSED
-**Re-verification:** No — initial validation
+**Status:** RE-OPENED / RUNTIME BLOCKED
+**Re-verification:** Yes — 2026-05-18 runtime-truth correction after forensic evidence proved plugin `ToolContext` has no `context.task` seam.
+
+> Runtime truth note: the 91/91 automated test result below remains useful L3 regression evidence for historical Waves 1-5, but it is not L1 proof that `delegate-task` can start a live OpenCode child/subagent session from plugin custom-tool context.
 
 ---
 
@@ -24,7 +26,7 @@ gaps: []
 | Delegation core + tool tests | `npx vitest run tests/lib/coordination/delegation/ tests/tools/delegation/` | 67/67 passed (11 files) | ✅ PASS |
 | Integration + pipeline tests | `npx vitest run tests/integration/delegation-v2-integration.test.ts tests/lib/coordination/delegation/full-pipeline.test.ts` | 15/15 passed (2 files) | ✅ PASS |
 | Auto-loop + ralph-loop tests | `npx vitest run tests/lib/features/auto-loop.test.ts tests/lib/features/ralph-loop.test.ts` | 9/9 passed (2 files) | ✅ PASS |
-| **Combined test total** | — | **91/91 passed (15 files)** | ✅ PASS |
+| **Combined test total** | — | **91/91 passed (15 files)** | ⚠️ L3 ONLY — mocked/injected dispatch seams do not prove live OpenCode Task execution |
 
 ---
 
@@ -184,7 +186,7 @@ No TODO/FIXME/PLACEHOLDER comments found in delegation modules. No empty impleme
 
 ## Gaps Summary
 
-**No gaps found.** All 18 spec requirements (11 REQ-DT + 4 REQ-CD + 2 REQ-AL + 1 REQ-RC) are DELIVERED with substantive implementations and passing tests. All 6 NFRs verified. Review ITER2 confirms 0 Critical findings. Plugin composition wiring verified through integration tests.
+**Runtime-critical gap found.** Historical Waves 1-5 delivered substantive modules and tests, but the central dispatch assumption was false: plugin `ToolContext` v1.15.4 has no `context.task` and no verified custom-tool API for invoking built-in Task. Therefore CP-DT-01 remains **RE-OPENED / RUNTIME BLOCKED** until L1-L3 runtime proof exists. The previous “18/18 delivered” classification is preserved as L3 implementation evidence only, not completion proof.
 
 ### Warnings (non-blocking, from Review ITER2)
 
@@ -205,7 +207,7 @@ These do not block the phase goal.
 | 3 | Ralph-loop agent rotation in live session | Agents rotate correctly with result passing | Requires running OpenCode runtime |
 | 4 | Control actions (abort/cancel) on live delegation | Status tool abort/cancel terminate running subagent | Requires running OpenCode runtime with child session management |
 
-These 4 items require a live OpenCode runtime with native Task support. Automated tests verify the wiring and logic thoroughly (91 tests), but end-to-end runtime proof requires manual smoke testing.
+These 4 items require a live OpenCode runtime with a verified child-session dispatch mechanism. Automated tests verify wiring and logic, but end-to-end runtime proof is currently blocked because the plugin custom-tool context does not expose native Task dispatch.
 
 ---
 

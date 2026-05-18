@@ -107,7 +107,7 @@ The SPEC defines **21 functional requirements** across 6 categories. VALIDATION 
 
 | DC | Evidence | Status |
 |----|----------|--------|
-| DC-01 (Native Task backbone) | `delegate-task.ts` uses Task tool | ✅ PASS |
+| DC-01 (Native Task backbone) | `delegate-task.ts` previously assumed mocked/injected Task seam; plugin `ToolContext` v1.15.4 has no `context.task` | ❌ INVALIDATED — RUNTIME BLOCKED until verified dispatch path exists |
 | DC-02 (Plugin = thin composition root) | `plugin.ts` wires only | ✅ PASS |
 | DC-03 (Durable state via task-management) | delegation records in `.hivemind/state/` | ✅ PASS |
 | DC-04 (Hooks = read-side only) | Hook handlers observe events, don't mutate state directly | ✅ PASS |
@@ -178,7 +178,14 @@ The SPEC defines **21 functional requirements** across 6 categories. VALIDATION 
 | **AP-04: Hardcoded Secrets** | API keys, tokens in source? | ✅ None found |
 | **AP-05: Circular Dependencies** | Import cycles across coordination modules? | ✅ No cycles detected (Gate 1 verified) |
 | **AP-06: Premature Optimization** | Caching without measure? | ✅ Notification router uses bounded cache with explicit limits |
-| **AP-07: Test Mock Leakage** | Tests passing due to over-mocking? | ✅ Integration tests exercise real dispatch flow |
+| **AP-07: Test Mock Leakage** | Tests passing due to over-mocking? | ❌ INVALIDATED — prior tests exercised mocked/injected seams and L3 module flow, not live OpenCode Task runtime |
+
+### 4.1 Runtime Truth Addendum — 2026-05-18
+
+- CP-DT-01 is **RE-OPENED / RUNTIME BLOCKED**.
+- DC-01 PASS is invalid until focused tests and runtime smoke prove a verified child-session dispatch mechanism.
+- AP-07 PASS is invalid because mocked/injected `nativeTask` or `context.task` seams cannot be classified as L1 runtime evidence.
+- Plans 01-05 remain historical implementation waves; they are not completion proof.
 
 ---
 

@@ -11,7 +11,7 @@
 
 Tài liệu này định nghĩa **10 design patterns** cho hệ sinh thái delegate-task v2. Mỗi pattern giải quyết một bài toán cụ thể được phát hiện qua phân tích CONTEXT.md (bằng chứng lỗi v1, god-object analysis) và RESEARCH.md (native Task tool capability, hook-based observation).
 
-**Nguyên tắc nền tảng:** delegate-task v2 là **preparation + post-processing wrapper** quanh OpenCode native Task tool. KHÔNG reimplement dispatch qua `promptAsync`. Hivemind thêm value ở layers trên: category gates, concurrency control, safety ceiling, auto/ralph loops, session tracking.
+**Nguyên tắc nền tảng đã sửa (2026-05-18):** delegate-task v2 KHÔNG được claim là wrapper runtime quanh OpenCode native Task tool từ plugin custom tool, vì `@opencode-ai/plugin` v1.15.4 `ToolContext` không có `task` field và không expose API gọi built-in Task tool. Hivemind vẫn giữ value ở layers trên: category gates, concurrency control, safety ceiling, auto/ralph loops, session tracking — nhưng runtime dispatch phải là path đã verify hoặc trả blocked state trung thực.
 
 **Nguồn tham chiếu kiến trúc:**
 - CQRS model: `.planning/codebase/ARCHITECTURE.md:48-68`
@@ -27,12 +27,21 @@ Tài liệu này định nghĩa **10 design patterns** cho hệ sinh thái deleg
 
 **Bài toán:** delegate-task v2 cần thêm value (category gates, concurrency, safety ceiling) mà KHÔNG thay thế execution backbone của OpenCode native Task tool.
 
-**Giải pháp:** Tool `delegate-task` v2 hoạt động như một wrapper 3 giai đoạn: (1) Pre-flight checks — validate args, evaluate category gates, acquire concurrency slot, enforce depth limit; (2) Yield to native Task tool — trả instruction cho OpenCode runtime invoke native Task với `subagent_type` đã enrich; (3) Post-processing — hook observe completion, persist delegation record, release concurrency slot, route notification.
+**Giải pháp đã sửa:** Tool `delegate-task` v2 hiện chỉ được phép validate input và trả blocked state trung thực khi chạy trong plugin custom-tool context hiện tại. Pre-flight/coordination pipeline vẫn là L3 module evidence, nhưng không được register delegation runtime nếu không có verified child-session dispatch mechanism. Bất kỳ future wrapper 3 giai đoạn nào phải được mở bằng phase CP-PTY/SDK riêng và có L1-L3 proof trước khi thay đổi trạng thái.
 
 ```typescript
 // Pseudocode — delegate-task v2 tool flow
 async function executeDelegateTaskV2(args: DelegateTaskArgs, ctx: ToolContext) {
-  // === PRE-FLIGHT (Hivemind value-add) ===
+  // === RUNTIME CONTRACT CHECK ===
+  // @opencode-ai/plugin ToolContext v1.15.4 không có ctx.task.
+  // Không register delegation nếu không có verified dispatch path.
+  return {
+    title: "Delegation runtime blocked",
+    output: "OpenCode plugin ToolContext does not expose Task dispatch API.",
+    metadata: { terminalKind: "runtime-dispatch-unsupported" }
+  }
+
+  // === FUTURE VERIFIED PATH ONLY (not current runtime proof) ===
   const gateResult = resolveCategoryGateDecision(args.agent, args.category)
   if (gateResult === "deny") {
     await recordCategoryGateask(args.agent, args.category, ctx.sessionID)
@@ -51,8 +60,7 @@ async function executeDelegateTaskV2(args: DelegateTaskArgs, ctx: ToolContext) {
   const delegationId = generateDelegationId()
   delegationTracker.register(delegationId, { parentId: ctx.sessionID, agent: args.agent, queueKey })
 
-  // === YIELD TO NATIVE TASK TOOL ===
-  // Return instruction — OpenCode runtime invoke native Task tool
+  // === YIELD TO VERIFIED CHILD-SESSION DISPATCH ===
   return {
     title: `Delegating to ${args.agent}`,
     output: `Prepared delegation ${delegationId}. Execute with Task tool.`,
@@ -62,10 +70,10 @@ async function executeDelegateTaskV2(args: DelegateTaskArgs, ctx: ToolContext) {
 ```
 
 **Đánh đổi:**
-- (+) Execution reliability — native Task tool quản lý lifecycle, không có execution gap
+- (+) Runtime honesty — không tạo delegation record giả khi plugin runtime không expose Task dispatch API
 - (+) Hivemind giữ value-adds — category gates, concurrency, depth limits
 - (-) Phụ thuộc native Task tool API — phải validate result format (Open Question #1 từ RESEARCH.md)
-- (-) Tool chaining limitation — nếu runtime không hỗ trợ auto-invoke Task từ custom tool return
+- (-) Tool chaining limitation — runtime hiện KHÔNG hỗ trợ auto-invoke Task từ custom tool return theo evidence 2026-05-18
 
 **Áp dụng:** Mọi lần dispatch subagent trong v2 — đây là entry point duy nhất.
 
