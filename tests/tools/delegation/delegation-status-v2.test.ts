@@ -232,4 +232,26 @@ describe("delegation-status v2 tool", () => {
 
     expect(data.elapsedHuman).toBe("1m 1s")
   })
+
+  describe("DelegationControlSchema adjust-prompt / change-agent", () => {
+    it("accepts adjust-prompt with restartPrompt", () => {
+      const r = DelegationControlSchema.safeParse({ action: "adjust-prompt", restartPrompt: "more info" })
+      expect(r.success).toBe(true)
+    })
+
+    it("rejects adjust-prompt without restartPrompt", () => {
+      const r = DelegationControlSchema.safeParse({ action: "adjust-prompt" })
+      expect(r.success).toBe(false)
+    })
+
+    it("accepts change-agent with agent", () => {
+      const r = DelegationControlSchema.safeParse({ action: "change-agent", agent: "gsd-reviewer" })
+      expect(r.success).toBe(true)
+    })
+
+    it("rejects change-agent without agent", () => {
+      const r = DelegationControlSchema.safeParse({ action: "change-agent" })
+      expect(r.success).toBe(false)
+    })
+  })
 })

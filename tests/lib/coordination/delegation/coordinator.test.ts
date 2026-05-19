@@ -1,4 +1,4 @@
-import { vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { DelegationCoordinator } from "../../../../src/coordination/delegation/coordinator.js"
 import type { DelegationResult } from "../../../../src/coordination/delegation/types.js"
@@ -268,5 +268,48 @@ describe("DelegationCoordinator", () => {
     expect(deps.notificationRouter.route).toHaveBeenCalledTimes(1)
     expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: right.delegationId }))
     expect(deps.notificationRouter.route).not.toHaveBeenCalledWith(expect.objectContaining({ delegationId: left.delegationId }))
+  })
+
+  describe("chain with append", () => {
+    it("first step dispatches normally and subsequent steps append via sendPromptAsync", async () => {
+      const deps = createDeps()
+      const coordinator = new DelegationCoordinator(deps)
+      const sendPromptAsync = vi.fn().mockResolvedValue(undefined)
+      const results = await coordinator.chain([
+        { agent: "builder", prompt: "step 1" },
+        { agent: "reviewer", prompt: "step 2" },
+      ], sendPromptAsync)
+      expect(deps.dispatcher.preflightCheck).toHaveBeenCalledTimes(1) // first step only
+      expect(results).toHaveLength(2)
+    })
+
+    it("second step reuses childSessionId from first step and sets chainedFrom", async () => {
+      const deps = createDeps()
+      const coordinator = new DelegationCoordinator(deps)
+      const sendPromptAsync = vi.fn().mockResolvedValue(undefined)
+      const results = await coordinator.chain([
+        { agent: "builder", prompt: "step 1" },
+        { agent: "reviewer", prompt: "step 2" },
+      ], sendPromptAsync)
+      // First result: childSessionId from dispatch
+      expect(results[0].childSessionId).toBeTruthy()
+      // Second result: same childSessionId
+      expect(results[1].childSessionId).toBe(results[0].childSessionId)
+      // Second result: chainedFrom set
+      expect(results[1].chainedFrom).toBe(results[0].delegationId)
+      // sendPromptAsync called for step 2
+      expect(sendPromptAsync).toHaveBeenCalledWith(results[0].childSessionId, "step 2")
+    })
+
+    it("falls back to dispatch for all steps when sendPromptAsync is not provided", async () => {
+      const deps = createDeps()
+      const coordinator = new DelegationCoordinator(deps)
+      const results = await coordinator.chain([
+        { agent: "builder", prompt: "step 1" },
+        { agent: "reviewer", prompt: "step 2" },
+      ])
+      expect(deps.dispatcher.preflightCheck).toHaveBeenCalledTimes(2)
+      expect(results[1].childSessionId).not.toBe(results[0].childSessionId) // different sessions
+    })
   })
 })

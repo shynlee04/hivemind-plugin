@@ -91,6 +91,7 @@ export interface DelegationResult {
   gracePeriodExpiresAt?: number
   /** Total count of matching delegations (for status tool responses) */
   total?: number
+  chainedFrom?: string
   childSessionId?: string
   executionState?: DelegationExecutionState
   firstActionAt?: number
