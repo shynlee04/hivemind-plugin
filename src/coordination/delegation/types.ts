@@ -57,7 +57,9 @@ export interface Delegation {
   explicitCancellation?: boolean
   redirectedFrom?: string
   restartedFrom?: string
+  /** Source delegation ID when a control action resumes an existing delegation flow. */
   resumedFrom?: string
+  /** Source delegation ID when a control action chains follow-up work. */
   chainedFrom?: string
   executionState?: DelegationExecutionState
   firstActionAt?: number
