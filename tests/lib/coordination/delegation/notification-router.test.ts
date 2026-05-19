@@ -7,6 +7,7 @@ import { vi } from "vitest"
 import { DelegationLifecycle } from "../../../../src/coordination/delegation/lifecycle.js"
 import { NotificationRouter } from "../../../../src/coordination/delegation/notification-router.js"
 import { DelegationRetryHandler } from "../../../../src/coordination/delegation/retry-handler.js"
+import { formatCompactLine, formatDelegationNotification, type NotificationFormatOptions } from "../../../../src/coordination/delegation/notification-formatter.js"
 
 describe("NotificationRouter", () => {
   it("routes a notification to the registered parent session", () => {
@@ -110,6 +111,66 @@ describe("NotificationRouter", () => {
     expect(router.formatNotification("failure", "dt-1", "bad")).toBe("❌ [DT:dt-1] failure — bad")
     expect(router.formatNotification("progress", "dt-1", "running")).toBe("🔄 [DT:dt-1] progress — running")
     expect(router.formatNotification("timeout", "dt-1", "300s")).toBe("⏰ [DT:dt-1] timeout — 300s")
+  })
+})
+
+describe("rich notification fields", () => {
+  const base: NotificationFormatOptions = {
+    delegationId: "dt-123",
+    agent: "builder",
+    status: "completed",
+    elapsedMs: 75000,
+    toolCount: 8,
+  }
+
+  it("formatDelegationNotification includes path when provided", () => {
+    const r = formatDelegationNotification({ ...base, path: "/src/components" } as NotificationFormatOptions)
+    expect(r).toContain("path=/src/components")
+  })
+
+  it("formatDelegationNotification omits path when not provided", () => {
+    const r = formatDelegationNotification(base)
+    expect(r).not.toContain("path=")
+  })
+
+  it("formatDelegationNotification includes file count when fileChanges provided", () => {
+    const r = formatDelegationNotification({ ...base, fileChanges: ["a.ts", "b.ts"] } as NotificationFormatOptions)
+    expect(r).toContain("files=2")
+  })
+
+  it("formatDelegationNotification includes timestamp when completedAt provided", () => {
+    const r = formatDelegationNotification({ ...base, completedAt: "2026-05-19T12:00:00.000Z" } as NotificationFormatOptions)
+    expect(r).toContain("at=2026-05-19T12:00:00.000Z")
+  })
+
+  it("formatCompactLine includes path and file count", () => {
+    const r = formatCompactLine({ ...base, path: "/src", fileChanges: ["f1.ts", "f2.ts"] } as NotificationFormatOptions)
+    expect(r).toContain("path=/src")
+    expect(r).toContain("files=2")
+  })
+
+  it("formatCompactLine omits path and file count when not provided", () => {
+    const r = formatCompactLine(base)
+    expect(r).not.toContain("path=")
+    expect(r).not.toContain("files=")
+  })
+
+  it("formatTuiNotification passes through path when provided", () => {
+    const router = new NotificationRouter()
+    const r = router.formatTuiNotification("success", "dt-1", "builder", 75000, 8, { path: "/src/components" })
+    expect(r).toContain("path=/src/components")
+  })
+
+  it("formatSystemNotification passes through path and fileChanges when provided", () => {
+    const router = new NotificationRouter()
+    const r = router.formatSystemNotification("success", "dt-1", "builder", 75000, 8, "done", {
+      path: "/src",
+      fileChanges: ["a.ts", "b.ts"],
+      completedAt: "2026-05-19T12:00:00.000Z",
+    })
+    expect(r).toContain("path=/src")
+    expect(r).toContain("files=2")
+    expect(r).toContain("at=2026-05-19T12:00:00.000Z")
   })
 })
 
