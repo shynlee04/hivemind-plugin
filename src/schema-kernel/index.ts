@@ -303,67 +303,19 @@ export {
   OpenCodeConfigSchemaLenient,
 } from "./config-precedence.schema.js"
 
-export type {
-  ConfigPrecedenceLevel,
-  ConfigSource,
-  ConfigSourceLenient,
-  OpenCodeConfig,
-  OpenCodeConfigLenient,
-} from "./config-precedence.schema.js"
-
 // ---------------------------------------------------------------------------
-// Agent work contract schemas
+// Session-view schemas
 // ---------------------------------------------------------------------------
 
 export {
-  AgentWorkEvidenceLevelSchema,
-  AgentWorkStatusSchema,
-  AgentWorkOwnerSchema,
-  AgentWorkScopeSchema,
-  AgentWorkEvidenceSchema,
-  AgentWorkCompactionSchema,
-  AgentWorkContractSchema,
-  AgentWorkContractStoreSchema,
-  AgentWorkCreateToolInputSchema,
-  AgentWorkExportToolInputSchema,
-  parseAgentWorkCreateToolInput,
-  parseAgentWorkExportToolInput,
-} from "./agent-work-contract.schema.js"
+  SessionViewInputSchema,
+  SessionViewDelegationFilterSchema,
+} from "./session-view.schema.js"
 
 export type {
-  AgentWorkEvidenceLevel,
-  AgentWorkStatus,
-  AgentWorkOwner,
-  AgentWorkScope,
-  AgentWorkEvidence,
-  AgentWorkCompaction,
-  AgentWorkContract,
-  AgentWorkContractStore,
-  AgentWorkCreateToolInput,
-  AgentWorkExportToolInput,
-} from "./agent-work-contract.schema.js"
-
-// ---------------------------------------------------------------------------
-// Hivemind configs schemas
-// ---------------------------------------------------------------------------
-
-export {
-  HIVEMIND_CONFIGS_SCHEMA_VERSION,
-  SupportedLanguageSchema,
-  HivemindModeSchema,
-  UserExpertLevelSchema,
-  DiscussModeSchema,
-  WorkflowConfigSchema,
-  DelegationSystemsSchema,
-  HivemindConfigsSchema,
-  LEGACY_KEY_MAP,
-  migrateKeys,
-  getDefaultConfigs,
-  getConfigsPath,
-  readConfigs,
-  validateConfigsFile,
-  writeConfigs,
-} from "./hivemind-configs.schema.js"
+  SessionViewInput,
+  SessionViewDelegationFilter,
+} from "./session-view.schema.js"
 
 export type {
   SupportedLanguage,
