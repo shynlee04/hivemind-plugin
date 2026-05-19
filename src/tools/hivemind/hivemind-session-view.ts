@@ -39,6 +39,9 @@ export function createHivemindSessionViewTool(projectRoot: string): ReturnType<t
       try {
         const input = SessionViewInputSchema.parse(rawArgs) as SessionViewInput
         const data = await buildUnifiedView(projectRoot, input.sessionId)
+        if (data.error) {
+          return renderToolResult(error(`Session not found: ${input.sessionId}`, data))
+        }
         return renderToolResult(success(`Unified view for ${input.sessionId}`, data))
       } catch (caughtError) {
         const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
