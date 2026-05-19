@@ -427,22 +427,25 @@ async function handleAggregate(projectRoot: string, groupBy: "subagentType" | "s
 | A3 | Event-tracker remnants in `.planning/` are purely historical and safe to leave as-is | Pitfalls | Some `.planning/` doc references are architecturally important (e.g., bootstrap spec). These should NOT be updated — they describe what was, not what is. |
 | A4 | The `hivemind-power-on` skill source-of-truth is `.hivefiver-meta-builder/skills-lab/hivemind-power-on/` and `.opencode/skills/hivemind-power-on/` is the runtime copy | Integration Points | Both locations need updating. The .opencode copy is consumed at runtime. The lab copy is the canonical source. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `hivemind-session-view` be a separate tool file or a new action on an existing tool?**
    - What we know: D-09 specifies "New tool `hivemind-session-view`"
    - What's unclear: The cross-root nature doesn't fit neatly on any existing tool. It reads from 3 roots; no existing tool owns all 3.
    - Recommendation: Per D-09, keep as new tool. Maintains single-responsibility.
+   - **RESOLVED:** D-09 locked as decision. 16-05 creates new tool file.
 
 2. **How to handle stale `hierarchy-manifest.json` when `get-manifest` is called?**
    - What we know: Manifest is written by capture layer on delegation. It could become stale if sessions are deleted or modified externally.
    - What's unclear: Should `get-manifest` warn about staleness? Should it verify against disk?
    - Recommendation: Start without staleness detection. Add if verification failures occur.
+   - **RESOLVED:** Accepted as known limitation. 16-04 implements without staleness detection per recommendation.
 
 3. **What exact progressive disclosure hierarchy should `hivemind-power-on` SKILL.md use?**
    - What we know: D-22 delegates to agent's discretion. Current skill has 7 IRON LAWS → ROUTING TABLE → QUICK REFERENCE → REFERENCE MAP.
    - What's unclear: The exact hierarchy depth and jump link format.
    - Recommendation: Keep the 4-level structure but ensure every jump link points to a real section ID in reference files.
+   - **RESOLVED:** Agent's discretion per D-22. 16-07 specifies 5-section structure in English.
 
 ## Environment Availability
 

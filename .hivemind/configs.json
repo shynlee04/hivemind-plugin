@@ -1,7 +1,7 @@
 {
   "$schema": "./configs.schema.json",
   "conversation_language": "vi",
-  "documents_and_artifacts_language": "vi",
+  "documents_and_artifacts_language": "en",
   "mode": "hivemind-powered",
   "user_expert_level": "clumsy-vibecoder",
   "delegation_systems": {

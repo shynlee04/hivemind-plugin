@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+  "lastUpdated": "2026-05-19T22:17:27.027Z",
+  "children": {
+    "ses_1bdc97231ffe2UtvUOh15BG7sv": {
+      "sessionID": "ses_1bdc97231ffe2UtvUOh15BG7sv",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-19T21:48:52.085Z",
+      "updatedAt": "2026-05-19T21:52:51.688Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bdc97231ffe2UtvUOh15BG7sv.json"
+    },
+    "ses_1bdc58cfbffedIWHd9ng7X7gnp": {
+      "sessionID": "ses_1bdc58cfbffedIWHd9ng7X7gnp",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-19T21:53:07.365Z",
+      "updatedAt": "2026-05-19T21:58:21.217Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bdc58cfbffedIWHd9ng7X7gnp.json"
+    },
+    "ses_1bdc08e49ffefNKg48J7hn9uQp": {
+      "sessionID": "ses_1bdc08e49ffefNKg48J7hn9uQp",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-19T21:58:34.714Z",
+      "updatedAt": "2026-05-19T22:05:26.674Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bdc08e49ffefNKg48J7hn9uQp.json"
+    },
+    "ses_1bdba0273ffehNFVQEzBliaJBr": {
+      "sessionID": "ses_1bdba0273ffehNFVQEzBliaJBr",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-19T22:05:43.735Z",
+      "updatedAt": "2026-05-19T22:13:08.447Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bdba0273ffehNFVQEzBliaJBr.json"
+    },
+    "ses_1bdb30357ffeTGVFdbEQ5MOoF3": {
+      "sessionID": "ses_1bdb30357ffeTGVFdbEQ5MOoF3",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-19T22:13:22.251Z",
+      "updatedAt": "2026-05-19T22:17:11.810Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bdb30357ffeTGVFdbEQ5MOoF3.json"
+    },
+    "ses_1bdaf475cffe7uDznDGElb242J": {
+      "sessionID": "ses_1bdaf475cffe7uDznDGElb242J",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-19T22:17:27.027Z",
+      "updatedAt": "2026-05-19T22:17:27.027Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_1bdaf475cffe7uDznDGElb242J.json"
+    }
+  },
+  "totalChildren": 6,
+  "maxDepth": 1
+}

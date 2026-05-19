@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
+  "lastUpdated": "2026-05-19T21:19:39.737Z",
+  "children": {
+    "ses_1be059a5fffeZ26SoACU7Rqo4j": {
+      "sessionID": "ses_1be059a5fffeZ26SoACU7Rqo4j",
+      "parentSessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
+      "rootMainSessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-scout",
+      "subagentType": "hm-l2-scout",
+      "createdAt": "2026-05-19T20:43:09.732Z",
+      "updatedAt": "2026-05-19T20:44:36.078Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1be059a5fffeZ26SoACU7Rqo4j.json"
+    },
+    "ses_1be041053ffe3OSX6HBlFgc1rR": {
+      "sessionID": "ses_1be041053ffe3OSX6HBlFgc1rR",
+      "parentSessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
+      "rootMainSessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-scout",
+      "subagentType": "hm-l2-scout",
+      "createdAt": "2026-05-19T20:44:50.531Z",
+      "updatedAt": "2026-05-19T20:45:38.746Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1be041053ffe3OSX6HBlFgc1rR.json"
+    },
+    "ses_1bde88b05ffemTW9e3KIQ16JlL": {
+      "sessionID": "ses_1bde88b05ffemTW9e3KIQ16JlL",
+      "parentSessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
+      "rootMainSessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-phase-researcher",
+      "subagentType": "gsd-phase-researcher",
+      "createdAt": "2026-05-19T21:14:54.145Z",
+      "updatedAt": "2026-05-19T21:19:39.737Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bde88b05ffemTW9e3KIQ16JlL.json"
+    }
+  },
+  "totalChildren": 3,
+  "maxDepth": 1
+}
