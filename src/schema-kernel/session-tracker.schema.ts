@@ -31,7 +31,8 @@ const safeSessionId = z
 /**
  * Input schema for the session-tracker tool.
  *
- * Five actions: export-session, get-status, get-summary, list-sessions, search-sessions.
+ * Six actions: export-session, get-status, get-summary, list-sessions, search-sessions,
+ * filter-sessions.
  * Backward-compatible with existing action names.
  */
 export const SessionTrackerInputSchema = z.discriminatedUnion("action", [
@@ -57,6 +58,18 @@ export const SessionTrackerInputSchema = z.discriminatedUnion("action", [
     query: z.string().min(1),
     limit: z.number().min(1).max(100).optional().default(20),
   }),
+  z.object({
+    action: z.literal("filter-sessions"),
+    status: z.string().optional(),
+    agentType: z.string().optional(),
+    minDepth: z.number().min(0).optional(),
+    maxDepth: z.number().min(0).optional(),
+    timeRange: z.object({
+      after: z.string().optional(),
+      before: z.string().optional(),
+    }).optional(),
+    limit: z.number().min(1).max(100).optional().default(20),
+  }),
 ])
 
 /** Inferred type for session-tracker tool input. */
@@ -69,7 +82,7 @@ export type SessionTrackerInput = z.infer<typeof SessionTrackerInputSchema>
 /**
  * Input schema for the session-hierarchy tool.
  *
- * Three actions: get-children, get-parent-chain, get-delegation-depth.
+ * Four actions: get-children, get-parent-chain, get-delegation-depth, get-manifest.
  */
 export const SessionHierarchyInputSchema = z.discriminatedUnion("action", [
   z.object({
@@ -85,6 +98,10 @@ export const SessionHierarchyInputSchema = z.discriminatedUnion("action", [
     action: z.literal("get-delegation-depth"),
     sessionId: safeSessionId,
   }),
+  z.object({
+    action: z.literal("get-manifest"),
+    sessionId: safeSessionId,
+  }),
 ])
 
 /** Inferred type for session-hierarchy tool input. */
@@ -97,7 +114,7 @@ export type SessionHierarchyInput = z.infer<typeof SessionHierarchyInputSchema>
 /**
  * Input schema for the session-context tool.
  *
- * Three actions: find-related, cross-reference, synthesize-context.
+ * Four actions: find-related, cross-reference, synthesize-context, aggregate.
  */
 export const SessionContextInputSchema = z.discriminatedUnion("action", [
   z.object({
@@ -113,6 +130,10 @@ export const SessionContextInputSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("synthesize-context"),
     sessionId: safeSessionId,
+  }),
+  z.object({
+    action: z.literal("aggregate"),
+    groupBy: z.enum(["subagentType", "status"]),
   }),
 ])
 
