@@ -23,7 +23,7 @@ import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-chil
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
 
 import type { Delegation, DelegationNotificationType, DelegationStatus } from "./coordination/delegation/types.js"
-import { appendTuiPrompt, sendPromptAsync as sdkSendPromptAsync, type OpenCodeClient } from "./shared/session-api.js"
+import { appendTuiPrompt, sendPromptAsync as sdkSendPromptAsync, getSessionMessageCount, abortSession, type OpenCodeClient } from "./shared/session-api.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
 import { taskState } from "./shared/state.js"
 import type { PendingNotification } from "./shared/types.js"
@@ -187,6 +187,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const monitor = new DelegationMonitor({
     getDelegationRecord: (delegationId) => lifecycle.getStatus(delegationId),
     getStatus: (delegationId) => lifecycle.getStatus(delegationId)?.status ?? "dispatched",
+    getActionCount: (delegationId) => lifecycle.getStatus(delegationId)?.actionCount ?? 0,
     inject: (_parentSessionId, line, delegationId) => {
       if (!delegationId) return
       notificationRouter.route({ delegationId, idempotencyKey: `${delegationId}:progress:${line}`, message: line, timestamp: Date.now(), type: "progress" })
@@ -392,7 +393,11 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     },
     tool: {
       "delegate-task": createDelegateTaskTool(delegationManager, hivemindConfig),
-      "delegation-status": createDelegationStatusTool(delegationManager),
+      "delegation-status": createDelegationStatusTool(delegationManager, {
+        getChildMessageCount: (sessionId) => getSessionMessageCount(client, sessionId),
+        terminateChild: (sessionId) => abortSession(client, sessionId),
+        getEscalationLevel: (delegationId) => monitor.getEscalationLevel(delegationId),
+      }),
       "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
       "prompt-skim": createPromptSkimTool(projectDirectory),
       "prompt-analyze": createPromptAnalyzeTool(projectDirectory),
