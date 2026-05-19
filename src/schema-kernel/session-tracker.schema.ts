@@ -16,7 +16,7 @@ import { z } from "zod"
  * sequences at the Zod boundary. This is the first line of defense before
  * `safeSessionPath()` applies a second guard in each handler (defense in depth).
  */
-const safeSessionId = z
+export const safeSessionId = z
   .string()
   .min(1)
   .refine(
@@ -64,10 +64,8 @@ export const SessionTrackerInputSchema = z.discriminatedUnion("action", [
     agentType: z.string().optional(),
     minDepth: z.number().min(0).optional(),
     maxDepth: z.number().min(0).optional(),
-    timeRange: z.object({
-      after: z.string().optional(),
-      before: z.string().optional(),
-    }).optional(),
+    timeAfter: z.string().optional(),
+    timeBefore: z.string().optional(),
     limit: z.number().min(1).max(100).optional().default(20),
   }),
 ])

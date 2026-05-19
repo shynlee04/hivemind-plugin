@@ -111,8 +111,11 @@ async function handleGetDelegationDepth(projectRoot: string, sessionId: string) 
   }))
 }
 
+const COMPUTE_DEPTH_MAX = 100
+
 async function computeDepth(projectRoot: string, sessionId: string, visited: Set<string>): Promise<number> {
   if (visited.has(sessionId)) return 0
+  if (visited.size >= COMPUTE_DEPTH_MAX) return 0
   visited.add(sessionId)
   const record = await readContinuity(projectRoot, sessionId)
   if (!record || !record.hierarchy?.children?.length) return 0

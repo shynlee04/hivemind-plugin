@@ -34,9 +34,8 @@ export function createSessionTrackerTool(projectRoot: string): ReturnType<typeof
       agentType: tool.schema.string().optional(),
       minDepth: tool.schema.number().optional(),
       maxDepth: tool.schema.number().optional(),
-      timeRange: tool.schema.string().optional(),
-      filterJson: tool.schema.string().optional(),
-      removeEmpty: tool.schema.string().optional(),
+      timeAfter: tool.schema.string().optional(),
+      timeBefore: tool.schema.string().optional(),
     },
     async execute(rawArgs: unknown, _context: ToolContext): Promise<string> {
       try {
@@ -283,7 +282,8 @@ async function handleFilterSessions(
     agentType?: string
     minDepth?: number
     maxDepth?: number
-    timeRange?: { after?: string; before?: string }
+    timeAfter?: string
+    timeBefore?: string
     limit: number
   },
 ) {
@@ -303,8 +303,8 @@ async function handleFilterSessions(
     const sessions = manifest.sessions ?? {}
     const statusLower = input.status?.toLowerCase()
     const agentLower = input.agentType?.toLowerCase()
-    const afterDate = input.timeRange?.after ? new Date(input.timeRange.after).getTime() : undefined
-    const beforeDate = input.timeRange?.before ? new Date(input.timeRange.before).getTime() : undefined
+  const afterDate = input.timeAfter ? new Date(input.timeAfter).getTime() : undefined
+  const beforeDate = input.timeBefore ? new Date(input.timeBefore).getTime() : undefined
 
     const filtered = Object.entries(sessions).filter(([_, meta]) => {
       if (statusLower && meta.status?.toLowerCase() !== statusLower) return false

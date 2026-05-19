@@ -8,7 +8,7 @@
  */
 
 import { mkdir, rename, writeFile, readFile } from "node:fs/promises"
-import { dirname, resolve } from "node:path"
+import { dirname, resolve, sep } from "node:path"
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -139,7 +139,8 @@ export function safeSessionPath(
   const trackerRoot = resolve(projectRoot, SESSION_TRACKER_DIR)
   const resolved = resolve(trackerRoot, safe, filename)
 
-  if (!resolved.startsWith(trackerRoot + "/") && resolved !== trackerRoot) {
+  const prefix = trackerRoot.endsWith(sep) ? trackerRoot : trackerRoot + sep
+  if (!resolved.startsWith(prefix) && resolved !== trackerRoot) {
     throw new Error(
       `[Harness] Path traversal detected — resolved path "${resolved}" is outside tracker root "${trackerRoot}"`,
     )

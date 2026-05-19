@@ -190,14 +190,18 @@ async function handleAggregate(projectRoot: string, groupBy: "subagentType" | "s
     for (const [sessionId] of Object.entries(sessions)) {
       const continuity = await readContinuity(projectRoot, sessionId)
       if (!continuity) continue
-      // Use sessionID prefix as agent type heuristic: "ses_" = generic, "hm-" = hm lineage
-      const agentType = continuity.sessionID?.startsWith("hm-")
-        ? "hm-lineage"
-        : continuity.sessionID?.startsWith("hf-")
-          ? "hf-lineage"
-          : continuity.sessionID?.startsWith("gsd-")
-            ? "gsd-lineage"
-            : "generic-session"
+      // Use sessionID prefix as agent type heuristic.
+      // Real session IDs from OpenCode start with "ses_", while "hm-"/"hf-"/"gsd-"
+      // prefixes are reserved for future harness-native session lineages.
+      const agentType = continuity.sessionID?.startsWith("ses_")
+        ? "opencode-session"
+        : continuity.sessionID?.startsWith("hm-")
+          ? "hm-lineage"
+          : continuity.sessionID?.startsWith("hf-")
+            ? "hf-lineage"
+            : continuity.sessionID?.startsWith("gsd-")
+              ? "gsd-lineage"
+              : "generic-session"
       counts[agentType] = (counts[agentType] ?? 0) + 1
     }
   }
