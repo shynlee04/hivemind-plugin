@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-19T21:14:43.539Z"
+last_updated: "2026-05-19T21:51:20.221Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
+  total_plans: 22
+  completed_plans: 16
+  percent: 73
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,14 +17,16 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-19
-**Last advance:** 15-05-PLAN.md completed — total tool activity duration tracking (computeTotalToolActivityDuration + 4-condition isComplete)
-**Last trigger:** CP-DT-01 RE-OPENED / RUNTIME BLOCKED — forensic report `report-20260518-105705.md` proved plugin `ToolContext` has no `context.task` runtime seam. Next step: execute CP-DT-01 Wave 6 gap closure before CP-PTY-01.
+**Last advance:** 16-01-PLAN.md completed — extended 3 tool input schemas with new action variants (filter-sessions, aggregate, get-manifest) + created session-view.schema.ts
+**Last trigger:** Phase 16 Plan 01 complete — schema foundation ready for Wave 1 tool implementation plans.
 
 ---
 
 ## Current Status
 
-**Active phase:** CP-DT-01 — Delegate-Task Ecosystem Revamp. RE-OPENED / RUNTIME BLOCKED. Waves 1-5 delivered historical implementation artifacts, but runtime proof failed because OpenCode plugin `ToolContext` v1.15.4 has no `context.task` field.
+**Active phase:** Phase 16 — session-tracker-tool-intelligence-event-tracker-deprecation.
+**Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
+**CP-DT-01 status:** RE-OPENED / RUNTIME BLOCKED. Waves 1-5 delivered historical implementation artifacts, but runtime proof failed because OpenCode plugin `ToolContext` v1.15.4 has no `context.task` field.
 **Health:** CP-DT-01 blocked until Wave 6 closes runtime-truth gaps. Required sequence: correct docs/spec/gates, reassess Plan 01/02 coordination contracts, rewrite Plan 03 tool contract, adjust Plan 04 loops/chaining, rebuild Plan 05 plugin/runtime-contract tests, then require L1-L3 evidence before any completion claim.
 **CP-ST-04 status:** ✅ COMPLETE — 3 plans delivered (PendingDispatchRegistry + Classification, Directory Architecture, Hierarchy Manifest + Immediate I/O + Cleanup).
 
@@ -55,7 +57,7 @@ Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/`
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Phase 14 — wire-monitor-notification-into-delegationmanager-dispatch-cl
+**Current focus:** Phase 16 — session-tracker-tool-intelligence-event-tracker-deprecation
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -140,6 +142,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-CP-ST-06-01 | Test audit complete: 25 failing tests all classified as 'rewrite' (0 keep, 0 delete); RC-3 (API mismatch) accounts for 19/25 root causes; 22 new integration tests across 4 files; 8 TDD RED tests for RetryQueue awaiting CP-ST-06-03 implementation | NEW — 2026-05-16 |
 | D-CP-ST-06-COMPLETE | CP-ST-06 fully complete: 5/5 plans, 418/418 tests pass, typecheck clean, all code review findings fixed (CR-01, CR-02, WR-01..04, IN-01..04), Nyquist gaps filled (5 gaps, 11 tests). 6 root causes fixed: RC-1 (hierarchy reverse-order), RC-2 (nested child status), RC-3 (gate:none→unknownSub), RC-4 (lastMessage truncation), RC-5 (error swallowing→retry queue), RC-6 (stale tests). Runtime preservation: parent task result capture, L2 hierarchy registration, unknownSub bootstrap guard, recovery reads child JSON | NEW — 2026-05-17 |
 | D-15-05 | computeTotalToolActivityDuration pure function + 4-condition isComplete (stalled + assistant + fileChanges + sufficientDuration); totalToolActivityDurationMs in result; minTotalToolActivityDurationMs in options (default 60s); 9 new tests, 31 total, all pass | NEW — 2026-05-19 |
+| D-16-01 | Schema extension: filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy; new session-view.schema.ts with SessionViewInputSchema for hivemind-session-view tool | NEW — 2026-05-19 |
 
 ---
 
@@ -232,11 +235,13 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass, typecheck clean, all review findings fixed. 6 root causes permanently fixed.
-2. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 4/4 core deliverables complete, 5/5 plans executed, and latest focused/regression/typecheck gates pass. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`, then live smoke/UAT where feasible.
-3. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete, entry gate satisfied). Now AFTER CP-DT-01 in dependency order.
-4. **Runtime UAT pending** — CP-ST live compact/resume and CP-DT live delegation smoke tests need real long-haul session proof after implementation.
-5. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-DT-01 and CP-PTY readiness checks.
+1. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
+2. **Phase 16 remaining plans (02-07)** — Wave 1 tool implementation plans can now import new action types.
+3. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass.
+4. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 5/5 plans executed. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`.
+5. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete). After CP-DT-01 in dependency order.
+6. **Runtime UAT pending** — CP-ST live compact/resume and CP-DT live delegation smoke tests need real long-haul session proof.
+7. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-DT-01 and CP-PTY readiness checks.
 
 ## Option 3 Foundation Artifacts
 
