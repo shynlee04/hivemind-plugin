@@ -94,7 +94,7 @@ export class DelegationCoordinator {
     })
 
     const status = this.deps.lifecycle.getStatus?.(delegationId)?.status ?? "dispatched"
-    return { delegationId, evidenceLevel: record.evidenceLevel, executionState: record.executionState, queueKey: preflight.queueKey, status }
+    return { childSessionId: record.childSessionId, delegationId, evidenceLevel: record.evidenceLevel, executionState: record.executionState, queueKey: preflight.queueKey, status }
   }
 
   /** Record the first observable child action/message/tool signal; promptAsync acceptance never calls this. */
@@ -216,10 +216,22 @@ export class DelegationCoordinator {
     this.handleChildSessionTerminal(childSessionId, "error", "[Harness] Delegated child session was deleted")
   }
 
-  /** Dispatches a bounded sequential chain, passing prior results into later prompts when requested. */
-  async chain(delegations: ChainStep[]): Promise<DelegationResult[]> {
+  /** Dispatches a bounded sequential chain, passing prior results into later prompts when requested.
+   * When sendPromptAsync is provided, steps after the first append to the previous child session
+   * instead of creating a new one. */
+  async chain(delegations: ChainStep[], sendPromptAsync?: (sessionId: string, prompt: string) => Promise<void>): Promise<DelegationResult[]> {
     const results: DelegationResult[] = []
+    let previousChildSessionId: string | undefined
     for (const [index, step] of delegations.entries()) {
+      if (index > 0 && previousChildSessionId && sendPromptAsync) {
+        // Append to existing completed child session
+        await sendPromptAsync(previousChildSessionId, step.prompt)
+        const chainResult = this.buildChainResult(step, previousChildSessionId, results[results.length - 1].delegationId, index)
+        results.push(chainResult)
+        if (chainResult.status !== "completed") break
+        continue
+      }
+      // First step or no sendPromptAsync: use existing dispatch
       const previous = results.at(-1)
       const result = await this.dispatch({
         agent: step.agent,
@@ -227,13 +239,23 @@ export class DelegationCoordinator {
         parentSessionId: "chain",
         prompt: step.usePreviousResult && previous ? `${step.prompt}\n\nPrevious result: ${previous.result ?? previous.error ?? previous.status}` : step.prompt,
         queueKey: `chain:${step.agent}:${index}`,
-
       })
-      const completedResult = result.status === "dispatched" ? { ...result, result: result.result ?? result.delegationId, status: "completed" as const } : result
+      previousChildSessionId = result.childSessionId
+      const completedResult = result.status === "dispatched" ? { ...result, status: "completed" as const } : result
       results.push(completedResult)
       if (completedResult.status !== "completed") break
     }
     return results
+  }
+
+  private buildChainResult(step: ChainStep, childSessionId: string, previousDelegationId: string, _index: number): DelegationResult {
+    return {
+      childSessionId,
+      delegationId: this.createDelegationId(),
+      status: "completed" as const,
+      result: step.usePreviousResult ? `Chained from ${previousDelegationId}` : undefined,
+      chainedFrom: previousDelegationId,
+    }
   }
 
   private cleanup(delegationId: string, status: DelegationStatus, result: DelegationResult): void {
