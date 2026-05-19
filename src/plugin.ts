@@ -142,6 +142,7 @@ export interface DelegationModuleSetup {
   lifecycle: DelegationLifecycle
   notificationRouter: NotificationRouter
   slotManager: SlotManager
+  monitor: DelegationMonitor
 }
 
 /**
@@ -211,7 +212,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
       parts: [{ type: "text", text: prompt }],
     }),
   })
-  return { coordinator, delegationManager, detector, lifecycle, notificationRouter, slotManager }
+  return { coordinator, delegationManager, detector, lifecycle, notificationRouter, slotManager, monitor }
 }
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
@@ -235,6 +236,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
   const delegationModules = setupDelegationModules({ client, enableRuntimeAdapter: true, projectDirectory, ptyManager, runtimePolicy })
   const delegationManager = delegationModules.delegationManager
+  const monitor = delegationModules.monitor
   // Recovery runs asynchronously — must not block plugin init.
   // If a second OpenCode instance starts, recoverPending() would await SDK calls
   // for sessions that belong to the first instance, causing a hang.
