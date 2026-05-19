@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-20T05:10:00.000Z"
+last_updated: "2026-05-19T22:11:56.238Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 22
-  completed_plans: 19
+  completed_plans: 20
   percent: 86
 ---
 
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 16-07-PLAN.md completed — hivemind-power-on skill rewrite with actual tool capabilities, 6 reference files updated, aspirational content removed
+**Last advance:** 16-02-PLAN.md completed — enhanced session-tracker with child .json search, >1MB warnings, filter-sessions action
 **Last trigger:** Phase 16 Plan 01 complete — schema foundation ready for Wave 1 tool implementation plans.
 
 ---
@@ -26,6 +26,7 @@ progress:
 
 **Active phase:** Phase 16 — session-tracker-tool-intelligence-event-tracker-deprecation.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
+**Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 06:** ✅ COMPLETE — Event-tracker deprecation cleanup: scanned all src/ + .opencode/skills/ for remnants, updated hm-l3-hivemind-engine-contracts (2 refs) and hm-l3-hivemind-state-reference (5 refs) with deprecation annotations. GAP-7 closed. REQ-07 satisfied.
 **Phase 16 Plan 07:** ✅ COMPLETE — hivemind-power-on skill rewrite: SKILL.md v2.1.0 (236 lines) + 6 reference files updated with actual tool capabilities (filter-sessions, get-manifest, aggregate, hivemind-session-view). All aspirational content removed. Truthful resume guidance with SDK v2 dependency noted. All acceptance criteria pass. REQ-08 satisfied.
 **CP-DT-01 status:** RE-OPENED / RUNTIME BLOCKED. Waves 1-5 delivered historical implementation artifacts, but runtime proof failed because OpenCode plugin `ToolContext` v1.15.4 has no `context.task` field.
@@ -239,8 +240,8 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 ## Next Actions
 
 1. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
-2. **Phase 16 Plan 06 COMPLETE** — Event-tracker deprecation cleanup: 2 SKILL.md files updated, src/ verified clean. GAP-7 closed.
-3. **Phase 16 remaining plans (02-05, 07)** — Wave 1 tool implementation plans waiting on plan 06/07 dependency (GAP-7 closure).
+2. **Phase 16 Plan 02 COMPLETE** — Enhanced session-tracker.ts: child .json search, >1MB warnings, filter-sessions action. typecheck clean, all tests pass.
+3. **Phase 16 remaining plans (03-05, 07)** — Wave 1 tool implementation plans. Next: 16-03 (session-hierarchy intelligence).
 3. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass.
 4. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 5/5 plans executed. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`.
 5. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete). After CP-DT-01 in dependency order.

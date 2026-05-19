@@ -481,11 +481,11 @@ Plans:
 **Goal:** 3 tools (session-tracker, session-hierarchy, session-context) và new hivemind-session-view tool được nâng cấp với JSON-aware child search, filter-sessions, aggregate, get-manifest, cross-root unified query; event-tracker remnants cleaned; hivemind-power-on skill rewritten truthful.
 **Requirements:** REQ-01, REQ-02, REQ-03, REQ-04, REQ-05, REQ-06, REQ-07, REQ-08
 **Depends on:** Phase 15
-**Plans:** 1/7 plans executed
+**Plans:** 2/7 plans executed
 
 Plans:
 - [x] 16-01-PLAN.md (Wave 0) — Schema-kernel extensions: filter-sessions, aggregate, get-manifest, new session-view schema
-- [ ] 16-02-PLAN.md (Wave 1) — session-tracker.ts: search child .json + filter-sessions action
+- [x] 16-02-PLAN.md (Wave 1) — session-tracker.ts: search child .json + filter-sessions action
 - [ ] 16-03-PLAN.md (Wave 1) — session-context.ts: aggregate action
 - [ ] 16-04-PLAN.md (Wave 1) — session-hierarchy.ts: get-manifest action
 - [ ] 16-05-PLAN.md (Wave 1) — hivemind-session-view.ts (new tool) + plugin.ts registration
