@@ -177,6 +177,14 @@ export class DelegationMonitor {
     }
   }
 
+  /** Retrieve the current failure escalation level for a delegation. */
+  getEscalationLevel(delegationId: string): string | null {
+    const state = this.states.get(delegationId)
+    if (!state) return null
+    const level = state.checkpointTracker.getState(delegationId)?.failureLevel ?? 0
+    return level > 0 ? `Level ${level}` : null
+  }
+
   private isTerminal(status: string): boolean {
     return status === "completed" || status === "error" || status === "timeout"
   }
