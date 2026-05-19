@@ -23,7 +23,7 @@ import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-chil
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
 
 import type { Delegation, DelegationNotificationType, DelegationStatus } from "./coordination/delegation/types.js"
-import { appendTuiPrompt, showTuiToast, type OpenCodeClient } from "./shared/session-api.js"
+import { appendTuiPrompt, sendPromptAsync as sdkSendPromptAsync, type OpenCodeClient } from "./shared/session-api.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
 import { taskState } from "./shared/state.js"
 import type { PendingNotification } from "./shared/types.js"
@@ -70,7 +70,7 @@ import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-lo
 import { SessionTracker } from "./features/session-tracker/index.js"
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
-import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./task-management/continuity/index.js"
+import { getSessionContinuity, listSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./task-management/continuity/index.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 import type { RuntimePolicy } from "./shared/types.js"
 
@@ -161,7 +161,6 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
       if (!shouldAppendParentTuiNotification(notification.type)) return true
       const line = notificationRouter.formatNotification(notification.type, notification.delegationId, notification.message)
       await appendTuiPrompt(options.client, line)
-      await showTuiToast(options.client, `Delegation ${notification.type} delivered`)
       return true
     },
     persistPending: persistPendingDelegationNotifications,
@@ -207,6 +206,9 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     notificationRouter,
     ptyManager: options.ptyManager,
     runtimePolicy: options.runtimePolicy,
+    sendPromptAsync: (sessionId, prompt) => sdkSendPromptAsync(options.client, sessionId, {
+      parts: [{ type: "text", text: prompt }],
+    }),
   })
   return { coordinator, delegationManager, detector, lifecycle, notificationRouter, slotManager }
 }
@@ -238,6 +240,12 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     delegationManager,
   })
   lifecycleManager.hydrateFromContinuity()
+
+  // Init-time pending notification drain — replays notifications queued
+  // while the parent session was ended. Best-effort: does not block plugin init.
+  // This runs AFTER hydrateFromContinuity so continuity records are available,
+  // but fires-and-forgets so it never blocks the plugin.
+  void replayPendingDelegationNotifications(client)
 
   // Phase 36.1 R-COMPLETION-DETECTOR-05: complete the dual-signal completion
   // wiring. The lifecycle manager *owns* the CompletionDetector (it receives
@@ -427,14 +435,39 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
 /**
  * Drain pending delegation notifications from ALL continuity records
- * and replay them into the TUI via appendTuiPrompt. Called at plugin init.
- * Best-effort: failures are silently ignored.
+ * and replay them into the TUI via appendTuiPrompt. Called at plugin init
+ * to recover notifications that were queued while the parent session was ended.
+ *
+ * Best-effort: failures during replay are silently ignored — the continuity
+ * array is cleared regardless to prevent duplicate replay on next init.
+ *
+ * Double-notification prevention: the lifecycle handler already calls
+ * patchSessionContinuity(sessionID, { pendingNotifications: [] }) during
+ * session.created/session.updated events. The init-time drain also clears
+ * after replay. Since both use patchSessionContinuity to write and
+ * listSessionContinuity to read fresh data each time, whichever runs first
+ * clears the array and the other sees empty. No duplicate notifications.
  *
  * @param client - OpenCode SDK client for TUI operations.
  */
 export async function replayPendingDelegationNotifications(client: OpenCodeClient): Promise<void> {
-  // STUB — will be implemented in GREEN phase
-  void client
+  const allSessions = listSessionContinuity()
+  for (const record of Object.values(allSessions)) {
+    const pending = record.metadata.pendingNotifications ?? []
+    if (pending.length === 0) continue
+    const sessionId = record.sessionID
+    if (!sessionId) continue
+    for (const notification of pending) {
+      const line = notification.resultPreview ??
+        `Delegation ${notification.metadata?.delegationId ?? "unknown"} ${notification.status}`
+      try {
+        await appendTuiPrompt(client, line)
+      } catch {
+        break  // best-effort: stop replay on first failure
+      }
+    }
+    patchSessionContinuity(sessionId, { pendingNotifications: [] })
+  }
 }
 
 export default HarnessControlPlane

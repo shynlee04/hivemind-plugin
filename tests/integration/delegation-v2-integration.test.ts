@@ -244,10 +244,12 @@ describe("delegation v2 plugin integration", () => {
 
     await HarnessControlPlane({ client: client as never, directory: "/tmp/project" } as never)
 
-    // Init should replay the pending notification
-    expect(client.tui.appendPrompt).toHaveBeenCalledWith(
-      expect.objectContaining({ body: expect.objectContaining({ text: expect.stringContaining("replay result completed") }) }),
-    )
+    // Init should replay the pending notification (fire-and-forget, so retry via waitFor)
+    await vi.waitFor(() => {
+      expect(client.tui.appendPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({ body: expect.objectContaining({ text: expect.stringContaining("replay result completed") }) }),
+      )
+    })
 
     // Clean up
     patchSessionContinuity(testSessionId, { pendingNotifications: [] })

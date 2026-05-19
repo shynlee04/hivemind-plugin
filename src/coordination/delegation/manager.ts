@@ -226,10 +226,16 @@ export class DelegationManager {
 
       await this.options.sendPromptAsync(childSessionId, prompt)
 
+      // For chain action, update parentSessionId to chainParentSessionId if provided
+      const chainParentId = request.action === "chain"
+        ? (request.chainParentSessionId ?? delegation.parentSessionId)
+        : delegation.parentSessionId
+
       // Create new delegation record via lifecycle.register
       const newRecord: Delegation = {
         ...delegation,
         id: `dt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        parentSessionId: chainParentId,
         childSessionId,
         prompt,
         status: "running",
