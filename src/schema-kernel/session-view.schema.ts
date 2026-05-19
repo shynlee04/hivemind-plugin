@@ -6,6 +6,7 @@
  */
 
 import { z } from "zod"
+import { safeSessionId } from "./session-tracker.schema.js"
 
 /**
  * Input schema for the hivemind-session-view tool.
@@ -13,7 +14,7 @@ import { z } from "zod"
 export const SessionViewInputSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("get"),
-    sessionId: z.string().min(1),
+    sessionId: safeSessionId,
   }),
 ])
 

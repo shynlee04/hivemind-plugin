@@ -16,7 +16,7 @@ import { z } from "zod"
  * sequences at the Zod boundary. This is the first line of defense before
  * `safeSessionPath()` applies a second guard in each handler (defense in depth).
  */
-const safeSessionId = z
+export const safeSessionId = z
   .string()
   .min(1)
   .refine(
