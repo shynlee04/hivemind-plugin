@@ -312,4 +312,45 @@ describe("DelegationCoordinator", () => {
       expect(results[1].childSessionId).not.toBe(results[0].childSessionId) // different sessions
     })
   })
+
+  it("invokes onChildSessionId early and registers mapping before starter completes", async () => {
+    const deps = createDeps()
+    const startSpy = vi.fn().mockImplementation(async (params) => {
+      params.onChildSessionId?.("child-early-id")
+      return { childSessionId: "child-early-id" }
+    })
+    const depsWithStarter = {
+      ...deps,
+      childSessionStarter: {
+        start: startSpy,
+      },
+    }
+    const coordinator = new DelegationCoordinator(depsWithStarter)
+
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    coordinator.recordChildMessageSignal("child-early-id", Date.now(), "hello early session")
+
+    const record = deps.lifecycle.getStatus(dispatched.delegationId)
+    expect(record).toBeDefined()
+    expect(record.finalMessageExcerpt).toBe("hello early session")
+  })
+
+  it("falls back to searching active records if childSessionId is not in the map", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    const active = (coordinator as any).active.get(dispatched.delegationId)
+    expect(active).toBeDefined()
+    active.record.childSessionId = "child-fallback-id"
+    ;(coordinator as any).delegationByChildSession.delete("child-fallback-id")
+
+    coordinator.recordChildMessageSignal("child-fallback-id", Date.now(), "hello fallback session")
+
+    const record = deps.lifecycle.getStatus(dispatched.delegationId)
+    expect(record).toBeDefined()
+    expect(record.finalMessageExcerpt).toBe("hello fallback session")
+    expect((coordinator as any).delegationByChildSession.get("child-fallback-id")).toBe(dispatched.delegationId)
+  })
 })
