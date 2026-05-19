@@ -2,8 +2,8 @@
  * Session-tracker tool — read-only query/export of session knowledge files.
  *
  * All path construction uses safeSessionPath() with isValidSessionID() pre-validation.
- * All I/O is async via node:fs/promises. Five actions:
- *   export-session, get-status, get-summary, list-sessions, search-sessions
+ * All I/O is async via node:fs/promises. Six actions:
+ *   export-session, get-status, get-summary, list-sessions, search-sessions, filter-sessions
  * Read-only (CQRS read-side). No mutation authority.
  * @module tools/hivemind/session-tracker
  */
@@ -23,13 +23,20 @@ type ToolContext = { sessionID?: string }
 export function createSessionTrackerTool(projectRoot: string): ReturnType<typeof tool> {
   return tool({
     description:
-      "Query and export session tracker data. Actions: export-session, get-status, get-summary, list-sessions, search-sessions.",
+      "Query and export session tracker data. Actions: export-session, get-status, get-summary, list-sessions, search-sessions, filter-sessions.",
     args: {
       action: tool.schema.string(),
       sessionId: tool.schema.string().optional(),
       query: tool.schema.string().optional(),
       limit: tool.schema.number().optional(),
       format: tool.schema.enum(["markdown", "json"]).optional(),
+      status: tool.schema.string().optional(),
+      agentType: tool.schema.string().optional(),
+      minDepth: tool.schema.number().optional(),
+      maxDepth: tool.schema.number().optional(),
+      timeRange: tool.schema.string().optional(),
+      filterJson: tool.schema.string().optional(),
+      removeEmpty: tool.schema.string().optional(),
     },
     async execute(rawArgs: unknown, _context: ToolContext): Promise<string> {
       try {
@@ -40,6 +47,7 @@ export function createSessionTrackerTool(projectRoot: string): ReturnType<typeof
           case "get-summary": return handleGetSummary(projectRoot, input.sessionId)
           case "list-sessions": return handleListSessions(projectRoot, input.limit)
           case "search-sessions": return handleSearchSessions(projectRoot, input.query, input.limit)
+          case "filter-sessions": return handleFilterSessions(projectRoot, input)
           default: return renderToolResult(error(`Unknown action`))
         }
       } catch (caughtError) {
@@ -260,4 +268,67 @@ async function handleSearchSessions(projectRoot: string, query: string, limit: n
     totalMatches: matches.length, sessions: paginated, hasMore: matches.length > limit,
     fileWarnings: fileWarnings.length > 0 ? fileWarnings : undefined,
   }))
+}
+
+/**
+ * Filter sessions using hierarchy-manifest.json index.
+ *
+ * Reads the pre-built index for fast queries by status, agentType, delegation depth,
+ * and time range without scanning individual session files.
+ */
+async function handleFilterSessions(
+  projectRoot: string,
+  input: {
+    status?: string
+    agentType?: string
+    minDepth?: number
+    maxDepth?: number
+    timeRange?: { after?: string; before?: string }
+    limit: number
+  },
+) {
+  try {
+    const indexPath = safeSessionPath(projectRoot, "project-continuity", "hierarchy-manifest.json")
+    await access(indexPath)
+    const raw = await readFile(indexPath, "utf-8")
+    const manifest = JSON.parse(raw) as {
+      sessions?: Record<string, {
+        status?: string
+        agentType?: string
+        depth?: number
+        lastUpdated?: string
+      }>
+      lastUpdated?: string
+    }
+    const sessions = manifest.sessions ?? {}
+    const statusLower = input.status?.toLowerCase()
+    const agentLower = input.agentType?.toLowerCase()
+    const afterDate = input.timeRange?.after ? new Date(input.timeRange.after).getTime() : undefined
+    const beforeDate = input.timeRange?.before ? new Date(input.timeRange.before).getTime() : undefined
+
+    const filtered = Object.entries(sessions).filter(([_, meta]) => {
+      if (statusLower && meta.status?.toLowerCase() !== statusLower) return false
+      if (agentLower && meta.agentType?.toLowerCase() !== agentLower) return false
+      if (input.minDepth !== undefined && (meta.depth ?? 0) < input.minDepth) return false
+      if (input.maxDepth !== undefined && (meta.depth ?? 0) > input.maxDepth) return false
+      if (afterDate !== undefined || beforeDate !== undefined) {
+        const updated = meta.lastUpdated ? new Date(meta.lastUpdated).getTime() : undefined
+        if (updated === undefined) return false
+        if (afterDate !== undefined && updated < afterDate) return false
+        if (beforeDate !== undefined && updated > beforeDate) return false
+      }
+      return true
+    })
+
+    const paginated = filtered.slice(0, input.limit).map(([sessionId, meta]) => ({
+      sessionId, ...meta,
+    }))
+
+    return renderToolResult(success(`Found ${paginated.length} sessions matching filters`, {
+      totalMatches: filtered.length, sessions: paginated,
+      hasMore: filtered.length > input.limit, indexLastUpdated: manifest.lastUpdated ?? null,
+    }))
+  } catch {
+    return renderToolResult(error("Hierarchy manifest not found. Enable hierarchy tracking first."))
+  }
 }
