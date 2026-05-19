@@ -461,5 +461,15 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 14 to break down)
 
+### Phase 15: Phase 15: Delegate-Task Gap Remediation — Resume, Delivery, Rich Notifications
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 14
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 15 to break down)
+
 ---
 *Last updated: 2026-05-15 — CP-ST-05 COMPLETE (3/3 waves, 12 commits, 362/364 tests). Gate 0 BEFORE-THE-FACT classification eliminates race conditions. Quarantine protocol prevents data loss. index.ts 982→807 LOC. CP-ST-04 COMPLETE (15 commits, 338/340 tests). Pre-existing failures: 2 test cases (cleanup.test.ts)*

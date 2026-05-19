@@ -10,6 +10,8 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 
 - DO NOT ROUTE any hm-* or hf-* commands, workflows nor agents - they are the subjects of developments - **ROUTE everything to gsd-* from commands, agents to workflows** , they are the toolings used for development of this harness project 
 
+- delegation to agents attention: do not use generic agents - use gsd-* agents only
+
 - Atomic commits are mandatory. You must follow the atomic commit rule: **One logical change = One commit**. Do not bundle multiple unrelated changes into a single commit. If a change is large, break it down into smaller, atomic commits with meaningful messages. Every commit must pass validation (typecheck, tests, gatekeeping) and be atomic, preventing any partial build or test failure states. Commit even the documents changes
 
 ## NON-NEGOTIABLE RULES
