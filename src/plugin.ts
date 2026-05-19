@@ -425,4 +425,16 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   }
 }
 
+/**
+ * Drain pending delegation notifications from ALL continuity records
+ * and replay them into the TUI via appendTuiPrompt. Called at plugin init.
+ * Best-effort: failures are silently ignored.
+ *
+ * @param client - OpenCode SDK client for TUI operations.
+ */
+export async function replayPendingDelegationNotifications(client: OpenCodeClient): Promise<void> {
+  // STUB — will be implemented in GREEN phase
+  void client
+}
+
 export default HarnessControlPlane

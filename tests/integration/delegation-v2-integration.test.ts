@@ -2,7 +2,7 @@ import { createDelegateTaskTool } from "../../src/tools/delegation/delegate-task
 import { createDelegationStatusTool } from "../../src/tools/delegation/delegation-status.js"
 import { AutoLoopEngine } from "../../src/features/auto-loop/index.js"
 import { RalphLoopEngine } from "../../src/features/ralph-loop/index.js"
-import { HarnessControlPlane, setupDelegationModules } from "../../src/plugin.js"
+import { HarnessControlPlane, setupDelegationModules, replayPendingDelegationNotifications } from "../../src/plugin.js"
 
 function parse(raw: string): Record<string, unknown> {
   return JSON.parse(raw) as Record<string, unknown>
@@ -188,5 +188,68 @@ describe("delegation v2 plugin integration", () => {
     expect(result.cycles).toBe(2)
     expect(modules.coordinator.dispatch).toHaveBeenNthCalledWith(1, expect.objectContaining({ agent: "builder" }))
     expect(modules.coordinator.dispatch).toHaveBeenNthCalledWith(2, expect.objectContaining({ agent: "critic" }))
+  })
+
+  // ───────────────────────────────────────────────────────────────────────────────
+  // 15-04 RED tests — pending notification replay, toast removal, sendPromptAsync injection
+  // ───────────────────────────────────────────────────────────────────────────────
+
+  it("does NOT call showTuiToast on terminal notification deliver (RED 15-04)", async () => {
+    const client = createRuntimeClient()
+    const modules = setupDelegationModules({ client: client as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project" })
+
+    const result = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })
+    modules.notificationRouter.route({ delegationId: result.delegationId, message: "done", timestamp: Date.now(), type: "success" })
+
+    // Drain microtasks so the async deliver callback completes
+    await new Promise<void>((resolve) => setTimeout(resolve, 0))
+    // showTuiToast should NOT be called after 15-04 change
+    expect(client.tui.showToast).not.toHaveBeenCalled()
+  })
+
+  it("injects sendPromptAsync into DelegationManager options (RED 15-04)", () => {
+    const client = createRuntimeClient()
+    const modules = setupDelegationModules({ client: client as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project" })
+
+    const options = (modules.delegationManager as unknown as { options: Record<string, unknown> }).options
+    expect(typeof options.sendPromptAsync).toBe("function")
+  })
+
+  it("replays pending notifications from continuity at plugin init (RED 15-04)", async () => {
+    const client = createRuntimeClient()
+
+    // Prep: write a pending notification to continuity
+    const { recordSessionContinuity, patchSessionContinuity } = await import("../../src/task-management/continuity/index.js")
+    const testSessionId = "replay-test-parent"
+    recordSessionContinuity({
+      sessionID: testSessionId,
+      metadata: {
+        pendingNotifications: [{
+          agent: "delegate-task",
+          createdAt: Date.now(),
+          delivered: false,
+          description: "Delegation dt-replay success",
+          metadata: { delegationId: "dt-replay", terminalState: "completed" },
+          resultPreview: "replay result completed",
+          sessionID: "dt-replay",
+          status: "completed",
+        }],
+        constraints: [],
+        delegation: null,
+        status: "running",
+        updatedAt: Date.now(),
+      },
+      promptParams: {},
+    })
+
+    await HarnessControlPlane({ client: client as never, directory: "/tmp/project" } as never)
+
+    // Init should replay the pending notification
+    expect(client.tui.appendPrompt).toHaveBeenCalledWith(
+      expect.objectContaining({ body: expect.objectContaining({ text: expect.stringContaining("replay result completed") }) }),
+    )
+
+    // Clean up
+    patchSessionContinuity(testSessionId, { pendingNotifications: [] })
   })
 })
