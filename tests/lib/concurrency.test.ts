@@ -268,21 +268,21 @@ describe("buildDelegationQueueKey", () => {
     ).toBe("model:gpt-5.4")
   })
 
-  it("preserves the agent+category fallback lane", () => {
+  it("ignores removed category fallback when an agent lane is available", () => {
     expect(
       buildDelegationQueueKey({
         agent: "builder",
         category: "implementation",
       }),
-    ).toBe("agent:builder:category:implementation")
+    ).toBe("agent:builder")
   })
 
   it("preserves the agent-only fallback lane", () => {
     expect(buildDelegationQueueKey({ agent: "builder" })).toBe("agent:builder")
   })
 
-  it("preserves the category-only fallback lane", () => {
-    expect(buildDelegationQueueKey({ category: "implementation" })).toBe("category:implementation")
+  it("falls back to default when only a removed category dimension is provided", () => {
+    expect(buildDelegationQueueKey({ category: "implementation" })).toBe("default")
   })
 
   it("falls back to default when no routing dimensions are provided", () => {

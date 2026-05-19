@@ -30,12 +30,22 @@ key-files:
   created:
     - .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-LIVE-UAT-CHECKLIST.md
     - .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-04-SUMMARY.md
-  modified: []
+    - .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-REVIEW-FIX-2026-05-19.md
+  modified:
+    - src/plugin.ts
+    - tests/hooks/plugin-event-observers.test.ts
+    - tests/plugin/bootstrap-tools-registration.test.ts
+    - tests/lib/concurrency.test.ts
+    - tests/lib/runtime-policy.test.ts
+    - tests/lib/coordination/delegation/dispatcher.test.ts
+    - tests/tools/execute-slash-command.test.ts
+    - tests/tools/delegation/delegate-task-e2e.test.ts
 
 key-decisions:
   - "Live TUI readiness remains BLOCKED / NOT PROVEN because no live OpenCode TUI evidence was collected in this subagent context."
   - "Automated Phase 14 scoped gates now pass after focused source/test remediation; live TUI readiness remains separately unproven."
-  - "Task 14-04-03 did not redo Task 14-04-01/02 or alter runtime source/tests."
+  - "The later full-suite remediation did not redo Task 14-04-01/02; it updated stale tests and one defensive plugin setup guard."
+  - "Full-suite stale tests for removed category-gate and steering-engine modules were removed instead of resurrecting deprecated Phase 14 surfaces."
 
 requirements-completed: []
 
@@ -46,7 +56,7 @@ completed: 2026-05-19
 
 # Phase 14 Plan 04: Semantic Cleanup, Automated Gate, and Live UAT Handoff Summary
 
-**Plan 14-04 now has a cleanup audit link, a live UAT checklist, and fresh passing automated scoped gate evidence; live TUI readiness remains blocked/not proven.**
+**Plan 14-04 now has a cleanup audit link, a live UAT checklist, fresh passing automated scoped gate evidence, and a passing full `npm test` suite; live TUI readiness remains blocked/not proven.**
 
 ## Scope Executed
 
@@ -104,37 +114,29 @@ Resolved groups:
 - `tests/tools/delegate-task.test.ts`: dispatch payload now includes `surface: "agent-delegation"`.
 - `tests/tools/delegation/delegation-status-v2.test.ts`: v2 status now reports elapsed-based `progressPct` and caps active progress below completion.
 
-Classification: resolved for the Phase 14 scoped automated gate. Full-suite status was not rerun in this fix pass.
+Classification: resolved for the Phase 14 scoped automated gate. Full-suite status was rerun in the Phase 14 full-suite remediation pass below.
 
 ### 3. `npm test`
 
-**Status:** FAIL
+**Status:** PASS (fresh rerun in review-fix worktree)
 
 Summary output:
 
 ```text
-Test Files  15 failed | 186 passed (201)
-Tests       46 failed | 2339 passed | 2 skipped (2387)
+Test Files  198 passed (198)
+Tests       2384 passed | 2 skipped (2386)
 ```
 
-Additional failed suites included:
+Resolved full-suite failure groups:
 
-```text
-FAIL tests/lib/category-gates.test.ts
-Cannot find module '../../src/coordination/delegation/category-gates.js'
+- Deleted stale tests that imported removed `category-gates`, `category-gate-audit`, and `steering-engine/injection-builder` modules.
+- Updated category queue/runtime policy/dispatcher tests to assert current Phase 14 semantics: category gate is removed and category-only queue dimensions fall back to current lanes.
+- Fixed plugin setup to tolerate absent `client` during tool-registration tests before probing `client.session`.
+- Updated event observer/bootstrap mocks for the current `createSessionEntryEventObserver` and `createSessionIsMainObserver` exports.
+- Updated `execute-slash-command` tests to the current TUI prompt pipeline contract.
+- Updated delegate-task e2e status expectation to the current v2 `dispatched` listing contract.
 
-FAIL tests/features/steering-engine/injection-builder.test.ts
-Cannot find module '../../../src/features/steering-engine/injection-builder.js'
-```
-
-Other notable failure groups:
-
-- category gate policy tests still expect removed category-gate behavior.
-- plugin/bootstrap and prompt-enhance integration tests fail during plugin setup because `DelegationManager` requires client/v2 injections.
-- execute-slash-command tests expect older SDK command behavior/return shape.
-- delegation v2 and delegate-task e2e tests fail around plugin wiring and removed category/safety semantics.
-
-Classification: unresolved. The missing category-gate module failures are consistent with Plan 14 cleanup removing deprecated category-gate files, but the full test-suite failure set spans more than Plan 14-04 and needs a dedicated remediation/gap-closure pass.
+Classification: resolved for automated L2/L3 gates. Live TUI readiness remains separate L1 evidence and is still not proven by this run.
 
 ## Live UAT Status
 
@@ -154,7 +156,7 @@ Do not claim live TUI runtime readiness from this summary. Current evidence is a
 |---|---|---|
 | Typecheck gate | Fresh `npm run typecheck` passed after adding `resumedFrom` / `chainedFrom` fields to `Delegation` type | Resolved for scoped gate. |
 | Scoped delegation gate | Fresh scoped Vitest passed: 11 files, 271 tests | Resolved for scoped gate. |
-| Full suite fails broadly | 46 failed tests, 2 failed suites | Separate Plan 14-introduced failures from broader stale tests before claiming phase completion. |
+| Full suite regression risk | Fresh full `npm test` passed: 198 files, 2384 tests, 2 skipped | Keep full-suite gate in future Phase 14 closure checks. |
 | Live TUI behavior unproven | No live OpenCode TUI evidence | Human must run `14-LIVE-UAT-CHECKLIST.md` and paste output. |
 | Two-parent routing caveat unresolved | SDK TUI append route target limitation from research | Treat multi-parent routing as L1-not-proven until live evidence exists. |
 
@@ -187,6 +189,5 @@ No new runtime network endpoint, auth path, file access pattern, or schema trust
 
 ## Human Verification Required
 
-1. Fix or explicitly waive the failing automated gates through a dedicated gap-closure plan.
-2. Run [`14-LIVE-UAT-CHECKLIST.md`](./14-LIVE-UAT-CHECKLIST.md) in a real OpenCode TUI runtime.
-3. Paste L1 evidence into the checklist before claiming Phase 14 live runtime readiness.
+1. Run [`14-LIVE-UAT-CHECKLIST.md`](./14-LIVE-UAT-CHECKLIST.md) in a real OpenCode TUI runtime.
+2. Paste L1 evidence into the checklist before claiming Phase 14 live runtime readiness.

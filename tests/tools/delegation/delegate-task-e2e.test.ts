@@ -68,6 +68,6 @@ describe("delegate-task e2e tool boundary", () => {
     const raw = await statusTool.execute({ action: "list" } as never, { sessionID: "parent-1" })
 
     const data = parse(raw).data as Array<Record<string, unknown>>
-    expect(data[0]).toMatchObject({ agent: "builder", status: "error" })
+    expect(data[0]).toMatchObject({ agent: "builder", status: "dispatched" })
   })
 })

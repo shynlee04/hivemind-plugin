@@ -53,12 +53,8 @@ describe("DEFAULT_RUNTIME_POLICY", () => {
     expect(DEFAULT_RUNTIME_POLICY.trustedRuntime.builtinAsyncBackgroundChildSessions).toBe(false)
   })
 
-  it("category gate defaults ask unknown categories and protect review/research", () => {
-    expect(DEFAULT_RUNTIME_POLICY.categoryGate).toMatchObject({
-      askUnknownCategories: true,
-      commandCategory: "command",
-    })
-    expect(DEFAULT_RUNTIME_POLICY.categoryGate?.readonlyCategories).toEqual(expect.arrayContaining(["review", "research"]))
+  it("does not expose the removed category gate policy surface", () => {
+    expect("categoryGate" in DEFAULT_RUNTIME_POLICY).toBe(false)
   })
 })
 
@@ -74,10 +70,12 @@ describe("loadRuntimePolicy", () => {
     expect(policy.budget.maxToolCallsPerSession).toBe(DEFAULT_RUNTIME_POLICY.budget.maxToolCallsPerSession)
   })
 
-  it("rejects malformed category gate policy with [Harness] errors", () => {
-    expect(() => loadRuntimePolicy({
+  it("ignores stale category gate workspace policy without restoring the surface", () => {
+    const policy = loadRuntimePolicy({
       categoryGate: { askUnknownCategories: true, readonlyCategories: "review" as never, commandCategory: "command" },
-    })).toThrow("[Harness]")
+    } as never)
+
+    expect("categoryGate" in policy).toBe(false)
   })
 
   it("merges workspace-level overrides onto defaults", () => {

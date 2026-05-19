@@ -11,6 +11,7 @@ vi.mock("../../src/coordination/delegation/manager.js", () => ({
   DelegationManager: class {
     recoverPending = vi.fn(async () => undefined)
     setCompletionDetector = vi.fn()
+    handleSessionError = vi.fn()
     handleSessionIdle = vi.fn()
     handleSessionDeleted = vi.fn()
   },
@@ -27,7 +28,7 @@ vi.mock("../../src/hooks/guards/tool-guard-hooks.js", () => ({
 vi.mock("../../src/hooks/observers/event-observers.js", () => ({
   createDelegationEventObserver: () => vi.fn(async () => ({ kind: "noop" })),
   createSessionEntryEventObserver: () => ({ observer: vi.fn(async () => undefined), getIntake: vi.fn(() => null) }),
-  createSessionJourneyEventObserver: () => vi.fn(async () => ({ kind: "noop" })),
+  createSessionIsMainObserver: () => ({ observer: vi.fn(async () => undefined), isMainSession: vi.fn(() => true) }),
 }))
 vi.mock("../../src/hooks/transforms/tool-after-composer.js", () => ({
   createToolExecuteAfterHook: () => vi.fn(async () => ({ kind: "noop" })),

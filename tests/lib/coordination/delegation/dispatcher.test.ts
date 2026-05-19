@@ -3,7 +3,7 @@ import { vi } from "vitest"
 import { DelegationDispatcher } from "../../../../src/coordination/delegation/dispatcher.js"
 
 describe("DelegationDispatcher", () => {
-  it("blocks dispatch when category gate denies and records audit evidence", async () => {
+  it("does not run removed category gate denial hooks during preflight", async () => {
     const recordCategoryGateask = vi.fn()
     const slotManager = { acquire: vi.fn() }
     const agentResolver = { resolve: vi.fn() }
@@ -26,17 +26,15 @@ describe("DelegationDispatcher", () => {
       parentSessionId: "parent-1",
       queueKey: "agent:gsd-executor:category:unsafe",
       surface: "agent-delegation",
-    })).rejects.toThrow('[Harness] Category gate denied for agent "gsd-executor" and category "unsafe": unknown delegation category')
-
-    expect(recordCategoryGateask).toHaveBeenCalledWith({
-      askReason: "unknown delegation category",
-      callerSessionId: "parent-1",
-      requestedAgent: "gsd-executor",
-      requestedCategory: "unsafe",
-      surface: "agent-delegation",
+    })).resolves.toEqual({
+      queueKey: "agent:gsd-executor:category:unsafe",
+      slotHandle: undefined,
+      validatedAgent: undefined,
     })
-    expect(slotManager.acquire).not.toHaveBeenCalled()
-    expect(agentResolver.resolve).not.toHaveBeenCalled()
+
+    expect(recordCategoryGateask).not.toHaveBeenCalled()
+    expect(slotManager.acquire).toHaveBeenCalledWith("parent-1", "agent:gsd-executor:category:unsafe", undefined)
+    expect(agentResolver.resolve).toHaveBeenCalledWith("gsd-executor")
   })
 
   it("continues to concurrency and agent validation when category gate allows", async () => {

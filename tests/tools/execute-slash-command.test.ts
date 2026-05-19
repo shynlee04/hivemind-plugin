@@ -3,18 +3,17 @@ import { createExecuteSlashCommandTool } from "../../src/tools/session/execute-s
 import type { PluginInput } from "@opencode-ai/plugin"
 
 describe("execute-slash-command tool", () => {
-  it("should successfully call the OpenCode client session command API", async () => {
-    // Mock the OpenCode client session.command endpoint
-    const commandMock = vi.fn().mockResolvedValue({
-      data: {
-        info: { id: "msg_123" }
-      }
-    })
+  it("should successfully dispatch through the OpenCode TUI prompt pipeline", async () => {
+    const clearPromptMock = vi.fn(async () => undefined)
+    const appendPromptMock = vi.fn(async () => undefined)
+    const submitPromptMock = vi.fn(async () => undefined)
     
     const client = {
-      session: {
-        command: commandMock
-      }
+      tui: {
+        clearPrompt: clearPromptMock,
+        appendPrompt: appendPromptMock,
+        submitPrompt: submitPromptMock,
+      },
     } as unknown as PluginInput["client"]
 
     const executeSlashCommandTool = createExecuteSlashCommandTool(client)
@@ -39,33 +38,34 @@ describe("execute-slash-command tool", () => {
 
     const result = await executeSlashCommandTool.execute(args, ctx)
 
-    // Verify the architectural boundary: tool calls the correct SDK endpoint
-    expect(commandMock).toHaveBeenCalledWith({
-      path: { id: "ses_abc123" },
-      body: {
-        command: "test-echo",
-        arguments: "hello world",
-        agent: "hm-operator"
-      }
+    // Verify the architectural boundary: tool uses the non-blocking TUI pipeline.
+    expect(clearPromptMock).toHaveBeenCalledOnce()
+    expect(appendPromptMock).toHaveBeenCalledWith({
+      body: { text: "/test-echo hello world" },
     })
+    expect(submitPromptMock).toHaveBeenCalledOnce()
 
     // Verify successful return format
-    expect(result).toEqual({
-      output: "Successfully executed /test-echo. Response ID: msg_123",
-      metadata: { responseId: "msg_123", command: "test-echo" }
+    expect(result).toMatchObject({
+      metadata: { command: "test-echo", dispatched: true, promptText: "/test-echo hello world" },
     })
+    expect(result.output).toContain("Command /test-echo hello world dispatched to TUI prompt")
 
     // Verify UI metadata was emitted
-    expect(metadataMock).toHaveBeenCalledWith({ title: "Executing /test-echo" })
+    expect(metadataMock).toHaveBeenCalledWith(expect.objectContaining({ title: "Executing /test-echo hello world" }))
   })
 
-  it("should gracefully return a failure string if the SDK throws", async () => {
-    const commandMock = vi.fn().mockRejectedValue(new Error("Network Error"))
+  it("should gracefully return a failure envelope if TUI dispatch throws", async () => {
+    const clearPromptMock = vi.fn(async () => undefined)
+    const appendPromptMock = vi.fn().mockRejectedValue(new Error("Network Error"))
+    const submitPromptMock = vi.fn(async () => undefined)
     
     const client = {
-      session: {
-        command: commandMock
-      }
+      tui: {
+        clearPrompt: clearPromptMock,
+        appendPrompt: appendPromptMock,
+        submitPrompt: submitPromptMock,
+      },
     } as unknown as PluginInput["client"]
 
     const executeSlashCommandTool = createExecuteSlashCommandTool(client)
@@ -76,7 +76,15 @@ describe("execute-slash-command tool", () => {
       metadata: vi.fn()
     } as any)
 
-    // Verify the tool gracefully handles rejection without crashing the plugin
-    expect(result).toBe("Failed to execute command /bad-command: Network Error")
+    // Verify the tool gracefully handles rejection without crashing the plugin.
+    expect(result).toEqual({
+      output: "✗ Failed to dispatch /bad-command: Network Error",
+      metadata: {
+        error: true,
+        errorType: "internal",
+        command: "bad-command",
+        message: "Network Error",
+      },
+    })
   })
 })

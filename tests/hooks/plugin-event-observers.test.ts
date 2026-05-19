@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
-import { createDelegationEventObserver, createSessionJourneyEventObserver } from "../../src/hooks/observers/event-observers.js"
+import { createDelegationEventObserver, createSessionEntryEventObserver } from "../../src/hooks/observers/event-observers.js"
 
 describe("plugin event observers", () => {
   it("extracts delegation lifecycle facts without write-capable dependencies", async () => {
@@ -13,13 +13,12 @@ describe("plugin event observers", () => {
     })
   })
 
-  it("extracts session journey projection facts through an injected predicate", async () => {
-    const observer = createSessionJourneyEventObserver(() => true)
+  it("extracts session entry intake facts without write-capable dependencies", async () => {
+    const { observer } = createSessionEntryEventObserver()
 
-    await expect(observer({ event: { type: "session.created" } })).resolves.toEqual({
-      kind: "session-journey-event",
-      event: { type: "session.created" },
-      source: "plugin.event",
+    await expect(observer({ event: { type: "session.created", properties: { sessionID: "ses_main" }, messages: [{ role: "user", content: "hello" }] } })).resolves.toMatchObject({
+      kind: "session-created",
+      sessionId: "ses_main",
     })
   })
 
