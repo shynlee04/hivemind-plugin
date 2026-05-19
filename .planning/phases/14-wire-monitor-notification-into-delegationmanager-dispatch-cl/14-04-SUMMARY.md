@@ -1,0 +1,195 @@
+---
+phase: 14-wire-monitor-notification-into-delegationmanager-dispatch-cl
+plan: 04
+subsystem: delegation-validation
+tags: [delegation, cleanup, validation, live-uat, evidence]
+
+# Dependency graph
+requires:
+  - phase: 14-wire-monitor-notification-into-delegationmanager-dispatch-cl
+    plan: 01
+    provides: monitor.start and notificationRouter.register reachability
+  - phase: 14-wire-monitor-notification-into-delegationmanager-dispatch-cl
+    plan: 02
+    provides: progressive checkpoint and auto-abort behavior
+  - phase: 14-wire-monitor-notification-into-delegationmanager-dispatch-cl
+    plan: 03
+    provides: resume/chain control schema and slot-cap work
+provides:
+  - semantic cleanup audit for deprecated delegation category/safetyCeiling/classification targets
+  - live UAT checklist for parent TUI notification, progressive cadence, failure checkpoint, and two-parent routing
+  - final automated gate evidence for Plan 14-04
+affects: [Phase 14 verification, human live-UAT handoff]
+
+# Tech tracking
+tech-stack:
+  added: []
+  patterns: [honest evidence capture, docs-only L1 blocker handoff]
+
+key-files:
+  created:
+    - .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-LIVE-UAT-CHECKLIST.md
+    - .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-04-SUMMARY.md
+  modified: []
+
+key-decisions:
+  - "Live TUI readiness remains BLOCKED / NOT PROVEN because no live OpenCode TUI evidence was collected in this subagent context."
+  - "Automated gates are recorded as failing, not hidden or reclassified without proof."
+  - "Task 14-04-03 did not redo Task 14-04-01/02 or alter runtime source/tests."
+
+requirements-completed: []
+
+# Metrics
+duration: 20min
+completed: 2026-05-19
+---
+
+# Phase 14 Plan 04: Semantic Cleanup, Automated Gate, and Live UAT Handoff Summary
+
+**Plan 14-04 now has a cleanup audit link, a live UAT checklist, and honest automated gate evidence; live TUI readiness remains blocked/not proven.**
+
+## Scope Executed
+
+This resume executed only Task `14-04-03`.
+
+Already-completed prior Plan 14-04 commits were verified and not redone:
+
+- `1b9a98c1` — `audit(14-04): create deprecated delegation cleanup audit`
+- `f8c1ec1b` — `feat(14-04-02): remove deprecated delegation code (safetyCeilingMs, category, ESCALATION_*)`
+
+## What Was Completed in Plan 14-04
+
+- Created live UAT checklist: [`14-LIVE-UAT-CHECKLIST.md`](./14-LIVE-UAT-CHECKLIST.md)
+- Linked cleanup audit: [`14-DEPRECATED-DELEGATION-CLEANUP-AUDIT.md`](./14-DEPRECATED-DELEGATION-CLEANUP-AUDIT.md)
+- Ran all required automated gate commands from `14-04-PLAN.md`
+- Captured failures honestly without claiming live runtime readiness
+- Marked L1 TUI/runtime UAT as `BLOCKED / NOT PROVEN`
+
+## Automated Gate Outputs
+
+### 1. `npm run typecheck`
+
+**Status:** FAIL
+
+Relevant output:
+
+```text
+> hivemind@0.1.0 typecheck
+> tsc --noEmit
+
+src/coordination/delegation/manager.ts(180,58): error TS2339: Property 'resumedFrom' does not exist on type 'Delegation'.
+src/coordination/delegation/manager.ts(181,57): error TS2339: Property 'chainedFrom' does not exist on type 'Delegation'.
+```
+
+Classification: unresolved. This subagent was scoped to docs/evidence only and did not alter runtime source to fix these errors.
+
+### 2. Scoped Phase 14 Vitest Gate
+
+Command:
+
+```bash
+npx vitest run tests/lib/delegation-manager.test.ts tests/tools/delegate-task.test.ts tests/lib/coordination/delegation/monitor.test.ts tests/lib/coordination/delegation/escalation-timer.test.ts tests/lib/coordination/delegation/completion-detector.test.ts tests/lib/coordination/delegation/notification-router.test.ts tests/integration/delegation-v2-integration.test.ts tests/tools/delegation/delegation-status-v2.test.ts tests/tools/delegation-status.test.ts tests/lib/coordination/delegation/coordinator.test.ts tests/lib/coordination/delegation/slot-manager.test.ts
+```
+
+**Status:** FAIL
+
+Summary output:
+
+```text
+Test Files  4 failed | 7 passed (11)
+Tests       29 failed | 242 passed (271)
+```
+
+Top failure groups observed:
+
+- `tests/integration/delegation-v2-integration.test.ts`: 11 failures, mostly `[Harness] DelegationManager requires a client when v2 modules are not injected.`
+- `tests/lib/delegation-manager.test.ts`: 16 failures, including stale category/safety ceiling/concurrency expectations.
+- `tests/tools/delegate-task.test.ts`: 1 failure, expected `surface: "agent-delegation"` but dispatch call omitted it.
+- `tests/tools/delegation/delegation-status-v2.test.ts`: 1 failure, expected `progressPct: 50`, received `progressPct: null`.
+
+Classification: unresolved. Some delegation-manager failures overlap prior summary notes about pre-existing/stale category and safety-ceiling tests, but the full set is not safely classifiable as pre-existing from available evidence.
+
+### 3. `npm test`
+
+**Status:** FAIL
+
+Summary output:
+
+```text
+Test Files  15 failed | 186 passed (201)
+Tests       46 failed | 2339 passed | 2 skipped (2387)
+```
+
+Additional failed suites included:
+
+```text
+FAIL tests/lib/category-gates.test.ts
+Cannot find module '../../src/coordination/delegation/category-gates.js'
+
+FAIL tests/features/steering-engine/injection-builder.test.ts
+Cannot find module '../../../src/features/steering-engine/injection-builder.js'
+```
+
+Other notable failure groups:
+
+- category gate policy tests still expect removed category-gate behavior.
+- plugin/bootstrap and prompt-enhance integration tests fail during plugin setup because `DelegationManager` requires client/v2 injections.
+- execute-slash-command tests expect older SDK command behavior/return shape.
+- delegation v2 and delegate-task e2e tests fail around plugin wiring and removed category/safety semantics.
+
+Classification: unresolved. The missing category-gate module failures are consistent with Plan 14 cleanup removing deprecated category-gate files, but the full test-suite failure set spans more than Plan 14-04 and needs a dedicated remediation/gap-closure pass.
+
+## Live UAT Status
+
+**Status:** `BLOCKED / NOT PROVEN`
+
+Reason:
+
+- This subagent context does not provide an actual live OpenCode TUI runtime for observation.
+- No L1 evidence was collected for visible parent TUI notification, progressive injection cadence, failure checkpoint UI behavior, or two-parent routing.
+- The checklist contains paste slots for future human/operator evidence.
+
+Do not claim live TUI runtime readiness from this summary. Current evidence is automated L2/L3 only, and those gates are failing.
+
+## Residual Risks
+
+| Risk | Evidence | Next Action |
+|---|---|---|
+| Typecheck broken | `manager.ts` references `resumedFrom` / `chainedFrom` fields missing from `Delegation` type | Open a focused fix plan or authorize source remediation. |
+| Scoped delegation gate fails | 29 scoped test failures | Run a gap closure task to reconcile tests with removed category/safetyCeiling semantics and plugin setup behavior. |
+| Full suite fails broadly | 46 failed tests, 2 failed suites | Separate Plan 14-introduced failures from broader stale tests before claiming phase completion. |
+| Live TUI behavior unproven | No live OpenCode TUI evidence | Human must run `14-LIVE-UAT-CHECKLIST.md` and paste output. |
+| Two-parent routing caveat unresolved | SDK TUI append route target limitation from research | Treat multi-parent routing as L1-not-proven until live evidence exists. |
+
+## Deviations from Plan
+
+None for this resumed tail task. The task required evidence capture and checklist creation; no runtime code or prior task commits were redone.
+
+## Auth Gates
+
+None encountered.
+
+## Known Stubs
+
+The live UAT checklist intentionally contains blank evidence paste slots. They are not runtime stubs; they are human-verification placeholders required by the plan.
+
+## Threat Flags
+
+No new runtime network endpoint, auth path, file access pattern, or schema trust-boundary surface was introduced by this docs/evidence-only tail task.
+
+## Self-Check
+
+- [x] `14-LIVE-UAT-CHECKLIST.md` exists.
+- [x] `14-04-SUMMARY.md` exists.
+- [x] Prior commit `1b9a98c1` found in git log.
+- [x] Prior commit `f8c1ec1b` found in git log.
+- [x] Required automated gate commands were run and recorded.
+- [x] Live UAT status is honestly marked `BLOCKED / NOT PROVEN`.
+
+## Self-Check: PASSED
+
+## Human Verification Required
+
+1. Fix or explicitly waive the failing automated gates through a dedicated gap-closure plan.
+2. Run [`14-LIVE-UAT-CHECKLIST.md`](./14-LIVE-UAT-CHECKLIST.md) in a real OpenCode TUI runtime.
+3. Paste L1 evidence into the checklist before claiming Phase 14 live runtime readiness.
