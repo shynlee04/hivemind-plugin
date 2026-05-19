@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-19T22:20:05.692Z"
+last_updated: "2026-05-19T22:25:16.775Z"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 22
   completed_plans: 22
   percent: 100
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 16-04-PLAN.md completed — added get-manifest action to session-hierarchy tool
+**Last advance:** 16-05-PLAN.md completed — created hivemind-session-view cross-root query tool
 **Last trigger:** Phase 16 Plan 01 complete — schema foundation ready for Wave 1 tool implementation plans.
 
 ---
@@ -29,6 +29,7 @@ progress:
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
 **Phase 16 Plan 04:** ✅ COMPLETE — Added get-manifest action to session-hierarchy tool: handleGetManifest reads hierarchy-manifest.json, returns flattened child list. GAP-2 closed. REQ-04 satisfied.
+**Phase 16 Plan 05:** ✅ COMPLETE — Created hivemind-session-view.ts (124 LOC) with single `get` action reading concurrently from 3 data roots via Promise.all. Registered in plugin.ts (23 tools). REQ-06 satisfied. typecheck clean.
 **Phase 16 Plan 06:** ✅ COMPLETE — Event-tracker deprecation cleanup: scanned all src/ + .opencode/skills/ for remnants, updated hm-l3-hivemind-engine-contracts (2 refs) and hm-l3-hivemind-state-reference (5 refs) with deprecation annotations. GAP-7 closed. REQ-07 satisfied.
 **Phase 16 Plan 07:** ✅ COMPLETE — hivemind-power-on skill rewrite: SKILL.md v2.1.0 (236 lines) + 6 reference files updated with actual tool capabilities (filter-sessions, get-manifest, aggregate, hivemind-session-view). All aspirational content removed. Truthful resume guidance with SDK v2 dependency noted. All acceptance criteria pass. REQ-08 satisfied.
 **CP-DT-01 status:** RE-OPENED / RUNTIME BLOCKED. Waves 1-5 delivered historical implementation artifacts, but runtime proof failed because OpenCode plugin `ToolContext` v1.15.4 has no `context.task` field.
