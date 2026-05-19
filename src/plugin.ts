@@ -189,9 +189,14 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     onFirstActionDeadline: (delegationId, elapsedSeconds) => coordinatorRef?.markExecutionUnconfirmed(delegationId, elapsedSeconds),
   })
   const retryHandler = new DelegationRetryHandler({ persist: options.persistDelegations })
-  const coordinator = new DelegationCoordinator({ childSessionStarter: createSdkChildSessionStarter(options.client), dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
+  const childSessionStarter = typeof (options.client as { session?: unknown }).session === "object"
+    ? createSdkChildSessionStarter(options.client)
+    : undefined
+  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
   coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
+    coordinator,
+    lifecycle,
     monitor,
     notificationRouter,
     ptyManager: options.ptyManager,

@@ -217,12 +217,12 @@ describe("delegation-status v2 tool", () => {
     expect(DelegationControlSchema.safeParse({ action: "chain" }).success).toBe(false)
   })
 
-  it("returns null progressPct (progress calculation deferred to monitor)", async () => {
+  it("caps running progressPct below completion", async () => {
     const { tool } = createHarness(activeRecord({ createdAt: now - 999_000 }))
 
     const data = parse(await tool.execute({ delegationId: "dt-123" } as never, context)).data as Record<string, unknown>
 
-    expect(data.progressPct).toBe(null)
+    expect(data.progressPct).toBe(99)
   })
 
   it("formats elapsed time as human-readable minutes and seconds", async () => {

@@ -100,6 +100,8 @@ type CommandDispatchResult = {
   queueKey?: string
 }
 
+const DEFAULT_RUNTIME_SAFETY_CEILING_MS = 30 * 60 * 1000
+
 function createMockClient(): MockClient {
   return {
     session: {
@@ -315,34 +317,36 @@ describe("DelegationManager", () => {
       })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
     })
 
-    it("denies unknown delegation category before session create", async () => {
+    it("ignores removed delegation category metadata during SDK dispatch", async () => {
       const client = createMockClient()
       client.app.agents.mockResolvedValue({ data: [{ name: "builder", category: "implementation" }] })
       const manager = new DelegationManager(client as never)
 
-      await expect(manager.dispatch({
+      const result = await manager.dispatch({
         parentSessionId: "ses-parent-category",
         agent: "builder",
         prompt: "do work",
         category: "mystery",
-      })).rejects.toThrow("[Harness] Category gate denied: unknown delegation category")
-      expect(client.session.create).not.toHaveBeenCalled()
+      })
+      expect(result.status).toBe("running")
+      expect(client.session.create).toHaveBeenCalledOnce()
     })
 
-    it("denies review category with write-capable primitive tools before session create", async () => {
+    it("does not enforce removed review category tool gates", async () => {
       const client = createMockClient()
       client.app.agents.mockResolvedValue({
         data: [{ name: "critic", category: "review", tools: { edit: true, write: true, bash: true } }],
       })
       const manager = new DelegationManager(client as never)
 
-      await expect(manager.dispatch({
+      const result = await manager.dispatch({
         parentSessionId: "ses-parent-review",
         agent: "critic",
         prompt: "review code",
         category: "review",
-      })).rejects.toThrow('category "review" cannot use write-capable tools')
-      expect(client.session.create).not.toHaveBeenCalled()
+      })
+      expect(result.status).toBe("running")
+      expect(client.session.create).toHaveBeenCalledOnce()
     })
 
     it("allows command dispatch through explicit command-process category", async () => {
@@ -408,7 +412,6 @@ describe("DelegationManager", () => {
         provider: "anthropic",
         model: "claude-3-5-sonnet",
         agent: "builder",
-        category: "implementation",
       })
       expect(acquireSpy).toHaveBeenCalledWith(
         "provider:anthropic:model:claude-3-5-sonnet",
@@ -450,7 +453,7 @@ describe("DelegationManager", () => {
       expect(result.queueKey).toBe(expectedQueueKey)
     })
 
-    it("uses canonical fallback semantics from concurrency.ts when only agent/category metadata exists", async () => {
+    it("uses canonical fallback semantics from concurrency.ts when only agent metadata exists", async () => {
       const client = createMockClient()
       client.app.agents.mockResolvedValue({
         data: [
@@ -477,10 +480,9 @@ describe("DelegationManager", () => {
         provider: undefined,
         model: undefined,
         agent: "builder",
-        category: "implementation",
       })
       expect(acquireSpy).toHaveBeenCalledWith(
-        "agent:builder:category:implementation",
+        "agent:builder",
         undefined,
         undefined,
       )
@@ -667,7 +669,7 @@ describe("DelegationManager", () => {
       })
 
       expect(acquireSpy).toHaveBeenCalledWith(
-        "category:implementation",
+        "default",
         undefined,
         undefined,
       )
@@ -681,7 +683,7 @@ describe("DelegationManager", () => {
         surface: "command-process",
         recoveryGuarantee: "non-resumable-after-restart",
         fallbackReason: expect.any(String),
-        queueKey: "category:implementation",
+        queueKey: "default",
       }))
       expect(manager.getStatus(result.delegationId)?.ptySessionId).toBeUndefined()
     })
@@ -910,7 +912,7 @@ describe("DelegationManager", () => {
       }))
     })
 
-    it("uses default safetyCeilingMs when not provided", async () => {
+    it("does not expose removed safetyCeilingMs on delegation records", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
@@ -921,10 +923,10 @@ describe("DelegationManager", () => {
       })
 
       const delegation = manager.getStatus(result.delegationId)
-      expect(delegation?.safetyCeilingMs).toBe(DEFAULT_SAFETY_CEILING_MS)
+      expect(delegation?.safetyCeilingMs).toBeUndefined()
     })
 
-    it("uses custom safetyCeilingMs when provided", async () => {
+    it("ignores removed custom safetyCeilingMs public override", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
@@ -936,7 +938,7 @@ describe("DelegationManager", () => {
       })
 
       const delegation = manager.getStatus(result.delegationId)
-      expect(delegation?.safetyCeilingMs).toBe(120_000)
+      expect(delegation?.safetyCeilingMs).toBeUndefined()
     })
   })
 
@@ -1236,11 +1238,10 @@ describe("DelegationManager", () => {
         parentSessionId: "ses-parent-timeout-ignore",
         agent: "builder",
         prompt: "timeout test",
-        safetyCeilingMs: 25,
       })
 
       // Trigger safety ceiling timeout
-      await vi.advanceTimersByTimeAsync(25)
+      await vi.advanceTimersByTimeAsync(DEFAULT_RUNTIME_SAFETY_CEILING_MS)
       expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
 
       // Idle on same session should be a no-op
@@ -1350,10 +1351,9 @@ describe("DelegationManager", () => {
         parentSessionId: "ses-parent-safety",
         agent: "builder",
         prompt: "wait forever",
-        safetyCeilingMs: 25,
       })
 
-      await vi.advanceTimersByTimeAsync(24)
+      await vi.advanceTimersByTimeAsync(DEFAULT_RUNTIME_SAFETY_CEILING_MS - 1)
       expect(["dispatched", "running"]).toContain(manager.getStatus(result.delegationId)?.status)
 
       await vi.advanceTimersByTimeAsync(1)
@@ -1370,14 +1370,13 @@ describe("DelegationManager", () => {
         parentSessionId: "ses-parent-ceiling-msg",
         agent: "builder",
         prompt: "ceiling msg",
-        safetyCeilingMs: 100,
       })
 
-      await vi.advanceTimersByTimeAsync(100)
+      await vi.advanceTimersByTimeAsync(DEFAULT_RUNTIME_SAFETY_CEILING_MS)
 
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.error).toContain("[Harness]")
-      expect(delegation?.error).toContain("100")
+      expect(delegation?.error).toContain(String(DEFAULT_RUNTIME_SAFETY_CEILING_MS))
     })
   })
 
@@ -1397,7 +1396,6 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)).toMatchObject({
         id: result.delegationId,
         status: "running",
-        safetyCeilingMs: DEFAULT_SAFETY_CEILING_MS,
         lastMessageCount: 0,
         stablePollCount: 0,
       })
@@ -2774,9 +2772,7 @@ describe("DelegationManager", () => {
       const cases: Array<{ args: Parameters<typeof buildDelegationQueueKey>[0]; expected: string }> = [
         { args: { provider: "anthropic", model: "claude-3-5-sonnet" }, expected: "provider:anthropic:model:claude-3-5-sonnet" },
         { args: { model: "claude-3-5-sonnet" }, expected: "model:claude-3-5-sonnet" },
-        { args: { agent: "builder", category: "implementation" }, expected: "agent:builder:category:implementation" },
         { args: { agent: "builder" }, expected: "agent:builder" },
-        { args: { category: "implementation" }, expected: "category:implementation" },
         { args: {}, expected: "default" },
       ]
 
@@ -2896,7 +2892,7 @@ describe("DelegationManager", () => {
   })
 
   describe("runtime policy dispatch wiring", () => {
-    it("denies delegation through a narrower runtime category policy", async () => {
+    it("ignores removed runtime category policy during SDK dispatch", async () => {
       const client = createMockClient()
       client.app.agents.mockResolvedValue({ data: [{ name: "builder", tools: { bash: true, edit: true } }] })
       const manager = createManager(client, {
@@ -2909,13 +2905,14 @@ describe("DelegationManager", () => {
         },
       })
 
-      await expect(manager.dispatch({
+      const result = await manager.dispatch({
         parentSessionId: "ses_parent_policy_ask",
         agent: "builder",
         prompt: "do work",
         title: "policy ask",
         category: "implementation",
-      })).rejects.toThrow("category \"implementation\" cannot use write-capable tools")
+      })
+      expect(result.status).toBe("running")
     })
 
     it("passes per-key runtime concurrency and acquire timeout into SDK dispatch", async () => {
@@ -2927,7 +2924,7 @@ describe("DelegationManager", () => {
           concurrency: {
             globalLimit: 3,
             perKey: {
-              "agent:builder:category:implementation": { limit: 1, acquireTimeoutMs: 250 },
+              "agent:builder": { limit: 1, acquireTimeoutMs: 250 },
             },
           },
         },
@@ -2941,7 +2938,7 @@ describe("DelegationManager", () => {
         category: "implementation",
       })
 
-      expect(acquireSpy).toHaveBeenCalledWith("agent:builder:category:implementation", 1, 250)
+      expect(acquireSpy).toHaveBeenCalledWith("agent:builder", 1, 250)
     })
 
     // -------------------------------------------------------------------

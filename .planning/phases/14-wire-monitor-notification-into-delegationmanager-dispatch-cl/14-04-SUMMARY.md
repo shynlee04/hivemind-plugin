@@ -34,7 +34,7 @@ key-files:
 
 key-decisions:
   - "Live TUI readiness remains BLOCKED / NOT PROVEN because no live OpenCode TUI evidence was collected in this subagent context."
-  - "Automated gates are recorded as failing, not hidden or reclassified without proof."
+  - "Automated Phase 14 scoped gates now pass after focused source/test remediation; live TUI readiness remains separately unproven."
   - "Task 14-04-03 did not redo Task 14-04-01/02 or alter runtime source/tests."
 
 requirements-completed: []
@@ -46,7 +46,7 @@ completed: 2026-05-19
 
 # Phase 14 Plan 04: Semantic Cleanup, Automated Gate, and Live UAT Handoff Summary
 
-**Plan 14-04 now has a cleanup audit link, a live UAT checklist, and honest automated gate evidence; live TUI readiness remains blocked/not proven.**
+**Plan 14-04 now has a cleanup audit link, a live UAT checklist, and fresh passing automated scoped gate evidence; live TUI readiness remains blocked/not proven.**
 
 ## Scope Executed
 
@@ -69,19 +69,16 @@ Already-completed prior Plan 14-04 commits were verified and not redone:
 
 ### 1. `npm run typecheck`
 
-**Status:** FAIL
+**Status:** PASS (fresh rerun in review-fix worktree)
 
 Relevant output:
 
 ```text
 > hivemind@0.1.0 typecheck
 > tsc --noEmit
-
-src/coordination/delegation/manager.ts(180,58): error TS2339: Property 'resumedFrom' does not exist on type 'Delegation'.
-src/coordination/delegation/manager.ts(181,57): error TS2339: Property 'chainedFrom' does not exist on type 'Delegation'.
 ```
 
-Classification: unresolved. This subagent was scoped to docs/evidence only and did not alter runtime source to fix these errors.
+Classification: resolved by adding the missing resume/chain lineage fields to `Delegation`.
 
 ### 2. Scoped Phase 14 Vitest Gate
 
@@ -91,23 +88,23 @@ Command:
 npx vitest run tests/lib/delegation-manager.test.ts tests/tools/delegate-task.test.ts tests/lib/coordination/delegation/monitor.test.ts tests/lib/coordination/delegation/escalation-timer.test.ts tests/lib/coordination/delegation/completion-detector.test.ts tests/lib/coordination/delegation/notification-router.test.ts tests/integration/delegation-v2-integration.test.ts tests/tools/delegation/delegation-status-v2.test.ts tests/tools/delegation-status.test.ts tests/lib/coordination/delegation/coordinator.test.ts tests/lib/coordination/delegation/slot-manager.test.ts
 ```
 
-**Status:** FAIL
+**Status:** PASS (fresh rerun in review-fix worktree)
 
 Summary output:
 
 ```text
-Test Files  4 failed | 7 passed (11)
-Tests       29 failed | 242 passed (271)
+Test Files  11 passed (11)
+Tests       271 passed (271)
 ```
 
-Top failure groups observed:
+Resolved groups:
 
-- `tests/integration/delegation-v2-integration.test.ts`: 11 failures, mostly `[Harness] DelegationManager requires a client when v2 modules are not injected.`
-- `tests/lib/delegation-manager.test.ts`: 16 failures, including stale category/safety ceiling/concurrency expectations.
-- `tests/tools/delegate-task.test.ts`: 1 failure, expected `surface: "agent-delegation"` but dispatch call omitted it.
-- `tests/tools/delegation/delegation-status-v2.test.ts`: 1 failure, expected `progressPct: 50`, received `progressPct: null`.
+- `tests/integration/delegation-v2-integration.test.ts`: `setupDelegationModules` now injects coordinator/lifecycle into the manager facade, so v2 module tests no longer fall into the runtime-adapter missing-client path.
+- `tests/lib/delegation-manager.test.ts`: stale category and custom `safetyCeilingMs` assertions were aligned with Plan 14 cleanup; runtime queue/semaphore observability remains available through the facade for tests.
+- `tests/tools/delegate-task.test.ts`: dispatch payload now includes `surface: "agent-delegation"`.
+- `tests/tools/delegation/delegation-status-v2.test.ts`: v2 status now reports elapsed-based `progressPct` and caps active progress below completion.
 
-Classification: unresolved. Some delegation-manager failures overlap prior summary notes about pre-existing/stale category and safety-ceiling tests, but the full set is not safely classifiable as pre-existing from available evidence.
+Classification: resolved for the Phase 14 scoped automated gate. Full-suite status was not rerun in this fix pass.
 
 ### 3. `npm test`
 
@@ -149,14 +146,14 @@ Reason:
 - No L1 evidence was collected for visible parent TUI notification, progressive injection cadence, failure checkpoint UI behavior, or two-parent routing.
 - The checklist contains paste slots for future human/operator evidence.
 
-Do not claim live TUI runtime readiness from this summary. Current evidence is automated L2/L3 only, and those gates are failing.
+Do not claim live TUI runtime readiness from this summary. Current evidence is automated L2/L3 only; the scoped automated gate now passes, but L1 live TUI proof remains missing.
 
 ## Residual Risks
 
 | Risk | Evidence | Next Action |
 |---|---|---|
-| Typecheck broken | `manager.ts` references `resumedFrom` / `chainedFrom` fields missing from `Delegation` type | Open a focused fix plan or authorize source remediation. |
-| Scoped delegation gate fails | 29 scoped test failures | Run a gap closure task to reconcile tests with removed category/safetyCeiling semantics and plugin setup behavior. |
+| Typecheck gate | Fresh `npm run typecheck` passed after adding `resumedFrom` / `chainedFrom` fields to `Delegation` type | Resolved for scoped gate. |
+| Scoped delegation gate | Fresh scoped Vitest passed: 11 files, 271 tests | Resolved for scoped gate. |
 | Full suite fails broadly | 46 failed tests, 2 failed suites | Separate Plan 14-introduced failures from broader stale tests before claiming phase completion. |
 | Live TUI behavior unproven | No live OpenCode TUI evidence | Human must run `14-LIVE-UAT-CHECKLIST.md` and paste output. |
 | Two-parent routing caveat unresolved | SDK TUI append route target limitation from research | Treat multi-parent routing as L1-not-proven until live evidence exists. |

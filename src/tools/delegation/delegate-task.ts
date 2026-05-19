@@ -60,6 +60,7 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType
           parentSessionId,
           prompt,
           queueKey: `agent:${args.agent}`,
+          surface: "agent-delegation",
           workingDirectory: context.directory ?? context.worktree,
         })
         const resultRecord = asRecord(result)

@@ -57,6 +57,8 @@ export interface Delegation {
   explicitCancellation?: boolean
   redirectedFrom?: string
   restartedFrom?: string
+  resumedFrom?: string
+  chainedFrom?: string
   executionState?: DelegationExecutionState
   firstActionAt?: number
   signalSource?: DelegationSignalSource

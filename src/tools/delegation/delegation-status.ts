@@ -81,12 +81,18 @@ function formatElapsed(ms: number): string {
   return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`
 }
 
+function calculateProgressPct(delegation: Delegation, elapsedMs: number): number | null {
+  if (delegation.status === "completed") return 100
+  if (delegation.status === "error" || delegation.status === "timeout") return 100
+  return Math.min(99, Math.floor((elapsedMs / 300_000) * 100))
+}
+
 async function renderDelegationV2(delegation: Delegation & { v2?: boolean; prompt?: string }, deps: StatusDeps): Promise<Record<string, unknown>> {
   const base = renderDelegation(delegation)
   if (!delegation.v2) return { ...base, prompt: delegation.prompt, elapsedMs: null, elapsedHuman: null, progressPct: null }
   const elapsedMs = (deps.now?.() ?? Date.now()) - delegation.createdAt
   const childMessageCount = await deps.getChildMessageCount?.(delegation.childSessionId)
-  return { ...base, agent: delegation.agent, childMessageCount, elapsedHuman: formatElapsed(elapsedMs), elapsedMs, escalationLevel: deps.getEscalationLevel?.(delegation.id) ?? null, progressPct: null, prompt: delegation.prompt, signals: { actionCount: delegation.actionCount ?? 0, messageCount: delegation.messageCount ?? childMessageCount ?? 0, toolCallCount: delegation.toolCallCount ?? 0 } }
+  return { ...base, agent: delegation.agent, childMessageCount, elapsedHuman: formatElapsed(elapsedMs), elapsedMs, escalationLevel: deps.getEscalationLevel?.(delegation.id) ?? null, progressPct: calculateProgressPct(delegation, elapsedMs), prompt: delegation.prompt, signals: { actionCount: delegation.actionCount ?? 0, messageCount: delegation.messageCount ?? childMessageCount ?? 0, toolCallCount: delegation.toolCallCount ?? 0 } }
 }
 
 /**

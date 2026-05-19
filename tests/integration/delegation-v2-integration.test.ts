@@ -66,14 +66,14 @@ describe("delegation v2 plugin integration", () => {
     expect(modules.delegationManager.listDelegations("parent-c").map((d) => d.id)).toEqual([ids[2]])
   })
 
-  it("delegate-task does not convert category-gated requests into fake runtime dispatches", async () => {
+  it("delegate-task ignores deprecated category input and dispatches through v2 runtime", async () => {
     const modules = setupDelegationModules({ client: createClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const tool = createDelegateTaskTool(modules.delegationManager)
 
     const raw = await tool.execute({ agent: "builder", category: "deny", prompt: "blocked" } as never, { sessionID: "parent-1" })
 
-    expect(parse(raw).kind).toBe("error")
-    expect(modules.delegationManager.listDelegations("parent-1")).toHaveLength(0)
+    expect(parse(raw).kind).toBe("success")
+    expect(modules.delegationManager.listDelegations("parent-1")).toHaveLength(1)
   })
 
   it("rejects depth-limit dispatch before lifecycle registration", async () => {
@@ -139,15 +139,15 @@ describe("delegation v2 plugin integration", () => {
     expect(modules.delegationManager.getStatus(dispatched.delegationId)?.error).toContain("aborted")
   })
 
-  it("redirects active delegations through the SDK starter", async () => {
+  it("chains active delegations through the SDK starter", async () => {
     const modules = setupDelegationModules({ client: createRuntimeClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })
     const dispatched = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
 
-    const raw = await statusTool.execute({ action: "control", delegationId: dispatched.delegationId, control: { action: "redirect", redirectAgent: "critic" } } as never, { sessionID: "parent-1" })
+    const raw = await statusTool.execute({ action: "control", delegationId: dispatched.delegationId, control: { action: "chain", chainParentSessionId: "parent-2" } } as never, { sessionID: "parent-1" })
 
     expect(parse(raw).kind).toBe("success")
-    expect(modules.delegationManager.listDelegations("parent-1").some((d) => d.agent === "critic" && d.redirectedFrom === dispatched.delegationId)).toBe(true)
+    expect(modules.delegationManager.listDelegations("parent-2").some((d) => d.agent === "builder" && d.chainedFrom === dispatched.delegationId)).toBe(true)
   })
 
   it("runs auto-loop for three context-chained iterations through the plugin coordinator", async () => {

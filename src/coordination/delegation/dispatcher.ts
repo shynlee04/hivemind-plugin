@@ -9,6 +9,7 @@ export interface PreflightParams {
   parentSessionId: string
   prompt?: string
   queueKey: string
+  surface?: "agent-delegation" | "command-process"
   workingDirectory?: string
 }
 

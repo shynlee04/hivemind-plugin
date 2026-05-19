@@ -228,9 +228,12 @@ export class DelegationManager {
   get delegations(): Map<string, Delegation> { return this.requireRuntime().delegations }
   get delegationsBySession(): Map<string, string> { return this.requireRuntime().delegationsBySession }
   get safetyTimers(): Map<string, NodeJS.Timeout> { return this.requireRuntime().safetyTimers }
+  get semaphore(): { acquire: (...args: unknown[]) => Promise<() => void> } {
+    return (this.requireRuntime() as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore
+  }
 
   private toDispatchParams(params: DelegateParams): DispatchParams {
-    return { agent: params.agent, currentDepth: 0, parentSessionId: params.parentSessionId, prompt: params.prompt, queueKey: params.agent }
+    return { agent: params.agent, currentDepth: 0, parentSessionId: params.parentSessionId, prompt: params.prompt, queueKey: `agent:${params.agent}`, surface: "agent-delegation", workingDirectory: params.workingDirectory }
   }
 
   private terminalFallback(delegationId: string, error: string): DelegationResult {
