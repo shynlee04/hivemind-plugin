@@ -303,6 +303,14 @@ export {
   OpenCodeConfigSchemaLenient,
 } from "./config-precedence.schema.js"
 
+export type {
+  ConfigPrecedenceLevel,
+  ConfigSource,
+  ConfigSourceLenient,
+  OpenCodeConfig,
+  OpenCodeConfigLenient,
+} from "./config-precedence.schema.js"
+
 // ---------------------------------------------------------------------------
 // Session-view schemas
 // ---------------------------------------------------------------------------

@@ -24,7 +24,10 @@ interface ContinuityRecord {
   parentSessionID?: string | null
   delegationDepth?: number
   status?: string
-  hierarchy?: { children?: Array<ChildRef & { status?: string; delegationDepth?: number }> }
+  hierarchy?: {
+    root?: string
+    children?: Record<string, ChildRef & { status?: string; delegationDepth?: number; children?: Record<string, unknown> }>
+  }
 }
 
 export function createSessionHierarchyTool(projectRoot: string): ReturnType<typeof tool> {
@@ -66,12 +69,32 @@ async function readContinuity(projectRoot: string, sessionId: string): Promise<C
   }
 }
 
+/** Normalize children to array — handles both Record<string, ...> (object) and Array formats. */
+function normalizeChildren(
+  children: unknown,
+): Array<{ sessionID: string; childFile: string; status?: string; delegationDepth?: number }> {
+  if (!children) return []
+  if (Array.isArray(children)) return children as Array<{ sessionID: string; childFile: string; status?: string; delegationDepth?: number }>
+  if (typeof children === "object") {
+    return Object.values(children).map((v) => {
+      const entry = v as Record<string, unknown>
+      return {
+        sessionID: typeof entry.sessionID === "string" ? entry.sessionID : String(entry.file ?? ""),
+        childFile: typeof entry.childFile === "string" ? entry.childFile : (typeof entry.file === "string" ? entry.file : ""),
+        status: typeof entry.status === "string" ? entry.status : undefined,
+        delegationDepth: typeof entry.depth === "number" ? entry.depth : undefined,
+      }
+    })
+  }
+  return []
+}
+
 /** Get children of a session. */
 async function handleGetChildren(projectRoot: string, sessionId: string, includeStatus: boolean | undefined) {
   if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
   const record = await readContinuity(projectRoot, sessionId)
   if (!record) return renderToolResult(error(`Session not found: ${sessionId}`))
-  const children = (record.hierarchy?.children ?? []).map((c) => ({
+  const children = normalizeChildren(record.hierarchy?.children).map((c) => ({
     sessionId: c.sessionID,
     childFile: c.childFile,
     status: includeStatus !== false ? c.status ?? record.status : undefined,
@@ -118,9 +141,11 @@ async function computeDepth(projectRoot: string, sessionId: string, visited: Set
   if (visited.size >= COMPUTE_DEPTH_MAX) return 0
   visited.add(sessionId)
   const record = await readContinuity(projectRoot, sessionId)
-  if (!record || !record.hierarchy?.children?.length) return 0
+  if (!record) return 0
+  const children = normalizeChildren(record.hierarchy?.children)
+  if (children.length === 0) return 0
   let maxChildDepth = 0
-  for (const child of record.hierarchy.children) {
+  for (const child of children) {
     const childDepth = await computeDepth(projectRoot, child.sessionID, visited)
     maxChildDepth = Math.max(maxChildDepth, childDepth + 1)
   }
@@ -134,29 +159,70 @@ async function handleGetManifest(projectRoot: string, sessionId: string) {
     const manifestPath = safeSessionPath(projectRoot, sessionId, "hierarchy-manifest.json")
     const raw = await readFile(manifestPath, "utf-8")
     const manifest = JSON.parse(raw) as {
-      children?: Array<{
-        childSessionId: string
+      version?: string
+      rootMainSessionID?: string
+      lastUpdated?: string
+      totalChildren?: number
+      maxDepth?: number
+      children?: Record<string, {
+        sessionID: string
+        parentSessionID?: string
+        rootMainSessionID?: string
+        delegationDepth?: number
+        delegatedBy?: string
+        subagentType?: string
         status?: string
-        delegatedBy?: { subagentType?: string; taskDescription?: string }
-        depth?: number
         turnCount?: number
+        childFile?: string
         createdAt?: string
       }>
     }
-    const children = manifest.children ?? []
+    const childrenMap = manifest.children ?? {}
+    const children = Object.entries(childrenMap).map(([childId, c]) => ({
+      childSessionId: childId,
+      status: c.status ?? "unknown",
+      delegatedBy: c.delegatedBy ?? null,
+      subagentType: c.subagentType ?? null,
+      depth: c.delegationDepth ?? 0,
+      turnCount: c.turnCount ?? 0,
+      createdAt: c.createdAt ?? null,
+    }))
     return renderToolResult(success(`Manifest for ${sessionId}`, {
       sessionId,
+      rootMainSessionID: manifest.rootMainSessionID ?? sessionId,
       childCount: children.length,
-      children: children.map((c) => ({
-        childSessionId: c.childSessionId,
-        status: c.status ?? "unknown",
-        delegatedBy: c.delegatedBy ?? null,
-        depth: c.depth ?? 0,
-        turnCount: c.turnCount ?? 0,
-        createdAt: c.createdAt ?? null,
-      })),
+      totalChildren: manifest.totalChildren ?? children.length,
+      maxDepth: manifest.maxDepth ?? 0,
+      lastUpdated: manifest.lastUpdated ?? null,
+      children,
     }))
   } catch {
-    return renderToolResult(error(`Manifest not found for session: ${sessionId}`))
+    // Attempt fallback: check if session has a continuity file with children
+    try {
+      const record = await readContinuity(projectRoot, sessionId)
+      if (record && record.hierarchy?.children) {
+        const children = normalizeChildren(record.hierarchy.children)
+        if (children.length > 0) {
+          return renderToolResult(success(`Manifest (from continuity fallback) for ${sessionId}`, {
+            sessionId,
+            rootMainSessionID: sessionId,
+            childCount: children.length,
+            totalChildren: children.length,
+            maxDepth: 0,
+            lastUpdated: null,
+            children: children.map((c) => ({
+              childSessionId: c.sessionID,
+              status: c.status ?? "unknown",
+              delegatedBy: null,
+              subagentType: null,
+              depth: c.delegationDepth ?? 0,
+              turnCount: 0,
+              createdAt: null,
+            })),
+          }))
+        }
+      }
+    } catch { /* fallback failed too */ }
+    return renderToolResult(error(`Manifest not found for session: ${sessionId}. Hierarchies are only tracked for root sessions that have active delegation children.`))
   }
 }

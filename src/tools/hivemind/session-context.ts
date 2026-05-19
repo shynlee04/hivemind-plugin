@@ -9,6 +9,7 @@
 
 import { tool } from "@opencode-ai/plugin/tool"
 import { readFile, readdir } from "node:fs/promises"
+import { resolve } from "node:path"
 import matter from "gray-matter"
 import { SessionContextInputSchema, type SessionContextInput } from "../../schema-kernel/session-tracker.schema.js"
 import { safeSessionPath, sessionTrackerRoot } from "../../features/session-tracker/persistence/atomic-write.js"
@@ -60,10 +61,10 @@ export function createSessionContextTool(projectRoot: string): ReturnType<typeof
   })
 }
 
-/** Read project-continuity.json index. */
+/** Read project-continuity.json index (flat path under session-tracker root). */
 async function readProjectIndex(projectRoot: string): Promise<ProjectIndex | null> {
   try {
-    const indexPath = safeSessionPath(projectRoot, "project-continuity", "project-continuity.json")
+    const indexPath = resolve(sessionTrackerRoot(projectRoot), "project-continuity.json")
     const raw = await readFile(indexPath, "utf-8")
     return JSON.parse(raw) as ProjectIndex
   } catch { return null }
@@ -111,8 +112,10 @@ async function handleFindRelated(projectRoot: string, sessionId: string, maxRela
 async function handleCrossReference(projectRoot: string, sessionId: string, query?: string) {
   if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
   const trackerRoot = sessionTrackerRoot(projectRoot)
-  const searchQuery = query ?? sessionId
-  if (!isValidSessionID(searchQuery)) return renderToolResult(error(`Invalid query: ${searchQuery}`))
+  // query is a tool/agent name (e.g. "bash", "delegate") — NOT a session ID
+  // Only validate sessionId; query is a free-text search term
+  const searchQuery = (query ?? sessionId).trim()
+  if (!searchQuery) return renderToolResult(error("Cross-reference requires a query or sessionId."))
   const refs: Array<{ sessionId: string; toolMatches: string[] }> = []
   try {
     const entries = await readdir(trackerRoot, { withFileTypes: true })

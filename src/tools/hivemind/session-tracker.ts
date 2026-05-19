@@ -10,6 +10,7 @@
 
 import { tool } from "@opencode-ai/plugin/tool"
 import { readFile, readdir, access } from "node:fs/promises"
+import { resolve } from "node:path"
 import matter from "gray-matter"
 import { SessionTrackerInputSchema, type SessionTrackerInput } from "../../schema-kernel/session-tracker.schema.js"
 import { sessionTrackerRoot, safeSessionPath } from "../../features/session-tracker/persistence/atomic-write.js"
@@ -34,8 +35,10 @@ export function createSessionTrackerTool(projectRoot: string): ReturnType<typeof
       agentType: tool.schema.string().optional(),
       minDepth: tool.schema.number().optional(),
       maxDepth: tool.schema.number().optional(),
-      timeAfter: tool.schema.string().optional(),
-      timeBefore: tool.schema.string().optional(),
+      timeRange: tool.schema.object({
+        after: tool.schema.string().optional(),
+        before: tool.schema.string().optional(),
+      }).optional(),
     },
     async execute(rawArgs: unknown, _context: ToolContext): Promise<string> {
       try {
@@ -82,10 +85,17 @@ async function searchChildJsonFiles(
     const continuityPath = safeSessionPath(projectRoot, sessionId, "session-continuity.json")
     const raw = await readFile(continuityPath, "utf-8")
     const continuity = JSON.parse(raw) as Record<string, unknown>
-    const hierarchy = continuity.hierarchy as { children?: Array<{ sessionID: string; childFile: string }> } | undefined
-    const children = hierarchy?.children ?? []
-    for (const child of children) {
-      const childPath = safeSessionPath(projectRoot, sessionId, child.childFile)
+    const hierarchy = continuity.hierarchy as { children?: Record<string, { sessionID?: string; file?: string; childFile?: string }> } | undefined
+    const children = hierarchy?.children ?? {}
+    const childArray = typeof children === "object" && !Array.isArray(children)
+      ? Object.values(children)
+      : (Array.isArray(children) ? children : [])
+    for (const child of childArray) {
+      const childEntry = child as Record<string, unknown>
+      const childId = typeof childEntry.sessionID === "string" ? childEntry.sessionID : ""
+      const childFile = typeof childEntry.childFile === "string" ? childEntry.childFile : (typeof childEntry.file === "string" ? childEntry.file : "")
+      if (!childId || !childFile) continue
+      const childPath = safeSessionPath(projectRoot, sessionId, childFile)
       try {
         const childData = JSON.parse(await readFile(childPath, "utf-8")) as Record<string, unknown>
         // Search target fields per D-02
@@ -108,7 +118,7 @@ async function searchChildJsonFiles(
           const value = extract(childData)
           if (value && value.toLowerCase().includes(queryLower)) {
             const truncated = value.length > 200 ? value.slice(0, 200) + "..." : value
-            matches.push({ childId: child.sessionID, field, snippet: truncated })
+            matches.push({ childId, field, snippet: truncated })
             break  // One match per child file
           }
         }
@@ -176,7 +186,7 @@ async function handleGetSummary(projectRoot: string, sessionId: string) {
 async function handleListSessions(projectRoot: string, limit: number) {
   // Try project-continuity.json index first
   try {
-    const indexPath = safeSessionPath(projectRoot, "project-continuity", "project-continuity.json")
+    const indexPath = resolve(sessionTrackerRoot(projectRoot), "project-continuity.json")
     await access(indexPath)
     const raw = await readFile(indexPath, "utf-8")
     const index = JSON.parse(raw) as {
@@ -270,65 +280,94 @@ async function handleSearchSessions(projectRoot: string, query: string, limit: n
 }
 
 /**
- * Filter sessions using hierarchy-manifest.json index.
+ * Filter sessions using per-session hierarchy-manifest.json files.
  *
- * Reads the pre-built index for fast queries by status, agentType, delegation depth,
- * and time range without scanning individual session files.
+ * Aggregates across all session directories, reading each session's
+ * hierarchy-manifest.json for fast queries by status, agentType, delegation depth,
+ * and time range. Falls back to directory scan if no manifests exist.
  */
 async function handleFilterSessions(
   projectRoot: string,
-  input: {
-    status?: string
-    agentType?: string
-    minDepth?: number
-    maxDepth?: number
-    timeAfter?: string
-    timeBefore?: string
-    limit: number
-  },
+  input: Record<string, unknown>,
 ) {
+  const trackerRoot = sessionTrackerRoot(projectRoot)
+  const inputAny = input as { status?: string; agentType?: string; minDepth?: number; maxDepth?: number; timeRange?: { after?: string; before?: string }; limit: number }
+  const statusLower = inputAny.status?.toLowerCase()
+  const agentLower = inputAny.agentType?.toLowerCase()
+  const afterDate = inputAny.timeRange?.after ? new Date(inputAny.timeRange.after).getTime() : undefined
+  const beforeDate = inputAny.timeRange?.before ? new Date(inputAny.timeRange.before).getTime() : undefined
+  const matches: Array<{ sessionId: string; status?: string; agentType?: string; depth?: number; lastUpdated?: string }> = []
+
   try {
-    const indexPath = safeSessionPath(projectRoot, "project-continuity", "hierarchy-manifest.json")
-    await access(indexPath)
-    const raw = await readFile(indexPath, "utf-8")
-    const manifest = JSON.parse(raw) as {
-      sessions?: Record<string, {
-        status?: string
-        agentType?: string
-        depth?: number
-        lastUpdated?: string
-      }>
-      lastUpdated?: string
-    }
-    const sessions = manifest.sessions ?? {}
-    const statusLower = input.status?.toLowerCase()
-    const agentLower = input.agentType?.toLowerCase()
-  const afterDate = input.timeAfter ? new Date(input.timeAfter).getTime() : undefined
-  const beforeDate = input.timeBefore ? new Date(input.timeBefore).getTime() : undefined
-
-    const filtered = Object.entries(sessions).filter(([_, meta]) => {
-      if (statusLower && meta.status?.toLowerCase() !== statusLower) return false
-      if (agentLower && meta.agentType?.toLowerCase() !== agentLower) return false
-      if (input.minDepth !== undefined && (meta.depth ?? 0) < input.minDepth) return false
-      if (input.maxDepth !== undefined && (meta.depth ?? 0) > input.maxDepth) return false
-      if (afterDate !== undefined || beforeDate !== undefined) {
-        const updated = meta.lastUpdated ? new Date(meta.lastUpdated).getTime() : undefined
-        if (updated === undefined) return false
-        if (afterDate !== undefined && updated < afterDate) return false
-        if (beforeDate !== undefined && updated > beforeDate) return false
+    const entries = await readdir(trackerRoot, { withFileTypes: true })
+    for (const entry of entries) {
+      if (!entry.isDirectory() || !entry.name.startsWith("ses_")) continue
+      const sessionId = entry.name
+      if (!isValidSessionID(sessionId)) continue
+      const manifestPath = safeSessionPath(projectRoot, sessionId, "hierarchy-manifest.json")
+      try {
+        await access(manifestPath)
+        const raw = await readFile(manifestPath, "utf-8")
+        const manifest = JSON.parse(raw) as {
+          rootMainSessionID?: string
+          lastUpdated?: string
+          maxDepth?: number
+          children?: Record<string, {
+            sessionID?: string
+            status?: string
+            subagentType?: string
+            delegationDepth?: number
+            updatedAt?: string
+          }>
+        }
+        // Add root session itself
+        const rootId = manifest.rootMainSessionID ?? sessionId
+        matches.push({
+          sessionId: rootId,
+          status: "active",
+          depth: 0,
+          lastUpdated: manifest.lastUpdated,
+        })
+        // Add children from manifest with their metadata
+        if (manifest.children) {
+          for (const [, childMeta] of Object.entries(manifest.children)) {
+            if (childMeta.sessionID) {
+              matches.push({
+                sessionId: childMeta.sessionID,
+                status: childMeta.status,
+                agentType: childMeta.subagentType,
+                depth: childMeta.delegationDepth,
+                lastUpdated: childMeta.updatedAt,
+              })
+            }
+          }
+        }
+      } catch {
+        // No manifest for this session — skip
       }
-      return true
-    })
-
-    const paginated = filtered.slice(0, input.limit).map(([sessionId, meta]) => ({
-      sessionId, ...meta,
-    }))
-
-    return renderToolResult(success(`Found ${paginated.length} sessions matching filters`, {
-      totalMatches: filtered.length, sessions: paginated,
-      hasMore: filtered.length > input.limit, indexLastUpdated: manifest.lastUpdated ?? null,
-    }))
+    }
   } catch {
-    return renderToolResult(error("Hierarchy manifest not found. Enable hierarchy tracking first."))
+    return renderToolResult(error("Unable to scan session directory for filtering."))
   }
+
+  // Apply filters
+  const filtered = matches.filter((meta) => {
+    if (statusLower && meta.status?.toLowerCase() !== statusLower) return false
+    if (agentLower && meta.agentType?.toLowerCase() !== agentLower) return false
+    if (inputAny.minDepth !== undefined && (meta.depth ?? 0) < inputAny.minDepth) return false
+    if (inputAny.maxDepth !== undefined && (meta.depth ?? 0) > inputAny.maxDepth) return false
+    if (afterDate !== undefined || beforeDate !== undefined) {
+      const updated = meta.lastUpdated ? new Date(meta.lastUpdated).getTime() : undefined
+      if (updated === undefined) return false
+      if (afterDate !== undefined && updated < afterDate) return false
+      if (beforeDate !== undefined && updated > beforeDate) return false
+    }
+    return true
+  })
+
+  const paginated = filtered.slice(0, inputAny.limit)
+  return renderToolResult(success(`Found ${paginated.length} sessions matching filters`, {
+    totalMatches: filtered.length, sessions: paginated,
+    hasMore: filtered.length > inputAny.limit, indexLastUpdated: null,
+  }))
 }

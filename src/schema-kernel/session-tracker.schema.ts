@@ -64,8 +64,10 @@ export const SessionTrackerInputSchema = z.discriminatedUnion("action", [
     agentType: z.string().optional(),
     minDepth: z.number().min(0).optional(),
     maxDepth: z.number().min(0).optional(),
-    timeAfter: z.string().optional(),
-    timeBefore: z.string().optional(),
+    timeRange: z.object({
+      after: z.string().optional(),
+      before: z.string().optional(),
+    }).optional(),
     limit: z.number().min(1).max(100).optional().default(20),
   }),
 ])

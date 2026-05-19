@@ -116,9 +116,9 @@ This is the most important correction from the previous version of this skill. *
 
 1. **Discover active sessions:**
    ```
-   session-tracker({action: "filter-sessions", status: "active"})
-   ```
-   This returns sessions with `status: "active"`. Each result includes `sessionId`, `agentType`, `depth`, `lastMessage[:500]`, `createdAt`, `updatedAt`, `toolSummary`.
+    session-tracker({action: "filter-sessions", status: "active"})
+    ```
+    This returns sessions with `status: "active"`. Filters are applied across all per-session hierarchy-manifest.json files — aggregation is automatic. If a session has no hierarchy-manifest.json, it is not included in filter results (fall back to search-sessions for text-based discovery).
 
 2. **Inspect hierarchy (if needed):**
    ```
