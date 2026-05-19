@@ -24,11 +24,11 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { 
 
   return tool({
     description:
-      "Delegate work to a specialist agent via SDK child-session dispatch. Returns immediately with a delegation ID (always-background WaiterModel). Respects the config `delegation_systems.delegate_task` flag — when disabled, the tool returns a graceful error. This tool ONLY works inside an OpenCode plugin runtime environment where session context is injected by the framework. In non-OpenCode environments, use the native task/subagent dispatch mechanism instead.",
+      "Delegate work to a specialist agent via SDK child-session dispatch. Returns immediately with a delegation ID (always-background WaiterModel). TO STACK ONTO AN EXISTING SESSION: pass context as JSON `{\"parentSessionId\": \"<existing-session-id>\"}` — the new delegation will attach as a child of that session instead of the current one. Respects the config `delegation_systems.delegate_task` flag — when disabled, the tool returns a graceful error. This tool ONLY works inside an OpenCode plugin runtime environment where session context is injected by the framework. In non-OpenCode environments, use the native task/subagent dispatch mechanism instead.",
     args: {
       agent: s.string().describe("Agent name to delegate to (must be valid at runtime)"),
       prompt: s.string().describe("Task prompt to send to the delegated agent"),
-      context: s.string().optional().describe("Optional context packet"),
+      context: s.string().optional().describe("Optional context packet. To stack onto an existing session, pass JSON: {\"parentSessionId\": \"ses_xxx\"}. Otherwise treated as free-text prepended to prompt."),
     },
     async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
       const parsed = DelegateTaskV2Schema.safeParse(rawArgs)
@@ -39,10 +39,27 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { 
         return renderToolResult(error("[Harness] delegate-task is disabled by config `delegation_systems.delegate_task: false`. Enable it in .hivemind/configs.json to use this tool."))
       }
 
-      const parentSessionId = context.sessionID
+      let parentSessionId = context.sessionID
+      let prompt = args.prompt
+
+      if (args.context) {
+        // Try JSON context for session stacking: {"parentSessionId": "ses_xxx"}
+        try {
+          const parsed = JSON.parse(args.context) as { parentSessionId?: string }
+          if (parsed.parentSessionId && typeof parsed.parentSessionId === "string") {
+            parentSessionId = parsed.parentSessionId
+            const { parentSessionId: _, ...rest } = parsed
+            const remaining = Object.keys(rest).length > 0 ? JSON.stringify(rest) : ""
+            prompt = remaining ? `${remaining}\n\n${args.prompt}` : args.prompt
+          } else {
+            prompt = `${args.context}\n\n${args.prompt}`
+          }
+        } catch {
+          prompt = `${args.context}\n\n${args.prompt}`
+        }
+      }
 
       try {
-        const prompt = args.context ? `${args.context}\n\n${args.prompt}` : args.prompt
         const result = await coordinator.dispatch({
           agent: args.agent,
           currentDepth: 0,

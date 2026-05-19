@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
-  "lastUpdated": "2026-05-19T22:17:27.011Z",
+  "lastUpdated": "2026-05-19T23:08:57.086Z",
   "hierarchy": {
     "root": "ses_1bdca773bffem4m5WuqDcUw6tH",
     "children": {
@@ -46,13 +46,42 @@
         "status": "active",
         "delegatedBy": "gsd-executor",
         "children": {}
+      },
+      "ses_1bdaac472ffesmvxGUByGIYHfj": {
+        "file": "ses_1bdaac472ffesmvxGUByGIYHfj.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1bd97c625ffefcMYZPzPnal05I": {
+        "file": "ses_1bd97c625ffefcMYZPzPnal05I.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debug-session-manager",
+        "children": {}
+      },
+      "ses_1bd93aa8fffesEAOxykleFmpyL": {
+        "file": "ses_1bd93aa8fffesEAOxykleFmpyL.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_1bd90ab54ffeqGWND4JbjMKKF0": {
+        "file": "ses_1bd90ab54ffeqGWND4JbjMKKF0.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-fixer",
+        "children": {}
       }
     }
   },
-  "turnCount": 1,
+  "turnCount": 4,
   "toolSummary": {
-    "bash": 7,
-    "read": 8,
-    "task": 5
+    "bash": 40,
+    "read": 18,
+    "task": 10,
+    "edit": 10
   }
 }

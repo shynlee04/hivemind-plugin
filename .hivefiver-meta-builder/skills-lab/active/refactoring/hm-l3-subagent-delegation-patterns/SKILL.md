@@ -152,13 +152,19 @@ grep -n "type=\"checkpoint\"" [plan-path]
 
 ### Resume by Session ID (NEVER Recreate)
 
-When a session disconnects:
-1. **DO NOT create new tasks** — resume the existing delegated task
-2. Use the session ID from the previous `task` call
-3. The task tool supports `task_id` parameter for resuming
-4. Check `.planning/phases/NN-name/SUMMARY.md` for completion status
-5. Re-query plan index to get incomplete plans
-6. Re-execute only incomplete plans
+When a session disconnects or you need to stack new work onto an existing session:
+
+1. **DO NOT create new tasks** — resume or stack onto the existing session
+2. Use the session ID from the previous `task` call or any completed session
+3. **NEVER inject the session ID into the prompt text** — that creates an independent session with no hierarchy connection. Always pass it as a **parameter**:
+   - **`task` tool:** set `task_id` = session ID → attaches new subagent as child of that session  
+     *(works for both resume of incomplete work and stack-on of completed work)*
+   - **`delegate-task` tool:** pass `context` = `{"parentSessionId": "<session-id>"}` → same effect
+4. The prompt itself stays **simple** — context from the target session is preserved through the session chain. No need to re-describe old work.
+5. This is the same principle as `subagent_type`/`agent`: the parameter selects the handler/session, not the prompt text.
+6. Check `.planning/phases/NN-name/SUMMARY.md` for completion status
+7. Re-query plan index to get incomplete plans
+8. Re-execute only incomplete plans
 
 ### Handoff Edge Guardrails
 

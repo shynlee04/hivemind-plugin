@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1be05c116ffeqIRmAKWcRUtdpO",
-  "lastUpdated": "2026-05-19T21:19:39.743Z",
+  "lastUpdated": "2026-05-19T22:25:52.674Z",
   "hierarchy": {
     "root": "ses_1be05c116ffeqIRmAKWcRUtdpO",
     "children": {
@@ -17,7 +17,15 @@
         "depth": 1,
         "status": "active",
         "delegatedBy": "hm-l2-scout",
-        "children": {}
+        "children": {
+          "ses_1be059a5fffeZ26SoACU7Rqo4j": {
+            "file": "ses_1be059a5fffeZ26SoACU7Rqo4j.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "hm-l2-scout",
+            "children": {}
+          }
+        }
       },
       "ses_1be041053ffe3OSX6HBlFgc1rR": {
         "file": "ses_1be041053ffe3OSX6HBlFgc1rR.json",
@@ -31,7 +39,29 @@
         "depth": 1,
         "status": "active",
         "delegatedBy": "hm-l2-scout",
-        "children": {}
+        "children": {
+          "ses_1be059a5fffeZ26SoACU7Rqo4j": {
+            "file": "ses_1be059a5fffeZ26SoACU7Rqo4j.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "hm-l2-scout",
+            "children": {}
+          },
+          "ses_1be058dceffevsZVsKjXm4kMZ0": {
+            "file": "ses_1be058dceffevsZVsKjXm4kMZ0.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "hm-l2-scout",
+            "children": {}
+          },
+          "ses_1be041053ffe3OSX6HBlFgc1rR": {
+            "file": "ses_1be041053ffe3OSX6HBlFgc1rR.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "hm-l2-scout",
+            "children": {}
+          }
+        }
       },
       "ses_1bde88b05ffemTW9e3KIQ16JlL": {
         "file": "ses_1bde88b05ffemTW9e3KIQ16JlL.json",

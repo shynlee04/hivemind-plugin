@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1c571efb0ffeIloZPzsnqS0P0y",
-  "lastUpdated": "2026-05-18T10:24:52.563Z",
+  "lastUpdated": "2026-05-19T23:20:33.283Z",
   "hierarchy": {
     "root": "ses_1c571efb0ffeIloZPzsnqS0P0y",
     "children": {
@@ -21,16 +21,18 @@
       }
     }
   },
-  "turnCount": 7,
+  "turnCount": 8,
   "toolSummary": {
     "skill": 4,
-    "delegation-status": 1,
-    "session-tracker": 1,
-    "read": 5,
+    "delegation-status": 2,
+    "session-tracker": 2,
+    "read": 6,
     "delegate-task": 2,
     "task": 2,
     "grep": 4,
     "glob": 3,
-    "bash": 8
+    "bash": 8,
+    "session-journal-export": 2,
+    "session-hierarchy": 2
   }
 }

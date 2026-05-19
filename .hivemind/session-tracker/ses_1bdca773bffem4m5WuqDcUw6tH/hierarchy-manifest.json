@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
-  "lastUpdated": "2026-05-19T22:17:27.027Z",
+  "lastUpdated": "2026-05-19T23:02:47.527Z",
   "children": {
     "ses_1bdc97231ffe2UtvUOh15BG7sv": {
       "sessionID": "ses_1bdc97231ffe2UtvUOh15BG7sv",
@@ -76,12 +76,64 @@
       "delegatedBy": "gsd-executor",
       "subagentType": "gsd-executor",
       "createdAt": "2026-05-19T22:17:27.027Z",
-      "updatedAt": "2026-05-19T22:17:27.027Z",
-      "status": "active",
+      "updatedAt": "2026-05-19T22:22:07.333Z",
+      "status": "idle",
       "turnCount": 0,
       "childFile": "ses_1bdaf475cffe7uDznDGElb242J.json"
+    },
+    "ses_1bdaac472ffesmvxGUByGIYHfj": {
+      "sessionID": "ses_1bdaac472ffesmvxGUByGIYHfj",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-19T22:22:22.647Z",
+      "updatedAt": "2026-05-19T22:25:32.961Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bdaac472ffesmvxGUByGIYHfj.json"
+    },
+    "ses_1bd97c625ffefcMYZPzPnal05I": {
+      "sessionID": "ses_1bd97c625ffefcMYZPzPnal05I",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-debug-session-manager",
+      "subagentType": "gsd-debug-session-manager",
+      "createdAt": "2026-05-19T22:43:07.415Z",
+      "updatedAt": "2026-05-19T22:47:26.172Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bd97c625ffefcMYZPzPnal05I.json"
+    },
+    "ses_1bd93aa8fffesEAOxykleFmpyL": {
+      "sessionID": "ses_1bd93aa8fffesEAOxykleFmpyL",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-code-reviewer",
+      "subagentType": "gsd-code-reviewer",
+      "createdAt": "2026-05-19T22:47:36.617Z",
+      "updatedAt": "2026-05-19T22:50:39.942Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bd93aa8fffesEAOxykleFmpyL.json"
+    },
+    "ses_1bd90ab54ffeqGWND4JbjMKKF0": {
+      "sessionID": "ses_1bd90ab54ffeqGWND4JbjMKKF0",
+      "parentSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "rootMainSessionID": "ses_1bdca773bffem4m5WuqDcUw6tH",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-code-fixer",
+      "subagentType": "gsd-code-fixer",
+      "createdAt": "2026-05-19T22:50:53.127Z",
+      "updatedAt": "2026-05-19T23:02:47.527Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bd90ab54ffeqGWND4JbjMKKF0.json"
     }
   },
-  "totalChildren": 6,
+  "totalChildren": 10,
   "maxDepth": 1
 }

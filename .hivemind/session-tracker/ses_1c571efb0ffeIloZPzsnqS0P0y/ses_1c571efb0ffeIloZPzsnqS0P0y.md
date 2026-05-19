@@ -1,7 +1,7 @@
 ---
 sessionID: ses_1c571efb0ffeIloZPzsnqS0P0y
 created: 2026-05-18T10:07:29.378Z
-updated: 2026-05-18T10:07:29.474Z
+updated: 2026-05-19T23:20:10.025Z
 parentSessionID: null
 delegationDepth: 0
 children: []
@@ -387,6 +387,82 @@ task_id: ses_1c5660edcffeEBRK8DMQIl5VNp
 ```json
 {
   "callID": "toolu_2ff8e32d9fd745eb8ac32e49"
+}
+```
+
+
+## USER (turn 1)
+
+**source:** real-human
+
+Analyze what was done in this session. Read the session file, continuity, delegation records, and hierarchy-manifest if present. Return a structured report showing: (1) what tools were used, (2) any delegation children, (3) the session status.
+
+### Tool: session-tracker
+
+**Input:**
+```json
+{
+  "callID": "call_00_IpYxYFv85JKJedNNFp3P0962"
+}
+```
+
+
+### Tool: session-journal-export
+
+**Input:**
+```json
+{
+  "callID": "call_01_MQe9iwBoTATulRfOAFDK8288"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/state/session-continuity.json"
+}
+```
+
+
+### Tool: session-hierarchy
+
+**Input:**
+```json
+{
+  "callID": "call_00_L0fV5IogrLWuAKsyY8Zb6199"
+}
+```
+
+
+### Tool: delegation-status
+
+**Input:**
+```json
+{
+  "callID": "call_01_HLafCz8QLbOea2L1kAca0788"
+}
+```
+
+
+### Tool: session-hierarchy
+
+**Input:**
+```json
+{
+  "callID": "call_02_3upGF39H9qVmJGbhv0si5026"
+}
+```
+
+
+### Tool: session-journal-export
+
+**Input:**
+```json
+{
+  "callID": "call_01_vVjmJTmaG9avR54OoGtf0045"
 }
 ```
 

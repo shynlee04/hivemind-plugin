@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+  "lastUpdated": "2026-05-19T23:29:41.798Z",
+  "children": {
+    "ses_1bda03a34ffek7NUrdj7Rv6V0Y": {
+      "sessionID": "ses_1bda03a34ffek7NUrdj7Rv6V0Y",
+      "parentSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "rootMainSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-19T22:33:53.452Z",
+      "updatedAt": "2026-05-19T22:37:06.753Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bda03a34ffek7NUrdj7Rv6V0Y.json"
+    },
+    "ses_1bda014dcffe6gPMzd3L0SQ34B": {
+      "sessionID": "ses_1bda014dcffe6gPMzd3L0SQ34B",
+      "parentSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "rootMainSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-19T22:34:02.977Z",
+      "updatedAt": "2026-05-19T22:35:57.360Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bda014dcffe6gPMzd3L0SQ34B.json"
+    },
+    "ses_1bd795788ffeUiClJLADe1OanX": {
+      "sessionID": "ses_1bd795788ffeUiClJLADe1OanX",
+      "parentSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "rootMainSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-19T23:16:21.824Z",
+      "updatedAt": "2026-05-19T23:16:41.493Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bd795788ffeUiClJLADe1OanX.json"
+    },
+    "ses_1bd77e51dffeG57pE8UT8Z7VCt": {
+      "sessionID": "ses_1bd77e51dffeG57pE8UT8Z7VCt",
+      "parentSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "rootMainSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-researcher",
+      "subagentType": "hm-l2-researcher",
+      "createdAt": "2026-05-19T23:17:56.628Z",
+      "updatedAt": "2026-05-19T23:19:10.329Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bd77e51dffeG57pE8UT8Z7VCt.json"
+    },
+    "ses_1bd76264effeOydeUGCUkkxcPT": {
+      "sessionID": "ses_1bd76264effeOydeUGCUkkxcPT",
+      "parentSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "rootMainSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "delegationDepth": 1,
+      "delegatedBy": "unknown",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-19T23:19:51.021Z",
+      "updatedAt": "2026-05-19T23:20:20.442Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bd76264effeOydeUGCUkkxcPT.json"
+    },
+    "ses_1bd6f8919ffeCb1nun4SzMIv6p": {
+      "sessionID": "ses_1bd6f8919ffeCb1nun4SzMIv6p",
+      "parentSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "rootMainSessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-scout",
+      "subagentType": "hm-l2-scout",
+      "createdAt": "2026-05-19T23:27:04.479Z",
+      "updatedAt": "2026-05-19T23:29:41.798Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1bd6f8919ffeCb1nun4SzMIv6p.json"
+    }
+  },
+  "totalChildren": 6,
+  "maxDepth": 1
+}
