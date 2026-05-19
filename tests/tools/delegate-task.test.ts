@@ -125,28 +125,6 @@ describe("delegate-task tool", () => {
     )
   })
 
-  it("falls back to process.env.OPENCODE_SESSION_ID when context.sessionID is undefined", async () => {
-    const manager = createManagerStub()
-    const tool = createDelegateTaskTool(manager as never)
-    const ctxNoSession = { ...mockCtx, sessionID: undefined }
-    const previousEnv = process.env.OPENCODE_SESSION_ID
-    process.env.OPENCODE_SESSION_ID = "env-session-id"
-
-    try {
-      await tool.execute({ agent: "builder", prompt: "work" } as never, ctxNoSession)
-
-      expect(manager.dispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ parentSessionId: "env-session-id" }),
-      )
-    } finally {
-      if (previousEnv === undefined) {
-        delete process.env.OPENCODE_SESSION_ID
-      } else {
-        process.env.OPENCODE_SESSION_ID = previousEnv
-      }
-    }
-  })
-
   // ---------------------------------------------------------------------------
   // Schema validation
   // ---------------------------------------------------------------------------
@@ -292,27 +270,17 @@ describe("delegate-task tool", () => {
     expect(result.message).toContain("[Harness]")
   })
 
-  it("returns error when parentSessionId unavailable from both context and env", async () => {
-    const tool = createDelegateTaskTool(createManagerStub() as never)
-    const ctxWithoutSession = { ...mockCtx, sessionID: undefined }
-    const previousEnv = process.env.OPENCODE_SESSION_ID
-    const previousState = process.env.OPENCODE_HARNESS_STATE_DIR
-    delete process.env.OPENCODE_SESSION_ID
-    delete process.env.OPENCODE_HARNESS_STATE_DIR
+  it("succeeds when parentSessionId is available from context.sessionID", async () => {
+    const manager = createManagerStub()
+    const tool = createDelegateTaskTool(manager as never)
 
-    try {
-      const raw = await tool.execute({ agent: "builder", prompt: "work" } as never, ctxWithoutSession)
-      const result = parseResult(raw)
+    const raw = await tool.execute({ agent: "builder", prompt: "work" } as never, mockCtx)
+    const result = parseResult(raw)
 
-      expect(result.kind).toBe("error")
-      expect(result.message).toContain("requires an OpenCode plugin runtime environment")
-      expect(result.message).toContain("native task/subagent tool")
-    } finally {
-      if (previousEnv) process.env.OPENCODE_SESSION_ID = previousEnv
-      else delete process.env.OPENCODE_SESSION_ID
-      if (previousState) process.env.OPENCODE_HARNESS_STATE_DIR = previousState
-      else delete process.env.OPENCODE_HARNESS_STATE_DIR
-    }
+    expect(result.kind).toBe("success")
+    expect(manager.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ parentSessionId: "parent-session" }),
+    )
   })
 
   it("returns error response for non-Error thrown values", async () => {
@@ -328,72 +296,24 @@ describe("delegate-task tool", () => {
   })
 
   // ---------------------------------------------------------------------------
-  // Honest runtime detection — R-RUNTIME-01
+  // sessionID injection (always provided by OpenCode runtime context)
   // ---------------------------------------------------------------------------
 
-  it("returns actionable error when no OpenCode runtime is detected and no session context exists", async () => {
-    const tool = createDelegateTaskTool(createManagerStub() as never)
-    const ctxNoSession = { ...mockCtx, sessionID: undefined }
-    const previousEnvSession = process.env.OPENCODE_SESSION_ID
-    const previousEnvState = process.env.OPENCODE_HARNESS_STATE_DIR
-    delete process.env.OPENCODE_SESSION_ID
-    delete process.env.OPENCODE_HARNESS_STATE_DIR
-
-    try {
-      const raw = await tool.execute({ agent: "builder", prompt: "work" } as never, ctxNoSession)
-      const result = parseResult(raw)
-
-      expect(result.kind).toBe("error")
-      expect(result.message).toContain("requires an OpenCode plugin runtime environment")
-      expect(result.message).toContain("native task/subagent tool")
-    } finally {
-      if (previousEnvSession) process.env.OPENCODE_SESSION_ID = previousEnvSession
-      else delete process.env.OPENCODE_SESSION_ID
-      if (previousEnvState) process.env.OPENCODE_HARNESS_STATE_DIR = previousEnvState
-      else delete process.env.OPENCODE_HARNESS_STATE_DIR
-    }
-  })
-
-  it("returns framework-failure error when OpenCode env exists but session ID is still missing", async () => {
-    const tool = createDelegateTaskTool(createManagerStub() as never)
-    const ctxNoSession = { ...mockCtx, sessionID: undefined }
-    const previousEnvSession = process.env.OPENCODE_SESSION_ID
-    delete process.env.OPENCODE_SESSION_ID
-    process.env.OPENCODE_HARNESS_STATE_DIR = "/tmp/harness-state"
-
-    try {
-      const raw = await tool.execute({ agent: "builder", prompt: "work" } as never, ctxNoSession)
-      const result = parseResult(raw)
-
-      expect(result.kind).toBe("error")
-      expect(result.message).toContain("framework-level context injection failure")
-    } finally {
-      if (previousEnvSession) process.env.OPENCODE_SESSION_ID = previousEnvSession
-      else delete process.env.OPENCODE_SESSION_ID
-      delete process.env.OPENCODE_HARNESS_STATE_DIR
-    }
-  })
-
-  it("dispatches successfully when OpenCode session ID is available from environment", async () => {
+  it("succeeds when context.sessionID is provided (runtime always injects it)", async () => {
     const manager = createManagerStub()
     const tool = createDelegateTaskTool(manager as never)
-    const ctxNoSession = { ...mockCtx, sessionID: undefined }
-    const previousEnv = process.env.OPENCODE_SESSION_ID
-    process.env.OPENCODE_SESSION_ID = "env-session-id"
+    const ctx = { ...mockCtx, sessionID: "runtime-injected-id" }
 
-    try {
-      const raw = await tool.execute({ agent: "builder", prompt: "work" } as never, ctxNoSession)
-      const result = parseResult(raw)
+    const raw = await tool.execute({ agent: "builder", prompt: "work" } as never, ctx)
+    const result = parseResult(raw)
 
-      expect(result.kind).toBe("success")
-      expect(manager.dispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ parentSessionId: "env-session-id" }),
-      )
-    } finally {
-      if (previousEnv === undefined) delete process.env.OPENCODE_SESSION_ID
-      else process.env.OPENCODE_SESSION_ID = previousEnv
-    }
+    expect(result.kind).toBe("success")
+    expect(manager.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ parentSessionId: "runtime-injected-id" }),
+    )
   })
+
+
 })
 
 describe("contract-based tests", () => {

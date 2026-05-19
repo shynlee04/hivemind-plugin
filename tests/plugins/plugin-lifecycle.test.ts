@@ -73,47 +73,46 @@ describe("plugin lifecycle wiring", () => {
     expect(plugin.tool["hivemind-agent-work-create"]).toBeDefined()
     expect(plugin.tool["hivemind-agent-work-export"]).toBeDefined()
   })
-
   it("verifies lifecycle notification replay functions independently", async () => {
     const projectRoot = mkdtempSync(join(tmpdir(), "plugin-lifecycle-observers-"))
     const client = createPluginClient()
-
-    recordSessionContinuity({
-      sessionID: "ses_23a0root",
-      promptParams: {},
-      metadata: {
-        status: "running",
-        description: "Parent plugin replay session",
-        delegation: null,
-        constraints: [],
-        lifecycle: { phase: "created" },
-        pendingNotifications: [
-          {
-            sessionID: "child-session",
-            description: "Delegation: builder",
-            agent: "builder",
-            status: "completed",
-            briefSummary: "Delegated work finished with terminal state completed after 2.0s.",
-            resultPreview: "Replayable completion payload",
-            metadata: {
-              delegationId: "del-plugin-replay",
-              terminalState: "completed",
-              recoveryGuarantee: "resumable",
-              summaryPreview: "Replayable completion payload",
-            },
-            createdAt: Date.now(),
-            delivered: false,
-          },
-        ],
-        updatedAt: Date.now(),
-      },
-    })
 
     try {
       const plugin = await HarnessControlPlane({
         client,
         directory: projectRoot,
       } as never)
+
+      recordSessionContinuity({
+        sessionID: "ses_23a0root",
+        promptParams: {},
+        metadata: {
+          status: "running",
+          description: "Parent plugin replay session",
+          delegation: null,
+          constraints: [],
+          lifecycle: { phase: "created" },
+          pendingNotifications: [
+            {
+              sessionID: "child-session",
+              description: "Delegation: builder",
+              agent: "builder",
+              status: "completed",
+              briefSummary: "Delegated work finished with terminal state completed after 2.0s.",
+              resultPreview: "Replayable completion payload",
+              metadata: {
+                delegationId: "del-plugin-replay",
+                terminalState: "completed",
+                recoveryGuarantee: "resumable",
+                summaryPreview: "Replayable completion payload",
+              },
+              createdAt: Date.now(),
+              delivered: false,
+            },
+          ],
+          updatedAt: Date.now(),
+        },
+      })
 
       await plugin.event({ event: { type: "session.created", sessionID: "ses_23a0root" } })
       await plugin.event({ event: { type: "message.updated", properties: { info: { id: "msg_not_a_root" }, sessionID: "ses_23a0root" } } })

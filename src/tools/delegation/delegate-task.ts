@@ -14,13 +14,9 @@ interface CoordinatorLike {
 }
 
 type ToolContext = {
-  sessionID?: string
+  sessionID: string
   directory?: string
   worktree?: string
-}
-
-function isOpenCodeRuntimeAvailable(): boolean {
-  return !!(process.env.OPENCODE_SESSION_ID || process.env.OPENCODE_HARNESS_STATE_DIR)
 }
 
 export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { delegation_systems?: { delegate_task?: boolean } }): ReturnType<typeof tool> {
@@ -43,14 +39,7 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { 
         return renderToolResult(error("[Harness] delegate-task is disabled by config `delegation_systems.delegate_task: false`. Enable it in .hivemind/configs.json to use this tool."))
       }
 
-      const parentSessionId = context.sessionID ?? process.env.OPENCODE_SESSION_ID
-      if (!parentSessionId) {
-        const hasOpenCodeEnv = isOpenCodeRuntimeAvailable()
-        const message = hasOpenCodeEnv
-          ? "[Harness] Missing parent session ID for delegate-task. Context.sessionID and OPENCODE_SESSION_ID are both unavailable. This indicates a framework-level context injection failure."
-          : "[Harness] delegate-task requires an OpenCode plugin runtime environment. sessionID context injection and OPENCODE_SESSION_ID are unavailable. In non-OpenCode environments, use the native task/subagent tool for delegation instead."
-        return renderToolResult(error(message))
-      }
+      const parentSessionId = context.sessionID
 
       try {
         const prompt = args.context ? `${args.context}\n\n${args.prompt}` : args.prompt
