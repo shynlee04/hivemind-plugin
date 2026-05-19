@@ -4,8 +4,7 @@
     ".opencode/rules/universal-rules.md"
   ],
   "plugin": [
-    "superpowers@git+https://github.com/obra/superpowers.git",
-    "./dist/plugin.js"
+    "./.opencode/plugins/harness-control-plane.ts"
   ],
   "compaction": {
     "auto": true,

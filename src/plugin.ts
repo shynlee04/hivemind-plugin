@@ -215,6 +215,16 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const projectDirectory = directory ?? process.cwd()
+
+  // Startup diagnostic: confirm plugin loaded by logging to OpenCode app log.
+  void client.app?.log?.({
+    body: {
+      service: "hivemind",
+      level: "info",
+      message: "[Harness] Hivemind plugin loaded — registering 22 custom tools",
+    },
+  })
+
   // Load workspace-level runtime policy once at startup.
   const runtimePolicy = loadRuntimePolicy(resolveWorkspaceRuntimePolicy(projectDirectory))
   // Load Hivemind configs — lazy-cached for downstream consumers.
