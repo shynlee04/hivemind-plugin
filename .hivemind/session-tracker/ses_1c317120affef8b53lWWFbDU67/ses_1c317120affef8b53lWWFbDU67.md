@@ -1,7 +1,7 @@
 ---
 sessionID: ses_1c317120affef8b53lWWFbDU67
 created: 2026-05-18T21:05:58.843Z
-updated: 2026-05-19T12:13:02.090Z
+updated: 2026-05-19T14:44:42.484Z
 parentSessionID: null
 delegationDepth: 0
 children: []
@@ -1964,6 +1964,12 @@ task_id: ses_1bfd4668affevjCGYVt0ISHrdB
 
 
 ## USER (turn 6)
+
+**source:** real-human
+
+commit mandate - Atomic commits are mandatory. You must follow the atomic commit rule: **One logical change = One commit**. Do not bundle multiple unrelated changes into a single commit. If a change is large, break it down into smaller, atomic commits with meaningful messages. Every commit must pass validation (typecheck, tests, gatekeeping) and be atomic, preventing any partial build or test failure states. Commit even the documents changes 
+
+## USER (turn 7)
 
 **source:** real-human
 
