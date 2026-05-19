@@ -100,7 +100,6 @@ describe("delegate-task tool", () => {
       prompt: "ship it",
       currentDepth: 0,
       queueKey: "agent:builder",
-      safetyCeilingMs: 300_000,
       surface: "agent-delegation",
     }))
     expect(result.kind).toBe("success")
@@ -111,7 +110,6 @@ describe("delegate-task tool", () => {
       workingDirectory: "/tmp/harness-child",
       queueKey: "provider:anthropic:model:claude-3-5-sonnet",
       agent: "builder",
-      safetyCeilingMs: 300_000,
     })
   })
 
@@ -174,24 +172,6 @@ describe("delegate-task tool", () => {
     expect(manager.dispatch).toHaveBeenCalledWith(
       expect.objectContaining({ agent: "builder", prompt: "work", queueKey: "agent:builder" }),
     )
-  })
-
-  it("passes optional safetyCeilingMs parameter through (60000-3600000 range)", async () => {
-    const manager = createManagerStub()
-    const tool = createDelegateTaskTool(manager as never)
-
-    await tool.execute({ agent: "critic", prompt: "review this", safetyCeilingMs: 120_000 } as never, mockCtx)
-
-    expect(manager.dispatch).toHaveBeenCalledWith(
-      expect.objectContaining({ safetyCeilingMs: 120_000 }),
-    )
-  })
-
-  it("validates safetyCeilingMs range — positive integer capped at 300000", () => {
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 0 })).toThrow()
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 300_001 })).toThrow()
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 60_000 })).not.toThrow()
-    expect(() => DelegateTaskInputSchema.parse({ agent: "builder", prompt: "work", safetyCeilingMs: 300_000 })).not.toThrow()
   })
 
   it("has no async parameter in schema — sync/async split removed", () => {

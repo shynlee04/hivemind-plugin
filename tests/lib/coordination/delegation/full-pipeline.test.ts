@@ -10,7 +10,6 @@ import { NotificationRouter } from "../../../../src/coordination/delegation/noti
 import { DelegationRetryHandler } from "../../../../src/coordination/delegation/retry-handler.js"
 import { SlotManager } from "../../../../src/coordination/delegation/slot-manager.js"
 import type { Delegation, DelegationStatus } from "../../../../src/coordination/delegation/types.js"
-import { ESCALATION_THRESHOLDS } from "../../../../src/coordination/delegation/types.js"
 
 function createPipelineHarness() {
   const records = new Map<string, Delegation>()
@@ -38,9 +37,6 @@ function createPipelineHarness() {
   const slotManager = new SlotManager({ acquireTimeoutMs: 20 })
   const dispatcher = new DelegationDispatcher({
     agentResolver: { resolve: vi.fn(async (agent: string) => ({ name: agent, tools: { read: true } })) } as Pick<AgentResolver, "resolve">,
-    resolveCategoryGateDecision: ({ category }) => category === "deny"
-      ? { allowed: false, reason: "denied by test", audit: { gate: "category", askReason: "denied by test" } }
-      : { allowed: true, reason: "allowed", audit: { gate: "category" } },
     slotManager,
   })
   let coordinator: DelegationCoordinator
@@ -66,7 +62,7 @@ describe("delegation v2 full pipeline", () => {
   it("dispatches, registers lifecycle state, completes via dual signal, routes notification, and releases the slot", async () => {
     const harness = createPipelineHarness()
 
-    const result = await harness.coordinator.dispatch({ agent: "builder", category: "implementation", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", safetyCeilingMs: 300_000, surface: "agent-delegation" })
+    const result = await harness.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", prompt: "build", queueKey: "agent:builder", surface: "agent-delegation" })
     harness.detector.signalCompletionEvent(result.delegationId)
     harness.detector.signalTerminalStatus(result.delegationId, "completed")
 
@@ -74,14 +70,6 @@ describe("delegation v2 full pipeline", () => {
     expect(harness.notifications).toHaveLength(1)
     await expect(harness.slotManager.acquire("parent-1", "agent:builder", { acquireTimeoutMs: 20 })).resolves.toMatchObject({ queueKey: "agent:builder" })
     expect(harness.persisted.at(-1)?.[0]?.status).toBe("completed")
-  })
-
-  it("blocks category-gate deny before creating lifecycle records", async () => {
-    const harness = createPipelineHarness()
-
-    await expect(harness.coordinator.dispatch({ agent: "builder", category: "deny", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })).rejects.toThrow("Category gate denied")
-
-    expect(harness.records.size).toBe(0)
   })
 
   it("marks timeout through coordinator cleanup", async () => {
@@ -92,19 +80,6 @@ describe("delegation v2 full pipeline", () => {
 
     expect(harness.lifecycle.getStatus(result.delegationId)?.status).toBe("timeout")
     expect(harness.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: result.delegationId, type: "timeout" }))
-  })
-
-  it("uses the 600s escalation path to terminal-stall, release the slot, and stop monitoring", async () => {
-    vi.useFakeTimers()
-    const harness = createPipelineHarness()
-    const result = await harness.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })
-
-    await vi.advanceTimersByTimeAsync(600_000)
-
-    expect(ESCALATION_THRESHOLDS).toEqual([60, 120, 180, 300, 600])
-    expect(harness.lifecycle.getStatus(result.delegationId)).toMatchObject({ executionState: "stalled", status: "timeout" })
-    await expect(harness.slotManager.acquire("parent-1", "agent:builder", { acquireTimeoutMs: 20 })).resolves.toMatchObject({ queueKey: "agent:builder" })
-    vi.useRealTimers()
   })
 
   it("supports abort lifecycle control on an active delegation", async () => {

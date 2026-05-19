@@ -348,7 +348,6 @@ export type {
 } from "../coordination/delegation/types.js"
 
 export {
-  DEFAULT_SAFETY_CEILING_MS,
   MAX_DELEGATION_DEPTH,
   TASK_CLEANUP_DELAY_MS,
   MAX_DELEGATIONS_BEFORE_PRUNE,

@@ -55,24 +55,14 @@ describe("delegate-task v2 tool", () => {
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
-  it("defaults safetyCeilingMs to 300000 when omitted", () => {
+  it("accepts minimal input with only agent and prompt", () => {
     const result = DelegateTaskV2Schema.parse({ agent: "builder", prompt: "build it" })
 
-    expect(result.safetyCeilingMs).toBe(300_000)
+    expect(result.agent).toBe("builder")
+    expect(result.prompt).toBe("build it")
   })
 
-  it("preserves validated optional category during runtime dispatch", async () => {
-    const coordinator = createCoordinator()
-    const tool = createDelegateTaskTool(coordinator as never)
-
-    const raw = await tool.execute({ agent: "critic", category: "review", prompt: "review" } as never, context)
-    const result = parse(raw)
-
-    expect(result.kind).toBe("success")
-    expect(coordinator.dispatch).toHaveBeenCalledWith(expect.objectContaining({ category: "review" }))
-  })
-
-  it("does not depend on an injected nativeTask mock seam", async () => {
+  it("passes validated input through to runtime dispatch", async () => {
     const coordinator = createCoordinator()
     const tool = createDelegateTaskTool(coordinator as never)
 

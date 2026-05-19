@@ -129,17 +129,6 @@ export type PollingCadence = typeof POLLING_CADENCE
 export const FAILURE_CHECKPOINTS = [60, 120, 180, 300] as const
 export type FailureCheckpointThresholds = typeof FAILURE_CHECKPOINTS
 
-/** @deprecated Use FAILURE_CHECKPOINTS — kept for backward compatibility */
-export const ESCALATION_THRESHOLDS = FAILURE_CHECKPOINTS
-/** @deprecated Use FailureCheckpointThresholds — kept for backward compatibility */
-export type EscalationThresholds = FailureCheckpointThresholds
-
-/** @deprecated Legacy escalation level — maps to failure checkpoint semantics */
-export type EscalationLevel = "WARN" | "NUDGE" | "ALERT" | "TERMINATE"
-
-/** Legacy icon constants — kept for backward compatibility with existing tests and consumers */
-export const ESCALATION_ICONS = ["⚠", "⚠", "🔴", "⛔", "🛑"] as const
-
 /** Compact notification payload routed back to the parent session. */
 export interface DelegationNotification {
   idempotencyKey?: string
@@ -170,7 +159,6 @@ export type CommandDelegationParams = {
   }
 }
 
-export const DEFAULT_SAFETY_CEILING_MS = 30 * 60 * 1000 // 30 minutes
 export const MAX_DELEGATION_DEPTH = 3
 
 /** Grace period before in-memory cleanup of terminal delegations (10 minutes) */

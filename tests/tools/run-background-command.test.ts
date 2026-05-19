@@ -46,14 +46,13 @@ function createDelegationManagerStub() {
     agent: "command-runner",
     status: "running",
     createdAt: Date.now(),
-    safetyCeilingMs: 180_000,
     lastMessageCount: 0,
     stablePollCount: 0,
     nestingDepth: 1,
     executionMode: "pty",
     workingDirectory: "/tmp/shared",
     ptySessionId: "pty-shared-1",
-    queueKey: "category:command",
+    queueKey: "agent:command-runner",
   }
   const foreignDelegation: Delegation = {
     ...ownedDelegation,

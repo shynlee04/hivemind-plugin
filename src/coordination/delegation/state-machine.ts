@@ -23,7 +23,6 @@ import { notifyDelegationTerminal } from "../completion/notification-handler.js"
 import { abortSession, type OpenCodeClient } from "../../shared/session-api.js"
 import {
   DEFAULT_PRUNE_MAX_AGE_MS,
-  DEFAULT_SAFETY_CEILING_MS,
   MAX_DELEGATIONS_BEFORE_PRUNE,
   TASK_CLEANUP_DELAY_MS,
   type Delegation,
@@ -33,6 +32,9 @@ import {
   type DelegationSurface,
   type DelegationTerminalKind,
 } from "../../shared/types.js"
+
+/** Internal safety-ceiling timeout (30 minutes) — not exposed as a dispatch parameter. */
+const DEFAULT_SAFETY_CEILING_MS = 30 * 60 * 1000
 
 /**
  * Allowed delegation status transitions.

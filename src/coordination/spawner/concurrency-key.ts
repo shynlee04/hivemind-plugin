@@ -4,7 +4,6 @@ type DelegationConcurrencyKeyArgs = {
   provider?: string
   model?: string
   agent?: string
-  category?: string
 }
 
 // Runtime adoption of this shared key flow happens in plan 16-04.

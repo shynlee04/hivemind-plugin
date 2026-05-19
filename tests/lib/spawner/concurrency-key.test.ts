@@ -14,7 +14,6 @@ describe("resolveDelegationConcurrencyKey", () => {
       provider: "openai",
       model: "gpt-5.4",
       agent: "builder",
-      category: "implementation",
     }
 
     const result = resolveDelegationConcurrencyKey(args)
@@ -31,10 +30,9 @@ describe("resolveDelegationConcurrencyKey", () => {
       provider: "openai",
       model: "gpt-5.4",
       agent: "builder",
-      category: "implementation",
     })
 
     expect(result).toBe("provider:openai:model:gpt-5.4")
-    expect(result).not.toBe("model:gpt-5.4:agent:builder:category:implementation")
+    expect(result).not.toBe("model:gpt-5.4:agent:builder")
   })
 })

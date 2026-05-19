@@ -18,7 +18,6 @@ function activeRecord(overrides: Record<string, unknown> = {}) {
     prompt: "build it",
     status: "running",
     createdAt: now - 150_000,
-    safetyCeilingMs: 300_000,
     v2: true,
     ...overrides,
   }
@@ -218,12 +217,12 @@ describe("delegation-status v2 tool", () => {
     expect(DelegationControlSchema.safeParse({ action: "chain" }).success).toBe(false)
   })
 
-  it("caps progress calculation at 99 percent", async () => {
-    const { tool } = createHarness(activeRecord({ createdAt: now - 999_000, safetyCeilingMs: 300_000 }))
+  it("returns null progressPct (progress calculation deferred to monitor)", async () => {
+    const { tool } = createHarness(activeRecord({ createdAt: now - 999_000 }))
 
     const data = parse(await tool.execute({ delegationId: "dt-123" } as never, context)).data as Record<string, unknown>
 
-    expect(data.progressPct).toBe(99)
+    expect(data.progressPct).toBe(null)
   })
 
   it("formats elapsed time as human-readable minutes and seconds", async () => {

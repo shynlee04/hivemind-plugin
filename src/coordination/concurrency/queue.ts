@@ -31,7 +31,6 @@ export function buildDelegationQueueKey(args: {
   provider?: string
   model?: string
   agent?: string
-  category?: string
 }): string {
   const provider = args.provider?.trim().toLowerCase()
   const model = args.model?.trim().toLowerCase()
@@ -44,17 +43,8 @@ export function buildDelegationQueueKey(args: {
   }
 
   const agent = args.agent?.trim().toLowerCase()
-  const category = args.category?.trim().toLowerCase()
-  if (agent && category) {
-    return `agent:${agent}:category:${category}`
-  }
-
   if (agent) {
     return `agent:${agent}`
-  }
-
-  if (category) {
-    return `category:${category}`
   }
 
   return "default"

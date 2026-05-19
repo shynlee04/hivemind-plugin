@@ -4,13 +4,12 @@
 
 ## 1. Sector purpose and lifecycle role
 
-`src/coordination/delegation/` owns the DelegationManager — the WaiterModel dispatch orchestrator for delegated child sessions. It evaluates category gates, acquires per-key concurrency slots, dispatches via SDK or command execution mode, and recovers pending delegations at harness startup. Contains: `manager.ts` (DelegationManager, ~500 LOC), `types.ts` (delegation contracts), `state-machine.ts` (transition logic), `category-gates.ts` (category evaluation), `category-gate-audit.ts` (ask audit). Source evidence: `.planning/codebase/ARCHITECTURE.md:55-57`, `.planning/codebase/ARCHITECTURE.md:153-158`, `.planning/codebase/STRUCTURE.md:95-97`.
+`src/coordination/delegation/` owns the DelegationManager — the WaiterModel dispatch orchestrator for delegated child sessions. It acquires per-key concurrency slots, dispatches via SDK or command execution mode, and recovers pending delegations at harness startup. Contains: `manager.ts` (DelegationManager, ~500 LOC), `types.ts` (delegation contracts), `state-machine.ts` (transition logic). Source evidence: `.planning/codebase/ARCHITECTURE.md:55-57`, `.planning/codebase/ARCHITECTURE.md:153-158`, `.planning/codebase/STRUCTURE.md:95-97`.
 
 ## 2. Allowed mutation authority
 
-- DelegationManager may dispatch child sessions via `SdkDelegationHandler` or `CommandDelegationHandler`, acquire concurrency slots through `DelegationConcurrencyQueue`, and evaluate category gates. Evidence: `.planning/codebase/ARCHITECTURE.md:187-190`.
+- DelegationManager may dispatch child sessions via `SdkDelegationHandler` or `CommandDelegationHandler`, and acquire concurrency slots through `DelegationConcurrencyQueue`. Evidence: `.planning/codebase/ARCHITECTURE.md:187-190`.
 - DelegationStateMachine may validate and enforce delegation status transitions (dispatched→running→completed/error/timeout). Evidence: `.planning/codebase/ARCHITECTURE.md:153-158`.
-- Category gates may resolve allow/ask decisions for agent-category dispatch pairings.
 
 ## 3. Forbidden mutations / explicit no-go boundaries
 
@@ -31,7 +30,7 @@
 ## 5. Naming and placement conventions
 
 - `manager.ts` — DelegationManager class (~500 LOC, reference module). Evidence: `.planning/codebase/STRUCTURE.md:218-261`.
-- `types.ts` — shared delegation contracts. `state-machine.ts` — DelegationStateMachine. `category-gates.ts` — gate evaluation. `category-gate-audit.ts` — ask audit trail.
+- `types.ts` — shared delegation contracts. `state-machine.ts` — DelegationStateMachine.
 - Tests mirror under `tests/lib/coordination/delegation/`.
 
 ## 6. Quality gates and evidence expectations
