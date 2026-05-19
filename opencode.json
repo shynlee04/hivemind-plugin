@@ -4,7 +4,7 @@
     ".opencode/rules/universal-rules.md"
   ],
   "plugin": [
-    "./.opencode/plugins/harness-control-plane.ts"
+    "hivemind/plugin"
   ],
   "compaction": {
     "auto": true,

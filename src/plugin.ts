@@ -217,7 +217,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const projectDirectory = directory ?? process.cwd()
 
   // Startup diagnostic: confirm plugin loaded by logging to OpenCode app log.
-  void client.app?.log?.({
+  void client?.app?.log?.({
     body: {
       service: "hivemind",
       level: "info",
@@ -379,7 +379,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       await createChatMessageCapture({
         sessionTracker,
         logWarn: (msg: string, err: unknown) => {
-          void client.app?.log?.({
+  void client?.app?.log?.({
             body: {
               service: "session-tracker",
               level: "warn",
