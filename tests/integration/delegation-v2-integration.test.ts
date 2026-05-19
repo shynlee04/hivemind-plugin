@@ -93,6 +93,20 @@ describe("delegation v2 plugin integration", () => {
     expect(modules.delegationManager.getStatus(result.delegationId)?.status).toBe("timeout")
   })
 
+  it("keeps parent TUI append terminal-only when progress notifications are routed", async () => {
+    const client = createRuntimeClient()
+    const modules = setupDelegationModules({ client: client as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
+    const result = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })
+
+    modules.notificationRouter.route({ delegationId: result.delegationId, message: "checkpoint at 60s", timestamp: Date.now(), type: "progress" })
+    modules.coordinator.handleCompletion(result.delegationId, { delegationId: result.delegationId, result: "done", status: "completed" })
+
+    expect(client.tui.appendPrompt).toHaveBeenCalledTimes(1)
+    expect(client.tui.appendPrompt).toHaveBeenCalledWith(expect.objectContaining({
+      body: expect.objectContaining({ text: expect.stringContaining("success") }),
+    }))
+  })
+
   it("completes a coordinator-tracked delegation through session idle event routing", async () => {
     const modules = setupDelegationModules({ client: createRuntimeClient() as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
     const statusTool = createDelegationStatusTool(modules.delegationManager, { lifecycle: modules.lifecycle })

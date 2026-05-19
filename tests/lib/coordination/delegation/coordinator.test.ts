@@ -111,7 +111,7 @@ describe("DelegationCoordinator", () => {
     })
   })
 
-  it("marks execution unconfirmed when no action signal arrives by deadline", async () => {
+  it("marks execution unconfirmed without routing a parent-facing notification", async () => {
     const deps = createDeps()
     const coordinator = new DelegationCoordinator(deps)
     const result = await coordinator.dispatch(baseDispatchParams)
@@ -119,11 +119,7 @@ describe("DelegationCoordinator", () => {
     coordinator.markExecutionUnconfirmed(result.delegationId, 60)
 
     expect(deps.lifecycle.getStatus(result.delegationId)).toMatchObject({ executionState: "unconfirmed" })
-    expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({
-      delegationId: result.delegationId,
-      message: expect.stringContaining("first action unconfirmed after 60s"),
-      type: "progress",
-    }))
+    expect(deps.notificationRouter.route).not.toHaveBeenCalled()
   })
 
   it("does not create records or start monitoring when preflight rejects the request", async () => {

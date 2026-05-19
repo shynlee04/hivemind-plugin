@@ -22,7 +22,7 @@ import { DelegationRetryHandler } from "./coordination/delegation/retry-handler.
 import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-child-session-starter.js"
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
 
-import type { Delegation, DelegationStatus } from "./coordination/delegation/types.js"
+import type { Delegation, DelegationNotificationType, DelegationStatus } from "./coordination/delegation/types.js"
 import { appendTuiPrompt, showTuiToast, type OpenCodeClient } from "./shared/session-api.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
 import { taskState } from "./shared/state.js"
@@ -75,6 +75,11 @@ import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js
 import type { RuntimePolicy } from "./shared/types.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
+
+/** Return true only for notification types that should append to the parent TUI. */
+function shouldAppendParentTuiNotification(type: DelegationNotificationType): boolean {
+  return type === "success" || type === "failure" || type === "timeout"
+}
 
 function extractHookSessionId(input: unknown): string | undefined {
   return asString(getNestedValue(input, ["sessionID"]))
@@ -153,9 +158,10 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const detector = new CompletionDetector()
   const notificationRouter = new NotificationRouter({
     deliver: async (_parentSessionId, notification) => {
+      if (!shouldAppendParentTuiNotification(notification.type)) return true
       const line = notificationRouter.formatNotification(notification.type, notification.delegationId, notification.message)
       await appendTuiPrompt(options.client, line)
-      await showTuiToast(options.client, notification.type === "progress" ? "Delegation update delivered" : `Delegation ${notification.type} delivered`)
+      await showTuiToast(options.client, `Delegation ${notification.type} delivered`)
       return true
     },
     persistPending: persistPendingDelegationNotifications,

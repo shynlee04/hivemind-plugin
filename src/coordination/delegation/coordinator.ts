@@ -142,7 +142,6 @@ export class DelegationCoordinator {
     }
     record.executionState = elapsedSeconds >= 600 ? "stalled" : "unconfirmed"
     record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
-    this.routeTerminal(delegationId, "progress", `first action unconfirmed after ${elapsedSeconds}s`)
   }
 
   /** Handles terminal completion and performs monitor, notification, slot, and persistence cleanup. */
