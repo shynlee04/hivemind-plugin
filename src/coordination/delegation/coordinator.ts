@@ -38,6 +38,7 @@ export interface ChildSessionStartParams {
   prompt: string
   validatedAgent: PreflightResult["validatedAgent"]
   workingDirectory: string
+  onChildSessionId?: (childSessionId: string) => void
 }
 
 export interface ChildSessionStartResult {
@@ -80,6 +81,7 @@ export class DelegationCoordinator {
           prompt: params.prompt ?? "",
           validatedAgent: preflight.validatedAgent,
           workingDirectory: params.workingDirectory ?? process.cwd(),
+          onChildSessionId: (childSessionId) => this.attachChildSession(delegationId, childSessionId),
         })
         this.attachChildSession(delegationId, child.childSessionId)
         this.deps.lifecycle.transition(delegationId, "running")
@@ -115,7 +117,7 @@ export class DelegationCoordinator {
 
   /** Record a runtime message observation for a tracked child session. */
   recordChildMessageSignal(childSessionId: string, observedAt?: number, finalMessageExcerpt?: string): void {
-    const delegationId = this.delegationByChildSession.get(childSessionId)
+    const delegationId = this.getDelegationIdForChildSession(childSessionId)
     if (!delegationId) return
     const record = this.findRecord(delegationId)
     if (record && finalMessageExcerpt) record.finalMessageExcerpt = finalMessageExcerpt
@@ -124,7 +126,7 @@ export class DelegationCoordinator {
 
   /** Record a runtime tool observation for a tracked child session. */
   recordChildToolSignal(childSessionId: string, observedAt?: number): void {
-    const delegationId = this.delegationByChildSession.get(childSessionId)
+    const delegationId = this.getDelegationIdForChildSession(childSessionId)
     if (!delegationId) return
     this.recordExecutionSignal(delegationId, { observedAt, source: "tool", toolDelta: 1 })
   }
@@ -169,6 +171,20 @@ export class DelegationCoordinator {
     this.delegationByChildSession.delete(active.record.childSessionId)
     active.record.childSessionId = childSessionId
     this.delegationByChildSession.set(childSessionId, delegationId)
+  }
+
+  private getDelegationIdForChildSession(childSessionId: string): string | undefined {
+    let delegationId = this.delegationByChildSession.get(childSessionId)
+    if (!delegationId) {
+      for (const [id, active] of this.active.entries()) {
+        if (active.record.childSessionId === childSessionId) {
+          delegationId = id
+          this.delegationByChildSession.set(childSessionId, id)
+          break
+        }
+      }
+    }
+    return delegationId
   }
 
   /** Converts a native Task dispatch failure into terminal cleanup without leaking active resources. */
@@ -299,7 +315,7 @@ export class DelegationCoordinator {
   }
 
   private handleChildSessionTerminal(childSessionId: string, status: DelegationStatus, errorMessage?: string): void {
-    const delegationId = this.delegationByChildSession.get(childSessionId)
+    const delegationId = this.getDelegationIdForChildSession(childSessionId)
     if (!delegationId) return
     const completionResult = this.buildChildCompletionResult(delegationId, childSessionId, status, errorMessage)
     this.deps.detector.signalCompletionEvent(delegationId, completionResult)
@@ -352,7 +368,7 @@ export class DelegationCoordinator {
       agent: params.agent, childSessionId: delegationId, createdAt: Date.now(), executionMode: "sdk", id: delegationId,
       actionCount: 0, evidenceLevel: "accepted-only", executionState: "pending", lastMessageCount: 0, messageCount: 0, nestingDepth: params.currentDepth + 1, parentSessionId: params.parentSessionId, queueKey,
       prompt: params.prompt, stablePollCount: 0, status: "dispatched", surface: params.surface, workingDirectory: params.workingDirectory ?? process.cwd(),
-      toolCallCount: 0,
+      toolCallCount: 0, v2: true,
     }
   }
 
