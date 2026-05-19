@@ -1,220 +1,143 @@
 # Reference 05: Continuity Navigation
 
-## Why You Should Probably Not Need This
+**See also:** [01-session-tracker-anatomy.md](#), [02-task-tool-resume.md](#)
 
-The SKILL.md gives you a dead-simple protocol: `session-tracker({action:"list-sessions"})` → find aborted IDs → `task({task_id: "<id>"})`. Context is **automatically preserved**. No manual navigation needed.
+## Summary
 
-**The "no thought must" rule** (SKILL.md Section 2) exists because:
-- Context is saved on every turn
-- Even if you resume the wrong session, it returns safely
-- You don't need to understand the JSON to continue work
+Navigation across the persistence layer. Three data roots feed the tool-based surface. This reference describes what each holds, and the preferred read path via tool actions.
 
-This reference exists for the rare cases where:
-- The session-tracker tool is not responding (fallback: glob the directories)
-- You need to manually verify a delegation chain before resuming
-- You're building tooling or diagnostics
-- The user specifically asks for continuity details
+## Three-Data-Root Architecture
 
-**If you are just resuming work, stop here and go back to SKILL.md Section 5.**
+```
+.hivemind/state/
+├── session-continuity.json     # Delegation records + hierarchy
+├── delegations.json            # Legacy/durable delegation store
+└── events.jsonl                # Event log (Phase 16)
+```
 
----
+### session-continuity.json
 
-## File Purpose Summary
+The durable delegation store written by `src/task-management/continuity/index.ts`. Contains the delegation hierarchy records. Written at delegation boundaries (create, complete).
 
-| File | Location | Contains |
-|------|----------|----------|
-| `project-continuity.json` | `.hivemind/session-tracker/` | Index of ALL main sessions in the project |
-| `session-continuity.json` | `.hivemind/session-tracker/<sessionId>/` | Delegation hierarchy WITHIN one session |
-| `<sessionId>.md` | `.hivemind/session-tracker/<sessionId>/` | Full capture of session content (turns, tool calls) |
-| `<childId>.json` | `.hivemind/session-tracker/<parentId>/` | Child session details |
-
-## project-continuity.json — Navigation
-
-### Read it:
 ```json
 {
   "version": "2.0",
-  "projectRoot": "/absolute/path/to/project",
-  "lastUpdated": "2026-05-11T12:36:32.353Z",
-  "sessions": {
+  "rootSessionId": "<root>",
+  "startTime": "<ISO-8601>",
+  "lastUpdated": "<ISO-8601>",
+  "lastPhaseCheckpoint": "<phase-name>",
+  "delegations": {
     "<sessionId>": {
-      "dir": "<sessionId>/",
-      "mainFile": "<sessionId>.md",
-      "continuityIndex": "<sessionId>/session-continuity.json",
-      "created": "2026-05-10T23:30:16.540Z",
-      "updated": "2026-05-10T23:30:16.540Z",
-      "status": "active",
-      "childCount": 0,
-      "totalDelegationDepth": 0
+      "sessionId": "<id>",
+      "parentId": "<parent-id-or-null>",
+      "rootId": "<root>",
+      "depth": <0|1|2>,
+      "status": "dispatched" | "running" | "completed" | "error" | "timeout",
+      "agentType": "<agent>",
+      "created": "<ISO-8601>",
+      "updated": "<ISO-8601>",
+      "completedAt": "<ISO-8601-or-null>",
+      "turnCount": <number>,
+      "error": "<error-message-or-null>",
+      "resultSummary": "<result-or-null>"
     }
-  },
-  "chronologicalOrder": ["<sessionId1>", "<sessionId2>", ...]
+  }
 }
 ```
 
-### How to use it:
-```
-1. Read once at power-on — small JSON, ~500 lines even with 50 sessions
+### delegations.json (Legacy)
 
-2. Filter active sessions:
-   sessions where .status === "active"
-
-3. Find sessions with aborted delegations:
-   active sessions where .childCount > 0
-
-4. Sort by recency:
-   Sort active sessions by .updated descending
-
-5. For each candidate, read its session-continuity.json
-```
-
-### Status field explainer:
-- **"active"** — Session was started but never terminated. May have aborted delegations. **CHECK FIRST.**
-- **"idle"** — Session is alive but has no active delegations. Safe to skip.
-- **"completed"** — Session finished successfully. Skip.
-- **"error"** — Session failed. Skip for auto-resume. May need manual inspection.
-
-### childCount and totalDelegationDepth:
-- `childCount: 0` → No delegations were made. Safe to skip.
-- `childCount: >0` → Delegations exist. Check if any are still "active".
-- `totalDelegationDepth: 0` → Root session only, no delegation tree.
-- `totalDelegationDepth: 1` → L1 children exist.
-- `totalDelegationDepth: 2` → L2 grandchildren exist (deepest possible).
-
-## session-continuity.json — Navigation
-
-### Read it:
 ```json
 {
-  "version": "2.0",
-  "sessionID": "<this session ID>",
-  "lastUpdated": "2026-05-11T09:41:51.487Z",
-  "hierarchy": {
-    "root": "<this session ID>",
-    "children": {
-      "<childSessionId>": {
-        "file": "<childSessionId>.json",
-        "depth": 1,
-        "status": "active",
-        "delegatedBy": "<agent_type>",
-        "children": {
-          "<grandchildSessionId>": {
-            "file": "<grandchildSessionId>.json",
-            "depth": 2,
-            "status": "active",
-            "delegatedBy": "<agent_type>",
-            "children": {}
-          }
-        }
-      }
-    }
-  },
-  "turnCount": 5,
-  "toolSummary": {}
+  "<delegationId>": {
+    "sessionId": "<id>",
+    "status": "...",
+    "agentType": "...",
+    ...
+  }
 }
 ```
 
-### How to traverse children:
-```
-1. hierarchy.children → map of childId → childInfo
-2. For each child, check .status
-3. Active children → need resume
-4. For each active child, check .children for grandchildren
-5. Grandchildren → deeper delegation, resume deepest first
-```
+Written by `delegation-persistence.ts`. Partially migrated to `session-continuity.json`. Use for cross-reference when continuity records don't have the full picture.
 
-### Find deepest active:
+### events.jsonl (Event Log)
+
 ```
-function getDeepestActive(hierarchy):
-  deepest = null
-  maxDepth = -1
-
-  for each child in hierarchy.children:
-    if child.status === "active":
-      if child.depth > maxDepth:
-        deepest = child
-        maxDepth = child.depth
-      // Check grandchildren recursively
-      for each grandchild in child.children:
-        if grandchild.status === "active" and grandchild.depth > maxDepth:
-          deepest = grandchild
-          maxDepth = grandchild.depth
-
-  return deepest  // { sessionId, depth, delegatedBy }
+{"type":"delegation_dispatch","sessionId":"...","timestamp":"...","data":{...}}
+{"type":"delegation_complete","sessionId":"...","timestamp":"...","data":{...}}
+{"type":"session_resume","sessionId":"...","timestamp":"...","data":{...}}
 ```
 
-## Parent → Child Chain Tracing
+Append-only JSON lines format. Each row is a single event. Use `grep` or `rg` for event filtering.
 
-### Trace from root to deepest active:
-```
-1. Read project-continuity.json → find active parent sessions
-2. Read parent's session-continuity.json → find active children
-3. For each active child → check if child has its own session-continuity.json
-4. If child has active grandchildren → trace to grandchildren
-5. Deepest active = resume target
+## Preferred Read Paths
 
-Example chain:
-  ses_1ebe832c5ffeeYuFbS1kqleZnD (root, L0)
-    ├── ses_1ebe39941ffecHehSRcc13IqeD (L1 child, depth=1, active, delegatedBy=hm-l2-auditor)
-    └── ses_1ebd373b1ffeDa7AJ7KJIPShVE (L1 child, depth=1, active, delegatedBy=hm-l2-researcher)
+| Data Needed | Tool / Command | File(s) Queried |
+|-------------|---------------|-----------------|
+| List active delegations | `delegation-status({action: "list", status: "running"})` | `session-continuity.json` |
+| Inspect delegation chain | `session-hierarchy({action: "get-manifest", sessionId})` | `hierarchy-manifest.json` |
+| Unified session view | `hivemind-session-view({action: "get", sessionId})` | All three roots |
+| Resume a session | `task({task_id: "<id>", ...})` | `session-continuity.json` |
+| Read event timeline | `grep "^.\{0,500\}" .hivemind/state/events.jsonl` | `events.jsonl` |
+| Cross-reference by session | `delegation-status({action: "list"})` then match IDs | Both continuity files |
+| Check delegation status | `delegation-status({action: "status", delegationId})` | `delegations.json` |
 
-  → Two active L1 children. Both need resume.
-  → Resume ses_1ebe39941ffecHehSRcc13IqeD first (only one needs to run at a time for sequential dispatch)
-```
+## hivemind-session-view Unified Return
 
-## Real Example Walkthrough
-
-### Step 1: Read project-continuity.json
-```
-read(".hivemind/session-tracker/project-continuity.json")
-→ 47 sessions, most recent: ses_1e8f5fe2fffeaOjWuQ8dOk7Z8i
-→ Most have childCount=0, status="active"
+```json
+{
+  "session": { /* project-continuity.json entry */ },
+  "delegations": [ /* all delegations for this session */ ],
+  "trajectory": { /* trajectory data if available */ },
+  "recovered": true
+}
 ```
 
-### Step 2: Filter for sessions with active children
+This is the **recommended** read path for getting a complete picture of a session. It consolidates data from all three data roots into one response.
+
+## Navigation Decision Tree
+
 ```
-Filter: sessions with childCount > 0 AND status === "active"
-Results (from real data):
-  - ses_1ebe832c5ffeeYuFbS1kqleZnD: childCount=2, depth=1
-  - ses_1e9a6ecf5ffev5trgNwpy4CjOf: childCount=5, depth=1
-  - ses_1e97a18f0ffe4tz4GJcaLAfmC3: childCount=4, depth=1
-  - ses_1e903ee6effet2MD0kFjZUNzug: childCount=1, depth=1
+NEED CONTINUITY INFO?
+    |
+    ├── Just list running delegations?
+    |   └── delegation-status({action: "list", status: "running"})
+    |
+    ├── Need full session context?
+    |   └── hivemind-session-view({action: "get", sessionId})
+    |
+    ├── Need to resume a child session?
+    |   └── session-hierarchy({action: "get-manifest", sessionId})
+    |       → filter-sessions to find active
+    |       → task(task_id=...) to resume
+    |
+    ├── Need event log for debugging?
+    |   └── Read .hivemind/state/events.jsonl
+    |       → Search for sessionId
+    |       → Trace event sequence
+    |
+    └── Fallback (tools not available)?
+        └── Read files directly:
+            1. .hivemind/state/session-continuity.json
+            2. .hivemind/state/delegations.json
+            3. .hivemind/state/hierarchy-manifest.json
 ```
 
-### Step 3: Check children for active status
-```
-Read: ses_1e9a6ecf5ffev5trgNwpy4CjOf/session-continuity.json
-→ 5 children, ALL active, ALL depth=1
-  - ses_1e99c28bbffek55k6UCs0G7d4N delegatedBy=main_l0_agent
-  - ses_1e99ac4e3ffeSa0QV5dg96628Q delegatedBy=main_l0_agent
-  - ses_1e99bd468ffetJO2iV7K2XEqmc delegatedBy=main_l0_agent
-  - ses_1e99b195affetbGfs42YyehaEO delegatedBy=main_l0_agent
-  - ses_1e99b6d51ffePAxZJNXXFiOv24 delegatedBy=main_l0_agent
+## Phase Checkpoints
 
-→ None have grandchildren. All depth=1.
-```
+`session-continuity.json` has a `lastPhaseCheckpoint` field. This records the last-plan-name when the continuity was last written. For GSD execution phases:
 
-### Step 4: Identify resume target
+| Phase Pattern | Checkpoint Value |
+|---------------|-----------------|
+| `CP-*` | Control plane |
+| `BOOT-*` | Bootstrap |
+| `PHASE-*` | General development |
+| `null` | No checkpoint recorded |
+
+## Aggregation Tool
+
 ```
-No grandchildren exist. Pick the most recently updated parent session:
-  ses_1e97a18f0ffe4tz4GJcaLAfmC3 (updated: 2026-05-11T11:24:39.541Z)
-  → First active child: ses_1e9734971ffewoLT5pzVTcvXJk (delegatedBy=main_l0_agent)
-  → Resume: task(description="resume", subagent_type="main_l0_agent",
-                   task_id="ses_1e9734971ffewoLT5pzVTcvXJk")
+session-tracker({action: "aggregate", stats: ["sessionCount", "totalTurns", "activeCount"]})
 ```
 
-## Field Meaning Summary
-
-| Field | In File | Meaning |
-|-------|---------|---------|
-| `sessionId` (root key) | project-continuity.json | Main session identifier |
-| `status` | Both files | Session state: active/idle/completed/error |
-| `childCount` | project-continuity.json | Number of child sessions created |
-| `totalDelegationDepth` | project-continuity.json | Max delegation depth |
-| `hierarchy.root` | session-continuity.json | Self-reference to root session |
-| `hierarchy.children.<id>.depth` | session-continuity.json | 1=L1 child, 2=L2 grandchild |
-| `hierarchy.children.<id>.status` | session-continuity.json | Child state |
-| `hierarchy.children.<id>.delegatedBy` | session-continuity.json | Agent type dispatched |
-| `hierarchy.children.<id>.children` | session-continuity.json | Grandchildren (recursive) |
-| `turnCount` | session-continuity.json | Number of turns in parent session |
-| `chronologicalOrder` | project-continuity.json | All session IDs in creation order |
+Returns quick aggregate statistics without traversing files individually. Useful for summary reports.

@@ -144,7 +144,7 @@ This is the most important correction from the previous version of this skill. *
 - If SDK version < 2.x, task_id resume may not preserve context
 - Run `delegation-status({action: "status", delegationId: "<id>"})` to check if delegation still exists
 
-**The old "no thought must" pattern is removed.** You SHOULD think about whether resume will work. You SHOULD verify before dispatching. The safety of "even if wrong it returns safely" depends on the SDK correctly handling the task_id — do not assume.
+**Important change from previous guidance.** You SHOULD think about whether resume will work. You SHOULD verify before dispatching. The safety of "even if wrong it returns safely" depends on the SDK correctly handling the task_id — do not assume.
 
 ## 4. Jump Links — Reference Files
 

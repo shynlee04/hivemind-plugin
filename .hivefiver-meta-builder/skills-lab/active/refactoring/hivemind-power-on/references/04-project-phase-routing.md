@@ -1,8 +1,12 @@
 # Reference 04: Project Phase Routing
 
-## hm-* Product Development Phases
+**See also:** [03-lineage-routing-tree.md](#)
 
-Map task domain to the correct specialist workflow. L1 coordinators use this to dispatch L2 specialists.
+## Summary
+
+Map task domains to specialist L2 agents. L1 coordinators use these tables to dispatch the correct specialist.
+
+## hm-* Product Development Phases
 
 | Task Category | L2 Specialist | Skills to Load |
 |---------------|---------------|----------------|
@@ -42,95 +46,24 @@ Map task domain to the correct specialist workflow. L1 coordinators use this to 
 
 ## Gate Skills (Shared Between Lineages)
 
-| Gate | Skill | When to Load | Who Loads It |
-|------|-------|-------------|-------------|
-| Lifecycle Check | gate-l3-lifecycle-integration | Before accepting any child agent output | hm-l1-coordinator, hf-l1-coordinator |
-| Spec Compliance | gate-l3-spec-compliance | After lifecycle gate passes | hm-l1-coordinator, hf-l1-coordinator |
-| Evidence Truth | gate-l3-evidence-truth | After spec gate passes (terminal gate) | hm-l1-coordinator, hf-l1-coordinator |
-| Gate Orchestration | hm-l2-gate-orchestrator | When running the full triad as a pipeline | hm-l1-coordinator |
-
-## Stack Reference Skills (Any Lineage)
-
-| Stack | Skill | When to Load |
-|-------|-------|-------------|
-| OpenCode Platform | stack-opencode | Understanding OpenCode SDK, tool registration |
-| Zod v4 | stack-l3-zod | Schema validation patterns |
-| Vitest | stack-l3-vitest | Test framework reference |
-| Bun PTY | stack-l3-bun-pty | PTY integration patterns |
-| Next.js | stack-l3-nextjs | GUI sidecar reference |
-| json-render | stack-l3-json-render | Generative UI patterns |
-
-## Phase Transition Rules
-
-```
-PLANNING → EXECUTION:
-  Gate: lifecycle-integration checks that plan is within CQRS boundaries
-  Gate: spec-compliance checks that plan traces to requirements
-  Pass → dispatch hm-l2-executor
-
-EXECUTION → QUALITY:
-  Gate: lifecycle-integration checks implementation surface authority
-  Gate: spec-compliance bidirectional traceability
-  Gate: evidence-truth checks L1-L5 evidence hierarchy
-  Pass → dispatch hm-l2-reviewer
-
-QUALITY → DEPLOYMENT:
-  Gate: hm-l2-production-readiness — 8 dimensions
-  Gate: evidence-truth — terminal gate
-  Pass → ready for deployment
-
-ANY PHASE → RECOVERY:
-  Gate: session-tracker check for aborted delegations
-  Action: RESUME protocol (hivemind-power-on Section 2 — "No Thought Must" philosophy; Section 5 — practical workflow)
-```
+| Gate | Skill | Loaded By |
+|------|-------|-----------|
+| Lifecycle Check | gate-l3-lifecycle-integration | hm-l1-coordinator, hf-l1-coordinator |
+| Spec Compliance | gate-l3-spec-compliance | hm-l1-coordinator, hf-l1-coordinator |
+| Evidence Truth | gate-l3-evidence-truth | hm-l1-coordinator, hf-l1-coordinator |
+| Gate Orchestration | hm-l2-gate-orchestrator | hm-l1-coordinator |
 
 ## L0 Orchestrator Routing Logic
 
 ```
 1. Receive task
-2. Classify lineage (hm-* or hf-*)
+2. Classify lineage (hm-* or hf-*) using lineage-routing-tree
 3. Classify domain within lineage (from tables above)
 4. Select L1 coordinator:
    - hm-* tasks → hm-l1-coordinator
    - hf-* tasks → hf-l1-coordinator
-5. Dispatch with:
-   - Task domain
-   - Expected L2 specialist type
-   - Required quality gates
-   - Context budget
-6. L1 coordinator maps domain to specific L2 specialist (from tables above)
+5. Dispatch with: task domain, expected L2 specialist, required gates
+6. L1 maps domain to specific L2 specialist (from tables above)
 7. L1 dispatches L2 with task envelope
 8. L1 monitors, integrates, verifies
-```
-
-## Example: "Audit the session-tracker module"
-
-```
-L0: "audit" + "session-tracker module" → hm-* lineage, Audit domain
-L0 → hm-l1-coordinator: "Audit session-tracker module, expect hm-l2-auditor"
-
-L1: Session-tracker → source code audit → hm-l2-auditor
-L1 → hm-l2-auditor: task envelope with scope, context, verification
-
-L2: Runs code review, produces AUDIT.md
-L1: Runs quality gate triad on AUDIT.md → PASS → accepts
-L1 → L0: "Audit complete. 12 flaws found. Report at .hivemind/audit/flaw-register-2026-05-10.json"
-
-L0: Reports to user
-```
-
-## Example: "Create a skill for session-tracker recovery"
-
-```
-L0: "create" + "skill" → hf-* lineage, Skill Authoring domain
-L0 → hf-l1-coordinator: "Create skill for session-tracker recovery, expect hf-l2-skill-builder"
-
-L1: Skill authoring → hf-l2-skill-builder
-L1 → hf-l2-skill-builder: task envelope with skill name, domain, trigger phrases
-
-L2: Drafts SKILL.md + references/ in .hivefiver-meta-builder/skills-lab/
-L1: Runs quality gate triad → PASS → accepts
-L1 → L0: "Skill created at .hivefiver-meta-builder/skills-lab/session-tracker-recovery/"
-
-L0: Reports to user, syncs to .opencode/skills/ if needed
 ```
