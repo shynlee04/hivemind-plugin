@@ -17,7 +17,6 @@ import { isValidSessionID } from "../../features/session-tracker/types.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
 
-const MAX_SEARCH_CHUNK_BYTES = 50000
 const MAX_QUERY_LENGTH = 1000
 type ToolContext = { sessionID?: string }
 
@@ -167,6 +166,7 @@ async function handleSearchSessions(projectRoot: string, query: string, limit: n
   }
   const trackerRoot = sessionTrackerRoot(projectRoot)
   const matches: Array<{ sessionId: string; file: string; snippet: string; matchLine: number }> = []
+  const fileWarnings: string[] = []
   try {
     const entries = await readdir(trackerRoot, { withFileTypes: true })
     for (const entry of entries) {
@@ -177,7 +177,10 @@ async function handleSearchSessions(projectRoot: string, query: string, limit: n
       try { await access(mdPath) } catch { continue }
       try {
         const content = await readFile(mdPath, "utf-8")
-        if (content.length > MAX_SEARCH_CHUNK_BYTES) continue
+        const contentBytes = Buffer.byteLength(content, "utf-8")
+        if (contentBytes > 1_000_000) {
+          fileWarnings.push(`${sessionId}/${sessionId}.md: ${(contentBytes / 1024 / 1024).toFixed(1)}MB — large file may slow search`)
+        }
         const lines = content.split("\n")
         const queryLower = query.toLowerCase()
         for (let i = 0; i < lines.length; i++) {
@@ -199,5 +202,6 @@ async function handleSearchSessions(projectRoot: string, query: string, limit: n
   const paginated = matches.slice(0, limit)
   return renderToolResult(success(`Found ${matches.length} matches across sessions`, {
     totalMatches: matches.length, sessions: paginated, hasMore: matches.length > limit,
+    fileWarnings: fileWarnings.length > 0 ? fileWarnings : undefined,
   }))
 }
