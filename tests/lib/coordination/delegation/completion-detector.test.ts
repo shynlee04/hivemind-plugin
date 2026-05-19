@@ -147,6 +147,58 @@ describe("completion-detector", () => {
       expect(r.toolActivityStalled).toBe(true)
       expect(r.isComplete).toBe(true)
     })
+
+    it("does NOT complete when total tool activity < custom minDuration despite idle>60s [short burst]", () => {
+      // 3 quick tool calls in 10s, idle > 60s, but total span is only 70s
+      // With custom minDuration=120000, total (70000) < 120000 → isComplete=false
+      const burstStart = NOW - 70000
+      const msgs = [
+        mockMessage("assistant", [
+          mockToolUse("bash", { command: "ls" }, burstStart),
+          mockToolResult("ok", burstStart + 500),
+        ]),
+        mockMessage("assistant", [
+          mockToolUse("write", { path: "/src/a.ts" }, burstStart + 5000),
+          mockToolResult("Wrote /src/a.ts", burstStart + 5500),
+        ]),
+        mockMessage("assistant", [
+          mockToolUse("bash", { command: "test" }, burstStart + 9000),
+          mockToolResult("pass", burstStart + 9500),
+        ]),
+        mockMessage("assistant", [mockTextPart("done")]),
+      ]
+      const r = checkSemanticCompletion(msgs, { now: NOW, minTotalToolActivityDurationMs: 120000 })
+      expect(r.toolActivityStalled).toBe(true)
+      expect(r.hasAssistantMessage).toBe(true)
+      expect(r.hasFileChanges).toBe(true)
+      expect(r.totalToolActivityDurationMs).toBe(70000)
+      expect(r.isComplete).toBe(false)  // BLOCKED: total (70s) < minDuration (120s)
+    })
+
+    it("completes when total tool activity > 60s AND idle > 60s [long activity]", () => {
+      const activityStart = NOW - 136000  // 136s ago
+      const msgs = [
+        mockMessage("assistant", [
+          mockToolUse("bash", { command: "start" }, activityStart),
+          mockToolResult("started", activityStart + 500),
+        ]),
+        mockMessage("assistant", [
+          mockToolUse("write", { path: "/src/big.ts" }, activityStart + 40000),
+          mockToolResult("progress", activityStart + 40500),
+        ]),
+        mockMessage("assistant", [
+          mockToolUse("bash", {}, activityStart + 75000),
+          mockToolResult("finally", activityStart + 75500),
+        ]),
+        mockMessage("assistant", [mockTextPart("all done")]),
+      ]
+      const r = checkSemanticCompletion(msgs, { now: NOW })
+      // Tools at NOW-136000, NOW-96000, NOW-61000
+      // total = 136000ms, last tool gap = 61000ms > 60000 threshold
+      expect(r.totalToolActivityDurationMs).toBeGreaterThanOrEqual(60000)
+      expect(r.toolActivityStalled).toBe(true)
+      expect(r.isComplete).toBe(true)
+    })
   })
 
   describe("computeTotalToolActivityDuration", () => {
