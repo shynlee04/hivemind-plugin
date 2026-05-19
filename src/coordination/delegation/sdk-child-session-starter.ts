@@ -41,6 +41,7 @@ export function createSdkChildSessionStarter(client: OpenCodeClient): {
         agent: params.validatedAgent.name,
         parts: [{ type: "text", text: params.prompt }],
         tools: buildDelegationPromptTools(permissionProfile.tools),
+        ...(params.model ? { model: params.model } : {}),
       })
 
       return { childSessionId }

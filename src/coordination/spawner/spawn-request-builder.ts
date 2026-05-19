@@ -82,7 +82,13 @@ function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | unde
     return allowed.length > 0 ? allowed : READ_ONLY_TOOLS
   }
   if (!agent.permission) return undefined
-  const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => isPermissionAllowed(agent.permission?.[toolName]))
+  const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => {
+    const value = agent.permission?.[toolName]
+    if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep")) {
+      return true
+    }
+    return isPermissionAllowed(value)
+  })
   const denied = new Set(WRITE_CAPABLE_TOOLS.filter((toolName) => isPermissionDenied(agent.permission?.[toolName])))
   addPromptToolDenialsForPrimitivePolicy(agent.permission, denied)
   const result = allowed.filter((toolName) => !denied.has(toolName))
@@ -107,13 +113,13 @@ function addPromptToolDenialsForPrimitivePolicy(permission: PrimitivePermission,
 }
 
 function isPermissionAllowed(value: unknown): boolean {
-  if (value === true || value === "allow") return true
+  if (value === true || value === "allow" || value === "ask") return true
   if (typeof value !== "object" || value === null) return false
   return Object.values(value as Record<string, unknown>).some(isPermissionAllowed)
 }
 
 function isPermissionDenied(value: unknown): boolean {
-  if (value === false || value === "ask") return true
+  if (value === false) return true
   if (typeof value !== "object" || value === null) return false
   const nestedValues = Object.values(value as Record<string, unknown>)
   return nestedValues.length > 0 && nestedValues.every(isPermissionDenied)

@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from "vitest"
 
 import { DelegationCoordinator } from "../../../../src/coordination/delegation/coordinator.js"
 import type { DelegationResult } from "../../../../src/coordination/delegation/types.js"
+import { getSessionMessages } from "../../../../src/shared/session-api.js"
+
+vi.mock("../../../../src/shared/session-api.js", () => ({
+  getSessionMessages: vi.fn().mockResolvedValue([]),
+}))
 
 const baseDispatchParams = {
   agent: "gsd-executor",
@@ -116,7 +121,7 @@ describe("DelegationCoordinator", () => {
     const coordinator = new DelegationCoordinator(deps)
     const result = await coordinator.dispatch(baseDispatchParams)
 
-    coordinator.markExecutionUnconfirmed(result.delegationId, 60)
+    await coordinator.markExecutionUnconfirmed(result.delegationId, 30)
 
     expect(deps.lifecycle.getStatus(result.delegationId)).toMatchObject({ executionState: "unconfirmed" })
     expect(deps.notificationRouter.route).not.toHaveBeenCalled()
@@ -352,5 +357,78 @@ describe("DelegationCoordinator", () => {
     expect(record).toBeDefined()
     expect(record.finalMessageExcerpt).toBe("hello fallback session")
     expect((coordinator as any).delegationByChildSession.get("child-fallback-id")).toBe(dispatched.delegationId)
+  })
+
+  it("inherits model and provider configuration from parent session history", async () => {
+    const deps = createDeps()
+    const mockClient = {} as any
+    const depsWithClient = { ...deps, client: mockClient }
+
+    vi.mocked(getSessionMessages).mockImplementation(async (client, sessionId) => {
+      if (sessionId === "parent-with-model") {
+        return [
+          { info: { role: "user" } },
+          { info: { role: "assistant", modelID: "claude-3-5", providerID: "anthropic" } }
+        ] as any
+      }
+      return []
+    })
+
+    const startSpy = vi.fn().mockResolvedValue({ childSessionId: "child-model-id" })
+    depsWithClient.childSessionStarter = { start: startSpy }
+
+    const coordinator = new DelegationCoordinator(depsWithClient)
+    await coordinator.dispatch({
+      ...baseDispatchParams,
+      parentSessionId: "parent-with-model",
+    })
+
+    expect(getSessionMessages).toHaveBeenCalledWith(mockClient, "parent-with-model")
+    expect(startSpy).toHaveBeenCalledWith(expect.objectContaining({
+      model: { modelID: "claude-3-5", providerID: "anthropic" }
+    }))
+  })
+
+  it("proactively detects error messages in child session messages and fails early", async () => {
+    const deps = createDeps()
+    const mockClient = {} as any
+    const depsWithClient = { ...deps, client: mockClient }
+
+    vi.mocked(getSessionMessages).mockImplementation(async (client, sessionId) => {
+      if (sessionId === "child-err-id") {
+        return [
+          { info: { role: "assistant", error: { message: "Internal server error" } } }
+        ] as any
+      }
+      return []
+    })
+
+    const coordinator = new DelegationCoordinator(depsWithClient)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    // Set childSessionId manually to trigger check
+    const active = (coordinator as any).active.get(dispatched.delegationId)
+    active.record.childSessionId = "child-err-id"
+
+    await coordinator.markExecutionUnconfirmed(dispatched.delegationId, 10)
+
+    const record = deps.lifecycle.getStatus(dispatched.delegationId)
+    expect(record.status).toBe("error")
+    expect(record.executionState).toBe("stalled")
+    expect(record.error).toContain("Child session assistant error: Internal server error")
+  })
+
+  it("proactively stalls delegation when 60s timeout is reached", async () => {
+    const deps = createDeps()
+    const coordinator = new DelegationCoordinator(deps)
+    const dispatched = await coordinator.dispatch(baseDispatchParams)
+
+    const handleTimeoutSpy = vi.spyOn(coordinator as any, "handleTimeout")
+
+    await coordinator.markExecutionUnconfirmed(dispatched.delegationId, 60)
+
+    const record = deps.lifecycle.getStatus(dispatched.delegationId)
+    expect(record.executionState).toBe("stalled")
+    expect(handleTimeoutSpy).toHaveBeenCalledWith(dispatched.delegationId)
   })
 })

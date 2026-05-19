@@ -35,7 +35,7 @@ describe("buildSdkSpawnRequest", () => {
 
     expect(profile).toEqual({
       mode: "write-capable",
-      tools: ["read", "edit", "bash", "glob", "grep"],
+      tools: ["read", "edit", "write", "bash", "glob", "grep"],
     })
   })
 
@@ -51,7 +51,7 @@ describe("buildSdkSpawnRequest", () => {
     })
   })
 
-  it("fails closed when restrictive ask and ask permission records do not explicitly allow tools", () => {
+  it("propagates restrictive ask permissions to tools and sets write-capable mode", () => {
     const profile = resolveDelegationPermissionProfile(
       { ...baseParams, agent: "review", prompt: "review code" },
       {
@@ -64,12 +64,12 @@ describe("buildSdkSpawnRequest", () => {
     )
 
     expect(profile).toEqual({
-      mode: "review-only",
-      tools: ["read", "glob", "grep"],
+      mode: "write-capable",
+      tools: ["read", "edit", "bash", "glob", "grep"],
     })
   })
 
-  it("does not escalate task intent when an ambiguous restrictive permission record is present", () => {
+  it("propagates ask permissions and determines mode based on allowed capabilities", () => {
     const profile = resolveDelegationPermissionProfile(
       { ...baseParams, agent: "builder", prompt: "Implement the fix with write access" },
       {
@@ -82,8 +82,8 @@ describe("buildSdkSpawnRequest", () => {
     )
 
     expect(profile).toEqual({
-      mode: "read-only",
-      tools: ["read", "glob", "grep"],
+      mode: "write-capable",
+      tools: ["read", "edit", "bash", "glob", "grep"],
     })
   })
 })

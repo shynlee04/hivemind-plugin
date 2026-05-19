@@ -5,6 +5,7 @@ import type { NotificationRouter } from "./notification-router.js"
 import type { DelegationRetryHandler } from "./retry-handler.js"
 import type { Delegation, DelegationNotification, DelegationResult, DelegationSignalSource, DelegationStatus } from "./types.js"
 import type { SlotHandle } from "./slot-manager.js"
+import { type OpenCodeClient, getSessionMessages } from "../../shared/session-api.js"
 
 export type DispatchParams = PreflightParams
 
@@ -29,6 +30,7 @@ export interface DelegationCoordinatorDeps {
     watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void
   }
   retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
+  client?: OpenCodeClient
 }
 
 export interface ChildSessionStartParams {
@@ -39,6 +41,10 @@ export interface ChildSessionStartParams {
   validatedAgent: PreflightResult["validatedAgent"]
   workingDirectory: string
   onChildSessionId?: (childSessionId: string) => void
+  model?: {
+    providerID: string
+    modelID: string
+  }
 }
 
 export interface ChildSessionStartResult {
@@ -72,6 +78,34 @@ export class DelegationCoordinator {
 
     this.deps.lifecycle.transition(delegationId, "dispatched")
     this.deps.notificationRouter.register(delegationId, params.parentSessionId)
+
+    // Retrieve parent session model for provider/model ID inheritance
+    let inheritedModel: { providerID: string; modelID: string } | undefined
+    if (this.deps.client && params.parentSessionId) {
+      try {
+        const parentMessages = await getSessionMessages(this.deps.client, params.parentSessionId)
+        for (const msg of [...parentMessages].reverse()) {
+          const msgInfo = (msg as any)?.info ?? msg
+          if (msgInfo?.modelID && msgInfo?.providerID) {
+            inheritedModel = {
+              providerID: msgInfo.providerID,
+              modelID: msgInfo.modelID,
+            }
+            break
+          }
+          if (msgInfo?.model?.providerID && msgInfo?.model?.modelID) {
+            inheritedModel = {
+              providerID: msgInfo.model.providerID,
+              modelID: msgInfo.model.modelID,
+            }
+            break
+          }
+        }
+      } catch (err) {
+        // Safe fallback - ignore error getting parent model
+      }
+    }
+
     if (this.deps.childSessionStarter) {
       try {
         const child = await this.deps.childSessionStarter.start({
@@ -82,6 +116,7 @@ export class DelegationCoordinator {
           validatedAgent: preflight.validatedAgent,
           workingDirectory: params.workingDirectory ?? process.cwd(),
           onChildSessionId: (childSessionId) => this.attachChildSession(delegationId, childSessionId),
+          model: inheritedModel,
         })
         this.attachChildSession(delegationId, child.childSessionId)
         this.deps.lifecycle.transition(delegationId, "running")
@@ -132,17 +167,48 @@ export class DelegationCoordinator {
   }
 
   /** Mark a delegation as unconfirmed when the 60s first-action window expires without signals. */
-  markExecutionUnconfirmed(delegationId: string, elapsedSeconds: number): void {
+  async markExecutionUnconfirmed(delegationId: string, elapsedSeconds: number): Promise<void> {
     const record = this.findRecord(delegationId)
     if (!record || record.executionState === "confirmed") return
-    if (elapsedSeconds >= 600) {
+
+    if (this.deps.client && record.childSessionId) {
+      try {
+        const messages = await getSessionMessages(this.deps.client, record.childSessionId)
+        const lastAssistantMessage = [...messages].reverse().find(m => {
+          const role = (m as any)?.info?.role ?? (m as any)?.role
+          return role === "assistant"
+        })
+        if (lastAssistantMessage) {
+          const errorField = (lastAssistantMessage as any)?.info?.error ?? (lastAssistantMessage as any)?.error
+          if (errorField) {
+            const errorMsg = typeof errorField === "object" && errorField !== null
+              ? ((errorField as any).message || JSON.stringify(errorField))
+              : String(errorField)
+            record.error = `[Harness] Child session assistant error: ${errorMsg}`
+            record.executionState = "stalled"
+            this.failDispatch(delegationId, new Error(record.error))
+            return
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes("404") || msg.includes("not found")) {
+          record.error = `[Harness] Child session ${record.childSessionId} was deleted or not found`
+          record.executionState = "stalled"
+          this.failDispatch(delegationId, new Error(record.error))
+          return
+        }
+      }
+    }
+
+    if (elapsedSeconds >= 60) {
       record.executionState = "stalled"
       record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
       record.error = `[Harness] Delegation stalled without first action after ${elapsedSeconds}s`
       this.handleTimeout(delegationId)
       return
     }
-    record.executionState = elapsedSeconds >= 600 ? "stalled" : "unconfirmed"
+    record.executionState = "unconfirmed"
     record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
   }
 
