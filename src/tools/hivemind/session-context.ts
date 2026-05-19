@@ -1,7 +1,7 @@
 /**
  * Session-context tool — read-only cross-session synthesis and discovery.
  *
- * Three actions: find-related, cross-reference, synthesize-context.
+ * Four actions: find-related, cross-reference, synthesize-context, aggregate.
  * All path construction uses safeSessionPath() with isValidSessionID() pre-validation.
  * Read-only (CQRS read-side). No mutation authority.
  * @module tools/hivemind/session-context
@@ -34,12 +34,13 @@ const TIME_PROXIMITY_MS = 30 * 60 * 1000 // ±30 minutes
 export function createSessionContextTool(projectRoot: string): ReturnType<typeof tool> {
   return tool({
     description:
-      "Cross-session synthesis and discovery. Actions: find-related, cross-reference, synthesize-context.",
+      "Cross-session synthesis and discovery. Actions: find-related, cross-reference, synthesize-context, aggregate.",
     args: {
-      action: tool.schema.enum(["find-related", "cross-reference", "synthesize-context"]),
-      sessionId: tool.schema.string(),
+      action: tool.schema.enum(["find-related", "cross-reference", "synthesize-context", "aggregate"]),
+      sessionId: tool.schema.string().optional(),
       query: tool.schema.string().optional(),
       maxRelated: tool.schema.number().optional(),
+      groupBy: tool.schema.enum(["subagentType", "status"]).optional(),
     },
     async execute(rawArgs: unknown, _context: ToolContext): Promise<string> {
       try {
@@ -48,6 +49,7 @@ export function createSessionContextTool(projectRoot: string): ReturnType<typeof
           case "find-related": return handleFindRelated(projectRoot, input.sessionId, input.maxRelated)
           case "cross-reference": return handleCrossReference(projectRoot, input.sessionId, input.query)
           case "synthesize-context": return handleSynthesizeContext(projectRoot, input.sessionId)
+          case "aggregate": return handleAggregate(projectRoot, input.groupBy)
           default: return renderToolResult(error(`Unknown action`))
         }
       } catch (caughtError) {
@@ -165,5 +167,51 @@ async function handleSynthesizeContext(projectRoot: string, sessionId: string) {
   ].join("\n")
   return renderToolResult(success(`Synthesized context for ${sessionId}`, {
     sessionId, context: markdown,
+  }))
+}
+
+/** Cross-session aggregation by status or subagentType. */
+async function handleAggregate(projectRoot: string, groupBy: "subagentType" | "status") {
+  const index = await readProjectIndex(projectRoot)
+  if (!index) return renderToolResult(error("No project index found. Session tracking may not be running."))
+
+  const sessions = index.sessions ?? {}
+  const counts: Record<string, number> = {}
+
+  if (groupBy === "status") {
+    // Fast path: status is in project-continuity.json index
+    for (const [, meta] of Object.entries(sessions)) {
+      const metaRecord = meta as Record<string, unknown>
+      const status = typeof metaRecord.status === "string" ? metaRecord.status : "unknown"
+      counts[status] = (counts[status] ?? 0) + 1
+    }
+  } else if (groupBy === "subagentType") {
+    // Slow path: need to read individual continuity files
+    for (const [sessionId] of Object.entries(sessions)) {
+      const continuity = await readContinuity(projectRoot, sessionId)
+      if (!continuity) continue
+      // Use sessionID prefix as agent type heuristic: "ses_" = generic, "hm-" = hm lineage
+      const agentType = continuity.sessionID?.startsWith("hm-")
+        ? "hm-lineage"
+        : continuity.sessionID?.startsWith("hf-")
+          ? "hf-lineage"
+          : continuity.sessionID?.startsWith("gsd-")
+            ? "gsd-lineage"
+            : "generic-session"
+      counts[agentType] = (counts[agentType] ?? 0) + 1
+    }
+  }
+
+  // Sort by count descending
+  const sorted = Object.fromEntries(
+    Object.entries(counts).sort(([, a], [, b]) => b - a),
+  )
+
+  const totalSessions = Object.keys(sessions).length
+  return renderToolResult(success(`Aggregated ${totalSessions} sessions by ${groupBy}`, {
+    groupBy,
+    totalSessions,
+    counts: sorted,
+    timestamp: new Date().toISOString(),
   }))
 }
