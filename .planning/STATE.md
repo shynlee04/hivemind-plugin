@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-19T21:51:20.221Z"
+last_updated: "2026-05-19T22:01:30.000Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 22
-  completed_plans: 16
-  percent: 73
+  completed_plans: 18
+  percent: 82
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-19
-**Last advance:** 16-01-PLAN.md completed — extended 3 tool input schemas with new action variants (filter-sessions, aggregate, get-manifest) + created session-view.schema.ts
+**Last advance:** 16-06-PLAN.md completed — verified event-tracker deprecation completeness, updated 2 SKILL.md files with deprecation annotations
 **Last trigger:** Phase 16 Plan 01 complete — schema foundation ready for Wave 1 tool implementation plans.
 
 ---
@@ -26,6 +26,7 @@ progress:
 
 **Active phase:** Phase 16 — session-tracker-tool-intelligence-event-tracker-deprecation.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
+**Phase 16 Plan 06:** ✅ COMPLETE — Event-tracker deprecation cleanup: scanned all src/ + .opencode/skills/ for remnants, updated hm-l3-hivemind-engine-contracts (2 refs) and hm-l3-hivemind-state-reference (5 refs) with deprecation annotations. GAP-7 closed. REQ-07 satisfied.
 **CP-DT-01 status:** RE-OPENED / RUNTIME BLOCKED. Waves 1-5 delivered historical implementation artifacts, but runtime proof failed because OpenCode plugin `ToolContext` v1.15.4 has no `context.task` field.
 **Health:** CP-DT-01 blocked until Wave 6 closes runtime-truth gaps. Required sequence: correct docs/spec/gates, reassess Plan 01/02 coordination contracts, rewrite Plan 03 tool contract, adjust Plan 04 loops/chaining, rebuild Plan 05 plugin/runtime-contract tests, then require L1-L3 evidence before any completion claim.
 **CP-ST-04 status:** ✅ COMPLETE — 3 plans delivered (PendingDispatchRegistry + Classification, Directory Architecture, Hierarchy Manifest + Immediate I/O + Cleanup).
@@ -143,6 +144,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-CP-ST-06-COMPLETE | CP-ST-06 fully complete: 5/5 plans, 418/418 tests pass, typecheck clean, all code review findings fixed (CR-01, CR-02, WR-01..04, IN-01..04), Nyquist gaps filled (5 gaps, 11 tests). 6 root causes fixed: RC-1 (hierarchy reverse-order), RC-2 (nested child status), RC-3 (gate:none→unknownSub), RC-4 (lastMessage truncation), RC-5 (error swallowing→retry queue), RC-6 (stale tests). Runtime preservation: parent task result capture, L2 hierarchy registration, unknownSub bootstrap guard, recovery reads child JSON | NEW — 2026-05-17 |
 | D-15-05 | computeTotalToolActivityDuration pure function + 4-condition isComplete (stalled + assistant + fileChanges + sufficientDuration); totalToolActivityDurationMs in result; minTotalToolActivityDurationMs in options (default 60s); 9 new tests, 31 total, all pass | NEW — 2026-05-19 |
 | D-16-01 | Schema extension: filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy; new session-view.schema.ts with SessionViewInputSchema for hivemind-session-view tool | NEW — 2026-05-19 |
+| D-16-06 | Event-tracker deprecation cleanup: src/ references in AGENTS.md comments and plugin.ts migration code left intact (legitimate historical/migration documentation); .opencode/skills/ references updated with deprecation annotations; evals.json not modified (test fixture per D-16) | NEW — 2026-05-19 |
 
 ---
 
@@ -236,7 +238,8 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 ## Next Actions
 
 1. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
-2. **Phase 16 remaining plans (02-07)** — Wave 1 tool implementation plans can now import new action types.
+2. **Phase 16 Plan 06 COMPLETE** — Event-tracker deprecation cleanup: 2 SKILL.md files updated, src/ verified clean. GAP-7 closed.
+3. **Phase 16 remaining plans (02-05, 07)** — Wave 1 tool implementation plans waiting on plan 06/07 dependency (GAP-7 closure).
 3. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass.
 4. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 5/5 plans executed. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`.
 5. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete). After CP-DT-01 in dependency order.
