@@ -15,6 +15,12 @@ export interface NotificationFormatOptions {
   elapsedMs: number
   toolCount?: number
   summaryPreview?: string
+  /** Path to working directory or result file */
+  path?: string
+  /** List of modified/created files detected by completion detector */
+  fileChanges?: string[]
+  /** ISO 8601 completion timestamp */
+  completedAt?: string
 }
 
 const STATUS_ICONS: Record<string, string> = {
@@ -32,7 +38,10 @@ export function formatDelegationNotification(opts: NotificationFormatOptions): s
   const icon = STATUS_ICONS[opts.status] ?? "?"
   const tools = opts.toolCount != null ? String(opts.toolCount) : "n/a"
   const summary = opts.summaryPreview ? ` | ${opts.summaryPreview}` : ""
-  return `<system_reminder>[DT:${opts.delegationId}] ${icon} ${opts.status} | agent=${opts.agent} | ${formatDuration(opts.elapsedMs)} | tools=${tools}${summary}</system_reminder>`
+  const path = opts.path ? ` | path=${opts.path}` : ""
+  const files = opts.fileChanges ? ` | files=${opts.fileChanges.length}` : ""
+  const timestamp = opts.completedAt ? ` | at=${opts.completedAt}` : ""
+  return `<system_reminder>[DT:${opts.delegationId}] ${icon} ${opts.status} | agent=${opts.agent} | ${formatDuration(opts.elapsedMs)} | tools=${tools}${path}${files}${timestamp}${summary}</system_reminder>`
 }
 
 /**
@@ -42,7 +51,9 @@ export function formatDelegationNotification(opts: NotificationFormatOptions): s
 export function formatCompactLine(opts: NotificationFormatOptions): string {
   const icon = STATUS_ICONS[opts.status] ?? "?"
   const tools = opts.toolCount != null ? String(opts.toolCount) : "n/a"
-  return `[DT:${opts.delegationId}] ${icon} ${opts.status} | ${formatDuration(opts.elapsedMs)} | tools=${tools} | agent=${opts.agent}`
+  const path = opts.path ? ` | path=${opts.path}` : ""
+  const files = opts.fileChanges ? ` | files=${opts.fileChanges.length}` : ""
+  return `[DT:${opts.delegationId}] ${icon} ${opts.status} | ${formatDuration(opts.elapsedMs)} | tools=${tools} | agent=${opts.agent}${path}${files}`
 }
 
 /**

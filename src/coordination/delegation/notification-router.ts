@@ -122,20 +122,23 @@ export class NotificationRouter {
     return `${NOTIFICATION_ICONS[type]} [DT:${delegationId}] ${type} — ${message}`
   }
 
-  /** Format a TUI system notification line for live delegation append. */
-  formatTuiNotification(type: DelegationNotificationType, delegationId: string, agent: string, elapsedMs: number, toolCount?: number): string {
+  /** Format a TUI system notification line for live delegation append. Extended with rich fields. */
+  formatTuiNotification(type: DelegationNotificationType, delegationId: string, agent: string, elapsedMs: number, toolCount?: number, extra?: { path?: string; fileChanges?: string[]; completedAt?: string }): string {
     const opts: NotificationFormatOptions = {
       agent,
       delegationId,
       elapsedMs,
       status: type === "success" ? "completed" : type === "failure" ? "error" : type === "timeout" ? "timeout" : "cancelled",
       toolCount,
+      path: extra?.path,
+      fileChanges: extra?.fileChanges,
+      completedAt: extra?.completedAt,
     }
     return formatCompactLine(opts)
   }
 
-  /** Format system notification block for session prompt delivery. */
-  formatSystemNotification(type: DelegationNotificationType, delegationId: string, agent: string, elapsedMs: number, toolCount?: number, summary?: string): string {
+  /** Format system notification block for session prompt delivery. Extended with rich fields. */
+  formatSystemNotification(type: DelegationNotificationType, delegationId: string, agent: string, elapsedMs: number, toolCount?: number, summary?: string, extra?: { path?: string; fileChanges?: string[]; completedAt?: string }): string {
     const opts: NotificationFormatOptions = {
       agent,
       delegationId,
@@ -143,6 +146,9 @@ export class NotificationRouter {
       status: type === "success" ? "completed" : type === "failure" ? "error" : type === "timeout" ? "timeout" : "cancelled",
       summaryPreview: summary,
       toolCount,
+      path: extra?.path,
+      fileChanges: extra?.fileChanges,
+      completedAt: extra?.completedAt,
     }
     return formatDelegationNotification(opts)
   }
