@@ -1,7 +1,7 @@
 /**
  * Session-hierarchy tool — read-only navigation of session delegation trees.
  *
- * Three actions: get-children, get-parent-chain, get-delegation-depth.
+ * Four actions: get-children, get-parent-chain, get-delegation-depth, get-manifest.
  * All path construction uses safeSessionPath() with isValidSessionID() pre-validation.
  * Read-only (CQRS read-side). No mutation authority.
  * @module tools/hivemind/session-hierarchy
@@ -30,9 +30,9 @@ interface ContinuityRecord {
 export function createSessionHierarchyTool(projectRoot: string): ReturnType<typeof tool> {
   return tool({
     description:
-      "Navigate session delegation hierarchy. Actions: get-children, get-parent-chain, get-delegation-depth.",
+      "Navigate session delegation hierarchy. Actions: get-children, get-parent-chain, get-delegation-depth, get-manifest.",
     args: {
-      action: tool.schema.enum(["get-children", "get-parent-chain", "get-delegation-depth"]),
+      action: tool.schema.enum(["get-children", "get-parent-chain", "get-delegation-depth", "get-manifest"]),
       sessionId: tool.schema.string(),
       includeStatus: tool.schema.boolean().optional(),
     },
@@ -43,6 +43,7 @@ export function createSessionHierarchyTool(projectRoot: string): ReturnType<type
           case "get-children": return handleGetChildren(projectRoot, input.sessionId, input.includeStatus)
           case "get-parent-chain": return handleGetParentChain(projectRoot, input.sessionId)
           case "get-delegation-depth": return handleGetDelegationDepth(projectRoot, input.sessionId)
+          case "get-manifest": return handleGetManifest(projectRoot, input.sessionId)
           default: return renderToolResult(error(`Unknown action`))
         }
       } catch (caughtError) {
@@ -121,4 +122,38 @@ async function computeDepth(projectRoot: string, sessionId: string, visited: Set
     maxChildDepth = Math.max(maxChildDepth, childDepth + 1)
   }
   return maxChildDepth
+}
+
+/** Read hierarchy-manifest.json for a session. */
+async function handleGetManifest(projectRoot: string, sessionId: string) {
+  if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
+  try {
+    const manifestPath = safeSessionPath(projectRoot, sessionId, "hierarchy-manifest.json")
+    const raw = await readFile(manifestPath, "utf-8")
+    const manifest = JSON.parse(raw) as {
+      children?: Array<{
+        childSessionId: string
+        status?: string
+        delegatedBy?: { subagentType?: string; taskDescription?: string }
+        depth?: number
+        turnCount?: number
+        createdAt?: string
+      }>
+    }
+    const children = manifest.children ?? []
+    return renderToolResult(success(`Manifest for ${sessionId}`, {
+      sessionId,
+      childCount: children.length,
+      children: children.map((c) => ({
+        childSessionId: c.childSessionId,
+        status: c.status ?? "unknown",
+        delegatedBy: c.delegatedBy ?? null,
+        depth: c.depth ?? 0,
+        turnCount: c.turnCount ?? 0,
+        createdAt: c.createdAt ?? null,
+      })),
+    }))
+  } catch {
+    return renderToolResult(error(`Manifest not found for session: ${sessionId}`))
+  }
 }
