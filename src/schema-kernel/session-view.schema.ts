@@ -23,6 +23,10 @@ export type SessionViewInput = z.infer<typeof SessionViewInputSchema>
 
 /**
  * Input schema for delegation-status tool (shared).
+ *
+ * NOTE: This schema is defined here but consumed by the delegation-status tool.
+ * It is orphaned from the delegation-status schema boundaries. A future refactor
+ * should move it to its own schema file (e.g. delegation-status.schema.ts).
  */
 export const SessionViewDelegationFilterSchema = z.object({
   sessionId: z.string().optional(),
