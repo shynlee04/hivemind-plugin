@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-19T22:15:53.000Z"
+last_updated: "2026-05-19T22:20:05.692Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 22
-  completed_plans: 21
-  percent: 86
+  completed_plans: 22
+  percent: 100
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 16-03-PLAN.md completed — added aggregate action to session-context tool
+**Last advance:** 16-04-PLAN.md completed — added get-manifest action to session-hierarchy tool
 **Last trigger:** Phase 16 Plan 01 complete — schema foundation ready for Wave 1 tool implementation plans.
 
 ---
@@ -28,6 +28,7 @@ progress:
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
+**Phase 16 Plan 04:** ✅ COMPLETE — Added get-manifest action to session-hierarchy tool: handleGetManifest reads hierarchy-manifest.json, returns flattened child list. GAP-2 closed. REQ-04 satisfied.
 **Phase 16 Plan 06:** ✅ COMPLETE — Event-tracker deprecation cleanup: scanned all src/ + .opencode/skills/ for remnants, updated hm-l3-hivemind-engine-contracts (2 refs) and hm-l3-hivemind-state-reference (5 refs) with deprecation annotations. GAP-7 closed. REQ-07 satisfied.
 **Phase 16 Plan 07:** ✅ COMPLETE — hivemind-power-on skill rewrite: SKILL.md v2.1.0 (236 lines) + 6 reference files updated with actual tool capabilities (filter-sessions, get-manifest, aggregate, hivemind-session-view). All aspirational content removed. Truthful resume guidance with SDK v2 dependency noted. All acceptance criteria pass. REQ-08 satisfied.
 **CP-DT-01 status:** RE-OPENED / RUNTIME BLOCKED. Waves 1-5 delivered historical implementation artifacts, but runtime proof failed because OpenCode plugin `ToolContext` v1.15.4 has no `context.task` field.
@@ -148,6 +149,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-15-05 | computeTotalToolActivityDuration pure function + 4-condition isComplete (stalled + assistant + fileChanges + sufficientDuration); totalToolActivityDurationMs in result; minTotalToolActivityDurationMs in options (default 60s); 9 new tests, 31 total, all pass | NEW — 2026-05-19 |
 | D-16-01 | Schema extension: filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy; new session-view.schema.ts with SessionViewInputSchema for hivemind-session-view tool | NEW — 2026-05-19 |
 | D-16-06 | Event-tracker deprecation cleanup: src/ references in AGENTS.md comments and plugin.ts migration code left intact (legitimate historical/migration documentation); .opencode/skills/ references updated with deprecation annotations; evals.json not modified (test fixture per D-16) | NEW — 2026-05-19 |
+| D-16-04 | get-manifest action on session-hierarchy tool: handleGetManifest reads hierarchy-manifest.json via safeSessionPath + readFile + JSON.parse. Returns flattened child list with status/delegatedBy/depth/turnCount/createdAt. No new imports. | NEW — 2026-05-20 |
 
 ---
 
@@ -242,7 +244,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 1. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
 2. **Phase 16 Plan 02 COMPLETE** — Enhanced session-tracker.ts: child .json search, >1MB warnings, filter-sessions action. typecheck clean, all tests pass.
-3. **Phase 16 remaining plans (03-05, 07)** — Wave 1 tool implementation plans. Next: 16-03 (session-hierarchy intelligence).
+3. **Phase 16 remaining plans (05, 07)** — Wave 1 tool implementation plans. Next: 16-05.
 3. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass.
 4. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 5/5 plans executed. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`.
 5. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete). After CP-DT-01 in dependency order.

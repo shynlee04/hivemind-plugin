@@ -487,7 +487,7 @@ Plans:
 - [x] 16-01-PLAN.md (Wave 0) — Schema-kernel extensions: filter-sessions, aggregate, get-manifest, new session-view schema
 - [x] 16-02-PLAN.md (Wave 1) — session-tracker.ts: search child .json + filter-sessions action
 - [ ] 16-03-PLAN.md (Wave 1) — session-context.ts: aggregate action
-- [ ] 16-04-PLAN.md (Wave 1) — session-hierarchy.ts: get-manifest action
+- [x] 16-04-PLAN.md (Wave 1) — session-hierarchy.ts: get-manifest action
 - [ ] 16-05-PLAN.md (Wave 1) — hivemind-session-view.ts (new tool) + plugin.ts registration
 - [ ] 16-06-PLAN.md (Wave 2) — Event-tracker deprecation: scan + update skill reference
 - [ ] 16-07-PLAN.md (Wave 2) — hivemind-power-on skill: full rewrite + 6 reference files
