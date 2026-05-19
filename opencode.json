@@ -4,7 +4,7 @@
     ".opencode/rules/universal-rules.md"
   ],
   "plugin": [
-    "hivemind/plugin"
+    "./dist/plugin.js"
   ],
   "compaction": {
     "auto": true,
