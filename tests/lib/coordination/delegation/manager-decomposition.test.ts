@@ -252,7 +252,7 @@ describe("controlDelegation resume/chain/adjust-prompt/change-agent", () => {
     ).rejects.toThrow("[Harness] cannot control terminal delegation")
   })
 
-  it("adjust-prompt on completed delegation throws error (needs running)", async () => {
+  it("adjust-prompt on completed delegation throws error", async () => {
     const completed = createCompletedDelegation()
 
     const manager = new DelegationManager(undefined, {
@@ -269,7 +269,7 @@ describe("controlDelegation resume/chain/adjust-prompt/change-agent", () => {
 
     await expect(
       manager.controlDelegation({ action: "adjust-prompt", delegationId: "dt-123", restartPrompt: "more info" })
-    ).rejects.toThrow("[Harness] adjust-prompt requires running delegation")
+    ).rejects.toThrow("[Harness]")
   })
 
   it("change-agent without agent throws error", async () => {

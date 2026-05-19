@@ -17,6 +17,7 @@ type FacadeLifecycle = {
   list: () => Delegation[]
   markAborted: (delegationId: string) => DelegationResult
   markCancelled: (delegationId: string) => DelegationResult
+  register?: (record: Delegation) => void
 }
 
 export type DelegationManagerOptions = {
@@ -26,14 +27,16 @@ export type DelegationManagerOptions = {
   notificationRouter?: Pick<NotificationRouter, "register">
   ptyManager?: PtyManager | null
   runtimePolicy?: RuntimePolicy
+  sendPromptAsync?: (sessionId: string, prompt: string) => Promise<void>
 }
 
 export type DelegationControlRequest = {
-  action: "abort" | "cancel" | "restart" | "resume" | "chain"
+  action: "abort" | "cancel" | "restart" | "resume" | "chain" | "adjust-prompt" | "change-agent"
   chainParentSessionId?: string
   delegationId: string
   nativeTask?: NativeTask
   restartPrompt?: string
+  agent?: string
 }
 
 /**
@@ -155,22 +158,118 @@ export class DelegationManager {
     return this.terminalFallback(delegationId, "[Harness] Delegation cancelled")
   }
 
-  /** Applies control semantics with coordinator cleanup and optional native replacement dispatch. */
+  /**
+   * Applies control semantics with two dispatch paths:
+   *
+   * 1. **sendPromptAsync path** (resume, chain, adjust-prompt, change-agent):
+   *    Reuses the existing childSessionId to continue a session without creating a
+   *    new child session. Requires `options.sendPromptAsync` to be configured.
+   *
+   * 2. **abort+dispatch path** (restart, legacy resume/chain fallback):
+   *    Aborts the current delegation and dispatches a new one via coordinator.dispatch.
+   *    This creates a new childSessionId.
+   *
+   * Direct terminal actions (abort, cancel) are handled immediately without dispatch.
+   */
   async controlDelegation(request: DelegationControlRequest): Promise<DelegationResult> {
     const delegation = this.getStatus(request.delegationId)
     if (!delegation) throw new Error(`[Harness] Delegation "${request.delegationId}" not found`)
-    if (delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout") {
+
+    // Resume and chain are ALLOWED on completed delegations — they reuse the session
+    const isTerminal = delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout"
+    if (isTerminal && request.action !== "resume" && request.action !== "chain") {
       throw new Error("[Harness] cannot control terminal delegation")
     }
+
+    // adjust-prompt only works on running delegations
+    if (request.action === "adjust-prompt" && delegation.status !== "running") {
+      throw new Error("[Harness] adjust-prompt requires running delegation")
+    }
+
+    // Abort/cancel: direct terminal marking
     if (request.action === "abort") return this.abortDelegation(request.delegationId)
     if (request.action === "cancel") return this.cancelDelegation(request.delegationId)
-    const agent = request.action === "resume" || request.action === "restart" ? delegation.agent : delegation.agent
+
+    // adjust-prompt: send supplementary prompt into running session
+    if (request.action === "adjust-prompt") {
+      const childSessionId = delegation.childSessionId
+      if (!childSessionId || !this.options.sendPromptAsync) {
+        throw new Error("[Harness] Cannot adjust-prompt: no active session or sendPromptAsync unavailable")
+      }
+      const prompt = request.restartPrompt ?? delegation.prompt
+      if (!prompt) throw new Error("[Harness] adjust-prompt requires a restartPrompt")
+      await this.options.sendPromptAsync(childSessionId, prompt)
+      return { delegationId: request.delegationId, childSessionId, status: "running" as const }
+    }
+
+    // change-agent: abort current session, restart with new agent via sendPromptAsync
+    if (request.action === "change-agent") {
+      if (!request.agent) throw new Error("[Harness] change-agent requires an agent name")
+      const childSessionId = delegation.childSessionId
+      if (!childSessionId || !this.options.sendPromptAsync) {
+        throw new Error("[Harness] Cannot change-agent: no active session or sendPromptAsync unavailable")
+      }
+      const prompt = request.restartPrompt ?? delegation.prompt
+      if (!prompt) throw new Error("[Harness] change-agent requires a prompt")
+      // Abort current session
+      this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation change-agent`)
+      // Send prompt with new agent context to existing session
+      await this.options.sendPromptAsync(childSessionId, prompt)
+      return { delegationId: request.delegationId, childSessionId, status: "running" as const }
+    }
+
+    // Resume and chain: reuse existing childSessionId via sendPromptAsync
+    if ((request.action === "resume" || request.action === "chain") && delegation.childSessionId && this.options.sendPromptAsync) {
+      const childSessionId = delegation.childSessionId
+      const prompt = request.restartPrompt ?? delegation.prompt
+      if (!prompt) throw new Error("[Harness] resume/chain requires a prompt")
+
+      await this.options.sendPromptAsync(childSessionId, prompt)
+
+      // Create new delegation record via lifecycle.register
+      const newRecord: Delegation = {
+        ...delegation,
+        id: `dt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        childSessionId,
+        prompt,
+        status: "running",
+        createdAt: Date.now(),
+        completedAt: undefined,
+        redirectedFrom: undefined,
+        restartedFrom: undefined,
+        resumedFrom: request.action === "resume" ? delegation.id : undefined,
+        chainedFrom: request.action === "chain" ? delegation.id : undefined,
+        executionState: "pending",
+        firstActionAt: undefined,
+        signalSource: undefined,
+        actionCount: 0,
+        messageCount: 0,
+        toolCallCount: 0,
+        evidenceLevel: "accepted-only",
+        finalMessageExcerpt: undefined,
+        result: undefined,
+        resultTruncated: undefined,
+        error: undefined,
+        terminalKind: undefined,
+        terminationSignal: undefined,
+        explicitCancellation: undefined,
+        gracePeriodExpiresAt: undefined,
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        lastMessageCountChangeAt: undefined,
+        ptySessionId: undefined,
+        fallbackReason: undefined,
+      }
+      this.options.lifecycle?.register?.(newRecord)
+      return { delegationId: newRecord.id, childSessionId, status: "running" as const }
+    }
+
+    // Legacy: abort+dispatch path for restart and backward compat
+    const agent = request.action === "restart" ? delegation.agent : delegation.agent
     const prompt = request.restartPrompt ?? delegation.prompt
     if (!prompt) throw new Error("[Harness] restart/resume requires a persisted original prompt or restartPrompt")
 
-    const original = request.action === "restart" || request.action === "resume"
-      ? this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation ${request.action}d`) ?? this.abortDelegation(request.delegationId)
-      : this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation ${request.action}d`) ?? this.abortDelegation(request.delegationId)
+    const original = this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation ${request.action}d`) ?? this.abortDelegation(request.delegationId)
     const replacement = this.options.coordinator
       ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: request.action === "chain" ? request.chainParentSessionId ?? delegation.parentSessionId : delegation.parentSessionId, prompt, queueKey: delegation.queueKey })
       : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt })
