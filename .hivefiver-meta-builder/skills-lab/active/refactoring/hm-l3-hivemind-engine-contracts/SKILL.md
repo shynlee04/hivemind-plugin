@@ -100,7 +100,7 @@ The `HarnessControlPlane` plugin (`src/plugin.ts`) wires components in this exac
 5. Create LifecycleManager     — createHarnessLifecycleManager({ client, pollTimeoutMs, runtimePolicy, delegationManager })
 6. Hydrate Continuity          — lifecycleManager.hydrateFromContinuity()
 7. Create Hook Factories        — sessionHooks, toolGuardHooks, event observers
-8. Wire Event Observers         — delegation → handleSessionIdle/handleSessionDeleted, journey → event tracker
+8. Wire Event Observers         — delegation → handleSessionIdle/handleSessionDeleted, journey → session tracker (event-tracker is deprecated; session-tracker is canonical)
 9. Wire Tool Execute After      — tool.execute.after: summarize output, audit projection, workflow persistence
 10. Return Plugin Object        — ...coreHooks, ...sessionReadHooks, ...toolGuardHooks, tool: { ... }, tool.execute.after
 ```
@@ -162,7 +162,7 @@ The plugin registers these hook categories:
 2. **Event observers are cascaded:** `consumeDelegationFact` processes delegation events first, then `sessionEventObserver` processes session events, then `consumeJourneyFact` processes journey events.
 3. **Tool guard hooks fire before every tool execution.** Budget checks, signature detection, and warning caps are enforced at this layer.
 4. **`tool.execute.after` is best-effort only.** Failures in the after-hook are silently ignored — they never affect tool call results.
-5. **Event tracker projection is best-effort.** `createEventTrackerArtifactsFromHook` failures are caught and ignored — audit projections never block canonical event handling.
+5. **Session tracker projection is best-effort (event-tracker deprecated).** `createEventTrackerArtifactsFromHook` failures are caught and ignored — audit projections never block canonical event handling.
 
 ### Hook Execution Order
 

@@ -95,8 +95,7 @@ STEP 5 — VERIFICATION RECORD
 ├── archive/                  # Archived session artifacts
 ├── cycle2/                   # Cycle 2 persistent data
 ├── daily-notes/              # Session daily notes
-├── event-tracker/            # Session event journals (JSON + Markdown)
-│   └── ses_XXXX.{json,md}    # One pair per session
+├── event-tracker/            # REMOVED in CP-ST-03; session-tracker is canonical
 ├── journal/                  # Session journals (YYYY-MM-DD.jsonl)
 ├── lineage/                  # Execution lineage records
 ├── research/                 # Deep research cached artifacts
@@ -242,13 +241,15 @@ Delegation = {
 - `handleSessionIdle(sessionID)` — triggered by `session.idle` event, transitions to completed
 - `handleSessionDeleted(sessionID)` — triggered by `session.deleted` event, transitions to error with cleanup
 
-### 3. `event-tracker/` — Session Event Journals
+### 3. `event-tracker/` — (REMOVED in CP-ST-03) Session Event Journals
 
-**Format:** One JSON + one Markdown file per session (`ses_XXXX.json`, `ses_XXXX.md`)
+**Status:** `event-tracker/` was removed in CP-ST-03 (2026-05-13). Session-tracker is the canonical replacement. This section documents the historical structure for reference only.
 
-**JSON record:**
+**Historical format:** One JSON + one Markdown file per session (`ses_XXXX.json`, `ses_XXXX.md`)
+
+**Historical JSON record:**
 ```typescript
-EventTrackerRecord = {
+EventTrackerRecord = {         // DEPRECATED — use session-tracker artifacts instead
   sessionId: string
   events: Array<{
     type: string
@@ -259,13 +260,13 @@ EventTrackerRecord = {
 }
 ```
 
-**Read contract:**
-- `createEventTrackerArtifactsFromHook()` — writes events to `.hivemind/event-tracker/`
-- Controlled by `shouldTrackEventTrackerEvent(event)` — filters relevant event types
-- Sessions are identified by the last 4 hex chars of the session ID (e.g., `ses_2252`)
-- Best-effort audit projection: failures are silently ignored, never block canonical event handling
+**Historical read contract (removed):**
+- `createEventTrackerArtifactsFromHook()` — previously wrote events to `.hivemind/event-tracker/` (removed)
+- `shouldTrackEventTrackerEvent(event)` — previously filtered event types (removed)
+- Sessions were identified by the last 4 hex chars of the session ID (e.g., `ses_2252`)
+- Best-effort audit projection: failures were silently ignored, never blocked canonical event handling
 
-**File naming:** `ses_{last4hex}{json|md}` — both JSON and Markdown versions are generated for each tracked session.
+**Historical file naming:** `ses_{last4hex}{json|md}` — both JSON and Markdown versions were generated for each tracked session.
 
 ### 4. `config-workflows.json` — Workflow Configuration State
 
