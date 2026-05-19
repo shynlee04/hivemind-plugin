@@ -64,6 +64,53 @@ function resolvePaths(
   }
 }
 
+/** Search for query in session's child .json files, returning matches. */
+async function searchChildJsonFiles(
+  projectRoot: string,
+  sessionId: string,
+  queryLower: string,
+): Promise<Array<{ childId: string; field: string; snippet: string }>> {
+  const matches: Array<{ childId: string; field: string; snippet: string }> = []
+  try {
+    const continuityPath = safeSessionPath(projectRoot, sessionId, "session-continuity.json")
+    const raw = await readFile(continuityPath, "utf-8")
+    const continuity = JSON.parse(raw) as Record<string, unknown>
+    const hierarchy = continuity.hierarchy as { children?: Array<{ sessionID: string; childFile: string }> } | undefined
+    const children = hierarchy?.children ?? []
+    for (const child of children) {
+      const childPath = safeSessionPath(projectRoot, sessionId, child.childFile)
+      try {
+        const childData = JSON.parse(await readFile(childPath, "utf-8")) as Record<string, unknown>
+        // Search target fields per D-02
+        const fieldsToSearch: Array<{ field: string; extract: (d: Record<string, unknown>) => string | undefined }> = [
+          { field: "lastMessage", extract: (d) => typeof d.lastMessage === "string" ? d.lastMessage : undefined },
+          { field: "turn.content", extract: (d) => {
+            const turns = d.turns as Array<{ content?: string }> | undefined
+            return turns ? turns.map((t) => t.content ?? "").join("\n") : undefined
+          }},
+          { field: "journey[].content", extract: (d) => {
+            const journey = d.journey as Array<{ content?: string }> | undefined
+            return journey ? journey.map((j) => j.content ?? "").join("\n") : undefined
+          }},
+          { field: "delegatedBy.subagentType", extract: (d) => {
+            const delegatedBy = d.delegatedBy as { subagentType?: string } | undefined
+            return delegatedBy?.subagentType
+          }},
+        ]
+        for (const { field, extract } of fieldsToSearch) {
+          const value = extract(childData)
+          if (value && value.toLowerCase().includes(queryLower)) {
+            const truncated = value.length > 200 ? value.slice(0, 200) + "..." : value
+            matches.push({ childId: child.sessionID, field, snippet: truncated })
+            break  // One match per child file
+          }
+        }
+      } catch { /* skip unreadable child file */ }
+    }
+  } catch { /* no session-continuity.json found */ }
+  return matches
+}
+
 async function handleExportSession(projectRoot: string, sessionId: string, format?: "markdown" | "json") {
   if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
   const paths = resolvePaths(projectRoot, sessionId)
@@ -195,6 +242,15 @@ async function handleSearchSessions(projectRoot: string, query: string, limit: n
           }
         }
       } catch { /* skip unreadable */ }
+
+      // Also search child .json files per D-02
+      const childMatches = await searchChildJsonFiles(projectRoot, sessionId, query)
+      for (const cm of childMatches) {
+        matches.push({
+          sessionId, file: `${sessionId}/${cm.childId}.json`,
+          snippet: `[${cm.field}] ${cm.snippet}`, matchLine: 0,
+        })
+      }
     }
   } catch {
     return renderToolResult(error("Unable to scan session directory."))
