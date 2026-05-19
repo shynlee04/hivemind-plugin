@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-19T23:13:00.000Z"
+last_updated: "2026-05-19T16:22:15.590Z"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 16
+  completed_phases: 3
+  total_plans: 15
   completed_plans: 15
-  percent: 94
+  percent: 100
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-19
-**Last advance:** 15-04-PLAN.md completed — pending replay + toast removal + sendPromptAsync injection (300ms TDD cycle)
+**Last advance:** 15-05-PLAN.md completed — total tool activity duration tracking (computeTotalToolActivityDuration + 4-condition isComplete)
 **Last trigger:** CP-DT-01 RE-OPENED / RUNTIME BLOCKED — forensic report `report-20260518-105705.md` proved plugin `ToolContext` has no `context.task` runtime seam. Next step: execute CP-DT-01 Wave 6 gap closure before CP-PTY-01.
 
 ---
@@ -139,6 +139,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | CP-CMD-01 | Command architecture classified: CQRS pattern (read: hivemind-command-engine, write: execute-slash-command), deprecated tools removed from `.opencode/` (violates soft meta-concepts-only rule), `list_commands` action added | NEW — 2026-05-13 |
 | D-CP-ST-06-01 | Test audit complete: 25 failing tests all classified as 'rewrite' (0 keep, 0 delete); RC-3 (API mismatch) accounts for 19/25 root causes; 22 new integration tests across 4 files; 8 TDD RED tests for RetryQueue awaiting CP-ST-06-03 implementation | NEW — 2026-05-16 |
 | D-CP-ST-06-COMPLETE | CP-ST-06 fully complete: 5/5 plans, 418/418 tests pass, typecheck clean, all code review findings fixed (CR-01, CR-02, WR-01..04, IN-01..04), Nyquist gaps filled (5 gaps, 11 tests). 6 root causes fixed: RC-1 (hierarchy reverse-order), RC-2 (nested child status), RC-3 (gate:none→unknownSub), RC-4 (lastMessage truncation), RC-5 (error swallowing→retry queue), RC-6 (stale tests). Runtime preservation: parent task result capture, L2 hierarchy registration, unknownSub bootstrap guard, recovery reads child JSON | NEW — 2026-05-17 |
+| D-15-05 | computeTotalToolActivityDuration pure function + 4-condition isComplete (stalled + assistant + fileChanges + sufficientDuration); totalToolActivityDurationMs in result; minTotalToolActivityDurationMs in options (default 60s); 9 new tests, 31 total, all pass | NEW — 2026-05-19 |
 
 ---
 
@@ -197,7 +198,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 | CP-ST-04 | ✅ COMPLETE | L3 source | Architecture fix — PendingDispatchRegistry, directory architecture, hierarchy manifest |
 | CP-ST-05 | ✅ COMPLETE | L3 source | Data loss investigation — root cause analysis, 6 decisions locked |
 | CP-ST-06 | ✅ COMPLETE | L3 source + L2 tests | Root cause rewrite — 6 RCs fixed, 418/418 tests, retry queue, runtime preservation |
-| CP-DT-01 | ✅ EXECUTION COMPLETE | L5→L2-L3 | Delegate-Task Ecosystem Revamp — 5/5 plans executed; Plan 01-05 summaries complete; review/validation/live-smoke gates pending |
+| CP-DT-01 | ✅ EXECUTION COMPLETE | L5→L2-L3 | Delegate-Task Ecosystem Revamp — 5/5 plans executed; Plan 01-05 summaries complete; Plan 05 added total tool activity duration tracking (GAP-M3); review/validation/live-smoke gates pending |
 
 ---
 
