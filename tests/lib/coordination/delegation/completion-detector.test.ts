@@ -1,5 +1,6 @@
 import {
   checkSemanticCompletion,
+  computeTotalToolActivityDuration,
   findLastToolActivity,
   hasAssistantLastMessage,
   hasFileChangeIndicators,
@@ -145,6 +146,56 @@ describe("completion-detector", () => {
       expect(r.lastToolActivityAt).toBe(NOW - 80_000)
       expect(r.toolActivityStalled).toBe(true)
       expect(r.isComplete).toBe(true)
+    })
+  })
+
+  describe("computeTotalToolActivityDuration", () => {
+    const NOW = 1_000_000
+
+    it("returns 0 for empty messages", () => {
+      expect(computeTotalToolActivityDuration([])).toBe(0)
+    })
+
+    it("returns 0 for messages with no tool_use parts", () => {
+      const msgs = [mockMessage("assistant", [mockTextPart("hi")])]
+      expect(computeTotalToolActivityDuration(msgs)).toBe(0)
+    })
+
+    it("returns now - timestamp for a single tool_use", () => {
+      const msgs = [mockMessage("assistant", [mockToolUse("bash", {}, NOW - 5000)])]
+      expect(computeTotalToolActivityDuration(msgs, NOW)).toBe(5000)
+    })
+
+    it("sums intervals between two tool_use timestamps plus last to now", () => {
+      const msgs = [mockMessage("assistant", [mockToolUse("bash", {}, NOW - 80000)])]
+      expect(computeTotalToolActivityDuration(msgs, NOW)).toBe(80000)
+    })
+
+    it("accumulates multiple tool_use parts correctly", () => {
+      const msgs = [
+        mockMessage("assistant", [mockToolUse("bash", {}, NOW - 100000)]),
+        mockMessage("assistant", [mockToolUse("write", {}, NOW - 80000), mockToolUse("edit", {}, NOW - 30000)]),
+      ]
+      // Intervals: 100k→80k = 20k, 80k→30k = 50k, 30k→now = 30k => 100k total
+      expect(computeTotalToolActivityDuration(msgs, NOW)).toBe(100000)
+    })
+
+    it("returns short duration for 3 quick tool calls in 10s", () => {
+      const burstBase = NOW - 10000  // 10s ago
+      const msgsShort = [
+        mockMessage("assistant", [mockToolUse("bash", {}, burstBase)]),
+        mockMessage("assistant", [mockToolUse("write", {}, burstBase + 3000)]),
+        mockMessage("assistant", [mockToolUse("bash", {}, burstBase + 7000)]),
+      ]
+      // intervals: 3000 + 4000 = 7000, last ts = NOW-3000, interval to now = 3000
+      // Total = 7000 + 3000 = 10000
+      expect(computeTotalToolActivityDuration(msgsShort, NOW)).toBe(10000)
+    })
+
+    it("uses provided now parameter", () => {
+      const testNow = 500000
+      const msgs = [mockMessage("assistant", [mockToolUse("bash", {}, testNow - 30000)])]
+      expect(computeTotalToolActivityDuration(msgs, testNow)).toBe(30000)
     })
   })
 
