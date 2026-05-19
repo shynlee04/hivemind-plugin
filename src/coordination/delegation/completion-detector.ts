@@ -7,11 +7,15 @@ export interface SemanticCompletionResult {
   isComplete: boolean
   lastToolActivityAt: number | null
   secondsSinceLastToolActivity: number | null
+  /** Cumulative wall-clock duration (ms) that tools were active */
+  totalToolActivityDurationMs: number
 }
 
 export interface SemanticCompletionOptions {
   toolIdleThresholdMs?: number
   now?: number
+  /** Minimum cumulative tool activity duration before completion (default 60000) */
+  minTotalToolActivityDurationMs?: number
 }
 
 const DEFAULT_TOOL_IDLE_MS = 60_000
@@ -97,6 +101,55 @@ export function findLastToolActivity(messages: unknown[]): number | null {
 }
 
 /**
+ * Compute the cumulative wall-clock duration (ms) that tools were active.
+ *
+ * Iterates all messages and their parts, collecting timestamps from tool_use
+ * parts. Sorts them and sums the intervals between consecutive timestamps.
+ * The final interval extends from the last tool_use timestamp to `now`.
+ *
+ * Returns 0 when no tool_use parts have timestamps.
+ *
+ * @param messages - Array of session message objects.
+ * @param now - Current time for extending the last interval (defaults to Date.now()).
+ * @returns Total cumulative tool activity duration in milliseconds.
+ *
+ * @example
+ * computeTotalToolActivityDuration([
+ *   { parts: [{ type: "tool_use", timestamp: 1000 }] },
+ *   { parts: [{ type: "tool_use", timestamp: 5000 }] }
+ * ], 10000)
+ * // (5000 - 1000) + (10000 - 5000) = 9000
+ */
+export function computeTotalToolActivityDuration(messages: unknown[], now?: number): number {
+  const timestamps: number[] = []
+  const effectiveNow = now ?? Date.now()
+
+  for (const message of messages) {
+    const parts = getMessageParts(message)
+    for (const part of parts) {
+      if (getNestedValue(part, ["type"]) !== "tool_use") continue
+      const partTs = getNestedValue(part, ["timestamp"])
+      const msgTs = getNestedValue(message, ["timestamp"])
+      const ts = typeof partTs === "number" ? partTs : typeof msgTs === "number" ? msgTs : null
+      if (ts !== null) timestamps.push(ts)
+    }
+  }
+
+  if (timestamps.length === 0) return 0
+  timestamps.sort((a, b) => a - b)
+
+  // Sum intervals between consecutive tool_use timestamps
+  let total = 0
+  for (let i = 1; i < timestamps.length; i++) {
+    total += timestamps[i] - timestamps[i - 1]
+  }
+  // Last tool_use extends to now
+  total += effectiveNow - timestamps[timestamps.length - 1]
+
+  return total
+}
+
+/**
  * Check whether the last message in the array is from the assistant with usable parts.
  *
  * A usable message has role "assistant" and a non-empty parts array containing
@@ -173,15 +226,16 @@ function hasFileChangeInToolResult(part: unknown): boolean {
 /**
  * Evaluate whether a delegated session has semantically completed its work.
  *
- * Checks three independent conditions and returns a structured result:
+ * Checks four independent conditions and returns a structured result:
  * 1. **Tool Activity Stall** — no tool_use parts for > threshold milliseconds
  * 2. **Assistant Last Message** — last message is from assistant with usable parts
  * 3. **File Changes Detected** — tool_result content suggests file mutations
+ * 4. **Sufficient Tool Duration** — cumulative tool activity >= minimum duration
  *
- * Completion is declared when all three conditions are true.
+ * Completion is declared when all four conditions are true.
  *
  * @param messages - Array of session message objects (OpenCode SDK shape).
- * @param options - Optional configuration for idle threshold and time injection.
+ * @param options - Optional configuration for idle threshold, time injection, and min duration.
  * @returns Structured result with individual condition flags and aggregate `isComplete`.
  *
  * @example
@@ -194,6 +248,7 @@ export function checkSemanticCompletion(
 ): SemanticCompletionResult {
   const now = options?.now ?? Date.now()
   const threshold = options?.toolIdleThresholdMs ?? DEFAULT_TOOL_IDLE_MS
+  const minDuration = options?.minTotalToolActivityDurationMs ?? 60000
   const lastToolActivityAt = findLastToolActivity(messages)
   const secondsSinceLastToolActivity =
     lastToolActivityAt !== null ? (now - lastToolActivityAt) / 1000 : null
@@ -201,7 +256,11 @@ export function checkSemanticCompletion(
     lastToolActivityAt !== null && now - lastToolActivityAt > threshold
   const hasAssistantMessage = hasAssistantLastMessage(messages)
   const hasFileChanges = hasFileChangeIndicators(messages)
-  const isComplete = toolActivityStalled && hasAssistantMessage && hasFileChanges
+  const totalToolActivityDurationMs = computeTotalToolActivityDuration(messages, now)
+  const hasSufficientToolDuration = totalToolActivityDurationMs >= minDuration
+
+  // Completion requires all FOUR conditions
+  const isComplete = toolActivityStalled && hasAssistantMessage && hasFileChanges && hasSufficientToolDuration
   return {
     toolActivityStalled,
     hasAssistantMessage,
@@ -209,5 +268,6 @@ export function checkSemanticCompletion(
     isComplete,
     lastToolActivityAt,
     secondsSinceLastToolActivity,
+    totalToolActivityDurationMs,
   }
 }
