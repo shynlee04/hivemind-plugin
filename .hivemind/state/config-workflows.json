@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1779213322939,
+  "updatedAt": 1779218375958,
   "workflows": {
     "wf-moum1iu4-gstos8": {
       "id": "wf-moum1iu4-gstos8",
@@ -7425,6 +7425,262 @@
       "mode": "batch-modify",
       "startedAt": 1779213322936,
       "updatedAt": 1779213322937
+    },
+    "wf-mpcybe7z-x143gy": {
+      "id": "wf-mpcybe7z-x143gy",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1779214401215
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1779214401216
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1779214401216
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1779214401215,
+      "updatedAt": 1779214401216
+    },
+    "wf-mpd03gzu-zkabse": {
+      "id": "wf-mpd03gzu-zkabse",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1779217390794
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1779217390794
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1779217390794
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1779217390794,
+      "updatedAt": 1779217390794
+    },
+    "wf-mpd06q12-964cfd": {
+      "id": "wf-mpd06q12-964cfd",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1779217542470
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1779217542470
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1779217542470
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1779217542470,
+      "updatedAt": 1779217542470
+    },
+    "wf-mpd0ol5f-uqhqjv": {
+      "id": "wf-mpd0ol5f-uqhqjv",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1779218375955
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1779218375955
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1779218375955
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1779218375955,
+      "updatedAt": 1779218375955
     }
   }
 }

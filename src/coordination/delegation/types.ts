@@ -69,6 +69,7 @@ export interface Delegation {
   toolCallCount?: number
   evidenceLevel?: DelegationEvidenceLevel
   finalMessageExcerpt?: string
+  v2?: boolean
 }
 
 export interface DelegationResult {
@@ -101,6 +102,7 @@ export interface DelegationResult {
   toolCallCount?: number
   evidenceLevel?: DelegationEvidenceLevel
   finalMessageExcerpt?: string
+  v2?: boolean
 }
 
 /** Notification types emitted by the delegate-task v2 routing layer. */
