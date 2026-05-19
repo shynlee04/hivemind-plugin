@@ -63,6 +63,7 @@ import { createHivemindCommandEngineTool } from "./tools/hivemind/hivemind-comma
 import { createSessionTrackerTool } from "./tools/hivemind/session-tracker.js"
 import { createSessionHierarchyTool } from "./tools/hivemind/session-hierarchy.js"
 import { createSessionContextTool } from "./tools/hivemind/session-context.js"
+import { createHivemindSessionViewTool } from "./tools/hivemind/hivemind-session-view.js"
 import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
@@ -223,7 +224,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     body: {
       service: "hivemind",
       level: "info",
-      message: "[Harness] Hivemind plugin loaded — registering 22 custom tools",
+      message: "[Harness] Hivemind plugin loaded — registering 23 custom tools",
     },
   })
 
@@ -414,6 +415,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "session-tracker": createSessionTrackerTool(projectDirectory),
       "session-hierarchy": createSessionHierarchyTool(projectDirectory),
       "session-context": createSessionContextTool(projectDirectory),
+      "hivemind-session-view": createHivemindSessionViewTool(projectDirectory),
       "hivemind-agent-work-create": createHivemindAgentWorkCreateTool(projectDirectory),
       "hivemind-agent-work-export": createHivemindAgentWorkExportTool(projectDirectory),
       "configure-primitive": createConfigurePrimitiveTool(),
