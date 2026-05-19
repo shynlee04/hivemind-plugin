@@ -28,6 +28,10 @@ export function createSdkChildSessionStarter(client: OpenCodeClient): {
       const childSessionId = getSessionID(childSession)
       if (!childSessionId) throw new Error("[Harness] Child session creation did not return a session ID.")
 
+      // Fire early callback so coordinator maps parent-child session mapping
+      // before sendPromptAsync yields or triggers downstream hooks.
+      params.onChildSessionId?.(childSessionId)
+
       const permissionProfile = resolveDelegationPermissionProfile({
         agent: params.agent,
         prompt: params.prompt,
