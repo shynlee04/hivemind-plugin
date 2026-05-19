@@ -463,13 +463,18 @@ Plans:
 
 ### Phase 15: Phase 15: Delegate-Task Gap Remediation — Resume, Delivery, Rich Notifications
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Close 8 identified gaps (3 critical, 3 medium, 2 minor) in the delegate-task ecosystem by implementing true session resume/chain-append, session-ended notification delivery with pending replay, rich notification fields (path, fileChanges, timestamp), adjust-prompt/change-agent control actions, and total tool activity duration tracking.
+
+**Requirements**: REQ-01 through REQ-06 (see 15-SPEC.md)
 **Depends on:** Phase 14
-**Plans:** 0 plans
+**Plans:** 5 plans in 3 waves
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 15 to break down)
+- [ ] 15-01-PLAN.md — manager.ts: restructure controlDelegation for resume/chain/adjust-prompt/change-agent (R1, R4, R5)
+- [ ] 15-02-PLAN.md — coordinator.ts chain-append + delegation-status.ts schema extension (R4, R5)
+- [ ] 15-03-PLAN.md — notification-formatter.ts + notification-router.ts rich notification fields (R3)
+- [ ] 15-04-PLAN.md — plugin.ts: sendPromptAsync injection, pending drain, toast removal (R2, GAP-N1)
+- [ ] 15-05-PLAN.md — completion-detector.ts: total tool activity duration tracking (R6)
 
 ---
-*Last updated: 2026-05-15 — CP-ST-05 COMPLETE (3/3 waves, 12 commits, 362/364 tests). Gate 0 BEFORE-THE-FACT classification eliminates race conditions. Quarantine protocol prevents data loss. index.ts 982→807 LOC. CP-ST-04 COMPLETE (15 commits, 338/340 tests). Pre-existing failures: 2 test cases (cleanup.test.ts)*
+*Last updated: 2026-05-19 — Phase 15 planned: 5 plans, 3 waves, 6 requirements, 8 gaps*

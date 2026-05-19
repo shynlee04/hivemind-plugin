@@ -1,0 +1,525 @@
+{
+  "sessionID": "ses_1bf2691cbffeDB8PisaVQx2mja",
+  "parentSessionID": "ses_1c317120affef8b53lWWFbDU67",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "GSD planner Phase 15 plans",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-05-19T15:27:31.905Z",
+  "updated": "2026-05-19T15:34:16.714Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-planner",
+      "content": "You are gsd-planner for Phase 15 of the hivemind-plugin-private project.\n\nPhase 15: \"Delegate-Task Gap Remediation — Resume, Delivery, Rich Notifications\"\nPhase number: 15\nPhase directory: .planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/\nProject root: /Users/apple/hivemind-plugin-private\n\n## MANDATORY: Read ALL context files BEFORE planning\n\nYou MUST read and understand ALL of these before creating any plans:\n\n1. 15-SPEC.md — 6 locked requirements\n2. 15-CONTEXT.md — 7 implementation decisions  \n3. 15-RESEARCH.md — validated SDK interfaces and per-requirement analysis\n4. 15-PATTERNS.md — code patterns to follow\n5. The gap analysis: ../14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-GAPS-ANALYSIS-2026-05-19.md\n\n## Then read the key source files that will be modified:\n- src/coordination/delegation/manager.ts\n- src/coordination/delegation/coordinator.ts\n- src/coordination/delegation/completion-detector.ts\n- src/coordination/delegation/notification-formatter.ts\n- src/coordination/delegation/notification-router.ts\n- src/coordination/delegation/types.ts\n- src/plugin.ts\n- src/tools/delegation/delegation-status.ts\n- src/shared/session-api.ts\n\n## Planning Task\n\nCreate executable PLAN.md files following the GSD convention. Split the 6 requirements into waves:\n\n### Suggested breakdown (3 waves):\n\n**Wave 1: Resume + Chain-Append (covers R1, R4 adjust-prompt/change-agent)**\n- Plan 15-01: manager.ts — restructure resume to reuse childSessionId, add adjust-prompt and change-agent\n- Plan 15-02: coordinator.ts — modify chain() to append to existing completed session\n- Tests for all\n\n**Wave 2: Notification Delivery + Rich Format (covers R2, R3, R6)**\n- Plan 15-03: notification-router.ts/plugin.ts — session-ended detection + pending replay\n- Plan 15-04: notification-formatter.ts — add path/files/at fields + remove toast\n- Tests for all\n\n**Wave 3: Total Tool Activity (covers R5)**\n- Plan 15-05: completion-detector.ts — add computeTotalToolActivityDuration, extend isComplete\n- Update 91 existing CP-DT-01 test mocks as needed\n- Tests\n\n### For EACH plan:\n- Goal-backward: start from acceptance criteria, work backward to code changes\n- List exact files to modify with line numbers\n- List test files to create/modify\n- TDD: write tests first (RED), then implementation (GREEN), then refactor\n\nWrite ALL plan files to the phase directory with naming:\n- .planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-01-PLAN.md\n- .planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-02-PLAN.md (etc.)\n\nReturn: List of all PLAN files created with summary of each.",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-planner",
+      "content": "GSD planner Phase 15 plans",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-planner",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 15-delegate-task-gap-remediation-resume-delivery-rich-\n**Plans:** 5 plans in 3 waves\n\n### Wave Structure\n\n| Wave | Plans | Files | Autonomous |\n|------|-------|-------|------------|\n| 1 | 15-01, 15-02 | manager.ts + coordinator.ts + delegation-status.ts | yes |\n| 2 | 15-03, 15-04 | notification-formatter.ts + router.ts + plugin.ts | no (15-04 has checkpoint) |\n| 3 | 15-05 | completion-detector.ts | yes |\n\n### Plans Created\n\n| Plan | Objective | Gaps Fixed | Key Files |\n|------|-----------|------------|-----------|\n| **15-01** | manager.ts: full controlDelegation restructure — resume/chain via sendPromptAsync, adjust-prompt, change-agent handlers + FacadeLifecycle.register | GAP-C1, GAP-M1, GAP-M2 | `manager.ts`, `types.ts` |\n| **15-02** | coordinator.ts chain-append + delegation-status.ts schema extension for adjust-prompt/change-agent | GAP-M1, GAP-M2 | `coordinator.ts`, `delegation-status.ts` |\n| **15-03** | notification-formatter.ts rich fields (path, fileChanges, completedAt) + router pass-through | GAP-C3 | `notification-formatter.ts`, `notification-router.ts` |\n| **15-04** | plugin.ts: sendPromptAsync injection, init-time pending notification drain, toast removal | GAP-C2, GAP-N1, GAP-N2 | `plugin.ts` |\n| **15-05** | completion-detector.ts: computeTotalToolActivityDuration, extend checkSemanticCompletion to 4 conditions | GAP-M3 | `completion-detector.ts` |\n\n### Coverage Audit\n\n| Source Item | Coverage | Plans |\n|-------------|----------|-------|\n| R1 (True session resume) | ✅ COVERED | 15-01 |\n| R2 (Session-ended delivery + pending replay) | ✅ COVERED | 15-04 |\n| R3 (Rich notification fields) | ✅ COVERED | 15-03 |\n| R4 (Chain-append to completed session) | ✅ COVERED | 15-01, 15-02 |\n| R5 (Adjust-prompt + change-agent) | ✅ COVERED | 15-01, 15-02 |\n| R6 (Total tool activity duration) | ✅ COVERED | 15-05 |\n| GAP-N1 (Toast removal) | ✅ COVERED | 15-04 |\n| All D-01 through D-07 decisions | ✅ HONORED | Across all plans |\n\n### Key Design Decisions Reflected\n\n- **D-01**: `sendPromptAsync` injected as constructor dependency in plugin.ts (Plan 15-04), used by Plan 15-01's resume/chain/adjust-prompt/change-agent handlers\n- **D-02**: Pending notification replay at **both** plugin init (Plan 15-04) and session resume (existing lifecycle path, left untouched)\n- **D-03**: Chain and resume share the same `sendPromptAsync` path with `chainedFrom`/`resumedFrom` references\n- **D-04**: `computeTotalToolActivityDuration` as pure function, not stateful tracker; 60s default (15-05)\n- **D-05**: Adjust-prompt uses `sendPromptAsync` directly — no queuing layer (15-01)\n- **D-06**: `path`, `fileChanges[]`, `completedAt` added to `NotificationFormatOptions` (15-03)\n- **D-07**: `showTuiToast` removed from deliver callback (15-04)\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 15`\n\n```markdown\n<sub>`/clear` first — fresh context window</sub>\n```",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-19T15:27:40.008Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_hdZerHHPGRY1XS7L3Mcs9447",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:27:46.325Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_RHMIr6makXFSTQeo0vDJ0693",
+        "input": {
+          "name": "gsd-plan-phase"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:27:52.143Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_g6IIEjveNGINQ9YoGS7x4405",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:27:52.599Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_LhhsnHQO9NZojNKfr8cL0579",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:27:58.320Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ZALE0Ir92lKG7H5Y9ZaU9299",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:27:58.667Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_CKc94DSRdcigUGlXWrQz2920",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:27:59.029Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_F7xN0qRLXKSgzzL6u2F80612",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:05.817Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_b7FVMNzj4ll992XVJPqI2810",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-PATTERNS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:06.292Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_8tZNuNCRwDEfBSMlW2j88716",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-GAPS-ANALYSIS-2026-05-19.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:13.940Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_2lb3xdCVmPk90ffIz9Nk3739",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:14.212Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_DcI3WC6st4MXsz7CyQX43373",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/coordinator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:14.559Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_TDIOP34L0fB9SuPcC3cZ1590",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/completion-detector.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:23.003Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_Wjm6KwNpKJsCpIakboy26716",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:23.214Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_2NzT1qwZV6x08mQ2EfQP6228",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/notification-formatter.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:23.518Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_lDpIs0IIfdqS9VkvtsLx5949",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/notification-router.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:23.860Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_D4Sh3xQer82f6czZAO3h6330",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegation-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:31.512Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_wWNZjq4YmrSpb8IXHwya2516",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:31.759Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_4Pbt7g0r4iBNwThZweBn9052",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:32.223Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_5FqsCt06T8sk3IHs118Q2964",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:39.010Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_K0f8j8Xumuo5iUrzfIdd3215",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:39.149Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_Gsj0Ohdd3cBLQ5IssHY22963",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:39.532Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_z4TGQGgR8FDBgaHJkHFE0926",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:47.197Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_bV0ISJoFDJ5rAEgHsOdJ2649",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:28:47.501Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_wFq0EXaK6h6vdLqxLg1z8620",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/coordination/delegation/completion-detector.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:29:43.344Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_A26VrU2mM3lLz2028p8M8653",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/tools/delegation/delegation-status-v2.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:29:43.753Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_4AcMdENHfseTE4CUh0y53464",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/coordination/delegation/coordinator.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:29:44.212Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_4BZBPH6Vz1AB5SVer7HO7815",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:29:51.905Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_IPouR3XjLR1pOLzQoWCE4160",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:29:52.310Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_4SPopP72c37XvLe78zBD5106",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:30:00.589Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_20neLBoi8UVfiHmRmKYn7400",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:30:08.221Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_o2qVeFFOQbdqQUHtCxSR5898",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:31:03.736Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_1VOS7ZN90tCuvXqNLnc46125",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:31:43.758Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_IXkMCGHm6USypHQLciLF0307",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:32:15.356Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_0AkEjWwgaGM186YmZNiF6453",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:32:50.462Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_xeymNuo0R2f6ZqJr3sAh9227",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:33:37.456Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_uR6IClEa6XEiKGZhl0iD6093",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:33:43.948Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_1MMBZrVyU2a1V9MyBSPi5939",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:33:54.664Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_ET_RAUJBM39cJlhe9qyPeM55312",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:34:02.123Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_NFJocwEVL3cbDBIp6sZ98176",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:34:16.695Z",
+      "type": "assistant_message",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 15-delegate-task-gap-remediation-resume-delivery-rich-\n**Plans:** 5 plans in 3 waves\n\n### Wave Structure\n\n| Wave | Plans | Files | Autonomous |\n|------|-------|-------|------------|\n| 1 | 15-01, 15-02 | manager.ts + coordinator.ts + delegation-status.ts | yes |\n| 2 | 15-03, 15-04 | notification-formatter.ts + router.ts + plugin.ts | no (15-04 has checkpoint) |\n| 3 | 15-05 | completion-detector.ts | yes |\n\n### Plans Created\n\n| Plan | Objective | Gaps Fixed | Key Files |\n|------|-----------|------------|-----------|\n| **15-01** | manager.ts: full controlDelegation restructure — resume/chain via sendPromptAsync, adjust-prompt, change-agent handlers + FacadeLifecycle.register | GAP-C1, GAP-M1, GAP-M2 | `manager.ts`, `types.ts` |\n| **15-02** | coordinator.ts chain-append + delegation-status.ts schema extension for adjust-prompt/change-agent | GAP-M1, GAP-M2 | `coordinator.ts`, `delegation-status.ts` |\n| **15-03** | notification-formatter.ts rich fields (path, fileChanges, completedAt) + router pass-through | GAP-C3 | `notification-formatter.ts`, `notification-router.ts` |\n| **15-04** | plugin.ts: sendPromptAsync injection, init-time pending notification drain, toast removal | GAP-C2, GAP-N1, GAP-N2 | `plugin.ts` |\n| **15-05** | completion-detector.ts: computeTotalToolActivityDuration, extend checkSemanticCompletion to 4 conditions | GAP-M3 | `completion-detector.ts` |\n\n### Coverage Audit\n\n| Source Item | Coverage | Plans |\n|-------------|----------|-------|\n| R1 (True session resume) | ✅ COVERED | 15-01 |\n| R2 (Session-ended delivery + pending replay) | ✅ COVERED | 15-04 |\n| R3 (Rich notification fields) | ✅ COVERED | 15-03 |\n| R4 (Chain-append to completed session) | ✅ COVERED | 15-01, 15-02 |\n| R5 (Adjust-prompt + change-agent) | ✅ COVERED | 15-01, 15-02 |\n| R6 (Total tool activity duration) | ✅ COVERED | 15-05 |\n| GAP-N1 (Toast removal) | ✅ COVERED | 15-04 |\n| All D-01 through D-07 decisions | ✅ HONORED | Across all plans |\n\n### Key Design Decisions Reflected\n\n- **D-01**: `sendPromptAsync` injected as constructor dependency in plugin.ts (Plan 15-04), used by Plan 15-01's resume/chain/adjust-prompt/change-agent handlers\n- **D-02**: Pending notification replay at **both** plugin init (Plan 15-04) and session resume (existing lifecycle path, left untouched)\n- **D-03**: Chain and resume share the same `sendPromptAsync` path with `chainedFrom`/`resumedFrom` references\n- **D-04**: `computeTotalToolActivityDuration` as pure function, not stateful tracker; 60s default (15-05)\n- **D-05**: Adjust-prompt uses `sendPromptAsync` directly — no queuing layer (15-01)\n- **D-06**: `path`, `fileChanges[]`, `completedAt` added to `NotificationFormatOptions` (15-03)\n- **D-07**: `showTuiToast` removed from deliver callback (15-04)\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 15`\n\n```markdown\n<sub>`/clear` first — fresh context window</sub>\n```",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1bf2691cbffeDB8PisaVQx2mja"
+      }
+    }
+  ],
+  "lastMessage": "## PLANNING COMPLETE\n\n**Phase:** 15-delegate-task-gap-remediation-resume-delivery-rich-\n**Plans:** 5 plans in 3 waves\n\n### Wave Structure\n\n| Wave | Plans | Files | Autonomous |\n|------|-------|-------|------------|\n| 1 | 15-01, 15-02 | manager.ts + coordinator.ts + delegation-status.ts | yes |\n| 2 | 15-03, 15-04 | notification-formatter.ts + router.ts + plugin.ts | no (15-04 has checkpoint) |\n| 3 | 15-05 | completion-detector.ts | yes |\n\n### Plans Created\n\n| Plan | Objective | Gaps Fixed | Key Files |\n|------|-----------|------------|-----------|\n| **15-01** | manager.ts: full controlDelegation restructure — resume/chain via sendPromptAsync, adjust-prompt, change-agent handlers + FacadeLifecycle.register | GAP-C1, GAP-M1, GAP-M2 | `manager.ts`, `types.ts` |\n| **15-02** | coordinator.ts chain-append + delegation-status.ts schema extension for adjust-prompt/change-agent | GAP-M1, GAP-M2 | `coordinator.ts`, `delegation-status.ts` |\n| **15-03** | notification-formatter.ts rich fields (path, fileChanges, completedAt) + router pass-through | GAP-C3 | `notification-formatter.ts`, `notification-router.ts` |\n| **15-04** | plugin.ts: sendPromptAsync injection, init-time pending notification drain, toast removal | GAP-C2, GAP-N1, GAP-N2 | `plugin.ts` |\n| **15-05** | completion-detector.ts: computeTotalToolActivityDuration, extend checkSemanticCompletion to 4 conditions | GAP-M3 | `completion-detector.ts` |\n\n### Coverage Audit\n\n| Source Item | Coverage | Plans |\n|-------------|----------|-------|\n| R1 (True session resume) | ✅ COVERED | 15-01 |\n| R2 (Session-ended delivery + pending replay) | ✅ COVERED | 15-04 |\n| R3 (Rich notification fields) | ✅ COVERED | 15-03 |\n| R4 (Chain-append to completed session) | ✅ COVERED | 15-01, 15-02 |\n| R5 (Adjust-prompt + change-agent) | ✅ COVERED | 15-01, 15-02 |\n| R6 (Total tool activity duration) | ✅ COVERED | 15-05 |\n| GAP-N1 (Toast removal) | ✅ COVERED | 15-04 |\n| All D-01 through D-07 decisions | ✅ HONORED | Across all plans |\n\n### Key Design Decisions Reflected\n\n- **D-01**: `sendPromptAsync` injected as constructor dependency in plugin.ts (Plan 15-04), used by Plan 15-01's resume/chain/adjust-prompt/change-agent handlers\n- **D-02**: Pending notification replay at **both** plugin init (Plan 15-04) and session resume (existing lifecycle path, left untouched)\n- **D-03**: Chain and resume share the same `sendPromptAsync` path with `chainedFrom`/`resumedFrom` references\n- **D-04**: `computeTotalToolActivityDuration` as pure function, not stateful tracker; 60s default (15-05)\n- **D-05**: Adjust-prompt uses `sendPromptAsync` directly — no queuing layer (15-01)\n- **D-06**: `path`, `fileChanges[]`, `completedAt` added to `NotificationFormatOptions` (15-03)\n- **D-07**: `showTuiToast` removed from deliver callback (15-04)\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 15`\n\n```markdown\n<sub>`/clear` first — fresh context window</sub>\n```"
+}

@@ -1,0 +1,578 @@
+{
+  "sessionID": "ses_1bf17e2daffe73iU6cLPznGh2F",
+  "parentSessionID": "ses_1c317120affef8b53lWWFbDU67",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Execute Plan 15-01: resume/chain",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-19T15:43:34.191Z",
+  "updated": "2026-05-19T15:50:15.079Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-executor",
+      "content": "You are gsd-executor for Phase 15, Plan 15-01.\n\nProject root: /Users/apple/hivemind-plugin-private\nPhase directory: .planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/\n\n## INSTRUCTIONS\n\nRead 15-01-PLAN.md completely first. Then execute it step by step following TDD (RED→GREEN).\n\n### Scope\n- Files: src/coordination/delegation/manager.ts, src/coordination/delegation/types.ts\n- Tests: tests/lib/coordination/delegation/manager-decomposition.test.ts (create new)\n- Also: notification-formatter.ts (if referenced by plan for FacadeLifecycle.register)\n\n### Execution Protocol\n\n1. **TASK 1 (RED)** — Write failing tests first\n   - Create test file with tests for resume, chain, adjust-prompt, change-agent\n   - Run tests → they must FAIL\n   - Commit: `test(15-01): add RED tests for controlDelegation resume/chain/adjust-prompt/change-agent`\n\n2. **TASK 2 (GREEN)** — Implement\n   - Extend FacadeLifecycle with `register`\n   - Extend DelegationManagerOptions with `sendPromptAsync`\n   - Extend DelegationControlRequest with new actions\n   - Restructure controlDelegation method\n   - Run tests → they must PASS\n   - Run npm run typecheck\n   - Commit: `feat(15-01): implement controlDelegation resume/chain/adjust-prompt/change-agent`\n\n3. **GATEKEEPING** — After each task\n   - Run scoped tests: `npx vitest run tests/lib/coordination/delegation/manager-decomposition.test.ts`\n   - Run broader regression: `npx vitest run tests/lib/coordination/delegation/ tests/lib/delegation-manager.test.ts tests/tools/delegation/`\n   - Verify typecheck: `npm run typecheck`\n   - DO NOT proceed if any test fails or typecheck errors\n\n### Constraints\n- Keep manager.ts under 500 LOC\n- JSDoc on all new/updated methods\n- No any types, verbatimModuleSyntax\n- Use existing patterns from PATTERNS.md\n\nReturn: Summary of what was done, files modified, test results, and commit hashes.",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-executor",
+      "content": "Execute Plan 15-01: resume/chain",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-executor",
+      "content": "## PLAN COMPLETE\n\n**Plan:** 15-delegate-task-gap-remediation-resume-delivery-rich--01\n**Tasks:** 3/3 complete (RED → GREEN → REFACTOR)\n**SUMMARY:** `.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-01-SUMMARY.md`\n\n### Commits\n\n| Hash | Message |\n|------|---------|\n| `6657382a` | `test(15-01): add RED tests for controlDelegation resume/chain/adjust-prompt/change-agent` |\n| `f8e6eefc` | `feat(15-01): implement controlDelegation resume/chain/adjust-prompt/change-agent` |\n| `9a8fbb47` | `docs(15-01): complete controlDelegation resume/chain/adjust-prompt/change-agent plan` |\n\n### What Was Done\n\n**Three interface additions to `manager.ts`:**\n\n| Change | Purpose |\n|--------|---------|\n| `FacadeLifecycle.register` | Creates new delegation records without `coordinator.dispatch` |\n| `DelegationManagerOptions.sendPromptAsync` | Injected dependency for non-dispatch session prompting |\n| `DelegationControlRequest` | Extended actions: `\"adjust-prompt\" \\| \"change-agent\"`, added `agent?: string` |\n\n**Restructured `controlDelegation` with two dispatch paths:**\n\n| Action | Path | Behavior |\n|--------|------|----------|\n| `resume` | sendPromptAsync | Reuses childSessionId, creates new record with `resumedFrom` |\n| `chain` | sendPromptAsync | Reuses childSessionId, creates new record with `chainedFrom` |\n| `adjust-prompt` | sendPromptAsync | Sends supplementary prompt to running delegation, same delegation ID |\n| `change-agent` | sendPromptAsync | Aborts + sends prompt with new agent to existing session |\n| `restart` | abort+dispatch | Existing path preserved (backward compat) |\n| `abort` / `cancel` | Direct terminal | Unchanged |\n\n**Terminal guard relaxed:** resume/chain now allowed on completed delegations; all other actions still blocked.\n\n### Test Results\n\n- **12/12 new tests** pass (all TDD-targeted scenarios)\n- **252/252 regression tests** pass across 15 files\n- **`npm run typecheck`** — clean\n\n### Files Modified\n\n| File | Status | LOC |\n|------|--------|-----|\n| `src/coordination/delegation/manager.ts` | Modified | 356 (under 500 cap) |\n| `tests/lib/coordination/delegation/manager-decomposition.test.ts` | Modified | 324 (248 new lines) |\n\n### Key Decisions\n\n1. **sendPromptAsync-first path**: When `options.sendPromptAsync` is configured and the delegation has a `childSessionId`, resume/chain use the sendPromptAsync path. Without it, they fall back to abort+dispatch — preserving backward compatibility.\n2. **change-agent is best-effort**: The current implementation sends a new prompt to the existing session. Actual agent override requires runtime session support (future CP-PTY work).\n3. **adjust-prompt requires running**: Only works on running delegations. Terminal guard catches it on completed delegations with a generic error.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-19T15:43:45.513Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_jTgGtn8YRlQrX1CNYdDC3214",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:43:51.328Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Tv0SvrGVqxBQmDHaIeZU1535",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:43:59.895Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_KZUMIxz0KI2frXfFy6AA6419",
+        "input": {
+          "name": "hm-l2-test-driven-execution"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:44:06.349Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_7wUdMocMIow1zGq7P5Fz3208",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:44:06.618Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_xxgZUJtE4hxUjgJjZ10u4214",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:44:07.059Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_mpNn4MdOjXVCuiI9o5V00981",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:44:13.950Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_viD5ShtRbvzH2lYx8uyC5409",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:44:14.162Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_rMgZ3pmMEslLNs2mgHqB1899",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/coordinator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:44:20.729Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_RBHsdcmCcy0jZsTc9MTQ0465",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/coordination/delegation/manager-decomposition.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:44:30.267Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_yb1YWm48qqMFe2H29nZ81948",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:45:03.030Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_KMhzWj8e9D1AeItjSjeV1684",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:45:12.342Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_HjtQZ41kYc3uWwkZf4GF9700",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:45:24.878Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_RDveMmY4ApMUwflNeFVV7745",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:45:33.691Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_rNLbLFxdDqfkXWh41iX91867",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:45:40.385Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_IcBr34q7hNqerGb8MbbG2018",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:45:47.335Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_XJ8CM3V2B6cdg6ngIT6D4910",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:45:55.274Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_MlDpB3WuGsarxQoREvey6865",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:46:04.527Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_c5Ik63nCy8utI1L0LP8v7286",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:46:11.240Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_uvIHrhyL96acb3rsbwgO9481",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:46:18.461Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_St2eF88xvn7lu62yDF6v2884",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:46:25.099Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_grGFopZ3B3gO7OStbwmy6297",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:46:45.538Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_VZokZVABiQnwxdpjSuJg2572",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:46:53.163Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_zrnPdktrJj6LQwwYaDQT5275",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:09.092Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_NloGYFZCqmubMylTa2gv6645",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:17.102Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_BII2R4yG70ki1KkXmwJ76347",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:26.748Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_kYqy69W2ZWYhgCrQvoi21855",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:33.309Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_rex2mfoBmiWPsMtu5C7s2681",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:39.747Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_9WG3cyxitRtE5ZgHDNDv5591",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:46.822Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_kqtQFtJVcKAjiTBQc6kT3619",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:56.405Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_fcR5W4SGXp0CHRPaJTJw9208",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:47:57.305Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_WbFXxYZH03G6Og3ajRoa8640",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:48:03.789Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_1rxwEScMbv4XdFTxU4Zu9154",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:48:10.385Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_E7586wy51JT8CJOZdrPZ0835",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegation-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:48:26.747Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_veB38CXwsYIUjlMH56Vd2769",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:48:32.637Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ILbLaUtBR0ELA8WEYoI73164",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:48:40.064Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_4eEZlQy80d3GBEd6kMML6717",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:48:56.120Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_ET_0mhB6MtsNs5lEIpAcqFZ1361",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:03.502Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_hPdCWmbK8yvfHqeupB5G2379",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:10.281Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_c8yQP6n0UDdQM8488p7r1124",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:18.157Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_CYP1LbGU3ql7GVLvI10b9707",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:24.709Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_aipW1yuLweY1YDbn5F799133",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:31.233Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_hBIurKtQ8L9wHTxrIaBd0577",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:37.751Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_SvDcweg2B2k3296qufKf0633",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:45.107Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_6rtFfXart3YWrc8uHX5i8815",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:49:52.346Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_2w0SPa8CYmhUcpjsT56P6148",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:50:01.570Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_mFSjSorKsiZzQ0adlx4B6742",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:50:15.060Z",
+      "type": "assistant_message",
+      "content": "## PLAN COMPLETE\n\n**Plan:** 15-delegate-task-gap-remediation-resume-delivery-rich--01\n**Tasks:** 3/3 complete (RED → GREEN → REFACTOR)\n**SUMMARY:** `.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-01-SUMMARY.md`\n\n### Commits\n\n| Hash | Message |\n|------|---------|\n| `6657382a` | `test(15-01): add RED tests for controlDelegation resume/chain/adjust-prompt/change-agent` |\n| `f8e6eefc` | `feat(15-01): implement controlDelegation resume/chain/adjust-prompt/change-agent` |\n| `9a8fbb47` | `docs(15-01): complete controlDelegation resume/chain/adjust-prompt/change-agent plan` |\n\n### What Was Done\n\n**Three interface additions to `manager.ts`:**\n\n| Change | Purpose |\n|--------|---------|\n| `FacadeLifecycle.register` | Creates new delegation records without `coordinator.dispatch` |\n| `DelegationManagerOptions.sendPromptAsync` | Injected dependency for non-dispatch session prompting |\n| `DelegationControlRequest` | Extended actions: `\"adjust-prompt\" \\| \"change-agent\"`, added `agent?: string` |\n\n**Restructured `controlDelegation` with two dispatch paths:**\n\n| Action | Path | Behavior |\n|--------|------|----------|\n| `resume` | sendPromptAsync | Reuses childSessionId, creates new record with `resumedFrom` |\n| `chain` | sendPromptAsync | Reuses childSessionId, creates new record with `chainedFrom` |\n| `adjust-prompt` | sendPromptAsync | Sends supplementary prompt to running delegation, same delegation ID |\n| `change-agent` | sendPromptAsync | Aborts + sends prompt with new agent to existing session |\n| `restart` | abort+dispatch | Existing path preserved (backward compat) |\n| `abort` / `cancel` | Direct terminal | Unchanged |\n\n**Terminal guard relaxed:** resume/chain now allowed on completed delegations; all other actions still blocked.\n\n### Test Results\n\n- **12/12 new tests** pass (all TDD-targeted scenarios)\n- **252/252 regression tests** pass across 15 files\n- **`npm run typecheck`** — clean\n\n### Files Modified\n\n| File | Status | LOC |\n|------|--------|-----|\n| `src/coordination/delegation/manager.ts` | Modified | 356 (under 500 cap) |\n| `tests/lib/coordination/delegation/manager-decomposition.test.ts` | Modified | 324 (248 new lines) |\n\n### Key Decisions\n\n1. **sendPromptAsync-first path**: When `options.sendPromptAsync` is configured and the delegation has a `childSessionId`, resume/chain use the sendPromptAsync path. Without it, they fall back to abort+dispatch — preserving backward compatibility.\n2. **change-agent is best-effort**: The current implementation sends a new prompt to the existing session. Actual agent override requires runtime session support (future CP-PTY work).\n3. **adjust-prompt requires running**: Only works on running delegations. Terminal guard catches it on completed delegations with a generic error.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1bf17e2daffe73iU6cLPznGh2F"
+      }
+    }
+  ],
+  "lastMessage": "## PLAN COMPLETE\n\n**Plan:** 15-delegate-task-gap-remediation-resume-delivery-rich--01\n**Tasks:** 3/3 complete (RED → GREEN → REFACTOR)\n**SUMMARY:** `.planning/phases/15-phase-15-delegate-task-gap-remediation-resume-delivery-rich-/15-01-SUMMARY.md`\n\n### Commits\n\n| Hash | Message |\n|------|---------|\n| `6657382a` | `test(15-01): add RED tests for controlDelegation resume/chain/adjust-prompt/change-agent` |\n| `f8e6eefc` | `feat(15-01): implement controlDelegation resume/chain/adjust-prompt/change-agent` |\n| `9a8fbb47` | `docs(15-01): complete controlDelegation resume/chain/adjust-prompt/change-agent plan` |\n\n### What Was Done\n\n**Three interface additions to `manager.ts`:**\n\n| Change | Purpose |\n|--------|---------|\n| `FacadeLifecycle.register` | Creates new delegation records without `coordinator.dispatch` |\n| `DelegationManagerOptions.sendPromptAsync` | Injected dependency for non-dispatch session prompting |\n| `DelegationControlRequest` | Extended actions: `\"adjust-prompt\" \\| \"change-agent\"`, added `agent?: string` |\n\n**Restructured `controlDelegation` with two dispatch paths:**\n\n| Action | Path | Behavior |\n|--------|------|----------|\n| `resume` | sendPromptAsync | Reuses childSessionId, creates new record with `resumedFrom` |\n| `chain` | sendPromptAsync | Reuses childSessionId, creates new record with `chainedFrom` |\n| `adjust-prompt` | sendPromptAsync | Sends supplementary prompt to running delegation, same delegation ID |\n| `change-agent` | sendPromptAsync | Aborts + sends prompt with new agent to existing session |\n| `restart` | abort+dispatch | Existing path preserved (backward compat) |\n| `abort` / `cancel` | Direct terminal | Unchanged |\n\n**Terminal guard relaxed:** resume/chain now allowed on completed delegations; all other actions still blocked.\n\n### Test Results\n\n- **12/12 new tests** pass (all TDD-targeted scenarios)\n- **252/252 regression tests** pass across 15 files\n- **`npm run typecheck`** — clean\n\n### Files Modified\n\n| File | Status | LOC |\n|------|--------|-----|\n| `src/coordination/delegation/manager.ts` | Modified | 356 (under 500 cap) |\n| `tests/lib/coordination/delegation/manager-decomposition.test.ts` | Modified | 324 (248 new lines) |\n\n### Key Decisions\n\n1. **sendPromptAsync-first path**: When `options.sendPromptAsync` is configured and the delegation has a `childSessionId`, resume/chain use the sendPromptAsync path. Without it, they fall back to abort+dispatch — preserving backward compatibility.\n2. **change-agent is best-effort**: The current implementation sends a new prompt to the existing session. Actual agent override requires runtime session support (future CP-PTY work).\n3. **adjust-prompt requires running**: Only works on running delegations. Terminal guard catches it on completed delegations with a generic error."
+}
