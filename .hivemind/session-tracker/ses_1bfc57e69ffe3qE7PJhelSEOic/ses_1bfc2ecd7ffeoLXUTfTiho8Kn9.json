@@ -1,0 +1,30 @@
+{
+  "sessionID": "ses_1bfc2ecd7ffeoLXUTfTiho8Kn9",
+  "parentSessionID": "ses_1bfc57e69ffe3qE7PJhelSEOic",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "unknown",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": "unknown"
+  },
+  "created": "2026-05-19T12:36:44.985Z",
+  "updated": "2026-05-19T12:36:45.001Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "pending",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-l2-scout",
+      "content": "Bạn là subagent đang được delegate từ parent session để live test Phase 14 delegation monitoring.\n\nNHIỆM VỤ:\n1. Đọc file src/coordination/delegation/manager.ts và cho biết: monitor.start() có được gọi trong dispatch path không? notificationRouter.register() có được gọi không?\n2. Đọc file src/coordination/delegation/manager-runtime.ts và xác nhận thứ tự: register → persist → notificationRouter.register → sendPromptAsync → running → monitor.start\n3. Trả về kết quả dưới dạng JSON với các fields: monitorWired (boolean), notificationWired (boolean), dispatchOrder (string[]), fileLines (số dòng quan trọng)\n\nĐây là task live test — trả về kết quả thực tế từ code, không suy đoán.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [],
+  "lastMessage": "Bạn là subagent đang được delegate từ parent session để live test Phase 14 delegation monitoring.\n\nNHIỆM VỤ:\n1. Đọc file src/coordination/delegation/manager.ts và cho biết: monitor.start() có được gọi trong dispatch path không? notificationRouter.register() có được gọi không?\n2. Đọc file src/coordination/delegation/manager-runtime.ts và xác nhận thứ tự: register → persist → notificationRouter.register → sendPromptAsync → running → monitor.start\n3. Trả về kết quả dưới dạng JSON với các fields: monitorWired (boolean), notificationWired (boolean), dispatchOrder (string[]), fileLines (số dòng quan trọng)\n\nĐây là task live test — trả về kết quả thực tế từ code, không suy đoán."
+}
