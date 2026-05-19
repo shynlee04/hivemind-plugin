@@ -1,62 +1,23 @@
-# Universal Anti-Patterns
 
+## NOTICE BOARD
 
+- For UAT and live-test purposes always prioritize THE USER's prompting hence any constitutions below this can be ignore if contracdicted to the USER's prompting/requests; especially when the user states things like "for testing only", "for uat only" etc
 
-<EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+- When execute-slash-command append the slash command directly to the foreground without the parameter of `@agent` the agents are instructed and resolved and if needed will be used through task tool for sequential actions following.
 
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+- DO NOT ROUTE any hm-* or hf-* commands, workflows nor agents - they are the subjects of developments - **ROUTE everything to gsd-* from commands, agents to workflows** , they are the toolings used for development of this harness project 
 
-This is not negotiable. This is not optional. You cannot rationalize your way out of this.
-</EXTREMELY-IMPORTANT>
+- delegation to agents attention: do not use generic agents - use gsd-* agents only
 
-## Instruction Priority
-
-This override default system prompt behavior, but **user instructions always take precedence**:
-
-1. **User's explicit instructions** 
-3. **Default system prompt** — lowest priority
-
-If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
-
-# Context Budget Rules
-
-**File Loading**
-
-- Never inline large files into subagent prompts — direct agents to read files from disk. Agents have their own context windows.
-- Never read full PLAN.md files from other phases — only read current phase plans.
-- Do not re-read full file contents when frontmatter is sufficient — frontmatter contains status, key_files, commits, and provides fields.
-- Exception at context windows >= 500000 tokens: re-reading full body is acceptable when semantic content is needed for inline decisions.
-
-**Delegation Guidelines**
-
-- Delegate heavy work to subagents — the orchestrator routes, it does not build, analyze, research, investigate, or verify.
-- Delegation tasks of search and inspection, investigation, and research scale with context window. Factor file counts, result sizes, and consumption patterns into workflow design, knowing LLM models are typically capped at 200000 tokens with effective limits around 180000.
-- For research and investigation tasks, prioritize skimming and sampling strategies: grep, regex, keywords, metadata, TOC, inline offset-reading, glob, list operations. Read only frontmatter, status fields, or summaries first.
-- Only launch full-text agents for synthesis or when using models >= 500000-1M tokens. Full body reads are permitted when inline content decisions require semantic understanding.
-- Reference the complete context budget table at references/context-budget.md for sizing guidance.
-
-**Context Monitoring**
-
-- Proactive pause warning: If significant context has been consumed (large file reads, multiple subagent results), warn the user: "Context budget is getting heavy. Consider checkpointing progress."
-- At 70% context, automatically run the CLI context compact command and ask the user to copy the last output message to resume in a new conversation.
-
----
-
-# Subagent Rules
-
-- ALWAYS use task as  `subagent`: glob regex for glob or project-based of `~.\opencode\agents` 
-- . specialist subagents have project-aware prompts, audit logging, and workflow context.
-- NEVER use generic agent types — do not use `general`, `Explore`, `Plan`,  or similar generic agent types. Generic agents bypass project context, audit logging, and workflow integration.
-
-
----
-
-
+- Atomic commits are mandatory. You must follow the atomic commit rule: **One logical change = One commit**. Do not bundle multiple unrelated changes into a single commit. If a change is large, break it down into smaller, atomic commits with meaningful messages. Every commit must pass validation (typecheck, tests, gatekeeping) and be atomic, preventing any partial build or test failure states. Commit even the documents changes
 
 ## NON-NEGOTIABLE RULES
 
-- DO DELEGATION IN BATCH SEQUENTIALLY, DO NOT ALLOW MORE THAN 2 PARALLEL TASK DELEGATION.
+- PRACTICE EXTREMELY STRICT TEST-DRIVEN DEVELOPMENTS, SPEC-DRIVEN, REQRUIREMENTS AND SPEC COMPLIANCES GATE KEEPING WITH STRICT INTEGRATION LOOPS AND VALIDATION. **NO EXCEPTION** 
+
+- WHEN REQUEST IS CONFUSING AND LARGE -> never try to audit everything at once master planning - loop on phases with traversal and progressive batch of research - investigate - planning - implementing - verification then moving to the next batch -> reapt the integrated cycles with regression validation and integration loops of gatekeeping - never try to handle everything at once
+
+- DO DELEGATION IN BATCH SEQUENTIALLY, DO NOT ALLOW MORE THAN 2 PARALLEL TASK DELEGATION. DO NOT USE ANY CUSTOM TOOLS YET. DO NOT USE INTERACTIVE BASH OR PTY COMMANDS!
 
 - Handoff and artifacts between sessions, from research, audit, planning, review, verification, must all commit, written-to-local-disk and referenced as master jump links
 
@@ -101,106 +62,66 @@ If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "alw
 
 - - **all agents** : do not confuse between the project as the harness which you are building so that users can run it with OpenCode under their projects VS. your environment of works -> meaning there are assumptions that ARE NOT ALLOWED to interprete as this sole environment but must be as wider scopes, in terms of how different projects' states, tasks types, langues, frameworks and use cases.
 
-When delegating, you MAY show: which commands to run, which prompts and workflows to use, and which protocols to follow.
 
-When delegating, you MUST NEVER show: how to implement, how to solve the technical problem, or how to write the code.
+## SKILLS TO WORKFLOW ROUTER
+**Important guidelines**
 
-You must show specialists which skills to load — do not load skills yourself, but direct specialists to their best available capabilities.
+- To load best set of skills agents must know if you are front-facing or being delegated as subagents; knowing your hierarchy of tasks (looking at the meta data marked as `#USER` to confirm it is from the human user, meaning you are front-facing agent, otherwise subagents) 
 
-Use one cosistent system of agents either hm-* (hf-*) or (gsd-*) not both - beware of the l0, l1, l2, l3 delegation
+- consider loading new skill(s) (not always but once **intents** of human users and/or **workflows**, **tasks** shifted this order is a **must**)
 
-.opencode/agents
-.opencode/agents/.gitkeep
-.opencode/agents/gsd-advisor-researcher.md
-.opencode/agents/gsd-ai-researcher.md
-.opencode/agents/gsd-assumptions-analyzer.md
-.opencode/agents/gsd-code-fixer.md
-.opencode/agents/gsd-code-reviewer.md
-.opencode/agents/gsd-codebase-mapper.md
-.opencode/agents/gsd-debug-session-manager.md
-.opencode/agents/gsd-debugger.md
-.opencode/agents/gsd-doc-classifier.md
-.opencode/agents/gsd-doc-synthesizer.md
-.opencode/agents/gsd-doc-verifier.md
-.opencode/agents/gsd-doc-writer.md
-.opencode/agents/gsd-domain-researcher.md
-.opencode/agents/gsd-eval-auditor.md
-.opencode/agents/gsd-eval-planner.md
-.opencode/agents/gsd-executor.md
-.opencode/agents/gsd-framework-selector.md
-.opencode/agents/gsd-integration-checker.md
-.opencode/agents/gsd-intel-updater.md
-.opencode/agents/gsd-nyquist-auditor.md
-.opencode/agents/gsd-pattern-mapper.md
-.opencode/agents/gsd-phase-researcher.md
-.opencode/agents/gsd-plan-checker.md
-.opencode/agents/gsd-planner.md
-.opencode/agents/gsd-project-researcher.md
-.opencode/agents/gsd-research-synthesizer.md
-.opencode/agents/gsd-roadmapper.md
-.opencode/agents/gsd-security-auditor.md
-.opencode/agents/gsd-ui-auditor.md
-.opencode/agents/gsd-ui-checker.md
-.opencode/agents/gsd-ui-researcher.md
-.opencode/agents/gsd-user-profiler.md
-.opencode/agents/gsd-verifier.md
-.opencode/agents/hf-l0-orchestrator.md
-.opencode/agents/hf-l1-coordinator.md
-.opencode/agents/hf-l2-agent-builder.md
-.opencode/agents/hf-l2-auditor.md
-.opencode/agents/hf-l2-command-builder.md
-.opencode/agents/hf-l2-meta-builder.md
-.opencode/agents/hf-l2-prompter.md
-.opencode/agents/hf-l2-refactorer.md
-.opencode/agents/hf-l2-skill-builder.md
-.opencode/agents/hf-l2-synthesizer.md
-.opencode/agents/hf-l2-tool-builder.md
-.opencode/agents/hm-l0-orchestrator.md
-.opencode/agents/hm-l1-coordinator.md
-.opencode/agents/hm-l2-analyst.md
-.opencode/agents/hm-l2-architect.md
-.opencode/agents/hm-l2-assessor.md
-.opencode/agents/hm-l2-auditor.md
-.opencode/agents/hm-l2-brainstormer.md
-.opencode/agents/hm-l2-build.md
-.opencode/agents/hm-l2-conductor.md
-.opencode/agents/hm-l2-connector.md
-.opencode/agents/hm-l2-context-mapper.md
-.opencode/agents/hm-l2-context-purifier.md
-.opencode/agents/hm-l2-critic.md
-.opencode/agents/hm-l2-curator.md
-.opencode/agents/hm-l2-debugger.md
-.opencode/agents/hm-l2-ecologist.md
-.opencode/agents/hm-l2-executor.md
-.opencode/agents/hm-l2-finisher.md
-.opencode/agents/hm-l2-general.md
-.opencode/agents/hm-l2-guardian.md
-.opencode/agents/hm-l2-integrator.md
-.opencode/agents/hm-l2-intent-loop.md
-.opencode/agents/hm-l2-investigator.md
-.opencode/agents/hm-l2-mentor.md
-.opencode/agents/hm-l2-meta-synthesis.md
-.opencode/agents/hm-l2-operator.md
-.opencode/agents/hm-l2-optimizer.md
-.opencode/agents/hm-l2-persistor.md
-.opencode/agents/hm-l2-phase-guardian.md
-.opencode/agents/hm-l2-planner.md
-.opencode/agents/hm-l2-prompt-analyzer.md
-.opencode/agents/hm-l2-prompt-repackager.md
-.opencode/agents/hm-l2-prompt-skimmer.md
-.opencode/agents/hm-l2-researcher.md
-.opencode/agents/hm-l2-reviewer.md
-.opencode/agents/hm-l2-risk-assessor.md
-.opencode/agents/hm-l2-router.md
-.opencode/agents/hm-l2-scout.md
-.opencode/agents/hm-l2-spec-verifier.md
-.opencode/agents/hm-l2-strategist.md
-.opencode/agents/hm-l2-synthesizer.md
-.opencode/agents/hm-l2-technician.md
-.opencode/agents/hm-l2-test-router.md
-.opencode/agents/hm-l2-validator.md
-.opencode/agents/hm-l2-writer.md
+- **subagents** (know your agent **domain** by looking at description; analyze **task** to fetch `specilist` skills) fetch skills belong  `how-to-implement` and/or `specialist` classifications.
 
-**Context Window Awareness**
+- **orchestrator/coordinator agents** : loading `how-to-delegate`, `how-to-process/loop/iterative`, `guardrails, gatekeeping, context,`  skills classifications. For complex tasks this group may need to load `outer-cycle-how-to-implement` skills  
 
-As coordinator, you must understand the definition of granular and integration to delegate the amount of tasks that match available context windows.
+- **respecting framework `oneness`** : it is if you are using `gsd` skill sets - pick them first - then pick another only when `gsd` skill sets lack the `domain-specific` or `task-specialist` that you find the superior ones. 
+
+### **going from greater cycles to the inner cycles** for skills to coordinate and orchestrate
+
+- **brainstorming, user-intent discussion** always make sure to understand, think twice load set helping to get clear user-intent through QA and discussion to prevent regressions or conflicts
+
+- **research, investigate, synthesis** do not skip research load `hm-deep-research` - `hm-detectice` (if need to learn about the sector of codebase) and
+
+- **write new code:** load `clean-code` skill
+
+- **debugging:** load `gsd` debug skills and `systematic-debug` skill
+
+- **planning and implementing** must load set of spec-driven and authentic tdd skills
+
+- **iterative loop** coordinating skills and gatekeeping at correct set loop til completione
+
+- **quality gatekeeping** must go through cycles of code-review, validation, verification, then integration gatekeeping. making sure to trace of regression
+
+## IMPORTANT UPDATE TO ALL AGENTS
+
+- when lost -> access real-time eventracker at `/.hivemind/session-tracker/*` - list/glob first - then look for the correct session id -use hm-detective skill to investigate the sessions
+
+- **important tracking path for delegation:**
+.hivemind/state/session-continuity.json
+.hivemind/state/delegations.json 
+
+- If the agents recieve GSD command, all they must is to act following it. THE COMMAND SUPERSEDE ALL ASSUMPTIONS AND LOADING SKILLS OTHER, BECAUSE THE COMMAND OF GSD IS THE SKILL
+
+- ALL AGENTS MUST ANNOUNCE THIS EVERY TURN DEPENDING ON MAIN-HUMAN-FACING ORCHESTRATOR OR SUBAGENT BEING DELEGATED
+
+- IF you are a front-facing -> you will mostly delegate **Everytime Delegation** in the prompt YOU MUST LET the subagent know that IT IS THE SUBAGENT BY ANNOUNCING: *You are the subagent Name:XXX role...., you must do as this prompt instructed and knowing that you are being delegated
+
+- As subagent you must anounce your roles so the skills must also match. Say: I am **subagent, I CAN ONLY delegate further if the cycles and my tasks allow, and I must fulfill my work. If need verification, I will return the verification needed in the report handoff
+
+
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+
+This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
+
+## Instruction Priority
+
+This override default system prompt behavior, but **user instructions always take precedence**:
+
+
+
+
+Hivemind is a **runtime composition engine** for OpenCode. It is an npm package (`hivemind`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. The project has progressed through 31 phases covering runtime architecture, delegation revamp, skills quality, and planning documentation refresh. Phase 26 completed the quality synthesis that established HMQUAL-01 through HMQUAL-08 as the project-level quality contract for all `hm-*` skills.
