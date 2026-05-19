@@ -30,21 +30,21 @@ describe("NotificationRouter", () => {
     expect(parents).toEqual(Array.from({ length: 10 }, (_, index) => `parent-${index}`))
   })
 
-  it("replays pending notifications FIFO when parent becomes available", () => {
+  it("replays terminal pending notifications FIFO when parent becomes available", () => {
     const router = new NotificationRouter()
     router.register("dt-1", "parent-1")
-    router.queuePending("dt-1", { delegationId: "dt-1", message: "first", timestamp: 1, type: "progress" })
+    router.queuePending("dt-1", { delegationId: "dt-1", message: "first", timestamp: 1, type: "failure" })
     router.queuePending("dt-1", { delegationId: "dt-1", message: "second", timestamp: 2, type: "success" })
 
     expect(router.replayPending("parent-1").map((notification) => notification.message)).toEqual(["first", "second"])
     expect(router.replayPending("parent-1")).toEqual([])
   })
 
-  it("bounds the pending queue at 50 notifications", () => {
+  it("bounds the terminal pending queue at 50 notifications", () => {
     const router = new NotificationRouter()
     router.register("dt-1", "parent-1")
     for (let index = 0; index < 55; index += 1) {
-      router.queuePending("dt-1", { delegationId: "dt-1", message: `n-${index}`, timestamp: index, type: "progress" })
+      router.queuePending("dt-1", { delegationId: "dt-1", message: `n-${index}`, timestamp: index, type: "failure" })
     }
 
     const replayed = router.replayPending("parent-1")
@@ -60,13 +60,28 @@ describe("NotificationRouter", () => {
     })
     router.register("dt-1", "parent-1")
 
-    router.route({ delegationId: "dt-1", idempotencyKey: "same-key", message: "first", timestamp: 1, type: "progress" })
-    router.route({ delegationId: "dt-1", idempotencyKey: "same-key", message: "first", timestamp: 1, type: "progress" })
+    router.route({ delegationId: "dt-1", idempotencyKey: "same-key", message: "first", timestamp: 1, type: "failure" })
+    router.route({ delegationId: "dt-1", idempotencyKey: "same-key", message: "first", timestamp: 1, type: "failure" })
 
     expect(router.replayPending("parent-1")).toHaveLength(1)
     expect(persisted.at(-1)).toEqual(expect.arrayContaining([
       expect.objectContaining({ parentSessionId: "parent-1", stateRoot: ".hivemind", notification: expect.objectContaining({ idempotencyKey: "same-key" }) }),
     ]))
+  })
+
+  it("does not deliver or persist progress notifications to the parent TUI", () => {
+    const deliver = vi.fn(() => false)
+    const persistPending = vi.fn()
+    const router = new NotificationRouter({ deliver, persistPending })
+    router.register("dt-1", "parent-1")
+
+    expect(router.route({ delegationId: "dt-1", idempotencyKey: "progress-key", message: "running", timestamp: 1, type: "progress" })).toMatchObject({
+      parentSessionId: "parent-1",
+    })
+
+    expect(deliver).not.toHaveBeenCalled()
+    expect(persistPending).not.toHaveBeenCalled()
+    expect(router.replayPending("parent-1")).toEqual([])
   })
 
   it("persists async delivery failures once and replays pending notifications once", async () => {

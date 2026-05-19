@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1c317120affef8b53lWWFbDU67",
-  "lastUpdated": "2026-05-18T21:38:09.846Z",
+  "lastUpdated": "2026-05-19T12:29:34.499Z",
   "hierarchy": {
     "root": "ses_1c317120affef8b53lWWFbDU67",
     "children": {
@@ -39,15 +39,39 @@
         "status": "active",
         "delegatedBy": "gsd-executor",
         "children": {}
+      },
+      "ses_1bff11717ffegM0c0TJKSumPdA": {
+        "file": "ses_1bff11717ffegM0c0TJKSumPdA.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-fixer",
+        "children": {}
+      },
+      "ses_1bfd7f337ffeIcrrBCqE6aqD7J": {
+        "file": "ses_1bfd7f337ffeIcrrBCqE6aqD7J.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_1bfd4668affevjCGYVt0ISHrdB": {
+        "file": "ses_1bfd4668affevjCGYVt0ISHrdB.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-fixer",
+        "children": {}
       }
     }
   },
-  "turnCount": 2,
+  "turnCount": 5,
   "toolSummary": {
-    "skill": 1,
-    "read": 5,
-    "bash": 8,
-    "task": 4,
-    "edit": 1
+    "skill": 6,
+    "read": 11,
+    "bash": 21,
+    "task": 7,
+    "edit": 1,
+    "todowrite": 3,
+    "grep": 4,
+    "apply_patch": 3
   }
 }

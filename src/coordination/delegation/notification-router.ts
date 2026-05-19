@@ -29,6 +29,10 @@ const NOTIFICATION_ICONS: Record<DelegationNotificationType, string> = {
   timeout: "⏰",
 }
 
+function isParentFacingNotification(type: DelegationNotificationType): boolean {
+  return type === "success" || type === "failure" || type === "timeout"
+}
+
 /** Routes delegation notifications to their owning parent session. */
 export class NotificationRouter {
   private readonly routes = new Map<string, RouteEntry>()
@@ -47,6 +51,10 @@ export class NotificationRouter {
     const route = this.routes.get(notification.delegationId)
     if (!route) return undefined
     if (notification.idempotencyKey && this.deliveredKeys.has(notification.idempotencyKey)) {
+      return { parentSessionId: route.parentSessionId, notification }
+    }
+    if (!isParentFacingNotification(notification.type)) {
+      if (notification.idempotencyKey) this.deliveredKeys.add(notification.idempotencyKey)
       return { parentSessionId: route.parentSessionId, notification }
     }
     const deliveryResult = this.options.deliver?.(route.parentSessionId, notification) ?? true
@@ -78,6 +86,7 @@ export class NotificationRouter {
 
   /** Queue a pending notification, bounded to the latest 50 entries. */
   queuePending(delegationId: string, notification: DelegationNotification): void {
+    if (!isParentFacingNotification(notification.type)) return
     const route = this.routes.get(delegationId)
     if (!route) return
     if (notification.idempotencyKey && this.deliveredKeys.has(notification.idempotencyKey)) return
