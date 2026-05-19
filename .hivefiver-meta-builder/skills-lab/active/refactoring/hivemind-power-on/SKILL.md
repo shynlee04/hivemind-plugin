@@ -1,12 +1,10 @@
 ---
 name: hivemind-power-on
 description: >-
-  LOAD FIRST before any response — at session start, every user turn, after disconnect, after compact, after any resume.
-  This is the session governance core. It routes hm/hf lineage, manages session lifecycle, enforces quality gates,
-  and optimizes context. BY ALL COSTS CONTINUE: session-tracker saves every aborted/completed/cancelled session,
-  and you MUST resume with the exact same task_id — context is auto-preserved, no reasoning needed, even if wrong
-  it returns safely. Triggers: session start, resume, disconnect, compact, every user turn.
-version: 2.0.0
+  LOAD FIRST — session governance core. Use actual tools to discover session
+  state, filter active/resumable sessions, query hierarchy, and aggregate
+  cross-session data. No aspirational workflow — only real tool capabilities.
+version: 2.1.0
 lineage: hivemind
 load_priority: 1
 consumed-by:
@@ -26,306 +24,213 @@ allowed-tools:
   - todowrite
   - session-tracker
   - session-hierarchy
-  - session-journal-export
+  - session-context
+  - hivemind-session-view
   - delegation-status
+  - hivemind-trajectory
   - prompt-skim
   - prompt-analyze
   - hivemind-doc
-  - hivemind-trajectory
   - hivemind-pressure
 ---
 
 # Hivemind Power-On — Session Governance Core
 
-## LOAD THIS FIRST. LOAD IT EVERY TURN.
+## 1. Overview (30-second read)
 
-This skill is how the entire Hivemind agent system stays alive across disconnects, aborts, compacts, and multi-day sessions. Every agent at L0/L1 loads this before anything else. **If you loaded it at session start, load it again at every user turn** — especially sessions that last many turns. The context changes. The session state evolves. You need the current picture.
+This skill helps you discover which sessions are active on the project, which can be resumed, and how to explore delegation hierarchy through actual tools. The session-tracker at `.hivemind/session-tracker/` records every session that ever ran. Use the tools below to query this data — do not rely on aspirational workflows or undocumented behavior. No hallucination. No fake capabilities.
 
-**You are NOT loading this for the rules. You are loading this to see what is alive RIGHT NOW.**
+**What this skill does NOT do:** It does not auto-preserve context across OpenCode restarts. It does not guarantee that resuming a session works without SDK support. It does not provide a magical "just delegate without thinking" protocol. It gives you real tool actions and tells you their honest capabilities.
 
----
+## 2. Real Tools and How to Use Them (2-minute read)
 
-## 1. THE ONLY THING THAT MATTERS: SESSION-TRACKER KNOWS EVERYTHING
+### 2.1 session-tracker (MOST IMPORTANT)
 
-The session-tracker at `.hivemind/session-tracker/` saves **every** session that ever ran on this project. Aborted. Completed. Cancelled. Active. It doesn't matter. Every single one has:
+This tool queries the session-tracker state in `.hivemind/session-tracker/`. Six actions:
 
-- A `.md` file with the full conversation
-- A `session-continuity.json` with the delegation hierarchy
-- A `project-continuity.json` index of all sessions
+| Action | What It Returns | Use Case |
+|--------|----------------|----------|
+| `list-sessions` | All session IDs with status, depth, timestamps | Getting the full picture of project activity |
+| `filter-sessions({status, agentType, minDepth, maxDepth, timeRange})` | Sessions matching filter criteria | Finding active/resumable sessions. Filter `status: "active"` replaces the old `find-resumable` |
+| `search-sessions({query, limit})` | Search results across .md AND child .json files | Searching session content including lastMessage, turn.content, journey[].content |
+| `get-status({sessionId})` | Status and metadata for one session | Quick check on a specific session |
+| `export-session({sessionId})` | Full session data | Getting complete session detail |
+| `get-summary({sessionId})` | Summarized session overview | Brief session snapshot |
 
-```json
-// .hivemind/session-tracker/project-continuity.json
-{
-  "sessions": {
-    "ses_1e665f792ffel0aC0a0qM0Oxo1": {
-      "status": "active",       // aborted mid-work
-      "childCount": 0,
-      "totalDelegationDepth": 0
-    }
-  },
-  "chronologicalOrder": ["ses_...", "ses_..."]
-}
+**Key distinction:** `filter-sessions` is the discovery tool. `search-sessions` is the research tool. Neither performs resume — they provide metadata for you to decide.
+
+### 2.2 session-hierarchy
+
+Explore delegation structure:
+
+| Action | What It Returns | Use Case |
+|--------|----------------|----------|
+| `get-children({sessionId})` | Direct children in hierarchy tree | View immediate delegations |
+| `get-manifest({sessionId})` | Flattened child list from hierarchy-manifest.json | Full delegation list without recursive traversal (NEW) |
+| `get-parent-chain({sessionId})` | Chain of parents up to root | Trace delegation path |
+| `get-delegation-depth({sessionId})` | Numerical depth value | Quick depth check |
+
+**`get-manifest` is the preferred action** for inspecting delegation trees. It reads `hierarchy-manifest.json` which captures the flattened child list — no recursive tree walking needed.
+
+### 2.3 session-context
+
+Cross-session intelligence:
+
+| Action | What It Returns | Use Case |
+|--------|----------------|----------|
+| `aggregate({groupBy: "status"})` | Count of sessions per status | "How many active/completed sessions?" (NEW) |
+| `aggregate({groupBy: "subagentType"})` | Count per agent type | "What are the top agent types?" (NEW) |
+| `find-related({sessionId})` | Related sessions by tool overlap | Finding related work |
+| `cross-reference({term})` | Sessions referencing a tool or term | Cross-session reference search |
+| `synthesize-context({sessionIds})` | Merged context from multiple sessions | Building a unified picture |
+
+### 2.4 hivemind-session-view (NEW)
+
+Unified read-through query across three data roots:
+
+| Action | What It Returns | Use Case |
+|--------|----------------|----------|
+| `get({sessionId})` | Nested view: `{session, delegations, trajectory}` | Complete picture from one call |
+
+This tool reads from three sources concurrently:
+- `.hivemind/session-tracker/{sessionId}/` — Session data (continuity, hierarchy)
+- `.hivemind/state/delegations.json` — Delegation records
+- `.hivemind/state/trajectory-ledger.json` — Trajectory checkpoints
+
+Use this when you need a unified view of a session's state. For simple queries (just status, just depth), use the specific tool action instead.
+
+### 2.5 delegation-status
+
+Poll and inspect delegation state:
+
+| Action | What It Returns | Use Case |
+|--------|----------------|----------|
+| `status({delegationId})` | Delegation status and progress | Checking a specific delegation |
+| `list({status})` | All delegations, optionally filtered | Overview of delegation activity |
+
+## 3. Resuming Sessions — The Truth (30-second read)
+
+This is the most important correction from the previous version of this skill. **Context is NOT auto-preserved across OpenCode restarts.** Resume depends on specific SDK capabilities.
+
+### The real resume workflow:
+
+1. **Discover active sessions:**
+   ```
+   session-tracker({action: "filter-sessions", status: "active"})
+   ```
+   This returns sessions with `status: "active"`. Each result includes `sessionId`, `agentType`, `depth`, `lastMessage[:500]`, `createdAt`, `updatedAt`, `toolSummary`.
+
+2. **Inspect hierarchy (if needed):**
+   ```
+   session-hierarchy({action: "get-manifest", sessionId: "<id>"})
+   ```
+   View the flattened delegation tree for the session.
+
+3. **Get unified view (optional):**
+   ```
+   hivemind-session-view({action: "get", sessionId: "<id>"})
+   ```
+   Get session data + delegations + trajectory in one call.
+
+4. **Attempt resume via task tool:**
+   ```
+   task({subagent_type: "<agentType>", task_id: "<sessionId>", prompt: "Continue"})
+   ```
+
+**Critical caveat:** Task tool resume **DEPENDS ON SDK V2** — verify before use. The SDK must support `task_id` resume with context restoration. If the SDK version does not support this, `task(task_id=...)` will start a new session instead of resuming.
+
+**How to verify:**
+- Check the SDK version in `node_modules/@opencode-ai/sdk/package.json`
+- If SDK version < 2.x, task_id resume may not preserve context
+- Run `delegation-status({action: "status", delegationId: "<id>"})` to check if delegation still exists
+
+**The old "no thought must" pattern is removed.** You SHOULD think about whether resume will work. You SHOULD verify before dispatching. The safety of "even if wrong it returns safely" depends on the SDK correctly handling the task_id — do not assume.
+
+## 4. Jump Links — Reference Files
+
+### Progressive Disclosure — Read Only When Needed
+
+These reference files provide deeper detail on specific topics. Load them on demand, not all at once.
+
+| # | File | Contains | Read When |
+|---|------|----------|-----------|
+| 1 | `references/01-session-tracker-anatomy.md` | Full session-tracker schemas: project-continuity.json, session-continuity.json, hierarchy-manifest.json | You need to understand the data format behind the tools |
+| 2 | `references/02-task-tool-resume.md` | Real resume workflow with filter-sessions, get-manifest, hivemind-session-view | You are planning a resume and need step-by-step guidance |
+| 3 | `references/03-lineage-routing-tree.md` | hm vs hf routing decision tree | You are unsure which lineage to route to |
+| 4 | `references/04-project-phase-routing.md` | Phase-to-specialist mapping tables | You are dispatching a phase and need the right L2 agent |
+| 5 | `references/05-continuity-navigation.md` | project-continuity.json and session-continuity.json navigation | You need to manually navigate the data without tools |
+| 6 | `references/06-delegation-depth-recovery.md` | Multi-level recovery cascade protocol | You are recovering from a deep delegation chain |
+
+## 5. Tool Catalog (1-minute read)
+
+All custom tools available via the Hivemind plugin. Callable directly from agent workflows.
+
+| Tool | Purpose | Key Actions |
+|------|---------|------------|
+| `session-tracker` | Query session state | list-sessions, filter-sessions, search-sessions, get-status, export-session, get-summary |
+| `session-hierarchy` | Explore delegation structure | get-children, get-manifest, get-parent-chain, get-delegation-depth |
+| `session-context` | Cross-session aggregation | aggregate({groupBy}), find-related, cross-reference, synthesize-context |
+| `hivemind-session-view` | Unified cross-root view | get({sessionId}) |
+| `delegation-status` | Poll delegation state | status, list |
+| `delegate-task` | Create child session via SDK | dispatch (WaiterModel) |
+| `hivemind-trajectory` | Query execution trajectory | inspect, traverse, attach, checkpoint, event, close |
+| `hivemind-pressure` | Query runtime pressure | classify, detect, inspect-tool-catalog, attach-event |
+| `hivemind-doc` | Read-only document intelligence | skim, skim-directory, read, chunk, search |
+| `prompt-skim` | Fast prompt scan | word/lines/tokens count, URL extraction, path verify, complexity score |
+| `prompt-analyze` | Deep prompt analysis | contradiction detection, vagueness, missing scope, clarity signals |
+| `hivemind-sdk-supervisor` | Inspect SDK client health | health, heartbeat, diagnostics, readiness |
+| `hivemind-command-engine` | Command discovery and routing | discover, analyze-contract, render-context, transform-messages, route-preview, list-commands |
+| `hivemind-agent-work-create` | Create agent work contract | Contract with task boundary, surfaces, dependencies, evidence requirements |
+| `hivemind-agent-work-export` | Export agent work contract | Export as JSON or Markdown |
+| `configure-primitive` | Configure OpenCode primitives | compile, decompile, read, list, inspect for agents/commands/skills |
+| `validate-restart` | Validate restart safety | Check discoverability, circular deps, missing refs, permission breaks |
+| `bootstrap-init` | Initialize harness bootstrap | Create .hivemind surfaces and install primitive symlinks |
+| `bootstrap-recover` | Recover bootstrap failures | Repair missing or broken symlinks |
+
+## 6. Quality Gates (shortened)
+
+Every delegation that returns should pass the gate triad. Load the gate skills independently — this skill does not run them.
+
+```
+Sequence: gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth
+HALT rule: If any gate FAILS, stop. Produce remediation. Do not proceed.
 ```
 
-**This means:** There are NO lost sessions. Everything is recoverable. The only thing you need is the session ID. And the session-tracker gives you that.
+For detailed gate execution, load `hm-l2-gate-orchestrator` or the individual gate skills:
+- `gate-l3-lifecycle-integration` — 9-surface mutation authority, CQRS boundaries, actor hierarchy
+- `gate-l3-spec-compliance` — Bidirectional traceability, gap detection, EARS criteria
+- `gate-l3-evidence-truth` — L1-L5 evidence hierarchy, mock detection
 
-### What you do at every power-on (start, resume, every user turn):
-
-```
-1. session-tracker({action:"list-sessions"})         // → get ALL session IDs
-2. Read project-continuity.json                       // → see statuses, depths, children
-3. Filter: "active" sessions that might need resume    // → aborted = active, completed = completed
-4. For each aborted/active session → note the ID
-5. Continue your routing with those IDs in your pocket
-```
-
-**That's it.** Three tool calls. You now know everything alive in this project.
-
----
-
-## 2. THE DELEGATION PATTERN: "NO THOUGHT MUST" — BY ALL COSTS CONTINUE
-
-This is the most important thing this skill teaches you. **Memorize it.**
+## 7. Short Version (for tight context)
 
 ```
-WHEN you see a session ID from session-tracker (ANY status):
-  → task({subagent_type: <same>, task_id: <exact ID>, prompt: "Continue"})
-  → NO reasoning about whether it's the right session
-  → NO checking if context was preserved (it IS — automatically)
-  → NO asking "but what if it completed?" (it returns safely if wrong)
-  → JUST DELEGATE
+1. session-tracker({action:"list-sessions"}) → see what exists
+2. session-tracker({action:"filter-sessions", status:"active"}) → find active/resumable
+3. session-hierarchy({action:"get-manifest", sessionId}) → inspect delegation tree
+4. hivemind-session-view({action:"get", sessionId}) → unified session view
+5. task({subagent_type:"<type>", task_id:"<id>"}) → attempt resume (verify SDK v2 first)
+6. Quality gate triad on each delegation return
+7. Depth max = 3 → escalate to user
 ```
 
-### Why this works without thinking:
+## 8. Load This at Every User Turn
 
-| What you worry about | What actually happens |
-|---------------------|----------------------|
-| "Is this the right session?" | Even if wrong, the subagent gets context from the wrong session → returns safely. No harm. |
-| "Was context preserved after abort?" | YES. OpenCode saves conversation state on every turn. Abort = last saved state is restored. |
-| "Should I repeat the prompt?" | NO. Context is auto-restored. Repeating prompt wastes context. Just say "Continue." |
-| "The front agent doesn't know what the downstream was doing" | **That's fine.** The downstream agent knows. Its context was preserved. You don't need to know. |
-| "The session completed, should I start new?" | Resume the completed session with the SAME ID. It continues the chain. If it's truly done, the subagent tells you. |
-
-### Real example from this project:
-
-```
-Session-tracker shows: ses_1e665f792ffel0aC0a0qM0Oxo1 (status: "active", gsd-planner)
-
-The correct response:
-  → task({description:"resume", subagent_type:"gsd-planner", task_id:"ses_1e665f792ffel0aC0a0qM0Oxo1"})
-  → The planner resumes with its FULL context (844 lines of prompt, all tool calls)
-  → It continues from where it was interrupted
-  → NO need to re-send requirements, research, or context
-```
-
-**The WRONG response (what most agents do):**
-```
-  → Read the .md file (waste)
-  → Re-read all the context files (waste)
-  → Reason about whether it's the right session (waste)
-  → Start a NEW task with a different ID (WRONG — loses the chain)
-  → Re-send the full prompt (waste)
-```
-
----
-
-## 3. LOAD THIS AT EVERY USER TURN
-
-This is **not** a "load once at start" skill. You must load it:
+This is not a "load once at start" skill. Load it:
 
 | When | Why |
 |------|-----|
 | Session start | Get the current session landscape |
-| **Every user turn** | Session state may have changed. New aborts. New children. |
-| After disconnect | Find sessions that need resume |
-| After compact | Reconstruct state from disk |
+| Every user turn | Session state may have changed. New sessions, new completions. |
+| After disconnect | Find sessions that may need attention |
+| After compact | Reconstruct awareness from disk |
 | Before delegation | Check if there's a session to resume vs create new |
-| After delegation returns | Check if the subagent left something to continue |
 
-**Multi-turn sessions:** The session-tracker is being written to by YOUR OWN previous turns. If you don't reload this skill, you won't see the sessions YOU created.
-
----
-
-## 4. ROUTING: WHICH LINEAGE, WHICH LEVEL
-
-Decision tree for where work goes. Read TOP to BOTTOM.
-
-```
-USER SENDS REQUEST
-│
-├──→ Is this about meta-concepts? (agents, skills, commands, tools)
-│   └──→ hf-lineage
-│       ├── Single concept, known type → FAST PATH → hf-l2-* directly
-│       └── Multi-concept, investigation, remediation → hf-l1-coordinator
-│
-├──→ Is this about features, bugs, architecture, implementation?
-│   └──→ hm-lineage
-│       ├── Simple, well-defined → hm-l1-coordinator (direct L2 dispatch)
-│       └── Complex, research needed → hm-l1-coordinator (waves)
-│
-├──→ Is this an ambiguous command?
-│   └──→ hm-l2-intent-loop for clarification
-│
-├──→ Is this a disconnected/resume scenario?
-│   └──→ BY ALL COSTS CONTINUE → task tool with EXACT session ID
-│       ├── Aborted? → same ID, context preserved
-│       ├── Completed? → same ID, context preserved
-│       └── Cancelled? → same ID or new (check with user)
-│
-└──→ Is this a cross-lineage request?
-    └──→ hf needs codebase investigation? → hm-l1-coordinator (cross-lineage)
-        hm needs meta-concept? → hf-l1-coordinator (cross-lineage)
-```
-
-### Depth rules (non-negotiable):
-
-```
-L0 → L1 → L2  (one level per delegation)
-L0 → L2       (ONLY for fast-path single-concept hf-* tasks)
-L2 → L2       (NEVER — L2 cannot delegate)
-L0 → L2 skip  (NEVER — always through coordinator for multi-concept)
-Depth > 3     (NEVER — escalate to user)
-```
-
----
-
-## 5. FINDING AND RESUMING SESSIONS — THE ACTUAL WORKFLOW
-
-### When you think "I should continue a session":
-
-```
-STEP 1: session-tracker({action:"list-sessions"})
-        → Gets all session IDs + statuses
-STEP 2: session-tracker({action:"search-sessions", query:"aborted"})
-        → Finds sessions that were interupted
-STEP 3: For each aborted/active session:
-        session-hierarchy({action:"get-delegation-depth", sessionId:"ses_xxx"})
-        → Check depth, find deepest active child
-STEP 4: task({subagent_type:"<matching type>", task_id:"<deepest active ID>"})
-        → Continue. Context preserved. No thinking.
-```
-
-### When you're mid-session and need to re-delegate to a completed sub:
-
-```
-The subagent returned. You got its results. But you need it to do MORE.
-
-  → task({task_id:"<SAME subagent session ID>", prompt:"Now do this additional thing..."})
-  → The same subagent continues with its previous context PLUS your new instruction
-  → No need to re-establish anything — it remembers everything
-```
-
-### When you're sure it's the wrong session:
-
-```
-task returns garbage or subagent says "I don't recognize this"
-  → It returns safely (user's words: "even it is wrong it will returns safely")
-  → Start fresh with a new task. No harm done.
-```
-
----
-
-## 6. QUALITY GATES: WHAT TO RUN BEFORE CLAIMING DONE
-
-Every delegation that returns must pass the triad. In order. No skipping.
-
-```
-1. gate-lifecycle-integration   → Does it participate in the runtime correctly?
-2. gate-spec-compliance         → Does it meet the spec requirements?
-3. gate-evidence-truth          → Is there actual proof? (not just claims)
-```
-
-**Sequence:** Load `gate-l3-lifecycle-integration` → run it → returns PASS or FAIL.
-→ If PASS: Load `gate-l3-spec-compliance` → run it → returns PASS or FAIL.
-→ If PASS: Load `gate-l3-evidence-truth` → run it → returns PASS or FAIL.
-→ If ALL PASS: Done.
-→ If ANY FAIL: Return to the delegation target with the specific remediation.
-
-Max 3 retry cycles. After 3, escalate to user with the full gap report.
-
----
-
-## 7. WHAT EACH LAYER ACTUALLY DOES WITH THIS
-
-| Layer | What they NEED from this skill |
-|-------|-------------------------------|
-| **L0 Orchestrator** | Full routing: find aborted sessions, resume them, know all active work |
-| **L1 Coordinator** | Delegation management: track children, know which to resume, gate their returns |
-| **L2 Specialist** | NOTHING from this skill. But they MUST know: "I was loaded by an L1 who loaded this. If I get interrupted, my session WILL be saved and can be resumed." |
-
----
-
-## 8. REFERENCE FILES (read on demand, not all at once)
-
-| File | What it has | Read when |
-|------|------------|-----------|
-| `references/01-session-tracker-anatomy.md` | Full session-tracker structure and schemas | You need to navigate `.hivemind/session-tracker/` manually |
-| `references/02-task-tool-resume.md` | Task tool resume mechanics and worked examples | You're resuming an aborted session |
-| `references/03-lineage-routing-tree.md` | Complete hm vs hf decision tree with command maps | You're unsure which lineage to route to |
-| `references/04-project-phase-routing.md` | Phase-to-specialist mapping tables | You're dispatching a phase and need the right L2 |
-| `references/05-continuity-navigation.md` | project-continuity.json navigation patterns | You're recovering from disconnect and need to find your place |
-| `references/06-delegation-depth-recovery.md` | Multi-level recovery cascade protocol | You're recovering from a deep delegation (L1→L2→...) |
-
----
-
-## 9. TOOL CATALOG REFERENCE
-
-See [Section 10](#10-custom-tool-catalog--available-harness-tools) for the full list of 22 custom tools available via the Hivemind plugin. Every L0/L1 agent should read this section to understand what tools are at their disposal.
-
----
-
-## 11. THE SHORT VERSION (for when context is tight)
-
-```
-1. session-tracker({action:"list-sessions"}) → see what exists
-2. Any aborted/active session → task with its ID → context preserved
-3. "No thought must" — even if wrong, it returns safely
-4. Every user turn → reload this skill
-5. Every delegation return → quality gate triad
-6. Depth max = 3 → escalate to user
-```
-
----
-
-## 10. CUSTOM TOOL CATALOG — AVAILABLE HARNESS TOOLS
-
-The Hivemind plugin registers these custom tools at startup. All are callable directly from agent workflows. Each tool has a `delegate_task` or native-Task analog; prefer the custom tool when you need harness-tracked delegation.
-
-| Tool Name | What It Does | When To Use |
-|-----------|-------------|-------------|
-| `delegate-task` | Create a child session via SDK dispatch, tracked by DelegationManager | You need harness-tracked delegation with dual-signal completion, recovery, and notification routing |
-| `delegation-status` | Poll delegation state: status, progress, abort, cancel, restart, resume, chain, adjust-prompt, change-agent | You need to check on or control a running delegation |
-| `run-background-command` | Execute a shell command in a background/PTY session | You need a long-running shell command that shouldn't block the agent |
-| `prompt-skim` | Fast skim of a prompt for structure and intent | You need a quick overview before deep analysis |
-| `prompt-analyze` | Deep analysis of a prompt for contradictions, gaps, risks | You need to audit a prompt before sending it |
-| `session-patch` | Modify session properties or metadata | You need to update session state |
-| `execute-slash-command` | Run a registered OpenCode slash command | You need to invoke a command programmatically |
-| `session-journal-export` | Export session journal to file | You need to persist session history for audit |
-| `hivemind-doc` | Query Hivemind documentation | You need docs about harness features |
-| `hivemind-trajectory` | Query execution trajectory / decision lineage | You need to trace what decisions led to current state |
-| `hivemind-pressure` | Query runtime pressure / budget status | You need to check circuit-breaker or tool budget status |
-| `hivemind-sdk-supervisor` | Inspect SDK client state and connection health | You need to debug SDK integration issues |
-| `hivemind-command-engine` | Execute the Hivemind command engine | You need to run engine-level commands |
-| `session-tracker` | List, search, and inspect session records | You need to find or resume a session |
-| `session-hierarchy` | Get delegation depth and parent/child tree | You need to understand session lineage |
-| `session-context` | Get session context from continuity | You need to recover context for a session |
-| `hivemind-agent-work-create` | Create an agent work contract | You need to define a formal work agreement |
-| `hivemind-agent-work-export` | Export agent work contract to file | You need to persist a work agreement |
-| `configure-primitive` | Configure OpenCode primitives (agents, commands, skills) | You need to update config via tool |
-| `validate-restart` | Validate restart safety before reconnecting | You need to check it's safe to restart |
-| `bootstrap-init` | Initialize harness bootstrap state | First-time setup of a Hivemind project |
-| `bootstrap-recover` | Recover from bootstrap failure | You need to recover a broken bootstrap |
-
-**Important**: The `delegate-task` tool routes through `DelegationCoordinator.dispatch()` → `client.session.create()` + `client.session.promptAsync()` (SDK surface available at plugin runtime). It is NOT blocked — the `UNSUPPORTED_NATIVE_TASK_MESSAGE` was removed in a refactor that replaced the old `ToolContext.task` approach with the SDK client path.
-
----
-
-## 11. ESCALATION — WHEN TO TELL THE USER
+## 9. Escalation — When to Tell the User
 
 | Situation | What to do |
 |-----------|-----------|
-| 3 consecutive gate failures on same delegation | Escalate with full gap report, evidence, and retry history |
+| 3 consecutive gate failures on same delegation | Escalate with full gap report and retry history |
 | delegation depth reaches 3 | Escalate: "This chain is too deep. Need architectural split." |
-| session-tracker not responding | Fallback: `glob(".hivemind/session-tracker/*/")` → find directories directly |
+| session-tracker not responding | Fallback: `glob(".hivemind/session-tracker/*/")` — find directories directly |
 | Ambiguous hm vs hf lineage | Load `hm-l2-user-intent-interactive-loop` → clarify with user |
-| task_id not found (session doesn't exist) | Export the `.md` session content, extract the prompt, create NEW dispatch with same params |
+| task_id not found | Session may not be resumable. Check SDK version. Create fresh dispatch. |
