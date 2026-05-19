@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-19T16:22:15.590Z"
+last_updated: "2026-05-19T21:14:43.539Z"
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 3
   total_plans: 15
   completed_plans: 15
@@ -214,6 +214,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-13** — CP-ST-03 phase created: Architecture Detox (event-tracker excision + plugin.ts purification). Plan 01 (Event-Tracker Excision) complete — 22 files deleted, 7 docs synced, EXCISION.md test (13 assertions) passes. Plan 02 (Plugin.ts Purification) complete — 7 inline closures extracted to 14 files, plugin.ts 330→267 LOC (19% reduction), 33 new unit tests all pass.
 - Phase CP-ST-06 added: Session Tracker Root Cause Rewrite — triệt để rewrite 6 root causes + xóa 30 stale mock tests
 - **2026-05-18** — Phase CP-DT-01 INSERTED after CP-ST-06: Delegate-Task Ecosystem Revamp — toàn diện refactor delegate-task (proven broken: child sessions freeze sau 30 phút, 0 tool calls). 4 deliverables: SPEC.md, CONTEXT.md, RESEARCH.md, PATTERN.md. Research sâu OpenCode SDK + source-code architecture trước khi design v2.
+- Phase 16 added: Session-Tracker Tool Intelligence + Event-Tracker Deprecation Cleanup — Nâng cấp read-side tools, deprecate event-tracker, sửa hivemind-power-on skill
 
 ### Key Restructuring Decisions
 
