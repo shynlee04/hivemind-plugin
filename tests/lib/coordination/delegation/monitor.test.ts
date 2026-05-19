@@ -300,4 +300,31 @@ describe("DelegationMonitor", () => {
       }),
     )
   })
+
+  it("returns null or correct escalation level based on checkpoint tracker failure level", () => {
+    const monitor = new DelegationMonitor({
+      inject: vi.fn(),
+      getStatus: () => "running",
+      getDelegationRecord: () => createMockDelegation({ actionCount: 0 }),
+      getActionCount: () => 0,
+      onComplete: vi.fn(),
+      onFailure: vi.fn(),
+    })
+
+    expect(monitor.getEscalationLevel("dt-1")).toBeNull()
+
+    monitor.start("dt-1", "parent-1")
+    expect(monitor.getEscalationLevel("dt-1")).toBeNull()
+
+    // Advance to 60s -> level 1 failure
+    vi.advanceTimersByTime(60_000)
+    expect(monitor.getEscalationLevel("dt-1")).toBe("Level 1")
+
+    // Advance to 120s -> level 2 failure
+    vi.advanceTimersByTime(60_000)
+    expect(monitor.getEscalationLevel("dt-1")).toBe("Level 2")
+
+    monitor.stop("dt-1")
+    expect(monitor.getEscalationLevel("dt-1")).toBeNull()
+  })
 })
