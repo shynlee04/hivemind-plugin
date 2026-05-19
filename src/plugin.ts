@@ -337,6 +337,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const toolGuardHooks = createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy, hivemindConfig })
 
   return {
+    config: async () => {},
     ...createCoreHooks({
       ...deps,
       eventObservers: [consumeDelegationFact, sessionEventObserver, consumeSessionTrackerFact, consumeSessionEntryFact, consumeIsMainSessionFact],
@@ -380,7 +381,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       })(input, output)
     },
     tool: {
-      "delegate-task": createDelegateTaskTool(delegationManager),
+      "delegate-task": createDelegateTaskTool(delegationManager, hivemindConfig),
       "delegation-status": createDelegationStatusTool(delegationManager),
       "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
       "prompt-skim": createPromptSkimTool(projectDirectory),
@@ -470,4 +471,4 @@ export async function replayPendingDelegationNotifications(client: OpenCodeClien
   }
 }
 
-export default HarnessControlPlane
+export default { server: HarnessControlPlane }

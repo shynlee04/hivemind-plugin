@@ -3,7 +3,6 @@ import { z } from "zod"
 
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
-
 export const DelegateTaskV2Schema = z.object({
   agent: z.string().min(1, { error: "agent is required" }),
   prompt: z.string().min(1, { error: "prompt is required" }),
@@ -20,19 +19,16 @@ type ToolContext = {
   worktree?: string
 }
 
-const UNSUPPORTED_NATIVE_TASK_MESSAGE =
-  "[Harness] delegate-task runtime child-session dispatch is blocked: @opencode-ai/plugin ToolContext v1.15.4 exposes sessionID/messageID/agent/directory/worktree/abort/metadata/ask, but no task field or custom-tool API for invoking OpenCode's built-in Task tool. Use the verified OpenCode Task tool directly, or wait for the CP-PTY/SDK child-session integration path; mocked nativeTask injection is test-only evidence and is not L1 runtime proof."
-
 function isOpenCodeRuntimeAvailable(): boolean {
   return !!(process.env.OPENCODE_SESSION_ID || process.env.OPENCODE_HARNESS_STATE_DIR)
 }
 
-export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType<typeof tool> {
+export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { delegation_systems?: { delegate_task?: boolean } }): ReturnType<typeof tool> {
   const s = tool.schema
 
   return tool({
     description:
-      "[REQUIRES OpenCode RUNTIME] Delegate work to a specialist agent via SDK child-session dispatch. Returns immediately with a delegation ID (always-background WaiterModel). This tool ONLY works inside an OpenCode plugin runtime environment where session context is injected by the framework. In non-OpenCode environments, use the native task/subagent dispatch mechanism instead.",
+      "Delegate work to a specialist agent via SDK child-session dispatch. Returns immediately with a delegation ID (always-background WaiterModel). Respects the config `delegation_systems.delegate_task` flag — when disabled, the tool returns a graceful error. This tool ONLY works inside an OpenCode plugin runtime environment where session context is injected by the framework. In non-OpenCode environments, use the native task/subagent dispatch mechanism instead.",
     args: {
       agent: s.string().describe("Agent name to delegate to (must be valid at runtime)"),
       prompt: s.string().describe("Task prompt to send to the delegated agent"),
@@ -42,6 +38,10 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike): ReturnType
       const parsed = DelegateTaskV2Schema.safeParse(rawArgs)
       if (!parsed.success) return renderToolResult(error(`[Harness] Invalid delegate-task input: ${z.prettifyError(parsed.error)}`))
       const args = parsed.data
+
+      if (config && config.delegation_systems?.delegate_task === false) {
+        return renderToolResult(error("[Harness] delegate-task is disabled by config `delegation_systems.delegate_task: false`. Enable it in .hivemind/configs.json to use this tool."))
+      }
 
       const parentSessionId = context.sessionID ?? process.env.OPENCODE_SESSION_ID
       if (!parentSessionId) {
@@ -85,4 +85,3 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 export { DelegateTaskV2Schema as DelegateTaskInputSchema }
-export { UNSUPPORTED_NATIVE_TASK_MESSAGE }

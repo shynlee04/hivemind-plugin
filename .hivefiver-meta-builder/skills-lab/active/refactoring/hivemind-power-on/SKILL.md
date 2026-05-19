@@ -268,7 +268,13 @@ Max 3 retry cycles. After 3, escalate to user with the full gap report.
 
 ---
 
-## 9. THE SHORT VERSION (for when context is tight)
+## 9. TOOL CATALOG REFERENCE
+
+See [Section 10](#10-custom-tool-catalog--available-harness-tools) for the full list of 22 custom tools available via the Hivemind plugin. Every L0/L1 agent should read this section to understand what tools are at their disposal.
+
+---
+
+## 11. THE SHORT VERSION (for when context is tight)
 
 ```
 1. session-tracker({action:"list-sessions"}) → see what exists
@@ -281,7 +287,40 @@ Max 3 retry cycles. After 3, escalate to user with the full gap report.
 
 ---
 
-## 10. ESCALATION — WHEN TO TELL THE USER
+## 10. CUSTOM TOOL CATALOG — AVAILABLE HARNESS TOOLS
+
+The Hivemind plugin registers these custom tools at startup. All are callable directly from agent workflows. Each tool has a `delegate_task` or native-Task analog; prefer the custom tool when you need harness-tracked delegation.
+
+| Tool Name | What It Does | When To Use |
+|-----------|-------------|-------------|
+| `delegate-task` | Create a child session via SDK dispatch, tracked by DelegationManager | You need harness-tracked delegation with dual-signal completion, recovery, and notification routing |
+| `delegation-status` | Poll delegation state: status, progress, abort, cancel, restart, resume, chain, adjust-prompt, change-agent | You need to check on or control a running delegation |
+| `run-background-command` | Execute a shell command in a background/PTY session | You need a long-running shell command that shouldn't block the agent |
+| `prompt-skim` | Fast skim of a prompt for structure and intent | You need a quick overview before deep analysis |
+| `prompt-analyze` | Deep analysis of a prompt for contradictions, gaps, risks | You need to audit a prompt before sending it |
+| `session-patch` | Modify session properties or metadata | You need to update session state |
+| `execute-slash-command` | Run a registered OpenCode slash command | You need to invoke a command programmatically |
+| `session-journal-export` | Export session journal to file | You need to persist session history for audit |
+| `hivemind-doc` | Query Hivemind documentation | You need docs about harness features |
+| `hivemind-trajectory` | Query execution trajectory / decision lineage | You need to trace what decisions led to current state |
+| `hivemind-pressure` | Query runtime pressure / budget status | You need to check circuit-breaker or tool budget status |
+| `hivemind-sdk-supervisor` | Inspect SDK client state and connection health | You need to debug SDK integration issues |
+| `hivemind-command-engine` | Execute the Hivemind command engine | You need to run engine-level commands |
+| `session-tracker` | List, search, and inspect session records | You need to find or resume a session |
+| `session-hierarchy` | Get delegation depth and parent/child tree | You need to understand session lineage |
+| `session-context` | Get session context from continuity | You need to recover context for a session |
+| `hivemind-agent-work-create` | Create an agent work contract | You need to define a formal work agreement |
+| `hivemind-agent-work-export` | Export agent work contract to file | You need to persist a work agreement |
+| `configure-primitive` | Configure OpenCode primitives (agents, commands, skills) | You need to update config via tool |
+| `validate-restart` | Validate restart safety before reconnecting | You need to check it's safe to restart |
+| `bootstrap-init` | Initialize harness bootstrap state | First-time setup of a Hivemind project |
+| `bootstrap-recover` | Recover from bootstrap failure | You need to recover a broken bootstrap |
+
+**Important**: The `delegate-task` tool routes through `DelegationCoordinator.dispatch()` → `client.session.create()` + `client.session.promptAsync()` (SDK surface available at plugin runtime). It is NOT blocked — the `UNSUPPORTED_NATIVE_TASK_MESSAGE` was removed in a refactor that replaced the old `ToolContext.task` approach with the SDK client path.
+
+---
+
+## 11. ESCALATION — WHEN TO TELL THE USER
 
 | Situation | What to do |
 |-----------|-----------|
