@@ -1,370 +1,183 @@
+---
+mapped_date: 2026-05-20
+last_mapped_commit: 906b21a055352fdeca3b7a1209c7c7be3f529cf7
+---
+
 # Testing Patterns
 
-**Analysis Date:** 2026-05-15
+**Analysis Date:** 2026-05-20
 
 ## Test Framework
 
 **Runner:**
-- Vitest 4.1.5
-- Config: `vitest.config.ts`
+- Vitest `4.1.5` configured in `vitest.config.ts`.
+- Test globals are enabled, so tests can use `describe`, `it`, `expect`, `beforeEach`, `afterEach`, and `vi` without importing them in every file.
+- Test discovery includes `tests/**/*.test.ts` and `eval/**/*.test.ts`.
 
 **Assertion Library:**
-- Vitest built-in assertions (BDD-style: `expect().toBe()`, `expect().toEqual()`, `expect().toThrow()`)
-- Vitest globals enabled — no imports needed for `describe`, `it`, `expect`, `beforeEach`, `afterEach`, `vi`
-
-**Coverage:**
-- Provider: `@vitest/coverage-v8` 4.1.5
-- Reporter: `text`, `lcov`, `json-summary`
-- Thresholds (enforced):
-  - Statements: 85%
-  - Branches: 72%
-  - Functions: 85%
-  - Lines: 85%
-- Coverage scope: `src/**/*.ts`
-- Coverage exclusions: `src/index.ts`, `src/**/index.ts` (barrel files)
+- Use Vitest built-in assertions: `toBe`, `toEqual`, `toMatchObject`, `toContain`, `toThrow`, `rejects.toThrow`.
+- Prefer specific assertions over snapshot-style broad output checks.
 
 **Run Commands:**
 ```bash
-npm test                     # Run all tests (vitest run)
-npm run test:watch           # Watch mode (vitest)
-npm run test:coverage        # Coverage report with thresholds
-npx vitest run tests/lib/helpers.test.ts  # Single test file
-npx vitest run -t "unwrapData"            # Tests matching pattern
+npm test                                      # Run all tests with vitest run
+npm run test:watch                            # Watch mode
+npm run test:coverage                         # Coverage with configured thresholds
+npx vitest run tests/lib/helpers.test.ts      # Single test file
+npx vitest run -t "unwrapData"                # Name-filtered test run
+npm run typecheck                             # Required TypeScript verification
 ```
+
+## Coverage
+
+**Requirements:**
+- Coverage provider: V8 via `@vitest/coverage-v8`.
+- Coverage include: `src/**/*.ts`.
+- Coverage exclude: `src/index.ts` and `src/**/index.ts` barrel files.
+- Enforced thresholds in `vitest.config.ts`: statements 85%, branches 72%, functions 85%, lines 85%.
+- Reporters: `text`, `lcov`, and `json-summary`.
+
+**Guidance:**
+- Do not lower thresholds without an explicit audit amendment.
+- Run scoped tests for small changes and run `npm test` or `npm run test:coverage` for shared contracts, state, delegation, hooks, plugin wiring, or cross-cutting changes.
 
 ## Test File Organization
 
 **Location:**
-- `tests/` directory at project root, mirroring `src/` structure
-- `tests/lib/` → `src/` runtime modules (shared, task-management, coordination, features)
-- `tests/hooks/` → `src/hooks/` (transforms, observers, guards, composition)
-- `tests/schema-kernel/` → `src/schema-kernel/` (Zod schema validation)
-- `tests/cli/` → `src/cli/` (CLI commands, discovery, renderer, router)
-- `tests/tools/` → `src/tools/` (tool implementations)
-- `tests/plugin/` → `src/plugin.ts` (plugin bootstrap, tool registration)
-- `tests/sidecar/` → `src/sidecar/` (readonly state sidecar)
-- `tests/features/` → `src/features/` (session-tracker, doc-intelligence, etc.)
+- Tests live under root `tests/`; tracked source/test scan found `226` tracked `src/**/*.ts` files and `194` tracked `.test.ts` files.
+- `tests/lib/` covers shared utilities, coordination, task management, runtime policy, recovery, PTY, prompt packets, and feature internals.
+- `tests/tools/` covers OpenCode tool contracts such as `tests/tools/delegation/delegate-task-v2.test.ts` and `tests/tools/run-background-command.test.ts`.
+- `tests/hooks/` covers hook factories, transforms, observers, guards, and CQRS boundaries.
+- `tests/schema-kernel/` covers Zod schema contracts.
+- `tests/cli/` covers CLI router, renderer, discovery, and commands.
+- `tests/plugin/` covers plugin bootstrap and registration.
+- `tests/sidecar/` covers read-only sidecar state.
 
 **Naming:**
-- Source file `foo.ts` → test file `foo.test.ts`
-- Test directories mirror source subdirectories (e.g., `src/tools/delegation/` → `tests/tools/delegate-task.test.ts`)
-- Phase-specific tests use descriptive names (e.g., `CP-ST-03-01-excision.test.ts`)
-
-**Structure:**
-```
-tests/
-├── lib/                          # Runtime module tests (largest group)
-│   ├── helpers.test.ts
-│   ├── state.test.ts
-│   ├── delegation-manager.test.ts
-│   ├── concurrency.test.ts
-│   ├── security/
-│   │   ├── redaction.test.ts
-│   │   └── path-scope.test.ts
-│   └── ...
-├── hooks/                        # Hook tests
-│   ├── transforms/
-│   ├── observers/
-│   └── ...
-├── schema-kernel/                # Schema validation tests
-├── cli/                          # CLI tests
-│   └── commands/
-├── tools/                        # Tool implementation tests
-├── plugin/                       # Plugin bootstrap tests
-├── sidecar/                      # Sidecar tests
-└── features/                     # Feature-specific tests
-    └── session-tracker/
-        ├── capture/
-        ├── persistence/
-        ├── transform/
-        └── recovery/
-```
-
-**Test file count:** 165 test files
-**Source file count:** 197 source files
+- Use `{source-name}.test.ts` for unit and contract tests.
+- Use subdirectories that mirror the source sector when the source has a sector boundary: `tests/hooks/transforms/` for `src/hooks/transforms/`.
+- Use phase or feature prefixes only for explicit lifecycle/regression contracts: `tests/CP-ST-03-01-excision.test.ts`.
 
 ## Test Structure
 
 **Suite Organization:**
 ```typescript
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import { functionUnderTest } from "../../src/module.js"
-
-describe("ModuleName", () => {
-  let instance: ModuleClass
-
+describe("module or contract name", () => {
   beforeEach(() => {
     vi.useRealTimers()
-    instance = new ModuleClass()
+    // create temp dirs, managers, mocks, or fixtures
   })
 
   afterEach(() => {
     vi.useRealTimers()
     vi.restoreAllMocks()
-    // Cleanup temp dirs, env vars, etc.
+    // restore env vars and remove temp dirs
   })
 
-  // Section separators with descriptive comments
-  // ---------------------------------------------------------------------------
-  // construction
-  // ---------------------------------------------------------------------------
-
-  describe("construction", () => {
-    it("constructs with empty state", () => {
-      expect(instance.getStats("nonexistent")).toBeUndefined()
-    })
-  })
-
-  // ---------------------------------------------------------------------------
-  // dispatch
-  // ---------------------------------------------------------------------------
-
-  describe("dispatch", () => {
-    it("creates child session with correct title and parentID", async () => {
-      const result = await instance.dispatch({ ... })
-      expect(result.status).toBe("running")
-    })
-
-    it("validates agent name with [Harness] error prefix", async () => {
-      await expect(instance.dispatch({ agent: "not-real", ... }))
-        .rejects.toThrow('[Harness] Invalid agent: "not-real"')
+  describe("behavior group", () => {
+    it("does one observable thing", async () => {
+      // arrange, act, assert
     })
   })
 })
 ```
 
 **Patterns:**
-- One `describe` block per testable unit (class, module, or function group)
-- Nested `describe` blocks for logical sections (construction, dispatch, lifecycle, persistence)
-- One behavior per `it()` — descriptive lowercase names
-- `beforeEach` for setup: create instances, mock SDK calls, set env vars
-- `afterEach` for cleanup: restore mocks, reset timers, remove temp directories
-- Section separators using `// ---` comments for visual grouping
+- One top-level `describe` per module, class, or externally visible contract.
+- Nested `describe` blocks group behaviors such as construction, dispatch, visibility, persistence, recovery, validation, and CLI routing.
+- Each `it()` should assert one behavior or one regression rule.
+- Use section dividers in long tests, as in `tests/lib/delegation-manager.test.ts`.
 
 ## Mocking
 
-**Framework:** Vitest `vi` module
+**Framework:**
+- Use Vitest `vi.fn`, `vi.spyOn`, `vi.mock`, `vi.mocked`, fake timers, and real timers.
 
-**Patterns:**
-
+**Common patterns:**
 ```typescript
-// Module-level mocking (hoisted)
 vi.mock("../../src/shared/session-api.js", () => ({
   getSession: vi.fn(),
   getSessionMessageCount: vi.fn(),
 }))
-const mockGetSession = vi.mocked(getSession)
 
-// Spying on module exports
-const acquireSpy = vi.spyOn(
-  (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
-  "acquire",
-)
-
-// Spying on prototype methods
-const idleSpy = vi.spyOn(DelegationManager.prototype, "handleSessionIdle")
-
-// Mock client factory pattern
-function createMockClient(): MockClient {
-  return {
-    session: {
-      create: vi.fn().mockResolvedValue({ data: { id: "child-ses-123" } }),
-      prompt: vi.fn().mockResolvedValue(undefined),
-      promptAsync: vi.fn().mockResolvedValue(undefined),
-      status: vi.fn().mockResolvedValue({ data: {} }),
-      messages: vi.fn().mockResolvedValue({ data: [...] }),
-      abort: vi.fn().mockResolvedValue(undefined),
-    },
-    app: {
-      agents: vi.fn().mockResolvedValue({ data: [...] }),
-      log: vi.fn(),
-    },
-  }
-}
-
-// Timer mocking
+const spy = vi.spyOn(DelegationManager.prototype, "handleSessionIdle")
 vi.useFakeTimers()
 await vi.advanceTimersByTimeAsync(500)
 vi.useRealTimers()
-
-// Restore all mocks in afterEach
-vi.restoreAllMocks()
 ```
 
-**What to Mock:**
-- OpenCode SDK client calls (`client.session.create`, `client.session.promptAsync`, etc.)
-- External dependencies (`bun-pty`, `@opencode-ai/sdk`)
-- Module exports via `vi.mock()` for controlled test doubles
-- Environment variables (save/restore pattern in `beforeEach`/`afterEach`)
-- File system operations using temp directories (`mkdtempSync`)
+**What to mock:**
+- OpenCode SDK calls and client surfaces: `client.session.create`, `client.session.promptAsync`, `client.app.agents`, `client.app.log`.
+- Optional runtime dependencies such as PTY managers and external SDK wrappers.
+- Time, environment variables, and temp directories where deterministic behavior is required.
 
-**What NOT to Mock:**
-- Pure utility functions (test them directly)
-- Zod schema validation (test schema behavior, not mock it)
-- Internal state managers (use real instances with controlled inputs)
+**What not to mock:**
+- Pure helpers such as `isObject()`, `stableStringify()`, and `makeToolSignature()` in `src/shared/helpers.ts`.
+- Zod schemas when validating accepted/rejected shapes in `tests/schema-kernel/`.
+- Store cloning and state-root behavior when the test is meant to prove persistence safety.
 
 ## Fixtures and Factories
 
-**Test Data:**
-```typescript
-// Factory function for test objects
-const makeValidMeta = (rootID: string): DelegationMeta => ({
-  rootID,
-  depth: 1,
-  budgetUsed: 1,
-  agent: "builder",
-  queueKey: "default",
-})
+**Local factories:**
+- Define small factories in the test file that owns the behavior: `createMockClient()` and `createManager()` in `tests/lib/delegation-manager.test.ts`.
+- Use override-based fixture builders for durable records: `createInput()` in `tests/lib/agent-work-contracts/store.test.ts`.
+- Keep mock structural types local to tests unless multiple files prove the same public contract.
 
-// Mock client factory
-function createMockClient(): MockClient { ... }
-
-// Manager factory with options
-function createManager(client: MockClient, options?: ManagerOptions): DelegationManager { ... }
-
-// Delegation factory with overrides
-function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
-  return {
-    id: "del-owned",
-    parentSessionId: "ses-parent-owned",
-    childSessionId: "ses-child-owned",
-    agent: "builder",
-    status: "running",
-    createdAt: Date.now(),
-    // ... defaults
-    ...overrides,
-  }
-}
-```
-
-**Location:**
-- Factories defined inline in test files (no shared fixtures directory)
-- Type definitions for mock objects at top of test file (`MockClient`, `ManagerInternals`, etc.)
-- Temp directory pattern: `mkdtempSync(join(tmpdir(), "test-prefix-"))` with cleanup in `afterEach`
-
-## Coverage
-
-**Requirements:**
-- Statements: 85%
-- Branches: 72%
-- Functions: 85%
-- Lines: 85%
-
-**View Coverage:**
-```bash
-npm run test:coverage
-```
-
-Coverage reports generated in:
-- `coverage/` directory (lcov format)
-- `coverage/coverage-summary.json` (json-summary format)
+**Temp directories and env vars:**
+- Use `mkdtempSync(join(tmpdir(), "prefix-"))` for isolated filesystem tests.
+- Save and restore environment variables in `beforeEach` / `afterEach`; never let `OPENCODE_HARNESS_STATE_DIR` or similar overrides leak between tests.
+- Remove temp directories with `rmSync(root, { recursive: true, force: true })` in cleanup.
 
 ## Test Types
 
-**Unit Tests:**
-- Primary test type — all 165 test files are unit tests
-- Test individual functions, classes, and modules in isolation
-- Mock external dependencies (SDK, file system, timers)
-- Examples: `helpers.test.ts`, `state.test.ts`, `concurrency.test.ts`
+**Unit and contract tests:**
+- Primary test style across `tests/lib/`, `tests/tools/`, `tests/hooks/`, `tests/schema-kernel/`, and `tests/cli/`.
+- Test public contracts, state transitions, tool responses, schema parsing, and error messages.
 
-**Integration Tests:**
-- Present in `tests/features/session-tracker/integration/e2e-verification.test.ts`
-- Test multi-module interactions (session-tracker capture + persistence + recovery)
-- Use `vi.mock()` for SDK layer but test real module interactions
-- E2E verification tests validate full session lifecycle flows
+**Integration-style tests:**
+- Present where multiple modules interact but external systems are mocked or faked, such as `tests/tools/delegation/delegate-task-e2e.test.ts` and session-tracker feature tests.
+- Classify mocked SDK evidence honestly; it does not prove live OpenCode runtime readiness by itself.
 
-**E2E Tests:**
-- No dedicated E2E test framework (no Playwright, Cypress, etc.)
-- E2E-style tests embedded in unit test files using mock SDK clients
-- Plugin lifecycle tests in `tests/plugins/plugin-lifecycle.test.ts`
+**CLI tests:**
+- Use in-memory IO arrays rather than real stdout/stderr where possible, as in `tests/cli/runCli.test.ts`.
+- Assert exit codes and emitted text separately.
 
 ## Common Patterns
 
-**Async Testing:**
+**Async testing:**
 ```typescript
-it("returns delegation ID immediately with dispatched status", async () => {
-  const result = await manager.dispatch({ ... })
-  expect(result.status).toBe("running")
-  expect(result.delegationId).toBeTypeOf("string")
-})
-
-// Concurrent operations
-const [one, two] = await Promise.all([
-  manager.dispatch({ parentSessionId: "ses-p1", ... }),
-  manager.dispatch({ parentSessionId: "ses-p2", ... }),
-])
-expect(one.delegationId).not.toBe(two.delegationId)
+await expect(manager.dispatch({ agent: "not-real", prompt: "task" }))
+  .rejects.toThrow("[Harness]")
 ```
 
-**Error Testing:**
+**Error testing:**
 ```typescript
-// Synchronous error
-expect(() => unwrapData({ error: "Something went wrong" }))
-  .toThrow("[Harness] Something went wrong")
-
-// Async rejection
-await expect(manager.dispatch({ agent: "not-real", ... }))
-  .rejects.toThrow('[Harness] Invalid agent: "not-real"')
-
-// Regex match on error
-expect(() => mgr.reserveDescendant("root-limit", 3))
-  .toThrow(/^\[Harness\]/)
-
-// Specific error message content
-const delegation = manager.getStatus(result.delegationId)
-expect(delegation?.error).toContain("[Harness]")
-expect(delegation?.error).toContain("100")
+expect(() => buildHarnessCli([{ name: "help", summary: "duplicate", handler }]))
+  .toThrow("[Harness]")
 ```
 
-**Timer Testing:**
+**Persistence testing:**
 ```typescript
-it("safety ceiling fires after MAX runtime", async () => {
-  vi.useFakeTimers()
-  const manager = new DelegationManager(client as never)
-  const result = await manager.dispatch({ ..., safetyCeilingMs: 25 })
-
-  await vi.advanceTimersByTimeAsync(24)
-  expect(manager.getStatus(result.delegationId)?.status).toBe("running")
-
-  await vi.advanceTimersByTimeAsync(1)
-  expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
-  expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-safety" } })
-})
+expect(getAgentWorkContractsFilePath(root))
+  .toBe(join(root, ".hivemind", "state", "agent-work-contracts.json"))
+expect(readAgentWorkContracts(root).contracts[id]).not.toBe(mutatedReference)
 ```
 
-**Environment Variable Testing:**
-```typescript
-let previousStateDir: string | undefined
+**Redaction testing:**
+- Assert that sensitive fields are replaced with redaction markers and that operational identifiers remain intact.
+- Do not put real secrets in tests or docs; use synthetic placeholders only.
 
-beforeEach(() => {
-  previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
-  stateDir = mkdtempSync(join(tmpdir(), "delegation-manager-"))
-  process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
-})
+## Verification Expectations
 
-afterEach(() => {
-  vi.restoreAllMocks()
-  if (previousStateDir === undefined) {
-    delete process.env.OPENCODE_HARNESS_STATE_DIR
-  } else {
-    process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
-  }
-  rmSync(stateDir, { recursive: true, force: true })
-})
-```
+**For source changes:**
+- Run `npm run typecheck`.
+- Run the closest scoped Vitest file for the changed module.
+- Run broader `npm test` for shared contracts, tool response envelopes, runtime state, plugin composition, delegation, hooks, or schema changes.
 
-**Internals Access Pattern:**
-```typescript
-// Cast to access private fields for testing
-function getInternals(manager: DelegationManager): ManagerInternals {
-  return manager as unknown as ManagerInternals
-}
-
-// Use in tests
-expect(getInternals(manager).stabilityTimers.size).toBe(1)
-expect(getInternals(manager).delegationsBySession.has("child-orphan")).toBe(false)
-```
+**For docs-only mapping changes:**
+- Verify assigned documents exist and have useful line counts.
+- Do not claim runtime readiness from documentation updates.
 
 ---
 
-*Testing analysis: 2026-05-15*
+*Testing analysis: 2026-05-20*
