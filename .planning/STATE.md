@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-21T01:06:00.000Z"
+last_updated: "2026-05-21T01:08:00.000Z"
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 30
   completed_plans: 30
   percent: 100
@@ -16,8 +16,8 @@ progress:
 
 # Hivemind — State
 
-**Last updated:** 2026-05-20
-**Last advance:** 18-03-PLAN.md completed — narrowed command-engine barrel from export * to 3 explicit named exports
+**Last updated:** 2026-05-21
+**Last advance:** 18-04-PLAN.md completed — synced STRUCTURE.md, ARCHITECTURE.md, CONCERNS.md, AGENTS.md with post-cleanup state
 **Last trigger:** Phase 18 Plan 01 complete — dead code removal: toggle-gates (83 LOC), steering-engine (609 LOC), runtime-detection (195 LOC), recovery/ (763 LOC). 19 files deleted, 3 atomic commits. typecheck + full test suite pass with zero regressions.
 
 ---
@@ -164,6 +164,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-18-04 | Deleted dead recovery/ submodule (763 LOC, 5 source + AGENTS.md + .gitkeep + 4 tests) — 0 external importers, session-tracker recovery test preserved | NEW — 2026-05-20 |
 | D-18-05 | Extracted storeCache singleton from continuity/index.ts into store-cache.ts with get/set/reset API — 4 TDD tests, all 2382 suite tests pass | NEW — 2026-05-20 |
 | D-18-06 | Narrowed command-engine barrel: replaced export * with 3 explicit named exports (executeCommandEngineAction, listCommands, discoverCommandBundles). 4 internal routing functions removed from public API. typecheck clean, 2382/2384 tests pass. | NEW — 2026-05-21 |
+| D-18-07 | Updated boundary manifests for Phase 18 cleanup: STRUCTURE.md removed steering-engine/ and recovery/, added store-cache.ts; ARCHITECTURE.md removed same from component tables; CONCERNS.md removed 3 stale recovery concerns, added cleanup annotation; AGENTS.md removed recovery from task-management comment. All grep acceptance criteria pass. | NEW — 2026-05-21 |
 
 ---
 

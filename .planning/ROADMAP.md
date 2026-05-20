@@ -420,13 +420,16 @@ Plans:
 
 ### Phase 18: Root cleanup, sync boundary, sync manifest
 
-**Goal:** [To be planned]
+**Goal:** Execute dead code deletion, context rot extraction, barrel narrowing, and manifest sync based on Phase 17's 60 structured findings.
 **Requirements**: TBD
 **Depends on:** Phase 17
-**Plans:** 0 plans
+**Plans:** 4 plans in 2 waves
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 18 to break down)
+- [ ] 18-01-PLAN.md — Dead Code Deletion: 3 module-batched commits (toggle-gates, steering-engine+runtime-detection, recovery/) — Wave 1
+- [ ] 18-02-PLAN.md — Context-Rot: storeCache extraction (store-cache.ts with get/set/reset, TDD RED/GREEN/REFACTOR) — Wave 1
+- [ ] 18-03-PLAN.md — Barrel Narrowing: replace export * with explicit named exports for command-engine — Wave 1
+- [x] 18-04-PLAN.md — Manifest Sync: update STRUCTURE.md, ARCHITECTURE.md, CONCERNS.md, AGENTS.md — Wave 2
 
 ### Phase 19: Fix sync-oss.yml workflow
 
