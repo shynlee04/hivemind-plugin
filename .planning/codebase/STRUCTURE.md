@@ -76,7 +76,7 @@ hivemind-plugin-private/
 
 **`src/features/`:**
 - Purpose: Standalone feature modules consumed by tools, hooks, routing, and plugin composition.
-- Contains: `agent-work-contracts/`, `auto-loop/`, `background-command/`, `bootstrap/`, `doc-intelligence/`, `prompt-packet/`, `ralph-loop/`, `runtime-pressure/`, `sdk-supervisor/`, `session-tracker/`, `steering-engine/`.
+- Contains: `agent-work-contracts/`, `auto-loop/`, `background-command/`, `bootstrap/`, `doc-intelligence/`, `prompt-packet/`, `ralph-loop/`, `runtime-pressure/`, `sdk-supervisor/`, `session-tracker/`.
 - Key files: `src/features/session-tracker/index.ts`, `src/features/background-command/pty/pty-runtime.ts`, `src/features/bootstrap/primitive-loader.ts`, `src/features/runtime-pressure/index.ts`.
 
 **`src/hooks/`:**
@@ -106,8 +106,8 @@ hivemind-plugin-private/
 
 **`src/task-management/`:**
 - Purpose: Durable state, lifecycle, journal, recovery, and trajectory ownership.
-- Contains: `continuity/`, `journal/`, `lifecycle/`, `recovery/`, `trajectory/`.
-- Key files: `src/task-management/continuity/index.ts`, `src/task-management/continuity/delegation-persistence.ts`, `src/task-management/lifecycle/index.ts`, `src/task-management/journal/index.ts`, `src/task-management/trajectory/index.ts`.
+- Contains: `continuity/`, `journal/`, `lifecycle/`, `trajectory/`.
+- Key files: `src/task-management/continuity/index.ts`, `src/task-management/continuity/store-cache.ts`, `src/task-management/continuity/delegation-persistence.ts`, `src/task-management/lifecycle/index.ts`, `src/task-management/journal/index.ts`, `src/task-management/trajectory/index.ts`.
 
 **`src/tools/`:**
 - Purpose: OpenCode custom tool entrypoint factories.
