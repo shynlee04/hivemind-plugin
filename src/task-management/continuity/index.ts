@@ -4,6 +4,7 @@ import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { redactBoundaryFields } from "../../shared/security/redaction.js"
 import { getCachedConfig } from "../../config/subscriber.js"
+import { getStoreCache, setStoreCache } from "./store-cache.js"
 import type {
   CapturedResult,
   CompactionCheckpointData,
@@ -21,7 +22,6 @@ const CONTINUITY_VERSION = 1 as const
 const CANONICAL_STATE_DIR = resolve(process.cwd(), ".hivemind", "state")
 const LEGACY_STATE_DIR = resolve(process.cwd(), ".opencode", "state", "hivemind")
 
-let storeCache: ContinuityStoreFile | undefined
 
 function getEnvPath(name: string): string | undefined {
   const value = process.env[name]
@@ -237,12 +237,14 @@ function cloneGovernanceState(state: GovernancePersistenceState): GovernancePers
 // ---------------------------------------------------------------------------
 
 function ensureStoreLoaded(): ContinuityStoreFile {
-  if (storeCache) {
-    return storeCache
+  const cached = getStoreCache()
+  if (cached) {
+    return cached
   }
 
-  storeCache = loadStoreFromDisk()
-  return storeCache
+  const loaded = loadStoreFromDisk()
+  setStoreCache(loaded)
+  return loaded
 }
 
 function loadStoreFromDisk(): ContinuityStoreFile {
