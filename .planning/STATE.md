@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-20T18:00:09.460Z"
+last_updated: "2026-05-21T01:06:00.000Z"
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 30
-  completed_plans: 28
-  percent: 93
+  completed_plans: 30
+  percent: 100
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 18-01-PLAN.md completed — deleted 2,287 LOC of dead code across 4 modules
+**Last advance:** 18-03-PLAN.md completed — narrowed command-engine barrel from export * to 3 explicit named exports
 **Last trigger:** Phase 18 Plan 01 complete — dead code removal: toggle-gates (83 LOC), steering-engine (609 LOC), runtime-detection (195 LOC), recovery/ (763 LOC). 19 files deleted, 3 atomic commits. typecheck + full test suite pass with zero regressions.
 
 ---
@@ -163,6 +163,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-18-03 | Deleted dead runtime-detection module (195 LOC, 2 files) + test — 0 external importers | NEW — 2026-05-20 |
 | D-18-04 | Deleted dead recovery/ submodule (763 LOC, 5 source + AGENTS.md + .gitkeep + 4 tests) — 0 external importers, session-tracker recovery test preserved | NEW — 2026-05-20 |
 | D-18-05 | Extracted storeCache singleton from continuity/index.ts into store-cache.ts with get/set/reset API — 4 TDD tests, all 2382 suite tests pass | NEW — 2026-05-20 |
+| D-18-06 | Narrowed command-engine barrel: replaced export * with 3 explicit named exports (executeCommandEngineAction, listCommands, discoverCommandBundles). 4 internal routing functions removed from public API. typecheck clean, 2382/2384 tests pass. | NEW — 2026-05-21 |
 
 ---
 
