@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-20T17:27:43.501Z"
+last_updated: "2026-05-20T18:00:09.460Z"
 progress:
   total_phases: 9
   completed_phases: 5
-  total_plans: 26
-  completed_plans: 26
-  percent: 100
+  total_plans: 30
+  completed_plans: 28
+  percent: 93
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -29,6 +29,7 @@ progress:
 **Phase 17 Plan 02:** ✅ COMPLETE — Manual audit of src/schema-kernel/ (20 files, 2,529 LOC), src/tools/ (30 files, 3,961 LOC), and src/hooks/ (16 files, 1,529 LOC). Found 3 dead code files: permission.schema.ts, tool-definition.schema.ts, toggle-gates.ts. All other files active and wired. 3 RESEARCH.md corrections: generate-config-json-schema is runtime (not build-time), prompt tools HAVE tests, tool count is 22 (not 23).
 **Phase 17 Plan 03:** ✅ COMPLETE — Discovery audit of src/coordination/ (31 files, 5,596 LOC) and src/task-management/ (16 files, 2,620 LOC). Found 5 dead files (entire recovery/ submodule, 763 LOC). Corrected 3 RESEARCH.md inaccuracies: sdk-delegation and command-delegation DO have tests (contrary to "NO tests" claim), manager.ts is 362 LOC (not ~500). storeCache singleton documented as context-rot. asString duplication confirmed resolved.
 **Phase 18 Plan 01:** ✅ COMPLETE — Dead code removal: toggle-gates (83 LOC), steering-engine (609 LOC), runtime-detection (195 LOC), recovery/ (763 LOC). 19 files deleted across 3 atomic batch commits. typecheck + full test suite pass with zero regressions.
+**Phase 18 Plan 02:** ✅ COMPLETE — Extracted storeCache singleton into dedicated store-cache.ts with get/set/reset API (4 TDD tests). continuity/index.ts imports from new module. continuity.test.ts uses resetStoreCache() for cold-start simulation. typecheck clean, 2382/2384 tests pass.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
@@ -161,6 +162,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-18-02 | Deleted dead steering-engine (609 LOC, 3 files + empty subdirs) — 0 external importers | NEW — 2026-05-20 |
 | D-18-03 | Deleted dead runtime-detection module (195 LOC, 2 files) + test — 0 external importers | NEW — 2026-05-20 |
 | D-18-04 | Deleted dead recovery/ submodule (763 LOC, 5 source + AGENTS.md + .gitkeep + 4 tests) — 0 external importers, session-tracker recovery test preserved | NEW — 2026-05-20 |
+| D-18-05 | Extracted storeCache singleton from continuity/index.ts into store-cache.ts with get/set/reset API — 4 TDD tests, all 2382 suite tests pass | NEW — 2026-05-20 |
 
 ---
 
