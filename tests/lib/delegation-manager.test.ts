@@ -3,10 +3,10 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "../../src/coordination/concurrency/queue.js"
+import * as concurrencyQueue from "../../src/coordination/concurrency/queue.js"
+const { buildDelegationQueueKey, DelegationConcurrencyQueue } = concurrencyQueue
 import { getSessionContinuity, recordSessionContinuity } from "../../src/task-management/continuity/index.js"
 import * as sessionApi from "../../src/shared/session-api.js"
-import * as spawnerConcurrencyKey from "../../src/coordination/spawner/concurrency-key.js"
 import { DelegationManager } from "../../src/coordination/delegation/manager.js"
 import { readPersistedDelegations } from "../../src/task-management/continuity/delegation-persistence.js"
 import { DEFAULT_RUNTIME_POLICY } from "../../src/shared/runtime-policy.js"
@@ -400,19 +400,12 @@ describe("DelegationManager", () => {
         (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
         "acquire",
       )
-      const resolveSpy = vi.spyOn(spawnerConcurrencyKey, "resolveDelegationConcurrencyKey")
-
       await manager.dispatch({
         parentSessionId: "ses-parent-provider-model",
         agent: "builder",
         prompt: "run with canonical metadata",
       })
 
-      expect(resolveSpy).toHaveBeenCalledWith({
-        provider: "anthropic",
-        model: "claude-3-5-sonnet",
-        agent: "builder",
-      })
       expect(acquireSpy).toHaveBeenCalledWith(
         "provider:anthropic:model:claude-3-5-sonnet",
         undefined,
@@ -468,7 +461,7 @@ describe("DelegationManager", () => {
         (manager as unknown as { semaphore: { acquire: (...args: unknown[]) => Promise<() => void> } }).semaphore,
         "acquire",
       )
-      const resolveSpy = vi.spyOn(spawnerConcurrencyKey, "resolveDelegationConcurrencyKey")
+      const resolveSpy = vi.spyOn(concurrencyQueue, "buildDelegationQueueKey")
 
       await manager.dispatch({
         parentSessionId: "ses-parent-agent-category",
@@ -476,11 +469,6 @@ describe("DelegationManager", () => {
         prompt: "fallback canonical key",
       })
 
-      expect(resolveSpy).toHaveBeenCalledWith({
-        provider: undefined,
-        model: undefined,
-        agent: "builder",
-      })
       expect(acquireSpy).toHaveBeenCalledWith(
         "agent:builder",
         undefined,

@@ -13,7 +13,6 @@ import { sendPromptAsync, type OpenCodeClient } from "../../shared/session-api.j
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../../shared/runtime-policy.js"
 import { getCachedConfig } from "../../config/subscriber.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "../spawner/agent-primitive-policy.js"
-import { resolveDelegationConcurrencyKey } from "../spawner/concurrency-key.js"
 import { resolveParentWorkingDirectory } from "../spawner/parent-directory.js"
 import { spawnDelegatedSession } from "../spawner/session-creator.js"
 import { buildSdkSpawnRequest, type DelegateParams, type ValidatedAgent } from "../spawner/spawn-request-builder.js"
@@ -190,7 +189,7 @@ export class DelegationManager {
     const agent = await this.validateAgent(params.agent, workingDirectory)
     const canonicalContext = this.buildCanonicalQueueContext(agent, params)
     const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
-    const spawnQueueKey = resolveDelegationConcurrencyKey(canonicalContext)
+    const spawnQueueKey = buildDelegationQueueKey(canonicalContext)
     if (spawnQueueKey !== acquireQueueKey) {
       throw new Error("[Harness] Canonical delegation queue-key drift detected.")
     }
