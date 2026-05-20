@@ -452,3 +452,274 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 ---
 
 *End of Plan 02 findings*
+
+---
+
+## Plan 03 Findings: coordination/, task-management/
+
+### Executive Summary
+
+Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 significant dead-code finding** (recovery/ submodule — 763 LOC with zero runtime consumers) and **major corrections to RESEARCH.md** regarding sdk-delegation and command-delegation test coverage. Both modules have **far better test coverage than RESEARCH.md claims**.
+
+| Module | Files | LOC | Dead | Noise | Context-Rot | Test-Gaps |
+|--------|-------|-----|------|-------|-------------|-----------|
+| src/coordination/ | 31 | 5,596 | 0 | 0 | 0 | 0 |
+| src/task-management/ | 16 | 2,620 | 5 (recovery/) | 0 | 1 (storeCache singleton) | 1 (recovery/ is dead) |
+| **Total** | **47** | **8,216** | **5** | **0** | **1** | **1** |
+
+---
+
+### Findings: src/coordination/
+
+### Finding CO-01: Inventory confirmed — 31 files, 5,596 LOC
+
+- **Module:** `src/coordination/`
+- **Evidence:** `find src/coordination -name '*.ts' | sort` returns 31 files. `wc -l` total = 5,596. Matches RESEARCH.md exactly.
+- **Submodule breakdown:**
+  - `delegation/`: 18 files
+  - `spawner/`: 8 files (654 LOC)
+  - `completion/`: 2 files (468 LOC)
+  - `concurrency/`: 1 file (300 LOC)
+  - `sdk-delegation/`: 1 file (324 LOC)
+  - `command-delegation/`: 1 file (416 LOC)
+
+---
+
+### Finding CO-02: `delegation/manager.ts` is 362 LOC — RESEARCH.md overstates "~500 LOC"
+
+- **Category:** N/A (correction to RESEARCH.md)
+- **Module:** `src/coordination/delegation/`
+- **File:** `src/coordination/delegation/manager.ts`
+- **Evidence:** Actual LOC = 362 (verified via `wc -l`). RESEARCH.md claimed "~500 LOC" which is overstated by ~138 lines. The largest delegation file is `manager-runtime.ts` at 478 LOC — still under the 500 cap.
+- **No size violation:** All delegation files are under 500 LOC. Largest: manager-runtime.ts (478), coordinator.ts (445), state-machine.ts (443).
+- **Recommended action:** Correct RESEARCH.md claim.
+
+---
+
+### Finding CO-03: `sdk-delegation/` HAS tests — RESEARCH.md claim is INCORRECT
+
+- **Category:** N/A (correction to RESEARCH.md)
+- **Module:** `src/coordination/sdk-delegation/`
+- **File:** `src/coordination/sdk-delegation/handler.ts` (324 LOC)
+- **Evidence:** RESEARCH.md claims "NO tests" for sdk-delegation/. This is **incorrect**. A dedicated test file exists:
+  - `tests/lib/sdk-delegation.test.ts` (618 lines)
+- **Wiring:** Imported by `src/coordination/delegation/manager-runtime.ts` (line 10), not directly by plugin.ts. This is correct — sdk-delegation is consumed through the delegation manager-runtime layer.
+- **Recommended action:** Correct RESEARCH.md claim. No additional test work needed.
+
+---
+
+### Finding CO-04: `command-delegation/` HAS tests — RESEARCH.md claim is INCORRECT
+
+- **Category:** N/A (correction to RESEARCH.md)
+- **Module:** `src/coordination/command-delegation/`
+- **File:** `src/coordination/command-delegation/handler.ts` (416 LOC)
+- **Evidence:** RESEARCH.md claims "NO tests" for command-delegation/. This is **incorrect**. A dedicated test file exists:
+  - `tests/lib/command-delegation.test.ts` (732 lines)
+- **Wiring:** Imported by `src/coordination/delegation/manager-runtime.ts` (line 1), not directly by plugin.ts. Correct wiring through the delegation layer.
+- **Recommended action:** Correct RESEARCH.md claim. No additional test work needed.
+
+---
+
+### Finding CO-05: `completion/` — Active, tested, wired
+
+- **Category:** CLEAN
+- **Module:** `src/coordination/completion/`
+- **Files:** `detector.ts` (226 LOC), `notification-handler.ts` (242 LOC)
+- **Evidence:** Both files are imported by plugin.ts (line 13). Completion detector is wired to lifecycle manager. Active test coverage:
+  - `tests/lib/completion-detector.test.ts`
+  - `tests/lib/completion-detector-crash.test.ts`
+  - `tests/lib/coordination/completion/detector-v2.test.ts`
+  - `tests/lib/notification-handler.test.ts`
+- **Recommended action:** None.
+
+---
+
+### Finding CO-06: `concurrency/queue.ts` — Active, tested, wired
+
+- **Category:** CLEAN
+- **Module:** `src/coordination/concurrency/`
+- **File:** `queue.ts` (300 LOC)
+- **Evidence:** Imported by `manager-runtime.ts` and `slot-manager.ts`. Active test coverage:
+  - `tests/lib/concurrency.test.ts`
+  - `tests/lib/coordination/concurrency/queue.test.ts`
+- **Recommended action:** None.
+
+---
+
+### Finding CO-07: `spawner/` — Active, tested, wired
+
+- **Category:** CLEAN
+- **Module:** `src/coordination/spawner/`
+- **Files:** 8 files, 654 LOC total
+- **Evidence:** `auto-loop.ts` and `ralph-loop.ts` imported by plugin.ts (lines 69-70). Other files consumed by delegation/ files (agent-resolver.ts, manager-runtime.ts, dispatcher.ts). 5 dedicated test files:
+  - `tests/lib/spawner/agent-primitive-policy.test.ts`
+  - `tests/lib/spawner/concurrency-key.test.ts`
+  - `tests/lib/spawner/parent-directory.test.ts`
+  - `tests/lib/spawner/session-creator.test.ts`
+  - `tests/lib/spawner/spawn-request-builder.test.ts`
+- **Recommended action:** None.
+
+---
+
+### Finding CO-08: All submodules have active import paths — no broken wires
+
+- **Category:** CLEAN
+- **Module:** `src/coordination/`
+- **Evidence:** Every submodule has at least one import path from plugin.ts or through delegation manager-runtime:
+  - plugin.ts imports: delegation/ (11 files), completion/ (2 files), spawner/ (2 files)
+  - manager-runtime.ts imports: sdk-delegation/, command-delegation/, concurrency/
+  - delegation/ files import: spawner/ (5 of 8 files)
+- **Orphan file check:** All 31 coordination/ .ts files have at least one external importer in `src/`. No orphan files.
+
+---
+
+### Finding CO-09: No coordination/ file exceeds 500 LOC cap
+
+- **Category:** CLEAN
+- **Module:** `src/coordination/`
+- **Evidence:** Largest file is `manager-runtime.ts` at 478 LOC. All files are under the 500 LOC architecture cap. RESEARCH.md's claim of "delegation/manager.ts ~500 LOC" is corrected to 362 LOC.
+
+---
+
+### Findings: src/task-management/
+
+### Finding TM-01: Inventory confirmed — 16 files, 2,620 LOC
+
+- **Module:** `src/task-management/`
+- **Evidence:** `find src/task-management -name '*.ts' | sort` returns 16 files. `wc -l` total = 2,620. Matches RESEARCH.md exactly.
+- **Submodule breakdown:**
+  - `continuity/`: 2 files (delegation-persistence 196, index 465) — 661 LOC
+  - `journal/`: 4 files (execution-lineage 122, index 119, query 168, replay 131) — 540 LOC
+  - `lifecycle/`: 1 file (index 242) — 242 LOC
+  - `recovery/`: 5 files (assess-state 218, create-checkpoint 143, failure-classes 168, index 29, repair-state 205) — 763 LOC
+  - `trajectory/`: 4 files (index 3, ledger 93, store-operations 190, types 128) — 414 LOC
+
+---
+
+### Finding TM-02: `continuity/index.ts` — storeCache singleton CONFIRMED (context-rot)
+
+- **Category:** `context-rot`
+- **Severity:** `LOW`
+- **Module:** `src/task-management/continuity/`
+- **File:** `src/task-management/continuity/index.ts` (465 LOC)
+- **Evidence:** Module-level `let storeCache: ContinuityStoreFile | undefined` at line 24. Functions at lines 240-245 check and return the cached value:
+  ```
+  240:  if (storeCache) { return storeCache }
+  244:  storeCache = loadStoreFromDisk()
+  ```
+  This singleton pattern prevents isolated testing of continuity functions — tests that use continuity must work around the module-level cache. However, existing continuity tests (`tests/lib/continuity.test.ts`) handle this through setup/teardown.
+- **Context:** Resetting module-level state between tests requires `vi.resetModules()` or explicit cache clearing. The singleton is documented as a known pattern in ARCHITECTURE.md line 266.
+- **Recommended action:** Flag for refactoring (Phase 18 could convert to explicit `ContinuityStore` class with instance-level cache). Low priority.
+
+---
+
+### Finding TM-03: `asString` duplication — RESOLVED (no duplicate exists)
+
+- **Category:** N/A (resolved from earlier phase)
+- **Module:** `src/task-management/continuity/`
+- **Evidence:** Grep for `asString` in `src/task-management/continuity/index.ts` returns zero results. The only `asString` function definition exists in `src/shared/helpers.ts` (line 87). The continuity.ts duplicate has already been removed (consistent with Plan 01, Finding S-01).
+- **Recommended action:** None — already resolved.
+
+---
+
+### Finding TM-04: `recovery/` — CONFIRMED DEAD CODE (5 files, 763 LOC)
+
+- **Category:** `dead`
+- **Severity:** `HIGH`
+- **Module:** `src/task-management/recovery/`
+- **Files:**
+  1. `assess-state.ts` (218 LOC) — `assessState()`
+  2. `create-checkpoint.ts` (143 LOC) — `createCheckpoint()`
+  3. `failure-classes.ts` (168 LOC) — `failureClasses()`
+  4. `repair-state.ts` (205 LOC) — `repairState()`
+  5. `index.ts` (29 LOC) — barrel re-exporting all 4 functions
+- **Evidence:**
+  - `grep -rn "task-management/recovery" --include="*.ts" src/` returns **ZERO results** — no src/ file imports the recovery module
+  - `grep -rn "assessState\|createCheckpoint\|failureClasses\|repairState" --include="*.ts" src/` returns **ZERO results** outside the recovery/ directory itself
+  - The `recoveryGuarantee` field used elsewhere in src/ (delegation state-machine, resume-resolver) is a type field on `Delegation` — NOT an import of recovery module functions
+  - Plugin.ts `recovery` references (`recoverPending()`, `bootstrap-recover`) are delegation-level recovery in coordination/delegation/ and tools/config/bootstrap-recover.ts — NOT the task-management/recovery/ module
+- **Paradox:** 4 dedicated test files exist (`tests/lib/recovery/*.test.ts`) that test functions no runtime code calls. The code is functional and tested but entirely unused.
+- **Recommended action:** Delete in Phase 18. The 4 test files should also be removed. The recovery functionality appears to have been replaced by delegation-level recovery (`src/coordination/delegation/` and `src/features/session-tracker/recovery/`).
+
+---
+
+### Finding TM-05: `journal/` — Active, tested, no orphan event-tracker references
+
+- **Category:** CLEAN
+- **Module:** `src/task-management/journal/`
+- **Files:** `execution-lineage.ts` (122), `index.ts` (119), `query.ts` (168), `replay.ts` (131)
+- **Evidence:**
+  - All journal files are exported through `src/index.ts` (lines 15-18) as public API
+  - `session-journal-export.ts` tool imports from `execution-lineage.ts`
+  - **No orphan event-tracker references:** `grep -rn "eventTracker\|event-tracker" --include="*.ts" src/task-management/` returns **ZERO results**
+  - Test coverage: `tests/lib/execution-lineage.test.ts`, `tests/lib/journal-query.test.ts`, `tests/lib/journal-replay.test.ts`, `tests/lib/session-journal.test.ts` (4 test files)
+- **Recommended action:** None.
+
+---
+
+### Finding TM-06: `lifecycle/` — Active, wired, tested
+
+- **Category:** CLEAN
+- **Module:** `src/task-management/lifecycle/`
+- **File:** `index.ts` (242 LOC)
+- **Evidence:**
+  - Imported by `src/plugin.ts` line 12 as `createHarnessLifecycleManager`
+  - Also imported by `hooks/types.ts`, `hooks/guards/tool-guard-hooks.ts`
+  - Test coverage: `tests/lib/lifecycle-manager.test.ts`
+- **Recommended action:** None.
+
+---
+
+### Finding TM-07: `trajectory/` — Active, wired, tested
+
+- **Category:** CLEAN
+- **Module:** `src/task-management/trajectory/`
+- **Files:** `index.ts` (3 — barrel), `ledger.ts` (93), `store-operations.ts` (190), `types.ts` (128)
+- **Evidence:**
+  - Imported by 3 src/ consumers: `hivemind-trajectory.ts` tool, `hivemind-pressure.ts` tool, `agent-work-contracts/operations.ts`
+  - Exported as public API via `src/index.ts` line 20
+  - Test coverage: `tests/lib/trajectory/ledger.test.ts`
+- **Recommended action:** None.
+
+---
+
+### Finding TM-08: Test coverage — adequate across all active submodules
+
+- **Module:** `src/task-management/`
+- **Evidence:** RESEARCH.md's claim of "ZERO dedicated test directory" is semantically true (no single `tests/task-management/` directory), but misleading — every active submodule HAS test coverage:
+
+| Submodule | Test Files | Status |
+|-----------|-----------|--------|
+| continuity/ | `tests/lib/continuity.test.ts`, `tests/lib/delegation-persistence.test.ts` | ✅ |
+| journal/ | `tests/lib/execution-lineage.test.ts`, `tests/lib/journal-query.test.ts`, `tests/lib/journal-replay.test.ts`, `tests/lib/session-journal.test.ts` | ✅ |
+| lifecycle/ | `tests/lib/lifecycle-manager.test.ts` | ✅ |
+| recovery/ | `tests/lib/recovery/assess-state.test.ts`, `tests/lib/recovery/create-checkpoint.test.ts`, `tests/lib/recovery/failure-classes.test.ts`, `tests/lib/recovery/repair-state.test.ts` | ⚠️ Tests exist but code is dead |
+| trajectory/ | `tests/lib/trajectory/ledger.test.ts` | ✅ |
+
+- The "ZERO tests" claim applies only if considering task-management/ as a whole without examining submodules. In practice, every submodule has dedicated test files.
+- **Recommended action:** Correct RESEARCH.md claim. The recovery/ tests will be removed with the dead code in Phase 18.
+
+---
+
+### Summary: Plan 03
+
+| Metric | Value |
+|--------|-------|
+| Files audited | 47 |
+| Total LOC audited | 8,216 |
+| Dead files found | 5 (entire recovery/ submodule — 763 LOC) |
+| Noise files found | 0 |
+| Context-rot found | 1 (storeCache singleton in continuity/index.ts) |
+| Test gaps found | 0 (sdk-delegation, command-delegation, and task-management submodules all have tests) |
+| Architecture violations | 0 |
+| RESEARCH.md corrections | 3 (manager.ts LOC, sdk-delegation tested, command-delegation tested) |
+
+### Cross-Plan Context
+
+- **Plan 01 finding S-01 verification:** `asString` duplication confirmed RESOLVED. Continuity/index.ts no longer defines `asString` — only `helpers.ts` has it.
+- **storeCache singleton:** Known and documented in ARCHITECTURE.md. Flagged for Phase 18 refactoring consideration.
+- **Recovery dead code:** The `src/task-management/recovery/` submodule appears to have been superseded by delegation-level recovery in `src/coordination/delegation/` and session-tracker recovery in `src/features/session-tracker/recovery/`. The 763 LOC of dead code should be removed in Phase 18.
+
+---
+
+*End of Plan 03 findings*
