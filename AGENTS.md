@@ -388,11 +388,14 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 ## Current Phase Context
 
-**Completed phase (2026-05-18):** CP-DT-01 — Delegate-Task Ecosystem Revamp. ✅ COMPLETE.
-**Review ITER2:** 0 Critical, 3 Warning (LOC/type-safety), 1 Info. 8/8 prior findings resolved.
-**Validation:** 18/18 spec requirements DELIVERED, 91/91 tests pass, `npm run typecheck` → clean.
-**Commits:** `c465b310`..`761046b4` (execution), `f4fd36e0` (review ITER2), `1ca16a3a` (validation).
-**Artifacts:** SPEC, CONTEXT, RESEARCH, PATTERN, 5 PLAN/SUMMARY pairs, REVIEW, REVIEW-FIX, REVIEW-ITER2, VALIDATION.
-**Remaining:** Live native Task UAT deferred to integration phase (L1 runtime proof manual-only).
-
-**Next phase:** CP-PTY-01 (Background Shell Control-Plane MVP) — READY, unblocked by BOOT-07 and WS-SR/CP-DT-01 completion.
+**Hard Restructuring Runway (Phase 19-25):** Inserted 2026-05-21 before original Phase 19/20 (pushed to Phase 26/27). Based on 4 research artifacts: SDK API audit, DI architecture analysis, hard-restructuring synthesis, advisor gray-area decisions.
+**Phase 18:** ✅ COMPLETE (2026-05-21) — 4/4 plans, gatekeeping 3 gates clear.
+**Active phase:** Phase 19 — Non-Destructive Remediation: dead schema, stale dist, extra hooks.
+**Sequence:** non-destructive (Phase 19) → dependency cleanup (20) → async I/O (21) → typed errors (22) → plugin decomposition (23) → module split (24) → legacy cleanup (25) → sync-oss.yml (26) → package primitives (27).
+**Dependency order:** Each phase depends on the previous. Phase 19 root cause: remaining dead schema files (permission.schema.ts, tool-definition.schema.ts) not covered in Phase 18 scope, plus stale dist artifacts from unrebuilt Phase 18.
+**Research artifacts:**
+- `.planning/research/hard-restructuring-synthesis-2026-05-21.md` (454 LOC)
+- `.planning/research/hard-restructuring-advisor-2026-05-21.md` (151 LOC)
+- `.planning/research/opencode-sdk-v1155-api-audit-2026-05-21.md` (493 LOC)
+- `.planning/codebase/DI-ARCHITECTURE-ANALYSIS.md` (397 LOC)
+**Key decisions pending:** Phase ordering, legacy removal strategy, dep cleanup timing, plugin decomposition approach, soft routing approach — per advisor report gray-area decisions.
