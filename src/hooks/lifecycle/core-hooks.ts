@@ -1,11 +1,11 @@
 /**
  * Core hook factory.
  *
- * Produces the `event`, `experimental.chat.system.transform`, `messages.transform`,
- * and `shell.env` hooks that route SDK events to the lifecycle manager.
+ * Produces the `event`, `experimental.chat.system.transform`, and `shell.env`
+ * hooks that route SDK events to the lifecycle manager.
  *
  * Stripped in 14-01: injection-engine, governance-engine removed.
- * Stripped in 35: messages-transform removed (dead code). Notification-handler re-activated in Phase 16.2.
+ * Stripped in Phase 35/19: messages-transform removed (dead code). Notification-handler re-activated in Phase 16.2.
  *
  * BOOT-09 note: The OpenCode plugin SDK hook name is `experimental.chat.system.transform`
  * (NOT `system.transform`). Both are returned for backward compatibility with tests,
@@ -22,8 +22,6 @@ import type { HookDependencies } from "../types.js"
 // ---------------------------------------------------------------------------
 
 type EventInput = { event?: unknown }
-type MessagesInput = { sessionID?: string; messages?: Array<{ role: string; content: string }> }
-type MessagesOutput = { messages: Array<{ role: string; content: string }> }
 type SystemInput = { sessionID?: string }
 type SystemOutput = { system?: unknown }
 type ShellEnvOutput = { env?: unknown }
@@ -32,10 +30,6 @@ export interface CoreHooks {
   event: (input: EventInput) => Promise<void>
   "system.transform": (input: SystemInput, output: SystemOutput) => Promise<void>
   "experimental.chat.system.transform": (input: SystemInput, output: SystemOutput) => Promise<void>
-  "messages.transform": (
-    input: MessagesInput,
-    output: MessagesOutput,
-  ) => Promise<void>
   "shell.env": (input: Record<string, unknown>, output: ShellEnvOutput) => Promise<void>
 }
 
@@ -184,15 +178,6 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       output: SystemOutput,
     ): Promise<void> => {
       return handleSystemTransform(deps, input, output)
-    },
-
-    "messages.transform": async (
-      input: MessagesInput,
-      output: MessagesOutput,
-    ): Promise<void> => {
-      // Messages transformation stripped in Phase 35 — messages-transform.ts deleted
-      classifyHookEffect("messages.transform")
-      output.messages = input.messages ?? []
     },
 
     "shell.env": async (
