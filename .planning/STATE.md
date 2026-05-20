@@ -17,17 +17,18 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 17-03-PLAN.md completed — discovery audit of coordination/ and task-management/ modules
-**Last trigger:** Phase 17 Plan 03 complete — coordination/ and task-management/ audit complete — 5 dead files identified (recovery/ submodule), RESEARCH.md corrections for test coverage.
+**Last advance:** 18-01-PLAN.md completed — deleted 2,287 LOC of dead code across 4 modules
+**Last trigger:** Phase 18 Plan 01 complete — dead code removal: toggle-gates (83 LOC), steering-engine (609 LOC), runtime-detection (195 LOC), recovery/ (763 LOC). 19 files deleted, 3 atomic commits. typecheck + full test suite pass with zero regressions.
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 17 — sync-boundary-definition-src-audit-and-cleanup.
+**Active phase:** Phase 18 — root-cleanup-sync-boundary-sync-manifest.
 **Phase 17 Plan 01:** ✅ COMPLETE — Discovered audit of src/shared/ (14 files), src/config/ (7 files), and src/routing/ (11 files). Zero dead code found. Zero architecture violations. 3 minor test-gaps in shared/. 3 RESEARCH.md inaccuracies corrected (routing test coverage, compiler.ts LOC, profile filename).
 **Phase 17 Plan 02:** ✅ COMPLETE — Manual audit of src/schema-kernel/ (20 files, 2,529 LOC), src/tools/ (30 files, 3,961 LOC), and src/hooks/ (16 files, 1,529 LOC). Found 3 dead code files: permission.schema.ts, tool-definition.schema.ts, toggle-gates.ts. All other files active and wired. 3 RESEARCH.md corrections: generate-config-json-schema is runtime (not build-time), prompt tools HAVE tests, tool count is 22 (not 23).
 **Phase 17 Plan 03:** ✅ COMPLETE — Discovery audit of src/coordination/ (31 files, 5,596 LOC) and src/task-management/ (16 files, 2,620 LOC). Found 5 dead files (entire recovery/ submodule, 763 LOC). Corrected 3 RESEARCH.md inaccuracies: sdk-delegation and command-delegation DO have tests (contrary to "NO tests" claim), manager.ts is 362 LOC (not ~500). storeCache singleton documented as context-rot. asString duplication confirmed resolved.
+**Phase 18 Plan 01:** ✅ COMPLETE — Dead code removal: toggle-gates (83 LOC), steering-engine (609 LOC), runtime-detection (195 LOC), recovery/ (763 LOC). 19 files deleted across 3 atomic batch commits. typecheck + full test suite pass with zero regressions.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
@@ -156,6 +157,10 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-16-04 | get-manifest action on session-hierarchy tool: handleGetManifest reads hierarchy-manifest.json via safeSessionPath + readFile + JSON.parse. Returns flattened child list with status/delegatedBy/depth/turnCount/createdAt. No new imports. | NEW — 2026-05-20 |
 | D-17-01 | Plan 01 audit complete: 32 files audited (shared/, config/, routing/), zero dead code, zero architecture violations, 3 minor test-gaps in shared/ (tool-response.ts, task-status.ts, tool-helpers.ts lack dedicated test files). 3 RESEARCH.md corrections: routing HAS test coverage (9 files), compiler.ts is 410 LOC (not ~500), profile filename corrected. Findings report ready for Phase 18 consumption. | NEW — 2026-05-20 |
 | D-17-03 | Plan 03 audit complete: 47 files audited (coordination/ 31 files, task-management/ 16 files). Found 5 dead files (entire recovery/ submodule, 763 LOC, zero runtime consumers). Corrected 3 RESEARCH.md inaccuracies: sdk-delegation/ HAS tests (tests/lib/sdk-delegation.test.ts), command-delegation/ HAS tests (tests/lib/command-delegation.test.ts), manager.ts is 362 LOC (not ~500). storeCache singleton confirmed as known context-rot (ARCHITECTURE.md line 266). asString duplication confirmed resolved. All active submodules have adequate test coverage. | NEW — 2026-05-20 |
+| D-18-01 | Deleted dead toggle-gates module (83 LOC) + test file — 0 external importers | NEW — 2026-05-20 |
+| D-18-02 | Deleted dead steering-engine (609 LOC, 3 files + empty subdirs) — 0 external importers | NEW — 2026-05-20 |
+| D-18-03 | Deleted dead runtime-detection module (195 LOC, 2 files) + test — 0 external importers | NEW — 2026-05-20 |
+| D-18-04 | Deleted dead recovery/ submodule (763 LOC, 5 source + AGENTS.md + .gitkeep + 4 tests) — 0 external importers, session-tracker recovery test preserved | NEW — 2026-05-20 |
 
 ---
 
