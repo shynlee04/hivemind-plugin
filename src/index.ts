@@ -21,6 +21,10 @@ export * from "./task-management/trajectory/index.js"
 export * from "./features/runtime-pressure/index.js"
 export * from "./features/agent-work-contracts/index.js"
 export * from "./features/sdk-supervisor/index.js"
-export * from "./routing/command-engine/index.js"
+export {
+  executeCommandEngineAction,
+  listCommands,
+  discoverCommandBundles,
+} from "./routing/command-engine/index.js"
 export * from "./features/bootstrap/primitive-registry.js"
 export * from "./features/bootstrap/control-plane/index.js"
