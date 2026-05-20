@@ -410,13 +410,13 @@ src/
 **Mode:** mvp
 **Requirements**: TBD
 **Depends on:** Phase 16
-**Plans:** 4 plans in 4 waves
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 17-01-PLAN.md — Audit shared/, config/, routing/ (smallest modules) — Wave 1 ✅ COMPLETE (2026-05-20)
 - [x] 17-02-PLAN.md — Audit schema-kernel/, tools/, hooks/ — Wave 2 ✅ COMPLETE (2026-05-20)
 - [x] 17-03-PLAN.md — Audit coordination/, task-management/ — Wave 3 ✅ COMPLETE (2026-05-20)
-- [ ] 17-04-PLAN.md — Audit features/, cli/, sidecar/, harness/kernel + compile final FINDINGS.md — Wave 4
+- [x] 17-04-PLAN.md — Audit features/, cli/, sidecar/, harness/kernel + compile final FINDINGS.md — Wave 4
 
 ### Phase 18: Root cleanup, sync boundary, sync manifest
 
