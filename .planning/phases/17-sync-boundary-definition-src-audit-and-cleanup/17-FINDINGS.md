@@ -1,16 +1,63 @@
 ---
 phase: 17
-plan: 01
+plan: 04
 created: 2026-05-20
-status: discovery-complete
+status: complete
 ---
 
-# Phase 17 Findings Report
+# Phase 17: src/ Audit — Structured Findings Report
 
-**Discovery-only audit of src/shared/, src/config/, and src/routing/**
-**Completed:** 2026-05-20
+**Generated:** 2026-05-20
+**Scope:** All 15 src/ modules
+**Method:** Manual file-by-file review per D-10
+**Consumed by:** Phase 18 (root cleanup + sync boundary)
+
+## Executive Summary
+
+| Metric | Count |
+|--------|-------|
+| Total modules audited | 15 |
+| Total files reviewed | 227 |
+| Total ~LOC reviewed | 36,082 |
+| Findings: Dead code | 7 |
+| Findings: Noise | 3 |
+| Findings: Context rot | 2 |
+| Findings: Test gap | 1 |
+| Findings: Size violation | 1 |
+| **Total findings** | **60** |
+| HIGH severity | 3 |
+| MEDIUM severity | 6 |
+| LOW severity | 6 |
+
+### Top 5 Critical Findings
+
+1. **TM-04 → Finding F-38: recovery/ submodule (5 files, 763 LOC) — DEAD** — Entire `src/task-management/recovery/` has zero runtime consumers. Appears superseded by delegation-level recovery. Delete in Phase 18. [HIGH]
+2. **F-16 → Finding F-49: steering-engine/ (3 files, 609 LOC) — DEAD** — Zero importers across src/. Not wired in plugin.ts, not exported from src/index.ts. Last modified in CP-ST refactoring. Delete in Phase 18. [HIGH]
+3. **F-27 → Finding F-60: harness/ and kernel/ — empty duplicate stubs** — Both directories contain only `.gitkeep`. Zero consumers. Identical. Keep `kernel/`, delete `harness/` in Phase 18. [HIGH]
+4. **F-13 → Finding F-46: bootstrap/runtime-detection/ (2 files, 195 LOC) — DEAD** — Zero importers across src/. Delete in Phase 18. [MEDIUM]
+5. **SK-14 → Finding F-23: toggle-gates.ts (83 LOC) — DEAD** — Zero external importers from src/. Not wired in plugin.ts. Delete (with test file). [MEDIUM]
+
+### Readiness for Phase 18
+
+**Blocking items:** None — all findings are pre-classified for cleanup. Phase 18 can execute directly.
+
+**Recommended actions (in priority order):**
+1. Delete `src/task-management/recovery/` (5 files, 763 LOC) + corresponding test files
+2. Delete `src/features/steering-engine/` (3 files, 609 LOC)
+3. Delete `src/harness/` (empty duplicate of `src/kernel/`)
+4. Delete `src/features/bootstrap/runtime-detection/` (2 files, 195 LOC)
+5. Delete `src/hooks/transforms/toggle-gates.ts` (83 LOC) + test file
+6. Delete `src/schema-kernel/permission.schema.ts` (168 LOC)
+7. Delete `src/schema-kernel/tool-definition.schema.ts` (74 LOC)
+8. Split `src/features/session-tracker/index.ts` (561 LOC → target under 500)
+9. Convert continuity/index.ts `storeCache` singleton to class-based instance
+10. Correct 12 RESEARCH.md inaccuracies identified during this audit
+11. Update tool count in RESEARCH.md from 23 to 22
+12. Consider adding a unified tool registry (f-03c PARTIAL gap)
 
 ---
+
+## Plan 01 Findings: shared/, config/, routing/
 
 ## Plan 01 Findings: shared/, config/, routing/
 
@@ -27,7 +74,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-01: `src/shared/` — All files CLEAN with active importers
+### Finding F-01: `src/shared/` — All files CLEAN with active importers
 
 - **Module:** `src/shared/`
 - **Classification:** All 14 files are CLEAN
@@ -55,7 +102,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-02: Minor test-coverage gaps in `src/shared/` (3 files)
+### Finding F-02: Minor test-coverage gaps in `src/shared/` (3 files)
 
 - **Category:** `test-gap`
 - **Severity:** `LOW`
@@ -69,7 +116,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-03: `src/config/` — All files CLEAN with good test coverage
+### Finding F-03: `src/config/` — All files CLEAN with good test coverage
 
 - **Module:** `src/config/`
 - **Classification:** All 7 files are CLEAN
@@ -86,7 +133,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-04: `src/config/compiler.ts` — Size verified under 500 LOC cap
+### Finding F-04: `src/config/compiler.ts` — Size verified under 500 LOC cap
 
 - **Category:** N/A (negative finding — no issue)
 - **Module:** `src/config/`
@@ -96,7 +143,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-05: `src/routing/` — INCORRECT RESEARCH CLAIM of zero test coverage
+### Finding F-05: `src/routing/` — INCORRECT RESEARCH CLAIM of zero test coverage
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Severity:** N/A
@@ -116,7 +163,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-06: `src/routing/session-entry/index.ts` and `src/routing/behavioral-profile/index.ts` are barrel re-export files
+### Finding F-06: `src/routing/session-entry/index.ts` and `src/routing/behavioral-profile/index.ts` are barrel re-export files
 
 - **Category:** `noise` (minor)
 - **Severity:** `LOW`
@@ -130,7 +177,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-07: `src/routing/command-engine/` — Active, tested, CLEAN
+### Finding F-07: `src/routing/command-engine/` — Active, tested, CLEAN
 
 - **Category:** CLEAN
 - **Module:** `src/routing/`
@@ -140,7 +187,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-08: RESEARCH.md filename error — `profile.ts` should be `profiles.ts`
+### Finding F-08: RESEARCH.md filename error — `profile.ts` should be `profiles.ts`
 
 - **Category:** N/A (documentation error)
 - **Severity:** `LOW`
@@ -150,7 +197,7 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 
 ---
 
-### Finding S-09: All barrelled submodule files in config/workflow/ have zero direct external importers
+### Finding F-09: All barrelled submodule files in config/workflow/ have zero direct external importers
 
 - **Category:** `noise` (documentational)
 - **Severity:** `LOW`
@@ -198,7 +245,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ### Findings: src/schema-kernel/
 
-### Finding SK-01: All 20 schema files inventoried — 2,529 LOC total
+### Finding F-10: All 20 schema files inventoried — 2,529 LOC total
 
 - **Module:** `src/schema-kernel/`
 - **Classification:** All files present and accounted for
@@ -211,7 +258,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-02: `index.ts` barrel is NOT noise — contains real validation logic + active re-exports
+### Finding F-11: `index.ts` barrel is NOT noise — contains real validation logic + active re-exports
 
 - **Category:** N/A (negative finding)
 - **Module:** `src/schema-kernel/`
@@ -221,7 +268,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-03: `generate-config-json-schema.ts` IS runtime code (not build-time only)
+### Finding F-12: `generate-config-json-schema.ts` IS runtime code (not build-time only)
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Module:** `src/schema-kernel/`
@@ -234,7 +281,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-04: `permission.schema.ts` — DEAD code (0 consumers outside schema-kernel/)
+### Finding F-13: `permission.schema.ts` — DEAD code (0 consumers outside schema-kernel/)
 
 - **Category:** `dead`
 - **Severity:** `MEDIUM`
@@ -247,7 +294,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-05: `tool-definition.schema.ts` — DEAD code (0 consumers outside schema-kernel/)
+### Finding F-14: `tool-definition.schema.ts` — DEAD code (0 consumers outside schema-kernel/)
 
 - **Category:** `dead`
 - **Severity:** `MEDIUM`
@@ -259,7 +306,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-06: Remaining 13 schema files all ACTIVE with confirmed consumers
+### Finding F-15: Remaining 13 schema files all ACTIVE with confirmed consumers
 
 - **Module:** `src/schema-kernel/`
 - **Classification:** All other schema files are ACTIVE
@@ -288,7 +335,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-07: Module size — no violations, but hivemind-configs.schema.ts at 446 LOC is near the 500 cap
+### Finding F-16: Module size — no violations, but hivemind-configs.schema.ts at 446 LOC is near the 500 cap
 
 - **Category:** N/A (observational)
 - **Module:** `src/schema-kernel/`
@@ -300,7 +347,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ### Findings: src/tools/
 
-### Finding SK-08: All 30 tools/ files inventoried — 3,961 LOC total
+### Finding F-17: All 30 tools/ files inventoried — 3,961 LOC total
 
 - **Module:** `src/tools/`
 - **Evidence:** `find src/tools -name '*.ts' | sort` returns 30 files. `wc -l` total = 3,961. Confirms RESEARCH.md claim of "30 files, ~3961 LOC" exactly.
@@ -313,7 +360,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-09: All 22 tool factories are registered in plugin.ts — no stale tools
+### Finding F-18: All 22 tool factories are registered in plugin.ts — no stale tools
 
 - **Category:** N/A (negative finding)
 - **Module:** `src/tools/`
@@ -323,7 +370,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-10: `configure-primitive.ts` at 490 LOC is near the 500 cap but within limits
+### Finding F-19: `configure-primitive.ts` at 490 LOC is near the 500 cap but within limits
 
 - **Category:** N/A (observational)
 - **Module:** `src/tools/config/`
@@ -333,7 +380,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-11: CORRECTION to RESEARCH.md — prompt sub-tools DO have dedicated tests
+### Finding F-20: CORRECTION to RESEARCH.md — prompt sub-tools DO have dedicated tests
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Module:** `src/tools/prompt/`
@@ -347,7 +394,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-12: No unified tool registry — f-03c PARTIAL confirmed
+### Finding F-21: No unified tool registry — f-03c PARTIAL confirmed
 
 - **Category:** `context-rot` (documentational)
 - **Severity:** `LOW`
@@ -359,7 +406,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ### Findings: src/hooks/
 
-### Finding SK-13: All 16 hooks/ files inventoried — 1,529 LOC total
+### Finding F-22: All 16 hooks/ files inventoried — 1,529 LOC total
 
 - **Module:** `src/hooks/`
 - **Evidence:** `find src/hooks -name '*.ts' | sort` returns 16 files. `wc -l` total = 1,529. Matches RESEARCH.md claim of "16 files, ~1529 LOC" exactly.
@@ -373,7 +420,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-14: `toggle-gates.ts` — CONFIRMED DEAD code (0 external importers from src/)
+### Finding F-23: `toggle-gates.ts` — CONFIRMED DEAD code (0 external importers from src/)
 
 - **Category:** `dead`
 - **Severity:** `MEDIUM`
@@ -392,7 +439,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-15: All other hooks/ files are ACTIVE and wired in plugin.ts
+### Finding F-24: All other hooks/ files are ACTIVE and wired in plugin.ts
 
 - **Module:** `src/hooks/`
 - **Evidence:** All 12 hook factories (excluding toggle-gates.ts and non-factory files types.ts, cqrs-boundary.ts) are imported and wired in `src/plugin.ts` lines 30-42:
@@ -414,7 +461,7 @@ Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead
 
 ---
 
-### Finding SK-16: hooks/ test coverage — EXCELLENT (19 test files covering all modules)
+### Finding F-25: hooks/ test coverage — EXCELLENT (19 test files covering all modules)
 
 - **Module:** `src/hooks/`
 - **Evidence:** 19 dedicated test files cover hooks:
@@ -471,7 +518,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ### Findings: src/coordination/
 
-### Finding CO-01: Inventory confirmed — 31 files, 5,596 LOC
+### Finding F-26: Inventory confirmed — 31 files, 5,596 LOC
 
 - **Module:** `src/coordination/`
 - **Evidence:** `find src/coordination -name '*.ts' | sort` returns 31 files. `wc -l` total = 5,596. Matches RESEARCH.md exactly.
@@ -485,7 +532,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-02: `delegation/manager.ts` is 362 LOC — RESEARCH.md overstates "~500 LOC"
+### Finding F-27: `delegation/manager.ts` is 362 LOC — RESEARCH.md overstates "~500 LOC"
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Module:** `src/coordination/delegation/`
@@ -496,7 +543,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-03: `sdk-delegation/` HAS tests — RESEARCH.md claim is INCORRECT
+### Finding F-28: `sdk-delegation/` HAS tests — RESEARCH.md claim is INCORRECT
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Module:** `src/coordination/sdk-delegation/`
@@ -508,7 +555,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-04: `command-delegation/` HAS tests — RESEARCH.md claim is INCORRECT
+### Finding F-29: `command-delegation/` HAS tests — RESEARCH.md claim is INCORRECT
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Module:** `src/coordination/command-delegation/`
@@ -520,7 +567,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-05: `completion/` — Active, tested, wired
+### Finding F-30: `completion/` — Active, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/coordination/completion/`
@@ -534,7 +581,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-06: `concurrency/queue.ts` — Active, tested, wired
+### Finding F-31: `concurrency/queue.ts` — Active, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/coordination/concurrency/`
@@ -546,7 +593,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-07: `spawner/` — Active, tested, wired
+### Finding F-32: `spawner/` — Active, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/coordination/spawner/`
@@ -561,7 +608,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-08: All submodules have active import paths — no broken wires
+### Finding F-33: All submodules have active import paths — no broken wires
 
 - **Category:** CLEAN
 - **Module:** `src/coordination/`
@@ -573,7 +620,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding CO-09: No coordination/ file exceeds 500 LOC cap
+### Finding F-34: No coordination/ file exceeds 500 LOC cap
 
 - **Category:** CLEAN
 - **Module:** `src/coordination/`
@@ -583,7 +630,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ### Findings: src/task-management/
 
-### Finding TM-01: Inventory confirmed — 16 files, 2,620 LOC
+### Finding F-35: Inventory confirmed — 16 files, 2,620 LOC
 
 - **Module:** `src/task-management/`
 - **Evidence:** `find src/task-management -name '*.ts' | sort` returns 16 files. `wc -l` total = 2,620. Matches RESEARCH.md exactly.
@@ -596,7 +643,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding TM-02: `continuity/index.ts` — storeCache singleton CONFIRMED (context-rot)
+### Finding F-36: `continuity/index.ts` — storeCache singleton CONFIRMED (context-rot)
 
 - **Category:** `context-rot`
 - **Severity:** `LOW`
@@ -613,7 +660,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding TM-03: `asString` duplication — RESOLVED (no duplicate exists)
+### Finding F-37: `asString` duplication — RESOLVED (no duplicate exists)
 
 - **Category:** N/A (resolved from earlier phase)
 - **Module:** `src/task-management/continuity/`
@@ -622,7 +669,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding TM-04: `recovery/` — CONFIRMED DEAD CODE (5 files, 763 LOC)
+### Finding F-38: `recovery/` — CONFIRMED DEAD CODE (5 files, 763 LOC)
 
 - **Category:** `dead`
 - **Severity:** `HIGH`
@@ -643,7 +690,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding TM-05: `journal/` — Active, tested, no orphan event-tracker references
+### Finding F-39: `journal/` — Active, tested, no orphan event-tracker references
 
 - **Category:** CLEAN
 - **Module:** `src/task-management/journal/`
@@ -657,7 +704,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding TM-06: `lifecycle/` — Active, wired, tested
+### Finding F-40: `lifecycle/` — Active, wired, tested
 
 - **Category:** CLEAN
 - **Module:** `src/task-management/lifecycle/`
@@ -670,7 +717,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding TM-07: `trajectory/` — Active, wired, tested
+### Finding F-41: `trajectory/` — Active, wired, tested
 
 - **Category:** CLEAN
 - **Module:** `src/task-management/trajectory/`
@@ -683,7 +730,7 @@ Audited **47 files** across **2 modules** totaling **8,216 LOC**. Found **1 sign
 
 ---
 
-### Finding TM-08: Test coverage — adequate across all active submodules
+### Finding F-42: Test coverage — adequate across all active submodules
 
 - **Module:** `src/task-management/`
 - **Evidence:** RESEARCH.md's claim of "ZERO dedicated test directory" is semantically true (no single `tests/task-management/` directory), but misleading — every active submodule HAS test coverage:
@@ -748,7 +795,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ### Findings: src/features/session-tracker/
 
-### Finding F-10: Inventory confirmed — 27 files, 7,745 LOC
+### Finding F-43: Inventory confirmed — 27 files, 7,745 LOC
 
 - **Module:** `src/features/session-tracker/`
 - **Evidence:** `find src/features/session-tracker -name '*.ts' | wc -l` = 27. `wc -l` total = 7,745. Confirms RESEARCH.md file/LOC counts.
@@ -761,7 +808,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-11: session-tracker/index.ts is 561 LOC (NOT 1035) — OVER 500 LOC CAP
+### Finding F-44: session-tracker/index.ts is 561 LOC (NOT 1035) — OVER 500 LOC CAP
 
 - **Category:** `size-violation` (corrected RESEARCH.md claim)
 - **Severity:** `MEDIUM`
@@ -773,7 +820,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-12: session-tracker — All 27 files have active importers, excellent test coverage
+### Finding F-45: session-tracker — All 27 files have active importers, excellent test coverage
 
 - **Category:** CLEAN
 - **Module:** `src/features/session-tracker/`
@@ -789,7 +836,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ### Findings: src/features/bootstrap/
 
-### Finding F-13: bootstrap/ — runtime-detection/ CONFIRMED DEAD (195 LOC, 0 importers)
+### Finding F-46: bootstrap/ — runtime-detection/ CONFIRMED DEAD (195 LOC, 0 importers)
 
 - **Category:** `dead`
 - **Severity:** `MEDIUM`
@@ -806,7 +853,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-14: bootstrap/ — control-plane/ submodule IS wired through public API
+### Finding F-47: bootstrap/ — control-plane/ submodule IS wired through public API
 
 - **Category:** CLEAN
 - **Module:** `src/features/bootstrap/control-plane/`
@@ -820,7 +867,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-15: bootstrap/ — No dead re-exports (no barrel index.ts exists)
+### Finding F-48: bootstrap/ — No dead re-exports (no barrel index.ts exists)
 
 - **Category:** CLEAN
 - **Module:** `src/features/bootstrap/`
@@ -838,7 +885,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ### Findings: src/features/steering-engine/
 
-### Finding F-16: steering-engine/ — CONFIRMED DEAD CODE (3 files, 609 LOC)
+### Finding F-49: steering-engine/ — CONFIRMED DEAD CODE (3 files, 609 LOC)
 
 - **Category:** `dead`
 - **Severity:** `HIGH`
@@ -861,7 +908,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ### Findings: src/features/ (remaining 8 submodules)
 
-### Finding F-17: runtime-pressure/ (5 files, 625 LOC) — ACTIVE, tested, wired
+### Finding F-50: runtime-pressure/ (5 files, 625 LOC) — ACTIVE, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/features/runtime-pressure/`
@@ -874,7 +921,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-18: agent-work-contracts/ (4 files, 400 LOC) — ACTIVE, tested, wired
+### Finding F-51: agent-work-contracts/ (4 files, 400 LOC) — ACTIVE, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/features/agent-work-contracts/`
@@ -887,7 +934,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-19: background-command/ (5 files, 398 LOC) — ACTIVE, tested, wired
+### Finding F-52: background-command/ (5 files, 398 LOC) — ACTIVE, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/features/background-command/`
@@ -899,7 +946,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-20: doc-intelligence/ (5 files, 454 LOC) — ACTIVE, tested, wired
+### Finding F-53: doc-intelligence/ (5 files, 454 LOC) — ACTIVE, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/features/doc-intelligence/`
@@ -912,7 +959,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-21: prompt-packet/ (4 files, 348 LOC) — ACTIVE, tested, wired
+### Finding F-54: prompt-packet/ (4 files, 348 LOC) — ACTIVE, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/features/prompt-packet/`
@@ -924,7 +971,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-22: sdk-supervisor/ (2 files, 312 LOC) — ACTIVE, tested, wired
+### Finding F-55: sdk-supervisor/ (2 files, 312 LOC) — ACTIVE, tested, wired
 
 - **Category:** CLEAN
 - **Module:** `src/features/sdk-supervisor/`
@@ -936,7 +983,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-23: auto-loop/ (2 files, 66 LOC) — NOT a stub, HAS tests (correction to RESEARCH.md)
+### Finding F-56: auto-loop/ (2 files, 66 LOC) — NOT a stub, HAS tests (correction to RESEARCH.md)
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Module:** `src/features/auto-loop/`
@@ -952,7 +999,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ---
 
-### Finding F-24: ralph-loop/ (2 files, 62 LOC) — NOT a stub, HAS tests (correction to RESEARCH.md)
+### Finding F-57: ralph-loop/ (2 files, 62 LOC) — NOT a stub, HAS tests (correction to RESEARCH.md)
 
 - **Category:** N/A (correction to RESEARCH.md)
 - **Module:** `src/features/ralph-loop/`
@@ -970,7 +1017,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ### Findings: src/cli/
 
-### Finding F-25: cli/ — WELL-TESTED, well-structured, clean
+### Finding F-58: cli/ — WELL-TESTED, well-structured, clean
 
 - **Category:** CLEAN
 - **Module:** `src/cli/`
@@ -992,7 +1039,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ### Findings: src/sidecar/
 
-### Finding F-26: sidecar/readonly-state.ts — POTENTIALLY DEAD (0 consumers from src/)
+### Finding F-59: sidecar/readonly-state.ts — POTENTIALLY DEAD (0 consumers from src/)
 
 - **Category:** `dead` (potential)
 - **Severity:** `MEDIUM`
@@ -1009,7 +1056,7 @@ Audited **73 files** across **4 areas** totaling **13,802 LOC**. Found **2 dead/
 
 ### Findings: src/harness/ vs src/kernel/
 
-### Finding F-27: harness/ and kernel/ — CONFIRMED EMPTY DUPLICATE STUBS
+### Finding F-60: harness/ and kernel/ — CONFIRMED EMPTY DUPLICATE STUBS
 
 - **Category:** `noise`
 - **Severity:** `HIGH`
