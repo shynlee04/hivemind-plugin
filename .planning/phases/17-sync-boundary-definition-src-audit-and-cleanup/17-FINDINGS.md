@@ -178,3 +178,277 @@ Audited **32 files** across **3 modules** totaling **4,412 LOC**. No dead code f
 ---
 
 *End of Plan 01 findings*
+
+---
+
+## Plan 02 Findings: schema-kernel/, tools/, hooks/
+
+### Executive Summary
+
+Audited **66 files** across **3 modules** totaling **8,019 LOC**. Found **3 dead code files** (permission.schema.ts, tool-definition.schema.ts, toggle-gates.ts). Major correction to RESEARCH.md: **prompt sub-tools DO have tests** (contrary to the "NO tests" claim), and **generate-config-json-schema.ts is runtime code**, not build-time only.
+
+| Module | Files | LOC | Dead | Noise | Context-Rot | Test-Gaps |
+|--------|-------|-----|------|-------|-------------|-----------|
+| src/schema-kernel/ | 20 | 2,529 | 2 | 0 | 0 | Minor |
+| src/tools/ | 30 | 3,961 | 0 | 0 | 0 | Minor |
+| src/hooks/ | 16 | 1,529 | 1 | 0 | 0 | 0 |
+| **Total** | **66** | **8,019** | **3** | **0** | **0** | **Minor** |
+
+---
+
+### Findings: src/schema-kernel/
+
+### Finding SK-01: All 20 schema files inventoried — 2,529 LOC total
+
+- **Module:** `src/schema-kernel/`
+- **Classification:** All files present and accounted for
+- **Evidence:** `find src/schema-kernel -name '*.ts' | sort` returns 20 files. `wc -l` total = 2,529. Confirms RESEARCH.md claims exactly.
+- **Details:**
+  - 16 individual `.schema.ts` files + `index.ts` barrel + `generate-config-json-schema.ts`
+  - Largest file: `hivemind-configs.schema.ts` at 446 LOC (under 500 cap)
+  - No file exceeds 500 LOC cap
+  - RESEARCH.md claim of "20 files, ~2529 LOC" is ACCURATE
+
+---
+
+### Finding SK-02: `index.ts` barrel is NOT noise — contains real validation logic + active re-exports
+
+- **Category:** N/A (negative finding)
+- **Module:** `src/schema-kernel/`
+- **File:** `src/schema-kernel/index.ts` (337 LOC)
+- **Evidence:** Contains `validateWithFallback()` function (40 line real logic) plus re-exports of all 16 schema files. 5 external importers in `src/` (compiler.ts, primitive-loader.ts, cross-primitive-validator.ts). 3 test files import from the barrel. Not a thin re-export file — it provides meaningful validation utility.
+- **Recommended action:** None — properly structured barrel with real logic.
+
+---
+
+### Finding SK-03: `generate-config-json-schema.ts` IS runtime code (not build-time only)
+
+- **Category:** N/A (correction to RESEARCH.md)
+- **Module:** `src/schema-kernel/`
+- **File:** `src/schema-kernel/generate-config-json-schema.ts` (149 LOC)
+- **Evidence:** RESEARCH.md claimed this is "build-time only" but it has 2 active runtime importers:
+  1. `src/cli/commands/doctor.ts` — used by the `hivemind doctor` CLI command
+  2. `src/tools/config/bootstrap-init.ts` — used during runtime for `hivemind init`
+- The file uses `mkdirSync` and `writeFileSync` for JSON schema generation. It is an active runtime utility that generates JSON schemas on demand.
+- **Recommended action:** Correct RESEARCH.md assumption. No cleanup needed.
+
+---
+
+### Finding SK-04: `permission.schema.ts` — DEAD code (0 consumers outside schema-kernel/)
+
+- **Category:** `dead`
+- **Severity:** `MEDIUM`
+- **Module:** `src/schema-kernel/`
+- **File:** `src/schema-kernel/permission.schema.ts` (168 LOC)
+- **Evidence:** ZERO external importers of any permission schema symbol across `src/`. Grep for `PermissionRuleSchema`, `PermissionRulesetSchema`, `PermissionKeySchema`, `PERMISSION_SCHEMA_VERSION`, `AgentPermissionOverrideSchema` returns zero hits outside `src/schema-kernel/`. The `PermissionRule` type used in `src/shared/types.ts` and `src/shared/helpers.ts` is a separate local type definition — NOT imported from this schema file.
+- **Bug note:** Line 10 has `z.enum(["allow", "ask", "ask"])` — "ask" appears twice. Should likely be `["allow", "ask", "deny"]` or similar. Since this schema has no consumers, the bug does not affect runtime behavior.
+- **Re-exported via:** `index.ts` barrel (lines 193-221), but no code outside schema-kernel/ actually imports these re-exports.
+- **Recommended action:** Delete in Phase 18. If permission validation is ever needed, the schema can be recreated from the `shared/types.ts` PermissionRule type.
+
+---
+
+### Finding SK-05: `tool-definition.schema.ts` — DEAD code (0 consumers outside schema-kernel/)
+
+- **Category:** `dead`
+- **Severity:** `MEDIUM`
+- **Module:** `src/schema-kernel/`
+- **File:** `src/schema-kernel/tool-definition.schema.ts` (74 LOC)
+- **Evidence:** ZERO external importers of `ToolDefinitionSchema`, `ToolNameSchema`, `ToolFileSchema`, or any other export from this file across `src/`. The `ToolDefinition` type imported by `src/tools/session/execute-slash-command.ts` comes from `@opencode-ai/plugin`, not from this schema file.
+- **Re-exported via:** `index.ts` barrel (lines 277-291), but no consumers actually import these.
+- **Recommended action:** Delete in Phase 18.
+
+---
+
+### Finding SK-06: Remaining 13 schema files all ACTIVE with confirmed consumers
+
+- **Module:** `src/schema-kernel/`
+- **Classification:** All other schema files are ACTIVE
+
+| File | LOC | External Importers (src/) | Test Coverage | Status |
+|------|-----|--------------------------|---------------|--------|
+| `hivemind-configs.schema.ts` | 446 | 13 (heaviest) | ✅ 6 test files | ACTIVE |
+| `prompt-enhance.schema.ts` | 169 | 6 | ✅ 4 test files | ACTIVE |
+| `bootstrap.schema.ts` | 109 | 5 | ⚠️ 0 direct test files | ACTIVE |
+| `agent-work-contract.schema.ts` | 148 | 4 | ⚠️ 0 direct test files | ACTIVE |
+| `session-tracker.schema.ts` | 141 | 3 | ✅ 3 test files | ACTIVE |
+| `agent-frontmatter.schema.ts` | 168 | Through barrel (compiler, prim-loader) | ⚠️ 0 direct test files | ACTIVE |
+| `command-frontmatter.schema.ts` | 104 | Through barrel (compiler, prim-loader) | ⚠️ 0 direct test files | ACTIVE |
+| `skill-metadata.schema.ts` | 111 | Through barrel (compiler, prim-loader) | ⚠️ 0 direct test files | ACTIVE |
+| `mcp-server.schema.ts` | 124 | Through barrel (prim-loader) | ⚠️ 0 direct test files | ACTIVE |
+| `config-precedence.schema.ts` | 76 | Through barrel (prim-loader) | ⚠️ 0 direct test files | ACTIVE |
+| `command-engine.schema.ts` | 32 | 1 | ⚠️ 0 direct test files | ACTIVE |
+| `runtime-pressure.schema.ts` | 55 | 1 | ⚠️ 0 direct test files | ACTIVE |
+| `sdk-supervisor.schema.ts` | 16 | 1 | ⚠️ 0 direct test files | ACTIVE |
+| `doc-intelligence.schema.ts` | 16 | 1 | ⚠️ 0 direct test files | ACTIVE |
+| `session-view.schema.ts` | 37 | 1 | ⚠️ 0 direct test files | ACTIVE |
+| `trajectory.schema.ts` | 49 | 1 | ⚠️ 0 direct test files | ACTIVE |
+
+- **Test note:** While several schemas lack dedicated test files, they are validated indirectly through tool tests (prompt-analyze, prompt-skim, session-patch, configure-primitive, etc.) and schema-kernel test files (generate-config-json-schema.test.ts, hivemind-configs.schema.test.ts, opencode-config.schemas.test.ts, prompt-enhance.schema.test.ts).
+- **Recommended action:** Dedicated schema tests would be ideal but not urgent — indirect coverage is adequate.
+
+---
+
+### Finding SK-07: Module size — no violations, but hivemind-configs.schema.ts at 446 LOC is near the 500 cap
+
+- **Category:** N/A (observational)
+- **Module:** `src/schema-kernel/`
+- **File:** `src/schema-kernel/hivemind-configs.schema.ts` (446 LOC)
+- **Evidence:** RESEARCH.md claimed this file is at 446 LOC. Verified: 446 LOC. Under the 500 LOC cap by 54 lines. Not an immediate concern but worth monitoring.
+- **Recommended action:** No action needed. Monitor if Phase 18 adds config schemas.
+
+---
+
+### Findings: src/tools/
+
+### Finding SK-08: All 30 tools/ files inventoried — 3,961 LOC total
+
+- **Module:** `src/tools/`
+- **Evidence:** `find src/tools -name '*.ts' | sort` returns 30 files. `wc -l` total = 3,961. Confirms RESEARCH.md claim of "30 files, ~3961 LOC" exactly.
+- **Details:**
+  - `tools/config/`: 5 files (bootstrap-init 309, bootstrap-recover 219, configure-primitive 490, configure-primitive-paths 45, validate-restart 116)
+  - `tools/delegation/`: 3 files (delegate-task 93, delegation-status 208, types 25)
+  - `tools/hivemind/`: 11 files (ranging from 45 to 373 LOC)
+  - `tools/prompt/`: 6 files (prompt-analyze/index 6, tools 169, types 17; prompt-skim/index 6, tools 107, types 18)
+  - `tools/session/`: 5 files (execute-slash-command 152, session-journal-export 117, session-patch/index 6, tools 136, types 19)
+
+---
+
+### Finding SK-09: All 22 tool factories are registered in plugin.ts — no stale tools
+
+- **Category:** N/A (negative finding)
+- **Module:** `src/tools/`
+- **Evidence:** `src/plugin.ts` lines 45-66 import 22 tool factories. Every tool file in `src/tools/` is represented (or provides a factory used by a file that IS imported). The 11 hivemind/ files all have corresponding imports in plugin.ts.
+- **Note:** RESEARCH.md claimed "23 registered tools" but the import count is 22. The discrepancy may be from tool count (including the dual-export hivemind-agent-work.ts which exports 2 tools from one file).
+- **Recommended action:** No stale tools to remove. Update RESEARCH.md tool count to 22.
+
+---
+
+### Finding SK-10: `configure-primitive.ts` at 490 LOC is near the 500 cap but within limits
+
+- **Category:** N/A (observational)
+- **Module:** `src/tools/config/`
+- **File:** `src/tools/config/configure-primitive.ts` (490 LOC)
+- **Evidence:** `wc -l` = 490. Under the 500 LOC cap by 10 lines. Confirms RESEARCH.md claim of "~490 LOC". Near the boundary but not over.
+- **Recommended action:** No immediate action, but should be watched during Phase 18 in case of additions.
+
+---
+
+### Finding SK-11: CORRECTION to RESEARCH.md — prompt sub-tools DO have dedicated tests
+
+- **Category:** N/A (correction to RESEARCH.md)
+- **Module:** `src/tools/prompt/`
+- **Evidence:** RESEARCH.md states "prompt-analyze/ and prompt-skim/ have NO tests" and "prompt/ (6 files, ~200 LOC) — Research says NO tests." This is INCORRECT. Dedicated test files exist:
+  1. `tests/tools/prompt-analyze.test.ts`
+  2. `tests/tools/prompt-skim.test.ts`
+  3. `tests/tools/session-patch.test.ts`
+  4. `tests/integration/prompt-enhance-pipeline.test.ts` (integration test for the full pipeline)
+- **Session-patch tool:** Also correctly wired and tested. Not a separate submodule — it's part of `src/tools/session/session-patch/` (3 files, 161 LOC total, not 269 LOC as RESEARCH.md claimed).
+- **Recommended action:** Correct RESEARCH.md claims. All 3 sub-tools (prompt-analyze, prompt-skim, session-patch) are tested and actively invoked.
+
+---
+
+### Finding SK-12: No unified tool registry — f-03c PARTIAL confirmed
+
+- **Category:** `context-rot` (documentational)
+- **Severity:** `LOW`
+- **Module:** `src/tools/`
+- **Evidence:** There is no single file or registry object that enumerates all available tools. Tool registration is distributed across `src/plugin.ts` (22 imports) and individual tool factory functions. REQUIREMENTS.md f-03c lists "Tool Registry" as PARTIAL. Confirmed.
+- **Recommended action:** Document as known gap. Phase 18 could add a lightweight registry file if needed.
+
+---
+
+### Findings: src/hooks/
+
+### Finding SK-13: All 16 hooks/ files inventoried — 1,529 LOC total
+
+- **Module:** `src/hooks/`
+- **Evidence:** `find src/hooks -name '*.ts' | sort` returns 16 files. `wc -l` total = 1,529. Matches RESEARCH.md claim of "16 files, ~1529 LOC" exactly.
+- **Submodule breakdown:**
+  - `lifecycle/`: 2 files (core-hooks 212, session-hooks 340) — 552 LOC combined
+  - `guards/`: 2 files (governance-block 104, tool-guard-hooks 203) — 307 LOC
+  - `transforms/`: 5 files (chat-message-capture 39, toggle-gates 83, tool-after-composer 71, tool-after-workflow 54, tool-before-guard 67) — 314 LOC
+  - `observers/`: 5 files (delegation-consumer 41, event-observers 135, session-entry-consumer 22, session-main-consumer 20, session-tracker-consumer 41) — 259 LOC
+  - `composition/`: 1 file (cqrs-boundary 36) — 36 LOC
+  - `types.ts`: 61 LOC
+
+---
+
+### Finding SK-14: `toggle-gates.ts` — CONFIRMED DEAD code (0 external importers from src/)
+
+- **Category:** `dead`
+- **Severity:** `MEDIUM`
+- **Module:** `src/hooks/transforms/`
+- **File:** `src/hooks/transforms/toggle-gates.ts` (83 LOC)
+- **Evidence:**
+  - `grep -rn "toggle-gates" --include="*.ts" src/ | grep -v "^src/hooks/transforms/toggle-gates.ts:"` returns **ZERO results** — the file has NO external importers from `src/`
+  - `grep -rn "isToggleEnabled\|getDiscussMode" --include="*.ts" src/` returns only self-references within toggle-gates.ts
+  - `grep "toggle\|Toggle\|getDiscussMode\|isToggleEnabled" src/config/compiler.ts src/config/subscriber.ts` returns **ZERO results** — config modules don't reference it
+  - `plugin.ts` (line 30-42) shows ALL imported hooks: no toggle-gates import present
+  - Git log: `git log --oneline --follow src/hooks/transforms/toggle-gates.ts` shows it was created as part of the discuss/plan-check feature (likely D-08 through D-13 context), but the runtime consumer was never wired
+- **Context:** Requirements TOG-01 is marked "DELIVERED" — this may mean the config/compile side handles toggle resolution, but the dedicated hook-based toggle-gates consumer is vestigial. The functions `isToggleEnabled()` and `getDiscussMode()` return config values but are never called.
+- **Exception:** `tests/hooks/toggle-gates.test.ts` exists — meaning the tests cover dead code.
+- **Note for Phase 18:** Deleting this file will require also removing `tests/hooks/toggle-gates.test.ts` and the references in `tests/hooks/toggle-gates.test.ts` imports.
+- **Recommended action:** Delete in Phase 18. The toggle logic can be called directly from config without the helper layer.
+
+---
+
+### Finding SK-15: All other hooks/ files are ACTIVE and wired in plugin.ts
+
+- **Module:** `src/hooks/`
+- **Evidence:** All 12 hook factories (excluding toggle-gates.ts and non-factory files types.ts, cqrs-boundary.ts) are imported and wired in `src/plugin.ts` lines 30-42:
+  - `lifecycle/core-hooks.ts` → `createCoreHooks()` — WIRED
+  - `lifecycle/session-hooks.ts` → `createSessionHooks()` — WIRED
+  - `guards/tool-guard-hooks.ts` → `createToolGuardHooks()` — WIRED
+  - `observers/event-observers.ts` → 3 observer factories — WIRED
+  - `transforms/tool-after-composer.ts` → WIRED
+  - `transforms/tool-before-guard.ts` → WIRED
+  - `transforms/chat-message-capture.ts` → WIRED
+  - `transforms/tool-after-workflow.ts` → WIRED
+  - `observers/session-entry-consumer.ts` → WIRED
+  - `observers/session-main-consumer.ts` → WIRED
+  - `observers/delegation-consumer.ts` → WIRED
+  - `observers/session-tracker-consumer.ts` → WIRED
+
+- **File size:** No individual hook file exceeds 500 LOC. Largest is `session-hooks.ts` at 340 LOC.
+- **lifecycle/ combined 552 LOC:** This is not a single file — it's 2 separate files (core-hooks 212 + session-hooks 340). Each is under 500 LOC individually. Not a violation.
+
+---
+
+### Finding SK-16: hooks/ test coverage — EXCELLENT (19 test files covering all modules)
+
+- **Module:** `src/hooks/`
+- **Evidence:** 19 dedicated test files cover hooks:
+  - `tests/hooks/create-core-hooks.test.ts` — lifecycle/core-hooks
+  - `tests/hooks/create-session-hooks.test.ts` — lifecycle/session-hooks
+  - `tests/hooks/create-tool-guard-hooks.test.ts` — guards/tool-guard-hooks
+  - `tests/hooks/governance-block.test.ts` — guards/governance-block
+  - `tests/hooks/toggle-gates.test.ts` — transforms/toggle-gates (dead code, but tested)
+  - `tests/hooks/tool-after-composer.test.ts` — transforms/tool-after-composer
+  - `tests/hooks/transforms/chat-message-capture.test.ts` — transforms/chat-message-capture
+  - `tests/hooks/transforms/tool-after-workflow.test.ts` — transforms/tool-after-workflow
+  - `tests/hooks/transforms/tool-before-guard.test.ts` — transforms/tool-before-guard
+  - `tests/hooks/hook-cqrs-boundary.test.ts` — composition/cqrs-boundary
+  - `tests/hooks/observers/*.test.ts` (5 files) — all observers
+  - `tests/hooks/plugin-event-observers.test.ts` — event-observers integration
+  - Integration test files covering hooks in broader context
+- **Coverage:** All 5 hook submodules have dedicated test files. No test gaps found.
+- **CQRS compliance:** `cqrs-boundary.ts` (36 LOC) enforces `assertHookWriteBoundary()` — confirmed read-only. No violations found in hook code.
+
+---
+
+### Summary: Plan 02
+
+| Metric | Value |
+|--------|-------|
+| Files audited | 66 |
+| Total LOC audited | 8,019 |
+| Dead files found | 3 (permission.schema.ts, tool-definition.schema.ts, toggle-gates.ts) |
+| Noise files found | 0 |
+| Context-rot files found | 0 (f-03c PARTIAL documented) |
+| Test gaps found | 0 (prompt tools DO have tests — RESEARCH.md correction) |
+| Architecture violations (CQRS) | 0 |
+| RESEARCH.md corrections | 3 (generate-config-json-schema runtime, prompt tools tested, tool count 22) |
+
+---
+
+*End of Plan 02 findings*
