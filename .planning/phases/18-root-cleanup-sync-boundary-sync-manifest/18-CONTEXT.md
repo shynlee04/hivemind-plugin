@@ -8,7 +8,7 @@
 
 Execute on Phase 17's structured findings: delete dead code, fix context rot, clean barrel noise, update boundary manifests. Pure cleanup phase — no new features, no behavior changes.
 
-- **Dead code removal:** Delete confirmed dead files (6 files, ~795 LOC) from `src/hooks/transforms/` (toggle-gates), `src/features/steering-engine/` (3 files), and `src/features/runtime-detection/`.
+- **Dead code removal:** Delete confirmed dead files (~1,558 LOC) from `src/hooks/transforms/` (toggle-gates), `src/features/steering-engine/` (3 files), `src/features/runtime-detection/`, and `src/task-management/recovery/` (5 files, 763 LOC).
 - **Context rot fix:** Extract `storeCache` singleton from `src/task-management/continuity/index.ts` into dedicated `store-cache.ts` module with explicit `resetCache()` API. Defer session-tracker index.ts split (561 LOC is well-factored, 12% over cap is acceptable exception).
 - **Noise/stub cleanup:** Narrow `export *` in `src/index.ts` to explicit named exports for command-engine barrel. Keep `src/harness/` and `src/kernel/` stub dirs as reserved architecture slots.
 - **Boundary sync:** Boundary audit first (detect CQRS drifts against `last_mapped_commit`), then cleanup, then update manifests (STRUCTURE.md, ARCHITECTURE.md, codebase maps, AGENTS.md).
@@ -24,6 +24,12 @@ Module-batched (2 commits):
 2. `src/features/steering-engine/` (3 files: types.ts, steering-state.ts, steering-policy.schema.ts) + `src/features/runtime-detection/`
 
 NOT all-in-one (poor bisect granularity), NOT per-file atomic (steering-engine internal imports defeat it).
+
+### D-01.1: Supplementary — recovery/ Submodule Deletion
+Research confirmed `src/task-management/recovery/` (5 files, 763 LOC) is fully dead — zero external importers. Add as 3rd commit batch:
+- 3. `src/task-management/recovery/` (assess-state.ts, recovery-engine.ts, recovery-orchestrator.ts, state-verifier.ts, index.ts)
+
+NOT merged into D-01 batches (separate module boundary, distinct rollback context).
 
 ### D-02: Context Rot — storeCache Extraction
 Extract `storeCache` singleton from `continuity/index.ts` into new `continuity/store-cache.ts` with exported `resetCache()` API. Fixes test isolation fragility (currently masked by `vi.resetModules()` boilerplate). Session-tracker split DEFERRED — 561 LOC (12% over 500 cap) is well-factored into submodules; re-evaluate when class body exceeds ~650 LOC.
