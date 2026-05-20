@@ -431,9 +431,20 @@ Plans:
 - [x] 18-03-PLAN.md — Barrel Narrowing: replace export * with explicit named exports for command-engine — Wave 1 ✅
 - [x] 18-04-PLAN.md — Manifest Sync: update STRUCTURE.md, ARCHITECTURE.md, CONCERNS.md, AGENTS.md — Wave 2 ✅
 
-### Phase 19: Non-Destructive Remediation — dead schema, stale dist, extra hooks
+### Phase 19: Non-Destructive Remediation — dead code, stale dist, extra hooks, schema bugfixes
 
-**Goal:** Eliminate all remaining dead code (permission.schema.ts, tool-definition.schema.ts), rebuild dist/ to eliminate 13 stale artifacts from Phase 18 deletions, and remove extra hooks (system.transform, messages.transform) from plugin.ts return. Non-destructive — zero logic changes, zero behavior impact.
+**Goal:** Non-destructive cleanup of ~880 LOC dead code across 4 modules. Fix schema bugs, rebuild clean dist/, eliminate no-op hooks. Zero logic changes to active runtime paths.
+**Total scope:**
+- Delete 3 dead schema files: `permission.schema.ts` (168 LOC), `tool-definition.schema.ts` (74 LOC), `skill-metadata.schema.ts` (111 LOC) — all confirmed zero consumers
+- Fix `permission.schema.ts` enum bug: `z.enum(["allow", "ask", "ask"])` → `["allow", "ask", "auto"]`
+- Delete `prompt-packet/` (348 LOC, 5 files) — designed never wired, superseded by session-tracker compaction
+- Delete `session-classification-hook.ts` (76 LOC) — never connected
+- Delete `schema-normalizer.ts` (155 LOC) — never imported
+- Delete `concurrency-key.ts` (12 LOC) — single-line delegating wrapper
+- Delete deprecated profile methods (`invalidateBehavioralProfile`, `clearAllBehavioralProfiles`) from `resolve-behavioral-profile.ts`
+- Remove `messages.transform` and duplicate `system.transform` no-op hooks from `core-hooks.ts`
+- Rebuild `dist/` — eliminates 13 stale .js files from Phase 18 deleted modules
+- Delete empty dirs: `src/kernel/`, `src/harness/`
 **Requirements:** TBD
 **Depends on:** Phase 18
 **Plans:** 0 plans
@@ -443,7 +454,13 @@ Plans:
 
 ### Phase 20: Package.json Dependency Cleanup
 
-**Goal:** Remove 11 unused runtime dependencies (commander, diff, fast-glob, fast-xml-parser, ink, js-yaml, jsonc-parser, node-pty, tree-sitter-javascript, vscode-jsonrpc, web-tree-sitter); bump 6 minor versions (@clack/prompts, bun-types, yaml, zod, @vitest/coverage-v8, vitest); move @json-render/* + react to sidecar-only optional deps. Verify typecheck + test suite after each batch.
+**Goal:** Clean up package.json dependencies. Remove 11 unused runtime deps, consolidate duplicate YAML libraries, bump 6 minor versions, move @json-render/* + react to optional.
+**Actions:**
+- Remove: commander, diff, fast-glob, fast-xml-parser, ink, js-yaml, jsonc-parser, node-pty, tree-sitter-javascript, vscode-jsonrpc, web-tree-sitter
+- Consolidate: `yaml` + `js-yaml` → use one (keep `yaml` which has 3 importers)
+- Bump minors: @clack/prompts ^1.3.0→^1.4.0, bun-types ^1.3.13→^1.3.14, yaml ^2.8.3→^2.9.0, zod ^4.3.6→^4.4.3, vitest ^4.1.5→^4.1.7
+- Move to optional: @json-render/core, @json-render/ink, @json-render/next, @json-render/react, @json-render/react-pdf, react
+- Verify: `npm run typecheck` → clean, `npm test` → 2382 passed (baseline)
 **Requirements:** TBD
 **Depends on:** Phase 19
 **Plans:** 0 plans
@@ -451,9 +468,16 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 20 to break down)
 
-### Phase 21: Sync I/O Async Conversion — Runtime Paths
+### Phase 21: Sync I/O Async Conversion + Promise Hygiene
 
-**Goal:** Convert all sync filesystem calls (readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, renameSync) in runtime paths (tools, hooks, features, coordination) to async fs/promises. Retain sync I/O only in CLI cold-start paths (bin/, bootstrap-init CLI mode). Target: reduce sync calls from ~159 to ~30.
+**Goal:** Convert sync filesystem calls to async in all runtime paths. Add error handling to 5 fire-and-forget promises in plugin.ts. Retain sync I/O only in CLI cold-start (bin/, bootstrap-init CLI mode). Target: ~159 sync calls → ~30.
+**Actions:**
+- Convert `readFileSync`/`writeFileSync`/`renameSync` in `task-management/continuity/index.ts` to async
+- Convert sync I/O in `continuity/delegation-persistence.ts`
+- Convert sync I/O in `features/agent-work-contracts/store.ts`
+- Convert `plugin.ts` startup sync I/O (`workspace-runtime-policy.ts`)
+- Add `.catch()` logging to 5 fire-and-forget promises: plugin.ts L223, L244, L262, L276, L290
+- Retain sync I/O in: `cli/`, `bin/`, `bootstrap-init.ts` (cold-start paths)
 **Requirements:** TBD
 **Depends on:** Phase 20
 **Plans:** 0 plans
@@ -463,7 +487,18 @@ Plans:
 
 ### Phase 22: Typed Error Hierarchy
 
-**Goal:** Create typed error classes (HarnessValidationError, HarnessPermissionError, HarnessNotFoundError, HarnessPersistenceError, HarnessRuntimeError) and replace ~95 untyped `throw new Error` sites across src/. Retrofit catch sites for type-based error classification. All existing error messages and behavior preserved.
+**Goal:** Create 5 typed error classes and replace ~100 untyped `throw new Error` sites across 45 files. Fix silent catch blocks. All error messages preserved.
+**Classes:**
+- `HarnessValidationError` — schema/tool input validation failures
+- `HarnessPermissionError` — permission/gate/guard denials
+- `HarnessNotFoundError` — session/delegation/continuity not found
+- `HarnessPersistenceError` — filesystem I/O, continuity write failures
+- `HarnessRuntimeError` — everything else (generic harness errors)
+**Actions:**
+- Create `src/shared/errors.ts` with all 5 classes
+- Replace `throw new Error("[Harness]...")` across ~45 files with typed alternatives
+- Fix silent `catch { /* Best-effort */ }` blocks in lifecycle/index.ts, orphan-cleanup.ts
+- Retrofit catch sites for type-based error routing
 **Requirements:** TBD
 **Depends on:** Phase 21
 **Plans:** 0 plans
@@ -471,9 +506,19 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 22 to break down)
 
-### Phase 23: Plugin Decomposition
+### Phase 23: Plugin Decomposition + Module Size Fixes
 
-**Goal:** Decompose plugin.ts (493 LOC, 50+ imports) by extracting: (a) tool registration map → src/tools/registry.ts, (b) startup tasks → src/plugin/startup.ts, (c) hook composition → src/hooks/composition/composer.ts. Target: plugin.ts < 300 LOC, each extracted module < 200 LOC.
+**Goal:** Decompose plugin.ts (493 LOC, 50+ imports) by extracting tool registry, startup tasks, and hook composer. Additionally split 2 near-cap modules. Standardize tool import paths.
+**Actions:**
+- Extract tool registration map → `src/tools/registry.ts`
+- Extract startup tasks → `src/plugin/startup.ts`
+- Extract hook composition → `src/hooks/composition/composer.ts`
+- Split `configure-primitive.ts` (490 LOC) — move inline Zod schemas to schema-kernel/, split `handleCompile`
+- Split `compiler.ts` (410 LOC) — split into `compile.ts`, `decompile.ts`, `batch.ts`
+- Standardize tool() import path: change 5 tools using wide `@opencode-ai/plugin` to narrow `@opencode-ai/plugin/tool`
+- Fix `decompileAgent` bug (`compiler.ts` returns `"unknown"` instead of frontmatter name)
+- Fix `execute-slash-command` return envelope — add `renderToolResult()` + Zod schema
+- Target: plugin.ts < 300 LOC
 **Requirements:** TBD
 **Depends on:** Phase 22
 **Plans:** 0 plans
@@ -481,9 +526,15 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 23 to break down)
 
-### Phase 24: Module Split — event-capture.ts + session-tracker/index.ts
+### Phase 24: Session-Tracker Module Split
 
-**Goal:** Split src/features/session-tracker/capture/event-capture.ts (702 LOC) into 2-3 files by lifecycle event family; split src/features/session-tracker/index.ts (561 LOC) into public facade + dependency wiring. All modules under 500 LOC cap. Zero behavior change.
+**Goal:** Split the 2 module-size violations in session-tracker. Fix CQRS violation in hooks. Simplify over-engineered PendingDispatchRegistry.
+**Actions:**
+- Split `event-capture.ts` (702 LOC, 40% over 500 cap) → 2-3 files by lifecycle event family
+- Split `session-tracker/index.ts` (561 LOC, 12% over cap) → extract initialization block
+- Simplify `PendingDispatchRegistry` (312 LOC, 3 reverse indices) → simple Map pair + periodic cleanup
+- Fix CQRS violation: move `tool-after-workflow.ts` durable writes from hooks sector to coordination
+- Make `assertHookWriteBoundary` actually enforce at runtime (or remove if unnecessary)
 **Requirements:** TBD
 **Depends on:** Phase 23
 **Plans:** 0 plans
@@ -491,9 +542,19 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 24 to break down)
 
-### Phase 25: Legacy/Deprecation Cleanup
+### Phase 25: Legacy Cleanup + Tool Relocation + CQRS Enforcement + Test Gaps
 
-**Goal:** Remove 48 legacy/deprecated references from runtime code (continuity legacy path compat, startup migration code, .env awareness, one-shot startup deletions). Each compat path gets a removal gate date. Clean startup initialization in plugin.ts.
+**Goal:** Final cleanup wave before soft primitives. Consolidate migration artifacts, relocate misplaced tools, close critical test gaps, fix shared/ leaf constraint.
+**Actions:**
+- **Legacy cleanup:** 48 legacy/deprecated refs tracked with owner + removal gate date; remove legacy continuity path compat; move event-tracker migration to one-shot cleanup script
+- **Dual delegation store:** Analyze coordinator.ts + state-machine.ts overlap; consolidate if safe
+- **Tool relocation:** Move 3 session tools from `src/tools/hivemind/` to `src/tools/session/`: session-context.ts, session-hierarchy.ts, session-tracker.ts
+- **Routing test gap:** Add 3 test files for session-entry (8 classifyPurpose classes, detectLanguage), behavioral-profile (merge strategy), command-engine (contract analysis, route preview)
+- **Config test gap:** Add tests for compiler.ts (compile/decompile/batch) and workflow module (state transitions, guards, persistence)
+- **Schema test gap:** Add tests for 9 untested schemas: trajectory, bootstrap, agent-work-contract, session-tracker, session-view, runtime-pressure, sdk-supervisor, command-engine, doc-intelligence
+- **shared/ leaf constraint:** Move `getSessionBehavioralProfile()` from `session-api.ts` to `routing/behavioral-profile/`
+- **Wire journal/appendJournalEntry** into lifecycle handler (540 LOC audit trail currently unused)
+- **Remove unused `yaml` library** (consolidation, Phase 20 follow-though)
 **Requirements:** TBD
 **Depends on:** Phase 24
 **Plans:** 0 plans
@@ -501,17 +562,22 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 25 to break down)
 
-### Phase 26: Fix sync-oss.yml workflow
+### Phase 26: Post-Restructuring Integration Verification
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Verify end-to-end integration after 7 restructuring phases. Smoke test all 23 tools. Full regression suite. Rebuild dist/.
+**Actions:**
+- Full regression: `npm run typecheck` + `npm test`
+- L1 smoke test for all 23 registered tools (verify tool factory → registration → execution)
+- Verify dist/ contains only active modules (no stale artifacts)
+- Update all manifests: STRUCTURE.md, ARCHITECTURE.md, CONCERNS.md, AGENTS.md
+**Requirements:** TBD
 **Depends on:** Phase 25
 **Plans:** 0 plans
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 26 to break down)
 
-### Phase 27: Package .opencode/ primitives for distribution
+### Phase 27: Fix sync-oss.yml workflow
 
 **Goal:** [To be planned]
 **Requirements**: TBD
@@ -520,6 +586,16 @@ Plans:
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 27 to break down)
+
+### Phase 28: Package .opencode/ primitives for distribution
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 27
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 28 to break down)
 
 ---
 
