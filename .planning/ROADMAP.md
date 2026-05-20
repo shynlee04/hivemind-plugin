@@ -466,10 +466,10 @@ Plans:
 - Verify: `npm run typecheck` → clean, `npm test` → 2382 passed (baseline)
 **Requirements:** TBD
 **Depends on:** Phase 19
-**Plans:** 0 plans
+**Plans:** 1 direct execution record
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 20 to break down)
+- [x] Phase 20 direct execution — dependency cleanup completed in `38e0bd8f`; progress/state manifests updated in `b3875fd6`. Evidence: `package.json`/`package-lock.json` dependency cleanup, `.planning/STATE.md` focus advanced to Phase 21, `AGENTS.md` current phase context updated.
 
 ### Phase 21: Sync I/O Async Conversion + Promise Hygiene
 
