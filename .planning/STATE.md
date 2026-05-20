@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-20T11:19:57.283Z"
+last_updated: "2026-05-20T11:24:13.000Z"
 progress:
   total_phases: 9
   completed_phases: 4
-  total_plans: 26
-  completed_plans: 24
-  percent: 92
+  total_plans: 27
+  completed_plans: 25
+  percent: 93
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,8 +17,8 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 17-02-PLAN.md completed — manual audit of schema-kernel/, tools/, hooks/ modules
-**Last trigger:** Phase 17 Plan 02 complete — schema-kernel, tools, hooks audit complete — 3 dead files identified for Phase 18 cleanup.
+**Last advance:** 17-03-PLAN.md completed — discovery audit of coordination/ and task-management/ modules
+**Last trigger:** Phase 17 Plan 03 complete — coordination/ and task-management/ audit complete — 5 dead files identified (recovery/ submodule), RESEARCH.md corrections for test coverage.
 
 ---
 
@@ -27,6 +27,7 @@ progress:
 **Active phase:** Phase 17 — sync-boundary-definition-src-audit-and-cleanup.
 **Phase 17 Plan 01:** ✅ COMPLETE — Discovered audit of src/shared/ (14 files), src/config/ (7 files), and src/routing/ (11 files). Zero dead code found. Zero architecture violations. 3 minor test-gaps in shared/. 3 RESEARCH.md inaccuracies corrected (routing test coverage, compiler.ts LOC, profile filename).
 **Phase 17 Plan 02:** ✅ COMPLETE — Manual audit of src/schema-kernel/ (20 files, 2,529 LOC), src/tools/ (30 files, 3,961 LOC), and src/hooks/ (16 files, 1,529 LOC). Found 3 dead code files: permission.schema.ts, tool-definition.schema.ts, toggle-gates.ts. All other files active and wired. 3 RESEARCH.md corrections: generate-config-json-schema is runtime (not build-time), prompt tools HAVE tests, tool count is 22 (not 23).
+**Phase 17 Plan 03:** ✅ COMPLETE — Discovery audit of src/coordination/ (31 files, 5,596 LOC) and src/task-management/ (16 files, 2,620 LOC). Found 5 dead files (entire recovery/ submodule, 763 LOC). Corrected 3 RESEARCH.md inaccuracies: sdk-delegation and command-delegation DO have tests (contrary to "NO tests" claim), manager.ts is 362 LOC (not ~500). storeCache singleton documented as context-rot. asString duplication confirmed resolved.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
@@ -154,6 +155,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-16-06 | Event-tracker deprecation cleanup: src/ references in AGENTS.md comments and plugin.ts migration code left intact (legitimate historical/migration documentation); .opencode/skills/ references updated with deprecation annotations; evals.json not modified (test fixture per D-16) | NEW — 2026-05-19 |
 | D-16-04 | get-manifest action on session-hierarchy tool: handleGetManifest reads hierarchy-manifest.json via safeSessionPath + readFile + JSON.parse. Returns flattened child list with status/delegatedBy/depth/turnCount/createdAt. No new imports. | NEW — 2026-05-20 |
 | D-17-01 | Plan 01 audit complete: 32 files audited (shared/, config/, routing/), zero dead code, zero architecture violations, 3 minor test-gaps in shared/ (tool-response.ts, task-status.ts, tool-helpers.ts lack dedicated test files). 3 RESEARCH.md corrections: routing HAS test coverage (9 files), compiler.ts is 410 LOC (not ~500), profile filename corrected. Findings report ready for Phase 18 consumption. | NEW — 2026-05-20 |
+| D-17-03 | Plan 03 audit complete: 47 files audited (coordination/ 31 files, task-management/ 16 files). Found 5 dead files (entire recovery/ submodule, 763 LOC, zero runtime consumers). Corrected 3 RESEARCH.md inaccuracies: sdk-delegation/ HAS tests (tests/lib/sdk-delegation.test.ts), command-delegation/ HAS tests (tests/lib/command-delegation.test.ts), manager.ts is 362 LOC (not ~500). storeCache singleton confirmed as known context-rot (ARCHITECTURE.md line 266). asString duplication confirmed resolved. All active submodules have adequate test coverage. | NEW — 2026-05-20 |
 
 ---
 
@@ -247,6 +249,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 ## Next Actions
 
 1. **Phase 17 Plan 01 COMPLETE** — Manual audit of shared/, config/, routing/. 32 files, 4,412 LOC, 0 dead code. Findings report created for Phase 18.
+1.5. **Phase 17 Plan 03 COMPLETE** — Audit of coordination/ (31 files, 5,596 LOC) and task-management/ (16 files, 2,620 LOC). 5 dead files found. Findings appended. Phase 17 fully complete — ready for Phase 18 cleanup execution.
 2. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
 3. **Phase 16 Plan 02 COMPLETE** — Enhanced session-tracker.ts: child .json search, >1MB warnings, filter-sessions action. typecheck clean, all tests pass.
 4. **Phase 16 remaining plans (05, 07)** — Wave 1 tool implementation plans. Next: 16-05.
