@@ -390,12 +390,13 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 **Hard Restructuring Runway (Phase 19-25):** Inserted 2026-05-21 before original Phase 19/20 (pushed to Phase 26/27). Based on 4 research artifacts: SDK API audit, DI architecture analysis, hard-restructuring synthesis, advisor gray-area decisions.
 **Phase 18:** ✅ COMPLETE (2026-05-21) — 4/4 plans, gatekeeping 3 gates clear.
-**Active phase:** Phase 20 — Package.json Dependency Cleanup.
+**Phase 20:** ✅ COMPLETE (2026-05-21) — cleaned up unused dependencies, consolidated yaml libraries, bumped minors, relocated dashboard/react to optionalDependencies.
+**Active phase:** Phase 21 — Sync I/O Async Conversion + Promise Hygiene.
 **Sequence:** non-destructive (Phase 19) → dependency cleanup (20) → async I/O (21) → typed errors (22) → plugin decomposition (23) → module split (24) → legacy cleanup (25) → sync-oss.yml (26) → package primitives (27).
-**Dependency order:** Each phase depends on the previous. Phase 19 is COMPLETE after non-destructive remediation and final gatekeeping. Historical trace confirmed `session-classification-hook.ts`, `schema-normalizer.ts`, and `delegation-packet.ts` were intended-but-unwired feature gaps, recorded for future rebuild instead of restored as dead code. Phase 20 may now handle dependency cleanup without reintroducing deleted prototype surfaces.
+**Dependency order:** Each phase depends on the previous. Phase 20 is COMPLETE. Phase 21 may now handle converting runtime sync filesystem calls to async and fixing fire-and-forget promises.
 **Research artifacts:**
 - `.planning/research/hard-restructuring-synthesis-2026-05-21.md` (454 LOC)
 - `.planning/research/hard-restructuring-advisor-2026-05-21.md` (151 LOC)
 - `.planning/research/opencode-sdk-v1155-api-audit-2026-05-21.md` (493 LOC)
 - `.planning/codebase/DI-ARCHITECTURE-ANALYSIS.md` (397 LOC)
-**Key decisions pending:** Phase ordering, legacy removal strategy, dep cleanup timing, plugin decomposition approach, soft routing approach — per advisor report gray-area decisions.
+**Key decisions pending:** Legacy removal strategy, plugin decomposition approach, soft routing approach — per advisor report gray-area decisions.

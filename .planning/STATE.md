@@ -17,18 +17,18 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-21
-**Last advance:** Phase 19 complete — dead schema cleanup, unwired feature deletion with gap trace, stale test removal, clean dist rebuild, manifest sync, and GSD gatekeeping pass
-**Current focus:** Phase 20 — Package.json Dependency Cleanup
-**Next recommended run:** `/gsd-plan-phase 20` after confirming dependency cleanup scope.
+**Last advance:** Phase 20 complete — purged 11 unused dependencies, consolidated yaml parser libraries, bumped minor versions, and relocated dashboard/react to optionalDependencies
+**Current focus:** Phase 21 — Sync I/O Async Conversion + Promise Hygiene
+**Next recommended run:** `/gsd-plan-phase 21` after planning I/O conversion.
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 20 — Package.json Dependency Cleanup.
+**Active phase:** Phase 21 — Sync I/O Async Conversion + Promise Hygiene.
 **Phase 18:** ✅ COMPLETE — 4/4 plans.
 **Phase 19:** ✅ COMPLETE — Plans 01-04 executed and gatekeeping passed. Historical trace records intended-but-unwired feature gaps for session-classification-hook, schema-normalizer, and delegation-packet.
-**Phase 20:** 📋 READY — Remove 11 unused deps, consolidate yaml+js-yaml, bump 6 minors, move @json-render/*+react to optional.
+**Phase 20:** ✅ COMPLETE — Purged 11 unused dependencies, bumped 6 minor versions, consolidated yaml libraries, moved sidecar/dashboard dependencies to optionalDependencies.
 **Phase 21:** 📋 READY — Convert runtime sync fs→async. Add .catch() to 5 fire-and-forget promises (plugin.ts startup). Target: ~159→~30 sync calls.
 **Phase 22:** 📋 READY — 5 typed error classes, replace ~100 `throw new Error` sites across 45 files.
 **Phase 23:** 📋 READY — Plugin decomposition + configure-primitive/compiler split + tool import standardization + decompileAgent bugfix + execute-slash-command return envelope fix.
@@ -75,7 +75,7 @@ Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/`
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Phase 20 — dependency cleanup after Phase 19 gate pass
+**Current focus:** Phase 21 — converting runtime sync fs calls to async and fixing fire-and-forget promises
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -269,9 +269,8 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **Phase 19** 📋 — Non-Destructive Remediation (~880 LOC dead code, schema bugfixes, stale dist). Run `/gsd-plan-phase 19`.
-2. **Phase 20** 📋 — Package.json Dependency Cleanup (11 deps remove, 6 bumps, yaml consolidation).
-3. **Phase 21** 📋 — Sync I/O Async Conversion + Promise Hygiene (runtime paths, fire-and-forget fixes).
+1. **Phase 20** ✅ — Package.json Dependency Cleanup (11 deps remove, 6 bumps, yaml consolidation).
+2. **Phase 21** 📋 — Sync I/O Async Conversion + Promise Hygiene (runtime paths, fire-and-forget fixes).
 4. **Phase 22** 📋 — Typed Error Hierarchy (5 classes, ~100 throw sites, silent catch fixes).
 5. **Phase 23** 📋 — Plugin Decomposition + Module Size Fixes (registry, startup, composer, split 2 near-cap modules).
 6. **Phase 24** 📋 — Session-Tracker Module Split (event-capture 702 LOC, PendingDispatchRegistry simplify, CQRS fix).
