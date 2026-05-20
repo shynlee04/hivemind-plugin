@@ -102,14 +102,14 @@ focus: arch
 **Task-Management Layer:**
 - Purpose: Durable state, lifecycle state machine, continuity, journal, recovery, trajectory.
 - Location: `src/task-management/`.
-- Contains: `src/task-management/continuity/`, `src/task-management/journal/`, `src/task-management/lifecycle/`, `src/task-management/recovery/`, `src/task-management/trajectory/`.
+- Contains: `src/task-management/continuity/`, `src/task-management/journal/`, `src/task-management/lifecycle/`, `src/task-management/trajectory/`.
 - Depends on: `src/shared/` contracts and selected coordination signals.
 - Used by: Tools, hooks, coordination, plugin composition.
 
 **Feature Layer:**
 - Purpose: Standalone runtime features not owned by routing/config/coordination/task-management.
 - Location: `src/features/`.
-- Contains: `agent-work-contracts/`, `auto-loop/`, `background-command/`, `bootstrap/`, `doc-intelligence/`, `prompt-packet/`, `ralph-loop/`, `runtime-pressure/`, `sdk-supervisor/`, `session-tracker/`, `steering-engine/`.
+- Contains: `agent-work-contracts/`, `auto-loop/`, `background-command/`, `bootstrap/`, `doc-intelligence/`, `prompt-packet/`, `ralph-loop/`, `runtime-pressure/`, `sdk-supervisor/`, `session-tracker/`.
 - Depends on: `src/shared/`, `src/schema-kernel/`, selected coordination helpers.
 - Used by: Tools, hooks, routing, plugin composition, public API exports.
 
