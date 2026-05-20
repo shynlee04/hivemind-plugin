@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-20T18:09:52.069Z"
+last_updated: "2026-05-21T18:00:00.000Z"
 progress:
-  total_phases: 9
+  total_phases: 16
   completed_phases: 6
   total_plans: 30
   completed_plans: 30
-  percent: 100
+  percent: 37.5
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,19 +17,25 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-21
-**Last advance:** 18-04-PLAN.md completed — synced STRUCTURE.md, ARCHITECTURE.md, CONCERNS.md, AGENTS.md with post-cleanup state
-**Last trigger:** Phase 18 Plan 01 complete — dead code removal: toggle-gates (83 LOC), steering-engine (609 LOC), runtime-detection (195 LOC), recovery/ (763 LOC). 19 files deleted, 3 atomic commits. typecheck + full test suite pass with zero regressions.
+**Last advance:** Phase 18 complete — dead code deletion, storeCache extraction, barrel narrowing, manifest sync
+**Current focus:** Phase 19 — Non-Destructive Remediation: dead schema, stale dist, extra hooks
+**Next recommended run:** `/gsd-plan-phase 19`
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 18 — root-cleanup-sync-boundary-sync-manifest.
-**Phase 17 Plan 01:** ✅ COMPLETE — Discovered audit of src/shared/ (14 files), src/config/ (7 files), and src/routing/ (11 files). Zero dead code found. Zero architecture violations. 3 minor test-gaps in shared/. 3 RESEARCH.md inaccuracies corrected (routing test coverage, compiler.ts LOC, profile filename).
-**Phase 17 Plan 02:** ✅ COMPLETE — Manual audit of src/schema-kernel/ (20 files, 2,529 LOC), src/tools/ (30 files, 3,961 LOC), and src/hooks/ (16 files, 1,529 LOC). Found 3 dead code files: permission.schema.ts, tool-definition.schema.ts, toggle-gates.ts. All other files active and wired. 3 RESEARCH.md corrections: generate-config-json-schema is runtime (not build-time), prompt tools HAVE tests, tool count is 22 (not 23).
-**Phase 17 Plan 03:** ✅ COMPLETE — Discovery audit of src/coordination/ (31 files, 5,596 LOC) and src/task-management/ (16 files, 2,620 LOC). Found 5 dead files (entire recovery/ submodule, 763 LOC). Corrected 3 RESEARCH.md inaccuracies: sdk-delegation and command-delegation DO have tests (contrary to "NO tests" claim), manager.ts is 362 LOC (not ~500). storeCache singleton documented as context-rot. asString duplication confirmed resolved.
-**Phase 18 Plan 01:** ✅ COMPLETE — Dead code removal: toggle-gates (83 LOC), steering-engine (609 LOC), runtime-detection (195 LOC), recovery/ (763 LOC). 19 files deleted across 3 atomic batch commits. typecheck + full test suite pass with zero regressions.
-**Phase 18 Plan 02:** ✅ COMPLETE — Extracted storeCache singleton into dedicated store-cache.ts with get/set/reset API (4 TDD tests). continuity/index.ts imports from new module. continuity.test.ts uses resetStoreCache() for cold-start simulation. typecheck clean, 2382/2384 tests pass.
+**Active phase:** Phase 19 — Non-Destructive Remediation: dead schema, stale dist, extra hooks.
+**Phase 18:** ✅ COMPLETE — 4/4 plans: dead code deletion (19 files, 2,287 LOC), storeCache TDD extraction, barrel narrowing, manifest sync. Gatekeeping: 3 gates clear. 2 WARNING findings (WR-01 duplicate tests, WR-02 stale resetStoreCache import).
+**Phase 19:** 📋 READY — Non-Destructive Remediation: delete permission.schema.ts (168 LOC), tool-definition.schema.ts (74 LOC); rebuild dist/ (13 stale files); remove extra hooks (system.transform, messages.transform) from plugin.ts.
+**Phase 20:** 📋 READY — Package.json Dependency Cleanup: remove 11 unused deps, bump 6 minor versions.
+**Phase 21:** 📋 READY — Sync I/O Async Conversion: convert runtime sync fs to async (target: ~159 → ~30 sync calls).
+**Phase 22:** 📋 READY — Typed Error Hierarchy: create typed error classes, replace 95 throw new Error sites.
+**Phase 23:** 📋 READY — Plugin Decomposition: extract tool registry, startup, hook composition (plugin.ts 493→~300 LOC).
+**Phase 24:** 📋 READY — Module Split: event-capture.ts (702 LOC → <500), session-tracker/index.ts (561 LOC → <500).
+**Phase 25:** 📋 READY — Legacy/Deprecation Cleanup: remove 48 legacy/deprecated refs from runtime.
+**Phase 26:** 📋 deferred — Fix sync-oss.yml workflow (originally Phase 19, pushed).
+**Phase 27:** 📋 deferred — Package .opencode/ primitives for distribution (originally Phase 20, pushed).
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
@@ -240,6 +246,8 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - Phase CP-ST-06 added: Session Tracker Root Cause Rewrite — triệt để rewrite 6 root causes + xóa 30 stale mock tests
 - **2026-05-18** — Phase CP-DT-01 INSERTED after CP-ST-06: Delegate-Task Ecosystem Revamp — toàn diện refactor delegate-task (proven broken: child sessions freeze sau 30 phút, 0 tool calls). 4 deliverables: SPEC.md, CONTEXT.md, RESEARCH.md, PATTERN.md. Research sâu OpenCode SDK + source-code architecture trước khi design v2.
 - Phase 16 added: Session-Tracker Tool Intelligence + Event-Tracker Deprecation Cleanup — Nâng cấp read-side tools, deprecate event-tracker, sửa hivemind-power-on skill
+- **2026-05-21** — Phase 18 complete (4/4 plans). Gatekeeping: 3 gates clear, 2 WARNING findings.
+- **2026-05-21** — **HARD RESTRUCTURING RUNWAY INSERTED**: Phases 19-25 inserted before original Phase 19/20 (pushed to Phase 26/27). Based on 4 research artifacts: SDK API audit (493 LOC), DI architecture analysis (397 LOC), hard-restructuring synthesis (454 LOC), advisor gray-area decisions (151 LOC). Sequence: non-destructive → dependency cleanup → async I/O → typed errors → plugin decomposition → module split → legacy cleanup.
 
 ### Key Restructuring Decisions
 
@@ -257,18 +265,17 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **Phase 17 Plan 01 COMPLETE** — Manual audit of shared/, config/, routing/. 32 files, 4,412 LOC, 0 dead code. Findings report created for Phase 18.
-
-1.5. **Phase 17 Plan 03 COMPLETE** — Audit of coordination/ (31 files, 5,596 LOC) and task-management/ (16 files, 2,620 LOC). 5 dead files found. Findings appended. Phase 17 fully complete — ready for Phase 18 cleanup execution.
-
-2. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
-3. **Phase 16 Plan 02 COMPLETE** — Enhanced session-tracker.ts: child .json search, >1MB warnings, filter-sessions action. typecheck clean, all tests pass.
-4. **Phase 16 remaining plans (05, 07)** — Wave 1 tool implementation plans. Next: 16-05.
-5. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass.
-6. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 5/5 plans executed. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`.
-7. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete). After CP-DT-01 in dependency order.
-8. **Runtime UAT pending** — CP-ST live compact/resume and CP-DT live delegation smoke tests need real long-haul session proof.
-9. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-DT-01 and CP-PTY readiness checks.
+1. **Phase 19** 📋 — Non-Destructive Remediation (dead schema, stale dist, extra hooks). Run `/gsd-plan-phase 19` to begin.
+2. **Phase 20** 📋 — Package.json Dependency Cleanup. Depends on Phase 19.
+3. **Phase 21** 📋 — Sync I/O Async Conversion. Depends on Phase 20.
+4. **Phase 22** 📋 — Typed Error Hierarchy. Depends on Phase 21.
+5. **Phase 23** 📋 — Plugin Decomposition. Depends on Phase 22.
+6. **Phase 24** 📋 — Module Split (event-capture.ts, session-tracker/index.ts). Depends on Phase 23.
+7. **Phase 25** 📋 — Legacy/Deprecation Cleanup. Depends on Phase 24.
+8. **Phase 26** 📋 — Fix sync-oss.yml workflow. Depends on Phase 25.
+9. **Phase 27** 📋 — Package .opencode/ primitives. Depends on Phase 26.
+10. **CP-PTY-01** 🔵 READY — Background Shell Control-Plane MVP. After hard restructuring runway.
+11. **Runtime UAT pending** — CP-ST live compact/resume and CP-DT live delegation smoke tests deferred.
 
 ## Option 3 Foundation Artifacts
 

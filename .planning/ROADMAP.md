@@ -431,25 +431,95 @@ Plans:
 - [x] 18-03-PLAN.md — Barrel Narrowing: replace export * with explicit named exports for command-engine — Wave 1 ✅
 - [x] 18-04-PLAN.md — Manifest Sync: update STRUCTURE.md, ARCHITECTURE.md, CONCERNS.md, AGENTS.md — Wave 2 ✅
 
-### Phase 19: Fix sync-oss.yml workflow
+### Phase 19: Non-Destructive Remediation — dead schema, stale dist, extra hooks
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Eliminate all remaining dead code (permission.schema.ts, tool-definition.schema.ts), rebuild dist/ to eliminate 13 stale artifacts from Phase 18 deletions, and remove extra hooks (system.transform, messages.transform) from plugin.ts return. Non-destructive — zero logic changes, zero behavior impact.
+**Requirements:** TBD
 **Depends on:** Phase 18
 **Plans:** 0 plans
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 19 to break down)
 
-### Phase 20: Package .opencode/ primitives for distribution
+### Phase 20: Package.json Dependency Cleanup
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Remove 11 unused runtime dependencies (commander, diff, fast-glob, fast-xml-parser, ink, js-yaml, jsonc-parser, node-pty, tree-sitter-javascript, vscode-jsonrpc, web-tree-sitter); bump 6 minor versions (@clack/prompts, bun-types, yaml, zod, @vitest/coverage-v8, vitest); move @json-render/* + react to sidecar-only optional deps. Verify typecheck + test suite after each batch.
+**Requirements:** TBD
 **Depends on:** Phase 19
 **Plans:** 0 plans
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 20 to break down)
+
+### Phase 21: Sync I/O Async Conversion — Runtime Paths
+
+**Goal:** Convert all sync filesystem calls (readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, renameSync) in runtime paths (tools, hooks, features, coordination) to async fs/promises. Retain sync I/O only in CLI cold-start paths (bin/, bootstrap-init CLI mode). Target: reduce sync calls from ~159 to ~30.
+**Requirements:** TBD
+**Depends on:** Phase 20
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 21 to break down)
+
+### Phase 22: Typed Error Hierarchy
+
+**Goal:** Create typed error classes (HarnessValidationError, HarnessPermissionError, HarnessNotFoundError, HarnessPersistenceError, HarnessRuntimeError) and replace ~95 untyped `throw new Error` sites across src/. Retrofit catch sites for type-based error classification. All existing error messages and behavior preserved.
+**Requirements:** TBD
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 22 to break down)
+
+### Phase 23: Plugin Decomposition
+
+**Goal:** Decompose plugin.ts (493 LOC, 50+ imports) by extracting: (a) tool registration map → src/tools/registry.ts, (b) startup tasks → src/plugin/startup.ts, (c) hook composition → src/hooks/composition/composer.ts. Target: plugin.ts < 300 LOC, each extracted module < 200 LOC.
+**Requirements:** TBD
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 23 to break down)
+
+### Phase 24: Module Split — event-capture.ts + session-tracker/index.ts
+
+**Goal:** Split src/features/session-tracker/capture/event-capture.ts (702 LOC) into 2-3 files by lifecycle event family; split src/features/session-tracker/index.ts (561 LOC) into public facade + dependency wiring. All modules under 500 LOC cap. Zero behavior change.
+**Requirements:** TBD
+**Depends on:** Phase 23
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 24 to break down)
+
+### Phase 25: Legacy/Deprecation Cleanup
+
+**Goal:** Remove 48 legacy/deprecated references from runtime code (continuity legacy path compat, startup migration code, .env awareness, one-shot startup deletions). Each compat path gets a removal gate date. Clean startup initialization in plugin.ts.
+**Requirements:** TBD
+**Depends on:** Phase 24
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 25 to break down)
+
+### Phase 26: Fix sync-oss.yml workflow
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 25
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 26 to break down)
+
+### Phase 27: Package .opencode/ primitives for distribution
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 26
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 27 to break down)
 
 ---
 
