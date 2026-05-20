@@ -447,10 +447,13 @@ Plans:
 - Delete empty dirs: `src/kernel/`, `src/harness/`
 **Requirements:** TBD
 **Depends on:** Phase 18
-**Plans:** 0 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 19 to break down)
+- [ ] 19-01-PLAN.md — Schema barrel cleanup (delete 3 dead schemas, migrate tool-definition)
+- [ ] 19-02-PLAN.md — Dead module deletions (session-classification, schema-normalizer, prompt-packet partial)
+- [ ] 19-03-PLAN.md — Code inlines and hook cleanup (concurrency-key, deprecated profile, no-op hooks)
+- [ ] 19-04-PLAN.md — Final cleanup (empty dirs, rebuild dist, sync manifests)
 
 ### Phase 20: Package.json Dependency Cleanup
 
