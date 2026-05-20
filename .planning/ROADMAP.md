@@ -410,10 +410,13 @@ src/
 **Mode:** mvp
 **Requirements**: TBD
 **Depends on:** Phase 16
-**Plans:** 0 plans
+**Plans:** 4 plans in 4 waves
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 17 to break down)
+- [ ] 17-01-PLAN.md — Audit shared/, config/, routing/ (smallest modules) — Wave 1
+- [ ] 17-02-PLAN.md — Audit schema-kernel/, tools/, hooks/ — Wave 2
+- [ ] 17-03-PLAN.md — Audit coordination/, task-management/ — Wave 3
+- [ ] 17-04-PLAN.md — Audit features/, cli/, sidecar/, harness/kernel + compile final FINDINGS.md — Wave 4
 
 ### Phase 18: Root cleanup, sync boundary, sync manifest
 
