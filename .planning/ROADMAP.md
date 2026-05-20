@@ -450,9 +450,9 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — Schema barrel cleanup (delete 3 dead schemas, migrate tool-definition)
-- [ ] 19-02-PLAN.md — Dead module deletions (session-classification, schema-normalizer, prompt-packet partial)
-- [ ] 19-03-PLAN.md — Code inlines and hook cleanup (concurrency-key, deprecated profile, no-op hooks)
+- [x] 19-01-PLAN.md — Schema barrel cleanup (delete 3 dead schemas, migrate tool-definition) — COMPLETE, 1 correction: skill-metadata preserved (has consumers)
+- [x] 19-02-PLAN.md — Dead module deletions (session-classification, schema-normalizer, prompt-packet partial) — COMPLETE
+- [x] 19-03-PLAN.md — Code inlines and hook cleanup (concurrency-key, deprecated profile, no-op hooks) — COMPLETE
 - [ ] 19-04-PLAN.md — Final cleanup (empty dirs, rebuild dist, sync manifests)
 
 ### Phase 20: Package.json Dependency Cleanup
