@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1c571efb0ffeIloZPzsnqS0P0y",
+  "lastUpdated": "2026-05-18T10:23:03.602Z",
+  "children": {
+    "ses_1c56bddc2ffe3DEHK2jkYCGQAz": {
+      "sessionID": "ses_1c56bddc2ffe3DEHK2jkYCGQAz",
+      "parentSessionID": "ses_1c571efb0ffeIloZPzsnqS0P0y",
+      "rootMainSessionID": "ses_1c571efb0ffeIloZPzsnqS0P0y",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-build",
+      "subagentType": "hm-l2-build",
+      "createdAt": "2026-05-18T10:14:07.201Z",
+      "updatedAt": "2026-05-18T10:14:16.867Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c56bddc2ffe3DEHK2jkYCGQAz.json"
+    },
+    "ses_1c5660edcffeEBRK8DMQIl5VNp": {
+      "sessionID": "ses_1c5660edcffeEBRK8DMQIl5VNp",
+      "parentSessionID": "ses_1c571efb0ffeIloZPzsnqS0P0y",
+      "rootMainSessionID": "ses_1c571efb0ffeIloZPzsnqS0P0y",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-scout",
+      "subagentType": "hm-l2-scout",
+      "createdAt": "2026-05-18T10:20:27.848Z",
+      "updatedAt": "2026-05-18T10:23:03.602Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c5660edcffeEBRK8DMQIl5VNp.json"
+    }
+  },
+  "totalChildren": 2,
+  "maxDepth": 1
+}

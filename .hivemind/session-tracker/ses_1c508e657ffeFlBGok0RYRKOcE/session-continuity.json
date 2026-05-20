@@ -1,0 +1,77 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+  "lastUpdated": "2026-05-18T12:17:40.350Z",
+  "hierarchy": {
+    "root": "ses_1c508e657ffeFlBGok0RYRKOcE",
+    "children": {
+      "ses_1c50675eeffe9xvxLse2YETTzR": {
+        "file": "ses_1c50675eeffe9xvxLse2YETTzR.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1c5062769ffef6KCrI0iAoRX7t": {
+        "file": "ses_1c5062769ffef6KCrI0iAoRX7t.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1c505ce4effexM0sOscPJSVWCp": {
+        "file": "ses_1c505ce4effexM0sOscPJSVWCp.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1c5052d53ffeO3xr2puYZdPaiy": {
+        "file": "ses_1c5052d53ffeO3xr2puYZdPaiy.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-scout",
+        "children": {}
+      },
+      "ses_1c5052cbcffeQ8CbvgNJXOEn1K": {
+        "file": "ses_1c5052cbcffeQ8CbvgNJXOEn1K.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "hm-l2-scout",
+        "children": {}
+      },
+      "ses_1c503c8d1ffezCNx4w6hKmjcF4": {
+        "file": "ses_1c503c8d1ffezCNx4w6hKmjcF4.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1c5035941ffeSZ5IyTJ47j8FhP": {
+        "file": "ses_1c5035941ffeSZ5IyTJ47j8FhP.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1c5029163ffeR4ZBz74DrEXPw5": {
+        "file": "ses_1c5029163ffeR4ZBz74DrEXPw5.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 4,
+  "toolSummary": {
+    "skill": 1,
+    "delegation-status": 22,
+    "session-tracker": 1,
+    "delegate-task": 12,
+    "grep": 2,
+    "read": 1,
+    "task": 1,
+    "glob": 3
+  }
+}

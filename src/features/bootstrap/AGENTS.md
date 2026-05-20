@@ -6,7 +6,7 @@
 
 ## 1. Sector purpose and lifecycle role
 
-`src/features/bootstrap/` owns bootstrap structure, primitive loading, framework/runtime detection, and validation helpers. Key modules: `primitive-loader.ts` (loads OpenCode primitives), `primitive-registry.ts` (registry of discovered primitives), `primitive-scanners.ts` (filesystem scanning), `framework-detector.ts` (framework detection), `runtime-validator.ts` (runtime validation), `cross-primitive-validator.ts` (cross-primitive dependency validation), `structure.ts` (bootstrap structure). The `control-plane/` and `runtime-detection/` subdirectories own deeper detection logic. Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`.
+`src/features/bootstrap/` owns bootstrap structure, primitive loading, framework detection, and validation helpers. Key modules: `primitive-loader.ts` (loads OpenCode primitives), `primitive-registry.ts` (registry of discovered primitives), `primitive-scanners.ts` (filesystem scanning), `framework-detector.ts` (framework detection), `runtime-validator.ts` (runtime validation), `cross-primitive-validator.ts` (cross-primitive dependency validation), `structure.ts` (bootstrap structure). The `control-plane/` subdirectory owns deeper bootstrap control-plane logic; legacy `runtime-detection/` was removed in Phase 18 as dead code. Source evidence: `.planning/codebase/ARCHITECTURE.md:136-183`.
 
 ## 2. Allowed mutation authority
 
@@ -31,7 +31,7 @@
 ## 5. Naming and placement conventions
 
 - Modules use `kebab-case.ts` in `src/features/bootstrap/`. Source evidence: `.planning/codebase/STRUCTURE.md:186-195`.
-- Subdirectories: `control-plane/`, `runtime-detection/`.
+- Subdirectories: `control-plane/`.
 - Tests mirror under `tests/features/bootstrap/`.
 
 ## 6. Quality gates and evidence expectations

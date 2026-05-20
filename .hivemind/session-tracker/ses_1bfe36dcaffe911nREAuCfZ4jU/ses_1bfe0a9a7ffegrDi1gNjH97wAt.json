@@ -1,0 +1,30 @@
+{
+  "sessionID": "ses_1bfe0a9a7ffegrDi1gNjH97wAt",
+  "parentSessionID": "ses_1bfe36dcaffe911nREAuCfZ4jU",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "general",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": "general"
+  },
+  "created": "2026-05-19T12:04:16.090Z",
+  "updated": "2026-05-19T12:04:16.118Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "pending",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "build",
+      "content": "Write the number 42 to a file called /tmp/delegate-test-verification.txt and confirm you did it",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [],
+  "lastMessage": "Write the number 42 to a file called /tmp/delegate-test-verification.txt and confirm you did it"
+}

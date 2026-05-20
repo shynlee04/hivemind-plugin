@@ -1,0 +1,31 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1be3597adffeTot1p4mwdclikw",
+  "lastUpdated": "2026-05-19T20:03:30.167Z",
+  "hierarchy": {
+    "root": "ses_1be3597adffeTot1p4mwdclikw",
+    "children": {
+      "ses_1be34fa49ffe5Yn8BF1nWFiLdh": {
+        "file": "ses_1be34fa49ffe5Yn8BF1nWFiLdh.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 3,
+  "toolSummary": {
+    "read": 7,
+    "delegate-task": 1,
+    "delegation-status": 20,
+    "bash": 12,
+    "hivemind-agent-work-create": 2,
+    "hivemind-trajectory": 1,
+    "hivemind-agent-work-export": 1,
+    "session-journal-export": 2,
+    "session-tracker": 1,
+    "session-context": 1,
+    "glob": 3
+  }
+}

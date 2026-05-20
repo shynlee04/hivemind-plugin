@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1bafdc626ffeJtA6rWs1bDsI12",
+  "lastUpdated": "2026-05-20T17:49:15.487Z",
+  "children": {
+    "ses_1bafc53ceffeiytsZeOGWOIcpJ": {
+      "sessionID": "ses_1bafc53ceffeiytsZeOGWOIcpJ",
+      "parentSessionID": "ses_1bafc538fffe4R8QCNu1cARYSq",
+      "rootMainSessionID": "ses_1bafdc626ffeJtA6rWs1bDsI12",
+      "delegationDepth": 2,
+      "delegatedBy": "gsd-codebase-mapper",
+      "subagentType": "gsd-codebase-mapper",
+      "createdAt": "2026-05-20T17:49:15.487Z",
+      "updatedAt": "2026-05-20T17:49:15.487Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_1bafc53ceffeiytsZeOGWOIcpJ.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 2
+}

@@ -4,6 +4,7 @@ plans:
   - 19-01: Schema barrel cleanup
   - 19-02: Dead module deletions
   - 19-03: Code inlines + hook cleanup
+  - 19-04: Final cleanup + gatekeeping remediation
 status: COMPLETE
 date: 2026-05-21
 metrics:
@@ -22,7 +23,7 @@ metrics:
 
 ## One-line
 
-Deleted ~850 LOC of dead/wrapper code across 8 source files, 5 test files, inlined 1 wrapper, removed 1 no-op hook, and preserved 2 prompt-packet files that have active consumers.
+Deleted dead/wrapper code across source and tests, inlined 1 wrapper, removed 1 no-op hook, preserved active prompt-packet files, traced intended-but-unwired feature gaps, removed stale test drift, deleted empty reserved folders, and rebuilt clean package output.
 
 ## Deviations from Plan
 
@@ -61,6 +62,10 @@ Deleted ~850 LOC of dead/wrapper code across 8 source files, 5 test files, inlin
 | 19-03 | 1 | Inline concurrency-key wrapper | concurrency-key.ts (DEL), manager-runtime.ts (EDIT), delegation-manager.test.ts (EDIT) |
 | 19-03 | 2 | Delete deprecated profile methods | resolve-behavioral-profile.ts (EDIT), index.ts (EDIT), test (EDIT) |
 | 19-03 | 3 | Remove messages.transform no-op hook | core-hooks.ts (EDIT) |
+| 19-04 | 1 | Delete empty reserved dirs | src/kernel/.gitkeep (DEL), src/harness/.gitkeep (DEL) |
+| 19-04 | 2 | Remove stale test drift | tests/lib/spawner/concurrency-key.test.ts (DEL) |
+| 19-04 | 3 | Sync governance/docs drift | ROADMAP.md, STATE.md, codebase maps, AGENTS.md, sector AGENTS.md (EDIT) |
+| 19-04 | 4 | Rebuild clean package output | dist/ regenerated via npm run build |
 
 ## Key Decisions
 
@@ -71,10 +76,12 @@ Deleted ~850 LOC of dead/wrapper code across 8 source files, 5 test files, inlin
 | Kept compaction-preservation.ts + kernel-packet.ts | Both actively imported by session-hooks.ts for compaction preservation |
 | Option B for system.transform | Safer than removing + updating tests; negligible maintenance burden |
 
-## Scope Remaining
+## Gap/Debt Tracking
 
-The following items from the ROADMAP are NOT yet complete and are deferred to subsequent plans:
-- **19-04:** Delete empty dirs (src/kernel/, src/harness/), rebuild dist/, sync ROADMAP + STATE
+Historical trace identified three intended-but-unwired feature gaps. They were correct to remove from active source during Phase 19 because they had no runtime wiring, but they remain product debts for future rebuilds:
+- **f-04c / S4:** session classification and workflow routing (`session-classification-hook.ts`).
+- **REQ-ST-12:** SDK schema normalization (`schema-normalizer.ts`).
+- **F-09a:** long-haul compaction survival delegation packet compiler (`delegation-packet.ts`).
 
 ## Stub Tracking
 
@@ -93,6 +100,6 @@ None — zero security-relevant surface introduced or modified.
 - Behavioral-profile tests: 48 passed
 - Core-hooks tests: 45 passed
 - Prompt-packet tests (preserved): 8 passed
-- Total: 7 test files, 355 tests, 0 failures
-- Dead code `rg` verification: all zero hits
-- 12 source/test files deleted, 1 file created, 10 files edited
+- Initial scoped verification: 7 test files, 355 tests, 0 failures
+- Gatekeeping remediation found stale `tests/lib/spawner/concurrency-key.test.ts`; removed because queue-key behavior is covered by queue and delegation manager tests
+- Final evidence is recorded in `19-GATEKEEPING-REPORT.md`

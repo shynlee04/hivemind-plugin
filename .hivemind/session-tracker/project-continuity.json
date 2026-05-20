@@ -1,0 +1,42 @@
+{
+  "version": "2.0",
+  "projectRoot": "/Users/apple/hivemind-plugin-private",
+  "lastUpdated": "2026-05-20T20:06:54.969Z",
+  "sessions": {
+    "ses_1c82207e4ffeWJk1tvGElgw3Lu": {
+      "dir": "ses_1c857a177ffeYERktxuHRawNcX/",
+      "mainFile": "ses_1c82207e4ffeWJk1tvGElgw3Lu.json",
+      "continuityIndex": "ses_1c857a177ffeYERktxuHRawNcX/session-continuity.json",
+      "created": "2026-05-20T20:02:52.261Z",
+      "updated": "2026-05-20T20:02:52.261Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8350683ffedKXOfJpQu0Lqn5": {
+      "dir": "ses_1c857a177ffeYERktxuHRawNcX/",
+      "mainFile": "ses_1c8350683ffedKXOfJpQu0Lqn5.json",
+      "continuityIndex": "ses_1c857a177ffeYERktxuHRawNcX/session-continuity.json",
+      "created": "2026-05-20T20:02:52.273Z",
+      "updated": "2026-05-20T20:02:52.273Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1b902b053ffeMCzAvDEJWgt1bl": {
+      "dir": "ses_1bb1cf1e0ffe478KZ4HwJgUCN6/",
+      "mainFile": "ses_1b902b053ffeMCzAvDEJWgt1bl.json",
+      "continuityIndex": "ses_1bb1cf1e0ffe478KZ4HwJgUCN6/session-continuity.json",
+      "created": "2026-05-20T20:04:26.707Z",
+      "updated": "2026-05-20T20:06:54.969Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    }
+  },
+  "chronologicalOrder": [
+    "ses_1c82207e4ffeWJk1tvGElgw3Lu",
+    "ses_1c8350683ffedKXOfJpQu0Lqn5",
+    "ses_1b902b053ffeMCzAvDEJWgt1bl"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "sessionID": "ses_1b90978a3ffeL0CQ237aUWVYgr",
+  "parentSessionID": "ses_1bb1cf1e0ffe478KZ4HwJgUCN6",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-code-reviewer",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Final GSD review 19",
+    "subagentType": "gsd-code-reviewer"
+  },
+  "created": "2026-05-20T20:00:28.121Z",
+  "updated": "2026-05-20T20:00:28.141Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-code-reviewer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-code-reviewer",
+      "content": "Final GSD review 19",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-code-reviewer",
+      "content": "I am **subagent gsd-code-reviewer**. Read-only review completed; I did not edit or commit.\n\n## Blocking Findings\n\nNo blocking code findings found.\n\n## Warnings\n\n### WR-01 — Summary references a missing final evidence artifact\n\n**File:** `.planning/phases/19-non-destructive-remediation/19-SUMMARY.md:105`  \n**Issue:** Summary says final evidence is recorded in `19-GATEKEEPING-REPORT.md`, but the phase directory does not contain that file. Current directory entries are only:\n\n- `19-01-PLAN.md`\n- `19-02-PLAN.md`\n- `19-03-PLAN.md`\n- `19-04-PLAN.md`\n- `19-HISTORICAL-TRACE-2026-05-21.md`\n- `19-RESEARCH.md`\n- `19-SUMMARY.md`\n\n**Why it matters:** This is a false evidence pointer. It can mislead downstream gatekeeping/orchestration into believing final gate evidence exists when it does not.\n\n**Fix:** Either create/attach the actual gatekeeping report, or change line 105 to state that final evidence is pending and reference the fresh verification commands/output.\n\n---\n\n### WR-02 — Current STRUCTURE map still lists deleted `src/harness/` and `src/kernel/` in the tree\n\n**File:** `.planning/codebase/STRUCTURE.md:22-24`  \n**Issue:** The top-level tree still lists:\n\n- `src/harness/`\n- `src/kernel/`\n\nBut line 295 correctly says both were removed in Phase 19.\n\n**Why it matters:** This is an internal contradiction in the current codebase map and can cause future agents to assume those broad roots still exist/are registered.\n\n**Fix:** Remove the stale `harness/` and `kernel/` entries from the tree section.\n\n## Verification I ran\n\n- `npm run typecheck` → pass\n- `npx vitest run tests/lib/continuity.test.ts tests/lib/delegation-persistence.test.ts tests/lib/coordination/concurrency/queue.test.ts tests/lib/delegation-manager.test.ts` → 4 files, 149 tests pass\n- `npm test` → 188 files, 2337 passed, 2 skipped\n- `dist/` stale-reference grep for removed modules → no stale deleted-module imports found, only historical comment references in `tool.schema` \n- Reviewed remediation diffs and stale references for `concurrency-key`, `src/kernel`, `src/harness`, `permission.schema`, `tool-definition.schema`, `session-classification-hook`, and `schema-normalizer`.",
+      "tools": []
+    }
+  ],
+  "journey": [
+    {
+      "timestamp": "2026-05-20T20:00:28.121Z",
+      "type": "assistant_message",
+      "content": "I am **subagent gsd-code-reviewer**. Read-only review completed; I did not edit or commit.\n\n## Blocking Findings\n\nNo blocking code findings found.\n\n## Warnings\n\n### WR-01 — Summary references a missing final evidence artifact\n\n**File:** `.planning/phases/19-non-destructive-remediation/19-SUMMARY.md:105`  \n**Issue:** Summary says final evidence is recorded in `19-GATEKEEPING-REPORT.md`, but the phase directory does not contain that file. Current directory entries are only:\n\n- `19-01-PLAN.md`\n- `19-02-PLAN.md`\n- `19-03-PLAN.md`\n- `19-04-PLAN.md`\n- `19-HISTORICAL-TRACE-2026-05-21.md`\n- `19-RESEARCH.md`\n- `19-SUMMARY.md`\n\n**Why it matters:** This is a false evidence pointer. It can mislead downstream gatekeeping/orchestration into believing final gate evidence exists when it does not.\n\n**Fix:** Either create/attach the actual gatekeeping report, or change line 105 to state that final evidence is pending and reference the fresh verification commands/output.\n\n---\n\n### WR-02 — Current STRUCTURE map still lists deleted `src/harness/` and `src/kernel/` in the tree\n\n**File:** `.planning/codebase/STRUCTURE.md:22-24`  \n**Issue:** The top-level tree still lists:\n\n- `src/harness/`\n- `src/kernel/`\n\nBut line 295 correctly says both were removed in Phase 19.\n\n**Why it matters:** This is an internal contradiction in the current codebase map and can cause future agents to assume those broad roots still exist/are registered.\n\n**Fix:** Remove the stale `harness/` and `kernel/` entries from the tree section.\n\n## Verification I ran\n\n- `npm run typecheck` → pass\n- `npx vitest run tests/lib/continuity.test.ts tests/lib/delegation-persistence.test.ts tests/lib/coordination/concurrency/queue.test.ts tests/lib/delegation-manager.test.ts` → 4 files, 149 tests pass\n- `npm test` → 188 files, 2337 passed, 2 skipped\n- `dist/` stale-reference grep for removed modules → no stale deleted-module imports found, only historical comment references in `tool.schema` \n- Reviewed remediation diffs and stale references for `concurrency-key`, `src/kernel`, `src/harness`, `permission.schema`, `tool-definition.schema`, `session-classification-hook`, and `schema-normalizer`.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1b90978a3ffeL0CQ237aUWVYgr"
+      }
+    }
+  ],
+  "children": [],
+  "lastMessage": "I am **subagent gsd-code-reviewer**. Read-only review completed; I did not edit or commit.\n\n## Blocking Findings\n\nNo blocking code findings found.\n\n## Warnings\n\n### WR-01 — Summary references a missing final evidence artifact\n\n**File:** `.planning/phases/19-non-destructive-remediation/19-SUMMARY.md:105`  \n**Issue:** Summary says final evidence is recorded in `19-GATEKEEPING-REPORT.md`, but the phase directory does not contain that file. Current directory entries are only:\n\n- `19-01-PLAN.md`\n- `19-02-PLAN.md`\n- `19-03-PLAN.md`\n- `19-04-PLAN.md`\n- `19-HISTORICAL-TRACE-2026-05-21.md`\n- `19-RESEARCH.md`\n- `19-SUMMARY.md`\n\n**Why it matters:** This is a false evidence pointer. It can mislead downstream gatekeeping/orchestration into believing final gate evidence exists when it does not.\n\n**Fix:** Either create/attach the actual gatekeeping report, or change line 105 to state that final evidence is pending and reference the fresh verification commands/output.\n\n---\n\n### WR-02 — Current STRUCTURE map still lists deleted `src/harness/` and `src/kernel/` in the tree\n\n**File:** `.planning/codebase/STRUCTURE.md:22-24`  \n**Issue:** The top-level tree still lists:\n\n- `src/harness/`\n- `src/kernel/`\n\nBut line 295 correctly says both were removed in Phase 19.\n\n**Why it matters:** This is an internal contradiction in the current codebase map and can cause future agents to assume those broad roots still exist/are registered.\n\n**Fix:** Remove the stale `harness/` and `kernel/` entries from the tree section.\n\n## Verification I ran\n\n- `npm run typecheck` → pass\n- `npx vitest run tests/lib/continuity.test.ts tests/lib/delegation-persistence.test.ts tests/lib/coordination/concurrency/queue.test.ts tests/lib/delegation-manager.test.ts` → 4 files, 149 tests pass\n- `npm test` → 188 files, 2337 passed, 2 skipped\n- `dist/` stale-reference grep for removed modules → no stale deleted-module imports found, only historical comment references in `tool.schema` \n- Reviewed remediation diffs and stale references for `concurrency-key`, `src/kernel`, `src/harness`, `permission.schema`, `tool-definition.schema`, `session-classification-hook`, and `schema-normalizer`."
+}

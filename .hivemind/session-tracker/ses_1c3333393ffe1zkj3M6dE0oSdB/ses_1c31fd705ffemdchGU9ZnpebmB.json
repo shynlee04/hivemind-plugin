@@ -1,0 +1,504 @@
+{
+  "sessionID": "ses_1c31fd705ffemdchGU9ZnpebmB",
+  "parentSessionID": "ses_1c3333393ffe1zkj3M6dE0oSdB",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Plan Phase 14",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-05-18T20:56:24.071Z",
+  "updated": "2026-05-18T21:04:55.508Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-planner",
+      "content": "You are the subagent Name: gsd-planner, role: phase planning specialist. You are being delegated by the front-facing GSD plan-phase orchestrator.\n\nYou must fulfill only this planning task and return a concise handoff. You are a subagent; do not delegate further unless your own agent instructions explicitly require it. Load and follow your relevant GSD/project planning skills before working.\n\n<planning_context>\nPhase: 14\nPhase name: Wire monitor/notification into DelegationManager.dispatch + clean up partial edits\nMode: standard\nTDD_MODE: true\nMVP_MODE: false\nWALKING_SKELETON: false\nPhase requirement IDs: TBD/null\nPhase directory: .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl\n\n<files_to_read>\n- .planning/STATE.md (Project State)\n- .planning/ROADMAP.md (Roadmap)\n- .planning/REQUIREMENTS.md (Requirements)\n- .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-CONTEXT.md (USER DECISIONS from discuss/spec context)\n- .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-RESEARCH.md (Technical Research)\n- .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-VALIDATION.md (Validation Strategy)\n- .planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-PATTERNS.md (Pattern Map)\n- ./AGENTS.md (Project instructions)\n</files_to_read>\n</planning_context>\n\n<mandatory_planning_rules>\n- Create executable Vietnamese PLAN.md files in the phase directory.\n- Do not implement code.\n- Plan must be safe for a dirty worktree: identify and preserve unrelated existing edits.\n- Use TDD for eligible behavior tasks: RED test first, GREEN minimal code, REFACTOR only when green.\n- Each task must include `<read_first>` with concrete file paths.\n- Each task must include `<acceptance_criteria>` with grep/command-verifiable checks.\n- Every `<action>` must contain concrete target state. Avoid vague phrases like \"align with\" unless exact values/files are named.\n- Include `<threat_model>` in every PLAN.md. Security enforcement default is enabled.\n- Include verification commands and explicit live UAT where runtime/TUI behavior cannot be proven by unit tests.\n- Honor the validation contract in `14-VALIDATION.md`.\n- Treat `category` cleanup semantically; do not plan broad grep-delete.\n</mandatory_planning_rules>\n\n<downstream_consumer>\nOutput is consumed by `/gsd-execute-phase 14 --auto`.\nPlans need:\n- YAML frontmatter with phase, plan, type, wave, depends_on, files_modified, autonomous, requirements/requirements_addressed.\n- XML-style task blocks with read_first and acceptance_criteria.\n- Verification criteria.\n- must_haves for goal-backward verification.\n</downstream_consumer>\n\n<expected_output>\nWrite one or more `*-PLAN.md` files in `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/`.\nReturn `## PLANNING COMPLETE` with plan count, wave count, files written, and any execution caveats.\nIf scope is too large or ambiguous, return the appropriate GSD marker and explain the blocker.\n</expected_output>\n\n<success_metrics>\n- PLAN.md files exist on disk and have valid YAML frontmatter.\n- Plans cover Phase 14 boundary from context/research.\n- Plans are TDD-first where behavior is testable.\n- Plans are ready for `gsd-plan-checker`.\n</success_metrics>",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-planner",
+      "content": "Plan Phase 14",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-planner",
+      "content": "Tôi là **subagent gsd-planner**. Đã dùng skill `gsd-plan-phase` và `tdd`.\n\n## PLANNING COMPLETE\n\n**Phase:** 14 — Wire monitor/notification into DelegationManager.dispatch + clean up partial edits  \n**Plans:** 4 plan(s)  \n**Waves:** 4 wave(s)\n\n### Files written\n\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-01-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-02-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-03-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-04-PLAN.md`\n\n### Wave Structure\n\n| Wave | Plan | Focus | Autonomous |\n|---|---|---|---|\n| 1 | `14-01-PLAN.md` | Dirty worktree guard + RED/GREEN dispatch monitor/router reachability | yes |\n| 2 | `14-02-PLAN.md` | Progressive monitor, failure checkpoints, completion, TUI notification wiring | yes |\n| 3 | `14-03-PLAN.md` | Control tools + per-parent 10-slot cap | yes |\n| 4 | `14-04-PLAN.md` | Semantic category/safety cleanup + final validation + live UAT checklist | **no** — human/live UAT gate |\n\n### Validation performed\n\n- YAML/frontmatter parse: PASS for all 4 plans.\n- `gsd-sdk query frontmatter.validate --schema plan`: PASS for all 4 plans.\n- `gsd-sdk query verify.plan-structure`: PASS for all 4 plans.\n- Confirmed every task has `<read_first>`.\n- Confirmed every task has `<acceptance_criteria>`.\n- Confirmed every plan has `<threat_model>`.\n\n### Execution caveat\n\n`14-04-PLAN.md` is intentionally `autonomous: false` because TUI notification/progressive injection routing needs live OpenCode UAT. `/gsd-execute-phase 14 --auto` can execute Waves 1–3 autonomously, then should pause at the Phase 14 live-UAT checkpoint.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-18T20:56:31.871Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_FwfRtWvWCuUKfIlnqDoRUhyN",
+        "input": {
+          "name": "gsd-plan-phase"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:36.476Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_aZwMir2DjTt1MzhoC4KeK0Mc",
+        "input": {
+          "name": "tdd"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:43.929Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_E3sdYV2RJVYEjsaXKxfD55xJ",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:55.827Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_bpFs98n36gn2lfwTq4VYXFwX",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:55.909Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_Rn6s40aY9Pr13Zcts0PurISo",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:55.931Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_P3OyF67EeFGqyyZY0BvZyyad",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/REQUIREMENTS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:55.950Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_8785dlnwb01tAoT97pVDKlci",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:55.998Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_dodiCueRfE8gaiZVc4zbSexC",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:56.034Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_kTFEdzRNNMtNasfYHooAP5HV",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/AGENTS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:56.055Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_4UkJInYBAPOPa6L5YmLydRPI",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-PATTERNS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:56:56.058Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_CmQDlxLjYsdl6sSUUH9aULPF",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-VALIDATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:06.229Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_ujWlFeL3MrS7BLma6ADZpfLJ",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:06.238Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_1cBz4B72FEUY7Shl8L7UeLO9",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:06.259Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_copjgFSFpPFAxTkIjJ2IKsOh",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/codebase/ARCHITECTURE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:06.289Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_yk7FRDPefn6jevOrPUf8vrP3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/codebase/CONVENTIONS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:17.567Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_MJVBU2URjNx0XLlLerWkI2Kv",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:17.572Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_d7X5yaBzWr912O6n6KMk0hKY",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:17.574Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_0rLsbXzVvt4euW7Re8De5F2h",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:17.592Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_CfBj00430qIlrYyMK9kF36ES",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:17.598Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_eWT4fX5EqsL1Rgxgh2TbRbZb",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:25.016Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_qDPIjihVl59xKWVDgrnVWE7X",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:25.107Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_VrHTFyn2b7j8TrCoG04XPmqV",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:25.110Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_JOAcuRvOEdRRTQ8zPxMlN1AL",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:43.666Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_0wmBk54OZf6sjWpcIS6qE3Fc",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:57:56.050Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_qB8ILVwLfYUjMn2s6IpSiDgr",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T20:58:05.952Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_lvQkZKgeKh9QIlegfi97ramR",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:03:23.860Z",
+      "type": "tool_call",
+      "content": "Tool: apply_patch",
+      "metadata": {
+        "tool": "apply_patch",
+        "callID": "call_KzLEf5zvYDyKQ9cxMVUHjNDZ",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:03:37.475Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_5Kc1Vwa2gC9zoRqZ9557l2hU",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:03:37.525Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_wTvyfoTqn94exTMQmPYiRwab",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:03:37.527Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_Vgv4QiYvz6ftA2bKT2d2jAgp",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:03:37.561Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_PxtnwRIxcSFa4MLsn7qwDrso",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-04-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:03:50.192Z",
+      "type": "tool_call",
+      "content": "Tool: apply_patch",
+      "metadata": {
+        "tool": "apply_patch",
+        "callID": "call_hviDFXsI00Kv126DcWqSJ3WI",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:04:02.919Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_IHmvitAmdbQkUE5owmCZVWuA",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:04:03.009Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_gUhDIIBujS7yVJGVSBwVduAx",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:04:03.032Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_vzmxqOsEuh5iyD9eB12ySwmT",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:04:12.046Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_fOK7HatEGHwVhrRSBq7ODiOa",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:04:28.344Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_J0SEXDtvzgGEzhguHDeSJB5w",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:04:40.931Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_pIorshxNqLeS3QDEMAZQoQ5h",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-18T21:04:55.489Z",
+      "type": "assistant_message",
+      "content": "Tôi là **subagent gsd-planner**. Đã dùng skill `gsd-plan-phase` và `tdd`.\n\n## PLANNING COMPLETE\n\n**Phase:** 14 — Wire monitor/notification into DelegationManager.dispatch + clean up partial edits  \n**Plans:** 4 plan(s)  \n**Waves:** 4 wave(s)\n\n### Files written\n\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-01-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-02-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-03-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-04-PLAN.md`\n\n### Wave Structure\n\n| Wave | Plan | Focus | Autonomous |\n|---|---|---|---|\n| 1 | `14-01-PLAN.md` | Dirty worktree guard + RED/GREEN dispatch monitor/router reachability | yes |\n| 2 | `14-02-PLAN.md` | Progressive monitor, failure checkpoints, completion, TUI notification wiring | yes |\n| 3 | `14-03-PLAN.md` | Control tools + per-parent 10-slot cap | yes |\n| 4 | `14-04-PLAN.md` | Semantic category/safety cleanup + final validation + live UAT checklist | **no** — human/live UAT gate |\n\n### Validation performed\n\n- YAML/frontmatter parse: PASS for all 4 plans.\n- `gsd-sdk query frontmatter.validate --schema plan`: PASS for all 4 plans.\n- `gsd-sdk query verify.plan-structure`: PASS for all 4 plans.\n- Confirmed every task has `<read_first>`.\n- Confirmed every task has `<acceptance_criteria>`.\n- Confirmed every plan has `<threat_model>`.\n\n### Execution caveat\n\n`14-04-PLAN.md` is intentionally `autonomous: false` because TUI notification/progressive injection routing needs live OpenCode UAT. `/gsd-execute-phase 14 --auto` can execute Waves 1–3 autonomously, then should pause at the Phase 14 live-UAT checkpoint.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1c31fd705ffemdchGU9ZnpebmB"
+      }
+    }
+  ],
+  "lastMessage": "Tôi là **subagent gsd-planner**. Đã dùng skill `gsd-plan-phase` và `tdd`.\n\n## PLANNING COMPLETE\n\n**Phase:** 14 — Wire monitor/notification into DelegationManager.dispatch + clean up partial edits  \n**Plans:** 4 plan(s)  \n**Waves:** 4 wave(s)\n\n### Files written\n\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-01-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-02-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-03-PLAN.md`\n- `.planning/phases/14-wire-monitor-notification-into-delegationmanager-dispatch-cl/14-04-PLAN.md`\n\n### Wave Structure\n\n| Wave | Plan | Focus | Autonomous |\n|---|---|---|---|\n| 1 | `14-01-PLAN.md` | Dirty worktree guard + RED/GREEN dispatch monitor/router reachability | yes |\n| 2 | `14-02-PLAN.md` | Progressive monitor, failure checkpoints, completion, TUI notification wiring | yes |\n| 3 | `14-03-PLAN.md` | Control tools + per-parent 10-slot cap | yes |\n| 4 | `14-04-PLAN.md` | Semantic category/safety cleanup + final validation + live UAT checklist | **no** — human/live UAT gate |\n\n### Validation performed\n\n- YAML/frontmatter parse: PASS for all 4 plans.\n- `gsd-sdk query frontmatter.validate --schema plan`: PASS for all 4 plans.\n- `gsd-sdk query verify.plan-structure`: PASS for all 4 plans.\n- Confirmed every task has `<read_first>`.\n- Confirmed every task has `<acceptance_criteria>`.\n- Confirmed every plan has `<threat_model>`.\n\n### Execution caveat\n\n`14-04-PLAN.md` is intentionally `autonomous: false` because TUI notification/progressive injection routing needs live OpenCode UAT. `/gsd-execute-phase 14 --auto` can execute Waves 1–3 autonomously, then should pause at the Phase 14 live-UAT checkpoint."
+}

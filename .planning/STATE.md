@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-21T18:00:00.000Z"
+last_updated: "2026-05-21T20:30:00.000Z"
 progress:
   total_phases: 16
   completed_phases: 6
@@ -17,17 +17,17 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-21
-**Last advance:** Phase 18 complete — dead code deletion, storeCache extraction, barrel narrowing, manifest sync
-**Current focus:** Phase 19 — Non-Destructive Remediation: dead schema, stale dist, extra hooks
-**Next recommended run:** `/gsd-plan-phase 19`
+**Last advance:** Phase 19 complete — dead schema cleanup, unwired feature deletion with gap trace, stale test removal, clean dist rebuild, manifest sync, and GSD gatekeeping pass
+**Current focus:** Phase 20 — Package.json Dependency Cleanup
+**Next recommended run:** `/gsd-plan-phase 20` after confirming dependency cleanup scope.
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 19 — Non-Destructive Remediation: dead code, stale dist, extra hooks, schema bugfixes.
+**Active phase:** Phase 20 — Package.json Dependency Cleanup.
 **Phase 18:** ✅ COMPLETE — 4/4 plans.
-**Phase 19:** 📋 READY — Delete ~880 LOC dead code (prompt-packet/, 3 dead schemas, session-classification-hook, schema-normalizer, concurrency-key, no-op hooks, empty dirs). Fix permission.schema.ts enum bug. Rebuild dist/.
+**Phase 19:** ✅ COMPLETE — Plans 01-04 executed and gatekeeping passed. Historical trace records intended-but-unwired feature gaps for session-classification-hook, schema-normalizer, and delegation-packet.
 **Phase 20:** 📋 READY — Remove 11 unused deps, consolidate yaml+js-yaml, bump 6 minors, move @json-render/*+react to optional.
 **Phase 21:** 📋 READY — Convert runtime sync fs→async. Add .catch() to 5 fire-and-forget promises (plugin.ts startup). Target: ~159→~30 sync calls.
 **Phase 22:** 📋 READY — 5 typed error classes, replace ~100 `throw new Error` sites across 45 files.
@@ -75,7 +75,7 @@ Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/`
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Phase 18 — root-cleanup-sync-boundary-sync-manifest
+**Current focus:** Phase 20 — dependency cleanup after Phase 19 gate pass
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -172,6 +172,9 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-18-05 | Extracted storeCache singleton from continuity/index.ts into store-cache.ts with get/set/reset API — 4 TDD tests, all 2382 suite tests pass | NEW — 2026-05-20 |
 | D-18-06 | Narrowed command-engine barrel: replaced export * with 3 explicit named exports (executeCommandEngineAction, listCommands, discoverCommandBundles). 4 internal routing functions removed from public API. typecheck clean, 2382/2384 tests pass. | NEW — 2026-05-21 |
 | D-18-07 | Updated boundary manifests for Phase 18 cleanup: STRUCTURE.md removed steering-engine/ and recovery/, added store-cache.ts; ARCHITECTURE.md removed same from component tables; CONCERNS.md removed 3 stale recovery concerns, added cleanup annotation; AGENTS.md removed recovery from task-management comment. All grep acceptance criteria pass. | NEW — 2026-05-21 |
+| D-19-01 | Schema cleanup corrected: `permission.schema.ts` deleted as prototype; `tool-definition.schema.ts` migrated to `tool.schema.ts`; `skill-metadata.schema.ts` preserved due active consumers. | NEW — 2026-05-21 |
+| D-19-02 | Historical trace locked: `session-classification-hook.ts`, `schema-normalizer.ts`, and `delegation-packet.ts` were intended-but-unwired feature gaps, not meaningless dead code; future rebuild must use requirements f-04c, REQ-ST-12, and F-09a. | NEW — 2026-05-21 |
+| D-19-03 | Final cleanup removed stale `concurrency-key` test, empty `src/kernel`/`src/harness` folders, and synchronized ROADMAP/STATE/codebase/AGENTS drift before clean dist rebuild. | NEW — 2026-05-21 |
 
 ---
 

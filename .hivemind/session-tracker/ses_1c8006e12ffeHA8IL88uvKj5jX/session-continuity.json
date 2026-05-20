@@ -1,0 +1,35 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c8006e12ffeHA8IL88uvKj5jX",
+  "lastUpdated": "2026-05-17T22:29:01.449Z",
+  "hierarchy": {
+    "root": "ses_1c8006e12ffeHA8IL88uvKj5jX",
+    "children": {
+      "ses_1c7fc64faffe5qfjhpQTyl9QtG": {
+        "file": "ses_1c7fc64faffe5qfjhpQTyl9QtG.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-researcher",
+        "children": {}
+      },
+      "ses_1c7fc64e6ffe1xVGnHyiOfyIPE": {
+        "file": "ses_1c7fc64e6ffe1xVGnHyiOfyIPE.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-analyst",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "skill": 3,
+    "read": 8,
+    "tavily_tavily_search": 3,
+    "webfetch": 2,
+    "grep": 1,
+    "todowrite": 4,
+    "task": 2,
+    "write": 1
+  }
+}

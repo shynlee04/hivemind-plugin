@@ -1,0 +1,168 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c857a177ffeYERktxuHRawNcX",
+  "lastUpdated": "2026-05-18T12:39:58.301Z",
+  "hierarchy": {
+    "root": "ses_1c857a177ffeYERktxuHRawNcX",
+    "children": {
+      "ses_1c8487354ffeUOsrTU3ThjChi8": {
+        "file": "ses_1c8487354ffeUOsrTU3ThjChi8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_1c8487341ffev04MQUJUkXRzam": {
+        "file": "ses_1c8487341ffev04MQUJUkXRzam.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1c840cceeffePw3f2EAvX3aMcv": {
+        "file": "ses_1c840cceeffePw3f2EAvX3aMcv.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_1c83c3863ffemnoml2QiCn6ma3": {
+        "file": "ses_1c83c3863ffemnoml2QiCn6ma3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_1c8350683ffedKXOfJpQu0Lqn5": {
+        "file": "ses_1c8350683ffedKXOfJpQu0Lqn5.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1c82207e4ffeWJk1tvGElgw3Lu": {
+        "file": "ses_1c82207e4ffeWJk1tvGElgw3Lu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1c813bae3ffetT4o061PVjvSit": {
+        "file": "ses_1c813bae3ffetT4o061PVjvSit.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1c80862b3ffejzcfzxxMs4Rhtu": {
+        "file": "ses_1c80862b3ffejzcfzxxMs4Rhtu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1c7fca414ffeOpG2Rpz4YeijZt": {
+        "file": "ses_1c7fca414ffeOpG2Rpz4YeijZt.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1c7eaa15dffet6eVaBtbpDvY2e": {
+        "file": "ses_1c7eaa15dffet6eVaBtbpDvY2e.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1c5e0746cffe5LUWFPPSdRJupa": {
+        "file": "ses_1c5e0746cffe5LUWFPPSdRJupa.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_1c5da3873ffefIDnMO7EigMIo3": {
+        "file": "ses_1c5da3873ffefIDnMO7EigMIo3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-fixer",
+        "children": {}
+      },
+      "ses_1c5c2ef4cffemmbXyNhf7mYVDE": {
+        "file": "ses_1c5c2ef4cffemmbXyNhf7mYVDE.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_1c5b92285ffeoccVwHF4X6DusW": {
+        "file": "ses_1c5b92285ffeoccVwHF4X6DusW.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-verifier",
+        "children": {}
+      },
+      "ses_1c5a14e36ffeIOr06SUYa2CTfA": {
+        "file": "ses_1c5a14e36ffeIOr06SUYa2CTfA.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-auditor",
+        "children": {}
+      },
+      "ses_1c593fcbfffern5Iohq5XBSftm": {
+        "file": "ses_1c593fcbfffern5Iohq5XBSftm.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-critic",
+        "children": {}
+      },
+      "ses_1c570f3f7ffeq2JjusKK9E8s4b": {
+        "file": "ses_1c570f3f7ffeq2JjusKK9E8s4b.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-investigator",
+        "children": {}
+      },
+      "ses_1c56d4f2bffefWLhHIFG3Kz7Im": {
+        "file": "ses_1c56d4f2bffefWLhHIFG3Kz7Im.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-build",
+        "children": {}
+      },
+      "ses_1c5630c46ffeXuWgjlU2rE95X8": {
+        "file": "ses_1c5630c46ffeXuWgjlU2rE95X8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-critic",
+        "children": {}
+      },
+      "ses_1c5352f49ffek0FvsibQK6tolb": {
+        "file": "ses_1c5352f49ffek0FvsibQK6tolb.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 75,
+  "toolSummary": {
+    "execute-slash-command": 14,
+    "read": 123,
+    "sequential-thinking_sequentialthinking": 14,
+    "bash": 97,
+    "edit": 15,
+    "skill": 41,
+    "grep": 27,
+    "glob": 24,
+    "todowrite": 27,
+    "task": 18,
+    "apply_patch": 26,
+    "hivemind-command-engine": 2,
+    "deepwiki_ask_question": 2,
+    "session-tracker": 2,
+    "github_get_file_contents": 2
+  }
+}

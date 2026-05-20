@@ -41,7 +41,7 @@ export interface CoreHooks {
  * Creates the core hooks using the provided dependency bundle.
  *
  * @param deps - Dependency bundle containing the lifecycle manager
- * @returns Object with `event`, `messages.transform`, and `shell.env` handlers
+ * @returns Object with `event`, system transform, and `shell.env` handlers
  */
 export function createCoreHooks(deps: HookDependencies): CoreHooks {
   const { lifecycleManager } = deps

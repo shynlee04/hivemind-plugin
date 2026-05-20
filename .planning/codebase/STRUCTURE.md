@@ -19,14 +19,12 @@ hivemind-plugin-private/
 │   ├── config/                   # Config compiler, subscriber, workflow state
 │   ├── coordination/             # Delegation, completion, concurrency, spawner
 │   ├── features/                 # Standalone runtime features
-│   ├── harness/                  # Reserved harness folder (`.gitkeep` only)
 │   ├── hooks/                    # Read-side lifecycle/guard/observer/transform hooks
-│   ├── kernel/                   # Reserved kernel folder (`.gitkeep` only)
 │   ├── routing/                  # Session entry, behavioral profile, command engine
 │   ├── schema-kernel/            # Zod schemas and generated schema support
 │   ├── shared/                   # Leaf utilities, shared types, SDK wrappers
 │   ├── sidecar/                  # Read-only state projection helpers
-│   ├── task-management/          # Continuity, lifecycle, journal, recovery, trajectory
+│   ├── task-management/          # Continuity, lifecycle, journal, trajectory
 │   └── tools/                    # OpenCode custom tool entrypoints
 ├── tests/                        # Vitest suite mirroring runtime modules
 │   ├── hooks/                    # Hook tests
@@ -91,7 +89,7 @@ hivemind-plugin-private/
 
 **`src/schema-kernel/`:**
 - Purpose: Validation authority for tools, primitives, config, and runtime feature contracts.
-- Contains: `agent-frontmatter.schema.ts`, `command-frontmatter.schema.ts`, `skill-metadata.schema.ts`, `hivemind-configs.schema.ts`, `permission.schema.ts`, `session-tracker.schema.ts`, `session-view.schema.ts`, `trajectory.schema.ts`, and related schemas.
+- Contains: `agent-frontmatter.schema.ts`, `command-frontmatter.schema.ts`, `skill-metadata.schema.ts`, `hivemind-configs.schema.ts`, `tool.schema.ts`, `session-tracker.schema.ts`, `session-view.schema.ts`, `trajectory.schema.ts`, and related schemas.
 - Key files: `src/schema-kernel/index.ts`, `src/schema-kernel/hivemind-configs.schema.ts`, `src/schema-kernel/generate-config-json-schema.ts`.
 
 **`src/shared/`:**
@@ -169,7 +167,7 @@ hivemind-plugin-private/
 - `src/schema-kernel/hivemind-configs.schema.ts`: Hivemind config shape.
 - `src/schema-kernel/agent-frontmatter.schema.ts`: agent frontmatter contract.
 - `src/schema-kernel/command-frontmatter.schema.ts`: command frontmatter contract.
-- `src/schema-kernel/permission.schema.ts`: permission schema.
+- `src/schema-kernel/tool.schema.ts`: custom tool definition schema migrated from the removed `tool-definition.schema.ts` prototype.
 - `src/shared/types.ts`: shared runtime contracts.
 
 **Testing:**
@@ -292,17 +290,7 @@ hivemind-plugin-private/
 
 ## Special Directories
 
-**`src/harness/`:**
-- Purpose: Reserved Hard Harness folder.
-- Generated: No.
-- Committed: Yes, via `.gitkeep`.
-- Add code here only with an explicit architecture decision; current runtime surfaces live in existing layer roots.
-
-**`src/kernel/`:**
-- Purpose: Reserved kernel folder.
-- Generated: No.
-- Committed: Yes, via `.gitkeep`.
-- Add code here only with an explicit architecture decision; validation contracts currently belong in `src/schema-kernel/`.
+`src/harness/` and `src/kernel/` were removed in Phase 19 because they were empty reserved folders with no authorized runtime consumers. Future broad roots require an explicit architecture decision and folder registration.
 
 **`.opencode/`:**
 - Purpose: Soft Meta-Concept runtime primitives.

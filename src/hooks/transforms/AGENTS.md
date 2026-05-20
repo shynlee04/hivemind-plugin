@@ -6,7 +6,7 @@
 
 ## 1. Sector purpose and lifecycle role
 
-`src/hooks/transforms/` owns system, messages, and tool-after payload transformations. `toggle-gates.ts` controls feature gate toggles in hook payloads. `tool-after-composer.ts` composes post-tool response shaping. Transforms are deterministic and side-effect free. Source evidence: `.planning/codebase/ARCHITECTURE.md:115-134`, `.planning/codebase/STRUCTURE.md:99-103`.
+`src/hooks/transforms/` owns system and tool-after payload transformations. `tool-after-composer.ts` composes post-tool response shaping. Transforms are deterministic and side-effect free. The legacy `toggle-gates.ts` transform and `messages.transform` no-op were removed in Phases 18-19 as dead code. Source evidence: `.planning/codebase/ARCHITECTURE.md:115-134`, `.planning/codebase/STRUCTURE.md:99-103`.
 
 ## 2. Allowed mutation authority
 

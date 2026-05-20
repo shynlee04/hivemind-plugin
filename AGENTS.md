@@ -390,9 +390,9 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 **Hard Restructuring Runway (Phase 19-25):** Inserted 2026-05-21 before original Phase 19/20 (pushed to Phase 26/27). Based on 4 research artifacts: SDK API audit, DI architecture analysis, hard-restructuring synthesis, advisor gray-area decisions.
 **Phase 18:** ✅ COMPLETE (2026-05-21) — 4/4 plans, gatekeeping 3 gates clear.
-**Active phase:** Phase 19 — Non-Destructive Remediation: dead schema, stale dist, extra hooks.
+**Active phase:** Phase 20 — Package.json Dependency Cleanup.
 **Sequence:** non-destructive (Phase 19) → dependency cleanup (20) → async I/O (21) → typed errors (22) → plugin decomposition (23) → module split (24) → legacy cleanup (25) → sync-oss.yml (26) → package primitives (27).
-**Dependency order:** Each phase depends on the previous. Phase 19 root cause: remaining dead schema files (permission.schema.ts, tool-definition.schema.ts) not covered in Phase 18 scope, plus stale dist artifacts from unrebuilt Phase 18.
+**Dependency order:** Each phase depends on the previous. Phase 19 is COMPLETE after non-destructive remediation and final gatekeeping. Historical trace confirmed `session-classification-hook.ts`, `schema-normalizer.ts`, and `delegation-packet.ts` were intended-but-unwired feature gaps, recorded for future rebuild instead of restored as dead code. Phase 20 may now handle dependency cleanup without reintroducing deleted prototype surfaces.
 **Research artifacts:**
 - `.planning/research/hard-restructuring-synthesis-2026-05-21.md` (454 LOC)
 - `.planning/research/hard-restructuring-advisor-2026-05-21.md` (151 LOC)

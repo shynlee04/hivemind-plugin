@@ -1,0 +1,257 @@
+{
+  "sessionID": "ses_1baf58452ffemwN9IGhhq6vYjd",
+  "parentSessionID": "ses_1bb1cf1e0ffe478KZ4HwJgUCN6",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-plan-checker",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Verify Phase 17 plans",
+    "subagentType": "gsd-plan-checker"
+  },
+  "created": "2026-05-20T10:59:35.488Z",
+  "updated": "2026-05-20T11:01:26.994Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-plan-checker",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-plan-checker",
+      "content": "Verify the quality of Phase 17 plans before execution.\n\n## Files to read\n- `.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-01-PLAN.md`\n- `.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-02-PLAN.md`\n- `.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-03-PLAN.md`\n- `.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-04-PLAN.md`\n- `.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-CONTEXT.md`\n- `.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-RESEARCH.md`\n\n## Phase Goal\nAs a Hivemind project maintainer, I want to manually audit all src/ modules to identify dead code, noise, stub files, context rot, and test coverage gaps, producing a structured findings report for cleanup in Phase 18.\n\n## What to verify\n1. **Goal-backward alignment** — Does each plan's tasks directly contribute to the phase goal?\n2. **Coverage** — Are ALL 15 src/ modules covered? Any gaps?\n3. **Task quality** — Does each task have read_first, acceptance_criteria, and concrete action fields?\n4. **Wave dependency correctness** — Are waves in the right order?\n5. **must_haves** — Are the must_have criteria verifiable?\n6. **Findings report** — Does plan 04 produce the findings report for Phase 18?\n\nReturn:\n- PASS or FAIL verdict\n- If FAIL: specific findings with file:line references\n- If PASS: confirmation with plan count",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-plan-checker",
+      "content": "Verify Phase 17 plans",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-plan-checker",
+      "content": "## ISSUES FOUND\n\n**Phase:** 17 — Sync Boundary Definition + src/ Audit\n**Plans checked:** 4 (17-01 through 17-04)\n**Issues:** 2 blocker(s), 0 warning(s), 0 info\n\n---\n\n### Blockers (must fix)\n\n**1. [nyquist_compliance] VALIDATION.md not found — missing planning artifact**\n- Plan: Phase-level (all 4 plans affected)\n- Dimension: 8 — Nyquist Compliance (Check 8e)\n- Severity: **BLOCKER**\n- Description: The config has `nyquist_validation: true` and `17-RESEARCH.md` contains a `## Validation Architecture` section (line 579), which triggers Nyquist checks. However, no `17-VALIDATION.md` file exists in the phase directory. Per Check 8e rules, this is a blocking fail.\n- Research acknowledges validation gaps (lines 603-606: \"No automated tests for Phase 17 output (by design — this is a discovery phase)\"), but the VALIDATION.md artifact itself was not produced as a separate document.\n- Fix: Run `/gsd-plan-phase 17 --research` to regenerate, or manually create `17-VALIDATION.md` documenting the manual-audit validation approach with Wave 0 test commands (even if they're `npx tsc --noEmit` type-check only).\n\n**2. [research_resolution] Open Questions in RESEARCH.md not resolved**\n- File: `17-RESEARCH.md`, section `## Open Questions` (line 544)\n- Dimension: 11 — Research Resolution\n- Severity: **BLOCKER**\n- Description: The `## Open Questions` section heading does NOT have the `(RESOLVED)` suffix, and none of the 4 listed questions have inline `RESOLVED` markers. The phase plans proceed as if answers are known, but the research explicitly flags uncertainties:\n  1. \"Is steering-engine/ actually dead or just deferred?\" (needs manual judgment call)\n  2. \"Is toggle-gates.ts truly dead (context rot) or consumed at config-compile time?\" (architectural ambiguity)\n  3. \"How should session-tracker/index.ts 1035 LOC be split?\" (split strategy undefined)\n  4. \"Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?\" (tool invoke data not gathered)\n- Fix: Resolve each open question before execution, or mark the section as `## Open Questions (RESOLVED)` with disposition per question (e.g., \"defer to Phase 18 for in-depth analysis\").\n\n---\n\n### Warnings (should fix)\n\nNone — the plan structure and task quality are otherwise strong.\n\n---\n\n### Structured Issues\n\n```yaml\nissues:\n  - plan: null\n    dimension: nyquist_compliance\n    severity: blocker\n    description: \"17-VALIDATION.md does not exist despite workflow.nyquist_validation=true and Validation Architecture section in RESEARCH.md\"\n    fix_hint: \"Create 17-VALIDATION.md documenting validation approach (manual audit per D-10, type-check at task commits, full suite at wave merge)\"\n  - plan: null\n    dimension: research_resolution\n    severity: blocker\n    description: \"Open Questions section not resolved — 4 questions lack RESOLVED markers or dispositions\"\n    file: \"17-RESEARCH.md\"\n    unresolved_questions:\n      - \"Is steering-engine/ actually dead or just deferred?\"\n      - \"Is toggle-gates.ts truly dead (context rot) or consumed at config-compile time?\"\n      - \"How should session-tracker/index.ts 1035 LOC be split?\"\n      - \"Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?\"\n    fix_hint: \"Resolve each question or mark section as (RESOLVED) with deferred-to-Phase-18 disposition\"\n```\n\n---\n\n### Dimensions P/F Breakdown\n\n| Dimension | Result | Notes |\n|-----------|--------|-------|\n| 1. Requirement Coverage | ✅ PASS | All D-XX decisions mapped to tasks across 4 plans; all 15 scope items covered |\n| 2. Task Completeness | ✅ PASS | All 11 tasks have `<read_first>`, `<action>`, `<acceptance_criteria>`; plan-level verification present |\n| 3. Dependency Correctness | ✅ PASS | Sequential chain: 01(w1)→02(w2,dep:01)→03(w3,dep:02)→04(w4,dep:03). Acyclic, valid |\n| 4. Key Links Planned | ✅ PASS | All plans link to FINDINGS.md via append; Plan 04 links to Executive Summary |\n| 5. Scope Sanity | ✅ PASS | 2-3 tasks per plan, 1 file modified per plan — well within budget |\n| 6. Verification Derivation | ✅ PASS | must_haves truths are user-observable; min_lines scales 50→100→175→300 |\n| 7. Context Compliance | ✅ PASS | D-XX references in task actions; no deferred ideas included; discretion areas respected |\n| 7b. Scope Reduction | ✅ PASS | No \"v1/simplified/placeholder/future enhancement\" language found |\n| 7c. Architectural Tier | ✅ PASS (N/A) | Discovery-only phase; minimal tier map in research; no tier boundary risk |\n| **8. Nyquist Compliance** | ❌ **FAIL** | **17-VALIDATION.md missing** — blocking per Check 8e |\n| 9. Cross-Plan Data Contracts | ✅ PASS | Sequential append to single file; no transform conflicts |\n| 10. AGENTS.md Compliance | ✅ PASS (N/A) | No source code changes; coding conventions not applicable |\n| **11. Research Resolution** | ❌ **FAIL** | **Open Questions unresolved** (4 questions, no RESOLVED markers) |\n| 12. Pattern Compliance | ⏭️ SKIPPED | No PATTERNS.md exists for this phase |\n\n---\n\n### Recommendation\n\n**2 blocker(s) require revision before execution.** Return to planner with feedback:\n\n1. **Create `17-VALIDATION.md`** — Document the manual-audit validation approach per the validation architecture in RESEARCH.md. Include: type-check command (`npx tsc --noEmit`) as per-task verification, full test suite (`npm test`) as wave-merge gate, and the manual review protocol for verifying FINDINGS.md completeness.\n\n2. **Resolve Research Open Questions** — Either:\n   - Make explicit judgment calls on each question and inline `RESOLVED` markers, OR\n   - Mark the section as `## Open Questions (RESOLVED)` with an explicit deferral statement: \"All 4 questions deferred to manual resolution during Plan 03 (steering-engine, toggle-gates, session-tracker split) and Plan 04 (tool invocation) execution. Phase 18 will act on findings.\"",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-20T10:59:45.663Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_5comFcw3HHJMBqASScv55908",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gates.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:46.012Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_fILUopi9iV1QXg3YWJ7C8829",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:46.478Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_qxEKfmLYCZbLZt3q22po0939",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:46.661Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_W0G8KNrMgvIr4cd8i4a51950",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:47.022Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_OpJpWWEHIkjtlAt6Hdck9537",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-04-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:47.340Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_w8ezFYEWKF5apAzKquC47111",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:47.671Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_1qrBcZCypWVVOZyxMqns2314",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup/17-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:55.812Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_8pGgTCXct80j8hM1NEss5235",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/17-sync-boundary-definition-src-audit-and-cleanup"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:56.286Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_u0ERZYXii5IbFXEsSB7a2288",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T10:59:56.462Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_0WUWC42a7pyPskKVZZfc2835",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:00:06.017Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_flFcBdGSObShCx5DGhW40731",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:00:06.295Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_xzyOVUvXgkM0ZBEm7ftF9141",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:00:06.571Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_ZBaqtojywsRdMm1sw8AP5910",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:00:12.174Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_aU66IZ246n34E3zjdawt1129",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/config.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:01:00.525Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_BQfwvbJ7Pc83HjsT3pW45266",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:01:01.137Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_L449eVFnmx807s1vhkVh2414",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:01:07.245Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_LroTOTSspakzSSfSBYU04245",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T11:01:26.977Z",
+      "type": "assistant_message",
+      "content": "## ISSUES FOUND\n\n**Phase:** 17 — Sync Boundary Definition + src/ Audit\n**Plans checked:** 4 (17-01 through 17-04)\n**Issues:** 2 blocker(s), 0 warning(s), 0 info\n\n---\n\n### Blockers (must fix)\n\n**1. [nyquist_compliance] VALIDATION.md not found — missing planning artifact**\n- Plan: Phase-level (all 4 plans affected)\n- Dimension: 8 — Nyquist Compliance (Check 8e)\n- Severity: **BLOCKER**\n- Description: The config has `nyquist_validation: true` and `17-RESEARCH.md` contains a `## Validation Architecture` section (line 579), which triggers Nyquist checks. However, no `17-VALIDATION.md` file exists in the phase directory. Per Check 8e rules, this is a blocking fail.\n- Research acknowledges validation gaps (lines 603-606: \"No automated tests for Phase 17 output (by design — this is a discovery phase)\"), but the VALIDATION.md artifact itself was not produced as a separate document.\n- Fix: Run `/gsd-plan-phase 17 --research` to regenerate, or manually create `17-VALIDATION.md` documenting the manual-audit validation approach with Wave 0 test commands (even if they're `npx tsc --noEmit` type-check only).\n\n**2. [research_resolution] Open Questions in RESEARCH.md not resolved**\n- File: `17-RESEARCH.md`, section `## Open Questions` (line 544)\n- Dimension: 11 — Research Resolution\n- Severity: **BLOCKER**\n- Description: The `## Open Questions` section heading does NOT have the `(RESOLVED)` suffix, and none of the 4 listed questions have inline `RESOLVED` markers. The phase plans proceed as if answers are known, but the research explicitly flags uncertainties:\n  1. \"Is steering-engine/ actually dead or just deferred?\" (needs manual judgment call)\n  2. \"Is toggle-gates.ts truly dead (context rot) or consumed at config-compile time?\" (architectural ambiguity)\n  3. \"How should session-tracker/index.ts 1035 LOC be split?\" (split strategy undefined)\n  4. \"Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?\" (tool invoke data not gathered)\n- Fix: Resolve each open question before execution, or mark the section as `## Open Questions (RESOLVED)` with disposition per question (e.g., \"defer to Phase 18 for in-depth analysis\").\n\n---\n\n### Warnings (should fix)\n\nNone — the plan structure and task quality are otherwise strong.\n\n---\n\n### Structured Issues\n\n```yaml\nissues:\n  - plan: null\n    dimension: nyquist_compliance\n    severity: blocker\n    description: \"17-VALIDATION.md does not exist despite workflow.nyquist_validation=true and Validation Architecture section in RESEARCH.md\"\n    fix_hint: \"Create 17-VALIDATION.md documenting validation approach (manual audit per D-10, type-check at task commits, full suite at wave merge)\"\n  - plan: null\n    dimension: research_resolution\n    severity: blocker\n    description: \"Open Questions section not resolved — 4 questions lack RESOLVED markers or dispositions\"\n    file: \"17-RESEARCH.md\"\n    unresolved_questions:\n      - \"Is steering-engine/ actually dead or just deferred?\"\n      - \"Is toggle-gates.ts truly dead (context rot) or consumed at config-compile time?\"\n      - \"How should session-tracker/index.ts 1035 LOC be split?\"\n      - \"Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?\"\n    fix_hint: \"Resolve each question or mark section as (RESOLVED) with deferred-to-Phase-18 disposition\"\n```\n\n---\n\n### Dimensions P/F Breakdown\n\n| Dimension | Result | Notes |\n|-----------|--------|-------|\n| 1. Requirement Coverage | ✅ PASS | All D-XX decisions mapped to tasks across 4 plans; all 15 scope items covered |\n| 2. Task Completeness | ✅ PASS | All 11 tasks have `<read_first>`, `<action>`, `<acceptance_criteria>`; plan-level verification present |\n| 3. Dependency Correctness | ✅ PASS | Sequential chain: 01(w1)→02(w2,dep:01)→03(w3,dep:02)→04(w4,dep:03). Acyclic, valid |\n| 4. Key Links Planned | ✅ PASS | All plans link to FINDINGS.md via append; Plan 04 links to Executive Summary |\n| 5. Scope Sanity | ✅ PASS | 2-3 tasks per plan, 1 file modified per plan — well within budget |\n| 6. Verification Derivation | ✅ PASS | must_haves truths are user-observable; min_lines scales 50→100→175→300 |\n| 7. Context Compliance | ✅ PASS | D-XX references in task actions; no deferred ideas included; discretion areas respected |\n| 7b. Scope Reduction | ✅ PASS | No \"v1/simplified/placeholder/future enhancement\" language found |\n| 7c. Architectural Tier | ✅ PASS (N/A) | Discovery-only phase; minimal tier map in research; no tier boundary risk |\n| **8. Nyquist Compliance** | ❌ **FAIL** | **17-VALIDATION.md missing** — blocking per Check 8e |\n| 9. Cross-Plan Data Contracts | ✅ PASS | Sequential append to single file; no transform conflicts |\n| 10. AGENTS.md Compliance | ✅ PASS (N/A) | No source code changes; coding conventions not applicable |\n| **11. Research Resolution** | ❌ **FAIL** | **Open Questions unresolved** (4 questions, no RESOLVED markers) |\n| 12. Pattern Compliance | ⏭️ SKIPPED | No PATTERNS.md exists for this phase |\n\n---\n\n### Recommendation\n\n**2 blocker(s) require revision before execution.** Return to planner with feedback:\n\n1. **Create `17-VALIDATION.md`** — Document the manual-audit validation approach per the validation architecture in RESEARCH.md. Include: type-check command (`npx tsc --noEmit`) as per-task verification, full test suite (`npm test`) as wave-merge gate, and the manual review protocol for verifying FINDINGS.md completeness.\n\n2. **Resolve Research Open Questions** — Either:\n   - Make explicit judgment calls on each question and inline `RESOLVED` markers, OR\n   - Mark the section as `## Open Questions (RESOLVED)` with an explicit deferral statement: \"All 4 questions deferred to manual resolution during Plan 03 (steering-engine, toggle-gates, session-tracker split) and Plan 04 (tool invocation) execution. Phase 18 will act on findings.\"",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1baf58452ffemwN9IGhhq6vYjd"
+      }
+    }
+  ],
+  "lastMessage": "## ISSUES FOUND\n\n**Phase:** 17 — Sync Boundary Definition + src/ Audit\n**Plans checked:** 4 (17-01 through 17-04)\n**Issues:** 2 blocker(s), 0 warning(s), 0 info\n\n---\n\n### Blockers (must fix)\n\n**1. [nyquist_compliance] VALIDATION.md not found — missing planning artifact**\n- Plan: Phase-level (all 4 plans affected)\n- Dimension: 8 — Nyquist Compliance (Check 8e)\n- Severity: **BLOCKER**\n- Description: The config has `nyquist_validation: true` and `17-RESEARCH.md` contains a `## Validation Architecture` section (line 579), which triggers Nyquist checks. However, no `17-VALIDATION.md` file exists in the phase directory. Per Check 8e rules, this is a blocking fail.\n- Research acknowledges validation gaps (lines 603-606: \"No automated tests for Phase 17 output (by design — this is a discovery phase)\"), but the VALIDATION.md artifact itself was not produced as a separate document.\n- Fix: Run `/gsd-plan-phase 17 --research` to regenerate, or manually create `17-VALIDATION.md` documenting the manual-audit validation approach with Wave 0 test commands (even if they're `npx tsc --noEmit` type-check only).\n\n**2. [research_resolution] Open Questions in RESEARCH.md not resolved**\n- File: `17-RESEARCH.md`, section `## Open Questions` (line 544)\n- Dimension: 11 — Research Resolution\n- Severity: **BLOCKER**\n- Description: The `## Open Questions` section heading does NOT have the `(RESOLVED)` suffix, and none of the 4 listed questions have inline `RESOLVED` markers. The phase plans proceed as if answers are known, but the research explicitly flags uncertainties:\n  1. \"Is steering-engine/ actually dead or just deferred?\" (needs manual judgment call)\n  2. \"Is toggle-gates.ts truly dead (context rot) or consumed at config-compile time?\" (architectural ambiguity)\n  3. \"How should session-tracker/index.ts 1035 LOC be split?\" (split strategy undefined)\n  4. \"Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?\" (tool invoke data not gathered)\n- Fix: Resolve each open question before execution, or mark the section as `## Open Questions (RESOLVED)` with disposition per question (e.g., \"defer to Phase 18 for in-depth analysis\").\n\n---\n\n### Warnings (should fix)\n\nNone — the plan structure and task quality are otherwise strong.\n\n---\n\n### Structured Issues\n\n```yaml\nissues:\n  - plan: null\n    dimension: nyquist_compliance\n    severity: blocker\n    description: \"17-VALIDATION.md does not exist despite workflow.nyquist_validation=true and Validation Architecture section in RESEARCH.md\"\n    fix_hint: \"Create 17-VALIDATION.md documenting validation approach (manual audit per D-10, type-check at task commits, full suite at wave merge)\"\n  - plan: null\n    dimension: research_resolution\n    severity: blocker\n    description: \"Open Questions section not resolved — 4 questions lack RESOLVED markers or dispositions\"\n    file: \"17-RESEARCH.md\"\n    unresolved_questions:\n      - \"Is steering-engine/ actually dead or just deferred?\"\n      - \"Is toggle-gates.ts truly dead (context rot) or consumed at config-compile time?\"\n      - \"How should session-tracker/index.ts 1035 LOC be split?\"\n      - \"Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?\"\n    fix_hint: \"Resolve each question or mark section as (RESOLVED) with deferred-to-Phase-18 disposition\"\n```\n\n---\n\n### Dimensions P/F Breakdown\n\n| Dimension | Result | Notes |\n|-----------|--------|-------|\n| 1. Requirement Coverage | ✅ PASS | All D-XX decisions mapped to tasks across 4 plans; all 15 scope items covered |\n| 2. Task Completeness | ✅ PASS | All 11 tasks have `<read_first>`, `<action>`, `<acceptance_criteria>`; plan-level verification present |\n| 3. Dependency Correctness | ✅ PASS | Sequential chain: 01(w1)→02(w2,dep:01)→03(w3,dep:02)→04(w4,dep:03). Acyclic, valid |\n| 4. Key Links Planned | ✅ PASS | All plans link to FINDINGS.md via append; Plan 04 links to Executive Summary |\n| 5. Scope Sanity | ✅ PASS | 2-3 tasks per plan, 1 file modified per plan — well within budget |\n| 6. Verification Derivation | ✅ PASS | must_haves truths are user-observable; min_lines scales 50→100→175→300 |\n| 7. Context Compliance | ✅ PASS | D-XX references in task actions; no deferred ideas included; discretion areas respected |\n| 7b. Scope Reduction | ✅ PASS | No \"v1/simplified/placeholder/future enhancement\" language found |\n| 7c. Architectural Tier | ✅ PASS (N/A) | Discovery-only phase; minimal tier map in research; no tier boundary risk |\n| **8. Nyquist Compliance** | ❌ **FAIL** | **17-VALIDATION.md missing** — blocking per Check 8e |\n| 9. Cross-Plan Data Contracts | ✅ PASS | Sequential append to single file; no transform conflicts |\n| 10. AGENTS.md Compliance | ✅ PASS (N/A) | No source code changes; coding conventions not applicable |\n| **11. Research Resolution** | ❌ **FAIL** | **Open Questions unresolved** (4 questions, no RESOLVED markers) |\n| 12. Pattern Compliance | ⏭️ SKIPPED | No PATTERNS.md exists for this phase |\n\n---\n\n### Recommendation\n\n**2 blocker(s) require revision before execution.** Return to planner with feedback:\n\n1. **Create `17-VALIDATION.md`** — Document the manual-audit validation approach per the validation architecture in RESEARCH.md. Include: type-check command (`npx tsc --noEmit`) as per-task verification, full test suite (`npm test`) as wave-merge gate, and the manual review protocol for verifying FINDINGS.md completeness.\n\n2. **Resolve Research Open Questions** — Either:\n   - Make explicit judgment calls on each question and inline `RESOLVED` markers, OR\n   - Mark the section as `## Open Questions (RESOLVED)` with an explicit deferral statement: \"All 4 questions deferred to manual resolution during Plan 03 (steering-engine, toggle-gates, session-tracker split) and Plan 04 (tool invocation) execution. Phase 18 will act on findings.\""
+}

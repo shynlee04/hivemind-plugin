@@ -1,0 +1,42 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1c3333393ffe1zkj3M6dE0oSdB",
+  "lastUpdated": "2026-05-18T21:05:04.461Z",
+  "hierarchy": {
+    "root": "ses_1c3333393ffe1zkj3M6dE0oSdB",
+    "children": {
+      "ses_1c33188e6ffecbOH0F7pxUOhoM": {
+        "file": "ses_1c33188e6ffecbOH0F7pxUOhoM.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1c325eb9bffe17XPfKDGtpWk1f": {
+        "file": "ses_1c325eb9bffe17XPfKDGtpWk1f.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-pattern-mapper",
+        "children": {}
+      },
+      "ses_1c31fd705ffemdchGU9ZnpebmB": {
+        "file": "ses_1c31fd705ffemdchGU9ZnpebmB.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 4,
+  "toolSummary": {
+    "skill": 4,
+    "read": 6,
+    "bash": 21,
+    "task": 3,
+    "execute-slash-command": 1,
+    "glob": 1,
+    "grep": 1,
+    "apply_patch": 1
+  }
+}

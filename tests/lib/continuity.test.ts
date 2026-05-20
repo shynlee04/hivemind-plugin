@@ -4,7 +4,6 @@ import { basename, join } from "node:path"
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { resetStoreCache } from "../../src/task-management/continuity/store-cache.js"
 import type { Delegation, SessionContinuityRecord } from "../../src/shared/types.js"
 
 /** Creates a minimal continuity record for persistence regression tests. */
@@ -29,7 +28,7 @@ describe("continuity persistence", () => {
 
   beforeEach(() => {
     vi.resetModules()
-    vi.unmock("node:fs")
+    vi.doUnmock("node:fs")
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
     stateDir = mkdtempSync(join(tmpdir(), "continuity-test-"))
     process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
@@ -167,6 +166,7 @@ describe("continuity persistence", () => {
     expect(existsSync(filePath)).toBe(true)
 
     // Phase 2: simulate restart — reset store cache so getStoreCache is undefined
+    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
     resetStoreCache()
     const continuity2 = await import("../../src/task-management/continuity/index.js")
 
@@ -271,6 +271,7 @@ describe("continuity persistence", () => {
     })
 
     // Phase 2: simulate restart — reset store cache so cache is cold
+    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
     resetStoreCache()
     const continuity2 = await import("../../src/task-management/continuity/index.js")
 
@@ -389,7 +390,7 @@ describe("atomic_commit toggle", () => {
 
   beforeEach(() => {
     vi.resetModules()
-    vi.unmock("node:fs")
+    vi.doUnmock("node:fs")
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
     stateDir = mkdtempSync(join(tmpdir(), "continuity-atomic-"))
     process.env.OPENCODE_HARNESS_STATE_DIR = stateDir

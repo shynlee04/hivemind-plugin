@@ -1,0 +1,817 @@
+{
+  "sessionID": "ses_1b91ba548ffeDnOHp9ah1flldt",
+  "parentSessionID": "ses_1bb1cf1e0ffe478KZ4HwJgUCN6",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-domain-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Trace historical intent of all Phase 19 deletion items",
+    "subagentType": "gsd-domain-researcher"
+  },
+  "created": "2026-05-20T19:37:11.115Z",
+  "updated": "2026-05-20T19:40:40.284Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-domain-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-domain-researcher",
+      "content": "<objective>CRITICAL RESEARCH: Trace the historical intent and original design context for every file that was deleted or modified in Phase 19 Plan 01-03. The user fears that \"dead code\" may actually be intended features that were never properly wired. I need to classify each item as truly dead vs. intended but unwired feature vs. wired but broken.</objective>\n\nWorking directory: /Users/apple/hivemind-plugin-private\n\nItems to research (from Phase 19 Plans 01-03 commits):\n1. permission.schema.ts — DELETED (was \"dead\" - schema-kernel/permission.schema.ts)\n2. skill-metadata.schema.ts — PRESERVED (was found to have consumers)\n3. tool-definition.schema.ts — MIGRATED to tool.schema.ts\n4. session-classification-hook.ts — DELETED\n5. schema-normalizer.ts — DELETED\n6. prompt-packet/delegation-packet.ts — DELETED (index.ts + AGENTS.md also deleted)\n7. prompt-packet/compaction-preservation.ts — PRESERVED\n8. prompt-packet/kernel-packet.ts — PRESERVED\n9. concurrency-key.ts — DELETED (inlined into manager-runtime.ts)\n10. resolve-behavioral-profile.ts — deprecated methods deleted (invalidateBehavioralProfile, clearAllBehavioralProfiles)\n11. core-hooks.ts — messages.transform + duplicate system.transform removed\n\nFor EACH item, search:\nA) GIT HISTORY: When was the file created? What was the commit message?\n```bash\ngit log --all --follow --oneline -- src/schema-kernel/permission.schema.ts\n# Replace path for each item\n```\n\nB) PLANNING DOCS: Search in .planning/ for references to this concept\n```bash\nrg -l \"permission.schema\\|permission model\\|permission system\" .planning/ --type md\nrg -l \"prompt.packet\\|compaction.preservation\\|kernel.packet\" .planning/ --type md\nrg -l \"session.classification\\|session classification\" .planning/ --type md\nrg -l \"schema.normalizer\\|schema normalizer\" .planning/ --type md\nrg -l \"concurrency.key\\|delegation concurrency\" .planning/ --type md\nrg -l \"behavioral.profile\\|behavioral profile\" .planning/ --type md\nrg -l \"messages.transform\\|message transform\" .planning/ --type md\n```\n\nC) RELEVANT REQUIREMENTS/PROJECT docs:\n- Read .planning/REQUIREMENTS.md (if exists) for requirement IDs\n- Read .planning/PROJECT.md for project concepts\n- Read .planning/archive/* for historical spec/context documents\n- Read docs/philosophy/HIVEMIND-PHILOSOPHY.md for vision alignment\n\nD) GAP MATRIX / LEGACY CATALOG:\n```bash\nrg -l \"GAP\\|gap\\|missing\\|unwired\\|unwired\" .planning/archive/ --type md\n```\n\nFor EACH item, produce:\n- FILE: name\n- ORIGINAL INTENT: What was it supposed to do? (from commit messages + planning docs)\n- WIRING STATUS: Was it ever wired into runtime? (L3 proof)\n- CLASSIFICATION: CORRECT_DELETION / INTENDED_BUT_UNWIRED / WIRED_BUT_BROKEN\n- REQUIREMENT REF: Which REQ-ID or concept does it map to?\n- DEBT/GAP: If classified as INTENDED_BUT_UNWIRED or WIRED_BUT_BROKEN, describe what needs to be rebuilt\n\nWrite report to: .planning/phases/19-non-destructive-remediation/19-HISTORICAL-TRACE-2026-05-21.md\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-domain-researcher",
+      "content": "Trace historical intent of all Phase 19 deletion items",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-domain-researcher",
+      "content": "## Báo cáo đã hoàn thành\n\nFile: `.planning/phases/19-non-destructive-remediation/19-HISTORICAL-TRACE-2026-05-21.md`\n\n### Tổng quan phân loại\n\n| File | Hành động | Phân loại |\n|------|-----------|-----------|\n| `permission.schema.ts` | DELETED | ✅ **CORRECT_DELETION** — prototype, runtime types đã tồn tại độc lập trong `shared/types.ts` |\n| `skill-metadata.schema.ts` | PRESERVED | ✅ **Đúng** — 3 runtime consumers |\n| `tool-definition.schema.ts` | MIGRATED | ✅ **Đúng** — nội dung chuyển sang `tool.schema.ts` |\n| `session-classification-hook.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — spec CP-ST-05 tồn tại, fix race condition thật, nhưng cả session-tracker chưa bao giờ được wire vào plugin.ts |\n| `schema-normalizer.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — REQ-ST-12 thật, nhưng cùng unwired session-tracker |\n| `delegation-packet.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — Phase 70 (P2, PENDING), GAP-MATRIX đã xác nhận dead từ 2026-05-05 |\n| `prompt-packet/index.ts` | DELETED | ✅ **CORRECT_DELETION** — barrel zero consumers |\n| `concurrency-key.ts` | DELETED (inlined) | ✅ **CORRECT_DELETION** — wrapper 1:1, comment ghi \"Runtime adoption happens in plan 16-04\" |\n| `resolve-behavioral-profile.ts` deprecated methods | DELETED | ✅ **CORRECT_DELETION** — đã `@deprecated`, no-op từ BOOT-09 |\n| `core-hooks.ts messages.transform` | DELETED | ✅ **CORRECT_DELETION** — no-op shell từ Phase 35 |\n\n### Phát hiện quan trọng\n\n**3 file \"INTENDED_BUT_UNWIRED\"** không phải dead code vô nghĩa — chúng là phần của 2 feature subsystem chưa bao giờ được wire:\n\n1. **Session-tracker** (items 4-5): CP-ST-05 spec mô tả một critical race condition fix (mất session journey). Code có logic đúng, có test, nhưng cả subsystem chưa bao giờ được kết nối vào `plugin.ts`. Yêu cầu gốc **f-04c** (workflow router) vẫn MISSING trong REQUIREMENTS.md.\n\n2. **Prompt-packet compiler** (item 6): Phase 70 thiết kế một delegation packet compiler cho compaction-safe context preservation. GAP-MATRIX (2026-05-05) đã xác nhận dead trước Phase 19. Yêu cầu gốc **F-09a** (long-haul compaction survival) vẫn MISSING.\n\n### Kết luận\n\n**Không có quyết định nào trong Phase 19 cần đảo ngược.** Cả 10 items đều được xử lý đúng:\n- Items CORRECT_DELETION là genuinely dead code\n- Items INTENDED_BUT_UNWIRED là đúng để xóa trong bối cảnh non-destructive remediation — chúng không được wire, và requirement gốc của chúng vẫn là gap riêng cần fill sau",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-20T19:37:19.670Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_NA1EjGFOGZi1ZS3FFVVO7134",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-evals.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:25.733Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_pNLN6mkaQlQouQxXBBAX3434",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:30.219Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_uMXrZ2pqm0aF7GHUx4gQ0696",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:30.455Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_X4UdGgGngqbYQOpJX0m71418",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:35.288Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ANswYwT1UQY0zPdlUKNF1793",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/19-non-destructive-remediation/19-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:35.548Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_0SN74SCfeinycARjeDF53103",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/19-non-destructive-remediation/19-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:35.759Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_ebYsKGnLmSFOMYzjRYxE1418",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/19-non-destructive-remediation/19-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:36.007Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_d3WkTbvT0cdhZOYB2ogg1884",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/19-non-destructive-remediation/19-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:36.273Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_d6D2RSR06UrHvN8aVFIx8036",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/19-non-destructive-remediation/19-04-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:36.503Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_uWKxCAStjZMUolCTl9Tu2525",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/19-non-destructive-remediation/19-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:43.640Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_WEvmLzDVGlQE0qWzsEVk0459",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:43.681Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_25NzWu54Biat9yk5c1C36106",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:44.103Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_J8lh5PAeCRdc9YoKTI0v0316",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:44.666Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_aJZhkuNMvNXrrcJcqEar1672",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:45.188Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_04_M2gTlTGl7rHK2DmzKB9Q7267",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:45.643Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_05_On39JHWDbpqD8XGztQAe5037",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:45.929Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_06_akkpUXhSsok0qWSNOwUb0157",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:46.369Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_07_xasmEp8gGSSDVAXo1Lfi1656",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:47.578Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_08_Yr0OqxVTD3BJdJ4syBqC8407",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:47.675Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_09_cIfPnhRI9u81wHBvvAuI1833",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:53.187Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ITs8racLMJ1TDutqLcmk2922",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:53.664Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_i0iE0x9ThMaMOzkAFWGV4594",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:54.119Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_Ms16OrOzV1qXulcaaK7m3402",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:54.690Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_npqTj0FFuZyeS22DdO050964",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:55.225Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_04_AoYAOH00vplZk7fxOWOU6497",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:37:55.637Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_05_yHiLNKzXIMCI98wknQUV0637",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:00.612Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_E8sADwS6EBgBwQbseLnx1736",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:01.253Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_vsvDq01abFKFmEsoTWQB4730",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:01.553Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_ryUX1hpaQd0yIS4nQ6SP8368",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:02.013Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_aUIgc3JZNygCHIFXikvc7077",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:02.444Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_04_tsNKUFqmNiWv5I7vKmxZ2262",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:02.848Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_05_LH2NVp2iYvIF8e5Nly5Y3358",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:03.396Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_06_dI7E7Qt4WE05ODNcCN114435",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:04.098Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_07_dxbhzWQ0Rc1eUXf6U2813480",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:09.271Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_MwXUVTAqqeTbW0NyCGLX7813",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:10.311Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_rKyQ01dAZkg1pdpnJUbf5444",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:10.753Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_BhrBghlKEF8kodna8L9J8015",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:11.232Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_HzYAHwNZWaETEyiJYFQj7387",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:11.881Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_04_n5Ia3zySXjFvslQXibbC9028",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:12.331Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_05_LY8hKyaYCr0XNPmiv0Cm8394",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:12.850Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_06_u64l6z7kvkkY90ETi6Ct9588",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:13.610Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_07_jWXPXjbqz6W7Qfi6VBPS8407",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:13.905Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_08_8QBfjlU5zahzvXCmrQow7745",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:20.004Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ntd1kFgjzfQgumnPPeZ68125",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:20.242Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_PLXSQj8rcrfa5jLdrYFZ8514",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/REQUIREMENTS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:25.089Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_hxuv510uhaOa51v3F8Tb6556",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/PROJECT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:26.005Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_qmQMMXJVkGNsjKTiiygw4892",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:26.845Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_8eb15yiU4lMlCVjuW0xv5331",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:32.511Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_HqKeYryUIO8H15iD8qMe0691",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/archive/2026-05-07/research/GAP-MATRIX-2026-05-05.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:32.802Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_esVcNj5j3GadwM3fJqmy7463",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/archive/2026-05-07/research/legacy-concept-catalog-2026-05-05.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:39.991Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_PecSDj4Bb3Wnx4hdSXap7101",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:40.923Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_JzHt6jpxjLmJAZERt5F03185",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:41.375Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_KxoQ6as0s9lhRWvITnhh3282",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:41.892Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_EIgRYIudagMXycoSf2Ju1749",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:47.482Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_4PYEE7UWi3eUZf5i5Ka38847",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/archive/2026-05-07/workstreams/milestone/phases/70-prompt-packet-compiler/CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:48.045Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_SEVcNmX99Y30m8R8Auko3062",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:48.654Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_wOiOGSgx7MpJPr5A1VTI1440",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:54.932Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_RCxpNc5WvnOgpxZpfi5B5809",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:56.106Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_ArEqWZZyqSZDvlzBMjbj2465",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:38:56.468Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_ON5eD4DvoOJBrnJQwwJ92949",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:39:09.737Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_7keiJyQPkZAf6L0jUn6n8532",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:39:10.466Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_rFJwpKZU83py07uvi5Yh6703",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:39:11.117Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_ciMhyOulvsQmk6i8m9xn0312",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:39:16.849Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_MaUzdcivz1kHUIgeyoF66765",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-05-session-data-loss-investigation/CP-ST-05-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:39:17.161Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_ceixeMzSko0E8ss1c6HS6464",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/CP-ST-05-session-data-loss-investigation/CP-ST-05-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:40:22.458Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_5CDhf63hA9Zz3Yi9QaJL2831",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:40:29.071Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_xEgX9szib2oj4vLyi5GX1028",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-20T19:40:40.262Z",
+      "type": "assistant_message",
+      "content": "## Báo cáo đã hoàn thành\n\nFile: `.planning/phases/19-non-destructive-remediation/19-HISTORICAL-TRACE-2026-05-21.md`\n\n### Tổng quan phân loại\n\n| File | Hành động | Phân loại |\n|------|-----------|-----------|\n| `permission.schema.ts` | DELETED | ✅ **CORRECT_DELETION** — prototype, runtime types đã tồn tại độc lập trong `shared/types.ts` |\n| `skill-metadata.schema.ts` | PRESERVED | ✅ **Đúng** — 3 runtime consumers |\n| `tool-definition.schema.ts` | MIGRATED | ✅ **Đúng** — nội dung chuyển sang `tool.schema.ts` |\n| `session-classification-hook.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — spec CP-ST-05 tồn tại, fix race condition thật, nhưng cả session-tracker chưa bao giờ được wire vào plugin.ts |\n| `schema-normalizer.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — REQ-ST-12 thật, nhưng cùng unwired session-tracker |\n| `delegation-packet.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — Phase 70 (P2, PENDING), GAP-MATRIX đã xác nhận dead từ 2026-05-05 |\n| `prompt-packet/index.ts` | DELETED | ✅ **CORRECT_DELETION** — barrel zero consumers |\n| `concurrency-key.ts` | DELETED (inlined) | ✅ **CORRECT_DELETION** — wrapper 1:1, comment ghi \"Runtime adoption happens in plan 16-04\" |\n| `resolve-behavioral-profile.ts` deprecated methods | DELETED | ✅ **CORRECT_DELETION** — đã `@deprecated`, no-op từ BOOT-09 |\n| `core-hooks.ts messages.transform` | DELETED | ✅ **CORRECT_DELETION** — no-op shell từ Phase 35 |\n\n### Phát hiện quan trọng\n\n**3 file \"INTENDED_BUT_UNWIRED\"** không phải dead code vô nghĩa — chúng là phần của 2 feature subsystem chưa bao giờ được wire:\n\n1. **Session-tracker** (items 4-5): CP-ST-05 spec mô tả một critical race condition fix (mất session journey). Code có logic đúng, có test, nhưng cả subsystem chưa bao giờ được kết nối vào `plugin.ts`. Yêu cầu gốc **f-04c** (workflow router) vẫn MISSING trong REQUIREMENTS.md.\n\n2. **Prompt-packet compiler** (item 6): Phase 70 thiết kế một delegation packet compiler cho compaction-safe context preservation. GAP-MATRIX (2026-05-05) đã xác nhận dead trước Phase 19. Yêu cầu gốc **F-09a** (long-haul compaction survival) vẫn MISSING.\n\n### Kết luận\n\n**Không có quyết định nào trong Phase 19 cần đảo ngược.** Cả 10 items đều được xử lý đúng:\n- Items CORRECT_DELETION là genuinely dead code\n- Items INTENDED_BUT_UNWIRED là đúng để xóa trong bối cảnh non-destructive remediation — chúng không được wire, và requirement gốc của chúng vẫn là gap riêng cần fill sau",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1b91ba548ffeDnOHp9ah1flldt"
+      }
+    }
+  ],
+  "lastMessage": "## Báo cáo đã hoàn thành\n\nFile: `.planning/phases/19-non-destructive-remediation/19-HISTORICAL-TRACE-2026-05-21.md`\n\n### Tổng quan phân loại\n\n| File | Hành động | Phân loại |\n|------|-----------|-----------|\n| `permission.schema.ts` | DELETED | ✅ **CORRECT_DELETION** — prototype, runtime types đã tồn tại độc lập trong `shared/types.ts` |\n| `skill-metadata.schema.ts` | PRESERVED | ✅ **Đúng** — 3 runtime consumers |\n| `tool-definition.schema.ts` | MIGRATED | ✅ **Đúng** — nội dung chuyển sang `tool.schema.ts` |\n| `session-classification-hook.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — spec CP-ST-05 tồn tại, fix race condition thật, nhưng cả session-tracker chưa bao giờ được wire vào plugin.ts |\n| `schema-normalizer.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — REQ-ST-12 thật, nhưng cùng unwired session-tracker |\n| `delegation-packet.ts` | DELETED | ⚠️ **INTENDED_BUT_UNWIRED** — Phase 70 (P2, PENDING), GAP-MATRIX đã xác nhận dead từ 2026-05-05 |\n| `prompt-packet/index.ts` | DELETED | ✅ **CORRECT_DELETION** — barrel zero consumers |\n| `concurrency-key.ts` | DELETED (inlined) | ✅ **CORRECT_DELETION** — wrapper 1:1, comment ghi \"Runtime adoption happens in plan 16-04\" |\n| `resolve-behavioral-profile.ts` deprecated methods | DELETED | ✅ **CORRECT_DELETION** — đã `@deprecated`, no-op từ BOOT-09 |\n| `core-hooks.ts messages.transform` | DELETED | ✅ **CORRECT_DELETION** — no-op shell từ Phase 35 |\n\n### Phát hiện quan trọng\n\n**3 file \"INTENDED_BUT_UNWIRED\"** không phải dead code vô nghĩa — chúng là phần của 2 feature subsystem chưa bao giờ được wire:\n\n1. **Session-tracker** (items 4-5): CP-ST-05 spec mô tả một critical race condition fix (mất session journey). Code có logic đúng, có test, nhưng cả subsystem chưa bao giờ được kết nối vào `plugin.ts`. Yêu cầu gốc **f-04c** (workflow router) vẫn MISSING trong REQUIREMENTS.md.\n\n2. **Prompt-packet compiler** (item 6): Phase 70 thiết kế một delegation packet compiler cho compaction-safe context preservation. GAP-MATRIX (2026-05-05) đã xác nhận dead trước Phase 19. Yêu cầu gốc **F-09a** (long-haul compaction survival) vẫn MISSING.\n\n### Kết luận\n\n**Không có quyết định nào trong Phase 19 cần đảo ngược.** Cả 10 items đều được xử lý đúng:\n- Items CORRECT_DELETION là genuinely dead code\n- Items INTENDED_BUT_UNWIRED là đúng để xóa trong bối cảnh non-destructive remediation — chúng không được wire, và requirement gốc của chúng vẫn là gap riêng cần fill sau"
+}

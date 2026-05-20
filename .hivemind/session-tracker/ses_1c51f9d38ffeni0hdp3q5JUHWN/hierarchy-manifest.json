@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1c51f9d38ffeni0hdp3q5JUHWN",
+  "lastUpdated": "2026-05-18T11:41:16.640Z",
+  "children": {
+    "ses_1c51c1f66ffeOe5Y2wptn7YdWW": {
+      "sessionID": "ses_1c51c1f66ffeOe5Y2wptn7YdWW",
+      "parentSessionID": "ses_1c51f9d38ffeni0hdp3q5JUHWN",
+      "rootMainSessionID": "ses_1c51f9d38ffeni0hdp3q5JUHWN",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-scout",
+      "subagentType": "hm-l2-scout",
+      "createdAt": "2026-05-18T11:41:13.290Z",
+      "updatedAt": "2026-05-18T11:41:16.640Z",
+      "status": "idle",
+      "turnCount": 0,
+      "childFile": "ses_1c51c1f66ffeOe5Y2wptn7YdWW.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

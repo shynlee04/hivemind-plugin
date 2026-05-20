@@ -118,7 +118,7 @@ export const AgentFrontmatterSchema = z
     /** @deprecated Use `steps` instead */
     maxSteps: z.number().int().positive().optional(),
 
-    /** Tool permission rules (placeholder until permission.schema.ts exists) */
+    /** Tool permission rules; runtime permission contracts live in shared/runtime policy surfaces. */
     permission: z.record(z.string(), z.unknown()).optional(),
   })
   .strict()

@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1bfc57e69ffe3qE7PJhelSEOic",
+  "lastUpdated": "2026-05-19T12:40:49.344Z",
+  "hierarchy": {
+    "root": "ses_1bfc57e69ffe3qE7PJhelSEOic",
+    "children": {
+      "ses_1bfc2ecd7ffeoLXUTfTiho8Kn9": {
+        "file": "ses_1bfc2ecd7ffeoLXUTfTiho8Kn9.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1bfc2b760ffeUuhsmoj1hTUiZm": {
+        "file": "ses_1bfc2b760ffeUuhsmoj1hTUiZm.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "unknown",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "read": 6,
+    "bash": 7,
+    "delegate-task": 2,
+    "execute-slash-command": 1,
+    "delegation-status": 7,
+    "session-hierarchy": 1
+  }
+}

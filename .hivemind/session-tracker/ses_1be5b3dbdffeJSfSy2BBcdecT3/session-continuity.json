@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1be5b3dbdffeJSfSy2BBcdecT3",
+  "lastUpdated": "2026-05-19T19:10:26.988Z",
+  "hierarchy": {
+    "root": "ses_1be5b3dbdffeJSfSy2BBcdecT3",
+    "children": {
+      "ses_1be5ac2a2ffelPa90JUCBUTmP5": {
+        "file": "ses_1be5ac2a2ffelPa90JUCBUTmP5.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "unknown",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 1,
+  "toolSummary": {
+    "read": 6,
+    "delegate-task": 1,
+    "delegation-status": 1
+  }
+}

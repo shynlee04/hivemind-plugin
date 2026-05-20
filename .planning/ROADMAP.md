@@ -433,17 +433,17 @@ Plans:
 
 ### Phase 19: Non-Destructive Remediation — dead code, stale dist, extra hooks, schema bugfixes
 
-**Goal:** Non-destructive cleanup of ~880 LOC dead code across 4 modules. Fix schema bugs, rebuild clean dist/, eliminate no-op hooks. Zero logic changes to active runtime paths.
+**Goal:** Non-destructive cleanup of dead/wrapper code across schema-kernel, session-tracker, prompt-packet, delegation concurrency, hooks, tests, and stale package output. Zero logic changes to active runtime paths.
 **Total scope:**
-- Delete 3 dead schema files: `permission.schema.ts` (168 LOC), `tool-definition.schema.ts` (74 LOC), `skill-metadata.schema.ts` (111 LOC) — all confirmed zero consumers
-- Fix `permission.schema.ts` enum bug: `z.enum(["allow", "ask", "ask"])` → `["allow", "ask", "auto"]`
-- Delete `prompt-packet/` (348 LOC, 5 files) — designed never wired, superseded by session-tracker compaction
+- Delete 2 dead schema files: `permission.schema.ts` (168 LOC) and `tool-definition.schema.ts` (74 LOC). `skill-metadata.schema.ts` was preserved because it has active consumers.
+- Record `permission.schema.ts` as historical REGISTRY-02 gap/debt instead of fixing the deleted prototype enum bug.
+- Delete unwired prompt-packet compiler shell (`delegation-packet.ts`, barrel, local AGENTS.md, tests) while preserving active `compaction-preservation.ts` and `kernel-packet.ts` consumers.
 - Delete `session-classification-hook.ts` (76 LOC) — never connected
 - Delete `schema-normalizer.ts` (155 LOC) — never imported
 - Delete `concurrency-key.ts` (12 LOC) — single-line delegating wrapper
 - Delete deprecated profile methods (`invalidateBehavioralProfile`, `clearAllBehavioralProfiles`) from `resolve-behavioral-profile.ts`
-- Remove `messages.transform` and duplicate `system.transform` no-op hooks from `core-hooks.ts`
-- Rebuild `dist/` — eliminates 13 stale .js files from Phase 18 deleted modules
+- Remove `messages.transform` no-op hook from `core-hooks.ts`; keep `system.transform` as backward-compatible test-facing alias for `experimental.chat.system.transform`.
+- Rebuild `dist/` — eliminates stale compiled artifacts from Phase 17-19 deletions
 - Delete empty dirs: `src/kernel/`, `src/harness/`
 **Requirements:** TBD
 **Depends on:** Phase 18
@@ -453,7 +453,7 @@ Plans:
 - [x] 19-01-PLAN.md — Schema barrel cleanup (delete 3 dead schemas, migrate tool-definition) — COMPLETE, 1 correction: skill-metadata preserved (has consumers)
 - [x] 19-02-PLAN.md — Dead module deletions (session-classification, schema-normalizer, prompt-packet partial) — COMPLETE
 - [x] 19-03-PLAN.md — Code inlines and hook cleanup (concurrency-key, deprecated profile, no-op hooks) — COMPLETE
-- [ ] 19-04-PLAN.md — Final cleanup (empty dirs, rebuild dist, sync manifests)
+- [x] 19-04-PLAN.md — Final cleanup (empty dirs, rebuild dist, sync manifests, gatekeeping remediation) — COMPLETE
 
 ### Phase 20: Package.json Dependency Cleanup
 

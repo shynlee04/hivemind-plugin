@@ -30,7 +30,7 @@ describe("delegation persistence", () => {
 
   beforeEach(() => {
     vi.resetModules()
-    vi.unmock("node:fs")
+    vi.doUnmock("node:fs")
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
     stateDir = mkdtempSync(join(tmpdir(), "delegation-persistence-"))
     process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
@@ -147,7 +147,7 @@ describe("commit_docs toggle", () => {
 
   beforeEach(() => {
     vi.resetModules()
-    vi.unmock("node:fs")
+    vi.doUnmock("node:fs")
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
     stateDir = mkdtempSync(join(tmpdir(), "delegation-commit-docs-"))
     process.env.OPENCODE_HARNESS_STATE_DIR = stateDir

@@ -163,8 +163,8 @@ focus: concerns
 ## Test Coverage Gaps
 
 **Schema kernel dedicated tests are incomplete:**
-- What's not tested: 16 of 18 schema files do not have direct `tests/schema-kernel/*.test.ts` coverage.
-- Files: `src/schema-kernel/agent-frontmatter.schema.ts`, `src/schema-kernel/agent-work-contract.schema.ts`, `src/schema-kernel/bootstrap.schema.ts`, `src/schema-kernel/command-engine.schema.ts`, `src/schema-kernel/command-frontmatter.schema.ts`, `src/schema-kernel/config-precedence.schema.ts`, `src/schema-kernel/doc-intelligence.schema.ts`, `src/schema-kernel/mcp-server.schema.ts`, `src/schema-kernel/permission.schema.ts`, `src/schema-kernel/runtime-pressure.schema.ts`, `src/schema-kernel/sdk-supervisor.schema.ts`, `src/schema-kernel/session-tracker.schema.ts`, `src/schema-kernel/session-view.schema.ts`, `src/schema-kernel/skill-metadata.schema.ts`, `src/schema-kernel/tool-definition.schema.ts`, `src/schema-kernel/trajectory.schema.ts`
+- What's not tested: many schema files do not have direct `tests/schema-kernel/*.test.ts` coverage.
+- Files: `src/schema-kernel/agent-frontmatter.schema.ts`, `src/schema-kernel/agent-work-contract.schema.ts`, `src/schema-kernel/bootstrap.schema.ts`, `src/schema-kernel/command-engine.schema.ts`, `src/schema-kernel/command-frontmatter.schema.ts`, `src/schema-kernel/config-precedence.schema.ts`, `src/schema-kernel/doc-intelligence.schema.ts`, `src/schema-kernel/mcp-server.schema.ts`, `src/schema-kernel/runtime-pressure.schema.ts`, `src/schema-kernel/sdk-supervisor.schema.ts`, `src/schema-kernel/session-tracker.schema.ts`, `src/schema-kernel/session-view.schema.ts`, `src/schema-kernel/skill-metadata.schema.ts`, `src/schema-kernel/tool.schema.ts`, `src/schema-kernel/trajectory.schema.ts`
 - Risk: Schema behavior may regress through indirect consumers only.
 - Priority: Medium.
 

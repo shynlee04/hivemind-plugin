@@ -1,0 +1,19 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1bafc5363ffe4yTDZFU7ImTVuZ",
+  "lastUpdated": "2026-05-20T10:52:09.389Z",
+  "hierarchy": {
+    "root": "ses_1bafc5363ffe4yTDZFU7ImTVuZ",
+    "children": {
+      "ses_1bafc53ceffeiytsZeOGWOIcpJ": {
+        "file": "ses_1bafc53ceffeiytsZeOGWOIcpJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 0,
+  "toolSummary": {}
+}

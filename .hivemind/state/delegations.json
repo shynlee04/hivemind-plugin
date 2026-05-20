@@ -1,14 +1,14 @@
 [
   {
-    "id": "6b9c2848-8d43-49c1-a5ec-0a755a0fc18f",
+    "id": "9fe41b33-4e8d-4ca5-b585-cf688dfd145f",
     "parentSessionId": "ses-parent-monitor-fail",
     "childSessionId": "child-prompt-fail-monitor",
     "agent": "builder",
     "status": "error",
-    "createdAt": 1779300952935,
+    "createdAt": 1779307381606,
     "lastMessageCount": 0,
     "stablePollCount": 0,
-    "lastMessageCountChangeAt": 1779300952935,
+    "lastMessageCountChangeAt": 1779307381606,
     "nestingDepth": 1,
     "executionMode": "sdk",
     "workingDirectory": "/Users/apple/hivemind-plugin-private",
@@ -16,8 +16,8 @@
     "surface": "agent-delegation",
     "recoveryGuarantee": "resumable",
     "explicitCancellation": false,
-    "completedAt": 1779300952936,
+    "completedAt": 1779307381607,
     "error": "Failed to send prompt to child session",
-    "gracePeriodExpiresAt": 1779301552937
+    "gracePeriodExpiresAt": 1779307981607
   }
 ]

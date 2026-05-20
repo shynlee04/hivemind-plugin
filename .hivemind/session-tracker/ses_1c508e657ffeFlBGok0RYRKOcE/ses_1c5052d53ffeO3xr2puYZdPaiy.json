@@ -1,0 +1,52 @@
+{
+  "sessionID": "ses_1c5052d53ffeO3xr2puYZdPaiy",
+  "parentSessionID": "ses_1c508e657ffeFlBGok0RYRKOcE",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-l2-scout",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Test native task tool",
+    "subagentType": "hm-l2-scout"
+  },
+  "created": "2026-05-18T12:06:17.015Z",
+  "updated": "2026-05-18T12:06:29.023Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-l2-scout",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-l2-scout",
+      "content": "You are a subagent launched via the native task tool (NOT delegate-task). Task: Count the number of .ts files in the src/tools/ directory and list their names. Return compact summary only.",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "hm-l2-scout",
+      "content": "Test native task tool",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "hm-l2-scout",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-18T12:06:29.009Z",
+      "type": "assistant_message",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1c5052d53ffeO3xr2puYZdPaiy"
+      }
+    }
+  ],
+  "lastMessage": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>"
+}
