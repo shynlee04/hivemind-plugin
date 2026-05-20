@@ -1,0 +1,46 @@
+{
+  "sessionID": "ses_1b997d567ffeqTU30AJIENCfEb",
+  "parentSessionID": "ses_1bb1cf1e0ffe478KZ4HwJgUCN6",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-advisor-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research: context rot handling",
+    "subagentType": "gsd-advisor-researcher"
+  },
+  "created": "2026-05-20T17:22:59.403Z",
+  "updated": "2026-05-20T17:22:59.423Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-advisor-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-advisor-researcher",
+      "content": "Research: context rot handling",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-advisor-researcher",
+      "content": "Sau khi nghiên cứu cả hai instance, đây là bảng so sánh có cấu trúc:\n\n## Context rot handling — storeCache singleton + session-tracker module cap\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Extract storeCache** to `continuity/store-cache.ts` + **session-tracker handler extraction** | Fixes test isolation cleanly (no module-level mutable state), brings both modules under 500 LOC cap, preserves existing test patterns | 2-file add + 1 test-file reorg for continuity; session-tracker needs ~4 new handler files — highest churn | 2 new files (continuity), ~4 new files + 1 split (session-tracker) -- Risk: import cycle if handler files import back to index | Rec if test isolation gaps are causing flaky CI; Rec if strict 500 LOC enforcement is desired |\n| **Add `resetStoreCache()` API** only + **note session-tracker overage** | Minimal change: 1 public export + 1 line in test `beforeEach`; session-tracker overage is small (61 LOC) and already well-factored | Doesn't fully fix the root cause (mutable singleton still exists), tests still need explicit reset calls per suite | 1 export added to continuity/index.ts -- Risk: low; no new deps | Rec if pragmatic speed matters more than architectural purity; Rec if enforcement is \"soft cap with documented exception\" |\n| **Defer both** — keep `vi.resetModules()` workaround + accept 500 LOC cap exception | Zero code churn, known workaround is already documented in test patterns (line 168), session-tracker is structurally healthy despite overage | Test isolation remains fragile (depends on `vi.resetModules()` discipline across all consumers), perpetuates a cap exception that may grow in future phases | 0 files touched -- Risk: test state leaks possible if new continuity consumers forget `resetModules()` | Rec if neither issue is causing real bugs or CI failures today |\n\n**Rationale:** The storeCache singleton is the higher-priority fix because it causes genuine test isolation fragility — currently masked by `vi.resetModules()` boilerplate in every test suite. The session-tracker index.ts at 561 LOC (12% over cap) is less urgent: it is already well-factored into 16+ submodules and the overage is purely in the coordinator class that delegates to those submodules. **Recommend** extracting storeCache to a dedicated module (`continuity/store-cache.ts`) with an explicit `resetCache()` export, while deferring the session-tracker split until the class body grows beyond ~650 LOC or a new handler is added — the structural health of the submodule tree makes the 61-line overage an acceptable exception to the 500 LOC cap.",
+      "tools": []
+    }
+  ],
+  "journey": [
+    {
+      "timestamp": "2026-05-20T17:22:59.403Z",
+      "type": "assistant_message",
+      "content": "Sau khi nghiên cứu cả hai instance, đây là bảng so sánh có cấu trúc:\n\n## Context rot handling — storeCache singleton + session-tracker module cap\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Extract storeCache** to `continuity/store-cache.ts` + **session-tracker handler extraction** | Fixes test isolation cleanly (no module-level mutable state), brings both modules under 500 LOC cap, preserves existing test patterns | 2-file add + 1 test-file reorg for continuity; session-tracker needs ~4 new handler files — highest churn | 2 new files (continuity), ~4 new files + 1 split (session-tracker) -- Risk: import cycle if handler files import back to index | Rec if test isolation gaps are causing flaky CI; Rec if strict 500 LOC enforcement is desired |\n| **Add `resetStoreCache()` API** only + **note session-tracker overage** | Minimal change: 1 public export + 1 line in test `beforeEach`; session-tracker overage is small (61 LOC) and already well-factored | Doesn't fully fix the root cause (mutable singleton still exists), tests still need explicit reset calls per suite | 1 export added to continuity/index.ts -- Risk: low; no new deps | Rec if pragmatic speed matters more than architectural purity; Rec if enforcement is \"soft cap with documented exception\" |\n| **Defer both** — keep `vi.resetModules()` workaround + accept 500 LOC cap exception | Zero code churn, known workaround is already documented in test patterns (line 168), session-tracker is structurally healthy despite overage | Test isolation remains fragile (depends on `vi.resetModules()` discipline across all consumers), perpetuates a cap exception that may grow in future phases | 0 files touched -- Risk: test state leaks possible if new continuity consumers forget `resetModules()` | Rec if neither issue is causing real bugs or CI failures today |\n\n**Rationale:** The storeCache singleton is the higher-priority fix because it causes genuine test isolation fragility — currently masked by `vi.resetModules()` boilerplate in every test suite. The session-tracker index.ts at 561 LOC (12% over cap) is less urgent: it is already well-factored into 16+ submodules and the overage is purely in the coordinator class that delegates to those submodules. **Recommend** extracting storeCache to a dedicated module (`continuity/store-cache.ts`) with an explicit `resetCache()` export, while deferring the session-tracker split until the class body grows beyond ~650 LOC or a new handler is added — the structural health of the submodule tree makes the 61-line overage an acceptable exception to the 500 LOC cap.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1b997d567ffeqTU30AJIENCfEb"
+      }
+    }
+  ],
+  "children": [],
+  "lastMessage": "Sau khi nghiên cứu cả hai instance, đây là bảng so sánh có cấu trúc:\n\n## Context rot handling — storeCache singleton + session-tracker module cap\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Extract storeCache** to `continuity/store-cache.ts` + **session-tracker handler extraction** | Fixes test isolation cleanly (no module-level mutable state), brings both modules under 500 LOC cap, preserves existing test patterns | 2-file add + 1 test-file reorg for continuity; session-tracker needs ~4 new handler files — highest churn | 2 new files (continuity), ~4 new files + 1 split (session-tracker) -- Risk: import cycle if handler files import back to index | Rec if test isolation gaps are causing flaky CI; Rec if strict 500 LOC enforcement is desired |\n| **Add `resetStoreCache()` API** only + **note session-tracker overage** | Minimal change: 1 public export + 1 line in test `beforeEach`; session-tracker overage is small (61 LOC) and already well-factored | Doesn't fully fix the root cause (mutable singleton still exists), tests still need explicit reset calls per suite | 1 export added to continuity/index.ts -- Risk: low; no new deps | Rec if pragmatic speed matters more than architectural purity; Rec if enforcement is \"soft cap with documented exception\" |\n| **Defer both** — keep `vi.resetModules()` workaround + accept 500 LOC cap exception | Zero code churn, known workaround is already documented in test patterns (line 168), session-tracker is structurally healthy despite overage | Test isolation remains fragile (depends on `vi.resetModules()` discipline across all consumers), perpetuates a cap exception that may grow in future phases | 0 files touched -- Risk: test state leaks possible if new continuity consumers forget `resetModules()` | Rec if neither issue is causing real bugs or CI failures today |\n\n**Rationale:** The storeCache singleton is the higher-priority fix because it causes genuine test isolation fragility — currently masked by `vi.resetModules()` boilerplate in every test suite. The session-tracker index.ts at 561 LOC (12% over cap) is less urgent: it is already well-factored into 16+ submodules and the overage is purely in the coordinator class that delegates to those submodules. **Recommend** extracting storeCache to a dedicated module (`continuity/store-cache.ts`) with an explicit `resetCache()` export, while deferring the session-tracker split until the class body grows beyond ~650 LOC or a new handler is added — the structural health of the submodule tree makes the 61-line overage an acceptable exception to the 500 LOC cap."
+}

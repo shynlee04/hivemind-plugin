@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
-  "lastUpdated": "2026-05-19T23:31:24.240Z",
+  "lastUpdated": "2026-05-20T09:46:57.226Z",
   "hierarchy": {
     "root": "ses_1bda22cc3ffebCEHYfj5Djbuyc",
     "children": {
@@ -45,7 +45,22 @@
         "depth": 1,
         "status": "active",
         "delegatedBy": "hm-l2-researcher",
-        "children": {}
+        "children": {
+          "ses_1c56bddc2ffe3DEHK2jkYCGQAz": {
+            "file": "ses_1c56bddc2ffe3DEHK2jkYCGQAz.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "hm-l2-build",
+            "children": {}
+          },
+          "ses_1c5660edcffeEBRK8DMQIl5VNp": {
+            "file": "ses_1c5660edcffeEBRK8DMQIl5VNp.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "hm-l2-scout",
+            "children": {}
+          }
+        }
       },
       "ses_1bd6f8919ffeCb1nun4SzMIv6p": {
         "file": "ses_1bd6f8919ffeCb1nun4SzMIv6p.json",

@@ -1,0 +1,185 @@
+{
+  "version": "2.0",
+  "projectRoot": "/Users/apple/hivemind-plugin-private",
+  "lastUpdated": "2026-05-20T18:15:43.396Z",
+  "sessions": {
+    "ses_1c8925814ffeOwXdAh4GCB66FB": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8925814ffeOwXdAh4GCB66FB.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.341Z",
+      "updated": "2026-05-20T18:15:43.341Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c89438f6ffedqo5Pg3TlddQRo": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c89438f6ffedqo5Pg3TlddQRo.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.343Z",
+      "updated": "2026-05-20T18:15:43.343Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8999521ffeU2ftdqgidRPZFV": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8999521ffeU2ftdqgidRPZFV.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.345Z",
+      "updated": "2026-05-20T18:15:43.345Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c89c86e4ffe7HKc5qOLAq343Y": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c89c86e4ffe7HKc5qOLAq343Y.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.347Z",
+      "updated": "2026-05-20T18:15:43.347Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c89f73d7ffeHDYi25hNBrqxL5": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c89f73d7ffeHDYi25hNBrqxL5.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.349Z",
+      "updated": "2026-05-20T18:15:43.349Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8a99034ffeZhjhxWe54qEQOn": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8a99034ffeZhjhxWe54qEQOn.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.351Z",
+      "updated": "2026-05-20T18:15:43.352Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8ad072fffeUYK0Ctj27sn4r8": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8ad072fffeUYK0Ctj27sn4r8.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.355Z",
+      "updated": "2026-05-20T18:15:43.355Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8caa9c5ffeaVnj2zFEHKk7s4": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8caa9c5ffeaVnj2zFEHKk7s4.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.357Z",
+      "updated": "2026-05-20T18:15:43.357Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8d3bf7bffenHhLDWjxSq2NUr": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8d3bf7bffenHhLDWjxSq2NUr.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.360Z",
+      "updated": "2026-05-20T18:15:43.360Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8d9639dffe1W2O0z3O4ermmO": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8d9639dffe1W2O0z3O4ermmO.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.363Z",
+      "updated": "2026-05-20T18:15:43.363Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8d97608ffeiEu7nn4D1egsB3": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8d97608ffeiEu7nn4D1egsB3.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.366Z",
+      "updated": "2026-05-20T18:15:43.366Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8df6afaffe278D3xUo5a011F": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8df6afaffe278D3xUo5a011F.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.368Z",
+      "updated": "2026-05-20T18:15:43.368Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8df6b13ffe12DjaaYzhVPWeB": {
+      "dir": "ses_1c8e2b89fffed4QjLzznXTil6x/",
+      "mainFile": "ses_1c8df6b13ffe12DjaaYzhVPWeB.json",
+      "continuityIndex": "ses_1c8e2b89fffed4QjLzznXTil6x/session-continuity.json",
+      "created": "2026-05-20T18:15:43.371Z",
+      "updated": "2026-05-20T18:15:43.371Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8f865e7fferZ0iHrq3owlIfT": {
+      "dir": "ses_1c8f865e7fferZ0iHrq3owlIfT/",
+      "mainFile": "ses_1c8f865e7fferZ0iHrq3owlIfT.md",
+      "continuityIndex": "ses_1c8f865e7fferZ0iHrq3owlIfT/session-continuity.json",
+      "created": "2026-05-20T18:15:43.375Z",
+      "updated": "2026-05-20T18:15:43.375Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8e9abaaffeDcFwpC38neaDU4": {
+      "dir": "ses_1c8f865e7fferZ0iHrq3owlIfT/",
+      "mainFile": "ses_1c8e9abaaffeDcFwpC38neaDU4.json",
+      "continuityIndex": "ses_1c8f865e7fferZ0iHrq3owlIfT/session-continuity.json",
+      "created": "2026-05-20T18:15:43.378Z",
+      "updated": "2026-05-20T18:15:43.381Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    },
+    "ses_1c8eedb60ffektkjL90O4d7ppI": {
+      "dir": "ses_1c8f865e7fferZ0iHrq3owlIfT/",
+      "mainFile": "ses_1c8eedb60ffektkjL90O4d7ppI.json",
+      "continuityIndex": "ses_1c8f865e7fferZ0iHrq3owlIfT/session-continuity.json",
+      "created": "2026-05-20T18:15:43.396Z",
+      "updated": "2026-05-20T18:15:43.396Z",
+      "status": "active",
+      "childCount": 0,
+      "totalDelegationDepth": 0
+    }
+  },
+  "chronologicalOrder": [
+    "ses_1c8925814ffeOwXdAh4GCB66FB",
+    "ses_1c89438f6ffedqo5Pg3TlddQRo",
+    "ses_1c8999521ffeU2ftdqgidRPZFV",
+    "ses_1c89c86e4ffe7HKc5qOLAq343Y",
+    "ses_1c89f73d7ffeHDYi25hNBrqxL5",
+    "ses_1c8a99034ffeZhjhxWe54qEQOn",
+    "ses_1c8ad072fffeUYK0Ctj27sn4r8",
+    "ses_1c8caa9c5ffeaVnj2zFEHKk7s4",
+    "ses_1c8d3bf7bffenHhLDWjxSq2NUr",
+    "ses_1c8d9639dffe1W2O0z3O4ermmO",
+    "ses_1c8d97608ffeiEu7nn4D1egsB3",
+    "ses_1c8df6afaffe278D3xUo5a011F",
+    "ses_1c8df6b13ffe12DjaaYzhVPWeB",
+    "ses_1c8f865e7fferZ0iHrq3owlIfT",
+    "ses_1c8e9abaaffeDcFwpC38neaDU4",
+    "ses_1c8eedb60ffektkjL90O4d7ppI"
+  ]
+}

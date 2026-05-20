@@ -1,0 +1,72 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1bafdc626ffeJtA6rWs1bDsI12",
+  "lastUpdated": "2026-05-20T17:49:15.487Z",
+  "hierarchy": {
+    "root": "ses_1bafdc626ffeJtA6rWs1bDsI12",
+    "children": {
+      "ses_1bafc53ceffeiytsZeOGWOIcpJ": {
+        "file": "ses_1bafc53ceffeiytsZeOGWOIcpJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1bafc5363ffe4yTDZFU7ImTVuZ": {
+        "file": "ses_1bafc5363ffe4yTDZFU7ImTVuZ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {
+          "ses_1bafc53ceffeiytsZeOGWOIcpJ": {
+            "file": "ses_1bafc53ceffeiytsZeOGWOIcpJ.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "gsd-codebase-mapper",
+            "children": {}
+          }
+        }
+      },
+      "ses_1bafc5337ffetVFOK4A7Wm604V": {
+        "file": "ses_1bafc5337ffetVFOK4A7Wm604V.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {
+          "ses_1bafc53ceffeiytsZeOGWOIcpJ": {
+            "file": "ses_1bafc53ceffeiytsZeOGWOIcpJ.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "gsd-codebase-mapper",
+            "children": {}
+          }
+        }
+      },
+      "ses_1bafc538fffe4R8QCNu1cARYSq": {
+        "file": "ses_1bafc538fffe4R8QCNu1cARYSq.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {
+          "ses_1bafc53ceffeiytsZeOGWOIcpJ": {
+            "file": "ses_1bafc53ceffeiytsZeOGWOIcpJ.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "gsd-codebase-mapper",
+            "children": {}
+          }
+        }
+      }
+    }
+  },
+  "turnCount": 1,
+  "toolSummary": {
+    "skill": 4,
+    "todowrite": 6,
+    "glob": 3,
+    "read": 1,
+    "task": 4,
+    "bash": 11,
+    "grep": 2
+  }
+}
