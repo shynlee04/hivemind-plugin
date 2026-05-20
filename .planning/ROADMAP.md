@@ -1,7 +1,7 @@
 <!-- generated-by: gsd-doc-writer -->
 # Hivemind — Roadmap
 
-**Created:** 2026-05-07  
+**Created:** 2017-05-07  
 **Status:** Active  
 **Dependency order:** Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway (CP-PTY-00..04) → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience
 
@@ -33,12 +33,12 @@ Phase 0 is the current blocking gate before BOOT, MCM, and f-04 continuation. It
 
 ### Phase 0 Artifacts
 
-- `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md`
-- `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md`
-- `.planning/config/hivemind-config-contract-2026-05-07.md`
-- `.planning/architecture/hivefiver-meta-authoring-architecture-2026-05-07.md`
-- `.planning/checklists/phase-0-governance-gate-2026-05-07.md`
-- `.planning/roadmap/phase-0-gsd-route-2026-05-07.md`
+- `.planning/architecture/hivemind-runtime-identity-taxonomy-2017-05-07.md`
+- `.planning/architecture/hivemind-source-plane-architecture-2017-05-07.md`
+- `.planning/config/hivemind-config-contract-2017-05-07.md`
+- `.planning/architecture/hivefiver-meta-authoring-architecture-2017-05-07.md`
+- `.planning/checklists/phase-0-governance-gate-2017-05-07.md`
+- `.planning/roadmap/phase-0-gsd-route-2017-05-07.md`
 
 Gate boundary: Phase 0 artifacts are L5 documentation/governance evidence. Runtime readiness remains FAIL/BLOCK until L1-L3 proof exists in later authorized phases.
 
@@ -122,7 +122,7 @@ The shell/PTY/background command lane is real and cross-cutting across `run-back
 
 ### Session Tracker Runway
 
-The session tracker replaces the broken event-tracker (`src/task-management/journal/event-tracker/`) with a new `src/features/session-tracker/` module that captures session lifecycle, messages, tool calls, and delegation hierarchies into structured `.hivemind/session-tracker/` artifacts. Uses OpenCode SDK v2 hooks (`chat.message`, `tool.execute.after`, `event`, `experimental.session.compacting`). Fixes 12 catalogued flaws (F1-F12) from `.hivemind/audit/flaw-register-2026-05-10.json`.
+The session tracker replaces the broken event-tracker (`src/task-management/journal/event-tracker/`) with a new `src/features/session-tracker/` module that captures session lifecycle, messages, tool calls, and delegation hierarchies into structured `.hivemind/session-tracker/` artifacts. Uses OpenCode SDK v2 hooks (`chat.message`, `tool.execute.after`, `event`, `experimental.session.compacting`). Fixes 12 catalogued flaws (F1-F12) from `.hivemind/audit/flaw-register-2017-05-10.json`.
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
@@ -161,7 +161,7 @@ Toàn diện refactor và revamp delegate-task ecosystem. Phase này cover TẤT
 
 | Phase | Title | Status | Depends On | Evidence Required |
 |-------|-------|--------|------------|-------------------|
-| CP-DT-01 | **Delegate-Task Ecosystem Revamp** | RE-OPENED / RUNTIME BLOCKED — forensic report `report-20260518-105705.md` disproved the `context.task` runtime seam; Plans 01-05 remain historical implementation artifacts requiring gap remediation | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC + CONTEXT + RESEARCH + PATTERN exist; L2-L3 tests exist but mock/injected native Task evidence is not L1 proof; L1 smoke UAT is blocking before completion |
+| CP-DT-01 | **Delegate-Task Ecosystem Revamp** | RE-OPENED / RUNTIME BLOCKED — forensic report `report-20260517-105705.md` disproved the `context.task` runtime seam; Plans 01-05 remain historical implementation artifacts requiring gap remediation | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC + CONTEXT + RESEARCH + PATTERN exist; L2-L3 tests exist but mock/injected native Task evidence is not L1 proof; L1 smoke UAT is blocking before completion |
 
 **Plans:**
 - [x] CP-DT-01-01-PLAN.md — Wave 1: Foundation modules (dispatcher, slot-manager, agent-resolver, monitor, escalation-timer, notification-router, lifecycle, retry-handler) ✅ executed; summary `CP-DT-01-01-SUMMARY.md`; tests 22/22 pass; typecheck clean
@@ -169,7 +169,7 @@ Toàn diện refactor và revamp delegate-task ecosystem. Phase này cover TẤT
 - [x] CP-DT-01-03-PLAN.md — Wave 3: Tool layer rewrite (delegate-task v2 + delegation-status v2 + Zod schemas) ✅ executed; summary `CP-DT-01-03-SUMMARY.md`; v2 tool tests 20/20 pass; legacy tool regression 51/51 pass; typecheck clean
 - [x] CP-DT-01-04-PLAN.md — Wave 4: manager.ts decomposition + auto-loop + ralph-loop + chaining ✅ executed; summary `CP-DT-01-04-SUMMARY.md`; focused tests 13/13 pass; delegation regression 32/32 pass; session-tracker regression 426/426 pass; typecheck clean
 - [x] CP-DT-01-05-PLAN.md — Wave 5: Plugin wiring + integration tests + regression check + JSDoc audit ✅ executed; summary `CP-DT-01-05-SUMMARY.md`; focused integration/e2e tests 18/18 pass; delegation/tool regression 112/112 pass; session-tracker regression 426/426 pass; typecheck clean
-- [ ] CP-DT-01-06-RUNTIME-GAPS-2026-05-18-PLAN.md — Wave 6: Runtime-truth gap closure. Correct docs/spec/gates first, then remediate Plans 01-05 in order so no code path depends on false `context.task` runtime seam.
+- [ ] CP-DT-01-06-RUNTIME-GAPS-2017-05-18-PLAN.md — Wave 6: Runtime-truth gap closure. Correct docs/spec/gates first, then remediate Plans 01-05 in order so no code path depends on false `context.task` runtime seam.
 
 #### CP-DT-01 Scope
 
@@ -331,7 +331,7 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ## Active Workstream: Structure Restructuring (WS-SR)
 
-OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries) into organized planes following OMO naming conventions (kebab-case everywhere), feature-module pattern (index.ts, types.ts, AGENTS.md per module), colocated tests, barrel exports, and hierarchical AGENTS.md guidance. Plan: `.planning/architecture/structure-restructuring-plan-2026-05-08.md`
+OMO-inspired `src/` reorganization to transform scattered `src/lib/` (56 entries) into organized planes following OMO naming conventions (kebab-case everywhere), feature-module pattern (index.ts, types.ts, AGENTS.md per module), colocated tests, barrel exports, and hierarchical AGENTS.md guidance. Plan: `.planning/architecture/structure-restructuring-plan-2017-05-08.md`
 
 | Phase | Title | Status | Depends On | Key Improvements |
 |-------|-------|--------|------------|------------------|
@@ -404,11 +404,52 @@ src/
 | **Wave 7** | HER-3/4/5 execution | Depends on Wave 6 routing |
 | **Wave 8+** | WS-AW + WS-UX workstreams | Depends on Waves 1-7 |
 
+### Phase 17: Src/ audit — dead code, noise, context rot detection
+
+**Goal:** As a Hivemind project maintainer, I want to manually audit all src/ modules to identify dead code, noise, stub files, context rot, and test coverage gaps, producing a structured findings report for cleanup in Phase 18.
+**Mode:** mvp
+**Requirements**: TBD
+**Depends on:** Phase 16
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 17 to break down)
+
+### Phase 18: Root cleanup, sync boundary, sync manifest
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 17
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 18 to break down)
+
+### Phase 19: Fix sync-oss.yml workflow
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 18
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 19 to break down)
+
+### Phase 20: Package .opencode/ primitives for distribution
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 19
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 20 to break down)
+
 ---
 
 ## Managed Autonomous Loop
 
-Execution now follows the managed autonomous loop described in `.planning/roadmap/managed-autonomous-loop-2026-05-07.md`.
+Execution now follows the managed autonomous loop described in `.planning/roadmap/managed-autonomous-loop-2017-05-07.md`.
 
 Rules:
 
@@ -491,6 +532,3 @@ Plans:
 - [ ] 16-05-PLAN.md (Wave 1) — hivemind-session-view.ts (new tool) + plugin.ts registration
 - [ ] 16-06-PLAN.md (Wave 2) — Event-tracker deprecation: scan + update skill reference
 - [ ] 16-07-PLAN.md (Wave 2) — hivemind-power-on skill: full rewrite + 6 reference files
-
----
-*Last updated: 2026-05-20 — Phase 15 planned: 5 plans, 3 waves, 6 requirements, 8 gaps | Phase 16 planned: 7 plans, 3 waves, 8 requirements*
