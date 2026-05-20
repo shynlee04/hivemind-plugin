@@ -541,27 +541,15 @@ done
 
 **If this table is empty:** Not applicable — assumptions exist and are documented.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Is `steering-engine/` actually dead or just deferred?**
-   - What we know: 3 files (609 LOC), own schema directory, 0 imports from plugin.ts
-   - What's unclear: Is it not yet wired (deferred) or was it once wired and now disconnected?
-   - Recommendation: Manual review to check if any code outside plugin.ts imports it. Check git log for when it was last modified.
+1. **Is `steering-engine/` actually dead or just deferred?** [RESOLVED: deferred to manual check during Plan 04 audit. If 0 imports from any src/ file → flag DEAD for Phase 18 cleanup. If imported but unwired → flag DEFERRED with recommendation.]
 
-2. **Is `toggle-gates.ts` truly dead (context rot) or does the REQUIREMENTS.md "DELIVERED" status mean it's consumed at config-compile time, not runtime?**
-   - What we know: 0 runtime imports. But TOG-01 says "DELIVERED."
-   - What's unclear: Was it intentionally designed as a compile-time-only module (no runtime consumer needed), or is this a gap?
-   - Recommendation: Check if toggle-gates.ts is referenced by config compiler or workflow system. If compile-time only, it may not be dead — just dormant.
+2. **Is `toggle-gates.ts` truly dead (context rot) or is it consumed at config-compile time?** [RESOLVED: deferred to manual check during Plan 02 audit. Inspect imports, config references, and REQUIREMENTS.md TOG-01 status. Classify as DEAD or DORMANT accordingly.]
 
-3. **How should the `session-tracker/index.ts` 1035 LOC be split?**
-   - What we know: Double the 500 LOC cap
-   - What's unclear: Best split boundary (by submodule? by concern?)
-   - Recommendation: Flag for Phase 18 with recommendation to split into 3-4 files matching existing subdirectory structure.
+3. **How should the `session-tracker/index.ts` 1035 LOC be split?** [RESOLVED: flag in findings as SIZE_VIOLATION (exceeds 500-LOC cap). Split strategy deferred to Phase 18 cleanup — recommendation: split into 3-4 files by submodule.]
 
-4. **Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?**
-   - What we know: 6 files across 3 directories, all registered in plugin.ts
-   - What's unclear: Are agents actually using these tools or are they registered but never invoked?
-   - Recommendation: Check tool invoke counts in session data. Or accept they're wired and just lack tests.
+4. **Are the 3 sub-tool groups (prompt-analyze, prompt-skim, session-patch) all actively invoked?** [RESOLVED: check tool registration in plugin.ts during Plan 02. All registered = INVOKE_UNKNOWN (cannot determine without runtime telemetry). Flag for Phase 20 if needed.]
 
 ## Environment Availability
 
