@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-19T22:25:16.775Z"
+last_updated: "2026-05-20T11:19:57.283Z"
 progress:
-  total_phases: 4
+  total_phases: 9
   completed_phases: 4
-  total_plans: 22
-  completed_plans: 22
-  percent: 100
+  total_plans: 26
+  completed_plans: 24
+  percent: 92
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,8 +17,8 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 17-01-PLAN.md completed — manual audit of shared/, config/, routing/ modules
-**Last trigger:** Phase 17 Plan 01 complete — findings report ready for Phase 18 consumption.
+**Last advance:** 17-02-PLAN.md completed — manual audit of schema-kernel/, tools/, hooks/ modules
+**Last trigger:** Phase 17 Plan 02 complete — schema-kernel, tools, hooks audit complete — 3 dead files identified for Phase 18 cleanup.
 
 ---
 
@@ -26,6 +26,7 @@ progress:
 
 **Active phase:** Phase 17 — sync-boundary-definition-src-audit-and-cleanup.
 **Phase 17 Plan 01:** ✅ COMPLETE — Discovered audit of src/shared/ (14 files), src/config/ (7 files), and src/routing/ (11 files). Zero dead code found. Zero architecture violations. 3 minor test-gaps in shared/. 3 RESEARCH.md inaccuracies corrected (routing test coverage, compiler.ts LOC, profile filename).
+**Phase 17 Plan 02:** ✅ COMPLETE — Manual audit of src/schema-kernel/ (20 files, 2,529 LOC), src/tools/ (30 files, 3,961 LOC), and src/hooks/ (16 files, 1,529 LOC). Found 3 dead code files: permission.schema.ts, tool-definition.schema.ts, toggle-gates.ts. All other files active and wired. 3 RESEARCH.md corrections: generate-config-json-schema is runtime (not build-time), prompt tools HAVE tests, tool count is 22 (not 23).
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
