@@ -271,7 +271,7 @@ export type {
 } from "./mcp-server.schema.js"
 
 // ---------------------------------------------------------------------------
-// Tool definition schemas
+// Tool schemas
 // ---------------------------------------------------------------------------
 
 export {
@@ -280,7 +280,7 @@ export {
   ToolDefinitionSchemaLenient,
   ToolFileSchema,
   ToolFileSchemaLenient,
-} from "./tool-definition.schema.js"
+} from "./tool.schema.js"
 
 export type {
   ToolName,
@@ -288,7 +288,7 @@ export type {
   ToolDefinitionLenient,
   ToolFile,
   ToolFileLenient,
-} from "./tool-definition.schema.js"
+} from "./tool.schema.js"
 
 // ---------------------------------------------------------------------------
 // Config precedence schemas
