@@ -49,13 +49,6 @@ focus: concerns
 - Workaround: Some internal functions catch failures, but there is no startup health state for callers to inspect.
 - Fix approach: Attach `.catch()` logging to all startup promises and expose a read-only startup diagnostics summary through `hivemind-sdk-supervisor` or a doctor check.
 
-**Recovery repair options imply session scope but repair global state:**
-- Symptoms: `repairRecoveryState()` requires `sessionId`, but the repair path only validates non-empty input and repairs the global `session-continuity.json` file.
-- Files: `src/task-management/recovery/repair-state.ts`, `src/task-management/recovery/create-checkpoint.ts`, `src/task-management/recovery/assess-state.ts`
-- Trigger: Operator expects a single-session repair but `quarantine-and-reset` rewrites the entire continuity store.
-- Workaround: Use recovery repair only with full-store backup/checkpoint context.
-- Fix approach: Rename the API to signal store-level repair or implement true session-scoped repair semantics.
-
 ## Security Considerations
 
 **Session tracker persists raw user and assistant text without redaction:**
@@ -160,7 +153,7 @@ focus: concerns
 **No typed structured error hierarchy:**
 - Problem: Source has 100 `throw new Error` sites across 45 TypeScript files. Errors are string-prefix based rather than typed.
 - Blocks: Callers cannot distinguish validation, permission, unavailable-runtime, not-found, and persistence failures without parsing messages.
-- Files: `src/coordination/delegation/manager.ts`, `src/tools/hivemind/run-background-command.ts`, `src/shared/session-api.ts`, `src/task-management/recovery/*.ts`
+- Files: `src/coordination/delegation/manager.ts`, `src/tools/hivemind/run-background-command.ts`, `src/shared/session-api.ts`
 
 **Startup and runtime diagnostics are partial:**
 - Problem: The plugin logs startup events and some warnings, but there is no unified health surface for recovery status, active timers, queue depth, pending notifications, PTY availability, and session tracker initialization outcome.
@@ -181,11 +174,11 @@ focus: concerns
 - Risk: Mocked SDK and unit tests can pass while runtime seams differ from the real OpenCode plugin environment.
 - Priority: High.
 
-**Recovery repair behavior needs clearer store-level tests:**
-- What's not tested: Operator expectations around session-scoped versus store-scoped repair outcomes.
-- Files: `src/task-management/recovery/repair-state.ts`, `tests/lib/recovery/repair-state.test.ts`
-- Risk: A future caller can invoke repair for one session and unintentionally reset or restore the full continuity store.
-- Priority: Medium.
+---
+
+## Phase 18 Cleanup
+
+**Phase 18 cleanup:** `steering-engine/`, `runtime-detection/`, `toggle-gates`, and `recovery/` removed — all confirmed dead code per Phase 17 audit findings. Relevant concerns referencing these deleted modules have been removed from this document.
 
 ---
 

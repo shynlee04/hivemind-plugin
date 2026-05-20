@@ -181,7 +181,7 @@ src/
 ├── plugin.ts                  # Composition root
 ├── index.ts                   # Public API re-exports
 ├── shared/                    # Leaf utilities, types, SDK wrappers, runtime policy, security
-├── task-management/           # Continuity, journal, event tracker, recovery, trajectory, lifecycle
+├── task-management/           # Continuity, journal, event tracker, trajectory, lifecycle
 ├── coordination/              # Delegation, completion, concurrency, SDK/command delegation, spawner
 ├── features/                  # Standalone runtime features: bootstrap, PTY/background command, doc intelligence, prompt packets, pressure, SDK supervisor, work contracts
 ├── config/                    # Config subscriber/compiler/workflow
