@@ -187,40 +187,6 @@ export type {
 } from "./command-frontmatter.schema.js"
 
 // ---------------------------------------------------------------------------
-// Permission schemas
-// ---------------------------------------------------------------------------
-
-export {
-  PERMISSION_SCHEMA_VERSION,
-  PermissionActionSchema,
-  PermissionKeySchema,
-  PatternEntrySchema,
-  PermissionRuleSchema,
-  PermissionRuleSchemaLenient,
-  PatternBasedPermissionSchema,
-  RulesBasedPermissionSchema,
-  RulesBasedPermissionSchemaLenient,
-  PermissionRulesetSchema,
-  PermissionRulesetSchemaLenient,
-  AgentPermissionOverrideSchema,
-  AgentPermissionOverrideSchemaLenient,
-} from "./permission.schema.js"
-
-export type {
-  PermissionAction,
-  PermissionKey,
-  PermissionRule,
-  PermissionRuleLenient,
-  PatternBasedPermissions,
-  RulesBasedPermissions,
-  RulesBasedPermissionsLenient,
-  PermissionRuleset,
-  PermissionRulesetLenient,
-  AgentPermissionOverride,
-  AgentPermissionOverrideLenient,
-} from "./permission.schema.js"
-
-// ---------------------------------------------------------------------------
 // Skill metadata schemas
 // ---------------------------------------------------------------------------
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   AgentNameSchema, AgentFrontmatterSchema, AgentFrontmatterSchemaLenient, AgentFileSchema, AgentFileSchemaLenient,
   CommandNameSchema, CommandFrontmatterSchema, CommandFrontmatterSchemaLenient, CommandTemplateFeaturesSchema, CommandTemplateFeaturesSchemaLenient, CommandFileSchema, CommandFileSchemaLenient,
-  PermissionActionSchema, PermissionRuleSchema, PermissionRuleSchemaLenient, PatternBasedPermissionSchema, PermissionKeySchema,
+
   SkillNameSchema, SkillFrontmatterSchema, SkillFrontmatterSchemaLenient, SkillFileSchema, SkillFileSchemaLenient, SkillDiscoveryLocationSchema,
   ToolDefinitionSchema, ToolDefinitionSchemaLenient, ToolFileSchema, ToolFileSchemaLenient,
   MCPServerConfigSchema, OpenCodeConfigSchema, ConfigPrecedenceLevelSchema, ConfigSourceSchema, ConfigSourceSchemaLenient,
@@ -56,13 +56,6 @@ const validTplFeatures = () => ({
 const validCmdFile = () => ({
   frontmatter: validCmdFm(), body: "Run $ARGUMENTS", filePath: ".opencode/commands/cmd.md",
 })
-
-// Permission fixtures
-const validPermRule = () => ({ permission: "bash", action: "ask" as const, pattern: "rm -rf *" })
-const PK = ["read", "edit", "glob", "grep", "bash", "task", "skill", "lsp", "question", "webfetch", "websearch", "codesearch", "external_directory", "doom_loop"]
-const validPatternBased = () => Object.fromEntries(PK.map(k =>
-  [k, k === "bash" ? { "*": "ask", "git *": "allow" } : k === "external_directory" || k === "doom_loop" ? { "*": "ask" } : { "*": "allow" }]
-))
 
 // Skill fixtures
 const validSkillFm = () => ({ name: "my-skill", description: "A test skill" })
@@ -184,54 +177,6 @@ describe("CommandFileSchema", () => {
   it("rejects missing body", () => { const { body, ...r } = validCmdFile(); expect(sp(CommandFileSchema, r).success).toBe(false) })
   it("rejects empty body", () => expect(sp(CommandFileSchema, { ...validCmdFile(), body: "" }).success).toBe(false))
   rejectsExtra(CommandFileSchema, validCmdFile())
-})
-
-// ===========================================================================
-// PermissionActionSchema
-// ===========================================================================
-
-describe("PermissionActionSchema", () => {
-  it('accepts "allow"', () => expect(sp(PermissionActionSchema, "allow").success).toBe(true))
-  it('accepts "ask"', () => expect(sp(PermissionActionSchema, "ask").success).toBe(true))
-  it('accepts "ask"', () => expect(sp(PermissionActionSchema, "ask").success).toBe(true))
-  it('rejects "block"', () => expect(sp(PermissionActionSchema, "block").success).toBe(false))
-  it('rejects "grant"', () => expect(sp(PermissionActionSchema, "grant").success).toBe(false))
-  it("rejects empty string", () => expect(sp(PermissionActionSchema, "").success).toBe(false))
-})
-
-// ===========================================================================
-// PermissionRuleSchema
-// ===========================================================================
-
-describe("PermissionRuleSchema", () => {
-  it("accepts valid rule", () => expect(sp(PermissionRuleSchema, validPermRule()).success).toBe(true))
-  it("rejects missing permission", () => { const { permission, ...r } = validPermRule(); expect(sp(PermissionRuleSchema, r).success).toBe(false) })
-  it("rejects missing action", () => { const { action, ...r } = validPermRule(); expect(sp(PermissionRuleSchema, r).success).toBe(false) })
-  it("rejects missing pattern", () => { const { pattern, ...r } = validPermRule(); expect(sp(PermissionRuleSchema, r).success).toBe(false) })
-  it("rejects invalid action", () => expect(sp(PermissionRuleSchema, { ...validPermRule(), action: "block" }).success).toBe(false))
-  it("rejects empty permission", () => expect(sp(PermissionRuleSchema, { ...validPermRule(), permission: "" }).success).toBe(false))
-  rejectsExtra(PermissionRuleSchema, validPermRule())
-})
-
-// ===========================================================================
-// PatternBasedPermissionSchema
-// ===========================================================================
-
-describe("PatternBasedPermissionSchema", () => {
-  it("accepts valid pattern-based", () => expect(sp(PatternBasedPermissionSchema, validPatternBased()).success).toBe(true))
-  it("accepts all-wildcard", () => {
-    const allAllow = Object.fromEntries(PK.map(k => [k, { "*": "allow" }]))
-    expect(sp(PatternBasedPermissionSchema, allAllow).success).toBe(true)
-  })
-  it("rejects invalid action in pattern", () => {
-    expect(sp(PatternBasedPermissionSchema, { ...validPatternBased(), bash: { "*": "block" } }).success).toBe(false)
-  })
-  it("accepts unknown permission keys (future compatibility)", () => {
-    expect(sp(PatternBasedPermissionSchema, { "future-permission": { "*": "allow" } }).success).toBe(true)
-  })
-  it("accepts partial keys (no longer requires all keys)", () => {
-    expect(sp(PatternBasedPermissionSchema, { bash: { "*": "ask" } }).success).toBe(true)
-  })
 })
 
 // ===========================================================================
@@ -419,11 +364,6 @@ describe("CommandTemplateFeaturesSchemaLenient", () => {
 describe("CommandFileSchemaLenient", () => {
   it("accepts valid file", () => expect(sp(CommandFileSchemaLenient, validCmdFile()).success).toBe(true))
   acceptsExtra(CommandFileSchemaLenient, validCmdFile())
-})
-
-describe("PermissionRuleSchemaLenient", () => {
-  it("accepts valid rule", () => expect(sp(PermissionRuleSchemaLenient, validPermRule()).success).toBe(true))
-  acceptsExtra(PermissionRuleSchemaLenient, validPermRule())
 })
 
 describe("SkillFrontmatterSchemaLenient", () => {
