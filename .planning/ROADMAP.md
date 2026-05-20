@@ -413,7 +413,7 @@ src/
 **Plans:** 4 plans in 4 waves
 
 Plans:
-- [ ] 17-01-PLAN.md — Audit shared/, config/, routing/ (smallest modules) — Wave 1
+- [x] 17-01-PLAN.md — Audit shared/, config/, routing/ (smallest modules) — Wave 1 ✅ COMPLETE (2026-05-20)
 - [ ] 17-02-PLAN.md — Audit schema-kernel/, tools/, hooks/ — Wave 2
 - [ ] 17-03-PLAN.md — Audit coordination/, task-management/ — Wave 3
 - [ ] 17-04-PLAN.md — Audit features/, cli/, sidecar/, harness/kernel + compile final FINDINGS.md — Wave 4

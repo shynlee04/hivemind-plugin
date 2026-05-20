@@ -5,7 +5,7 @@ milestone_name: milestone
 status: planned
 last_updated: "2026-05-19T22:25:16.775Z"
 progress:
-  total_phases: 5
+  total_phases: 4
   completed_phases: 4
   total_plans: 22
   completed_plans: 22
@@ -17,14 +17,15 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-20
-**Last advance:** 16-05-PLAN.md completed — created hivemind-session-view cross-root query tool
-**Last trigger:** Phase 16 Plan 01 complete — schema foundation ready for Wave 1 tool implementation plans.
+**Last advance:** 17-01-PLAN.md completed — manual audit of shared/, config/, routing/ modules
+**Last trigger:** Phase 17 Plan 01 complete — findings report ready for Phase 18 consumption.
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 16 — session-tracker-tool-intelligence-event-tracker-deprecation.
+**Active phase:** Phase 17 — sync-boundary-definition-src-audit-and-cleanup.
+**Phase 17 Plan 01:** ✅ COMPLETE — Discovered audit of src/shared/ (14 files), src/config/ (7 files), and src/routing/ (11 files). Zero dead code found. Zero architecture violations. 3 minor test-gaps in shared/. 3 RESEARCH.md inaccuracies corrected (routing test coverage, compiler.ts LOC, profile filename).
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
@@ -63,7 +64,7 @@ Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/`
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Phase 16 — session-tracker-tool-intelligence-event-tracker-deprecation
+**Current focus:** Phase 17 — sync-boundary-definition-src-audit-and-cleanup
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -110,7 +111,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | **E2E tests MISSING** — 1767 unit tests, zero integration | 🟡 HIGH | Add at least delegation smoke test |
 | **Lifecycle gate criteria MISSING** — references/ empty | 🟡 HIGH | CA-04.4: synthesize from ARCHITECTURE.md |
 | **`.hivemind/` ownership gap** — 17/19 dirs no typed module | 🟡 MEDIUM | CA-04.3: after bootstrap |
-| **`asString` duplicated** — helpers.ts + continuity.ts | 🟢 LOW | Consolidate |
+| **`asString` duplication** — **RESOLVED** (continuity.ts copy removed in prior phase) | 🟢 RESOLVED | Already consolidated |
 | **storeCache singleton** — prevents isolated testing | 🟢 LOW | Refactor continuity.ts |
 
 ---
@@ -151,6 +152,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-16-01 | Schema extension: filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy; new session-view.schema.ts with SessionViewInputSchema for hivemind-session-view tool | NEW — 2026-05-19 |
 | D-16-06 | Event-tracker deprecation cleanup: src/ references in AGENTS.md comments and plugin.ts migration code left intact (legitimate historical/migration documentation); .opencode/skills/ references updated with deprecation annotations; evals.json not modified (test fixture per D-16) | NEW — 2026-05-19 |
 | D-16-04 | get-manifest action on session-hierarchy tool: handleGetManifest reads hierarchy-manifest.json via safeSessionPath + readFile + JSON.parse. Returns flattened child list with status/delegatedBy/depth/turnCount/createdAt. No new imports. | NEW — 2026-05-20 |
+| D-17-01 | Plan 01 audit complete: 32 files audited (shared/, config/, routing/), zero dead code, zero architecture violations, 3 minor test-gaps in shared/ (tool-response.ts, task-status.ts, tool-helpers.ts lack dedicated test files). 3 RESEARCH.md corrections: routing HAS test coverage (9 files), compiler.ts is 410 LOC (not ~500), profile filename corrected. Findings report ready for Phase 18 consumption. | NEW — 2026-05-20 |
 
 ---
 
@@ -243,14 +245,15 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
-2. **Phase 16 Plan 02 COMPLETE** — Enhanced session-tracker.ts: child .json search, >1MB warnings, filter-sessions action. typecheck clean, all tests pass.
-3. **Phase 16 remaining plans (05, 07)** — Wave 1 tool implementation plans. Next: 16-05.
-3. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass.
-4. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 5/5 plans executed. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`.
-5. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete). After CP-DT-01 in dependency order.
-6. **Runtime UAT pending** — CP-ST live compact/resume and CP-DT live delegation smoke tests need real long-haul session proof.
-7. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-DT-01 and CP-PTY readiness checks.
+1. **Phase 17 Plan 01 COMPLETE** — Manual audit of shared/, config/, routing/. 32 files, 4,412 LOC, 0 dead code. Findings report created for Phase 18.
+2. **Phase 16 Plan 01 COMPLETE** — Schema extension: 3 tools extended, new session-view.schema.ts created. typecheck clean.
+3. **Phase 16 Plan 02 COMPLETE** — Enhanced session-tracker.ts: child .json search, >1MB warnings, filter-sessions action. typecheck clean, all tests pass.
+4. **Phase 16 remaining plans (05, 07)** — Wave 1 tool implementation plans. Next: 16-05.
+5. **CP-ST-06 COMPLETE** — Session-Tracker Root Cause Rewrite: all 5 plans delivered, 418/418 tests pass.
+6. **CP-DT-01 EXECUTION COMPLETE** — Delegate-Task Ecosystem Revamp: 5/5 plans executed. Next: `/gsd-code-review CP-DT-01`, `/gsd-validate-phase CP-DT-01`.
+7. **CP-PTY-01 READY** — Background Shell Control-Plane MVP (BOOT-07 complete). After CP-DT-01 in dependency order.
+8. **Runtime UAT pending** — CP-ST live compact/resume and CP-DT live delegation smoke tests need real long-haul session proof.
+9. **Resume MCM/f-04 dependency order** — follow ROADMAP gates after CP-DT-01 and CP-PTY readiness checks.
 
 ## Option 3 Foundation Artifacts
 
