@@ -4,6 +4,7 @@ import { basename, join } from "node:path"
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { resetStoreCache } from "../../src/task-management/continuity/store-cache.js"
 import type { Delegation, SessionContinuityRecord } from "../../src/shared/types.js"
 
 /** Creates a minimal continuity record for persistence regression tests. */
@@ -165,8 +166,8 @@ describe("continuity persistence", () => {
     const filePath = continuity1.getContinuityStoragePath()
     expect(existsSync(filePath)).toBe(true)
 
-    // Phase 2: simulate restart — reset module cache so storeCache is undefined
-    vi.resetModules()
+    // Phase 2: simulate restart — reset store cache so getStoreCache is undefined
+    resetStoreCache()
     const continuity2 = await import("../../src/task-management/continuity/index.js")
 
     // Verify state was rehydrated from disk
@@ -269,8 +270,8 @@ describe("continuity persistence", () => {
       },
     })
 
-    // Phase 2: simulate restart
-    vi.resetModules()
+    // Phase 2: simulate restart — reset store cache so cache is cold
+    resetStoreCache()
     const continuity2 = await import("../../src/task-management/continuity/index.js")
 
     // Verify delegation metadata survived across restart
