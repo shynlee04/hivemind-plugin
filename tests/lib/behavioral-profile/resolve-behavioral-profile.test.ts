@@ -26,8 +26,6 @@ import { resolveProfile } from "../../../src/routing/session-entry/profile-resol
 import { BehavioralProfiles } from "../../../src/routing/behavioral-profile/profiles.js"
 import {
   resolveBehavioralProfile,
-  invalidateBehavioralProfile,
-  clearAllBehavioralProfiles,
   mapLevelToExpertise,
 } from "../../../src/routing/behavioral-profile/resolve-behavioral-profile.js"
 import type {
@@ -162,13 +160,11 @@ describe("mapLevelToExpertise", () => {
 
 describe("resolveBehavioralProfile", () => {
   beforeEach(() => {
-    clearAllBehavioralProfiles()
     mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
   afterEach(() => {
-    clearAllBehavioralProfiles()
   })
 
   it("resolves a complete profile for expert-advisor mode", () => {
@@ -273,13 +269,11 @@ describe("resolveBehavioralProfile", () => {
 
 describe("caching behavior", () => {
   beforeEach(() => {
-    clearAllBehavioralProfiles()
     mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
   afterEach(() => {
-    clearAllBehavioralProfiles()
   })
 
   it("always reads fresh config — each call produces a new profile", () => {
@@ -304,32 +298,6 @@ describe("caching behavior", () => {
     expect(mockGetFreshConfig).toHaveBeenCalledTimes(2)
   })
 
-  it("invalidateBehavioralProfile is a no-op — always reads fresh config", () => {
-    mockGetFreshConfig.mockReturnValue(createMockConfig())
-    mockResolveProfile.mockReturnValue(createMockProfileMatch())
-
-    resolveBehavioralProfile("sess-c3", "/project")
-    expect(mockGetFreshConfig).toHaveBeenCalledTimes(1)
-
-    invalidateBehavioralProfile("sess-c3")
-    resolveBehavioralProfile("sess-c3", "/project")
-    expect(mockGetFreshConfig).toHaveBeenCalledTimes(2)
-  })
-
-  it("clearAllBehavioralProfiles resets entire cache", () => {
-    mockGetFreshConfig.mockReturnValue(createMockConfig())
-    mockResolveProfile.mockReturnValue(createMockProfileMatch())
-
-    resolveBehavioralProfile("sess-c4a", "/project")
-    resolveBehavioralProfile("sess-c4b", "/project")
-    expect(mockGetFreshConfig).toHaveBeenCalledTimes(2)
-
-    clearAllBehavioralProfiles()
-
-    resolveBehavioralProfile("sess-c4a", "/project")
-    resolveBehavioralProfile("sess-c4b", "/project")
-    expect(mockGetFreshConfig).toHaveBeenCalledTimes(4)
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -367,7 +335,6 @@ describe("type shape contracts", () => {
     expect(result.merged).toHaveProperty("communicationStyle")
     expect(result.merged).toHaveProperty("decisionSpeed")
 
-    clearAllBehavioralProfiles()
   })
 
   it("BehavioralOverrides has required fields", () => {
@@ -391,14 +358,12 @@ describe("type shape contracts", () => {
 
 describe("language pipeline feature evaluation", () => {
   beforeEach(() => {
-    clearAllBehavioralProfiles()
     mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
     mockResolveProfile.mockReturnValue(createMockProfileMatch())
   })
 
   afterEach(() => {
-    clearAllBehavioralProfiles()
   })
 
   const supportedLanguages = ["en", "vi", "zh", "fr", "ja", "ko", "de", "es", "th", "id"] as const
@@ -465,13 +430,11 @@ describe("language pipeline feature evaluation", () => {
 
 describe("multi-level expertise merge feature evaluation", () => {
   beforeEach(() => {
-    clearAllBehavioralProfiles()
     mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
   afterEach(() => {
-    clearAllBehavioralProfiles()
   })
 
   it("clumsy-vibecoder maps to junior, overriding runtime senior", () => {
@@ -521,13 +484,11 @@ describe("multi-level expertise merge feature evaluation", () => {
 
 describe("real-life config scenario (CA-01→CA-02 integration)", () => {
   beforeEach(() => {
-    clearAllBehavioralProfiles()
     mockGetFreshConfig.mockReset()
     mockResolveProfile.mockReset()
   })
 
   afterEach(() => {
-    clearAllBehavioralProfiles()
   })
 
   it("produces correct resolved profile for actual configs.json values", () => {

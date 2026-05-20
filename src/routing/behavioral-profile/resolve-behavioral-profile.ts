@@ -84,20 +84,3 @@ export function resolveBehavioralProfile(
     },
   }
 }
-
-/**
- * @deprecated The behavioral profile no longer caches per-session results.
- *             Each resolution reads fresh config from disk. This function
- *             is a no-op, kept for backward compatibility.
- */
-export function invalidateBehavioralProfile(_sessionId: string): void {
-  // no-op — profile no longer cached
-}
-
-/**
- * @deprecated The behavioral profile no longer caches results.
- *             This function is a no-op, kept for backward compatibility.
- */
-export function clearAllBehavioralProfiles(): void {
-  // no-op — profile no longer cached
-}

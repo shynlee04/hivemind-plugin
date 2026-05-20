@@ -23,7 +23,5 @@ export { BehavioralProfiles } from "./profiles.js"
 // Resolution functions
 export {
   resolveBehavioralProfile,
-  invalidateBehavioralProfile,
-  clearAllBehavioralProfiles,
   mapLevelToExpertise,
 } from "./resolve-behavioral-profile.js"
