@@ -11,7 +11,7 @@
  * @module session-tracker/persistence/hierarchy-manifest
  */
 
-import { writeFile, rename, mkdir, readFile } from "node:fs/promises"
+import { writeFile, rename, mkdir, readFile, unlink } from "node:fs/promises"
 import { dirname } from "node:path"
 import { safeSessionPath } from "./atomic-write.js"
 import type { HierarchyManifest, HierarchyManifestChild } from "../types.js"
@@ -202,5 +202,12 @@ export class HierarchyManifestWriter {
     await mkdir(dirname(filePath), { recursive: true })
     await writeFile(tmpPath, JSON.stringify(manifest, null, 2), "utf-8")
     await rename(tmpPath, filePath)
+    // Post-rename temp cleanup (F-01 / REQ-21-01) — this path may be deprecated by Plan 02
+    // but fix it now while it exists to prevent leaks
+    try {
+      await unlink(tmpPath)
+    } catch {
+      // Best-effort cleanup
+    }
   }
 }
