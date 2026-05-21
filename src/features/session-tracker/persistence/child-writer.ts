@@ -376,4 +376,58 @@ export class ChildWriter {
       },
     )
   }
+
+  /**
+   * Backfills real agent metadata into a child session `.json` file
+   * when the initial creation used fallback values (F-18).
+   *
+   * If `mainAgent.name` is "pending" or empty, replaces it with the
+   * real agent name from the completed delegation. Otherwise no-ops
+   * to avoid overwriting already-correct metadata.
+   *
+   * Uses the same `enqueueWrite()` + `resolveWriteParent()` + `readChildFile()`
+   * + `atomicWriteJson()` pipeline as `updateChildStatus()`.
+   *
+   * @param parentSessionID - The parent session identifier.
+   * @param childSessionID - The child session identifier.
+   * @param metadata - The real agent metadata to backfill.
+   * @returns Promise that resolves when the backfill completes (or no-ops).
+   */
+  async backfillChildMetadata(
+    parentSessionID: string,
+    childSessionID: string,
+    metadata: { agentName: string; model?: string; description?: string },
+  ): Promise<void> {
+    const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
+    return this.enqueueWrite(
+      `${writeParent}/${childSessionID}-backfill`,
+      async () => {
+        let record: ChildSessionRecord
+        try {
+          record = await this.readChildFile(writeParent, childSessionID)
+        } catch {
+          // Child file doesn't exist yet — nothing to backfill
+          return
+        }
+
+        // Only backfill if mainAgent is still the fallback "pending" value
+        if (record.mainAgent?.name === "pending" || !record.mainAgent?.name) {
+          record.mainAgent = {
+            name: metadata.agentName,
+            model: metadata.model ?? record.mainAgent?.model ?? "",
+          }
+          record.delegatedBy = {
+            ...record.delegatedBy,
+            agentName: metadata.agentName,
+            description: metadata.description ?? record.delegatedBy?.description ?? "",
+          }
+          record.updated = new Date().toISOString()
+
+          const filePath = this.getChildFilePath(writeParent, childSessionID)
+          await atomicWriteJson(filePath, record)
+        }
+        // If mainAgent already has real values, no-op
+      },
+    )
+  }
 }
