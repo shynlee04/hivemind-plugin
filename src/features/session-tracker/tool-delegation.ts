@@ -285,16 +285,6 @@ export class ToolDelegation {
       `${rootMain}/`,
       `${childSessionID}.json`,
     )
-    await this.manifestWriter.addChild({
-      rootMainSessionID: rootMain,
-      childSessionID,
-      parentSessionID: input.sessionID,
-      delegationDepth: depth,
-      delegatedBy: subagentType,
-      subagentType,
-      childFile: `${childSessionID}.json`,
-    })
-
     const taskResult = extractTaskResult(output.output, childSessionID)
     if (taskResult) {
       await this.childWriter.appendChildTurn(input.sessionID, childSessionID, {

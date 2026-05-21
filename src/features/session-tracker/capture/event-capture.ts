@@ -487,15 +487,6 @@ export class EventCapture {
             `${rootMain}/`,
             `${sessionID}.json`,
           )
-          await this.manifestWriter.addChild({
-            rootMainSessionID: rootMain,
-            childSessionID: sessionID,
-            parentSessionID: parentID,
-            delegationDepth,
-            delegatedBy: subagentType,
-            subagentType,
-            childFile: `${sessionID}.json`,
-          })
         }
       }
     } catch (err) {

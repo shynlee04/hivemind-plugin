@@ -14,7 +14,12 @@
 import { writeFile, rename, mkdir, readFile, unlink } from "node:fs/promises"
 import { dirname } from "node:path"
 import { safeSessionPath } from "./atomic-write.js"
-import type { HierarchyManifest, HierarchyManifestChild } from "../types.js"
+import type {
+  HierarchyManifest,
+  HierarchyManifestChild,
+  SessionContinuityIndex,
+  ChildHierarchyEntry,
+} from "../types.js"
 
 // ---------------------------------------------------------------------------
 // HierarchyManifestWriter
@@ -144,6 +149,84 @@ export class HierarchyManifestWriter {
     return manifest.children[childSessionID]
   }
 
+  /**
+   * Generates a flattened hierarchy manifest from the continuity tree.
+   *
+   * Per G-1: The continuity tree is the canonical hierarchy source.
+   * The manifest is a derivative cache — generated from the tree at read time
+   * to eliminate drift between the two stores.
+   *
+   * Walks all nested `hierarchy.children` entries in the session-continuity.json
+   * file and flattens them into a single `Record<string, HierarchyManifestChild>`.
+   *
+   * @param rootMainID - The root main session whose continuity tree to walk.
+   * @returns A flattened hierarchy manifest.
+   */
+  async generateFromContinuity(rootMainID: string): Promise<HierarchyManifest> {
+    const continuityPath = safeSessionPath(
+      this.projectRoot,
+      rootMainID,
+      "session-continuity.json",
+    )
+    let continuity: SessionContinuityIndex
+
+    try {
+      const raw = await readFile(continuityPath, "utf-8")
+      continuity = JSON.parse(raw)
+    } catch {
+      // No continuity file — return an empty manifest
+      return {
+        version: "1.0",
+        rootMainSessionID: rootMainID,
+        lastUpdated: new Date().toISOString(),
+        children: {},
+        totalChildren: 0,
+        maxDepth: 0,
+      }
+    }
+
+    const children: Record<string, HierarchyManifestChild> = {}
+
+    const walk = (
+      entries: Record<string, ChildHierarchyEntry>,
+      parentID: string,
+    ): void => {
+      for (const [childID, entry] of Object.entries(entries)) {
+        children[childID] = {
+          sessionID: childID,
+          parentSessionID: parentID,
+          rootMainSessionID: rootMainID,
+          delegationDepth: entry.depth ?? 1,
+          delegatedBy: entry.delegatedBy ?? "unknown",
+          subagentType: entry.delegatedBy ?? "unknown",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: entry.status ?? "active",
+          turnCount: 0,
+          childFile: entry.file ?? `${childID}.json`,
+        }
+        if (entry.children && Object.keys(entry.children).length > 0) {
+          walk(entry.children, childID)
+        }
+      }
+    }
+
+    walk(continuity.hierarchy?.children ?? {}, rootMainID)
+
+    const ids = Object.keys(children)
+    return {
+      version: "1.0",
+      rootMainSessionID: rootMainID,
+      lastUpdated: new Date().toISOString(),
+      children,
+      totalChildren: ids.length,
+      maxDepth:
+        ids.length > 0
+          ? Math.max(0, ...ids.map((id) => children[id].delegationDepth ?? 0))
+          : 0,
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Private helpers
   // -------------------------------------------------------------------------
@@ -167,16 +250,15 @@ export class HierarchyManifestWriter {
     )
     try {
       const raw = await readFile(filePath, "utf-8")
-      return JSON.parse(raw) as HierarchyManifest
+      const parsed = JSON.parse(raw) as HierarchyManifest
+      // Cache hit — return the cached manifest (fast path)
+      return parsed
     } catch {
-      return {
-        version: "1.0",
-        rootMainSessionID,
-        lastUpdated: new Date().toISOString(),
-        children: {},
-        totalChildren: 0,
-        maxDepth: 0,
-      }
+      // Cache miss — regenerate from continuity tree (G-1 derivative cache)
+      // Write the generated manifest back to disk as cache optimization
+      const generated = await this.generateFromContinuity(rootMainSessionID)
+      await this.writeManifest(rootMainSessionID, generated)
+      return generated
     }
   }
 
