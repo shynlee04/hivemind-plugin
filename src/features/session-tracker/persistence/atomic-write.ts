@@ -7,7 +7,7 @@
  * @module session-tracker/persistence/atomic-write
  */
 
-import { mkdir, rename, writeFile, readFile } from "node:fs/promises"
+import { mkdir, rename, writeFile, readFile, unlink, stat } from "node:fs/promises"
 import { dirname, resolve, sep } from "node:path"
 
 // ---------------------------------------------------------------------------
@@ -38,7 +38,21 @@ export async function atomicWriteJson(
   const content = JSON.stringify(data, null, 2)
   await ensureDirectory(dirname(filePath))
   await writeFile(tmpPath, content, "utf-8")
+  // Cross-volume rename detection (G-5 / REQ-21-02)
+  const tmpDev = await stat(tmpPath).then(s => s.dev).catch(() => null)
+  const targetDev = await stat(dirname(filePath)).then(s => s.dev).catch(() => null)
+  if (tmpDev !== null && targetDev !== null && tmpDev !== targetDev) {
+    process.emitWarning(
+      `[Harness] Cross-volume rename detected: tmp dev=${tmpDev} !== target dev=${targetDev} — rename NOT atomic for "${filePath}"`,
+    )
+  }
   await rename(tmpPath, filePath)
+  // Post-rename cleanup: prevent temp file accumulation (F-01 / REQ-21-01)
+  try {
+    await unlink(tmpPath)
+  } catch {
+    // Best-effort: temp file will be cleaned on next startup by orphanCleanup
+  }
 }
 
 /**
@@ -74,6 +88,12 @@ export async function atomicAppendMarkdown(
   await ensureDirectory(dirname(filePath))
   await writeFile(tmpPath, merged, "utf-8")
   await rename(tmpPath, filePath)
+  // Post-rename cleanup (F-01 / REQ-21-01)
+  try {
+    await unlink(tmpPath)
+  } catch {
+    // Best-effort
+  }
 }
 
 /**
