@@ -582,10 +582,21 @@ Plans:
 - [x] 21-05-PLAN.md — G-3 Precondition + G-4 Gate Removal (Wave 2) — REQ-21-12, REQ-21-13
 - [x] 21-06-PLAN.md — Guardrails + Integration Verification (Wave 3) — REQ-21-14, REQ-21-15
 
+### Phase 21.1: Execute-Slash-Command SDK Redesign — agent switching, native SDK execution, primitive awareness, subtask wiring (INSERTED)
+
+**Goal:** Upgrade execute-slash-command to use native OpenCode SDK command execution path with real TUI agent switching (switch-before-append and run-as-agent-then-restore), command frontmatter-aware preflight (agent/model/subtask), primitive discovery across project/global + singular/plural dirs, $ARGUMENTS/flags/template/reference parsing, and subtask-to-native-task delegation wiring. Resolve gaps: no agent restore, no model injection, no command existence check, no result envelope.
+**Requirements**: REQ-01 through REQ-07
+**Depends on:** Phase 21
+**Plans:** 3 plans
+
+Plans:
+- [ ] 21.1-01-PLAN.md — CommandBundle type extension + frontmatter enrichment (Wave 1) — REQ-03, REQ-04
+- [ ] 21.1-02-PLAN.md — Tool rewrite: SDK-native execution, agent switching, preflight, subtask, standard envelope (Wave 2) — REQ-01 through REQ-07
+- [ ] 21.1-03-PLAN.md — Test rewrite: comprehensive coverage for all 7 requirements (Wave 3) — REQ-01 through REQ-07
+
 ### Phase 22: Coordination Status + Error Unification (Group 1)
 
-**Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry. Add guardrails to execute-slash-command.
-**Depends on:** Phase 21
+**Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry.\n**Depends on:** Phase 21.1
 
 ### Phase 23: Coordination Dispatch + Delegate-Task Fix (Group 1)
 
