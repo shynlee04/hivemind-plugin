@@ -400,7 +400,7 @@ export class ChildWriter {
   ): Promise<void> {
     const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
     return this.enqueueWrite(
-      `${writeParent}/${childSessionID}-backfill`,
+      `${writeParent}/${childSessionID}`,
       async () => {
         let record: ChildSessionRecord
         try {
