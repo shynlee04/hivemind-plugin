@@ -356,6 +356,23 @@ export class EventCapture {
         if (this.manifestWriter) {
           await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
+        // F-18: Backfill child metadata with real agent identity
+        const pendingEntry = this.pendingRegistry?.get(sessionID)
+        const agentName = pendingEntry?.subagentType ?? "unknown"
+        await this.childWriter.backfillChildMetadata(
+          childRoute.parentID,
+          sessionID,
+          { agentName, model: "" },
+        ).catch((err) => {
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: backfill failed for "${sessionID}"`,
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
+        })
         return
       }
       // Main session — existing behavior
@@ -390,6 +407,23 @@ export class EventCapture {
         if (this.manifestWriter) {
           await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "error")
         }
+        // F-18: Backfill child metadata with real agent identity
+        const pendingEntry = this.pendingRegistry?.get(sessionID)
+        const agentName = pendingEntry?.subagentType ?? "unknown"
+        await this.childWriter.backfillChildMetadata(
+          childRoute.parentID,
+          sessionID,
+          { agentName, model: "" },
+        ).catch((err) => {
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: backfill failed for "${sessionID}"`,
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
+        })
         return
       }
       // Main session — existing behavior
@@ -430,6 +464,8 @@ export class EventCapture {
     parentID: string,
     explicitSubagentType?: string,
     explicitDelegationDepth?: number,
+    explicitAgentName?: string,
+    explicitModel?: string,
   ): Promise<void> {
     if (!this.childWriter) return
 
@@ -451,8 +487,8 @@ export class EventCapture {
         parentSessionID: parentID,
         delegationDepth,
         delegatedBy: {
-          agentName: subagentType,
-          model: "",
+          agentName: explicitAgentName ?? subagentType,
+          model: explicitModel ?? "",
           tool: "task",
           description: "",
           subagentType,
@@ -460,7 +496,10 @@ export class EventCapture {
         created: now,
         updated: now,
         status: "active",
-        mainAgent: { name: "pending", model: "" },
+        mainAgent: {
+          name: explicitAgentName ?? subagentType,
+          model: explicitModel ?? "",
+        },
         turns: [],
         children: [],
         journey: [],
