@@ -12,6 +12,10 @@ export type CommandBundle = {
   description: string
   /** Optional agent hint from frontmatter. */
   agent?: string
+  /** Optional model override from command frontmatter. */
+  model?: string
+  /** Optional subtask hint from command frontmatter. */
+  subtask?: boolean
   /** Raw command body. */
   body: string
 }
