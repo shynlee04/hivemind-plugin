@@ -471,152 +471,11 @@ Plans:
 Plans:
 - [x] Phase 20 direct execution — dependency cleanup completed in `38e0bd8f`; progress/state manifests updated in `b3875fd6`. Evidence: `package.json`/`package-lock.json` dependency cleanup, `.planning/STATE.md` focus advanced to Phase 21, `AGENTS.md` current phase context updated.
 
-### Phase 21: Sync I/O Async Conversion + Promise Hygiene
-
-**Goal:** Convert sync filesystem calls to async in all runtime paths. Add error handling to 5 fire-and-forget promises in plugin.ts. Retain sync I/O only in CLI cold-start (bin/, bootstrap-init CLI mode). Target: ~159 sync calls → ~30.
-**Actions:**
-- Convert `readFileSync`/`writeFileSync`/`renameSync` in `task-management/continuity/index.ts` to async
-- Convert sync I/O in `continuity/delegation-persistence.ts`
-- Convert sync I/O in `features/agent-work-contracts/store.ts`
-- Convert `plugin.ts` startup sync I/O (`workspace-runtime-policy.ts`)
-- Add `.catch()` logging to 5 fire-and-forget promises: plugin.ts L223, L244, L262, L276, L290
-- Retain sync I/O in: `cli/`, `bin/`, `bootstrap-init.ts` (cold-start paths)
-**Requirements:** TBD
-**Depends on:** Phase 20
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 21 to break down)
-
-### Phase 22: Typed Error Hierarchy
-
-**Goal:** Create 5 typed error classes and replace ~100 untyped `throw new Error` sites across 45 files. Fix silent catch blocks. All error messages preserved.
-**Classes:**
-- `HarnessValidationError` — schema/tool input validation failures
-- `HarnessPermissionError` — permission/gate/guard denials
-- `HarnessNotFoundError` — session/delegation/continuity not found
-- `HarnessPersistenceError` — filesystem I/O, continuity write failures
-- `HarnessRuntimeError` — everything else (generic harness errors)
-**Actions:**
-- Create `src/shared/errors.ts` with all 5 classes
-- Replace `throw new Error("[Harness]...")` across ~45 files with typed alternatives
-- Fix silent `catch { /* Best-effort */ }` blocks in lifecycle/index.ts, orphan-cleanup.ts
-- Retrofit catch sites for type-based error routing
-**Requirements:** TBD
-**Depends on:** Phase 21
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 22 to break down)
-
-### Phase 23: Plugin Decomposition + Module Size Fixes
-
-**Goal:** Decompose plugin.ts (493 LOC, 50+ imports) by extracting tool registry, startup tasks, and hook composer. Additionally split 2 near-cap modules. Standardize tool import paths.
-**Actions:**
-- Extract tool registration map → `src/tools/registry.ts`
-- Extract startup tasks → `src/plugin/startup.ts`
-- Extract hook composition → `src/hooks/composition/composer.ts`
-- Split `configure-primitive.ts` (490 LOC) — move inline Zod schemas to schema-kernel/, split `handleCompile`
-- Split `compiler.ts` (410 LOC) — split into `compile.ts`, `decompile.ts`, `batch.ts`
-- Standardize tool() import path: change 5 tools using wide `@opencode-ai/plugin` to narrow `@opencode-ai/plugin/tool`
-- Fix `decompileAgent` bug (`compiler.ts` returns `"unknown"` instead of frontmatter name)
-- Fix `execute-slash-command` return envelope — add `renderToolResult()` + Zod schema
-- Target: plugin.ts < 300 LOC
-**Requirements:** TBD
-**Depends on:** Phase 22
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 23 to break down)
-
-### Phase 24: Session-Tracker Module Split
-
-**Goal:** Split the 2 module-size violations in session-tracker. Fix CQRS violation in hooks. Simplify over-engineered PendingDispatchRegistry.
-**Actions:**
-- Split `event-capture.ts` (702 LOC, 40% over 500 cap) → 2-3 files by lifecycle event family
-- Split `session-tracker/index.ts` (561 LOC, 12% over cap) → extract initialization block
-- Simplify `PendingDispatchRegistry` (312 LOC, 3 reverse indices) → simple Map pair + periodic cleanup
-- Fix CQRS violation: move `tool-after-workflow.ts` durable writes from hooks sector to coordination
-- Make `assertHookWriteBoundary` actually enforce at runtime (or remove if unnecessary)
-**Requirements:** TBD
-**Depends on:** Phase 23
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 24 to break down)
-
-### Phase 25: Legacy Cleanup + Tool Relocation + CQRS Enforcement + Test Gaps
-
-**Goal:** Final cleanup wave before soft primitives. Consolidate migration artifacts, relocate misplaced tools, close critical test gaps, fix shared/ leaf constraint.
-**Actions:**
-- **Legacy cleanup:** 48 legacy/deprecated refs tracked with owner + removal gate date; remove legacy continuity path compat; move event-tracker migration to one-shot cleanup script
-- **Dual delegation store:** Analyze coordinator.ts + state-machine.ts overlap; consolidate if safe
-- **Tool relocation:** Move 3 session tools from `src/tools/hivemind/` to `src/tools/session/`: session-context.ts, session-hierarchy.ts, session-tracker.ts
-- **Routing test gap:** Add 3 test files for session-entry (8 classifyPurpose classes, detectLanguage), behavioral-profile (merge strategy), command-engine (contract analysis, route preview)
-- **Config test gap:** Add tests for compiler.ts (compile/decompile/batch) and workflow module (state transitions, guards, persistence)
-- **Schema test gap:** Add tests for 9 untested schemas: trajectory, bootstrap, agent-work-contract, session-tracker, session-view, runtime-pressure, sdk-supervisor, command-engine, doc-intelligence
-- **shared/ leaf constraint:** Move `getSessionBehavioralProfile()` from `session-api.ts` to `routing/behavioral-profile/`
-- **Wire journal/appendJournalEntry** into lifecycle handler (540 LOC audit trail currently unused)
-- **Remove unused `yaml` library** (consolidation, Phase 20 follow-though)
-**Requirements:** TBD
-**Depends on:** Phase 24
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 25 to break down)
-
-### Phase 26: Post-Restructuring Integration Verification
-
-**Goal:** Verify end-to-end integration after 7 restructuring phases. Smoke test all 23 tools. Full regression suite. Rebuild dist/.
-**Actions:**
-- Full regression: `npm run typecheck` + `npm test`
-- L1 smoke test for all 23 registered tools (verify tool factory → registration → execution)
-- Verify dist/ contains only active modules (no stale artifacts)
-- Update all manifests: STRUCTURE.md, ARCHITECTURE.md, CONCERNS.md, AGENTS.md
-**Requirements:** TBD
-**Depends on:** Phase 25
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 26 to break down)
-
-### Phase 27: Fix sync-oss.yml workflow
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 26
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 27 to break down)
-
-### Phase 28: Package .opencode/ primitives for distribution
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 27
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 28 to break down)
-
 ---
 
-## Managed Autonomous Loop
+### Completed Historical Phases (13-16)
 
-Execution now follows the managed autonomous loop described in `.planning/roadmap/managed-autonomous-loop-2017-05-07.md`.
-
-Rules:
-
-- Only one workflow cycle may run per user authorization.
-- Each cycle must have an entry gate, plan gate, execution gate, review gate, and exit gate.
-- Broad autonomy is blocked until bootstrap recovery, config-to-behavior wiring, f-04 routing, hierarchy enforcement, and E2E proof are complete.
-- Cycle 1 — Lifecycle Alignment: ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
-- Current authorized cycle: **Cycle 2 — Bootstrap Recovery** (Phase 0 gate PASSED, BOOT-02 through BOOT-07 complete; BOOT-08 and CP-PTY-00 remain before downstream runtime expansion).
-- Parallel docs/spec lane: **CP-PTY-00 Shell / PTY Control-Plane Spike** (L5 only; no runtime mutation).
-- Current blocking gate: **BOOT-08 Agent + Skill Integration** and **CP-PTY-00 docs/spec spike** before CP-PTY-01..04 or routing expansion.
-- MCM continuation pending BOOT-04 symlinks.
-- Next recommended cycle: **Cycle 3 — Routing Foundation**.
+These phase records are preserved from the previous iteration and are fully completed.
 
 ### Phase 13: Fix all session-tracker defects with gatekeeping TDD SPEC-driven honest validation and regression prevention
 
@@ -684,6 +543,136 @@ Plans:
 - [x] 16-02-PLAN.md (Wave 1) — session-tracker.ts: search child .json + filter-sessions action
 - [ ] 16-03-PLAN.md (Wave 1) — session-context.ts: aggregate action
 - [x] 16-04-PLAN.md (Wave 1) — session-hierarchy.ts: get-manifest action
-- [ ] 16-05-PLAN.md (Wave 1) — hivemind-session-view.ts (new tool) + plugin.ts registration
-- [ ] 16-06-PLAN.md (Wave 2) — Event-tracker deprecation: scan + update skill reference
-- [ ] 16-07-PLAN.md (Wave 2) — hivemind-power-on skill: full rewrite + 6 reference files
+- [x] 16-05-PLAN.md (Wave 1) — hivemind-session-view.ts (new tool) + plugin.ts registration
+- [x] 16-06-PLAN.md (Wave 2) — Event-tracker deprecation: scan + update skill reference
+- [x] 16-07-PLAN.md (Wave 2) — hivemind-power-on skill: full rewrite + 6 reference files
+
+---
+
+## Cluster-Based Hard Restructuring (Reordered 2026-05-21)
+
+18 phases following owner's 3-group framework: **Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup LAST)**. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, production session evidence (16,053 LOC), and phase-reordering analysis (4 critical violations).
+
+### Prerequisite: P00.5 — Non-Destructive Foundation Sweep
+
+**Goal:** Delete remaining dead code, rebuild dist/, remove 2 legacy hooks — purely additive-safe changes before Group 1.
+**Scope:**
+- Delete 3 dead schema files (permission.schema.ts, tool-definition.schema.ts, skill-metadata.schema.ts — ~350 LOC)
+- Rebuild dist/ to eliminate 38 stale artifacts
+- Remove legacy hooks system.transform + messages.transform from plugin.ts return
+- Verify npm test regression baseline
+**Entry gate:** Phase 20 COMPLETE
+**Exit gate:** dist/ clean, zero dead code, 3,000+ tests passing, typecheck clean
+**Depends on:** Phase 20
+
+### Phase 21: Session-Tracker Design Fix (Group 1)
+
+**Goal:** Fix 16 design flaws (2 CRITICAL, 6 HIGH). Temp file leak (F-01), hierarchy-manifest never writes (F-02), recovery blindness (F-04/F-07/F-08), status consistency (F-03/F-05), persistence simplification (F-09).
+**Evidence:** Production session `ses_1baf.md` (16,053 LOC) — real data loss observed.
+**Entry gate:** P00.5 complete
+**Exit gate:** All P0-P1 flaws resolved, 418+ tests passing, production scenario simulated
+
+### Phase 22: Coordination Status + Error Unification (Group 1)
+
+**Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry. Add guardrails to execute-slash-command.
+**Depends on:** Phase 21
+
+### Phase 23: Coordination Dispatch + Delegate-Task Fix (Group 1)
+
+**Goal:** Fix CP-DT-01 runtime block. Decompose DelegationManager god-object (~580 LOC). Consolidate dual in-memory stores. Fix coordinatorRef forward reference.
+**Depends on:** Phase 22
+
+### Phase 24: Trajectory + Agent-Work-Contract Redesign (Group 1)
+
+**Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface().
+**Depends on:** Phase 23
+
+### Phase 25: Pressure + Notification Redesign (Group 1)
+
+**Goal:** Fix pressure scoring (zero tests, 625 LOC). Fix authority-matrix overlap. Fix notification TTL + retry + delivery tracking. Fix SDK handler race.
+**Depends on:** Phase 23
+
+### Phase 26: Routing + Intent Loop Foundation (Group 2)
+
+**Goal:** Fix intent-classifier (fragile substring). Remove dead registry validator. Delete dead no-op profile methods. Add tests for 3 sub-modules (~1,200 LOC untested).
+**Depends on:** Phase 21-P25
+
+### Phase 27: Hook Injection Plane Redesign (Group 2)
+
+**Goal:** Fix CQRS violation in tool-after-workflow. Enforce assertHookWriteBoundary. Type hook signatures. Classify silent vs required. Inline thin observers.
+**Depends on:** Phase 26
+
+### Phase 28: Auto-Looping + PTY + Background Command Revamp (Group 2)
+
+**Goal:** Fix auto-loop session-tracker dependency. Fix ralph-loop termination. Wire into routing pipeline. Delete dead prompt-packet (348 LOC).
+**Depends on:** Phase 27
+
+### Phase 29: Schema Kernel Cleanup (Group 3)
+
+**Goal:** Delete 3 dead schemas. Add tests for 9 untested schemas (bootstrap, agent-work-contract, trajectory, session-tracker, session-view, runtime-pressure, sdk-supervisor, command-engine, doc-intelligence). Leaf module — can run parallel to Group 1-2.
+**Depends on:** Nothing (leaf module)
+
+### Phase 30: Config Plane Redesign (Group 3)
+
+**Goal:** Fix config subscriber singleton. Fix decompileAgent bug. Fix validateWithFallback locale check. Split compiler.ts (410 LOC).
+**Depends on:** Phase 29
+
+### Phase 31: Shipped Primitives + Governance Wire (Group 3)
+
+**Goal:** Wire agent/skill/command primitives with soft approach (.md first). Implement hm-* vs hf-* lineage routing validation. Fix governance/permission wiring.
+**Depends on:** Phase 30
+
+### Phase 32: Plugin.ts Decomposition (Group 4)
+
+**Goal:** Extract tool registry → registry.ts, startup → startup.ts, hook composition → composer.ts. Fix promise hygiene. Remove legacy hooks. Fix temporal coupling. Target: 493→~150 LOC.
+**Depends on:** Phases 21-31 (design fixes settled)
+
+### Phase 33: Async I/O Conversion + Typed Errors (Group 4)
+
+**Goal:** Convert runtime sync fs→fs/promises (44 readFileSync, 32 writeFileSync, 19 renameSync). Create 5 typed error classes. Replace ~100 throw new Error.
+**Depends on:** Phase 32
+
+### Phase 34: Module Splits + Legacy Inventory (Group 4)
+
+**Goal:** Split event-capture.ts (702→2-3), session-tracker/index.ts (561→extract init). Simplify PendingDispatchRegistry. Split types.ts. Standardize tool imports. Legacy inventory.
+**Depends on:** Phase 33
+
+### Phase 35: Integration Verification (Group 4)
+
+**Goal:** Full regression. dist rebuild. Tool smoke test. Manifest sync (ARCHITECTURE.md/STRUCTURE.md/CONCERNS.md).
+**Depends on:** Phase 34
+
+### Phase 36: Fix sync-oss.yml workflow (Independent)
+
+**Goal:** [To be planned]
+**Depends on:** Phase 35
+
+### Phase 37: Package .opencode/ primitives for distribution (Independent)
+
+**Goal:** [To be planned]
+**Depends on:** Phase 36
+
+---
+
+## Managed Autonomous Loop — Cycle 3: Cluster-Based Restructuring
+
+**Current authorized cycle: Cycle 3 — Cluster-Based Restructuring** (Phases 21-37)
+- Entry gate: Phase 20 COMPLETE (2026-05-21)
+- 18 phases across 4 groups: Group 1 (design fix FIRST) → Group 2 → Group 3 → Group 4 (structural cleanup LAST)
+- Non-destructive foundation sweep (P00.5) precedes Group 1
+
+**Previous cycles:**
+- **Cycle 1 — Lifecycle Alignment:** ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
+- **Cycle 2 — Bootstrap Recovery:** ✅ COMPLETE (BOOT-02 through BOOT-07, Phase 15-20 delivered)
+
+**Completed phases summary (11-20):**
+- Phase 11: Governance reconciliation
+- Phase 12: CP-ST-01 remediation
+- Phase 13: Session-tracker defects (6/6 plans)
+- Phase 14: Delegation wiring (3/4 plans)
+- Phase 15: Delegate-task gap remediation (5 plans)
+- Phase 16: Session-tracker tool intelligence (7 plans)
+- Phase 17: src/ audit (60 findings, 36K LOC)
+- Phase 18: Root cleanup (4 submodules deleted)
+- Phase 19: Non-destructive (-854 LOC net)
+- Phase 20: Dependency cleanup (11 deps removed)

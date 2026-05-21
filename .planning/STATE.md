@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-21T20:30:00.000Z"
+last_updated: "2026-05-21T22:00:00.000Z"
 progress:
-  total_phases: 16
-  completed_phases: 6
+  total_phases: 37
+  completed_phases: 20
   total_plans: 30
   completed_plans: 30
-  percent: 37.5
+  percent: 54
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,26 +17,36 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-21
-**Last advance:** Phase 20 complete — purged 11 unused dependencies, consolidated yaml parser libraries, bumped minor versions, and relocated dashboard/react to optionalDependencies
-**Current focus:** Phase 21 — Sync I/O Async Conversion + Promise Hygiene
-**Next recommended run:** `/gsd-plan-phase 21` after planning I/O conversion.
+**Last advance:** Reordered Phases 21-37 per owner's 3-group framework: Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup). Based on 16 research artifacts (6,621 LOC), phase-reordering analysis (4 critical violations), session-tracker flaws analysis (16 flaws, 2 CRITICAL).
+**Current focus:** Phase 21 — Session-Tracker Design Fix (16 flaws, 2 CRITICAL)
+**Next recommended run:** `/gsd-discuss-phase 21` then `/gsd-plan-phase 21`
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 21 — Sync I/O Async Conversion + Promise Hygiene.
+**Active phase:** Phase 21 — Session-Tracker Design Fix (Group 1, HIGHEST PRIORITY).
 **Phase 18:** ✅ COMPLETE — 4/4 plans.
-**Phase 19:** ✅ COMPLETE — Plans 01-04 executed and gatekeeping passed. Historical trace records intended-but-unwired feature gaps for session-classification-hook, schema-normalizer, and delegation-packet.
-**Phase 20:** ✅ COMPLETE — Purged 11 unused dependencies, bumped 6 minor versions, consolidated yaml libraries, moved sidecar/dashboard dependencies to optionalDependencies.
-**Phase 21:** 📋 READY — Convert runtime sync fs→async. Add .catch() to 5 fire-and-forget promises (plugin.ts startup). Target: ~159→~30 sync calls.
-**Phase 22:** 📋 READY — 5 typed error classes, replace ~100 `throw new Error` sites across 45 files.
-**Phase 23:** 📋 READY — Plugin decomposition + configure-primitive/compiler split + tool import standardization + decompileAgent bugfix + execute-slash-command return envelope fix.
-**Phase 24:** 📋 READY — Split event-capture.ts (702→~400 LOC), session-tracker/index.ts (561 LOC). Simplify PendingDispatchRegistry. Fix CQRS violation in tool-after-workflow.ts.
-**Phase 25:** 📋 READY — Legacy cleanup + 3 tool relocation + routing/config/schema test gaps + shared leaf constraint fix + wire journal/ + CQRS enforcement.
-**Phase 26:** 📋 READY — Post-restructuring integration verification: full regression, L1 smoke test all 23 tools, rebuild dist/, update manifests.
-**Phase 27:** 📋 deferred — Fix sync-oss.yml workflow.
-**Phase 28:** 📋 deferred — Package .opencode/ primitives for distribution.
+**Phase 19:** ✅ COMPLETE — Non-destructive remediation.
+**Phase 20:** ✅ COMPLETE — Dependency cleanup (11 deps removed, yaml consolidated, react→optional).
+**P00.5:** 📋 READY — Non-destructive foundation sweep (delete 3 dead schemas, rebuild dist/, remove 2 legacy hooks).
+**Phase 21:** 📋 READY — Session-Tracker Design Fix (16 flaws, 2 CRITICAL: F-01 temp leak, F-02 manifest never writes).
+**Phase 22:** 📋 PENDING — Coordination Status + Error Unification (unify TaskStatus/DelegationStatus, DelegationError type).
+**Phase 23:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (CP-DT-01 block, DelegationManager decompose).
+**Phase 24:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign.
+**Phase 25:** 📋 PENDING — Pressure + Notification Redesign.
+**Phase 26:** 📋 PENDING — Routing + Intent Loop Foundation (Group 2).
+**Phase 27:** 📋 PENDING — Hook Injection Plane Redesign (Group 2).
+**Phase 28:** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2).
+**Phase 29:** 📋 PENDING — Schema Kernel Cleanup (Group 3).
+**Phase 30:** 📋 PENDING — Config Plane Redesign (Group 3).
+**Phase 31:** 📋 PENDING — Shipped Primitives + Governance Wire (Group 3).
+**Phase 32:** 📋 PENDING — Plugin.ts Decomposition (Group 4, LAST).
+**Phase 33:** 📋 PENDING — Async I/O Conversion + Typed Errors (Group 4).
+**Phase 34:** 📋 PENDING — Module Splits + Legacy Inventory (Group 4).
+**Phase 35:** 📋 PENDING — Integration Verification (Group 4).
+**Phase 36:** 📋 deferred — Fix sync-oss.yml workflow.
+**Phase 37:** 📋 deferred — Package .opencode/ primitives for distribution.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
@@ -75,7 +85,7 @@ Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/`
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Phase 21 — converting runtime sync fs calls to async and fixing fire-and-forget promises
+**Current focus:** Phase 21 — Session-Tracker Design Fix (Group 1, HIGHEST PRIORITY)
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -91,7 +101,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 |-----------|--------|---------|
 | Build system | ✅ | tsc clean, typecheck passes, dist/ produces correctly |
 | Test suite | ✅ | 125 test files, 1767 tests, 2 failures (README heading assertions) |
-| 16 custom tools | ✅ | Registered in plugin.ts, Zod schemas, CQRS write-side |
+| 24 custom tools | ✅ | Registered in plugin.ts, Zod schemas, CQRS write-side |
 | 6 hook types | ✅ | Event observers, system/messages transforms, tool guards |
 | configs.json schema | ✅ | 29 fields, readConfigs()/writeConfigs(), lazy-cached subscriber |
 | Behavioral profiles | ✅ | 3 modes → profile mapping, wired into hooks/delegation/gates |
@@ -252,6 +262,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - Phase 16 added: Session-Tracker Tool Intelligence + Event-Tracker Deprecation Cleanup — Nâng cấp read-side tools, deprecate event-tracker, sửa hivemind-power-on skill
 - **2026-05-21** — Phase 18 complete (4/4 plans). Gatekeeping: 3 gates clear, 2 WARNING findings.
 - **2026-05-21** — **HARD RESTRUCTURING RUNWAY INSERTED**: Phases 19-25 before original Phases 19/20 (pushed to 27/28). Based on 4 initial research + 6 deep analysis agents (3,807 LOC) + full restructuring map (3,994 LOC). Phase 26 added as post-restructuring integration verification. Sequence: non-destructive → deps → async I/O → typed errors → plugin decomposition + module split → session-tracker split → legacy + test gaps + tool relocation + CQRS → integration verification → sync-oss.yml → package primitives.
+- **2026-05-21** — **REORDERED per owner's 3-group framework**: Group 1 (Orchestration Design Fix, P21-P25) → Group 2 (Routing/Coordination, P26-P28) → Group 3 (Schema/Config, P29-P31) → Group 4 (Structural Cleanup, P32-P35) → P36-P37 independent. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis reports, phase-reordering analysis (4 critical violations). Session-tracker FIRST with production evidence.
 
 ### Key Restructuring Decisions
 
@@ -269,16 +280,25 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **Phase 20** ✅ — Package.json Dependency Cleanup (11 deps remove, 6 bumps, yaml consolidation).
-2. **Phase 21** 📋 — Sync I/O Async Conversion + Promise Hygiene (runtime paths, fire-and-forget fixes).
-4. **Phase 22** 📋 — Typed Error Hierarchy (5 classes, ~100 throw sites, silent catch fixes).
-5. **Phase 23** 📋 — Plugin Decomposition + Module Size Fixes (registry, startup, composer, split 2 near-cap modules).
-6. **Phase 24** 📋 — Session-Tracker Module Split (event-capture 702 LOC, PendingDispatchRegistry simplify, CQRS fix).
-7. **Phase 25** 📋 — Legacy Cleanup + Tool Relocation + Test Gaps + shared leaf fix + wire journal.
-8. **Phase 26** 📋 — Post-Restructuring Integration Verification (full regression, smoke all 23 tools, rebuild dist/).
-9. **Phase 27** 📋 — Fix sync-oss.yml workflow (deferred).
-10. **Phase 28** 📋 — Package .opencode/ primitives (deferred).
-11. **CP-PTY-01** — Background Shell Control-Plane MVP (after restructuring runway).
+1. **P00.5** 📋 — Non-destructive foundation sweep (delete 3 dead schemas, rebuild dist/, remove 2 legacy hooks).
+2. **Phase 21** 📋 — Session-Tracker Design Fix (Group 1, HIGHEST PRIORITY — fix F-01 temp leak, F-02 manifest wire, F-04/F-07/F-08 recovery).
+3. **Phase 22** 📋 — Coordination Status + Error Unification (Depends: P21).
+4. **Phase 23** 📋 — Coordination Dispatch + Delegate-Task Fix (Depends: P22). Includes CP-DT-01 runtime block resolution.
+5. **Phase 24** 📋 — Trajectory + Agent-Work-Contract Redesign (Depends: P23).
+6. **Phase 25** 📋 — Pressure + Notification Redesign (Depends: P23).
+7. **Phase 26** 📋 — Routing + Intent Loop Foundation (Group 2, Depends: P21-P25).
+8. **Phase 27** 📋 — Hook Injection Plane Redesign (Group 2, Depends: P26).
+9. **Phase 28** 📋 — Auto-Looping + PTY + Background Command Revamp (Group 2, Depends: P27).
+10. **Phase 29** 📋 — Schema Kernel Cleanup (Group 3, can run parallel to Groups 1-2).
+11. **Phase 30** 📋 — Config Plane Redesign (Group 3, Depends: P29).
+12. **Phase 31** 📋 — Shipped Primitives + Governance Wire (Group 3, Depends: P30).
+13. **Phase 32** 📋 — Plugin.ts Decomposition (Group 4, LAST — Depends: P21-P31 design fixes settled).
+14. **Phase 33** 📋 — Async I/O Conversion + Typed Errors (Group 4, Depends: P32).
+15. **Phase 34** 📋 — Module Splits + Legacy Inventory (Group 4, Depends: P33).
+16. **Phase 35** 📋 — Integration Verification (Group 4, Depends: P34).
+17. **Phase 36** 📋 — Fix sync-oss.yml workflow (deferred, Depends: P35).
+18. **Phase 37** 📋 — Package .opencode/ primitives (deferred, Depends: P36).
+19. **CP-PTY-01** — Background Shell Control-Plane MVP (after restructuring runway).
 
 ## Option 3 Foundation Artifacts
 
@@ -308,4 +328,4 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 - `.planning/roadmap/shell-pty-control-plane-route-2026-05-08.md`
 
 ---
-*State updated: 2026-05-08 for SR remediation completion*
+*State updated: 2026-05-21 for cluster-based restructuring reordering*

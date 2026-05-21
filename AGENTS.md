@@ -388,15 +388,13 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 ## Current Phase Context
 
-**Hard Restructuring Runway (Phase 19-25):** Inserted 2026-05-21 before original Phase 19/20 (pushed to Phase 26/27). Based on 4 research artifacts: SDK API audit, DI architecture analysis, hard-restructuring synthesis, advisor gray-area decisions.
-**Phase 18:** ✅ COMPLETE (2026-05-21) — 4/4 plans, gatekeeping 3 gates clear.
-**Phase 20:** ✅ COMPLETE (2026-05-21) — cleaned up unused dependencies, consolidated yaml libraries, bumped minors, relocated dashboard/react to optionalDependencies.
-**Active phase:** Phase 21 — Sync I/O Async Conversion + Promise Hygiene.
-**Sequence:** non-destructive (Phase 19) → dependency cleanup (20) → async I/O (21) → typed errors (22) → plugin decomposition (23) → module split (24) → legacy cleanup (25) → sync-oss.yml (26) → package primitives (27).
-**Dependency order:** Each phase depends on the previous. Phase 20 is COMPLETE. Phase 21 may now handle converting runtime sync filesystem calls to async and fixing fire-and-forget promises.
+**Reordered restructuring (Phases 21-37):** Owner's 3-group framework applied — Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup). Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, phase-reordering analysis (4 critical violations found), session-tracker flaws analysis (16 flaws, 2 CRITICAL).
+**Phase 18-20:** ✅ COMPLETE (2026-05-21) — root cleanup, non-destructive remediation, dependency cleanup.
+**Active phase:** Phase 21 — Session-Tracker Design Fix (16 flaws, 2 CRITICAL: F-01 temp leak, F-02 manifest never writes).
+**Sequence:** Session-Tracker (P21) → Status/Error (P22) → Dispatch/Delegate (P23) → Trajectory/Contract (P24) → Pressure/Notification (P25) → Routing/Intent (P26) → Hooks (P27) → Auto-Loop/PTY (P28) → Schema (P29) → Config (P30) → Primitives (P31) → Plugin Decomp (P32) → Async I/O+Errors (P33) → Module Splits (P34) → Integration (P35) → sync-oss.yml (P36) → Package Primitives (P37).
+**Group order:** Group 1 (P21-P25, HIGHEST) → Group 2 (P26-P28) → Group 3 (P29-P31) → Group 4 (P32-P35, LAST) → P36-P37 independent.
+**Key decisions:** Async I/O + typed errors pushed to P33 (Group 4, LAST); plugin decomposition pushed to P32; session-tracker fixed FIRST with production evidence.
 **Research artifacts:**
+- `.planning/research/phase-reordering-final-recommendation-2026-05-21.md` (543 LOC)
 - `.planning/research/hard-restructuring-synthesis-2026-05-21.md` (454 LOC)
-- `.planning/research/hard-restructuring-advisor-2026-05-21.md` (151 LOC)
-- `.planning/research/opencode-sdk-v1155-api-audit-2026-05-21.md` (493 LOC)
-- `.planning/codebase/DI-ARCHITECTURE-ANALYSIS.md` (397 LOC)
-**Key decisions pending:** Legacy removal strategy, plugin decomposition approach, soft routing approach — per advisor report gray-area decisions.
+- `.planning/research/session-tracker-flaws-analysis-2026-05-21.md` (136 LOC)
