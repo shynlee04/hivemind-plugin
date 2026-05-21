@@ -68,6 +68,34 @@ describe("ProjectIndexWriter", () => {
   })
 
   describe("addSession", () => {
+    it("should preserve existing status through repeated addSession calls (G-3)", async () => {
+      await writer.initializeIndex()
+      mockAtomicWriteJson.mockClear()
+
+      // Create session with default "active" status
+      await writer.addSession("ses_g3test", "ses_g3test/", "ses_g3test.md")
+
+      // Change status to "idle" via updateSession
+      await writer.updateSession("ses_g3test", { status: "idle" })
+      mockAtomicWriteJson.mockClear()
+
+      // Simulate hook callback — addSession with same session ID
+      await writer.addSession("ses_g3test", "ses_g3test/", "ses_g3test.md")
+
+      // Status MUST still be "idle" — not reset to "active"
+      const [, data] = mockAtomicWriteJson.mock.calls[0]
+      expect((data as any).sessions["ses_g3test"].status).toBe("idle")
+    })
+
+    it("should set status to 'active' for new sessions on initial creation (G-3)", async () => {
+      await writer.initializeIndex()
+      mockAtomicWriteJson.mockClear()
+
+      await writer.addSession("ses_newactive", "ses_newactive/", "ses_newactive.md")
+
+      const [, data] = mockAtomicWriteJson.mock.calls[0]
+      expect((data as any).sessions["ses_newactive"].status).toBe("active")
+    })
     it("should add session entry and update chronological order", async () => {
       await writer.initializeIndex()
       mockAtomicWriteJson.mockClear()
