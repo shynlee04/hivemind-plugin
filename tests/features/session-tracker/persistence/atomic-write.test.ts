@@ -16,6 +16,26 @@ import {
   safeSessionPath,
 } from "../../../../src/features/session-tracker/persistence/atomic-write.js"
 
+// Cross-volume stat mock flag — only enabled in the cross-volume test.
+// Uses vi.hoisted so the mock factory captures the reference before module loading.
+const { crossVolumeEnabled } = vi.hoisted(() => ({
+  crossVolumeEnabled: { current: false },
+}))
+
+vi.mock("node:fs/promises", async () => {
+  const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises")
+  return {
+    ...actual,
+    stat: async (path: string) => {
+      if (!crossVolumeEnabled.current) return actual.stat(path)
+      // Return different dev values: tmp file on dev=1, target dir on dev=2
+      return path.includes(".tmp.")
+        ? ({ dev: 1 } as ReturnType<typeof actual.stat>)
+        : ({ dev: 2 } as ReturnType<typeof actual.stat>)
+    },
+  }
+})
+
 let tmpDir: string
 
 beforeEach(() => {
@@ -309,18 +329,46 @@ describe("F-01 temp leak prevention", () => {
     expect(tmpFiles).toEqual([])
   })
 
-  it("logs warning when tmp and target are on different devices", async () => {
+  it("logs warning when tmp and target are on different devices (cross-volume)", async () => {
     const filePath = join(tmpDir, "test.json")
     const warnSpy = vi.spyOn(process, "emitWarning").mockImplementation(() => {})
 
     try {
-      // On real filesystems stat returns same dev — the unlink fix handles the cleanup.
-      // The cross-volume warning test validates that the stat check is wired correctly.
-      // We write normally and verify the operation succeeds; the stat check is passive.
+      // Enable cross-volume stat mock — stat returns dev=1 for tmp, dev=2 for target
+      crossVolumeEnabled.current = true
+
       await atomicWriteJson(filePath, { crossVolume: true })
 
-      // The test verifies that atomicWriteJson completes without throwing
-      // and that the target file is written correctly regardless of volume scenario.
+      // Verify the cross-volume warning was emitted with device IDs
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Cross-volume rename detected"),
+      )
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("tmp dev=1"),
+      )
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("target dev=2"),
+      )
+      // File should still be written successfully
+      expect(existsSync(filePath)).toBe(true)
+    } finally {
+      crossVolumeEnabled.current = false
+      warnSpy.mockRestore()
+    }
+  })
+
+  it("does NOT log warning when tmp and target are on the same device", async () => {
+    const filePath = join(tmpDir, "test.json")
+    const warnSpy = vi.spyOn(process, "emitWarning").mockImplementation(() => {})
+
+    try {
+      // crossVolumeEnabled is false — stat returns real (same-dev) values
+      await atomicWriteJson(filePath, { sameDevice: true })
+
+      // No cross-volume warning should be emitted
+      expect(warnSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining("Cross-volume rename detected"),
+      )
       expect(existsSync(filePath)).toBe(true)
     } finally {
       warnSpy.mockRestore()
