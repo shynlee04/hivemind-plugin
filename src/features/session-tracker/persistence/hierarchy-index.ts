@@ -300,6 +300,39 @@ export class HierarchyIndex {
   }
 
   /**
+   * Returns the number of direct children for a session.
+   * Walks the parentToChildren reverse index for O(1) lookup.
+   *
+   * @param sessionID - The parent session identifier.
+   * @returns The number of direct children, or 0 if none.
+   */
+  getChildCountForSession(sessionID: string): number {
+    return this.parentToChildren.get(sessionID)?.size ?? 0
+  }
+
+  /**
+   * Computes the maximum delegation depth in a session's subtree.
+   * Walks all descendants via parentToChildren reverse index.
+   *
+   * @param sessionID - The session whose subtree to measure.
+   * @returns The maximum delegation depth (0 = no children, 1 = L1, 2 = L2, etc.).
+   */
+  getMaxDepthForSession(sessionID: string): number {
+    let maxDepth = 0
+    const walk = (id: string, depth: number): void => {
+      if (depth > maxDepth) maxDepth = depth
+      const children = this.parentToChildren.get(id)
+      if (children) {
+        for (const childId of children) {
+          walk(childId, depth + 1)
+        }
+      }
+    }
+    walk(sessionID, 0)
+    return maxDepth
+  }
+
+  /**
    * Returns the current number of tracked child→parent mappings.
    */
   get size(): number {
