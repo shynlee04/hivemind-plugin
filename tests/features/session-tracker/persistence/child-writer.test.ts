@@ -6,7 +6,7 @@
  * All writes use atomic rename for crash safety.
  */
 
-import { mkdtempSync, readFileSync, existsSync, rmSync } from "node:fs"
+import { mkdtempSync, readFileSync, existsSync, rmSync, mkdirSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { ChildWriter } from "../../../../src/features/session-tracker/persistence/child-writer.js"
@@ -558,5 +558,92 @@ describe("ChildWriter — root main session routing (D-03)", () => {
     const rootPath = join(projectRoot, ".hivemind", "session-tracker", ROOT_SESSION, `${L1_CHILD}.json`)
     const record = JSON.parse(readFileSync(rootPath, "utf-8"))
     expect(record.status).toBe("completed")
+  })
+})
+
+// ── backfillChildMetadata (F-18) ────────────────────────────────────────
+
+describe("backfillChildMetadata (F-18)", () => {
+  let tmpDir: string
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "st-bf-"))
+    mkdirSync(join(tmpDir, ".hivemind", "session-tracker", "root-session"), { recursive: true })
+  })
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  it("backfills pending agent name with real value", async () => {
+    const writer = new ChildWriter({ projectRoot: tmpDir })
+
+    // Create child with pending metadata
+    await writer.createChildFile("root-session", "child-1", {
+      sessionID: "child-1",
+      parentSessionID: "root-session",
+      delegationDepth: 1,
+      delegatedBy: { agentName: "unknown", model: "", tool: "task", description: "", subagentType: "unknown" },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      status: "active",
+      mainAgent: { name: "pending", model: "" },
+      turns: [],
+      children: [],
+    })
+
+    // Backfill with real metadata
+    await writer.backfillChildMetadata("root-session", "child-1", {
+      agentName: "hm-l2-researcher",
+      model: "claude-3",
+    })
+
+    // Read the file and verify
+    const childPath = join(tmpDir, ".hivemind", "session-tracker", "root-session", "child-1.json")
+    const raw = readFileSync(childPath, "utf-8")
+    const record = JSON.parse(raw)
+    expect(record.mainAgent.name).toBe("hm-l2-researcher")
+    expect(record.mainAgent.model).toBe("claude-3")
+  })
+
+  it("does not backfill when mainAgent already has real name", async () => {
+    const writer = new ChildWriter({ projectRoot: tmpDir })
+
+    // Create child with already-real metadata
+    await writer.createChildFile("root-session", "child-1", {
+      sessionID: "child-1",
+      parentSessionID: "root-session",
+      delegationDepth: 1,
+      delegatedBy: { agentName: "hm-l2-researcher", model: "claude-2", tool: "task", description: "", subagentType: "hm-l2-researcher" },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      status: "active",
+      mainAgent: { name: "hm-l2-researcher", model: "claude-2" },
+      turns: [],
+      children: [],
+    })
+
+    // Backfill with different metadata — should NOT overwrite
+    await writer.backfillChildMetadata("root-session", "child-1", {
+      agentName: "hm-l2-builder",
+      model: "claude-3",
+    })
+
+    // Verify original name preserved
+    const childPath = join(tmpDir, ".hivemind", "session-tracker", "root-session", "child-1.json")
+    const raw = readFileSync(childPath, "utf-8")
+    const record = JSON.parse(raw)
+    expect(record.mainAgent.name).toBe("hm-l2-researcher")
+    expect(record.mainAgent.model).toBe("claude-2")
+  })
+
+  it("silently no-ops when child file does not exist", async () => {
+    const writer = new ChildWriter({ projectRoot: tmpDir })
+    // Should not throw
+    await expect(
+      writer.backfillChildMetadata("root-session", "non-existent-child", {
+        agentName: "test-agent",
+      }),
+    ).resolves.toBeUndefined()
   })
 })
