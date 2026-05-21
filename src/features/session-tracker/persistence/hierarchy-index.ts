@@ -134,6 +134,12 @@ export class HierarchyIndex {
         if (root) this.childToRootMain.set(childID, root)
       }
     }
+
+    // Third pass (G-2 / REQ-21-05): Ensure EVERY registered child has
+    // a rootMain. The second pass only resolves children NOT already in
+    // childToRootMain. This pass catches any children whose parent chain
+    // was fully resolved after their iteration in the second pass.
+    this.rebuildChildToRootMain()
   }
 
   /**
@@ -297,6 +303,32 @@ export class HierarchyIndex {
       depth++
     }
     return Math.min(depth, 2) // cap at L2
+  }
+
+  /**
+   * Rebuilds the childToRootMain mapping for all registered children.
+   *
+   * Called at the end of buildFromDisk() to ensure that every child in the
+   * hierarchy index has a root main session ID. Uses resolveRootMain() to
+   * walk each child's parent chain.
+   *
+   * For DAG hierarchies (child under multiple parents), uses first-found-wins
+   * strategy — the first parent chain that resolves determines the rootMain.
+   * This matches existing runtime behavior where registerChild() propagates
+   * rootMain from the parent at registration time.
+   *
+   * Per G-2: No new file format. Rebuilds from the in-memory childToParent
+   * map which was populated from session-continuity.json files.
+   */
+  rebuildChildToRootMain(): void {
+    for (const [childID] of this.childToParent) {
+      if (!this.childToRootMain.has(childID)) {
+        const root = this.resolveRootMain(childID)
+        if (root) {
+          this.childToRootMain.set(childID, root)
+        }
+      }
+    }
   }
 
   /**
