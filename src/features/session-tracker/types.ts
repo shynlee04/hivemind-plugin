@@ -258,6 +258,8 @@ export interface ChildHierarchyEntry {
   status: string
   /** Who delegated this child (agent name or "main_l0_agent"). */
   delegatedBy: string
+  /** Subagent type dispatched (e.g. "hm-l2-researcher"). Optional for backward compat. */
+  subagentType?: string
   /** Nested children map, keyed by child session ID. */
   children: Record<string, ChildHierarchyEntry>
 }

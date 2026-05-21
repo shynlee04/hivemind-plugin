@@ -250,7 +250,7 @@ export class OrphanCleanup {
         rootMainSessionID,
         delegationDepth: normalizedEntry.depth,
         delegatedBy: normalizedEntry.delegatedBy,
-        subagentType: normalizedEntry.delegatedBy,
+        subagentType: normalizedEntry.subagentType ?? normalizedEntry.delegatedBy ?? "unknown",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         status: normalizedEntry.status,
