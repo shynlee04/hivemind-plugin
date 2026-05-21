@@ -185,6 +185,28 @@ describe("commit_docs toggle", () => {
     expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: "del-commit-true" })]))
   })
 
+  it("persists delegation data regardless of commit_docs config (G-4)", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/config/subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ commit_docs: false, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    const filePath = persistence.getDelegationsFilePath()
+
+    persistence.persistDelegations([makeDelegation("del-g4-test")])
+
+    // File MUST be written to disk even when commit_docs is false
+    const { existsSync } = await import("node:fs")
+    expect(existsSync(filePath)).toBe(true)
+    const persisted = JSON.parse(await import("node:fs").then(m => m.readFileSync(filePath, "utf-8"))) as Delegation[]
+    expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: "del-g4-test" })]))
+  })
+
   it("skips disk write when commit_docs is false", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
     vi.doMock("../../src/config/subscriber.js", () => ({
