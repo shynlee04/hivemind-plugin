@@ -73,7 +73,6 @@ export function persistDelegations(delegations: Delegation[]): void {
     redactFieldNames: ["result", "error", "fallbackReason"],
   })
   writeFileSync(tmpFile, `${JSON.stringify(redactedDelegations, null, 2)}\n`, "utf-8")
-  mkdirSync(dirname(filePath), { recursive: true })
   renameSync(tmpFile, filePath)
 }
 
