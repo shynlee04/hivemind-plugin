@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { mkdir, readFile, readdir } from "node:fs/promises"
-import { resolve, dirname } from "node:path"
+import { resolve, dirname, join } from "node:path"
 import { tmpdir } from "node:os"
 import { randomBytes } from "node:crypto"
 import { unlinkSync, rmSync, existsSync } from "node:fs"
@@ -321,5 +321,42 @@ describe("addChild", () => {
 
     expect(manifest.totalChildren).toBe(2)
     expect(manifest.maxDepth).toBe(3)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// F-01 temp leak in hierarchy-manifest
+// ---------------------------------------------------------------------------
+
+describe("F-01 temp leak in hierarchy-manifest", () => {
+  let f01Dir: string
+  let f01Writer: HierarchyManifestWriter
+
+  beforeEach(() => {
+    const { mkdtempSync } = require("node:fs") as typeof import("node:fs")
+    f01Dir = mkdtempSync(join(tmpdir(), "st-hm-f01-"))
+    f01Writer = new HierarchyManifestWriter({ projectRoot: f01Dir })
+  })
+
+  afterEach(() => {
+    rmSync(f01Dir, { recursive: true, force: true })
+  })
+
+  it("writeManifest does not leave .tmp files", async () => {
+    await f01Writer.addChild({
+      rootMainSessionID: "root-ses-test",
+      childSessionID: "child-ses-test",
+      parentSessionID: "root-ses-test",
+      delegationDepth: 1,
+      delegatedBy: "test-agent",
+      subagentType: "test",
+      childFile: "child-ses-test.json",
+    })
+    // After addChild (which calls writeManifest), check for temp files
+    const rootDir = join(f01Dir, ".hivemind", "session-tracker", "root-ses-test")
+    const { readdirSync } = require("node:fs") as typeof import("node:fs")
+    const files = readdirSync(rootDir)
+    const tmpFiles = files.filter((f: string) => f.includes(".tmp."))
+    expect(tmpFiles).toEqual([])
   })
 })
