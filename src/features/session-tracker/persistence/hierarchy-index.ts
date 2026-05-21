@@ -302,7 +302,16 @@ export class HierarchyIndex {
       current = this.childToParent.get(current)!
       depth++
     }
-    return Math.min(depth, 2) // cap at L2
+    const capped = Math.min(depth, 2)
+    // G-7 guardrail (REQ-21-15): Log warning when depth exceeds the cap.
+    // The architecture explicitly limits delegation depth to 2 (Q1).
+    // This warning makes the cap observable for P23 dispatch redesign.
+    if (depth > 2) {
+      process.emitWarning(
+        `[Harness] Session tracker: delegation depth ${depth} exceeds max 2 — truncating to ${capped}. Session: "${sessionID}"`,
+      )
+    }
+    return capped
   }
 
   /**
