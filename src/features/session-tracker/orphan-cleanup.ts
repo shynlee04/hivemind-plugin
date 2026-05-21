@@ -54,6 +54,30 @@ export class OrphanCleanup {
   }
 
   /**
+   * Checks whether a session has a continuity tree entry on disk.
+   * Returns true if session-continuity.json exists for the session.
+   *
+   * G-6 guardrail: prevents quarantining legitimate children that
+   * happen to have continuity tree entries but are classified as orphans.
+   *
+   * @param sessionID - The session identifier to check.
+   * @returns True if continuity file exists.
+   */
+  private async checkContinuityTree(sessionID: string): Promise<boolean> {
+    try {
+      const indexPath = safeSessionPath(
+        this.projectRoot,
+        sessionID,
+        "session-continuity.json",
+      )
+      await access(indexPath)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Scans for and quarantines orphan child session directories.
    *
    * An orphan is a directory whose session ID is classified as a child
@@ -133,6 +157,20 @@ export class OrphanCleanup {
       }
 
       if (isOrphan) {
+        // G-6 guardrail (REQ-21-14): Warn if quarantining a session that has
+        // a valid continuity tree entry — it may be a legitimate child that
+        // should not be quarantined.
+        const hasContinuity = await this.checkContinuityTree(sessionID)
+        if (hasContinuity) {
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: quarantining "${sessionID}" which has a continuity tree entry — may be a legitimate child`,
+            },
+          })
+        }
+
         // Quarantine instead of delete (CP-ST-05-03)
         try {
           await this.preserveOrphanHierarchy(sessionID)
