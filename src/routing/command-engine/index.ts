@@ -33,6 +33,8 @@ export async function discoverCommandBundles(options: { projectRoot: string }): 
       filePath: command.filePath,
       description: command.frontmatter.description,
       agent: command.frontmatter.agent,
+      model: command.frontmatter.model,
+      subtask: command.frontmatter.subtask,
       body: command.body,
     }))
     .sort((left, right) => left.name.localeCompare(right.name))
