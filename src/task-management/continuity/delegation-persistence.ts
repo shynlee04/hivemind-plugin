@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path"
 
 import { getContinuityStoragePath } from "./index.js"
-import { getCachedConfig } from "../../config/subscriber.js"
+
 import { redactBoundaryFields } from "../../shared/security/redaction.js"
 import type { Delegation, DelegationStatus } from "../../shared/types.js"
 
@@ -56,12 +56,11 @@ export function getDelegationsFilePath(): string {
 }
 
 export function persistDelegations(delegations: Delegation[]): void {
-  // CA-03: commit_docs toggle gate (D-16)
-  // When false, document auto-commit is skipped.
-  const config = getCachedConfig()
-  if (!config.commit_docs) {
-    return  // Skip document persistence
-  }
+  // G-4 (REQ-21-13): Delegations are ALWAYS persisted — removed commit_docs gate.
+  // commit_docs schema field is KEPT for GSD framework (162+ refs).
+  // The gate was a CA-03 design error: commit_docs controls git commits, not delegation persistence.
+  //
+  // If opt-out is needed in future, add a separate `persist_delegations` config field.
 
   const filePath = getDelegationsFilePath()
   mkdirSync(dirname(filePath), { recursive: true })
