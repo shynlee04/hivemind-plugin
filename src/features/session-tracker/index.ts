@@ -369,19 +369,43 @@ export class SessionTracker {
   /**
    * Recursively registers a parent session's own parent chain from SDK data.
    *
+   * Includes MAX_DEPTH guard (F-13 / REQ-21-07) to prevent stack overflow
+   * on corrupt SDK data or deep ancestor chains.
+   *
    * @param sessionID - Session whose ancestors should be registered.
    * @param seen - Cycle guard for defensive SDK data handling.
+   * @param depth - Current recursion depth (internal, pass 0 on first call).
    */
-  private async ensureAncestorRoute(sessionID: string, seen: Set<string>): Promise<void> {
+  private async ensureAncestorRoute(
+    sessionID: string,
+    seen: Set<string>,
+    depth: number = 0,
+  ): Promise<void> {
+    const MAX_DEPTH = 20
+
+    // F-13: Stack overflow guard — return gracefully with warning
+    if (depth > MAX_DEPTH) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: ensureAncestorRoute exceeded MAX_DEPTH=${MAX_DEPTH} at "${sessionID}" — truncating to prevent stack overflow`,
+        },
+      })
+      return
+    }
+
     if (seen.has(sessionID)) return
     seen.add(sessionID)
+
     const session = await this.getSessionSafely(sessionID)
     const parentID =
       session && typeof session === "object" && "parentID" in session
         ? (session as { parentID?: string }).parentID
         : undefined
     if (!parentID) return
-    await this.ensureAncestorRoute(parentID, seen)
+
+    await this.ensureAncestorRoute(parentID, seen, depth + 1)
     if (!this.hierarchyIndex.isChild(sessionID)) {
       this.hierarchyIndex.registerChild(parentID, sessionID)
     }
