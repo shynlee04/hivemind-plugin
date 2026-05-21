@@ -567,10 +567,20 @@ Plans:
 
 ### Phase 21: Session-Tracker Design Fix (Group 1)
 
-**Goal:** Fix 16 design flaws (2 CRITICAL, 6 HIGH). Temp file leak (F-01), hierarchy-manifest never writes (F-02), recovery blindness (F-04/F-07/F-08), status consistency (F-03/F-05), persistence simplification (F-09).
+**Goal:** Fix 16 design flaws (2 CRITICAL, 6 HIGH). Temp file leak (F-01), manifest asymmetry (F-02/F-17), recovery blindness (F-04/F-07/F-08), status consistency (F-03/F-05), anonymous children (F-18), childCount (F-19), guardrails for deferred flaws.
 **Evidence:** Production session `ses_1baf.md` (16,053 LOC) — real data loss observed.
 **Entry gate:** P00.5 complete
 **Exit gate:** All P0-P1 flaws resolved, 418+ tests passing, production scenario simulated
+**Requirements:** REQ-21-01 through REQ-21-15 (15 EARS requirements)
+**Plans:** 6/6 plans complete
+
+Plans:
+- [x] 21-01-PLAN.md — F-01 Temp Fix + Cross-Volume Guardrail (Wave 2) — REQ-21-01, REQ-21-02
+- [x] 21-02-PLAN.md — Manifest Derivative Cache + childCount Computation (Wave 1 — prerequisite) — REQ-21-03, REQ-21-04, REQ-21-10, REQ-21-11
+- [x] 21-03-PLAN.md — F-18 Anonymous Children Metadata Capture (Wave 2) — REQ-21-08, REQ-21-09
+- [x] 21-04-PLAN.md — F-07 Recovery Blindness + F-13 MAX_DEPTH Guard (Wave 2) — REQ-21-05, REQ-21-06, REQ-21-07
+- [x] 21-05-PLAN.md — G-3 Precondition + G-4 Gate Removal (Wave 2) — REQ-21-12, REQ-21-13
+- [x] 21-06-PLAN.md — Guardrails + Integration Verification (Wave 3) — REQ-21-14, REQ-21-15
 
 ### Phase 22: Coordination Status + Error Unification (Group 1)
 
