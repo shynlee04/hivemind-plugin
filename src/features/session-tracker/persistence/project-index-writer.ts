@@ -209,8 +209,15 @@ export class ProjectIndexWriter {
    * Serialized via the write queue. Merges partial updates into the
    * existing session entry.
    *
+   * NOTE: The `childCount` and `totalDelegationDepth` fields in the
+   * `updates` parameter are ALWAYS overridden from the hierarchy index
+   * (see F-19 lines below). Caller-supplied values for these fields are
+   * silently ignored — they are computed from the canonical hierarchy
+   * index to prevent drift between the two stores.
+   *
    * @param sessionID - The session identifier.
-   * @param updates - Partial session metadata to merge.
+   * @param updates - Partial session metadata to merge. `childCount` and
+   *   `totalDelegationDepth` are always sourced from hierarchy index.
    * @returns Promise that resolves when the index is updated.
    */
   async updateSession(
