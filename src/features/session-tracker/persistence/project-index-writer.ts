@@ -178,9 +178,9 @@ export class ProjectIndexWriter {
         // Preserve dir, mainFile, continuityIndex, created, childCount,
         // and totalDelegationDepth to prevent data loss on concurrent writes.
         existing.updated = now
-        if (existing.status !== "error" && existing.status !== "deleted") {
-          existing.status = "active"
-        }
+        // G-3 precondition (REQ-21-12): Preserve existing status — do NOT reset to "active".
+        // Only INITIAL creation sets status. Subsequent hook callbacks must preserve
+        // the caller-provided status so P22 can trust project-continuity.json.
       } else {
         index.sessions[sessionID] = {
           dir: sessionDir,
