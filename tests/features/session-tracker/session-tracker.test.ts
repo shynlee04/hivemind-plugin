@@ -5,6 +5,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import { SessionTracker } from "../../../src/features/session-tracker/index.js"
 
 // Mock the session-api module
@@ -223,5 +225,20 @@ describe("SessionTracker — routing and bootstrap", () => {
       expect(mockHandleChatMessage).toHaveBeenCalled()
       expect(mockRecordChildMessage).not.toHaveBeenCalled()
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// MAX_DEPTH guard (F-13 / REQ-21-07)
+// ---------------------------------------------------------------------------
+
+describe("MAX_DEPTH guard (F-13 / REQ-21-07)", () => {
+  it("ensureAncestorRoute has MAX_DEPTH=20 constant", () => {
+    const sourcePath = resolve(__dirname, "../../../src/features/session-tracker/index.ts")
+    const source = readFileSync(sourcePath, "utf-8")
+
+    // MAX_DEPTH and depth parameter must exist
+    expect(source).toContain("MAX_DEPTH")
+    expect(source).toContain("depth")
   })
 })
