@@ -479,13 +479,9 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
       event: {},
     })
 
-    expect(mockManifestAddChild).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rootMainSessionID: "ses_root_main_parent",
-        childSessionID: "ses_child_manifest",
-        parentSessionID: "ses_parent_manifest",
-      }),
-    )
+    // Manifest is now a derivative cache (REQ-21-04) — NOT proactively written.
+    // Child .json IS still written immediately.
+    expect(mockCreateChildFile).toHaveBeenCalled()
   })
 
   // ── Test 3: main session (root) does NOT trigger child .json write ─────

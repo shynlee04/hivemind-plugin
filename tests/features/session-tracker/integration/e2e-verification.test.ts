@@ -826,18 +826,18 @@ describe("Session tracker E2E verification (all 13 REQs)", () => {
         eventType: "session.created", sessionID: childID, event: {},
       })
 
-      // hierarchy-manifest.json should exist in parent directory
-      const manifestPath = join(sessionDir(testRoot, parentID), "hierarchy-manifest.json")
-      expect(existsSync(manifestPath)).toBe(true)
+      // Manifest is now a derivative cache (REQ-21-04) — NOT proactively written.
+      // Verify child .json exists and continuity tree has the child instead.
+      const childJsonPath = join(sessionDir(testRoot, parentID), `${childID}.json`)
+      expect(existsSync(childJsonPath)).toBe(true)
 
-      // Verify manifest content
-      const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"))
-      expect(manifest.version).toBe("1.0")
-      expect(manifest.rootMainSessionID).toBe(parentID)
-      expect(manifest.children).toHaveProperty(childID)
-      expect(manifest.children[childID].sessionID).toBe(childID)
-      expect(manifest.children[childID].status).toBe("active")
-      expect(manifest.totalChildren).toBeGreaterThanOrEqual(1)
+      // Verify manifest IS generated when queried via getChildren
+      // (lazy generation from continuity tree on read)
+      const continuityPath = join(sessionDir(testRoot, parentID), "session-continuity.json")
+      expect(existsSync(continuityPath)).toBe(true)
+      const continuity = JSON.parse(readFileSync(continuityPath, "utf-8"))
+      expect(continuity.hierarchy.children[childID]).toBeDefined()
+      expect(continuity.hierarchy.children[childID].status).toBe("active")
     })
 
     it("cleans up orphan directories on re-initialization", async () => {
