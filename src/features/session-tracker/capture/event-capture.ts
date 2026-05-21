@@ -111,28 +111,6 @@ export class EventCapture {
         return
       }
 
-      // Validate eventType is a recognized session lifecycle type.
-      const validEventTypes = [
-        "session.created",
-        "session.idle",
-        "session.deleted",
-        "session.error",
-        "session.status",
-        "session.compacted",
-        "session.updated",
-      ]
-      if (!validEventTypes.includes(event.eventType)) {
-        void this.client.app?.log?.({
-          body: {
-            service: "session-tracker",
-            level: "warn",
-            message: `[Harness] Session tracker: unexpected event type "${event.eventType}", expected one of: ${validEventTypes.join(", ")}`,
-          },
-        })
-        // Continue for unrecognized types — they may carry unknown but harmless events.
-        // Don't return; log is sufficient for observability.
-      }
-
       switch (event.eventType) {
         case "session.created":
           await this.handleSessionCreated(event.sessionID)
