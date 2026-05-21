@@ -5,8 +5,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { readFileSync } from "node:fs"
-import { resolve } from "node:path"
 import { SessionTracker } from "../../../src/features/session-tracker/index.js"
 
 // Mock the session-api module
@@ -233,12 +231,64 @@ describe("SessionTracker — routing and bootstrap", () => {
 // ---------------------------------------------------------------------------
 
 describe("MAX_DEPTH guard (F-13 / REQ-21-07)", () => {
-  it("ensureAncestorRoute has MAX_DEPTH=20 constant", () => {
-    const sourcePath = resolve(__dirname, "../../../src/features/session-tracker/index.ts")
-    const source = readFileSync(sourcePath, "utf-8")
+  it("should return gracefully without stack overflow when depth exceeds MAX_DEPTH=20", async () => {
+    const mockLog = vi.fn()
+    const tracker = new SessionTracker({
+      client: { app: { log: mockLog }, session: { get: vi.fn() } } as any,
+      projectRoot: "/fake/project",
+    });
+    (tracker as any).hierarchyIndex = {
+      isChild: vi.fn().mockReturnValue(false),
+      registerChild: vi.fn(),
+    };
+    (tracker as any).bootstrap = {
+      getSessionSafely: vi.fn().mockResolvedValue({ parentID: "ses_parent" }),
+    }
 
-    // MAX_DEPTH and depth parameter must exist
-    expect(source).toContain("MAX_DEPTH")
-    expect(source).toContain("depth")
+    // Call with depth=25 which exceeds MAX_DEPTH=20 — should return immediately
+    await expect(
+      (tracker as any).ensureAncestorRoute("ses_deep", new Set(), 25),
+    ).resolves.toBeUndefined()
+
+    // Verify warning was logged via client.app.log
+    expect(mockLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          level: "warn",
+          message: expect.stringContaining("MAX_DEPTH"),
+        }),
+      }),
+    )
+  })
+
+  it("should chain up to MAX_DEPTH levels without stack overflow", async () => {
+    const mockLog = vi.fn()
+    const tracker = new SessionTracker({
+      client: { app: { log: mockLog }, session: { get: vi.fn() } } as any,
+      projectRoot: "/fake/project",
+    });
+    (tracker as any).hierarchyIndex = {
+      isChild: vi.fn().mockReturnValue(false),
+      registerChild: vi.fn(),
+    }
+
+    // Create chain of 25+ ancestors by returning a parent ID for each depth level
+    let depthCounter = 0
+    const maxDepth = 25;
+    (tracker as any).bootstrap = {
+      getSessionSafely: vi.fn().mockImplementation(async () => {
+        depthCounter++
+        if (depthCounter >= maxDepth) return { parentID: null }
+        return { parentID: `ses_ancestor_${depthCounter}` }
+      }),
+    }
+
+    // Start at depth=0 — should recurse through 25+ ancestors and stop gracefully
+    await expect(
+      (tracker as any).ensureAncestorRoute("ses_root", new Set(), 0),
+    ).resolves.toBeUndefined()
+
+    // Verifies the recursion completed without stack overflow
+    expect(depthCounter).toBeGreaterThan(0)
   })
 })
