@@ -343,3 +343,76 @@ describe("HierarchyIndex — root main session tracking (D-03, D-08)", () => {
     })
   })
 })
+
+// ---------------------------------------------------------------------------
+// rebuildChildToRootMain (F-07 / REQ-21-05)
+// ---------------------------------------------------------------------------
+
+describe("rebuildChildToRootMain (F-07 / REQ-21-05)", () => {
+  let tmpDir: string
+
+  beforeEach(async () => {
+    tmpDir = resolve(os.tmpdir(), `st-rb-${randomBytes(4).toString("hex")}`)
+    await mkdir(resolve(tmpDir, ".hivemind", "session-tracker", "root-session"), { recursive: true })
+    await mkdir(resolve(tmpDir, ".hivemind", "session-tracker", "l1-session"), { recursive: true })
+    await mkdir(resolve(tmpDir, ".hivemind", "session-tracker", "l2-session"), { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true }).catch(() => {})
+  })
+
+  it("rebuildChildToRootMain resolves root for L0→L1→L2 chain", () => {
+    const index = new HierarchyIndex({ projectRoot: tmpDir })
+    index.registerChild("root-session", "l1-session")
+    index.registerChild("l1-session", "l2-session")
+
+    expect(index.getRootMain("l1-session")).toBe("root-session")
+    expect(index.getRootMain("l2-session")).toBe("root-session")
+  })
+
+  it("rebuild after buildFromDisk repopulates rootMain correctly", async () => {
+    const continuity = {
+      version: "2.0",
+      sessionID: "root-session",
+      lastUpdated: new Date().toISOString(),
+      hierarchy: {
+        root: "root-session",
+        children: {
+          "l1-session": {
+            file: "l1-session.json", depth: 1, status: "active",
+            parentSessionID: "root-session", delegatedBy: "test",
+            children: {
+              "l2-session": {
+                file: "l2-session.json", depth: 2, status: "active",
+                parentSessionID: "l1-session", delegatedBy: "test",
+              },
+            },
+          },
+        },
+      },
+      turnCount: 0,
+      toolSummary: {},
+    }
+    const indexPath = resolve(
+      tmpDir, ".hivemind", "session-tracker", "root-session", "session-continuity.json",
+    )
+    await writeFile(indexPath, JSON.stringify(continuity, null, 2), "utf-8")
+
+    const index = new HierarchyIndex({ projectRoot: tmpDir })
+    await index.buildFromDisk()
+
+    expect(index.getRootMain("l1-session")).toBe("root-session")
+    expect(index.getRootMain("l2-session")).toBe("root-session")
+  })
+
+  it("rebuild works for isolated children (no continuity file)", () => {
+    const index = new HierarchyIndex({ projectRoot: tmpDir })
+    index.registerChild("root-session", "child-a")
+    index.registerChild("root-session", "child-b")
+    // rebuildChildToRootMain() is called — this will fail typecheck until implemented
+    index.rebuildChildToRootMain()
+    expect(index.getRootMain("child-a")).toBe("root-session")
+    expect(index.getRootMain("child-b")).toBe("root-session")
+  })
+})
