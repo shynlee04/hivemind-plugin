@@ -96,7 +96,7 @@ export function constructDependencies(
   const sessionWriter = new SessionWriter({ projectRoot })
   const childWriter = new ChildWriter({ projectRoot, hierarchyIndex, retryQueue })
   const sessionIndexWriter = new SessionIndexWriter({ projectRoot })
-  const projectIndexWriter = new ProjectIndexWriter({ client, projectRoot })
+  const projectIndexWriter = new ProjectIndexWriter({ client, projectRoot, hierarchyIndex })
 
   // Create child recorder — child delegation message capture
   const childRecorder = new ChildRecorder({

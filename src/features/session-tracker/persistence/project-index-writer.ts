@@ -22,6 +22,7 @@ import type {
   ProjectSessionEntry,
 } from "../types.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
+import type { HierarchyIndex } from "./hierarchy-index.js"
 
 // ---------------------------------------------------------------------------
 // ProjectIndexWriter class
@@ -37,6 +38,12 @@ import type { OpenCodeClient } from "../../../shared/session-api.js"
 export class ProjectIndexWriter {
   private client: OpenCodeClient
   private projectRoot: string
+
+  /**
+   * Optional hierarchy index for computing childCount and totalDelegationDepth.
+   * When undefined, these fields will remain at their default values (0).
+   */
+  private hierarchyIndex: HierarchyIndex | undefined
 
   /**
    * Timestamp of the last successful write (epoch ms).
@@ -60,10 +67,16 @@ export class ProjectIndexWriter {
    * @param deps - Injected dependencies.
    * @param deps.client - The OpenCode SDK client for logging.
    * @param deps.projectRoot - Absolute path to the project root.
+   * @param deps.hierarchyIndex - Optional hierarchy index for childCount/depth.
    */
-  constructor(deps: { client: OpenCodeClient; projectRoot: string }) {
+  constructor(deps: {
+    client: OpenCodeClient
+    projectRoot: string
+    hierarchyIndex?: HierarchyIndex
+  }) {
     this.client = deps.client
     this.projectRoot = deps.projectRoot
+    this.hierarchyIndex = deps.hierarchyIndex
   }
 
   /**
@@ -210,6 +223,10 @@ export class ProjectIndexWriter {
 
       const existing = index.sessions[sessionID]
       if (existing) {
+        // F-19: Compute childCount and totalDelegationDepth from hierarchy index
+        updates.childCount = await this.computeChildCount(sessionID)
+        updates.totalDelegationDepth = await this.computeMaxDepth(sessionID)
+
         index.sessions[sessionID] = {
           ...existing,
           ...updates,
@@ -222,6 +239,30 @@ export class ProjectIndexWriter {
       const filePath = this.getIndexPath()
       await atomicWriteJson(filePath, index)
     })
+  }
+
+  /**
+   * Computes childCount from the hierarchy index.
+   * Returns 0 if no hierarchyIndex is wired (graceful degradation).
+   *
+   * @param sessionID - The session to count children for.
+   * @returns The number of direct children.
+   */
+  private async computeChildCount(sessionID: string): Promise<number> {
+    if (!this.hierarchyIndex) return 0
+    return this.hierarchyIndex.getChildCountForSession(sessionID)
+  }
+
+  /**
+   * Computes the maximum delegation depth from the hierarchy index.
+   * Returns 0 if no hierarchyIndex is wired.
+   *
+   * @param sessionID - The session to measure depth for.
+   * @returns The maximum delegation depth.
+   */
+  private async computeMaxDepth(sessionID: string): Promise<number> {
+    if (!this.hierarchyIndex) return 0
+    return this.hierarchyIndex.getMaxDepthForSession(sessionID)
   }
 
   /**
