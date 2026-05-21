@@ -1,47 +1,75 @@
 import { tool } from "@opencode-ai/plugin"
 import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
+import { success, error } from "../../shared/tool-response.js"
+import { renderToolResult } from "../../shared/tool-helpers.js"
+
+/** Wrap a ToolResponse into the ToolResult format expected by tool(). */
+function toToolResult<T>(response: { kind: string; message: string; data?: T; metadata?: Record<string, unknown> }) {
+  return {
+    output: renderToolResult(response),
+    metadata: (response.metadata ?? {}) as Record<string, unknown>,
+  }
+}
 
 /**
  * Creates the execute-slash-command tool.
  *
- * This tool allows an agent to programmatically dispatch a slash command
- * (e.g., built-in commands or custom `.opencode/commands/*.md` commands)
- * to the active session via the TUI prompt pipeline.
+ * Dispatches OpenCode slash commands through the SDK-native `session.command()`
+ * path as the primary mechanism, with three specialized dispatch modes:
  *
- * ## Why TUI path instead of `session.command()`?
+ * 1. **Direct command execution** — calls `client.session.command()` with the
+ *    command name, arguments, optional agent, and optional model. Agent/model
+ *    parameters trigger SDK-side agent switching with proper event emission.
  *
- * `session.command()` calls `SessionPrompt.prompt()` internally, which
- * **blocks** until the LLM completes. But since this tool is called
- * *during* an active LLM loop, `SessionRunState.ensureRunning()` detects
- * the session is busy and **queues** the command — it never executes
- * immediately.
+ * 2. **Subtask routing** — when the command's frontmatter has `subtask: true`,
+ *    dispatches via `client.session.prompt()` with `SubtaskPartInput`, which
+ *    creates a properly tracked child session.
  *
- * The TUI path (`appendPrompt` + `submitPrompt`) bypasses this by
- * injecting the command text into the TUI prompt buffer, which the TUI
- * processes as a slash command *after* the current tool call returns.
- * This results in immediate execution once the current turn completes.
+ * 3. **TUI fallback** — if the SDK path fails (session busy, queued, error),
+ *    falls back to the TUI prompt pipeline (`clearPrompt → appendPrompt →
+ *    submitPrompt`), preserving backward compatibility.
  *
- * **SDK contract** (TUI pipeline):
- * - `tui.appendPrompt({ body: { text } })` — injects `/<command> <args>` into the TUI prompt
- * - `tui.submitPrompt()` — submits the prompt, triggering slash command dispatch
+ * ## Agent Switching Mechanisms
+ *
+ * - **Mechanism (a) — pass-agent:** When `agent` is provided, it is passed to
+ *   `session.command()`, triggering an SDK-side agent switch with
+ *   `SessionNextAgentSwitched` event.
+ * - **Mechanism (b) — run-then-restore:** When `restore: true` is set, the
+ *   tool caches `ctx.agent` before dispatch, executes the command under the
+ *   target agent, then sends a follow-up `session.command()` to restore the
+ *   prior agent.
+ *
+ * ## Preflight Check
+ *
+ * Before dispatching, the tool calls `client.command.list()` to verify the
+ * command exists in the OpenCode command registry. Unknown commands return
+ * a graceful error with the list of available commands.
+ *
+ * ## Standard Result Envelope
+ *
+ * All returns use `success()` / `error()` from `src/shared/tool-response.ts`
+ * with `{ kind, message, data, metadata }` shape.
  *
  * @example
  * ```
- * // Basic command execution
- * execute-slash-command { command: "gsd-stats", arguments: "" }
+ * // Basic command
+ * execute-slash-command { command: "gsd-stats" }
  *
  * // Command with arguments
  * execute-slash-command { command: "hf-create", arguments: "skill my-new-skill" }
  *
- * // Command with agent context override
+ * // Agent switch (mechanism a)
  * execute-slash-command { command: "deep-research-synthesis-repomix", arguments: "vitest", agent: "hm-researcher" }
  *
- * // Command with model override
- * execute-slash-command { command: "plan", arguments: "refactor auth module", model: "anthropic/claude-sonnet-4-20250514" }
+ * // Agent switch and restore (mechanism b)
+ * execute-slash-command { command: "plan", arguments: "refactor", agent: "hm-planner", restore: true }
+ *
+ * // Model override
+ * execute-slash-command { command: "gsd-help", model: "anthropic/claude-sonnet-4-20250514" }
  * ```
  *
- * @see src/tools/hivemind/hivemind-command-engine.ts — discovery companion (CQRS read-side)
- * @see src/routing/command-engine/index.ts — command engine core
+ * @see src/tools/hivemind/hivemind-command-engine.ts — CQRS read-side command discovery
+ * @see src/shared/tool-response.ts — Standard result envelope
  *
  * @param client - The OpenCode SDK client instance (injected from plugin composition root).
  * @returns ToolDefinition for the execute-slash-command tool.
@@ -49,8 +77,10 @@ import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
 export const createExecuteSlashCommandTool = (client: PluginInput["client"]): ToolDefinition => {
   return tool({
     description:
-      "Executes an OpenCode slash command on the active session. This is equivalent to a user typing '/command args' in the TUI. " +
-      "Dispatches via the TUI prompt pipeline for immediate execution — NOT the blocking session.command() path. " +
+      "Executes an OpenCode slash command on the active session. " +
+      "Dispatches via the SDK-native session.command() path with TUI fallback. " +
+      "Supports agent switching (two mechanisms), model override, command preflight, " +
+      "frontmatter-aware dispatch, subtask routing, and standard response envelope. " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
     args: {
       command: tool.schema.string().describe(
@@ -60,92 +90,259 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
         "Arguments string to pass to the command (e.g., 'my-new-skill'). Defaults to empty string.",
       ),
       agent: tool.schema.string().optional().describe(
-        "Optional agent context override. When set, the agent is prepended as '@agent' before the command " +
-        "(e.g., '@hm-researcher /deep-research-synthesis-repomix vitest').",
+        "Optional agent context override. Passed to session.command() for SDK-side agent switching. " +
+        "When set, the TUI switches to the target agent with proper SessionNextAgentSwitched event. " +
+        "Combine with restore: true for mechanism (b): run-under-agent-then-restore.",
       ),
       model: tool.schema.string().optional().describe(
         "Optional model override in 'providerID/modelID' format (e.g., 'anthropic/claude-sonnet-4-20250514'). " +
-        "When set, prepended as a model tag in the prompt text.",
+        "Passed to session.command() for SDK-side model selection.",
+      ),
+      restore: tool.schema.boolean().optional().describe(
+        "When true and agent is set, runs mechanism (b): records current agent, " +
+        "dispatches under the target agent, then restores the prior agent via a follow-up " +
+        "session.command() call. Only effective when agent is also provided.",
       ),
     },
     async execute(args, ctx) {
-      const cmdDisplay = `/${args.command}${args.arguments ? ` ${args.arguments}` : ""}`
+      const sessionID = ctx.sessionID
+      const currentAgent = ctx.agent
+
       ctx.metadata({
-        title: `Executing ${cmdDisplay}`,
+        title: `Executing /${args.command}${args.arguments ? ` ${args.arguments}` : ""}`,
         metadata: {
           command: args.command,
           ...(args.agent && { agent: args.agent }),
           ...(args.model && { model: args.model }),
+          ...(args.restore && { restore: true }),
         },
       })
 
+      // Step 1: Preflight — Command existence check (REQ-03)
       try {
-        // Build the slash command text exactly as a user would type it in the TUI
-        // Format: [@agent] [/command] [arguments]
-        const parts: string[] = []
-
-        // Prepend agent override if specified
-        if (args.agent) {
-          parts.push(`@${args.agent}`)
-        }
-
-        // The command itself
-        parts.push(`/${args.command}`)
-
-        // Append arguments if any
-        if (args.arguments) {
-          parts.push(args.arguments)
-        }
-
-        const promptText = parts.join(" ")
-
-        // Step 1: Clear any existing prompt to avoid stale state
-        await client.tui.clearPrompt()
-
-        // Step 2: Append the slash command text to the TUI prompt buffer
-        await client.tui.appendPrompt({
-          body: { text: promptText },
+        const commands = await client.command.list({
+          query: { directory: ctx.directory },
         })
+        const unwrappedCommands = Array.isArray(commands)
+          ? commands
+          : (commands as { data?: Array<{ name: string }> }).data ?? []
 
-        // Step 3: Submit the prompt — TUI dispatches as a slash command
-        await client.tui.submitPrompt()
+        const found = unwrappedCommands.find(
+          (c: { name: string }) => c.name === args.command,
+        )
 
-        return {
-          output: [
-            `✓ Command ${cmdDisplay} dispatched to TUI prompt.`,
-            `  Prompt text: ${promptText}`,
-            `  The command will execute immediately after this tool call returns.`,
-            args.agent ? `  Agent: ${args.agent}` : null,
-            args.model ? `  Model: ${args.model}` : null,
-          ].filter(Boolean).join("\n"),
-          metadata: {
-            command: args.command,
-            promptText,
-            dispatched: true,
-            ...(args.agent && { agent: args.agent }),
-            ...(args.model && { model: args.model }),
-          },
-        }
-      } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : String(error)
-
-        // Classify error type for better agent error handling
-        let errorType: "bad_request" | "not_found" | "internal" = "internal"
-        if (error instanceof Error) {
-          const statusMatch = msg.match(/\b(400|422)\b/)
-          if (statusMatch) errorType = "bad_request"
-          else if (msg.includes("404") || msg.includes("not found")) errorType = "not_found"
+        if (!found) {
+          const available = unwrappedCommands.map(
+            (c: { name: string }) => c.name,
+          )
+          return toToolResult(
+            error(
+              `Command not found: /${args.command}. Available commands: ${available.join(", ")}`,
+              { availableCommands: available },
+              { command: args.command },
+            ),
+          )
         }
 
-        return {
-          output: `✗ Failed to dispatch ${cmdDisplay}: ${msg}`,
-          metadata: {
-            error: true,
-            errorType,
-            command: args.command,
-            message: msg,
-          },
+        // Step 2: Frontmatter enrichment (REQ-04)
+        const frontmatterAgent = (found as { agent?: string }).agent
+        const frontmatterModel = (found as { model?: string }).model
+        const frontmatterSubtask = (found as { subtask?: boolean }).subtask
+        const effectiveAgent = args.agent || frontmatterAgent
+        const effectiveModel = args.model || frontmatterModel
+
+        // Step 3: Subtask routing (REQ-04 subtask)
+        if (frontmatterSubtask === true) {
+          try {
+            const subtaskAgent = effectiveAgent ?? "assistant"
+            const cmdTemplate = (found as { template?: string }).template ?? args.command
+            const promptText = `${cmdTemplate}${args.arguments ? ` ${args.arguments}` : ""}`
+            const subtaskDescription: string = (found as { description?: string }).description ?? ""
+            await client.session.prompt({
+              path: { id: sessionID },
+              body: {
+                agent: subtaskAgent,
+                parts: [
+                  {
+                    type: "subtask" as const,
+                    agent: subtaskAgent,
+                    prompt: promptText,
+                    description: subtaskDescription,
+                  },
+                ],
+              },
+              query: { directory: ctx.directory },
+            })
+            return toToolResult(
+              success(
+                `Subtask dispatched: /${args.command} → ${subtaskAgent}`,
+                {
+                  command: args.command,
+                  agent: subtaskAgent,
+                  dispatched: true,
+                },
+                { command: args.command, mode: "subtask" },
+              ),
+            )
+          } catch (subtaskError: unknown) {
+            const msg =
+              subtaskError instanceof Error
+                ? subtaskError.message
+                : String(subtaskError)
+            return toToolResult(
+              error(
+                `Subtask dispatch failed for /${args.command}: ${msg}`,
+                { command: args.command },
+                { command: args.command, mode: "subtask", error: msg },
+              ),
+            )
+          }
         }
+
+        // Step 4: Primary path — SDK session.command() (REQ-01)
+        try {
+          // Mechanism (b) — run-as-then-restore (REQ-02)
+          if (args.restore && effectiveAgent && currentAgent) {
+            await client.session.command({
+              path: { id: sessionID },
+              body: {
+                command: args.command,
+                arguments: args.arguments ?? "",
+                agent: effectiveAgent,
+                model: effectiveModel,
+              },
+              query: { directory: ctx.directory },
+            })
+            // Restore prior agent
+            await client.session.command({
+              path: { id: sessionID },
+              body: {
+                command: "",
+                arguments: "",
+                agent: currentAgent,
+              },
+              query: { directory: ctx.directory },
+            })
+            return toToolResult(
+              success(
+                `Command /${args.command} executed under ${effectiveAgent} and restored to ${currentAgent}.`,
+                {
+                  command: args.command,
+                  agent: effectiveAgent,
+                  restored: true,
+                  priorAgent: currentAgent,
+                },
+                {
+                  command: args.command,
+                  mode: "agent-switch-restore",
+                },
+              ),
+            )
+          }
+
+          // Mechanism (a) — simple agent switch via SDK
+          await client.session.command({
+            path: { id: sessionID },
+            body: {
+              command: args.command,
+              arguments: args.arguments ?? "",
+              ...(effectiveAgent && { agent: effectiveAgent }),
+              ...(effectiveModel && { model: effectiveModel }),
+            },
+            query: { directory: ctx.directory },
+          })
+
+          const parts: string[] = [
+            `✓ Command /${args.command} dispatched via SDK command path.`,
+          ]
+          if (effectiveAgent) {
+            parts.push(`  Agent: ${effectiveAgent}`)
+          }
+          if (effectiveModel) {
+            parts.push(`  Model: ${effectiveModel}`)
+          }
+          parts.push(
+            "  The command will execute after this tool call returns.",
+          )
+
+          return toToolResult(
+            success(
+              parts.join("\n"),
+              {
+                command: args.command,
+                agent: effectiveAgent ?? null,
+                dispatched: true,
+              },
+              {
+                command: args.command,
+                mode: effectiveAgent
+                  ? args.restore
+                    ? "agent-switch-restore"
+                    : "agent-switch"
+                  : "direct",
+              },
+            ),
+          )
+        } catch (sdkError: unknown) {
+          // Step 5: TUI fallback (REQ-01 hybrid approach)
+          try {
+            const parts: string[] = []
+            if (effectiveAgent) parts.push(`@${effectiveAgent}`)
+            parts.push(`/${args.command}`)
+            if (args.arguments) parts.push(args.arguments)
+            const promptText = parts.join(" ")
+
+            await client.tui.clearPrompt()
+            await client.tui.appendPrompt({
+              body: { text: promptText },
+            })
+            await client.tui.submitPrompt()
+
+            return toToolResult(
+              success(
+                [
+                  `✓ Command /${args.command} dispatched via TUI fallback.`,
+                  `  Prompt text: ${promptText}`,
+                  `  The command will execute after this tool call returns.`,
+                ].join("\n"),
+                {
+                  command: args.command,
+                  promptText,
+                  dispatched: true,
+                  fallback: true,
+                },
+                {
+                  command: args.command,
+                  mode: "tui-fallback",
+                },
+              ),
+            )
+          } catch (tuiError: unknown) {
+            const msg =
+              tuiError instanceof Error
+                ? tuiError.message
+                : String(tuiError)
+            return toToolResult(
+              error(
+                `Failed to dispatch /${args.command}: ${msg}`,
+                { command: args.command },
+                { command: args.command, error: msg },
+              ),
+            )
+          }
+        }
+      } catch (preflightError: unknown) {
+        const msg =
+          preflightError instanceof Error
+            ? preflightError.message
+            : String(preflightError)
+        return toToolResult(
+          error(
+            `Preflight check failed for /${args.command}: ${msg}`,
+            { command: args.command },
+            { command: args.command, error: msg },
+          ),
+        )
       }
     },
   })
