@@ -14,7 +14,7 @@ import type { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
 import { isValidSessionID } from "./types.js"
 import type { ChildHierarchyEntry, SessionContinuityIndex, HierarchyManifest } from "./types.js"
 import { safeSessionPath, sessionTrackerRoot, atomicWriteJson } from "./persistence/atomic-write.js"
-import { readdir, access, readFile, rename } from "node:fs/promises"
+import { readdir, access, readFile, rename, unlink } from "node:fs/promises"
 import { resolve } from "node:path"
 
 /**
@@ -357,7 +357,6 @@ export class OrphanCleanup {
    */
   async cleanupOrphanedTmpFiles(): Promise<void> {
     try {
-      const { unlink } = await import("node:fs/promises")
       const trackerRoot = resolve(this.projectRoot, ".hivemind", "session-tracker")
 
       const entries = await readdir(trackerRoot, { withFileTypes: true })
