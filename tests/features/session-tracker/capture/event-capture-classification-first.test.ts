@@ -132,6 +132,86 @@ describe("EventCapture — classification-first flow (CP-ST-05-01 Task 2)", () =
       expect(callArgs[2].delegationDepth).toBe(2)
     })
 
+    it("classifies as child when 2+ consecutive dispatches exist (pendingCount > 1)", async () => {
+      // Reproduces the bug: when parent dispatches 2+ tasks consecutively within
+      // 1-2 seconds, both PreToolUse entries exist in the registry before any
+      // session.created fires. Gate 0 must STILL classify as child.
+      registry.add({
+        parentSessionID: "ses_parent",
+        callID: "pretooluse-task1",
+        subagentType: "gsd-researcher",
+        timestamp: Date.now(),
+        delegationDepth: 1,
+      })
+      registry.add({
+        parentSessionID: "ses_parent",
+        callID: "pretooluse-task2",
+        subagentType: "gsd-researcher",
+        timestamp: Date.now(),
+        delegationDepth: 1,
+      })
+
+      // pendingCount is now 2
+      mockGetSession.mockResolvedValue({
+        id: "ses_child_consecutive",
+        parentID: null,
+        title: "Consecutive Child Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+
+      await eventCapture.handleSessionEvent({
+        eventType: "session.created",
+        sessionID: "ses_child_consecutive",
+        event: {},
+      })
+
+      // Gate 0 must still classify as child — write .json, NO root dir
+      expect(mockCreateChildFile).toHaveBeenCalled()
+      expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    })
+
+    it("classifies as child when 3+ consecutive dispatches exist (pendingCount > 2)", async () => {
+      // Edge case: 3+ tasks dispatched in rapid succession
+      registry.add({
+        parentSessionID: "ses_parent_3",
+        callID: "pretooluse-task1",
+        subagentType: "gsd-researcher",
+        timestamp: Date.now(),
+        delegationDepth: 1,
+      })
+      registry.add({
+        parentSessionID: "ses_parent_3",
+        callID: "pretooluse-task2",
+        subagentType: "gsd-researcher",
+        timestamp: Date.now(),
+        delegationDepth: 1,
+      })
+      registry.add({
+        parentSessionID: "ses_parent_3",
+        callID: "pretooluse-task3",
+        subagentType: "gsd-researcher",
+        timestamp: Date.now(),
+        delegationDepth: 1,
+      })
+
+      mockGetSession.mockResolvedValue({
+        id: "ses_child_3tasks",
+        parentID: null,
+        title: "3-Task Child Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+
+      await eventCapture.handleSessionEvent({
+        eventType: "session.created",
+        sessionID: "ses_child_3tasks",
+        event: {},
+      })
+
+      // Must still classify as child
+      expect(mockCreateChildFile).toHaveBeenCalled()
+      expect(mockCreateSessionDir).not.toHaveBeenCalled()
+    })
+
     it("creates directory only when no pending dispatches exist", async () => {
       // No pending dispatches — this is a true root session
       mockGetSession.mockResolvedValue({

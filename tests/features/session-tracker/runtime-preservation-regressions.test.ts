@@ -426,8 +426,8 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", l1SessionID))).toBe(false)
   })
 
-  it("does not assign ambiguous pending session.created events to the wrong parent", async () => {
-    const ambiguousSessionID = "ses_ambiguous_pending_child"
+  it("classifies as root when pending registry has no active entries (getAnyActiveEntry returns undefined)", async () => {
+    const rootSessionID = "ses_ambiguous_pending_child"
     const sessionWriter = new SessionWriter({ projectRoot })
     const childWriter = new ChildWriter({ projectRoot })
     const eventCapture = new EventCapture({
@@ -438,21 +438,22 @@ describe("CP-ST-06 runtime preservation regressions", () => {
       hierarchyIndex: new HierarchyIndex({ projectRoot }),
       manifestWriter: new HierarchyManifestWriter({ projectRoot }),
       pendingRegistry: {
-        size: 2,
-        getAnyActiveEntry: vi.fn(),
+        getAnyActiveEntry: vi.fn().mockReturnValue(undefined),
         has: vi.fn().mockReturnValue(false),
         get: vi.fn(),
       } as never,
     })
-    mockGetSession.mockResolvedValue({ id: ambiguousSessionID, parentID: null } as never)
+    mockGetSession.mockResolvedValue({ id: rootSessionID, parentID: null } as never)
 
     await eventCapture.handleSessionEvent({
       eventType: "session.created",
-      sessionID: ambiguousSessionID,
+      sessionID: rootSessionID,
       event: {},
     })
 
-    expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", ambiguousSessionID))).toBe(false)
+    // When getAnyActiveEntry() returns undefined, no pending dispatches exist —
+    // the session is a true root and should create a directory.
+    expect(existsSync(join(projectRoot, ".hivemind", "session-tracker", rootSessionID))).toBe(true)
   })
 
   it("rebuilds context with root-owned child turns, journey, and lastMessage", async () => {

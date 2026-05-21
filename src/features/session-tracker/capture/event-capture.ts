@@ -163,10 +163,11 @@ export class EventCapture {
       // Check if ANY task dispatch was recently recorded via PreToolUse hook.
       // If so, this session is almost certainly a child — write .json immediately
       // without waiting for SDK parentID or creating a directory.
-      const pendingCount = this.pendingRegistry?.size ?? 0
-      const anyPending = pendingCount === 1
-        ? this.pendingRegistry?.getAnyActiveEntry()
-        : undefined
+      // Uses getAnyActiveEntry() unconditionally (Option A) — handles any number
+      // of concurrent dispatches (normal when agents delegate 10+ tasks rapidly).
+      // No longer bails on pendingCount > 1 (Option B) — falls through to SDK
+      // retry + Gates 2/3 for defense-in-depth.
+      const anyPending = this.pendingRegistry?.getAnyActiveEntry()
       if (anyPending) {
         void this.client.app?.log?.({
           body: {
@@ -176,16 +177,6 @@ export class EventCapture {
           },
         })
         await this.writeImmediateChildFile(sessionID, anyPending.parentSessionID, anyPending.subagentType, anyPending.delegationDepth)
-        return
-      }
-      if (pendingCount > 1) {
-        void this.client.app?.log?.({
-          body: {
-            service: "session-tracker",
-            level: "warn",
-            message: `[Harness] Session tracker: ambiguous Gate 0 classification for "${sessionID}" — waiting for authoritative task result`,
-          },
-        })
         return
       }
 
