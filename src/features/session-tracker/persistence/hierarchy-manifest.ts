@@ -11,9 +11,8 @@
  * @module session-tracker/persistence/hierarchy-manifest
  */
 
-import { writeFile, rename, mkdir, readFile, unlink } from "node:fs/promises"
-import { dirname } from "node:path"
-import { safeSessionPath } from "./atomic-write.js"
+import { readFile } from "node:fs/promises"
+import { atomicWriteJson, safeSessionPath } from "./atomic-write.js"
 import type {
   HierarchyManifest,
   HierarchyManifestChild,
@@ -265,8 +264,9 @@ export class HierarchyManifestWriter {
   /**
    * Atomically writes the hierarchy manifest to disk.
    *
-   * Uses write-to-tmp → rename pattern (D-03). On crash mid-write, only
-   * the temp file exists — the target is either complete or untouched.
+   * Delegates to {@link atomicWriteJson} which handles write-to-tmp → rename
+   * (D-03), cross-volume detection (G-5 / REQ-21-02), and temp file cleanup
+   * (F-01 / REQ-21-01).
    *
    * @param rootMainSessionID - The root main session that owns the manifest.
    * @param manifest - The manifest to persist.
@@ -280,16 +280,6 @@ export class HierarchyManifestWriter {
       rootMainSessionID,
       "hierarchy-manifest.json",
     )
-    const tmpPath = `${filePath}.tmp.${Date.now().toString(36)}`
-    await mkdir(dirname(filePath), { recursive: true })
-    await writeFile(tmpPath, JSON.stringify(manifest, null, 2), "utf-8")
-    await rename(tmpPath, filePath)
-    // Post-rename temp cleanup (F-01 / REQ-21-01) — this path may be deprecated by Plan 02
-    // but fix it now while it exists to prevent leaks
-    try {
-      await unlink(tmpPath)
-    } catch {
-      // Best-effort cleanup
-    }
+    await atomicWriteJson(filePath, manifest)
   }
 }
