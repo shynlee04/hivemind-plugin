@@ -6,7 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { mkdir, rm } from "node:fs/promises"
-import { resolve } from "node:path"
+import { resolve, join } from "node:path"
 import { tmpdir } from "node:os"
 import { randomUUID } from "node:crypto"
 
@@ -113,14 +113,14 @@ describe("ProjectIndexWriter", () => {
 
       await writer.updateSession("ses_test12345abcdefg0", {
         status: "completed",
-        childCount: 3,
       })
 
       expect(mockAtomicWriteJson).toHaveBeenCalledTimes(1)
       const [, data] = mockAtomicWriteJson.mock.calls[0]
       const session = (data as any).sessions["ses_test12345abcdefg0"]
       expect(session.status).toBe("completed")
-      expect(session.childCount).toBe(3)
+      // childCount is computed from hierarchyIndex (0 when not wired) — F-19
+      expect(session.childCount).toBe(0)
       // Original fields preserved
       expect(session.dir).toBe("ses_test12345abcdefg0/")
     })
@@ -243,5 +243,52 @@ describe("ProjectIndexWriter", () => {
       // All three should be attempted (2nd is caught internally by writeQueue)
       expect(callCount).toBeGreaterThanOrEqual(2)
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// HierarchyIndex childCount/depth computation (F-19)
+// ---------------------------------------------------------------------------
+
+describe("HierarchyIndex childCount/depth", () => {
+  let hiDir: string
+
+  beforeEach(() => {
+    const { mkdtempSync } = require("node:fs") as typeof import("node:fs")
+    hiDir = mkdtempSync(join(tmpdir(), "st-piw-"))
+    const { mkdirSync } = require("node:fs") as typeof import("node:fs")
+    mkdirSync(join(hiDir, ".hivemind", "session-tracker"), { recursive: true })
+  })
+
+  afterEach(() => {
+    const { rmSync } = require("node:fs") as typeof import("node:fs")
+    rmSync(hiDir, { recursive: true, force: true })
+  })
+
+  it("computeChildCount returns correct count from hierarchyIndex", async () => {
+    const { HierarchyIndex } = await vi.importActual<
+      typeof import("../../../../src/features/session-tracker/persistence/hierarchy-index.js")
+    >("../../../../src/features/session-tracker/persistence/hierarchy-index.js")
+    const hIndex = new HierarchyIndex({ projectRoot: hiDir })
+    // Register 3 children
+    hIndex.registerChild("root-session", "child-1")
+    hIndex.registerChild("root-session", "child-2")
+    hIndex.registerChild("root-session", "child-3")
+
+    expect(hIndex.getChildCountForSession("root-session")).toBe(3)
+    expect(hIndex.getChildCountForSession("child-1")).toBe(0)
+  })
+
+  it("getMaxDepthForSession returns max chain depth", async () => {
+    const { HierarchyIndex } = await vi.importActual<
+      typeof import("../../../../src/features/session-tracker/persistence/hierarchy-index.js")
+    >("../../../../src/features/session-tracker/persistence/hierarchy-index.js")
+    const hIndex = new HierarchyIndex({ projectRoot: hiDir })
+    hIndex.registerChild("root-session", "child-1")
+    hIndex.registerChild("child-1", "child-2")
+
+    expect(hIndex.getMaxDepthForSession("root-session")).toBe(2)
+    expect(hIndex.getMaxDepthForSession("child-1")).toBe(1)
+    expect(hIndex.getMaxDepthForSession("child-2")).toBe(0)
   })
 })

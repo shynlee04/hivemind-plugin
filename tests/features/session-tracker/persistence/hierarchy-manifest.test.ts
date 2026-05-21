@@ -360,3 +360,113 @@ describe("F-01 temp leak in hierarchy-manifest", () => {
     expect(tmpFiles).toEqual([])
   })
 })
+
+// ---------------------------------------------------------------------------
+// generateFromContinuity — G-1 derivative cache tests
+// ---------------------------------------------------------------------------
+
+describe("generateFromContinuity", () => {
+  let gfcDir: string
+  let gfcWriter: HierarchyManifestWriter
+
+  beforeEach(() => {
+    const { mkdtempSync } = require("node:fs") as typeof import("node:fs")
+    gfcDir = mkdtempSync(join(tmpdir(), "st-gfc-"))
+    // Create session-tracker directory structure
+    const { mkdirSync } = require("node:fs") as typeof import("node:fs")
+    mkdirSync(join(gfcDir, ".hivemind", "session-tracker", "root-session"), { recursive: true })
+    gfcWriter = new HierarchyManifestWriter({ projectRoot: gfcDir })
+  })
+
+  afterEach(() => {
+    rmSync(gfcDir, { recursive: true, force: true })
+  })
+
+  it("generates empty manifest when no continuity file exists", async () => {
+    const manifest = await gfcWriter.generateFromContinuity("root-session")
+    expect(manifest.totalChildren).toBe(0)
+    expect(manifest.children).toEqual({})
+  })
+
+  it("generates manifest with 3 children from continuity tree", async () => {
+    const { writeFileSync } = require("node:fs") as typeof import("node:fs")
+
+    // Write a fixture session-continuity.json
+    const continuity = {
+      version: "2.0",
+      sessionID: "root-session",
+      lastUpdated: new Date().toISOString(),
+      hierarchy: {
+        root: "root-session",
+        children: {
+          "child-1": {
+            file: "child-1.json",
+            depth: 1,
+            status: "completed",
+            delegatedBy: "test",
+            children: {},
+          },
+          "child-2": {
+            file: "child-2.json",
+            depth: 1,
+            status: "active",
+            delegatedBy: "test",
+            children: {},
+          },
+          "child-3": {
+            file: "child-3.json",
+            depth: 2,
+            status: "active",
+            delegatedBy: "child-1",
+            children: {},
+          },
+        },
+      },
+      turnCount: 0,
+      toolSummary: {},
+    }
+    const indexPath = join(gfcDir, ".hivemind", "session-tracker", "root-session", "session-continuity.json")
+    writeFileSync(indexPath, JSON.stringify(continuity, null, 2), "utf-8")
+
+    const manifest = await gfcWriter.generateFromContinuity("root-session")
+
+    expect(manifest.totalChildren).toBe(3)
+    expect(manifest.children["child-1"]).toBeDefined()
+    expect(manifest.children["child-2"]).toBeDefined()
+    expect(manifest.children["child-3"]).toBeDefined()
+    expect(manifest.children["child-1"].delegationDepth).toBe(1)
+    expect(manifest.children["child-3"].delegationDepth).toBe(2)
+  })
+
+  it("loadManifest regenerates from continuity when manifest file missing", async () => {
+    const { writeFileSync } = require("node:fs") as typeof import("node:fs")
+
+    // Write continuity but NO manifest file
+    const continuity = {
+      version: "2.0",
+      sessionID: "root-session",
+      lastUpdated: new Date().toISOString(),
+      hierarchy: {
+        root: "root-session",
+        children: {
+          "child-1": {
+            file: "child-1.json",
+            depth: 1,
+            status: "active",
+            delegatedBy: "test",
+            children: {},
+          },
+        },
+      },
+      turnCount: 0,
+      toolSummary: {},
+    }
+    const indexPath = join(gfcDir, ".hivemind", "session-tracker", "root-session", "session-continuity.json")
+    writeFileSync(indexPath, JSON.stringify(continuity, null, 2), "utf-8")
+
+    const children = await gfcWriter.getChildren("root-session")
+
+    expect(Object.keys(children).length).toBe(1)
+    expect(children["child-1"]).toBeDefined()
+  })
+})
