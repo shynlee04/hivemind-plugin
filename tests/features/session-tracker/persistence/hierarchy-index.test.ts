@@ -201,6 +201,24 @@ describe("HierarchyIndex — root main session tracking (D-03, D-08)", () => {
       // L3 is capped at L2 per GA-2 — must NOT return 3
       expect(index.getDepth("ses_l3")).toBe(2)
     })
+
+    it("should emit warning when delegation depth exceeds max L2 cap", () => {
+      const warnSpy = vi.spyOn(process, "emitWarning").mockImplementation(() => {})
+
+      try {
+        index.registerChild("ses_root", "ses_l1")
+        index.registerChild("ses_l1", "ses_l2")
+        index.registerChild("ses_l2", "ses_l3")
+
+        index.getDepth("ses_l3")
+
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining("delegation depth 3 exceeds max 2"),
+        )
+      } finally {
+        warnSpy.mockRestore()
+      }
+    })
   })
 
   // ── Test 4: registerChild automatically resolves root main ────────────
