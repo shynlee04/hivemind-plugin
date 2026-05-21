@@ -138,10 +138,10 @@ describe("delegation persistence", () => {
 })
 
 // ---------------------------------------------------------------------------
-// CA-03: commit_docs toggle
+// G-4: Delegation persistence is unconditional (commit_docs gate removed)
 // ---------------------------------------------------------------------------
 
-describe("commit_docs toggle", () => {
+describe("delegation persistence unconditional (G-4)", () => {
   let stateDir: string
   let previousStateDir: string | undefined
 
@@ -149,7 +149,7 @@ describe("commit_docs toggle", () => {
     vi.resetModules()
     vi.doUnmock("node:fs")
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
-    stateDir = mkdtempSync(join(tmpdir(), "delegation-commit-docs-"))
+    stateDir = mkdtempSync(join(tmpdir(), "delegation-unconditional-"))
     process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
   })
 
@@ -162,27 +162,6 @@ describe("commit_docs toggle", () => {
       process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
     }
     rmSync(stateDir, { recursive: true, force: true })
-  })
-
-  it("writes delegations.json to disk when commit_docs is true (default)", async () => {
-    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/config/subscriber.js", () => ({
-      getConfig: vi.fn(),
-      getCachedConfig: vi.fn().mockReturnValue(
-        HivemindConfigsSchema.parse({ commit_docs: true, workflow: { use_worktrees: false } }),
-      ),
-      invalidateConfigCache: vi.fn(),
-    }))
-
-    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
-    const filePath = persistence.getDelegationsFilePath()
-
-    persistence.persistDelegations([makeDelegation("del-commit-true")])
-
-    // File should exist on disk
-    expect(existsSync(filePath)).toBe(true)
-    const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
-    expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: "del-commit-true" })]))
   })
 
   it("persists delegation data regardless of commit_docs config (G-4)", async () => {
@@ -201,32 +180,12 @@ describe("commit_docs toggle", () => {
     persistence.persistDelegations([makeDelegation("del-g4-test")])
 
     // File MUST be written to disk even when commit_docs is false
-    const { existsSync } = await import("node:fs")
     expect(existsSync(filePath)).toBe(true)
-    const persisted = JSON.parse(await import("node:fs").then(m => m.readFileSync(filePath, "utf-8"))) as Delegation[]
+    const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
     expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: "del-g4-test" })]))
   })
 
-  it("skips disk write when commit_docs is false", async () => {
-    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/config/subscriber.js", () => ({
-      getConfig: vi.fn(),
-      getCachedConfig: vi.fn().mockReturnValue(
-        HivemindConfigsSchema.parse({ commit_docs: false, workflow: { use_worktrees: false } }),
-      ),
-      invalidateConfigCache: vi.fn(),
-    }))
-
-    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
-    const filePath = persistence.getDelegationsFilePath()
-
-    persistence.persistDelegations([makeDelegation("del-commit-false")])
-
-    // No file should be created on disk when commit_docs is false
-    expect(existsSync(filePath)).toBe(false)
-  })
-
-  it("writes to disk with default config (commit_docs defaults to true)", async () => {
+  it("writes to disk with default config (default behavior)", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
     vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
@@ -239,7 +198,7 @@ describe("commit_docs toggle", () => {
 
     persistence.persistDelegations([makeDelegation("del-commit-defaults")])
 
-    // File should exist on disk (commit_docs defaults to true)
+    // File should exist on disk regardless of config
     expect(existsSync(filePath)).toBe(true)
   })
 })
