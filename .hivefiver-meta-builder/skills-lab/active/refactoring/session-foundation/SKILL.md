@@ -305,6 +305,9 @@ all at once.
 | File | Contains | Read When |
 |------|----------|-----------|
 | `references/session-tools-reference.md` | Complete tool signatures, parameter schemas, response formats | You need exact API details for tool calls |
+| `references/terminology-map.md` | Session concepts translated across frameworks (session, subagent, delegation, stacking, hierarchy, CQRS boundaries, evidence hierarchy) | You encounter unfamiliar framework terminology or need to map concepts between systems |
+| `references/philosophy.md` | Design principles: CQRS read-side, progressive disclosure, session as unit of work, hierarchy structure, tool name contracts | You need the "why" behind the tool design patterns |
+| `references/future-tools-tbd.md` | 🟡 PARTIAL tools in development: trajectory (P24), pressure (P26), agent-work (P25), background-command (CP-PTY-01) — their current state and future role | You hear about a session tool not in the main catalog or need to know what's coming
 
 ## 8. Short Version (for tight context)
 
