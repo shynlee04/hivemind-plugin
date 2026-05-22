@@ -145,13 +145,17 @@ type SessionPromptAsyncRequest = Parameters<OpenCodeClient["session"]["promptAsy
 export async function sendPrompt(
   client: OpenCodeClient,
   sessionID: string,
-  body: unknown
+  body: unknown,
+  noReply?: boolean
 ): Promise<unknown> {
   const validSessionID = assertValidSessionID(sessionID)
   const baselineMessageCount = (await getSessionMessages(client, validSessionID).catch(() => [] as unknown[])).length
   const request: SessionPromptRequest = {
     path: { id: validSessionID },
-    body: body as SessionPromptRequest["body"],
+    body: {
+      ...(body as SessionPromptRequest["body"]),
+      ...(noReply !== undefined ? { noReply } : {}),
+    },
   }
 
   const response = unwrapData(await client.session.prompt(request))
