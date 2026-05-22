@@ -244,6 +244,9 @@ For the detailed monitoring protocol, read `references/status-checking-protocol.
 | `references/delegation-tools-comparison.md` | Need extended edge case comparison across all 3 tools |
 | `references/session-stacking-protocol.md` | Before attaching work to an existing session |
 | `references/status-checking-protocol.md` | Before polling delegation status or monitoring running work |
+| `references/terminology-map.md` | Need to translate delegation concepts across frameworks (dispatch, WaiterModel, dual-signal, stacking, synthetic injection) |
+| `references/philosophy.md` | Need the design principles behind the delegation patterns — why WaiterModel, why opt-in polling, why dual-signal completion |
+| `references/future-delegation-tools-tbd.md` | 🟡 Need to know about TBD delegation tools: trajectory (P25), pressure (P26), agent-work-contract (P25), background-command (CP-PTY-01) |
 
 ## Anti-Patterns
 
