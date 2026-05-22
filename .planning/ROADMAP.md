@@ -600,6 +600,7 @@ Plans:
 **Requirements:** `21.2-spec-2026-05-22.md`
 **Depends on:** Phase 21.1
 **Status:** Prototype implemented with L3 unit/typecheck evidence; verdict PARTIAL / NEEDS LIVE UAT
+**Plans:** 2 plans in 2 waves
 
 Artifacts:
 - [x] `21.2-context-2026-05-22.md` — user intent, current state, phase boundary
@@ -607,6 +608,13 @@ Artifacts:
 - [x] `21.2-spec-2026-05-22.md` — prototype-gated requirements and acceptance criteria
 - [x] `21.2-prototype-plan-2026-05-22.md` — minimal non-mutating prototype route and live UAT matrix
 - [x] `21.2-prototype-implementation-evidence-2026-05-22.md` — unit/typecheck evidence and remaining live UAT gate
+- [x] `21.2-CONTEXT.md` — standard-named context artifact
+- [x] `21.2-RESEARCH.md` — standard-named research artifact
+- [x] `21.2-SPEC.md` — standard-named spec artifact
+
+Plans:
+- [ ] `21.2-01-PLAN.md` — Live UAT verification (synthetic parent prompt, baseline subtask, TUI control) — Wave 1
+- [ ] `21.2-02-PLAN.md` — Final verdict documentation + governance artifacts update — Wave 2
 
 ### Phase 22: Coordination Status + Error Unification (Group 1)
 
