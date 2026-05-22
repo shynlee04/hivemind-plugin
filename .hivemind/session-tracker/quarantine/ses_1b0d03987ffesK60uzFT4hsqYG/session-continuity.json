@@ -1,0 +1,74 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1b0d03987ffesK60uzFT4hsqYG",
+  "lastUpdated": "2026-05-22T13:18:55.647Z",
+  "hierarchy": {
+    "root": "ses_1b0d03987ffesK60uzFT4hsqYG",
+    "children": {
+      "ses_1b0ce691effeQqRQuT7TU81lgJ": {
+        "file": "ses_1b0ce691effeQqRQuT7TU81lgJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b0c7f961ffeBK6VglaaAC24Jr": {
+        "file": "ses_1b0c7f961ffeBK6VglaaAC24Jr.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b0afce4effeXMF5P0Vptgy8Lw": {
+        "file": "ses_1b0afce4effeXMF5P0Vptgy8Lw.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b05c715bffeXfF224GCrPMs2a": {
+        "file": "ses_1b05c715bffeXfF224GCrPMs2a.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_1b03ff24dffeQdW0dDtLD2aiJx": {
+        "file": "ses_1b03ff24dffeQdW0dDtLD2aiJx.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b03d7d92ffei2o4ZJbHWbOVC4": {
+        "file": "ses_1b03d7d92ffei2o4ZJbHWbOVC4.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b0314074ffeqG2E95z1jYn7ct": {
+        "file": "ses_1b0314074ffeqG2E95z1jYn7ct.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 45,
+  "toolSummary": {
+    "bash": 80,
+    "glob": 6,
+    "read": 53,
+    "execute-slash-command": 13,
+    "task": 5,
+    "write": 4,
+    "grep": 15,
+    "session-tracker": 4,
+    "todowrite": 7,
+    "edit": 25,
+    "skill": 1,
+    "session-hierarchy": 2
+  }
+}

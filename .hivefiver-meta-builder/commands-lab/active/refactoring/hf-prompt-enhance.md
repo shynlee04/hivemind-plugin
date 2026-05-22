@@ -1,7 +1,7 @@
 ---
 description: "Enhance, audit, or repack a prompt through skim, investigation lanes, clarification gating, and structured final assembly. Triggers: 'enhance this prompt', 'audit this prompt', 'repack this prompt'."
-agent: hf-l0-orchestrator
-subtask: false
+agent: hm-l1-coordinator
+subtask: true
 ---
 
 Execute the prompt-enhance workflow using `task` tool for invoking subagents pipelines for investigations.

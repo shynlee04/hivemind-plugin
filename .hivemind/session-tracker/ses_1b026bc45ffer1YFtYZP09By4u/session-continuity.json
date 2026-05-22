@@ -1,0 +1,67 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1b026bc45ffer1YFtYZP09By4u",
+  "lastUpdated": "2026-05-22T16:12:12.574Z",
+  "hierarchy": {
+    "root": "ses_1b026bc45ffer1YFtYZP09By4u",
+    "children": {
+      "ses_1b02b9048ffeNN5DGqgl66q3Qp": {
+        "file": "ses_1b02b9048ffeNN5DGqgl66q3Qp.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {
+          "ses_1b0d03987ffesK60uzFT4hsqYG": {
+            "file": "ses_1b0d03987ffesK60uzFT4hsqYG.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "gsd-advisor-researcher",
+            "children": {}
+          }
+        }
+      },
+      "ses_1affcdfb4ffes3AV8uUw4nO9ls": {
+        "file": "ses_1affcdfb4ffes3AV8uUw4nO9ls.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_1affa1edcffe6XzwjZ5jDzpUGy": {
+        "file": "ses_1affa1edcffe6XzwjZ5jDzpUGy.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1aff58e41ffe5e7DMXps0WN45I": {
+        "file": "ses_1aff58e41ffe5e7DMXps0WN45I.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1afe87c84ffegHK5CoHWe9iCE7": {
+        "file": "ses_1afe87c84ffegHK5CoHWe9iCE7.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 4,
+  "toolSummary": {
+    "session-tracker": 3,
+    "hivemind-doc": 1,
+    "glob": 3,
+    "read": 14,
+    "session-hierarchy": 2,
+    "skill": 2,
+    "todowrite": 7,
+    "task": 8,
+    "question": 6,
+    "edit": 8,
+    "write": 1
+  }
+}

@@ -258,7 +258,7 @@ interface PendingNotificationRecord {
 
 **This table is empty of true assumptions:** All claims are verified by live grep or file reads. No user confirmation needed for these factual claims.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the 4 non-coordination delegation files (manager.ts: runtime errors, state-machine.ts, dispatcher.ts) also use DelegationError for notification paths?**
    - What we know: manager.ts has 12 error sites, some are policy/preflight errors that should throw, others are control-action errors that should become DelegationError responses.

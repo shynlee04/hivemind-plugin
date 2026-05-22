@@ -1,0 +1,140 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1b48772bbffeDg2eO1wx7j3vKY",
+  "lastUpdated": "2026-05-22T10:15:22.265Z",
+  "hierarchy": {
+    "root": "ses_1b48772bbffeDg2eO1wx7j3vKY",
+    "children": {
+      "ses_1b4869be7ffeuKzbfhxku4hK10": {
+        "file": "ses_1b4869be7ffeuKzbfhxku4hK10.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1b4869b74ffe5G395s5zjraSIO": {
+        "file": "ses_1b4869b74ffe5G395s5zjraSIO.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1b47d0a9fffeWAlFFOVt5b2qRc": {
+        "file": "ses_1b47d0a9fffeWAlFFOVt5b2qRc.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-advisor-researcher",
+        "children": {}
+      },
+      "ses_1b4761739ffeoLpgjmZwIVI5Yt": {
+        "file": "ses_1b4761739ffeoLpgjmZwIVI5Yt.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      },
+      "ses_1b475feeaffemWGHBwAnU5NhCQ": {
+        "file": "ses_1b475feeaffemWGHBwAnU5NhCQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1b4710bc9ffeDFoqmd67F40U3p": {
+        "file": "ses_1b4710bc9ffeDFoqmd67F40U3p.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1b4698b19ffexmI4i6Ja4PR8x9": {
+        "file": "ses_1b4698b19ffexmI4i6Ja4PR8x9.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b4654780ffejKrzx9jn5a4iQ5": {
+        "file": "ses_1b4654780ffejKrzx9jn5a4iQ5.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b4563fc9ffewprtaU1mfWnS8j": {
+        "file": "ses_1b4563fc9ffewprtaU1mfWnS8j.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1b4401fe6ffe8z7cKzUP2rx4zQ": {
+        "file": "ses_1b4401fe6ffe8z7cKzUP2rx4zQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l1-coordinator",
+        "children": {}
+      },
+      "ses_1b439f02cffe7OMaM3IspAo1NG": {
+        "file": "ses_1b439f02cffe7OMaM3IspAo1NG.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "hm-l1-coordinator",
+        "children": {}
+      },
+      "ses_1b11a5fe3ffePIal5jdqBETCCr": {
+        "file": "ses_1b11a5fe3ffePIal5jdqBETCCr.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "hm-l2-general",
+        "children": {}
+      },
+      "ses_1b10970cfffen8bzXZxekVAaqQ": {
+        "file": "ses_1b10970cfffen8bzXZxekVAaqQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-l2-general",
+        "children": {}
+      },
+      "ses_1b0f660b5ffe5mzCW3YQrvpw4C": {
+        "file": "ses_1b0f660b5ffe5mzCW3YQrvpw4C.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1b0e330e6ffepk2iiIn3KqIZi3": {
+        "file": "ses_1b0e330e6ffepk2iiIn3KqIZi3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 63,
+  "toolSummary": {
+    "skill": 18,
+    "todowrite": 32,
+    "task": 14,
+    "read": 85,
+    "execute-slash-command": 22,
+    "bash": 110,
+    "edit": 3,
+    "write": 7,
+    "question": 2,
+    "invalid": 1,
+    "grep": 33,
+    "hivemind-command-engine": 1,
+    "deepwiki_read_wiki_structure": 1,
+    "context7_resolve-library-id": 3,
+    "deepwiki_ask_question": 4,
+    "deepwiki_read_wiki_contents": 1,
+    "apply_patch": 29,
+    "glob": 4,
+    "context7_query-docs": 3,
+    "zread_search_doc": 1,
+    "zread_read_file": 2,
+    "fetch_fetch": 3
+  }
+}

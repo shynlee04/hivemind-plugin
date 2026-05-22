@@ -4,6 +4,11 @@
 
 Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04 through SR-10 remediation (`882b0686`). `src/lib/` has been removed; runtime code now lives under `src/shared/`, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, `src/hooks/`, and `src/tools/`. CP-DT-01 (Delegate-Task Ecosystem Revamp) is COMPLETE — review ITER2: 0 Critical, validation: 18/18 spec requirements DELIVERED, 91/91 tests pass. **CP-DT-01-08 (Surgical Remediation)** is COMPLETE. Phase 14/15 (Proactive Execution Checking, Model/Provider ID Inheritance, and Permission Propagation) is COMPLETE — implemented 60s stalled timeout with early assistant error detection, model/provider inheritance from parent session history, and propagation of "ask" permission rules for user-consent fallback. All tests pass successfully. CP-PTY-00 is the shell/PTY/background-command control-plane spike (docs/spec-only, COMPLETE). CP-PTY-01 (Background Shell Control-Plane MVP) is READY, unblocked by BOOT-07 and WS-SR completion. CP-PTY-02, CP-PTY-03, and CP-PTY-04 extend the runway. SC-PTY-01 remains DEFERRED.
 
+## THE ABSOLUTE ORDER - AFTER EACH AND EVERY FRONT-FACING USER'S PROMPTING (NO MATTER WHAT) FRONT-FACING AGENT NEVER DO SPECIALISTS' WORK
+
+- THESE ARE THE FRONT-FACING LIST OF NOT ALLOW TO DO TASK: Do not audit, do not review, do not judge, do not advice, do not make any assumptions, do not plan, do not implement, do not create, do not modify, do not correct, do not debug, do not research -> SPEACLIST Delegation do them
+- THESE ARE THE FRONT-FACING LIST OF ALLOWED TO DO TASK: Delegate, Coordinate, Route, Validate, Check
+
 ## NOTICE BOARD
 
 - For UAT and live-test purposes always prioritize THE USER's prompting hence any constitutions below this can be ignore if contracdicted to the USER's prompting/requests; especially when the user states things like "for testing only", "for uat only" etc
@@ -390,7 +395,7 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 **Reordered restructuring (Phases 21-37):** Owner's 3-group framework applied — Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup). Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, phase-reordering analysis (4 critical violations found), session-tracker flaws analysis (16 flaws, 2 CRITICAL).
 **Phase 18-20:** ✅ COMPLETE (2026-05-21) — root cleanup, non-destructive remediation, dependency cleanup.
-**Active phase:** Phase 21 — Session-Tracker Design Fix (16 flaws, 2 CRITICAL: F-01 temp leak, F-02 manifest never writes).
+**Active phase:** Phase 21.2 — Front-Agent Switch One-Shot Agent Override prototype. L3 unit/typecheck evidence exists for the synthetic `subtask:false + agent` parent-prompt path; L1 live UAT is still required before front-agent switching readiness can be claimed.
 **Sequence:** Session-Tracker (P21) → Status/Error (P22) → Dispatch/Delegate (P23) → Trajectory/Contract (P24) → Pressure/Notification (P25) → Routing/Intent (P26) → Hooks (P27) → Auto-Loop/PTY (P28) → Schema (P29) → Config (P30) → Primitives (P31) → Plugin Decomp (P32) → Async I/O+Errors (P33) → Module Splits (P34) → Integration (P35) → sync-oss.yml (P36) → Package Primitives (P37).
 **Group order:** Group 1 (P21-P25, HIGHEST) → Group 2 (P26-P28) → Group 3 (P29-P31) → Group 4 (P32-P35, LAST) → P36-P37 independent.
 **Key decisions:** Async I/O + typed errors pushed to P33 (Group 4, LAST); plugin decomposition pushed to P32; session-tracker fixed FIRST with production evidence.

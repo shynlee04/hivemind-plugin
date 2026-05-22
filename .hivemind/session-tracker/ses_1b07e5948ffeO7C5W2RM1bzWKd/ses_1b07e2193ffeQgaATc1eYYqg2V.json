@@ -1,0 +1,426 @@
+{
+  "sessionID": "ses_1b07e2193ffeQgaATc1eYYqg2V",
+  "parentSessionID": "ses_1b07e5948ffeO7C5W2RM1bzWKd",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-advisor-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Phase 22 grey area analysis",
+    "subagentType": "gsd-advisor-researcher"
+  },
+  "created": "2026-05-22T11:46:11.724Z",
+  "updated": "2026-05-22T11:49:09.980Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-advisor-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-advisor-researcher",
+      "content": "*You are subagent Name: gsd-advisor-researcher, role: grey area decision analyst. You are being delegated by the front-facing orchestrator.*\n\n**Task:** Research and identify ALL grey area decisions for Phase 22 (Status/Error) of the Hivemind restructuring project.\n\n**Context:**\n- Phase 22 is part of Group 1 (Orchestration Design Fix), focusing on Status/Error handling\n- This phase follows Phase 21.2 (Front-Agent Switch prototype)\n- The project is a runtime composition engine for OpenCode (npm package `hivemind`)\n- Current architecture has session-tracker, delegation, continuity, and lifecycle modules\n- Phase 22 likely involves status reporting, error handling, and error propagation patterns\n\n**Your mission:**\n1. Read the phase reordering research at `.planning/research/phase-reordering-final-recommendation-2026-05-21.md`\n2. Read the hard restructuring synthesis at `.planning/research/hard-restructuring-synthesis-2026-05-21.md`\n3. Identify what Phase 22 specifically covers (Status/Error concerns)\n4. Produce a structured comparison table of grey area decisions with:\n   - Decision point\n   - Option A vs Option B\n   - Trade-offs\n   - Recommended approach with rationale\n   - Evidence from codebase or research\n\n**Boundaries:**\n- DO NOT implement anything\n- DO NOT create plans\n- Focus ONLY on surfacing grey areas and decisions needed\n- Return structured findings for human review\n\n**Success metrics:**\n- Clear identification of 3-7 grey area decisions\n- Each decision has evidence-backed options\n- Recommendations are actionable",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-advisor-researcher",
+      "content": "Phase 22 grey area analysis",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-advisor-researcher",
+      "content": "Now I have sufficient evidence to produce the grey area analysis. Let me compile the findings.\n\n---\n\n## Phase 22 Grey Area Decisions — Status/Error Unification\n\n**Subagent:** gsd-advisor-researcher\n**Phase:** P22 — Coordination Status + Error Unification\n**Evidence sources:** `src/shared/task-status.ts`, `src/shared/types.ts`, `src/coordination/delegation/types.ts`, `src/coordination/delegation/state-machine.ts`, `src/coordination/completion/notification-handler.ts`, `src/coordination/delegation/notification-router.ts`, `src/coordination/delegation/notification-formatter.ts`, `src/tools/session/execute-slash-command.ts`, `.planning/research/phase-reordering-final-recommendation-2026-05-21.md`, `.planning/research/hard-restructuring-synthesis-2026-05-21.md`\n\n---\n\n### Grey Area 1: TaskStatus ↔ DelegationStatus Unification Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Single unified `HarnessStatus` type** | One type everywhere, eliminates UC-1 dual-system rework (scored 12/20), simple mental model | TaskStatus has 8 values (pending, queued, interrupt) that have no delegation equivalent; DelegationStatus has \"dispatched\" and \"timeout\" with no task equivalent; forcing a union creates invalid states for each consumer | 3 files (types.ts, task-status.ts, state-machine.ts) + all consumers — Risk: invalid state combinations, broad migration surface | Rec if both systems have identical lifecycle semantics |\n| **B: Explicit bridge/mapping layer** — keep both types, add `taskStatusFromDelegation()` and `delegationStatusFromTask()` pure functions | Preserves domain-specific semantics (delegation has \"dispatched\"/\"timeout\"; tasks have \"queued\"/\"interrupt\"), minimal migration, each consumer keeps its own transition table | Two types persist, mapping must be maintained, callers must know which type to use | 2 files (new bridge module + types.ts re-export) — Risk: mapping drift if new statuses added | Rec if delegation and task lifecycles have genuinely different state machines |\n| **C: DelegationStatus as canonical, TaskStatus deprecated** — DelegationStatus becomes the single source, TaskStatus mapped to it at continuity boundary | Aligns with architecture direction (delegation is the primary runtime concept), TaskStatus becomes a legacy alias, continuity store migrates gradually | \"pending\", \"queued\", \"interrupt\" have no delegation equivalent — must be added to DelegationStatus or handled as special cases; continuity store migration is P33/P34 scope | 4 files (types.ts, task-status.ts, delegation types, continuity bridge) — Risk: continuity store format change | Rec if delegation is the long-term canonical lifecycle model |\n\n**Rationale:** The evidence shows these are genuinely different state machines. `TaskStatus` (8 values, `src/shared/task-status.ts:3`) includes `pending`, `queued`, and `interrupt` which are task-queue concepts with no delegation equivalent. `DelegationStatus` (5 values, `src/coordination/delegation/types.ts:1-6`) includes `dispatched` and `timeout` which are delegation-specific. The transition tables (`VALID_TRANSITIONS` vs `VALID_DELEGATION_TRANSITIONS`) have different shapes — tasks allow `interrupt → running` recovery, delegations do not. **Option B (bridge layer)** is the safest for P22 scope because it unifies the *contract* without forcing a single type that creates invalid states. Full unification can happen in P33/P34 when the continuity store format is addressed.\n\n---\n\n### Grey Area 2: DelegationError Scope — Standalone vs Hierarchy Root\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Single `DelegationError` class** — one error type with a `code` discriminator field | Simple, fast to implement, addresses the P22 scope directly, no over-engineering | P33 (typed error hierarchy) will need to refactor this into a hierarchy anyway; callers still need to check `.code` strings | 1 new file (`src/coordination/delegation/errors.ts`), ~30 LOC — Risk: becomes a god-error if too many codes | Rec if P33 is confirmed to run soon after P22 |\n| **B: Error hierarchy seed** — `DelegationError` base + 3-4 subclasses (`DelegationDispatchError`, `DelegationTimeoutError`, `DelegationCompletionError`, `DelegationCancellationError`) | P33 can extend rather than refactor, callers can `instanceof` check, aligns with the 100+ `throw new Error` sites needing typed errors (synthesis H-06) | More upfront design, subclasses may not map cleanly to all error sites, P22 scope creep risk | 1 new file with 4-5 classes, ~80 LOC — Risk: premature hierarchy if error sites don't map cleanly | Rec if P33 timeline is uncertain or P22→P33 gap is long |\n| **C: Error code enum + factory** — `DelegationErrorCode` enum + `createDelegationError(code, context)` factory, no class hierarchy | Middle ground: structured errors without class proliferation, easy to extend in P33, callers switch on code | No `instanceof` support, still string-discriminated at runtime | 1 new file, ~50 LOC — Risk: loses type narrowing benefit | Rec if the team prefers composition over inheritance for errors |\n\n**Rationale:** The synthesis report (H-06) identifies 100+ `throw new Error` sites across 45 files, with `manager.ts` alone having 12. P22 scope is specifically \"create `DelegationError` type\" — not the full hierarchy (that's P33). However, the phase sequence shows P22→P23→P24→P25→P26→P27→P28 before P33 arrives. That's 6 phases of delegation code running with only a single error type. **Option B (hierarchy seed)** is recommended because the delegation error domain is well-bounded (dispatch, timeout, completion, cancellation are already distinct code paths in `state-machine.ts` and `manager.ts`), and P33 can extend the hierarchy rather than replacing a flat type.\n\n---\n\n### Grey Area 3: Notification System Consolidation — Two Parallel Paths\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Keep both systems, clarify ownership** — `notification-handler.ts` (completion sector) owns parent-session prompt delivery; `notification-router.ts` (delegation sector) owns in-memory routing + TUI formatting | Respects CQRS sector boundaries (completion vs delegation), minimal change, each system has a clear owner | Two pending-notification queues exist in parallel (continuity store `pendingNotifications` vs `NotificationRouter.routes`), risk of duplicate delivery or lost notifications | 0 new files, documentation-only — Risk: continued confusion about which system is authoritative | Rec if sector boundaries must be preserved strictly |\n| **B: Merge into `notification-router.ts` as single authority** — move `notifyDelegationTerminal` and `replayPendingNotifications` into the router, deprecate `notification-handler.ts` | Single notification authority, eliminates dual-queue problem, P23 (dispatch fix) gets a cleaner notification surface | Crosses sector boundary (completion → delegation), `notification-handler.ts` imports from `task-management/continuity/` which delegation sector is forbidden from doing directly (AGENTS.md: \"Delegation SHALL NOT perform durable state writes\") | 3 files modified, ~100 LOC moved — Risk: CQRS violation if delegation sector gains continuity imports | Rec if the dual-queue problem is causing real delivery failures |\n| **C: Extract shared notification service** — new `src/coordination/notification/` module that both sectors inject | Clean separation, both sectors depend on a shared leaf, persistence stays in task-management | New module creation, P22 scope expansion, dependency wiring changes in plugin.ts | 3-4 new files, ~150 LOC — Risk: scope creep beyond P22 mandate | Rec if notification becomes a cross-cutting concern beyond delegation |\n\n**Rationale:** The evidence reveals a structural problem: `notification-handler.ts` (in `src/coordination/completion/`) writes to the continuity store via `patchSessionContinuity()` (line 148), while `notification-router.ts` (in `src/coordination/delegation/`) maintains its own in-memory `routes` Map with a `persistPending` callback. The phase reordering doc explicitly states P22 should \"fix notification TTL/retry/delivery.\" The root cause of delivery unreliability is likely the dual-queue: `notification-handler.ts:135-166` queues to continuity store, while `notification-router.ts:88-97` queues to in-memory routes. **Option A (clarify ownership)** is the minimum viable fix for P22, with the understanding that P23 (dispatch fix) and P25 (notification redesign) will address the deeper consolidation. The key decision is: which queue is the *durable* authority? The continuity store (`notification-handler.ts`) is durable (survives restart); the router's in-memory Map is not.\n\n---\n\n### Grey Area 4: Notification TTL and Retry Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: No TTL, no retry** — fire-and-forget with durable queue, replay on session lifecycle events only (current behavior) | Simple, no timer management, relies on existing `replayPendingNotifications` hook | Notifications may never deliver if parent session never triggers a lifecycle event; no bounded staleness | 0 new files — Risk: silent notification loss for long-lived parent sessions | Rec if parent sessions always trigger lifecycle events within acceptable time |\n| **B: TTL-based expiry** — pending notifications expire after N minutes/hours, logged as undelivered | Prevents unbounded queue growth, explicit failure signal, aligns with `TASK_CLEANUP_DELAY_MS` (10 min) pattern | Adds timer management, needs persistence for TTL state, replay must check expiry | 1 file modified, ~40 LOC — Risk: timer leaks if not cleaned on shutdown | Rec if notification staleness is a real user-facing problem |\n| **C: Retry with backoff** — attempt delivery N times with exponential backoff before marking undelivered | Higher delivery success rate, bounded attempts | Timer complexity, multiple SDK calls per notification, potential for duplicate delivery without idempotency | 1 file modified, ~60 LOC — Risk: SDK rate limiting, duplicate notifications | Rec if delivery reliability is critical and idempotency keys are wired |\n\n**Rationale:** The current `notification-handler.ts` uses fire-and-forget (`notifyDelegationTerminal`, line 221-240) with a durable fallback (`queuePendingNotification`, line 135). The `NotificationRouter` has a `pendingLimit: 50` bound (line 39) but no TTL. The `replayPendingNotifications` function (line 199) only runs on lifecycle events. For long-haul sessions (the production evidence shows 16,053 LOC sessions), notifications queued during a parent session's idle period may sit undelivered for hours. **Option B (TTL-based expiry)** is recommended because it aligns with the existing `TASK_CLEANUP_DELAY_MS` pattern (10-minute grace period), prevents unbounded queue growth, and provides an explicit signal (logged undelivered count) that P25 (pressure/notification redesign) can consume.\n\n---\n\n### Grey Area 5: execute-slash-command Guardrails\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Input validation only** — validate command name exists, agent name is valid, model format is correct before dispatch | Prevents obvious bad-input failures, fast-fail before SDK call | Does not prevent authorized-but-dangerous operations (e.g., recursive command dispatch, model override abuse) | 1 file modified, ~30 LOC — Risk: minimal | Rec if the primary concern is error reduction |\n| **B: Input validation + dispatch authorization** — validate inputs AND check that the calling agent has permission to dispatch the target command/agent | Prevents unauthorized cross-agent dispatch, aligns with governance wiring (P31) | Requires a permission model that doesn't exist yet (P31 scope), adds coupling to agent/command metadata | 2 files modified, ~80 LOC — Risk: premature governance before P31 | Rec if security boundary is needed before P31 |\n| **C: Input validation + rate limiting + recursion guard** — validate inputs, limit dispatches per session, prevent command-from-command recursion | Prevents runaway dispatch loops, protects against agent confusion | Rate limiting needs state (per-session counter), recursion guard needs call-stack tracking | 2 files modified, ~60 LOC — Risk: state management for rate limits | Rec if recursive dispatch is a real risk in current agent configurations |\n\n**Rationale:** The current `execute-slash-command.ts` has 3 dispatch paths (synthetic parent prompt, subtask, TUI) with minimal validation. Error handling at line 243-263 does string-matching on HTTP status codes (`msg.match(/\\b(400|422)\\b/)`), which is fragile. The tool accepts arbitrary `agent` and `model` strings without validation against known agents or model formats. The phase reordering doc says P22 should \"add guardrails to execute-slash-command\" — but P31 (governance wire) is where permissions are formally wired. **Option A (input validation only)** is the correct P22 scope: validate command existence (already done via `findCommandBundle`), validate agent name format (non-empty, kebab-case), validate model format (`provider/model`), and replace string-matching error classification with the new `DelegationError` type. Authorization and rate limiting belong in P31 and P25 respectively.\n\n---\n\n### Grey Area 6: TaskNotification.status Mapping Loss\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Keep current 4-value mapping** — `started | completed | failed | cancelled` as-is, accept that \"timeout\" and \"error\" both map to \"failed\" | No change needed, `TaskNotification` is a parent-facing display type, not a lifecycle type | Parent session cannot distinguish timeout from error from cancellation without reading `metadata.terminalState`; notification messages lose semantic precision | 0 files — Risk: continued ambiguity in parent-facing notifications | Rec if TaskNotification is purely a display contract |\n| **B: Expand TaskNotification.status** — add \"error\" and \"timeout\" to the union: `started | completed | failed | error | timeout | cancelled` | Parent session gets precise terminal state without parsing metadata, aligns with DelegationStatus semantics | Changes a shared type (`src/shared/types.ts:9`), all consumers of `TaskNotification.status` must handle new values, `buildNotificationMessage` switch statement grows | 2 files (types.ts, notification-handler.ts), ~20 LOC — Risk: consumer breakage if any code switches on status | Rec if parent sessions need to react differently to timeout vs error vs failure |\n| **C: Deprecate TaskNotification.status, use metadata.terminalState** — keep status for backward compat but make metadata.terminalState the authoritative field | No breaking change, gradual migration path, terminalState already carries the precise DelegationStatus | Two fields carry overlapping information, confusion about which is authoritative | 1 file (notification-handler.ts), ~10 LOC — Risk: dual-authority confusion | Rec if backward compatibility is required during migration |\n\n**Rationale:** The current mapping at `notification-handler.ts:120` collapses `DelegationStatus` (5 values) into `TaskNotification.status` (4 values): `delegation.status === \"completed\" ? \"completed\" : delegation.explicitCancellation ? \"cancelled\" : \"failed\"`. This means a delegation that timed out (safety ceiling at 30 minutes) is reported to the parent as \"failed\" — the parent cannot distinguish \"agent worked for 30 minutes and hit safety ceiling\" from \"agent crashed immediately.\" The `metadata.terminalState` field (line 128) already carries the precise value, but `buildNotificationMessage` (line 24-79) uses `task.status` for the display label. **Option B (expand TaskNotification.status)** is recommended because the parent session's reaction to a timeout (potentially re-dispatch) is fundamentally different from a failure (investigate and fix) or a cancellation (user intent). The type change is small and the consumer surface is limited to `notification-handler.ts` formatting functions.\n\n---\n\n### Summary: Recommended Decisions\n\n| # | Grey Area | Recommended Option | Key Rationale |\n|---|-----------|-------------------|---------------|\n| 1 | Status unification | **B: Bridge layer** | Different state machines, different domains — unify contract not type |\n| 2 | DelegationError scope | **B: Hierarchy seed** | 6 phases before P33; delegation error domain is well-bounded |\n| 3 | Notification consolidation | **A: Clarify ownership** | CQRS sector boundaries; deeper consolidation is P25 scope |\n| 4 | Notification TTL | **B: TTL-based expiry** | Aligns with existing grace-period pattern; prevents unbounded queues |\n| 5 | execute-slash-command guardrails | **A: Input validation only** | Authorization is P31 scope; P22 should fix error classification |\n| 6 | TaskNotification mapping loss | **B: Expand status union** | Parent needs timeout vs error distinction for correct re-dispatch decisions |",
+      "tools": []
+    },
+    {
+      "turn": 4,
+      "actor": "gsd-planner",
+      "content": "*You are subagent Name: gsd-planner, role: specification author for Phase 22. You are being delegated and stacked onto an existing session.*\n\n**Task:** Create the SPEC.md for Phase 22 (Status/Error Unification) based on the grey area analysis already completed.\n\n**Context from previous research (session: ses_1b07e2193ffeQgaATc1eYYqg2V):**\n\nPhase 22 covers 6 key decisions:\n1. **Status Unification**: Bridge layer approach — keep TaskStatus (8 values) and DelegationStatus (5 values) separate, add `taskStatusFromDelegation()` and `delegationStatusFromTask()` pure mapping functions\n2. **DelegationError Scope**: Hierarchy seed — `DelegationError` base class + 4 subclasses: `DelegationDispatchError`, `DelegationTimeoutError`, `DelegationCompletionError`, `DelegationCancellationError`\n3. **Notification Consolidation**: Clarify ownership — `notification-handler.ts` (completion sector) owns durable persistence; `notification-router.ts` (delegation sector) owns in-memory routing. Continuity store is the durable authority.\n4. **Notification TTL**: TTL-based expiry — 10-minute TTL aligned with `TASK_CLEANUP_DELAY_MS` pattern, prevents unbounded queue growth\n5. **execute-slash-command Guardrails**: Input validation only — validate command existence, agent name format (kebab-case), model format (provider/model). Replace string-matching error classification with DelegationError type. Authorization deferred to P31.\n6. **TaskNotification Mapping**: Expand status union — add \"error\" and \"timeout\" to `TaskNotification.status`: `started | completed | failed | error | timeout | cancelled`\n\n**Key source files:**\n- `src/shared/task-status.ts` — TaskStatus (8 values)\n- `src/shared/types.ts` — TaskNotification type\n- `src/coordination/delegation/types.ts` — DelegationStatus (5 values)\n- `src/coordination/delegation/state-machine.ts` — transition tables\n- `src/coordination/completion/notification-handler.ts` — durable notification persistence\n- `src/coordination/delegation/notification-router.ts` — in-memory routing\n- `src/tools/session/execute-slash-command.ts` — 3 dispatch paths\n\n**Your mission:**\n1. Write a complete SPEC.md following the project's spec-driven authoring conventions\n2. Include falsifiable requirements with EARS-style acceptance criteria\n3. Each of the 6 decisions becomes a requirement group\n4. Include verification methods for each requirement\n5. Write to `.planning/phases/phase-22/SPEC.md`\n\n**Boundaries:**\n- DO NOT implement anything\n- DO NOT create plans (that's a separate phase)\n- Focus ONLY on WHAT, not HOW\n- Requirements must be testable and unambiguous\n\n**Success metrics:**\n- 6 requirement groups (one per decision)\n- Each requirement has EARS acceptance criteria\n- Verification methods specified\n- No implementation details in spec",
+      "tools": []
+    },
+    {
+      "turn": 5,
+      "actor": "gsd-phase-researcher",
+      "content": "*You are subagent Name: gsd-phase-researcher, role: context gatherer for Phase 22. You are being delegated and stacked onto an existing session.*\n\n**Task:** Create the CONTEXT.md for Phase 22 (Status/Error Unification) by gathering and synthesizing all relevant codebase context.\n\n**Context from previous research (session: ses_1b07e2193ffeQgaATc1eYYqg2V):**\n\nPhase 22 addresses Status/Error concerns in the Hivemind runtime composition engine. The grey area analysis identified 6 decision points.\n\n**Your mission:**\n1. Read and analyze ALL relevant source files:\n   - `src/shared/task-status.ts` — current TaskStatus implementation\n   - `src/shared/types.ts` — TaskNotification and related types\n   - `src/coordination/delegation/types.ts` — DelegationStatus\n   - `src/coordination/delegation/state-machine.ts` — transition tables for both status types\n   - `src/coordination/completion/notification-handler.ts` — notification persistence\n   - `src/coordination/delegation/notification-router.ts` — in-memory routing\n   - `src/coordination/delegation/manager.ts` — delegation manager error handling\n   - `src/tools/session/execute-slash-command.ts` — dispatch paths and error handling\n\n2. Read the research artifacts:\n   - `.planning/research/phase-reordering-final-recommendation-2026-05-21.md`\n   - `.planning/research/hard-restructuring-synthesis-2026-05-21.md`\n\n3. Produce a CONTEXT.md that includes:\n   - Current state of each module affected by Phase 22\n   - Line counts and key function signatures\n   - Existing error handling patterns\n   - Current notification flow (dual-queue problem)\n   - Status transition diagrams (text-based)\n   - Dependencies between affected modules\n   - Known issues and pain points from the codebase\n\n4. Write to `.planning/phases/phase-22/CONTEXT.md`\n\n**Boundaries:**\n- DO NOT implement anything\n- DO NOT make recommendations (that's the spec's job)\n- Focus ONLY on documenting current state\n- Include exact file:line references for all findings\n\n**Success metrics:**\n- Complete coverage of all 8 source files listed above\n- Accurate line counts and function signatures\n- Clear documentation of current pain points\n- File:line references for every claim",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T11:46:18.088Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_4cbc24123a684493ae13c219",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/research/phase-reordering-final-recommendation-2026-05-21.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:18.355Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_5c4f59e490d94a6ab42a7f36",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/research/hard-restructuring-synthesis-2026-05-21.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:23.466Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_9b8b9a229b8a45609a4b95fa",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:23.913Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_81091483d2e94eeb9403749c",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:24.274Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_f4a83c5f215f4b5f88c5f41b",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:24.616Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_66adac8cbb3b4968824a97cd",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:25.060Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_99a5d76a5cfe4fd885f330ce",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:29.101Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_93a40f9ce8f44b3eadc2a545",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/task-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:29.331Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_1a752e3203fe4d848abf0f10",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:29.575Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_ea2f2cf847644e9ab932bcd0",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:29.790Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_cd19fc5ea5da423b87c948ec",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:30.034Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_e9aebce0cc794b188cf8417d",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/state-machine.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:34.686Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_3d759feb4c1643eb9b2a8b45",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:34.904Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_d752d4de295643cbbf4206de",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/notification-router.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:46:35.136Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_9a67c6b6c4cb41bd8b772b6b",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/notification-formatter.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:47:13.941Z",
+      "type": "assistant_message",
+      "content": "Now I have sufficient evidence to produce the grey area analysis. Let me compile the findings.\n\n---\n\n## Phase 22 Grey Area Decisions — Status/Error Unification\n\n**Subagent:** gsd-advisor-researcher\n**Phase:** P22 — Coordination Status + Error Unification\n**Evidence sources:** `src/shared/task-status.ts`, `src/shared/types.ts`, `src/coordination/delegation/types.ts`, `src/coordination/delegation/state-machine.ts`, `src/coordination/completion/notification-handler.ts`, `src/coordination/delegation/notification-router.ts`, `src/coordination/delegation/notification-formatter.ts`, `src/tools/session/execute-slash-command.ts`, `.planning/research/phase-reordering-final-recommendation-2026-05-21.md`, `.planning/research/hard-restructuring-synthesis-2026-05-21.md`\n\n---\n\n### Grey Area 1: TaskStatus ↔ DelegationStatus Unification Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Single unified `HarnessStatus` type** | One type everywhere, eliminates UC-1 dual-system rework (scored 12/20), simple mental model | TaskStatus has 8 values (pending, queued, interrupt) that have no delegation equivalent; DelegationStatus has \"dispatched\" and \"timeout\" with no task equivalent; forcing a union creates invalid states for each consumer | 3 files (types.ts, task-status.ts, state-machine.ts) + all consumers — Risk: invalid state combinations, broad migration surface | Rec if both systems have identical lifecycle semantics |\n| **B: Explicit bridge/mapping layer** — keep both types, add `taskStatusFromDelegation()` and `delegationStatusFromTask()` pure functions | Preserves domain-specific semantics (delegation has \"dispatched\"/\"timeout\"; tasks have \"queued\"/\"interrupt\"), minimal migration, each consumer keeps its own transition table | Two types persist, mapping must be maintained, callers must know which type to use | 2 files (new bridge module + types.ts re-export) — Risk: mapping drift if new statuses added | Rec if delegation and task lifecycles have genuinely different state machines |\n| **C: DelegationStatus as canonical, TaskStatus deprecated** — DelegationStatus becomes the single source, TaskStatus mapped to it at continuity boundary | Aligns with architecture direction (delegation is the primary runtime concept), TaskStatus becomes a legacy alias, continuity store migrates gradually | \"pending\", \"queued\", \"interrupt\" have no delegation equivalent — must be added to DelegationStatus or handled as special cases; continuity store migration is P33/P34 scope | 4 files (types.ts, task-status.ts, delegation types, continuity bridge) — Risk: continuity store format change | Rec if delegation is the long-term canonical lifecycle model |\n\n**Rationale:** The evidence shows these are genuinely different state machines. `TaskStatus` (8 values, `src/shared/task-status.ts:3`) includes `pending`, `queued`, and `interrupt` which are task-queue concepts with no delegation equivalent. `DelegationStatus` (5 values, `src/coordination/delegation/types.ts:1-6`) includes `dispatched` and `timeout` which are delegation-specific. The transition tables (`VALID_TRANSITIONS` vs `VALID_DELEGATION_TRANSITIONS`) have different shapes — tasks allow `interrupt → running` recovery, delegations do not. **Option B (bridge layer)** is the safest for P22 scope because it unifies the *contract* without forcing a single type that creates invalid states. Full unification can happen in P33/P34 when the continuity store format is addressed.\n\n---\n\n### Grey Area 2: DelegationError Scope — Standalone vs Hierarchy Root\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Single `DelegationError` class** — one error type with a `code` discriminator field | Simple, fast to implement, addresses the P22 scope directly, no over-engineering | P33 (typed error hierarchy) will need to refactor this into a hierarchy anyway; callers still need to check `.code` strings | 1 new file (`src/coordination/delegation/errors.ts`), ~30 LOC — Risk: becomes a god-error if too many codes | Rec if P33 is confirmed to run soon after P22 |\n| **B: Error hierarchy seed** — `DelegationError` base + 3-4 subclasses (`DelegationDispatchError`, `DelegationTimeoutError`, `DelegationCompletionError`, `DelegationCancellationError`) | P33 can extend rather than refactor, callers can `instanceof` check, aligns with the 100+ `throw new Error` sites needing typed errors (synthesis H-06) | More upfront design, subclasses may not map cleanly to all error sites, P22 scope creep risk | 1 new file with 4-5 classes, ~80 LOC — Risk: premature hierarchy if error sites don't map cleanly | Rec if P33 timeline is uncertain or P22→P33 gap is long |\n| **C: Error code enum + factory** — `DelegationErrorCode` enum + `createDelegationError(code, context)` factory, no class hierarchy | Middle ground: structured errors without class proliferation, easy to extend in P33, callers switch on code | No `instanceof` support, still string-discriminated at runtime | 1 new file, ~50 LOC — Risk: loses type narrowing benefit | Rec if the team prefers composition over inheritance for errors |\n\n**Rationale:** The synthesis report (H-06) identifies 100+ `throw new Error` sites across 45 files, with `manager.ts` alone having 12. P22 scope is specifically \"create `DelegationError` type\" — not the full hierarchy (that's P33). However, the phase sequence shows P22→P23→P24→P25→P26→P27→P28 before P33 arrives. That's 6 phases of delegation code running with only a single error type. **Option B (hierarchy seed)** is recommended because the delegation error domain is well-bounded (dispatch, timeout, completion, cancellation are already distinct code paths in `state-machine.ts` and `manager.ts`), and P33 can extend the hierarchy rather than replacing a flat type.\n\n---\n\n### Grey Area 3: Notification System Consolidation — Two Parallel Paths\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Keep both systems, clarify ownership** — `notification-handler.ts` (completion sector) owns parent-session prompt delivery; `notification-router.ts` (delegation sector) owns in-memory routing + TUI formatting | Respects CQRS sector boundaries (completion vs delegation), minimal change, each system has a clear owner | Two pending-notification queues exist in parallel (continuity store `pendingNotifications` vs `NotificationRouter.routes`), risk of duplicate delivery or lost notifications | 0 new files, documentation-only — Risk: continued confusion about which system is authoritative | Rec if sector boundaries must be preserved strictly |\n| **B: Merge into `notification-router.ts` as single authority** — move `notifyDelegationTerminal` and `replayPendingNotifications` into the router, deprecate `notification-handler.ts` | Single notification authority, eliminates dual-queue problem, P23 (dispatch fix) gets a cleaner notification surface | Crosses sector boundary (completion → delegation), `notification-handler.ts` imports from `task-management/continuity/` which delegation sector is forbidden from doing directly (AGENTS.md: \"Delegation SHALL NOT perform durable state writes\") | 3 files modified, ~100 LOC moved — Risk: CQRS violation if delegation sector gains continuity imports | Rec if the dual-queue problem is causing real delivery failures |\n| **C: Extract shared notification service** — new `src/coordination/notification/` module that both sectors inject | Clean separation, both sectors depend on a shared leaf, persistence stays in task-management | New module creation, P22 scope expansion, dependency wiring changes in plugin.ts | 3-4 new files, ~150 LOC — Risk: scope creep beyond P22 mandate | Rec if notification becomes a cross-cutting concern beyond delegation |\n\n**Rationale:** The evidence reveals a structural problem: `notification-handler.ts` (in `src/coordination/completion/`) writes to the continuity store via `patchSessionContinuity()` (line 148), while `notification-router.ts` (in `src/coordination/delegation/`) maintains its own in-memory `routes` Map with a `persistPending` callback. The phase reordering doc explicitly states P22 should \"fix notification TTL/retry/delivery.\" The root cause of delivery unreliability is likely the dual-queue: `notification-handler.ts:135-166` queues to continuity store, while `notification-router.ts:88-97` queues to in-memory routes. **Option A (clarify ownership)** is the minimum viable fix for P22, with the understanding that P23 (dispatch fix) and P25 (notification redesign) will address the deeper consolidation. The key decision is: which queue is the *durable* authority? The continuity store (`notification-handler.ts`) is durable (survives restart); the router's in-memory Map is not.\n\n---\n\n### Grey Area 4: Notification TTL and Retry Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: No TTL, no retry** — fire-and-forget with durable queue, replay on session lifecycle events only (current behavior) | Simple, no timer management, relies on existing `replayPendingNotifications` hook | Notifications may never deliver if parent session never triggers a lifecycle event; no bounded staleness | 0 new files — Risk: silent notification loss for long-lived parent sessions | Rec if parent sessions always trigger lifecycle events within acceptable time |\n| **B: TTL-based expiry** — pending notifications expire after N minutes/hours, logged as undelivered | Prevents unbounded queue growth, explicit failure signal, aligns with `TASK_CLEANUP_DELAY_MS` (10 min) pattern | Adds timer management, needs persistence for TTL state, replay must check expiry | 1 file modified, ~40 LOC — Risk: timer leaks if not cleaned on shutdown | Rec if notification staleness is a real user-facing problem |\n| **C: Retry with backoff** — attempt delivery N times with exponential backoff before marking undelivered | Higher delivery success rate, bounded attempts | Timer complexity, multiple SDK calls per notification, potential for duplicate delivery without idempotency | 1 file modified, ~60 LOC — Risk: SDK rate limiting, duplicate notifications | Rec if delivery reliability is critical and idempotency keys are wired |\n\n**Rationale:** The current `notification-handler.ts` uses fire-and-forget (`notifyDelegationTerminal`, line 221-240) with a durable fallback (`queuePendingNotification`, line 135). The `NotificationRouter` has a `pendingLimit: 50` bound (line 39) but no TTL. The `replayPendingNotifications` function (line 199) only runs on lifecycle events. For long-haul sessions (the production evidence shows 16,053 LOC sessions), notifications queued during a parent session's idle period may sit undelivered for hours. **Option B (TTL-based expiry)** is recommended because it aligns with the existing `TASK_CLEANUP_DELAY_MS` pattern (10-minute grace period), prevents unbounded queue growth, and provides an explicit signal (logged undelivered count) that P25 (pressure/notification redesign) can consume.\n\n---\n\n### Grey Area 5: execute-slash-command Guardrails\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Input validation only** — validate command name exists, agent name is valid, model format is correct before dispatch | Prevents obvious bad-input failures, fast-fail before SDK call | Does not prevent authorized-but-dangerous operations (e.g., recursive command dispatch, model override abuse) | 1 file modified, ~30 LOC — Risk: minimal | Rec if the primary concern is error reduction |\n| **B: Input validation + dispatch authorization** — validate inputs AND check that the calling agent has permission to dispatch the target command/agent | Prevents unauthorized cross-agent dispatch, aligns with governance wiring (P31) | Requires a permission model that doesn't exist yet (P31 scope), adds coupling to agent/command metadata | 2 files modified, ~80 LOC — Risk: premature governance before P31 | Rec if security boundary is needed before P31 |\n| **C: Input validation + rate limiting + recursion guard** — validate inputs, limit dispatches per session, prevent command-from-command recursion | Prevents runaway dispatch loops, protects against agent confusion | Rate limiting needs state (per-session counter), recursion guard needs call-stack tracking | 2 files modified, ~60 LOC — Risk: state management for rate limits | Rec if recursive dispatch is a real risk in current agent configurations |\n\n**Rationale:** The current `execute-slash-command.ts` has 3 dispatch paths (synthetic parent prompt, subtask, TUI) with minimal validation. Error handling at line 243-263 does string-matching on HTTP status codes (`msg.match(/\\b(400|422)\\b/)`), which is fragile. The tool accepts arbitrary `agent` and `model` strings without validation against known agents or model formats. The phase reordering doc says P22 should \"add guardrails to execute-slash-command\" — but P31 (governance wire) is where permissions are formally wired. **Option A (input validation only)** is the correct P22 scope: validate command existence (already done via `findCommandBundle`), validate agent name format (non-empty, kebab-case), validate model format (`provider/model`), and replace string-matching error classification with the new `DelegationError` type. Authorization and rate limiting belong in P31 and P25 respectively.\n\n---\n\n### Grey Area 6: TaskNotification.status Mapping Loss\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **A: Keep current 4-value mapping** — `started | completed | failed | cancelled` as-is, accept that \"timeout\" and \"error\" both map to \"failed\" | No change needed, `TaskNotification` is a parent-facing display type, not a lifecycle type | Parent session cannot distinguish timeout from error from cancellation without reading `metadata.terminalState`; notification messages lose semantic precision | 0 files — Risk: continued ambiguity in parent-facing notifications | Rec if TaskNotification is purely a display contract |\n| **B: Expand TaskNotification.status** — add \"error\" and \"timeout\" to the union: `started | completed | failed | error | timeout | cancelled` | Parent session gets precise terminal state without parsing metadata, aligns with DelegationStatus semantics | Changes a shared type (`src/shared/types.ts:9`), all consumers of `TaskNotification.status` must handle new values, `buildNotificationMessage` switch statement grows | 2 files (types.ts, notification-handler.ts), ~20 LOC — Risk: consumer breakage if any code switches on status | Rec if parent sessions need to react differently to timeout vs error vs failure |\n| **C: Deprecate TaskNotification.status, use metadata.terminalState** — keep status for backward compat but make metadata.terminalState the authoritative field | No breaking change, gradual migration path, terminalState already carries the precise DelegationStatus | Two fields carry overlapping information, confusion about which is authoritative | 1 file (notification-handler.ts), ~10 LOC — Risk: dual-authority confusion | Rec if backward compatibility is required during migration |\n\n**Rationale:** The current mapping at `notification-handler.ts:120` collapses `DelegationStatus` (5 values) into `TaskNotification.status` (4 values): `delegation.status === \"completed\" ? \"completed\" : delegation.explicitCancellation ? \"cancelled\" : \"failed\"`. This means a delegation that timed out (safety ceiling at 30 minutes) is reported to the parent as \"failed\" — the parent cannot distinguish \"agent worked for 30 minutes and hit safety ceiling\" from \"agent crashed immediately.\" The `metadata.terminalState` field (line 128) already carries the precise value, but `buildNotificationMessage` (line 24-79) uses `task.status` for the display label. **Option B (expand TaskNotification.status)** is recommended because the parent session's reaction to a timeout (potentially re-dispatch) is fundamentally different from a failure (investigate and fix) or a cancellation (user intent). The type change is small and the consumer surface is limited to `notification-handler.ts` formatting functions.\n\n---\n\n### Summary: Recommended Decisions\n\n| # | Grey Area | Recommended Option | Key Rationale |\n|---|-----------|-------------------|---------------|\n| 1 | Status unification | **B: Bridge layer** | Different state machines, different domains — unify contract not type |\n| 2 | DelegationError scope | **B: Hierarchy seed** | 6 phases before P33; delegation error domain is well-bounded |\n| 3 | Notification consolidation | **A: Clarify ownership** | CQRS sector boundaries; deeper consolidation is P25 scope |\n| 4 | Notification TTL | **B: TTL-based expiry** | Aligns with existing grace-period pattern; prevents unbounded queues |\n| 5 | execute-slash-command guardrails | **A: Input validation only** | Authorization is P31 scope; P22 should fix error classification |\n| 6 | TaskNotification mapping loss | **B: Expand status union** | Parent needs timeout vs error distinction for correct re-dispatch decisions |",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1b07e2193ffeQgaATc1eYYqg2V"
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:31.780Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_1508d7f424194849b18d915d",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:32.097Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_fe555e6865194c95896db123",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:32.382Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_038c8204c52547e683aafe6a",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:43.820Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_fd2810a5e37240ab8802362a",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:44.018Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_bfe8eb0e316a4cde882016b8",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:48.474Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_ed314f95ef544d71b515d7cf",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:48.784Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_d1d77a6141f14667be4a51c2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:52.779Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_55582c77571547af80d2b91e",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:53.035Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_fabd4865807b45878123c488",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/lifecycle.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:57.476Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_d0e8b1ebf318482993aec509",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:48:57.902Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_66aa13f223f04cde89365389",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:49:03.055Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_8a857f03b7cf4f84b5d3a3d7",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:49:03.921Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_5023644e3bce4485ae451021",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:49:09.562Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_2451684234ea478ea6e37d26",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T11:49:09.944Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_a9959e5ae3b7405894457979",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/lifecycle/index.ts"
+        },
+        "output": {}
+      }
+    }
+  ],
+  "lastMessage": "*You are subagent Name: gsd-phase-researcher, role: context gatherer for Phase 22. You are being delegated and stacked onto an existing session.*\n\n**Task:** Create the CONTEXT.md for Phase 22 (Status/Error Unification) by gathering and synthesizing all relevant codebase context.\n\n**Context from previous research (session: ses_1b07e2193ffeQgaATc1eYYqg2V):**\n\nPhase 22 addresses Status/Error concerns in the Hivemind runtime composition engine. The grey area analysis identified 6 decision points.\n\n**Your mission:**\n1. Read and analyze ALL relevant source files:\n   - `src/shared/task-status.ts` — current TaskStatus implementation\n   - `src/shared/types.ts` — TaskNotification and related types\n   - `src/coordination/delegation/types.ts` — DelegationStatus\n   - `src/coordination/delegation/state-machine.ts` — transition tables for both status types\n   - `src/coordination/completion/notification-handler.ts` — notification persistence\n   - `src/coordination/delegation/notification-router.ts` — in-memory routing\n   - `src/coordination/delegation/manager.ts` — delegation manager error handling\n   - `src/tools/session/execute-slash-command.ts` — dispatch paths and error handling\n\n2. Read the research artifacts:\n   - `.planning/research/phase-reordering-final-recommendation-2026-05-21.md`\n   - `.planning/research/hard-restructuring-synthesis-2026-05-21.md`\n\n3. Produce a CONTEXT.md that includes:\n   - Current state of each module affected by Phase 22\n   - Line counts and key function signatures\n   - Existing error handling patterns\n   - Current notification flow (dual-queue problem)\n   - Status transition diagrams (text-based)\n   - Dependencies between affected modules\n   - Known issues and pain points from the codebase\n\n4. Write to `.planning/phases/phase-22/CONTEXT.md`\n\n**Boundaries:**\n- DO NOT implement anything\n- DO NOT make recommendations (that's the spec's job)\n- Focus ONLY on documenting current state\n- Include exact file:line references for all findings\n\n**Success metrics:**\n- Complete coverage of all 8 source files listed above\n- Accurate line counts and function signatures\n- Clear documentation of current pain points\n- File:line references for every claim"
+}

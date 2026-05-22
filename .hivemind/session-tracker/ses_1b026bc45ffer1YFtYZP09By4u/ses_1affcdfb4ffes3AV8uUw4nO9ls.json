@@ -1,0 +1,174 @@
+{
+  "sessionID": "ses_1affcdfb4ffes3AV8uUw4nO9ls",
+  "parentSessionID": "ses_1b026bc45ffer1YFtYZP09By4u",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-plan-checker",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Verify Phase 22 plans",
+    "subagentType": "gsd-plan-checker"
+  },
+  "created": "2026-05-22T14:07:22.727Z",
+  "updated": "2026-05-22T14:09:21.791Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-plan-checker",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-plan-checker",
+      "content": "You are gsd-plan-checker in a FRESH session.\n\nTask: Goal-backward analysis of **Phase 22: Coordination Status + Error Unification** — verify all 3 plans will achieve the phase goal before execution.\n\n## Phase Goal (from ROADMAP.md:619-621)\n\"Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry.\"\n\n## Artifacts to Read\n1. SPEC: `.planning/phases/22-coordination-status-error-unification/22-SPEC.md` (9 requirements)\n2. Plan 01: `.planning/phases/22-coordination-status-error-unification/22-01-PLAN.md` (Wave 1 — types + mapping)\n3. Plan 02: `.planning/phases/22-coordination-status-error-unification/22-02-PLAN.md` (Wave 2 — notification routing)\n4. Plan 03: `.planning/phases/22-coordination-status-error-unification/22-03-PLAN.md` (Wave 3 — shared schema + gate)\n5. Research: `.planning/phases/22-coordination-status-error-unification/22-RESEARCH.md`\n\n## Verification Criteria\nFor each plan, check:\n\n1. **Goal backward**: Does completing this plan's must_haves get us closer to the phase goal?\n2. **Dependency correctness**: Are depends_on accurate? (Plan 01 has no deps, Plan 02 depends on Plan 01, Plan 03 depends on Plan 02)\n3. **Scope boundary**: Do all files_modified match the SPEC.md IN SCOPE list? No out-of-scope files?\n4. **Test coverage**: Does each plan have at least RED phase (failing tests)?\n5. **Verification**: Are the verification commands valid? Do they match the test files being created?\n6. **Gaps**: Are there any requirements not covered by any plan? Any plans with missing requirements?\n7. **Deviation handling**: Did the plan handle known deviations? (PendingNotification vs PendingNotificationRecord, createdAt already exists, HarnessStatus string union not enum)\n\nReturn a structured PASS/FAIL report for each plan. If any FAIL, explain exactly what needs fixing. If all PASS, confirm ready for execution.",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-plan-checker",
+      "content": "Verify Phase 22 plans",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-plan-checker",
+      "content": "---\n\n## ISSUES FOUND\n\n**Phase:** 22-coordination-status-error-unification\n**Plans checked:** 3 (22-01, 22-02, 22-03)\n**Issues:** 1 blocker(s), 2 warning(s), 0 info\n\n---\n\n### Blockers (must fix before execution)\n\n#### 1. [Nyquist Compliance] VALIDATION.md not found for Phase 22\n\nPer Dimension 8 (Nyquist Validation), `22-VALIDATION.md` does not exist in the phase directory. The Nyquist gate requires this file to validate the validation architecture before execution.\n\n```yaml\nissue:\n  dimension: nyquist_compliance\n  severity: blocker\n  description: \"VALIDATION.md not found for Phase 22. Re-run `/gsd-plan-phase 22 --research` to regenerate.\"\n  plan: null\n  fix_hint: \"Generate 22-VALIDATION.md with automated verify commands, feedback latency assessment, sampling continuity, and Wave 0 completeness for all 3 plans.\"\n```\n\nAll `<verify>` blocks in all plans contain `<automated>` commands (good), but the formal VALIDATION.md is absent, which blocks Nyquist checks 8a-8d from even running.\n\n---\n\n### Warnings (should fix)\n\n#### 2. [Research Resolution] Open Questions section not marked RESOLVED\n\nRESEARCH.md has a `## Open Questions` section (line 263) without the `(RESOLVED)` suffix. While the SPEC.md Design Decisions (D6 at line 86) have resolved the question about which error sites get DelegationError, the RESEARCH.md heading lacks the formal resolution marker.\n\n```yaml\nissue:\n  dimension: research_resolution\n  severity: warning\n  description: \"RESEARCH.md ## Open Questions section lacks (RESOLVED) suffix\"\n  file: \"22-RESEARCH.md\"\n  unresolved_questions:\n    - \"Should the 4 non-coordination delegation files also use DelegationError for notification paths?\"\n  fix_hint: \"Either add (RESOLVED) suffix to section heading, or add inline RESOLVED marker on the question. SPEC.md D6 has already locked the decision.\"\n```\n\n#### 3. [Verification Derivation] P22-07b tests placed in divergent location from SPEC\n\nSPEC.md line 187 specifies: `npx vitest run tests/lib/coordination/continuity/continuity.test.ts -t \"PendingNotification\"`\n\nPlan 03 (Task 1) correctly identifies that `tests/lib/coordination/continuity/continuity.test.ts` does not exist and places tests in `tests/lib/coordination/delegation/status-mapping.test.ts` instead.\n\nThis means there is **no integration test** covering the PendingNotification → continuity/index.ts persistence round-trip (the SPEC's own integration case for P22-07b). Only type-level tests exist.\n\n```yaml\nissue:\n  dimension: verification_derivation\n  severity: warning\n  description: \"P22-07b tests placed in status-mapping.test.ts instead of continuity.test.ts (which does not exist). No integration coverage for PendingNotification persistence round-trip.\"\n  plan: \"22-03\"\n  task: 1\n  fix_hint: \"Either create continuity.test.ts for the integration test, or add a note that continuity integration coverage will be deferred to the phase that creates continuity.test.ts.\"\n```\n\n---\n\n### Plans That PASS All Checks\n\n#### Plan 22-01 (Wave 1 — types + mapping) ✅ **PASS**\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-01 through P22-04 |\n| Task Completeness | ✅ 3 tasks, all with Files/Action/Verify/Done |\n| Dependency Correctness | ✅ `depends_on: []` — Wave 1, no deps |\n| Key Links | ✅ shared/types ↔ delegation/types wired |\n| Scope Sanity | ✅ 3 tasks, 3 source files + 1 test file |\n| Verification Derivation | ✅ Truths are user-observable |\n| Architectural Tier | ✅ Status mapping in shared, error types in coordination |\n| Scope Reduction | ✅ No reduction language — all requirements delivered fully |\n| Verification | ✅ RED phase tests then GREEN implementation, `npx vitest run` + `npm run typecheck` |\n\nKey strength: Explicitly calls out and handles the RESEARCH.md code example error (`HarnessStatus.InProgress` is incorrect — `HarnessStatus` is a string union, not an enum). Deviations properly documented.\n\n#### Plan 22-02 (Wave 2 — notification routing) ✅ **PASS**\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-05, P22-06, P22-07a, P22-08 |\n| Task Completeness | ✅ 3 tasks, all with Files/Action/Verify/Done |\n| Dependency Correctness | ✅ `depends_on: [\"22-01\"]` — Wave 2, correct |\n| Key Links | ✅ PendingNotificationRecord ↔ queuePending/replayPending wired |\n| Scope Sanity | ✅ 3 tasks, 1 source file + 1 test file |\n| Verification Derivation | ✅ Truths are user-observable |\n| Architectural Tier | ✅ Notification retry/TTL in notification-router.ts |\n| Scope Reduction | ✅ No reduction language |\n| Verification | ✅ RED phase tests then GREEN implementation |\n\nKey strength: Well-thought-out design compromise — `PendingNotificationRecord` vs `route.notifications` (DelegationNotification[]) mismatch is resolved by adding a parallel `retryState` Map. Clean `queuePending()` gate pattern.\n\n#### Plan 22-03 (Wave 3 — shared schema + gate) ✅ **PASS** (with warnings)\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-07b, P22-09 |\n| Task Completeness | ✅ 4 tasks (2 implementation, 1 read-only, 1 gate), all complete |\n| Dependency Correctness | ✅ `depends_on: [\"22-02\"]` — Wave 3, correct |\n| Key Links | ✅ PendingNotification → continuity/index.ts, detector.ts → delegation types |\n| Scope Sanity | ✅ 2 source + 1 test file, read-only task + gate task = lightweight |\n| Verification Derivation | ✅ Truths are user-observable, includes scope boundary gate |\n| Architectural Tier | ✅ PendingNotification in shared, TERMINAL_EVENTS verified in detector |\n| Scope Reduction | ✅ No reduction language |\n\n---\n\n### Requirement Coverage Matrix\n\n| Req ID | Description | Plan | Tasks | Status |\n|--------|-------------|------|-------|--------|\n| P22-01 | `delegationStatusToHarnessStatus()` mapping | 01 | 1,3 | Covered ✅ |\n| P22-02 | `DelegationErrorCode` const union (12 codes) | 01 | 1,2 | Covered ✅ |\n| P22-03 | `DelegationError` interface | 01 | 1,2 | Covered ✅ |\n| P22-04 | `createDelegationError()` factory | 01 | 1,2 | Covered ✅ |\n| P22-05 | Notification retry counter | 02 | 1,2,3 | Covered ✅ |\n| P22-06 | Notification TTL expiry | 02 | 1,2,3 | Covered ✅ |\n| P22-07a | PendingNotificationRecord schema update | 02 | 1,2 | Covered ✅ |\n| P22-07b | PendingNotification schema update | 03 | 1,2 | Covered ✅ |\n| P22-08 | replayPending() cleanup (expired + exhausted) | 02 | 1,3 | Covered ✅ |\n| P22-09 | Scope boundary enforcement | 03 | 4 | Covered ✅ |\n\n---\n\n### Plan Summary\n\n| Plan | Tasks | Files Modifiable | Wave | Depends On | Status |\n|------|-------|-----------------|------|------------|--------|\n| 22-01 | 3 | 3 src + 1 test | 1 | — | ✅ PASS |\n| 22-02 | 3 | 1 src + 1 test | 2 | 22-01 | ✅ PASS |\n| 22-03 | 4 (2 impl/1 read/1 gate) | 2 src + 1 test | 3 | 22-02 | ✅ PASS |\n\n---\n\n### Recommendation\n\n**1 blocker + 2 warnings.** The blocker must be addressed before execution can proceed.\n\n1. **Generate `22-VALIDATION.md`** — Run `/gsd-plan-phase 22 --research` to regenerate with the Nyquist validation architecture artifact. This is a blocking gate.\n\n2. After the blocker is resolved, the plans themselves are well-structured and achieve the phase goal:\n   - Plan 01 correctly handles the `HarnessStatus` string-union vs enum mismatch (calling out RESEARCH.md error)\n   - Plan 02 has a clean design for retry-state tracking via a parallel `retryState` Map\n   - Plan 03 provides the scope-boundary gate (P22-09) to prevent Pitfall 1\n\n3. The two warnings should be addressed during the revision: add `(RESOLVED)` to the RESEARCH.md Open Questions heading, and decide on the continuity integration test gap.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T14:07:33.100Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_RtnChRgpOcb6flzOgDe46033",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gates.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:07:38.801Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_KGDjPXJXMG1Rl313n4Lh9460",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:07:39.166Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_ymEczK1R0yXmeYNcfPsz7706",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:07:39.513Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_ASt5l6HLEn61LTCp4EzX8347",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:07:39.904Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_kN6QdUrmeEdekLHzNrAM1133",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:07:40.200Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_EcnaCJRdk9FxlHSMihQJ7044",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:08:28.194Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_cyz3htOCTCwBmDS6yn1m6639",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:08:37.074Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_bEiXYNX3swVT4esuV3eE4674",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:08:37.358Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_cZtvo70SoRob8K9kTNuo8772",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:08:55.005Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_pHtN1nixjpvGyQsTCaHg9872",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T14:09:21.773Z",
+      "type": "assistant_message",
+      "content": "---\n\n## ISSUES FOUND\n\n**Phase:** 22-coordination-status-error-unification\n**Plans checked:** 3 (22-01, 22-02, 22-03)\n**Issues:** 1 blocker(s), 2 warning(s), 0 info\n\n---\n\n### Blockers (must fix before execution)\n\n#### 1. [Nyquist Compliance] VALIDATION.md not found for Phase 22\n\nPer Dimension 8 (Nyquist Validation), `22-VALIDATION.md` does not exist in the phase directory. The Nyquist gate requires this file to validate the validation architecture before execution.\n\n```yaml\nissue:\n  dimension: nyquist_compliance\n  severity: blocker\n  description: \"VALIDATION.md not found for Phase 22. Re-run `/gsd-plan-phase 22 --research` to regenerate.\"\n  plan: null\n  fix_hint: \"Generate 22-VALIDATION.md with automated verify commands, feedback latency assessment, sampling continuity, and Wave 0 completeness for all 3 plans.\"\n```\n\nAll `<verify>` blocks in all plans contain `<automated>` commands (good), but the formal VALIDATION.md is absent, which blocks Nyquist checks 8a-8d from even running.\n\n---\n\n### Warnings (should fix)\n\n#### 2. [Research Resolution] Open Questions section not marked RESOLVED\n\nRESEARCH.md has a `## Open Questions` section (line 263) without the `(RESOLVED)` suffix. While the SPEC.md Design Decisions (D6 at line 86) have resolved the question about which error sites get DelegationError, the RESEARCH.md heading lacks the formal resolution marker.\n\n```yaml\nissue:\n  dimension: research_resolution\n  severity: warning\n  description: \"RESEARCH.md ## Open Questions section lacks (RESOLVED) suffix\"\n  file: \"22-RESEARCH.md\"\n  unresolved_questions:\n    - \"Should the 4 non-coordination delegation files also use DelegationError for notification paths?\"\n  fix_hint: \"Either add (RESOLVED) suffix to section heading, or add inline RESOLVED marker on the question. SPEC.md D6 has already locked the decision.\"\n```\n\n#### 3. [Verification Derivation] P22-07b tests placed in divergent location from SPEC\n\nSPEC.md line 187 specifies: `npx vitest run tests/lib/coordination/continuity/continuity.test.ts -t \"PendingNotification\"`\n\nPlan 03 (Task 1) correctly identifies that `tests/lib/coordination/continuity/continuity.test.ts` does not exist and places tests in `tests/lib/coordination/delegation/status-mapping.test.ts` instead.\n\nThis means there is **no integration test** covering the PendingNotification → continuity/index.ts persistence round-trip (the SPEC's own integration case for P22-07b). Only type-level tests exist.\n\n```yaml\nissue:\n  dimension: verification_derivation\n  severity: warning\n  description: \"P22-07b tests placed in status-mapping.test.ts instead of continuity.test.ts (which does not exist). No integration coverage for PendingNotification persistence round-trip.\"\n  plan: \"22-03\"\n  task: 1\n  fix_hint: \"Either create continuity.test.ts for the integration test, or add a note that continuity integration coverage will be deferred to the phase that creates continuity.test.ts.\"\n```\n\n---\n\n### Plans That PASS All Checks\n\n#### Plan 22-01 (Wave 1 — types + mapping) ✅ **PASS**\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-01 through P22-04 |\n| Task Completeness | ✅ 3 tasks, all with Files/Action/Verify/Done |\n| Dependency Correctness | ✅ `depends_on: []` — Wave 1, no deps |\n| Key Links | ✅ shared/types ↔ delegation/types wired |\n| Scope Sanity | ✅ 3 tasks, 3 source files + 1 test file |\n| Verification Derivation | ✅ Truths are user-observable |\n| Architectural Tier | ✅ Status mapping in shared, error types in coordination |\n| Scope Reduction | ✅ No reduction language — all requirements delivered fully |\n| Verification | ✅ RED phase tests then GREEN implementation, `npx vitest run` + `npm run typecheck` |\n\nKey strength: Explicitly calls out and handles the RESEARCH.md code example error (`HarnessStatus.InProgress` is incorrect — `HarnessStatus` is a string union, not an enum). Deviations properly documented.\n\n#### Plan 22-02 (Wave 2 — notification routing) ✅ **PASS**\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-05, P22-06, P22-07a, P22-08 |\n| Task Completeness | ✅ 3 tasks, all with Files/Action/Verify/Done |\n| Dependency Correctness | ✅ `depends_on: [\"22-01\"]` — Wave 2, correct |\n| Key Links | ✅ PendingNotificationRecord ↔ queuePending/replayPending wired |\n| Scope Sanity | ✅ 3 tasks, 1 source file + 1 test file |\n| Verification Derivation | ✅ Truths are user-observable |\n| Architectural Tier | ✅ Notification retry/TTL in notification-router.ts |\n| Scope Reduction | ✅ No reduction language |\n| Verification | ✅ RED phase tests then GREEN implementation |\n\nKey strength: Well-thought-out design compromise — `PendingNotificationRecord` vs `route.notifications` (DelegationNotification[]) mismatch is resolved by adding a parallel `retryState` Map. Clean `queuePending()` gate pattern.\n\n#### Plan 22-03 (Wave 3 — shared schema + gate) ✅ **PASS** (with warnings)\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-07b, P22-09 |\n| Task Completeness | ✅ 4 tasks (2 implementation, 1 read-only, 1 gate), all complete |\n| Dependency Correctness | ✅ `depends_on: [\"22-02\"]` — Wave 3, correct |\n| Key Links | ✅ PendingNotification → continuity/index.ts, detector.ts → delegation types |\n| Scope Sanity | ✅ 2 source + 1 test file, read-only task + gate task = lightweight |\n| Verification Derivation | ✅ Truths are user-observable, includes scope boundary gate |\n| Architectural Tier | ✅ PendingNotification in shared, TERMINAL_EVENTS verified in detector |\n| Scope Reduction | ✅ No reduction language |\n\n---\n\n### Requirement Coverage Matrix\n\n| Req ID | Description | Plan | Tasks | Status |\n|--------|-------------|------|-------|--------|\n| P22-01 | `delegationStatusToHarnessStatus()` mapping | 01 | 1,3 | Covered ✅ |\n| P22-02 | `DelegationErrorCode` const union (12 codes) | 01 | 1,2 | Covered ✅ |\n| P22-03 | `DelegationError` interface | 01 | 1,2 | Covered ✅ |\n| P22-04 | `createDelegationError()` factory | 01 | 1,2 | Covered ✅ |\n| P22-05 | Notification retry counter | 02 | 1,2,3 | Covered ✅ |\n| P22-06 | Notification TTL expiry | 02 | 1,2,3 | Covered ✅ |\n| P22-07a | PendingNotificationRecord schema update | 02 | 1,2 | Covered ✅ |\n| P22-07b | PendingNotification schema update | 03 | 1,2 | Covered ✅ |\n| P22-08 | replayPending() cleanup (expired + exhausted) | 02 | 1,3 | Covered ✅ |\n| P22-09 | Scope boundary enforcement | 03 | 4 | Covered ✅ |\n\n---\n\n### Plan Summary\n\n| Plan | Tasks | Files Modifiable | Wave | Depends On | Status |\n|------|-------|-----------------|------|------------|--------|\n| 22-01 | 3 | 3 src + 1 test | 1 | — | ✅ PASS |\n| 22-02 | 3 | 1 src + 1 test | 2 | 22-01 | ✅ PASS |\n| 22-03 | 4 (2 impl/1 read/1 gate) | 2 src + 1 test | 3 | 22-02 | ✅ PASS |\n\n---\n\n### Recommendation\n\n**1 blocker + 2 warnings.** The blocker must be addressed before execution can proceed.\n\n1. **Generate `22-VALIDATION.md`** — Run `/gsd-plan-phase 22 --research` to regenerate with the Nyquist validation architecture artifact. This is a blocking gate.\n\n2. After the blocker is resolved, the plans themselves are well-structured and achieve the phase goal:\n   - Plan 01 correctly handles the `HarnessStatus` string-union vs enum mismatch (calling out RESEARCH.md error)\n   - Plan 02 has a clean design for retry-state tracking via a parallel `retryState` Map\n   - Plan 03 provides the scope-boundary gate (P22-09) to prevent Pitfall 1\n\n3. The two warnings should be addressed during the revision: add `(RESOLVED)` to the RESEARCH.md Open Questions heading, and decide on the continuity integration test gap.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1affcdfb4ffes3AV8uUw4nO9ls"
+      }
+    }
+  ],
+  "lastMessage": "---\n\n## ISSUES FOUND\n\n**Phase:** 22-coordination-status-error-unification\n**Plans checked:** 3 (22-01, 22-02, 22-03)\n**Issues:** 1 blocker(s), 2 warning(s), 0 info\n\n---\n\n### Blockers (must fix before execution)\n\n#### 1. [Nyquist Compliance] VALIDATION.md not found for Phase 22\n\nPer Dimension 8 (Nyquist Validation), `22-VALIDATION.md` does not exist in the phase directory. The Nyquist gate requires this file to validate the validation architecture before execution.\n\n```yaml\nissue:\n  dimension: nyquist_compliance\n  severity: blocker\n  description: \"VALIDATION.md not found for Phase 22. Re-run `/gsd-plan-phase 22 --research` to regenerate.\"\n  plan: null\n  fix_hint: \"Generate 22-VALIDATION.md with automated verify commands, feedback latency assessment, sampling continuity, and Wave 0 completeness for all 3 plans.\"\n```\n\nAll `<verify>` blocks in all plans contain `<automated>` commands (good), but the formal VALIDATION.md is absent, which blocks Nyquist checks 8a-8d from even running.\n\n---\n\n### Warnings (should fix)\n\n#### 2. [Research Resolution] Open Questions section not marked RESOLVED\n\nRESEARCH.md has a `## Open Questions` section (line 263) without the `(RESOLVED)` suffix. While the SPEC.md Design Decisions (D6 at line 86) have resolved the question about which error sites get DelegationError, the RESEARCH.md heading lacks the formal resolution marker.\n\n```yaml\nissue:\n  dimension: research_resolution\n  severity: warning\n  description: \"RESEARCH.md ## Open Questions section lacks (RESOLVED) suffix\"\n  file: \"22-RESEARCH.md\"\n  unresolved_questions:\n    - \"Should the 4 non-coordination delegation files also use DelegationError for notification paths?\"\n  fix_hint: \"Either add (RESOLVED) suffix to section heading, or add inline RESOLVED marker on the question. SPEC.md D6 has already locked the decision.\"\n```\n\n#### 3. [Verification Derivation] P22-07b tests placed in divergent location from SPEC\n\nSPEC.md line 187 specifies: `npx vitest run tests/lib/coordination/continuity/continuity.test.ts -t \"PendingNotification\"`\n\nPlan 03 (Task 1) correctly identifies that `tests/lib/coordination/continuity/continuity.test.ts` does not exist and places tests in `tests/lib/coordination/delegation/status-mapping.test.ts` instead.\n\nThis means there is **no integration test** covering the PendingNotification → continuity/index.ts persistence round-trip (the SPEC's own integration case for P22-07b). Only type-level tests exist.\n\n```yaml\nissue:\n  dimension: verification_derivation\n  severity: warning\n  description: \"P22-07b tests placed in status-mapping.test.ts instead of continuity.test.ts (which does not exist). No integration coverage for PendingNotification persistence round-trip.\"\n  plan: \"22-03\"\n  task: 1\n  fix_hint: \"Either create continuity.test.ts for the integration test, or add a note that continuity integration coverage will be deferred to the phase that creates continuity.test.ts.\"\n```\n\n---\n\n### Plans That PASS All Checks\n\n#### Plan 22-01 (Wave 1 — types + mapping) ✅ **PASS**\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-01 through P22-04 |\n| Task Completeness | ✅ 3 tasks, all with Files/Action/Verify/Done |\n| Dependency Correctness | ✅ `depends_on: []` — Wave 1, no deps |\n| Key Links | ✅ shared/types ↔ delegation/types wired |\n| Scope Sanity | ✅ 3 tasks, 3 source files + 1 test file |\n| Verification Derivation | ✅ Truths are user-observable |\n| Architectural Tier | ✅ Status mapping in shared, error types in coordination |\n| Scope Reduction | ✅ No reduction language — all requirements delivered fully |\n| Verification | ✅ RED phase tests then GREEN implementation, `npx vitest run` + `npm run typecheck` |\n\nKey strength: Explicitly calls out and handles the RESEARCH.md code example error (`HarnessStatus.InProgress` is incorrect — `HarnessStatus` is a string union, not an enum). Deviations properly documented.\n\n#### Plan 22-02 (Wave 2 — notification routing) ✅ **PASS**\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-05, P22-06, P22-07a, P22-08 |\n| Task Completeness | ✅ 3 tasks, all with Files/Action/Verify/Done |\n| Dependency Correctness | ✅ `depends_on: [\"22-01\"]` — Wave 2, correct |\n| Key Links | ✅ PendingNotificationRecord ↔ queuePending/replayPending wired |\n| Scope Sanity | ✅ 3 tasks, 1 source file + 1 test file |\n| Verification Derivation | ✅ Truths are user-observable |\n| Architectural Tier | ✅ Notification retry/TTL in notification-router.ts |\n| Scope Reduction | ✅ No reduction language |\n| Verification | ✅ RED phase tests then GREEN implementation |\n\nKey strength: Well-thought-out design compromise — `PendingNotificationRecord` vs `route.notifications` (DelegationNotification[]) mismatch is resolved by adding a parallel `retryState` Map. Clean `queuePending()` gate pattern.\n\n#### Plan 22-03 (Wave 3 — shared schema + gate) ✅ **PASS** (with warnings)\n\n| Dimension | Result |\n|-----------|--------|\n| Requirement Coverage | ✅ Covers P22-07b, P22-09 |\n| Task Completeness | ✅ 4 tasks (2 implementation, 1 read-only, 1 gate), all complete |\n| Dependency Correctness | ✅ `depends_on: [\"22-02\"]` — Wave 3, correct |\n| Key Links | ✅ PendingNotification → continuity/index.ts, detector.ts → delegation types |\n| Scope Sanity | ✅ 2 source + 1 test file, read-only task + gate task = lightweight |\n| Verification Derivation | ✅ Truths are user-observable, includes scope boundary gate |\n| Architectural Tier | ✅ PendingNotification in shared, TERMINAL_EVENTS verified in detector |\n| Scope Reduction | ✅ No reduction language |\n\n---\n\n### Requirement Coverage Matrix\n\n| Req ID | Description | Plan | Tasks | Status |\n|--------|-------------|------|-------|--------|\n| P22-01 | `delegationStatusToHarnessStatus()` mapping | 01 | 1,3 | Covered ✅ |\n| P22-02 | `DelegationErrorCode` const union (12 codes) | 01 | 1,2 | Covered ✅ |\n| P22-03 | `DelegationError` interface | 01 | 1,2 | Covered ✅ |\n| P22-04 | `createDelegationError()` factory | 01 | 1,2 | Covered ✅ |\n| P22-05 | Notification retry counter | 02 | 1,2,3 | Covered ✅ |\n| P22-06 | Notification TTL expiry | 02 | 1,2,3 | Covered ✅ |\n| P22-07a | PendingNotificationRecord schema update | 02 | 1,2 | Covered ✅ |\n| P22-07b | PendingNotification schema update | 03 | 1,2 | Covered ✅ |\n| P22-08 | replayPending() cleanup (expired + exhausted) | 02 | 1,3 | Covered ✅ |\n| P22-09 | Scope boundary enforcement | 03 | 4 | Covered ✅ |\n\n---\n\n### Plan Summary\n\n| Plan | Tasks | Files Modifiable | Wave | Depends On | Status |\n|------|-------|-----------------|------|------------|--------|\n| 22-01 | 3 | 3 src + 1 test | 1 | — | ✅ PASS |\n| 22-02 | 3 | 1 src + 1 test | 2 | 22-01 | ✅ PASS |\n| 22-03 | 4 (2 impl/1 read/1 gate) | 2 src + 1 test | 3 | 22-02 | ✅ PASS |\n\n---\n\n### Recommendation\n\n**1 blocker + 2 warnings.** The blocker must be addressed before execution can proceed.\n\n1. **Generate `22-VALIDATION.md`** — Run `/gsd-plan-phase 22 --research` to regenerate with the Nyquist validation architecture artifact. This is a blocking gate.\n\n2. After the blocker is resolved, the plans themselves are well-structured and achieve the phase goal:\n   - Plan 01 correctly handles the `HarnessStatus` string-union vs enum mismatch (calling out RESEARCH.md error)\n   - Plan 02 has a clean design for retry-state tracking via a parallel `retryState` Map\n   - Plan 03 provides the scope-boundary gate (P22-09) to prevent Pitfall 1\n\n3. The two warnings should be addressed during the revision: add `(RESOLVED)` to the RESEARCH.md Open Questions heading, and decide on the continuity integration test gap."
+}

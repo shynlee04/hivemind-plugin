@@ -618,7 +618,14 @@ Plans:
 
 ### Phase 22: Coordination Status + Error Unification (Group 1)
 
-**Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry.\n**Depends on:** Phase 21.2 research route or explicit user deferral
+**Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry.
+**Depends on:** Phase 21.2 research route or explicit user deferral
+**Plans:** 3 plans
+
+Plans:
+- [ ] `22-01-PLAN.md` — Types + mapping (DelegationErrorCode, DelegationError, createDelegationError, delegationStatusToHarnessStatus) — Wave 1
+- [ ] `22-02-PLAN.md` — Notification routing (retry counter, TTL expiry, PendingNotificationRecord schema, replayPending cleanup) — Wave 2
+- [ ] `22-03-PLAN.md` — Shared schema + integration (PendingNotification schema update, TERMINAL_EVENTS verification, phase gate) — Wave 3
 
 ### Phase 23: Coordination Dispatch + Delegate-Task Fix (Group 1)
 

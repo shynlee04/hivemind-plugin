@@ -1,3 +1,5 @@
+import { homedir } from "node:os"
+import path from "node:path"
 import { loadPrimitives } from "../../features/bootstrap/primitive-loader.js"
 import { detectRuntimePressure } from "../../features/runtime-pressure/index.js"
 import type {
@@ -24,8 +26,11 @@ const COMMAND_FAILURE_STATES = ["missing_command", "invalid_contract", "pressure
  * @param options - Project root containing `.opencode/commands`.
  * @returns Discovered command bundles and primitive-loader warnings.
  */
-export async function discoverCommandBundles(options: { projectRoot: string }): Promise<CommandDiscoveryResult> {
-  const primitives = await loadPrimitives({ projectRoot: options.projectRoot })
+export async function discoverCommandBundles(options: { projectRoot: string; globalConfigPath?: string }): Promise<CommandDiscoveryResult> {
+  const primitives = await loadPrimitives({
+    projectRoot: options.projectRoot,
+    globalConfigPath: options.globalConfigPath ?? resolveDefaultGlobalConfigPath(),
+  })
   const commands = Array.from(primitives.commands.entries())
     .map(([name, command]): CommandBundle => ({
       name,
@@ -40,6 +45,12 @@ export async function discoverCommandBundles(options: { projectRoot: string }): 
     .sort((left, right) => left.name.localeCompare(right.name))
 
   return { commands, warnings: primitives.warnings }
+}
+
+function resolveDefaultGlobalConfigPath(): string {
+  if (process.env.OPENCODE_GLOBAL_CONFIG_DIR) return process.env.OPENCODE_GLOBAL_CONFIG_DIR
+  const configHome = process.env.XDG_CONFIG_HOME ?? path.join(homedir(), ".config")
+  return path.join(configHome, "opencode")
 }
 
 /**

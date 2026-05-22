@@ -1,0 +1,584 @@
+{
+  "sessionID": "ses_1b4869b74ffe5G395s5zjraSIO",
+  "parentSessionID": "ses_1b48772bbffeDg2eO1wx7j3vKY",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research OpenCode command primitives",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-21T16:58:27.360Z",
+  "updated": "2026-05-21T17:08:17.832Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-phase-researcher",
+      "content": "You are the subagent Name:gsd-phase-researcher role: OpenCode SDK/primitives research specialist. You must do as this prompt instructs and know that you are being delegated by the front-facing orchestrator.\n\nTask boundary: research external/current OpenCode SDK and primitive behavior relevant to upgrading `execute-slash-command`. Do not modify files. Do not propose implementation yet. Return evidence and unanswered questions.\n\nMandatory source context from user:\n- `.hivemind/STACKS-REFERENCES.md` states active OpenCode repo is `anomalyco/opencode`, packages `@opencode-ai/sdk` and `@opencode-ai/plugin` at npm latest 1.14.44; legacy `opencode-ai/opencode` is archived.\n- `repo-for-learning-and-synthesis.md` says synthesize patterns toward Hivemind philosophy, not copy wholesale; notable repos: `Opencode-DCP/opencode-dynamic-context-pruning`, `shekohex/opencode-pty`, `kdcokenny/opencode-background-agents`, `awesome-opencode/awesome-opencode`.\n\nResearch requirements:\n- Use internet-backed MCP/repo tools where available: DeepWiki/GitHub/Context7/Repomix/Exa/Tavily or equivalent. Validate against active repo `anomalyco/opencode`, not archived legacy.\n- Investigate OpenCode SDK/plugin capabilities for session agent switching, TUI prompt/append command execution, command discovery, command file locations (`.opencode/command` vs `.opencode/commands`, `.opencode/agent` vs `.opencode/agents`, project/global), command frontmatter fields such as `agent`, `subtask`, argument substitution (`$ARGUMENTS`), and task/subagent delegation semantics.\n- Investigate patterns in the suggested OpenCode ecosystem repos only as synthesis references; do not assume they are directly portable.\n- Include URLs/repo paths and exact evidence snippets where possible.\n- Return compact report in Vietnamese prose with source citations/links.\n\nExpected return sections:\n1. OpenCode SDK/plugin surfaces relevant to agent switching and command execution\n2. Primitive layout and frontmatter semantics discovered\n3. `$ARGUMENTS`/flags/reference parsing behavior discovered\n4. Ecosystem repo patterns that may inform but not dictate Hivemind design\n5. Uncertainties requiring follow-up codebase validation\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-phase-researcher",
+      "content": "Research OpenCode command primitives",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-phase-researcher",
+      "content": "Tôi là **subagent gsd-phase-researcher**. Báo cáo dưới đây chỉ là **research evidence**, không sửa file và không đề xuất implementation chi tiết.\n\n## 1. OpenCode SDK/plugin surfaces liên quan agent switching + command execution\n\n- **Active source verified:** `anomalyco/opencode`, tag `v1.14.44`, không dùng repo legacy archived.  \n  - SDK/client source: [`packages/sdk/js/src/v2/client.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/client.ts)\n  - Generated SDK: [`packages/sdk/js/src/v2/gen/sdk.gen.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/gen/sdk.gen.ts)\n\n- **NPM discrepancy:** user context nói latest `1.14.44`, nhưng `npm view @opencode-ai/sdk` và `@opencode-ai/plugin` hiện trả latest `1.15.7`. Vì task yêu cầu validate `1.14.44`, tôi dùng tag `v1.14.44`; planner nên kiểm tra project pin thực tế trước khi lock. `[VERIFIED: npm registry + GitHub tag]`\n\n- SDK v2 có các surface quan trọng:\n  - `client.session.prompt(...)` → `POST /session/{sessionID}/message`; body có `agent`, `model`, `variant`, `parts`, `tools`. Evidence snippet: generated method `public prompt... url: \"/session/{sessionID}/message\"`.\n  - `client.session.command(...)` → `POST /session/{sessionID}/command`; body có `agent`, `model`, `arguments`, `command`, `variant`, `parts`. Evidence snippet: generated method `public command... url: \"/session/{sessionID}/command\"`.\n  - `client.command.list(...)` → `GET /command` for command discovery. Evidence snippet: `export class Command ... public list ... url: \"/command\"`.\n  - `client.tui.appendPrompt(...)` → `POST /tui/append-prompt`; only appends prompt text.\n  - `client.tui.executeCommand(...)` → `POST /tui/execute-command`; executes TUI command string, not necessarily same semantics as session slash-command execution.  \n  Sources: generated SDK snippets from [`sdk.gen.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/gen/sdk.gen.ts), Context7 `/anomalyco/opencode-sdk-js`.\n\n- **Agent switching:** `SessionPrompt.createUserMessage()` chooses `input.agent || defaultAgent`, validates agent exists, stores `info.agent`, and emits `SessionEvent.AgentSwitched` when stored session agent differs. Source: [`packages/opencode/src/session/prompt.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/session/prompt.ts).  \n  Evidence snippet: `const agentName = input.agent || (yield* agents.defaultAgent())`; later `EventV2.run(SessionEvent.AgentSwitched.Sync, { ... agent: info.agent })`.\n\n- **Plugin hook surface:** `Plugin.Service.trigger()` invokes registered hooks sequentially. Source: [`packages/opencode/src/plugin/index.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/plugin/index.ts).  \n  In command flow, OpenCode triggers `command.execute.before` with `{ command, sessionID, arguments }` and mutable `{ parts }`. Source: `session/prompt.ts`.\n\n## 2. Primitive layout + frontmatter semantics discovered\n\n- **Commands support BOTH singular and plural directories in v1.14.44:**  \n  Source: [`packages/opencode/src/config/command.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/config/command.ts)  \n  Evidence snippet: `Glob.scan(\"{command,commands}/**/*.md\", ...)` and patterns include `\"/.opencode/command/\"`, `\"/.opencode/commands/\"`, `\"/command/\"`, `\"/commands/\"`.\n\n- **Agents also support BOTH singular and plural directories in v1.14.44:**  \n  Source: [`packages/opencode/src/config/agent.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/config/agent.ts)  \n  Evidence snippet: `Glob.scan(\"{agent,agents}/**/*.md\", ...)` and patterns include `\"/.opencode/agent/\"`, `\"/.opencode/agents/\"`, `\"/agent/\"`, `\"/agents/\"`.\n\n- **Command frontmatter/config schema:**  \n  Source: `config/command.ts`  \n  Evidence snippet:\n  ```ts\n  export const Info = Schema.Struct({\n    template: Schema.String,\n    description: Schema.optional(Schema.String),\n    agent: Schema.optional(Schema.String),\n    model: Schema.optional(ConfigModelID),\n    subtask: Schema.optional(Schema.Boolean),\n  })\n  ```\n\n- **Agent frontmatter/config schema:**  \n  Source: `config/agent.ts`  \n  Supports `model`, `variant`, `temperature`, `top_p`, `prompt`, deprecated `tools`, `disable`, `description`, `mode: \"subagent\" | \"primary\" | \"all\"`, `hidden`, `options`, `color`, `steps/maxSteps`, `permission`.\n\n- **Command registry sources:**  \n  Source: [`packages/opencode/src/command/index.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/command/index.ts)  \n  Registry merges:\n  1. built-in `init` and `review`;\n  2. `cfg.command`;\n  3. MCP prompts;\n  4. skills as commands if no name collision.\n\n## 3. `$ARGUMENTS` / flags / reference parsing behavior discovered\n\n- Command argument parsing is in `SessionPrompt.command()`. Source: [`session/prompt.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/session/prompt.ts).  \n  Evidence snippets:\n  - `const argsRegex = /(?:\\[Image\\s+\\d+\\]|\"[^\"]*\"|'[^']*'|[^\\s\"']+)/gi`\n  - `const placeholderRegex = /\\$(\\d+)/g`\n  - `const quoteTrimRegex = /^[\"']|[\"']$/g`\n\n- Behavior:\n  - `$1`, `$2`, ... are replaced by parsed positional args.\n  - The **last numbered placeholder absorbs the remaining args**: `if (position === last) return args.slice(argIndex).join(\" \")`.\n  - `$ARGUMENTS` is replaced with raw `input.arguments`.\n  - If no `$1` placeholders and no `$ARGUMENTS`, but args exist, OpenCode appends args to the template: `template = template + \"\\n\\n\" + input.arguments`.\n  - Shell interpolation exists via backtick syntax: `!`cmd`` matched by `bashRegex = /!`([^`]+)`/g`, executed with preferred shell, output replaces the marker.\n  - File/agent references are resolved by `resolvePromptParts()`: markdown file references become file parts; if no file exists and an agent name matches, an `agent` part is added.\n\n- **Subtask semantics for commands:**  \n  `isSubtask = (agent.mode === \"subagent\" && cmd.subtask !== false) || cmd.subtask === true`.  \n  If subtask, OpenCode creates a `SubtaskPart` with target agent/model/prompt, while the user message uses current/default agent; run loop then handles the subtask through native `task` tool.\n\n- **Native task semantics:**  \n  Source: [`packages/opencode/src/tool/task.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/tool/task.ts)  \n  Evidence:\n  - `task_id` resumes previous subagent session.\n  - New subtask creates child session with `parentID: ctx.sessionID`.\n  - It uses target agent model if configured, else inherits current assistant model/provider.\n\n## 4. Ecosystem repo patterns that inform but do not dictate Hivemind design\n\n- **Opencode-DCP / dynamic-context-pruning**  \n  Source: [`Opencode-DCP/opencode-dynamic-context-pruning`](https://github.com/Opencode-DCP/opencode-dynamic-context-pruning) + Exa release result.  \n  Useful pattern: expose one unified model-facing tool (`compress`) and slash commands for manual control; protect important tool outputs; do not mutate raw session history directly, instead transform context sent to model. Not directly portable, but useful for “single narrow surface + durable policy” design.\n\n- **kdcokenny/opencode-background-agents**  \n  Source: [`kdcokenny/opencode-background-agents`](https://github.com/kdcokenny/opencode-background-agents), OCX docs.  \n  Useful pattern: async delegation has stable IDs, explicit lifecycle states, persistence-before-notify, compaction carry-forward, and read-only/write-capable split. It explicitly says write-capable agents should use native `task` because background sessions cannot preserve undo/branching parity.\n\n- **shekohex/opencode-pty**  \n  Source: [`shekohex/opencode-pty`](https://github.com/shekohex/opencode-pty) README via Tavily extract.  \n  Useful pattern: long-running PTY work is exposed through tools plus slash commands (`/pty-open-background-spy`, `/pty-show-server-url`) and a web observer UI. Important warning: agent prompting must name background work as “session” to avoid shell `&` misuse.\n\n- **awesome-opencode/awesome-opencode**  \n  Source: [`awesome-opencode/awesome-opencode`](https://github.com/awesome-opencode/awesome-opencode), `data/plugins/background-agents.yaml`.  \n  Useful only as ecosystem index; it confirms existence/category of plugins like Background Agents and DCP but is not behavioral authority.\n\n## 5. Uncertainties requiring follow-up codebase validation\n\n1. **Project pin vs npm latest conflict:** npm latest is `1.15.7`, while provided stack context says `1.14.44`. Need local `package.json`/lockfile validation before planner chooses exact API target.\n\n2. **TUI `executeCommand` semantics:** SDK exposes `client.tui.executeCommand({ command })`, but evidence suggests session slash commands should use `client.session.command(...)` for command templates, `$ARGUMENTS`, `agent`, `model`, and `subtask`. Need local `execute-slash-command` code validation to see whether it currently uses TUI append/execute because of runtime constraints.\n\n3. **Plugin availability of `client.session.command`:** Plugin receives `createOpencodeClient(...)` in `PluginInput`; source confirms client exists, but local Hivemind wrapper may use older SDK types or its own session API wrapper. Need local compile/type validation.\n\n4. **Global/project precedence exact order:** Source confirms singular/plural scanning inside each config dir, but exact merge order across global, custom config dir, project config should be validated in `Config` loader if planner needs overwrite rules.\n\n5. **Command names from nested paths:** `configEntryNameFromPath(...)` determines names for nested command files. Need inspect if Hivemind uses nested command namespaces or flat names.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-21T16:58:37.967Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_w6DSqwQQzmy5F3gPDSXlmvJ7",
+        "input": {
+          "name": "hm-l3-opencode-platform-reference"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:58:46.099Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_iF2Jsl09KuLz87TNIhK80wQ3",
+        "input": {
+          "name": "hm-l3-deep-research"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:00.425Z",
+      "type": "tool_call",
+      "content": "Tool: context7_resolve-library-id",
+      "metadata": {
+        "tool": "context7_resolve-library-id",
+        "callID": "call_4jhnDPBN7leAmU4AAXjRBagO",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:00.696Z",
+      "type": "tool_call",
+      "content": "Tool: context7_resolve-library-id",
+      "metadata": {
+        "tool": "context7_resolve-library-id",
+        "callID": "call_Iz7BMli5UNtAIPZeI4Wr9aC4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:13.781Z",
+      "type": "tool_call",
+      "content": "Tool: deepwiki_ask_question",
+      "metadata": {
+        "tool": "deepwiki_ask_question",
+        "callID": "call_q0QGXzqEQq5LkRJu4C9BOeIa",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:16.763Z",
+      "type": "tool_call",
+      "content": "Tool: deepwiki_ask_question",
+      "metadata": {
+        "tool": "deepwiki_ask_question",
+        "callID": "call_OxAUlDC7NfOpUX4wbyNOWXnH",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:26.846Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_Z7jRCdyxQAGF4Utr7NcfVAhA",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:26.938Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_pvxpJL74PNdZ9W3ZWhsipzBA",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:27.512Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_StWmKUF0gTWSmMemZmb2dUsm",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:37.371Z",
+      "type": "tool_call",
+      "content": "Tool: zread_get_repo_structure",
+      "metadata": {
+        "tool": "zread_get_repo_structure",
+        "callID": "call_QM6HkddE1urpHcszq5rxz36R",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:48.699Z",
+      "type": "tool_call",
+      "content": "Tool: zread_get_repo_structure",
+      "metadata": {
+        "tool": "zread_get_repo_structure",
+        "callID": "call_VtHA52qiPWPE7FH7syIYHVfa",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T16:59:50.906Z",
+      "type": "tool_call",
+      "content": "Tool: zread_read_file",
+      "metadata": {
+        "tool": "zread_read_file",
+        "callID": "call_kac3eNFBN4cvKzbHDMHPbExr",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:01:05.479Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_qaHJH70OE5pIl9m66ahrgcLh",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:01:05.655Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_1hJlmrnQbIUQoWVmhzazv5by",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:01:05.686Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_BYNmusQIzbjzRx1R9fMHUGO7",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:01:05.863Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_4tumMc2LrjYHVVnYU6RXqU2g",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:01:17.463Z",
+      "type": "tool_call",
+      "content": "Tool: zread_search_doc",
+      "metadata": {
+        "tool": "zread_search_doc",
+        "callID": "call_IPAqff8Ims8fgCYyzr1aVmR4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:26.329Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_02LipHYBtU95YdUfvBNyHtFO",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:26.541Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_j5wuTXICSBrcZlcFmZSELbW5",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:26.931Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_SdOKmt5TZykvmdRYDA1CLnOq",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:39.921Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_XEtuWCQVmp1Gh4S945RwwbGm",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:40.206Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_dxSA3oDoxbY6XJAEW43OnN9Q",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:40.244Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_mh7aEQDY1hG7sFMIZYFsMgku",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:55.558Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_MV7gvnWhcEdvT2PqrMOWfEY8",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:55.605Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_yit1CFPdng8u4VHoGHN45ofq",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:55.612Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_AyINQIZt6zOwFSPcqVyCiaZa",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:02:55.618Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_PQflekmBWCMct7n6HMyv4bvk",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:05.887Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_4LVdGCNeAJlYYvI1nllZ7cxO",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:05.904Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_m82d5OoP9o76Eqv4FG2Rdp0W",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:05.959Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_bdYy6Jf9rSzWBVHgVeoNSMKO",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:18.512Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_ESQS6aifT2ZCtPl9sQLk17Kt",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:18.519Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_qtkENYOSyVtF5mCgPhr6QEPy",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:18.525Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_VQktsd9lpbgO1Jx3iaKWVdBM",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:28.593Z",
+      "type": "tool_call",
+      "content": "Tool: fetch_fetch",
+      "metadata": {
+        "tool": "fetch_fetch",
+        "callID": "call_7Mgi6v6ycBDvKaqop1rtdbaf",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:37.650Z",
+      "type": "tool_call",
+      "content": "Tool: fetch_fetch",
+      "metadata": {
+        "tool": "fetch_fetch",
+        "callID": "call_Eu0pbB0OHdsA6M2jBSIbYqLX",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:48.271Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_HMU0eQTiIKwIIdYVbO79jtBt",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:57.839Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_wFJXS8ky5ZyW1eKaLWVD5uY8",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:57.845Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_p1IF7TUxqx2Mvl26SU26i5hR",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:03:57.877Z",
+      "type": "tool_call",
+      "content": "Tool: github_get_file_contents",
+      "metadata": {
+        "tool": "github_get_file_contents",
+        "callID": "call_GlqM4wU1WroN3Bdln3bJypuW",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:04:20.441Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_ngZjiYsvNP1UIU63WRARdclx",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:04:31.855Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_oDc7Ik5sm6bXE19GbmZSsCT2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:04:41.141Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_usmQkwGZ8OluXtCEK9xk3pdp",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:04:55.586Z",
+      "type": "tool_call",
+      "content": "Tool: zread_get_repo_structure",
+      "metadata": {
+        "tool": "zread_get_repo_structure",
+        "callID": "call_ypchGquLwB8i7UKrLEiySJ9x",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:05:09.577Z",
+      "type": "tool_call",
+      "content": "Tool: zread_get_repo_structure",
+      "metadata": {
+        "tool": "zread_get_repo_structure",
+        "callID": "call_iBjN73fpQFB6vR1FqmuIsmME",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:06:03.164Z",
+      "type": "tool_call",
+      "content": "Tool: exa_web_search_exa",
+      "metadata": {
+        "tool": "exa_web_search_exa",
+        "callID": "call_UjS1HiKOeSSr1czTWDHUKIC3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:06:03.537Z",
+      "type": "tool_call",
+      "content": "Tool: exa_web_search_exa",
+      "metadata": {
+        "tool": "exa_web_search_exa",
+        "callID": "call_YM8uVlmtgmynv3iTyegTlOpG",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:06:51.889Z",
+      "type": "tool_call",
+      "content": "Tool: zread_read_file",
+      "metadata": {
+        "tool": "zread_read_file",
+        "callID": "call_ED9jCfIFeT4kZ7ujV40sb9eE",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:07:14.785Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_extract",
+      "metadata": {
+        "tool": "tavily_tavily_extract",
+        "callID": "call_p74TdybDsHHECnfiYO4dX6Hr",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:08:17.808Z",
+      "type": "assistant_message",
+      "content": "Tôi là **subagent gsd-phase-researcher**. Báo cáo dưới đây chỉ là **research evidence**, không sửa file và không đề xuất implementation chi tiết.\n\n## 1. OpenCode SDK/plugin surfaces liên quan agent switching + command execution\n\n- **Active source verified:** `anomalyco/opencode`, tag `v1.14.44`, không dùng repo legacy archived.  \n  - SDK/client source: [`packages/sdk/js/src/v2/client.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/client.ts)\n  - Generated SDK: [`packages/sdk/js/src/v2/gen/sdk.gen.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/gen/sdk.gen.ts)\n\n- **NPM discrepancy:** user context nói latest `1.14.44`, nhưng `npm view @opencode-ai/sdk` và `@opencode-ai/plugin` hiện trả latest `1.15.7`. Vì task yêu cầu validate `1.14.44`, tôi dùng tag `v1.14.44`; planner nên kiểm tra project pin thực tế trước khi lock. `[VERIFIED: npm registry + GitHub tag]`\n\n- SDK v2 có các surface quan trọng:\n  - `client.session.prompt(...)` → `POST /session/{sessionID}/message`; body có `agent`, `model`, `variant`, `parts`, `tools`. Evidence snippet: generated method `public prompt... url: \"/session/{sessionID}/message\"`.\n  - `client.session.command(...)` → `POST /session/{sessionID}/command`; body có `agent`, `model`, `arguments`, `command`, `variant`, `parts`. Evidence snippet: generated method `public command... url: \"/session/{sessionID}/command\"`.\n  - `client.command.list(...)` → `GET /command` for command discovery. Evidence snippet: `export class Command ... public list ... url: \"/command\"`.\n  - `client.tui.appendPrompt(...)` → `POST /tui/append-prompt`; only appends prompt text.\n  - `client.tui.executeCommand(...)` → `POST /tui/execute-command`; executes TUI command string, not necessarily same semantics as session slash-command execution.  \n  Sources: generated SDK snippets from [`sdk.gen.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/gen/sdk.gen.ts), Context7 `/anomalyco/opencode-sdk-js`.\n\n- **Agent switching:** `SessionPrompt.createUserMessage()` chooses `input.agent || defaultAgent`, validates agent exists, stores `info.agent`, and emits `SessionEvent.AgentSwitched` when stored session agent differs. Source: [`packages/opencode/src/session/prompt.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/session/prompt.ts).  \n  Evidence snippet: `const agentName = input.agent || (yield* agents.defaultAgent())`; later `EventV2.run(SessionEvent.AgentSwitched.Sync, { ... agent: info.agent })`.\n\n- **Plugin hook surface:** `Plugin.Service.trigger()` invokes registered hooks sequentially. Source: [`packages/opencode/src/plugin/index.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/plugin/index.ts).  \n  In command flow, OpenCode triggers `command.execute.before` with `{ command, sessionID, arguments }` and mutable `{ parts }`. Source: `session/prompt.ts`.\n\n## 2. Primitive layout + frontmatter semantics discovered\n\n- **Commands support BOTH singular and plural directories in v1.14.44:**  \n  Source: [`packages/opencode/src/config/command.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/config/command.ts)  \n  Evidence snippet: `Glob.scan(\"{command,commands}/**/*.md\", ...)` and patterns include `\"/.opencode/command/\"`, `\"/.opencode/commands/\"`, `\"/command/\"`, `\"/commands/\"`.\n\n- **Agents also support BOTH singular and plural directories in v1.14.44:**  \n  Source: [`packages/opencode/src/config/agent.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/config/agent.ts)  \n  Evidence snippet: `Glob.scan(\"{agent,agents}/**/*.md\", ...)` and patterns include `\"/.opencode/agent/\"`, `\"/.opencode/agents/\"`, `\"/agent/\"`, `\"/agents/\"`.\n\n- **Command frontmatter/config schema:**  \n  Source: `config/command.ts`  \n  Evidence snippet:\n  ```ts\n  export const Info = Schema.Struct({\n    template: Schema.String,\n    description: Schema.optional(Schema.String),\n    agent: Schema.optional(Schema.String),\n    model: Schema.optional(ConfigModelID),\n    subtask: Schema.optional(Schema.Boolean),\n  })\n  ```\n\n- **Agent frontmatter/config schema:**  \n  Source: `config/agent.ts`  \n  Supports `model`, `variant`, `temperature`, `top_p`, `prompt`, deprecated `tools`, `disable`, `description`, `mode: \"subagent\" | \"primary\" | \"all\"`, `hidden`, `options`, `color`, `steps/maxSteps`, `permission`.\n\n- **Command registry sources:**  \n  Source: [`packages/opencode/src/command/index.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/command/index.ts)  \n  Registry merges:\n  1. built-in `init` and `review`;\n  2. `cfg.command`;\n  3. MCP prompts;\n  4. skills as commands if no name collision.\n\n## 3. `$ARGUMENTS` / flags / reference parsing behavior discovered\n\n- Command argument parsing is in `SessionPrompt.command()`. Source: [`session/prompt.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/session/prompt.ts).  \n  Evidence snippets:\n  - `const argsRegex = /(?:\\[Image\\s+\\d+\\]|\"[^\"]*\"|'[^']*'|[^\\s\"']+)/gi`\n  - `const placeholderRegex = /\\$(\\d+)/g`\n  - `const quoteTrimRegex = /^[\"']|[\"']$/g`\n\n- Behavior:\n  - `$1`, `$2`, ... are replaced by parsed positional args.\n  - The **last numbered placeholder absorbs the remaining args**: `if (position === last) return args.slice(argIndex).join(\" \")`.\n  - `$ARGUMENTS` is replaced with raw `input.arguments`.\n  - If no `$1` placeholders and no `$ARGUMENTS`, but args exist, OpenCode appends args to the template: `template = template + \"\\n\\n\" + input.arguments`.\n  - Shell interpolation exists via backtick syntax: `!`cmd`` matched by `bashRegex = /!`([^`]+)`/g`, executed with preferred shell, output replaces the marker.\n  - File/agent references are resolved by `resolvePromptParts()`: markdown file references become file parts; if no file exists and an agent name matches, an `agent` part is added.\n\n- **Subtask semantics for commands:**  \n  `isSubtask = (agent.mode === \"subagent\" && cmd.subtask !== false) || cmd.subtask === true`.  \n  If subtask, OpenCode creates a `SubtaskPart` with target agent/model/prompt, while the user message uses current/default agent; run loop then handles the subtask through native `task` tool.\n\n- **Native task semantics:**  \n  Source: [`packages/opencode/src/tool/task.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/tool/task.ts)  \n  Evidence:\n  - `task_id` resumes previous subagent session.\n  - New subtask creates child session with `parentID: ctx.sessionID`.\n  - It uses target agent model if configured, else inherits current assistant model/provider.\n\n## 4. Ecosystem repo patterns that inform but do not dictate Hivemind design\n\n- **Opencode-DCP / dynamic-context-pruning**  \n  Source: [`Opencode-DCP/opencode-dynamic-context-pruning`](https://github.com/Opencode-DCP/opencode-dynamic-context-pruning) + Exa release result.  \n  Useful pattern: expose one unified model-facing tool (`compress`) and slash commands for manual control; protect important tool outputs; do not mutate raw session history directly, instead transform context sent to model. Not directly portable, but useful for “single narrow surface + durable policy” design.\n\n- **kdcokenny/opencode-background-agents**  \n  Source: [`kdcokenny/opencode-background-agents`](https://github.com/kdcokenny/opencode-background-agents), OCX docs.  \n  Useful pattern: async delegation has stable IDs, explicit lifecycle states, persistence-before-notify, compaction carry-forward, and read-only/write-capable split. It explicitly says write-capable agents should use native `task` because background sessions cannot preserve undo/branching parity.\n\n- **shekohex/opencode-pty**  \n  Source: [`shekohex/opencode-pty`](https://github.com/shekohex/opencode-pty) README via Tavily extract.  \n  Useful pattern: long-running PTY work is exposed through tools plus slash commands (`/pty-open-background-spy`, `/pty-show-server-url`) and a web observer UI. Important warning: agent prompting must name background work as “session” to avoid shell `&` misuse.\n\n- **awesome-opencode/awesome-opencode**  \n  Source: [`awesome-opencode/awesome-opencode`](https://github.com/awesome-opencode/awesome-opencode), `data/plugins/background-agents.yaml`.  \n  Useful only as ecosystem index; it confirms existence/category of plugins like Background Agents and DCP but is not behavioral authority.\n\n## 5. Uncertainties requiring follow-up codebase validation\n\n1. **Project pin vs npm latest conflict:** npm latest is `1.15.7`, while provided stack context says `1.14.44`. Need local `package.json`/lockfile validation before planner chooses exact API target.\n\n2. **TUI `executeCommand` semantics:** SDK exposes `client.tui.executeCommand({ command })`, but evidence suggests session slash commands should use `client.session.command(...)` for command templates, `$ARGUMENTS`, `agent`, `model`, and `subtask`. Need local `execute-slash-command` code validation to see whether it currently uses TUI append/execute because of runtime constraints.\n\n3. **Plugin availability of `client.session.command`:** Plugin receives `createOpencodeClient(...)` in `PluginInput`; source confirms client exists, but local Hivemind wrapper may use older SDK types or its own session API wrapper. Need local compile/type validation.\n\n4. **Global/project precedence exact order:** Source confirms singular/plural scanning inside each config dir, but exact merge order across global, custom config dir, project config should be validated in `Config` loader if planner needs overwrite rules.\n\n5. **Command names from nested paths:** `configEntryNameFromPath(...)` determines names for nested command files. Need inspect if Hivemind uses nested command namespaces or flat names.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1b4869b74ffe5G395s5zjraSIO"
+      }
+    }
+  ],
+  "lastMessage": "Tôi là **subagent gsd-phase-researcher**. Báo cáo dưới đây chỉ là **research evidence**, không sửa file và không đề xuất implementation chi tiết.\n\n## 1. OpenCode SDK/plugin surfaces liên quan agent switching + command execution\n\n- **Active source verified:** `anomalyco/opencode`, tag `v1.14.44`, không dùng repo legacy archived.  \n  - SDK/client source: [`packages/sdk/js/src/v2/client.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/client.ts)\n  - Generated SDK: [`packages/sdk/js/src/v2/gen/sdk.gen.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/gen/sdk.gen.ts)\n\n- **NPM discrepancy:** user context nói latest `1.14.44`, nhưng `npm view @opencode-ai/sdk` và `@opencode-ai/plugin` hiện trả latest `1.15.7`. Vì task yêu cầu validate `1.14.44`, tôi dùng tag `v1.14.44`; planner nên kiểm tra project pin thực tế trước khi lock. `[VERIFIED: npm registry + GitHub tag]`\n\n- SDK v2 có các surface quan trọng:\n  - `client.session.prompt(...)` → `POST /session/{sessionID}/message`; body có `agent`, `model`, `variant`, `parts`, `tools`. Evidence snippet: generated method `public prompt... url: \"/session/{sessionID}/message\"`.\n  - `client.session.command(...)` → `POST /session/{sessionID}/command`; body có `agent`, `model`, `arguments`, `command`, `variant`, `parts`. Evidence snippet: generated method `public command... url: \"/session/{sessionID}/command\"`.\n  - `client.command.list(...)` → `GET /command` for command discovery. Evidence snippet: `export class Command ... public list ... url: \"/command\"`.\n  - `client.tui.appendPrompt(...)` → `POST /tui/append-prompt`; only appends prompt text.\n  - `client.tui.executeCommand(...)` → `POST /tui/execute-command`; executes TUI command string, not necessarily same semantics as session slash-command execution.  \n  Sources: generated SDK snippets from [`sdk.gen.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/sdk/js/src/v2/gen/sdk.gen.ts), Context7 `/anomalyco/opencode-sdk-js`.\n\n- **Agent switching:** `SessionPrompt.createUserMessage()` chooses `input.agent || defaultAgent`, validates agent exists, stores `info.agent`, and emits `SessionEvent.AgentSwitched` when stored session agent differs. Source: [`packages/opencode/src/session/prompt.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/session/prompt.ts).  \n  Evidence snippet: `const agentName = input.agent || (yield* agents.defaultAgent())`; later `EventV2.run(SessionEvent.AgentSwitched.Sync, { ... agent: info.agent })`.\n\n- **Plugin hook surface:** `Plugin.Service.trigger()` invokes registered hooks sequentially. Source: [`packages/opencode/src/plugin/index.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/plugin/index.ts).  \n  In command flow, OpenCode triggers `command.execute.before` with `{ command, sessionID, arguments }` and mutable `{ parts }`. Source: `session/prompt.ts`.\n\n## 2. Primitive layout + frontmatter semantics discovered\n\n- **Commands support BOTH singular and plural directories in v1.14.44:**  \n  Source: [`packages/opencode/src/config/command.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/config/command.ts)  \n  Evidence snippet: `Glob.scan(\"{command,commands}/**/*.md\", ...)` and patterns include `\"/.opencode/command/\"`, `\"/.opencode/commands/\"`, `\"/command/\"`, `\"/commands/\"`.\n\n- **Agents also support BOTH singular and plural directories in v1.14.44:**  \n  Source: [`packages/opencode/src/config/agent.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/config/agent.ts)  \n  Evidence snippet: `Glob.scan(\"{agent,agents}/**/*.md\", ...)` and patterns include `\"/.opencode/agent/\"`, `\"/.opencode/agents/\"`, `\"/agent/\"`, `\"/agents/\"`.\n\n- **Command frontmatter/config schema:**  \n  Source: `config/command.ts`  \n  Evidence snippet:\n  ```ts\n  export const Info = Schema.Struct({\n    template: Schema.String,\n    description: Schema.optional(Schema.String),\n    agent: Schema.optional(Schema.String),\n    model: Schema.optional(ConfigModelID),\n    subtask: Schema.optional(Schema.Boolean),\n  })\n  ```\n\n- **Agent frontmatter/config schema:**  \n  Source: `config/agent.ts`  \n  Supports `model`, `variant`, `temperature`, `top_p`, `prompt`, deprecated `tools`, `disable`, `description`, `mode: \"subagent\" | \"primary\" | \"all\"`, `hidden`, `options`, `color`, `steps/maxSteps`, `permission`.\n\n- **Command registry sources:**  \n  Source: [`packages/opencode/src/command/index.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/command/index.ts)  \n  Registry merges:\n  1. built-in `init` and `review`;\n  2. `cfg.command`;\n  3. MCP prompts;\n  4. skills as commands if no name collision.\n\n## 3. `$ARGUMENTS` / flags / reference parsing behavior discovered\n\n- Command argument parsing is in `SessionPrompt.command()`. Source: [`session/prompt.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/session/prompt.ts).  \n  Evidence snippets:\n  - `const argsRegex = /(?:\\[Image\\s+\\d+\\]|\"[^\"]*\"|'[^']*'|[^\\s\"']+)/gi`\n  - `const placeholderRegex = /\\$(\\d+)/g`\n  - `const quoteTrimRegex = /^[\"']|[\"']$/g`\n\n- Behavior:\n  - `$1`, `$2`, ... are replaced by parsed positional args.\n  - The **last numbered placeholder absorbs the remaining args**: `if (position === last) return args.slice(argIndex).join(\" \")`.\n  - `$ARGUMENTS` is replaced with raw `input.arguments`.\n  - If no `$1` placeholders and no `$ARGUMENTS`, but args exist, OpenCode appends args to the template: `template = template + \"\\n\\n\" + input.arguments`.\n  - Shell interpolation exists via backtick syntax: `!`cmd`` matched by `bashRegex = /!`([^`]+)`/g`, executed with preferred shell, output replaces the marker.\n  - File/agent references are resolved by `resolvePromptParts()`: markdown file references become file parts; if no file exists and an agent name matches, an `agent` part is added.\n\n- **Subtask semantics for commands:**  \n  `isSubtask = (agent.mode === \"subagent\" && cmd.subtask !== false) || cmd.subtask === true`.  \n  If subtask, OpenCode creates a `SubtaskPart` with target agent/model/prompt, while the user message uses current/default agent; run loop then handles the subtask through native `task` tool.\n\n- **Native task semantics:**  \n  Source: [`packages/opencode/src/tool/task.ts`](https://github.com/anomalyco/opencode/blob/v1.14.44/packages/opencode/src/tool/task.ts)  \n  Evidence:\n  - `task_id` resumes previous subagent session.\n  - New subtask creates child session with `parentID: ctx.sessionID`.\n  - It uses target agent model if configured, else inherits current assistant model/provider.\n\n## 4. Ecosystem repo patterns that inform but do not dictate Hivemind design\n\n- **Opencode-DCP / dynamic-context-pruning**  \n  Source: [`Opencode-DCP/opencode-dynamic-context-pruning`](https://github.com/Opencode-DCP/opencode-dynamic-context-pruning) + Exa release result.  \n  Useful pattern: expose one unified model-facing tool (`compress`) and slash commands for manual control; protect important tool outputs; do not mutate raw session history directly, instead transform context sent to model. Not directly portable, but useful for “single narrow surface + durable policy” design.\n\n- **kdcokenny/opencode-background-agents**  \n  Source: [`kdcokenny/opencode-background-agents`](https://github.com/kdcokenny/opencode-background-agents), OCX docs.  \n  Useful pattern: async delegation has stable IDs, explicit lifecycle states, persistence-before-notify, compaction carry-forward, and read-only/write-capable split. It explicitly says write-capable agents should use native `task` because background sessions cannot preserve undo/branching parity.\n\n- **shekohex/opencode-pty**  \n  Source: [`shekohex/opencode-pty`](https://github.com/shekohex/opencode-pty) README via Tavily extract.  \n  Useful pattern: long-running PTY work is exposed through tools plus slash commands (`/pty-open-background-spy`, `/pty-show-server-url`) and a web observer UI. Important warning: agent prompting must name background work as “session” to avoid shell `&` misuse.\n\n- **awesome-opencode/awesome-opencode**  \n  Source: [`awesome-opencode/awesome-opencode`](https://github.com/awesome-opencode/awesome-opencode), `data/plugins/background-agents.yaml`.  \n  Useful only as ecosystem index; it confirms existence/category of plugins like Background Agents and DCP but is not behavioral authority.\n\n## 5. Uncertainties requiring follow-up codebase validation\n\n1. **Project pin vs npm latest conflict:** npm latest is `1.15.7`, while provided stack context says `1.14.44`. Need local `package.json`/lockfile validation before planner chooses exact API target.\n\n2. **TUI `executeCommand` semantics:** SDK exposes `client.tui.executeCommand({ command })`, but evidence suggests session slash commands should use `client.session.command(...)` for command templates, `$ARGUMENTS`, `agent`, `model`, and `subtask`. Need local `execute-slash-command` code validation to see whether it currently uses TUI append/execute because of runtime constraints.\n\n3. **Plugin availability of `client.session.command`:** Plugin receives `createOpencodeClient(...)` in `PluginInput`; source confirms client exists, but local Hivemind wrapper may use older SDK types or its own session API wrapper. Need local compile/type validation.\n\n4. **Global/project precedence exact order:** Source confirms singular/plural scanning inside each config dir, but exact merge order across global, custom config dir, project config should be validated in `Config` loader if planner needs overwrite rules.\n\n5. **Command names from nested paths:** `configEntryNameFromPath(...)` determines names for nested command files. Need inspect if Hivemind uses nested command namespaces or flat names."
+}

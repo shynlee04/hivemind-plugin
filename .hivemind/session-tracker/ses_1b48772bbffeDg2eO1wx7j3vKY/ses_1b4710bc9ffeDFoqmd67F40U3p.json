@@ -1,0 +1,381 @@
+{
+  "sessionID": "ses_1b4710bc9ffeDFoqmd67F40U3p",
+  "parentSessionID": "ses_1b48772bbffeDg2eO1wx7j3vKY",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Plan Phase 21.1 execution",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-05-21T17:22:00.386Z",
+  "updated": "2026-05-21T17:26:00.352Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-planner",
+      "content": "You are the subagent Name:gsd-planner role: phase planning specialist. You are being delegated by the front-facing orchestrator. Your task is bounded: create executable phase plans for Phase 21.1. Do NOT write code, do NOT edit files outside `.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/`.\n\nRead ALL these files first:\n\n1. `.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-SPEC.md` — 7 requirements, boundaries, acceptance criteria\n2. `.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-RESEARCH.md` — SDK v1 types confirmed, architecture patterns, pitfalls, code examples\n3. `.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-CONTEXT.md` — 10 decisions locked, canonical refs, code context, contamination report\n4. `src/tools/session/execute-slash-command.ts` — current implementation\n5. `src/plugin.ts:397-414` — tool registration\n6. `src/routing/command-engine/index.ts:27-41` and `src/routing/command-engine/types.ts:4-17`\n7. `src/shared/tool-response.ts` — standard result envelope\n8. `tests/tools/execute-slash-command.test.ts` — existing tests\n9. `package.json` — SDK version: @opencode-ai/sdk ^1.15.5\n10. `.planning/ROADMAP.md` around Phase 21.1 entry\n\nKey known facts from research:\n- Project uses SDK v1 (`@opencode-ai/sdk` 1.15.5), NOT v2. `PluginInput.client` = v1 client.\n- v1 `session.command()` body = `{ command, arguments, agent?, model?, messageID? }` — no `parts`, no `variant`.\n- `client` is factory-injected at `plugin.ts:408`, not from `ctx`.\n- `client.command.list()` returns `Array<Command>` with `{ name, description, agent?, model?, template, subtask? }` — use for preflight.\n- Subtask routing uses `session.prompt()` with `SubtaskPartInput` — NOT `session.command()`.\n- Agent switching is server-side via `session.command({ agent })`.\n- `CommandBundle` type drops `model` and `subtask` — extend or use SDK `Command` type.\n- Current tool uses `{ output, metadata }` — change to `ToolResponse` envelope.\n- TUI fallback path must be preserved (hybrid approach per SPEC).\n\nCreate PLAN.md(s) following GSD conventions:\n- Wave-based parallelization (max 3-4 plans per wave)\n- Each plan has: title, goal, tasks (numbered), entry/exit gates, acceptance criteria mapped to SPEC requirements\n- Reference evidence from RESEARCH.md for SDK types\n- Address all 4 contamination/risk items\n- Plan order must respect dependencies (preflight first, then execution, then subtask, then agent switch, then result envelope, then tests)\n\nWrite to: `.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/`\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-planner",
+      "content": "Plan Phase 21.1 execution",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-planner",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd  \n**Plans:** 3 plans in 3 waves\n\n### Wave Structure\n\n| Wave | Plans | Autonomous |\n|------|-------|------------|\n| 1 | 21.1-01 | yes |\n| 2 | 21.1-02 | no (has checkpoint) |\n| 3 | 21.1-03 | no (has checkpoint) |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| **21.1-01** | CommandBundle type extension + frontmatter enrichment | 3 | `src/routing/command-engine/types.ts`, `src/routing/command-engine/index.ts` |\n| **21.1-02** | Tool rewrite: SDK-native execution, agent switching (a+b), preflight, frontmatter, subtask routing, standard envelope | 2 | `src/tools/session/execute-slash-command.ts` |\n| **21.1-03** | Test rewrite: comprehensive coverage for all 7 REQs | 2 | `tests/tools/execute-slash-command.test.ts` |\n\n### Requirement Coverage\n\n| REQ | Description | Plan |\n|-----|-------------|------|\n| REQ-01 | SDK-native command execution path | 21.1-02, 21.1-03 |\n| REQ-02 | Real TUI agent switching (mech a+b) | 21.1-02, 21.1-03 |\n| REQ-03 | Command existence preflight | 21.1-01, 21.1-02, 21.1-03 |\n| REQ-04 | Command frontmatter awareness | 21.1-01, 21.1-02, 21.1-03 |\n| REQ-05 | Full argument/template/reference parsing | 21.1-02, 21.1-03 |\n| REQ-06 | Primitive discovery across all locations | 21.1-02, 21.1-03 |\n| REQ-07 | Standard result envelope | 21.1-02, 21.1-03 |\n\n### Decision Coverage (D-01 through D-10)\n\nAll 10 locked decisions from CONTEXT.md are implemented across the plans:\n- **D-01/D-02** (SDK v1, factory injection): 21.1-02 maintains v1 `session.command()` body shape\n- **D-03** (primary + fallback): 21.1-02 Step 5\n- **D-04** (subtask via session.prompt): 21.1-02 Step 3\n- **D-05** (ToolResponse): 21.1-02 imports from `src/shared/tool-response.ts`\n- **D-06** (command.list for preflight): 21.1-02 Step 1\n- **D-07** (CommandBundle extension): 21.1-01 extends type, 21.1-02 uses SDK Command type\n- **D-08/D-09** (agent mechanisms): 21.1-02 Step 4 (both a and b)\n- **D-10** (cache from ctx.agent): 21.1-02 Step 0\n\n### Contamination/Risk Items Addressed\n\n| Risk | Mitigation Plan |\n|------|----------------|\n| SDK queue behavior | TUI fallback preserved (Plan 02); tool returns immediately on queue |\n| Current-agent introspection missing | Cached from `ctx.agent` at execute entry (Plan 02 Step 0) |\n| CommandBundle type gap | Extended with model/subtask (Plan 01); SDK Command type also used (Plan 02) |\n| v1/v2 SDK mismatch | Only v1 body shape used; no `parts`/`variant` fields (Plan 02) |\n\n### Multi-Source Coverage Audit\n\n- **GOAL:** 7/7 sub-goals covered across plans ✓\n- **REQ:** 7/7 requirements mapped ✓\n- **RESEARCH:** All architecture patterns, pitfalls, code example guidance folded into tasks ✓\n- **CONTEXT:** All 10 decisions honored, 0 deferred ideas appear in plans ✓\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 21.1`\n\n```\n/clear first - fresh context window\n```\n\n**Execution order:** Wave 1 (21.1-01) → Wave 2 (21.1-02) → Wave 3 (21.1-03)",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-21T17:22:09.451Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_wuOpqwp8dPhMcTBBTXdg5312",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:09.715Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_JJvl0jgyuwR83aXxhN9a8463",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:10.090Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_XrKtM7OwMSdoqZNkkN9p4755",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:10.314Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_GNK1lR6lky8v5tcn6QGz2704",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:16.570Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ds4v4eJhyACNO4MqyODg6282",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:16.887Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_cXe8IAO5OmNwMjmD3gJy7729",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:17.287Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_0zllFERb267aKV4vTIsx4106",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:17.540Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_JFuq9LjC7aYpV5LKUTyy2782",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/tool-response.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:17.800Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_ZUw0Ia5e6NCqN5x1aoTA3707",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/tools/execute-slash-command.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:23.503Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_f6AKy5qNxV4z7M3Veg330006",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:23.775Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_iM3fWkiisccS7HNs89Nl6732",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:24.070Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_lRr9TQODEF4ZdT7wWgJp1631",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:29.256Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_i7NwNmcwl9oYb6ogcQlt0466",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:29.489Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_ktXaOjy4H7SN0Na1P9ZE2624",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/tool-helpers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:56.151Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_UWEdFEmpeYniIAhCs9L70180",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:22:56.587Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_11Szcp9CkmozJUGNKX3S9860",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:23:04.957Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Ivfv8r0xJs78Xy25E6hq4842",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/command-frontmatter.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:23:05.314Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_CTd8BKXq9Q41b7iXYeu45473",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/bootstrap/primitive-loader.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:23:21.684Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_qf6x7LHJ06H6yIJWv6sA3980",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:23:46.346Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_9G6atAq56EFuZ5NDzYKz1765",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:24:30.886Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_UAcZYBZvlCmz6sX3alw08609",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:25:04.097Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_8yF98ACgVm3SKoVbQez33257",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:25:16.652Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_UWk5VdiEktYXBWiMYjpZ2231",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:25:22.865Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_k1lCBd7Fmsoqq7pdlau23595",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:25:33.002Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_3xGtSKu4gdGqcUi0Smku6908",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:25:40.753Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_GQ4MQJe5727DYeD4HlPF4994",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:25:47.369Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ET_U5mO7sS1E7aNuC5tEfFz5952",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:26:00.332Z",
+      "type": "assistant_message",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd  \n**Plans:** 3 plans in 3 waves\n\n### Wave Structure\n\n| Wave | Plans | Autonomous |\n|------|-------|------------|\n| 1 | 21.1-01 | yes |\n| 2 | 21.1-02 | no (has checkpoint) |\n| 3 | 21.1-03 | no (has checkpoint) |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| **21.1-01** | CommandBundle type extension + frontmatter enrichment | 3 | `src/routing/command-engine/types.ts`, `src/routing/command-engine/index.ts` |\n| **21.1-02** | Tool rewrite: SDK-native execution, agent switching (a+b), preflight, frontmatter, subtask routing, standard envelope | 2 | `src/tools/session/execute-slash-command.ts` |\n| **21.1-03** | Test rewrite: comprehensive coverage for all 7 REQs | 2 | `tests/tools/execute-slash-command.test.ts` |\n\n### Requirement Coverage\n\n| REQ | Description | Plan |\n|-----|-------------|------|\n| REQ-01 | SDK-native command execution path | 21.1-02, 21.1-03 |\n| REQ-02 | Real TUI agent switching (mech a+b) | 21.1-02, 21.1-03 |\n| REQ-03 | Command existence preflight | 21.1-01, 21.1-02, 21.1-03 |\n| REQ-04 | Command frontmatter awareness | 21.1-01, 21.1-02, 21.1-03 |\n| REQ-05 | Full argument/template/reference parsing | 21.1-02, 21.1-03 |\n| REQ-06 | Primitive discovery across all locations | 21.1-02, 21.1-03 |\n| REQ-07 | Standard result envelope | 21.1-02, 21.1-03 |\n\n### Decision Coverage (D-01 through D-10)\n\nAll 10 locked decisions from CONTEXT.md are implemented across the plans:\n- **D-01/D-02** (SDK v1, factory injection): 21.1-02 maintains v1 `session.command()` body shape\n- **D-03** (primary + fallback): 21.1-02 Step 5\n- **D-04** (subtask via session.prompt): 21.1-02 Step 3\n- **D-05** (ToolResponse): 21.1-02 imports from `src/shared/tool-response.ts`\n- **D-06** (command.list for preflight): 21.1-02 Step 1\n- **D-07** (CommandBundle extension): 21.1-01 extends type, 21.1-02 uses SDK Command type\n- **D-08/D-09** (agent mechanisms): 21.1-02 Step 4 (both a and b)\n- **D-10** (cache from ctx.agent): 21.1-02 Step 0\n\n### Contamination/Risk Items Addressed\n\n| Risk | Mitigation Plan |\n|------|----------------|\n| SDK queue behavior | TUI fallback preserved (Plan 02); tool returns immediately on queue |\n| Current-agent introspection missing | Cached from `ctx.agent` at execute entry (Plan 02 Step 0) |\n| CommandBundle type gap | Extended with model/subtask (Plan 01); SDK Command type also used (Plan 02) |\n| v1/v2 SDK mismatch | Only v1 body shape used; no `parts`/`variant` fields (Plan 02) |\n\n### Multi-Source Coverage Audit\n\n- **GOAL:** 7/7 sub-goals covered across plans ✓\n- **REQ:** 7/7 requirements mapped ✓\n- **RESEARCH:** All architecture patterns, pitfalls, code example guidance folded into tasks ✓\n- **CONTEXT:** All 10 decisions honored, 0 deferred ideas appear in plans ✓\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 21.1`\n\n```\n/clear first - fresh context window\n```\n\n**Execution order:** Wave 1 (21.1-01) → Wave 2 (21.1-02) → Wave 3 (21.1-03)",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1b4710bc9ffeDFoqmd67F40U3p"
+      }
+    }
+  ],
+  "lastMessage": "## PLANNING COMPLETE\n\n**Phase:** 21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd  \n**Plans:** 3 plans in 3 waves\n\n### Wave Structure\n\n| Wave | Plans | Autonomous |\n|------|-------|------------|\n| 1 | 21.1-01 | yes |\n| 2 | 21.1-02 | no (has checkpoint) |\n| 3 | 21.1-03 | no (has checkpoint) |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| **21.1-01** | CommandBundle type extension + frontmatter enrichment | 3 | `src/routing/command-engine/types.ts`, `src/routing/command-engine/index.ts` |\n| **21.1-02** | Tool rewrite: SDK-native execution, agent switching (a+b), preflight, frontmatter, subtask routing, standard envelope | 2 | `src/tools/session/execute-slash-command.ts` |\n| **21.1-03** | Test rewrite: comprehensive coverage for all 7 REQs | 2 | `tests/tools/execute-slash-command.test.ts` |\n\n### Requirement Coverage\n\n| REQ | Description | Plan |\n|-----|-------------|------|\n| REQ-01 | SDK-native command execution path | 21.1-02, 21.1-03 |\n| REQ-02 | Real TUI agent switching (mech a+b) | 21.1-02, 21.1-03 |\n| REQ-03 | Command existence preflight | 21.1-01, 21.1-02, 21.1-03 |\n| REQ-04 | Command frontmatter awareness | 21.1-01, 21.1-02, 21.1-03 |\n| REQ-05 | Full argument/template/reference parsing | 21.1-02, 21.1-03 |\n| REQ-06 | Primitive discovery across all locations | 21.1-02, 21.1-03 |\n| REQ-07 | Standard result envelope | 21.1-02, 21.1-03 |\n\n### Decision Coverage (D-01 through D-10)\n\nAll 10 locked decisions from CONTEXT.md are implemented across the plans:\n- **D-01/D-02** (SDK v1, factory injection): 21.1-02 maintains v1 `session.command()` body shape\n- **D-03** (primary + fallback): 21.1-02 Step 5\n- **D-04** (subtask via session.prompt): 21.1-02 Step 3\n- **D-05** (ToolResponse): 21.1-02 imports from `src/shared/tool-response.ts`\n- **D-06** (command.list for preflight): 21.1-02 Step 1\n- **D-07** (CommandBundle extension): 21.1-01 extends type, 21.1-02 uses SDK Command type\n- **D-08/D-09** (agent mechanisms): 21.1-02 Step 4 (both a and b)\n- **D-10** (cache from ctx.agent): 21.1-02 Step 0\n\n### Contamination/Risk Items Addressed\n\n| Risk | Mitigation Plan |\n|------|----------------|\n| SDK queue behavior | TUI fallback preserved (Plan 02); tool returns immediately on queue |\n| Current-agent introspection missing | Cached from `ctx.agent` at execute entry (Plan 02 Step 0) |\n| CommandBundle type gap | Extended with model/subtask (Plan 01); SDK Command type also used (Plan 02) |\n| v1/v2 SDK mismatch | Only v1 body shape used; no `parts`/`variant` fields (Plan 02) |\n\n### Multi-Source Coverage Audit\n\n- **GOAL:** 7/7 sub-goals covered across plans ✓\n- **REQ:** 7/7 requirements mapped ✓\n- **RESEARCH:** All architecture patterns, pitfalls, code example guidance folded into tasks ✓\n- **CONTEXT:** All 10 decisions honored, 0 deferred ideas appear in plans ✓\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 21.1`\n\n```\n/clear first - fresh context window\n```\n\n**Execution order:** Wave 1 (21.1-01) → Wave 2 (21.1-02) → Wave 3 (21.1-03)"
+}

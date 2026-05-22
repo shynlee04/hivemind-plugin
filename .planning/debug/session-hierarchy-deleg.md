@@ -1,6 +1,6 @@
 ---
 slug: session-hierarchy-deleg
-status: root_cause_found
+status: fix-applied-awaiting-live-test
 trigger: "Phase 21 regression — consecutive delegations create separate root directories instead of children under same parent"
 created: 2026-05-21T22:45:00Z
 updated: 2026-05-21T23:45:00Z

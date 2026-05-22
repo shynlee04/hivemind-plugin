@@ -1,0 +1,623 @@
+{
+  "sessionID": "ses_1b4761739ffeoLpgjmZwIVI5Yt",
+  "parentSessionID": "ses_1b48772bbffeDg2eO1wx7j3vKY",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-assumptions-analyzer",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Assumptions analysis for P21.1",
+    "subagentType": "gsd-assumptions-analyzer"
+  },
+  "created": "2026-05-21T17:16:29.786Z",
+  "updated": "2026-05-21T17:20:04.623Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-assumptions-analyzer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-assumptions-analyzer",
+      "content": "You are the subagent Name:gsd-assumptions-analyzer role: phase context assumptions analyzer. You are being delegated by the front-facing orchestrator. Your task is bounded: produce a structured assumptions analysis for Phase 21.1. Do NOT write code, do NOT create plans, do NOT propose implementation.\n\nRead the SPEC.md at `.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-SPEC.md`\n\nThen deeply analyze the phase goal against the existing codebase to surface all implicit assumptions. For each assumption:\n\n1. State the assumption clearly\n2. Show evidence from the codebase (file:line)\n3. Mark if it is VALIDATED, UNVERIFIED, or CONTRADICTED\n4. If UNVERIFIED, state what investigation is needed\n\nFocus on:\n- Technical assumptions: SDK version compatibility, plugin context availability, existing test infrastructure\n- Dependency assumptions: what must exist before this phase can work\n- Integration assumptions: how this phase connects to existing modules\n- Risk assumptions: what could go wrong if the assumption is wrong\n\nReturn the analysis in a structured format ready to append as a section in CONTEXT.md. Include file:line references for every codebase claim.\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-assumptions-analyzer",
+      "content": "Assumptions analysis for P21.1",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-assumptions-analyzer",
+      "content": "## Assumptions\n\n### Area 1: SDK API Surface and Runtime Compatibility (Critical)\n\n- **Assumption:** `client.session.command(...)` on the installed SDK (`@opencode-ai/sdk ^1.15.5`) accepts the parameters claimed in the SPEC (`sessionID`, `command`, `agent`, `model`, `arguments`, `variant`, `parts`) and functions as a slash command executor from *within* an active tool execution loop.\n  - **Evidence (VALIDATED):** SDK types at `node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts:1155-1178` confirm the `Session2.command()` method signature: `{ sessionID, directory?, workspace?, messageID?, agent?, model?, arguments?, command?, variant?, parts? }` with description: *\"Send a new command to a session for execution by the AI assistant.\"*\n  - **Evidence (UNVERIFIED):** The SDK's current **plugin wrapper** (`@opencode-ai/plugin/tool`) passes `client` as `PluginInput[\"client\"]` (line 37 of `plugin/dist/index.d.ts`), which is `ReturnType<typeof createOpencodeClient>`. The `createOpencodeClient` in `sdk/dist/client.d.ts:5-7` wraps the `OpencodeClient` class that implements the full `Session2` API — but there is zero evidence in the codebase that `session.command()` has ever been called from within a running tool execution. The existing `createExecuteSlashCommandTool` at `src/tools/session/execute-slash-command.ts:49-151` uses only `client.tui.*` methods.\n  - **If wrong:** `client.session.command(...)` may block (like `session.prompt()` does) or may queue forever because `SessionRunState.ensureRunning()` detects the session is busy executing the current tool call — exactly the problem cited at `execute-slash-command.ts:12-21`. The tool would hang or silently fail. The SPEC's fallback to TUI append (Req 1) would become the *only* working path.\n  - **Confidence:** Unclear — SDK types exist but *runtime behavior* from within a tool execution loop is not tested, documented, or evidenced in the codebase.\n\n- **Assumption:** `client.tui.executeCommand(...)` provides a viable native alternative or secondary TUI command execution path.\n  - **Evidence (VALIDATED):** `Tui.executeCommand()` exists at `sdk/dist/v2/gen/sdk.gen.d.ts:1508-1512` with description *\"Execute a TUI command.\"*, taking `{ directory?, workspace?, command? }`.\n  - **Evidence (UNVERIFIED):** No code in `src/` or `tests/` ever calls `client.tui.executeCommand()`. Its return type and behavior (especially whether it blocks or returns immediately) are unknown from codebase evidence alone.\n  - **If wrong:** The tool must fall back entirely to the raw `clearPrompt → appendPrompt → submitPrompt` TUI path — which is what the SPEC explicitly aims to replace.\n  - **Confidence:** Unclear — API exists but runtime behavior is untested.\n\n### Area 2: Command Discovery and Frontmatter Awareness\n\n- **Assumption:** The existing `discoverCommandBundles()` or `client.command.list()` can be used for command existence preflight and frontmatter metadata extraction.\n  - **Evidence (VALIDATED):** `discoverCommandBundles()` at `src/routing/command-engine/index.ts:27-41` already scans `.opencode/{commands,command}/` from both project and global dirs. It returns `{ name, filePath, description, agent?, body }`. `listCommands()` at lines 171-180 also returns compact entries.\n  - **Evidence (CONTRADICTED):** The `CommandBundle` type at `src/routing/command-engine/types.ts:4-17` and the `discoverCommandBundles()` mapping (lines 30-37) **strip `model` and `subtask`** from the command frontmatter. The `CommandFrontmatterSchema` at `src/schema-kernel/command-frontmatter.schema.ts:32-39` validates `model` and `subtask` but `discoverCommandBundles()` never reads them. The SPEC assumes full frontmatter awareness is available (Req 4) but the read-side command-engine does not surface these fields.\n  - **If wrong:** The tool cannot determine whether a command has `subtask: true` or a `model` override from the read-side command-engine. It would need to either (a) use `client.command.list()` (SDK API, untested) or (b) re-read raw command files and parse frontmatter directly, duplicating logic.\n  - **Confidence:** Likely — the read-side engine is usable for preflight but incomplete for full frontmatter extraction; the SDK `client.command.list()` may provide richer metadata.\n\n- **Assumption:** The SDK's `client.command.list()` returns richer frontmatter data than the project's `discoverCommandBundles()`.\n  - **Evidence (VALIDATED):** `Command.list()` at `sdk/dist/v2/gen/sdk.gen.d.ts:519-528` exists with `{ directory?, workspace? }` parameters. The response type `CommandListResponses` is imported but not inspected — its shape is unknown from codebase evidence alone.\n  - **Evidence (UNVERIFIED):** No code in `src/` calls `client.command.list()`. The project's own `discoverCommandBundles()` is the only command discovery mechanism used today. Whether the SDK's `command.list()` returns `model`, `subtask`, or other frontmatter fields is undocumented in the consumed types.\n  - **If wrong:** The tool must either extend `discoverCommandBundles()` to surface `model`/`subtask` fields, or implement a separate frontmatter re-read path.\n  - **Confidence:** Unclear — SDK types confirm the method exists but its response shape is opaque.\n\n### Area 3: Agent Switching Mechanism\n\n- **Assumption:** The tool can reliably detect the \"current TUI agent\" and restore it after running a command under a target agent (mechanism b in Req 2).\n  - **Evidence (UNVERIFIED):** The SDK provides `client.app.agents()` at `sdk/dist/v2/gen/sdk.gen.d.ts:68-71` which *lists all available agents* — but there is no API that reports *which agent the current session/TUI is using*. The `command.execute.before` hook input at `plugin/dist/index.d.ts:227-233` receives `{ command, sessionID, arguments }` — no `agent` field. The `chat.message` hook (line 186-198) includes `agent?` in the input but that's after-the-fact message delivery, not a query API.\n  - **Evidence (UNVERIFIED):** No code in `src/shared/session-api.ts` (the SDK wrapper authority, 311 lines) exposes any \"get current session agent\" method. The session API wrappers cover `create`, `get`, `status`, `abort`, `messages`, `prompt`, `promptAsync` — but not agent introspection.\n  - **If wrong:** Mechanism (b) — record current agent → run under target → restore — cannot be implemented because there's no way to discover the current agent. Only mechanism (a) (switch and leave) is possible.\n  - **Confidence:** Unclear — no evidence in the codebase that current-agent introspection is possible via the SDK.\n\n- **Assumption:** The `agent` parameter in `client.session.command({ sessionID, agent: \"hm-operator\" })` causes the TUI to visually show and run under that agent.\n  - **Evidence (VALIDATED):** The SDK `Session2.command()` signature at `sdk/dist/v2/gen/sdk.gen.d.ts:1160-1178` includes `agent?: string`. The SPEC cites SDK native agent switching with `AgentSwitched` event from research. But there is zero codebase evidence of this event being captured or of `agent` parameter effects being tested.\n  - **Evidence (UNVERIFIED):** No test in `tests/tools/execute-slash-command.test.ts` tests agent behavior. The existing mock client only provides `tui` methods — no `session.command()` mock exists.\n  - **If wrong:** The `agent` parameter is silently ignored by the SDK, leaving the TUI on the default agent — same behavior as the current `@agent` text prepend, just without the visible marker.\n  - **Confidence:** Likely — SDK signature includes `agent` but no codebase evidence confirms the visual/temporal switching behavior.\n\n### Area 4: Standard Result Envelope and Test Infrastructure\n\n- **Assumption:** The raw `{ output, metadata }` return shape from the current tool is incompatible with the project's `ToolResponse` envelope, and switching will not break LLM-facing contract behavior.\n  - **Evidence (VALIDATED):** Current tool returns `{ output: string, metadata: object }` at `src/tools/session/execute-slash-command.ts:113-128` and `140-148`. The project standard `ToolResponse` at `src/shared/tool-response.ts:6-11` is `{ kind: \"success\" | \"error\" | \"pending\", message: string, data?, metadata? }`. Other tools like `hivemind-command-engine.ts:46` use `renderToolResult(success(...))` to render `ToolResponse` as JSON. The `renderToolResult()` at `src/shared/tool-helpers.ts:7-8` does `JSON.stringify(result, null, 2)`.\n  - **Evidence (UNVERIFIED):** The existing tests at `tests/tools/execute-slash-command.test.ts:49` assert `result.metadata.command === \"test-echo\"` — they access `.metadata` on the raw return. Changing to a `ToolResponse` envelope would break these assertions unless the test mock is also updated.\n  - **If wrong:** Existing callers (agents/tools) that parse the raw `{ output, metadata }` shape would break. The 2 existing tests fail until updated.\n  - **Confidence:** Likely — the envelope format differs but both are JSON-encodable; tests need corresponding updates.\n\n- **Assumption:** The existing test infrastructure can mock `client.session.command()` and `client.command.list()` for unit tests.\n  - **Evidence (VALIDATED):** Existing tests at `tests/tools/execute-slash-command.test.ts:11-16` mock `client.tui` methods as plain `vi.fn()`. The same pattern (`as unknown as PluginInput[\"client\"]`) would work for `session.command` and `command.list`.\n  - **Evidence (UNVERIFIED):** The `createExecuteSlashCommandTool` takes `client: PluginInput[\"client\"]` which is `ReturnType<typeof createOpencodeClient>`. The SDK's `Session2.command()` returns a complex type: `RequestResult<SessionCommandResponses>`. Mocking this correctly would require understanding the `RequestResult` response shape and `unwrapData()` pattern from `src/shared/session-api.ts:53-54`.\n  - **If wrong:** Tests for the new `session.command()` path would be superficial or incorrectly typed, leading to false confidence in unit-test coverage.\n  - **Confidence:** Likely — mocking pattern exists but response types are complex.\n\n## Needs External Research\n\n1. **`client.session.command()` runtime behavior from within a tool execution loop:** The SPEC's core assumption is that `session.command()` works *during* an active tool call. The current codebase explicitly documents (at `execute-slash-command.ts:12-21`) that `session.command()` blocks because `SessionRunState.ensureRunning()` detects the session is busy. External testing or SDK source analysis is needed to confirm whether `session.command()` differs from `session.prompt()` in this regard. This is the single highest-risk assumption for the entire phase.\n\n2. **Current-agent introspection API:** No codebase evidence exists for reading the \"currently active TUI agent\" from a plugin. The SDK may expose this via a session status field or a separate API — this needs external research against the actual OpenCode SDK documentation or source (`anomalyco/opencode`).\n\n3. **`client.tui.executeCommand()` return type and blocking behavior:** The method exists in SDK types but its runtime behavior (blocking vs fire-and-forget, whether it triggers `AgentSwitched` event, return shape) is undocumented in consumed type files. External SDK source inspection is needed.\n\n4. **`client.command.list()` response shape for frontmatter fields:** Whether the SDK's command list returns `model`, `subtask`, or other frontmatter metadata beyond `name`/`description` is unknown from the `RequestResult` generic type at `sdk/dist/v2/gen/sdk.gen.d.ts:525-528`. External API documentation or SDK source inspection is required.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-21T17:16:45.443Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_rC25B9ayGyIgQ39PjkNJ9711",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:45.807Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_TxbGS2s2IPkHpKLFvTmx3352",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:46.003Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_fH0U0TakoCVpznY7dDpL2247",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:52.865Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_meZNN3Zh2kYCPvwS7hCh3534",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:53.207Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_TPimYdYUxQPImIhPJDAO0190",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/tool-response.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:53.350Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_Txdy3n5xJW7YTJXVBolC2612",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:53.554Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_lMbnBfYO5h9vxTmuigQM6509",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:59.425Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_2lhUocgF6IY3Tg5BS2xV4698",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:59.603Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_QoLMYzyjqBX8rtO8HaiS9229",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:16:59.810Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_u3YHRwK8UdLr57l68Egs0130",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/package.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:06.106Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_EiBlJCojHwcZtux7q5mf4548",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:06.426Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_YqGnzOdCubVlqbDGuhgw2807",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-command-engine.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:06.632Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_anQQRXYVVJc7qbBrfBFG7002",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:13.257Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_dMM6V4EXjwCIk5lulQWU3547",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/tools/execute-slash-command.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:13.520Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_bw3RO70X7auoyZiggdQb7615",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/tool-helpers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:13.720Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_xZzqLT6eqjRXwgAqvNbm4407",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:19.649Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_olRoyjo0ppMYvoAG2VHB4958",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:19.821Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_nZDTgR5exmE2P1XixMvd3195",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/bootstrap/primitive-loader.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:20.069Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_YgCNXNDbNZxMuoqJj38F3085",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/command-engine.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:25.844Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_cNgVTJJ0cKAE3EPyCcmC4630",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:26.029Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_fzo7rld3Ew9hNLkyIslF9151",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:26.546Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_Sod6ojC2bgdAz1WO2P0I3655",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:33.306Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_DhaVfMds8QT62O36RgRk3979",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/plugin/dist/index.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:33.963Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_PQN3iaEyBpjEbmQaLgXs0267",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/command-frontmatter.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:41.934Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_y2uY50gYkHHcfVeEgLIO5329",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:42.460Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_jiP1lhqHxhRlJXlqjagS0141",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:49.156Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_ZGPVGU3NoXkCOUFuAJow6165",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:49.442Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_jQ0PFB29X6KWqdv8KqJo8350",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/index.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:56.673Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_zQLFFxHNCFziMirdrIQW2408",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:17:56.754Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_cLwTCpUa7yzH2TDZvMqI6882",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/client.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:03.192Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_mQ55p05CZXoJNx4v88J60433",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:03.690Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_lUNnTUgbYwfPHzXpY6T00655",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:10.672Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_IWHW6dw6fEVL2lRejajx6118",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:11.139Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_931hLMT1R0dmyfj4lU7p9972",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:18.939Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ZDmqXJGqzTOyQCxf0T206380",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:19.314Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_PDmwSN5Awq1N2Ru4QwNi2383",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:25.489Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_860jvw4E1GwxqlIfMei02753",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:25.885Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_bkzzi9i9YG9pt84GoBJG0133",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:33.012Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_WruR2K7D7mUmhUGd3BVL6137",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:33.309Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_q8ipvRyYQfsDZVi1ynFH7235",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/plugin/dist/tui.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:47.170Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_CjCMk5We88pgYKhAfvnl7841",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:49.334Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_Vji5BZDO6HyzsoAeLVnD7476",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:55.711Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_QSZiZo9gyaLaqWfs0HEU3244",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:18:56.265Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_qnyfcVwnq2eZa9R0Z7T55274",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:19:03.161Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_u1BN5mc357Fa1B09qLu32709",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:19:25.336Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_5kiA0GesPhkFF6sx01X47965",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:19:31.302Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_CqsBYjGvzpcj6v5s09uU5359",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-21T17:20:04.602Z",
+      "type": "assistant_message",
+      "content": "## Assumptions\n\n### Area 1: SDK API Surface and Runtime Compatibility (Critical)\n\n- **Assumption:** `client.session.command(...)` on the installed SDK (`@opencode-ai/sdk ^1.15.5`) accepts the parameters claimed in the SPEC (`sessionID`, `command`, `agent`, `model`, `arguments`, `variant`, `parts`) and functions as a slash command executor from *within* an active tool execution loop.\n  - **Evidence (VALIDATED):** SDK types at `node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts:1155-1178` confirm the `Session2.command()` method signature: `{ sessionID, directory?, workspace?, messageID?, agent?, model?, arguments?, command?, variant?, parts? }` with description: *\"Send a new command to a session for execution by the AI assistant.\"*\n  - **Evidence (UNVERIFIED):** The SDK's current **plugin wrapper** (`@opencode-ai/plugin/tool`) passes `client` as `PluginInput[\"client\"]` (line 37 of `plugin/dist/index.d.ts`), which is `ReturnType<typeof createOpencodeClient>`. The `createOpencodeClient` in `sdk/dist/client.d.ts:5-7` wraps the `OpencodeClient` class that implements the full `Session2` API — but there is zero evidence in the codebase that `session.command()` has ever been called from within a running tool execution. The existing `createExecuteSlashCommandTool` at `src/tools/session/execute-slash-command.ts:49-151` uses only `client.tui.*` methods.\n  - **If wrong:** `client.session.command(...)` may block (like `session.prompt()` does) or may queue forever because `SessionRunState.ensureRunning()` detects the session is busy executing the current tool call — exactly the problem cited at `execute-slash-command.ts:12-21`. The tool would hang or silently fail. The SPEC's fallback to TUI append (Req 1) would become the *only* working path.\n  - **Confidence:** Unclear — SDK types exist but *runtime behavior* from within a tool execution loop is not tested, documented, or evidenced in the codebase.\n\n- **Assumption:** `client.tui.executeCommand(...)` provides a viable native alternative or secondary TUI command execution path.\n  - **Evidence (VALIDATED):** `Tui.executeCommand()` exists at `sdk/dist/v2/gen/sdk.gen.d.ts:1508-1512` with description *\"Execute a TUI command.\"*, taking `{ directory?, workspace?, command? }`.\n  - **Evidence (UNVERIFIED):** No code in `src/` or `tests/` ever calls `client.tui.executeCommand()`. Its return type and behavior (especially whether it blocks or returns immediately) are unknown from codebase evidence alone.\n  - **If wrong:** The tool must fall back entirely to the raw `clearPrompt → appendPrompt → submitPrompt` TUI path — which is what the SPEC explicitly aims to replace.\n  - **Confidence:** Unclear — API exists but runtime behavior is untested.\n\n### Area 2: Command Discovery and Frontmatter Awareness\n\n- **Assumption:** The existing `discoverCommandBundles()` or `client.command.list()` can be used for command existence preflight and frontmatter metadata extraction.\n  - **Evidence (VALIDATED):** `discoverCommandBundles()` at `src/routing/command-engine/index.ts:27-41` already scans `.opencode/{commands,command}/` from both project and global dirs. It returns `{ name, filePath, description, agent?, body }`. `listCommands()` at lines 171-180 also returns compact entries.\n  - **Evidence (CONTRADICTED):** The `CommandBundle` type at `src/routing/command-engine/types.ts:4-17` and the `discoverCommandBundles()` mapping (lines 30-37) **strip `model` and `subtask`** from the command frontmatter. The `CommandFrontmatterSchema` at `src/schema-kernel/command-frontmatter.schema.ts:32-39` validates `model` and `subtask` but `discoverCommandBundles()` never reads them. The SPEC assumes full frontmatter awareness is available (Req 4) but the read-side command-engine does not surface these fields.\n  - **If wrong:** The tool cannot determine whether a command has `subtask: true` or a `model` override from the read-side command-engine. It would need to either (a) use `client.command.list()` (SDK API, untested) or (b) re-read raw command files and parse frontmatter directly, duplicating logic.\n  - **Confidence:** Likely — the read-side engine is usable for preflight but incomplete for full frontmatter extraction; the SDK `client.command.list()` may provide richer metadata.\n\n- **Assumption:** The SDK's `client.command.list()` returns richer frontmatter data than the project's `discoverCommandBundles()`.\n  - **Evidence (VALIDATED):** `Command.list()` at `sdk/dist/v2/gen/sdk.gen.d.ts:519-528` exists with `{ directory?, workspace? }` parameters. The response type `CommandListResponses` is imported but not inspected — its shape is unknown from codebase evidence alone.\n  - **Evidence (UNVERIFIED):** No code in `src/` calls `client.command.list()`. The project's own `discoverCommandBundles()` is the only command discovery mechanism used today. Whether the SDK's `command.list()` returns `model`, `subtask`, or other frontmatter fields is undocumented in the consumed types.\n  - **If wrong:** The tool must either extend `discoverCommandBundles()` to surface `model`/`subtask` fields, or implement a separate frontmatter re-read path.\n  - **Confidence:** Unclear — SDK types confirm the method exists but its response shape is opaque.\n\n### Area 3: Agent Switching Mechanism\n\n- **Assumption:** The tool can reliably detect the \"current TUI agent\" and restore it after running a command under a target agent (mechanism b in Req 2).\n  - **Evidence (UNVERIFIED):** The SDK provides `client.app.agents()` at `sdk/dist/v2/gen/sdk.gen.d.ts:68-71` which *lists all available agents* — but there is no API that reports *which agent the current session/TUI is using*. The `command.execute.before` hook input at `plugin/dist/index.d.ts:227-233` receives `{ command, sessionID, arguments }` — no `agent` field. The `chat.message` hook (line 186-198) includes `agent?` in the input but that's after-the-fact message delivery, not a query API.\n  - **Evidence (UNVERIFIED):** No code in `src/shared/session-api.ts` (the SDK wrapper authority, 311 lines) exposes any \"get current session agent\" method. The session API wrappers cover `create`, `get`, `status`, `abort`, `messages`, `prompt`, `promptAsync` — but not agent introspection.\n  - **If wrong:** Mechanism (b) — record current agent → run under target → restore — cannot be implemented because there's no way to discover the current agent. Only mechanism (a) (switch and leave) is possible.\n  - **Confidence:** Unclear — no evidence in the codebase that current-agent introspection is possible via the SDK.\n\n- **Assumption:** The `agent` parameter in `client.session.command({ sessionID, agent: \"hm-operator\" })` causes the TUI to visually show and run under that agent.\n  - **Evidence (VALIDATED):** The SDK `Session2.command()` signature at `sdk/dist/v2/gen/sdk.gen.d.ts:1160-1178` includes `agent?: string`. The SPEC cites SDK native agent switching with `AgentSwitched` event from research. But there is zero codebase evidence of this event being captured or of `agent` parameter effects being tested.\n  - **Evidence (UNVERIFIED):** No test in `tests/tools/execute-slash-command.test.ts` tests agent behavior. The existing mock client only provides `tui` methods — no `session.command()` mock exists.\n  - **If wrong:** The `agent` parameter is silently ignored by the SDK, leaving the TUI on the default agent — same behavior as the current `@agent` text prepend, just without the visible marker.\n  - **Confidence:** Likely — SDK signature includes `agent` but no codebase evidence confirms the visual/temporal switching behavior.\n\n### Area 4: Standard Result Envelope and Test Infrastructure\n\n- **Assumption:** The raw `{ output, metadata }` return shape from the current tool is incompatible with the project's `ToolResponse` envelope, and switching will not break LLM-facing contract behavior.\n  - **Evidence (VALIDATED):** Current tool returns `{ output: string, metadata: object }` at `src/tools/session/execute-slash-command.ts:113-128` and `140-148`. The project standard `ToolResponse` at `src/shared/tool-response.ts:6-11` is `{ kind: \"success\" | \"error\" | \"pending\", message: string, data?, metadata? }`. Other tools like `hivemind-command-engine.ts:46` use `renderToolResult(success(...))` to render `ToolResponse` as JSON. The `renderToolResult()` at `src/shared/tool-helpers.ts:7-8` does `JSON.stringify(result, null, 2)`.\n  - **Evidence (UNVERIFIED):** The existing tests at `tests/tools/execute-slash-command.test.ts:49` assert `result.metadata.command === \"test-echo\"` — they access `.metadata` on the raw return. Changing to a `ToolResponse` envelope would break these assertions unless the test mock is also updated.\n  - **If wrong:** Existing callers (agents/tools) that parse the raw `{ output, metadata }` shape would break. The 2 existing tests fail until updated.\n  - **Confidence:** Likely — the envelope format differs but both are JSON-encodable; tests need corresponding updates.\n\n- **Assumption:** The existing test infrastructure can mock `client.session.command()` and `client.command.list()` for unit tests.\n  - **Evidence (VALIDATED):** Existing tests at `tests/tools/execute-slash-command.test.ts:11-16` mock `client.tui` methods as plain `vi.fn()`. The same pattern (`as unknown as PluginInput[\"client\"]`) would work for `session.command` and `command.list`.\n  - **Evidence (UNVERIFIED):** The `createExecuteSlashCommandTool` takes `client: PluginInput[\"client\"]` which is `ReturnType<typeof createOpencodeClient>`. The SDK's `Session2.command()` returns a complex type: `RequestResult<SessionCommandResponses>`. Mocking this correctly would require understanding the `RequestResult` response shape and `unwrapData()` pattern from `src/shared/session-api.ts:53-54`.\n  - **If wrong:** Tests for the new `session.command()` path would be superficial or incorrectly typed, leading to false confidence in unit-test coverage.\n  - **Confidence:** Likely — mocking pattern exists but response types are complex.\n\n## Needs External Research\n\n1. **`client.session.command()` runtime behavior from within a tool execution loop:** The SPEC's core assumption is that `session.command()` works *during* an active tool call. The current codebase explicitly documents (at `execute-slash-command.ts:12-21`) that `session.command()` blocks because `SessionRunState.ensureRunning()` detects the session is busy. External testing or SDK source analysis is needed to confirm whether `session.command()` differs from `session.prompt()` in this regard. This is the single highest-risk assumption for the entire phase.\n\n2. **Current-agent introspection API:** No codebase evidence exists for reading the \"currently active TUI agent\" from a plugin. The SDK may expose this via a session status field or a separate API — this needs external research against the actual OpenCode SDK documentation or source (`anomalyco/opencode`).\n\n3. **`client.tui.executeCommand()` return type and blocking behavior:** The method exists in SDK types but its runtime behavior (blocking vs fire-and-forget, whether it triggers `AgentSwitched` event, return shape) is undocumented in consumed type files. External SDK source inspection is needed.\n\n4. **`client.command.list()` response shape for frontmatter fields:** Whether the SDK's command list returns `model`, `subtask`, or other frontmatter metadata beyond `name`/`description` is unknown from the `RequestResult` generic type at `sdk/dist/v2/gen/sdk.gen.d.ts:525-528`. External API documentation or SDK source inspection is required.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1b4761739ffeoLpgjmZwIVI5Yt"
+      }
+    }
+  ],
+  "lastMessage": "## Assumptions\n\n### Area 1: SDK API Surface and Runtime Compatibility (Critical)\n\n- **Assumption:** `client.session.command(...)` on the installed SDK (`@opencode-ai/sdk ^1.15.5`) accepts the parameters claimed in the SPEC (`sessionID`, `command`, `agent`, `model`, `arguments`, `variant`, `parts`) and functions as a slash command executor from *within* an active tool execution loop.\n  - **Evidence (VALIDATED):** SDK types at `node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts:1155-1178` confirm the `Session2.command()` method signature: `{ sessionID, directory?, workspace?, messageID?, agent?, model?, arguments?, command?, variant?, parts? }` with description: *\"Send a new command to a session for execution by the AI assistant.\"*\n  - **Evidence (UNVERIFIED):** The SDK's current **plugin wrapper** (`@opencode-ai/plugin/tool`) passes `client` as `PluginInput[\"client\"]` (line 37 of `plugin/dist/index.d.ts`), which is `ReturnType<typeof createOpencodeClient>`. The `createOpencodeClient` in `sdk/dist/client.d.ts:5-7` wraps the `OpencodeClient` class that implements the full `Session2` API — but there is zero evidence in the codebase that `session.command()` has ever been called from within a running tool execution. The existing `createExecuteSlashCommandTool` at `src/tools/session/execute-slash-command.ts:49-151` uses only `client.tui.*` methods.\n  - **If wrong:** `client.session.command(...)` may block (like `session.prompt()` does) or may queue forever because `SessionRunState.ensureRunning()` detects the session is busy executing the current tool call — exactly the problem cited at `execute-slash-command.ts:12-21`. The tool would hang or silently fail. The SPEC's fallback to TUI append (Req 1) would become the *only* working path.\n  - **Confidence:** Unclear — SDK types exist but *runtime behavior* from within a tool execution loop is not tested, documented, or evidenced in the codebase.\n\n- **Assumption:** `client.tui.executeCommand(...)` provides a viable native alternative or secondary TUI command execution path.\n  - **Evidence (VALIDATED):** `Tui.executeCommand()` exists at `sdk/dist/v2/gen/sdk.gen.d.ts:1508-1512` with description *\"Execute a TUI command.\"*, taking `{ directory?, workspace?, command? }`.\n  - **Evidence (UNVERIFIED):** No code in `src/` or `tests/` ever calls `client.tui.executeCommand()`. Its return type and behavior (especially whether it blocks or returns immediately) are unknown from codebase evidence alone.\n  - **If wrong:** The tool must fall back entirely to the raw `clearPrompt → appendPrompt → submitPrompt` TUI path — which is what the SPEC explicitly aims to replace.\n  - **Confidence:** Unclear — API exists but runtime behavior is untested.\n\n### Area 2: Command Discovery and Frontmatter Awareness\n\n- **Assumption:** The existing `discoverCommandBundles()` or `client.command.list()` can be used for command existence preflight and frontmatter metadata extraction.\n  - **Evidence (VALIDATED):** `discoverCommandBundles()` at `src/routing/command-engine/index.ts:27-41` already scans `.opencode/{commands,command}/` from both project and global dirs. It returns `{ name, filePath, description, agent?, body }`. `listCommands()` at lines 171-180 also returns compact entries.\n  - **Evidence (CONTRADICTED):** The `CommandBundle` type at `src/routing/command-engine/types.ts:4-17` and the `discoverCommandBundles()` mapping (lines 30-37) **strip `model` and `subtask`** from the command frontmatter. The `CommandFrontmatterSchema` at `src/schema-kernel/command-frontmatter.schema.ts:32-39` validates `model` and `subtask` but `discoverCommandBundles()` never reads them. The SPEC assumes full frontmatter awareness is available (Req 4) but the read-side command-engine does not surface these fields.\n  - **If wrong:** The tool cannot determine whether a command has `subtask: true` or a `model` override from the read-side command-engine. It would need to either (a) use `client.command.list()` (SDK API, untested) or (b) re-read raw command files and parse frontmatter directly, duplicating logic.\n  - **Confidence:** Likely — the read-side engine is usable for preflight but incomplete for full frontmatter extraction; the SDK `client.command.list()` may provide richer metadata.\n\n- **Assumption:** The SDK's `client.command.list()` returns richer frontmatter data than the project's `discoverCommandBundles()`.\n  - **Evidence (VALIDATED):** `Command.list()` at `sdk/dist/v2/gen/sdk.gen.d.ts:519-528` exists with `{ directory?, workspace? }` parameters. The response type `CommandListResponses` is imported but not inspected — its shape is unknown from codebase evidence alone.\n  - **Evidence (UNVERIFIED):** No code in `src/` calls `client.command.list()`. The project's own `discoverCommandBundles()` is the only command discovery mechanism used today. Whether the SDK's `command.list()` returns `model`, `subtask`, or other frontmatter fields is undocumented in the consumed types.\n  - **If wrong:** The tool must either extend `discoverCommandBundles()` to surface `model`/`subtask` fields, or implement a separate frontmatter re-read path.\n  - **Confidence:** Unclear — SDK types confirm the method exists but its response shape is opaque.\n\n### Area 3: Agent Switching Mechanism\n\n- **Assumption:** The tool can reliably detect the \"current TUI agent\" and restore it after running a command under a target agent (mechanism b in Req 2).\n  - **Evidence (UNVERIFIED):** The SDK provides `client.app.agents()` at `sdk/dist/v2/gen/sdk.gen.d.ts:68-71` which *lists all available agents* — but there is no API that reports *which agent the current session/TUI is using*. The `command.execute.before` hook input at `plugin/dist/index.d.ts:227-233` receives `{ command, sessionID, arguments }` — no `agent` field. The `chat.message` hook (line 186-198) includes `agent?` in the input but that's after-the-fact message delivery, not a query API.\n  - **Evidence (UNVERIFIED):** No code in `src/shared/session-api.ts` (the SDK wrapper authority, 311 lines) exposes any \"get current session agent\" method. The session API wrappers cover `create`, `get`, `status`, `abort`, `messages`, `prompt`, `promptAsync` — but not agent introspection.\n  - **If wrong:** Mechanism (b) — record current agent → run under target → restore — cannot be implemented because there's no way to discover the current agent. Only mechanism (a) (switch and leave) is possible.\n  - **Confidence:** Unclear — no evidence in the codebase that current-agent introspection is possible via the SDK.\n\n- **Assumption:** The `agent` parameter in `client.session.command({ sessionID, agent: \"hm-operator\" })` causes the TUI to visually show and run under that agent.\n  - **Evidence (VALIDATED):** The SDK `Session2.command()` signature at `sdk/dist/v2/gen/sdk.gen.d.ts:1160-1178` includes `agent?: string`. The SPEC cites SDK native agent switching with `AgentSwitched` event from research. But there is zero codebase evidence of this event being captured or of `agent` parameter effects being tested.\n  - **Evidence (UNVERIFIED):** No test in `tests/tools/execute-slash-command.test.ts` tests agent behavior. The existing mock client only provides `tui` methods — no `session.command()` mock exists.\n  - **If wrong:** The `agent` parameter is silently ignored by the SDK, leaving the TUI on the default agent — same behavior as the current `@agent` text prepend, just without the visible marker.\n  - **Confidence:** Likely — SDK signature includes `agent` but no codebase evidence confirms the visual/temporal switching behavior.\n\n### Area 4: Standard Result Envelope and Test Infrastructure\n\n- **Assumption:** The raw `{ output, metadata }` return shape from the current tool is incompatible with the project's `ToolResponse` envelope, and switching will not break LLM-facing contract behavior.\n  - **Evidence (VALIDATED):** Current tool returns `{ output: string, metadata: object }` at `src/tools/session/execute-slash-command.ts:113-128` and `140-148`. The project standard `ToolResponse` at `src/shared/tool-response.ts:6-11` is `{ kind: \"success\" | \"error\" | \"pending\", message: string, data?, metadata? }`. Other tools like `hivemind-command-engine.ts:46` use `renderToolResult(success(...))` to render `ToolResponse` as JSON. The `renderToolResult()` at `src/shared/tool-helpers.ts:7-8` does `JSON.stringify(result, null, 2)`.\n  - **Evidence (UNVERIFIED):** The existing tests at `tests/tools/execute-slash-command.test.ts:49` assert `result.metadata.command === \"test-echo\"` — they access `.metadata` on the raw return. Changing to a `ToolResponse` envelope would break these assertions unless the test mock is also updated.\n  - **If wrong:** Existing callers (agents/tools) that parse the raw `{ output, metadata }` shape would break. The 2 existing tests fail until updated.\n  - **Confidence:** Likely — the envelope format differs but both are JSON-encodable; tests need corresponding updates.\n\n- **Assumption:** The existing test infrastructure can mock `client.session.command()` and `client.command.list()` for unit tests.\n  - **Evidence (VALIDATED):** Existing tests at `tests/tools/execute-slash-command.test.ts:11-16` mock `client.tui` methods as plain `vi.fn()`. The same pattern (`as unknown as PluginInput[\"client\"]`) would work for `session.command` and `command.list`.\n  - **Evidence (UNVERIFIED):** The `createExecuteSlashCommandTool` takes `client: PluginInput[\"client\"]` which is `ReturnType<typeof createOpencodeClient>`. The SDK's `Session2.command()` returns a complex type: `RequestResult<SessionCommandResponses>`. Mocking this correctly would require understanding the `RequestResult` response shape and `unwrapData()` pattern from `src/shared/session-api.ts:53-54`.\n  - **If wrong:** Tests for the new `session.command()` path would be superficial or incorrectly typed, leading to false confidence in unit-test coverage.\n  - **Confidence:** Likely — mocking pattern exists but response types are complex.\n\n## Needs External Research\n\n1. **`client.session.command()` runtime behavior from within a tool execution loop:** The SPEC's core assumption is that `session.command()` works *during* an active tool call. The current codebase explicitly documents (at `execute-slash-command.ts:12-21`) that `session.command()` blocks because `SessionRunState.ensureRunning()` detects the session is busy. External testing or SDK source analysis is needed to confirm whether `session.command()` differs from `session.prompt()` in this regard. This is the single highest-risk assumption for the entire phase.\n\n2. **Current-agent introspection API:** No codebase evidence exists for reading the \"currently active TUI agent\" from a plugin. The SDK may expose this via a session status field or a separate API — this needs external research against the actual OpenCode SDK documentation or source (`anomalyco/opencode`).\n\n3. **`client.tui.executeCommand()` return type and blocking behavior:** The method exists in SDK types but its runtime behavior (blocking vs fire-and-forget, whether it triggers `AgentSwitched` event, return shape) is undocumented in consumed type files. External SDK source inspection is needed.\n\n4. **`client.command.list()` response shape for frontmatter fields:** Whether the SDK's command list returns `model`, `subtask`, or other frontmatter metadata beyond `name`/`description` is unknown from the `RequestResult` generic type at `sdk/dist/v2/gen/sdk.gen.d.ts:525-528`. External API documentation or SDK source inspection is required."
+}
