@@ -582,21 +582,35 @@ Plans:
 - [x] 21-05-PLAN.md — G-3 Precondition + G-4 Gate Removal (Wave 2) — REQ-21-12, REQ-21-13
 - [x] 21-06-PLAN.md — Guardrails + Integration Verification (Wave 3) — REQ-21-14, REQ-21-15
 
-### Phase 21.1: Execute-Slash-Command SDK Redesign — agent switching, native SDK execution, primitive awareness, subtask wiring (INSERTED)
+### Phase 21.1: Execute-Slash-Command Command Dispatch — deferred subtask command routing (INSERTED)
 
-**Goal:** Upgrade execute-slash-command to use native OpenCode SDK command execution path with real TUI agent switching (switch-before-append and run-as-agent-then-restore), command frontmatter-aware preflight (agent/model/subtask), primitive discovery across project/global + singular/plural dirs, $ARGUMENTS/flags/template/reference parsing, and subtask-to-native-task delegation wiring. Resolve gaps: no agent restore, no model injection, no command existence check, no result envelope.
-**Requirements**: REQ-01 through REQ-07
+**Goal:** Upgrade execute-slash-command to discover command primitives from project/global singular/plural roots, expand command bodies, support one-shot `agent` + `subtask` overrides, and schedule subtask dispatch after tool return without mutating command files.
+**Requirements**: Revised REQ-01 through REQ-07 in `21.1-SPEC.md`
 **Depends on:** Phase 21
-**Plans:** 3 plans
+**Plans:** 3/3 implementation/test waves revised; live front-agent switching moved to Phase 21.2 research
 
 Plans:
-- [ ] 21.1-01-PLAN.md — CommandBundle type extension + frontmatter enrichment (Wave 1) — REQ-03, REQ-04
-- [ ] 21.1-02-PLAN.md — Tool rewrite: SDK-native execution, agent switching, preflight, subtask, standard envelope (Wave 2) — REQ-01 through REQ-07
-- [ ] 21.1-03-PLAN.md — Test rewrite: comprehensive coverage for all 7 requirements (Wave 3) — REQ-01 through REQ-07
+- [x] 21.1-01-PLAN.md — CommandBundle type extension + frontmatter enrichment (Wave 1) — REQ-03, REQ-04
+- [x] 21.1-02-SUMMARY.md — Deferred command dispatch rewrite after live SDK-await failure — REQ-01 through REQ-07
+- [x] 21.1-03-SUMMARY.md — Regression tests for one-shot subtask overrides and no-hang deferred scheduling — REQ-01 through REQ-07
+
+### Phase 21.2: Front-Agent Switch One-Shot Agent Override — research/prototype route (INSERTED)
+
+**Goal:** Research whether execute-slash-command can run a command in the main/front-facing session under a configured `mode: subagent` agent by temporarily treating that agent as `all`/`primary` for one execution only, without mutating command or agent primitives.
+**Requirements:** `21.2-spec-2026-05-22.md`
+**Depends on:** Phase 21.1
+**Status:** Prototype implemented with L3 unit/typecheck evidence; verdict PARTIAL / NEEDS LIVE UAT
+
+Artifacts:
+- [x] `21.2-context-2026-05-22.md` — user intent, current state, phase boundary
+- [x] `21.2-research-2026-05-22.md` — live OpenCode source evidence and feasibility options
+- [x] `21.2-spec-2026-05-22.md` — prototype-gated requirements and acceptance criteria
+- [x] `21.2-prototype-plan-2026-05-22.md` — minimal non-mutating prototype route and live UAT matrix
+- [x] `21.2-prototype-implementation-evidence-2026-05-22.md` — unit/typecheck evidence and remaining live UAT gate
 
 ### Phase 22: Coordination Status + Error Unification (Group 1)
 
-**Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry.\n**Depends on:** Phase 21.1
+**Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry.\n**Depends on:** Phase 21.2 research route or explicit user deferral
 
 ### Phase 23: Coordination Dispatch + Delegate-Task Fix (Group 1)
 
