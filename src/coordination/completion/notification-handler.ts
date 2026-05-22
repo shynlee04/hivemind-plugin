@@ -7,12 +7,13 @@
  * Audit: G-01 closed as by-design (2026-04-21)
  */
 
-import { sendPrompt, type OpenCodeClient } from "../../shared/session-api.js"
+import { sendPrompt, appendTuiPrompt, type OpenCodeClient } from "../../shared/session-api.js"
 import type { Delegation } from "../../shared/types.js"
 import type { TaskNotification } from "../../shared/types.js"
 import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "../../task-management/continuity/index.js"
 
 const MAX_PREVIEW_LENGTH = 500
+const STALL_TIMEOUT_MS = 60000
 
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`
@@ -93,6 +94,27 @@ export function formatToastMessage(task: TaskNotification): string {
 
 export type ToastFn = (message: string) => void
 
+/**
+ * Reactivate a stopped parent session stream by sending an empty synthetic prompt.
+ *
+ * Per D3: Send empty synthetic prompt to reactivate stopped session stream,
+ * THEN deliver notification. Empty synthetic prompt should NOT trigger AI loop.
+ * Best-effort: if reactivation fails, notification is still delivered.
+ */
+export async function reactivateSessionStream(
+  client: OpenCodeClient,
+  sessionID: string,
+): Promise<void> {
+  try {
+    await sendPrompt(client, sessionID, {
+      noReply: true,
+      parts: [{ type: "text", text: "", synthetic: true }],
+    })
+  } catch {
+    // Best-effort: if reactivation fails, notification still delivered
+  }
+}
+
 function buildDelegationSummary(
   delegation: Delegation,
   duration: number,
@@ -171,28 +193,43 @@ export async function notifyParentSession(
   client: OpenCodeClient,
   parentSessionID: string,
   task: TaskNotification,
-  toastFn?: ToastFn
+  toastFn?: ToastFn,
+  options?: { urgent?: boolean }
 ): Promise<boolean> {
   const message = buildNotificationMessage(task)
   let delivered = true
 
+  // Determine delivery mechanism
+  // Urgent by default for terminal states (failed/completed)
+  const isUrgent = options?.urgent ?? (task.status === "failed" || task.status === "completed")
+
+  if (isUrgent) {
+    // Reactivate stream if needed (D3)
+    try {
+      await reactivateSessionStream(client, parentSessionID)
+    } catch {
+      // Best-effort: notification still delivered
+    }
+
+    // Urgent: append to TUI prompt so agent sees it immediately
+    try {
+      if (toastFn) toastFn(formatToastMessage(task))
+      await appendTuiPrompt(client, formatToastMessage(task))
+    } catch {
+      // Best-effort
+    }
+  }
+
   const body = {
-    noReply: true,
-    parts: [{ type: "text", text: message }],
+    noReply: !isUrgent,
+    parts: [{ type: "text", text: message, synthetic: true }],
   }
 
   try {
     await sendPrompt(client, parentSessionID, body)
   } catch {
     delivered = false
-  }
-
-  if (toastFn) {
-    try {
-      toastFn(formatToastMessage(task))
-    } catch {
-      // Best-effort: toast failure is not critical
-    }
+    queuePendingNotification(parentSessionID, task)
   }
 
   return delivered
@@ -227,8 +264,11 @@ export async function notifyDelegationTerminal(
   const task = buildDelegationTaskNotification(delegation)
   const message = buildNotificationMessage(task)
 
+  // Reactivate stream before terminal notification delivery
+  await reactivateSessionStream(client, delegation.parentSessionId)
+
   try {
-    await sendPrompt(client, delegation.parentSessionId, { noReply: true, parts: [{ type: "text", text: message }] })
+    await sendPrompt(client, delegation.parentSessionId, { noReply: true, parts: [{ type: "text", text: message, synthetic: true }] })
   } catch (error) {
     queuePendingNotification(delegation.parentSessionId, task)
     void client.app?.log?.({
