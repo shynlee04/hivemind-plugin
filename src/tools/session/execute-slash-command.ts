@@ -12,33 +12,33 @@ const DEFERRED_SUBTASK_DISPATCH_DELAY_MS = 50
  *
  * 1. **Synthetic parent prompt** (`subtask: false` + `agent`): Calls
  *    `session.prompt({ agent, parts: [{ type: "text", text }] })` after
- *    tool return. The target agent runs in the parent session context.
- *    Requires the target agent to be `mode: all`.
+ *    tool return. The target agent runs one turn in the parent session,
+ *    then the original agent is restored. Requires `mode: all` agents.
  *
  * 2. **Subtask dispatch** (`subtask: true` + `agent`): Calls
  *    `session.prompt({ agent, parts: [{ type: "subtask", agent, prompt }] })`
- *    after tool return. Creates a child/delegation session.
+ *    after tool return. Creates a child/delegation session (proven Phase 21.1).
  *
  * 3. **TUI pipeline** (no overrides): Uses `tui.appendPrompt + tui.submitPrompt`
- *    to inject `/command args` into the TUI prompt buffer. Best for basic
- *    command execution without agent context changes.
+ *    to inject `/command args` into the TUI prompt buffer.
  *
- * The `agent` and `subtask` fields are added on-the-fly per invocation —
- * they are NOT written to any command or agent configuration file.
+ * The `agent` and `subtask` fields are added on-the-fly per invocation.
+ * When `agent` is provided without `subtask`, defaults to `subtask: false`
+ * (parent session dispatch).
  *
  * @example
  * ```
- * // Basic TUI command execution (no agent override)
+ * // Basic command execution (no agent override)
  * execute-slash-command { command: "gsd-stats", arguments: "" }
  *
- * // Subtask dispatch to a specific agent
+ * // Synthetic parent prompt (agent runs one turn in parent session)
+ * execute-slash-command { command: "gsd-stats", agent: "gsd-executor" }
+ *
+ * // Explicit subtask dispatch
  * execute-slash-command { command: "gsd-stats", agent: "gsd-executor", subtask: true }
  *
- * // Parent session dispatch with agent override
- * execute-slash-command { command: "gsd-stats", agent: "gsd-executor", subtask: false }
- *
- * // Command with agent and model override
- * execute-slash-command { command: "plan", arguments: "refactor auth module", agent: "gsd-planner", subtask: false, model: "anthropic/claude-sonnet-4-20250514" }
+ * // Command with model override
+ * execute-slash-command { command: "plan", arguments: "refactor auth module", model: "anthropic/claude-sonnet-4-20250514" }
  * ```
  *
  * @see src/tools/hivemind/hivemind-command-engine.ts — discovery companion (CQRS read-side)
@@ -51,8 +51,8 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
   return tool({
     description:
       "Executes an OpenCode slash command on the active session. " +
-      "Three dispatch paths: (1) subtask:false + agent → synthetic parent prompt via session.prompt(), " +
-      "(2) subtask:true + agent → subtask delegation via session.prompt(), " +
+      "Three dispatch paths: (1) subtask:false + agent → synthetic parent prompt via session.prompt() " +
+      "(agent runs one turn, then restored), (2) subtask:true + agent → subtask delegation via session.prompt(), " +
       "(3) no overrides → TUI appendPrompt/submitPrompt for basic command execution. " +
       "When agent is provided without subtask, defaults to subtask:false (parent session dispatch). " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
@@ -103,6 +103,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
             }
           }
 
+          const originalAgent = ctx.agent as string | undefined
           const promptText = expandCommandArguments(commandBundle.body, args.arguments ?? "")
           dispatchPromptAfterToolReturn(client, {
             path: { id: ctx.sessionID },
@@ -116,14 +117,14 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
               ],
             },
             query: { directory: ctx.directory },
-          })
+          }, originalAgent)
 
           return {
             output: [
               `✓ Command ${cmdDisplay} dispatched as synthetic parent prompt.`,
               `  Agent: ${syntheticPromptAgent}`,
               `  Description: ${commandBundle.description}`,
-              "  Note: this bypasses native slash-command parsing and requires live UAT before runtime readiness claims.",
+              "  Note: synthetic parent prompt creates a ## USER turn in the session body. Agent will be restored after one turn.",
             ].join("\n"),
             metadata: {
               command: args.command,
@@ -278,9 +279,18 @@ function expandCommandArguments(commandBody: string, commandArguments: string): 
 function dispatchPromptAfterToolReturn(
   client: PluginInput["client"],
   request: Parameters<PluginInput["client"]["session"]["prompt"]>[0],
+  originalAgent?: string,
 ): void {
   setTimeout(() => {
-    void client.session.prompt(request).catch((caughtError: unknown) => {
+    void client.session.prompt(request).then(() => {
+      if (originalAgent && request.body && originalAgent !== request.body.agent) {
+        void client.session.prompt({
+          path: request.path,
+          body: { agent: originalAgent, parts: [{ type: "text", text: "" }] },
+          query: request.query,
+        }).catch(() => {})
+      }
+    }).catch((caughtError: unknown) => {
       const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
       console.error(`[Harness] Deferred slash command prompt dispatch failed: ${message}`)
     })
