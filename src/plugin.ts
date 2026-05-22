@@ -105,6 +105,8 @@ function persistPendingDelegationNotifications(records: Array<{ notification: { 
       agent: "delegate-task",
       createdAt: record.notification.timestamp,
       delivered: false,
+      retryCount: 0,
+      maxRetries: 3,
       description: `Delegation ${record.notification.delegationId} ${record.notification.type}`,
       metadata: { delegationId: record.notification.delegationId, terminalState: record.notification.type === "success" ? "completed" : record.notification.type === "timeout" ? "timeout" : "error", summaryPreview: record.notification.message.slice(0, 500) },
       resultPreview: record.notification.message,

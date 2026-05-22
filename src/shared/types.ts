@@ -25,6 +25,10 @@ export type TaskNotification = {
 export type PendingNotification = TaskNotification & {
   createdAt: number
   delivered: boolean
+  /** Number of times this notification has been retried. */
+  retryCount: number
+  /** Maximum retry attempts before the notification is dropped. */
+  maxRetries: number
 }
 
 export const MAX_DESCENDANTS_PER_ROOT = 10

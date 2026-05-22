@@ -140,6 +140,8 @@ function queuePendingNotification(parentSessionID: string, notification: TaskNot
     commits: notification.commits ? [...notification.commits] : undefined,
     createdAt: Date.now(),
     delivered: false,
+    retryCount: 0,
+    maxRetries: 3,
   }
   const current = getSessionContinuity(parentSessionID)
   const existing = current?.metadata.pendingNotifications ?? []
