@@ -3,8 +3,11 @@ import {
   buildNotificationMessage,
   formatToastMessage,
   notifyParentSession,
+  notifyDelegationTerminal,
+  reactivateSessionStream,
 } from "../../src/coordination/completion/notification-handler.js"
 import type { TaskNotification } from "../../src/shared/types.js"
+import type { Delegation } from "../../src/shared/types.js"
 
 /**
  * Stateful fake client that records sent prompts.
@@ -13,6 +16,7 @@ import type { TaskNotification } from "../../src/shared/types.js"
  */
 function createFakeClient() {
   const sentPrompts: Array<{ sessionID: string; body: unknown }> = []
+  const sentTuiPrompts: string[] = []
   return {
     session: {
       prompt: vi.fn(async (request: { path: { id: string }; body: unknown }) => {
@@ -23,7 +27,17 @@ function createFakeClient() {
       // getSessionMessages uses client.session.messages(params)
       messages: vi.fn(async () => ({ data: { messages: [] } })),
     },
+    tui: {
+      appendPrompt: vi.fn(async (request: { body: { text: string } }) => {
+        sentTuiPrompts.push(request.body.text)
+        return { data: true }
+      }),
+    },
+    app: {
+      log: vi.fn(),
+    },
     getSentPrompts: () => sentPrompts,
+    getSentTuiPrompts: () => sentTuiPrompts,
   }
 }
 
@@ -211,12 +225,89 @@ describe("notifyParentSession (integration with fake client)", () => {
 
     expect(delivered).toBe(true)
     const prompts = client.getSentPrompts()
-    expect(prompts.length).toBe(1)
-    expect(prompts[0].sessionID).toBe("ses_parent_001")
-    // Body should contain notification message
-    const body = prompts[0].body as { parts: Array<{ text: string }> }
+    expect(prompts.length).toBe(2) // stream reactivation + notification
+    // Last prompt is the notification
+    const body = prompts[prompts.length - 1].body as { parts: Array<{ text: string; synthetic?: boolean }>; noReply: boolean }
     expect(body.parts[0].text).toContain("completed")
     expect(body.parts[0].text).toContain("builder")
+    expect(body.parts[0].synthetic).toBe(true)
+  })
+
+  it("delivers silent notification with noReply:true and synthetic:true for non-terminal status", async () => {
+    const client = createFakeClient()
+    const task: TaskNotification = {
+      delegationId: "delg_102",
+      agent: "builder",
+      title: "Silent test",
+      status: "started",
+      description: "Silent progress update",
+      sessionID: "child_ses",
+    }
+
+    await notifyParentSession(
+      client as never,
+      "ses_parent_003",
+      task
+    )
+
+    const prompts = client.getSentPrompts()
+    expect(prompts.length).toBe(1) // no stream reactivation for non-urgent
+    const body = prompts[0].body as { parts: Array<{ text: string; synthetic?: boolean }>; noReply: boolean }
+    expect(body.noReply).toBe(true)
+    expect(body.parts[0].synthetic).toBe(true)
+  })
+
+  it("delivers urgent notification with appendTuiPrompt for terminal status", async () => {
+    const client = createFakeClient()
+    const task: TaskNotification = {
+      delegationId: "delg_103",
+      agent: "builder",
+      title: "Urgent test",
+      status: "failed",
+      description: "Failed task notification",
+      sessionID: "child_ses",
+    }
+
+    await notifyParentSession(
+      client as never,
+      "ses_parent_004",
+      task
+    )
+
+    // TUI prompt should have been called
+    expect(client.getSentTuiPrompts().length).toBeGreaterThan(0)
+    expect(client.getSentTuiPrompts()[0]).toContain("Failed task notification")
+
+    const prompts = client.getSentPrompts()
+    expect(prompts.length).toBe(2) // stream reactivation + notification
+    const body = prompts[prompts.length - 1].body as { parts: Array<{ text: string; synthetic?: boolean }>; noReply: boolean }
+    expect(body.noReply).toBe(false)
+    expect(body.parts[0].synthetic).toBe(true)
+  })
+
+  it("delivers silent notification when options.urgent is explicitly false", async () => {
+    const client = createFakeClient()
+    const task: TaskNotification = {
+      delegationId: "delg_104",
+      agent: "builder",
+      title: "Forced silent",
+      status: "failed",
+      description: "Should be silent despite terminal status",
+      sessionID: "child_ses",
+    }
+
+    await notifyParentSession(
+      client as never,
+      "ses_parent_005",
+      task,
+      undefined,
+      { urgent: false }
+    )
+
+    const prompts = client.getSentPrompts()
+    expect(prompts.length).toBe(1) // no stream reactivation
+    const body = prompts[0].body as { noReply: boolean }
+    expect(body.noReply).toBe(true)
   })
 
   it("returns false when sendPrompt fails", async () => {
@@ -243,5 +334,68 @@ describe("notifyParentSession (integration with fake client)", () => {
     )
 
     expect(delivered).toBe(false)
+  })
+})
+
+describe("reactivateSessionStream", () => {
+  it("sends empty synthetic prompt with noReply:true", async () => {
+    const client = createFakeClient()
+    await reactivateSessionStream(client as never, "ses_parent_stream")
+
+    const prompts = client.getSentPrompts()
+    expect(prompts.length).toBe(1)
+    const body = prompts[0].body as { parts: Array<{ type: string; text: string; synthetic: boolean }>; noReply: boolean }
+    expect(body.noReply).toBe(true)
+    expect(body.parts[0].type).toBe("text")
+    expect(body.parts[0].text).toBe("")
+    expect(body.parts[0].synthetic).toBe(true)
+  })
+
+  it("does not throw when sendPrompt fails", async () => {
+    const client = {
+      session: {
+        prompt: vi.fn(async () => {
+          throw new Error("Connection lost")
+        }),
+        messages: vi.fn(async () => ({ data: { messages: [] } })),
+      },
+    }
+    await expect(reactivateSessionStream(client as never, "ses_parent_stream_fail")).resolves.toBeUndefined()
+  })
+})
+
+describe("notifyDelegationTerminal", () => {
+  it("sends notification with synthetic:true and reactivates stream", async () => {
+    const client = createFakeClient()
+    const delegation: Delegation = {
+      id: "delg_term_001",
+      agent: "researcher",
+      childSessionId: "ses_child_term",
+      parentSessionId: "ses_parent_term",
+      status: "completed",
+      createdAt: Date.now() - 60000,
+      completedAt: Date.now(),
+      queueKey: null,
+      recoveryGuarantee: "none",
+      explicitCancellation: false,
+    }
+
+    await notifyDelegationTerminal(client as never, delegation)
+
+    const prompts = client.getSentPrompts()
+    // First prompt is stream reactivation, second is notification
+    expect(prompts.length).toBe(2)
+    // First call is reactivation
+    expect(prompts[0].sessionID).toBe("ses_parent_term")
+    const reactivationBody = prompts[0].body as { parts: Array<{ text: string; synthetic: boolean }> }
+    expect(reactivationBody.parts[0].text).toBe("")
+    expect(reactivationBody.parts[0].synthetic).toBe(true)
+    // Second call is notification with synthetic
+    expect(prompts[1].sessionID).toBe("ses_parent_term")
+    const notifBody = prompts[1].body as { parts: Array<{ text: string; synthetic: boolean }>; noReply: boolean }
+    expect(notifBody.noReply).toBe(true)
+    expect(notifBody.parts[0].synthetic).toBe(true)
+    expect(notifBody.parts[0].text).toContain("completed")
+    expect(notifBody.parts[0].text).toContain("researcher")
   })
 })
