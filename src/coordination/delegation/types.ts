@@ -194,3 +194,51 @@ export const MIN_STABILITY_TIME_MS = 10000
 export const STABLE_POLLS_REQUIRED = 3
 export const STABILITY_THRESHOLD = STABLE_POLLS_REQUIRED
 export const STABILITY_POLL_INTERVAL_MS = POLL_INTERVAL_BASE_MS
+
+// ---------------------------------------------------------------------------
+// Phase 22 — Delegation error codes
+// ---------------------------------------------------------------------------
+
+/**
+ * Machine-readable error codes for coordination-layer delegation failures.
+ * @phase 22
+ */
+export const DelegationErrorCode = {
+  SLOT_LIMIT_REACHED: "SLOT_LIMIT_REACHED",
+  SLOT_ACQUIRE_TIMEOUT: "SLOT_ACQUIRE_TIMEOUT",
+  PER_KEY_LIMIT_REACHED: "PER_KEY_LIMIT_REACHED",
+  UNKNOWN_AGENT: "UNKNOWN_AGENT",
+  CHILD_SESSION_FAILED: "CHILD_SESSION_FAILED",
+  CANNEL_TERMINAL: "CANNEL_TERMINAL",
+  ADJUST_PROMPT_NO_SESSION: "ADJUST_PROMPT_NO_SESSION",
+  CHANGE_AGENT_NO_SESSION: "CHANGE_AGENT_NO_SESSION",
+  RESUME_NO_PROMPT: "RESUME_NO_PROMPT",
+  RUNTIME_NOT_CONFIGURED: "RUNTIME_NOT_CONFIGURED",
+  QUEUE_KEY_DRIFT: "QUEUE_KEY_DRIFT",
+  UNKNOWN_ERROR: "UNKNOWN_ERROR",
+} as const
+export type DelegationErrorCode = (typeof DelegationErrorCode)[keyof typeof DelegationErrorCode]
+
+/**
+ * Structured delegation error with machine-readable code and human-readable message.
+ * NOT an Error subclass — a plain data structure for tool responses and notifications.
+ * @phase 22
+ */
+export interface DelegationError {
+  code: DelegationErrorCode
+  message: string
+  sessionId?: string
+  timestamp: number
+}
+
+/**
+ * Factory for creating DelegationError structs with current timestamp.
+ * @phase 22
+ */
+export function createDelegationError(
+  code: DelegationErrorCode,
+  message: string,
+  sessionId?: string,
+): DelegationError {
+  return { code, message, sessionId, timestamp: Date.now() }
+}
