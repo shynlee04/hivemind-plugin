@@ -5,7 +5,7 @@ import { join } from "node:path"
 import { vi } from "vitest"
 
 import { DelegationLifecycle } from "../../../../src/coordination/delegation/lifecycle.js"
-import { NotificationRouter } from "../../../../src/coordination/delegation/notification-router.js"
+import { NotificationRouter, PendingNotificationRecord } from "../../../../src/coordination/delegation/notification-router.js"
 import { DelegationRetryHandler } from "../../../../src/coordination/delegation/retry-handler.js"
 import { formatCompactLine, formatDelegationNotification, type NotificationFormatOptions } from "../../../../src/coordination/delegation/notification-formatter.js"
 
@@ -111,6 +111,109 @@ describe("NotificationRouter", () => {
     expect(router.formatNotification("failure", "dt-1", "bad")).toBe("❌ [DT:dt-1] failure — bad")
     expect(router.formatNotification("progress", "dt-1", "running")).toBe("🔄 [DT:dt-1] progress — running")
     expect(router.formatNotification("timeout", "dt-1", "300s")).toBe("⏰ [DT:dt-1] timeout — 300s")
+  })
+
+  // ---- P22-07a: PendingNotificationRecord schema extension ----
+
+  it("PendingNotificationRecord carries retryCount, maxRetries, expiresAt fields", () => {
+    const record: PendingNotificationRecord = {
+      parentSessionId: "parent-1",
+      notification: { delegationId: "dt-1", message: "test", timestamp: 1, type: "failure" },
+      stateRoot: ".hivemind",
+      retryCount: 0,
+      maxRetries: 1,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+    }
+    expect(record.retryCount).toBe(0)
+    expect(record.maxRetries).toBe(1)
+    expect(record.expiresAt).toBeGreaterThan(Date.now())
+    expect(record.parentSessionId).toBe("parent-1")
+    expect(record.stateRoot).toBe(".hivemind")
+  })
+
+  // ---- P22-05: Retry counter ----
+
+  it("increments retryCount and drops at maxRetries", () => {
+    const deliver = () => false
+    const router = new NotificationRouter({ deliver })
+    router.register("dt-1", "parent-1")
+
+    // First delivery failure → retryCount goes 0→1, 1 >= 1? No → queued
+    router.route({ delegationId: "dt-1", message: "attempt-1", timestamp: 1, type: "success" })
+    expect(router.replayPending("parent-1")).toHaveLength(1)
+
+    // Second delivery failure → retryCount 1 >= maxRetries 1 → dropped
+    router.route({ delegationId: "dt-1", message: "attempt-2", timestamp: 2, type: "success" })
+    expect(router.replayPending("parent-1")).toHaveLength(0)
+  })
+
+  // ---- P22-06: TTL expiry ----
+
+  it("drops expired notifications during replay", () => {
+    vi.useFakeTimers()
+    const router = new NotificationRouter({ deliver: () => false })
+    router.register("dt-1", "parent-1")
+
+    // Queue a notification via failed delivery — creates retryState with expiresAt = now + 5min
+    router.route({ delegationId: "dt-1", message: "before-ttl", timestamp: 1, type: "success" })
+
+    // Fast-forward past the default 5-minute TTL
+    vi.advanceTimersByTime(5 * 60 * 1000 + 1)
+
+    // Replay — should detect expired and purge from Map (P22-08)
+    expect(router.replayPending("parent-1")).toHaveLength(0)
+
+    // Second replay confirms purge (not just filter from in-memory Map)
+    expect(router.replayPending("parent-1")).toHaveLength(0)
+
+    vi.useRealTimers()
+  })
+
+  it("delivers non-expired notifications during replay", () => {
+    const router = new NotificationRouter({ deliver: () => false })
+    router.register("dt-1", "parent-1")
+
+    router.route({ delegationId: "dt-1", message: "in-time", timestamp: 1, type: "success" })
+
+    // Notification should be replayed (not expired)
+    expect(router.replayPending("parent-1")).toHaveLength(1)
+  })
+
+  // ---- P22-08: replayPending cleanup ----
+
+  it("replayPending purges expired records from in-memory Map", () => {
+    vi.useFakeTimers()
+    const router = new NotificationRouter({ deliver: () => false })
+    router.register("dt-1", "parent-1")
+
+    // Queue notification (creates retryState with 5min TTL)
+    router.route({ delegationId: "dt-1", message: "will-expire", timestamp: 1, type: "success" })
+
+    // Advance past TTL
+    vi.advanceTimersByTime(5 * 60 * 1000 + 1)
+
+    // First replay: should detect expired and purge
+    expect(router.replayPending("parent-1")).toHaveLength(0)
+
+    // Second replay: should still be empty (was purged, not just filtered)
+    expect(router.replayPending("parent-1")).toHaveLength(0)
+
+    vi.useRealTimers()
+  })
+
+  it("replayPending purges exhausted retry records from in-memory Map", () => {
+    const router = new NotificationRouter({ deliver: () => false })
+    router.register("dt-1", "parent-1")
+
+    // First delivery failure → queued
+    router.route({ delegationId: "dt-1", message: "first", timestamp: 1, type: "success" })
+    expect(router.replayPending("parent-1")).toHaveLength(1)
+
+    // Second delivery failure → exhausted (retryCount 1 >= maxRetries 1)
+    router.route({ delegationId: "dt-1", message: "second", timestamp: 2, type: "success" })
+
+    // Should not be queued — exhausted
+    expect(router.replayPending("parent-1")).toHaveLength(0)
   })
 })
 
