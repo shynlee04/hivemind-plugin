@@ -155,7 +155,7 @@ export async function sendPrompt(
     body: {
       ...(body as SessionPromptRequest["body"]),
       ...(noReply !== undefined ? { noReply } : {}),
-    },
+    } as SessionPromptRequest["body"],
   }
 
   const response = unwrapData(await client.session.prompt(request))
