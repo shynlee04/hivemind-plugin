@@ -8,6 +8,7 @@ import type {
   DelegationError,
   DelegationErrorCode as DelegationErrorCodeType,
 } from "../../../../src/coordination/delegation/types.js"
+import type { PendingNotification } from "../../../../src/shared/types.js"
 
 describe("P22-01: delegationStatusToHarnessStatus()", () => {
   it("maps dispatched to pending", () => {
@@ -158,5 +159,48 @@ describe("P22-04: createDelegationError() factory", () => {
     const after = Date.now()
     expect(err.timestamp).toBeGreaterThanOrEqual(before)
     expect(err.timestamp).toBeLessThanOrEqual(after + 1000)
+  })
+})
+
+describe("P22-07b: PendingNotification schema extension", () => {
+  function createSamplePendingNotification(
+    overrides: Partial<PendingNotification> = {},
+  ): PendingNotification {
+    return {
+      sessionID: "test-session",
+      description: "test description",
+      agent: "test-agent",
+      status: "completed",
+      createdAt: Date.now(),
+      delivered: false,
+      retryCount: 0,
+      maxRetries: 3,
+      ...overrides,
+    }
+  }
+
+  it("includes retryCount field of type number", () => {
+    const n = createSamplePendingNotification({ retryCount: 5 })
+    expect(n.retryCount).toBe(5)
+  })
+
+  it("includes maxRetries field of type number", () => {
+    const n = createSamplePendingNotification({ maxRetries: 3 })
+    expect(n.maxRetries).toBe(3)
+  })
+
+  it("preserves createdAt field (not re-added)", () => {
+    const n = createSamplePendingNotification({ createdAt: 1234567890 })
+    expect(n.createdAt).toBe(1234567890)
+  })
+
+  it("preserves delivered field and TaskNotification inheritance", () => {
+    const n = createSamplePendingNotification({ delivered: true })
+    expect(n.delivered).toBe(true)
+    // Verify TaskNotification-inherited fields are still present
+    expect(n.sessionID).toBe("test-session")
+    expect(n.description).toBe("test description")
+    expect(n.agent).toBe("test-agent")
+    expect(n.status).toBe("completed")
   })
 })
