@@ -13,7 +13,7 @@ import type { TaskNotification } from "../../shared/types.js"
 import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "../../task-management/continuity/index.js"
 
 const MAX_PREVIEW_LENGTH = 500
-const STALL_TIMEOUT_MS = 60000
+export const STALL_TIMEOUT_MS = 60000
 
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`
