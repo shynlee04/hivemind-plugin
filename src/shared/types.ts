@@ -158,6 +158,27 @@ export const HARNESS_STATUS_TO_LIFECYCLE_PHASE: Record<
   failed: "failed",
 } as const
 
+// -- begin Phase 22 additions --
+
+/**
+ * Map DelegationStatus → HarnessStatus at the coordination-to-plugin boundary.
+ * Keeps each enum independent and avoids breaking existing direct imports.
+ * Opt-in: existing direct imports of DelegationStatus continue to work unchanged.
+ * @phase 22
+ */
+export function delegationStatusToHarnessStatus(status: DelegationStatus): HarnessStatus {
+  const map: Record<DelegationStatus, HarnessStatus> = {
+    dispatched: "pending",
+    running: "running",
+    completed: "completed",
+    error: "error",
+    timeout: "error", // no "timeout" value in HarnessStatus
+  }
+  return map[status]
+}
+
+// -- end Phase 22 additions --
+
 // ---------------------------------------------------------------------------
 // Runtime policy types (RESEARCH D-16: supplements OpenCode built-ins only)
 // ---------------------------------------------------------------------------
