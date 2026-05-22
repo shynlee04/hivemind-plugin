@@ -3,23 +3,23 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-21T14:06:44.368Z"
+last_updated: "2026-05-22T14:13:47.809Z"
 progress:
-  total_phases: 26
-  completed_phases: 6
-  total_plans: 40
-  completed_plans: 31
-  percent: 78
+  total_phases: 28
+  completed_phases: 8
+  total_plans: 48
+  completed_plans: 42
+  percent: 88
 ---
 
 <!-- generated-by: gsd-doc-writer -->
 
 # Hivemind — State
 
-**Last updated:** 2026-05-21
-**Last advance:** Reordered Phases 21-37 per owner's 3-group framework: Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup). Based on 16 research artifacts (6,621 LOC), phase-reordering analysis (4 critical violations), session-tracker flaws analysis (16 flaws, 2 CRITICAL).
-**Current focus:** Phase 21 — session-tracker-design-fix
-**Next recommended run:** `/gsd-discuss-phase 21` then `/gsd-plan-phase 21`
+**Last updated:** 2026-05-22
+**Last advance:** Phase 22 Plan 01 complete — DelegationStatus→HarnessStatus mapping, DelegationErrorCode const union (12 codes), DelegationError struct, createDelegationError() factory. All 26 tests pass, typecheck clean.
+**Current focus:** Phase 22 Plan 01 — coordination-layer type contracts completed
+**Next recommended run:** Phase 22 Plan 02 — Tool Response Envelope Modification
 
 ---
 
@@ -31,7 +31,9 @@ progress:
 **Phase 20:** ✅ COMPLETE — Dependency cleanup (11 deps removed, yaml consolidated, react→optional).
 **P00.5:** 📋 READY — Non-destructive foundation sweep (delete 3 dead schemas, rebuild dist/, remove 2 legacy hooks).
 **Phase 21:** 📋 READY — Session-Tracker Design Fix (16 flaws, 2 CRITICAL: F-01 temp leak, F-02 manifest never writes).
-**Phase 22:** 📋 PENDING — Coordination Status + Error Unification (unify TaskStatus/DelegationStatus, DelegationError type).
+**Phase 21.1:** 🟡 REVISED — execute-slash-command supports deferred one-shot subtask dispatch; front-agent switching moved to Phase 21.2.
+**Phase 21.2:** 🟡 PROTOTYPE — one-shot front-agent mode override feasibility; L3 unit/typecheck pass, L1 live UAT still required.
+**Phase 22:** 🟡 ACTIVE — Coordination Status + Error Unification. Plan 01 ✅: delegationStatusToHarnessStatus(), DelegationErrorCode (12 codes), DelegationError, createDelegationError(). 26/26 tests pass.
 **Phase 23:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (CP-DT-01 block, DelegationManager decompose).
 **Phase 24:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign.
 **Phase 25:** 📋 PENDING — Pressure + Notification Redesign.
@@ -263,6 +265,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-21** — Phase 18 complete (4/4 plans). Gatekeeping: 3 gates clear, 2 WARNING findings.
 - **2026-05-21** — **HARD RESTRUCTURING RUNWAY INSERTED**: Phases 19-25 before original Phases 19/20 (pushed to 27/28). Based on 4 initial research + 6 deep analysis agents (3,807 LOC) + full restructuring map (3,994 LOC). Phase 26 added as post-restructuring integration verification. Sequence: non-destructive → deps → async I/O → typed errors → plugin decomposition + module split → session-tracker split → legacy + test gaps + tool relocation + CQRS → integration verification → sync-oss.yml → package primitives.
 - **2026-05-21** — **REORDERED per owner's 3-group framework**: Group 1 (Orchestration Design Fix, P21-P25) → Group 2 (Routing/Coordination, P26-P28) → Group 3 (Schema/Config, P29-P31) → Group 4 (Structural Cleanup, P32-P35) → P36-P37 independent. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis reports, phase-reordering analysis (4 critical violations). Session-tracker FIRST with production evidence.
+- Phase 21.1 inserted after Phase 21: Execute-Slash-Command SDK Redesign — agent switching, native SDK execution, primitive awareness, subtask wiring (URGENT)
 
 ### Key Restructuring Decisions
 
