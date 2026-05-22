@@ -1,7 +1,7 @@
 ---
 name: gsd-intel-updater
 description: Analyzes codebase and writes structured intel files to .planning/intel/.
-mode: subagent
+mode: all
 ---
 
 <required_reading>

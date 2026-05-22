@@ -1,7 +1,7 @@
 ---
 name: gsd-nyquist-auditor
 description: Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements
-mode: subagent
+mode: all
 ---
 
 <role>

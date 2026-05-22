@@ -1,75 +1,48 @@
 import { tool } from "@opencode-ai/plugin"
 import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
-import { success, error } from "../../shared/tool-response.js"
-import { renderToolResult } from "../../shared/tool-helpers.js"
+import { discoverCommandBundles } from "../../routing/command-engine/index.js"
+import type { CommandBundle } from "../../routing/command-engine/types.js"
 
-/** Wrap a ToolResponse into the ToolResult format expected by tool(). */
-function toToolResult<T>(response: { kind: string; message: string; data?: T; metadata?: Record<string, unknown> }) {
-  return {
-    output: renderToolResult(response),
-    metadata: (response.metadata ?? {}) as Record<string, unknown>,
-  }
-}
+const DEFERRED_SUBTASK_DISPATCH_DELAY_MS = 50
 
 /**
  * Creates the execute-slash-command tool.
  *
- * Dispatches OpenCode slash commands through the SDK-native `session.command()`
- * path as the primary mechanism, with three specialized dispatch modes:
+ * Dispatches a slash command via one of three paths depending on input:
  *
- * 1. **Direct command execution** — calls `client.session.command()` with the
- *    command name, arguments, optional agent, and optional model. Agent/model
- *    parameters trigger SDK-side agent switching with proper event emission.
+ * 1. **Synthetic parent prompt** (`subtask: false` + `agent`): Calls
+ *    `session.prompt({ agent, parts: [{ type: "text", text }] })` after
+ *    tool return. The target agent runs in the parent session context.
+ *    Requires the target agent to be `mode: all`.
  *
- * 2. **Subtask routing** — when the command's frontmatter has `subtask: true`,
- *    dispatches via `client.session.prompt()` with `SubtaskPartInput`, which
- *    creates a properly tracked child session.
+ * 2. **Subtask dispatch** (`subtask: true` + `agent`): Calls
+ *    `session.prompt({ agent, parts: [{ type: "subtask", agent, prompt }] })`
+ *    after tool return. Creates a child/delegation session.
  *
- * 3. **TUI fallback** — if the SDK path fails (session busy, queued, error),
- *    falls back to the TUI prompt pipeline (`clearPrompt → appendPrompt →
- *    submitPrompt`), preserving backward compatibility.
+ * 3. **TUI pipeline** (no overrides): Uses `tui.appendPrompt + tui.submitPrompt`
+ *    to inject `/command args` into the TUI prompt buffer. Best for basic
+ *    command execution without agent context changes.
  *
- * ## Agent Switching Mechanisms
- *
- * - **Mechanism (a) — pass-agent:** When `agent` is provided, it is passed to
- *   `session.command()`, triggering an SDK-side agent switch with
- *   `SessionNextAgentSwitched` event.
- * - **Mechanism (b) — run-then-restore:** When `restore: true` is set, the
- *   tool caches `ctx.agent` before dispatch, executes the command under the
- *   target agent, then sends a follow-up `session.command()` to restore the
- *   prior agent.
- *
- * ## Preflight Check
- *
- * Before dispatching, the tool calls `client.command.list()` to verify the
- * command exists in the OpenCode command registry. Unknown commands return
- * a graceful error with the list of available commands.
- *
- * ## Standard Result Envelope
- *
- * All returns use `success()` / `error()` from `src/shared/tool-response.ts`
- * with `{ kind, message, data, metadata }` shape.
+ * The `agent` and `subtask` fields are added on-the-fly per invocation —
+ * they are NOT written to any command or agent configuration file.
  *
  * @example
  * ```
- * // Basic command
- * execute-slash-command { command: "gsd-stats" }
+ * // Basic TUI command execution (no agent override)
+ * execute-slash-command { command: "gsd-stats", arguments: "" }
  *
- * // Command with arguments
- * execute-slash-command { command: "hf-create", arguments: "skill my-new-skill" }
+ * // Subtask dispatch to a specific agent
+ * execute-slash-command { command: "gsd-stats", agent: "gsd-executor", subtask: true }
  *
- * // Agent switch (mechanism a)
- * execute-slash-command { command: "deep-research-synthesis-repomix", arguments: "vitest", agent: "hm-researcher" }
+ * // Parent session dispatch with agent override
+ * execute-slash-command { command: "gsd-stats", agent: "gsd-executor", subtask: false }
  *
- * // Agent switch and restore (mechanism b)
- * execute-slash-command { command: "plan", arguments: "refactor", agent: "hm-planner", restore: true }
- *
- * // Model override
- * execute-slash-command { command: "gsd-help", model: "anthropic/claude-sonnet-4-20250514" }
+ * // Command with agent and model override
+ * execute-slash-command { command: "plan", arguments: "refactor auth module", agent: "gsd-planner", subtask: false, model: "anthropic/claude-sonnet-4-20250514" }
  * ```
  *
- * @see src/tools/hivemind/hivemind-command-engine.ts — CQRS read-side command discovery
- * @see src/shared/tool-response.ts — Standard result envelope
+ * @see src/tools/hivemind/hivemind-command-engine.ts — discovery companion (CQRS read-side)
+ * @see src/routing/command-engine/index.ts — command engine core
  *
  * @param client - The OpenCode SDK client instance (injected from plugin composition root).
  * @returns ToolDefinition for the execute-slash-command tool.
@@ -78,9 +51,10 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
   return tool({
     description:
       "Executes an OpenCode slash command on the active session. " +
-      "Dispatches via the SDK-native session.command() path with TUI fallback. " +
-      "Supports agent switching (two mechanisms), model override, command preflight, " +
-      "frontmatter-aware dispatch, subtask routing, and standard response envelope. " +
+      "Three dispatch paths: (1) subtask:false + agent → synthetic parent prompt via session.prompt(), " +
+      "(2) subtask:true + agent → subtask delegation via session.prompt(), " +
+      "(3) no overrides → TUI appendPrompt/submitPrompt for basic command execution. " +
+      "When agent is provided without subtask, defaults to subtask:false (parent session dispatch). " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
     args: {
       command: tool.schema.string().describe(
@@ -90,260 +64,225 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
         "Arguments string to pass to the command (e.g., 'my-new-skill'). Defaults to empty string.",
       ),
       agent: tool.schema.string().optional().describe(
-        "Optional agent context override. Passed to session.command() for SDK-side agent switching. " +
-        "When set, the TUI switches to the target agent with proper SessionNextAgentSwitched event. " +
-        "Combine with restore: true for mechanism (b): run-under-agent-then-restore.",
+        "Optional agent context override. With subtask:true, dispatches a SubtaskPartInput to this agent. " +
+        "With subtask:false, dispatches the expanded command body as a deferred synthetic parent prompt for this agent.",
       ),
       model: tool.schema.string().optional().describe(
         "Optional model override in 'providerID/modelID' format (e.g., 'anthropic/claude-sonnet-4-20250514'). " +
-        "Passed to session.command() for SDK-side model selection.",
+        "When set, prepended as a model tag in the prompt text.",
       ),
-      restore: tool.schema.boolean().optional().describe(
-        "When true and agent is set, runs mechanism (b): records current agent, " +
-        "dispatches under the target agent, then restores the prior agent via a follow-up " +
-        "session.command() call. Only effective when agent is also provided.",
+      subtask: tool.schema.boolean().optional().describe(
+        "Optional one-shot subtask override. When true, dispatches the command body as a SubtaskPartInput using the resolved or overridden agent.",
       ),
     },
     async execute(args, ctx) {
-      const sessionID = ctx.sessionID
-      const currentAgent = ctx.agent
-
+      const cmdDisplay = `/${args.command}${args.arguments ? ` ${args.arguments}` : ""}`
       ctx.metadata({
-        title: `Executing /${args.command}${args.arguments ? ` ${args.arguments}` : ""}`,
+        title: `Executing ${cmdDisplay}`,
         metadata: {
           command: args.command,
           ...(args.agent && { agent: args.agent }),
           ...(args.model && { model: args.model }),
-          ...(args.restore && { restore: true }),
         },
       })
 
-      // Step 1: Preflight — Command existence check (REQ-03)
       try {
-        const commands = await client.command.list({
-          query: { directory: ctx.directory },
-        })
-        const unwrappedCommands = Array.isArray(commands)
-          ? commands
-          : (commands as { data?: Array<{ name: string }> }).data ?? []
-
-        const found = unwrappedCommands.find(
-          (c: { name: string }) => c.name === args.command,
-        )
-
-        if (!found) {
-          const available = unwrappedCommands.map(
-            (c: { name: string }) => c.name,
-          )
-          return toToolResult(
-            error(
-              `Command not found: /${args.command}. Available commands: ${available.join(", ")}`,
-              { availableCommands: available },
-              { command: args.command },
-            ),
-          )
-        }
-
-        // Step 2: Frontmatter enrichment (REQ-04)
-        const frontmatterAgent = (found as { agent?: string }).agent
-        const frontmatterModel = (found as { model?: string }).model
-        const frontmatterSubtask = (found as { subtask?: boolean }).subtask
-        const effectiveAgent = args.agent || frontmatterAgent
-        const effectiveModel = args.model || frontmatterModel
-
-        // Step 3: Subtask routing (REQ-04 subtask)
-        if (frontmatterSubtask === true) {
-          try {
-            const subtaskAgent = effectiveAgent ?? "assistant"
-            const cmdTemplate = (found as { template?: string }).template ?? args.command
-            const promptText = `${cmdTemplate}${args.arguments ? ` ${args.arguments}` : ""}`
-            const subtaskDescription: string = (found as { description?: string }).description ?? ""
-            await client.session.prompt({
-              path: { id: sessionID },
-              body: {
-                agent: subtaskAgent,
-                parts: [
-                  {
-                    type: "subtask" as const,
-                    agent: subtaskAgent,
-                    prompt: promptText,
-                    description: subtaskDescription,
-                  },
-                ],
-              },
-              query: { directory: ctx.directory },
-            })
-            return toToolResult(
-              success(
-                `Subtask dispatched: /${args.command} → ${subtaskAgent}`,
-                {
-                  command: args.command,
-                  agent: subtaskAgent,
-                  dispatched: true,
-                },
-                { command: args.command, mode: "subtask" },
-              ),
-            )
-          } catch (subtaskError: unknown) {
-            const msg =
-              subtaskError instanceof Error
-                ? subtaskError.message
-                : String(subtaskError)
-            return toToolResult(
-              error(
-                `Subtask dispatch failed for /${args.command}: ${msg}`,
-                { command: args.command },
-                { command: args.command, mode: "subtask", error: msg },
-              ),
-            )
-          }
-        }
-
-        // Step 4: Primary path — SDK session.command() (REQ-01)
-        try {
-          // Mechanism (b) — run-as-then-restore (REQ-02)
-          if (args.restore && effectiveAgent && currentAgent) {
-            await client.session.command({
-              path: { id: sessionID },
-              body: {
+        const projectRoot = ctx.directory ?? ""
+        const commandBundle = await findCommandBundle(projectRoot, args.command)
+        const resolvedSubtask = args.subtask ?? (args.agent ? false : undefined)
+        const syntheticPromptAgent = resolvedSubtask === false ? args.agent || commandBundle?.agent : undefined
+        if (syntheticPromptAgent) {
+          if (!commandBundle) {
+            return {
+              output: `✗ Failed to dispatch ${cmdDisplay}: command not found for synthetic parent prompt dispatch`,
+              metadata: {
+                error: true,
+                errorType: "not_found",
                 command: args.command,
-                arguments: args.arguments ?? "",
-                agent: effectiveAgent,
-                model: effectiveModel,
               },
-              query: { directory: ctx.directory },
-            })
-            // Restore prior agent
-            await client.session.command({
-              path: { id: sessionID },
-              body: {
-                command: "",
-                arguments: "",
-                agent: currentAgent,
-              },
-              query: { directory: ctx.directory },
-            })
-            return toToolResult(
-              success(
-                `Command /${args.command} executed under ${effectiveAgent} and restored to ${currentAgent}.`,
-                {
-                  command: args.command,
-                  agent: effectiveAgent,
-                  restored: true,
-                  priorAgent: currentAgent,
-                },
-                {
-                  command: args.command,
-                  mode: "agent-switch-restore",
-                },
-              ),
-            )
+            }
           }
 
-          // Mechanism (a) — simple agent switch via SDK
-          await client.session.command({
-            path: { id: sessionID },
+          const promptText = expandCommandArguments(commandBundle.body, args.arguments ?? "")
+          dispatchPromptAfterToolReturn(client, {
+            path: { id: ctx.sessionID },
             body: {
-              command: args.command,
-              arguments: args.arguments ?? "",
-              ...(effectiveAgent && { agent: effectiveAgent }),
-              ...(effectiveModel && { model: effectiveModel }),
+              agent: syntheticPromptAgent,
+              parts: [
+                {
+                  type: "text",
+                  text: promptText,
+                },
+              ],
             },
             query: { directory: ctx.directory },
           })
 
-          const parts: string[] = [
-            `✓ Command /${args.command} dispatched via SDK command path.`,
-          ]
-          if (effectiveAgent) {
-            parts.push(`  Agent: ${effectiveAgent}`)
-          }
-          if (effectiveModel) {
-            parts.push(`  Model: ${effectiveModel}`)
-          }
-          parts.push(
-            "  The command will execute after this tool call returns.",
-          )
-
-          return toToolResult(
-            success(
-              parts.join("\n"),
-              {
-                command: args.command,
-                agent: effectiveAgent ?? null,
-                dispatched: true,
-              },
-              {
-                command: args.command,
-                mode: effectiveAgent
-                  ? args.restore
-                    ? "agent-switch-restore"
-                    : "agent-switch"
-                  : "direct",
-              },
-            ),
-          )
-        } catch (sdkError: unknown) {
-          // Step 5: TUI fallback (REQ-01 hybrid approach)
-          try {
-            const parts: string[] = []
-            if (effectiveAgent) parts.push(`@${effectiveAgent}`)
-            parts.push(`/${args.command}`)
-            if (args.arguments) parts.push(args.arguments)
-            const promptText = parts.join(" ")
-
-            await client.tui.clearPrompt()
-            await client.tui.appendPrompt({
-              body: { text: promptText },
-            })
-            await client.tui.submitPrompt()
-
-            return toToolResult(
-              success(
-                [
-                  `✓ Command /${args.command} dispatched via TUI fallback.`,
-                  `  Prompt text: ${promptText}`,
-                  `  The command will execute after this tool call returns.`,
-                ].join("\n"),
-                {
-                  command: args.command,
-                  promptText,
-                  dispatched: true,
-                  fallback: true,
-                },
-                {
-                  command: args.command,
-                  mode: "tui-fallback",
-                },
-              ),
-            )
-          } catch (tuiError: unknown) {
-            const msg =
-              tuiError instanceof Error
-                ? tuiError.message
-                : String(tuiError)
-            return toToolResult(
-              error(
-                `Failed to dispatch /${args.command}: ${msg}`,
-                { command: args.command },
-                { command: args.command, error: msg },
-              ),
-            )
+          return {
+            output: [
+              `✓ Command ${cmdDisplay} dispatched as synthetic parent prompt.`,
+              `  Agent: ${syntheticPromptAgent}`,
+              `  Description: ${commandBundle.description}`,
+              "  Note: this bypasses native slash-command parsing and requires live UAT before runtime readiness claims.",
+            ].join("\n"),
+            metadata: {
+              command: args.command,
+              agent: syntheticPromptAgent,
+              description: commandBundle.description,
+              mode: "synthetic-parent-prompt",
+              scheduled: true,
+              dispatched: true,
+            },
           }
         }
-      } catch (preflightError: unknown) {
-        const msg =
-          preflightError instanceof Error
-            ? preflightError.message
-            : String(preflightError)
-        return toToolResult(
-          error(
-            `Preflight check failed for /${args.command}: ${msg}`,
-            { command: args.command },
-            { command: args.command, error: msg },
-          ),
-        )
+
+        const shouldDispatchSubtask = args.subtask ?? commandBundle?.subtask === true
+        if (shouldDispatchSubtask) {
+          if (!commandBundle) {
+            return {
+              output: `✗ Failed to dispatch ${cmdDisplay}: command not found for subtask dispatch`,
+              metadata: {
+                error: true,
+                errorType: "not_found",
+                command: args.command,
+              },
+            }
+          }
+          const subtaskAgent = args.agent || commandBundle.agent
+          if (!subtaskAgent) {
+            return {
+              output: `✗ Failed to dispatch ${cmdDisplay}: command has subtask: true but no agent was provided or defined in frontmatter`,
+              metadata: {
+                error: true,
+                errorType: "bad_request",
+                command: args.command,
+              },
+            }
+          }
+
+          const promptText = expandCommandArguments(commandBundle.body, args.arguments ?? "")
+          dispatchPromptAfterToolReturn(client, {
+            path: { id: ctx.sessionID },
+            body: {
+              agent: subtaskAgent,
+              parts: [
+                {
+                  type: "subtask",
+                  agent: subtaskAgent,
+                  description: commandBundle.description,
+                  prompt: promptText,
+                },
+              ],
+            },
+            query: { directory: ctx.directory },
+          })
+
+          return {
+            output: [
+              `✓ Command ${cmdDisplay} dispatched as subtask.`,
+              `  Agent: ${subtaskAgent}`,
+              `  Description: ${commandBundle.description}`,
+            ].join("\n"),
+            metadata: {
+              command: args.command,
+              agent: subtaskAgent,
+              description: commandBundle.description,
+              mode: "subtask",
+              scheduled: true,
+              dispatched: true,
+            },
+          }
+        }
+
+        // Build the slash command text exactly as a user would type it in the TUI
+        // Format: [@agent] [/command] [arguments]
+        const parts: string[] = []
+
+        // Prepend agent override if specified
+        if (args.agent) {
+          parts.push(`@${args.agent}`)
+        }
+
+        // The command itself
+        parts.push(`/${args.command}`)
+
+        // Append arguments if any
+        if (args.arguments) {
+          parts.push(args.arguments)
+        }
+
+        const promptText = parts.join(" ")
+
+        // Step 1: Clear any existing prompt to avoid stale state
+        await client.tui.clearPrompt()
+
+        // Step 2: Append the slash command text to the TUI prompt buffer
+        await client.tui.appendPrompt({
+          body: { text: promptText },
+        })
+
+        // Step 3: Submit the prompt — TUI dispatches as a slash command
+        await client.tui.submitPrompt()
+
+        return {
+          output: [
+            `✓ Command ${cmdDisplay} dispatched to TUI prompt.`,
+            `  Prompt text: ${promptText}`,
+            `  The command will execute immediately after this tool call returns.`,
+            args.agent ? `  Agent: ${args.agent}` : null,
+            args.model ? `  Model: ${args.model}` : null,
+          ].filter(Boolean).join("\n"),
+          metadata: {
+            command: args.command,
+            promptText,
+            dispatched: true,
+            ...(args.agent && { agent: args.agent }),
+            ...(args.model && { model: args.model }),
+          },
+        }
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : String(error)
+
+        // Classify error type for better agent error handling
+        let errorType: "bad_request" | "not_found" | "internal" = "internal"
+        if (error instanceof Error) {
+          const statusMatch = msg.match(/\b(400|422)\b/)
+          if (statusMatch) errorType = "bad_request"
+          else if (msg.includes("404") || msg.includes("not found")) errorType = "not_found"
+        }
+
+        return {
+          output: `✗ Failed to dispatch ${cmdDisplay}: ${msg}`,
+          metadata: {
+            error: true,
+            errorType,
+            command: args.command,
+            message: msg,
+          },
+        }
       }
     },
   })
+}
+
+async function findCommandBundle(projectRoot: string, commandName: string): Promise<CommandBundle | undefined> {
+  if (!projectRoot) return undefined
+  const discovery = await discoverCommandBundles({ projectRoot })
+  return discovery.commands.find((command) => command.name === commandName)
+}
+
+function expandCommandArguments(commandBody: string, commandArguments: string): string {
+  return commandBody.replaceAll("$ARGUMENTS", commandArguments)
+}
+
+function dispatchPromptAfterToolReturn(
+  client: PluginInput["client"],
+  request: Parameters<PluginInput["client"]["session"]["prompt"]>[0],
+): void {
+  setTimeout(() => {
+    void client.session.prompt(request).catch((caughtError: unknown) => {
+      const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+      console.error(`[Harness] Deferred slash command prompt dispatch failed: ${message}`)
+    })
+  }, DEFERRED_SUBTASK_DISPATCH_DELAY_MS)
 }
