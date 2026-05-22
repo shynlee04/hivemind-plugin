@@ -63,12 +63,12 @@ This skill is framework-agnostic: it describes delegation using OpenCode runtime
 | Dimension | `task` tool | `delegate-task` | `execute-slash-command` |
 |-----------|------------|-----------------|------------------------|
 | **Mechanism** | Native OpenCode subagent dispatch | WaiterModel SDK child-session dispatch | Command dispatch + synthetic parent prompt |
-| **When to use** | Simple delegation, no progress tracking | Complex async work with progress monitoring | Command execution, agent override, one-shot dispatch |
-| **Monitoring** | Automatic (OpenCode runtime manages lifecycle) | Manual polling via `delegation-status` tool | Return value + synthetic response from agent |
+| **When to use** | Code editing, governance documents, state/roadmap/plan/artifact modification | Async background: research, audit, review, verification | Command execution, agent override, one-shot dispatch |
+| **Monitoring** | User-visible progress (click to view); runtime manages lifecycle | Manual polling via `delegation-status` tool | Return value + synthetic response from agent |
 | **Stacking** | Automatic via `task_id` resume parameter | Explicit via `parentSessionId` in context JSON | N/A — one-shot, no session attachment |
-| **Limitations** | No progress tracking; agent completes or fails | Async-only (WaiterModel — returns immediately) | Agent override must exist as a definition |
+| **Limitations** | None significant for code/artifact tasks (handles 40+ tool calls) | Async-only (WaiterModel — returns immediately); NOT for code editing | Agent override must exist as a definition |
 | **Output** | Final message from subagent to caller | Pollable via `delegation-status` — returns state + output | Command result + optional synthetic prompt output |
-| **Use case profile** | ≤3 step tasks, known scope | Multi-step async, long-running, needs status | Agent override, discover commands, proxy dispatch |
+| **Use case profile** | Code editing, governance docs, multi-step code changes (40+ tool calls) | Research, audit, review, verification — low-risk background work | Agent override, discover commands, proxy dispatch |
 | **Budget control** | Inherits from parent session | Explicit turn/token limits via delegate-task config | Inherits from target agent definition |
 
 ### Quick Decision Flow
@@ -76,71 +76,85 @@ This skill is framework-agnostic: it describes delegation using OpenCode runtime
 ```
 Is the work a one-shot command or agent override?
   YES → execute-slash-command (command, agent parameter)
-  
-Does the work need progress tracking or status polling?
-  YES → delegate-task (WaiterModel, delegation-status polling)
-  
-Is the work simple, bounded, and under 3 steps?
-  YES → task tool (native subagent, automatic monitoring)
-  
+
+Is the work code editing, governance documents, or artifact modification?
+  YES → task tool (HIGH CONTROL, user-visible, handles 40+ tool calls for code/artifacts)
+
+Is the work research, audit, review, or verification?
+  YES → delegate-task (async background, WaiterModel, polling via delegation-status)
+
 Do you need to attach work to an existing completed session?
   YES → delegate-task with parentSessionId (session stacking)
+  OR → task tool with task_id (session stacking)
 
 Are you unsure which agent has the right tools?
   → Use hivemind-command-engine to discover commands
   → Use configure-primitive or hivemind-sdk-supervisor to verify agent readiness
 ```
 
-## Pattern 1: Task Tool — Simple Subagent Dispatch
+## Pattern 1: Task Tool — Code & Artifact Dispatch (HIGH CONTROL)
 
-Use when delegating bounded, straightforward work to a specialist agent. The OpenCode runtime manages the subagent lifecycle automatically — dispatch, execution, completion detection — with no manual polling needed.
+**Use for ALL code editing, governance documents, and artifact modifications** (state, roadmap, architecture, requirements, planning). The task tool handles 40+ consecutive tool calls perfectly with user-visible progress — the user can click to view subagent progress at any time.
+
+**Why task tool for code/artifacts:**
+- **Full control** — user can see every tool call, every file edit
+- **High capacity** — handles 40+ consecutive tool calls without degradation
+- **Direct lineage** — auto-chained by runtime, preserving session hierarchy
+- **User-visible** — click-through progress means no "black box" execution
 
 **Example:**
 
 ```
-# Delegate a research task to the scout agent
-# The subagent runs in its own session, returns results
-# Task tool handles monitoring automatically
+# Code editing — task tool for full visibility
+# Governance document modification — task tool for full control
+# State/roadmap/plan artifact changes — task tool for audit trail
 ```
 
 **When it works best:**
-- Single-unit work: "research this API", "audit this module", "review these files"
-- ≤3 step tasks with no branching
-- Work where you do not need intermediate progress — only the final result
-- Agent is well-scoped (not overloaded with ambiguous instructions)
+- Code editing (file creation, modification, deletion)
+- Core governance documents (roadmap, requirements, architecture, planning artifacts)
+- State modifications requiring user visibility and audit trail
+- Multi-step code changes with high tool call volume (40+ calls)
+- Any task where the user needs to monitor what is happening
 
 **When NOT to use:**
-- Work exceeding ~5 tool calls (unbounded subagents lose focus)
-- Work that requires progress monitoring (you cannot poll task tool)
-- Work that needs to attach to a specific parent session (task tool auto-creates its own chain)
-- Multi-step orchestration with conditional branching
+- Research tasks (use `delegate-task` — no code is changed)
+- Audit/review tasks (use `delegate-task` — read-only, can run in background)
+- Verification against specifications (use `delegate-task` — async background)
+- Purely informational lookups (use `delegate-task` or inline tools)
 
 **Stacking onto an existing session:** Pass `task_id` parameter to resume the same subagent session. This continues the previous session rather than creating a new one.
 
-## Pattern 2: Delegate-Task — WaiterModel Async Delegation
+## Pattern 2: Delegate-Task — Research, Audit, Review (ASYNC BACKGROUND)
 
-Use when delegating complex, multi-step, or long-running work that needs progress tracking. `delegate-task` returns immediately with a delegation ID — it does not block the caller. The subagent runs asynchronously in a child session, and the caller polls for completion using `delegation-status`.
+**Use for low-risk research, audit, review, and verification ONLY.** `delegate-task` returns immediately with a delegation ID — it does not block the caller. The subagent runs asynchronously in a child session via WaiterModel, and the caller polls for completion using `delegation-status`.
+
+**Why delegate-task for research/audit/review:**
+- **Async** — dispatch and continue working; check results when ready
+- **Non-blocking** — the caller never waits; useful for parallel batch dispatch
+- **Mechanisms** — dual-signal completion detection, polling via delegation-status, synthetic injection
+- **Low-risk** — research/audit/review tasks are read-mostly, do not modify codebase
 
 **Example:**
 
 ```
-# Delegate complex async work
-# Returns delegation ID immediately
-# subagent works in background while caller continues
+# Research task — delegate-task runs in background
+# Audit task — delegate-task runs asynchronously  
+# Review task — delegate-task for parallel batch review
 ```
 
 **When it works best:**
-- Multi-step orchestration with verification gates
-- Long-running analysis or research (5+ tool calls)
-- Work that needs status tracking during execution
-- Parallel delegation of independent tasks
-- Work that must survive context switches
+- Research tasks (multi-source investigation, evidence gathering, deep research)
+- Audit tasks (code review, quality analysis, compliance checking)
+- Review tasks (spec review, plan review, architecture review)
+- Verification against specifications (read-only verification)
+- Low-risk background work that benefits from async parallelism
 
 **When NOT to use:**
+- **Code editing** — use `task` tool (code changes need user visibility and control)
+- **Artifact/governance document modification** — use `task` tool (state changes need audit trail)
+- **Any task that directly modifies the codebase** — use `task` tool
 - Simple one-step tasks (use `task` tool — less overhead)
-- Synchronous workflows (delegate-task is always async/background)
-- Commands that need agent override (use `execute-slash-command`)
-- Work that must complete before the next instruction (you must poll for completion)
 
 **Session stacking:** See Pattern 4.
 
@@ -244,8 +258,7 @@ For the detailed monitoring protocol, read `references/status-checking-protocol.
 | `references/delegation-tools-comparison.md` | Need extended edge case comparison across all 3 tools |
 | `references/session-stacking-protocol.md` | Before attaching work to an existing session |
 | `references/status-checking-protocol.md` | Before polling delegation status or monitoring running work |
-| `references/terminology-map.md` | Need to translate delegation concepts across frameworks (dispatch, WaiterModel, dual-signal, stacking, synthetic injection) |
-| `references/philosophy.md` | Need the design principles behind the delegation patterns — why WaiterModel, why opt-in polling, why dual-signal completion |
+
 | `references/future-delegation-tools-tbd.md` | 🟡 Need to know about TBD delegation tools: trajectory (P25), pressure (P26), agent-work-contract (P25), background-command (CP-PTY-01) |
 
 ## Anti-Patterns
@@ -253,11 +266,12 @@ For the detailed monitoring protocol, read `references/status-checking-protocol.
 | Anti-Pattern | Detection | Correction |
 |-------------|-----------|------------|
 | **Orphan Dispatch** — delegating without `parentSessionId` | Subagent creates new independent session; no hierarchy linkage | Always pass `parentSessionId` or `task_id` to maintain hierarchy |
+| **Delegate-task for Code Editing** — using WaiterModel for code changes | Agent modifies code files via async delegate-task | Use `task` tool for ALL code editing. Delegate-task is ONLY for research, audit, review, verification |
 | **Context Dumping** — injecting full session history into prompt | Prompt contains "earlier in conversation" or wall of previous context | Construct bounded intent: what to do + why + scope. Never raw session history |
 | **No Success Criteria** — subagent completes but output is unusable | You receive a result but cannot verify if it satisfies the goal | Include explicit success criteria in the prompt: what output looks like when done |
 | **Budget Starvation** — no turn/token limit, subagent runs indefinitely | Subagent produces excessive output or runs to timeout | Set explicit turn limits and token budgets in the delegate-task config |
 | **Permission Mismatch** — agent lacks required tools for its task | Agent tries to use a tool and gets a permission error | Verify agent permissions via `configure-primitive read/list` or `hivemind-sdk-supervisor` before dispatching |
-| **Wrong Tool Choice** — using `delegate-task` where `task` tool suffices or vice versa | Overhead of polling for simple task, or blocking on long-running work | Use the Differentiation Matrix above. Simple = task. Complex/async = delegate-task. Command = execute-slash-command |
+| **Wrong Tool Choice** — using `task` for research or `delegate-task` for code | Code changes happening in background (no visibility) or trivial research blocking the caller | Use the Differentiation Matrix above. Code/artifacts = task tool. Research/audit/review = delegate-task. Command = execute-slash-command |
 | **Stale Parent Session** — stacking onto a session that no longer exists | Session ID passed but session is expired or purged | Verify session existence via `session-tracker` before stacking. Use `hivemind-session-view` for unified check |
 | **Synchronous Wait on Async** — blocking on delegate-task return | Caller waits for delegation-status in a loop instead of continuing work | Design async workflow: dispatch → continue own work → check status when needed |
 | **Prompt Session ID Injection** — passing session ID in prompt text | New independent session created instead of attaching to parent | Put session ID in `task_id` parameter (task tool) or `parentSessionId` in context JSON (delegate-task) |
@@ -276,9 +290,9 @@ For the detailed monitoring protocol, read `references/status-checking-protocol.
 
 **Recovery:** Re-read the Differentiation Matrix. The quick decision flow covers the common cases:
 - One-shot command → `execute-slash-command`
-- Needs progress tracking → `delegate-task`
-- Simple bounded work → `task` tool
-- When in doubt, use `delegate-task` for complex work (you can always check `delegation-status`) and `task` tool for simple work (the runtime handles monitoring).
+- Code/artifacts → `task` tool (code editing, governance docs, state modifications)
+- Research/audit/review → `delegate-task` (async background, low-risk read-mostly tasks)
+- When in doubt, consider the work TYPE: code/artifacts → task tool; research/audit/review → delegate-task
 
 ### When the User Contradicts Skill Guidance
 

@@ -32,11 +32,11 @@ This reference provides the extended edge case comparison across all three deleg
 
 | Edge Case | Behavior | Recommendation |
 |-----------|----------|----------------|
-| Subagent exceeds token limit | Runtime may truncate output | Use `delegate-task` for large outputs |
-| Subagent does not return | Runtime times out | Set parent session timeout; use `delegate-task` |
+| Subagent exceeds token limit | Runtime may truncate output | `task` tool handles large outputs well (40+ calls); truncation rare in practice |
+| Subagent does not return | Runtime times out | Set parent session timeout; consider splitting work |
 | Same `task_id` reused across different agents | Unclear — may reset session | Create fresh `task_id` per agent type |
 | Subagent makes tool errors | Errors propagate in output message | Inspect output for error patterns |
-| Multiple parallel task dispatches | Not supported natively | Use sequential or switch to `delegate-task` |
+| Multiple parallel task dispatches | Not supported natively | Use sequential or switch to `delegate-task` for parallel research/audit |
 
 ### `delegate-task` edge cases
 
