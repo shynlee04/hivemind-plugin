@@ -18,7 +18,7 @@ async function waitForDeferredDispatch(): Promise<void> {
 }
 
 describe("execute-slash-command tool", () => {
-  it("should dispatch synthetic parent prompt for subtask:false + agent and restore original agent", async () => {
+  it("should dispatch synthetic parent prompt for subtask:false + agent", async () => {
     const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
     const client = {
       session: { prompt: promptMock },
@@ -77,11 +77,6 @@ Do front-agent work with: $ARGUMENTS
       query: { directory: projectRoot },
     }))
 
-    expect(promptMock).toHaveBeenCalledTimes(2)
-    const restoreCall = promptMock.mock.calls[1][0] as Record<string, unknown>
-    expect(restoreCall.body).toMatchObject({
-      agent: "hm-build",
-    })
   })
 
   it("should dispatch subtask commands with expanded body, description, and agent", async () => {

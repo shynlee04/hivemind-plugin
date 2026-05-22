@@ -103,7 +103,6 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
             }
           }
 
-          const originalAgent = ctx.agent as string | undefined
           const promptText = expandCommandArguments(commandBundle.body, args.arguments ?? "")
           dispatchPromptAfterToolReturn(client, {
             path: { id: ctx.sessionID },
@@ -117,7 +116,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
               ],
             },
             query: { directory: ctx.directory },
-          }, originalAgent)
+          })
 
           return {
             output: [
@@ -279,18 +278,9 @@ function expandCommandArguments(commandBody: string, commandArguments: string): 
 function dispatchPromptAfterToolReturn(
   client: PluginInput["client"],
   request: Parameters<PluginInput["client"]["session"]["prompt"]>[0],
-  originalAgent?: string,
 ): void {
   setTimeout(() => {
-    void client.session.prompt(request).then(() => {
-      if (originalAgent && request.body && originalAgent !== request.body.agent) {
-        void client.session.prompt({
-          path: request.path,
-          body: { agent: originalAgent, parts: [{ type: "text", text: "[Agent restored]" }] },
-          query: request.query,
-        }).catch(() => {})
-      }
-    }).catch((caughtError: unknown) => {
+    void client.session.prompt(request).catch((caughtError: unknown) => {
       const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
       console.error(`[Harness] Deferred slash command prompt dispatch failed: ${message}`)
     })
