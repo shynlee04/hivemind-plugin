@@ -10,6 +10,15 @@ export interface PendingNotificationRecord {
   parentSessionId: string
   notification: DelegationNotification
   stateRoot: ".hivemind"
+  retryCount: number
+  maxRetries: number
+  expiresAt: number
+}
+
+type RetryState = {
+  retryCount: number
+  maxRetries: number
+  expiresAt: number
 }
 
 export interface NotificationRouterOptions {
@@ -38,6 +47,7 @@ export class NotificationRouter {
   private readonly routes = new Map<string, RouteEntry>()
   private readonly pendingLimit = 50
   private readonly deliveredKeys = new Set<string>()
+  private readonly retryState = new Map<string, RetryState>()
 
   constructor(private readonly options: NotificationRouterOptions = {}) {}
 
@@ -65,6 +75,7 @@ export class NotificationRouter {
     } else if (deliveryResult) {
       if (notification.idempotencyKey) this.deliveredKeys.add(notification.idempotencyKey)
     } else {
+      if (!this.shouldQueuePending(notification.delegationId)) return { parentSessionId: route.parentSessionId, notification }
       this.queuePending(notification.delegationId, notification)
     }
     return { parentSessionId: route.parentSessionId, notification }
@@ -76,12 +87,31 @@ export class NotificationRouter {
       if (notification.idempotencyKey) this.deliveredKeys.add(notification.idempotencyKey)
       return
     }
+    if (!this.shouldQueuePending(delegationId)) return
     this.queuePending(delegationId, notification)
+  }
+
+  /** Check retry/TTL state before queueing a failed delivery. Returns false to drop silently. */
+  private shouldQueuePending(delegationId: string): boolean {
+    const state = this.retryState.get(delegationId)
+    if (!state) {
+      // First failed delivery attempt — create state and allow queue
+      this.retryState.set(delegationId, { retryCount: 1, maxRetries: 1, expiresAt: Date.now() + 5 * 60 * 1000 })
+      return true
+    }
+    // TTL expiry check
+    if (state.expiresAt <= Date.now()) return false
+    // Retry exhaustion check
+    if (state.retryCount >= state.maxRetries) return false
+    // Increment retry count and allow queue
+    state.retryCount++
+    return true
   }
 
   /** Remove a route after terminal completion. */
   deregister(delegationId: string): void {
     this.routes.delete(delegationId)
+    this.retryState.delete(delegationId)
   }
 
   /** Queue a pending notification, bounded to the latest 50 entries. */
@@ -99,8 +129,16 @@ export class NotificationRouter {
   /** Replay and clear pending notifications for a parent in FIFO order. */
   replayPending(parentSessionId: string): DelegationNotification[] {
     const replayed: DelegationNotification[] = []
-    for (const route of this.routes.values()) {
+    const now = Date.now()
+    for (const [delegationId, route] of this.routes.entries()) {
       if (route.parentSessionId !== parentSessionId) continue
+      // P22-08: Purge expired records from in-memory Map at replay time
+      const state = this.retryState.get(delegationId)
+      if (state && state.expiresAt <= now) {
+        this.retryState.delete(delegationId)
+        route.notifications = []
+        continue
+      }
       replayed.push(...route.notifications.splice(0))
     }
     return replayed.sort((left, right) => left.timestamp - right.timestamp)
@@ -109,9 +147,17 @@ export class NotificationRouter {
   private persistAllPending(): void {
     if (!this.options.persistPending) return
     const records: PendingNotificationRecord[] = []
-    for (const route of this.routes.values()) {
+    for (const [delegationId, route] of this.routes.entries()) {
+      const state = this.retryState.get(delegationId)
       for (const notification of route.notifications) {
-        records.push({ notification, parentSessionId: route.parentSessionId, stateRoot: ".hivemind" })
+        records.push({
+          notification,
+          parentSessionId: route.parentSessionId,
+          stateRoot: ".hivemind" as const,
+          retryCount: state?.retryCount ?? 0,
+          maxRetries: state?.maxRetries ?? 1,
+          expiresAt: state?.expiresAt ?? Date.now() + 5 * 60 * 1000,
+        })
       }
     }
     this.options.persistPending(records)
