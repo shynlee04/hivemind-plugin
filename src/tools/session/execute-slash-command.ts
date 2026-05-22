@@ -286,7 +286,7 @@ function dispatchPromptAfterToolReturn(
       if (originalAgent && request.body && originalAgent !== request.body.agent) {
         void client.session.prompt({
           path: request.path,
-          body: { agent: originalAgent, parts: [{ type: "text", text: "" }] },
+          body: { agent: originalAgent, parts: [{ type: "text", text: "[Agent restored]" }] },
           query: request.query,
         }).catch(() => {})
       }
