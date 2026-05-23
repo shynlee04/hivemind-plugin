@@ -575,9 +575,31 @@ private isInParentChain(
 | **Live Test History** | 3 live tests ALL FAIL (no toast, no injection). Root cause was dead code — notification code never ran from active dispatch path. |
 | **Status** | **FIX COMMITTED — awaiting live UAT after rebuild** |
 
-### 📋 Step 2: Completion/Failure Notification — PENDING (blocked on Step 1 UAT)
-### 📋 Step 3: Stream Reactivation — PENDING (blocked on Step 1 UAT)
-### 📋 Step 4: Permission Inheritance — PENDING (blocked on Step 1 UAT)
+### 📋 Step 2: Completion/Failure Notification — FIX COMMITTED (2026-05-23, commit 88527420)
+
+| Area | Result |
+|------|--------|
+| **Root Cause** | `buildDelegationTaskNotification()` chỉ map subset fields của `Delegation` vào `TaskNotification`. Missing: `toolCallCount`, `actionCount`, `messageCount`, `signalSource`, `elapsedHuman`, `progressPct`. |
+| **Fix** | Mở rộng `TaskNotification` type (shared/types.ts) thêm 6 fields. Populate trong `buildDelegationTaskNotification()`. Thêm `computeProgressPct()` helper. |
+| **Live UAT** | ⚠️ User xác nhận completion injection nhận được `system-reminder` ở T=180s. Nhưng delivery mechanism SAI — text được append vào terminal input line (`> ...`) thay vì tạo turn mới. |
+| **Remaining Issue** | Bug #3: completion injection append vào input line, không tạo turn → nếu main session đã end stream, completion không bao giờ gửi được. Cần cơ chế tạo turn mới để reactivate. |
+| **Status** | **FIELDS FIXED, MECHANISM STILL BROKEN** |
+
+### 📋 Step 3: Stream Reactivation — UNVERIFIED (no live test done)
+
+| Area | Result |
+|------|--------|
+| **Code** | `reactivateSessionStream()` in notification-handler.ts dùng `sendPromptAsync()` với empty text. Chưa verify ngoài live test. |
+| **Live UAT** | Chưa test riêng — main session vẫn active trong các live test. Không biết stream reactivation có hoạt động với end stream không. |
+| **Status** | **UNVERIFIED — cần live test riêng** |
+
+### 📋 Step 4: Permission Inheritance — PENDING (chưa implement)
+
+| Area | Result |
+|------|--------|
+| **Code** | `manager-runtime.ts:339-362` — `canSessionAccessDelegation()` chưa có chain traversal. Bug B2 từ gap plan gốc. |
+| **Live UAT** | Bug C (cancel control inconsistent) có thể liên quan — "cannot control terminal delegation" từ permission check. |
+| **Status** | **PENDING — chưa implement** |
 
 ---
 
@@ -655,3 +677,46 @@ If any step fails live test:
 | `session.prompt({ noReply: true })` | `{ parts }` | `UserMessage` | **YES — ## USER** | YES | Deprecated — DO NOT USE for notifications |
 | `session.prompt({ noReply: false })` | `{ parts }` | `AssistantMessage` | **YES — ## ASSISTANT** | YES | Completion/failure notification (Step 2) |
 | `tui.appendPrompt()` | `{ text }` | `boolean` | NO (but pollutes input) | NO (user field) | **DO NOT USE** — gây pollution |
+| `session.promptAsync()` | `{ noReply, parts }` | `204 No Content` | **NO** | **YES** | Fire-and-forget context injection (RECOMMENDED) |
+
+---
+
+## 7. Live UAT Confirmed Bugs — Status Report (2026-05-24)
+
+### Bug Registry
+
+| # | Symptom | Root Cause | Classification | Status | Fix Commit |
+|---|---------|------------|----------------|--------|------------|
+| U1 | Periodic injection double — message lặp 2 lần mỗi mốc | `periodic-notifier.ts:injectSnapshot()` called from BOTH `handlePollTick()` (immediate) AND `flush()` (2s batch timer) | **CODE_BUG** — removed flush mechanism entirely | **FIXED** | `a85a6296` |
+| U2 | TUI toast không hiện — user không thấy toast | `plugin.ts:220`: `showToast: false` was never changed to `true` | **CONFIG** — fixed to `showToast: true` | **FIXED** | `88527420` |
+| U3 | Completion injection sai mechanism — text append vào input line `> ...` thay vì `<system_reminder>` | `notification-handler.ts:301`: `notifyDelegationTerminal()` used `sendPrompt()` (tạo USER turn) thay vì `sendPromptAsync()` (fire-and-forget, silent) | **CODE_BUG** — replaced with `sendPromptAsync()` | **FIXED** | `374fbf8d` |
+| U4 | session-tracker không ghi delegate-task child sessions SDK | `tool-before-guard.ts:40`: filter `if (toolName === "task")` loại trừ `delegate-task`. PendingDispatchRegistry không được populate. | **MISSING_HOOK** — added `\|\| toolName === "delegate-task"` | **FIXED** | `823a64ad` |
+| U5 | session-tracker hierarchy sai — `childCount: 0`, `totalDelegationDepth: 0` | Systemic — cùng root cause với U4 (tracker không observe delegate-task dispatches) | **SHARED_ROOT** — fixed alongside U4 | **FIXED** | `823a64ad` |
+| U6 | Cancel control inconsistent — "cannot control terminal delegation" timing race | `delegation-status.ts:190`: `isTerminal()` check blocks cancel sau khi delegation complete giữa lúc user poll và issue action | **TIMING** — allowed cancel/abort on terminal delegations | **FIXED** | `b290ed19` |
+| G1 | `sendPrompt()` creates USER turn — đã fix từ Phase 23 Step 1 | Replaced with `sendPromptAsync()` + `showTuiToast()` | **FIXED** (Phase 23 Step 1) | **FIXED** | `41cba301` |
+| G2 | Permission denial cho stacked sub-agents | `manager-runtime.ts:339-362`: `canSessionAccessDelegation()` chỉ check 1 level parent/child, không có grandparent chain traversal | **DESIGN_GAP** — added iterative chain traversal | **FIXED** | `9c9cad58` |
+
+### Verification Results
+
+| Check | Before Fixes | After Fixes |
+|-------|-------------|-------------|
+| Test suite | 2434 passed, 2 skipped, 2 failed (pre-existing) | 2435 passed, 2 skipped, 2 failed (pre-existing) |
+| Typecheck | ✅ | ✅ |
+| New failures introduced | — | 0 |
+| Pre-existing failures unchanged | command-engine + delegation-v2-integration | ✅ Same 2 |
+
+### Remaining Pre-existing Failures
+
+1. `tests/integration/delegation-v2-integration.test.ts` — "does NOT call showTuiToast on terminal notification deliver (RED 15-04)" — unrelated Phase 15 regression
+2. `tests/lib/command-engine/command-engine.test.ts` — "discovers command bundles without replacing primitive discovery" — unrelated command ordering
+
+### Fix Commit Chain
+
+| # | Commit | Description |
+|---|--------|-------------|
+| U4/U5 | `823a64ad` | Add delegate-task to session-tracker proactive discovery hook |
+| U1 | `a85a6296` | Remove batch flush from PeriodicNotifier to prevent double injection |
+| U3 | `374fbf8d` | Replace sendPrompt with sendPromptAsync in notifyDelegationTerminal |
+| G2 | `9c9cad58` | Add chain traversal to canSessionAccessDelegation for stacked sub-agents |
+| U6 | `b290ed19` | Allow cancel/abort on terminal delegations to fix race condition |
+| Tests | `1bf29466` | Update delegation-manager tests for sendPromptAsync migration |
