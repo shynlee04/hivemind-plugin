@@ -619,94 +619,144 @@ Plans:
 ### Phase 22: Coordination Status + Error Unification (Group 1)
 
 **Goal:** Unify TaskStatus ↔ DelegationStatus. Create DelegationError type. Fix notification TTL/retry.
+**Status:** ✅ COMPLETE — all 3 quality gates passed
 **Depends on:** Phase 21.2 research route or explicit user deferral
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] `22-01-PLAN.md` — Types + mapping (DelegationErrorCode, DelegationError, createDelegationError, delegationStatusToHarnessStatus) — Wave 1
-- [ ] `22-02-PLAN.md` — Notification routing (retry counter, TTL expiry, PendingNotificationRecord schema, replayPending cleanup) — Wave 2
-- [ ] `22-03-PLAN.md` — Shared schema + integration (PendingNotification schema update, TERMINAL_EVENTS verification, phase gate) — Wave 3
+- [x] `22-01-PLAN.md` — Types + mapping (DelegationErrorCode, DelegationError, createDelegationError, delegationStatusToHarnessStatus) — Wave 1
+- [x] `22-02-PLAN.md` — Notification routing (retry counter, TTL expiry, PendingNotificationRecord schema, replayPending cleanup) — Wave 2
+- [x] `22-03-PLAN.md` — Shared schema + integration (PendingNotification schema update, TERMINAL_EVENTS verification, phase gate) — Wave 3
 
-### Phase 23: Coordination Dispatch + Delegate-Task Fix (Group 1)
+### Phase 23: Notification Architecture Fix + Holistic Tool Surface Documentation (Group 1 — NEW, HIGH PRIORITY)
+
+**Goal:** Fix CRITICAL notification delivery flaw (session.prompt lacks `synthetic: true` — notifications appended as user-role messages). Create definitive tool-surface documentation skill. Audit and rewrite ALL hm-* coordination skills + hivemind-power-on. Create injection delivery patterns skill. Assess trajectory/pressure/agent-work-contract for redesign.
+
+**Why this exists:** Phase 22 notification routing has a CRITICAL flaw — `sendPrompt()` without `synthetic: true` stores delegation notifications as user-role messages, conflating system notifications with actual user input. Additionally, ALL hm-* orchestration skills contain aspirational patterns (non-existent scripts, ralph-loops, imaginary gate tools) that must be corrected before agents can use them reliably.
+
+**7 requirements (+3 SYNTHESIS):**
+- P23-01: Fix `notification-handler.ts` — add `synthetic: true` to all notification text parts
+- P23-02: Stream reactivation after notification delivery to idle sessions
+- P23-03: Create `hm-l3-tool-surface-documentation` — definitive reference for ALL 14+ Hivemind custom tools with differentiation matrix (task vs delegate-task vs execute-slash-command)
+- P23-04: Audit + rewrite ALL hm-* coordination skills (coordinating-loop, gate-orchestrator, phase-execution, phase-loop, completion-looping, hivemind-engine-contracts, hivemind-state-reference, integration-contracts) — remove aspirational patterns, reference only real tool capabilities
+- P23-05: Rewrite `hivemind-power-on` skill — tool-based session governance using actual capabilities
+- P23-06: Structured assessment of trajectory/pressure/agent-work-contract — redesign or deprecation plan
+- P23-07: Create `hm-l3-injection-delivery-patterns` — silent vs required, body vs append, TUI vs direct patterns
+**SYNTHESIS (expanded scope):**
+- P23-S01: GSD deep research — 6 synthesis documents (command-system, agent-architecture, workflow-pipeline, quality-gates, sdk-surface, reference) ingested from github.com/gsd-build/get-shit-done/docs (113 files, 425K tokens). 9-dimension comparison: GSD vs Hivemind per domain. See `23-GSD-{TYPE}-2026-05-23.md`.
+- P23-S02: Debt registry — 25 findings (5 CRITICAL, 5 HIGH, 12 MEDIUM, 3 LOW) across hm-*/hf-* agents, commands, skills. See `23-DEBTS-REGISTER-2026-05-23.md`.
+- P23-S03: Document governance debt C-5 identified — artifact naming/pathing collapse systemic, moved to Phase 31 as P31-01 through P31-07 requirements.
+
+**Depends on:** Phase 22 (COMPLETE)
+**Blocks:** Phase 24 (notification surface must be fixed before delegate-task redesign), Phase 26 (hooks injection plane depends on delivery patterns)
+
+**Plans:** 6 plans in 5 waves
+
+| Plan | Wave | Requirements | Objective |
+|------|------|-------------|-----------|
+| `23-01-PLAN.md` | 1 (code fix) | P23-01, P23-02 | Fix notification delivery architecture — two-mechanism system + stream reactivation |
+| `23-02-PLAN.md` | 2 (surface docs) | P23-03 | Create `hm-l3-tool-surface-documentation` skill — 14+ tool catalog + differentiation matrix |
+| `23-03-PLAN.md` | 2 (surface docs) | P23-07 | Create `hm-l3-injection-delivery-patterns` skill — 4 delivery patterns |
+| `23-04-PLAN.md` | 3 (skill rewrite) | P23-04 | Audit + rewrite ALL 13 hm-* skills — 3 sub-waves, remove aspirational patterns |
+| `23-05-PLAN.md` | 3 (skill rewrite) | P23-05 | Rewrite `hivemind-power-on` — trim ~80 lines, add IRON CLAW, remove duplicate content |
+| `23-06-PLAN.md` | 4 (assessment) | P23-06 | Structured assessment of trajectory/pressure/work-contract tools |
+
+Plan list:
+- [x] `23-01-PLAN.md` — Notification fix: synthetic:true + two-mechanism + stream reactivation (Wave 1)
+- [x] `23-02-PLAN.md` — Tool surface documentation skill (Wave 2)
+- [x] `23-03-PLAN.md` — Injection delivery patterns skill (Wave 2)
+- [x] `23-04-PLAN.md` — Audit + rewrite ALL hm-* coordination skills — 13 skills, 3 sub-waves (Wave 3)
+- [x] `23-05-PLAN.md` — Rewrite hivemind-power-on skill (Wave 3)
+- [x] `23-06-PLAN.md` — Structured assessment of trajectory/pressure/work-contract (Wave 4)
+
+### Phase 24: Coordination Dispatch + Delegate-Task Fix (Group 1 — was Phase 23)
 
 **Goal:** Fix CP-DT-01 runtime block. Decompose DelegationManager god-object (~580 LOC). Consolidate dual in-memory stores. Fix coordinatorRef forward reference.
-**Depends on:** Phase 22
-
-### Phase 24: Trajectory + Agent-Work-Contract Redesign (Group 1)
-
-**Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface().
 **Depends on:** Phase 23
 
-### Phase 25: Pressure + Notification Redesign (Group 1)
+### Phase 25: Trajectory + Agent-Work-Contract Redesign (Group 1 — was Phase 24)
 
-**Goal:** Fix pressure scoring (zero tests, 625 LOC). Fix authority-matrix overlap. Fix notification TTL + retry + delivery tracking. Fix SDK handler race.
-**Depends on:** Phase 23
+**Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface(). Incorporate P23-06 assessment findings.
+**Depends on:** Phase 23, 24
 
-### Phase 26: Routing + Intent Loop Foundation (Group 2)
+### Phase 26: Pressure + Notification Redesign (Group 1 — was Phase 25)
+
+**Goal:** Fix pressure scoring (zero tests, 625 LOC). Fix authority-matrix overlap. Complete notification delivery redesign (TTL + retry + delivery tracking + injection plane patterns from P23-07). Fix SDK handler race.
+**Depends on:** Phase 23, 24, 25
+
+### Phase 27: Routing + Intent Loop Foundation (Group 2 — was Phase 26)
 
 **Goal:** Fix intent-classifier (fragile substring). Remove dead registry validator. Delete dead no-op profile methods. Add tests for 3 sub-modules (~1,200 LOC untested).
-**Depends on:** Phase 21-P25
+**Depends on:** Phase 21-P26
 
-### Phase 27: Hook Injection Plane Redesign (Group 2)
+### Phase 28: Hook Injection Plane Redesign (Group 2 — was Phase 27)
 
-**Goal:** Fix CQRS violation in tool-after-workflow. Enforce assertHookWriteBoundary. Type hook signatures. Classify silent vs required. Inline thin observers.
-**Depends on:** Phase 26
-
-### Phase 28: Auto-Looping + PTY + Background Command Revamp (Group 2)
-
-**Goal:** Fix auto-loop session-tracker dependency. Fix ralph-loop termination. Wire into routing pipeline. Delete dead prompt-packet (348 LOC).
+**Goal:** Fix CQRS violation in tool-after-workflow. Enforce assertHookWriteBoundary. Type hook signatures. Classify silent vs required (incorporate P23-07 delivery patterns). Inline thin observers.
 **Depends on:** Phase 27
 
-### Phase 29: Schema Kernel Cleanup (Group 3)
+### Phase 29: Auto-Looping + PTY + Background Command Revamp (Group 2 — was Phase 28)
 
-**Goal:** Delete 3 dead schemas. Add tests for 9 untested schemas (bootstrap, agent-work-contract, trajectory, session-tracker, session-view, runtime-pressure, sdk-supervisor, command-engine, doc-intelligence). Leaf module — can run parallel to Group 1-2.
+**Goal:** Fix auto-loop session-tracker dependency. Replace ralph-loop with practical verification patterns (per P23-04 rewrite). Wire into routing pipeline. Delete dead prompt-packet (348 LOC).
+**Depends on:** Phase 28
+
+### Phase 30: Schema Kernel Cleanup (Group 3 — was Phase 29)
+
+**Goal:** Delete 3 dead schemas. Add tests for 9 untested schemas. Leaf module — can run parallel to Group 1-2.
 **Depends on:** Nothing (leaf module)
 
-### Phase 30: Config Plane Redesign (Group 3)
+### Phase 31: Config Plane Redesign + Artifact Governance (Group 3 — was Phase 30)
 
-**Goal:** Fix config subscriber singleton. Fix decompileAgent bug. Fix validateWithFallback locale check. Split compiler.ts (410 LOC).
-**Depends on:** Phase 29
-
-### Phase 31: Shipped Primitives + Governance Wire (Group 3)
-
-**Goal:** Wire agent/skill/command primitives with soft approach (.md first). Implement hm-* vs hf-* lineage routing validation. Fix governance/permission wiring.
+**Goal:** Fix config subscriber singleton. Fix decompileAgent bug. Fix validateWithFallback locale check. Split compiler.ts (410 LOC). Establish planning-path projection and document/artifact naming/pathing governance (inspired by GSD ADR-0006 Planning Path Projection Module + STATE.md Document Module).
+**Requirements:**
+- P31-01: Standardize artifact naming convention: `{PHASE}-{TYPE}[-{SUBTYPE}][-{DATE}].md` với TYPE = uppercase
+- P31-02: Standardize phase artifact structure: SPEC.md, RESEARCH.md, PLAN.md, PLAN-N.md, SUMMARY.md, SYNTHESIS.md, DEBTS-REGISTER.md
+- P31-03: Classify artifacts by category: research/, specs/, plans/, syntheses/, audits/ per phase
+- P31-04: Gatekeeping: document creation validation (naming, location, format)
+- P31-05: Cross-session validation: check existing artifacts before creating new ones
+- P31-06: Planning-path projection module (centralized path resolution à la GSD ADR-0006)
+- P31-07: Debt tracking: integrate `.hivemind/tracking/` (or phase-level `DEBTS-REGISTER.md`) into workflow commands
 **Depends on:** Phase 30
 
-### Phase 32: Plugin.ts Decomposition (Group 4)
+### Phase 32: Shipped Primitives + Governance Wire (Group 3 — was Phase 31)
+
+**Goal:** Wire agent/skill/command primitives with soft approach (.md first). Implement hm-* vs hf-* lineage routing validation. Fix governance/permission wiring. Extends P23-03 tool surface docs with shipped primitive patterns.
+**Depends on:** Phase 31
+
+### Phase 33: Plugin.ts Decomposition (Group 4 — was Phase 32)
 
 **Goal:** Extract tool registry → registry.ts, startup → startup.ts, hook composition → composer.ts. Fix promise hygiene. Remove legacy hooks. Fix temporal coupling. Target: 493→~150 LOC.
-**Depends on:** Phases 21-31 (design fixes settled)
+**Depends on:** Phases 21-32 (design fixes settled)
 
-### Phase 33: Async I/O Conversion + Typed Errors (Group 4)
+### Phase 34: Async I/O Conversion + Typed Errors (Group 4 — was Phase 33)
 
 **Goal:** Convert runtime sync fs→fs/promises (44 readFileSync, 32 writeFileSync, 19 renameSync). Create 5 typed error classes. Replace ~100 throw new Error.
-**Depends on:** Phase 32
-
-### Phase 34: Module Splits + Legacy Inventory (Group 4)
-
-**Goal:** Split event-capture.ts (702→2-3), session-tracker/index.ts (561→extract init). Simplify PendingDispatchRegistry. Split types.ts. Standardize tool imports. Legacy inventory.
 **Depends on:** Phase 33
 
-### Phase 35: Integration Verification (Group 4)
+### Phase 35: Module Splits + Legacy Inventory (Group 4 — was Phase 34)
 
-**Goal:** Full regression. dist rebuild. Tool smoke test. Manifest sync (ARCHITECTURE.md/STRUCTURE.md/CONCERNS.md).
+**Goal:** Split event-capture.ts (702→2-3), session-tracker/index.ts (561→extract init). Simplify PendingDispatchRegistry. Split types.ts. Standardize tool imports. Legacy inventory.
 **Depends on:** Phase 34
 
-### Phase 36: Fix sync-oss.yml workflow (Independent)
+### Phase 36: Integration Verification (Group 4 — was Phase 35)
 
-**Goal:** [To be planned]
+**Goal:** Full regression. dist rebuild. Tool smoke test. Manifest sync (ARCHITECTURE.md/STRUCTURE.md/CONCERNS.md).
 **Depends on:** Phase 35
 
-### Phase 37: Package .opencode/ primitives for distribution (Independent)
+### Phase 37: Fix sync-oss.yml workflow (Independent — was Phase 36)
 
 **Goal:** [To be planned]
 **Depends on:** Phase 36
+
+### Phase 38: Package .opencode/ primitives for distribution (Independent — was Phase 37)
+
+**Goal:** [To be planned]
+**Depends on:** Phase 37
 
 ---
 
 ## Managed Autonomous Loop — Cycle 3: Cluster-Based Restructuring
 
-**Current authorized cycle: Cycle 3 — Cluster-Based Restructuring** (Phases 21-37)
+**Current authorized cycle: Cycle 3 — Cluster-Based Restructuring** (Phases 21-38)
 - Entry gate: Phase 20 COMPLETE (2026-05-21)
 - 18 phases across 4 groups: Group 1 (design fix FIRST) → Group 2 → Group 3 → Group 4 (structural cleanup LAST)
 - Non-destructive foundation sweep (P00.5) precedes Group 1

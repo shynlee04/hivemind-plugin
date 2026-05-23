@@ -5,11 +5,11 @@ milestone_name: milestone
 status: planned
 last_updated: "2026-05-22T14:13:47.809Z"
 progress:
-  total_phases: 28
-  completed_phases: 8
-  total_plans: 48
-  completed_plans: 42
-  percent: 88
+  total_phases: 29
+  completed_phases: 9
+  total_plans: 61
+  completed_plans: 45
+  percent: 74
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,38 +17,39 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-22
-**Last advance:** Phase 22 Plan 01 complete — DelegationStatus→HarnessStatus mapping, DelegationErrorCode const union (12 codes), DelegationError struct, createDelegationError() factory. All 26 tests pass, typecheck clean.
-**Current focus:** Phase 22 Plan 01 — coordination-layer type contracts completed
-**Next recommended run:** Phase 22 Plan 02 — Tool Response Envelope Modification
+**Last advance:** Phase 23 plan created — 6 plans in 5 waves covering notification fix, surface docs, skill rewrite (13 skills), power-on trim, and tool assessment.
+**Current focus:** Phase 23 — Notification Architecture Fix + Holistic Tool Surface Documentation
+**Next recommended run:** `/gsd-execute-phase 23` — execute all 6 plans across 5 waves
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 21 — Session-Tracker Design Fix (Group 1, HIGHEST PRIORITY).
+**Active phase:** Phase 23 — Notification Architecture Fix + Holistic Tool Surface Documentation (Group 1, HIGHEST PRIORITY).
 **Phase 18:** ✅ COMPLETE — 4/4 plans.
 **Phase 19:** ✅ COMPLETE — Non-destructive remediation.
 **Phase 20:** ✅ COMPLETE — Dependency cleanup (11 deps removed, yaml consolidated, react→optional).
-**P00.5:** 📋 READY — Non-destructive foundation sweep (delete 3 dead schemas, rebuild dist/, remove 2 legacy hooks).
-**Phase 21:** 📋 READY — Session-Tracker Design Fix (16 flaws, 2 CRITICAL: F-01 temp leak, F-02 manifest never writes).
-**Phase 21.1:** 🟡 REVISED — execute-slash-command supports deferred one-shot subtask dispatch; front-agent switching moved to Phase 21.2.
-**Phase 21.2:** 🟡 PROTOTYPE — one-shot front-agent mode override feasibility; L3 unit/typecheck pass, L1 live UAT still required.
-**Phase 22:** 🟡 ACTIVE — Coordination Status + Error Unification. Plan 01 ✅: delegationStatusToHarnessStatus(), DelegationErrorCode (12 codes), DelegationError, createDelegationError(). 26/26 tests pass.
-**Phase 23:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (CP-DT-01 block, DelegationManager decompose).
-**Phase 24:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign.
-**Phase 25:** 📋 PENDING — Pressure + Notification Redesign.
-**Phase 26:** 📋 PENDING — Routing + Intent Loop Foundation (Group 2).
-**Phase 27:** 📋 PENDING — Hook Injection Plane Redesign (Group 2).
-**Phase 28:** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2).
-**Phase 29:** 📋 PENDING — Schema Kernel Cleanup (Group 3).
-**Phase 30:** 📋 PENDING — Config Plane Redesign (Group 3).
-**Phase 31:** 📋 PENDING — Shipped Primitives + Governance Wire (Group 3).
-**Phase 32:** 📋 PENDING — Plugin.ts Decomposition (Group 4, LAST).
-**Phase 33:** 📋 PENDING — Async I/O Conversion + Typed Errors (Group 4).
-**Phase 34:** 📋 PENDING — Module Splits + Legacy Inventory (Group 4).
-**Phase 35:** 📋 PENDING — Integration Verification (Group 4).
-**Phase 36:** 📋 deferred — Fix sync-oss.yml workflow.
-**Phase 37:** 📋 deferred — Package .opencode/ primitives for distribution.
+**P00.5:** ✅ COMPLETE — Dead code sweep + dist rebuild (merged into Phase 19).
+**Phase 21:** ✅ COMPLETE — Session-Tracker Design Fix (6/6 plans, 15/15 REQs).
+**Phase 21.1:** ✅ COMPLETE — execute-slash-command SDK redesign, deferred subtask dispatch.
+**Phase 21.2:** 🟡 PROTOTYPE — front-agent switching; L3 unit/typecheck pass, L1 live UAT pending.
+**Phase 22:** ✅ COMPLETE — Coordination Status + Error Unification. 9/9 REQs, 3/3 gates PASS. 176/176 tests.
+**Phase 23:** 🟡 ACTIVE — Notification Architecture Fix + Holistic Tool Surface Documentation + GSD Research Synthesis + Debt Registry. Fix CRITICAL synthetic:true notification bug, audit/rewrite ALL hm-* coordination skills + hivemind-power-on, create tool-surface differentiation + injection delivery patterns skills. RESEARCH: 6 GSD deep-dive documents (command-system, agent-architecture, workflow-pipeline, quality-gates, sdk-surface, reference). TRACKING: 25 debts/gaps registered (5 CRITICAL, 5 HIGH, 12 MEDIUM, 3 LOW). SYSTEMIC DEBT C-5: document/artifact naming + pathing + governance collapse affecting commands, workflows, references, agents, skills.
+**Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (was P23, Depends: P23).
+**Phase 25:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (was P24, Depends: P23, P24).
+**Phase 26:** 📋 PENDING — Pressure + Notification Redesign (was P25, Depends: P23, P24, P25).
+**Phase 27:** 📋 PENDING — Routing + Intent Loop Foundation (Group 2, was P26).
+**Phase 28:** 📋 PENDING — Hook Injection Plane Redesign (Group 2, was P27).
+**Phase 29:** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2, was P28).
+**Phase 30:** 📋 PENDING — Schema Kernel Cleanup (Group 3, was P29).
+**Phase 31:** 📋 PENDING — Config Plane Redesign (Group 3, was P30).
+**Phase 32:** 📋 PENDING — Shipped Primitives + Governance Wire (Group 3, was P31).
+**Phase 33:** 📋 PENDING — Plugin.ts Decomposition (Group 4, was P32).
+**Phase 34:** 📋 PENDING — Async I/O Conversion + Typed Errors (Group 4, was P33).
+**Phase 35:** 📋 PENDING — Module Splits + Legacy Inventory (Group 4, was P34).
+**Phase 36:** 📋 PENDING — Integration Verification (Group 4, was P35).
+**Phase 37:** 📋 deferred — Fix sync-oss.yml workflow (was P36).
+**Phase 38:** 📋 deferred — Package .opencode/ primitives for distribution (was P37).
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
