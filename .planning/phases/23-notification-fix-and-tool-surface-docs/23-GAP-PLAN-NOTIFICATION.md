@@ -561,20 +561,23 @@ private isInParentChain(
 
 ## Step Completion Results
 
-### ✅ Step 1: Silent Context Injection — FIX COMMITTED (2026-05-23)
+### Step 1: Silent Context Injection — FIX COMMITTED + ROOT CAUSE ANALYSIS (2026-05-23)
 
 | Area | Result |
 |------|--------|
 | **SDK Verification** | V1 SDK confirmed. APIs: `session.promptAsync()` (204 No Content), `tui.showToast()`, `session.prompt()`. |
 | **Code Changes** | `notification-handler.ts`: toast + promptAsync logic confirmed correct. `coordinator.ts`: **ADDED `notifyParentSession("started")` call** after `lifecycle.transition("running")` (line 123-131). |
 | **Tests** | Typecheck: clean. Build: success. Delegation: 164/164 pass. Notification: 7/7 pass. Full suite: 2415/2417 pass (2 pre-existing). |
-| **Root Cause** | CONFIRMED: `notifyParentSession()` was never called from coordinator.ts (the actual runtime dispatch path). manager-runtime.ts has the call but is dead code. |
+| **Root Cause (2 layers)** | **Layer 1 — DEAD CODE:** `manager.ts:74` always routes to coordinator (coordinator always injected by plugin.ts:208). `manager-runtime.ts` dispatch path never runs → all notification code there is dead code. **Layer 2 — MISSING CALL:** `coordinator.ts:72-134` dispatch() has zero notification calls. `notifyParentSession()` simply never invoked from the active path. |
+| **Session ID targeting** | VERIFIED NOT AN ISSUE: `sendPromptAsync` uses explicit `parentSessionID` via path param, `showTuiToast` is global TUI API, `client` is global from plugin entry (not session-scoped), `params.parentSessionId` in coordinator correctly references parent. |
 | **Fix applied** | `coordinator.ts`: import `notifyParentSession` + `if (this.deps.client) { void notifyParentSession(client, parentSessionId, { status: "started" }) }` after lifecycle transition. Commit: `41cba301`. |
-| **Awaiting** | Live UAT — user rebuilds plugin, runs delegate-task, verifies toast in parent TUI |
+| **Debug session evidence** | `.planning/debug/notification-dead-code-and-session-targeting.md` — 7 evidence entries, 3 hypotheses eliminated, session-ID hypothesis disproven. |
+| **Live Test History** | 3 live tests ALL FAIL (no toast, no injection). Root cause was dead code — notification code never ran from active dispatch path. |
+| **Status** | **FIX COMMITTED — awaiting live UAT after rebuild** |
 
-### 📋 Step 2: Completion/Failure Notification — PENDING
-### 📋 Step 3: Stream Reactivation — PENDING  
-### 📋 Step 4: Permission Inheritance — PENDING
+### 📋 Step 2: Completion/Failure Notification — PENDING (blocked on Step 1 UAT)
+### 📋 Step 3: Stream Reactivation — PENDING (blocked on Step 1 UAT)
+### 📋 Step 4: Permission Inheritance — PENDING (blocked on Step 1 UAT)
 
 ---
 
