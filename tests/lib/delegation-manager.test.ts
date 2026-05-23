@@ -2037,11 +2037,12 @@ describe("DelegationManager", () => {
         data: [{ role: "assistant", parts: [{ type: "text", text: "task completed successfully" }] }],
       })
 
-      // Dispatch prompt uses promptAsync; notification prompt uses prompt and throws.
+      // Dispatch promptAsync succeeds; notification promptAsync throws.
       // notifyDelegationTerminal() catches the error internally (fire-and-forget).
-      let promptCallCount = 0
-      client.session.prompt.mockImplementation(async () => {
-        promptCallCount++
+      let promptAsyncCallCount = 0
+      client.session.promptAsync.mockImplementation(async () => {
+        promptAsyncCallCount++
+        if (promptAsyncCallCount <= 1) return undefined // Dispatch call succeeds
         throw new Error("Notification delivery failed")
       })
 
@@ -2068,8 +2069,8 @@ describe("DelegationManager", () => {
       expect(delegation?.error).toBeUndefined()
       expect(delegation?.completedAt).toBeGreaterThan(0)
 
-      // 4. Notification was attempted through parent prompt delivery.
-      expect(promptCallCount).toBeGreaterThanOrEqual(1)
+      // 4. Notification was attempted through parent promptAsync delivery.
+      expect(promptAsyncCallCount).toBeGreaterThanOrEqual(1)
 
       // 5. Notification failure was logged (not silently swallowed)
       // Verifies notification-handler's console.error was replaced with client.app.log
@@ -2098,9 +2099,10 @@ describe("DelegationManager", () => {
         },
       })
 
-      let promptCallCount = 0
-      client.session.prompt.mockImplementation(async () => {
-        promptCallCount += 1
+      let promptAsyncCallCount = 0
+      client.session.promptAsync.mockImplementation(async () => {
+        promptAsyncCallCount += 1
+        if (promptAsyncCallCount <= 1) return undefined // Dispatch call succeeds
         throw new Error("Parent session unavailable")
       })
 
