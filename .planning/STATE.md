@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-22T14:13:47.809Z"
+last_updated: "2026-05-23T19:53:46.625Z"
 progress:
   total_phases: 29
-  completed_phases: 9
-  total_plans: 61
-  completed_plans: 45
-  percent: 74
+  completed_phases: 11
+  total_plans: 51
+  completed_plans: 47
+  percent: 92
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,8 +17,8 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-24
-**Last advance:** Phase 23 — Round 4 live UAT: 4/10 FIXED (G1, U1, U6, M3-A), 3/10 STILL FAIL (U2, U4, U5), 1/10 PARTIAL (U3), 2/10 UNTESTED (G2, M3-B). Phase 23.1 created for session-tracker SDK dispatch investigation.
-**Current focus:** Phase 23 (remaining notification bugs) + Phase 23.1 (session-tracker investigation)
+**Last advance:** Phase 23.1 Plan 01 complete — session-tracker race condition fixed: sync constructCoreDependencies() before delegation wiring, defensive [Harness] logging, .then(cleanup) removed. Typecheck clean, 400/400 unit tests pass.
+**Current focus:** Phase 23 (remaining notification bugs) + Phase 23.1 (session-tracker investigation — Plan 01 done)
 **Next recommended run:** Continue debug session `ses_1aa92e240ffeEpaWmxUFFxFh67` for U2/U3/double-wrapped fixes. Route Phase 23.1 via gsd-research-chain for session-tracker investigation.
 
 ---
@@ -189,6 +189,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-19-01 | Schema cleanup corrected: `permission.schema.ts` deleted as prototype; `tool-definition.schema.ts` migrated to `tool.schema.ts`; `skill-metadata.schema.ts` preserved due active consumers. | NEW — 2026-05-21 |
 | D-19-02 | Historical trace locked: `session-classification-hook.ts`, `schema-normalizer.ts`, and `delegation-packet.ts` were intended-but-unwired feature gaps, not meaningless dead code; future rebuild must use requirements f-04c, REQ-ST-12, and F-09a. | NEW — 2026-05-21 |
 | D-19-03 | Final cleanup removed stale `concurrency-key` test, empty `src/kernel`/`src/harness` folders, and synchronized ROADMAP/STATE/codebase/AGENTS drift before clean dist rebuild. | NEW — 2026-05-21 |
+| D-23.1-01 | Sync constructCoreDependencies() before setupDelegationModules() eliminates race window where onChildSessionCreated callbacks silently dropped session events before Object.assign. 3 atomic commits across index.ts + plugin.ts. | COMPLETE — 2026-05-24 |
 
 ---
 
