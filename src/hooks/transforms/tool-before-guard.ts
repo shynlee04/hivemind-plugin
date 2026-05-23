@@ -37,17 +37,18 @@ export function createToolBeforeGuard(
     // Session tracker: detect task dispatch for proactive child discovery
     try {
       const toolName = (input as Record<string, unknown>)?.tool
-      if (toolName === "task") {
+      if (toolName === "task" || toolName === "delegate-task") {
         const inputRecord = input as Record<string, unknown>
         const sessionID = (inputRecord.sessionID as string) || ""
         const callID = (inputRecord.callID as string) || ""
+        const agent = (inputRecord.agent as string) || ""
 
         // Extract args from output (PreToolUse output contains the tool's arguments)
         const outputRecord = output as Record<string, unknown> | undefined
         const args = (outputRecord?.args ?? {}) as Record<string, unknown>
 
-        const subagentType = (args.subagent_type as string) || ""
-        const description = (args.description as string) || ""
+        const subagentType = (args.subagent_type as string) || (args.agent as string) || agent
+        const description = (args.description as string) || (args.prompt as string) || ""
         const taskId = (args.task_id as string) || undefined
 
         if (sessionID && callID) {
