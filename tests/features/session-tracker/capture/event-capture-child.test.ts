@@ -89,7 +89,7 @@ describe("EventCapture — child session routing (DEFECT-08)", () => {
       expect(mockUpdateChildStatusCw).toHaveBeenCalledWith(
         "ses_parent0987654321xy",
         "ses_child1234567890ab",
-        "idle",
+        "completed",
       )
       // Should NOT call sessionWriter for child
       expect(mockUpdateFrontmatter).not.toHaveBeenCalled()

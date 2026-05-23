@@ -124,7 +124,7 @@ describe("EventCapture", () => {
 
       expect(mockUpdateFrontmatter).toHaveBeenCalledWith(
         "ses_test12345abcdefg0",
-        { status: "idle" },
+        { status: "completed" },
       )
     })
   })
