@@ -163,10 +163,13 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const dispatcher = new DelegationDispatcher({ agentResolver, slotManager })
   const detector = new CompletionDetector()
   const notificationRouter = new NotificationRouter({
-    deliver: async (_parentSessionId, notification) => {
+    deliver: async (parentSessionId, notification) => {
       if (!shouldAppendParentTuiNotification(notification.type)) return true
       const line = notificationRouter.formatNotification(notification.type, notification.delegationId, notification.message)
-      await appendTuiPrompt(options.client, line)
+      const systemMsg = `<system_reminder>${line}</system_reminder>`
+      if (options.client?.session) {
+        void sdkSendPromptAsync(options.client, parentSessionId, { parts: [{ type: "text", text: systemMsg }], noReply: true })
+      }
       return true
     },
     persistPending: persistPendingDelegationNotifications,
@@ -211,7 +214,9 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
       }
     },
     injectUrgent: (_parentSessionId, line): void => {
-      void sdkSendPrompt(options.client, _parentSessionId, { parts: [{ type: "text", text: line }] })
+      if (options.client?.session) {
+        void sdkSendPrompt(options.client, _parentSessionId, { parts: [{ type: "text", text: line }] })
+      }
     },
     onFirstActionDeadline: (delegationId, elapsedSeconds) => coordinatorRef?.markExecutionUnconfirmed(delegationId, elapsedSeconds),
   })
@@ -224,7 +229,9 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
       client: options.client,
     },
     (parentSessionId: string, line: string): void => {
-      void sdkSendPromptAsync(options.client, parentSessionId, { parts: [{ type: "text", text: line }], noReply: true })
+      if (options.client?.session) {
+        void sdkSendPromptAsync(options.client, parentSessionId, { parts: [{ type: "text", text: line }], noReply: true })
+      }
     },
   )
   periodicNotifierRef = periodicNotifier

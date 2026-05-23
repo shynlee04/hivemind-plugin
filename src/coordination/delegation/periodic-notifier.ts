@@ -140,8 +140,11 @@ export class PeriodicNotifier {
     if (lines.length === 0) return
 
     // Single combined <system_reminder> block
+    // Use the first snapshot's parentSessionId (all delegations in batch share the same parent)
+    const firstSnap = batch.values().next().value
+    if (!firstSnap) return
     const combinedBlock = `<system_reminder>\n${lines.join("\n")}\n</system_reminder>`
-    this.inject("batch", combinedBlock, undefined)
+    this.inject(firstSnap.parentSessionId, combinedBlock, undefined)
 
     // Aggregated toast: one toast for the entire batch
     if (this.config.showToast) {

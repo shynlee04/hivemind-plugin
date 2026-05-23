@@ -101,9 +101,13 @@ describe("delegation v2 plugin integration", () => {
     modules.notificationRouter.route({ delegationId: result.delegationId, message: "checkpoint at 60s", timestamp: Date.now(), type: "progress" })
     modules.coordinator.handleCompletion(result.delegationId, { delegationId: result.delegationId, result: "done", status: "completed" })
 
-    expect(client.tui.appendPrompt).toHaveBeenCalledTimes(1)
-    expect(client.tui.appendPrompt).toHaveBeenCalledWith(expect.objectContaining({
-      body: expect.objectContaining({ text: expect.stringContaining("success") }),
+    // 2 prompts: 1 for "started" notification (dispatch), 1 for "success" notification (handleCompletion)
+    expect(client.session.promptAsync).toHaveBeenCalledTimes(2)
+    // Last call should be the completion notification
+    const lastCall = client.session.promptAsync.mock.calls[client.session.promptAsync.mock.calls.length - 1]
+    expect(lastCall[0]).toEqual(expect.objectContaining({
+      path: expect.objectContaining({ id: "parent-1" }),
+      body: expect.objectContaining({ parts: expect.arrayContaining([expect.objectContaining({ text: expect.stringContaining("success") })]) }),
     }))
   })
 
