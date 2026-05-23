@@ -36,6 +36,8 @@ export interface PendingDispatchEntry {
   subagentType: string
   /** `Date.now()` at registration time, for stale detection. */
   timestamp: number
+  /** The tool used to dispatch (e.g. "task" or "delegate-task"). */
+  tool: string
   /** Delegation depth (1 = L1, 2 = L2). CP-ST-05-01 addition. */
   delegationDepth?: number
   /** Task description from the dispatch. CP-ST-05-01 addition. */

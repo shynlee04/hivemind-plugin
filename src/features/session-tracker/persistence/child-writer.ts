@@ -297,6 +297,14 @@ export class ChildWriter {
       `${writeParent}/${childSessionID}`,
       async () => {
         const record = await this.readChildFile(writeParent, childSessionID)
+        // Status precedence: terminal states ("completed", "error") must NOT
+        // be overwritten by non-terminal states ("idle", "active"). This
+        // prevents the race where session.idle fires after
+        // recordChildTaskDelegation already set "completed".
+        const terminalStates = new Set(["completed", "error"])
+        if (terminalStates.has(record.status) && !terminalStates.has(status)) {
+          return // Preserve terminal state
+        }
         record.status = status
         record.updated = new Date().toISOString()
 

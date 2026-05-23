@@ -219,10 +219,13 @@ export class SessionIndexWriter {
         if (parent) {
           parent.children[childSessionID] = entry
         } else {
-          // Fallback: top-level insertion with [Harness] warning
-          throw new Error(
-            `[Harness] SessionIndexWriter: parent "${parentSessionID}" not found in hierarchy for nested child "${childSessionID}"`,
+          // BUG-5 FIX: Parent not yet in on-disk hierarchy (race between in-memory
+          // hierarchyIndex and session-index writes). Fallback to top-level insertion
+          // with a warning instead of throwing — prevents the child from being lost.
+          console.warn(
+            `[Harness] SessionIndexWriter: parent "${parentSessionID}" not found in hierarchy for nested child "${childSessionID}", inserting as top-level`,
           )
+          index.hierarchy.children[childSessionID] = entry
         }
       } else {
         index.hierarchy.children[childSessionID] = entry

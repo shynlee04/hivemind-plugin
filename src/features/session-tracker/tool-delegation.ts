@@ -267,6 +267,24 @@ export class ToolDelegation {
     }
 
     await ensureChildRoute(parentID, input.sessionID)
+
+    // BUG-5 FIX: Ensure the L1 parent (input.sessionID) is registered in the
+    // session-index hierarchy BEFORE adding the nested child. Without this,
+    // addChild(parentSessionID=input.sessionID) throws because the parent entry
+    // doesn't exist in the on-disk index yet — only in the in-memory hierarchyIndex.
+    const parentDepth = this.hierarchyIndex.getDepth(input.sessionID)
+    if (parentDepth > 0) {
+      // L1+ parent: register as top-level child in the root main's index
+      await this.sessionIndexWriter.addChild(
+        rootMain,
+        input.sessionID,
+        `${input.sessionID}.json`,
+        parentDepth,
+        subagentType,
+        // No parentSessionID → top-level insertion
+      )
+    }
+
     await this.childWriter.createChildFile(input.sessionID, childSessionID, childMetadata)
     // Record delegation initiation as a journey entry (not a turn) to avoid
     // polluting lastMessage with the delegation prompt before the child completes.
@@ -296,14 +314,13 @@ export class ToolDelegation {
       `${rootMain}/`,
       `${childSessionID}.json`,
     )
+    // BUG-3 FIX: Extract the child agent's final assistant response and append it
+    // as both a journey entry AND a turn. OpenCode fires chat.message for the parent
+    // session (not the child), so child assistant responses are never captured by the
+    // child-recorder. We must capture them here from the delegation result.
     const taskResult = extractTaskResult(output.output, childSessionID)
     if (taskResult) {
-      await this.childWriter.appendChildTurn(input.sessionID, childSessionID, {
-        turn: 0,
-        actor: subagentType,
-        content: taskResult,
-        tools: [],
-      })
+      // Journey entry for audit trail
       await this.childWriter.appendJourneyEntry(input.sessionID, childSessionID, {
         timestamp: now,
         type: "assistant_message",
@@ -312,6 +329,14 @@ export class ToolDelegation {
           capturedFrom: "task_tool_result",
           taskID: childSessionID,
         },
+      })
+      // BUG-3 FIX: Also append as a turn so lastMessage is set and the turn
+      // appears in the child's turns array for recovery/resumption.
+      await this.childWriter.appendChildTurn(input.sessionID, childSessionID, {
+        turn: 0, // Placeholder — auto-assigned by appendChildTurn
+        actor: subagentType || "unknown",
+        content: taskResult,
+        tools: [],
       })
       await this.childWriter.updateChildStatus(input.sessionID, childSessionID, "completed")
       await this.sessionIndexWriter.updateChildStatus(rootMain, childSessionID, "completed")
