@@ -1,10 +1,10 @@
 /**
- * Unit tests for PeriodicNotifier — periodic silent injection of delegation
- * progress into parent sessions via the monitor's inject callback.
+ * Unit tests for PeriodicNotifier — batch-coalesced periodic injection of
+ * delegation progress into parent sessions.
  *
  * Covers: construction, register/deregister, handlePollTick dedup,
- * immediate injection on change, toast support, deregister cleanup,
- * activeCount getter, and stripDuration helper.
+ * batch coalescing (single delegation, multiple delegations, 2s window),
+ * cross-batch dedup, aggregated toast, destroy cleanup.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
@@ -79,132 +79,136 @@ describe("PeriodicNotifier", () => {
     expect(notifier.activeCount).toBe(1)
   })
 
-  it("handlePollTick skips injection when toolCount and actionCount are unchanged", () => {
-    const snap = makeSnapshot({ toolCount: 5, actionCount: 3 })
+  it("handlePollTick does NOT inject immediately — only queues for batch", () => {
+    const snap = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap)
-    notifier.handlePollTick(snap)
+    notifier.handlePollTick(makeSnapshot({ toolCount: 3, actionCount: 0 }))
     expect(injectFn).not.toHaveBeenCalled()
   })
 
-  it("handlePollTick injects when toolCount changes", () => {
+  it("flush fires after batch window and injects combined block", () => {
     const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap1)
-    notifier.handlePollTick(snap1)
 
-    const snap2 = makeSnapshot({ toolCount: 3, actionCount: 0 })
-    notifier.handlePollTick(snap2)
+    notifier.handlePollTick(makeSnapshot({ toolCount: 1, actionCount: 0 }))
+    expect(injectFn).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(2100)
     expect(injectFn).toHaveBeenCalledTimes(1)
   })
 
-  it("handlePollTick injects when actionCount changes", () => {
-    const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
-    notifier.register(snap1)
-    notifier.handlePollTick(snap1)
+  it("multiple delegations are combined into a single combined block", () => {
+    notifier.register(makeSnapshot({ delegationId: "del-a", agent: "gsd-A" }))
+    notifier.register(makeSnapshot({ delegationId: "del-b", agent: "gsd-B" }))
 
-    const snap2 = makeSnapshot({ toolCount: 0, actionCount: 5 })
-    notifier.handlePollTick(snap2)
+    notifier.handlePollTick(makeSnapshot({ delegationId: "del-a", agent: "gsd-A", toolCount: 3, actionCount: 1 }))
+    notifier.handlePollTick(makeSnapshot({ delegationId: "del-b", agent: "gsd-B", toolCount: 2, actionCount: 0 }))
+
+    vi.advanceTimersByTime(2100)
+    expect(injectFn).toHaveBeenCalledTimes(1)
+
+    const combined = injectFn.mock.calls[0][1] as string
+    expect(combined).toContain("<system_reminder>")
+    expect(combined).toContain("del-a")
+    expect(combined).toContain("del-b")
+    expect(combined).toContain("gsd-A")
+    expect(combined).toContain("gsd-B")
+    expect(combined).toContain("</system_reminder>")
+  })
+
+  it("handlePollTick skips batch when toolCount and actionCount unchanged", () => {
+    const snap = makeSnapshot({ toolCount: 5, actionCount: 3 })
+    notifier.register(snap)
+    notifier.handlePollTick(snap)
+    vi.advanceTimersByTime(2100)
+    expect(injectFn).not.toHaveBeenCalled()
+  })
+
+  it("cross-batch dedup skips flush when no new changes since last batch", () => {
+    notifier.register(makeSnapshot({ delegationId: "del-a" }))
+
+    // First batch: tool changed
+    notifier.handlePollTick(makeSnapshot({ delegationId: "del-a", toolCount: 1, actionCount: 0 }))
+    vi.advanceTimersByTime(2100)
+    expect(injectFn).toHaveBeenCalledTimes(1)
+
+    // Second tick: same data → same hash → skip
+    notifier.handlePollTick(makeSnapshot({ delegationId: "del-a", toolCount: 1, actionCount: 0 }))
+    vi.advanceTimersByTime(2100)
     expect(injectFn).toHaveBeenCalledTimes(1)
   })
 
-  it("handlePollTick injects on each change with no double injection", () => {
-    const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
-    notifier.register(snap1)
-    notifier.handlePollTick(snap1)
-
-    const snap2 = makeSnapshot({ toolCount: 1, actionCount: 0 })
-    notifier.handlePollTick(snap2)
-
-    const snap3 = makeSnapshot({ toolCount: 3, actionCount: 2 })
-    notifier.handlePollTick(snap3)
-
-    expect(injectFn).toHaveBeenCalledTimes(2)
-  })
-
-  it("handlePollTick passes parentSessionId and formatted line to inject", () => {
-    const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
-    notifier.register(snap1)
-    notifier.handlePollTick(snap1)
-
-    const snap2 = makeSnapshot({ toolCount: 2, actionCount: 1, elapsedMs: 45000 })
-    notifier.handlePollTick(snap2)
-
-    const lastCall = injectFn.mock.calls[injectFn.mock.calls.length - 1]
-    expect(lastCall[0]).toBe("parent-ses-001")
-    expect(lastCall[1]).toContain("[DT:del-001]")
-    expect(lastCall[1]).toContain("tools=2")
-    expect(lastCall[2]).toBe("del-001")
-  })
-
-  it("showToast=true triggers showTuiToast after inject", async () => {
+  it("aggregated toast shows delegation count and top agents", async () => {
     const toastConfig = makeConfig({ showToast: true })
     const toastNotifier = new PeriodicNotifier(toastConfig, injectFn)
-    const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
-    toastNotifier.register(snap1)
-    toastNotifier.handlePollTick(snap1)
 
-    const snap2 = makeSnapshot({ toolCount: 1, actionCount: 0 })
-    toastNotifier.handlePollTick(snap2)
+    toastNotifier.register(makeSnapshot({ delegationId: "del-a", agent: "gsd-A" }))
+    toastNotifier.register(makeSnapshot({ delegationId: "del-b", agent: "gsd-B" }))
+    toastNotifier.register(makeSnapshot({ delegationId: "del-c", agent: "gsd-C" }))
+
+    toastNotifier.handlePollTick(makeSnapshot({ delegationId: "del-a", agent: "gsd-A", toolCount: 1, actionCount: 0, elapsedMs: 30000 }))
+    toastNotifier.handlePollTick(makeSnapshot({ delegationId: "del-b", agent: "gsd-B", toolCount: 1, actionCount: 0, elapsedMs: 45000 }))
+    toastNotifier.handlePollTick(makeSnapshot({ delegationId: "del-c", agent: "gsd-C", toolCount: 1, actionCount: 0, elapsedMs: 15000 }))
+
+    vi.advanceTimersByTime(2100)
     await vi.runAllTimersAsync()
 
-    expect(showTuiToast).toHaveBeenCalled()
+    expect(showTuiToast).toHaveBeenCalledTimes(1)
+    const toastMsg = vi.mocked(showTuiToast).mock.calls[0][1] as string
+    expect(toastMsg).toContain("3 delegations active")
+    // Should list top 3 by elapsed
+    toastNotifier.destroy()
+  })
+
+  it("aggregated toast shows count with +N more when > 3 delegations", async () => {
+    const toastConfig = makeConfig({ showToast: true })
+    const toastNotifier = new PeriodicNotifier(toastConfig, injectFn)
+
+    for (let i = 0; i < 5; i++) {
+      toastNotifier.register(makeSnapshot({ delegationId: `del-${i}`, agent: `gsd-${i}` }))
+    }
+    for (let i = 0; i < 5; i++) {
+      toastNotifier.handlePollTick(makeSnapshot({ delegationId: `del-${i}`, agent: `gsd-${i}`, toolCount: 1, actionCount: 0, elapsedMs: 10000 + i * 5000 }))
+    }
+
+    vi.advanceTimersByTime(2100)
+    await vi.runAllTimersAsync()
+
+    const toastMsg = vi.mocked(showTuiToast).mock.calls[0][1] as string
+    expect(toastMsg).toContain("+2 more")
     toastNotifier.destroy()
   })
 
   it("showToast=false does NOT trigger showTuiToast", async () => {
     const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap1)
-    notifier.handlePollTick(snap1)
-
-    const snap2 = makeSnapshot({ toolCount: 1, actionCount: 0 })
-    notifier.handlePollTick(snap2)
+    notifier.handlePollTick(makeSnapshot({ toolCount: 1, actionCount: 0 }))
+    vi.advanceTimersByTime(2100)
     await vi.runAllTimersAsync()
 
     expect(showTuiToast).not.toHaveBeenCalled()
   })
 
-  it("multiple changes within same tick each trigger injection", () => {
+  it("deregister during batch window removes delegation from pending flush", () => {
     const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap1)
-    notifier.handlePollTick(snap1)
-
-    notifier.handlePollTick(makeSnapshot({ toolCount: 1, actionCount: 0 }))
-    notifier.handlePollTick(makeSnapshot({ toolCount: 3, actionCount: 1 }))
-
-    expect(injectFn).toHaveBeenCalledTimes(2)
-  })
-
-  it("deregister prevents further injection for that delegation", () => {
-    const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
-    notifier.register(snap1)
-    notifier.handlePollTick(snap1)
 
     notifier.handlePollTick(makeSnapshot({ toolCount: 1, actionCount: 0 }))
     notifier.deregister("del-001")
+    vi.advanceTimersByTime(3000)
 
-    expect(injectFn).toHaveBeenCalledTimes(1)
+    expect(injectFn).not.toHaveBeenCalled()
   })
 
   it("showTuiToast failure does not throw (fire-and-forget)", async () => {
     vi.mocked(showTuiToast).mockRejectedValueOnce(new Error("network failure"))
 
-    const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
-    notifier.register(snap1)
-    notifier.handlePollTick(snap1)
-
-    const snap2 = makeSnapshot({ toolCount: 1, actionCount: 0 })
-    notifier.handlePollTick(snap2)
+    notifier.register(makeSnapshot())
+    notifier.handlePollTick(makeSnapshot({ toolCount: 1, actionCount: 0 }))
+    vi.advanceTimersByTime(2100)
     await vi.runAllTimersAsync()
 
     expect(() => {}).not.toThrow()
-  })
-
-  it("destroy clears all tracked delegations", () => {
-    notifier.register(makeSnapshot({ delegationId: "del-a" }))
-    notifier.register(makeSnapshot({ delegationId: "del-b" }))
-
-    notifier.destroy()
-
-    expect(notifier.activeCount).toBe(0)
   })
 
   it("activeCount reflects only currently tracked delegations", () => {
@@ -219,18 +223,17 @@ describe("PeriodicNotifier", () => {
     expect(notifier.activeCount).toBe(0)
   })
 
-  it("destroy clears all tracked delegations and flush timers", () => {
+  it("destroy clears all tracked delegations and pending flush", () => {
     notifier.register(makeSnapshot({ delegationId: "del-a" }))
     notifier.register(makeSnapshot({ delegationId: "del-b" }))
 
     notifier.handlePollTick(makeSnapshot({ delegationId: "del-a", toolCount: 1, actionCount: 0 }))
 
     notifier.destroy()
-
     expect(notifier.activeCount).toBe(0)
 
     vi.advanceTimersByTime(5000)
-    expect(injectFn).toHaveBeenCalledTimes(1)
+    expect(injectFn).not.toHaveBeenCalled()
   })
 })
 
