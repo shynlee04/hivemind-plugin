@@ -3,8 +3,7 @@
  * progress into parent sessions via the monitor's inject callback.
  *
  * Covers: construction, register/deregister, handlePollTick dedup,
- * batch coalescing within 2s window, toast support, flush timer,
- * completed delegation deregistration, sendPromptAsync failure resilience,
+ * immediate injection on change, toast support, deregister cleanup,
  * activeCount getter, and stripDuration helper.
  */
 
@@ -107,7 +106,7 @@ describe("PeriodicNotifier", () => {
     expect(injectFn).toHaveBeenCalledTimes(1)
   })
 
-  it("handlePollTick coalesces rapid changes — each triggers immediate inject, batch flush sends latest", () => {
+  it("handlePollTick injects on each change with no double injection", () => {
     const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap1)
     notifier.handlePollTick(snap1)
@@ -119,10 +118,6 @@ describe("PeriodicNotifier", () => {
     notifier.handlePollTick(snap3)
 
     expect(injectFn).toHaveBeenCalledTimes(2)
-
-    vi.advanceTimersByTime(2100)
-
-    expect(injectFn).toHaveBeenCalledTimes(3)
   })
 
   it("handlePollTick passes parentSessionId and formatted line to inject", () => {
@@ -149,8 +144,6 @@ describe("PeriodicNotifier", () => {
 
     const snap2 = makeSnapshot({ toolCount: 1, actionCount: 0 })
     toastNotifier.handlePollTick(snap2)
-
-    vi.advanceTimersByTime(2100)
     await vi.runAllTimersAsync()
 
     expect(showTuiToast).toHaveBeenCalled()
@@ -164,39 +157,29 @@ describe("PeriodicNotifier", () => {
 
     const snap2 = makeSnapshot({ toolCount: 1, actionCount: 0 })
     notifier.handlePollTick(snap2)
-
-    vi.advanceTimersByTime(2100)
     await vi.runAllTimersAsync()
 
     expect(showTuiToast).not.toHaveBeenCalled()
   })
 
-  it("flush timer resets when new change arrives within batch window", () => {
+  it("multiple changes within same tick each trigger injection", () => {
     const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap1)
     notifier.handlePollTick(snap1)
 
     notifier.handlePollTick(makeSnapshot({ toolCount: 1, actionCount: 0 }))
-    vi.advanceTimersByTime(1000)
-
     notifier.handlePollTick(makeSnapshot({ toolCount: 3, actionCount: 1 }))
-    vi.advanceTimersByTime(1500)
 
     expect(injectFn).toHaveBeenCalledTimes(2)
-
-    vi.advanceTimersByTime(600)
-    expect(injectFn).toHaveBeenCalledTimes(3)
   })
 
-  it("deregister during batch window cancels pending flush for that delegation", () => {
+  it("deregister prevents further injection for that delegation", () => {
     const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap1)
     notifier.handlePollTick(snap1)
 
     notifier.handlePollTick(makeSnapshot({ toolCount: 1, actionCount: 0 }))
     notifier.deregister("del-001")
-
-    vi.advanceTimersByTime(3000)
 
     expect(injectFn).toHaveBeenCalledTimes(1)
   })
@@ -210,11 +193,18 @@ describe("PeriodicNotifier", () => {
 
     const snap2 = makeSnapshot({ toolCount: 1, actionCount: 0 })
     notifier.handlePollTick(snap2)
-
-    vi.advanceTimersByTime(2100)
     await vi.runAllTimersAsync()
 
     expect(() => {}).not.toThrow()
+  })
+
+  it("destroy clears all tracked delegations", () => {
+    notifier.register(makeSnapshot({ delegationId: "del-a" }))
+    notifier.register(makeSnapshot({ delegationId: "del-b" }))
+
+    notifier.destroy()
+
+    expect(notifier.activeCount).toBe(0)
   })
 
   it("activeCount reflects only currently tracked delegations", () => {

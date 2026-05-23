@@ -3,7 +3,8 @@
  * into parent sessions via the monitor's inject callback.
  *
  * Deduplicates by comparing toolCount + actionCount snapshots.
- * Batch-coalesces rapid changes within a configurable window (default 2s).
+ * Single immediate injection per state change — no batch flush to avoid
+ * duplicate messages in the parent session context.
  * Fire-and-forget: sendPromptAsync failures are caught and logged.
  */
 
@@ -50,8 +51,6 @@ export class PeriodicNotifier {
   private readonly config: Required<PeriodicNotifierConfig>
   private readonly inject: InjectFn
   private readonly tracked: Map<string, TrackedDelegation> = new Map()
-  private flushTimer: ReturnType<typeof setTimeout> | null = null
-  private pendingFlush: Map<string, DelegationSnapshot> = new Map()
   private destroyed = false
 
   constructor(config: PeriodicNotifierConfig, inject: InjectFn) {
@@ -80,7 +79,6 @@ export class PeriodicNotifier {
 
   deregister(delegationId: string): void {
     this.tracked.delete(delegationId)
-    this.pendingFlush.delete(delegationId)
   }
 
   handlePollTick(snapshot: DelegationSnapshot): void {
@@ -95,18 +93,7 @@ export class PeriodicNotifier {
     tracked.lastToolCount = snapshot.toolCount
     tracked.lastActionCount = snapshot.actionCount
 
-    this.pendingFlush.set(snapshot.delegationId, snapshot)
-
-    if (this.flushTimer !== null) {
-      clearTimeout(this.flushTimer)
-    }
-
     this.injectSnapshot(snapshot)
-
-    this.flushTimer = setTimeout(() => {
-      this.flushTimer = null
-      this.flush()
-    }, this.config.batchWindowMs)
   }
 
   private injectSnapshot(snapshot: DelegationSnapshot): void {
@@ -128,25 +115,9 @@ export class PeriodicNotifier {
     }
   }
 
-  private flush(): void {
-    if (this.destroyed) return
-    const batch = new Map(this.pendingFlush)
-    this.pendingFlush.clear()
-
-    for (const [delegationId, snap] of batch) {
-      if (!this.tracked.has(delegationId)) continue
-      this.injectSnapshot(snap)
-    }
-  }
-
   destroy(): void {
     this.destroyed = true
-    if (this.flushTimer !== null) {
-      clearTimeout(this.flushTimer)
-      this.flushTimer = null
-    }
     this.tracked.clear()
-    this.pendingFlush.clear()
   }
 }
 
