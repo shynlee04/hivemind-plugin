@@ -107,6 +107,31 @@ export function formatFinalFailure(opts: FailureNotificationOptions): string {
 }
 
 /**
+ * Format an urgent failure notification that requires the orchestrator to respond.
+ *
+ * For early failures (30s/60s/120s checkpoints) where no actions were detected,
+ * this creates a prompt that the orchestrator MUST respond to with a decision:
+ * resume, change-agent, steer, or cancel.
+ */
+export function formatUrgentFailureNotification(opts: FailureNotificationOptions): string {
+  const title = opts.isExecutedRunning
+    ? `Delegation ${opts.delegationId} (${opts.agent}) appears stalled`
+    : `Delegation ${opts.delegationId} (${opts.agent}) did not execute`
+
+  const actions = opts.isExecutedRunning
+    ? "Suggested actions: resume, change agent, adjust prompt, or cancel."
+    : "Suggested actions: cancel (agent may be unavailable), change agent, or adjust prompt and retry."
+
+  return `<system_reminder>
+[DT:${opts.delegationId}] ⚠️  ${title}
+  Level: ${opts.failureLevel} | Elapsed: ${opts.elapsedSeconds}s
+  Actions recorded: ${opts.actionCount}
+  ${actions}
+</system_reminder>
+`
+}
+
+/**
  * Map a DelegationNotificationType to the corresponding status string
  * used by the formatter functions.
  */

@@ -3,7 +3,7 @@ import type { FailureCheckpointResult } from "./types.js"
 import type { SemanticCompletionResult } from "./completion-detector.js"
 import { POLLING_CADENCE } from "./types.js"
 import { FailureCheckpointTracker } from "./escalation-timer.js"
-import { formatCompactLine, formatFailureNotification, formatFinalFailure } from "./notification-formatter.js"
+import { formatCompactLine, formatFailureNotification, formatFinalFailure, formatUrgentFailureNotification } from "./notification-formatter.js"
 import { checkSemanticCompletion } from "./completion-detector.js"
 
 type FormatterStatus = "completed" | "error" | "timeout" | "cancelled"
@@ -24,6 +24,7 @@ export interface MonitorOptions {
   getDelegationRecord: (delegationId: string) => Delegation | undefined
   getActionCount?: (delegationId: string) => number
   inject: (parentSessionId: string, line: string, delegationId?: string) => void
+  injectUrgent?: (parentSessionId: string, line: string, delegationId?: string) => void
   onComplete?: (delegationId: string, result?: SemanticCompletionResult) => void
   onFailure?: (delegationId: string, result: FailureCheckpointResult) => void
   onFirstActionDeadline?: (delegationId: string, elapsedSeconds: number) => void
@@ -52,6 +53,7 @@ export class DelegationMonitor {
   private readonly getDelegationRecord: MonitorOptions["getDelegationRecord"]
   private readonly getActionCount: MonitorOptions["getActionCount"]
   private readonly inject: MonitorOptions["inject"]
+  private readonly injectUrgent: MonitorOptions["injectUrgent"]
   private readonly onComplete: MonitorOptions["onComplete"]
   private readonly onFailure: MonitorOptions["onFailure"]
   private readonly onFirstActionDeadline: MonitorOptions["onFirstActionDeadline"]
@@ -64,6 +66,7 @@ export class DelegationMonitor {
     this.getDelegationRecord = options.getDelegationRecord
     this.getActionCount = options.getActionCount
     this.inject = options.inject
+    this.injectUrgent = options.injectUrgent
     this.onComplete = options.onComplete
     this.onFailure = options.onFailure
     this.onFirstActionDeadline = options.onFirstActionDeadline
@@ -195,6 +198,22 @@ export class DelegationMonitor {
     const isExecutedRunning = actionCount > 0
 
     this.onFailure?.(delegationId, result)
+
+    // Early failures (level 1-2) with no actions → urgent notification requiring response
+    const isEarlyFailure = result.level <= 2 && !isExecutedRunning
+
+    if (isEarlyFailure && this.injectUrgent) {
+      const notification = formatUrgentFailureNotification({
+        delegationId,
+        agent: record?.agent ?? "unknown",
+        failureLevel: result.level,
+        elapsedSeconds: result.elapsedSeconds,
+        actionCount,
+        isExecutedRunning,
+      })
+      this.injectUrgent(parentSessionId, notification, delegationId)
+      return
+    }
 
     if (result.isFinal) {
       const notification = formatFinalFailure({
