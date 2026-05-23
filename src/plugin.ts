@@ -217,11 +217,11 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     {
       cadenceMs: 30_000,
       batchWindowMs: 2_000,
-      showToast: false,
+      showToast: true,
       client: options.client,
     },
-    (_parentSessionId: string, line: string): void => {
-      void appendTuiPrompt(options.client, line)
+    (parentSessionId: string, line: string): void => {
+      void sdkSendPromptAsync(options.client, parentSessionId, { parts: [{ type: "text", text: line }], noReply: true })
     },
   )
   periodicNotifierRef = periodicNotifier

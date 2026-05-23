@@ -14,11 +14,10 @@ import type { PeriodicNotifierConfig } from "../../../../src/coordination/delega
 import type { DelegationSnapshot } from "../../../../src/coordination/delegation/periodic-notifier.js"
 
 vi.mock("../../../../src/shared/session-api.js", () => ({
-  appendTuiPrompt: vi.fn().mockResolvedValue(undefined),
   showTuiToast: vi.fn().mockResolvedValue(undefined),
 }))
 
-import { appendTuiPrompt, showTuiToast } from "../../../../src/shared/session-api.js"
+import { showTuiToast } from "../../../../src/shared/session-api.js"
 
 function makeSnapshot(overrides: Partial<DelegationSnapshot> = {}): DelegationSnapshot {
   return {
@@ -52,7 +51,6 @@ describe("PeriodicNotifier", () => {
     config = makeConfig()
     injectFn = vi.fn()
     notifier = new PeriodicNotifier(config, injectFn)
-    vi.mocked(appendTuiPrompt).mockReset().mockResolvedValue(undefined)
     vi.mocked(showTuiToast).mockReset().mockResolvedValue(undefined)
   })
 
@@ -203,8 +201,8 @@ describe("PeriodicNotifier", () => {
     expect(injectFn).toHaveBeenCalledTimes(1)
   })
 
-  it("sendPromptAsync failure does not throw (fire-and-forget)", async () => {
-    vi.mocked(appendTuiPrompt).mockRejectedValueOnce(new Error("network failure"))
+  it("showTuiToast failure does not throw (fire-and-forget)", async () => {
+    vi.mocked(showTuiToast).mockRejectedValueOnce(new Error("network failure"))
 
     const snap1 = makeSnapshot({ toolCount: 0, actionCount: 0 })
     notifier.register(snap1)

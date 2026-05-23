@@ -9,7 +9,7 @@
 
 import { formatCompactLine } from "./notification-formatter.js"
 import type { OpenCodeClient } from "../../shared/session-api.js"
-import { appendTuiPrompt, showTuiToast } from "../../shared/session-api.js"
+import { showTuiToast } from "../../shared/session-api.js"
 
 export interface DelegationSnapshot {
   delegationId: string
@@ -120,13 +120,11 @@ export class PeriodicNotifier {
     })
     this.inject(snapshot.parentSessionId, line, snapshot.delegationId)
 
-    const client = this.config.client as OpenCodeClient | undefined
-    if (client) {
-      appendTuiPrompt(client, line).catch(() => {})
-    }
-
-    if (this.config.showToast && client) {
-      showTuiToast(client, `[DT:${snapshot.delegationId}] ${snapshot.agent} — ${formatElapsed(snapshot.elapsedMs)}`).catch(() => {})
+    if (this.config.showToast) {
+      const toastClient = this.config.client as OpenCodeClient | undefined
+      if (toastClient) {
+        showTuiToast(toastClient, `[DT:${snapshot.delegationId}] ${snapshot.agent} — ${formatElapsed(snapshot.elapsedMs)}`).catch(() => {})
+      }
     }
   }
 

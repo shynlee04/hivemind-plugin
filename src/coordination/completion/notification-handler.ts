@@ -21,6 +21,12 @@ function formatDuration(ms: number): string {
   return `${Math.floor(ms / 3600000)}h ${Math.floor((ms % 3600000) / 60000)}m`
 }
 
+function computeProgressPct(delegation: Delegation): number | undefined {
+  if (!delegation.toolCallCount && !delegation.actionCount && !delegation.messageCount) return undefined
+  const raw = ((delegation.toolCallCount ?? 0) * 3 + (delegation.messageCount ?? 0) * 2 + (delegation.actionCount ?? 0)) / 30
+  return Math.min(Math.round(raw * 100), 99)
+}
+
 function statusIcon(status: TaskNotification["status"]): string {
   switch (status) {
     case "started": return "▶"
@@ -87,6 +93,30 @@ export function buildNotificationMessage(task: TaskNotification): string {
     lines.push(`- Duration: ${formatted}`)
   }
 
+  if (task.elapsedHuman && task.elapsedHuman !== (task.duration !== undefined ? formatDuration(task.duration) : undefined)) {
+    lines.push(`- Elapsed: ${task.elapsedHuman}`)
+  }
+
+  if (task.toolCallCount !== undefined) {
+    lines.push(`- Tool calls: ${task.toolCallCount}`)
+  }
+
+  if (task.actionCount !== undefined) {
+    lines.push(`- Actions: ${task.actionCount}`)
+  }
+
+  if (task.messageCount !== undefined) {
+    lines.push(`- Messages: ${task.messageCount}`)
+  }
+
+  if (task.signalSource) {
+    lines.push(`- Signal source: ${task.signalSource}`)
+  }
+
+  if (task.progressPct !== undefined) {
+    lines.push(`- Progress: ${task.progressPct}%`)
+  }
+
   if (task.metadata) {
     lines.push(`- Metadata: ${JSON.stringify(task.metadata)}`)
   }
@@ -132,6 +162,12 @@ function buildDelegationTaskNotification(delegation: Delegation): TaskNotificati
     briefSummary: buildDelegationSummary(delegation, duration, summaryPreview),
     outputLink: `session://${delegation.childSessionId}`,
     duration,
+    toolCallCount: delegation.toolCallCount,
+    actionCount: delegation.actionCount,
+    messageCount: delegation.messageCount,
+    signalSource: delegation.signalSource,
+    elapsedHuman: formatDuration(duration),
+    progressPct: computeProgressPct(delegation),
     metadata: {
       delegationId: delegation.id,
       terminalState: delegation.status,

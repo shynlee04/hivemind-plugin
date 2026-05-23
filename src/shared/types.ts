@@ -1,4 +1,4 @@
-import type { DelegationRecoveryGuarantee, DelegationStatus } from "../coordination/delegation/types.js"
+import type { DelegationRecoveryGuarantee, DelegationSignalSource, DelegationStatus } from "../coordination/delegation/types.js"
 
 export type TaskStatus = "pending" | "queued" | "running" | "completed" | "failed" | "error" | "cancelled" | "interrupt"
 
@@ -12,6 +12,12 @@ export type TaskNotification = {
   briefSummary?: string
   outputLink?: string
   duration?: number
+  toolCallCount?: number
+  actionCount?: number
+  messageCount?: number
+  signalSource?: DelegationSignalSource
+  elapsedHuman?: string
+  progressPct?: number
   artifacts?: string[]
   commits?: string[]
   metadata?: {
