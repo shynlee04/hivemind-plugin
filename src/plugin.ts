@@ -328,14 +328,12 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
   // Initialize session tracker (reads project-continuity.json, creates writers).
   // Fire-and-forget: must not block plugin init.
-  void sessionTracker.initialize().then(() => {
-    return sessionTracker.cleanup()
-  }).catch((err) => {
+  void sessionTracker.initialize().catch((err) => {
     void client.app?.log?.({
       body: {
         service: "session-tracker",
         level: "warn",
-        message: "[Harness] Session tracker: init+cleanup failed",
+        message: "[Harness] Session tracker: initialization failed",
         extra: { error: err instanceof Error ? err.message : String(err) },
       },
     })
