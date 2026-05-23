@@ -1,6 +1,6 @@
 ---
-status: resolved
-trigger: "session-tracker records wrong lastMessage (initial prompt instead of final summary), wrong status (idle instead of completed), wrong delegatedBy.tool ('task' instead of 'delegate-task') — shared interface between task tool and delegate-task, 5 rounds STILL FAIL"
+status: investigating
+trigger: "session-tracker fails to capture lastMessages at turn ends (both main and sub sessions must capture n-turn last assistant messages across sequential turns rather than a single overwritten field), and compaction fails to capture actual message summary content."
 created: 2026-05-24
 updated: 2026-05-24
 ---
@@ -9,24 +9,16 @@ updated: 2026-05-24
 
 ## Symptoms
 
-1. **Expected:** session-tracker records child sessions for BOTH task tool AND delegate-task with correct fields
-2. **Actual:** 
-   - `lastMessage` = initial prompt (not assistant's final summary/report)
-   - `status` = "idle" (not "completed")
-   - `delegatedBy.tool` = "task" (not "delegate-task" for delegate-task dispatches)
-   - `children: []` (hierarchy not updated)
-3. **Timeline:** Not clear — persisted after Phase 23.1 fix (constructCoreDependencies reorder). Before fix, sessions not found at all.
+1. **lastMessage capture failure:** Both main and sub (child) sessions fail to capture assistant messages (lastMessage). When a new turn starts (a new user prompt at main, or delegate-task/task tool stacking on sub), there should be n-turn last assistant messages preserved rather than a single overwritten field.
+2. **Compaction preservation failure:** The session compaction event (session.compacted) fails to capture actual message summaries; it only writes the raw event envelope to the journey/markdown file without the text content provided by the hook.
 
 ## Current Focus
 
-✅ **ALL 4 BUGS FIXED** — Awaiting live UAT verification.
+- **Investigate and Fix:**
+  - Update lastMessage logic to support multi-turn capture/preservation across turns instead of a single overwritten field.
+  - Fix compaction capture to retrieve and append the actual summary/content from the OpenCode compaction hook to both main (.md) and child (.json) sessions.
 
-- **Fix 1 (delegatedBy.tool):** ✅ COMMITTED — Added `tool` field to PendingDispatchEntry, populated in handleToolExecuteBefore, propagated to writeImmediateChildFile via pendingEntry
-- **Fix 2 (status stuck at idle):** ✅ COMMITTED — Expanded `handleToolExecuteAfter` gate from `input.tool === "task"` to `input.tool === "task" || input.tool === "delegate-task"`
-- **Fix 3 (lastMessage = delegation prompt):** ✅ COMMITTED — Replaced `appendChildTurn` with `appendJourneyEntry` for delegation-init to prevent prompt from polluting lastMessage
-- **Fix 4 (children:[]):** ✅ COMMITTED — Same fix as Bug 2; also changed `tool: "task"` hardcoded to `tool: input.tool` in childMetadata.delegatedBy
-
-**next_action:** Live UAT verification — dispatch both task and delegate-task, check child session files for correct status, lastMessage, delegatedBy.tool, and children.
+**next_action:** Investigate why lastMessage and compaction capture fail, locate the hook/persistence code paths, and implement the fixes.
 
 **Commits:**
 - `882b0686` — Fix 1: delegatedBy.tool via PendingDispatchEntry
