@@ -393,11 +393,16 @@ describe("notifyDelegationTerminal", () => {
     expect(toasts[0].variant).toBe("success")
     expect(toasts[0].message).toContain("completed")
 
-    // 2. Context injected via sendPromptAsync (fire-and-forget)
+    // 2. Stream reactivation via empty sendPromptAsync
     const asyncPrompts = client.getSentAsyncPrompts()
-    expect(asyncPrompts.length).toBe(1)
-    expect(asyncPrompts[0].sessionID).toBe("ses_parent_term")
-    const notifBody = asyncPrompts[0].body as { parts: Array<{ text: string }>; noReply: boolean }
+    expect(asyncPrompts.length).toBe(2)
+    // First prompt = stream reactivation (empty text)
+    const reactivateBody = asyncPrompts[0].body as { parts: Array<{ text: string }>; noReply: boolean }
+    expect(reactivateBody.parts[0].text).toBe("")
+
+    // 3. Context injection via sendPromptAsync (fire-and-forget)
+    const notifBody = asyncPrompts[1].body as { parts: Array<{ text: string }>; noReply: boolean }
+    expect(asyncPrompts[1].sessionID).toBe("ses_parent_term")
     expect(notifBody.noReply).toBe(true)
     expect(notifBody.parts[0].text).toContain("completed")
     expect(notifBody.parts[0].text).toContain("researcher")
