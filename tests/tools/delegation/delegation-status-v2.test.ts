@@ -170,13 +170,13 @@ describe("delegation-status v2 tool", () => {
     expect(coordinator.dispatch).not.toHaveBeenCalled()
   })
 
-  it("rejects control on terminal delegation", async () => {
+  it("accepts cancel on terminal delegation", async () => {
     const { lifecycle, tool } = createHarness(activeRecord({ status: "completed" }))
 
     const raw = await tool.execute({ action: "control", delegationId: "dt-123", control: { action: "cancel" } } as never, context)
 
-    expect(parse(raw).message).toContain("cannot control terminal delegation")
-    expect(lifecycle.markCancelled).not.toHaveBeenCalled()
+    expect(parse(raw).message).toContain("cancelled")
+    expect(lifecycle.markCancelled).toHaveBeenCalledTimes(1)
   })
 
   it("exposes a terminal-safe resume path for completed child sessions without mutating the record", async () => {

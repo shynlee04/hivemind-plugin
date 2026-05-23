@@ -187,7 +187,22 @@ async function handleControl(args: DelegationStatusInput, context: ToolContext, 
   const delegation = (manager.getStatus(args.delegationId) ?? readPersisted().find((d) => d.id === args.delegationId)) as (Delegation & { prompt?: string }) | undefined
   if (!delegation) return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
   if (!manager.canSessionAccessDelegation(context.sessionID, delegation)) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
-  if (deps.lifecycle?.isTerminal(delegation.status)) return renderToolResult(error("[Harness] cannot control terminal delegation"))
+  if (deps.lifecycle?.isTerminal(delegation.status)) {
+    // Allow cancel/abort on terminal delegations (e.g., race condition where
+    // delegation completed between user polling and issuing control action).
+    if (args.control.action === "cancel" || args.control.action === "abort") {
+      if (args.control.action === "cancel") {
+        deps.lifecycle?.markCancelled?.(delegation.id)
+        return renderToolResult(success(`Delegation ${delegation.id} cancelled (was terminal: ${delegation.status})`, { delegationId: delegation.id, status: "cancelled", wasTerminal: delegation.status }))
+      }
+      if (args.control.action === "abort") {
+        deps.lifecycle?.markAborted?.(delegation.id)
+        await deps.terminateChild?.(delegation.childSessionId)
+        return renderToolResult(success(`Delegation ${delegation.id} aborted (was terminal: ${delegation.status})`, { delegationId: delegation.id, status: "aborted", wasTerminal: delegation.status }))
+      }
+    }
+    return renderToolResult(error("[Harness] cannot control terminal delegation"))
+  }
   if (manager.controlDelegation) {
     const result = await manager.controlDelegation({
       action: args.control.action,
