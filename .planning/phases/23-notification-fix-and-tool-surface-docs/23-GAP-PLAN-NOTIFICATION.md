@@ -685,22 +685,41 @@ If any step fails live test:
 
 ### Bug Registry
 
-| # | Symptom | Root Cause | Classification | Status | Fix Commit |
-|---|---------|------------|----------------|--------|------------|
-| U1 | Periodic injection double — message lặp 2 lần mỗi mốc | `periodic-notifier.ts:injectSnapshot()` called from BOTH `handlePollTick()` (immediate) AND `flush()` (2s batch timer) | **CODE_BUG** — removed flush mechanism entirely | **FIXED** | `a85a6296` |
-| U2 | TUI toast không hiện — user không thấy toast | `plugin.ts:220`: `showToast: false` was never changed to `true` | **CONFIG** — fixed to `showToast: true` | **FIXED** | `88527420` |
-| U3 | Completion injection sai mechanism — text append vào input line `> ...` thay vì `<system_reminder>` | `notification-handler.ts:301`: `notifyDelegationTerminal()` used `sendPrompt()` (tạo USER turn) thay vì `sendPromptAsync()` (fire-and-forget, silent) | **CODE_BUG** — replaced with `sendPromptAsync()` | **FIXED** | `374fbf8d` |
-| U4 | session-tracker không ghi delegate-task child sessions SDK | `tool-before-guard.ts:40`: filter `if (toolName === "task")` loại trừ `delegate-task`. PendingDispatchRegistry không được populate. | **MISSING_HOOK** — added `\|\| toolName === "delegate-task"` | **FIXED** | `823a64ad` |
-| U5 | session-tracker hierarchy sai — `childCount: 0`, `totalDelegationDepth: 0` | Systemic — cùng root cause với U4 (tracker không observe delegate-task dispatches) | **SHARED_ROOT** — fixed alongside U4 | **FIXED** | `823a64ad` |
-| U6 | Cancel control inconsistent — "cannot control terminal delegation" timing race | `delegation-status.ts:190`: `isTerminal()` check blocks cancel sau khi delegation complete giữa lúc user poll và issue action | **TIMING** — allowed cancel/abort on terminal delegations | **FIXED** | `b290ed19` |
-| G1 | `sendPrompt()` creates USER turn — đã fix từ Phase 23 Step 1 | Replaced with `sendPromptAsync()` + `showTuiToast()` | **FIXED** (Phase 23 Step 1) | **FIXED** | `41cba301` |
-| G2 | Permission denial cho stacked sub-agents | `manager-runtime.ts:339-362`: `canSessionAccessDelegation()` chỉ check 1 level parent/child, không có grandparent chain traversal | **DESIGN_GAP** — added iterative chain traversal | **FIXED** | `9c9cad58` |
+| # | Symptom | Root Cause | Classification | Round 3 Status | Fix Commits |
+|---|---------|------------|----------------|---------------|-------------|
+| U1 | Periodic injection double → ZERO (regression) | `periodic-notifier.ts:flush()` hardcoded `"batch"` as parentSessionId → SDK silently fails. Fixed: use first snapshot's real parentSessionId | **CODE_BUG** | **✅ FIXED** — single per task, 30s cadence | `80cd2e53`, `31e1dff6`, `513c0760` |
+| U2 | TUI toast không hiện | `showToast: true` set nhưng `.catch(() => {})` nuốt lỗi. Diagnostic logging added. Có thể `client.tui.showToast()` không available trong context | **SDK_UNKNOWN** — diagnostic added | **❌ STILL FAIL** — "có injection nhưng không thấy toast" | `80cd2e53`, `a6784568`, `513c0760` |
+| U3 | Completion injection vào input line | `notificationRouter.deliver` dùng `appendTuiPrompt()`. Fixed: `sdkSendPromptAsync()` với `<system_reminder>` | **CODE_BUG** | **⚠️ PARTIAL** — stream reactivation OK, user vẫn phải forward manual | `374fbf8d`, `31e1dff6`, `a6784568` |
+| U4 | session-tracker miss child sessions | `tool-before-guard.ts` fix + `session.created` event không fire cho SDK-created sessions. Fixed: coordinator.ts gọi `onChildSessionCreated` → `sessionTracker.handleSessionEvent()` | **ARCHITECTURAL** | **❌ STILL FAIL** — qua 3 rounds vẫn "Session status not found" | `823a64ad`, `a6784568` |
+| U5 | session-tracker hierarchy broken | Same as U4 | **SHARED** | **❌ STILL FAIL** | `823a64ad`, `a6784568` |
+| U6 | Cancel inconsistent | Allowed cancel on terminal delegations | **TIMING** | **⏳ UNTESTED** | `b290ed19` |
+| G1 | sendPrompt() tạo USER turn | Replaced with sendPromptAsync | **CODE_BUG** | **✅ FIXED** | `41cba301`, `88527420` |
+| G2 | Permission chain traversal | Added iterative parent chain walk | **DESIGN_GAP** | **⏳ UNTESTED** | `9c9cad58` |
+| M3-A | Stream reactivation unwired | Added reactivateSessionStream() before injection | **DESIGN_GAP** | **✅ FIXED** — user sees "Please address this message..." | `8ba376f3`, `a6784568` |
+| M3-B | Early failure no response path | Added injectUrgent with sendPrompt noReply:true | **DESIGN_GAP** | **⏳ UNTESTED** — no early failure in live test | `90a8e4d3`, `513c0760` |
+
+### Round 3 Live UAT Results (2026-05-24)
+
+| # | Round 2 | Round 3 | Verdict |
+|---|---------|---------|---------|
+| G1 | ⚠️ Partial | ✅ Clean dispatch | **FIXED** |
+| U1 | ❌ Zero injection | ✅ Single per task, 30s cadence | **FIXED** |
+| U2 | ❌ | ❌ "có injection nhưng không thấy toast" | **STILL FAIL** |
+| U3 | ❌ Append input | ⚠️ Stream reactivation OK, user vẫn forward | **PARTIAL** |
+| U4 | ❌ | ❌ Vẫn "Session status not found" | **STILL FAIL** |
+| U5 | ❌ | ❌ Not applicable (U4 fails) | **STILL FAIL** |
+| U6 | ⏳ | ⏳ Chưa test | **UNTESTED** |
+| G2 | ⏳ | ⏳ Chưa test | **UNTESTED** |
+| M3-A | ❌ | ✅ "Please address this message..." | **FIXED** |
+| M3-B | ⏳ | ⏳ Không có early failure | **UNTESTED** |
+
+**Summary:** 4/10 FIXED (G1, U1, M3-A), 3/10 STILL FAIL (U2, U4, U5), 1/10 PARTIAL (U3), 2/10 UNTESTED (U6, G2, M3-B)
 
 ### Verification Results
 
 | Check | Before Fixes | After Fixes |
 |-------|-------------|-------------|
-| Test suite | 2434 passed, 2 skipped, 2 failed (pre-existing) | 2435 passed, 2 skipped, 2 failed (pre-existing) |
+| Test suite | 2434 passed, 2 skipped, 2 failed (pre-existing) | 2434 passed, 2 skipped, 2 failed (pre-existing) |
 | Typecheck | ✅ | ✅ |
 | New failures introduced | — | 0 |
 | Pre-existing failures unchanged | command-engine + delegation-v2-integration | ✅ Same 2 |
@@ -710,13 +729,21 @@ If any step fails live test:
 1. `tests/integration/delegation-v2-integration.test.ts` — "does NOT call showTuiToast on terminal notification deliver (RED 15-04)" — unrelated Phase 15 regression
 2. `tests/lib/command-engine/command-engine.test.ts` — "discovers command bundles without replacing primitive discovery" — unrelated command ordering
 
-### Fix Commit Chain
+### Full Fix Commit Chain
 
 | # | Commit | Description |
 |---|--------|-------------|
+| Phase 23 Step 1 | `41cba301` | Add notifyParentSession to coordinator dispatch (started notification) |
+| U1/U2/D | `88527420` | Repair periodic injection mechanism + enrich completion fields |
 | U4/U5 | `823a64ad` | Add delegate-task to session-tracker proactive discovery hook |
-| U1 | `a85a6296` | Remove batch flush from PeriodicNotifier to prevent double injection |
+| U1 | `a85a6296` | Remove batch flush from PeriodicNotifier (later restored by 80cd2e53) |
 | U3 | `374fbf8d` | Replace sendPrompt with sendPromptAsync in notifyDelegationTerminal |
 | G2 | `9c9cad58` | Add chain traversal to canSessionAccessDelegation for stacked sub-agents |
 | U6 | `b290ed19` | Allow cancel/abort on terminal delegations to fix race condition |
 | Tests | `1bf29466` | Update delegation-manager tests for sendPromptAsync migration |
+| U1 | `80cd2e53` | Restore batch queue with single-path combined injection + aggregated toast |
+| M3-A | `8ba376f3` | Wire reactivateSessionStream into notifyDelegationTerminal |
+| M3-B | `90a8e4d3` | Add injectUrgent for early failure response-required notifications |
+| M3-A/M3-B | `8ba376f3` | Wire reactivateSessionStream into notifyDelegationTerminal |
+| U1/U3 | `31e1dff6` | Fix U1 (batch→real parentSessionId) + U3 (router deliver→sendPromptAsync) |
+| Code Review | `513c0760` | Apply code review fixes — CR-01 (progress→running), CR-02 (injectUrgent noReply), CR-03 (group flush by parentSessionId) |
