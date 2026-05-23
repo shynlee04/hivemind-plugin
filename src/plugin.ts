@@ -278,6 +278,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // for delegate-task SDK-dispatched sessions.
   const sessionTracker = new SessionTracker({ client, projectRoot: projectDirectory })
 
+  // REQ-01: Construct critical deps SYNCHRONOUSLY before delegation wiring
+  // so onChildSessionCreated callbacks find eventCapture already available.
+  sessionTracker.constructCoreDependencies()
+
   const delegationModules = setupDelegationModules({
     client,
     enableRuntimeAdapter: true,

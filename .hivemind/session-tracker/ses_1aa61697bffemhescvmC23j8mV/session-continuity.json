@@ -1,0 +1,84 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1aa61697bffemhescvmC23j8mV",
+  "lastUpdated": "2026-05-23T19:10:43.076Z",
+  "hierarchy": {
+    "root": "ses_1aa61697bffemhescvmC23j8mV",
+    "children": {
+      "ses_1aa5ff090ffevIbiecwApCljDJ": {
+        "file": "ses_1aa5ff090ffevIbiecwApCljDJ.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1aa3d4d7affeX0hMbhb90yTvQH": {
+        "file": "ses_1aa3d4d7affeX0hMbhb90yTvQH.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1a9ea60afffeMzUrYgIBQuCf2R": {
+        "file": "ses_1a9ea60afffeMzUrYgIBQuCf2R.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a9ea5166ffeP8l9JMRVCtJZSM": {
+        "file": "ses_1a9ea5166ffeP8l9JMRVCtJZSM.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a9db9be4ffedfSFIJYjYr7tKx": {
+        "file": "ses_1a9db9be4ffedfSFIJYjYr7tKx.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a9db91c6ffeoIWrjFgtjNeWF5": {
+        "file": "ses_1a9db91c6ffeoIWrjFgtjNeWF5.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a9c5bbfbffe7o05JV33Dwzo4W": {
+        "file": "ses_1a9c5bbfbffe7o05JV33Dwzo4W.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a9c5b260ffe7XrpqRqIf9kC0r": {
+        "file": "ses_1a9c5b260ffe7XrpqRqIf9kC0r.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a9c45610ffeEoCVD6fJrfVfPp": {
+        "file": "ses_1a9c45610ffeEoCVD6fJrfVfPp.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 68,
+  "toolSummary": {
+    "delegate-task": 10,
+    "bash": 24,
+    "delegation-status": 29,
+    "glob": 1,
+    "read": 2,
+    "todowrite": 8,
+    "session-tracker": 27,
+    "session-hierarchy": 1
+  }
+}

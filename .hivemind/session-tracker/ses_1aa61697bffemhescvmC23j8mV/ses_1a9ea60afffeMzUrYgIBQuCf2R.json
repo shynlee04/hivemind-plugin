@@ -1,0 +1,536 @@
+{
+  "sessionID": "ses_1a9ea60afffeMzUrYgIBQuCf2R",
+  "parentSessionID": "ses_1aa61697bffemhescvmC23j8mV",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-codebase-mapper",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": "gsd-codebase-mapper"
+  },
+  "created": "2026-05-23T18:25:18.164Z",
+  "updated": "2026-05-23T18:27:59.578Z",
+  "status": "idle",
+  "mainAgent": {
+    "name": "gsd-codebase-mapper",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-codebase-mapper",
+      "content": "{\"expected_return\": \"full audit report at .planning/phases/25-trajectory-agent-work-contract-redesign/25-AUDIT-2026-05-23.md + git commit\", \"handoff_reason\": \"TASK-A: Phase 25 full audit — parallel test verify 10 fixes\", \"history_policy\": \"fresh-context\", \"source_agent\": \"front-facing-orchestrator\", \"allowed_destinations\": []}\n\nYou are subagent gsd-codebase-mapper, TASK-A of parallel dispatch test.\n\nConduct a DEEP audit of Phase 25 trajectory + agent-work-contract systems.\n\nRead ALL files in:\n1. `src/task-management/trajectory/` — every .ts file\n2. `src/features/agent-work-contracts/` — every .ts file\n3. `src/shared/types.ts`\n4. `src/schema-kernel/trajectory.schema.ts`\n5. `src/schema-kernel/agent-work-contract.schema.ts`\n6. `src/tools/hivemind/hivemind-trajectory.ts`\n7. `src/tools/hivemind/hivemind-agent-work.ts`\n8. `.planning/ROADMAP.md`\n9. `.planning/STATE.md`\n\nAnalyze and document:\n1. ALL design errors with file:line\n2. Feature integration including boundary violations\n3. Mechanism compliance (CQRS, atomic write, error handling)\n4. Overlap with session-tracker, delegation persistence, journals\n5. Phase 25 readiness assessment\n\nWrite to: `.planning/phases/25-trajectory-agent-work-contract-redesign/25-AUDIT-2026-05-23.md`\nStructure: Executive Summary, 1.Design Errors, 2.Feature Integration, 3.Mechanism Compliance, 4.Overlap Analysis, 5.Phase 25 Readiness, 6.Recommendations, Appendix A (File Inventory), Appendix B (Test Coverage)\n\nConstraints: include file:line for ALL findings, read ALL files, do NOT modify source code, COMMIT after write.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-23T18:25:27.847Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_9LJphbXbPt2VVl9TDH1F4763",
+        "input": {
+          "name": "gsd-map-codebase"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:28.056Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_0TKr0efGU4esAuFOr17d8772",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:28.281Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_VnqxRQL2tG768rh84SlY3182",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:33.210Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_RCK6GgFOFu9hAoojY7cJ7913",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:33.311Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_qnD2Fg0TBMRqw4zeIJFN4679",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/ledger.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:33.544Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_9LyWJfuo62oZC4VQkFtI0383",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/store-operations.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:33.785Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_9kPFobvNcBDKqldLE0zr4978",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:34.069Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_GlrjwRnNFehbfIPIOAy15197",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/AGENTS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:34.305Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_UwNkQ0uPiqaXYv7MOa1Y4426",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:34.511Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_9sf7fhhsc7MYyzhWIjYQ3663",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/operations.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:34.778Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_sq6qwcMAuwoC69j3lkjW5567",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/store.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:35.019Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_08_S8AvhksH1teKnSiRMYx00475",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:35.492Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_09_8phfjwc2YSg3mA4k3Xrc5117",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/AGENTS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:41.616Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_1KvsshatYkZCI1uDLZhI1030",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:41.828Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_LEUcfrAb8RF0MnCXgaxm6819",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/trajectory.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:42.057Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_eZVhtL7giWcYRg410XdA8017",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/agent-work-contract.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:42.307Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_3B5WDlqpH6VShXjzVejz9224",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-trajectory.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:42.571Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_9XiRRe5OVhb5bCQmHVS23278",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-agent-work.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:42.807Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_D7LMnPgPBYIpIZYUt4Oo6072",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:43.023Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_m6FN2LQ46mDXSHV9zSDp2354",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:52.847Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_T1eJ89iyxoBlu8zjMOVS6824",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:53.082Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_nykNYt2CqV1sJh1eXPzY4216",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:53.457Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_4PDeNQJllzfh6t3exmMi0396",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:58.836Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_sItUaxo0cYnqYnxlYrG44697",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:59.133Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_LrKyUA3KtOWrmMMANq9z9653",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:59.499Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_nBJY5HBVsXOhhcuvmNhy2271",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/25-trajectory-agent-work-contract-redesign"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:25:59.761Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_gos4Ck1AqMFZ3R3nQgIC3413",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:05.171Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_DPRZod2TrjuPBZzZjudL1614",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:05.595Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_RmOTdz8aQhmYsM4XMKGm1421",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:05.955Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_02_RQxGd2N4FPoFNheht6Pr5285",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:06.416Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_03_0ukNm31igtwk8fSJRIim0039",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:11.888Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_UWwBdiyX0Y92QSc85TIq1406",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:12.084Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_8aEJ7LlMk8kzY4l3nHtA6298",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/tools/hivemind-trajectory.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:12.323Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_VyUk7cYuzRaSIR6BuOJV3850",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/runtime-pressure"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:17.821Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_8REIamAU1vugAdAB4FwR2281",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/tools/hivemind-agent-work.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:17.946Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_03oytITH2C3w8JpH6VAk5471",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/runtime-pressure/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:18.243Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_nVYvLL3aItyB3sVIo6q27545",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/runtime-pressure/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:41.790Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_gSYoX1tQ8csiRZhVXANk5328",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:26:42.319Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_wxqPOmrFD08uWzoLrYZU9432",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:27:45.666Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_GaHjg2qepyReyhsOR2yl4942",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T18:27:52.593Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_UUTIYQxx4hHNvkL4OJOq9272",
+        "input": {},
+        "output": {}
+      }
+    }
+  ],
+  "lastMessage": "{\"expected_return\": \"full audit report at .planning/phases/25-trajectory-agent-work-contract-redesign/25-AUDIT-2026-05-23.md + git commit\", \"handoff_reason\": \"TASK-A: Phase 25 full audit — parallel test verify 10 fixes\", \"history_policy\": \"fresh-context\", \"source_agent\": \"front-facing-orchestrator\", \"allowed_destinations\": []}\n\nYou are subagent gsd-codebase-mapper, TASK-A of parallel dispatch test.\n\nConduct a DEEP audit of Phase 25 trajectory + agent-work-contract systems.\n\nRead ALL files in:\n1. `src/task-management/trajectory/` — every .ts file\n2. `src/features/agent-work-contracts/` — every .ts file\n3. `src/shared/types.ts`\n4. `src/schema-kernel/trajectory.schema.ts`\n5. `src/schema-kernel/agent-work-contract.schema.ts`\n6. `src/tools/hivemind/hivemind-trajectory.ts`\n7. `src/tools/hivemind/hivemind-agent-work.ts`\n8. `.planning/ROADMAP.md`\n9. `.planning/STATE.md`\n\nAnalyze and document:\n1. ALL design errors with file:line\n2. Feature integration including boundary violations\n3. Mechanism compliance (CQRS, atomic write, error handling)\n4. Overlap with session-tracker, delegation persistence, journals\n5. Phase 25 readiness assessment\n\nWrite to: `.planning/phases/25-trajectory-agent-work-contract-redesign/25-AUDIT-2026-05-23.md`\nStructure: Executive Summary, 1.Design Errors, 2.Feature Integration, 3.Mechanism Compliance, 4.Overlap Analysis, 5.Phase 25 Readiness, 6.Recommendations, Appendix A (File Inventory), Appendix B (Test Coverage)\n\nConstraints: include file:line for ALL findings, read ALL files, do NOT modify source code, COMMIT after write."
+}

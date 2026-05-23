@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
-  "lastUpdated": "2026-05-23T15:12:40.629Z",
+  "lastUpdated": "2026-05-23T19:36:35.054Z",
   "hierarchy": {
     "root": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
     "children": {
@@ -451,27 +451,104 @@
         "file": "ses_1aa9abb6affeTRsYDhAo1wL4Ri.json",
         "depth": 1,
         "status": "active",
-        "delegatedBy": "unknown",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1aa92e240ffeEpaWmxUFFxFh67": {
+        "file": "ses_1aa92e240ffeEpaWmxUFFxFh67.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debug-session-manager",
+        "children": {}
+      },
+      "ses_1aa269dd4ffesMCaU9pSQc63HH": {
+        "file": "ses_1aa269dd4ffesMCaU9pSQc63HH.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_1a9cfffa1ffecYOUB7KL5AG4vM": {
+        "file": "ses_1a9cfffa1ffecYOUB7KL5AG4vM.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-fixer",
+        "children": {}
+      },
+      "ses_1a9ba2573ffeIps0L0DRX8GzCc": {
+        "file": "ses_1a9ba2573ffeIps0L0DRX8GzCc.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_1a9b4a46fffeR8yqR0zFZ9OFaJ": {
+        "file": "ses_1a9b4a46fffeR8yqR0zFZ9OFaJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1a9b3c440ffe2bVc0Lolctw7GX": {
+        "file": "ses_1a9b3c440ffe2bVc0Lolctw7GX.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1a9b22f8affe5UBN2lviVVh94l": {
+        "file": "ses_1a9b22f8affe5UBN2lviVVh94l.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1a9b12741ffeNFjeeFxbRsLMCD": {
+        "file": "ses_1a9b12741ffeNFjeeFxbRsLMCD.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1a9ae4563ffeiBA7sYJrk33r6u": {
+        "file": "ses_1a9ae4563ffeiBA7sYJrk33r6u.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1a9ab69d2ffexfbVclj7C5J03p": {
+        "file": "ses_1a9ab69d2ffexfbVclj7C5J03p.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_1a9a91e2affeUetaDPkduEBiPV": {
+        "file": "ses_1a9a91e2affeUetaDPkduEBiPV.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
         "children": {}
       }
     }
   },
-  "turnCount": 114,
+  "turnCount": 156,
   "toolSummary": {
     "skill": 13,
-    "read": 89,
+    "read": 129,
     "delegate-task": 1,
     "delegation-status": 4,
-    "task": 71,
-    "grep": 11,
+    "task": 91,
+    "grep": 23,
     "todowrite": 13,
-    "bash": 105,
-    "write": 7,
-    "edit": 46,
-    "glob": 5,
+    "bash": 130,
+    "write": 10,
+    "edit": 55,
+    "glob": 7,
     "question": 9,
-    "hivemind-command-engine": 1,
-    "execute-slash-command": 2,
+    "hivemind-command-engine": 2,
+    "execute-slash-command": 5,
     "session-hierarchy": 2,
     "session-tracker": 9,
     "repomix_pack_remote_repository": 4,
@@ -482,6 +559,7 @@
     "deepwiki_ask_question": 2,
     "invalid": 1,
     "repomix_read_repomix_output": 2,
-    "memory_create_entities": 1
+    "memory_create_entities": 1,
+    "hivemind-session-view": 1
   }
 }

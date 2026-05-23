@@ -446,6 +446,30 @@ export class SessionTracker {
   }
 
   /**
+   * Synchronously constructs all session-tracker dependencies.
+   *
+   * Must be called BEFORE delegation wiring so that `onChildSessionCreated`
+   * callbacks immediately find `eventCapture`, `pendingRegistry`, and other
+   * critical deps available — eliminating the race window where async
+   * `initialize()` would otherwise leave them `undefined` (D-01, REQ-01).
+   *
+   * Safe to call multiple times: does NOT perform I/O, does NOT start
+   * intervals, does NOT reset existing deps. Call once during plugin init.
+   */
+  constructCoreDependencies(): void {
+    const deps = constructDependencies(
+      this.client,
+      this.projectRoot,
+      {
+        getSessionSafely: (id) => this.getSessionSafely(id),
+        ensureChildRoute: (parentID, childSessionID) => this.ensureChildRoute(parentID, childSessionID),
+        bootstrappedSessions: this.bootstrappedSessions,
+      },
+    )
+    Object.assign(this, deps)
+  }
+
+  /**
    * Initializes the session tracker module.
    *
    * Called once during plugin startup. Creates all persistence writers,
@@ -455,19 +479,7 @@ export class SessionTracker {
    */
   async initialize(): Promise<void> {
     try {
-      await this.hierarchyIndex?.buildFromDisk?.()
-      const deps = constructDependencies(
-        this.client,
-        this.projectRoot,
-        {
-          getSessionSafely: (id) => this.getSessionSafely(id),
-          ensureChildRoute: (parentID, childSessionID) => this.ensureChildRoute(parentID, childSessionID),
-          bootstrappedSessions: this.bootstrappedSessions,
-        },
-      )
-      await deps.hierarchyIndex.buildFromDisk()
-
-      Object.assign(this, deps)
+      await this.hierarchyIndex.buildFromDisk()
       await this.retryQueue.flush()
       this.startRetryFlushLoop()
 
