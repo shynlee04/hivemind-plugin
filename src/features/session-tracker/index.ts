@@ -139,6 +139,15 @@ export class SessionTracker {
     try {
       if (this.eventCapture) {
         await this.eventCapture.handleSessionEvent(event)
+      } else {
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: handleSessionEvent skipped — ` +
+              `eventCapture not initialized (sessionID: ${event.sessionID}, eventType: ${event.eventType})`,
+          },
+        })
       }
 
       // Fork handling: reference-copy child delegation records from parent session.
