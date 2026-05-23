@@ -294,7 +294,7 @@ export class SessionTracker {
         await this.toolDelegation.recordChildToolJourney(
           parentID, input, output, this.ensureChildRoute.bind(this),
         )
-        if (input.tool === "task") {
+        if (input.tool === "task" || input.tool === "delegate-task") {
           await this.toolDelegation.recordChildTaskDelegation(
             parentID, input, output, this.ensureChildRoute.bind(this),
           )
@@ -439,6 +439,7 @@ export class SessionTracker {
     subagentType: string
     description: string
     taskId?: string
+    tool?: string
   }): Promise<void> {
     try {
       await this.toolDelegation.handleToolExecuteBefore(params)

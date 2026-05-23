@@ -458,7 +458,7 @@ export class EventCapture {
         delegatedBy: {
           agentName: explicitAgentName ?? subagentType,
           model: explicitModel ?? "",
-          tool: "task",
+          tool: pendingEntry?.tool ?? "task",
           description: "",
           subagentType,
         },

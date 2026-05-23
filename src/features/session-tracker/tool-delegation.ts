@@ -75,6 +75,7 @@ export class ToolDelegation {
    * @param params.subagentType - The subagent_type from task tool args.
    * @param params.description - The task description.
    * @param params.taskId - If present, this is a resume — skip registration.
+   * @param params.tool - The tool name used for dispatch ("task" or "delegate-task").
    */
   async handleToolExecuteBefore(params: {
     sessionID: string
@@ -82,6 +83,7 @@ export class ToolDelegation {
     subagentType: string
     description: string
     taskId?: string
+    tool?: string
   }): Promise<void> {
     try {
       if (!isValidSessionID(params.sessionID)) return
@@ -99,6 +101,7 @@ export class ToolDelegation {
         callID: params.callID,
         subagentType: params.subagentType || "unknown",
         timestamp: Date.now(),
+        tool: params.tool ?? "task",
       })
 
       // Fire-and-forget polling: discover child session via Server API.
@@ -247,7 +250,7 @@ export class ToolDelegation {
       delegatedBy: {
         agentName: subagentType,
         model: "unknown",
-        tool: "task",
+        tool: input.tool,
         description,
         subagentType,
       },
@@ -265,11 +268,19 @@ export class ToolDelegation {
 
     await ensureChildRoute(parentID, input.sessionID)
     await this.childWriter.createChildFile(input.sessionID, childSessionID, childMetadata)
-    await this.childWriter.appendChildTurn(input.sessionID, childSessionID, {
-      turn: 0,
-      actor: subagentType,
-      content: description || "Task delegation initiated",
-      tools: [],
+    // Record delegation initiation as a journey entry (not a turn) to avoid
+    // polluting lastMessage with the delegation prompt before the child completes.
+    await this.childWriter.appendJourneyEntry(input.sessionID, childSessionID, {
+      timestamp: now,
+      type: "tool_call",
+      content: `Tool: ${input.tool} — delegation initiated`,
+      metadata: {
+        tool: input.tool,
+        callID: input.callID,
+        phase: "dispatch",
+        description: description || "Task delegation initiated",
+        subagentType,
+      },
     })
     await this.sessionIndexWriter.addChild(
       rootMain,
