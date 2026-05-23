@@ -219,19 +219,14 @@ export async function notifyParentSession(
   parentSessionID: string,
   task: TaskNotification,
 ): Promise<boolean> {
-  // Phase 23 diagnostic: console.error for guaranteed terminal visibility
-  console.error("[Harness] notifyParentSession ENTERED", { parentSessionID, taskStatus: task.status, taskAgent: task.agent })
-
   const message = buildNotificationMessage(task)
   let delivered = true
 
   // 1. User toast (transient, agent-invisible)
-  console.error("[Harness] toast pre-call", { hasTui: !!client?.tui, hasShowToast: typeof client?.tui?.showToast })
   try {
     await showTuiToast(client, formatToastMessage(task), toastVariant(task.status))
   } catch (error) {
     // Best-effort: toast failure doesn't block context delivery
-    console.error("[Harness] Toast catch:", error)
     void client.app?.log?.({
       body: {
         service: "notification",
@@ -242,7 +237,6 @@ export async function notifyParentSession(
   }
 
   // 2. Context injection via async prompt (agent sees, no AI response triggered)
-  console.error("[Harness] promptAsync pre-call", { parentSessionID, hasSession: !!client?.session, hasPromptAsync: typeof client?.session?.promptAsync })
   try {
     await sendPromptAsync(client, parentSessionID, {
       noReply: true,
@@ -250,7 +244,6 @@ export async function notifyParentSession(
     })
   } catch (error) {
     delivered = false
-    console.error("[Harness] Context injection catch:", error)
     queuePendingNotification(parentSessionID, task)
     void client.app?.log?.({
       body: {
