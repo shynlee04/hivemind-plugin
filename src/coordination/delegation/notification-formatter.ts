@@ -11,7 +11,7 @@ import type { DelegationNotificationType } from "./types.js"
 export interface NotificationFormatOptions {
   delegationId: string
   agent: string
-  status: "completed" | "error" | "timeout" | "cancelled"
+  status: "completed" | "error" | "timeout" | "cancelled" | "running"
   elapsedMs: number
   toolCount?: number
   summaryPreview?: string
@@ -28,6 +28,7 @@ const STATUS_ICONS: Record<string, string> = {
   error: "❌",
   timeout: "⏰",
   cancelled: "⊘",
+  running: "🔄",
 }
 
 /**
