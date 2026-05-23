@@ -1,0 +1,44 @@
+{
+  "sessionID": "ses_1ab03791dffetWmMfeFws9liGW",
+  "parentSessionID": "ses_1ab1192daffeVSAaSj31hD0OJj",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "unknown",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": "unknown"
+  },
+  "created": "2026-05-23T13:18:16.318Z",
+  "updated": "2026-05-23T13:18:38.374Z",
+  "status": "idle",
+  "mainAgent": {
+    "name": "unknown",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-codebase-mapper",
+      "content": "{\"source_agent\": \"front-facing-orchestrator\", \"handoff_reason\": \"Timed diagnostic test for TUI notification and context injection verification\", \"allowed_destinations\": [], \"history_policy\": \"fresh-context\", \"expected_return\": \"list of 5 type exports from types.ts\"}\n\nYou are subagent gsd-codebase-mapper. Quick diagnostic task: read src/shared/types.ts and report back the first 5 type exports you find. Return results immediately — do not read other files. This is a timed test.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-23T13:18:26.590Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_08223bb636a24965b1b0589d",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/types.ts"
+        },
+        "output": {}
+      }
+    }
+  ],
+  "lastMessage": "{\"source_agent\": \"front-facing-orchestrator\", \"handoff_reason\": \"Timed diagnostic test for TUI notification and context injection verification\", \"allowed_destinations\": [], \"history_policy\": \"fresh-context\", \"expected_return\": \"list of 5 type exports from types.ts\"}\n\nYou are subagent gsd-codebase-mapper. Quick diagnostic task: read src/shared/types.ts and report back the first 5 type exports you find. Return results immediately — do not read other files. This is a timed test."
+}

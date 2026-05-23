@@ -1,0 +1,543 @@
+{
+  "sessionID": "ses_1af32950dffexDfCKc303aRmfs",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Create tool-surface-documentation skill",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-22T17:48:20.101Z",
+  "updated": "2026-05-22T17:52:12.335Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-executor",
+      "content": "You are subagent **gsd-executor**. Execute Plan 23-02 (Wave 2, parallel).\n\n## CRITICAL: You are a subagent. Execute ALL tasks, commit each atomically.\n\n## Context\nCreate `hm-l3-tool-surface-documentation` skill — definitive tool surface differentiation covering ALL 14+ Hivemind custom tools with differentiation matrix.\n\n## Read First\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-02-PLAN.md` (full plan)\n- `src/plugin.ts` — tool registration list\n- `src/tools/` — all tool implementations (list dir, skim each)\n- `.opencode/skills/hm-l3-tool-capability-matrix/SKILL.md` — existing tool docs, avoid duplicate\n- `.opencode/skills/stack-l3-vitest/SKILL.md` — reference skill pattern\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-PATTERNS.md` — Wave 2 templates\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-RESEARCH.md` — surface audit section\n\n## Tasks\n\n### Task 1: Audit src/tools/ for complete tool catalog\nList all files in `src/tools/` recursively. For each tool file, extract: name, actions, description. Verify each action exists in the source.\n\n### Task 2: Create skill directory + SKILL.md\nCreate `.opencode/skills/hm-l3-tool-surface-documentation/SKILL.md`\n\nFormat per REFERENCE template (hm-l3-hivemind-engine-contracts style):\n- IRON CLAM validation chain header\n- For EACH tool (14+): description, actions table, when-to-use, limitations\n- CRITICAL: Differentiation matrix (task vs delegate-task vs execute-slash-command)\n- Anti-Patterns section\n- Self-Correction (4 modes)\n- Cross-References section\n\n### Task 3: Create references/\n- `.opencode/skills/hm-l3-tool-surface-documentation/references/tool-surface-classification.md`\n- `.opencode/skills/hm-l3-tool-surface-documentation/references/surface-diffusion-matrix.md`\n\n### Task 4: Verify every tool mention against actual source\nCross-reference every claimed tool/action against the actual source in src/tools/. If a tool/action doesn't exist, remove it from the skill.\n\n## Commit Protocol\n- Commit after each task\n- Run `npm run typecheck` (should pass — only new .md files)\n- Write SUMMARY.md: `.planning/phases/23-notification-fix-and-tool-surface-docs/23-02-SUMMARY.md`\n\nReturn: `## PLAN 23-02 COMPLETE` when done.\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-executor",
+      "content": "Create tool-surface-documentation skill",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-executor",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n \n</task_result>",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T17:48:27.971Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_M3udaSUmcRC0N4f36SeZ1848",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:32.805Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_YBVgicvClHHDSFaFD2OL5759",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:33.035Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_vrsGgGqE3b2rWgX4v8om6378",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:33.352Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_InhA4jXR91o1qY9agNLh2248",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l3-tool-capability-matrix/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:33.661Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_Sx2wfJNZclsKyP3oFuOr9457",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/stack-l3-vitest/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:33.969Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_KcbTx8hpWcd9K5nlCuKJ3164",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-PATTERNS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:34.305Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_uBZLh4wgjPOtqOwvP1jV5645",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:43.902Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_ROI6DaCNnMngzMnlU1o88154",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:49.181Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_6jSPlop68P165AQlf2gM8422",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:54.727Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_vhISxXfuDOFM3v3qKWv91245",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:55.048Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_PrCX5R7wr46gjxkrhVvR6902",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegate-task.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:55.232Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_IHMWCRU5vFmTgEnhP98J8229",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegation-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:55.614Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_EmqKCq0XJz5oYXlpkOGK8241",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/session-tracker.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:55.966Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_q2VyhCTV3Jp4a1d6Bgzh1698",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/session-hierarchy.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:56.312Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_0Q72hBzsO92jfE0DyfYf4315",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/session-context.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:56.684Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_FMl0o5BrcwSrUnlpXyx48927",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-session-view.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:57.092Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_x2teoTFMGo9Q6jXYmcIK7349",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-trajectory.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:03.496Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_w4jzG052eN3x0byFeIiX7415",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-pressure.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:04.058Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Ab4RMZXEqINEAJKBmIun2350",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-agent-work.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:04.262Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_sdbJbyNtyoP4RzzSI7lP9840",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-command-engine.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:04.620Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_sSsobgEc36ynChraIzWm7304",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-doc.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:05.008Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_Vw44Hy3WtiGSEsLlmfM95583",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-sdk-supervisor.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:05.385Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_I0fF7ID8Ns3C5Ink7BzF9877",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/run-background-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:05.780Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_AeltlUX5lUFUQGwcnmBH7348",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-journal-export.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:06.141Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_epOSSiO3K8AD7Xx8IqqC6409",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-patch/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:12.289Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_0xt10sruomRG7XUSLi3Q4770",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-patch/tools.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:12.659Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_6fCHvIYXoDVrJAP23raH2835",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/prompt/prompt-skim/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:13.025Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_QR8qV108CNCOA4zsET7H1736",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/prompt/prompt-analyze/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:13.335Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_PMAB5yaiM8kyxGkjEUya8093",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/configure-primitive.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:13.676Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_TVxsqjBJ1KFzPuMwM14X5686",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/validate-restart.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:13.986Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_8izRdPmNTlUNVfrmOjef9462",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/bootstrap-init.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:14.322Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_PqLi3EkNIfPa5wAhgKjk1539",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/bootstrap-recover.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:19.774Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_drLVTHhtq7SL72yRySXV3865",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/prompt/prompt-skim/tools.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:20.148Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Ghgo2mZqTv7LvxocOUoN0216",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/prompt/prompt-analyze/tools.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:33.619Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_1ct2I8YWzfLWIPsGgYvB1291",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:39.629Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_f6iGRslsPZJbU35dBIt58281",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:22.626Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_fJSCw2yJ7NFfFvjPn4ar5491",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:29.161Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_Wn7jjQvK3EQbN0zUUhqP9759",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:55.863Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_2zl3KrPkjCHRN8gNnpp94020",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:52:12.329Z",
+      "type": "assistant_message",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n \n</task_result>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1af32950dffexDfCKc303aRmfs"
+      }
+    }
+  ],
+  "lastMessage": "(for resuming to continue this task if needed)\n\n<task_result>\n \n</task_result>"
+}

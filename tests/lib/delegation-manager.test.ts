@@ -129,6 +129,9 @@ function createMockClient(): MockClient {
       }),
       log: vi.fn(),
     },
+    tui: {
+      showToast: vi.fn().mockResolvedValue({ data: true }),
+    },
   }
 }
 

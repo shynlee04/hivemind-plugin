@@ -9,6 +9,14 @@ This reference provides the extended edge case comparison across all three deleg
 3. [Mixed-Mode Workflows](#mixed-mode-workflows)
 4. [Permission and Safety Considerations](#permission-and-safety-considerations)
 
+## Tool Selection Principle
+
+**`task` tool is always the preferred choice.** It handles 40+ consecutive tool calls perfectly, gives full user control (click to view progress), and works for EVERY use case — code editing, governance documents, artifact modifications. Its ONLY limitation: it blocks the caller.
+
+**`delegate-task` is ONLY for async background execution.** Use when the agent needs to continue other work while a delegation runs. Use strictly for low-risk tasks: research, audit, review, verification — never for code editing.
+
+**`execute-slash-command` is for command dispatch and agent override only.**
+
 ## Feature-by-Feature Comparison
 
 | Feature | `task` tool | `delegate-task` | `execute-slash-command` |
@@ -36,7 +44,7 @@ This reference provides the extended edge case comparison across all three deleg
 | Subagent does not return | Runtime times out | Set parent session timeout; consider splitting work |
 | Same `task_id` reused across different agents | Unclear — may reset session | Create fresh `task_id` per agent type |
 | Subagent makes tool errors | Errors propagate in output message | Inspect output for error patterns |
-| Multiple parallel task dispatches | Not supported natively | Use sequential or switch to `delegate-task` for parallel research/audit |
+| Multiple parallel task dispatches | Not supported natively for task tool | Use sequential task dispatch, or switch to delegate-task ONLY for parallel research/audit (not code) |
 
 ### `delegate-task` edge cases
 
@@ -68,27 +76,29 @@ Common patterns combining multiple delegation tools:
 1. hivemind-command-engine discover → list available commands
 2. execute-slash-command → execute the command with agent override
 3. Command output → parse results
-4. delegate-task → dispatch follow-up async work based on results
-5. delegation-status → poll for completion
+4. task tool → dispatch follow-up work (PREFERRED) OR delegate-task → (async background only)
+5. delegation-status → poll for completion (delegate-task only)
 ```
 
 ### Pattern: Parallel Batch Dispatch
 
 ```
 1. Define N independent tasks
-2. For each task: delegate-task with agent="specialist"
-3. Record all delegation IDs
-4. Continue own work while subagents run
-5. delegation-status each ID → collect results when completed
+2. For code/artifacts: task tool sequentially (PREFERRED, full control)
+3. For research/audit ONLY: delegate-task in parallel with agent="specialist"
+4. Record all delegation IDs (delegate-task only)
+5. Continue own work while subagents run (delegate-task only)
+6. delegation-status each ID → collect results when completed (delegate-task only)
 ```
 
 ### Pattern: Stack-On with Context Preservation
 
 ```
 1. Locate session ID of completed session (session-tracker)
-2. delegate-task with parentSessionId → attach as child
-3. New subagent inherits context from parent session
-4. Prompt stays simple — do not re-describe old work
+2. task tool with task_id → attach as child (PREFERRED, full control)
+3. OR delegate-task with parentSessionId → (async background only)
+4. New subagent inherits context from parent session
+5. Prompt stays simple — do not re-describe old work
 ```
 
 ## Permission and Safety Considerations

@@ -1,0 +1,783 @@
+{
+  "sessionID": "ses_1af7d501bffeCG97BPS06TVVhE",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Consume phases 21-22 deeply",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-22T16:26:42.551Z",
+  "updated": "2026-05-22T16:29:47.490Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-phase-researcher",
+      "content": "CONSUME ALL PHASE ARTIFACTS from phases 21, 21.1, 21.2, and 22 in `/Users/apple/hivemind-plugin-private/.planning/phases/` and produce a DEEP SYNTHESIS report.\n\nRead EVERY .md file in these directories (use glob to find all files first, then read each one):\n- `21-session-tracker-design-fix/`\n- `21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/`\n- `21.2-front-agent-switch-one-shot-agent-override/`\n- `22-coordination-status-error-unification/`\n\nFor each phase, extract:\n1. **What was built/delivered** — concrete files, functions, types, tool signatures\n2. **Execute-slash-command redesign** — new dispatch paths, subtask:true/false, agent switching, SDK integration\n3. **Front-agent switching** — how synthetic parent prompts work, agent override\n4. **Notification delivery in Phase 22** — EXACTLY how `sendPrompt()` is called, what session.prompt() does with noReply, how notifications reach parent sessions\n5. **Status/error unification** — DelegationErrorCode, DelegationError, delegationStatusToHarnessStatus\n6. **Retry/TTL design** — how notification-router.ts delivers + retries\n\nReturn a structured markdown report with:\n- Phase-by-phase summary table\n- Complete execute-slash-command dispatch flow diagram (text)\n- COMPLETE notification delivery chain: from delegation completion → notifyDelegationTerminal → sendPrompt → session.prompt() → parent session\n- The exact SDK method calls and their parameters\n- How the current notification design differs from \"append system message to session history and reactivate stream\"\n- ALL skill files referenced or created\n\nUse `gsd-fast` style: read files with read tool, don't execute any code.",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-phase-researcher",
+      "content": "Consume phases 21-22 deeply",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-phase-researcher",
+      "content": "Synthesis complete. The report has been written to `.planning/research/phases-21-22-deep-synthesis-2026-05-22.md`.\n\n---\n\n## RESEARCH COMPLETE\n\n**Phase:** 21-22 Synthesis\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **Phase 21 (Session-Tracker):** 6 flaw categories fixed across 19 files, 8 gray-area decisions applied, 15/15 requirements verified. Temp leaks eliminated, manifest made derivative cache, childToRootMain now survives restart, anonymous children fixed, childCount populated, status preserved across callbacks, delegation always persisted.\n\n2. **Phase 21.1 (Execute-Slash-Command):** Complete rewrite from TUI-only to SDK-first with TUI fallback. Three dispatch paths: non-subtask (TUI), subtask (`session.prompt` + SubtaskPartInput), and synthetic parent prompt (`session.prompt` + text part). Two agent switching mechanisms. Original SDK-await design was disproved by live UAT — deferred scheduling is the corrected approach.\n\n3. **Phase 21.2 (Front-Agent Switching):** **SUPPORTED** at L1 runtime — OpenCode accepts subagent-mode agents for direct parent session prompts via the synthetic parent prompt path (`subtask:false + agent`). Prototype verified through live UAT after rebuild. No command or agent primitives were mutated.\n\n4. **Phase 22 (Status/Error Unification):** 9 requirements delivered. 12-code `DelegationErrorCode` const union, `DelegationError` struct, `delegationStatusToHarnessStatus()` mapping, notification retry (maxRetries=1 default) + TTL (5min default), `PendingNotificationRecord`/`PendingNotification` schema updates, `replayPending()` cleanup. All 3 quality gates passed (Lifecycle/Spec/Evidence).\n\n5. **Notification delivery chain:** Notifications are queued via `shouldQueuePending()` → `queuePending()` with retry/TTL gates, persisted via `persistAllPending()`, and delivered on `replayPending()` call. The actual `session.prompt()` to the parent session happens **outside** Phase 22 scope — in LifecycleManager/plugin.ts orchestration.\n\n6. **The notification design differs from \"append system message + reactivate stream\":** It uses passive pending notification replay with retry/TTL/idempotency, not active stream interruption.\n\n### File Created\n\n`.planning/research/phases-21-22-deep-synthesis-2026-05-22.md`\n\n### Ready for Planning\n\nResearch covers Phases 21, 21.1, 21.2, 22 in full depth — 70+ files consumed, all dispatch flows and notification chains documented with exact SDK method calls and signatures.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T16:26:48.287Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_IgwXdavPbAV0Ks2uSWyA9396",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:48.540Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_iOcqnL3sBEOcflYCptrF1441",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:48.826Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_yzISOttdDgtr6tA8hjEo9819",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:48.997Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_JZvrto7LLQgoqE4dcLzO9454",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:55.921Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_dXFt5NLLY3t8GhIMasV72336",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:56.062Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_RgexWRTIqoZ7lUNIjKJJ8973",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:56.154Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_zejKA7F98QDYBq2wRPiA9214",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:56.214Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_G81RzNLBjGTkY0UPPnWK8490",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-PATTERNS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:56.437Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_TsvEBLntHWeSxjEQ0Jqb2598",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-ASSUMPTIONS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:26:56.796Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_xiQSkAYb032wmGR7j7t08587",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-PLAN-REVIEW.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:04.375Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_v8Rg94ToNd8Sxt8EFeYK3661",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:04.712Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_GULEWw23quGT8Lomyejz4415",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:05.061Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_pf8ifBdaDsPHyTVSBo197583",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:05.385Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_T1FS2Cpq3HNVRRWJBpjj2402",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-04-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:05.724Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_KKjEqNTWHJhS6ybO5RMz3665",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-05-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:06.062Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_GpOziiZNxzIUHvrXctXm8504",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-06-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:14.079Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_wBTXEHNOryyD9HrJ7GZV3932",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-01-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:14.458Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_tc4obxSrmsT4m1UQCugM2785",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-02-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:14.797Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_QDMQvZbLPjm6BhOuaZq79746",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-03-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:15.110Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_V4F0xiOoKKTBs1U6pbbo5114",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-04-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:15.534Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_K9AOP6hkceHtpmnOtKbC0230",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-05-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:15.738Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_5029P4oAnJyPeRwGGRJU2616",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-06-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:16.104Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_jXEwnzSHtUhEQK7aT17z0548",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-REVIEW.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:16.489Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_3amsqzUpU0pabB5hezTV3424",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-REVIEW-FIX.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:23.365Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_5kGa0titSY3khRdP4J1U6990",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-hotfix-pending-verification-2026-05-21.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:23.748Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_X3g3ahMR7kZtKTYwZWUz1271",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21-session-tracker-design-fix/21-VERIFICATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:29.724Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_oUx81TupRcmgvk3IhJj38310",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:30.137Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_JcDhJW1nyQ9d0fjSYekC9715",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:30.553Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_kgAIJUzuDuowdm8jMjdE6994",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:37.508Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_zsZYoHB54WOwLB5C4icP2084",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:38.032Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_gGiwiApNEd6CQFiYtYSb0543",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:38.377Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_VSqtfYACjEAIWgYF8HcN5903",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:45.772Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_t9ThKUZ9n1lEmr1NjFre2220",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-01-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:46.343Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_RVDaRTDKuVRoT6h52lHW0436",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-02-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:46.493Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_BfZzrNz5p6NivLGRZzI70862",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/21.1-03-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:46.726Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_R6hY4dCgiTNT0DAoxfyk4444",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.1-execute-slash-command-sdk-redesign-agent-switching-native-sd/execute-slash-command-live-uat-2026-05-22.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:52.699Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Wj4HIUM65r0TWVC6ev0P0677",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:53.523Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_1rCmm06qf8wyTV7r61vY2152",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-research-2026-05-22.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:27:53.536Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_EMLNIhh9CG3Klwtvqpgk8336",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-context-2026-05-22.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:00.510Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Lowu95Cixk4MKdNnWJ2H6588",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-spec-2026-05-22.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:00.942Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_7UUGEnmzVMzEOi6YoEfY2483",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-prototype-plan-2026-05-22.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:01.309Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_tEoeZVN4gxJW82hg3d9f4313",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-prototype-implementation-evidence-2026-05-22.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:01.751Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_ynCXtZ3AeLMvaoe1DLuT7826",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-01-UAT-EVIDENCE-2026-05-22.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:08.083Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_lB238e4NZWfM2Z9uywa47567",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:08.743Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_OtxhBs1OMNkbGmTNcQUU9247",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:17.076Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_A1ZIFtHpy7HMTWm4Atza2528",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:17.237Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_M4ctf0qt8DYgLK4Lr1nW7948",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:17.564Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_ofDgL1AyNikfn80t1Ye90722",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:24.724Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_RdK77mh9vHR78uWoxuei1844",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-01-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:25.074Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_vJGzGRKYhqsCZtwkWOaB9358",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-02-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:25.398Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_yXw769qluqwJlgFY8yMj0553",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-03-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:25.732Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_oP3GMNCVxt2xRtuP6gxz5118",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-GATE1-LIFECYCLE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:26.061Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_vga5mbb2Z5zPjmTIFNQV1331",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-VERIFICATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:26.443Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_vPIiuOGUQs6fmrot3GcQ7850",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/22-coordination-status-error-unification/22-VALIDATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:34.550Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_INdmlhYz5ZfYJgJuMkG47887",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:28:35.528Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_oLU7KSUjkj14LNCGWq9A7445",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/21.2-front-agent-switch-one-shot-agent-override/21.2-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:29:34.264Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_Nf5XBxvrT1MKxt40A0DJ7245",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:29:47.465Z",
+      "type": "assistant_message",
+      "content": "Synthesis complete. The report has been written to `.planning/research/phases-21-22-deep-synthesis-2026-05-22.md`.\n\n---\n\n## RESEARCH COMPLETE\n\n**Phase:** 21-22 Synthesis\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **Phase 21 (Session-Tracker):** 6 flaw categories fixed across 19 files, 8 gray-area decisions applied, 15/15 requirements verified. Temp leaks eliminated, manifest made derivative cache, childToRootMain now survives restart, anonymous children fixed, childCount populated, status preserved across callbacks, delegation always persisted.\n\n2. **Phase 21.1 (Execute-Slash-Command):** Complete rewrite from TUI-only to SDK-first with TUI fallback. Three dispatch paths: non-subtask (TUI), subtask (`session.prompt` + SubtaskPartInput), and synthetic parent prompt (`session.prompt` + text part). Two agent switching mechanisms. Original SDK-await design was disproved by live UAT — deferred scheduling is the corrected approach.\n\n3. **Phase 21.2 (Front-Agent Switching):** **SUPPORTED** at L1 runtime — OpenCode accepts subagent-mode agents for direct parent session prompts via the synthetic parent prompt path (`subtask:false + agent`). Prototype verified through live UAT after rebuild. No command or agent primitives were mutated.\n\n4. **Phase 22 (Status/Error Unification):** 9 requirements delivered. 12-code `DelegationErrorCode` const union, `DelegationError` struct, `delegationStatusToHarnessStatus()` mapping, notification retry (maxRetries=1 default) + TTL (5min default), `PendingNotificationRecord`/`PendingNotification` schema updates, `replayPending()` cleanup. All 3 quality gates passed (Lifecycle/Spec/Evidence).\n\n5. **Notification delivery chain:** Notifications are queued via `shouldQueuePending()` → `queuePending()` with retry/TTL gates, persisted via `persistAllPending()`, and delivered on `replayPending()` call. The actual `session.prompt()` to the parent session happens **outside** Phase 22 scope — in LifecycleManager/plugin.ts orchestration.\n\n6. **The notification design differs from \"append system message + reactivate stream\":** It uses passive pending notification replay with retry/TTL/idempotency, not active stream interruption.\n\n### File Created\n\n`.planning/research/phases-21-22-deep-synthesis-2026-05-22.md`\n\n### Ready for Planning\n\nResearch covers Phases 21, 21.1, 21.2, 22 in full depth — 70+ files consumed, all dispatch flows and notification chains documented with exact SDK method calls and signatures.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1af7d501bffeCG97BPS06TVVhE"
+      }
+    }
+  ],
+  "lastMessage": "Synthesis complete. The report has been written to `.planning/research/phases-21-22-deep-synthesis-2026-05-22.md`.\n\n---\n\n## RESEARCH COMPLETE\n\n**Phase:** 21-22 Synthesis\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **Phase 21 (Session-Tracker):** 6 flaw categories fixed across 19 files, 8 gray-area decisions applied, 15/15 requirements verified. Temp leaks eliminated, manifest made derivative cache, childToRootMain now survives restart, anonymous children fixed, childCount populated, status preserved across callbacks, delegation always persisted.\n\n2. **Phase 21.1 (Execute-Slash-Command):** Complete rewrite from TUI-only to SDK-first with TUI fallback. Three dispatch paths: non-subtask (TUI), subtask (`session.prompt` + SubtaskPartInput), and synthetic parent prompt (`session.prompt` + text part). Two agent switching mechanisms. Original SDK-await design was disproved by live UAT — deferred scheduling is the corrected approach.\n\n3. **Phase 21.2 (Front-Agent Switching):** **SUPPORTED** at L1 runtime — OpenCode accepts subagent-mode agents for direct parent session prompts via the synthetic parent prompt path (`subtask:false + agent`). Prototype verified through live UAT after rebuild. No command or agent primitives were mutated.\n\n4. **Phase 22 (Status/Error Unification):** 9 requirements delivered. 12-code `DelegationErrorCode` const union, `DelegationError` struct, `delegationStatusToHarnessStatus()` mapping, notification retry (maxRetries=1 default) + TTL (5min default), `PendingNotificationRecord`/`PendingNotification` schema updates, `replayPending()` cleanup. All 3 quality gates passed (Lifecycle/Spec/Evidence).\n\n5. **Notification delivery chain:** Notifications are queued via `shouldQueuePending()` → `queuePending()` with retry/TTL gates, persisted via `persistAllPending()`, and delivered on `replayPending()` call. The actual `session.prompt()` to the parent session happens **outside** Phase 22 scope — in LifecycleManager/plugin.ts orchestration.\n\n6. **The notification design differs from \"append system message + reactivate stream\":** It uses passive pending notification replay with retry/TTL/idempotency, not active stream interruption.\n\n### File Created\n\n`.planning/research/phases-21-22-deep-synthesis-2026-05-22.md`\n\n### Ready for Planning\n\nResearch covers Phases 21, 21.1, 21.2, 22 in full depth — 70+ files consumed, all dispatch flows and notification chains documented with exact SDK method calls and signatures."
+}

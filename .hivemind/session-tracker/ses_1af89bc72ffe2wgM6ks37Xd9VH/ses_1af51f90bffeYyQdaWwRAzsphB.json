@@ -1,0 +1,306 @@
+{
+  "sessionID": "ses_1af51f90bffeYyQdaWwRAzsphB",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "general",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research notification implementation",
+    "subagentType": "general"
+  },
+  "created": "2026-05-22T17:14:02.886Z",
+  "updated": "2026-05-22T17:15:47.733Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "general",
+      "content": "You are a subagent tasked with researching implementation details for Phase 23 of the Hivemind project. This is RESEARCH ONLY — do NOT write any code.\n\n## Context\n\nPhase 23 fixes the notification injection architecture (adding synthetic:true to text parts) and implements two notification mechanisms:\n1. **Silent Injection:** `synthetic:true` + `noReply:true` → body context (agent decides to poll delegation-status)\n2. **Urgent Notification:** `appendTuiPrompt()` + `synthetic:true` body → TUI prompt for urgency, synthetic body for context (NOT injected into user input)\n\nPlus a stream reactivation pattern: send empty synthetic:true prompt to reactivate stopped session streams.\n\n## Files to Read\n\nRead these files to understand current implementation:\n\n1. `src/coordination/completion/notification-handler.ts` — CURRENT notification delivery\n2. `src/shared/session-api.ts` — SDK wrapper for session.prompt(), sendPrompt(), appendTuiPrompt()\n3. `src/tools/routing/execute-slash-command.ts` — already uses synthetic prompt pattern\n4. `src/task-management/continuity/message-capture.ts` — filters synthetic parts\n5. `src/plugin.ts` — check for any notification-related composition\n6. `src/coordination/completion/detector.ts` — completion detection for timeout/threshold understanding\n\n## What to Research\n\n1. **`session.prompt()` API signature** — What parameters does it accept? Does `body` accept `synthetic` property on parts? Check the `@opencode-ai/sdk` types in node_modules.\n2. **`appendTuiPrompt()`** — Where is this defined? What signature? Can it accept synthetic parts?\n3. **`showTuiToast()`** — Available? What signature?\n4. **Stream reactivation** — How to send an empty synthetic prompt? What API call re-activates a session stream?\n5. **Notification handler flow** — Trace the current execution path from `notifyDelegationTerminal()` to the actual `session.prompt()` call. Where does `synthetic:true` need to be added?\n\n## Output\n\nReturn a structured research report:\n\n```markdown\n# Phase 23 Implementation Research\n\n## 1. session-api.ts Capabilities\n- sendPrompt() signature and synthetic support\n- appendTuiPrompt() availability and signature\n- Any other notification/delivery APIs\n\n## 2. notification-handler.ts Flow Trace\n- Execution path from entry to delivery\n- File:line references for where synthetic:true must be added\n- Current payload construction\n\n## 3. execute-slash-command.ts Pattern (Reference)\n- How it uses synthetic parts for parent prompt dispatch\n- Pattern to replicate in notification-handler\n\n## 4. Stream Reactivation\n- Analysis of how to send empty prompt\n- Any existing reactivation mechanism\n\n## 5. Message Capture Filter Verification\n- Does message-capture.ts correctly handle synthetic:true? (Line 356)\n\n## 6. SDK Type Verification\n- Actual type definitions from node_modules for TextPartInput\n``\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "general",
+      "content": "Research notification implementation",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "general",
+      "content": "All SDK types extracted. Here is the full research report:\n\n---\n\n# Phase 23 Research Report — Notification Injection Architecture\n\n## 1. Notification Architecture — `notification-handler.ts`\n\n**Location:** `src/coordination/completion/notification-handler.ts:130-162`\n\n**Flow:**\n1. `notifyDelegationTerminal()` is called by `ProgressManager` (line ~43) when a delegation reaches terminal state.\n2. Builds message via `buildNotificationMessage()` — constructs a `{ role: \"assistant\", parts: [{ type: \"text\", text: ... }] }` with notification summary.\n3. Calls `sendPrompt(sessionId, message)` — the SDK wrapper at `session-api.ts:51-64` which maps to `session.prompt()` → `POST /session/{id}/message`.\n4. **Critical gap:** `buildNotificationMessage()` returns a `Message` type (`{ role, parts }`), but `sendPrompt` expects a `SessionPromptData` body. The call at `notification-handler.ts:162` is `sendPrompt(sessionId, body)` where `body` is a `Message` — this works because the SDK wrapper's `sendPrompt` accepts `Omit<SessionPromptData['body'], 'parts'> & { parts: Part[] }` and coerces.\n\n**Synthetic flag: NOT SET** — no `synthetic: true` on the text part currently.\n\n## 2. `TextPartInput` Type Confirmation\n\n```typescript\n// node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts:1231-1244\nexport type TextPartInput = {\n    id?: string;\n    type: \"text\";\n    text: string;\n    synthetic?: boolean;        // <-- EXISTS! ✓\n    ignored?: boolean;\n    time?: { start: number; end?: number };\n    metadata?: { [key: string]: unknown };\n};\n```\n\n**`synthetic?: boolean` is a first-class property of `TextPartInput`.** The mechanism exists in the SDK. The `sendPrompt` → `session.prompt()` → `POST /session/{id}/message` endpoint accepts this field.\n\n## 3. `SessionPromptData` Request Shape\n\n```typescript\n// types.gen.d.ts:2244-2269\nexport type SessionPromptData = {\n    body?: {\n        messageID?: string;\n        model?: { providerID: string; modelID: string };\n        agent?: string;\n        noReply?: boolean;\n        system?: string;\n        tools?: { [key: string]: boolean };\n        parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput>;\n    };\n    path: { id: string };       // session ID\n    url: \"/session/{id}/message\";\n};\n```\n\n**Key points:**\n- `messageID` is optional (no explicit message specified — new message created)\n- `noReply?: boolean` — if `true`, the LLM does NOT respond (fire-and-forget)\n- `agent?: string` — can inject into a specific agent's context\n- Parts array accepts `TextPartInput` which has `synthetic`\n\n## 4. `TuiAppendPromptData` & `TuiShowToastData`\n\n```typescript\n// types.gen.d.ts:3126-3135\nexport type TuiAppendPromptData = {\n    body?: { text: string };\n    url: \"/tui/append-prompt\";\n};\n// Response: 200 → boolean (processed successfully)\n\n// types.gen.d.ts:3264-3279\nexport type TuiShowToastData = {\n    body?: {\n        title?: string;\n        message: string;\n        variant: \"info\" | \"success\" | \"warning\" | \"error\";\n        duration?: number;      // in milliseconds\n    };\n    url: \"/tui/show-toast\";\n};\n// Response: 200 → boolean (shown successfully)\n```\n\n**Key insight:** `TuiAppendPromptData` accepts raw `{ text: string }` — no parts, no synthetic flag. This is a simple TUI-side text injection. It goes through `POST /tui/append-prompt` which the OpenCode TUI processes and the user sees as a keyboard-update simulation.\n\n## 5. `session-api.ts` — SDK Wrapper Signatures\n\n```typescript\n// src/shared/session-api.ts (from earlier read)\nsendPrompt(sessionId, body)  →  uses session.prompt({ path: { id: sessionId }, body })\nappendTuiPrompt(text)        →  uses tui.appendPrompt({ body: { text } })\nshowTuiToast(title, message, variant, duration?)  →  uses tui.showToast({ body: { title, message, variant, duration } })\n```\n\nThe wrapper currently does NOT expose `synthetic` or `agent` overrides on `sendPrompt` — they are passed through to the SDK's `SessionPromptData` body but currently not surfaced as parameters.\n\n## 6. Injection Strategy Recommendations\n\n### Option A: `synthetic: true` + `noReply: true` (Recommended)\n\n**Target:** `notification-handler.ts` — in `notifyDelegationTerminal()` around line 162, when building the message parts:\n\n```typescript\n// Current:\nparts: [{ type: \"text\", text: buildNotificationMessage(...) }]\n\n// Target:\nparts: [{ type: \"text\", text: buildNotificationMessage(...), synthetic: true }]\n```\n\nAdditional changes needed:\n- `session-api.ts` `sendPrompt()` must accept `noReply?: boolean` parameter and pass it through to `SessionPromptData.body`.\n- `notification-handler.ts` `notifyDelegationTerminal()` must pass `noReply: true` so the LLM doesn't generate a response to its own notification.\n\n**Evidence chain:**\n1. `TextPartInput.synthetic` exists (line 1235) ✓\n2. `SessionPromptData.body.parts` accepts `TextPartInput` (line 2257) ✓\n3. `SessionPromptData.body.noReply` exists (line 2252) ✓\n4. `execute-slash-command.ts:14-22` documents the synthetic parent prompt pattern (reference) ✓\n5. `message-capture.ts:~356` filters out synthetic parts for session tracker — don't need to change this, it will work correctly ✓\n\n### Option B: `appendTuiPrompt` for TUI-only notification\n\n`notification-handler.ts` could also call `appendTuiPrompt(\"Delegation complete: ...\")` alongside or instead of the session prompt. This is simpler (no `synthetic` flag needed) but does NOT inject into the session's message stream — it only updates the TUI's input area.\n\n### Option C: `showTuiToast` for visible notification\n\nA toast notification (`showTuiToast`) provides the most visible UI cue. This could be used as a supplement to either Option A or B, not as a replacement for the session message.\n\n### Recommended Hybrid:\n\n```\nsendPrompt(sessionId, { parts: [{ type: \"text\", text, synthetic: true }], noReply: true })\n  + appendTuiPrompt(notificationText)\n```\n\nThe `sendPrompt` with `synthetic + noReply` injects the notification into the session stream (avoiding LLM reprocessing), while `appendTuiPrompt` makes it visible in the TUI. Optionally add `showTuiToast` for a visible popup.\n\n## Key Files Summary\n\n| File | Role | Changes Needed |\n|------|------|---------------|\n| `src/coordination/completion/notification-handler.ts` | Main injection point | Add `synthetic: true` + `noReply: true` |\n| `src/shared/session-api.ts` | SDK wrapper | Expose `noReply` parameter on `sendPrompt()` |\n| `src/coordination/completion/detector.ts` | Completion detection | No changes — detects terminal states already |\n| `src/plugin.ts` | Wiring | No changes — notification already wired |\n| `src/features/session-tracker/capture/message-capture.ts` | Synthetic filter | No changes — already filters `synthetic: true` parts |\n| `src/tools/session/execute-slash-command.ts` | Reference pattern | No changes — read-only reference |\n\nAll evidence confirms the architecture is ready for `synthetic: true` injection. The SDK types, the session tracker filter, and the dispatch pattern all support this approach without any new SDK features or architectural changes.",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T17:14:09.080Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Kk4alZZvEb67kNjEcOaH8376",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:09.141Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_3BGY9uuwl8Lj5jVTwx8j3890",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:10.077Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_0XbQd3DEvZ4hGDh0oFA35718",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:10.363Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_5bgtN5ud9dwiJ2uVH3Gs9878",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/detector.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:18.449Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_KddoRUsg5UXfrMYkYuj36341",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:18.742Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_zjEi0PFl4sfCuGqyUcLb3538",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:25.611Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_zXtJnbTEvn0kx6soVPhE2511",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:25.926Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_2OzNgdxI0LinRmiBPjTT5031",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:34.372Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_1IUSKiKiJCgON2IytXb60105",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:40.193Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_rUXM79dhPmvzvnBmGGR11293",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:40.306Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_lRTrCiOn0GSfmmjO9Ozn2201",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/sdk.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:40.853Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_RQV1dCqFHRo9NX507UXy3356",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:48.645Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_oLz9roizjJpTrIdltk361314",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:14:49.084Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_BLOeE945aDBSMSl9v0Ft9973",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:01.464Z",
+      "type": "session_compacted",
+      "content": "**raw_event:**\n\n```json\n{\n  \"id\": \"evt_e50aeebd4001xHxbdiYqZilJyY\",\n  \"type\": \"session.compacted\",\n  \"properties\": {\n    \"sessionID\": \"ses_1af51f90bffeYyQdaWwRAzsphB\"\n  }\n}\n```\n",
+      "metadata": {
+        "capturedFrom": "session.compacted"
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:07.772Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Q4tmTJ6BLiyKGsxG0R4w4905",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:08.059Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_J57PzCsTBWhySjv7S4i31377",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:14.748Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_M3AHGqgGeatga8Cf5Ino1863",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:15.245Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_4mnWKFxkhkMr6y0TwMew2340",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:21.160Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_D0VNiAZay5fCTFNSqKzz1445",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:21.643Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_6uiDHolFJ9WRADxfbNKW0679",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:15:47.696Z",
+      "type": "assistant_message",
+      "content": "All SDK types extracted. Here is the full research report:\n\n---\n\n# Phase 23 Research Report — Notification Injection Architecture\n\n## 1. Notification Architecture — `notification-handler.ts`\n\n**Location:** `src/coordination/completion/notification-handler.ts:130-162`\n\n**Flow:**\n1. `notifyDelegationTerminal()` is called by `ProgressManager` (line ~43) when a delegation reaches terminal state.\n2. Builds message via `buildNotificationMessage()` — constructs a `{ role: \"assistant\", parts: [{ type: \"text\", text: ... }] }` with notification summary.\n3. Calls `sendPrompt(sessionId, message)` — the SDK wrapper at `session-api.ts:51-64` which maps to `session.prompt()` → `POST /session/{id}/message`.\n4. **Critical gap:** `buildNotificationMessage()` returns a `Message` type (`{ role, parts }`), but `sendPrompt` expects a `SessionPromptData` body. The call at `notification-handler.ts:162` is `sendPrompt(sessionId, body)` where `body` is a `Message` — this works because the SDK wrapper's `sendPrompt` accepts `Omit<SessionPromptData['body'], 'parts'> & { parts: Part[] }` and coerces.\n\n**Synthetic flag: NOT SET** — no `synthetic: true` on the text part currently.\n\n## 2. `TextPartInput` Type Confirmation\n\n```typescript\n// node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts:1231-1244\nexport type TextPartInput = {\n    id?: string;\n    type: \"text\";\n    text: string;\n    synthetic?: boolean;        // <-- EXISTS! ✓\n    ignored?: boolean;\n    time?: { start: number; end?: number };\n    metadata?: { [key: string]: unknown };\n};\n```\n\n**`synthetic?: boolean` is a first-class property of `TextPartInput`.** The mechanism exists in the SDK. The `sendPrompt` → `session.prompt()` → `POST /session/{id}/message` endpoint accepts this field.\n\n## 3. `SessionPromptData` Request Shape\n\n```typescript\n// types.gen.d.ts:2244-2269\nexport type SessionPromptData = {\n    body?: {\n        messageID?: string;\n        model?: { providerID: string; modelID: string };\n        agent?: string;\n        noReply?: boolean;\n        system?: string;\n        tools?: { [key: string]: boolean };\n        parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput>;\n    };\n    path: { id: string };       // session ID\n    url: \"/session/{id}/message\";\n};\n```\n\n**Key points:**\n- `messageID` is optional (no explicit message specified — new message created)\n- `noReply?: boolean` — if `true`, the LLM does NOT respond (fire-and-forget)\n- `agent?: string` — can inject into a specific agent's context\n- Parts array accepts `TextPartInput` which has `synthetic`\n\n## 4. `TuiAppendPromptData` & `TuiShowToastData`\n\n```typescript\n// types.gen.d.ts:3126-3135\nexport type TuiAppendPromptData = {\n    body?: { text: string };\n    url: \"/tui/append-prompt\";\n};\n// Response: 200 → boolean (processed successfully)\n\n// types.gen.d.ts:3264-3279\nexport type TuiShowToastData = {\n    body?: {\n        title?: string;\n        message: string;\n        variant: \"info\" | \"success\" | \"warning\" | \"error\";\n        duration?: number;      // in milliseconds\n    };\n    url: \"/tui/show-toast\";\n};\n// Response: 200 → boolean (shown successfully)\n```\n\n**Key insight:** `TuiAppendPromptData` accepts raw `{ text: string }` — no parts, no synthetic flag. This is a simple TUI-side text injection. It goes through `POST /tui/append-prompt` which the OpenCode TUI processes and the user sees as a keyboard-update simulation.\n\n## 5. `session-api.ts` — SDK Wrapper Signatures\n\n```typescript\n// src/shared/session-api.ts (from earlier read)\nsendPrompt(sessionId, body)  →  uses session.prompt({ path: { id: sessionId }, body })\nappendTuiPrompt(text)        →  uses tui.appendPrompt({ body: { text } })\nshowTuiToast(title, message, variant, duration?)  →  uses tui.showToast({ body: { title, message, variant, duration } })\n```\n\nThe wrapper currently does NOT expose `synthetic` or `agent` overrides on `sendPrompt` — they are passed through to the SDK's `SessionPromptData` body but currently not surfaced as parameters.\n\n## 6. Injection Strategy Recommendations\n\n### Option A: `synthetic: true` + `noReply: true` (Recommended)\n\n**Target:** `notification-handler.ts` — in `notifyDelegationTerminal()` around line 162, when building the message parts:\n\n```typescript\n// Current:\nparts: [{ type: \"text\", text: buildNotificationMessage(...) }]\n\n// Target:\nparts: [{ type: \"text\", text: buildNotificationMessage(...), synthetic: true }]\n```\n\nAdditional changes needed:\n- `session-api.ts` `sendPrompt()` must accept `noReply?: boolean` parameter and pass it through to `SessionPromptData.body`.\n- `notification-handler.ts` `notifyDelegationTerminal()` must pass `noReply: true` so the LLM doesn't generate a response to its own notification.\n\n**Evidence chain:**\n1. `TextPartInput.synthetic` exists (line 1235) ✓\n2. `SessionPromptData.body.parts` accepts `TextPartInput` (line 2257) ✓\n3. `SessionPromptData.body.noReply` exists (line 2252) ✓\n4. `execute-slash-command.ts:14-22` documents the synthetic parent prompt pattern (reference) ✓\n5. `message-capture.ts:~356` filters out synthetic parts for session tracker — don't need to change this, it will work correctly ✓\n\n### Option B: `appendTuiPrompt` for TUI-only notification\n\n`notification-handler.ts` could also call `appendTuiPrompt(\"Delegation complete: ...\")` alongside or instead of the session prompt. This is simpler (no `synthetic` flag needed) but does NOT inject into the session's message stream — it only updates the TUI's input area.\n\n### Option C: `showTuiToast` for visible notification\n\nA toast notification (`showTuiToast`) provides the most visible UI cue. This could be used as a supplement to either Option A or B, not as a replacement for the session message.\n\n### Recommended Hybrid:\n\n```\nsendPrompt(sessionId, { parts: [{ type: \"text\", text, synthetic: true }], noReply: true })\n  + appendTuiPrompt(notificationText)\n```\n\nThe `sendPrompt` with `synthetic + noReply` injects the notification into the session stream (avoiding LLM reprocessing), while `appendTuiPrompt` makes it visible in the TUI. Optionally add `showTuiToast` for a visible popup.\n\n## Key Files Summary\n\n| File | Role | Changes Needed |\n|------|------|---------------|\n| `src/coordination/completion/notification-handler.ts` | Main injection point | Add `synthetic: true` + `noReply: true` |\n| `src/shared/session-api.ts` | SDK wrapper | Expose `noReply` parameter on `sendPrompt()` |\n| `src/coordination/completion/detector.ts` | Completion detection | No changes — detects terminal states already |\n| `src/plugin.ts` | Wiring | No changes — notification already wired |\n| `src/features/session-tracker/capture/message-capture.ts` | Synthetic filter | No changes — already filters `synthetic: true` parts |\n| `src/tools/session/execute-slash-command.ts` | Reference pattern | No changes — read-only reference |\n\nAll evidence confirms the architecture is ready for `synthetic: true` injection. The SDK types, the session tracker filter, and the dispatch pattern all support this approach without any new SDK features or architectural changes.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1af51f90bffeYyQdaWwRAzsphB"
+      }
+    }
+  ],
+  "lastMessage": "All SDK types extracted. Here is the full research report:\n\n---\n\n# Phase 23 Research Report — Notification Injection Architecture\n\n## 1. Notification Architecture — `notification-handler.ts`\n\n**Location:** `src/coordination/completion/notification-handler.ts:130-162`\n\n**Flow:**\n1. `notifyDelegationTerminal()` is called by `ProgressManager` (line ~43) when a delegation reaches terminal state.\n2. Builds message via `buildNotificationMessage()` — constructs a `{ role: \"assistant\", parts: [{ type: \"text\", text: ... }] }` with notification summary.\n3. Calls `sendPrompt(sessionId, message)` — the SDK wrapper at `session-api.ts:51-64` which maps to `session.prompt()` → `POST /session/{id}/message`.\n4. **Critical gap:** `buildNotificationMessage()` returns a `Message` type (`{ role, parts }`), but `sendPrompt` expects a `SessionPromptData` body. The call at `notification-handler.ts:162` is `sendPrompt(sessionId, body)` where `body` is a `Message` — this works because the SDK wrapper's `sendPrompt` accepts `Omit<SessionPromptData['body'], 'parts'> & { parts: Part[] }` and coerces.\n\n**Synthetic flag: NOT SET** — no `synthetic: true` on the text part currently.\n\n## 2. `TextPartInput` Type Confirmation\n\n```typescript\n// node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts:1231-1244\nexport type TextPartInput = {\n    id?: string;\n    type: \"text\";\n    text: string;\n    synthetic?: boolean;        // <-- EXISTS! ✓\n    ignored?: boolean;\n    time?: { start: number; end?: number };\n    metadata?: { [key: string]: unknown };\n};\n```\n\n**`synthetic?: boolean` is a first-class property of `TextPartInput`.** The mechanism exists in the SDK. The `sendPrompt` → `session.prompt()` → `POST /session/{id}/message` endpoint accepts this field.\n\n## 3. `SessionPromptData` Request Shape\n\n```typescript\n// types.gen.d.ts:2244-2269\nexport type SessionPromptData = {\n    body?: {\n        messageID?: string;\n        model?: { providerID: string; modelID: string };\n        agent?: string;\n        noReply?: boolean;\n        system?: string;\n        tools?: { [key: string]: boolean };\n        parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput>;\n    };\n    path: { id: string };       // session ID\n    url: \"/session/{id}/message\";\n};\n```\n\n**Key points:**\n- `messageID` is optional (no explicit message specified — new message created)\n- `noReply?: boolean` — if `true`, the LLM does NOT respond (fire-and-forget)\n- `agent?: string` — can inject into a specific agent's context\n- Parts array accepts `TextPartInput` which has `synthetic`\n\n## 4. `TuiAppendPromptData` & `TuiShowToastData`\n\n```typescript\n// types.gen.d.ts:3126-3135\nexport type TuiAppendPromptData = {\n    body?: { text: string };\n    url: \"/tui/append-prompt\";\n};\n// Response: 200 → boolean (processed successfully)\n\n// types.gen.d.ts:3264-3279\nexport type TuiShowToastData = {\n    body?: {\n        title?: string;\n        message: string;\n        variant: \"info\" | \"success\" | \"warning\" | \"error\";\n        duration?: number;      // in milliseconds\n    };\n    url: \"/tui/show-toast\";\n};\n// Response: 200 → boolean (shown successfully)\n```\n\n**Key insight:** `TuiAppendPromptData` accepts raw `{ text: string }` — no parts, no synthetic flag. This is a simple TUI-side text injection. It goes through `POST /tui/append-prompt` which the OpenCode TUI processes and the user sees as a keyboard-update simulation.\n\n## 5. `session-api.ts` — SDK Wrapper Signatures\n\n```typescript\n// src/shared/session-api.ts (from earlier read)\nsendPrompt(sessionId, body)  →  uses session.prompt({ path: { id: sessionId }, body })\nappendTuiPrompt(text)        →  uses tui.appendPrompt({ body: { text } })\nshowTuiToast(title, message, variant, duration?)  →  uses tui.showToast({ body: { title, message, variant, duration } })\n```\n\nThe wrapper currently does NOT expose `synthetic` or `agent` overrides on `sendPrompt` — they are passed through to the SDK's `SessionPromptData` body but currently not surfaced as parameters.\n\n## 6. Injection Strategy Recommendations\n\n### Option A: `synthetic: true` + `noReply: true` (Recommended)\n\n**Target:** `notification-handler.ts` — in `notifyDelegationTerminal()` around line 162, when building the message parts:\n\n```typescript\n// Current:\nparts: [{ type: \"text\", text: buildNotificationMessage(...) }]\n\n// Target:\nparts: [{ type: \"text\", text: buildNotificationMessage(...), synthetic: true }]\n```\n\nAdditional changes needed:\n- `session-api.ts` `sendPrompt()` must accept `noReply?: boolean` parameter and pass it through to `SessionPromptData.body`.\n- `notification-handler.ts` `notifyDelegationTerminal()` must pass `noReply: true` so the LLM doesn't generate a response to its own notification.\n\n**Evidence chain:**\n1. `TextPartInput.synthetic` exists (line 1235) ✓\n2. `SessionPromptData.body.parts` accepts `TextPartInput` (line 2257) ✓\n3. `SessionPromptData.body.noReply` exists (line 2252) ✓\n4. `execute-slash-command.ts:14-22` documents the synthetic parent prompt pattern (reference) ✓\n5. `message-capture.ts:~356` filters out synthetic parts for session tracker — don't need to change this, it will work correctly ✓\n\n### Option B: `appendTuiPrompt` for TUI-only notification\n\n`notification-handler.ts` could also call `appendTuiPrompt(\"Delegation complete: ...\")` alongside or instead of the session prompt. This is simpler (no `synthetic` flag needed) but does NOT inject into the session's message stream — it only updates the TUI's input area.\n\n### Option C: `showTuiToast` for visible notification\n\nA toast notification (`showTuiToast`) provides the most visible UI cue. This could be used as a supplement to either Option A or B, not as a replacement for the session message.\n\n### Recommended Hybrid:\n\n```\nsendPrompt(sessionId, { parts: [{ type: \"text\", text, synthetic: true }], noReply: true })\n  + appendTuiPrompt(notificationText)\n```\n\nThe `sendPrompt` with `synthetic + noReply` injects the notification into the session stream (avoiding LLM reprocessing), while `appendTuiPrompt` makes it visible in the TUI. Optionally add `showTuiToast` for a visible popup.\n\n## Key Files Summary\n\n| File | Role | Changes Needed |\n|------|------|---------------|\n| `src/coordination/completion/notification-handler.ts` | Main injection point | Add `synthetic: true` + `noReply: true` |\n| `src/shared/session-api.ts` | SDK wrapper | Expose `noReply` parameter on `sendPrompt()` |\n| `src/coordination/completion/detector.ts` | Completion detection | No changes — detects terminal states already |\n| `src/plugin.ts` | Wiring | No changes — notification already wired |\n| `src/features/session-tracker/capture/message-capture.ts` | Synthetic filter | No changes — already filters `synthetic: true` parts |\n| `src/tools/session/execute-slash-command.ts` | Reference pattern | No changes — read-only reference |\n\nAll evidence confirms the architecture is ready for `synthetic: true` injection. The SDK types, the session tracker filter, and the dispatch pattern all support this approach without any new SDK features or architectural changes."
+}

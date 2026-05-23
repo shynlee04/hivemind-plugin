@@ -122,9 +122,9 @@ Tasks in the same wave dispatch in parallel when:
 - Each task's dependencies are confirmed complete.
 - The wave's dependency gate has passed.
 
-Dispatch all tasks simultaneously — do not stagger within a wave. Use the available
-delegation mechanism (`task` tool, `delegate-task`) to launch each task as an
-independent subagent or session.
+Dispatch all tasks simultaneously — do not stagger within a wave. Use the `task` tool
+(preferred, full control) for code/artifact tasks, or `delegate-task` (async background
+only) for research/audit/review tasks within the wave.
 
 ### Sequential Dispatch (Between Waves)
 

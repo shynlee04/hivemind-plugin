@@ -101,8 +101,8 @@ Context is NOT auto-preserved across restarts. Resume depends on SDK support.
 | Situation | Approach | Tool |
 |-----------|----------|------|
 | Session active, same agent type | **Resume** | `task` tool with `task_id` |
-| Session completed, add work | **Stack** | `delegate-task` with `parentSessionId` in context |
-| No relevant session exists | **Create** | `task` tool (fresh) or `delegate-task` |
+| Session completed, add work | **Stack** | `task` tool with `task_id` (preferred) or `delegate-task` with `parentSessionId` (async background only) |
+| No relevant session exists | **Create** | `task` tool (PREFERRED, full control) or `delegate-task` (async background only) |
 | Not sure if resumable | **Check first** | `delegation-status` before dispatch |
 
 ## 4. Jump Links — Reference Files

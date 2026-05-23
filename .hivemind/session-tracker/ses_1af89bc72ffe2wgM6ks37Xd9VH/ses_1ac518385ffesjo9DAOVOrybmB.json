@@ -1,0 +1,609 @@
+{
+  "sessionID": "ses_1ac518385ffesjo9DAOVOrybmB",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-l2-critic",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Audit all 8 skills comprehensively",
+    "subagentType": "hm-l2-critic"
+  },
+  "created": "2026-05-23T07:13:24.624Z",
+  "updated": "2026-05-23T07:16:01.005Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-l2-critic",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-l2-critic",
+      "content": "Audit these 8 skills with CRITICAL scrutiny. For each skill, check for these violations:\n\n**Violations to detect:**\n1. WRONG TASK/DELEGATE-TASK — says delegate-task is preferred, or says task tool is \"simple\", or doesn't state task tool PREFERRED\n2. FRAMEWORK LEAKAGE — references to hm-*/hf-*/gsd-* prefixes in skill BODY content (not in identifying what they are, but as workflow instructions)\n3. NO TBD — missing \"TBD\" markers for features/tools that aren't implemented yet\n4. NO SCOPE BOUNDARY — doesn't define when to NOT use this skill, or overlaps with another skill's domain\n5. HALLUCINATED CAPABILITIES — claims tool capabilities that don't exist\n\nSkills to audit (read their SKILL.md + all references/*.md):\n\n1. /Users/apple/hivemind-plugin-private/.opencode/skills/session-foundation/SKILL.md\n2. /Users/apple/hivemind-plugin-private/.opencode/skills/subagent-delegation-patterns/SKILL.md\n3. /Users/apple/hivemind-plugin-private/.opencode/skills/user-intent-patterns/SKILL.md\n4. /Users/apple/hivemind-plugin-private/.opencode/skills/cross-cutting-change-mgmt/SKILL.md\n5. /Users/apple/hivemind-plugin-private/.opencode/skills/multi-agent-coordination/SKILL.md\n6. /Users/apple/hivemind-plugin-private/.opencode/skills/quality-gate-orchestration/SKILL.md\n7. /Users/apple/hivemind-plugin-private/.opencode/skills/wave-execution/SKILL.md\n8. /Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/SKILL.md\n\nAlso check their reference files:\n- session-foundation/references/*.md\n- subagent-delegation-patterns/references/*.md\n- hivemind-power-on/references/*.md\n\nFor each skill, produce a structured audit report listing:\n- Total lines\n- Violations found (with file:line)\n- Overall quality score (PASS/FLAG/FAIL)\n- What needs fixing\n\nBe ruthless. Read ALL the files.",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "hm-l2-critic",
+      "content": "Audit all 8 skills comprehensively",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "hm-l2-critic",
+      "content": "---\n\n# 🔍 CRITICAL AUDIT: 8 Skills — Full Violation Report\n\n**Agent:** hm-l2-critic\n**Domain:** Quality Verification\n**Method:** Full file reads via sequential-thinking cross-referencing against system-prompt tool definitions and AGENTS.md conventions\n**Evidence tier:** L3 (documented observation from file reads) with cross-referenced L2 (tool-verified against actual tool definitions)\n\n---\n\n## SKILL 1: session-foundation\n\n| Metric | Value |\n|--------|-------|\n| **File** | `session-foundation/SKILL.md` |\n| **Total lines** | 330 SKILL.md + 115 `session-tools-reference.md` + 121 `future-tools-tbd.md` |\n| **References** | `session-tools-reference.md`, `future-tools-tbd.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 133: `task` tool with `task_id` is **(PREFERRED — full control)**. Line 209: \"Stack via `task(task_id=...)` (preferred)\". Line 250: \"task tool (preferred, full control)\". Correct stance throughout. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | No `hm-*/hf-*/gsd-*` prefixes in body content. References operational tools only (session-tracker, session-hierarchy, etc.). |\n| 3 | NO TBD | ✅ **PASS** | Lines 307-308 reference `future-tools-tbd.md` (🟡 PARTIAL markers for trajectory, pressure, agent-work, background-command). |\n| 4 | NO SCOPE BOUNDARY | ⚠️ **WEAK** | No explicit \"Do NOT load when:\" section in the body. Anti-patterns (lines 242-250) and \"When to Load\" (lines 322-330) imply boundaries, but there is no negative-use-case section. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | All tool references verified against system-prompt definitions. `session-tracker`, `session-hierarchy`, `session-context`, `delegate-task`, `delegation-status`, `hivemind-session-view`, `hivemind-command-engine` all exist. |\n\n### Overall: **PASS** ⚠️ (weak scope boundary)\n\n### What needs fixing\n- Add explicit \"Do NOT load\" section (e.g., \"Do NOT load for: writing session state, creating delegations, code editing — use write-side tools instead\")\n\n---\n\n## SKILL 2: subagent-delegation-patterns\n\n| Metric | Value |\n|--------|-------|\n| **File** | `subagent-delegation-patterns/SKILL.md` |\n| **Total lines** | 317 SKILL.md + 112 `delegation-tools-comparison.md` + 126 `future-delegation-tools-tbd.md` + 109 `session-stacking-protocol.md` + 160 `status-checking-protocol.md` |\n| **References** | 4 files (extensive) |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 81: \"YES → task tool (HIGH CONTROL)\". Line 97: \"Use for ALL code editing\". `delegation-tools-comparison.md` line 14: \"`task` tool is always the preferred choice.\" Correct. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Claims framework-agnostic (line 51). Cross-References (lines 311-317) use bare skill names without hm-* prefixes. No leakage. |\n| 3 | NO TBD | ✅ **PASS** | Line 262 explicitly references `future-delegation-tools-tbd.md` with 🟡 PARTIAL markers. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Description explicitly says \"NOT for simple one-step tool calls or single-file edits.\" |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | All referenced tools exist. No fake parameters. |\n| — | **CONTRADICTION** | ❌ **FAIL** | `session-stacking-protocol.md` line 45 says: \"The `task_id` parameter is NOT for creating new parent-child links with arbitrary sessions — it is specifically for resuming an existing subagent session. For stacking new work onto completed sessions, use `delegate-task` with `parentSessionId`.\" This directly CONTRADICTS SKILL.md lines 195-207 which say `task_id` DOES work for stacking onto completed sessions and IS the preferred approach. Two files in the same skill package give opposite instructions. |\n\n### Overall: **FAIL** ❌ (contradiction between SKILL.md and reference file)\n\n### What needs fixing\n- **CRITICAL:** Resolve contradiction between SKILL.md (says task_id works for stacking onto completed sessions) and `session-stacking-protocol.md` (says it does NOT). One must be corrected. Based on the project's stated guidance in AGENTS.md (\"Both `task` and `delegate-task` support attaching new work\"), the SKILL.md is correct and the reference file is wrong.\n- Fix `session-stacking-protocol.md` line 45-46 to align with SKILL.md: task_id SHOULD work for stacking onto completed sessions.\n\n---\n\n## SKILL 3: user-intent-patterns\n\n| Metric | Value |\n|--------|-------|\n| **File** | `user-intent-patterns/SKILL.md` |\n| **Total lines** | 269 SKILL.md + 141 `terminology-map.md` + philosophy.md |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Line 228 mentions `hm-l2-brainstorm` as a cross-reference (identifying a related skill). `terminology-map.md` references `hf-l2-context-absorb`, `hm-l2-user-intent-interactive-loop`, `gsd-discuss-phase` — but these are in a FRAMEWORK TERMINOLOGY MAP whose sole purpose is to identify frameworks by their skill names. This is \"identifying what they are\" not \"as workflow instructions.\" |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 21-26: explicit \"What This Skill Does NOT Cover\" section with 4 clear boundaries. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. Framework comparison is descriptive, not prescriptive. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill with proper boundaries.\n\n---\n\n## SKILL 4: cross-cutting-change-mgmt\n\n| Metric | Value |\n|--------|-------|\n| **File** | `cross-cutting-change-mgmt/SKILL.md` |\n| **Total lines** | 232 SKILL.md + 133 `terminology-map.md` + 129 `philosophy.md` |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | SKILL.md body is framework-agnostic — no hm-*/hf-*/gsd-* prefixes. `terminology-map.md` references `hm-detective`, `hm-l2-cross-cutting-change`, `hm-completion-looping` — but these are in a FRAMEWORK-SPECIFIC TRANSLATION TABLE that maps universal concepts to Hivemind equivalents. This is \"identifying what they are\" not workflow instructions. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 44-47: explicit \"Do NOT use this skill for:\" section with 3 exclusions. Lines 38-43: \"Use when ALL of the following apply\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill.\n\n---\n\n## SKILL 5: multi-agent-coordination\n\n| Metric | Value |\n|--------|-------|\n| **File** | `multi-agent-coordination/SKILL.md` |\n| **Total lines** | 197 SKILL.md + 95 `terminology-map.md` + 156 `philosophy.md` |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about single-tool delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | No hm-*/hf-*/gsd-* prefixes in SKILL.md body. `terminology-map.md` is framework-comparison content, not workflow instructions. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 24-27: explicit \"Do NOT load this skill for:\" section with 3 exclusions. Lines 16-23: \"Load this skill when:\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. References `delegation-status` and `task` by name only. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill.\n\n---\n\n## SKILL 6: quality-gate-orchestration\n\n| Metric | Value |\n|--------|-------|\n| **File** | `quality-gate-orchestration/SKILL.md` |\n| **Total lines** | 323 SKILL.md + 164 `terminology-map.md` + philosophy.md |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Clean. No hm-* prefix references in body. `terminology-map.md` is framework comparison. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 56-62: explicit \"When NOT to use\" section with 4 exclusions. Lines 47-54: \"When to use this framework\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill with excellent boundaries.\n\n---\n\n## SKILL 7: wave-execution\n\n| Metric | Value |\n|--------|-------|\n| **File** | `wave-execution/SKILL.md` |\n| **Total lines** | 274 (NO reference files) |\n| **References** | None |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Lines 125-127: \"Use the `task` tool (preferred, full control) for code/artifact tasks, or `delegate-task` (async background only) for research/audit/review tasks within the wave.\" Correct. |\n| 2 | FRAMEWORK LEAKAGE | ⚠️ **FLAG** | Lines 269-274 (Cross-References section): Uses `hm-l2-phase-execution`, `hm-l2-coordinating-loop`, `hm-l2-phase-loop`, `hm-l2-completion-looping` prefix references WITH behavioral descriptions: \"Wave execution is the ENGINE for... Phase execution is the ORCHESTRATOR that applies waves to phases.\" These are hm-* prefixed names used to describe workflow relationships, which crosses from \"identifying what they are\" into \"describing how they work together\" — i.e., workflow instructions. Borderline — cross-referencing related skills is a standard SKILL.md need but the behavioral descriptions push into leakage territory. |\n| 3 | NO TBD | ✅ **PASS** (N/A) | No partially-implemented tools referenced. Not needed. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Description lines 12-13: \"NOT for single-task dispatch, unstructured sequential execution, coordination patterns (multi-agent-coordination), or loop control (iterative-loop).\" |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No questionable tool claims. |\n\n### Overall: **PASS** ⚠️ (minor framework leakage in cross-references)\n\n### What needs fixing\n- (Optional) Remove hm-* prefixes from cross-references and use bare skill names, or add a note that cross-references identify related skills by project convention.\n\n---\n\n## SKILL 8: hivemind-power-on\n\n| Metric | Value |\n|--------|-------|\n| **File** | `hivemind-power-on/SKILL.md` |\n| **Total lines** | 157 SKILL.md + 8 reference files (165+101+122+69+143+99+61+76 lines) |\n| **References** | 8 files (extensive) |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 104: \"task tool (PREFERRED, full control)\". Line 105: \"delegate-task (async background only)\". Correct. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | SKILL.md body clean. `03-lineage-routing-tree.md` extensively uses hm-*/hf-*/gsd-* prefixes — but this is its DESIGN PURPOSE: a lineage routing tree whose entire function is to identify which lineage to use. This is \"identifying what they are\" by architectural necessity. |\n| 3 | NO TBD | ✅ **PASS** | Lines 32-34 (YAML): explicit `# TBD tools` markers. Lines 62-68: TBD section with 🟡 PARTIAL/📋 TBD classification for trajectory, pressure. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Line 43: explicit \"What this skill does NOT do\" section. Lines 44-45: explicit \"Boundary with session-foundation\" section. |\n| 5 | HALLUCINATED CAPABILITIES | ❌ **CRITICAL** | `references/05-continuity-navigation.md` line 140: **`session-tracker({action: \"aggregate\", stats: [\"sessionCount\", \"totalTurns\", \"activeCount\"]})`** — The `aggregate` action belongs to `session-context`, NOT `session-tracker`. The parameter is `groupBy`, NOT `stats`. The `session-tracker` tool has NO `aggregate` action at all (its actions are: `export-session`, `get-status`, `get-summary`, `list-sessions`, `search-sessions`, `filter-sessions`). This call would FAIL at runtime. Verified against system-prompt tool definition. [L2: Tool-verified against actual tool definition] |\n\n### Overall: **FAIL** ❌ (1 CRITICAL hallucination)\n\n### What needs fixing\n- **CRITICAL:** `references/05-continuity-navigation.md` line 140 — Fix the hallucinated `session-tracker({action: \"aggregate\", stats: [...]})` call. Replace with `session-context({action: \"aggregate\", groupBy: \"status\"})` which IS the correct tool and action for this purpose.\n\n---\n\n## Summary Matrix\n\n| # | Skill | Total Lines | Violation 1 (Tool Pref) | Violation 2 (Leakage) | Violation 3 (TBD) | Violation 4 (Scope) | Violation 5 (Hallucination) | Overall Score |\n|---|-------|------------|------------------------|----------------------|--------------------|--------------------|-----------------------------|--------------|\n| 1 | **session-foundation** | 566 | ✅ PASS | ✅ PASS | ✅ PASS | ⚠️ WEAK | ✅ PASS | **PASS** ⚠️ |\n| 2 | **subagent-delegation-patterns** | 824 | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS (+CONTRADICTION) | **FAIL** ❌ |\n| 3 | **user-intent-patterns** | 412 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 4 | **cross-cutting-change-mgmt** | 496 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 5 | **multi-agent-coordination** | 448 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 6 | **quality-gate-orchestration** | 489 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 7 | **wave-execution** | 274 | ✅ PASS | ⚠️ FLAG | N/A | ✅ PASS | ✅ PASS | **PASS** ⚠️ |\n| 8 | **hivemind-power-on** | 792 (with refs) | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS | ❌ **CRITICAL** | **FAIL** ❌ |\n\n---\n\n## Consolidated Defect List (must-fix)\n\n### CRITICAL (blocking)\n1. **`hivemind-power-on/references/05-continuity-navigation.md:140`** — Hallucinated tool call: `session-tracker` does NOT have an `aggregate` action, and does NOT have a `stats` parameter. The correct tool is `session-context` with `groupBy`. This will cause a runtime error if followed. [L2: Cross-referenced against system-prompt tool definition.]\n\n### WARNING (should fix)\n2. **`subagent-delegation-patterns/references/session-stacking-protocol.md:45`** — Contradiction with parent SKILL.md: claims `task_id` is NOT for creating parent-child links with completed sessions (only for resuming). But SKILL.md lines 195-207 explicitly say `task_id` IS for stacking onto completed sessions. These contradict. Fix by aligning the reference file with the SKILL.md (which matches AGENTS.md guidance). [L3: Direct file read of both documents.]\n\n### INFO (nice to have)\n3. **`session-foundation/SKILL.md`** — No explicit \"Do NOT load\" section exists. The \"When to Load\" table implies boundaries but doesn't state them negatively. Add a 1-2 line \"Do NOT load for:\" section. [L3: Observation.]\n4. **`wave-execution/SKILL.md:269-274`** — Cross-References section uses hm-* prefixed skill names with behavioral descriptions. Consider removing prefixes or adding a note that these identify related skills by project convention. Borderline. [L3: Observation.]\n\n---\n\n## Gate Verdicts\n\n| Gate | Verdict |\n|------|---------|\n| **Lifecycle Integration** | ⚠️ CONDITIONAL — skills are properly structured but the contradiction (skill #2) and hallucination (skill #8) indicate lifecycle integrity issues in reference files |\n| **Spec Compliance** | ❌ FAIL — 2 of 8 skills have critical defects blocking clean spec compliance |\n| **Evidence Truth** | ✅ PASS — all findings backed by L2-L3 evidence from file reads and tool signature verification |\n\n**Recommendation for L1 coordinator:**\n- Route skill #8 (hivemind-power-on) to hm-executor for CRITICAL fix of hallucinated tool call in `references/05-continuity-navigation.md:140`\n- Route skill #2 (subagent-delegation-patterns) to hm-executor for contradiction fix in `references/session-stacking-protocol.md:45-46`\n- Re-verify both after fixes applied\n- Skills #3, 4, 5, 6 pass clean — no action needed\n- Skills #1, 7 flagged for INFO-level improvements only",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-23T07:13:30.791Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_UgX0Db3MENU7WdAwJScF2988",
+        "input": {
+          "name": "gate-l3-spec-compliance"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:30.919Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_01_FYy2Ov0RbZsQqRC6jUO76989",
+        "input": {
+          "name": "gate-l3-evidence-truth"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:31.100Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_02_8ZVHKPH9lmobmGWnKJFV1362",
+        "input": {
+          "name": "gate-l3-lifecycle-integration"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:36.310Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_A5j6rLmV5tvvjF9dlIEP2316",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/session-foundation/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:36.478Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_1UI6aROgIaMQ7Kf1zLMs0588",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/subagent-delegation-patterns/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:36.711Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_RWDJid97vmWh3nWqXEKq8816",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/user-intent-patterns/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:36.973Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_v5Fft0sI6yNf51NIpISQ2697",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/cross-cutting-change-mgmt/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:37.265Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_rF7PU8ayZOQO6DM3uHBs5454",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/multi-agent-coordination/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:37.498Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_sGBinhTBU9QUsKZGEqFU7904",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/quality-gate-orchestration/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:37.746Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_tS8I9IaBWBbRd9BcNyoP2835",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/wave-execution/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:38.062Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_9unVbCMOHptDMMJCpayT2479",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:46.852Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_bd5piJDRRBWLRgQo1FFJ8982",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:47.220Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_KAeihHnbz6DUqm0RIqSU1401",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:47.587Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_FZ3h7etMG1hSrIHjfgvx9176",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:48.114Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_YwmRC5eneeUbxE8pft1k0718",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:48.379Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_hkNl5VAZqZc5c4tW4Lsu1068",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:48.741Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_05_r5kSIZwig09Sbfe5E3PH4396",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:49.105Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_06_qal8IMI4M1l1G1kyv4ca6226",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:49.457Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_07_VS51dkSv3EJ86QvUhh3m1504",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:55.745Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_fERZAWTkRDFVuJCVHGDQ7970",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/session-foundation/references/session-tools-reference.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:55.937Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_NClQaFs22xMheYhZrVXz3874",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/session-foundation/references/future-tools-tbd.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:56.271Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_zJH6SSZThNXFN0P9VAlC6631",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/subagent-delegation-patterns/references/delegation-tools-comparison.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:56.596Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_jZ5QMwaPmAnkba2FYqmR0563",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/subagent-delegation-patterns/references/future-delegation-tools-tbd.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:56.911Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_ShJgsyAhpd7X4bk4HRbG2175",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/subagent-delegation-patterns/references/session-stacking-protocol.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:13:57.232Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_qM93IQyuqNvd1eH8XurZ2503",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/subagent-delegation-patterns/references/status-checking-protocol.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:03.164Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ckaifbmawsyHUDv0Xu298113",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/01-session-tracker-anatomy.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:03.435Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_E7wi7iWqskYV1Hy57AdC5259",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/02-task-tool-resume.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:04.004Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_QLpi3cq0OeFkLxLCsRfy3362",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/03-lineage-routing-tree.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:04.046Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_EMRqRFHKe3NJlx5lo95k4608",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/04-project-phase-routing.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:04.339Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_2aLvsGLYtG9UozjcxlZy5815",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/05-continuity-navigation.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:04.700Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_m2Hp9ViBbrL6w0JbarEa8169",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/06-delegation-depth-recovery.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:04.920Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_WklqakLhKoUHE21x0Pak1452",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/terminology-map.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:05.567Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_gGfFsVUKxmQHUOx3wU9F5449",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hivemind-power-on/references/philosophy.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:11.116Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_zDPSQ4sODjqenUpagaKv2569",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:11.461Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_WqRlUbUwdDVRLxeD7SVE9137",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:11.797Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_74O20ZrdB2ywVDWaegRH4639",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:12.117Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_fDbG08ywokavclOYcxuZ1801",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:12.584Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_tN0VyTQ5brnXe6sEPCsG2805",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:18.500Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_LAXDeENYu5azMwWYntAm4440",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/user-intent-patterns/references/terminology-map.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:18.787Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_NkiDlx7xSu85qra1KiAN3231",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/cross-cutting-change-mgmt/references/terminology-map.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:19.074Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_mFBij46MkpEbuhkXszWx4765",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/multi-agent-coordination/references/terminology-map.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:19.397Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_x4h59QduQB1mb2SvLkII9689",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/quality-gate-orchestration/references/terminology-map.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:19.807Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_lqqWzllffpNzKaagOyBg2391",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/cross-cutting-change-mgmt/references/philosophy.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:14:20.111Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_Cxri6IqonIT8OyP0l9Dv8530",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/multi-agent-coordination/references/philosophy.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:15:20.837Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_eF8kqPb1ecfQhUCwyegK5117",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:16:00.982Z",
+      "type": "assistant_message",
+      "content": "---\n\n# 🔍 CRITICAL AUDIT: 8 Skills — Full Violation Report\n\n**Agent:** hm-l2-critic\n**Domain:** Quality Verification\n**Method:** Full file reads via sequential-thinking cross-referencing against system-prompt tool definitions and AGENTS.md conventions\n**Evidence tier:** L3 (documented observation from file reads) with cross-referenced L2 (tool-verified against actual tool definitions)\n\n---\n\n## SKILL 1: session-foundation\n\n| Metric | Value |\n|--------|-------|\n| **File** | `session-foundation/SKILL.md` |\n| **Total lines** | 330 SKILL.md + 115 `session-tools-reference.md` + 121 `future-tools-tbd.md` |\n| **References** | `session-tools-reference.md`, `future-tools-tbd.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 133: `task` tool with `task_id` is **(PREFERRED — full control)**. Line 209: \"Stack via `task(task_id=...)` (preferred)\". Line 250: \"task tool (preferred, full control)\". Correct stance throughout. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | No `hm-*/hf-*/gsd-*` prefixes in body content. References operational tools only (session-tracker, session-hierarchy, etc.). |\n| 3 | NO TBD | ✅ **PASS** | Lines 307-308 reference `future-tools-tbd.md` (🟡 PARTIAL markers for trajectory, pressure, agent-work, background-command). |\n| 4 | NO SCOPE BOUNDARY | ⚠️ **WEAK** | No explicit \"Do NOT load when:\" section in the body. Anti-patterns (lines 242-250) and \"When to Load\" (lines 322-330) imply boundaries, but there is no negative-use-case section. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | All tool references verified against system-prompt definitions. `session-tracker`, `session-hierarchy`, `session-context`, `delegate-task`, `delegation-status`, `hivemind-session-view`, `hivemind-command-engine` all exist. |\n\n### Overall: **PASS** ⚠️ (weak scope boundary)\n\n### What needs fixing\n- Add explicit \"Do NOT load\" section (e.g., \"Do NOT load for: writing session state, creating delegations, code editing — use write-side tools instead\")\n\n---\n\n## SKILL 2: subagent-delegation-patterns\n\n| Metric | Value |\n|--------|-------|\n| **File** | `subagent-delegation-patterns/SKILL.md` |\n| **Total lines** | 317 SKILL.md + 112 `delegation-tools-comparison.md` + 126 `future-delegation-tools-tbd.md` + 109 `session-stacking-protocol.md` + 160 `status-checking-protocol.md` |\n| **References** | 4 files (extensive) |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 81: \"YES → task tool (HIGH CONTROL)\". Line 97: \"Use for ALL code editing\". `delegation-tools-comparison.md` line 14: \"`task` tool is always the preferred choice.\" Correct. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Claims framework-agnostic (line 51). Cross-References (lines 311-317) use bare skill names without hm-* prefixes. No leakage. |\n| 3 | NO TBD | ✅ **PASS** | Line 262 explicitly references `future-delegation-tools-tbd.md` with 🟡 PARTIAL markers. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Description explicitly says \"NOT for simple one-step tool calls or single-file edits.\" |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | All referenced tools exist. No fake parameters. |\n| — | **CONTRADICTION** | ❌ **FAIL** | `session-stacking-protocol.md` line 45 says: \"The `task_id` parameter is NOT for creating new parent-child links with arbitrary sessions — it is specifically for resuming an existing subagent session. For stacking new work onto completed sessions, use `delegate-task` with `parentSessionId`.\" This directly CONTRADICTS SKILL.md lines 195-207 which say `task_id` DOES work for stacking onto completed sessions and IS the preferred approach. Two files in the same skill package give opposite instructions. |\n\n### Overall: **FAIL** ❌ (contradiction between SKILL.md and reference file)\n\n### What needs fixing\n- **CRITICAL:** Resolve contradiction between SKILL.md (says task_id works for stacking onto completed sessions) and `session-stacking-protocol.md` (says it does NOT). One must be corrected. Based on the project's stated guidance in AGENTS.md (\"Both `task` and `delegate-task` support attaching new work\"), the SKILL.md is correct and the reference file is wrong.\n- Fix `session-stacking-protocol.md` line 45-46 to align with SKILL.md: task_id SHOULD work for stacking onto completed sessions.\n\n---\n\n## SKILL 3: user-intent-patterns\n\n| Metric | Value |\n|--------|-------|\n| **File** | `user-intent-patterns/SKILL.md` |\n| **Total lines** | 269 SKILL.md + 141 `terminology-map.md` + philosophy.md |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Line 228 mentions `hm-l2-brainstorm` as a cross-reference (identifying a related skill). `terminology-map.md` references `hf-l2-context-absorb`, `hm-l2-user-intent-interactive-loop`, `gsd-discuss-phase` — but these are in a FRAMEWORK TERMINOLOGY MAP whose sole purpose is to identify frameworks by their skill names. This is \"identifying what they are\" not \"as workflow instructions.\" |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 21-26: explicit \"What This Skill Does NOT Cover\" section with 4 clear boundaries. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. Framework comparison is descriptive, not prescriptive. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill with proper boundaries.\n\n---\n\n## SKILL 4: cross-cutting-change-mgmt\n\n| Metric | Value |\n|--------|-------|\n| **File** | `cross-cutting-change-mgmt/SKILL.md` |\n| **Total lines** | 232 SKILL.md + 133 `terminology-map.md` + 129 `philosophy.md` |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | SKILL.md body is framework-agnostic — no hm-*/hf-*/gsd-* prefixes. `terminology-map.md` references `hm-detective`, `hm-l2-cross-cutting-change`, `hm-completion-looping` — but these are in a FRAMEWORK-SPECIFIC TRANSLATION TABLE that maps universal concepts to Hivemind equivalents. This is \"identifying what they are\" not workflow instructions. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 44-47: explicit \"Do NOT use this skill for:\" section with 3 exclusions. Lines 38-43: \"Use when ALL of the following apply\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill.\n\n---\n\n## SKILL 5: multi-agent-coordination\n\n| Metric | Value |\n|--------|-------|\n| **File** | `multi-agent-coordination/SKILL.md` |\n| **Total lines** | 197 SKILL.md + 95 `terminology-map.md` + 156 `philosophy.md` |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about single-tool delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | No hm-*/hf-*/gsd-* prefixes in SKILL.md body. `terminology-map.md` is framework-comparison content, not workflow instructions. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 24-27: explicit \"Do NOT load this skill for:\" section with 3 exclusions. Lines 16-23: \"Load this skill when:\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. References `delegation-status` and `task` by name only. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill.\n\n---\n\n## SKILL 6: quality-gate-orchestration\n\n| Metric | Value |\n|--------|-------|\n| **File** | `quality-gate-orchestration/SKILL.md` |\n| **Total lines** | 323 SKILL.md + 164 `terminology-map.md` + philosophy.md |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Clean. No hm-* prefix references in body. `terminology-map.md` is framework comparison. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 56-62: explicit \"When NOT to use\" section with 4 exclusions. Lines 47-54: \"When to use this framework\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill with excellent boundaries.\n\n---\n\n## SKILL 7: wave-execution\n\n| Metric | Value |\n|--------|-------|\n| **File** | `wave-execution/SKILL.md` |\n| **Total lines** | 274 (NO reference files) |\n| **References** | None |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Lines 125-127: \"Use the `task` tool (preferred, full control) for code/artifact tasks, or `delegate-task` (async background only) for research/audit/review tasks within the wave.\" Correct. |\n| 2 | FRAMEWORK LEAKAGE | ⚠️ **FLAG** | Lines 269-274 (Cross-References section): Uses `hm-l2-phase-execution`, `hm-l2-coordinating-loop`, `hm-l2-phase-loop`, `hm-l2-completion-looping` prefix references WITH behavioral descriptions: \"Wave execution is the ENGINE for... Phase execution is the ORCHESTRATOR that applies waves to phases.\" These are hm-* prefixed names used to describe workflow relationships, which crosses from \"identifying what they are\" into \"describing how they work together\" — i.e., workflow instructions. Borderline — cross-referencing related skills is a standard SKILL.md need but the behavioral descriptions push into leakage territory. |\n| 3 | NO TBD | ✅ **PASS** (N/A) | No partially-implemented tools referenced. Not needed. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Description lines 12-13: \"NOT for single-task dispatch, unstructured sequential execution, coordination patterns (multi-agent-coordination), or loop control (iterative-loop).\" |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No questionable tool claims. |\n\n### Overall: **PASS** ⚠️ (minor framework leakage in cross-references)\n\n### What needs fixing\n- (Optional) Remove hm-* prefixes from cross-references and use bare skill names, or add a note that cross-references identify related skills by project convention.\n\n---\n\n## SKILL 8: hivemind-power-on\n\n| Metric | Value |\n|--------|-------|\n| **File** | `hivemind-power-on/SKILL.md` |\n| **Total lines** | 157 SKILL.md + 8 reference files (165+101+122+69+143+99+61+76 lines) |\n| **References** | 8 files (extensive) |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 104: \"task tool (PREFERRED, full control)\". Line 105: \"delegate-task (async background only)\". Correct. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | SKILL.md body clean. `03-lineage-routing-tree.md` extensively uses hm-*/hf-*/gsd-* prefixes — but this is its DESIGN PURPOSE: a lineage routing tree whose entire function is to identify which lineage to use. This is \"identifying what they are\" by architectural necessity. |\n| 3 | NO TBD | ✅ **PASS** | Lines 32-34 (YAML): explicit `# TBD tools` markers. Lines 62-68: TBD section with 🟡 PARTIAL/📋 TBD classification for trajectory, pressure. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Line 43: explicit \"What this skill does NOT do\" section. Lines 44-45: explicit \"Boundary with session-foundation\" section. |\n| 5 | HALLUCINATED CAPABILITIES | ❌ **CRITICAL** | `references/05-continuity-navigation.md` line 140: **`session-tracker({action: \"aggregate\", stats: [\"sessionCount\", \"totalTurns\", \"activeCount\"]})`** — The `aggregate` action belongs to `session-context`, NOT `session-tracker`. The parameter is `groupBy`, NOT `stats`. The `session-tracker` tool has NO `aggregate` action at all (its actions are: `export-session`, `get-status`, `get-summary`, `list-sessions`, `search-sessions`, `filter-sessions`). This call would FAIL at runtime. Verified against system-prompt tool definition. [L2: Tool-verified against actual tool definition] |\n\n### Overall: **FAIL** ❌ (1 CRITICAL hallucination)\n\n### What needs fixing\n- **CRITICAL:** `references/05-continuity-navigation.md` line 140 — Fix the hallucinated `session-tracker({action: \"aggregate\", stats: [...]})` call. Replace with `session-context({action: \"aggregate\", groupBy: \"status\"})` which IS the correct tool and action for this purpose.\n\n---\n\n## Summary Matrix\n\n| # | Skill | Total Lines | Violation 1 (Tool Pref) | Violation 2 (Leakage) | Violation 3 (TBD) | Violation 4 (Scope) | Violation 5 (Hallucination) | Overall Score |\n|---|-------|------------|------------------------|----------------------|--------------------|--------------------|-----------------------------|--------------|\n| 1 | **session-foundation** | 566 | ✅ PASS | ✅ PASS | ✅ PASS | ⚠️ WEAK | ✅ PASS | **PASS** ⚠️ |\n| 2 | **subagent-delegation-patterns** | 824 | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS (+CONTRADICTION) | **FAIL** ❌ |\n| 3 | **user-intent-patterns** | 412 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 4 | **cross-cutting-change-mgmt** | 496 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 5 | **multi-agent-coordination** | 448 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 6 | **quality-gate-orchestration** | 489 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 7 | **wave-execution** | 274 | ✅ PASS | ⚠️ FLAG | N/A | ✅ PASS | ✅ PASS | **PASS** ⚠️ |\n| 8 | **hivemind-power-on** | 792 (with refs) | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS | ❌ **CRITICAL** | **FAIL** ❌ |\n\n---\n\n## Consolidated Defect List (must-fix)\n\n### CRITICAL (blocking)\n1. **`hivemind-power-on/references/05-continuity-navigation.md:140`** — Hallucinated tool call: `session-tracker` does NOT have an `aggregate` action, and does NOT have a `stats` parameter. The correct tool is `session-context` with `groupBy`. This will cause a runtime error if followed. [L2: Cross-referenced against system-prompt tool definition.]\n\n### WARNING (should fix)\n2. **`subagent-delegation-patterns/references/session-stacking-protocol.md:45`** — Contradiction with parent SKILL.md: claims `task_id` is NOT for creating parent-child links with completed sessions (only for resuming). But SKILL.md lines 195-207 explicitly say `task_id` IS for stacking onto completed sessions. These contradict. Fix by aligning the reference file with the SKILL.md (which matches AGENTS.md guidance). [L3: Direct file read of both documents.]\n\n### INFO (nice to have)\n3. **`session-foundation/SKILL.md`** — No explicit \"Do NOT load\" section exists. The \"When to Load\" table implies boundaries but doesn't state them negatively. Add a 1-2 line \"Do NOT load for:\" section. [L3: Observation.]\n4. **`wave-execution/SKILL.md:269-274`** — Cross-References section uses hm-* prefixed skill names with behavioral descriptions. Consider removing prefixes or adding a note that these identify related skills by project convention. Borderline. [L3: Observation.]\n\n---\n\n## Gate Verdicts\n\n| Gate | Verdict |\n|------|---------|\n| **Lifecycle Integration** | ⚠️ CONDITIONAL — skills are properly structured but the contradiction (skill #2) and hallucination (skill #8) indicate lifecycle integrity issues in reference files |\n| **Spec Compliance** | ❌ FAIL — 2 of 8 skills have critical defects blocking clean spec compliance |\n| **Evidence Truth** | ✅ PASS — all findings backed by L2-L3 evidence from file reads and tool signature verification |\n\n**Recommendation for L1 coordinator:**\n- Route skill #8 (hivemind-power-on) to hm-executor for CRITICAL fix of hallucinated tool call in `references/05-continuity-navigation.md:140`\n- Route skill #2 (subagent-delegation-patterns) to hm-executor for contradiction fix in `references/session-stacking-protocol.md:45-46`\n- Re-verify both after fixes applied\n- Skills #3, 4, 5, 6 pass clean — no action needed\n- Skills #1, 7 flagged for INFO-level improvements only",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1ac518385ffesjo9DAOVOrybmB"
+      }
+    }
+  ],
+  "lastMessage": "---\n\n# 🔍 CRITICAL AUDIT: 8 Skills — Full Violation Report\n\n**Agent:** hm-l2-critic\n**Domain:** Quality Verification\n**Method:** Full file reads via sequential-thinking cross-referencing against system-prompt tool definitions and AGENTS.md conventions\n**Evidence tier:** L3 (documented observation from file reads) with cross-referenced L2 (tool-verified against actual tool definitions)\n\n---\n\n## SKILL 1: session-foundation\n\n| Metric | Value |\n|--------|-------|\n| **File** | `session-foundation/SKILL.md` |\n| **Total lines** | 330 SKILL.md + 115 `session-tools-reference.md` + 121 `future-tools-tbd.md` |\n| **References** | `session-tools-reference.md`, `future-tools-tbd.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 133: `task` tool with `task_id` is **(PREFERRED — full control)**. Line 209: \"Stack via `task(task_id=...)` (preferred)\". Line 250: \"task tool (preferred, full control)\". Correct stance throughout. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | No `hm-*/hf-*/gsd-*` prefixes in body content. References operational tools only (session-tracker, session-hierarchy, etc.). |\n| 3 | NO TBD | ✅ **PASS** | Lines 307-308 reference `future-tools-tbd.md` (🟡 PARTIAL markers for trajectory, pressure, agent-work, background-command). |\n| 4 | NO SCOPE BOUNDARY | ⚠️ **WEAK** | No explicit \"Do NOT load when:\" section in the body. Anti-patterns (lines 242-250) and \"When to Load\" (lines 322-330) imply boundaries, but there is no negative-use-case section. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | All tool references verified against system-prompt definitions. `session-tracker`, `session-hierarchy`, `session-context`, `delegate-task`, `delegation-status`, `hivemind-session-view`, `hivemind-command-engine` all exist. |\n\n### Overall: **PASS** ⚠️ (weak scope boundary)\n\n### What needs fixing\n- Add explicit \"Do NOT load\" section (e.g., \"Do NOT load for: writing session state, creating delegations, code editing — use write-side tools instead\")\n\n---\n\n## SKILL 2: subagent-delegation-patterns\n\n| Metric | Value |\n|--------|-------|\n| **File** | `subagent-delegation-patterns/SKILL.md` |\n| **Total lines** | 317 SKILL.md + 112 `delegation-tools-comparison.md` + 126 `future-delegation-tools-tbd.md` + 109 `session-stacking-protocol.md` + 160 `status-checking-protocol.md` |\n| **References** | 4 files (extensive) |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 81: \"YES → task tool (HIGH CONTROL)\". Line 97: \"Use for ALL code editing\". `delegation-tools-comparison.md` line 14: \"`task` tool is always the preferred choice.\" Correct. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Claims framework-agnostic (line 51). Cross-References (lines 311-317) use bare skill names without hm-* prefixes. No leakage. |\n| 3 | NO TBD | ✅ **PASS** | Line 262 explicitly references `future-delegation-tools-tbd.md` with 🟡 PARTIAL markers. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Description explicitly says \"NOT for simple one-step tool calls or single-file edits.\" |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | All referenced tools exist. No fake parameters. |\n| — | **CONTRADICTION** | ❌ **FAIL** | `session-stacking-protocol.md` line 45 says: \"The `task_id` parameter is NOT for creating new parent-child links with arbitrary sessions — it is specifically for resuming an existing subagent session. For stacking new work onto completed sessions, use `delegate-task` with `parentSessionId`.\" This directly CONTRADICTS SKILL.md lines 195-207 which say `task_id` DOES work for stacking onto completed sessions and IS the preferred approach. Two files in the same skill package give opposite instructions. |\n\n### Overall: **FAIL** ❌ (contradiction between SKILL.md and reference file)\n\n### What needs fixing\n- **CRITICAL:** Resolve contradiction between SKILL.md (says task_id works for stacking onto completed sessions) and `session-stacking-protocol.md` (says it does NOT). One must be corrected. Based on the project's stated guidance in AGENTS.md (\"Both `task` and `delegate-task` support attaching new work\"), the SKILL.md is correct and the reference file is wrong.\n- Fix `session-stacking-protocol.md` line 45-46 to align with SKILL.md: task_id SHOULD work for stacking onto completed sessions.\n\n---\n\n## SKILL 3: user-intent-patterns\n\n| Metric | Value |\n|--------|-------|\n| **File** | `user-intent-patterns/SKILL.md` |\n| **Total lines** | 269 SKILL.md + 141 `terminology-map.md` + philosophy.md |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Line 228 mentions `hm-l2-brainstorm` as a cross-reference (identifying a related skill). `terminology-map.md` references `hf-l2-context-absorb`, `hm-l2-user-intent-interactive-loop`, `gsd-discuss-phase` — but these are in a FRAMEWORK TERMINOLOGY MAP whose sole purpose is to identify frameworks by their skill names. This is \"identifying what they are\" not \"as workflow instructions.\" |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 21-26: explicit \"What This Skill Does NOT Cover\" section with 4 clear boundaries. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. Framework comparison is descriptive, not prescriptive. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill with proper boundaries.\n\n---\n\n## SKILL 4: cross-cutting-change-mgmt\n\n| Metric | Value |\n|--------|-------|\n| **File** | `cross-cutting-change-mgmt/SKILL.md` |\n| **Total lines** | 232 SKILL.md + 133 `terminology-map.md` + 129 `philosophy.md` |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | SKILL.md body is framework-agnostic — no hm-*/hf-*/gsd-* prefixes. `terminology-map.md` references `hm-detective`, `hm-l2-cross-cutting-change`, `hm-completion-looping` — but these are in a FRAMEWORK-SPECIFIC TRANSLATION TABLE that maps universal concepts to Hivemind equivalents. This is \"identifying what they are\" not workflow instructions. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 44-47: explicit \"Do NOT use this skill for:\" section with 3 exclusions. Lines 38-43: \"Use when ALL of the following apply\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill.\n\n---\n\n## SKILL 5: multi-agent-coordination\n\n| Metric | Value |\n|--------|-------|\n| **File** | `multi-agent-coordination/SKILL.md` |\n| **Total lines** | 197 SKILL.md + 95 `terminology-map.md` + 156 `philosophy.md` |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about single-tool delegation mechanics. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | No hm-*/hf-*/gsd-* prefixes in SKILL.md body. `terminology-map.md` is framework-comparison content, not workflow instructions. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 24-27: explicit \"Do NOT load this skill for:\" section with 3 exclusions. Lines 16-23: \"Load this skill when:\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. References `delegation-status` and `task` by name only. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill.\n\n---\n\n## SKILL 6: quality-gate-orchestration\n\n| Metric | Value |\n|--------|-------|\n| **File** | `quality-gate-orchestration/SKILL.md` |\n| **Total lines** | 323 SKILL.md + 164 `terminology-map.md` + philosophy.md |\n| **References** | `terminology-map.md`, `philosophy.md` |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Not about delegation. N/A. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | Clean. No hm-* prefix references in body. `terminology-map.md` is framework comparison. |\n| 3 | NO TBD | N/A | No partially-implemented tools referenced. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Lines 56-62: explicit \"When NOT to use\" section with 4 exclusions. Lines 47-54: \"When to use this framework\" checklist. |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No tool capability claims. |\n\n### Overall: **PASS** ✅\n\n### What needs fixing\n- None. Clean skill with excellent boundaries.\n\n---\n\n## SKILL 7: wave-execution\n\n| Metric | Value |\n|--------|-------|\n| **File** | `wave-execution/SKILL.md` |\n| **Total lines** | 274 (NO reference files) |\n| **References** | None |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Lines 125-127: \"Use the `task` tool (preferred, full control) for code/artifact tasks, or `delegate-task` (async background only) for research/audit/review tasks within the wave.\" Correct. |\n| 2 | FRAMEWORK LEAKAGE | ⚠️ **FLAG** | Lines 269-274 (Cross-References section): Uses `hm-l2-phase-execution`, `hm-l2-coordinating-loop`, `hm-l2-phase-loop`, `hm-l2-completion-looping` prefix references WITH behavioral descriptions: \"Wave execution is the ENGINE for... Phase execution is the ORCHESTRATOR that applies waves to phases.\" These are hm-* prefixed names used to describe workflow relationships, which crosses from \"identifying what they are\" into \"describing how they work together\" — i.e., workflow instructions. Borderline — cross-referencing related skills is a standard SKILL.md need but the behavioral descriptions push into leakage territory. |\n| 3 | NO TBD | ✅ **PASS** (N/A) | No partially-implemented tools referenced. Not needed. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Description lines 12-13: \"NOT for single-task dispatch, unstructured sequential execution, coordination patterns (multi-agent-coordination), or loop control (iterative-loop).\" |\n| 5 | HALLUCINATED CAPABILITIES | ✅ **PASS** | No questionable tool claims. |\n\n### Overall: **PASS** ⚠️ (minor framework leakage in cross-references)\n\n### What needs fixing\n- (Optional) Remove hm-* prefixes from cross-references and use bare skill names, or add a note that cross-references identify related skills by project convention.\n\n---\n\n## SKILL 8: hivemind-power-on\n\n| Metric | Value |\n|--------|-------|\n| **File** | `hivemind-power-on/SKILL.md` |\n| **Total lines** | 157 SKILL.md + 8 reference files (165+101+122+69+143+99+61+76 lines) |\n| **References** | 8 files (extensive) |\n\n### Violation Scan\n\n| # | Violation Type | Status | Evidence |\n|---|---------------|--------|----------|\n| 1 | WRONG TASK/DELEGATE-TASK | ✅ **PASS** | Line 104: \"task tool (PREFERRED, full control)\". Line 105: \"delegate-task (async background only)\". Correct. |\n| 2 | FRAMEWORK LEAKAGE | ✅ **PASS** | SKILL.md body clean. `03-lineage-routing-tree.md` extensively uses hm-*/hf-*/gsd-* prefixes — but this is its DESIGN PURPOSE: a lineage routing tree whose entire function is to identify which lineage to use. This is \"identifying what they are\" by architectural necessity. |\n| 3 | NO TBD | ✅ **PASS** | Lines 32-34 (YAML): explicit `# TBD tools` markers. Lines 62-68: TBD section with 🟡 PARTIAL/📋 TBD classification for trajectory, pressure. |\n| 4 | NO SCOPE BOUNDARY | ✅ **PASS** | Line 43: explicit \"What this skill does NOT do\" section. Lines 44-45: explicit \"Boundary with session-foundation\" section. |\n| 5 | HALLUCINATED CAPABILITIES | ❌ **CRITICAL** | `references/05-continuity-navigation.md` line 140: **`session-tracker({action: \"aggregate\", stats: [\"sessionCount\", \"totalTurns\", \"activeCount\"]})`** — The `aggregate` action belongs to `session-context`, NOT `session-tracker`. The parameter is `groupBy`, NOT `stats`. The `session-tracker` tool has NO `aggregate` action at all (its actions are: `export-session`, `get-status`, `get-summary`, `list-sessions`, `search-sessions`, `filter-sessions`). This call would FAIL at runtime. Verified against system-prompt tool definition. [L2: Tool-verified against actual tool definition] |\n\n### Overall: **FAIL** ❌ (1 CRITICAL hallucination)\n\n### What needs fixing\n- **CRITICAL:** `references/05-continuity-navigation.md` line 140 — Fix the hallucinated `session-tracker({action: \"aggregate\", stats: [...]})` call. Replace with `session-context({action: \"aggregate\", groupBy: \"status\"})` which IS the correct tool and action for this purpose.\n\n---\n\n## Summary Matrix\n\n| # | Skill | Total Lines | Violation 1 (Tool Pref) | Violation 2 (Leakage) | Violation 3 (TBD) | Violation 4 (Scope) | Violation 5 (Hallucination) | Overall Score |\n|---|-------|------------|------------------------|----------------------|--------------------|--------------------|-----------------------------|--------------|\n| 1 | **session-foundation** | 566 | ✅ PASS | ✅ PASS | ✅ PASS | ⚠️ WEAK | ✅ PASS | **PASS** ⚠️ |\n| 2 | **subagent-delegation-patterns** | 824 | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS (+CONTRADICTION) | **FAIL** ❌ |\n| 3 | **user-intent-patterns** | 412 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 4 | **cross-cutting-change-mgmt** | 496 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 5 | **multi-agent-coordination** | 448 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 6 | **quality-gate-orchestration** | 489 | N/A | ✅ PASS | N/A | ✅ PASS | ✅ PASS | **PASS** ✅ |\n| 7 | **wave-execution** | 274 | ✅ PASS | ⚠️ FLAG | N/A | ✅ PASS | ✅ PASS | **PASS** ⚠️ |\n| 8 | **hivemind-power-on** | 792 (with refs) | ✅ PASS | ✅ PASS | ✅ PASS | ✅ PASS | ❌ **CRITICAL** | **FAIL** ❌ |\n\n---\n\n## Consolidated Defect List (must-fix)\n\n### CRITICAL (blocking)\n1. **`hivemind-power-on/references/05-continuity-navigation.md:140`** — Hallucinated tool call: `session-tracker` does NOT have an `aggregate` action, and does NOT have a `stats` parameter. The correct tool is `session-context` with `groupBy`. This will cause a runtime error if followed. [L2: Cross-referenced against system-prompt tool definition.]\n\n### WARNING (should fix)\n2. **`subagent-delegation-patterns/references/session-stacking-protocol.md:45`** — Contradiction with parent SKILL.md: claims `task_id` is NOT for creating parent-child links with completed sessions (only for resuming). But SKILL.md lines 195-207 explicitly say `task_id` IS for stacking onto completed sessions. These contradict. Fix by aligning the reference file with the SKILL.md (which matches AGENTS.md guidance). [L3: Direct file read of both documents.]\n\n### INFO (nice to have)\n3. **`session-foundation/SKILL.md`** — No explicit \"Do NOT load\" section exists. The \"When to Load\" table implies boundaries but doesn't state them negatively. Add a 1-2 line \"Do NOT load for:\" section. [L3: Observation.]\n4. **`wave-execution/SKILL.md:269-274`** — Cross-References section uses hm-* prefixed skill names with behavioral descriptions. Consider removing prefixes or adding a note that these identify related skills by project convention. Borderline. [L3: Observation.]\n\n---\n\n## Gate Verdicts\n\n| Gate | Verdict |\n|------|---------|\n| **Lifecycle Integration** | ⚠️ CONDITIONAL — skills are properly structured but the contradiction (skill #2) and hallucination (skill #8) indicate lifecycle integrity issues in reference files |\n| **Spec Compliance** | ❌ FAIL — 2 of 8 skills have critical defects blocking clean spec compliance |\n| **Evidence Truth** | ✅ PASS — all findings backed by L2-L3 evidence from file reads and tool signature verification |\n\n**Recommendation for L1 coordinator:**\n- Route skill #8 (hivemind-power-on) to hm-executor for CRITICAL fix of hallucinated tool call in `references/05-continuity-navigation.md:140`\n- Route skill #2 (subagent-delegation-patterns) to hm-executor for contradiction fix in `references/session-stacking-protocol.md:45-46`\n- Re-verify both after fixes applied\n- Skills #3, 4, 5, 6 pass clean — no action needed\n- Skills #1, 7 flagged for INFO-level improvements only"
+}

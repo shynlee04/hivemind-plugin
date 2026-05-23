@@ -1,0 +1,52 @@
+{
+  "sessionID": "ses_1ab29ffbcffe2xeq8uMCipBpI1",
+  "parentSessionID": "ses_1ab2a484cffe3bnFf27Bz61hbe",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-l2-scout",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Investigate agent-work-contract and trajectory",
+    "subagentType": "hm-l2-scout"
+  },
+  "created": "2026-05-23T12:36:11.488Z",
+  "updated": "2026-05-23T12:36:14.379Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-l2-scout",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-l2-scout",
+      "content": "## Task: Investigate agent-work-contract + trajectory code + planning docs\n\nYou are a subagent. Investigate the following areas and return a structured summary:\n\n### 1. Source Files — Trajectory\nRead ALL files under `src/task-management/trajectory/` (list first, then read all files found).\n\n### 2. Source Files — Agent-Work-Contracts\nSearch for `agent-work-contract` anywhere in the codebase (grep + glob):\n- `src/features/agent-work-contracts/` (if exists)\n- Any file containing \"agentWorkContract\" or \"agent_work_contract\" or \"AgentWorkContract\"\n- The hivemind tools: grep for \"hivemind-agent-work\" in src/\n\n### 3. Types\nRead `src/shared/types.ts` and extract ALL types related to:\n- Trajectory\n- AgentWorkContract\n- Any evidence/checkpoint/event types\n\n### 4. Planning Docs\nRead:\n- `.planning/ROADMAP.md` — look for Phase 25, trajectory, agent-work-contract references\n- `.planning/STATE.md` — look for trajectory, agent-work-contract references\n\n### 5. Tool implementations\nGrep for \"hivemind-agent-work\" and \"hivemind-trajectory\" in `src/tools/` and read any matching files.\n\nReturn a MARKDOWN report with:\n1. Full file tree of trajectory/ directory with brief description per file\n2. All agent-work-contract related files found (full paths)\n3. All trajectory/contract types from types.ts\n4. Phase references from ROADMAP.md and STATE.md\n5. Tool function signatures found\n6. Any integration patterns or concerns you notice",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "hm-l2-scout",
+      "content": "Investigate agent-work-contract and trajectory",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "hm-l2-scout",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-23T12:36:14.363Z",
+      "type": "assistant_message",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1ab29ffbcffe2xeq8uMCipBpI1"
+      }
+    }
+  ],
+  "lastMessage": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>"
+}

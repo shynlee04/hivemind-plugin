@@ -1,0 +1,679 @@
+{
+  "sessionID": "ses_1ac417509ffewKAqSjY4olEI6i",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-l2-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Deep GSD synthesis ALL domains",
+    "subagentType": "hm-l2-researcher"
+  },
+  "created": "2026-05-23T07:30:56.908Z",
+  "updated": "2026-05-23T07:45:51.594Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-l2-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-l2-researcher",
+      "content": "Bạn là hm-l2-researcher (read-only). Nhiệm vụ: Research GSD framework từ tài liệu đã download để hiểu sâu cách GSD vận hành.\n\n## Background\n\nChúng tôi đang phát triển Hivemind — một runtime composition engine cho OpenCode. Hivemind có tools, hooks, plugin system, delegation, continuity, concurrency riêng. Chúng tôi muốn học hỏi từ GSD để nâng cấp Hivemind nhưng BẢO TOÀN:\n- Automation cao độ\n- Delegation logics riêng (WaiterModel, dual-signal, task tool preferred)\n- Tools riêng (session-tracker, hivemind-*, prompt-*, delegation-status, etc.)\n\n## Nguồn dữ liệu\n\nFile: /var/folders/xq/pq0b7jpn75s3l6d0pzpyw2380000gn/T/repomix/mcp-outputs/Waum1s/repomix-output.md\n\nĐọc các sections quan trọng (dùng grep_repomix_output + read_repomix_output):\n- docs/FEATURES.md — GSD features overview (start)\n- docs/ARCHITECTURE.md — GSD architecture\n- docs/AGENTS.md — GSD agent definitions\n- docs/COMMANDS.md — GSD command system\n- docs/CONFIGURATION.md — GSD configuration\n- docs/USER-GUIDE.md — GSD user guide\n- docs/INVENTORY.md — GSD inventory\n- docs/context-monitor.md — GSD context monitoring\n- docs/workflow-discuss-mode.md — GSD discuss workflow\n- docs/STATE-MD-LIFECYCLE.md — state lifecycle\n- docs/adr/*.md — Architectural decisions (skim)\n- docs/research/*.md — Research docs\n- docs/agents/*.md — Agent domain definitions\n- docs/prd/*.md — PRDs\n- docs/skills/*.md — Skill discovery contract\n\n## Phân tích theo các dimension\n\n1. **Command System**: GSD commands hoạt động thế nào? So với Hivemind command engine?\n2. **Agent Architecture**: GSD agents organized thế nào (L0, L1, L2 hierarchy)? Agent domain model?\n3. **Skill System**: GSD skills discovery & surface budget?\n4. **Workflow**: GSD discuss → plan → execute → verify pipeline?\n5. **State Management**: GSD state.md lifecycle vs Hivemind session-tracker?\n6. **Delegation**: GSD subagent dispatch vs Hivemind WaiterModel?\n7. **Quality Gates**: GSD testing/verification patterns?\n8. **Phase Management**: GSD phase planning, roadmap, milestones?\n9. **SDK Integration**: GSD sdk vs Hivemind plugin?\n\n## Return\n\nStructured research report covering all 9 dimensions. For each:\n- How GSD does it (with evidence from docs)\n- How Hivemind does it (compare)\n- What Hivemind can learn/borrow\n- What Hivemind must preserve (unique advantage)\n\nFocus on actionable insights, not summaries.",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "hm-l2-researcher",
+      "content": "Research GSD framework deeply",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "hm-l2-researcher",
+      "content": "I now have comprehensive data. Let me compile the full research report.\n\n---\n\n## Research Report\n\n**Agent:** hm-l2-researcher\n**Domain:** Research — GSD Framework Deep Analysis\n**Question:** How does GSD framework operate across 9 dimensions, and what can Hivemind learn from it?\n**Status:** COMPLETED\n\n---\n\n### Dimension 1: Command System\n\n**How GSD does it:**\n- GSD has **67 shipped commands** stored as `commands/gsd/*.md` files — prompt-based command files with YAML frontmatter (name, description, allowed-tools) and a prompt body that bootstraps the workflow [L29994-L29997]\n- Commands are installed differently per runtime: Claude Code uses hyphen form `/gsd-command-name`, Gemini uses colon form `/gsd:command-name`, Codex uses `$gsd-command-name` [L22068-L22076]\n- **Two-stage hierarchical routing** (v1.40): 6 namespace **meta-skills** (`gsd-workflow`, `gsd-project`, `gsd-quality`, `gsd-context`, `gsd-manage`, `gsd-ideate`) sit above concrete sub-skills. The model sees 6 entries (~120 tokens) instead of a flat 86-skill listing (~2,150 tokens). Each namespace router has a routing table to dispatch to concrete sub-skills [L22078-L22083]\n- Commands are **additive** — every concrete command is still directly invocable [L23523]\n- Workflow files (`get-shit-done/workflows/*.md`, 88 shipped) are thin orchestrators that commands reference [L30101-L30102]\n\n**How Hivemind does it:**\n- Hivemind uses its own `execute-slash-command` tool + `hivemind-command-engine` (discover/analyze_contract/render_context) \n- Commands are stored in `.opencode/commands/` directory\n- 19 commands total (7 core + 7 extended + 1 sync + 4 test)\n- No equivalent of namespace meta-skills or two-stage routing\n\n**What Hivemind can learn/borrow:**\n1. **Two-stage hierarchical routing** — The concept of namespace meta-skills that reduce eager listing cost is directly applicable. Hivemind could create namespace-level command grouping (e.g., `gsd-workflow` → `/gsd-plan-phase`, `/gsd-execute-phase`)\n2. **Workflow files as thin orchestrators** — GSD separates command entry-points from workflow orchestration logic. Hivemind's commands mix both. Splitting would enable reusability\n3. **88 workflows vs 19 commands** — GSD's workflow count shows the value of multi-mode orchestration (discuss, plan, execute, verify, fast, ultraplan)\n\n**What Hivemind must preserve:**\n- Hivemind's `execute-slash-command` with `subtask:true/false` + `agent` override is more flexible than GSD's flat dispatch\n- Hivemind's `hivemind-command-engine` with `discover`/`analyze_contract`/`transform_messages` is a richer read-side than GSD's command loading\n\n---\n\n### Dimension 2: Agent Architecture\n\n**How GSD does it:**\n- **33 shipped agents** stored as `agents/gsd-*.md` files [L29950-L29952]\n- **Flat agent hierarchy** — no L0/L1/L2/L3 taxonomy. Agents are categorized functionally: Researchers (4), Analyzers (2), Synthesizers (1), Planners (2), Executors (1), Checkers (3), Verifiers (1), Auditors (3), Mappers (1), Debuggers (1), Doc Writers (2), Profilers (1) [L21214-L21225]\n- Each agent has frontmatter: `name`, `description`, `tools`, `color`, `model` [L21198-L21650]\n- Orchestrator → Agent pattern: workflow loads context via `gsd-sdk query init.<workflow>`, resolves model via `gsd-sdk query resolve-model <agent-name>`, spawns agent via Task/SubAgent call, collects result, updates state [L22277-L22294]\n- 21 primary agents (full role cards in docs) + 12 advanced/specialized agents (stubs) [L21212]\n- Wave execution model: agents grouped into dependency waves, parallel within waves, sequential across waves [L22302-L22315]\n\n**How Hivemind does it:**\n- 89 agents in `.hivefiver-meta-builder/agents-lab/` — 33 GSD + 45 hm-* + 11 hf-*\n- **Full L0-L1-L2-L3 hierarchy**: L0 orchestrators → L1 coordinators → L2 specialists → L3 skills\n- Agent definitions with XML-tagged execution flows, deviation rules, evidence contracts, etc.\n- `task` and `delegate-task` tools for agent dispatch\n\n**What Hivemind can learn/borrow:**\n1. **Fresh context per agent** — GSD's principle of \"every agent spawned by an orchestrator gets a clean context window\" is already adopted by Hivemind but GSD formalizes it better\n2. **Model resolution at spawn time** — GSD resolves model per agent type (`gsd-sdk query resolve-model <agent-name>`), not baked into agent definition. Hivemind bakes model into agent frontmatter\n3. **Adaptive context enrichment** — GSD dynamically enriches subagent prompts based on context window size (200K vs 500K+), adding cross-plan awareness for larger windows [L22340-L22350]\n4. **Parallel commit safety with STATE.md.lock** — lockfile-based mutual exclusion (`O_EXCL` atomic creation) for state reads/writes when multiple executors run in same wave [L22352-L22356]\n\n**What Hivemind must preserve:**\n- Hivemind's L0-L1-L2 hierarchy is strictly superior for task decomposition. GSD's flat hierarchy works for their model but would not scale for Hivemind's complexity\n- Hivemind's specialist-level agents with strict evidence contracts (L1-L5 evidence hierarchy) are more disciplined than GSD's agent descriptions\n- `delegate-task` with `parentSessionId` stacking is more flexible than GSD's Task() calls\n\n---\n\n### Dimension 3: Skill System\n\n**How GSD does it:**\n- Skills are stored as `skills/gsd-*/SKILL.md` files installed in multiple runtime directories: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, `.codex/skills/` [L17029-L17034]\n- **Skill Surface Budgeting** (v1.42, ADR-0010): 10-cluster taxonomy for runtime surface control, profile-based skill staging, namespace meta-skills for two-stage routing [L22078-L22083]\n- **Skill Discovery Contract**: formalized rules in `docs/skills/discovery-contract.md` for scanning, inventorying, and rendering GSD skills [L17023-L17180]\n- Skills have `name`, `description`, `triggers`, `path`, `file_path`, `root`, `scope`, `installed`, `deprecated` fields\n- Three scanner implementations: `sdk/src/query/skills.ts` (de-duplicated discovery), `get-shit-done/bin/lib/profile-output.cjs` (project CLAUDE.md build), `get-shit-done/bin/lib/init.cjs` (skill-manifest generation) [L17040-L17073]\n- **Two-stage routing** keeps eager skill-listing at ~120 tokens (6 routers) instead of ~2,150 tokens (86 skills) [L22080-L22083]\n\n**How Hivemind does it:**\n- Skills in `.opencode/skills/` as SKILL.md files (symlinked from `.hivefiver-meta-builder/skills-lab/`)\n- 59 skills total: 35 hm-* + 13 hf-* + 3 gate-* + 6 stack-* + 1 opencode-config + 1 hivemind-governance\n- Skill loading via `skill` tool with binary loading (injects skill content into conversation)\n- `hm-l3-tech-stack-ingest` for caching third-party assets\n- `hm-l3-synthesis` for artifact compression\n\n**What Hivemind can learn/borrow:**\n1. **Skill discovery contract** — GSD has a formal contract for scanning/inventorying/rendering skills. Hivemind could formalize its skill discovery (maybe in `.opencode/skills/DISCOVERY.md`)\n2. **Two-stage routing for skills** — Hivemind's 59 flat-listed skills could benefit from namespace-level meta-skills (e.g., hf-*, gate-*, stack-* namespace routers)\n3. **Skill Surface Budgeting** — Profile-based skill staging (not just binary install/uninstall but tiered profiles like \"minimal\", \"standard\", \"full\") is a GSD innovation worth studying\n4. **Cluster taxonomy** — GSD's 10-cluster taxonomy for skill grouping is more structured than Hivemind's prefix-based grouping\n\n**What Hivemind must preserve:**\n- Hivemind's `skill` tool with inline content injection is more seamless than GSD's file-based loading\n- Hivemind's IRON CLAW consumption governance (5-step validation chain) is unique and protects against stale data\n- Hivemind's `hm-l3-tech-stack-ingest` with version-matched caching is more sophisticated than GSD's flat skill install\n\n---\n\n### Dimension 4: Workflow (Discuss → Plan → Execute → Verify)\n\n**How GSD does it:**\n- **Complete pipeline**: discuss-phase → (optional ui-phase) → plan-phase → execute-phase → verify-work → (optional ui-review) → ship [L22407-L22420]\n- **Discuss-phase**: Two modes — `discuss` (interview-style, ~15-20 interactions) and `assumptions` (codebase-first, ~2-4 interactions). Both produce identical CONTEXT.md with 6 sections: domain, decisions, canonical_refs, code_context, specifics, deferred [L34235-L34306]\n- **Plan-phase**: Spawns researcher → planner → plan-checker (8 verification dimensions, max 3 iterations). Research gate blocks on unresolved questions. Package Legitimacy Gate checks for slopsquatting [L26627-L26678]\n- **Execute-phase**: Wave analysis (dependency grouping) → executor per plan → atomic commits → SUMMARY.md per plan → verifier → VERIFICATION.md [L22320-L22325]\n- **Verify-phase**: Conversational UAT, auto-diagnosis for failures, post-execution verification vs phase goals [L28452-L28462]\n- **Wave execution model**: Plans grouped by dependency, parallel within waves, sequential across waves. Each executor gets fresh 200K context window [L22302-L22310]\n- **Adaptive context enrichment**: 1M-class models get richer subagent prompts (cross-plan awareness, history-aware verification) [L22340-L22350]\n\n**How Hivemind does it:**\n- Hivemind has no equivalent pipeline. Workflows are ad-hoc\n- Hivemind has `hm-l2-phase-execution` (wave-based parallelization + checkpoint recovery) — directly modeled after GSD\n- Hivemind has `hm-l2-coordinating-loop` (multi-agent dispatch with validation gates)\n- Hivemind has `hm-l2-completion-looping` (guardrail against premature completion)\n\n**What Hivemind can learn/borrow:**\n1. **Discuss-phase with two modes** — Hivemind has `hm-l2-brainstorm` and `hm-l2-user-intent-interactive-loop` but lacks GSD's formal \"assumptions mode\" where the agent deeply analyzes codebase first, then presents findings for confirmation\n2. **Research gate** — GSD blocks planning if RESEARCH.md has unresolved questions. Hivemind lacks this formal guard\n3. **Package Legitimacy Gate** — Supply-chain security gate (`slopcheck`) with `[ASSUMED]`/`[VERIFIED]`/`[CITED]` provenance system. Crucial for a code-generation agent\n4. **Post-execute codebase drift gate** — compares `last_mapped_commit..HEAD` against codebase structure docs, warns/auto-remaps on structural changes [L22538-L22548]\n5. **Conversational UAT** — `/gsd-verify-work` with auto-diagnosis produces UAT.md and fix plans. Hivemind's `hm-l2-product-validation` covers a different domain\n\n**What Hivemind must preserve:**\n- Hivemind's `hm-l2-completion-looping` with automatic re-looping on non-completion is more robust than GSD's max-3-iterations hard cap\n- Hivemind's evidence hierarchy (L1-L5) provides stricter verification than GSD's plan-checker (8 dimensions)\n- Hivemind's `hm-l2-spec-driven-authoring` + `hm-l2-test-driven-execution` provides a tighter spec-test loop than GSD's plan→execute→verify\n\n---\n\n### Dimension 5: State Management\n\n**How GSD does it:**\n- **STATE.md** is the project's \"living memory\" — YAML frontmatter + Markdown body. Frontmatter contains: `gsd_state_version`, `milestone`, `milestone_name`, `status`, `active_phase`, `next_action`, `next_phases`, `progress` (total_phases, completed_phases, percent) [L32402-L32465]\n- **File-based state**: All state lives in `.planning/` — human-readable Markdown and JSON. No database, no server [L22048]\n- **Phase-lifecycle frontmatter** (v1.40): 4 additive fields — `active_phase`, `next_action`, `next_phases`, `progress.percent`. The status-line hook reads these for 4 rendering scenes [L32410-L32465]\n- **STATE.md.lock** for concurrent write safety (O_EXCL atomic creation, 10s timeout, spin-wait with jitter) [L22352-L22356]\n- **Continuation/Resume**: `continue-here.md` from `/gsd-pause-work`, plus STATE.md for full context restoration\n\n**How Hivemind does it:**\n- `.hivemind/state/` with JSON persistence: `session-continuity.json`, `delegations.json`\n- `hivemind-session-view` for unified session data query\n- `session-tracker` with rich querying (list, search, filter, export)\n- `session-foundation` for cross-session discovery and navigation\n\n**What Hivemind can learn/borrow:**\n1. **Phase-lifecycle fields** — GSD's `active_phase` + `next_action` + `next_phases` provides clear \"what's next\" guidance. Hivemind's session-tracker doesn't encode progression\n2. **Progress dimensions** — GSD distinguishes phase-dimension (completed_phases/total_phases) from plan-dimension progress, avoiding the \"optimistic bar\" problem\n3. **STATE.md.lock with O_EXCL** — Practical pattern for concurrent agent writes. Hivemind uses session continuity file, but shared state conflicts between parallel agents could use this\n\n**What Hivemind must preserve:**\n- Hivemind's session-tracker with rich queries (search, filter, export, hierarchy traversal) is significantly more capable than GSD's flat STATE.md\n- Hivemind's `hivemind-session-view` with enriched nested tree (session + delegations + trajectory) is unique\n- Hivemind's trajectory ledger provides execution lineage that GSD lacks\n\n---\n\n### Dimension 6: Delegation (Subagent Dispatch)\n\n**How GSD does it:**\n- Uses Claude Code's native **Task/SubAgent** calls — not custom delegation tools [L22032-L22036]\n- Orchestrator workflow loads context, spawns agent with a prompt, model assignment, and tool permissions, then collects result [L22277-L22294]\n- **WaiterModel** is NOT used (no dual-signal completion). GSD uses synchronous Task() calls\n- **Wave execution**: plans grouped by dependency, parallel within waves, sequential across waves. Orchestrator spawns, monitors, and collects results [L22302-L22310]\n- **No delegation tracking/journaling** — state updates happen via SDK queries after agent completion\n- **Parallel commit safety**: `--no-verify` commits by executors, then orchestrator runs `git hook run pre-commit` once after each wave [L22352-L22356]\n- **No persistent delegation records** — state is reconstructed from STATE.md + planning artifacts\n\n**How Hivemind does it:**\n- **WaiterModel** with dual-signal completion (response + tool-use signal)\n- `task` and `delegate-task` tools with background dispatch\n- `delegation-status` for monitoring running delegations\n- Delegation persistence in `.hivemind/state/delegations.json`\n- `hivemind-trajectory` for execution lineage\n\n**What Hivemind can learn/borrow:**\n1. **Wave-based parallelization** — GSD's wave execution model (dependency grouping into waves, parallel within waves) is well-structured. Hivemind's `hm-l2-phase-execution` already implements this\n2. **Parallel commit safety with shared state lockfile** — `STATE.md.lock` pattern (O_EXCL + timeout + jitter) is practical. Hivemind delegates write to one agent at a time, but cross-wave state conflicts could benefit from this\n3. **Adaptive context enrichment** — Dynamically control how much context each subagent receives based on available window size (200K vs 500K+)\n\n**What Hivemind must preserve:**\n- Hivemind's WaiterModel with dual-signal is strictly more flexible than GSD's synchronous Task() — enables async dispatch and monitoring\n- Hivemind's delegation persistence (`delegations.json`) and trajectory ledger provide audit trail that GSD lacks\n- Hivemind's `session-stacking` (attach new work to any existing session via parentSessionId) is unique\n- `delegation-status` with polling is richer than GSD's collect-result-then-proceed model\n\n---\n\n### Dimension 7: Quality Gates\n\n**How GSD does it:**\n- **Plan-checker** (8 verification dimensions): requirement coverage, task atomicity, dependency ordering, file scope, verification commands, context fit, gap detection, Nyquist compliance. Max 3 iterations [L21382-L21390]\n- **Verifier**: Post-execution goal-backward analysis against phase goals (not just task completion). Includes Test quality audit: checks for disabled/skipped tests, circular test patterns, assertion strength, expected value provenance. Milestone scope filtering [L21420-L21432]\n- **Nyquist auditor**: Test gap filling, never modifies implementation code, max 3 attempts per gap [L21438-L21444]\n- **Integration checker**: Cross-phase flow verification [L21220]\n- **Security auditor**: Threat mitigation verification from PLAN.md [L21680-L21700]\n- **Code review pipeline**: `/gsd-code-review` → REVIEW.md → `/gsd-code-review --fix` → REVIEW-FIX.md [L24542-L24550]\n- **Cross-phase regression gate**: Checks that phase changes don't break prior phases [L26627-L26678]\n- **Requirements coverage gate**: Verifies every REQ-ID maps to a plan [L22407-L22420]\n- **Package Legitimacy Gate**: 3-layer supply-chain security (research slopcheck, planning checkpoint injection, execution restriction) [L22680-L22720]\n- **Codebase drift gate**: Post-execute structural drift detection vs `last_mapped_commit` [L22538-L22548]\n\n**How Hivemind does it:**\n- **Quality gate triad**: gate-l3-lifecycle-integration → gate-l3-spec-compliance → gate-l3-evidence-truth\n- `hm-l2-gate-orchestrator` for routing through the triad in sequence\n- `hm-l2-production-readiness` for pre-deployment verification\n- `hm-l2-critic` for adversarial code review\n- Evidence hierarchy L1-L5 for explicit quality standards\n\n**What Hivemind can learn/borrow:**\n1. **Test quality audit** — GSD's verifier checks that tests actually prove what they claim (disabled tests, circular patterns, assertion strength, expected value provenance). Hivemind's gates don't audit test quality\n2. **Package Legitimacy Gate** — Supply-chain security is directly applicable. Hivemind uses dependencies from package.json but has no gate for hallucinated packages\n3. **8 verification dimensions** — GSD's plan-checker dimensions (especially context fit, gap detection, Nyquist compliance) could augment Hivemind's spec-compliance gate\n4. **Codebase drift detection** — Comparing `last_mapped_commit..HEAD` for structural drift is useful. Hivemind has `hm-l3-opencode-project-audit` but no drift detection\n\n**What Hivemind must preserve:**\n- Hivemind's L1-L5 evidence hierarchy is more precise than GSD's binary PASS/FAIL\n- Hivemind's quality gate triad (lifecycle → spec → evidence) provides layered validation that GSD doesn't have\n- `gate-l3-lifecycle-integration` with 9-surface mutation authority is unique\n- `gate-l3-evidence-truth` with mock-only detection is more rigorous than any GSD gate\n\n---\n\n### Dimension 8: Phase Management\n\n**How GSD does it:**\n- **ROADMAP.md** with phase breakdown: each phase has number, status, goal, requirement mapping [L32844-L32850]\n- **Decimal phase numbering** for urgent insertions (e.g., `4.5` between phase 4 and 5) [L23841-L23850]\n- **Milestone management**: `/gsd-new-milestone`, `/gsd-complete-milestone`, `/gsd-audit-milestone`, **MILESTONES.md** for completed milestones [L26781-L26803]\n- **27 phase management commands**: add, insert, remove, edit, plan, execute, verify, validate, secure, audit, complete [L29994-L30200]\n- **Granularity setting** controls how many phases: `fine` (more phases), `standard`, `coarse` (fewer phases) [L26530-L26540]\n- **Phase artifacts**: CONTEXT.md, RESEARCH.md, PLAN.md files, SUMMARY.md, VERIFICATION.md, VALIDATION.md, UI-SPEC.md, UI-REVIEW.md, UAT.md [L22485-L22510]\n- **Autonomous mode**: `/gsd-autonomous` runs all remaining phases — discuss → plan → execute per phase [L30123]\n\n**How Hivemind does it:**\n- `.planning/` with GSD-style roadmaps (adopted from GSD)\n- Phase execution via `hm-l2-phase-execution` and `hm-l2-phase-loop`\n- No milestone management, no decimal phase numbering in Hivemind's own tools\n- Phase artifacts not standardized\n\n**What Hivemind can learn/borrow:**\n1. **Decimal phase insertion** — Urgent work discovered mid-milestone gets inserted as decimal phase (e.g., 4.5). Hivemind has no equivalent\n2. **Milestone management** — GSD's `/gsd-new-milestone`, `/gsd-complete-milestone`, `/gsd-audit-milestone` with MILESTONES.md archive is more structured than Hivemind's phase-only approach\n3. **Granularity setting** — Controls how many phases a project has. Hivemind hardcodes this\n4. **Standardized phase artifact structure** — Every GSD phase has known file paths (XX-CONTEXT.md, XX-RESEARCH.md, etc.) making automation predictable. Hivemind phases lack this standardization\n5. **Autonomous mode** — `/gsd-autonomous` that drives discuss→plan→execute per phase. Hivemind's `gsd-autonomous` skill is directly adopted from this\n\n**What Hivemind must preserve:**\n- Hivemind's `hm-l2-phase-loop` with entry/exit criteria + checkpoint gates is more formal than GSD's sequential phase processing\n- Hivemind's checkpoint recovery in `hm-l2-phase-execution` is more robust than GSD's single-pass wave execution\n- Hivemind's `hm-l2-completion-looping` guards against premature phase completion\n\n---\n\n### Dimension 9: SDK Integration\n\n**How GSD does it:**\n- **`@gsd-build/sdk`** — TypeScript SDK with typed, tested, registry-based query system [L29417-L29434]\n- **`gsd-sdk query`** — CLI tool that replaces the old untyped `gsd-tools.cjs` subprocess. Returns structured JSON results, classified errors (`GSDError`), golden-verified parity with old CLI [L29419-L29422]\n- **Query Registry** at `sdk/src/query/` with typed handlers per command family: `init.*`, `state.*`, `roadmap.*`, `phase.*`, `config.*`, `commit`, `resolve-model`, `agent-skills`, `validate.*`, etc. [L29185-L29190]\n- **Query Runtime Bridge** at `sdk/src/query-runtime-bridge.ts` — programmatic SDK callers route through one seam that owns query dispatch policy (native registry, subprocess fallback, strict SDK mode, structured observability) [L22265-L22275]\n- **CJS→SDK migration** via phased Shared Module architecture: STATE.md Document Module → Configuration Module → Workstream Inventory Module → Planning Path Projection Module → Query Runtime Bridge [L22600-L22650]\n- **Golden test parity**: `golden.integration.test.ts` verifies identical exit code + stdout + stderr between CLI and SDK for every canonical command [L15429-L15430]\n\n**How Hivemind does it:**\n- Plugin system at `src/plugin.ts` — composition root wiring tools, hooks, lifecycle\n- Custom tools via SDK `tool()` helper with Zod schemas\n- `src/shared/session-api.ts` for SDK session calls\n- `hivemind-sdk-supervisor` for SDK wrapper health monitoring\n- No equivalent of `gsd-sdk query` typed handler registry\n\n**What Hivemind can learn/borrow:**\n1. **Query handler registry** — GSD's typed registry (`createRegistry()` from `sdk/src/query/index.ts`) provides structured, tested access to every subsystem. Hivemind's tools are individual entrypoints without a unified query surface\n2. **CJS→SDK phased migration** — GSD's phased Shared Module architecture (moving one module at a time from legacy CLI to typed SDK) is a blueprint for Hivemind's own evolution\n3. **Golden test parity** — Running identical tests against both old and new surfaces to verify behavior match. Hivemind doesn't maintain this for its SDK wrappers\n4. **Structured dispatch observability** — `onDispatchEvent` with mode, reason, duration, outcome for every SDK call. Hivemind has `hivemind-sdk-supervisor` but lacks per-call observability\n5. **Error classification** — `GSDError` with `ErrorClassification` enum for typed error handling. Hivemind uses `[Harness]` prefix on thrown errors but lacks classification\n\n**What Hivemind must preserve:**\n- Hivemind's `hivemind-sdk-supervisor` with health/heartbeat/diagnostics/readiness is unique\n- Hivemind's plugin-based architecture (composition root at `plugin.ts`) is more extensible than GSD's monolithic `gsd-tools.cjs`\n- Hivemind's dual-layer (tool + hook) SDK integration via `@opencode-ai/plugin` provides composition GSD doesn't have\n- Hivemind's `src/shared/` layered leaf architecture is cleaner than GSD's `bin/lib/*.cjs` module system\n\n---\n\n### Synthesized Artifact\n\n| Dimension | GSD Strength | Hivemind Superiority | Action |\n|-----------|-------------|---------------------|--------|\n| **Commands** | Two-stage namespace routing, 67 commands, 88 workflows | `subtask:true/false` + agent override, command engine with discovery | Adopt namespace routing |\n| **Agents** | Wave execution, adaptive context enrichment, model-per-agent | L0-L2-L3 hierarchy, evidence contracts, WaiterModel | Reuse wave + enrichment patterns |\n| **Skills** | Skill discovery contract, surface budgeting, cluster taxonomy | IRON CLAW validation, tech-stack ingest | Formalize discovery contract |\n| **Workflow** | Formal discuss→plan→execute→verify pipeline, research gate | completion-looping, spec+TDD driven | Adopt research gate + drift gate |\n| **State** | STATE.md.lock, phase-lifecycle fields, progress dimensions | session-tracker with rich query, trajectory ledger | Reuse O_EXCL lock pattern |\n| **Delegation** | Wave parallelization, adaptive context | WaiterModel, dual-signal, delegation journal, session-stacking | KEEP superiority |\n| **Quality** | 8-dim plan-checker, test quality audit, package legitimacy gate | L1-L5 evidence hierarchy, quality gate triad, mock detection | Adopt test audit + package gate |\n| **Phase** | Decimal insertion, milestone management, standardized artifacts | phase-loop with entry/exit gates, checkpoint recovery | Adopt decimal + milestone + standardization |\n| **SDK** | Query registry, golden tests, phased migration, structed observability | plugin composition, SDK supervisor, tool+hook duality | Adopt registry + golden tests |\n\n### Knowledge Gaps\n1. GSD's `gsd-sdk query` handler registry internal implementation — not available in docs, would need source code inspection\n2. GSD test suite internals — brief mentions of `tests/command-count-sync.test.cjs`, `tests/workflow-size-budget.test.cjs` but no deep architecture of testing patterns\n3. GSD's implementer (`executor`) agent frontmatter — not fully detailed in AGENTS.md, only referenced\n\n### Recommendations (Ordered by Impact)\n\n1. **HIGH — Namespace meta-skills for command routing**: Implement two-stage routing for `.opencode/commands/` to reduce eager listing cost. 6 namespace routers covering GSD/workflow/project/quality phases vs 19 flat commands\n\n2. **HIGH — Research gate for phase planning**: Add formal guard that blocks planning if RESEARCH.md has unresolved open questions. Directly adoptable into `hm-l2-phase-execution`\n\n3. **MEDIUM — Phase-lifecycle state fields**: Add `active_phase`, `next_action`, `next_phases` fields to session state for clear \"what's next\" guidance. Status-line or agent prompt can consume these\n\n4. **MEDIUM — Standardized phase artifact structure**: Formalize file paths for every phase artifact (CONTEXT.md, RESEARCH.md, PLAN.md, SUMMARY.md, VERIFICATION.md). Makes automation predictable\n\n5. **MEDIUM — Test quality audit**: Add assertion strength analysis, circular test detection, and disabled-test audit to `hm-l2-critic` or `gate-l3-evidence-truth`\n\n6. **LOW — Decimal phase insertion**: Add support for decimal phase numbers (e.g., `4.5`) for urgent mid-milestone work. Simple numbering convention change\n\n7. **LOW — Milestone management with archive**: Add `/gsd-new-milestone`, `/gsd-complete-milestone`, `/gsd-audit-milestone` commands with MILESTONES.md archive\n\n8. **LOW — Adaptive context enrichment**: Dynamically adjust subagent prompt richness based on available context window (200K vs 500K+)",
+      "tools": []
+    },
+    {
+      "turn": 4,
+      "actor": "hm-l2-researcher",
+      "content": "BẠN LÀ SUBAGENT. Nhiệm vụ này yêu cầu SYNTHESIS RẤT CHI TIẾT, KHÔNG PHẢI TÓM TẮT.\n\nBạn đã làm research GSD trước đó. Kết quả quá sơ sài. Bây giờ phải làm LẠI với độ sâu gấp 5 lần:\n\n## Nguồn dữ liệu\n\nGSD docs: `/var/folders/xq/pq0b7jpn75s3l6d0pzpyw2380000gn/T/repomix/mcp-outputs/Waum1s/repomix-output.md`\n(113 files, 425K tokens)\n\nĐọc file này bằng `read_repomix_output(outputId=\"18c86810d37a77c9\")` và `grep_repomix_output` để truy xuất từng section.\n\n## Sản phẩm: 5 documents, mỗi document cực kỳ chi tiết\n\nViết ra các file sau (dùng `write` tool):\n\n### 1. `.hivemind/research/gsd-command-system-deep-2026-05-23.md` — GSD COMMAND SYSTEM\n\nPhân tích cực kỳ chi tiết:\n- 67 commands: đọc hết tất cả command names từ file, phân loại theo chức năng\n- 88 workflow files: đọc hết các workflow, phân tích pipeline\n- Cấu trúc YAML frontmatter của mỗi command (đọc sample 5-10 commands để thấy pattern)\n- Two-stage routing: namespace routers (6 cái) hoạt động thế nào, routing table format ra sao\n- Commands vs Workflows: sự khác biệt, khi nào dùng cái nào\n- Platform adapters: Claude Code / Gemini / Codex khác nhau thế nào\n- **SO SÁNH VỚI HIVEMIND**: 19 commands của Hivemind, command engine, execute-slash-command. Điểm mạnh/yếu từng bên.\n- **RECOMMENDATIONS**: cụ thể, actionable, có ví dụ\n\n### 2. `.hivemind/research/gsd-agent-architecture-deep-2026-05-23.md` — GSD AGENT ARCHITECTURE\n\nPhân tích chi tiết:\n- Đọc AGENTS.md của GSD → 33 agents: tên, mô tả, tools, color, model\n- Agent categories: Researchers (4), Analyzers (2), Synthesizers (1), Planners (2), Executors (1), Checkers (3), Verifiers (1), Auditors (3), Mappers (1), Debuggers (1), Doc Writers (2), Profilers (1)\n- Mỗi agent: đọc description, hiểu role, khi nào dùng\n- Wave execution model: dependency grouping, parallelization strategy\n- Adaptive context enrichment: thuật toán, khi nào thêm context nào\n- Model resolution: runtime resolve-model, catalog-based\n- Orchestrator → Agent pipeline: workflow load context → resolve model → spawn → collect → update state\n- **SO SÁNH VỚI HIVEMIND**: 89 agents, L0-L2 hierarchy, WaiterModel, evidence contracts\n- **ĐÁNH GIÁ**: Hivemind nên học gì? Giữ gì?\n\n### 3. `.hivemind/research/gsd-workflow-pipeline-deep-2026-05-23.md` — GSD WORKFLOW PIPELINE\n\nPhân tích cực kỳ chi tiết từ pipeline:\n- discuss-phase: 2 modes (interview + assumptions), CONTEXT.md format 6 sections\n- plan-phase: researcher → planner → plan-checker (8 verification dimensions, max 3 iterations)\n- Research gate: unresolved questions block planning\n- Package Legitimacy Gate: slopcheck, [ASSUMED]/[VERIFIED]/[CITED] provenance\n- execute-phase: wave analysis → executor per plan → atomic commits → SUMMARY.md → verifier → VERIFICATION.md\n- verify-phase: conversational UAT, auto-diagnosis, post-execution vs phase goals\n- ship: PR creation, review, merge\n- Codebase drift gate: last_mapped_commit → structural change detection\n- Cross-phase regression gate\n- **SO SÁNH VỚI HIVEMIND**: hm-l2-phase-execution, hm-l2-coordinating-loop, hm-l2-completion-looping\n- **RECOMMENDATIONS**: research gate, package gate, drift gate, pipeline standardization\n\n### 4. `.hivemind/research/gsd-quality-gates-deep-2026-05-23.md` — GSD QUALITY SYSTEM\n\nPhân tích chi tiết:\n- 8 verification dimensions của plan-checker\n- Test quality audit: assertion strength, disabled tests, circular patterns, expected value provenance\n- Package Legitimacy Gate (supply chain) — 3 layers\n- Codebase drift detection\n- Cross-phase regression\n- Security auditor: threat mitigation from PLAN.md\n- Nyquist auditor: test gap filling, max 3 attempts\n- Integration checker: cross-phase flow\n- Code review pipeline: /gsd-code-review → REVIEW.md → /gsd-code-review --fix → REVIEW-FIX.md\n- **SO SÁNH VỚI HIVEMIND**: gate triad (lifecycle→spec→evidence), L1-L5 hierarchy, 9-surface mutation authority\n- **RECOMMENDATIONS**: test quality audit, package gate, drift detection\n\n### 5. `.hivemind/research/gsd-sdk-surface-deep-2026-05-23.md` — GSD SDK & INTEGRATION\n\nPhân tích chi tiết:\n- `@gsd-build/sdk` — typed query registry\n- `gsd-sdk query` — CLI tool, structured JSON, GSDError classification\n- Query Registry: init.*, state.*, roadmap.*, phase.*, config.*, commit, resolve-model, agent-skills, validate.*\n- Query Runtime Bridge: native/subprocess/strict/dispatch modes\n- CJS→SDK migration: Shared Module architecture, 6 modules\n- Golden test parity: identical tests for CLI + SDK\n- Structured dispatch observability: onDispatchEvent with mode/reason/duration/outcome\n- **SO SÁNH VỚI HIVEMIND**: plugin-based composition, SDK supervisor, tool+hook duality, layered leaf architecture\n- **RECOMMENDATIONS**: query registry adoption, golden tests, observability\n\n## YÊU CẦU CHẤT LƯỢNG\n\n1. Mỗi document tối thiểu 300 lines\n2. KHÔNG tóm tắt — PHẢI diễn giải, phân tích, so sánh\n3. Mỗi section có evidence (line number references từ repomix output)\n4. Mỗi document có recommendations riêng cho Hivemind\n5. Dùng `write` tool để ghi từng file vào `.hivemind/research/`\n\n## CÔNG CỤ\n\nDùng `read_repomix_output(outputId=\"18c86810d37a77c9\", startLine=N, endLine=M)` để đọc từng section.\nDùng `grep_repomix_output(outputId=\"18c86810d37a77c9\", pattern=\"...\")` để tìm nội dung cụ thể.\nDùng `write(filePath=\"...\", content=\"...\")` để ghi file kết quả.\n\nBẮT ĐẦU NGAY.",
+      "tools": []
+    },
+    {
+      "turn": 5,
+      "actor": "hm-l2-researcher",
+      "content": "Deep GSD synthesis ALL domains",
+      "tools": []
+    },
+    {
+      "turn": 6,
+      "actor": "hm-l2-researcher",
+      "content": "All 5 research documents completed successfully:\n\n| Document | Lines | Size | Status |\n|----------|-------|------|--------|\n| **1. gsd-command-system-deep-2026-05-23.md** | 370 | 17KB | ✅ |\n| **2. gsd-agent-architecture-deep-2026-05-23.md** | 402 | 19KB | ✅ |\n| **3. gsd-workflow-pipeline-deep-2026-05-23.md** | 433 | 19KB | ✅ |\n| **4. gsd-quality-gates-deep-2026-05-23.md** | 392 | 19KB | ✅ |\n| **5. gsd-sdk-surface-deep-2026-05-23.md** | 481 | 23KB | ✅ |\n| **Total 5 documents** | **2,078** | **108KB** | ✅ |\n\nAll documents are in `.hivemind/research/` with evidence tags (file:line references from the repomix output) and per-document recommendations for Hivemind.\n\n**Top 3 HIGHEST IMPACT findings across all dimensions:**\n\n1. **Package Legitimacy Gate** (3-layer supply-chain security) — GSD's most critical innovation. Hivemind has zero protection against slopsquatting. Should be added to `hm-l3-deep-research` immediately.\n\n2. **Namespace meta-skills for command routing** — 90% token savings (2,150→240 tokens/turn) by adding 6 router descriptions instead of 86 flat commands. Directly applicable to Hivemind's 19 commands.\n\n3. **Query handler registry (`gsd-sdk query`)** — GSD's typed registry with golden test parity, structured error classification (`ERROR_KINDS`), and per-call dispatch observability (`onDispatchEvent`). Hivemind's tool surface would benefit from a unified programmatic query layer.\n\n**Top 3 THINGS HIVEMIND MUST PRESERVE** (GSD has NO equivalent):\n1. **WaiterModel with dual-signal completion** + delegation journal + session-stacking — far more flexible than GSD's synchronous Task() calls\n2. **L1-L5 evidence hierarchy** with file:line requirements — GSD uses binary PASS/FAIL. Hivemind's graded evidence is strictly superior\n3. **L0-L1-L2 agent hierarchy** — GSD's flat agent model (33 peers) cannot decompose tasks as effectively as Hivemind's layered architecture",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-23T07:31:02.990Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_7HSMULRTBVEmicMWYmuh5139",
+        "input": {
+          "name": "hm-l3-detective"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:03.117Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_01_IMO01mFpqY8dlnY0GNQW0690",
+        "input": {
+          "name": "hm-l3-deep-research"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:03.305Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_02_763iqKRXQ2WGVhRCN9ut8713",
+        "input": {
+          "name": "hm-l3-research-chain"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:09.098Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_attach_packed_output",
+      "metadata": {
+        "tool": "repomix_attach_packed_output",
+        "callID": "call_00_3hyqkiMclHMDimagUsLM0208",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:14.824Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_00_Qa3T8sPED9pIPCX0kAAE1650",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:21.168Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_00_fTVpxvLrT60FMs1C7rQd5054",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:21.679Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_01_vRgA7BmzAfpZ4wOD5oCP2155",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:22.145Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_02_oBVZMUPEWr7AiGMow9C30660",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:22.630Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_03_sXUmIfmTLT1LIh6yVQ9Z6253",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:23.093Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_04_S2mQ7Sjo8pFjhNrOZ90k9651",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:23.596Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_05_WdAhALHvF8VzEfZxUMwb3799",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:24.103Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_06_qOk3mzDzMeKEpamaS4M71741",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:24.608Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_07_EfoCGOks2TaDkGlCDYSi0076",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:25.072Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_08_f9eUmtHb1ItLakc2CpG16227",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:25.586Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_09_3nBernXTFnWz3Ya0WGK23360",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:31.247Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_jBq6uytPtcjgtIUcY4ah4482",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:31.642Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_j3m2XcYG9O0m2mRuPvdM8049",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:31.974Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_02_ANKXp3zrAsEoegB10iHf8018",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:38.219Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_R26O9MHhgHs77COt3ETD2339",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:38.657Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_6ZA99CerOLZ8FWgtrPGV6191",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:39.168Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_02_JWMpVjkkCsbxjzsqbuSv1654",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:45.899Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_FOahFjZV5uGE6Jc0e55c7940",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:46.324Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_emBNuNNnl1vWxWGoTsgO6954",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:46.738Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_02_uz0zNBVV7uVl7HRnTcAD4519",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:47.227Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_03_fsekhztQ8tvjQ9QnTLh10416",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:53.041Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_00_7v5ZaNrwnpNy3ZZGp40E9365",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:53.542Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_UZeznHl0vTp5Ah7oo8dt6046",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:53.931Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_02_te4JcFNo7vcooxARy67A1830",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:31:59.829Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_EHeF8Q9ogsEysyAPCFsy9978",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:32:00.246Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_cBEujI5Hb7dLvivjCUOm6616",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:32:06.782Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_3LIafaTeN57c5YT6I1hJ8805",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:32:07.402Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_01_d9m3UdNv6BEkpG6hRuHW3594",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:32:17.758Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_grep_repomix_output",
+      "metadata": {
+        "tool": "repomix_grep_repomix_output",
+        "callID": "call_00_yDojZU7slkGVXWwxExw59339",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:32:18.369Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_chE0z1dFOCLUx77KPra77462",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:33:39.017Z",
+      "type": "assistant_message",
+      "content": "I now have comprehensive data. Let me compile the full research report.\n\n---\n\n## Research Report\n\n**Agent:** hm-l2-researcher\n**Domain:** Research — GSD Framework Deep Analysis\n**Question:** How does GSD framework operate across 9 dimensions, and what can Hivemind learn from it?\n**Status:** COMPLETED\n\n---\n\n### Dimension 1: Command System\n\n**How GSD does it:**\n- GSD has **67 shipped commands** stored as `commands/gsd/*.md` files — prompt-based command files with YAML frontmatter (name, description, allowed-tools) and a prompt body that bootstraps the workflow [L29994-L29997]\n- Commands are installed differently per runtime: Claude Code uses hyphen form `/gsd-command-name`, Gemini uses colon form `/gsd:command-name`, Codex uses `$gsd-command-name` [L22068-L22076]\n- **Two-stage hierarchical routing** (v1.40): 6 namespace **meta-skills** (`gsd-workflow`, `gsd-project`, `gsd-quality`, `gsd-context`, `gsd-manage`, `gsd-ideate`) sit above concrete sub-skills. The model sees 6 entries (~120 tokens) instead of a flat 86-skill listing (~2,150 tokens). Each namespace router has a routing table to dispatch to concrete sub-skills [L22078-L22083]\n- Commands are **additive** — every concrete command is still directly invocable [L23523]\n- Workflow files (`get-shit-done/workflows/*.md`, 88 shipped) are thin orchestrators that commands reference [L30101-L30102]\n\n**How Hivemind does it:**\n- Hivemind uses its own `execute-slash-command` tool + `hivemind-command-engine` (discover/analyze_contract/render_context) \n- Commands are stored in `.opencode/commands/` directory\n- 19 commands total (7 core + 7 extended + 1 sync + 4 test)\n- No equivalent of namespace meta-skills or two-stage routing\n\n**What Hivemind can learn/borrow:**\n1. **Two-stage hierarchical routing** — The concept of namespace meta-skills that reduce eager listing cost is directly applicable. Hivemind could create namespace-level command grouping (e.g., `gsd-workflow` → `/gsd-plan-phase`, `/gsd-execute-phase`)\n2. **Workflow files as thin orchestrators** — GSD separates command entry-points from workflow orchestration logic. Hivemind's commands mix both. Splitting would enable reusability\n3. **88 workflows vs 19 commands** — GSD's workflow count shows the value of multi-mode orchestration (discuss, plan, execute, verify, fast, ultraplan)\n\n**What Hivemind must preserve:**\n- Hivemind's `execute-slash-command` with `subtask:true/false` + `agent` override is more flexible than GSD's flat dispatch\n- Hivemind's `hivemind-command-engine` with `discover`/`analyze_contract`/`transform_messages` is a richer read-side than GSD's command loading\n\n---\n\n### Dimension 2: Agent Architecture\n\n**How GSD does it:**\n- **33 shipped agents** stored as `agents/gsd-*.md` files [L29950-L29952]\n- **Flat agent hierarchy** — no L0/L1/L2/L3 taxonomy. Agents are categorized functionally: Researchers (4), Analyzers (2), Synthesizers (1), Planners (2), Executors (1), Checkers (3), Verifiers (1), Auditors (3), Mappers (1), Debuggers (1), Doc Writers (2), Profilers (1) [L21214-L21225]\n- Each agent has frontmatter: `name`, `description`, `tools`, `color`, `model` [L21198-L21650]\n- Orchestrator → Agent pattern: workflow loads context via `gsd-sdk query init.<workflow>`, resolves model via `gsd-sdk query resolve-model <agent-name>`, spawns agent via Task/SubAgent call, collects result, updates state [L22277-L22294]\n- 21 primary agents (full role cards in docs) + 12 advanced/specialized agents (stubs) [L21212]\n- Wave execution model: agents grouped into dependency waves, parallel within waves, sequential across waves [L22302-L22315]\n\n**How Hivemind does it:**\n- 89 agents in `.hivefiver-meta-builder/agents-lab/` — 33 GSD + 45 hm-* + 11 hf-*\n- **Full L0-L1-L2-L3 hierarchy**: L0 orchestrators → L1 coordinators → L2 specialists → L3 skills\n- Agent definitions with XML-tagged execution flows, deviation rules, evidence contracts, etc.\n- `task` and `delegate-task` tools for agent dispatch\n\n**What Hivemind can learn/borrow:**\n1. **Fresh context per agent** — GSD's principle of \"every agent spawned by an orchestrator gets a clean context window\" is already adopted by Hivemind but GSD formalizes it better\n2. **Model resolution at spawn time** — GSD resolves model per agent type (`gsd-sdk query resolve-model <agent-name>`), not baked into agent definition. Hivemind bakes model into agent frontmatter\n3. **Adaptive context enrichment** — GSD dynamically enriches subagent prompts based on context window size (200K vs 500K+), adding cross-plan awareness for larger windows [L22340-L22350]\n4. **Parallel commit safety with STATE.md.lock** — lockfile-based mutual exclusion (`O_EXCL` atomic creation) for state reads/writes when multiple executors run in same wave [L22352-L22356]\n\n**What Hivemind must preserve:**\n- Hivemind's L0-L1-L2 hierarchy is strictly superior for task decomposition. GSD's flat hierarchy works for their model but would not scale for Hivemind's complexity\n- Hivemind's specialist-level agents with strict evidence contracts (L1-L5 evidence hierarchy) are more disciplined than GSD's agent descriptions\n- `delegate-task` with `parentSessionId` stacking is more flexible than GSD's Task() calls\n\n---\n\n### Dimension 3: Skill System\n\n**How GSD does it:**\n- Skills are stored as `skills/gsd-*/SKILL.md` files installed in multiple runtime directories: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, `.codex/skills/` [L17029-L17034]\n- **Skill Surface Budgeting** (v1.42, ADR-0010): 10-cluster taxonomy for runtime surface control, profile-based skill staging, namespace meta-skills for two-stage routing [L22078-L22083]\n- **Skill Discovery Contract**: formalized rules in `docs/skills/discovery-contract.md` for scanning, inventorying, and rendering GSD skills [L17023-L17180]\n- Skills have `name`, `description`, `triggers`, `path`, `file_path`, `root`, `scope`, `installed`, `deprecated` fields\n- Three scanner implementations: `sdk/src/query/skills.ts` (de-duplicated discovery), `get-shit-done/bin/lib/profile-output.cjs` (project CLAUDE.md build), `get-shit-done/bin/lib/init.cjs` (skill-manifest generation) [L17040-L17073]\n- **Two-stage routing** keeps eager skill-listing at ~120 tokens (6 routers) instead of ~2,150 tokens (86 skills) [L22080-L22083]\n\n**How Hivemind does it:**\n- Skills in `.opencode/skills/` as SKILL.md files (symlinked from `.hivefiver-meta-builder/skills-lab/`)\n- 59 skills total: 35 hm-* + 13 hf-* + 3 gate-* + 6 stack-* + 1 opencode-config + 1 hivemind-governance\n- Skill loading via `skill` tool with binary loading (injects skill content into conversation)\n- `hm-l3-tech-stack-ingest` for caching third-party assets\n- `hm-l3-synthesis` for artifact compression\n\n**What Hivemind can learn/borrow:**\n1. **Skill discovery contract** — GSD has a formal contract for scanning/inventorying/rendering skills. Hivemind could formalize its skill discovery (maybe in `.opencode/skills/DISCOVERY.md`)\n2. **Two-stage routing for skills** — Hivemind's 59 flat-listed skills could benefit from namespace-level meta-skills (e.g., hf-*, gate-*, stack-* namespace routers)\n3. **Skill Surface Budgeting** — Profile-based skill staging (not just binary install/uninstall but tiered profiles like \"minimal\", \"standard\", \"full\") is a GSD innovation worth studying\n4. **Cluster taxonomy** — GSD's 10-cluster taxonomy for skill grouping is more structured than Hivemind's prefix-based grouping\n\n**What Hivemind must preserve:**\n- Hivemind's `skill` tool with inline content injection is more seamless than GSD's file-based loading\n- Hivemind's IRON CLAW consumption governance (5-step validation chain) is unique and protects against stale data\n- Hivemind's `hm-l3-tech-stack-ingest` with version-matched caching is more sophisticated than GSD's flat skill install\n\n---\n\n### Dimension 4: Workflow (Discuss → Plan → Execute → Verify)\n\n**How GSD does it:**\n- **Complete pipeline**: discuss-phase → (optional ui-phase) → plan-phase → execute-phase → verify-work → (optional ui-review) → ship [L22407-L22420]\n- **Discuss-phase**: Two modes — `discuss` (interview-style, ~15-20 interactions) and `assumptions` (codebase-first, ~2-4 interactions). Both produce identical CONTEXT.md with 6 sections: domain, decisions, canonical_refs, code_context, specifics, deferred [L34235-L34306]\n- **Plan-phase**: Spawns researcher → planner → plan-checker (8 verification dimensions, max 3 iterations). Research gate blocks on unresolved questions. Package Legitimacy Gate checks for slopsquatting [L26627-L26678]\n- **Execute-phase**: Wave analysis (dependency grouping) → executor per plan → atomic commits → SUMMARY.md per plan → verifier → VERIFICATION.md [L22320-L22325]\n- **Verify-phase**: Conversational UAT, auto-diagnosis for failures, post-execution verification vs phase goals [L28452-L28462]\n- **Wave execution model**: Plans grouped by dependency, parallel within waves, sequential across waves. Each executor gets fresh 200K context window [L22302-L22310]\n- **Adaptive context enrichment**: 1M-class models get richer subagent prompts (cross-plan awareness, history-aware verification) [L22340-L22350]\n\n**How Hivemind does it:**\n- Hivemind has no equivalent pipeline. Workflows are ad-hoc\n- Hivemind has `hm-l2-phase-execution` (wave-based parallelization + checkpoint recovery) — directly modeled after GSD\n- Hivemind has `hm-l2-coordinating-loop` (multi-agent dispatch with validation gates)\n- Hivemind has `hm-l2-completion-looping` (guardrail against premature completion)\n\n**What Hivemind can learn/borrow:**\n1. **Discuss-phase with two modes** — Hivemind has `hm-l2-brainstorm` and `hm-l2-user-intent-interactive-loop` but lacks GSD's formal \"assumptions mode\" where the agent deeply analyzes codebase first, then presents findings for confirmation\n2. **Research gate** — GSD blocks planning if RESEARCH.md has unresolved questions. Hivemind lacks this formal guard\n3. **Package Legitimacy Gate** — Supply-chain security gate (`slopcheck`) with `[ASSUMED]`/`[VERIFIED]`/`[CITED]` provenance system. Crucial for a code-generation agent\n4. **Post-execute codebase drift gate** — compares `last_mapped_commit..HEAD` against codebase structure docs, warns/auto-remaps on structural changes [L22538-L22548]\n5. **Conversational UAT** — `/gsd-verify-work` with auto-diagnosis produces UAT.md and fix plans. Hivemind's `hm-l2-product-validation` covers a different domain\n\n**What Hivemind must preserve:**\n- Hivemind's `hm-l2-completion-looping` with automatic re-looping on non-completion is more robust than GSD's max-3-iterations hard cap\n- Hivemind's evidence hierarchy (L1-L5) provides stricter verification than GSD's plan-checker (8 dimensions)\n- Hivemind's `hm-l2-spec-driven-authoring` + `hm-l2-test-driven-execution` provides a tighter spec-test loop than GSD's plan→execute→verify\n\n---\n\n### Dimension 5: State Management\n\n**How GSD does it:**\n- **STATE.md** is the project's \"living memory\" — YAML frontmatter + Markdown body. Frontmatter contains: `gsd_state_version`, `milestone`, `milestone_name`, `status`, `active_phase`, `next_action`, `next_phases`, `progress` (total_phases, completed_phases, percent) [L32402-L32465]\n- **File-based state**: All state lives in `.planning/` — human-readable Markdown and JSON. No database, no server [L22048]\n- **Phase-lifecycle frontmatter** (v1.40): 4 additive fields — `active_phase`, `next_action`, `next_phases`, `progress.percent`. The status-line hook reads these for 4 rendering scenes [L32410-L32465]\n- **STATE.md.lock** for concurrent write safety (O_EXCL atomic creation, 10s timeout, spin-wait with jitter) [L22352-L22356]\n- **Continuation/Resume**: `continue-here.md` from `/gsd-pause-work`, plus STATE.md for full context restoration\n\n**How Hivemind does it:**\n- `.hivemind/state/` with JSON persistence: `session-continuity.json`, `delegations.json`\n- `hivemind-session-view` for unified session data query\n- `session-tracker` with rich querying (list, search, filter, export)\n- `session-foundation` for cross-session discovery and navigation\n\n**What Hivemind can learn/borrow:**\n1. **Phase-lifecycle fields** — GSD's `active_phase` + `next_action` + `next_phases` provides clear \"what's next\" guidance. Hivemind's session-tracker doesn't encode progression\n2. **Progress dimensions** — GSD distinguishes phase-dimension (completed_phases/total_phases) from plan-dimension progress, avoiding the \"optimistic bar\" problem\n3. **STATE.md.lock with O_EXCL** — Practical pattern for concurrent agent writes. Hivemind uses session continuity file, but shared state conflicts between parallel agents could use this\n\n**What Hivemind must preserve:**\n- Hivemind's session-tracker with rich queries (search, filter, export, hierarchy traversal) is significantly more capable than GSD's flat STATE.md\n- Hivemind's `hivemind-session-view` with enriched nested tree (session + delegations + trajectory) is unique\n- Hivemind's trajectory ledger provides execution lineage that GSD lacks\n\n---\n\n### Dimension 6: Delegation (Subagent Dispatch)\n\n**How GSD does it:**\n- Uses Claude Code's native **Task/SubAgent** calls — not custom delegation tools [L22032-L22036]\n- Orchestrator workflow loads context, spawns agent with a prompt, model assignment, and tool permissions, then collects result [L22277-L22294]\n- **WaiterModel** is NOT used (no dual-signal completion). GSD uses synchronous Task() calls\n- **Wave execution**: plans grouped by dependency, parallel within waves, sequential across waves. Orchestrator spawns, monitors, and collects results [L22302-L22310]\n- **No delegation tracking/journaling** — state updates happen via SDK queries after agent completion\n- **Parallel commit safety**: `--no-verify` commits by executors, then orchestrator runs `git hook run pre-commit` once after each wave [L22352-L22356]\n- **No persistent delegation records** — state is reconstructed from STATE.md + planning artifacts\n\n**How Hivemind does it:**\n- **WaiterModel** with dual-signal completion (response + tool-use signal)\n- `task` and `delegate-task` tools with background dispatch\n- `delegation-status` for monitoring running delegations\n- Delegation persistence in `.hivemind/state/delegations.json`\n- `hivemind-trajectory` for execution lineage\n\n**What Hivemind can learn/borrow:**\n1. **Wave-based parallelization** — GSD's wave execution model (dependency grouping into waves, parallel within waves) is well-structured. Hivemind's `hm-l2-phase-execution` already implements this\n2. **Parallel commit safety with shared state lockfile** — `STATE.md.lock` pattern (O_EXCL + timeout + jitter) is practical. Hivemind delegates write to one agent at a time, but cross-wave state conflicts could benefit from this\n3. **Adaptive context enrichment** — Dynamically control how much context each subagent receives based on available window size (200K vs 500K+)\n\n**What Hivemind must preserve:**\n- Hivemind's WaiterModel with dual-signal is strictly more flexible than GSD's synchronous Task() — enables async dispatch and monitoring\n- Hivemind's delegation persistence (`delegations.json`) and trajectory ledger provide audit trail that GSD lacks\n- Hivemind's `session-stacking` (attach new work to any existing session via parentSessionId) is unique\n- `delegation-status` with polling is richer than GSD's collect-result-then-proceed model\n\n---\n\n### Dimension 7: Quality Gates\n\n**How GSD does it:**\n- **Plan-checker** (8 verification dimensions): requirement coverage, task atomicity, dependency ordering, file scope, verification commands, context fit, gap detection, Nyquist compliance. Max 3 iterations [L21382-L21390]\n- **Verifier**: Post-execution goal-backward analysis against phase goals (not just task completion). Includes Test quality audit: checks for disabled/skipped tests, circular test patterns, assertion strength, expected value provenance. Milestone scope filtering [L21420-L21432]\n- **Nyquist auditor**: Test gap filling, never modifies implementation code, max 3 attempts per gap [L21438-L21444]\n- **Integration checker**: Cross-phase flow verification [L21220]\n- **Security auditor**: Threat mitigation verification from PLAN.md [L21680-L21700]\n- **Code review pipeline**: `/gsd-code-review` → REVIEW.md → `/gsd-code-review --fix` → REVIEW-FIX.md [L24542-L24550]\n- **Cross-phase regression gate**: Checks that phase changes don't break prior phases [L26627-L26678]\n- **Requirements coverage gate**: Verifies every REQ-ID maps to a plan [L22407-L22420]\n- **Package Legitimacy Gate**: 3-layer supply-chain security (research slopcheck, planning checkpoint injection, execution restriction) [L22680-L22720]\n- **Codebase drift gate**: Post-execute structural drift detection vs `last_mapped_commit` [L22538-L22548]\n\n**How Hivemind does it:**\n- **Quality gate triad**: gate-l3-lifecycle-integration → gate-l3-spec-compliance → gate-l3-evidence-truth\n- `hm-l2-gate-orchestrator` for routing through the triad in sequence\n- `hm-l2-production-readiness` for pre-deployment verification\n- `hm-l2-critic` for adversarial code review\n- Evidence hierarchy L1-L5 for explicit quality standards\n\n**What Hivemind can learn/borrow:**\n1. **Test quality audit** — GSD's verifier checks that tests actually prove what they claim (disabled tests, circular patterns, assertion strength, expected value provenance). Hivemind's gates don't audit test quality\n2. **Package Legitimacy Gate** — Supply-chain security is directly applicable. Hivemind uses dependencies from package.json but has no gate for hallucinated packages\n3. **8 verification dimensions** — GSD's plan-checker dimensions (especially context fit, gap detection, Nyquist compliance) could augment Hivemind's spec-compliance gate\n4. **Codebase drift detection** — Comparing `last_mapped_commit..HEAD` for structural drift is useful. Hivemind has `hm-l3-opencode-project-audit` but no drift detection\n\n**What Hivemind must preserve:**\n- Hivemind's L1-L5 evidence hierarchy is more precise than GSD's binary PASS/FAIL\n- Hivemind's quality gate triad (lifecycle → spec → evidence) provides layered validation that GSD doesn't have\n- `gate-l3-lifecycle-integration` with 9-surface mutation authority is unique\n- `gate-l3-evidence-truth` with mock-only detection is more rigorous than any GSD gate\n\n---\n\n### Dimension 8: Phase Management\n\n**How GSD does it:**\n- **ROADMAP.md** with phase breakdown: each phase has number, status, goal, requirement mapping [L32844-L32850]\n- **Decimal phase numbering** for urgent insertions (e.g., `4.5` between phase 4 and 5) [L23841-L23850]\n- **Milestone management**: `/gsd-new-milestone`, `/gsd-complete-milestone`, `/gsd-audit-milestone`, **MILESTONES.md** for completed milestones [L26781-L26803]\n- **27 phase management commands**: add, insert, remove, edit, plan, execute, verify, validate, secure, audit, complete [L29994-L30200]\n- **Granularity setting** controls how many phases: `fine` (more phases), `standard`, `coarse` (fewer phases) [L26530-L26540]\n- **Phase artifacts**: CONTEXT.md, RESEARCH.md, PLAN.md files, SUMMARY.md, VERIFICATION.md, VALIDATION.md, UI-SPEC.md, UI-REVIEW.md, UAT.md [L22485-L22510]\n- **Autonomous mode**: `/gsd-autonomous` runs all remaining phases — discuss → plan → execute per phase [L30123]\n\n**How Hivemind does it:**\n- `.planning/` with GSD-style roadmaps (adopted from GSD)\n- Phase execution via `hm-l2-phase-execution` and `hm-l2-phase-loop`\n- No milestone management, no decimal phase numbering in Hivemind's own tools\n- Phase artifacts not standardized\n\n**What Hivemind can learn/borrow:**\n1. **Decimal phase insertion** — Urgent work discovered mid-milestone gets inserted as decimal phase (e.g., 4.5). Hivemind has no equivalent\n2. **Milestone management** — GSD's `/gsd-new-milestone`, `/gsd-complete-milestone`, `/gsd-audit-milestone` with MILESTONES.md archive is more structured than Hivemind's phase-only approach\n3. **Granularity setting** — Controls how many phases a project has. Hivemind hardcodes this\n4. **Standardized phase artifact structure** — Every GSD phase has known file paths (XX-CONTEXT.md, XX-RESEARCH.md, etc.) making automation predictable. Hivemind phases lack this standardization\n5. **Autonomous mode** — `/gsd-autonomous` that drives discuss→plan→execute per phase. Hivemind's `gsd-autonomous` skill is directly adopted from this\n\n**What Hivemind must preserve:**\n- Hivemind's `hm-l2-phase-loop` with entry/exit criteria + checkpoint gates is more formal than GSD's sequential phase processing\n- Hivemind's checkpoint recovery in `hm-l2-phase-execution` is more robust than GSD's single-pass wave execution\n- Hivemind's `hm-l2-completion-looping` guards against premature phase completion\n\n---\n\n### Dimension 9: SDK Integration\n\n**How GSD does it:**\n- **`@gsd-build/sdk`** — TypeScript SDK with typed, tested, registry-based query system [L29417-L29434]\n- **`gsd-sdk query`** — CLI tool that replaces the old untyped `gsd-tools.cjs` subprocess. Returns structured JSON results, classified errors (`GSDError`), golden-verified parity with old CLI [L29419-L29422]\n- **Query Registry** at `sdk/src/query/` with typed handlers per command family: `init.*`, `state.*`, `roadmap.*`, `phase.*`, `config.*`, `commit`, `resolve-model`, `agent-skills`, `validate.*`, etc. [L29185-L29190]\n- **Query Runtime Bridge** at `sdk/src/query-runtime-bridge.ts` — programmatic SDK callers route through one seam that owns query dispatch policy (native registry, subprocess fallback, strict SDK mode, structured observability) [L22265-L22275]\n- **CJS→SDK migration** via phased Shared Module architecture: STATE.md Document Module → Configuration Module → Workstream Inventory Module → Planning Path Projection Module → Query Runtime Bridge [L22600-L22650]\n- **Golden test parity**: `golden.integration.test.ts` verifies identical exit code + stdout + stderr between CLI and SDK for every canonical command [L15429-L15430]\n\n**How Hivemind does it:**\n- Plugin system at `src/plugin.ts` — composition root wiring tools, hooks, lifecycle\n- Custom tools via SDK `tool()` helper with Zod schemas\n- `src/shared/session-api.ts` for SDK session calls\n- `hivemind-sdk-supervisor` for SDK wrapper health monitoring\n- No equivalent of `gsd-sdk query` typed handler registry\n\n**What Hivemind can learn/borrow:**\n1. **Query handler registry** — GSD's typed registry (`createRegistry()` from `sdk/src/query/index.ts`) provides structured, tested access to every subsystem. Hivemind's tools are individual entrypoints without a unified query surface\n2. **CJS→SDK phased migration** — GSD's phased Shared Module architecture (moving one module at a time from legacy CLI to typed SDK) is a blueprint for Hivemind's own evolution\n3. **Golden test parity** — Running identical tests against both old and new surfaces to verify behavior match. Hivemind doesn't maintain this for its SDK wrappers\n4. **Structured dispatch observability** — `onDispatchEvent` with mode, reason, duration, outcome for every SDK call. Hivemind has `hivemind-sdk-supervisor` but lacks per-call observability\n5. **Error classification** — `GSDError` with `ErrorClassification` enum for typed error handling. Hivemind uses `[Harness]` prefix on thrown errors but lacks classification\n\n**What Hivemind must preserve:**\n- Hivemind's `hivemind-sdk-supervisor` with health/heartbeat/diagnostics/readiness is unique\n- Hivemind's plugin-based architecture (composition root at `plugin.ts`) is more extensible than GSD's monolithic `gsd-tools.cjs`\n- Hivemind's dual-layer (tool + hook) SDK integration via `@opencode-ai/plugin` provides composition GSD doesn't have\n- Hivemind's `src/shared/` layered leaf architecture is cleaner than GSD's `bin/lib/*.cjs` module system\n\n---\n\n### Synthesized Artifact\n\n| Dimension | GSD Strength | Hivemind Superiority | Action |\n|-----------|-------------|---------------------|--------|\n| **Commands** | Two-stage namespace routing, 67 commands, 88 workflows | `subtask:true/false` + agent override, command engine with discovery | Adopt namespace routing |\n| **Agents** | Wave execution, adaptive context enrichment, model-per-agent | L0-L2-L3 hierarchy, evidence contracts, WaiterModel | Reuse wave + enrichment patterns |\n| **Skills** | Skill discovery contract, surface budgeting, cluster taxonomy | IRON CLAW validation, tech-stack ingest | Formalize discovery contract |\n| **Workflow** | Formal discuss→plan→execute→verify pipeline, research gate | completion-looping, spec+TDD driven | Adopt research gate + drift gate |\n| **State** | STATE.md.lock, phase-lifecycle fields, progress dimensions | session-tracker with rich query, trajectory ledger | Reuse O_EXCL lock pattern |\n| **Delegation** | Wave parallelization, adaptive context | WaiterModel, dual-signal, delegation journal, session-stacking | KEEP superiority |\n| **Quality** | 8-dim plan-checker, test quality audit, package legitimacy gate | L1-L5 evidence hierarchy, quality gate triad, mock detection | Adopt test audit + package gate |\n| **Phase** | Decimal insertion, milestone management, standardized artifacts | phase-loop with entry/exit gates, checkpoint recovery | Adopt decimal + milestone + standardization |\n| **SDK** | Query registry, golden tests, phased migration, structed observability | plugin composition, SDK supervisor, tool+hook duality | Adopt registry + golden tests |\n\n### Knowledge Gaps\n1. GSD's `gsd-sdk query` handler registry internal implementation — not available in docs, would need source code inspection\n2. GSD test suite internals — brief mentions of `tests/command-count-sync.test.cjs`, `tests/workflow-size-budget.test.cjs` but no deep architecture of testing patterns\n3. GSD's implementer (`executor`) agent frontmatter — not fully detailed in AGENTS.md, only referenced\n\n### Recommendations (Ordered by Impact)\n\n1. **HIGH — Namespace meta-skills for command routing**: Implement two-stage routing for `.opencode/commands/` to reduce eager listing cost. 6 namespace routers covering GSD/workflow/project/quality phases vs 19 flat commands\n\n2. **HIGH — Research gate for phase planning**: Add formal guard that blocks planning if RESEARCH.md has unresolved open questions. Directly adoptable into `hm-l2-phase-execution`\n\n3. **MEDIUM — Phase-lifecycle state fields**: Add `active_phase`, `next_action`, `next_phases` fields to session state for clear \"what's next\" guidance. Status-line or agent prompt can consume these\n\n4. **MEDIUM — Standardized phase artifact structure**: Formalize file paths for every phase artifact (CONTEXT.md, RESEARCH.md, PLAN.md, SUMMARY.md, VERIFICATION.md). Makes automation predictable\n\n5. **MEDIUM — Test quality audit**: Add assertion strength analysis, circular test detection, and disabled-test audit to `hm-l2-critic` or `gate-l3-evidence-truth`\n\n6. **LOW — Decimal phase insertion**: Add support for decimal phase numbers (e.g., `4.5`) for urgent mid-milestone work. Simple numbering convention change\n\n7. **LOW — Milestone management with archive**: Add `/gsd-new-milestone`, `/gsd-complete-milestone`, `/gsd-audit-milestone` commands with MILESTONES.md archive\n\n8. **LOW — Adaptive context enrichment**: Dynamically adjust subagent prompt richness based on available context window (200K vs 500K+)",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1ac417509ffewKAqSjY4olEI6i"
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:39:53.978Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_attach_packed_output",
+      "metadata": {
+        "tool": "repomix_attach_packed_output",
+        "callID": "call_00_18H56ulzL25AmNvUH4kj5573",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:00.643Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_AfcGsf8Csq6SYNoKGcpo6369",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:01.090Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_cuAnCZQmaqFHx75GFjcP9182",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:01.532Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_02_Jazfpf72zUji8foX4mHI5828",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:01.980Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_03_JBUt8LYAvwhquTCtaQH34333",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:08.798Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_yMAfeGyHMnr3pL3LzkAj6649",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:09.232Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_GIboKXDjhlmeGswABbRL6540",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:09.680Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_02_8ozNCEqDtyejihjAoSAc2063",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:10.157Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_03_CtjG94RxFHNuIdPUyWax9701",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:16.903Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_00_RholEcVmaDrkHPujMb2y6630",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:17.309Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_01_vEONy69dkMHGfRBEEuCf8148",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:17.763Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_02_uiwygYwN9UnxEcxn0cMJ6294",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:18.191Z",
+      "type": "tool_call",
+      "content": "Tool: repomix_read_repomix_output",
+      "metadata": {
+        "tool": "repomix_read_repomix_output",
+        "callID": "call_03_8xWWGADSH1lAGztOodzF3417",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:40:42.001Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_jsYG5WHpbfB6H8Nt1lzC0613",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:41:38.687Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_hQPjelCuHb88Gq5xt2zQ0403",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:42:33.447Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_2nmVdLgZs8gun4KsA7uv3869",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:43:28.554Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_GyS06ELelNuaoHWyJ8um1270",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:44:23.788Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_xZsvnROaeOQV5y05Qmig8239",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:45:26.300Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_n9HuoiNDXC9ZPRwUdr4S7389",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:45:38.169Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_6ZGWK7TN4q0Vuda0vA2C8665",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-23T07:45:51.521Z",
+      "type": "assistant_message",
+      "content": "All 5 research documents completed successfully:\n\n| Document | Lines | Size | Status |\n|----------|-------|------|--------|\n| **1. gsd-command-system-deep-2026-05-23.md** | 370 | 17KB | ✅ |\n| **2. gsd-agent-architecture-deep-2026-05-23.md** | 402 | 19KB | ✅ |\n| **3. gsd-workflow-pipeline-deep-2026-05-23.md** | 433 | 19KB | ✅ |\n| **4. gsd-quality-gates-deep-2026-05-23.md** | 392 | 19KB | ✅ |\n| **5. gsd-sdk-surface-deep-2026-05-23.md** | 481 | 23KB | ✅ |\n| **Total 5 documents** | **2,078** | **108KB** | ✅ |\n\nAll documents are in `.hivemind/research/` with evidence tags (file:line references from the repomix output) and per-document recommendations for Hivemind.\n\n**Top 3 HIGHEST IMPACT findings across all dimensions:**\n\n1. **Package Legitimacy Gate** (3-layer supply-chain security) — GSD's most critical innovation. Hivemind has zero protection against slopsquatting. Should be added to `hm-l3-deep-research` immediately.\n\n2. **Namespace meta-skills for command routing** — 90% token savings (2,150→240 tokens/turn) by adding 6 router descriptions instead of 86 flat commands. Directly applicable to Hivemind's 19 commands.\n\n3. **Query handler registry (`gsd-sdk query`)** — GSD's typed registry with golden test parity, structured error classification (`ERROR_KINDS`), and per-call dispatch observability (`onDispatchEvent`). Hivemind's tool surface would benefit from a unified programmatic query layer.\n\n**Top 3 THINGS HIVEMIND MUST PRESERVE** (GSD has NO equivalent):\n1. **WaiterModel with dual-signal completion** + delegation journal + session-stacking — far more flexible than GSD's synchronous Task() calls\n2. **L1-L5 evidence hierarchy** with file:line requirements — GSD uses binary PASS/FAIL. Hivemind's graded evidence is strictly superior\n3. **L0-L1-L2 agent hierarchy** — GSD's flat agent model (33 peers) cannot decompose tasks as effectively as Hivemind's layered architecture",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1ac417509ffewKAqSjY4olEI6i"
+      }
+    }
+  ],
+  "lastMessage": "All 5 research documents completed successfully:\n\n| Document | Lines | Size | Status |\n|----------|-------|------|--------|\n| **1. gsd-command-system-deep-2026-05-23.md** | 370 | 17KB | ✅ |\n| **2. gsd-agent-architecture-deep-2026-05-23.md** | 402 | 19KB | ✅ |\n| **3. gsd-workflow-pipeline-deep-2026-05-23.md** | 433 | 19KB | ✅ |\n| **4. gsd-quality-gates-deep-2026-05-23.md** | 392 | 19KB | ✅ |\n| **5. gsd-sdk-surface-deep-2026-05-23.md** | 481 | 23KB | ✅ |\n| **Total 5 documents** | **2,078** | **108KB** | ✅ |\n\nAll documents are in `.hivemind/research/` with evidence tags (file:line references from the repomix output) and per-document recommendations for Hivemind.\n\n**Top 3 HIGHEST IMPACT findings across all dimensions:**\n\n1. **Package Legitimacy Gate** (3-layer supply-chain security) — GSD's most critical innovation. Hivemind has zero protection against slopsquatting. Should be added to `hm-l3-deep-research` immediately.\n\n2. **Namespace meta-skills for command routing** — 90% token savings (2,150→240 tokens/turn) by adding 6 router descriptions instead of 86 flat commands. Directly applicable to Hivemind's 19 commands.\n\n3. **Query handler registry (`gsd-sdk query`)** — GSD's typed registry with golden test parity, structured error classification (`ERROR_KINDS`), and per-call dispatch observability (`onDispatchEvent`). Hivemind's tool surface would benefit from a unified programmatic query layer.\n\n**Top 3 THINGS HIVEMIND MUST PRESERVE** (GSD has NO equivalent):\n1. **WaiterModel with dual-signal completion** + delegation journal + session-stacking — far more flexible than GSD's synchronous Task() calls\n2. **L1-L5 evidence hierarchy** with file:line requirements — GSD uses binary PASS/FAIL. Hivemind's graded evidence is strictly superior\n3. **L0-L1-L2 agent hierarchy** — GSD's flat agent model (33 peers) cannot decompose tasks as effectively as Hivemind's layered architecture"
+}

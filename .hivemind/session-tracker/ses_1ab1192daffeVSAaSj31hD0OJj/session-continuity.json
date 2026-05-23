@@ -1,0 +1,47 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1ab1192daffeVSAaSj31hD0OJj",
+  "lastUpdated": "2026-05-23T14:44:20.006Z",
+  "hierarchy": {
+    "root": "ses_1ab1192daffeVSAaSj31hD0OJj",
+    "children": {
+      "ses_1ab10495affeSpQdYu9oWfzVd1": {
+        "file": "ses_1ab10495affeSpQdYu9oWfzVd1.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1ab03791dffetWmMfeFws9liGW": {
+        "file": "ses_1ab03791dffetWmMfeFws9liGW.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1aad00327ffeiDIc0C5zrVrppl": {
+        "file": "ses_1aad00327ffeiDIc0C5zrVrppl.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1aab79510ffeCV4vW09IWnutzl": {
+        "file": "ses_1aab79510ffeCV4vW09IWnutzl.json",
+        "depth": 1,
+        "status": "idle",
+        "delegatedBy": "unknown",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 9,
+  "toolSummary": {
+    "skill": 1,
+    "glob": 5,
+    "bash": 10,
+    "todowrite": 2,
+    "delegate-task": 4,
+    "delegation-status": 9
+  }
+}

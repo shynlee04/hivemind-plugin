@@ -1,0 +1,426 @@
+{
+  "sessionID": "ses_1af327b39ffeLbp0gQ3YAGJEmR",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Create injection-patterns skill",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-22T17:48:26.713Z",
+  "updated": "2026-05-22T17:52:11.604Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-executor",
+      "content": "You are subagent **gsd-executor**. Execute Plan 23-03 (Wave 2, parallel).\n\n## CRITICAL: You are a subagent. Execute ALL tasks, commit each atomically.\n\n## Context\nCreate `hm-l3-injection-delivery-patterns` skill — 4 delivery patterns for Hivemind notification. Reference P23-01 fix (already committed) as the canonical implementation.\n\n## Read First\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-03-PLAN.md` (full plan)\n- `src/coordination/completion/notification-handler.ts` (after P23-01 fix — synthetic:true, reactivateSessionStream)\n- `src/shared/session-api.ts` (sendPrompt, appendTuiPrompt, showTuiToast)\n- `src/features/session-tracker/capture/message-capture.ts` (synthetic:true filter at line 356)\n- `.opencode/skills/hm-l3-hivemind-engine-contracts/SKILL.md` — REFERENCE template\n- `.opencode/skills/stack-l3-vitest/SKILL.md` — reference skill pattern\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-CONTEXT.md` — D2, D3\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-RESEARCH.md` — OpenCode Ecosystem Patterns\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-PATTERNS.md` — Wave 2 templates\n\n## Tasks\n\n### Task 1: Create skill directory + SKILL.md\nCreate `.opencode/skills/hm-l3-injection-delivery-patterns/SKILL.md`\n\nFormat per REFERENCE template with these sections:\n1. IRON CLAW validation chain header\n2. **4 Delivery Patterns:**\n   a. **Silent Injection** — `synthetic: true` + `noReply: true` → body context. When: non-terminal notifications, status updates. Agent decides when to poll delegation-status.\n   b. **Urgent Notification** — `appendTuiPrompt()` + `synthetic: true` body. When: delegation terminal states (failure/success). Agent sees urgency immediately.\n   c. **Stream Reactivation** — empty `synthetic: true` prompt. When: parent session stream stopped. Wake before delivery.\n   d. **Direct Session Injection** — `sendPrompt()` with full parts. When: complex multi-part payloads.\n3. **When to use which** — decision matrix\n4. **Real code examples** from notification-handler.ts (after P23-01 fix)\n5. **Anti-Patterns** — common mistakes\n6. **Self-Correction** (4 modes)\n7. **Cross-References**\n\n### Task 2: Create references/\n- `.opencode/skills/hm-l3-injection-delivery-patterns/references/injection-patterns-catalog.md` — full catalog with all patterns documented\n- `.opencode/skills/hm-l3-injection-delivery-patterns/references/delivery-mechanisms.md` — low-level mechanisms (TUI vs session vs synthetic)\n\n## Commit Protocol\n- Commit after each task\n- Write SUMMARY.md: `.planning/phases/23-notification-fix-and-tool-surface-docs/23-03-SUMMARY.md`\n\nReturn: `## PLAN 23-03 COMPLETE` when done.\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-executor",
+      "content": "Create injection-patterns skill",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-executor",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T17:48:31.070Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_J7PBA2VmPjlyDE9kB5T50932",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:31.361Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_hydoHJLPMQxM75aeFWjQ5600",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:31.573Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_Bkkk85sgPmDMC7gI0TOt2723",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:31.878Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_laUMqj5kE2U7dn5JQjQp2728",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:37.622Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_OnW9Yr132b2paNQXQc514929",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l3-hivemind-engine-contracts/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:38.142Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Ma3t7LYRUDReurcfm2KH0798",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/stack-l3-vitest/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:38.319Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_ErHZafJp2pxTxT0YkVey1044",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:38.619Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_UejlgpJdZ6J5gTDnRoqZ0621",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:39.127Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_vRM1j4juohRdMCve589U0203",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-PATTERNS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:47.463Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_bvXeDpI11JKbYXzDAR8r7530",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l3-hivemind-engine-contracts/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:47.951Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_LTtwynlFEEZCndKhf7F49973",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:48:53.901Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_cdSQTvfEHWDqOlmNqVvO9189",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l3-hivemind-engine-contracts/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:02.017Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_7AmvcvBrnkLVRHosXftB9550",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:07.651Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_X4wHFxnlgjUABZUkUul74309",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:49:59.167Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_JHfJ15OH60FLimTKUEJ78847",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:50:28.328Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_TLbZmgnm7xkCrhowKYpR7726",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:50:57.577Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_l7anM7f8tifU7CaYzjnv7176",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:05.834Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_G6BMtTIdeDybLSqcR4f65873",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:11.606Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_FNPuHxS5Vy7xYE5PAQad1806",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:12.114Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_ApGD0JNtapwPbN7sYhWi8789",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:12.391Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_jg3c3cMaFZlB1F2RsMOs7333",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:12.801Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_teYzOJbx0d6I80gj8j1q6090",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:13.481Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_04_ofC2uqQxpWIVNwjc16tE6956",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:22.166Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_OIq182FJuGqfhmgnikI04006",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:23.667Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_aVVaCxAmwbg5vyIVWbDo7529",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:30.661Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_srxZqDp3FfEBDU7xSqat2186",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:36.813Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_yhYKjniSMcwGkP1Xr4aZ7693",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:43.610Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_y5cQ2taYsUushBfhXbcM8751",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:50.305Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_EHyabiS8LoOyMIOmjgPu3796",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:51:57.021Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_2xiYO8ibNzFqACSR9M9d0736",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:52:04.665Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_hhjLkEHlwGSPAgKVV4ny2448",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:52:10.993Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_47OHHzjqfSwiOi09bDF24024",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:52:11.583Z",
+      "type": "assistant_message",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1af327b39ffeLbp0gQ3YAGJEmR"
+      }
+    }
+  ],
+  "lastMessage": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>"
+}

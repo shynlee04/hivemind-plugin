@@ -1,0 +1,87 @@
+{
+  "sessionID": "ses_1af7895b3ffenLLYRKeO0ZwEOu",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-codebase-mapper",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Wave 2 Surface audit tools",
+    "subagentType": "gsd-codebase-mapper"
+  },
+  "created": "2026-05-22T16:31:52.415Z",
+  "updated": "2026-05-22T16:32:11.836Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-codebase-mapper",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-codebase-mapper",
+      "content": "## AUDIT: Complete Tool Surface Documentation (P23-03)\n\n### Task\nRead EVERY tool file in `src/tools/` and produce a comprehensive tool surface documentation skill file.\n\n### Method\n1. Use `repomix pack` or glob to list ALL tool files: `src/tools/**/*.ts`\n2. For each tool, extract:\n   - File path and class/function name\n   - ALL actions (the `action` enum values or switch cases)\n   - Parameters/options for each action\n   - Return type shape\n   - Whether it's READ-ONLY or WRITE-SIDE (CQRS classification)\n   - Any limitations, bugs, or edge cases\n\n3. Create the output skill at: `.opencode/skills/hm-l3-tool-surface-documentation/SKILL.md`\n\n### Skill Structure Required\n\n```markdown\n# hm-l3-tool-surface-documentation\n\n## Overview\nComplete reference for ALL Hivemind custom tools.\n\n## Tool Catalog\n\n### 1. execute-slash-command\n- **File:** src/tools/... (find the actual path)\n- **CQRS:** Write (dispatches commands)\n- **Dispatch paths:**\n  - subtask:false + agent → synthetic parent prompt (session.prompt, one turn, restore)\n  - subtask:true + agent → subtask delegation (session.prompt with SubtaskPartInput)\n  - No overrides → TUI appendPrompt/submitPrompt\n- **When to use:** ...\n- **Limitations:** ...\n\n### 2. delegate-task\n- **File:** ...\n- **Mechanism:** SDK child-session dispatch via sendPromptAsync\n- **Monitoring:** WaiterModel with 30→45→60→90→120→180s progressive polling\n- **When to use:** Background delegation where you need completion detection, failure checkpoints, slot management\n- **When NOT to use:** Simple synchronous tasks — use native `task` tool instead\n- **Limitations:** ...\n- **Stacking:** Can stack on existing sessions via context.parentSessionId\n\n### 3. task (native OpenCode tool)\n- **Mechanism:** OpenCode native subagent dispatch\n- **When to use:** Quick, synchronous delegation where no monitoring needed\n- **When NOT to use:** Long-running background work needing failure detection\n\n### 4. delegation-status\n- **File:** ...\n- **Actions:** status, list, control\n- **When to use:** After delegate-task dispatch to poll completion or send control actions\n- **Limitations:** ...\n\n### ... and so on for ALL tools\n```\n\n### Differentiation Matrix (MANDATORY section)\n\n| Dimension | task (native) | delegate-task | execute-slash-command |\n|-----------|---------------|---------------|----------------------|\n| Mechanism | Native subagent | SDK child-session | TUI or session.prompt |\n| Monitoring | None | Progressive polling | N/A |\n| Control | None | abort/cancel/restart/resume/chain | N/A |\n| Best for | Quick sync tasks | Background delegation | Slash command routing |\n| Stack via | task_id | context.parentSessionId | agent parameter |\n\n### Verification\n- Verify EVERY tool reference against actual source code\n- Run: `ls src/tools/hivemind/ src/tools/delegation/` to get accurate file list\n- The skill must reference ONLY real files and real interfaces\n\n### File listing to start with (verify each exists):\n- src/tools/delegation/delegate-task.ts\n- src/tools/delegation/delegation-status.ts\n- src/tools/hivemind/session-tracker.ts\n- src/tools/hivemind/session-hierarchy.ts\n- src/tools/hivemind/session-context.ts\n- src/tools/hivemind/hivemind-session-view.ts\n- src/tools/hivemind/hivemind-trajectory.ts\n- src/tools/hivemind/hivemind-pressure.ts\n- src/tools/hivemind/hivemind-doc.ts\n- src/tools/hivemind/hivemind-command-engine.ts\n- src/tools/hivemind/hivemind-sdk-supervisor.ts\n- src/tools/hivemind/hivemind-agent-work-create.ts\n- src/tools/hivemind/hivemind-agent-work-export.ts\n- src/tools/config/configure-primitive.ts (or wherever it is)\n- src/tools/prompt/prompt-analyze.ts (or similar)\n- src/tools/prompt/prompt-skim.ts (or similar)\n\nRead the actual files to get accurate interfaces!",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-codebase-mapper",
+      "content": "Wave 2 Surface audit tools",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-codebase-mapper",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T16:32:01.631Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_B2Mm3Ma5LZZcBNXbrLHc5598",
+        "input": {
+          "name": "gsd-map-codebase"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:32:06.544Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_MMl9xZgT3U0kTanXKcfv4114",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:32:07.095Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_jxIGjw3I0v8GUq9SpL9z0144",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T16:32:11.826Z",
+      "type": "assistant_message",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1af7895b3ffenLLYRKeO0ZwEOu"
+      }
+    }
+  ],
+  "lastMessage": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>"
+}

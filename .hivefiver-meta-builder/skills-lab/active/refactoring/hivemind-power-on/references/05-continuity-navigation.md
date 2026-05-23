@@ -137,7 +137,7 @@ NEED CONTINUITY INFO?
 ## Aggregation Tool
 
 ```
-session-tracker({action: "aggregate", stats: ["sessionCount", "totalTurns", "activeCount"]})
+session-context({action: "aggregate", groupBy: "status"})
 ```
 
 Returns quick aggregate statistics without traversing files individually. Useful for summary reports.

@@ -1,0 +1,578 @@
+{
+  "sessionID": "ses_1af385ccfffeHryg3QG2Y0UQV1",
+  "parentSessionID": "ses_1af89bc72ffe2wgM6ks37Xd9VH",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Execute Wave 1 Plan 23-01",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-22T17:42:01.286Z",
+  "updated": "2026-05-22T17:47:09.264Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-executor",
+      "content": "You are subagent **gsd-executor**. Execute Plan 23-01 (Wave 1) of Phase 23.\n\n## CRITICAL: You are a subagent. Execute ALL 4 tasks below, commit each atomically.\n\n## Execution Context\n\nRead the plan file first:\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-01-PLAN.md`\n\nThen read these source files BEFORE making any changes:\n- `src/coordination/completion/notification-handler.ts` (CURRENT — read full file)\n- `src/shared/session-api.ts` (CURRENT — read sendPrompt/appendTuiPrompt signatures)\n- `src/features/session-tracker/capture/message-capture.ts` around line 356 (verify filter)\n- `tests/lib/coordination/completion/notification-handler.test.ts` (CURRENT tests)\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-PATTERNS.md` (Wave 1 code patterns)\n- `.planning/phases/23-notification-fix-and-tool-surface-docs/23-RESEARCH.md` (change points)\n\n## Tasks (execute in order)\n\n### Task 1: Add STALL_TIMEOUT_MS + synthetic:true + noReply:true to notification-handler.ts\nFILE: `src/coordination/completion/notification-handler.ts`\n\n1. Add `STALL_TIMEOUT_MS = 60000` constant at module level near existing imports\n2. Add `reactivateSessionStream()` function — sends empty `{ type: \"text\", text: \"\", synthetic: true }` with noReply:true. Best-effort (try/catch).\n3. Refactor `notifyParentSession()` to support `urgent` option:\n   - Silent (non-terminal): `noReply: true, parts: [{ type: \"text\", text, synthetic: true }]`\n   - Urgent (terminal): call `appendTuiPrompt()` + `showTuiToast()` first, then `noReply: false, parts: [{ type: \"text\", text, synthetic: true }]`\n   - Auto-determine urgency from `task.status === \"failed\" || task.status === \"completed\"`\n4. Fix `notifyDelegationTerminal()` at line ~231: add `synthetic: true` to text parts\n5. Call `reactivateSessionStream()` before urgent notification delivery\n\nDO NOT modify message-capture.ts (already correct at line 356).\nDO NOT modify detector.ts, plugin.ts.\n\n### Task 2: Expose noReply parameter in session-api.ts sendPrompt()\nFILE: `src/shared/session-api.ts`\n- Add `noReply?: boolean` parameter to `sendPrompt()` function signature\n- Pass it through to `SessionPromptData.body`\n\n### Task 3: Add reactivateSessionStream in notification-handler.ts\n(Already covered in Task 1 above)\n\n### Task 4: Update tests\nFILE: `tests/lib/coordination/completion/notification-handler.test.ts`\n- Add expect assertions for `synthetic: true` on notification parts\n- Add test for silent vs urgent delivery\n- Add test for stream reactivation\n- Add test for notifyDelegationTerminal() body construction\n- Run existing tests: `npx vitest run tests/lib/coordination/completion/notification-handler.test.ts`\n\n## Commit Protocol\n- Commit AFTER each task with message: `phase(23): <description>`\n- Run `npm run typecheck` after all tasks\n- Run `npx vitest run tests/lib/coordination/completion/notification-handler.test.ts` after all tasks\n- Write SUMMARY.md at `tests/lib/coordination/completion/notification-handler.SUMMARY.md` (wait this is wrong - use the phase dir)\n\nActually write SUMMARY.md to: `.planning/phases/23-notification-fix-and-tool-surface-docs/23-01-SUMMARY.md`\n\nFormat:\n```markdown\n# Plan 23-01 SUMMARY\n\n## Changes Made\n- notification-handler.ts: added STALL_TIMEOUT_MS, reactivateSessionStream(), two-mechanism notification, synthetic:true\n- session-api.ts: exposed noReply parameter\n- tests: added synthetic:true assertions, stream reactivation tests\n\n## Verification\n- `npm run typecheck`: PASS/FAIL\n- `npx vitest run tests/lib/coordination/completion/notification-handler.test.ts`: PASS/FAIL\n```\n\nReturn: `## PLAN 23-01 COMPLETE` when done.\n",
+      "tools": []
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-executor",
+      "content": "Execute Wave 1 Plan 23-01",
+      "tools": []
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-executor",
+      "content": "## PLAN 23-01 COMPLETE\n\n**Plan:** 23-01\n**Tasks:** 4/4 (all committed atomically)\n**SUMMARY:** `.planning/phases/23-notification-fix-and-tool-surface-docs/23-01-SUMMARY.md`\n\n**Commits:**\n- `d272f77d` — phase(23-01): add STALL_TIMEOUT_MS, reactivateSessionStream, two-mechanism notification, synthetic:true\n- `3877cd9f` — phase(23-01): expose noReply parameter in sendPrompt()\n- `12b325b1` — phase(23-01): add synthetic:true assertions and new notification handler tests\n- `6ac58658` — phase(23-01): export STALL_TIMEOUT_MS constant\n- `d4f02ba8` — docs(23-01): complete Plan 23-01 — notification delivery architecture fix\n\n**Verification:**\n- `npm run typecheck`: ✅ PASS\n- `npx vitest run tests/lib/notification-handler.test.ts`: ✅ 18/18 tests pass\n- `grep -c \"synthetic: true\" notification-handler.ts`: 3 (≥ 2 ✓)\n- `message-capture.ts` line 356: UNCHANGED (filter already correct ✓)",
+      "tools": []
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-22T17:42:10.988Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_12RtTjCN1MC9Q6d53Oqi3643",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:11.205Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_CXI5Z1QQmuHaxrOQZLnw7960",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:11.466Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_0JvFuApWGVVoSZWAehfZ3379",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:17.014Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_KgXM5ykxvK4WDfm4rZlz6904",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-PATTERNS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:17.366Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_BbxBWQWQWroY2OeZnWA41939",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:22.862Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_OwU12L8Vr7OvCfB5rCiU8486",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:23.248Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_XTjU3MDEvwvjQSg85z1T6690",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:28.512Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_18tEof90LBWaRvZDIA114546",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/notification-handler.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:48.217Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_9xpsCfR8sJtiQQAWokl55851",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:42:56.430Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_qmvnCAypTFYuUDTbCcBo5362",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:03.568Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_CTyWwB2Gorw0T5NFtc3a5317",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:11.563Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_gh4YkGikPqzhcsTBZmFx1263",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:17.978Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_8TuKOd8UfM9pYibEfznj8695",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:24.627Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_j3ufFfAuKE2oN6pOqkXg1835",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:29.942Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_V8jijbfWAchmFY3XggS12290",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:37.288Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_fVPZX1Qal4HMmUGfTL5x8549",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:43.422Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_p8peVwmNQUyCxMB9cmyY3861",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:43:56.305Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_iKRWw5DzsC7Z3Rhz26kI2155",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:44:02.043Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_JCZBC2nPGpq6xptdraJm2967",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:44:10.443Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_ZGgUoZOUSdcHAnwBinGk7749",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:44:23.432Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_wHzRMqAGQAjjRRMEzx3a4560",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:44:44.730Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_BaSj8hMIAA5yveZHwgTr1136",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:44:50.323Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_nmAcOGhiN00puGtzo7D04242",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:44:55.704Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_j5WdQX3W6yjsC6CD2EcM6766",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:02.447Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_Bbz1DlvOcOJI82RXpmtg4975",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:09.795Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_1KkdWnDQR8HvUFGgIVSn6670",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:16.571Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_Tpm0tFameTgqf8Evpcds7219",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:25.244Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_zMQEDTxl1EzPhbce42TS9332",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:36.091Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_f3hMexmS5We9T1vqYFLO5700",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:43.043Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_cKr9DxOztyciWoPktkNl0727",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:53.009Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_oVfLagzp58g9uEI5fOfd2157",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:59.526Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_PbchmzfCSbzeFbesoOOn0279",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:45:59.949Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_EoKdQDr8dg4TubYJS0880156",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:00.770Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_2jH5082SVE9JvQ5opgsG7578",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:06.677Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_UnE2Rz5r3QUNzXCPkWWk6967",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:13.738Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_te38tiz97Wb7QpljWV8W9122",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:14.157Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_gidfTrdepL8iqgAV3e392463",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:14.547Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_tJpjiiUpSlqVaKjMbMo19077",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:14.935Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_O9VpkdGJ5oG5X49zfKnz7978",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:15.325Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_04_6m9IPn6XdFAbHxGLDMPJ3521",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:21.888Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_pkiiEDM2QCPhv1yAEp9h0669",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:28.739Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_2dhlvopU2deuoMKxAXNj1634",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:41.827Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_phbuGKCNllUVhHHYIO2e2363",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:47.646Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ONCCZthnKSnAFrMhuA4T7754",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:46:53.906Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_7DFbxDokHlCI1skXwnCl2427",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:47:02.089Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_NP1KtZXTyHtFptwCG4bO7988",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-22T17:47:09.243Z",
+      "type": "assistant_message",
+      "content": "## PLAN 23-01 COMPLETE\n\n**Plan:** 23-01\n**Tasks:** 4/4 (all committed atomically)\n**SUMMARY:** `.planning/phases/23-notification-fix-and-tool-surface-docs/23-01-SUMMARY.md`\n\n**Commits:**\n- `d272f77d` — phase(23-01): add STALL_TIMEOUT_MS, reactivateSessionStream, two-mechanism notification, synthetic:true\n- `3877cd9f` — phase(23-01): expose noReply parameter in sendPrompt()\n- `12b325b1` — phase(23-01): add synthetic:true assertions and new notification handler tests\n- `6ac58658` — phase(23-01): export STALL_TIMEOUT_MS constant\n- `d4f02ba8` — docs(23-01): complete Plan 23-01 — notification delivery architecture fix\n\n**Verification:**\n- `npm run typecheck`: ✅ PASS\n- `npx vitest run tests/lib/notification-handler.test.ts`: ✅ 18/18 tests pass\n- `grep -c \"synthetic: true\" notification-handler.ts`: 3 (≥ 2 ✓)\n- `message-capture.ts` line 356: UNCHANGED (filter already correct ✓)",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1af385ccfffeHryg3QG2Y0UQV1"
+      }
+    }
+  ],
+  "lastMessage": "## PLAN 23-01 COMPLETE\n\n**Plan:** 23-01\n**Tasks:** 4/4 (all committed atomically)\n**SUMMARY:** `.planning/phases/23-notification-fix-and-tool-surface-docs/23-01-SUMMARY.md`\n\n**Commits:**\n- `d272f77d` — phase(23-01): add STALL_TIMEOUT_MS, reactivateSessionStream, two-mechanism notification, synthetic:true\n- `3877cd9f` — phase(23-01): expose noReply parameter in sendPrompt()\n- `12b325b1` — phase(23-01): add synthetic:true assertions and new notification handler tests\n- `6ac58658` — phase(23-01): export STALL_TIMEOUT_MS constant\n- `d4f02ba8` — docs(23-01): complete Plan 23-01 — notification delivery architecture fix\n\n**Verification:**\n- `npm run typecheck`: ✅ PASS\n- `npx vitest run tests/lib/notification-handler.test.ts`: ✅ 18/18 tests pass\n- `grep -c \"synthetic: true\" notification-handler.ts`: 3 (≥ 2 ✓)\n- `message-capture.ts` line 356: UNCHANGED (filter already correct ✓)"
+}

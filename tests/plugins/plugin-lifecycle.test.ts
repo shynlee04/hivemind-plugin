@@ -29,7 +29,11 @@ function createPluginClient() {
       status: vi.fn().mockResolvedValue({ data: {} }),
       abort: vi.fn().mockResolvedValue(undefined),
       prompt: vi.fn().mockResolvedValue(undefined),
+      promptAsync: vi.fn().mockResolvedValue(undefined),
       messages: vi.fn().mockResolvedValue({ data: [] }),
+    },
+    tui: {
+      showToast: vi.fn().mockResolvedValue({ data: true }),
     },
     app: {
       agents: vi.fn().mockResolvedValue({
@@ -117,7 +121,7 @@ describe("plugin lifecycle wiring", () => {
       await plugin.event({ event: { type: "session.created", sessionID: "ses_23a0root" } })
       await plugin.event({ event: { type: "message.updated", properties: { info: { id: "msg_not_a_root" }, sessionID: "ses_23a0root" } } })
 
-      expect(client.session.prompt).toHaveBeenCalledTimes(1)
+      expect(client.session.promptAsync).toHaveBeenCalledTimes(1)
       expect(getSessionContinuity("ses_23a0root")?.metadata.pendingNotifications).toEqual([])
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
@@ -225,8 +229,8 @@ describe("plugin lifecycle wiring", () => {
 
     await hooks.event({ event: { type: "session.created", sessionID: "ses-parent-replay-success" } })
 
-    expect(client.session.prompt).toHaveBeenCalledTimes(1)
-    const payload = client.session.prompt.mock.calls[0]?.[0]?.body?.parts?.[0]?.text
+    expect(client.session.promptAsync).toHaveBeenCalledTimes(1)
+    const payload = client.session.promptAsync.mock.calls[0]?.[0]?.body?.parts?.[0]?.text
     expect(payload).toContain("Summary: Delegated work finished with terminal state completed after 2.0s.")
     expect(payload).toContain('Metadata: {"delegationId":"del-replay-success","terminalState":"completed","recoveryGuarantee":"resumable","summaryPreview":"Replayable completion payload"}')
     expect(getSessionContinuity("ses-parent-replay-success")?.metadata.pendingNotifications).toEqual([])
@@ -234,7 +238,7 @@ describe("plugin lifecycle wiring", () => {
 
   it("keeps pending notifications when replay delivery fails on parent session.updated", async () => {
     const client = createPluginClient()
-    client.session.prompt.mockRejectedValue(new Error("parent unavailable during replay"))
+    client.session.promptAsync.mockRejectedValue(new Error("parent unavailable during replay"))
 
     recordSessionContinuity({
       sessionID: "ses-parent-replay-failure",
@@ -274,8 +278,9 @@ describe("plugin lifecycle wiring", () => {
 
     await hooks.event({ event: { type: "session.updated", sessionID: "ses-parent-replay-failure" } })
 
-    expect(client.session.prompt).toHaveBeenCalledTimes(1)
-    expect(getSessionContinuity("ses-parent-replay-failure")?.metadata.pendingNotifications).toHaveLength(1)
+    expect(client.session.promptAsync).toHaveBeenCalledTimes(1)
+    // queuePendingNotification appends on failure — expects 2 (original + re-queued)
+    expect(getSessionContinuity("ses-parent-replay-failure")?.metadata.pendingNotifications).toHaveLength(2)
   })
 
   it("makes auto-loop retry inert when the session is deleted while retry is pending", async () => {

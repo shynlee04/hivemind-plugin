@@ -10,13 +10,18 @@ import type { TaskNotification } from "../../src/shared/types.js"
 import type { Delegation } from "../../src/shared/types.js"
 
 /**
- * Stateful fake client that records sent prompts.
- * Matches the OpenCode SDK shape: session.prompt takes
- * { path: { id: string }, body: unknown }.
+ * Stateful fake client that records sent prompts and toasts.
+ * Matches the OpenCode SDK v1.14.44 shape.
+ *
+ * Step 1 changes:
+ * - Adds `promptAsync` tracking (fire-and-forget context injection)
+ * - Adds `showToast` tracking (user-visible toast)
+ * - Removes `appendPrompt` (BUG — pollutes user input)
  */
 function createFakeClient() {
   const sentPrompts: Array<{ sessionID: string; body: unknown }> = []
-  const sentTuiPrompts: string[] = []
+  const sentAsyncPrompts: Array<{ sessionID: string; body: unknown }> = []
+  const sentToasts: Array<{ message: string; variant?: string }> = []
   return {
     session: {
       prompt: vi.fn(async (request: { path: { id: string }; body: unknown }) => {
@@ -24,12 +29,16 @@ function createFakeClient() {
         // Return data-wrapped response that unwrapData extracts
         return { data: "{}" }
       }),
+      promptAsync: vi.fn(async (request: { path: { id: string }; body: unknown }) => {
+        sentAsyncPrompts.push({ sessionID: request.path.id, body: request.body })
+        // promptAsync returns 204 No Content — void
+      }),
       // getSessionMessages uses client.session.messages(params)
       messages: vi.fn(async () => ({ data: { messages: [] } })),
     },
     tui: {
-      appendPrompt: vi.fn(async (request: { body: { text: string } }) => {
-        sentTuiPrompts.push(request.body.text)
+      showToast: vi.fn(async (request: { body: { message: string; variant?: string } }) => {
+        sentToasts.push({ message: request.body.message, variant: request.body.variant })
         return { data: true }
       }),
     },
@@ -37,7 +46,8 @@ function createFakeClient() {
       log: vi.fn(),
     },
     getSentPrompts: () => sentPrompts,
-    getSentTuiPrompts: () => sentTuiPrompts,
+    getSentAsyncPrompts: () => sentAsyncPrompts,
+    getSentToasts: () => sentToasts,
   }
 }
 
@@ -205,8 +215,8 @@ describe("formatToastMessage", () => {
   })
 })
 
-describe("notifyParentSession (integration with fake client)", () => {
-  it("sends prompt to parent session via fake client", async () => {
+describe("notifyParentSession (Step 1 — toast + async context injection)", () => {
+  it("shows toast and injects context via promptAsync for any status", async () => {
     const client = createFakeClient()
     const task: TaskNotification = {
       delegationId: "delg_100",
@@ -224,16 +234,24 @@ describe("notifyParentSession (integration with fake client)", () => {
     )
 
     expect(delivered).toBe(true)
-    const prompts = client.getSentPrompts()
-    expect(prompts.length).toBe(2) // stream reactivation + notification
-    // Last prompt is the notification
-    const body = prompts[prompts.length - 1].body as { parts: Array<{ text: string; synthetic?: boolean }>; noReply: boolean }
+
+    // 1. Toast was shown
+    const toasts = client.getSentToasts()
+    expect(toasts.length).toBe(1)
+    expect(toasts[0].message).toContain("completed")
+    expect(toasts[0].message).toContain("builder")
+    expect(toasts[0].variant).toBe("success")
+
+    // 2. Context injected via promptAsync (fire-and-forget)
+    const asyncPrompts = client.getSentAsyncPrompts()
+    expect(asyncPrompts.length).toBe(1)
+    const body = asyncPrompts[0].body as { parts: Array<{ text: string }>; noReply: boolean }
+    expect(body.noReply).toBe(true)
     expect(body.parts[0].text).toContain("completed")
     expect(body.parts[0].text).toContain("builder")
-    expect(body.parts[0].synthetic).toBe(true)
   })
 
-  it("delivers silent notification with noReply:true and synthetic:true for non-terminal status", async () => {
+  it("shows info toast + async context for non-terminal (started) status", async () => {
     const client = createFakeClient()
     const task: TaskNotification = {
       delegationId: "delg_102",
@@ -250,14 +268,21 @@ describe("notifyParentSession (integration with fake client)", () => {
       task
     )
 
-    const prompts = client.getSentPrompts()
-    expect(prompts.length).toBe(1) // no stream reactivation for non-urgent
-    const body = prompts[0].body as { parts: Array<{ text: string; synthetic?: boolean }>; noReply: boolean }
+    // Toast with info variant
+    const toasts = client.getSentToasts()
+    expect(toasts.length).toBe(1)
+    expect(toasts[0].variant).toBe("info")
+    expect(toasts[0].message).toContain("▶")
+    expect(toasts[0].message).toContain("Silent progress update")
+
+    // Async context injection
+    const asyncPrompts = client.getSentAsyncPrompts()
+    expect(asyncPrompts.length).toBe(1)
+    const body = asyncPrompts[0].body as { noReply: boolean }
     expect(body.noReply).toBe(true)
-    expect(body.parts[0].synthetic).toBe(true)
   })
 
-  it("delivers urgent notification with appendTuiPrompt for terminal status", async () => {
+  it("shows error toast + async context for failed status", async () => {
     const client = createFakeClient()
     const task: TaskNotification = {
       delegationId: "delg_103",
@@ -274,49 +299,31 @@ describe("notifyParentSession (integration with fake client)", () => {
       task
     )
 
-    // TUI prompt should have been called
-    expect(client.getSentTuiPrompts().length).toBeGreaterThan(0)
-    expect(client.getSentTuiPrompts()[0]).toContain("Failed task notification")
+    // Toast with error variant — NOT appendTuiPrompt (removed in Step 1)
+    const toasts = client.getSentToasts()
+    expect(toasts.length).toBe(1)
+    expect(toasts[0].variant).toBe("error")
+    expect(toasts[0].message).toContain("Failed task notification")
 
-    const prompts = client.getSentPrompts()
-    expect(prompts.length).toBe(2) // stream reactivation + notification
-    const body = prompts[prompts.length - 1].body as { parts: Array<{ text: string; synthetic?: boolean }>; noReply: boolean }
-    expect(body.noReply).toBe(false)
-    expect(body.parts[0].synthetic).toBe(true)
-  })
-
-  it("delivers silent notification when options.urgent is explicitly false", async () => {
-    const client = createFakeClient()
-    const task: TaskNotification = {
-      delegationId: "delg_104",
-      agent: "builder",
-      title: "Forced silent",
-      status: "failed",
-      description: "Should be silent despite terminal status",
-      sessionID: "child_ses",
-    }
-
-    await notifyParentSession(
-      client as never,
-      "ses_parent_005",
-      task,
-      undefined,
-      { urgent: false }
-    )
-
-    const prompts = client.getSentPrompts()
-    expect(prompts.length).toBe(1) // no stream reactivation
-    const body = prompts[0].body as { noReply: boolean }
+    // Async context injection
+    const asyncPrompts = client.getSentAsyncPrompts()
+    expect(asyncPrompts.length).toBe(1)
+    const body = asyncPrompts[0].body as { noReply: boolean; parts: Array<{ text: string }> }
     expect(body.noReply).toBe(true)
+    expect(body.parts[0].text).toContain("failed")
   })
 
-  it("returns false when sendPrompt fails", async () => {
+  it("returns false when promptAsync fails (toast still best-effort)", async () => {
     const client = {
       session: {
-        prompt: vi.fn(async () => {
+        promptAsync: vi.fn(async () => {
           throw new Error("Connection lost")
         }),
       },
+      tui: {
+        showToast: vi.fn(async () => ({ data: true })),
+      },
+      app: { log: vi.fn() },
     }
     const task: TaskNotification = {
       delegationId: "delg_101",
@@ -338,26 +345,24 @@ describe("notifyParentSession (integration with fake client)", () => {
 })
 
 describe("reactivateSessionStream", () => {
-  it("sends empty synthetic prompt with noReply:true", async () => {
+  it("sends empty prompt via promptAsync with noReply:true", async () => {
     const client = createFakeClient()
     await reactivateSessionStream(client as never, "ses_parent_stream")
 
-    const prompts = client.getSentPrompts()
-    expect(prompts.length).toBe(1)
-    const body = prompts[0].body as { parts: Array<{ type: string; text: string; synthetic: boolean }>; noReply: boolean }
+    const asyncPrompts = client.getSentAsyncPrompts()
+    expect(asyncPrompts.length).toBe(1)
+    const body = asyncPrompts[0].body as { parts: Array<{ type: string; text: string }>; noReply: boolean }
     expect(body.noReply).toBe(true)
     expect(body.parts[0].type).toBe("text")
     expect(body.parts[0].text).toBe("")
-    expect(body.parts[0].synthetic).toBe(true)
   })
 
-  it("does not throw when sendPrompt fails", async () => {
+  it("does not throw when promptAsync fails", async () => {
     const client = {
       session: {
-        prompt: vi.fn(async () => {
+        promptAsync: vi.fn(async () => {
           throw new Error("Connection lost")
         }),
-        messages: vi.fn(async () => ({ data: { messages: [] } })),
       },
     }
     await expect(reactivateSessionStream(client as never, "ses_parent_stream_fail")).resolves.toBeUndefined()
@@ -365,7 +370,7 @@ describe("reactivateSessionStream", () => {
 })
 
 describe("notifyDelegationTerminal", () => {
-  it("sends notification with synthetic:true and reactivates stream", async () => {
+  it("shows toast + sends notification via sendPrompt", async () => {
     const client = createFakeClient()
     const delegation: Delegation = {
       id: "delg_term_001",
@@ -382,19 +387,18 @@ describe("notifyDelegationTerminal", () => {
 
     await notifyDelegationTerminal(client as never, delegation)
 
+    // 1. Toast shown to user
+    const toasts = client.getSentToasts()
+    expect(toasts.length).toBe(1)
+    expect(toasts[0].variant).toBe("success")
+    expect(toasts[0].message).toContain("completed")
+
+    // 2. Context injected via sendPrompt (synchronous)
     const prompts = client.getSentPrompts()
-    // First prompt is stream reactivation, second is notification
-    expect(prompts.length).toBe(2)
-    // First call is reactivation
+    expect(prompts.length).toBe(1)
     expect(prompts[0].sessionID).toBe("ses_parent_term")
-    const reactivationBody = prompts[0].body as { parts: Array<{ text: string; synthetic: boolean }> }
-    expect(reactivationBody.parts[0].text).toBe("")
-    expect(reactivationBody.parts[0].synthetic).toBe(true)
-    // Second call is notification with synthetic
-    expect(prompts[1].sessionID).toBe("ses_parent_term")
-    const notifBody = prompts[1].body as { parts: Array<{ text: string; synthetic: boolean }>; noReply: boolean }
+    const notifBody = prompts[0].body as { parts: Array<{ text: string }>; noReply: boolean }
     expect(notifBody.noReply).toBe(true)
-    expect(notifBody.parts[0].synthetic).toBe(true)
     expect(notifBody.parts[0].text).toContain("completed")
     expect(notifBody.parts[0].text).toContain("researcher")
   })

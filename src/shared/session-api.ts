@@ -11,7 +11,8 @@ type SessionCreateRequest = Parameters<OpenCodeClient["session"]["create"]>[0]
 type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
 type SessionMessagesRequest = Parameters<OpenCodeClient["session"]["messages"]>[0]
 type TuiAppendPromptRequest = Parameters<OpenCodeClient["tui"]["appendPrompt"]>[0]
-type TuiShowToastRequest = Parameters<OpenCodeClient["tui"]["showToast"]>[0]
+// Using inline cast for showToast — the SDK Options type is complex
+// type TuiShowToastRequest is intentionally unused
 
 type CreateSessionOptions = {
   parentID?: string
@@ -213,13 +214,25 @@ export async function appendTuiPrompt(client: OpenCodeClient, text: string): Pro
 /**
  * Show a compact delegation toast in the OpenCode TUI when the host exposes it.
  *
+ * Step 1 (notification redesign): replaces `appendTuiPrompt` for user-visible notifications.
+ * Toast is transient — user sees it, agent's context does NOT receive it.
+ *
+ * SDK v1 API: `client.tui.showToast({ body: { message, variant, duration?, title? } })`
+ *
  * @param client - OpenCode SDK client with the `tui.showToast` surface.
  * @param message - Toast message to display.
+ * @param variant - Optional visual style: "info" | "success" | "error" | "warning".
  * @returns The unwrapped SDK response when the toast succeeds.
  */
-export async function showTuiToast(client: OpenCodeClient, message: string): Promise<unknown> {
-  const request: TuiShowToastRequest = { body: { message } } as TuiShowToastRequest
-  return unwrapData(await client.tui.showToast(request))
+export async function showTuiToast(
+  client: OpenCodeClient,
+  message: string,
+  variant?: "info" | "success" | "error" | "warning",
+): Promise<unknown> {
+  return unwrapData(await client.tui.showToast({
+    body: { message, ...(variant ? { variant } : {}) },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any))
 }
 
 export function getSessionID(session: unknown): string | undefined {

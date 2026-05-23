@@ -130,9 +130,8 @@ Once you understand the session landscape:
    ```
 
 3. **To continue work or verify completeness:**
-   - Resume a session: via `task` tool with `task_id` parameter
-   - Stack new work onto session: via `delegate-task` with
-     `context: '{"parentSessionId": "<id>"}'`
+   - Resume a session: via `task` tool with `task_id` (PREFERRED — full control)
+    - Stack new work onto session: via `task` tool with `task_id` (PREFERRED) or `delegate-task` with `context: '{"parentSessionId": "<id>"}'` (async background only)
    - Run a command: via `execute-slash-command`
    - Discover available commands: via `hivemind-command-engine`
 
@@ -207,8 +206,8 @@ needing to resume the original session.
 | Situation | Approach | Why |
 |-----------|----------|-----|
 | Session is still active, agent is same type | **Resume** via `task(task_id=...)` | Preserves full context |
-| Session completed, need to add work | **Stack** via `delegate-task(parentSessionId=...)` | Attaches as child — clean hierarchy |
-| Different agent type needed | **Stack** via delegate-task | Agent type mismatch prevents resume |
+| Session completed, need to add work | **Stack** via `task(task_id=...)` (preferred) or `delegate-task(parentSessionId=...)` (if async needed) | Clean hierarchy; task tool gives full control |
+| Different agent type needed | **Stack** via `task(task_id=...)` (if supported) or `delegate-task` | Agent type mismatch may prevent resume |
 | Not sure if resumable | **Check** via delegation-status first | Verify before attempting |
 
 ### Resume Mechanics
@@ -248,7 +247,7 @@ that creates an independent session without hierarchy tracking.
 | **Broken resume assumption** | Assuming `task(task_id=...)` always preserves context | Verify SDK version and delegation status before attempting resume |
 | **Lost hierarchy** | Injecting session IDs into prompt text instead of using `parentSessionId` parameter | Use `context: '{"parentSessionId": "..."}'` — the SDK handles hierarchy tracking |
 | **Discovery without filter** | Calling `list-sessions` on a project with hundreds of sessions | Use `filter-sessions` with status, agent type, or time range to narrow results |
-| **Read-write blur** | Calling session state tools when the real need is to create or continue work | Use discover→navigate→aggregate to inform, then use appropriate write-side tools (delegate-task, task) for action |
+| **Read-write blur** | Calling session state tools when the real need is to create or continue work | Use discover→navigate→aggregate to inform, then use task tool (preferred, full control) or delegate-task (async background only) for action |
 
 ## 6. Self-Correction — When Things Go Wrong
 
@@ -305,8 +304,6 @@ all at once.
 | File | Contains | Read When |
 |------|----------|-----------|
 | `references/session-tools-reference.md` | Complete tool signatures, parameter schemas, response formats | You need exact API details for tool calls |
-| `references/terminology-map.md` | Session concepts translated across frameworks (session, subagent, delegation, stacking, hierarchy, CQRS boundaries, evidence hierarchy) | You encounter unfamiliar framework terminology or need to map concepts between systems |
-| `references/philosophy.md` | Design principles: CQRS read-side, progressive disclosure, session as unit of work, hierarchy structure, tool name contracts | You need the "why" behind the tool design patterns |
 | `references/future-tools-tbd.md` | 🟡 PARTIAL tools in development: trajectory (P24), pressure (P26), agent-work (P25), background-command (CP-PTY-01) — their current state and future role | You hear about a session tool not in the main catalog or need to know what's coming
 
 ## 8. Short Version (for tight context)

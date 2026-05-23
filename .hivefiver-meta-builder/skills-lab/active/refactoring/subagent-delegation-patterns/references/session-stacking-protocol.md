@@ -42,7 +42,7 @@ task(
 )
 ```
 
-**Important:** The `task_id` parameter is NOT for creating new parent-child links with arbitrary sessions — it is specifically for resuming an existing subagent session. For stacking new work onto completed sessions, use `delegate-task` with `parentSessionId`.
+**Important:** The `task_id` parameter supports BOTH resuming an incomplete session AND stacking new work onto a completed session. This aligns with the skill's stance that both `task` (with `task_id`) and `delegate-task` (with `parentSessionId`) can attach work to existing sessions. The `task` tool is the **preferred approach** for code editing and artifact work; `delegate-task` with `parentSessionId` is the async alternative for research/audit/review tasks. Do NOT inject the session ID into the prompt text in either case — always pass it as a parameter.
 
 ## Stacking via parentSessionId (Delegate-Task)
 
