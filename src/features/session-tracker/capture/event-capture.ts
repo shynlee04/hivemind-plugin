@@ -15,7 +15,7 @@
  */
 
 import type { OpenCodeClient } from "../../../shared/session-api.js"
-import { getSession } from "../../../shared/session-api.js"
+import { getSession, getSessionMessages } from "../../../shared/session-api.js"
 import type { SessionWriter } from "../persistence/session-writer.js"
 import type { ChildWriter } from "../persistence/child-writer.js"
 import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
@@ -23,9 +23,10 @@ import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "../persistence/hierarchy-manifest.js"
-import type { JourneyEntry } from "../types.js"
+import type { JourneyEntry, Turn } from "../types.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
+import { asString, getNestedValue } from "../../../shared/helpers.js"
 
 // ---------------------------------------------------------------------------
 // EventCapture class
@@ -298,6 +299,7 @@ export class EventCapture {
         if (this.manifestWriter) {
           await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
+        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch(() => {})
         return
       }
       // Main session — "completed" is a valid terminal transition from "running"
@@ -349,6 +351,7 @@ export class EventCapture {
             },
           })
         })
+        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch(() => {})
         return
       }
       // Main session — existing behavior
@@ -400,6 +403,7 @@ export class EventCapture {
             },
           })
         })
+        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch(() => {})
         return
       }
       // Main session — existing behavior
@@ -637,9 +641,12 @@ export class EventCapture {
       const candidate = record[key]
       if (typeof candidate === "string" && candidate.trim().length > 0) return candidate
     }
-    for (const key of preferredKeys) {
-      const nested = this.findCompactionText(record[key])
-      if (nested) return nested
+    for (const key of Object.keys(record)) {
+      const val = record[key]
+      if (val && typeof val === "object") {
+        const nested = this.findCompactionText(val)
+        if (nested) return nested
+      }
     }
     return undefined
   }
@@ -704,5 +711,62 @@ export class EventCapture {
         },
       })
     }
+  }
+
+  /**
+   * Backfills turns and lastMessage from OpenCode SDK messages on child completion.
+   */
+  private async backfillChildTurnsFromSdk(
+    parentID: string,
+    childSessionID: string,
+  ): Promise<void> {
+    try {
+      const messages = await getSessionMessages(this.client, childSessionID)
+      if (!messages || messages.length === 0) return
+
+      const turns: Turn[] = []
+      let turnNumber = 1
+      for (const message of messages) {
+        const role = this.messageRole(message)
+        const content = this.extractTextFromSdkMessage(message)
+        if (!content) continue
+
+        turns.push({
+          turn: turnNumber++,
+          actor: (getNestedValue(message, ["agent"]) as string) || (role === "user" ? "user" : "unknown"),
+          content,
+          tools: [],
+          role,
+        })
+      }
+
+      if (turns.length > 0) {
+        await this.childWriter.backfillChildTurns(parentID, childSessionID, turns)
+      }
+    } catch (err) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: failed to backfill child turns for "${childSessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  }
+
+  private messageRole(message: unknown): string | undefined {
+    return asString(getNestedValue(message, ["info", "role"])) ?? asString(getNestedValue(message, ["role"]))
+  }
+
+  private extractTextFromSdkMessage(message: unknown): string | undefined {
+    const parts = getNestedValue(message, ["parts"])
+    if (!Array.isArray(parts)) return undefined
+    const content = parts
+      .filter((part) => getNestedValue(part, ["type"]) === "text")
+      .map((part) => asString(getNestedValue(part, ["text"])) ?? "")
+      .filter((text) => text.length > 0)
+      .join("\n")
+    return content.length > 0 ? content : undefined
   }
 }

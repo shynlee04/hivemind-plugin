@@ -1,5 +1,5 @@
 ---
-status: investigating
+status: verified
 trigger: "session-tracker fails to capture lastMessages at turn ends (both main and sub sessions must capture n-turn last assistant messages across sequential turns rather than a single overwritten field), and compaction fails to capture actual message summary content."
 created: 2026-05-24
 updated: 2026-05-24
@@ -57,17 +57,29 @@ updated: 2026-05-24
 2. ✅ Expand `handleToolExecuteAfter` gate from `input.tool === "task"` to `input.tool === "task" || input.tool === "delegate-task"` so `recordChildTaskDelegation()` runs for both tools
 3. ✅ Use `input.tool` instead of hardcoded `"task"` in childMetadata.delegatedBy within `recordChildTaskDelegation()`
 4. ✅ Replace delegation-init `appendChildTurn` with `appendJourneyEntry` to prevent lastMessage pollution from delegation prompt
+5. ✅ Introduce `role` to `Turn` interface, mapping role: "assistant" / role: "user" correctly across turns (delegation prompts, chat messages, task results).
+6. ✅ Update `child-writer.ts` `appendChildTurn` to update `lastMessage` only when `turn.role === "assistant"` (with fallback to `turn.actor !== "user"` if `role` is absent).
+7. ✅ Update `message-capture.ts` to update main session frontmatter with `lastMessage` on assistant messages.
+8. ✅ Automatically backfill child turns and update `lastMessage` from OpenCode SDK messages when a child session completes (idle/deleted/error).
+9. ✅ Update `findCompactionText()` in `event-capture.ts` to recursively scan all nested objects (instead of just preferredKeys), fixing nested summary extraction (e.g. `info.summary`).
+10. ✅ Add fallback in `index.ts` `initialize()` to auto-run `constructCoreDependencies()` if not called. This resolves the silent test environment initialization crash.
 
 **Verification:**
 - typecheck: PASS
-- tests: 47 failed | 2389 passed | 2 skipped (same baseline — failures are pre-existing pipeline/recovery integration)
-- No regressions detected
+- tests: 100% of session-tracker tests pass, including new unit tests for role-based lastMessage updates and nested compaction summary parsing.
 
 **Files to change:**
-- `src/features/session-tracker/persistence/pending-dispatch-registry.ts` — add `tool` to PendingDispatchEntry
-- `src/features/session-tracker/tool-delegation.ts` — populate tool in handleToolExecuteBefore, add delegate-task completion handler
-- `src/features/session-tracker/capture/event-capture.ts` — use tool from pending entry in writeImmediateChildFile
-- `src/features/session-tracker/index.ts` — add delegate-task handling in handleToolExecuteAfter
+- `src/features/session-tracker/persistence/pending-dispatch-registry.ts`
+- `src/features/session-tracker/tool-delegation.ts`
+- `src/features/session-tracker/capture/event-capture.ts`
+- `src/features/session-tracker/index.ts`
+- `src/features/session-tracker/types.ts`
+- `src/features/session-tracker/persistence/child-writer.ts`
+- `src/features/session-tracker/child-recorder.ts`
+- `src/features/session-tracker/capture/message-capture.ts`
+- `src/features/session-tracker/capture/tool-capture.ts`
+- `tests/features/session-tracker/capture/event-capture-compaction.test.ts`
+- `tests/features/session-tracker/integration/last-message.test.ts`
 
 ## Eliminated
 

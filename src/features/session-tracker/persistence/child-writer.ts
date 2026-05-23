@@ -340,7 +340,8 @@ export class ChildWriter {
         record.updated = new Date().toISOString()
 
         // P-04: Track last assistant message for resumption context
-        if (turn.actor !== "user" && turn.content) {
+        const isAssistant = turn.role === "assistant" || (!turn.role && turn.actor !== "user")
+        if (isAssistant && turn.content) {
           record.lastMessage = turn.content
         }
 
@@ -435,6 +436,51 @@ export class ChildWriter {
           await atomicWriteJson(filePath, record)
         }
         // If mainAgent already has real values, no-op
+      },
+    )
+  }
+
+  /**
+   * Backfills/replaces turns for an existing child session .json file.
+   *
+   * Updates/merges the turns array and sets lastMessage to the latest assistant turn.
+   */
+  async backfillChildTurns(
+    parentSessionID: string,
+    childSessionID: string,
+    turns: Turn[],
+  ): Promise<void> {
+    const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
+    return this.enqueueWrite(
+      `${writeParent}/${childSessionID}`,
+      async () => {
+        let record: ChildSessionRecord
+        try {
+          record = await this.readChildFile(writeParent, childSessionID)
+        } catch {
+          // Child file doesn't exist yet — nothing to backfill
+          return
+        }
+
+        let updated = false
+        if (turns.length > record.turns.length) {
+          record.turns = turns
+          updated = true
+        }
+
+        const lastAssistant = [...record.turns].reverse().find(
+          (t) => t.role === "assistant" || (!t.role && t.actor !== "user"),
+        )
+        if (lastAssistant?.content && record.lastMessage !== lastAssistant.content) {
+          record.lastMessage = lastAssistant.content
+          updated = true
+        }
+
+        if (updated) {
+          record.updated = new Date().toISOString()
+          const filePath = this.getChildFilePath(writeParent, childSessionID)
+          await atomicWriteJson(filePath, record)
+        }
       },
     )
   }

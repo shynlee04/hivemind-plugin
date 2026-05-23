@@ -209,5 +209,31 @@ describe("LastMessage capture (RC-4)", () => {
       expect(content.lastMessage).toBe(longMessage)
       expect(content.lastMessage).toHaveLength(5000)
     })
+
+    it("updates lastMessage only for assistant turns and ignores delegation spawn turn", async () => {
+      await childWriter.createChildFile(PARENT, CHILD, makeChildRecord({
+        sessionID: CHILD,
+      }))
+
+      // Append delegation spawn turn (role user/system) — should NOT set lastMessage
+      await childWriter.appendChildTurn(PARENT, CHILD, {
+        actor: "hm-l2-investigator",
+        content: "Please find the bug.",
+        role: "user",
+      })
+
+      let content = await readChildFile()
+      expect(content.lastMessage).toBeUndefined()
+
+      // Append assistant turn (role assistant) — should set lastMessage
+      await childWriter.appendChildTurn(PARENT, CHILD, {
+        actor: "hm-l2-investigator",
+        content: "Analysis complete. Bug resolved.",
+        role: "assistant",
+      })
+
+      content = await readChildFile()
+      expect(content.lastMessage).toBe("Analysis complete. Bug resolved.")
+    })
   })
 })

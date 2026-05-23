@@ -65,6 +65,8 @@ export interface SessionRecord {
   continuityIndex: string
   /** Session status: active | idle | completed | error. */
   status: string
+  /** Last assistant message content for context recovery. */
+  lastMessage?: string
 }
 
 /** Metadata about the agent that performed a delegation. */
@@ -174,6 +176,8 @@ export interface Turn {
   content: string
   /** Tool invocations that occurred during this turn. */
   tools: ToolRecord[]
+  /** Optional role (e.g., "user", "assistant") to precisely classify the turn. */
+  role?: string
 }
 
 /**

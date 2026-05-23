@@ -111,5 +111,24 @@ describe("EventCapture — compaction handling (D-10)", () => {
       expect(mockAppendCompactionBlock).toHaveBeenCalled()
       expect(mockAppendCompactionBlock.mock.calls[0][1]).toContain("## COMPACTED")
     })
+
+    it("should extract nested compaction summary (e.g. info.summary)", async () => {
+      await eventCapture.handleSessionEvent({
+        eventType: "session.compacted",
+        sessionID: "ses_main_compact_nested",
+        event: {
+          trigger: "context-budget",
+          info: {
+            summary: "Compacted 10 user messages into a 1-sentence summary.",
+          },
+        },
+      })
+
+      expect(mockAppendCompactionBlock).toHaveBeenCalled()
+      // get the last call
+      const lastCall = mockAppendCompactionBlock.mock.calls[mockAppendCompactionBlock.mock.calls.length - 1]
+      expect(lastCall[0]).toBe("ses_main_compact_nested")
+      expect(lastCall[1]).toContain("Compacted 10 user messages into a 1-sentence summary.")
+    })
   })
 })

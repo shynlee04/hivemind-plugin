@@ -489,6 +489,9 @@ export class SessionTracker {
    */
   async initialize(): Promise<void> {
     try {
+      if (!this.hierarchyIndex) {
+        this.constructCoreDependencies()
+      }
       await this.hierarchyIndex.buildFromDisk()
       await this.retryQueue.flush()
       this.startRetryFlushLoop()

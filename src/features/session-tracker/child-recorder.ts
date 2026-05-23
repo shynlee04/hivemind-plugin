@@ -105,6 +105,7 @@ export class ChildRecorder {
         actor: input.agent || "unknown",
         content,
         tools: [],
+        role: typeof messageRole === "string" ? messageRole : undefined,
       },
     )
 

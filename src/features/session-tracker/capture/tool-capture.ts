@@ -307,6 +307,7 @@ export class ToolCapture {
           actor: subagentType || "unknown",
           content: description || "Task delegation initiated",
           tools: [],
+          role: "user",
         },
       )
 
@@ -320,6 +321,7 @@ export class ToolCapture {
             actor: subagentType || "unknown",
             content: taskResult,
             tools: [],
+            role: "assistant",
           },
         )
         await this.childWriter.appendJourneyEntry(input.sessionID, childSessionID, {

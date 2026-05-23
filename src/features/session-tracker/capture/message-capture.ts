@@ -218,6 +218,12 @@ export class MessageCapture {
       metadata.thinkingDuration,
       content || undefined,
     )
+
+    if (content) {
+      await this.sessionWriter.updateFrontmatter(input.sessionID, {
+        lastMessage: content,
+      })
+    }
   }
 
   /**
