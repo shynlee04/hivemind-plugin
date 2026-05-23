@@ -275,27 +275,34 @@ export class EventCapture {
   }
 
   /**
-   * Handles `session.idle` — updates the session status to "idle".
+   * Handles `session.idle` — updates the session status to "completed".
    * Child sessions are routed through childWriter + sessionIndexWriter (DEFECT-08).
+   *
+   * Uses "completed" instead of "idle" because "idle" is not a valid TaskStatus,
+   * which prevents any further status transitions and leaves sessions stuck.
+   * "completed" is terminal and valid — `running → completed` is in VALID_TRANSITIONS.
+   *
+   * Respects status precedence: terminal states ("completed", "error") are NOT
+   * overwritten. This prevents the race where session.idle fires
+   * after recordChildTaskDelegation already set "completed".
    */
   private async handleSessionIdle(sessionID: string): Promise<void> {
     try {
       // Check if this is a child session
       const childRoute = await this.resolveChildLifecycleRoute(sessionID)
       if (childRoute) {
-        // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "idle")
-        // Also update session-local index hierarchy
-        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "idle")
+        // Child session — updateChildStatus has built-in precedence guard
+        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "completed")
+        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         // D-07: update hierarchy-manifest.json
         if (this.manifestWriter) {
-          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "idle")
+          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
         return
       }
-      // Main session — existing behavior
+      // Main session — "completed" is a valid terminal transition from "running"
       await this.sessionWriter.updateFrontmatter(sessionID, {
-        status: "idle",
+        status: "completed",
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
       void this.client.app?.log?.({
