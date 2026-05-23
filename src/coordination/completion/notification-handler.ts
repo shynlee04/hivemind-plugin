@@ -7,7 +7,7 @@
  * Audit: G-01 closed as by-design (2026-04-21)
  */
 
-import { sendPrompt, sendPromptAsync, showTuiToast, type OpenCodeClient } from "../../shared/session-api.js"
+import { sendPromptAsync, showTuiToast, type OpenCodeClient } from "../../shared/session-api.js"
 import type { Delegation } from "../../shared/types.js"
 import type { TaskNotification } from "../../shared/types.js"
 import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "../../task-management/continuity/index.js"
@@ -313,7 +313,7 @@ export async function replayPendingNotifications(
  *
  * Step 1 implementation:
  * - Uses `showTuiToast()` for user visibility
- * - Uses `sendPrompt()` for synchronous context injection into parent session
+ * - Uses `sendPromptAsync()` for fire-and-forget context injection into parent session
  *
  * R-NOTIF-02: Payload contains taskId, terminalState, resultSummary, duration.
  * R-NOTIF-03: Delivery failure does NOT block the terminal transition.
@@ -332,9 +332,9 @@ export async function notifyDelegationTerminal(
     // Best-effort: toast failure doesn't block context delivery
   }
 
-  // 2. Context injection into parent session
+  // 2. Context injection into parent session via fire-and-forget async prompt
   try {
-    await sendPrompt(client, delegation.parentSessionId, { noReply: true, parts: [{ type: "text", text: message }] })
+    await sendPromptAsync(client, delegation.parentSessionId, { noReply: true, parts: [{ type: "text", text: message }] })
   } catch (error) {
     queuePendingNotification(delegation.parentSessionId, task)
     void client.app?.log?.({
