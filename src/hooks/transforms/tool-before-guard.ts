@@ -1,4 +1,4 @@
-import type { SessionTracker } from "../../features/session-tracker/index.js"
+
 
 /**
  * Dependencies for the tool-before-guard transform (AC-18).
@@ -10,7 +10,7 @@ import type { SessionTracker } from "../../features/session-tracker/index.js"
  */
 export interface ToolBeforeGuardDeps {
   toolGuardHook: (input: unknown, output: unknown) => Promise<void>
-  sessionTracker: Pick<SessionTracker, "handleToolExecuteBefore">
+  sessionTracker: { handleToolExecuteBefore(params: { sessionID: string; callID: string; subagentType: string; description: string; taskId?: string; tool?: string }): Promise<void> }
   logWarn?: (message: string, error: unknown) => void
 }
 
@@ -58,6 +58,7 @@ export function createToolBeforeGuard(
             subagentType,
             description,
             taskId,
+            tool: toolName,
           })
         }
       }
