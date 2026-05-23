@@ -18,6 +18,7 @@ import { DelegationLifecycle } from "./coordination/delegation/lifecycle.js"
 import { DelegationManager } from "./coordination/delegation/manager.js"
 import { DelegationMonitor } from "./coordination/delegation/monitor.js"
 import { NotificationRouter } from "./coordination/delegation/notification-router.js"
+import { PeriodicNotifier } from "./coordination/delegation/periodic-notifier.js"
 import { DelegationRetryHandler } from "./coordination/delegation/retry-handler.js"
 import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-child-session-starter.js"
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
@@ -144,6 +145,7 @@ export interface DelegationModuleSetup {
   detector: CompletionDetector
   lifecycle: DelegationLifecycle
   notificationRouter: NotificationRouter
+  periodicNotifier: PeriodicNotifier
   slotManager: SlotManager
   monitor: DelegationMonitor
 }
@@ -170,6 +172,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     persistPending: persistPendingDelegationNotifications,
   })
   let coordinatorRef: DelegationCoordinator | undefined
+  let periodicNotifierRef: PeriodicNotifier | undefined
   const lifecycle = new DelegationLifecycle({
     get: (delegationId) => records.get(delegationId),
     getAll: () => Array.from(records.values()),
@@ -195,14 +198,37 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     inject: (_parentSessionId, line, delegationId) => {
       if (!delegationId) return
       notificationRouter.route({ delegationId, idempotencyKey: `${delegationId}:progress:${line}`, message: line, timestamp: Date.now(), type: "progress" })
+      const rec = lifecycle.getStatus(delegationId)
+      if (rec) {
+        periodicNotifierRef?.handlePollTick({
+          delegationId,
+          parentSessionId: _parentSessionId,
+          agent: rec.agent,
+          toolCount: rec.toolCallCount ?? 0,
+          actionCount: rec.actionCount ?? 0,
+          elapsedMs: Date.now() - rec.createdAt,
+        })
+      }
     },
     onFirstActionDeadline: (delegationId, elapsedSeconds) => coordinatorRef?.markExecutionUnconfirmed(delegationId, elapsedSeconds),
   })
   const retryHandler = new DelegationRetryHandler({ persist: options.persistDelegations })
+  const periodicNotifier = new PeriodicNotifier(
+    {
+      cadenceMs: 30_000,
+      batchWindowMs: 2_000,
+      showToast: false,
+      client: options.client,
+    },
+    (_parentSessionId: string, line: string): void => {
+      void appendTuiPrompt(options.client, line)
+    },
+  )
+  periodicNotifierRef = periodicNotifier
   const childSessionStarter = typeof options.client?.session === "object"
     ? createSdkChildSessionStarter(options.client)
     : undefined
-  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler, client: options.client })
+  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler, periodicNotifier, client: options.client })
   coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
@@ -215,7 +241,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
       parts: [{ type: "text", text: prompt }],
     }),
   })
-  return { coordinator, delegationManager, detector, lifecycle, notificationRouter, slotManager, monitor }
+  return { coordinator, delegationManager, detector, lifecycle, notificationRouter, periodicNotifier, slotManager, monitor }
 }
 
 export const HarnessControlPlane: Plugin = async ({ client, directory }) => {

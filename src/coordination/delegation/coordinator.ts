@@ -3,6 +3,7 @@ import type { DelegationLifecycle } from "./lifecycle.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
 import type { DelegationRetryHandler } from "./retry-handler.js"
+import type { PeriodicNotifier } from "./periodic-notifier.js"
 import type { Delegation, DelegationNotification, DelegationResult, DelegationSignalSource, DelegationStatus } from "./types.js"
 import type { SlotHandle } from "./slot-manager.js"
 import { type OpenCodeClient, getSessionMessages } from "../../shared/session-api.js"
@@ -31,6 +32,7 @@ export interface DelegationCoordinatorDeps {
     watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void
   }
   retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
+  periodicNotifier?: Pick<PeriodicNotifier, "deregister" | "register">
   client?: OpenCodeClient
 }
 
@@ -137,6 +139,14 @@ export class DelegationCoordinator {
       }
     }
     this.deps.monitor.start(delegationId, params.parentSessionId)
+    this.deps.periodicNotifier?.register({
+      delegationId,
+      parentSessionId: params.parentSessionId,
+      agent: params.agent,
+      toolCount: 0,
+      actionCount: 0,
+      elapsedMs: 0,
+    })
     this.deps.detector.watchDualSignal(delegationId, record.childSessionId, (result) => {
       this.handleCompletion(delegationId, result)
     })
@@ -226,6 +236,7 @@ export class DelegationCoordinator {
   /** Handles terminal completion and performs monitor, notification, slot, and persistence cleanup. */
   handleCompletion(delegationId: string, result: DelegationResult): void {
     const status = result.status
+    this.deps.periodicNotifier?.deregister(delegationId)
     this.deps.monitor.onCompletion(delegationId)
     this.mergeCompletionResult(delegationId, result)
     this.deps.lifecycle.transition(delegationId, status)
@@ -276,6 +287,7 @@ export class DelegationCoordinator {
   /** Aborts an active delegation and releases all coordinator-owned resources. */
   abortDelegation(delegationId: string, reason = "[Harness] Delegation aborted"): DelegationResult {
     const result: DelegationResult = { delegationId, error: reason, status: "error", terminalKind: "cancelled", explicitCancellation: true }
+    this.deps.periodicNotifier?.deregister(delegationId)
     this.deps.lifecycle.transition(delegationId, "error")
     this.deps.monitor.onCompletion(delegationId)
     this.routeTerminal(delegationId, "failure", reason)
