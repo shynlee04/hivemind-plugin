@@ -344,21 +344,35 @@ export class DelegationManager {
       return true
     }
 
-    const recordedDelegationId = this.state.getDelegationIdForSession(callerSessionId)
-    if (!recordedDelegationId) {
-      return false
-    }
-    if (recordedDelegationId === delegation.id) {
-      return true
+    // Walk up the delegation chain: find the recorded delegation for the caller,
+    // then check if any ancestor delegation's childSessionId matches the target's
+    // parentSessionId, or vice versa.
+    let currentDelegationId = this.state.getDelegationIdForSession(callerSessionId)
+    const visited = new Set<string>()
+
+    while (currentDelegationId && !visited.has(currentDelegationId)) {
+      visited.add(currentDelegationId)
+
+      if (currentDelegationId === delegation.id) {
+        return true
+      }
+
+      const currentDelegation = this.state.get(currentDelegationId)
+      if (!currentDelegation) break
+
+      // Check if the current delegation is the parent or child of the target
+      if (currentDelegation.childSessionId === delegation.parentSessionId) {
+        return true
+      }
+      if (currentDelegation.parentSessionId === delegation.childSessionId) {
+        return true
+      }
+
+      // Walk up to the parent of this delegation
+      currentDelegationId = this.state.getDelegationIdForSession(currentDelegation.parentSessionId)
     }
 
-    const recordedDelegation = this.state.get(recordedDelegationId)
-    if (!recordedDelegation) {
-      return false
-    }
-
-    return recordedDelegation.parentSessionId === delegation.childSessionId
-      || recordedDelegation.childSessionId === delegation.parentSessionId
+    return false
   }
 
   /**
