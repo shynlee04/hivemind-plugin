@@ -167,9 +167,8 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     deliver: async (parentSessionId, notification) => {
       if (!shouldAppendParentTuiNotification(notification.type)) return true
       const line = notificationRouter.formatNotification(notification.type, notification.delegationId, notification.message)
-      const systemMsg = `<system_reminder>${line}</system_reminder>`
       if (options.client?.session) {
-        void sdkSendPromptAsync(options.client, parentSessionId, { parts: [{ type: "text", text: systemMsg }], noReply: true })
+        void sdkSendPromptAsync(options.client, parentSessionId, { parts: [{ type: "text", text: line }], noReply: true })
       }
       return true
     },

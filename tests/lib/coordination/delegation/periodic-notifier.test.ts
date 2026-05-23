@@ -108,12 +108,10 @@ describe("PeriodicNotifier", () => {
     expect(injectFn).toHaveBeenCalledTimes(1)
 
     const combined = injectFn.mock.calls[0][1] as string
-    expect(combined).toContain("<system_reminder>")
     expect(combined).toContain("del-a")
     expect(combined).toContain("del-b")
     expect(combined).toContain("gsd-A")
     expect(combined).toContain("gsd-B")
-    expect(combined).toContain("</system_reminder>")
   })
 
   it("handlePollTick skips batch when toolCount and actionCount unchanged", () => {

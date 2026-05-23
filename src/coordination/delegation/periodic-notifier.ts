@@ -143,7 +143,7 @@ export class PeriodicNotifier {
 
     // Send one combined <system_reminder> block per parent
     for (const [parentSessionId, parentLines] of byParent) {
-      const combinedBlock = `<system_reminder>\n${parentLines.join("\n")}\n</system_reminder>`
+      const combinedBlock = parentLines.join("\n")
       this.inject(parentSessionId, combinedBlock, undefined)
     }
 
