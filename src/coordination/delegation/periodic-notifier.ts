@@ -124,27 +124,28 @@ export class PeriodicNotifier {
     const batch = new Map(this.pendingFlush)
     this.pendingFlush.clear()
 
-    // Build combined <system_reminder> block with one thin line per delegation
-    const lines: string[] = []
+    // Group by parentSessionId so each parent receives its own combined block.
+    const byParent = new Map<string, string[]>()
     for (const [, snap] of batch) {
       if (!this.tracked.has(snap.delegationId)) continue
-      lines.push(formatCompactLine({
+      const existing = byParent.get(snap.parentSessionId) ?? []
+      existing.push(formatCompactLine({
         delegationId: snap.delegationId,
         agent: snap.agent,
         status: "running",
         elapsedMs: snap.elapsedMs,
         toolCount: snap.toolCount,
       }))
+      byParent.set(snap.parentSessionId, existing)
     }
 
-    if (lines.length === 0) return
+    if (byParent.size === 0) return
 
-    // Single combined <system_reminder> block
-    // Use the first snapshot's parentSessionId (all delegations in batch share the same parent)
-    const firstSnap = batch.values().next().value
-    if (!firstSnap) return
-    const combinedBlock = `<system_reminder>\n${lines.join("\n")}\n</system_reminder>`
-    this.inject(firstSnap.parentSessionId, combinedBlock, undefined)
+    // Send one combined <system_reminder> block per parent
+    for (const [parentSessionId, parentLines] of byParent) {
+      const combinedBlock = `<system_reminder>\n${parentLines.join("\n")}\n</system_reminder>`
+      this.inject(parentSessionId, combinedBlock, undefined)
+    }
 
     // Aggregated toast: one toast for the entire batch
     if (this.config.showToast) {

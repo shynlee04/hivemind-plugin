@@ -24,7 +24,7 @@ import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-chil
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
 
 import type { Delegation, DelegationNotificationType, DelegationStatus } from "./coordination/delegation/types.js"
-import { appendTuiPrompt, sendPrompt as sdkSendPrompt, sendPromptAsync as sdkSendPromptAsync, getSessionMessageCount, abortSession, type OpenCodeClient } from "./shared/session-api.js"
+import { appendTuiPrompt, sendPromptAsync as sdkSendPromptAsync, getSessionMessageCount, abortSession, type OpenCodeClient } from "./shared/session-api.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
 import { taskState } from "./shared/state.js"
 import type { PendingNotification } from "./shared/types.js"
@@ -216,7 +216,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     },
     injectUrgent: (_parentSessionId, line): void => {
       if (options.client?.session) {
-        void sdkSendPrompt(options.client, _parentSessionId, { parts: [{ type: "text", text: line }] })
+        void sdkSendPromptAsync(options.client, _parentSessionId, { parts: [{ type: "text", text: line }], noReply: true })
       }
     },
     onFirstActionDeadline: (delegationId, elapsedSeconds) => coordinatorRef?.markExecutionUnconfirmed(delegationId, elapsedSeconds),

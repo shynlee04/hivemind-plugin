@@ -135,7 +135,7 @@ export function formatUrgentFailureNotification(opts: FailureNotificationOptions
  * Map a DelegationNotificationType to the corresponding status string
  * used by the formatter functions.
  */
-export function typeToStatus(type: DelegationNotificationType): "completed" | "error" | "timeout" | "cancelled" {
+export function typeToStatus(type: DelegationNotificationType): "completed" | "error" | "timeout" | "cancelled" | "running" {
   switch (type) {
     case "success":
       return "completed"
@@ -144,6 +144,6 @@ export function typeToStatus(type: DelegationNotificationType): "completed" | "e
     case "timeout":
       return "timeout"
     case "progress":
-      return "cancelled"
+      return "running"
   }
 }

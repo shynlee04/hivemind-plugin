@@ -193,8 +193,15 @@ export async function reactivateSessionStream(
       noReply: true,
       parts: [{ type: "text", text: "" }],
     })
-  } catch {
+  } catch (error) {
     // Best-effort: if reactivation fails, notification still delivered
+    void client.app?.log?.({
+      body: {
+        service: "notification",
+        level: "warn",
+        message: `[Harness] Stream reactivation failed for ${sessionID}: ${error instanceof Error ? error.message : String(error)}`,
+      },
+    })
   }
 }
 
@@ -328,8 +335,15 @@ export async function notifyDelegationTerminal(
   // 1. User toast (transient, agent-invisible)
   try {
     await showTuiToast(client, formatToastMessage(task), toastVariant(task.status))
-  } catch {
+  } catch (error) {
     // Best-effort: toast failure doesn't block context delivery
+    void client.app?.log?.({
+      body: {
+        service: "delegation",
+        level: "error",
+        message: `[Harness] Toast failed for delegation ${delegation.id}: ${error instanceof Error ? error.message : String(error)}`,
+      },
+    })
   }
 
   // 2. Combined reactivation + context injection into parent session.

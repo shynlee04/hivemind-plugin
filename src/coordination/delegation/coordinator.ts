@@ -106,7 +106,14 @@ export class DelegationCoordinator {
           }
         }
       } catch (err) {
-        // Safe fallback - ignore error getting parent model
+        // Best-effort: safe fallback — ignore error getting parent model
+        void this.deps.client?.app?.log?.({
+          body: {
+            service: "delegation",
+            level: "warn",
+            message: `[Harness] Failed to resolve parent model for ${params.parentSessionId}: ${err instanceof Error ? err.message : String(err)}`,
+          },
+        })
       }
     }
 
