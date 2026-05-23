@@ -10,7 +10,6 @@ import type { PtyManager } from "../../features/background-command/pty/pty-manag
 import { SdkDelegationHandler } from "../sdk-delegation/handler.js"
 import { getAppAgents } from "../../shared/app-api.js"
 import { sendPromptAsync, type OpenCodeClient } from "../../shared/session-api.js"
-import { notifyParentSession } from "../completion/notification-handler.js"
 import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../../shared/runtime-policy.js"
 import { getCachedConfig } from "../../config/subscriber.js"
 import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "../spawner/agent-primitive-policy.js"
@@ -242,21 +241,6 @@ export class DelegationManager {
         await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
         this.state.transition(delegation.id, "running")
         this.monitor?.start(delegation.id, params.parentSessionId)
-
-        // Step 1: Notify parent session with "started" status
-        // Fire-and-forget — toast for user, promptAsync for context injection
-        // Phase 23 diagnostic: console.error for guaranteed terminal visibility
-        console.error("[Harness] pre-notifyParentSession", { parentSessionId: params.parentSessionId, childSessionId: delegation.childSessionId, clientKeys: Object.keys(this.client || {}), hasTui: !!this.client?.tui, hasSession: !!this.client?.session })
-        void notifyParentSession(this.client, params.parentSessionId, {
-          sessionID: delegation.childSessionId,
-          description: `Delegation: ${agent.name}`,
-          agent: agent.name,
-          status: "started",
-          metadata: {
-            delegationId: delegation.id,
-            terminalState: "dispatched",
-          },
-        })
       } catch {
         this.state.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
         return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
