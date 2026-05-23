@@ -34,7 +34,7 @@ progress:
 **Phase 21.1:** ✅ COMPLETE — execute-slash-command SDK redesign, deferred subtask dispatch.
 **Phase 21.2:** 🟡 PROTOTYPE — front-agent switching; L3 unit/typecheck pass, L1 live UAT pending.
 **Phase 22:** ✅ COMPLETE — Coordination Status + Error Unification. 9/9 REQs, 3/3 gates PASS. 176/176 tests.
-**Phase 23:** 🟡 ACTIVE — Notification Architecture Fix + Holistic Tool Surface Documentation + GSD Research Synthesis + Debt Registry. Fix CRITICAL synthetic:true notification bug, audit/rewrite ALL hm-* coordination skills + hivemind-power-on, create tool-surface differentiation + injection delivery patterns skills. RESEARCH: 6 GSD deep-dive documents (command-system, agent-architecture, workflow-pipeline, quality-gates, sdk-surface, reference). TRACKING: 25 debts/gaps registered (5 CRITICAL, 5 HIGH, 12 MEDIUM, 3 LOW). SYSTEMIC DEBT C-5: document/artifact naming + pathing + governance collapse affecting commands, workflows, references, agents, skills.
+**Phase 23:** 🟡 ACTIVE — Notification Architecture Fix + Holistic Tool Surface Documentation + GSD Research Synthesis + Debt Registry. Fix CRITICAL synthetic:true notification bug, audit/rewrite ALL hm-* coordination skills + hivemind-power-on, create tool-surface differentiation + injection delivery patterns skills. SYNTHESIS: 6 GSD deep-dive documents, 25 debts/gaps registered and DEFERRED to owning phases (24-38). Phase 23 does NOT fix these debts — documentation only.
 **Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (was P23, Depends: P23).
 **Phase 25:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (was P24, Depends: P23, P24).
 **Phase 26:** 📋 PENDING — Pressure + Notification Redesign (was P25, Depends: P23, P24, P25).

@@ -2,9 +2,13 @@
 
 **Maintained by:** Orchestrator agent (front-facing)
 **Updated:** 2026-05-23
-**Next review:** TBD
+**Next review:** At Phase 24 entry gate
 
-This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-*/hf-* agents, commands, skills, and workflows. Each entry has a jump link to the exact defect location. When delegated tasks touch these areas, update this file with new findings.
+This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-*/hf-* agents, commands, skills, and workflows during Phase 23. 
+
+**Phase 23 does NOT fix these debts.** This is a **reference document only** — each debt is deferred to its appropriate later phase. When a delegated task or phase handler touches any of the affected files, consult this register first.
+
+**Deferral policy:** Each entry has a `Defers to` field pointing to the phase that owns the fix. Phase 23 only documents, classifies, and routes — never remediates.
 
 ---
 
@@ -12,8 +16,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 
 ### C-1: `delegate-task` vs `task` Proxy War
 
-**Severity:** CRITICAL | **Type:** CONFLICT
-**Files:**
+**Severity:** CRITICAL | **Type:** CONFLICT | **Defers to:** Phase 24 (Coordination Dispatch + Delegate-Task Fix)
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l0-orchestrator.md:598` — says "Never use `delegate-task` (custom tool, not production-ready)"
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-conductor.md:121` — says "NEVER use the built-in `task` tool for delegation. Use `delegate-task` every time."
 - `file:///Users/apple/hivemind-plugin-private/.opencode/commands/start-work.md:14` — routes to conductor → follows conductor protocol
@@ -27,8 +30,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 
 ### C-2: Broken Agent Name Cross-References in hf-l1-coordinator
 
-**Severity:** CRITICAL | **Type:** GAP
-**Files:**
+**Severity:** CRITICAL | **Type:** GAP | **Defers to:** Phase 32 (Shipped Primitives + Governance Wire)
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hf-l1-coordinator.md:99-103` — references `hf-agent-builder` (should be `hf-l2-agent-builder`)
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hf-l1-coordinator.md:102` — references `hf-skill-author` (should be `hf-l2-skill-builder`)
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hf-l1-coordinator.md:276-279` — references `hf-agent-builder`, `hf-skill-author`, `hf-command-builder`, `hf-tool-builder` (should be `hf-l2-*`)
@@ -42,8 +44,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 
 ### C-3: Hallucinated `websearch` Tool in Permissions
 
-**Severity:** CRITICAL | **Type:** HALLUCINATION
-**Files:**
+**Severity:** CRITICAL | **Type:** HALLUCINATION | **Defers to:** Phase 32 (Shipped Primitives + Governance Wire)
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l0-orchestrator.md:39` — `websearch: allow`
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hf-l0-orchestrator.md:44` — `websearch: allow`
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l1-coordinator.md:31` — `websearch: allow`
@@ -56,8 +57,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 
 ### C-4: Q6 State Path Violation — Skills Write to `.opencode/state/`
 
-**Severity:** CRITICAL | **Type:** DEBT
-**Files:**
+**Severity:** CRITICAL | **Type:** DEBT | **Defers to:** Phase 35 (Module Splits + Legacy Inventory)
 - `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-phase-execution/SKILL.md:50-53` — writes to `.opencode/state/opencode-harness/phase-execution/`
 - `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-phase-loop/SKILL.md:65` — references `.opencode/state/` and `.planning/phases/.../STATE.md`
 - `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-user-intent-interactive-loop/SKILL.md:140-145` — writes to `.opencode/state/intent.json` and `.opencode/state/question-count.json`
@@ -72,6 +72,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### C-5: Document/Artifact Naming & Pathing Governance Collapse
 
 **Severity:** CRITICAL | **Type:** SYSTEMIC DEBT
+**Defers to:** Phase 31 (Config Plane Redesign + Artifact Governance)
 **Files:** Toàn bộ `.planning/phases/`, `.hivemind/research/`, `.hivemind/tracking/`, `.hivemind/planning/`
 
 **Vấn đề:** Hivemind không có hệ thống naming convention, pathing, format, gatekeeping, và dependency validation cho documents và artifacts. Hậu quả:
@@ -110,6 +111,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### H-1: Bash Permission Trailing Space in L0 Orchestrators
 
 **Severity:** HIGH | **Type:** GAP
+**Defers to:** IMMEDIATE (trivial fix)
 **Files:**
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l0-orchestrator.md:16` — `"node * ": allow` (trailing space)
 - `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hf-l0-orchestrator.md:19` — same trailing space
@@ -123,6 +125,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### H-2: hm-l2-build Severely Underspecified
 
 **Severity:** HIGH | **Type:** GAP
+**Defers to:** Phase 30 (Schema Kernel Cleanup)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-build.md`
 
 **Impact:** Only 86 lines. Default primary agent with "all tools enabled" but no execution flow, behavioral contract, anti-patterns, or verification guidance. Will produce unpredictable results.
@@ -134,6 +137,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### H-3: hm-l2-phase-guardian Temperature Too High
 
 **Severity:** HIGH | **Type:** DEBT
+**Defers to:** Phase 30 (Schema Kernel Cleanup)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-phase-guardian.md:5` — `temperature: 0.25`
 
 **Impact:** Guardrail enforcement and phase exit decisions should be deterministic (≤0.15). 0.25 allows too much creativity for a gatekeeping role.
@@ -145,6 +149,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### H-4: hf-create Command Broken Path Reference
 
 **Severity:** HIGH | **Type:** GAP
+**Defers to:** Phase 32 (Shipped Primitives + Governance Wire)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/commands/hf-create.md:14`
 
 **Impact:** References `@.hivefiver-hm-meta-builder/workflows-lab/active/refactoring/create.md` but actual directory is `.hivefiver-meta-builder` (no `-hm-` infix). Path will fail.
@@ -156,6 +161,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### H-5: Skills Reference External Scripts — Not Verified
 
 **Severity:** HIGH | **Type:** DEBT
+**Defers to:** Phase 29 (Auto-Looping + PTY Revamp)
 **Files:**
 - `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-coordinating-loop/SKILL.md` — references `scripts/register-skill.sh`, `scripts/check-gate.sh`, `scripts/validate-envelope.sh`, `scripts/run-ralph-loop.sh`, `scripts/coordination-check.sh`, `scripts/init-session.sh`
 - `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-user-intent-interactive-loop/SKILL.md` — references `scripts/intent-verify.sh`, `scripts/verify-hierarchy.sh`, `scripts/register-skill.sh`
@@ -171,6 +177,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-1: hm-l0-orchestrator Exceeds Max Skills
 
 **Severity:** MEDIUM | **Type:** CONFLICT
+**Defers to:** Phase 24 (Coordination Dispatch + Delegate-Task Fix)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l0-orchestrator.md:108-117` vs `:684`
 
 **Impact:** YAML declares 8 skills. Iron Law #10 says max 3. Internal contradiction.
@@ -182,6 +189,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-2: hf-l0-orchestrator Lists Default hm-* Skills
 
 **Severity:** MEDIUM | **Type:** DEBT
+**Defers to:** Phase 32 (Shipped Primitives + Governance Wire)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hf-l0-orchestrator.md:123-130`
 
 **Impact:** Loads hm-* skills as default (not on-demand). Blurs lineage boundaries. Requires "justified" cross-lineage access per architecture.
@@ -193,6 +201,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-3: hm-l2-conductor Domain Mismatch
 
 **Severity:** MEDIUM | **Type:** DEBT
+**Defers to:** Phase 27 (Routing + Intent Loop Foundation)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-conductor.md:48` — `domain: Phase Lifecycle`
 
 **Impact:** Domain "Phase Lifecycle" doesn't match role "Delegation routing specialist".
@@ -204,6 +213,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-4: hm-l2-conductor References Legacy `.harness/` Path
 
 **Severity:** MEDIUM | **Type:** DEBT
+**Defers to:** Phase 25 (Trajectory + Agent-Work-Contract Redesign)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-conductor.md:99-105` — references `.harness/wisdom/`
 
 **Impact:** Dead path. Wisdom system won't work as described. Legacy from old architecture.
@@ -215,6 +225,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-5: hm-l2-build GSD Agent List Not Validated
 
 **Severity:** MEDIUM | **Type:** DEBT
+**Defers to:** Phase 36 (Integration Verification)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-build.md:39-75`
 
 **Impact:** Lists 33 GSD agents from `.hivefiver-meta-builder/agents-lab/active/refactoring/`. Depends on meta-builder directory existing. References may be dead.
@@ -226,6 +237,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-6: `.coordination/` Unregistered State Directory
 
 **Severity:** MEDIUM | **Type:** DEBT
+**Defers to:** Phase 35 (Module Splits + Legacy Inventory)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-coordinating-loop/SKILL.md:21,52,55`
 
 **Impact:** References `.coordination/` directory — not defined in `.hivemind/` state structure. New untracked persistence location.
@@ -237,6 +249,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-7: hm-l2-context-mapper Underspecified
 
 **Severity:** MEDIUM | **Type:** GAP
+**Defers to:** Phase 27 (Routing + Intent Loop Foundation)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-context-mapper.md`
 
 **Impact:** ~112 lines. Purpose stated but no execution flow or protocol.
@@ -248,6 +261,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-8: start-work Routes to Conductor Despite L0 Contradiction
 
 **Severity:** MEDIUM | **Type:** CONFLICT
+**Defers to:** Phase 24 (Coordination Dispatch + Delegate-Task Fix)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/commands/start-work.md:2-4`
 
 **Impact:** Routes to conductor. Conductor says use delegate-task. L0 says delegate-task deprecated. Inconsistent behavior.
@@ -259,6 +273,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-9: harness-audit Cross-Lineage Routing
 
 **Severity:** MEDIUM | **Type:** GAP
+**Defers to:** Phase 32 (Shipped Primitives + Governance Wire)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/commands/harness-audit.md:3` — `agent: hf-l0-orchestrator`
 
 **Impact:** Harness audit is product-dev task, not meta-concept. Should go to hm-l0-orchestrator. hf will just forward back.
@@ -270,6 +285,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-10: hf- Commands Have Dead References
 
 **Severity:** MEDIUM | **Type:** GAP
+**Defers to:** Phase 32 (Shipped Primitives + Governance Wire)
 **Files:**
 - `file:///Users/apple/hivemind-plugin-private/.opencode/commands/hf-create.md:14` — wrong path infix
 - `file:///Users/apple/hivemind-plugin-private/.opencode/commands/harness-audit.md:40` — `hm-opencode-project-audit` should be `hm-l3-opencode-project-audit`
@@ -283,6 +299,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-11: user-intent Skill Heavy Gate Dependencies
 
 **Severity:** MEDIUM | **Type:** DEBT
+**Defers to:** Phase 29 (Auto-Looping + PTY Revamp)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-user-intent-interactive-loop/SKILL.md:27-96`
 
 **Impact:** Defines 5 HARD GATES depending on external scripts + platform skills. In minimal OpenCode install, gates unenforceable.
@@ -294,6 +311,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### M-12: Skill Cross-References Missing Depth Suffix
 
 **Severity:** MEDIUM | **Type:** DEBT
+**Defers to:** Phase 32 (Shipped Primitives + Governance Wire)
 **File:** `file:///Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-coordinating-loop/SKILL.md:35`
 
 **Impact:** References `hm-coordinating-loop` (missing `-l2-`). May cause broken links.
@@ -307,6 +325,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### L-1: hm-l2-guardian / hm-l2-phase-guardian Possible Overlap
 
 **Severity:** LOW | **Type:** DEBT
+**Defers to:** Phase 35 (Module Splits + Legacy Inventory)
 **Files:** `file:///Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-guardian.md`, `hm-l2-phase-guardian.md`
 
 **Impact:** Both describe "phase loop" and "guardrail" responsibilities. Possible duplication.
@@ -318,6 +337,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### L-2: L2 Agents Exceed Temperature Range
 
 **Severity:** LOW | **Type:** DEBT
+**Defers to:** Phase 30 (Schema Kernel Cleanup)
 **Files:**
 - `hm-l2-general.md` — 0.2 (should be ≤0.15)
 - `hm-l2-conductor.md` — 0.3 (should be ≤0.15)
@@ -332,6 +352,7 @@ This file tracks **gaps, debts, conflicts, and hallucinations** found across hm-
 ### L-3: Agent Files Exceed 500-Line Limit
 
 **Severity:** LOW | **Type:** DEBT
+**Defers to:** Phase 38 (Package primitives for distribution)
 **Files:**
 - `hm-l0-orchestrator.md` — 806 lines
 - `hf-l0-orchestrator.md` — 659 lines

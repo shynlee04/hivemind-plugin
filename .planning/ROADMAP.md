@@ -642,10 +642,10 @@ Plans:
 - P23-05: Rewrite `hivemind-power-on` skill — tool-based session governance using actual capabilities
 - P23-06: Structured assessment of trajectory/pressure/agent-work-contract — redesign or deprecation plan
 - P23-07: Create `hm-l3-injection-delivery-patterns` — silent vs required, body vs append, TUI vs direct patterns
-**SYNTHESIS (expanded scope):**
+**SYNTHESIS (expanded scope — documentation only, defer to later phases):**
 - P23-S01: GSD deep research — 6 synthesis documents (command-system, agent-architecture, workflow-pipeline, quality-gates, sdk-surface, reference) ingested from github.com/gsd-build/get-shit-done/docs (113 files, 425K tokens). 9-dimension comparison: GSD vs Hivemind per domain. See `23-GSD-{TYPE}-2026-05-23.md`.
-- P23-S02: Debt registry — 25 findings (5 CRITICAL, 5 HIGH, 12 MEDIUM, 3 LOW) across hm-*/hf-* agents, commands, skills. See `23-DEBTS-REGISTER-2026-05-23.md`.
-- P23-S03: Document governance debt C-5 identified — artifact naming/pathing collapse systemic, moved to Phase 31 as P31-01 through P31-07 requirements.
+- P23-S02: Debt registry — 25 findings (5 CRITICAL, 5 HIGH, 12 MEDIUM, 3 LOW) across hm-*/hf-* agents, commands, skills. **Phase 23 does NOT fix these debts** — each is deferred to its owning phase. See `23-DEBTS-REGISTER-2026-05-23.md`.
+- P23-S03: Document governance debt C-5 identified — artifact naming/pathing collapse systemic, deferred to Phase 31 as P31-01 through P31-07 requirements.
 
 **Depends on:** Phase 22 (COMPLETE)
 **Blocks:** Phase 24 (notification surface must be fixed before delegate-task redesign), Phase 26 (hooks injection plane depends on delivery patterns)
@@ -673,11 +673,13 @@ Plan list:
 
 **Goal:** Fix CP-DT-01 runtime block. Decompose DelegationManager god-object (~580 LOC). Consolidate dual in-memory stores. Fix coordinatorRef forward reference.
 **Depends on:** Phase 23
+**Debts inherited from Phase 23:** C-1 (delegate-task proxy war), M-1 (L0 max skills), M-8 (start-work routing) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 25: Trajectory + Agent-Work-Contract Redesign (Group 1 — was Phase 24)
 
 **Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface(). Incorporate P23-06 assessment findings.
 **Depends on:** Phase 23, 24
+**Debts inherited from Phase 23:** M-4 (legacy .harness/ path) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 26: Pressure + Notification Redesign (Group 1 — was Phase 25)
 
@@ -688,6 +690,7 @@ Plan list:
 
 **Goal:** Fix intent-classifier (fragile substring). Remove dead registry validator. Delete dead no-op profile methods. Add tests for 3 sub-modules (~1,200 LOC untested).
 **Depends on:** Phase 21-P26
+**Debts inherited from Phase 23:** M-3 (conductor domain mismatch), M-7 (context-mapper underspecified) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 28: Hook Injection Plane Redesign (Group 2 — was Phase 27)
 
@@ -698,11 +701,13 @@ Plan list:
 
 **Goal:** Fix auto-loop session-tracker dependency. Replace ralph-loop with practical verification patterns (per P23-04 rewrite). Wire into routing pipeline. Delete dead prompt-packet (348 LOC).
 **Depends on:** Phase 28
+**Debts inherited from Phase 23:** H-5 (external scripts), M-11 (gate dependencies) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 30: Schema Kernel Cleanup (Group 3 — was Phase 29)
 
 **Goal:** Delete 3 dead schemas. Add tests for 9 untested schemas. Leaf module — can run parallel to Group 1-2.
 **Depends on:** Nothing (leaf module)
+**Debts inherited from Phase 23:** H-2 (hm-l2-build underspecified), H-3 (phase-guardian temp), L-2 (agent temp range) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 31: Config Plane Redesign + Artifact Governance (Group 3 — was Phase 30)
 
@@ -721,6 +726,7 @@ Plan list:
 
 **Goal:** Wire agent/skill/command primitives with soft approach (.md first). Implement hm-* vs hf-* lineage routing validation. Fix governance/permission wiring. Extends P23-03 tool surface docs with shipped primitive patterns.
 **Depends on:** Phase 31
+**Debts inherited from Phase 23:** C-2 (broken agent refs), C-3 (websearch hallucination), H-4 (hf-create broken path), M-2 (hf-l0 hm-* defaults), M-9 (harness-audit routing), M-10 (hf- dead refs), M-12 (skill depth suffix) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 33: Plugin.ts Decomposition (Group 4 — was Phase 32)
 
@@ -736,21 +742,25 @@ Plan list:
 
 **Goal:** Split event-capture.ts (702→2-3), session-tracker/index.ts (561→extract init). Simplify PendingDispatchRegistry. Split types.ts. Standardize tool imports. Legacy inventory.
 **Depends on:** Phase 34
+**Debts inherited from Phase 23:** C-4 (Q6 state path), M-6 (.coordination/ path), L-1 (guardian overlap) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 36: Integration Verification (Group 4 — was Phase 35)
 
 **Goal:** Full regression. dist rebuild. Tool smoke test. Manifest sync (ARCHITECTURE.md/STRUCTURE.md/CONCERNS.md).
 **Depends on:** Phase 35
+**Debts inherited from Phase 23:** M-5 (GSD agent list validation) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 37: Fix sync-oss.yml workflow (Independent — was Phase 36)
 
 **Goal:** [To be planned]
 **Depends on:** Phase 36
+**Debts inherited from Phase 23:** (none)
 
 ### Phase 38: Package .opencode/ primitives for distribution (Independent — was Phase 37)
 
 **Goal:** [To be planned]
 **Depends on:** Phase 37
+**Debts inherited from Phase 23:** L-3 (agent file size) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ---
 
