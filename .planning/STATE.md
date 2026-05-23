@@ -16,16 +16,17 @@ progress:
 
 # Hivemind — State
 
-**Last updated:** 2026-05-22
-**Last advance:** Phase 23 plan created — 6 plans in 5 waves covering notification fix, surface docs, skill rewrite (13 skills), power-on trim, and tool assessment.
-**Current focus:** Phase 23 — Notification Architecture Fix + Holistic Tool Surface Documentation
-**Next recommended run:** `/gsd-execute-phase 23` — execute all 6 plans across 5 waves
+**Last updated:** 2026-05-24
+**Last advance:** Phase 23 — Round 4 live UAT: 4/10 FIXED (G1, U1, U6, M3-A), 3/10 STILL FAIL (U2, U4, U5), 1/10 PARTIAL (U3), 2/10 UNTESTED (G2, M3-B). Phase 23.1 created for session-tracker SDK dispatch investigation.
+**Current focus:** Phase 23 (remaining notification bugs) + Phase 23.1 (session-tracker investigation)
+**Next recommended run:** Continue debug session `ses_1aa92e240ffeEpaWmxUFFxFh67` for U2/U3/double-wrapped fixes. Route Phase 23.1 via gsd-research-chain for session-tracker investigation.
 
 ---
 
 ## Current Status
 
 **Active phase:** Phase 23 — Notification Architecture Fix + Holistic Tool Surface Documentation (Group 1, HIGHEST PRIORITY).
+**Sub-phase:** Phase 23.1 — Session-Tracker SDK Dispatch Investigation — investigate root cause session-tracker miss child sessions (U4/U5 failed 4 UAT rounds).
 **Phase 18:** ✅ COMPLETE — 4/4 plans.
 **Phase 19:** ✅ COMPLETE — Non-destructive remediation.
 **Phase 20:** ✅ COMPLETE — Dependency cleanup (11 deps removed, yaml consolidated, react→optional).

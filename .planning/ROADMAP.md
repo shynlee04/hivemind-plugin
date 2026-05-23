@@ -669,7 +669,27 @@ Plan list:
 - [x] `23-05-PLAN.md` — Rewrite hivemind-power-on skill (Wave 3)
 - [x] `23-06-PLAN.md` — Structured assessment of trajectory/pressure/work-contract (Wave 4)
 
-### Phase 24: Coordination Dispatch + Delegate-Task Fix (Group 1 — was Phase 23)
+### Phase 23.1: Session-Tracker SDK Dispatch Investigation (Group 1 — sub-phase of 23)
+
+**Goal:** Investigate và fix root cause session-tracker không observe được child sessions tạo từ `delegate-task` (SDK dispatch). Bug U4/U5 dai dẳng qua 4 rounds live UAT.
+
+**Why this exists:** Phase 23 notification fixes đã thử nghiệm 4 rounds live UAT. U4 (session-tracker miss children) và U5 (hierarchy broken) vẫn FAIL qua tất cả rounds. Root cause chưa được xác nhận: SDK `session.created` event có fire cho sessions tạo từ custom tools (`client.session.create()`) hay không. Cần investigate chuyên sâu OpenCode SDK event system.
+
+**Requirements:**
+- P23.1-01: Research OpenCode SDK v1.15.5 — `session.created` event behavior for sessions created via `client.session.create()` inside custom tool dispatch
+- P23.1-02: Trace delegate-task dispatch path — identify all session creation points (coordinator.ts, manager-runtime.ts, session-creator.ts)
+- P23.1-03: Determine if missing event registration is architectural (cannot observe SDK sessions) or implementation gap (can fix with hook wiring)
+- P23.1-04: If architectural — propose alternative: explicit registration via `sessionTracker.handleSessionEvent()` from dispatch path
+- P23.1-05: Implement fix + test
+
+**Depends on:** Phase 23
+**Blocks:** Phase 25 (session-tracker/CP-ST phases)
+
+**Risks:**
+- HIGH: If OpenCode SDK v1.15.5 does NOT fire `session.created` events for sessions created from custom tool code → architectural limit, need alternative approach
+- MEDIUM: Session-tracker fix may require changes across 3+ modules (tool-before-guard, event-capture, coordinator, plugin.ts)
+
+---
 
 **Goal:** Fix CP-DT-01 runtime block. Decompose DelegationManager god-object (~580 LOC). Consolidate dual in-memory stores. Fix coordinatorRef forward reference.
 **Depends on:** Phase 23
