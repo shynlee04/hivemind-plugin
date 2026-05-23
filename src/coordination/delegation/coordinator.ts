@@ -33,6 +33,7 @@ export interface DelegationCoordinatorDeps {
   }
   retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
   periodicNotifier?: Pick<PeriodicNotifier, "deregister" | "register">
+  onChildSessionCreated?: (childSessionId: string, parentSessionId: string) => void
   client?: OpenCodeClient
 }
 
@@ -123,6 +124,11 @@ export class DelegationCoordinator {
         })
         this.attachChildSession(delegationId, child.childSessionId)
         this.deps.lifecycle.transition(delegationId, "running")
+
+        // Notify session-tracker (if wired) so child sessions created by
+        // delegate-task are visible even when session.created events don't fire
+        // for SDK-created sessions.
+        this.deps.onChildSessionCreated?.(child.childSessionId, params.parentSessionId)
 
         // Phase 23: Notify parent session — toast + context injection
         if (this.deps.client) {

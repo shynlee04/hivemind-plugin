@@ -325,11 +325,6 @@ export async function notifyDelegationTerminal(
   const task = buildDelegationTaskNotification(delegation)
   const message = buildNotificationMessage(task)
 
-  // 0. Reactivate parent session stream first (best-effort)
-  // If the main session stream ended before background tasks completed,
-  // this creates a new turn so the agent sees the completion context.
-  await reactivateSessionStream(client, delegation.parentSessionId)
-
   // 1. User toast (transient, agent-invisible)
   try {
     await showTuiToast(client, formatToastMessage(task), toastVariant(task.status))
@@ -337,7 +332,9 @@ export async function notifyDelegationTerminal(
     // Best-effort: toast failure doesn't block context delivery
   }
 
-  // 2. Context injection into parent session via fire-and-forget async prompt
+  // 2. Combined reactivation + context injection into parent session.
+  // A single sendPromptAsync call reactivates the stream (if stopped) AND
+  // delivers the completion notification — no need for separate empty prompt.
   try {
     await sendPromptAsync(client, delegation.parentSessionId, { noReply: true, parts: [{ type: "text", text: message }] })
   } catch (error) {

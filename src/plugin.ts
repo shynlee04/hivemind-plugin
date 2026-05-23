@@ -137,6 +137,7 @@ export interface DelegationModuleSetupOptions {
   projectDirectory: string
   ptyManager?: Awaited<ReturnType<typeof createPtyManagerIfSupported>>
   runtimePolicy?: RuntimePolicy
+  onChildSessionCreated?: (childSessionId: string, parentSessionId: string) => void
 }
 
 export interface DelegationModuleSetup {
@@ -238,7 +239,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const childSessionStarter = typeof options.client?.session === "object"
     ? createSdkChildSessionStarter(options.client)
     : undefined
-  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler, periodicNotifier, client: options.client })
+  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler, periodicNotifier, onChildSessionCreated: options.onChildSessionCreated, client: options.client })
   coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
@@ -273,7 +274,21 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const hivemindConfig: HivemindConfigs = getConfig(projectDirectory)
   const ptyManager = await createPtyManagerIfSupported()
 
-  const delegationModules = setupDelegationModules({ client, enableRuntimeAdapter: true, projectDirectory, ptyManager, runtimePolicy })
+  // Session tracker: typed owning module for session knowledge capture.
+  // Created before delegation modules so it can wire into child session creation
+  // for delegate-task SDK-dispatched sessions.
+  const sessionTracker = new SessionTracker({ client, projectRoot: projectDirectory })
+
+  const delegationModules = setupDelegationModules({
+    client,
+    enableRuntimeAdapter: true,
+    projectDirectory,
+    ptyManager,
+    runtimePolicy,
+    onChildSessionCreated: (childSessionId, _parentSessionId) => {
+      void sessionTracker.handleSessionEvent({ eventType: "session.created", sessionID: childSessionId, event: {} })
+    },
+  })
   const delegationManager = delegationModules.delegationManager
   const monitor = delegationModules.monitor
   // Recovery runs asynchronously — must not block plugin init.
@@ -283,7 +298,6 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
   // Session tracker: typed owning module for session knowledge capture.
   // Wired via deps injection (D-01) — matches DelegationManager instantiation pattern.
-  const sessionTracker = new SessionTracker({ client, projectRoot: projectDirectory })
 
   const lifecycleManager = createHarnessLifecycleManager({
     client,
