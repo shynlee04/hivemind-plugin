@@ -6,6 +6,7 @@ import type { DelegationRetryHandler } from "./retry-handler.js"
 import type { Delegation, DelegationNotification, DelegationResult, DelegationSignalSource, DelegationStatus } from "./types.js"
 import type { SlotHandle } from "./slot-manager.js"
 import { type OpenCodeClient, getSessionMessages } from "../../shared/session-api.js"
+import { notifyParentSession } from "../completion/notification-handler.js"
 
 export type DispatchParams = PreflightParams
 
@@ -120,6 +121,16 @@ export class DelegationCoordinator {
         })
         this.attachChildSession(delegationId, child.childSessionId)
         this.deps.lifecycle.transition(delegationId, "running")
+
+        // Phase 23: Notify parent session — toast + context injection
+        if (this.deps.client) {
+          void notifyParentSession(this.deps.client, params.parentSessionId, {
+            sessionID: child.childSessionId,
+            description: `Delegation: ${params.agent}`,
+            agent: params.agent,
+            status: "started",
+          })
+        }
       } catch (caughtError) {
         this.failDispatch(delegationId, caughtError)
         return this.errorResult(delegationId, caughtError)
