@@ -39,7 +39,7 @@ vi.mock("../../src/shared/runtime-policy.js", () => ({ loadRuntimePolicy: vi.fn(
 vi.mock("../../src/shared/workspace-runtime-policy.js", () => ({ resolveWorkspaceRuntimePolicy: vi.fn(() => "/policy") }))
 vi.mock("../../src/coordination/spawner/auto-loop.js", () => ({ runAutoLoop: vi.fn(async () => undefined) }))
 vi.mock("../../src/coordination/spawner/ralph-loop.js", () => ({ runRalphLoop: vi.fn(async () => undefined), escalationMessage: "escalate" }))
-vi.mock("../../src/config/subscriber.js", () => ({ getConfig: vi.fn(() => ({})) }))
+vi.mock("../../src/config/subscriber.js", () => ({ getConfig: vi.fn(() => ({})), getCachedConfig: vi.fn(() => ({})) }))
 vi.mock("../../src/routing/behavioral-profile/resolve-behavioral-profile.js", () => ({
   resolveBehavioralProfile: vi.fn(() => ({})),
 }))

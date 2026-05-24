@@ -13,9 +13,12 @@ import {
 
 describe("command engine", () => {
   let projectRoot: string
+  let originalEnv: string | undefined
 
   beforeEach(() => {
+    originalEnv = process.env.OPENCODE_GLOBAL_CONFIG_DIR
     projectRoot = mkdtempSync(join(tmpdir(), "command-engine-"))
+    process.env.OPENCODE_GLOBAL_CONFIG_DIR = join(projectRoot, "global-config")
     mkdirSync(join(projectRoot, ".opencode", "commands"), { recursive: true })
     writeFileSync(join(projectRoot, ".opencode", "commands", "phase59.md"), [
       "---",
@@ -27,6 +30,11 @@ describe("command engine", () => {
   })
 
   afterEach(() => {
+    if (originalEnv === undefined) {
+      delete process.env.OPENCODE_GLOBAL_CONFIG_DIR
+    } else {
+      process.env.OPENCODE_GLOBAL_CONFIG_DIR = originalEnv
+    }
     rmSync(projectRoot, { recursive: true, force: true })
   })
 

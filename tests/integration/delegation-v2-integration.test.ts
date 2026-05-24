@@ -203,6 +203,7 @@ describe("delegation v2 plugin integration", () => {
     const modules = setupDelegationModules({ client: client as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project" })
 
     const result = await modules.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })
+    vi.mocked(client.tui.showToast).mockClear()
     modules.notificationRouter.route({ delegationId: result.delegationId, message: "done", timestamp: Date.now(), type: "success" })
 
     // Drain microtasks so the async deliver callback completes
