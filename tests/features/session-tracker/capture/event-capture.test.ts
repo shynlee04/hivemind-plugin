@@ -584,3 +584,147 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
     )
   })
 })
+
+describe("session.next.text.ended — lastMessage capture for main sessions", () => {
+  let eventCapture: EventCapture
+  let sessionWriter: SessionWriter
+  let childWriter: ChildWriter
+  let sessionIndexWriter: SessionIndexWriter
+  let mockUpdateFrontmatter: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    mockUpdateFrontmatter = vi.fn().mockResolvedValue(undefined)
+
+    sessionWriter = {
+      createSessionDir: vi.fn().mockResolvedValue("/fake/path"),
+      initializeSessionFile: vi.fn().mockResolvedValue(undefined),
+      updateFrontmatter: mockUpdateFrontmatter,
+      addChildRef: vi.fn(),
+      appendUserTurn: vi.fn(),
+      appendAgentBlock: vi.fn(),
+      appendToolBlock: vi.fn(),
+    } as unknown as SessionWriter
+
+    childWriter = {
+      updateChildStatus: vi.fn().mockResolvedValue(undefined),
+    } as unknown as ChildWriter
+
+    sessionIndexWriter = {
+      updateChildStatus: vi.fn().mockResolvedValue(undefined),
+    } as unknown as SessionIndexWriter
+
+    eventCapture = new EventCapture({
+      client: { app: { log: vi.fn() } } as any,
+      sessionWriter,
+      childWriter,
+      sessionIndexWriter,
+    })
+  })
+
+  it("should update frontmatter lastMessage for main sessions", async () => {
+    // Root session — not a child
+    mockGetSession.mockResolvedValue({
+      id: "ses_main_text1",
+      parentID: null,
+      title: "Main Session",
+      time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.next.text.ended",
+      sessionID: "ses_main_text1",
+      event: {
+        type: "session.next.text.ended",
+        properties: {
+          sessionID: "ses_main_text1",
+          text: "This is the assistant response text",
+        },
+      },
+    })
+
+    expect(mockUpdateFrontmatter).toHaveBeenCalledWith(
+      "ses_main_text1",
+      expect.objectContaining({
+        lastMessage: "This is the assistant response text",
+      }),
+    )
+  })
+
+  it("should skip empty text", async () => {
+    mockGetSession.mockResolvedValue({
+      id: "ses_main_empty",
+      parentID: null,
+      title: "Empty Session",
+      time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.next.text.ended",
+      sessionID: "ses_main_empty",
+      event: {
+        type: "session.next.text.ended",
+        properties: {
+          sessionID: "ses_main_empty",
+          text: "   ",
+        },
+      },
+    })
+
+    expect(mockUpdateFrontmatter).not.toHaveBeenCalled()
+  })
+
+  it("should skip child sessions", async () => {
+    // Child session — has parentID
+    mockGetSession.mockResolvedValue({
+      id: "ses_child_text1",
+      parentID: "ses_parent_text1",
+      title: "Child Session",
+      time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.next.text.ended",
+      sessionID: "ses_child_text1",
+      event: {
+        type: "session.next.text.ended",
+        properties: {
+          sessionID: "ses_child_text1",
+          text: "Child assistant text",
+        },
+      },
+    })
+
+    // updateFrontmatter should NOT be called for child sessions
+    expect(mockUpdateFrontmatter).not.toHaveBeenCalled()
+  })
+
+  it("should trim whitespace from text", async () => {
+    mockGetSession.mockResolvedValue({
+      id: "ses_main_ws",
+      parentID: null,
+      title: "Whitespace Session",
+      time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+    })
+
+    await eventCapture.handleSessionEvent({
+      eventType: "session.next.text.ended",
+      sessionID: "ses_main_ws",
+      event: {
+        type: "session.next.text.ended",
+        properties: {
+          sessionID: "ses_main_ws",
+          text: "  hello world  ",
+        },
+      },
+    })
+
+    expect(mockUpdateFrontmatter).toHaveBeenCalledWith(
+      "ses_main_ws",
+      expect.objectContaining({
+        lastMessage: "hello world",
+      }),
+    )
+  })
+})
