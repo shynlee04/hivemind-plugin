@@ -290,6 +290,31 @@ export class PendingDispatchRegistry {
   }
 
   /**
+   * Retrieves a pending dispatch entry by parent session ID.
+   * Fallback for race conditions where child ID lookup fails because
+   * updateWithChildID() hasn't run yet.
+   *
+   * Iterates the byParent reverse index, resolves callIDs to entries,
+   * and returns the first non-stale match.
+   *
+   * @param parentSessionID - The parent session identifier to search by.
+   * @returns The first non-stale pending dispatch entry for this parent, or undefined.
+   */
+  getByParent(parentSessionID: string): PendingDispatchEntry | undefined {
+    this.cleanupStale()
+    const callIDs = this.byParent.get(parentSessionID)
+    if (!callIDs || callIDs.size === 0) return undefined
+
+    for (const callID of callIDs) {
+      const entry = this.dispatches.get(`call:${callID}`)
+      if (entry && Date.now() - entry.timestamp <= PendingDispatchRegistry.STALE_THRESHOLD_MS) {
+        return entry
+      }
+    }
+    return undefined
+  }
+
+  /**
    * Gets any active pending dispatch entry when the child session ID is
    * not yet known but `byParent` indicates recent task dispatches.
    *

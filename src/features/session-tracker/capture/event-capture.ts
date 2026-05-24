@@ -450,7 +450,10 @@ export class EventCapture {
     if (!this.childWriter) return
 
     const now = new Date().toISOString()
-    const pendingEntry = this.pendingRegistry?.get(sessionID)
+    // REQ-23.2-03: Direct child ID lookup + parent-based fallback for race conditions
+    const pendingEntry =
+      this.pendingRegistry?.get(sessionID) ??
+      this.pendingRegistry?.getByParent(parentID)
     const subagentType = explicitSubagentType ?? pendingEntry?.subagentType ?? "unknown"
     let delegationDepth = explicitDelegationDepth ?? 1
 
@@ -506,6 +509,18 @@ export class EventCapture {
             `${rootMain}/`,
             `${sessionID}.json`,
           )
+          // REQ-23.2-04: Populate hierarchy-manifest.json (was missing at this call site)
+          if (typeof this.manifestWriter.addChild === "function") {
+            await this.manifestWriter.addChild({
+              rootMainSessionID: rootMain,
+              childSessionID: sessionID,
+              parentSessionID: parentID,
+              delegationDepth,
+              delegatedBy: pendingEntry?.tool ?? "task",
+              subagentType,
+              childFile: `${sessionID}.json`,
+            })
+          }
         }
       }
     } catch (err) {
@@ -569,7 +584,17 @@ export class EventCapture {
   ): Promise<void> {
     try {
       const now = new Date().toISOString()
-      const compactContext = this.renderCompactionContext(event)
+      // REQ-23.2-02: Try event payload first, then message history fallback
+      let compactContext: string
+
+      const eventSummary = this.findCompactionText(event)
+      if (eventSummary) {
+        // Event payload has summary text — use it directly
+        compactContext = `**compact_summary:**\n\n${eventSummary}\n`
+      } else {
+        // Event payload has no summary (metadata-only event) — read message history
+        compactContext = await this.resolveCompactionFromMessages(sessionID)
+      }
       const section =
         `## COMPACTED (${now})\n\n` +
         compactContext +
@@ -600,32 +625,6 @@ export class EventCapture {
   }
 
   /**
-   * Renders the compacted session payload without truncation.
-   *
-   * The OpenCode compact event shape can vary across SDK versions. This method
-   * preserves prioritized summary-like fields as readable markdown and also
-   * stores the full raw event JSON when available so no compact context is lost.
-   *
-   * @param event - Raw `session.compacted` event payload.
-   * @returns Markdown content for the compaction section or child journey entry.
-   */
-  private renderCompactionContext(event: Record<string, unknown> | undefined): string {
-    const summary = this.findCompactionText(event)
-    const raw = this.stringifyEvent(event)
-
-    if (summary && raw) {
-      return `**compact_summary:**\n\n${summary}\n\n**raw_event:**\n\n\`\`\`json\n${raw}\n\`\`\`\n`
-    }
-    if (summary) {
-      return `**compact_summary:**\n\n${summary}\n`
-    }
-    if (raw) {
-      return `**raw_event:**\n\n\`\`\`json\n${raw}\n\`\`\`\n`
-    }
-    return "**Pre-compaction state preserved.** Compact event carried no textual payload.\n"
-  }
-
-  /**
    * Finds the most likely compact summary string in a version-tolerant payload.
    *
    * @param value - Raw event value to scan.
@@ -649,21 +648,6 @@ export class EventCapture {
       }
     }
     return undefined
-  }
-
-  /**
-   * Serializes an event payload for lossless audit context when possible.
-   *
-   * @param event - Raw event payload.
-   * @returns Pretty JSON, or undefined when no serializable payload exists.
-   */
-  private stringifyEvent(event: Record<string, unknown> | undefined): string | undefined {
-    if (!event || Object.keys(event).length === 0) return undefined
-    try {
-      return JSON.stringify(event, null, 2)
-    } catch {
-      return undefined
-    }
   }
 
   /**
@@ -768,5 +752,43 @@ export class EventCapture {
       .filter((text) => text.length > 0)
       .join("\n")
     return content.length > 0 ? content : undefined
+  }
+
+  /**
+   * Resolves compaction content from session message history.
+   * Fallback when the session.compacted event payload is metadata-only.
+   *
+   * @param sessionID - The session that was compacted.
+   * @returns Markdown content for the compaction section.
+   */
+  private async resolveCompactionFromMessages(sessionID: string): Promise<string> {
+    try {
+      const messages = await getSessionMessages(this.client, sessionID)
+      if (messages && messages.length > 0) {
+        // Find the last assistant message — it typically contains the compact summary
+        let lastAssistantMsg: unknown
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (this.messageRole(messages[i]) === "assistant") {
+            lastAssistantMsg = messages[i]
+            break
+          }
+        }
+        if (lastAssistantMsg) {
+          const text = this.extractTextFromSdkMessage(lastAssistantMsg)
+          if (text && text.trim().length > 0) {
+            return `**compact_summary:**\n\n${text}\n`
+          }
+        }
+        // No assistant message with text — try last message of any role
+        const lastMsg = messages[messages.length - 1]
+        const fallbackText = this.extractTextFromSdkMessage(lastMsg)
+        if (fallbackText && fallbackText.trim().length > 0) {
+          return `**compact_summary:**\n\n${fallbackText}\n`
+        }
+      }
+    } catch {
+      // getSessionMessages failed — fall through to default message
+    }
+    return "**Compaction occurred — summary unavailable.**\n"
   }
 }
