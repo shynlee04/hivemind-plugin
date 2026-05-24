@@ -1,243 +1,124 @@
 /**
- * Pending dispatch registry for session classification Gate 3.
+ * Pending dispatch registry for tracking in-flight subagent delegations.
  *
- * Tracks sessions whose parent recently dispatched a task tool but whose
- * child session ID is not yet known to the SDK or HierarchyIndex. This
- * closes the race condition window where `session.created` fires during
- * `TaskTool.execute()` and both Gate 1 (SDK parentID) and Gate 2
- * (HierarchyIndex) fail to recognize the session as a child.
- *
- * ## Lifecycle
- *
- * 1. **PreToolUse** (tool.execute.before with tool="task") → `add()`
- * 2. **PostToolUse** (tool.execute.after with metadata.sessionId) → `refreshTimestamp()`
- * 3. **Auto-purge**: stale entries (>30s) removed on classification check
- *
- * All methods are synchronous (Map operations, no I/O).
- * Thread safety: single-threaded Node.js event loop (sync Map ops).
+ * Stores entries keyed by tool callID or child session ID, with a TTL-based
+ * auto-cleanup mechanism. Entries survive PostToolUse so the child recorder
+ * can read actor/model attribution from the registry after dispatch starts.
  *
  * @module session-tracker/persistence/pending-dispatch-registry
  */
 
 // ---------------------------------------------------------------------------
-// PendingDispatchEntry interface
+// Types
 // ---------------------------------------------------------------------------
 
 /**
- * Pending dispatch entry stored when PreToolUse detects a task tool dispatch.
- * Lives in-memory only — never persisted to disk.
+ * A pending dispatch entry tracking an in-flight delegation.
  */
 export interface PendingDispatchEntry {
-  /** The session ID of the parent that dispatched the task. */
+  /** Parent session that dispatched the delegation. */
   parentSessionID: string
-  /** The callID from the tool.execute hook input. */
+  /** Tool call identifier from the hook event. */
   callID: string
-  /** The subagent type dispatched (e.g. "hm-l2-investigator"). */
+  /** Subagent type (used for actor attribution). */
   subagentType: string
-  /** `Date.now()` at registration time, for stale detection. */
+  /** Tool name (task or delegate-task). */
+  tool?: string
+  /** Timestamp of the last activity (used for TTL). */
   timestamp: number
-  /** The tool used to dispatch (e.g. "task" or "delegate-task"). */
-  tool: string
-  /** Delegation depth (1 = L1, 2 = L2). CP-ST-05-01 addition. */
-  delegationDepth?: number
-  /** Task description from the dispatch. CP-ST-05-01 addition. */
-  description?: string
-  /** Model identifier from the dispatch hook (e.g. "claude-sonnet-4-20250514"). Bug D-2. */
+  /** Model identifier (e.g. "claude-sonnet-4-20250514"). */
   model?: string
+  /** Child session ID assigned after dispatch resolves. */
+  childSessionID?: string
 }
 
 // ---------------------------------------------------------------------------
-// PendingDispatchRegistry class
+// Constants
 // ---------------------------------------------------------------------------
 
 /**
- * In-memory registry for sessions that have been dispatched as tasks
- * but whose child session ID is not yet known.
+ * Stale threshold: 30 seconds. Entries older than this are auto-purged.
+ */
+const STALE_THRESHOLD_MS = 30_000
+
+// ---------------------------------------------------------------------------
+// Registry
+// ---------------------------------------------------------------------------
+
+/**
+ * Registry that tracks pending subagent dispatches.
  *
- * Provides Gate 3 classification: if a `session.created` event fires for
- * a session whose parent recently dispatched a task, we can infer it's
- * a child even before the SDK or HierarchyIndex confirms it.
+ * Three indexing strategies:
+ * 1. **dispatches** — Map<string, PendingDispatchEntry> keyed by `call:<callID>` or child sessionID.
+ * 2. **byParent** — Map<string, Set<string>> tracking which callIDs belong to which parent.
+ * 3. **callIDToChild** — Map<string, string> bridging callID → child sessionID (re-keyed after updateWithChildID).
  *
- * ## Key design decisions
- *
- * - **callID as temporary key**: Because the child session ID is unknown at
- *   PreToolUse time, entries are stored with `call:` prefix. When the child
- *   ID is discovered, `updateWithChildID()` re-keys the entry with the real
- *   session ID.
- * - **Synchronous Map operations**: No async I/O — the registry is purely
- *   in-memory. All methods return synchronously.
- * - **30s auto-purge**: Stale entries are removed on every `has()`/`get()`
- *   call via `cleanupStale()`. If a dispatch never completes (tool abort,
- *   crash), the entry auto-expires and won't cause false CHILD classification.
- * - **subagentType storage**: The agent name is captured in the entry at
- *   registration time and retrieved later by tool-capture for delegator
- *   attribution.
+ * Entries survive PostToolUse (see Bug D-1): callers use `refreshTimestamp()`
+ * instead of `removeByCallID()` at PostToolUse.
+ * `removeByCallID()` now requires an explicit `"completed"` reason to delete.
  */
 export class PendingDispatchRegistry {
-  /** childID → PendingDispatchEntry map for O(1) has() lookup */
-  private dispatches: Map<string, PendingDispatchEntry> = new Map()
+  private readonly dispatches = new Map<string, PendingDispatchEntry>()
+  private readonly byParent = new Map<string, Set<string>>()
+  private readonly callIDToChild = new Map<string, string>()
 
-  /** callID → childID reverse index for cleanup at PostToolUse */
-  private callIDToChild: Map<string, string> = new Map()
-
-  /**
-   * Parent-indexed reverse lookup (D-04).
-   *
-   * Maps `parentSessionID → Set<callID>` so pending dispatches can be
-   * inspected by parent when a session.created event arrives before a real
-   * child ID is known. Direct `has(sessionID)` remains child/call-key scoped.
-   */
-  private byParent: Map<string, Set<string>> = new Map()
-
-  /** Maximum age (ms) before an entry is considered stale and auto-purged */
-  static readonly STALE_THRESHOLD_MS = 30_000
+  // -----------------------------------------------------------------------
+  // Core operations
+  // -----------------------------------------------------------------------
 
   /**
-   * Registers a pending dispatch for a parent session.
-   * Called by handleToolExecuteBefore when tool === "task" and task_id
-   * is absent (new dispatch, not resume).
+   * Adds a new pending dispatch entry.
    *
-   * Note: at PreToolUse time, the child session ID is NOT yet known.
-   * The child will be discovered later via polling or PostToolUse metadata.
-   * For the initial registration, we use callID as a temporary key
-   * (replaced later with the real child session ID when discovered).
-   *
-   * @param entry - The pending dispatch entry to register.
+   * @param entry - The entry to add.
    */
   add(entry: PendingDispatchEntry): void {
-    // Use callID as temporary key until child session ID is discovered.
-    // When the child session ID becomes known (via polling or PostToolUse),
-    // updateWithChildID removes the callID key and re-adds with child session ID.
-    this.dispatches.set(`call:${entry.callID}`, entry)
+    const callKey = `call:${entry.callID}`
+    this.dispatches.set(callKey, { ...entry })
 
-    // D-04: Index by parent session ID for reverse-lookup in has().
-    // When a child session ID appears (Gate 3 classification), we need to
-    // know that ANY pending dispatch means a child session may exist.
-    if (!this.byParent.has(entry.parentSessionID)) {
-      this.byParent.set(entry.parentSessionID, new Set())
+    // Index by parent (D-04)
+    const parentSet = this.byParent.get(entry.parentSessionID)
+    if (parentSet) {
+      parentSet.add(entry.callID)
+    } else {
+      this.byParent.set(entry.parentSessionID, new Set([entry.callID]))
     }
-    this.byParent.get(entry.parentSessionID)!.add(entry.callID)
   }
 
   /**
-   * Updates a pending dispatch entry with the actual child session ID.
-   * Called when the child session is discovered (via polling or PostToolUse).
+   * Checks if a pending dispatch entry exists for the given key.
    *
-   * Removes the callID-based temporary entry and re-adds with the real
-   * child session ID, enabling Gate 3 has() lookups.
+   * The key can be a `call:<callID>` string, a `callID`, or a child session ID.
+   * Runs cleanupStale() on every call.
    *
-   * @param callID - The tool call identifier from hook input.
-   * @param childSessionID - The discovered child session identifier.
+   * @param key - The key to check (callID, call:callID, or sessionID).
+   * @returns `true` if a non-stale entry exists.
    */
-  updateWithChildID(callID: string, childSessionID: string): void {
-    const callKey = `call:${callID}`
-    const entry = this.dispatches.get(callKey)
-    if (!entry) return
-    this.dispatches.delete(callKey)
-    this.dispatches.set(childSessionID, entry)
-    this.callIDToChild.set(callID, childSessionID)
-  }
-
-  /**
-   * Checks whether a session ID has a pending dispatch entry.
-   * Used by Gate 3 classification in ensureSessionReady and handleSessionCreated.
-   *
-   * Checks both direct childID keys AND callID-based temporary keys.
-   * Auto-purges stale entries before checking.
-   *
-   * @param sessionID - The session identifier to check.
-   * @returns `true` if a pending dispatch entry exists for this session.
-   */
-  has(sessionID: string): boolean {
+  has(key: string): boolean {
     this.cleanupStale()
-    if (this.dispatches.has(sessionID)) return true
-    if (this.dispatches.has(`call:${sessionID}`)) return true
-    return false
+    return this.dispatches.has(this.normalizeKey(key))
   }
 
   /**
-   * Retrieves the pending dispatch entry for a session ID, if any.
-   * Returns undefined if not found or entry is stale.
+   * Gets a pending dispatch entry for the given key.
    *
-   * @param sessionID - The session identifier to look up.
-   * @returns The pending dispatch entry, or `undefined`.
+   * The key can be a `call:<callID>` string, a `callID`, or a child session ID.
+   * Runs cleanupStale() on every call.
+   *
+   * @param key - The key to look up.
+   * @returns The entry, or `undefined` if not found (or stale).
    */
-  get(sessionID: string): PendingDispatchEntry | undefined {
+  get(key: string): PendingDispatchEntry | undefined {
     this.cleanupStale()
-    const entry = this.dispatches.get(sessionID) ?? this.dispatches.get(`call:${sessionID}`)
-    if (entry && Date.now() - entry.timestamp > PendingDispatchRegistry.STALE_THRESHOLD_MS) {
-      this.dispatches.delete(sessionID)
-      this.dispatches.delete(`call:${sessionID}`)
-      return undefined
-    }
-    return entry
+    const k = this.normalizeKey(key)
+    return this.dispatches.get(k)
   }
 
   /**
-   * Gets the subagentType for a pending dispatch, if any.
-   * Used for delegator attribution in tool-capture.handleTask.
-   *
-   * @param sessionID - The session identifier to look up.
-   * @returns The subagent type string, or `undefined` if not found.
+   * Gets the number of non-stale pending dispatch entries.
    */
-  getSubagentType(sessionID: string): string | undefined {
-    return this.get(sessionID)?.subagentType
-  }
-
-  /**
-   * Refreshes the timestamp of a pending dispatch entry by callID.
-   *
-   * Instead of removing the entry at PostToolUse (which causes a race when
-   * subsequent `session.created` / `chat.message` events still need the entry
-   * for classification), this bumps the timestamp so the entry survives until
-   * `cleanupStale()` auto-purges it after the normal TTL.
-   *
-   * Bug D-1: prevents premature removal that causes "unknown" actor attribution.
-   *
-   * @param callID - The tool call identifier whose entry should be refreshed.
-   */
-  refreshTimestamp(callID: string): void {
-    const callKey = `call:${callID}`
-    const entry = this.dispatches.get(callKey)
-    if (entry) {
-      entry.timestamp = Date.now()
-      return
-    }
-    const childID = this.callIDToChild.get(callID)
-    if (childID) {
-      const childEntry = this.dispatches.get(childID)
-      if (childEntry) {
-        childEntry.timestamp = Date.now()
-      }
-    }
-  }
-
-  /**
-   * Removes a pending dispatch entry by callID (PostToolUse cleanup).
-   *
-   * @param callID - The tool call identifier to remove.
-   */
-  removeByCallID(callID: string): void {
-    const callKey = `call:${callID}`
-    const entry = this.dispatches.get(callKey)
-
-    // D-04: Clean byParent index when removing by callID
-    if (entry) {
-      const parentSet = this.byParent.get(entry.parentSessionID)
-      if (parentSet) {
-        parentSet.delete(callID)
-        if (parentSet.size === 0) {
-          this.byParent.delete(entry.parentSessionID)
-        }
-      }
-    }
-
-    const childID = this.callIDToChild.get(callID)
-    this.dispatches.delete(callKey)
-    if (childID) {
-      this.dispatches.delete(childID)
-      this.callIDToChild.delete(callID)
-    }
+  get size(): number {
+    this.cleanupStale()
+    return this.dispatches.size
   }
 
   /**
@@ -260,6 +141,136 @@ export class PendingDispatchRegistry {
     this.dispatches.delete(sessionID)
   }
 
+  // -----------------------------------------------------------------------
+  // Query by parent
+  // -----------------------------------------------------------------------
+
+  /**
+   * Gets entries for a parent session, maintaining insertion order.
+   *
+   * @param parentSessionID - The parent session ID to query.
+   * @returns An array of entries, or `undefined` if no entries exist.
+   */
+  getByParent(parentSessionID: string): PendingDispatchEntry[] | undefined {
+    this.cleanupStale()
+    const callIDs = this.byParent.get(parentSessionID)
+    if (!callIDs || callIDs.size === 0) {
+      return undefined
+    }
+
+    const entries: PendingDispatchEntry[] = []
+    for (const callID of callIDs) {
+      const entry = this.dispatches.get(`call:${callID}`) || this.dispatches.get(callID)
+      if (entry) {
+        entries.push(entry)
+      }
+    }
+    return entries.length > 0 ? entries : undefined
+  }
+
+  // -----------------------------------------------------------------------
+  // Child ID bridge
+  // -----------------------------------------------------------------------
+
+  /**
+   * Re-keys a callID to use the child session ID after dispatch resolves.
+   *
+   * Prevents dispatches from cleaning stale callID entries while the child
+   * session is still being tracked.
+   *
+   * @param callID - The original tool call identifier.
+   * @param childSessionID - The child session ID assigned by dispatch.
+   */
+  updateWithChildID(callID: string, childSessionID: string): void {
+    const callKey = `call:${callID}`
+    const entry = this.dispatches.get(callKey)
+    if (!entry) {
+      return
+    }
+
+    entry.childSessionID = childSessionID
+
+    // Re-key from call:callID → childSessionID
+    this.dispatches.delete(callKey)
+    this.dispatches.set(childSessionID, entry)
+    this.callIDToChild.set(callID, childSessionID)
+
+    // D-04: byParent index stays on callID so parent can still find the entry
+    // even after re-keying. No change to byParent needed.
+  }
+
+  // -----------------------------------------------------------------------
+  // TTL management
+  // -----------------------------------------------------------------------
+
+  /**
+   * Refreshes the timestamp for a pending dispatch entry.
+   *
+   * Used at PostToolUse to keep the entry alive for actor attribution
+   * instead of prematurely removing it (Bug D-1).
+   *
+   * @param callID - The tool call identifier to refresh.
+   */
+  refreshTimestamp(callID: string): void {
+    const callKey = `call:${callID}`
+    const entry = this.dispatches.get(callKey)
+    if (entry) {
+      entry.timestamp = Date.now()
+    }
+
+    // Also refresh the child entry if re-keyed
+    const childID = this.callIDToChild.get(callID)
+    if (childID) {
+      const childEntry = this.dispatches.get(childID)
+      if (childEntry) {
+        childEntry.timestamp = Date.now()
+      }
+    }
+  }
+
+  /**
+   * Removes a pending dispatch entry by callID.
+   *
+   * **Bug D-1 hardening:** Only deletes when `reason === "completed"`.
+   * For `"postToolUse"` and `"stale"`, does nothing — callers should use
+   * `refreshTimestamp()` to keep entries alive for actor attribution.
+   *
+   * @param callID - The tool call identifier to remove.
+   * @param reason - The reason for removal. Only `"completed"` triggers deletion.
+   */
+  removeByCallID(callID: string, reason: "completed" | "postToolUse" | "stale" = "postToolUse"): void {
+    // Bug D-1: Only delete when reason is explicitly "completed".
+    // For "postToolUse" and "stale", the entry must survive for actor attribution.
+    if (reason !== "completed") {
+      return
+    }
+
+    const callKey = `call:${callID}`
+    const entry = this.dispatches.get(callKey)
+
+    // D-04: Clean byParent index when removing by callID
+    if (entry) {
+      const parentSet = this.byParent.get(entry.parentSessionID)
+      if (parentSet) {
+        parentSet.delete(callID)
+        if (parentSet.size === 0) {
+          this.byParent.delete(entry.parentSessionID)
+        }
+      }
+    }
+
+    const childID = this.callIDToChild.get(callID)
+    this.dispatches.delete(callKey)
+    if (childID) {
+      this.dispatches.delete(childID)
+      this.callIDToChild.delete(callID)
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Stale cleanup
+  // -----------------------------------------------------------------------
+
   /**
    * Removes ALL pending dispatch entries whose timestamp exceeds
    * STALE_THRESHOLD_MS. Called automatically by has() and get().
@@ -268,102 +279,62 @@ export class PendingDispatchRegistry {
    */
   cleanupStale(): void {
     const now = Date.now()
-    const threshold = PendingDispatchRegistry.STALE_THRESHOLD_MS
+    const staleKeys: string[] = []
+
     for (const [key, entry] of this.dispatches) {
-      if (now - entry.timestamp > threshold) {
-        this.dispatches.delete(key)
-
-        // D-04: Clean byParent index for stale entries
-        const parentSet = this.byParent.get(entry.parentSessionID)
-        if (parentSet) {
-          parentSet.delete(entry.callID)
-          if (parentSet.size === 0) {
-            this.byParent.delete(entry.parentSessionID)
-          }
-        }
-
-        // Clean up callIDToChild if this was a childID entry
-        for (const [callId, childId] of this.callIDToChild) {
-          if (childId === key) {
-            this.callIDToChild.delete(callId)
-            break
-          }
-        }
+      if (now - entry.timestamp > STALE_THRESHOLD_MS) {
+        staleKeys.push(key)
       }
+    }
+
+    for (const key of staleKeys) {
+      this.dispatches.delete(key)
     }
   }
 
-  /**
-   * Returns the number of active (non-stale) pending dispatch entries.
-   */
-  get size(): number {
-    this.cleanupStale()
-    return this.dispatches.size
-  }
+  // -----------------------------------------------------------------------
+  // Diagnostics
+  // -----------------------------------------------------------------------
 
   /**
-   * Clears all entries. Used in tests.
-   */
-  clear(): void {
-    this.dispatches.clear()
-    this.callIDToChild.clear()
-    this.byParent.clear()
-  }
-
-  /**
-   * Returns all active (non-stale) pending dispatch entries.
-   * Used for testing and debugging.
-   */
-  getAll(): PendingDispatchEntry[] {
-    this.cleanupStale()
-    return Array.from(this.dispatches.values())
-  }
-
-  /**
-   * Retrieves a pending dispatch entry by parent session ID.
-   * Fallback for race conditions where child ID lookup fails because
-   * updateWithChildID() hasn't run yet.
+   * Returns the list of pending keys for debugging purposes.
    *
-   * Iterates the byParent reverse index, resolves callIDs to entries,
-   * and returns the first non-stale match.
-   *
-   * @param parentSessionID - The parent session identifier to search by.
-   * @returns The first non-stale pending dispatch entry for this parent, or undefined.
+   * @returns Array of active dispatch keys.
    */
-  getByParent(parentSessionID: string): PendingDispatchEntry | undefined {
+  keys(): string[] {
     this.cleanupStale()
-    const callIDs = this.byParent.get(parentSessionID)
-    if (!callIDs || callIDs.size === 0) return undefined
+    return [...this.dispatches.keys()]
+  }
 
-    for (const callID of callIDs) {
-      const entry = this.dispatches.get(`call:${callID}`)
-      if (entry && Date.now() - entry.timestamp <= PendingDispatchRegistry.STALE_THRESHOLD_MS) {
-        return entry
-      }
+  // -----------------------------------------------------------------------
+  // Helpers
+  // -----------------------------------------------------------------------
+
+  /**
+   * Normalizes a lookup key.
+   *
+   * If the key starts with "call:" it is returned as-is.
+   * If the key maps to a child session via callIDToChild, the child session ID is returned.
+   * Otherwise the key is treated as a session ID.
+   *
+   * @param key - The raw lookup key.
+   * @returns The normalized key for the dispatches map.
+   */
+  private normalizeKey(key: string): string {
+    if (key.startsWith("call:")) {
+      return key
     }
-    return undefined
-  }
-
-  /**
-   * Gets any active pending dispatch entry when the child session ID is
-   * not yet known but `byParent` indicates recent task dispatches.
-   *
-   * Used by Gate 0 in handleSessionCreated: when `byParent.size > 0`,
-   * a task was recently dispatched and the resulting session is likely
-   * a child even though we don't know its ID yet.
-   *
-   * @returns The first active pending entry, or `undefined`.
-   */
-  getAnyActiveEntry(): PendingDispatchEntry | undefined {
-    this.cleanupStale()
-    if (this.byParent.size === 0) return undefined
-    // Return the first entry from byParent
-    for (const callIds of this.byParent.values()) {
-      for (const callId of callIds) {
-        const entry = this.dispatches.get(`call:${callId}`)
-        if (entry) return entry
-      }
+    // Check if this key is known as a callID that was re-keyed
+    const childID = this.callIDToChild.get(key)
+    if (childID) {
+      return childID
     }
-    return undefined
+    // For bare callID lookup, prefix with call:
+    const callKey = `call:${key}`
+    if (this.dispatches.has(callKey)) {
+      return callKey
+    }
+    // Otherwise use as session ID directly
+    return key
   }
 }

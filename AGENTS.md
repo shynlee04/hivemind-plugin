@@ -2,8 +2,6 @@
 
 ## Project Overview
 
-Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04 through SR-10 remediation (`882b0686`). `src/lib/` has been removed; runtime code now lives under `src/shared/`, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, `src/hooks/`, and `src/tools/`. CP-DT-01 (Delegate-Task Ecosystem Revamp) is COMPLETE — review ITER2: 0 Critical, validation: 18/18 spec requirements DELIVERED, 91/91 tests pass. **CP-DT-01-08 (Surgical Remediation)** is COMPLETE. Phase 14/15 (Proactive Execution Checking, Model/Provider ID Inheritance, and Permission Propagation) is COMPLETE — implemented 60s stalled timeout with early assistant error detection, model/provider inheritance from parent session history, and propagation of "ask" permission rules for user-consent fallback. All tests pass successfully. CP-PTY-00 is the shell/PTY/background-command control-plane spike (docs/spec-only, COMPLETE). CP-PTY-01 (Background Shell Control-Plane MVP) is READY, unblocked by BOOT-07 and WS-SR completion. CP-PTY-02, CP-PTY-03, and CP-PTY-04 extend the runway. SC-PTY-01 remains DEFERRED.
-
 ## THE ABSOLUTE ORDER - AFTER EACH AND EVERY FRONT-FACING USER'S PROMPTING (NO MATTER WHAT) FRONT-FACING AGENT NEVER DO SPECIALISTS' WORK
 
 - THESE ARE THE FRONT-FACING LIST OF NOT ALLOW TO DO TASK: Do not audit, do not review, do not judge, do not advice, do not make any assumptions, do not plan, do not implement, do not create, do not modify, do not correct, do not debug, do not research -> SPEACLIST Delegation do them

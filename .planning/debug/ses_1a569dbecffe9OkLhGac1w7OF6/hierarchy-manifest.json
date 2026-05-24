@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1a569dbecffe9OkLhGac1w7OF6",
+  "lastUpdated": "2026-05-24T15:30:08.465Z",
+  "children": {
+    "ses_1a568fc64ffewzaevtVCfDic5Z": {
+      "sessionID": "ses_1a568fc64ffewzaevtVCfDic5Z",
+      "parentSessionID": "ses_1a569dbecffe9OkLhGac1w7OF6",
+      "rootMainSessionID": "ses_1a569dbecffe9OkLhGac1w7OF6",
+      "delegationDepth": 1,
+      "delegatedBy": "delegate-task",
+      "subagentType": "gsd-code-reviewer",
+      "createdAt": "2026-05-24T15:25:06.989Z",
+      "updatedAt": "2026-05-24T15:30:08.465Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a568fc64ffewzaevtVCfDic5Z.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

@@ -170,14 +170,14 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
       expect(registry.has("call:call_keep")).toBe(true)
       expect(registry.size).toBe(2)
 
-      registry.removeByCallID("call_to_remove")
+      registry.removeByCallID("call_to_remove", "completed")
 
       // After removal: only one remains
       expect(registry.has("call:call_to_remove")).toBe(false)
       expect(registry.has("call:call_keep")).toBe(true)
       expect(registry.size).toBe(1)
 
-      registry.removeByCallID("call_keep")
+      registry.removeByCallID("call_keep", "completed")
 
       // After all removed: empty
       expect(registry.has("call:call_keep")).toBe(false)
@@ -186,7 +186,7 @@ describe("PendingDispatchRegistry — parent-indexed reverse lookup (D-04)", () 
 
     it("should handle removing a non-existent callID gracefully", () => {
       // Should NOT throw
-      registry.removeByCallID("call_nonexistent")
+      registry.removeByCallID("call_nonexistent", "completed")
 
       // Registry should still be empty
       expect(registry.size).toBe(0)

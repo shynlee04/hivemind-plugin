@@ -84,7 +84,7 @@ describe("PendingDispatchRegistry — Bug D-1: refreshTimestamp", () => {
       timestamp: Date.now(),
     })
 
-    registry.removeByCallID("call-1")
+    registry.removeByCallID("call-1", "completed")
     expect(registry.getByParent("parent-1")).toBeUndefined()
   })
 })
