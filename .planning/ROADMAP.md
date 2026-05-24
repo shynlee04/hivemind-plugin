@@ -689,6 +689,23 @@ Plan list:
 - HIGH: If OpenCode SDK v1.15.5 does NOT fire `session.created` events for sessions created from custom tool code → architectural limit, need alternative approach
 - MEDIUM: Session-tracker fix may require changes across 3+ modules (tool-before-guard, event-capture, coordinator, plugin.ts)
 
+### Phase 23.2: Session-Tracker Bugfix — Unified task/delegate-task (Group 1 — sub-phase of 23)
+
+**Goal:** Fix all 5 bugs to ensure session-tracker correctly captures assistant text, compaction summaries, tool attribution, hierarchy manifest entries, and actor metadata for BOTH task and delegate-task delegation paths.
+
+**Why this exists:** Phase 23.1 investigation confirmed 5 bugs sharing a root cause: code written exclusively for `task` tool, never adapted for `delegate-task`. All fixes are surgical (no architecture changes).
+
+**Requirements:** REQ-23.2-01 (assistant text extraction), REQ-23.2-02 (compaction summary), REQ-23.2-03 (tool attribution race), REQ-23.2-04 (hierarchy manifest), REQ-23.2-05 (actor field)
+
+**Plans:** 4 plans
+- [ ] 23.2-01-PLAN.md — BUG#4 + BUG#5: manifestWriter.addChild() in tool-delegation.ts + subagentType dual-key extraction
+- [ ] 23.2-02-PLAN.md — BUG#1: extractTextContent multi-field support in message-capture.ts
+- [ ] 23.2-03-PLAN.md — BUG#3 + BUG#4: Tool attribution race fix + manifestWriter.addChild() in event-capture.ts
+- [ ] 23.2-04-PLAN.md — BUG#2: Compaction summary fallback via message history
+
+**Depends on:** Phase 23.1 (investigation complete)
+**Blocks:** Phase 25 (session-tracker/CP-ST phases)
+
 ---
 
 **Goal:** Fix CP-DT-01 runtime block. Decompose DelegationManager god-object (~580 LOC). Consolidate dual in-memory stores. Fix coordinatorRef forward reference.
