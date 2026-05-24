@@ -30,6 +30,8 @@ export interface PendingDispatchEntry {
   model?: string
   /** Child session ID assigned after dispatch resolves. */
   childSessionID?: string
+  /** Delegation depth (1 for direct, >1 for nested). */
+  delegationDepth?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -304,6 +306,36 @@ export class PendingDispatchRegistry {
   keys(): string[] {
     this.cleanupStale()
     return [...this.dispatches.keys()]
+  }
+
+  /**
+   * Gets ANY active entry from the registry (for Gate 0 classification).
+   *
+   * When session.created fires and we don't know the sessionID yet, we need
+   * to check if ANY pending dispatch exists. This returns the first non-stale
+   * entry found (usually the most recent one).
+   *
+   * @returns The first active entry, or `undefined` if no entries exist.
+   */
+  getAnyActiveEntry(): PendingDispatchEntry | undefined {
+    this.cleanupStale()
+    if (this.dispatches.size > 0) {
+      const firstKey = this.dispatches.keys().next().value
+      return firstKey ? this.dispatches.get(firstKey) : undefined
+    }
+    return undefined
+  }
+
+  /**
+   * Gets the subagent type for a given key (session ID or callID).
+   *
+   * @param key - The session ID or callID to look up.
+   * @returns The subagent type, or "unknown" if not found.
+   */
+  getSubagentType(key: string): string {
+    this.cleanupStale()
+    const entry = this.get(key)
+    return entry?.subagentType ?? "unknown"
   }
 
   // -----------------------------------------------------------------------

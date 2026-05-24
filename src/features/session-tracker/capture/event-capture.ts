@@ -655,14 +655,18 @@ export class EventCapture {
     if (!value || typeof value !== "object" || Array.isArray(value)) return undefined
 
     const record = value as Record<string, unknown>
-    const preferredKeys = ["summary", "compactSummary", "compactionSummary", "content", "context", "message", "text"]
+    const preferredKeys = [
+      "summary", "compactSummary", "compactionSummary",
+      "content", "context", "message", "text",
+      "compact_summary", "compaction_text", "output",
+    ]
     for (const key of preferredKeys) {
       const candidate = record[key]
       if (typeof candidate === "string" && candidate.trim().length > 0) return candidate
     }
     for (const key of Object.keys(record)) {
       const val = record[key]
-      if (val && typeof val === "object") {
+      if (val && typeof val === "object" && !Array.isArray(val)) {
         const nested = this.findCompactionText(val)
         if (nested) return nested
       }
@@ -785,7 +789,6 @@ export class EventCapture {
     try {
       const messages = await getSessionMessages(this.client, sessionID)
       if (messages && messages.length > 0) {
-        // Find the last assistant message — it typically contains the compact summary
         let lastAssistantMsg: unknown
         for (let i = messages.length - 1; i >= 0; i--) {
           if (this.messageRole(messages[i]) === "assistant") {
@@ -799,7 +802,6 @@ export class EventCapture {
             return `**compact_summary:**\n\n${text}\n`
           }
         }
-        // No assistant message with text — try last message of any role
         const lastMsg = messages[messages.length - 1]
         const fallbackText = this.extractTextFromSdkMessage(lastMsg)
         if (fallbackText && fallbackText.trim().length > 0) {
@@ -807,17 +809,46 @@ export class EventCapture {
         }
       }
     } catch {
-      // getSessionMessages failed — fall through to child .json fallback
+      // getSessionMessages failed — fall through
     }
 
-    // Bug B fix: Try reading the child .json file directly
     const childData = await this.childWriter.readChildData(sessionID)
     if (childData) {
       const summary = this.extractSummaryFromChildRecord(childData)
       if (summary) return `**compact_summary:**\n\n${summary}\n`
     }
 
+    const childSummaries = await this.collectChildSummaries(sessionID)
+    if (childSummaries && childSummaries.length > 0) {
+      return `**compact_summary (from children):**\n\n${childSummaries.join("\n---\n")}\n`
+    }
+
     return "**Compaction occurred — summary unavailable.**\n"
+  }
+
+  /**
+   * Collects lastMessage summaries from all child sessions
+   * in the hierarchy manifest for a given root session.
+   */
+  private async collectChildSummaries(rootSessionID: string): Promise<string[]> {
+    try {
+      if (!this.manifestWriter) return []
+      const children = await this.manifestWriter.getChildren(rootSessionID)
+      if (!children || Object.keys(children).length === 0) return []
+
+      const summaries: string[] = []
+      for (const [childID, meta] of Object.entries(children)) {
+        if (meta.status === "completed") {
+          const childData = await this.childWriter.readChildData(childID)
+          if (childData?.lastMessage && childData.lastMessage.trim().length > 0) {
+            summaries.push(`**${childID}:** ${childData.lastMessage.substring(0, 2000)}`)
+          }
+        }
+      }
+      return summaries
+    } catch {
+      return []
+    }
   }
 
   /**

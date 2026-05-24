@@ -200,7 +200,6 @@ export class MessageCapture {
     input: ChatMessageInput,
     parts: OutputPart[],
   ): Promise<void> {
-    // Filter out thinking blocks before passing to agent transform
     const nonThinkingParts = (parts || []).filter(
       (p) => p.type !== "thinking",
     )
@@ -209,7 +208,6 @@ export class MessageCapture {
       parts: nonThinkingParts,
     })
 
-    // P-01: Extract assistant text content from non-thinking parts
     const content = this.extractTextContent(nonThinkingParts)
 
     await this.sessionWriter.appendAgentBlock(
@@ -220,11 +218,47 @@ export class MessageCapture {
       content || undefined,
     )
 
-    if (content) {
+    const lastMessage = this.resolveLastMessage(nonThinkingParts, content, metadata)
+    if (lastMessage) {
       await this.sessionWriter.updateFrontmatter(input.sessionID, {
-        lastMessage: content,
+        lastMessage,
       })
     }
+  }
+
+  /**
+   * Resolves the lastMessage value for frontmatter update.
+   *
+   * Priority: text content > tool summary > model name fallback.
+   * Ensures lastMessage is ALWAYS captured even when assistant
+   * only outputs tool calls with no text content.
+   */
+  private resolveLastMessage(
+    parts: OutputPart[],
+    textContent: string,
+    metadata: { name?: string; model?: string },
+  ): string {
+    if (textContent && textContent.trim().length > 0) {
+      return textContent
+    }
+
+    const toolCalls = parts.filter((p) => p.type === "tool_use" || p.type === "tool_call")
+    if (toolCalls.length > 0) {
+      const toolNames = toolCalls
+        .map((p) => {
+          const tu = p as { tool?: string; name?: string }
+          return tu.tool || tu.name || "tool"
+        })
+        .filter(Boolean)
+      const agentLabel = metadata.name || "agent"
+      return `[${agentLabel}] Executed: ${toolNames.join(", ")}`
+    }
+
+    if (metadata.model) {
+      return `[${metadata.model}] (no text output)`
+    }
+
+    return ""
   }
 
   /**
