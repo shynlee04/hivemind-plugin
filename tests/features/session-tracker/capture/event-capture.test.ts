@@ -438,6 +438,7 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
       pendingRegistry: {
         has: mockPendingHas,
         get: mockPendingGet,
+        getByParent: vi.fn().mockReturnValue(undefined),
         getAnyActiveEntry: vi.fn().mockReturnValue(undefined),
       } as any,
       manifestWriter,

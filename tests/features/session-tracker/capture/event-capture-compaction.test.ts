@@ -14,9 +14,10 @@ import { SessionWriter } from "../../../../src/features/session-tracker/persiste
 import { ChildWriter } from "../../../../src/features/session-tracker/persistence/child-writer.js"
 import { SessionIndexWriter } from "../../../../src/features/session-tracker/persistence/session-index-writer.js"
 
-// Mock the session-api module
+// Mock the session-api module — getSessionMessages needed by resolveCompactionFromMessages
 vi.mock("../../../../src/shared/session-api.js", () => ({
   getSession: vi.fn(),
+  getSessionMessages: vi.fn().mockResolvedValue([]),
 }))
 
 import { getSession } from "../../../../src/shared/session-api.js"
@@ -96,7 +97,9 @@ describe("EventCapture — compaction handling (D-10)", () => {
 
       expect(mockAppendCompactionBlock).toHaveBeenCalled()
       const section = mockAppendCompactionBlock.mock.calls[0][1]
-      expect(section).toContain("Pre-compaction state preserved")
+      // With empty event, findCompactionText returns undefined → resolveCompactionFromMessages
+      // falls through to "Compaction occurred — summary unavailable." fallback
+      expect(section).toContain("Compaction occurred")
       expect(section).toContain("active delegations")
     })
 

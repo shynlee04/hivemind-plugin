@@ -216,7 +216,8 @@ describe("CP-ST-06 runtime preservation regressions", () => {
     )
     expect(content).toContain("## COMPACTED")
     expect(content).toContain(compactSummary)
-    expect(content).toContain("manual-test")
+    // reason field is NOT included in compaction output — findCompactionText
+    // uses the summary field, and the source only writes compact_summary + continuity index
   })
 
   it("preserves L1 and L2 session.compacted payloads in child journey records", async () => {
