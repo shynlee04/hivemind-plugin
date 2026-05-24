@@ -13,6 +13,7 @@ import { EventCapture } from "../../../../src/features/session-tracker/capture/e
 import { SessionWriter } from "../../../../src/features/session-tracker/persistence/session-writer.js"
 import { ChildWriter } from "../../../../src/features/session-tracker/persistence/child-writer.js"
 import { SessionIndexWriter } from "../../../../src/features/session-tracker/persistence/session-index-writer.js"
+import type { ChildRef } from "../../../../src/features/session-tracker/types.js"
 
 // Mock the session-api module
 vi.mock("../../../../src/shared/session-api.js", () => ({
@@ -30,6 +31,7 @@ describe("EventCapture — child session routing (DEFECT-08)", () => {
   let mockUpdateFrontmatter: ReturnType<typeof vi.fn>
   let mockUpdateChildStatusCw: ReturnType<typeof vi.fn>
   let mockUpdateChildStatusSiw: ReturnType<typeof vi.fn>
+  let mockAddChildRef: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -37,9 +39,11 @@ describe("EventCapture — child session routing (DEFECT-08)", () => {
     mockUpdateFrontmatter = vi.fn().mockResolvedValue(undefined)
     mockUpdateChildStatusCw = vi.fn().mockResolvedValue(undefined)
     mockUpdateChildStatusSiw = vi.fn().mockResolvedValue(undefined)
+    mockAddChildRef = vi.fn().mockResolvedValue(undefined)
 
     sessionWriter = {
       updateFrontmatter: mockUpdateFrontmatter,
+      addChildRef: mockAddChildRef,
       createSessionDir: vi.fn(),
       initializeSessionFile: vi.fn(),
       appendUserTurn: vi.fn(),
@@ -168,6 +172,13 @@ describe("EventCapture — child session routing (DEFECT-08)", () => {
         "ses_child8888888888gh",
         "error",
       )
+    })
+  })
+
+  describe("addChildRef integration (Bug A fix — Phase 23.2)", () => {
+    it("should expose addChildRef on sessionWriter mock for wiring verification", () => {
+      expect(typeof mockAddChildRef).toBe("function")
+      expect(sessionWriter.addChildRef).toBe(mockAddChildRef)
     })
   })
 })

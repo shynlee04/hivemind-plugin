@@ -530,6 +530,11 @@ export class EventCapture {
               childFile: `${sessionID}.json`,
             })
           }
+          // Bug A: populate root .md frontmatter children array
+          await this.sessionWriter.addChildRef(rootMain, {
+            sessionID,
+            childFile: `${sessionID}.json`,
+          })
         }
       }
     } catch (err) {

@@ -14,7 +14,7 @@ import { stringify as yamlStringify } from "yaml"
 import { readFile, writeFile, rename } from "node:fs/promises"
 import { dirname } from "node:path"
 import { ensureDirectory, atomicAppendMarkdown, safeSessionPath } from "./atomic-write.js"
-import type { SessionRecord, JourneyEntry } from "../types.js"
+import type { SessionRecord, JourneyEntry, ChildRef } from "../types.js"
 
 // ---------------------------------------------------------------------------
 // SessionWriter class
@@ -224,6 +224,45 @@ export class SessionWriter {
     const content = `---\n${yamlStr}---\n${parsed.content.trim() ? parsed.content : ""}`
 
     // Direct atomic write — no re-read via atomicAppendMarkdown (DEFECT-06)
+    const tmpPath = `${filePath}.tmp.${Date.now()}`
+    await ensureDirectory(dirname(filePath))
+    await writeFile(tmpPath, content, "utf-8")
+    await rename(tmpPath, filePath)
+  }
+
+  /**
+   * Appends a child reference to the root session `.md` frontmatter's
+   * `children` array. Prevents duplicates by checking for existing
+   * sessionID entries before appending.
+   *
+   * This fixes Bug A where `children: []` was never populated after
+   * child sessions were created (Phase 23.2).
+   *
+   * @param rootSessionID - The root/main session whose `.md` file to update.
+   * @param childRef - The child reference to append.
+   * @returns Promise that resolves when the update is written.
+   */
+  async addChildRef(rootSessionID: string, childRef: ChildRef): Promise<void> {
+    const filePath = this.getSessionFilePath(rootSessionID)
+    const raw = await readFile(filePath, "utf-8")
+
+    const parsed = matter(raw)
+    const existing: ChildRef[] = Array.isArray(parsed.data.children)
+      ? parsed.data.children
+      : []
+
+    if (existing.some((c) => c.sessionID === childRef.sessionID)) {
+      return
+    }
+
+    const merged: Record<string, unknown> = {
+      ...parsed.data,
+      children: [...existing, childRef],
+    }
+
+    const yamlStr = yamlStringify(merged)
+    const content = `---\n${yamlStr}---\n${parsed.content.trim() ? parsed.content : ""}`
+
     const tmpPath = `${filePath}.tmp.${Date.now()}`
     await ensureDirectory(dirname(filePath))
     await writeFile(tmpPath, content, "utf-8")

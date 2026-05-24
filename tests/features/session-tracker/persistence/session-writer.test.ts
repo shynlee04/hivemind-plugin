@@ -327,3 +327,71 @@ describe("updateFrontmatter", () => {
     expect(content).toContain("status: idle")
   })
 })
+
+// ---------------------------------------------------------------------------
+// addChildRef tests (Bug A fix — Phase 23.2)
+// ---------------------------------------------------------------------------
+
+describe("addChildRef", () => {
+  beforeEach(async () => {
+    const sessionID = "ses_root0000000000"
+    await writer.createSessionDir(sessionID)
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      created: "2026-01-01T00:00:00Z",
+      updated: "2026-01-01T00:00:00Z",
+      parentSessionID: null,
+      delegationDepth: 0,
+      children: [],
+      continuityIndex: "session-continuity.json",
+      status: "active",
+    })
+  })
+
+  it("appends a child ref to the children array in frontmatter", async () => {
+    const rootID = "ses_root0000000000"
+    await writer.addChildRef(rootID, {
+      sessionID: "ses_child1111111111",
+      childFile: "ses_child1111111111.json",
+    })
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", rootID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+
+    expect(content).toContain("ses_child1111111111")
+    expect(content).toContain("ses_child1111111111.json")
+  })
+
+  it("does not duplicate a child ref that already exists", async () => {
+    const rootID = "ses_root0000000000"
+    const childRef = { sessionID: "ses_child2222222222", childFile: "ses_child2222222222.json" }
+
+    await writer.addChildRef(rootID, childRef)
+    await writer.addChildRef(rootID, childRef)
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", rootID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+
+    // Parse frontmatter and check children array length
+    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/)
+    expect(fmMatch).toBeDefined()
+    const fm = require("yaml").parse(fmMatch![1])
+    expect(fm.children).toHaveLength(1)
+    expect(fm.children[0].sessionID).toBe("ses_child2222222222")
+  })
+
+  it("appends multiple different child refs", async () => {
+    const rootID = "ses_root0000000000"
+    await writer.addChildRef(rootID, { sessionID: "ses_aaa1111111111", childFile: "ses_aaa1111111111.json" })
+    await writer.addChildRef(rootID, { sessionID: "ses_bbb2222222222", childFile: "ses_bbb2222222222.json" })
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", rootID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+
+    expect(content).toContain("ses_aaa1111111111")
+    expect(content).toContain("ses_bbb2222222222")
+  })
+})

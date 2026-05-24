@@ -40,6 +40,7 @@ describe("EventCapture", () => {
       createSessionDir: mockCreateSessionDir,
       initializeSessionFile: mockInitializeSessionFile,
       updateFrontmatter: mockUpdateFrontmatter,
+      addChildRef: vi.fn(),
       appendUserTurn: vi.fn(),
       appendAgentBlock: vi.fn(),
       appendToolBlock: vi.fn(),
@@ -239,6 +240,7 @@ describe("handleSessionCreated() — root-only directory creation (D-02)", () =>
       createSessionDir: mockCreateSessionDir,
       initializeSessionFile: mockInitializeSessionFile,
       updateFrontmatter: vi.fn(),
+      addChildRef: vi.fn(),
     } as unknown as SessionWriter
 
     const childWriter = {
@@ -401,6 +403,7 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
       createSessionDir: mockCreateSessionDir,
       initializeSessionFile: mockInitializeSessionFile,
       updateFrontmatter: vi.fn(),
+      addChildRef: vi.fn(),
     } as unknown as SessionWriter
 
     const childWriter = {
