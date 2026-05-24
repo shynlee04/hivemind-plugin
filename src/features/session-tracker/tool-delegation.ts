@@ -234,7 +234,11 @@ export class ToolDelegation {
 
     const args = asRecord(input.args)
     const description = typeof args.description === "string" ? args.description : ""
-    const subagentType = typeof args.subagent_type === "string" ? args.subagent_type : "unknown"
+    // REQ-23.2-05: Support both task (subagent_type) and delegate-task (agent) arg keys
+    const subagentType =
+      typeof args.subagent_type === "string" ? args.subagent_type :
+      typeof args.agent === "string" ? args.agent :
+      "unknown"
 
     if (!this.hierarchyIndex.isChild(input.sessionID)) {
       this.hierarchyIndex.registerChild(parentID, input.sessionID)
