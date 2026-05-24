@@ -312,6 +312,16 @@ export class ToolDelegation {
       subagentType,
       input.sessionID,
     )
+    // REQ-23.2-04: Populate hierarchy-manifest.json (was missing — addChild defined but never called)
+    await this.manifestWriter.addChild({
+      rootMainSessionID: rootMain,
+      childSessionID,
+      parentSessionID: input.sessionID,
+      delegationDepth: depth,
+      delegatedBy: input.tool,
+      subagentType,
+      childFile: `${childSessionID}.json`,
+    })
     await this.projectIndexWriter.incrementChildCount(rootMain, depth)
     await this.projectIndexWriter.addSession(
       childSessionID,
