@@ -311,42 +311,47 @@ export class MessageCapture {
   /**
    * Extracts the concatenated text content from an array of output parts.
    *
+   * FIX: Filter thinking blocks + lấy TOÀN BỘ text + content fields, join với \n
+   *
    * @param parts - Array of hook output parts.
    * @returns The concatenated text content, or empty string if no text found.
    */
   private extractTextContent(parts: OutputPart[] | null | undefined): string {
     if (!Array.isArray(parts)) return ""
-    let hasTextLikeField = false
+
     const texts: string[] = []
 
     for (const p of parts) {
-      if (!p) continue
-      const textVal = p.text
-      const contentVal = p.content
+      if (!p || typeof p !== "object") continue
 
-      const hasText = typeof textVal === "string"
-      const hasContent = typeof contentVal === "string"
+      // FILTER: Bỏ thinking blocks (thin line - không ghi ra)
+      if ((p as { type?: string }).type === "thinking") {
+        continue
+      }
 
-      if (hasText || hasContent) {
-        hasTextLikeField = true
-        const value = hasText ? textVal : contentVal
-        if (value) {
-          texts.push(value)
-        }
+      // LẤY TOÀN BỘ text fields (text + content)
+      if (p.text && typeof p.text === "string" && p.text.trim().length > 0) {
+        texts.push(p.text)
+      }
+
+      if (p.content && typeof p.content === "string" && p.content.trim().length > 0) {
+        texts.push(p.content)
       }
     }
 
-    if (parts.length > 0 && !hasTextLikeField) {
+    const result = texts.join("\n")
+
+    if (parts.length > 0 && texts.length === 0) {
       void this.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "debug",
-          message: "[Harness] extractTextContent found no text-like fields in parts",
+          message: "[Harness] extractTextContent: found parts but no text content",
         },
       })
     }
 
-    return texts.join("\n")
+    return result
   }
 
   /**
