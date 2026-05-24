@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1a673ffbbffeIrsMhEeHKDPpVI",
+  "lastUpdated": "2026-05-24T13:55:16.001Z",
+  "children": {
+    "ses_1a5bd6a19ffeuEJvyIu6We8ZB6": {
+      "sessionID": "ses_1a5bd6a19ffeuEJvyIu6We8ZB6",
+      "parentSessionID": "ses_1a673ffbbffeIrsMhEeHKDPpVI",
+      "rootMainSessionID": "ses_1a673ffbbffeIrsMhEeHKDPpVI",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "unknown",
+      "createdAt": "2026-05-24T13:52:53.793Z",
+      "updatedAt": "2026-05-24T13:55:16.001Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a5bd6a19ffeuEJvyIu6We8ZB6.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

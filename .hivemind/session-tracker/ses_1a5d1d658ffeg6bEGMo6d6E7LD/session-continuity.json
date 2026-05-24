@@ -1,0 +1,32 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1a5d1d658ffeg6bEGMo6d6E7LD",
+  "lastUpdated": "2026-05-24T13:37:56.971Z",
+  "hierarchy": {
+    "root": "ses_1a5d1d658ffeg6bEGMo6d6E7LD",
+    "children": {
+      "ses_1a5cfef5fffed9b5wsxC78Xi10": {
+        "file": "ses_1a5cfef5fffed9b5wsxC78Xi10.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a5cee94affeiQgh6J82I7PVIo": {
+        "file": "ses_1a5cee94affeiQgh6J82I7PVIo.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 12,
+  "toolSummary": {
+    "glob": 6,
+    "read": 2,
+    "task": 1,
+    "delegation-status": 5,
+    "delegate-task": 1
+  }
+}
