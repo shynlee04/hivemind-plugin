@@ -348,6 +348,152 @@ describe("MessageCapture", () => {
     })
   })
 
+  // REQ-23.2-01: extractTextContent multi-field extraction
+  describe("extractTextContent — multi-field and multi-type extraction (REQ-23.2-01)", () => {
+    it("should extract text from parts with type 'text' and p.text field", async () => {
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "text", text: "hello" }],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+        1,
+        "hello",
+      )
+    })
+
+    it("should extract text from parts with p.content field (no .text)", async () => {
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "text", content: "world" }],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+        1,
+        "world",
+      )
+    })
+
+    it("should extract text from mixed parts with both .text and .content", async () => {
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [
+            { type: "text", text: "a" },
+            { type: "text", content: "b" },
+          ],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+        1,
+        "a\nb",
+      )
+    })
+
+    it("should extract text from non-'text' types when they have .text field", async () => {
+      await messageCapture.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "tool_result", text: "result data here" }],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+        1,
+        "result data here",
+      )
+    })
+
+    it("should return empty string and log diagnostic when no text-like fields found", async () => {
+      const mockLog = vi.fn()
+      const captureWithLog = new MessageCapture({
+        sessionWriter,
+        agentTransform,
+        client: { app: { log: mockLog } } as any,
+        projectRoot: "/tmp",
+        sessionIndexWriter,
+      })
+
+      await captureWithLog.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [{ type: "unknown" }],
+        },
+      )
+
+      // Should call appendUserTurn with empty content
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+        1,
+        "",
+      )
+
+      // Should log a diagnostic warning about no text extracted
+      expect(mockLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            level: "debug",
+            message: expect.stringContaining("extractTextContent found no text"),
+          }),
+        }),
+      )
+    })
+
+    it("should return empty string for null parts without crash", async () => {
+      await expect(
+        messageCapture.handleChatMessage(
+          { sessionID: "ses_test12345abcdefg0" },
+          {
+            message: { role: "user" },
+            parts: null as any,
+          },
+        ),
+      ).resolves.toBeUndefined()
+    })
+
+    it("should return empty string for empty array without diagnostic warning", async () => {
+      const mockLog = vi.fn()
+      const captureWithLog = new MessageCapture({
+        sessionWriter,
+        agentTransform,
+        client: { app: { log: mockLog } } as any,
+        projectRoot: "/tmp",
+        sessionIndexWriter,
+      })
+
+      await captureWithLog.handleChatMessage(
+        { sessionID: "ses_test12345abcdefg0" },
+        {
+          message: { role: "user" },
+          parts: [],
+        },
+      )
+
+      expect(mockAppendUserTurn).toHaveBeenCalledWith(
+        "ses_test12345abcdefg0",
+        1,
+        "",
+      )
+
+      // Should NOT log diagnostic for empty array
+      expect(mockLog).not.toHaveBeenCalled()
+    })
+  })
+
   // F-06: seedTurnCounters wiring
   describe("seedTurnCounters — turn counter restoration on restart", () => {
     beforeEach(() => {

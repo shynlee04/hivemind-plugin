@@ -42,6 +42,7 @@ interface ChatMessageInput {
 interface OutputPart {
   type: string
   text?: string
+  content?: string
 }
 
 /** Shape of the chat.message hook output. */
@@ -315,10 +316,37 @@ export class MessageCapture {
    */
   private extractTextContent(parts: OutputPart[] | null | undefined): string {
     if (!Array.isArray(parts)) return ""
-    return parts
-      .filter((p) => p.type === "text" && typeof p.text === "string")
-      .map((p) => p.text!)
-      .join("\n")
+    let hasTextLikeField = false
+    const texts: string[] = []
+
+    for (const p of parts) {
+      if (!p) continue
+      const textVal = p.text
+      const contentVal = p.content
+
+      const hasText = typeof textVal === "string"
+      const hasContent = typeof contentVal === "string"
+
+      if (hasText || hasContent) {
+        hasTextLikeField = true
+        const value = hasText ? textVal : contentVal
+        if (value) {
+          texts.push(value)
+        }
+      }
+    }
+
+    if (parts.length > 0 && !hasTextLikeField) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "debug",
+          message: "[Harness] extractTextContent found no text-like fields in parts",
+        },
+      })
+    }
+
+    return texts.join("\n")
   }
 
   /**
