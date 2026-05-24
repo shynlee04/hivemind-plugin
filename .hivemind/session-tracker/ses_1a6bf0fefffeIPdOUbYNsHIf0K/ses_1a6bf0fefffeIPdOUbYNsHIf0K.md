@@ -2928,3 +2928,20 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
 **source:** real-human
 
 task tool
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Research Phase 23.2 --research",
+  "subagent_type": "gsd-phase-researcher",
+  "task_id": "ses_1a6bb6c91ffeu5NwxwLhNDmdwj"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1a6bb6c91ffeu5NwxwLhNDmdwj
+```
+

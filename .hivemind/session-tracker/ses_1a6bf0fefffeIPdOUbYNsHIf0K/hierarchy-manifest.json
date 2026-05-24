@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1a6bf0fefffeIPdOUbYNsHIf0K",
+  "lastUpdated": "2026-05-24T09:23:44.659Z",
+  "children": {
+    "ses_1a6bb6c91ffeu5NwxwLhNDmdwj": {
+      "sessionID": "ses_1a6bb6c91ffeu5NwxwLhNDmdwj",
+      "parentSessionID": "ses_1a6bf0fefffeIPdOUbYNsHIf0K",
+      "rootMainSessionID": "ses_1a6bf0fefffeIPdOUbYNsHIf0K",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-phase-researcher",
+      "subagentType": "gsd-phase-researcher",
+      "createdAt": "2026-05-24T09:23:44.658Z",
+      "updatedAt": "2026-05-24T09:23:44.659Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a6bb6c91ffeu5NwxwLhNDmdwj.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}
