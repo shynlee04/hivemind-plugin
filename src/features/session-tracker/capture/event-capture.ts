@@ -23,7 +23,7 @@ import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "../persistence/hierarchy-manifest.js"
-import type { JourneyEntry, Turn } from "../types.js"
+import type { ChildSessionRecord, JourneyEntry, Turn } from "../types.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 import { asString, getNestedValue } from "../../../shared/helpers.js"
@@ -801,8 +801,45 @@ export class EventCapture {
         }
       }
     } catch {
-      // getSessionMessages failed — fall through to default message
+      // getSessionMessages failed — fall through to child .json fallback
     }
+
+    // Bug B fix: Try reading the child .json file directly
+    const childData = await this.childWriter.readChildData(sessionID)
+    if (childData) {
+      const summary = this.extractSummaryFromChildRecord(childData)
+      if (summary) return `**compact_summary:**\n\n${summary}\n`
+    }
+
     return "**Compaction occurred — summary unavailable.**\n"
+  }
+
+  /**
+   * Extracts a compaction summary from a child session record.
+   *
+   * Prefers `lastMessage`, then last assistant turn content, then any
+   * turn content as fallback.
+   *
+   * @param record - The child session record to extract from.
+   * @returns Summary text, or `undefined` if no usable content found.
+   */
+  private extractSummaryFromChildRecord(record: ChildSessionRecord): string | undefined {
+    if (record.lastMessage && record.lastMessage.trim().length > 0) {
+      return record.lastMessage.trim()
+    }
+
+    const turns = record.turns
+    if (turns && turns.length > 0) {
+      for (let i = turns.length - 1; i >= 0; i--) {
+        const t = turns[i]
+        if (t.role === "assistant" || t.actor.includes("agent")) {
+          if (t.content && t.content.trim().length > 0) return t.content.trim()
+        }
+      }
+      const last = turns[turns.length - 1]
+      if (last.content && last.content.trim().length > 0) return last.content.trim()
+    }
+
+    return undefined
   }
 }

@@ -48,6 +48,8 @@ describe("EventCapture — compaction handling (D-10)", () => {
       updateChildStatus: vi.fn(),
       createChildFile: vi.fn(),
       appendChildTurn: vi.fn(),
+      appendJourneyEntry: vi.fn(),
+      readChildData: vi.fn().mockResolvedValue(undefined),
     } as unknown as ChildWriter
 
     sessionIndexWriter = {

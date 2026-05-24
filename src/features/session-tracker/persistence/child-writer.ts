@@ -10,7 +10,8 @@
  * @module session-tracker/persistence/child-writer
  */
 
-import { readFile } from "node:fs/promises"
+import { readFile, readdir } from "node:fs/promises"
+import { resolve } from "node:path"
 import { atomicWriteJson, ensureDirectory, safeSessionPath } from "./atomic-write.js"
 import type { ChildSessionRecord, Turn, JourneyEntry } from "../types.js"
 import type { HierarchyIndex } from "./hierarchy-index.js"
@@ -285,6 +286,57 @@ export class ChildWriter {
     const filePath = this.getChildFilePath(parentSessionID, childSessionID)
     const raw = await readFile(filePath, "utf-8")
     return JSON.parse(raw) as ChildSessionRecord
+  }
+
+  /**
+   * Reads a child session record from disk using only the child session ID.
+   *
+   * Resolves the parent directory via hierarchy index, then falls back to
+   * scanning all session-tracker subdirectories if the index is unavailable.
+   *
+   * @param sessionID - The child session identifier to look up.
+   * @returns The parsed child session record, or `undefined` if not found.
+   */
+  async readChildData(sessionID: string): Promise<ChildSessionRecord | undefined> {
+    if (this.hierarchyIndex) {
+      const parentID = this.hierarchyIndex.getParent(sessionID)
+      if (parentID) {
+        try {
+          return await this.readChildFile(parentID, sessionID)
+        } catch {
+          // File not found under indexed parent — try scan below
+        }
+      }
+      const rootMain = this.hierarchyIndex.getRootMain(sessionID)
+      if (rootMain) {
+        try {
+          return await this.readChildFile(rootMain, sessionID)
+        } catch {
+          // Not found under root main either
+        }
+      }
+    }
+
+    const trackerRoot = resolve(this.projectRoot, ".hivemind", "session-tracker")
+    let entries: string[]
+    try {
+      entries = await readdir(trackerRoot)
+    } catch {
+      return undefined
+    }
+
+    const targetFile = `${sessionID}.json`
+    for (const entry of entries) {
+      try {
+        const filePath = safeSessionPath(this.projectRoot, entry, targetFile)
+        const raw = await readFile(filePath, "utf-8")
+        return JSON.parse(raw) as ChildSessionRecord
+      } catch {
+        continue
+      }
+    }
+
+    return undefined
   }
 
   /**

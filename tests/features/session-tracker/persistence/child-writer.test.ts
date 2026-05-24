@@ -776,3 +776,89 @@ describe("appendChildTurn — manifest turnCount sync (Bug C)", () => {
     ).resolves.toBeUndefined()
   })
 })
+
+// ---------------------------------------------------------------------------
+// readChildData tests (Bug B — child .json fallback for compaction summary)
+// ---------------------------------------------------------------------------
+
+describe("readChildData", () => {
+  it("resolves child record via directory scan when no hierarchy index", async () => {
+    const childID = "ses_child_readdata01"
+    const record: ChildSessionRecord = {
+      ...baseMetadata,
+      sessionID: childID,
+      turns: [
+        { turn: 1, actor: "assistant", content: "Hello from child", role: "assistant", tools: [] },
+      ],
+      lastMessage: "Hello from child",
+    }
+    await writer.createChildFile(parentSessionID, childID, record)
+
+    // ChildWriter without hierarchy index — must scan directories
+    const result = await writer.readChildData(childID)
+    expect(result).toBeDefined()
+    expect(result!.sessionID).toBe(childID)
+    expect(result!.lastMessage).toBe("Hello from child")
+  })
+
+  it("returns undefined when child session does not exist on disk", async () => {
+    const result = await writer.readChildData("ses_nonexistent_child")
+    expect(result).toBeUndefined()
+  })
+
+  it("resolves child record via hierarchy index when parent is known", async () => {
+    const childID = "ses_child_hier_idx"
+    const record: ChildSessionRecord = {
+      ...baseMetadata,
+      sessionID: childID,
+      turns: [
+        { turn: 2, actor: "assistant", content: "Indexed child data", role: "assistant", tools: [] },
+      ],
+    }
+    await writer.createChildFile(parentSessionID, childID, record)
+
+    // Wire up a hierarchy index that maps child → parent
+    const manifestWriter = new HierarchyManifestWriter({ projectRoot })
+    const writerWithIndex = new ChildWriter({ projectRoot, manifestWriter })
+
+    // First, create a session dir for parent so manifest can be initialized
+    const { safeSessionPath, ensureDirectory } = await import(
+      "../../../../src/features/session-tracker/persistence/atomic-write.js"
+    )
+    const parentDir = safeSessionPath(projectRoot, parentSessionID, "")
+    await ensureDirectory(parentDir)
+
+    // Write hierarchy manifest linking child to parent
+    const { writeFileSync } = await import("node:fs")
+    const manifestPath = safeSessionPath(projectRoot, parentSessionID, "hierarchy-manifest.json")
+    writeFileSync(manifestPath, JSON.stringify({
+      sessionID: parentSessionID,
+      children: [childID],
+      childLookup: { [childID]: parentSessionID },
+    }))
+
+    const result = await writerWithIndex.readChildData(childID)
+    expect(result).toBeDefined()
+    expect(result!.sessionID).toBe(childID)
+    expect(result!.turns[0].content).toBe("Indexed child data")
+  })
+
+  it("returns lastMessage when available, otherwise falls back to last assistant turn", async () => {
+    const childID = "ses_child_lastmsg"
+    const record: ChildSessionRecord = {
+      ...baseMetadata,
+      sessionID: childID,
+      lastMessage: "This is the lastMessage field",
+      turns: [
+        { turn: 1, actor: "assistant", content: "Turn content should not win", role: "assistant", tools: [] },
+      ],
+    }
+    await writer.createChildFile(parentSessionID, childID, record)
+
+    const result = await writer.readChildData(childID)
+    expect(result).toBeDefined()
+    expect(result!.lastMessage).toBe("This is the lastMessage field")
+    // Verify turn content is also present as fallback
+    expect(result!.turns[0].content).toBe("Turn content should not win")
+  })
+})
