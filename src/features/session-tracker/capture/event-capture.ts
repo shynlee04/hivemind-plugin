@@ -336,8 +336,10 @@ export class EventCapture {
         }
         // F-18: Backfill child metadata with real agent identity
         const pendingEntry = this.pendingRegistry?.get(sessionID)
-        const agentName = pendingEntry?.subagentType ?? "unknown"
-        const model = pendingEntry?.model ?? ""
+        // Fix: handle union type PendingDispatchEntry | PendingDispatchEntry[]
+        const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
+        const agentName = entry?.subagentType ?? "unknown"
+        const model = entry?.model ?? ""
         await this.childWriter.backfillChildMetadata(
           childRoute.parentID,
           sessionID,
@@ -389,8 +391,10 @@ export class EventCapture {
         }
         // F-18: Backfill child metadata with real agent identity
         const pendingEntry = this.pendingRegistry?.get(sessionID)
-        const agentName = pendingEntry?.subagentType ?? "unknown"
-        const model = pendingEntry?.model ?? ""
+        // Fix: handle union type PendingDispatchEntry | PendingDispatchEntry[]
+        const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
+        const agentName = entry?.subagentType ?? "unknown"
+        const model = entry?.model ?? ""
         await this.childWriter.backfillChildMetadata(
           childRoute.parentID,
           sessionID,
@@ -456,7 +460,9 @@ export class EventCapture {
     const pendingEntry =
       this.pendingRegistry?.get(sessionID) ??
       this.pendingRegistry?.getByParent(parentID)
-    const subagentType = explicitSubagentType ?? pendingEntry?.subagentType ?? "unknown"
+    // Fix: handle union type PendingDispatchEntry | PendingDispatchEntry[]
+    const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
+    const subagentType = explicitSubagentType ?? entry?.subagentType ?? "unknown"
     let delegationDepth = explicitDelegationDepth ?? 1
 
     try {
@@ -473,8 +479,8 @@ export class EventCapture {
         delegationDepth,
         delegatedBy: {
           agentName: explicitAgentName ?? subagentType,
-          model: explicitModel ?? pendingEntry?.model ?? "",
-          tool: pendingEntry?.tool ?? "task",
+          model: explicitModel ?? entry?.model ?? "",
+          tool: entry?.tool ?? "task",
           description: "",
           subagentType,
         },
@@ -483,7 +489,7 @@ export class EventCapture {
         status: "active",
         mainAgent: {
           name: explicitAgentName ?? subagentType,
-          model: explicitModel ?? pendingEntry?.model ?? "",
+          model: explicitModel ?? entry?.model ?? "",
         },
         turns: [],
         children: [],
@@ -494,7 +500,7 @@ export class EventCapture {
       // as fallback when chat.message hook payload has empty agent/model.
       this.childWriter.setDelegationContext(sessionID, {
         agentName: explicitAgentName ?? subagentType,
-        model: explicitModel ?? pendingEntry?.model,
+        model: explicitModel ?? entry?.model,
       })
 
       // D-07: update hierarchy-manifest.json
@@ -525,7 +531,7 @@ export class EventCapture {
               childSessionID: sessionID,
               parentSessionID: parentID,
               delegationDepth,
-              delegatedBy: pendingEntry?.tool ?? "task",
+              delegatedBy: entry?.tool ?? "task",
               subagentType,
               childFile: `${sessionID}.json`,
             })
