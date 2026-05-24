@@ -65,6 +65,7 @@ describe("Session routing classification", () => {
       has: vi.fn().mockReturnValue(false),
       get: vi.fn().mockReturnValue(undefined),
       removeByCallID: vi.fn(),
+      refreshTimestamp: vi.fn(),
     }
     ;(tracker as any).ensureChildRoute = vi.fn()
   })
@@ -140,7 +141,7 @@ describe("Session routing classification", () => {
     expect(mockRecordChildToolJourney).toHaveBeenCalled()
   })
 
-  it("handleToolExecuteAfter removes pending entry by callID", async () => {
+  it("handleToolExecuteAfter refreshes pending entry timestamp by callID", async () => {
     mockClassify.mockResolvedValue({ kind: "main" })
 
     await tracker.handleToolExecuteAfter(
@@ -148,6 +149,7 @@ describe("Session routing classification", () => {
       { title: "read", output: "ok", metadata: {} },
     )
 
-    expect((tracker as any).pendingRegistry.removeByCallID).toHaveBeenCalledWith("call-pending")
+    // Bug D-1: changed from removeByCallID to refreshTimestamp
+    expect((tracker as any).pendingRegistry.refreshTimestamp).toHaveBeenCalledWith("call-pending")
   })
 })

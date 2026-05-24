@@ -53,6 +53,15 @@ export class ChildWriter {
   private lastWriteTimes: Map<string, number> = new Map()
 
   /**
+   * Delegation context map (childID → { agentName, model }) for Bug D-2.
+   *
+   * Stores the agent name and model from the dispatch so that child-recorder
+   * can use them as fallback when the chat.message hook payload has empty
+   * agent/model fields.
+   */
+  private delegationContext: Map<string, { agentName: string; model?: string }> = new Map()
+
+  /**
    * Threshold (in milliseconds) before a per-child queue is considered
    * stale and auto-reset.
    */
@@ -72,6 +81,35 @@ export class ChildWriter {
     this.projectRoot = deps.projectRoot
     this.hierarchyIndex = deps.hierarchyIndex
     this.retryQueue = deps.retryQueue
+  }
+
+  /**
+   * Stores delegation context (agentName, model) for a child session.
+   *
+   * Called after child file creation when the dispatch context (from
+   * PendingDispatchRegistry) is available. The stored values are later
+   * retrieved by child-recorder as fallback for actor/model attribution.
+   *
+   * @param childSessionID - The child session identifier.
+   * @param context - The delegation context with agentName and optional model.
+   */
+  setDelegationContext(
+    childSessionID: string,
+    context: { agentName: string; model?: string },
+  ): void {
+    this.delegationContext.set(childSessionID, context)
+  }
+
+  /**
+   * Retrieves the stored delegation context for a child session.
+   *
+   * @param childSessionID - The child session identifier.
+   * @returns The delegation context, or `undefined` if none was stored.
+   */
+  getDelegationContext(
+    childSessionID: string,
+  ): { agentName: string; model?: string } | undefined {
+    return this.delegationContext.get(childSessionID)
   }
 
   /**

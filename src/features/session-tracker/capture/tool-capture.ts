@@ -356,10 +356,15 @@ export class ToolCapture {
         `${childSessionID}.json`,
       )
 
-      // Clean up pending dispatch registry entry (AC-05: entry removed at PostToolUse).
-      // Ensures Gate 3 doesn't hold stale entries for already-registered children.
+      // Refresh the pending dispatch registry entry instead of removing it.
+      // Bug D-1: premature removal causes subsequent session events to miss
+      // the entry, leading to "unknown" actor attribution. The entry will be
+      // auto-purged by cleanupStale() after the normal TTL.
       if (this.pendingRegistry) {
-        this.pendingRegistry.remove(childSessionID)
+        const callID = input.callID || ""
+        if (callID) {
+          this.pendingRegistry.refreshTimestamp(callID)
+        }
       }
 
       // Also append the task tool block to the main session .md

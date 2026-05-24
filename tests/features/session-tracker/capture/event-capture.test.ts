@@ -406,6 +406,8 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
     const childWriter = {
       createChildFile: mockCreateChildFile,
       updateChildStatus: vi.fn(),
+      setDelegationContext: vi.fn(),
+      getDelegationContext: vi.fn().mockReturnValue(undefined),
     } as unknown as ChildWriter
 
     const sessionIndexWriter = {

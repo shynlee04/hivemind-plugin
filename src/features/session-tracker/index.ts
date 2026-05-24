@@ -300,7 +300,7 @@ export class SessionTracker {
           )
         }
         if (this.pendingRegistry && input.callID) {
-          this.pendingRegistry.removeByCallID(input.callID)
+          this.pendingRegistry.refreshTimestamp(input.callID)
         }
         return
       }
@@ -324,7 +324,7 @@ export class SessionTracker {
           output as Parameters<typeof this.toolCapture.handleToolExecuteAfter>[1],
         )
         if (this.pendingRegistry && input.callID) {
-          this.pendingRegistry.removeByCallID(input.callID)
+          this.pendingRegistry.refreshTimestamp(input.callID)
         }
       }
     } catch (err) {

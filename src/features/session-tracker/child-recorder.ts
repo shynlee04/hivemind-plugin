@@ -96,13 +96,22 @@ export class ChildRecorder {
       .join("\n")
       || (typeof messageRole === "string" ? `[${messageRole} message]` : "unknown")
 
+    // Bug D-2: Prefer delegation context from PendingDispatchRegistry
+    // (carried via ChildWriter) when hook payload has empty agent/model.
+    const delegationCtx = this.childWriter.getDelegationContext(sessionID)
+    const effectiveActor = input.agent || delegationCtx?.agentName || "unknown"
+    const effectiveModel =
+      (typeof input.model === "string" ? input.model : input.model?.modelID)
+      || delegationCtx?.model
+      || ""
+
     // Record turn to child .json under parent
     await this.childWriter.appendChildTurn(
       parentID,
       sessionID,
       {
         turn: 0, // Placeholder — overwritten by ChildWriter.appendChildTurn from record.turns.length
-        actor: input.agent || "unknown",
+        actor: effectiveActor,
         content,
         tools: [],
         role: typeof messageRole === "string" ? messageRole : undefined,
@@ -116,8 +125,8 @@ export class ChildRecorder {
         type: "assistant_message",
         content,
         metadata: {
-          actor: input.agent || "unknown",
-          model: typeof input.model === "string" ? input.model : input.model?.modelID,
+          actor: effectiveActor,
+          model: effectiveModel,
           messageID: input.messageID,
         },
       })

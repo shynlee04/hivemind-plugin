@@ -10,7 +10,7 @@
  * ## Lifecycle
  *
  * 1. **PreToolUse** (tool.execute.before with tool="task") → `add()`
- * 2. **PostToolUse** (tool.execute.after with metadata.sessionId) → `remove()`
+ * 2. **PostToolUse** (tool.execute.after with metadata.sessionId) → `refreshTimestamp()`
  * 3. **Auto-purge**: stale entries (>30s) removed on classification check
  *
  * All methods are synchronous (Map operations, no I/O).
@@ -42,6 +42,8 @@ export interface PendingDispatchEntry {
   delegationDepth?: number
   /** Task description from the dispatch. CP-ST-05-01 addition. */
   description?: string
+  /** Model identifier from the dispatch hook (e.g. "claude-sonnet-4-20250514"). Bug D-2. */
+  model?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -180,6 +182,34 @@ export class PendingDispatchRegistry {
    */
   getSubagentType(sessionID: string): string | undefined {
     return this.get(sessionID)?.subagentType
+  }
+
+  /**
+   * Refreshes the timestamp of a pending dispatch entry by callID.
+   *
+   * Instead of removing the entry at PostToolUse (which causes a race when
+   * subsequent `session.created` / `chat.message` events still need the entry
+   * for classification), this bumps the timestamp so the entry survives until
+   * `cleanupStale()` auto-purges it after the normal TTL.
+   *
+   * Bug D-1: prevents premature removal that causes "unknown" actor attribution.
+   *
+   * @param callID - The tool call identifier whose entry should be refreshed.
+   */
+  refreshTimestamp(callID: string): void {
+    const callKey = `call:${callID}`
+    const entry = this.dispatches.get(callKey)
+    if (entry) {
+      entry.timestamp = Date.now()
+      return
+    }
+    const childID = this.callIDToChild.get(callID)
+    if (childID) {
+      const childEntry = this.dispatches.get(childID)
+      if (childEntry) {
+        childEntry.timestamp = Date.now()
+      }
+    }
   }
 
   /**

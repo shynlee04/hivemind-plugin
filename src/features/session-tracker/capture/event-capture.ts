@@ -337,10 +337,11 @@ export class EventCapture {
         // F-18: Backfill child metadata with real agent identity
         const pendingEntry = this.pendingRegistry?.get(sessionID)
         const agentName = pendingEntry?.subagentType ?? "unknown"
+        const model = pendingEntry?.model ?? ""
         await this.childWriter.backfillChildMetadata(
           childRoute.parentID,
           sessionID,
-          { agentName, model: "" },
+          { agentName, model },
         ).catch((err) => {
           void this.client.app?.log?.({
             body: {
@@ -389,10 +390,11 @@ export class EventCapture {
         // F-18: Backfill child metadata with real agent identity
         const pendingEntry = this.pendingRegistry?.get(sessionID)
         const agentName = pendingEntry?.subagentType ?? "unknown"
+        const model = pendingEntry?.model ?? ""
         await this.childWriter.backfillChildMetadata(
           childRoute.parentID,
           sessionID,
-          { agentName, model: "" },
+          { agentName, model },
         ).catch((err) => {
           void this.client.app?.log?.({
             body: {
@@ -471,7 +473,7 @@ export class EventCapture {
         delegationDepth,
         delegatedBy: {
           agentName: explicitAgentName ?? subagentType,
-          model: explicitModel ?? "",
+          model: explicitModel ?? pendingEntry?.model ?? "",
           tool: pendingEntry?.tool ?? "task",
           description: "",
           subagentType,
@@ -481,11 +483,18 @@ export class EventCapture {
         status: "active",
         mainAgent: {
           name: explicitAgentName ?? subagentType,
-          model: explicitModel ?? "",
+          model: explicitModel ?? pendingEntry?.model ?? "",
         },
         turns: [],
         children: [],
         journey: [],
+      })
+
+      // Bug D-2: Store delegation context so child-recorder can use it
+      // as fallback when chat.message hook payload has empty agent/model.
+      this.childWriter.setDelegationContext(sessionID, {
+        agentName: explicitAgentName ?? subagentType,
+        model: explicitModel ?? pendingEntry?.model,
       })
 
       // D-07: update hierarchy-manifest.json

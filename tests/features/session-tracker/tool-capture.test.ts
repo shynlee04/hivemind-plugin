@@ -155,16 +155,18 @@ describe("ToolCapture — delegator attribution (agentName resolution)", () => {
       expect(meta!.delegatedBy.agentName).toBe("gsd-planner")
     })
 
-    it("should clean up pendingRegistry entry after child record creation (REGISTRY)", async () => {
+    it("should refresh pendingRegistry entry after child record creation (Bug D-1: no premature removal)", async () => {
       pendingRegistry = new PendingDispatchRegistry()
       const childID = "ses_child2222222222cc"
       pendingRegistry.add({
         parentSessionID: "ses_parent1234567890ab",
         callID: "call_test1234567890ab",
         subagentType: "hm-l2-reviewer",
-        timestamp: Date.now(),
+        timestamp: Date.now() - 1000,
       })
       pendingRegistry.updateWithChildID("call_test1234567890ab", childID)
+
+      const beforeTimestamp = pendingRegistry.get(childID)!.timestamp
 
       const { deps } = createMockDeps(pendingRegistry)
       const capture = new ToolCapture(deps)
@@ -172,9 +174,11 @@ describe("ToolCapture — delegator attribution (agentName resolution)", () => {
       const { input, output } = taskWithChild(childID)
       await (capture as any).handleTask(input, output)
 
-      // After handleTask, the pending entry should be removed
-      expect(pendingRegistry.has(childID)).toBe(false)
-      expect(pendingRegistry.size).toBe(0)
+      // Bug D-1: entry stays alive via refreshTimestamp instead of premature remove
+      expect(pendingRegistry.has(childID)).toBe(true)
+      expect(pendingRegistry.size).toBe(1)
+      // Timestamp should have been refreshed (>= before)
+      expect(pendingRegistry.get(childID)!.timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
     })
   })
 
