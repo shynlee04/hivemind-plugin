@@ -1,0 +1,37 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1a91121c8ffef2j6KOk36tvqRe",
+  "lastUpdated": "2026-05-23T22:31:24.586Z",
+  "hierarchy": {
+    "root": "ses_1a91121c8ffef2j6KOk36tvqRe",
+    "children": {
+      "ses_1a90ee8ddffenYkoikglNTVHBo": {
+        "file": "ses_1a90ee8ddffenYkoikglNTVHBo.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1a90e3409ffeeOjbWMgg7zwoK2": {
+        "file": "ses_1a90e3409ffeeOjbWMgg7zwoK2.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 12,
+  "toolSummary": {
+    "todowrite": 4,
+    "glob": 11,
+    "grep": 1,
+    "read": 13,
+    "delegate-task": 2,
+    "task": 2,
+    "bash": 11,
+    "delegation-status": 9,
+    "hivemind-session-view": 1,
+    "write": 1
+  }
+}

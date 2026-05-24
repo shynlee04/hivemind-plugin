@@ -1,0 +1,19 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1a6bf0fefffeIPdOUbYNsHIf0K",
+  "lastUpdated": "2026-05-24T09:15:26.982Z",
+  "hierarchy": {
+    "root": "ses_1a6bf0fefffeIPdOUbYNsHIf0K",
+    "children": {
+      "ses_1a6bb6c91ffeu5NwxwLhNDmdwj": {
+        "file": "ses_1a6bb6c91ffeu5NwxwLhNDmdwj.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 3,
+  "toolSummary": {}
+}

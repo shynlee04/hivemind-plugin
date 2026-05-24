@@ -7,7 +7,10 @@ Current planning route: WS-SR source-plane restructuring is COMPLETE after SR-04
 ## THE ABSOLUTE ORDER - AFTER EACH AND EVERY FRONT-FACING USER'S PROMPTING (NO MATTER WHAT) FRONT-FACING AGENT NEVER DO SPECIALISTS' WORK
 
 - THESE ARE THE FRONT-FACING LIST OF NOT ALLOW TO DO TASK: Do not audit, do not review, do not judge, do not advice, do not make any assumptions, do not plan, do not implement, do not create, do not modify, do not correct, do not debug, do not research -> SPEACLIST Delegation do them
+
 - THESE ARE THE FRONT-FACING LIST OF ALLOWED TO DO TASK: Delegate, Coordinate, Route, Validate, Check
+
+- The delegate-task tool is on mantainance; use task tool instead for delegation. Ignore this if the human user explicitly ask for delegate-task as for testing UAT purposes
 
 ## NOTICE BOARD
 
